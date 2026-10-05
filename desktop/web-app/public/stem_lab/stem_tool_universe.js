@@ -512,6 +512,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       })));
   }
 
+  function universeFlightDiscoveries(destinations, info, project, fov, aspect, selectedId, retainedId) {
+    if(!info.position||info.position.length!==3||!info.position.every(Number.isFinite))return [];
+    return destinations.reduce(function(found,target){
+      if(target.id===selectedId)return found;
+      var delta=target.position.map(function(v,i){return v-info.position[i];}),distance=Math.hypot.apply(Math,delta);
+      if(!Number.isFinite(distance)||distance<1e-9)return found;
+      var guide=project(delta.map(function(v){return v/distance;}),info.yaw||0,info.pitch||0,0,fov,aspect);
+      // A small entry inset avoids fleeting edge suggestions; retain the current one to the visible edge.
+      var inset=target.id===retainedId?0.02:0.08;
+      if(guide.inView&&guide.screen.every(function(v){return v>=inset&&v<=1-inset;}))found.push({target:target,distance:distance,angle:guide.angleDeg,screen:guide.screen});
+      return found;
+    },[]).sort(function(a,b){return a.angle-b.angle||a.distance-b.distance||a.target.id.localeCompare(b.target.id);});
+  }
+
+  function UniverseFlightDiscovery(props) {
+    var React=props.React,h=React.createElement,label=props.label;
+    var memoryState=React.useState(null),memory=memoryState[0],setMemory=memoryState[1];
+    var hoverState=React.useState(false),hover=hoverState[0],setHover=hoverState[1];
+    var focusState=React.useState(false),focused=focusState[0],setFocused=focusState[1];
+    var aspectState=React.useState(1),aspect=aspectState[0],setAspect=aspectState[1];
+    React.useEffect(function(){
+      var element=props.canvas;if(!element)return;
+      function measure(){var box=element.getBoundingClientRect();setAspect(box.width/Math.max(1,box.height));}
+      measure();var observer=typeof ResizeObserver==='function'?new ResizeObserver(measure):null;
+      if(observer)observer.observe(element);else window.addEventListener('resize',measure);
+      return function(){if(observer)observer.disconnect();else window.removeEventListener('resize',measure);};
+    },[props.canvas]);
+    var candidates=universeFlightDiscoveries(props.destinations,props.info,props.project,props.fov,aspect,props.selectedId,memory&&memory.target.id);
+    var retained=memory&&candidates.filter(function(item){return item.target.id===memory.target.id;})[0];
+    var held=hover||focused,suggestion=held&&memory?memory:retained||candidates[0]||null;
+    React.useEffect(function(){if(!held)setMemory(suggestion);},[props.info,props.fov,props.selectedId,aspect,held]);
+    if(!suggestion)return null;
+    var target=suggestion.target,current=candidates.filter(function(item){return item.target.id===target.id;})[0];
+    function next(){var index=candidates.findIndex(function(item){return item.target.id===target.id;});if(candidates.length)setMemory(candidates[(index+1)%candidates.length]);}
+    return h(React.Fragment,null,
+      current&&h('div',{className:'uf-discovery-marker','aria-hidden':'true',style:{left:(current.screen[0]*100)+'%',top:(current.screen[1]*100)+'%'}},h('span',null)),
+      h('section',{className:'uf-discovery','data-discovery-target':target.id,'aria-labelledby':'uf-discovery-name',
+      onPointerEnter:function(e){if(e.pointerType!=='touch')setHover(true);},onPointerLeave:function(){setHover(false);},
+      onFocusCapture:function(){setFocused(true);},onBlurCapture:function(e){if(!e.currentTarget.contains(e.relatedTarget))setFocused(false);}},
+      h('div',{className:'uf-discovery-heading'},h('div',null,
+        h('span',{className:'uf-discovery-eyebrow'},current?label('discovery_ahead','In your view'):label('discovery_held','Ready to explore')),
+        h('strong',{id:'uf-discovery-name'},target.name)),
+        h('button',{type:'button',disabled:candidates.length<2,onClick:next,'aria-label':label('discovery_next','Next visible landmark'),title:label('discovery_next','Next visible landmark')},'→')),
+      h('p',{className:'uf-discovery-distance'},props.number((current||suggestion).distance)+' ly · '+target.kind),
+      h('div',{className:'uf-discovery-actions'},
+        h('button',{type:'button',onClick:function(){props.onInspect(target.id);},'aria-label':label('discovery_inspect','Inspect ')+target.name,title:label('discovery_inspect_help','Pause and face this landmark')},label('discovery_inspect_action','Inspect')),
+        h('button',{type:'button',className:'uf-primary',onClick:function(){props.onFly(target.id);},'aria-label':label('discovery_fly','Fly here: ')+target.name,title:label('discovery_fly_help','Guided camera approach; pauses on arrival')},label('discovery_fly_action','Fly here')))));
+  }
+
   function UniverseFlightExplorer(props) {
     var React = props.React, h = React.createElement;
     var useState = React.useState;
@@ -838,6 +887,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     var lightClock = ready && api.math.lightClock ? api.math.lightClock(beta,1) : null;
     function chooseBeta(value) { setExperiment(''); setBeta(value); }
     function chooseTarget(id) { stop();if(id!==targetId)setJourney(null);if(activeTour&&(!tourStop||tourStop.id!==id))setTour(null); setNotice(''); setTargetId(id); if(scene.current) { scene.current.cancelNavigation(); scene.current.selectTarget(id); } }
+    function inspectDiscovery(id) {
+      if(!scene.current||!ready||mode!=='explore')return;
+      chooseTarget(id);scene.current.focusTarget(id);inspectScene();
+    }
+    function flyToDiscovery(id) {
+      if(!scene.current||!ready||mode!=='explore')return;
+      var target=destinations.filter(function(item){return item.id===id;})[0];if(!target)return;
+      var position=scene.current.snapshot().state.position;
+      var distance=Math.hypot.apply(Math,target.position.map(function(v,i){return v-position[i];}));
+      chooseTarget(id);setArrivalScale(1);
+      var best=speedLevel,error=Infinity;
+      if(distance>target.arrivalRadiusLy){
+        for(var level=0;level<=100;level++){
+          var pace=limits[0]*Math.pow(limits[1]/limits[0],level/100);
+          var difference=Math.abs(api.math.approachPlan(distance,target.arrivalRadiusLy,1,pace).estimatedSeconds-20);
+          if(difference<error){best=level;error=difference;}
+        }
+      }
+      var speed=limits[0]*Math.pow(limits[1]/limits[0],best/100);
+      setSpeedLevel(best);settingsRef.current.speed=speed;scene.current.set({speed:speed});
+      if(scene.current.navigateTo(id,1)){
+        setRunning(true);setNotice(label('discovery_flight_active','Guided camera approach. Travel pauses at ')+target.name+'.');
+      }
+      inspectScene();
+    }
     function startApproach() {
       if(!scene.current || !ready || !targetId) return false;
       setNotice(''); if(scene.current.navigateTo(targetId,arrivalScale)) {
@@ -1083,6 +1157,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               targetGuide && !activeTarget.inView && h('div',{className:'uf-target-bearing','aria-hidden':'true',style:{left:'clamp(28px, '+(targetGuide.edge[0]*100)+'%, calc(100% - 28px))',top:'clamp(var(--uf-bearing-top,104px), '+(targetGuide.edge[1]*100)+'%, calc(100% - 140px))'}},
                 h('svg',{viewBox:'0 0 24 24',focusable:'false',style:{transform:'rotate('+targetGuide.arrowDeg+'deg)'}},h('path',{d:'M5 12h14M13 6l6 6-6 6',fill:'none',stroke:'currentColor',strokeWidth:1.8,strokeLinecap:'round',strokeLinejoin:'round'}))),
               activeTarget && activeTarget.coincident && h('div',{className:'uf-at-landmark'},h('strong',null,selected.name),h('span',null,label('at_landmark','At landmark center'))),
+              ready&&showHud&&mode==='explore'&&!activeTour&&!checkpoint&&!(flyby&&flyby.active)&&!(info.navigation&&info.navigation.active)&&!(info.orbit&&info.orbit.active)&&!(fullscreen&&showInViewControls)&&h(UniverseFlightDiscovery,{
+                key:flightRegion,React:React,label:label,number:number,canvas:canvas.current,info:info,project:api.math.targetView,fov:fov,destinations:destinations,selectedId:targetId,onInspect:inspectDiscovery,onFly:flyToDiscovery}),
               h('div',{className:'uf-scene-bottom','aria-hidden':'true'},h('span',null,Math.round(heading)+'° heading · '+Math.round((info.pitch||0)*180/Math.PI)+'° pitch'),h('span',null,'3D MODEL')),
               route && route.active && h('div',{className:'uf-route-progress','aria-hidden':'true'},
                 h('span',null,(running?label('approaching','APPROACHING'):label('approach_paused','APPROACH PAUSED'))+' · '+Math.floor(route.progress*100)+'%'),
@@ -1559,6 +1635,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   [data-universe-tool] .uf-stage canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab;}
   [data-universe-tool] .uf-stage canvas:active{cursor:grabbing;}
   [data-universe-tool] .uf-scene-top,[data-universe-tool] .uf-scene-bottom{position:absolute;left:16px;right:16px;display:flex;justify-content:space-between;gap:8px;pointer-events:none;color:#cbd9e9;font-size:10px;letter-spacing:.09em;}
+  [data-universe-tool] .uf-discovery{position:absolute;right:12px;bottom:94px;width:280px;max-width:calc(100% - 24px);padding:10px 12px;border:1px solid #58758b;border-top:2px solid #87dcca;border-radius:12px;background:linear-gradient(135deg,#10283bf5,#081321fa);box-shadow:0 8px 28px #0007;z-index:2;color:#e8f2fa;}
+  [data-universe-tool] .uf-stage:fullscreen .uf-discovery{bottom:148px;}
+  [data-universe-tool] .uf-discovery-marker{position:absolute;transform:translate(-50%,-50%);width:28px;height:28px;border:1px solid #a0e6d9;border-radius:50%;box-shadow:0 0 0 3px #08132199;display:grid;place-items:center;pointer-events:none;z-index:1;}
+  [data-universe-tool] .uf-discovery-marker span{width:4px;height:4px;border-radius:50%;background:#a0e6d9;}
+  [data-universe-tool] .uf-discovery-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;}
+  [data-universe-tool] .uf-discovery-heading strong{display:block;font-size:14px;line-height:1.3;}
+  [data-universe-tool] .uf-discovery-eyebrow{display:block;font-size:10px;line-height:1.5;letter-spacing:.1em;text-transform:uppercase;color:#a0e6d9;}
+  [data-universe-tool] .uf-discovery-heading button{flex:0 0 44px;min-height:44px;padding:0;font-size:20px;background:#122d40;}
+  [data-universe-tool] .uf-discovery p.uf-discovery-distance{margin:5px 0 9px;font-size:11px;line-height:1.4;color:#c4d5e5;}
+  [data-universe-tool] .uf-discovery-actions{display:flex;gap:8px;}
+  [data-universe-tool] .uf-discovery-actions button{flex:1;min-height:44px;padding:6px 8px;font-size:12px;}
+  @media(max-height:480px) and (min-width:520px){[data-universe-tool] .uf-stage:fullscreen .uf-discovery{left:12px;right:auto;width:252px;padding:6px 10px;}[data-universe-tool] .uf-stage:fullscreen .uf-discovery p.uf-discovery-distance{margin:2px 0 5px;}}
+  @media(forced-colors:active){[data-universe-tool] .uf-discovery{background:Canvas;color:CanvasText;border-color:CanvasText;box-shadow:none;}[data-universe-tool] .uf-discovery-eyebrow,[data-universe-tool] .uf-discovery p.uf-discovery-distance{color:CanvasText;}[data-universe-tool] .uf-stage button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;}[data-universe-tool] .uf-discovery-marker{border-color:CanvasText;background:Canvas;box-shadow:none;}[data-universe-tool] .uf-discovery-marker span{background:CanvasText;}}
   [data-universe-tool] .uf-scene-top{top:16px;}[data-universe-tool] .uf-scene-bottom{bottom:16px;}
   [data-universe-tool] .uf-chip{border:1px solid #4a627b;padding:5px 8px;background:#07111edb;border-radius:5px;}
   [data-universe-tool] .uf-flight-chip{min-width:0;max-width:270px;}

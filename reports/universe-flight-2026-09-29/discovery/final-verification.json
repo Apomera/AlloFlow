@@ -1,0 +1,30 @@
+{
+  "completed": true,
+  "verifiedAt": "2026-10-05T01:58:26.679Z",
+  "sourceHash": "574df0078ca2da78a2c46ed4d7e1f943bb695983ae8a9e6cb106fb3a57543701",
+  "uiHash": "a962a08031b4f6d300f6894613333ef0e49657de401a64a66297ec16ef6ac948",
+  "focusedTests": 139,
+  "focusedTestFiles": 5,
+  "testDurationSeconds": 34.5,
+  "discoveryCheckGroups": 7,
+  "flybyPreviewSelections": 18,
+  "accessibilityScopes": 18,
+  "captures": 5,
+  "fileHashes": {
+    "stem_lab/stem_tool_universe.js": "a962a08031b4f6d300f6894613333ef0e49657de401a64a66297ec16ef6ac948",
+    "desktop/web-app/public/stem_lab/stem_tool_universe.js": "a962a08031b4f6d300f6894613333ef0e49657de401a64a66297ec16ef6ac948",
+    "dev-tools/universe_flight_discovery_check.cjs": "010b630590ae6768d18818a685eabd29e5165048ca31ab06567d3a07945b7f56",
+    "tests/universe_flight_discovery.test.js": "87a780c8691a09d547ddce748c3790531db0f2d62a7f66f30b73d15d19197385",
+    "reports/universe-flight-2026-09-29/README.md": "6362dcc1bb818b15303891b218692fb8bb27a47ec568c81939139818d91a50f4",
+    "reports/universe-flight-2026-09-29/discovery/focused-tests.txt": "4f4f0c6e61e6a822c8980fec58453837b3721a65861d0f99c1696b0e12baac73",
+    "reports/universe-flight-2026-09-29/discovery/test-run.json": "2118d62096ea1bd3b8b9669899ef23f39bb448222ebb07b2e50f8eb567abed65",
+    "reports/universe-flight-2026-09-29/discovery/browser-check.json": "1f9710b662d49953985afebebfaf15f7aa1aeec9bc4b311c4f0bdb2da28f04d8",
+    "reports/universe-flight-2026-09-29/discovery/storyboard/browser-check.json": "bbfcf9294bbd71cfa6308645f8b24703a99f8044e7046f8d8f7e20ab9fc75697",
+    "reports/universe-flight-2026-09-29/discovery/discovery-desktop.png": "0d12939e932b42f9b5b92311bd3e1f2a73772ab085e12d8411a281707f498e4a",
+    "reports/universe-flight-2026-09-29/discovery/discovery-fullscreen.png": "8e46ef399254da638556047a4134d2b7cca5e9514fe84db56cbe5d691915a993",
+    "reports/universe-flight-2026-09-29/discovery/discovery-320.png": "5581c10e14aa8106e92b0ec3315f5578599ae278cfd630056561e2acd58cd358",
+    "reports/universe-flight-2026-09-29/discovery/discovery-568.png": "9d61a7adfea1b23d442eaa92f024144132413c1a591370fc950de08662b3ee40",
+    "reports/universe-flight-2026-09-29/discovery/discovery-forced-colors.png": "c4e8b17f3ba6088307f6e6d3ca056905f8069ebc5115f19b207d147fa1113023"
+  },
+  "preview": "http://127.0.0.1:3187/reports/universe-flight-2026-09-29/preview.html?enhanced=45#universe-flight"
+}

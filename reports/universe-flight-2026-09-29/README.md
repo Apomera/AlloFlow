@@ -67,6 +67,16 @@ The sightline instrument uses the observer-frame relation D = 1/[γ(1−βμ′)
 
 ## Verification
 
+### Free-flight discovery pass
+
+Free exploration now offers **In your view**, a compact card for a generated landmark ahead. A matching ring locates it in the scene; the card shows its model distance and object kind. Next cycles through visible landmarks. Suggestions use the renderer’s projection with the current camera pose, lens and viewport. The current choice stays while visible, with a small edge tolerance, and remains fixed during pointer hover or keyboard focus. If that held choice leaves the view, its heading changes to “Ready to explore.”
+
+**Inspect** pauses and faces the landmark without changing position, traveled distance or display settings. **Fly here** chooses a camera pace near a 20-second guided approach within the scene’s existing speed limits, starting at the current position and pausing at the viewing distance. Already-nearby targets remain stationary. Suggestions step aside during guided approaches, flybys, orbits, tours, journey checkpoints, relativity mode, hidden overlays and fullscreen flight controls. The original generated scenery and physics remain unchanged.
+
+Verification passes **139 tests in five files**, seven discovery browser check groups, 18 existing flyby preview selections and 18 scoped accessibility checks. Coverage includes moving inspection, stable focused targets, all three model scales, automatic arrival, already-nearby approaches, paused pixels, desktop/fullscreen, 320-pixel phone and 568-pixel landscape layouts, text spacing and system colors. Source and desktop copies match.
+
+Review [desktop discovery](discovery/discovery-desktop.png), [phone discovery](discovery/discovery-320.png), [short landscape](discovery/discovery-568.png), and [system colors](discovery/discovery-forced-colors.png).
+
 ### Cinematic arrivals and cloud depth pass
 
 With **Pause at highlights** enabled, flybys now accelerate from rest and decelerate into each highlight and the final panorama. An integrated smooth velocity curve reaches its endpoint in finite time and follows the same authored path regardless of frame subdivision. The guided gaze settles into the selected view; free look keeps its direction. Manual pause stops immediately. The next-stop countdown includes easing and updates with playback pace. Route timestamps still identify the same positions.
