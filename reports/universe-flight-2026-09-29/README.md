@@ -67,6 +67,16 @@ The sightline instrument uses the observer-frame relation D = 1/[γ(1−βμ′)
 
 ## Verification
 
+### Cinematic arrivals and cloud depth pass
+
+With **Pause at highlights** enabled, flybys now accelerate from rest and decelerate into each highlight and the final panorama. An integrated smooth velocity curve reaches its endpoint in finite time and follows the same authored path regardless of frame subdivision. The guided gaze settles into the selected view; free look keeps its direction. Manual pause stops immediately. The next-stop countdown includes easing and updates with playback pace. Route timestamps still identify the same positions.
+
+Nearby nebula wisps now blend two offset samples of their existing emission atlas as the observer moves. A soft proximity fade removes a wisp as the camera passes into it. Both point sprites and enlarged cloud surfaces use the same treatment. These are layered emission approximations, not volumetric gas transport or dust extinction. Generated world positions, source populations, atlas bytes, galaxy rendering and physical clocks retain their previous behavior. The shader adds two texture samples for resolved clouds; this pass does not claim a measured frame-rate improvement.
+
+Verification passes **162 tests in seven files** in 17.77 seconds. Real WebGL comparisons cover **36 stable paused captures and 18 paired views**, with exact unchanged pixels for six galaxy highlights, matching scene data and route samples, and equal graphics allocation and disposal counts. Browser regressions cover 16 automatic arrivals, 26 timeline seeks, and 19 accessibility scopes across desktop, phone and short landscape layouts. All twelve preview images were rebuilt from the accepted renderer; four images changed, and the complete set totals 91,890 bytes.
+
+Review the [before-and-after cloud views](cinematic/cloud-comparison.png), [updated route controls](cinematic/stops/stops-normal.png), and [short landscape arrival](cinematic/stops/stops-568.png).
+
 ### Automatic highlight stops pass
 
 Enable **Pause at highlights** in a flyby's controls or fullscreen Explore to stop automatically at its three named views. **Continue flyby** resumes from that position at the selected pace. The next-stop readout gives remaining playback time at the current pace. The preference stays available across route launches during the current explorer session.

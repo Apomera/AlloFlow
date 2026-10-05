@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),crypto=require('node:crypto');
-const repo=path.resolve(__dirname,'..'),report=path.join(repo,'reports/universe-flight-2026-09-29/highlight-stops');
+const repo=path.resolve(__dirname,'..'),report=process.env.UNIVERSE_STOPS_REPORT||path.join(repo,'reports/universe-flight-2026-09-29/highlight-stops');
 const hash=b=>crypto.createHash('sha256').update(b).digest('hex'),read=f=>fs.readFileSync(path.join(repo,f));
 const files=['stem_lab/stem_tool_universe.js','stem_lab/universe_flight_scene.js'],pins=Object.fromEntries(files.map(f=>[f,hash(read(f))]));
 for(const f of files)assert.deepEqual(read(f),read('desktop/web-app/public/'+f));

@@ -320,6 +320,22 @@
     {id:'blue',name:'Blue star pass',seconds:24,targetId:'blue-star',description:'Compare the blue-white surface and the moving stellar background.'},
     {id:'pale',name:'Pale star reveal',seconds:38,targetId:'pale-star',description:'Look across the pale star with the blue emission region beyond.'}
   ];
+  // Integrate a smooth velocity ramp analytically in authored route seconds.
+  // Its finite endpoint avoids an asymptotic crawl and frame-rate dependence.
+  function flybyLeg(start, end, depart) {
+    var distance=Math.max(0,end-start), ramp=Math.min(1.2,distance*0.45);
+    var entry=depart?ramp:0, exit=ramp;
+    return {start:start,end:end,entry:entry,exit:exit,duration:distance+(entry+exit)/2,clock:0};
+  }
+  function flybyLegPosition(leg, clock) {
+    var t=clamp(clock,0,leg.duration);
+    function rampDistance(time,span) { var u=time/span;return span*(u*u*u-0.5*u*u*u*u); }
+    if(t>=leg.duration)return leg.end;
+    if(leg.entry&&t<leg.entry)return leg.start+rampDistance(t,leg.entry);
+    if(leg.exit&&t>leg.duration-leg.exit)return leg.end-rampDistance(leg.duration-t,leg.exit);
+    return leg.start+t-leg.entry/2;
+  }
+
   function flybyRoute(id) { return Object.prototype.hasOwnProperty.call(FLYBY_ROUTES,id) ? FLYBY_ROUTES[id] : null; }
   function flybys(region) {
     return Object.keys(FLYBY_ROUTES).map(function(id){return FLYBY_ROUTES[id];}).filter(function(item){return region===undefined || region===item.region;}).map(function(item){
@@ -1193,7 +1209,7 @@
     'uniform mediump float u_cloudQuad; uniform float u_cloudQuadMax;',
     'uniform float u_galacticBand;',
     'varying vec3 v_color; varying float v_light; varying float v_cloud; varying vec3 v_cloudProfile;',
-    'varying vec4 v_stellarDetail; varying vec2 v_quadCoord;',
+    'varying vec4 v_stellarDetail; varying vec2 v_quadCoord; varying vec2 v_cloudRelief;',
     'void main() {',
     '  vec3 delta = a_position - u_position;',
     '  float distance = max(length(delta), 0.00001);',
@@ -1284,6 +1300,10 @@
     // minimum-size dot. The diffuse surface carries their collective light.
     '  float coverage = min(1.0, pow(projectedSize / minimumSize, 2.0));',
     '  v_light = a_light * bandGain * u_exposure * exposure * mix(1.0, coverage, isCloud) * mix(1.0 - quadBlend, quadBlend, max(u_stellarQuad, u_cloudQuad));',
+    // Nearby generated wisps fade through the observer instead of filling the
+    // view with a capped billboard. This is an emission approximation.
+    '  if (a_cloud >= 5.0) v_light *= smoothstep(0.35, 2.8, distance / max(a_size, 0.00001));',
+    '  v_cloudRelief = vec2(dot(n,normalize(vec3(0.83,0.21,0.51))),dot(n,normalize(vec3(-0.31,0.93,0.20)))) * 0.16;',
     '  v_cloud = isCloud;',
     '  float rotation = fract(a_cloud) * 6.28318530718;',
     '  v_cloudProfile = vec3(mod(max(0.0, floor(a_cloud) - 1.0), 4.0), cos(rotation), sin(rotation));',
@@ -1295,7 +1315,7 @@
     // Fragment-only frames avoid sharing camera uniforms at a different precision.
     'uniform vec3 u_stellarRight,u_stellarUp,u_stellarToward; uniform float u_stellarStructure,u_stellarLoops;',
     'varying vec3 v_color; varying float v_light; varying float v_cloud; varying vec3 v_cloudProfile;',
-    'varying vec4 v_stellarDetail; varying vec2 v_quadCoord;',
+    'varying vec4 v_stellarDetail; varying vec2 v_quadCoord; varying vec2 v_cloudRelief;',
     'float stellarHash(vec2 cell, float seed) { return fract(sin(dot(cell, vec2(12.9898, 78.233)) + seed * 6.28318530718) * 127.1); }',
     'float stellarNoise(vec2 point, float seed) {',
     '  vec2 cell = floor(point), f = fract(point); f = f * f * (3.0 - 2.0 * f);',
@@ -1351,7 +1371,17 @@
     '    vec2 uv = (q * 0.5 + 0.5) * 111.0 + 8.5;',
     '    uv.x += v_cloudProfile.x * 128.0;',
     '    vec4 emission = texture2D(u_cloudTexture, uv / vec2(512.0, 128.0));',
-    '    cloud = mix(emission.a, emission.r, v_stellarDetail.y) * 0.55;',
+    '    float detail = emission.r;',
+    // Two bounded emission layers separate with observer direction. They use
+    // the same fixed atlas; looking around or pausing adds no texture motion.
+    '    if (v_stellarDetail.y > 0.0) {',
+    '      vec2 offset = v_cloudRelief * 55.5;',
+    '      vec2 cell = vec2(v_cloudProfile.x * 128.0, 0.0);',
+    '      vec2 front = clamp(uv-cell+offset,vec2(0.5),vec2(127.5))+cell;',
+    '      vec2 back = clamp(uv-cell-offset*0.7,vec2(0.5),vec2(127.5))+cell;',
+    '      detail = mix(detail,texture2D(u_cloudTexture,front/vec2(512.0,128.0)).r*0.6+texture2D(u_cloudTexture,back/vec2(512.0,128.0)).r*0.4,0.75);',
+    '    }',
+    '    cloud = mix(emission.a, detail, v_stellarDetail.y) * 0.55;',
     '  }',
     '  float light = mix(star, cloud, v_cloud) * v_light * (1.0 - smoothstep(0.72, 1.0, radius2));',
     // Clouds share the emission path; unresolved stars keep their original light.
@@ -1439,8 +1469,8 @@
     var targetId = null, navigation = { active: false, targetId: null };
     var orbitId = null;
     var flyby = { active:false, completed:false, id:null, elapsedSeconds:0, autoLook:false };
-    var flybyPace = 0;
-    function clearFlyby() { flyby = { active:false, completed:false, id:null, elapsedSeconds:0, autoLook:false }; flybyPace = 0; }
+    var flybyPace = 0, easedLeg = null;
+    function clearFlyby() { flyby = { active:false, completed:false, id:null, elapsedSeconds:0, autoLook:false }; flybyPace = 0; easedLeg = null; }
     function endFlyby(message) {
       if (!flyby.active) return false;
       clearFlyby();
@@ -1462,7 +1492,7 @@
       // distance replaces the old progress; physical clocks do not advance.
       cancelFrame();
       state={position:sample.position.slice(),yaw:sample.yaw,pitch:sample.pitch,distanceLy:sample.distance,universeYears:0,travelerYears:0};
-      flyby={active:!completed,completed:completed,id:route.id,elapsedSeconds:seconds,autoLook:true}; flybyPace=0;
+      flyby={active:!completed,completed:completed,id:route.id,elapsedSeconds:seconds,autoLook:true}; flybyPace=0; easedLeg=null;
       targetId=destination.id; navigation={active:false,targetId:null}; orbitId=null;
       trail=[]; cameraMoves=[]; clearFraming();
       var detail={kind:highlight?'flyby-highlight':'flyby-moment',routeId:route.id,routeName:route.name,seconds:seconds,position:state.position.slice(),targetId:targetId,targetName:destination.name};
@@ -1470,12 +1500,19 @@
       pauseWithMessage((highlight?highlight.name:route.name+' · '+seconds.toFixed(1)+' seconds')+'. Travel is paused; '+(completed?'revisit a route moment or replay the flyby.':'start travel to continue from this route moment.'),detail);
       requestDraw(); return true;
     }
+    function nextFlybyLeg(depart) {
+      var route=flybyRoute(flyby.id);
+      if(!route||!flyby.active)return null;
+      var next=route.highlights.filter(function(item){return item.seconds>flyby.elapsedSeconds;})[0];
+      return flybyLeg(flyby.elapsedSeconds,next?next.seconds:route.durationSeconds,depart);
+    }
     function flybyTelemetry() {
       var route = flybyRoute(flyby.id);
       var sample = route ? route.atTime(flyby.elapsedSeconds) : null;
       return { active:flyby.active, completed:flyby.completed, id:flyby.id, name:route?route.name:null,
         progress:route?flyby.elapsedSeconds/route.durationSeconds:0, elapsedSeconds:flyby.elapsedSeconds,
-        durationSeconds:route?route.durationSeconds:0, autoLook:flyby.autoLook, phase:sample?sample.phase:null, rate:settings.flybyRate, pauseAtHighlights:settings.pauseAtHighlights };
+        durationSeconds:route?route.durationSeconds:0, autoLook:flyby.autoLook, phase:sample?sample.phase:null, rate:settings.flybyRate, pauseAtHighlights:settings.pauseAtHighlights,
+        remainingPlaybackSeconds:settings.pauseAtHighlights&&flyby.active?((easedLeg||nextFlybyLeg(!settings.running)).duration-(easedLeg?easedLeg.clock:0))/settings.flybyRate:null };
     }
     var freePace = 0;
     var trail = [];
@@ -1553,7 +1590,7 @@
       return { smoothTravel: settings.smoothTravel, paceLyPerSecond: moving ? kind === 'flyby' ? flybyPace : kind === 'free' && settings.smoothTravel ? freePace : target : 0, targetLyPerSecond: target, kind: kind };
     }
     function pauseWithMessage(message, detail) {
-      settings.running = false; lastFrame = 0; freePace = 0;
+      settings.running = false; lastFrame = 0; freePace = 0; easedLeg = null;
       emitTelemetry(true); status('ready', message);
       if (typeof options.onPause === 'function') {
         if (detail) options.onPause(message, detail);
@@ -1872,8 +1909,12 @@
     function stepFlyby(dt) {
       var seconds = clamp(finite(dt,0),0,0.5), route = flybyRoute(flyby.id);
       var oldElapsed = flyby.elapsedSeconds, elapsed = Math.min(route.durationSeconds,oldElapsed+seconds*settings.flybyRate);
-      // Stop at the first crossed highlight, even when a slow frame or fast pace
-      // would step beyond it. Strictly later stops allow Continue to advance.
+      if(settings.pauseAtHighlights) {
+        if(!easedLeg)easedLeg=nextFlybyLeg(oldElapsed===0);
+        easedLeg.clock=Math.min(easedLeg.duration,easedLeg.clock+seconds*settings.flybyRate);
+        elapsed=flybyLegPosition(easedLeg,easedLeg.clock);
+      }
+      // Clamp to the first crossed highlight; Continue selects the next leg.
       var stop = settings.pauseAtHighlights ? route.highlights.filter(function(item){return item.seconds > oldElapsed && item.seconds <= elapsed;})[0] : null;
       if (stop) elapsed = stop.seconds;
       var oldSample = route.atTime(oldElapsed), sample = route.atTime(elapsed);
@@ -1884,6 +1925,10 @@
       state = Object.assign({},state,{position:sample.position.slice(),distanceLy:sample.distance});
       if (flyby.autoLook) {
         var follow = 1-Math.exp(-seconds/0.35);
+        if(easedLeg) {
+          var settle=clamp((easedLeg.duration-easedLeg.clock)/0.8,0,1);
+          follow=1-(1-follow)*settle*settle*(3-2*settle);
+        }
         var yawDelta = ((sample.yaw-state.yaw+Math.PI)%TAU+TAU)%TAU-Math.PI;
         state.yaw = ((state.yaw+yawDelta*follow)%TAU+TAU)%TAU;
         state.pitch = clamp(state.pitch+(sample.pitch-state.pitch)*follow,-Math.PI/2+0.01,Math.PI/2-0.01);
@@ -2010,6 +2055,7 @@
         var previousQuality = settings.quality;
         var wasRunning = settings.running;
         var previousSmooth = settings.smoothTravel;
+        var previousStops = settings.pauseAtHighlights;
         var previousSpeed = settings.speed;
         var previousFov = settings.fov, previousBeta = displayBeta();
         if (next.mode === 'explore' || next.mode === 'relativity') settings.mode = next.mode;
@@ -2027,6 +2073,8 @@
         if (next.exposure !== undefined) settings.exposure = clamp(finite(next.exposure, 1), 0.3, 2);
         if (['auto', 'low', 'high'].indexOf(next.quality) >= 0) settings.quality = next.quality;
         if (next.running !== undefined) settings.running = !!next.running;
+        if (wasRunning && !settings.running) easedLeg = null;
+        if (flyby.active && ((!wasRunning&&settings.running)||previousStops!==settings.pauseAtHighlights)) easedLeg=settings.pauseAtHighlights?nextFlybyLeg(!wasRunning):null;
         if (next.running) cameraMoves = [];
         if (next.running && flyby.completed) clearFlyby();
         if (next.running && navigation.completed) navigation = { active:false, targetId:null };
@@ -2203,7 +2251,7 @@
         var sample=route.atTime(0);
         state={position:sample.position.slice(),yaw:sample.yaw,pitch:sample.pitch,distanceLy:0,universeYears:0,travelerYears:0};
         targetId=route.targetId; navigation={active:false,targetId:null}; orbitId=null;
-        flyby={active:true,completed:false,id:route.id,elapsedSeconds:0,autoLook:true}; flybyPace=0;
+        flyby={active:true,completed:false,id:route.id,elapsedSeconds:0,autoLook:true}; flybyPace=0; easedLeg=null;
         trail=[]; cameraMoves=[]; clearFraming(); settings.running=true; lastFrame=0; freePace=0;
         emitTelemetry(true); requestDraw(); return true;
       },

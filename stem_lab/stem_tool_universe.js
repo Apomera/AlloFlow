@@ -312,7 +312,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             'aria-describedby':prefix+'-flyby-seek-help','aria-valuetext':elapsed.toFixed(1)+' / '+duration+' '+label('flyby_route_seconds','seconds at Standard pace')+' · '+flybyPhaseLabel(flyby,label),
             onPointerDown:props.onPause,onKeyDown:function(e){if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'].indexOf(e.key)>=0)props.onPause();},onChange:function(e){props.onSeek(Number(e.target.value));}}),
           h('div',{className:'uf-flyby-ticks','aria-hidden':'true'},(props.highlights||[]).map(function(item){return h('i',{key:item.id,style:{left:(item.seconds/duration*100)+'%'}});}))),
-        h('p',{id:prefix+'-flyby-seek-help',className:'uf-note'},label('flyby_seek_help','Scrub to pause at any moment. Route time is shown at Standard pace.')),
+        h('p',{id:prefix+'-flyby-seek-help',className:'uf-note'},label('flyby_seek_help','Scrub to pause at any moment. Route time is shown at Standard pace; highlight pauses add gentle easing.')),
         !completed&&h('button',{type:'button',className:'uf-flyby-play',disabled:!props.ready,onClick:props.onPlayback},props.running?label('flyby_pause','Pause flyby'):label('flyby_continue','Continue flyby'))),
       h('p',{className:'uf-note'},completed?(flyby.id==='stellar'?label('flyby_stellar_complete_help','The stellar panorama is ready. Travel is paused; revisit a close pass or save this viewpoint.'):flyby.id==='nebula'?label('flyby_nebula_complete_help','The violet cloud view is ready. Travel is paused; look around or save this viewpoint.'):flyby.id==='group'?label('flyby_group_complete_help','The galaxy group view is ready. Travel is paused; look around or save this viewpoint.'):label('flyby_complete_help','The galaxy view is ready. Travel is paused; look around or save this viewpoint.')):label('flyby_control_help','Pause any time. Looking around keeps the route moving and releases the guided view.')),
       h('label',{htmlFor:prefix+'-flyby-rate'},label('flyby_rate','Flyby pace')),
@@ -321,9 +321,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       h('label',{className:'uf-flyby-stops',htmlFor:prefix+'-flyby-stops'},
         h('input',{id:prefix+'-flyby-stops',type:'checkbox',checked:props.pauseAtHighlights,disabled:!props.ready,'aria-describedby':prefix+'-flyby-stops-help',onChange:function(e){props.onStops(e.target.checked);}}),
         h('span',null,label('flyby_pause_highlights','Pause at highlights'))),
-      h('p',{id:prefix+'-flyby-stops-help',className:'uf-note'},label('flyby_stops_help','Stop automatically at each preview. Continue whenever you are ready.')),
+      h('p',{id:prefix+'-flyby-stops-help',className:'uf-note'},label('flyby_stops_help','Ease into each preview and pause. Continue whenever you are ready.')),
       !completed&&props.pauseAtHighlights&&h('p',{className:'uf-flyby-next','aria-live':'off'},next?
-        label('flyby_next_pause','Next pause')+': '+label('flyby_'+flyby.id+'_highlight_'+next.id,next.name)+' · '+Math.ceil((next.seconds-elapsed)/props.rate)+' '+label('flyby_playback_seconds_short','s of playback'):
+        label('flyby_next_pause','Next pause')+': '+label('flyby_'+flyby.id+'_highlight_'+next.id,next.name)+' · '+Math.ceil(Number.isFinite(flyby.remainingPlaybackSeconds)?flyby.remainingPlaybackSeconds:(next.seconds-elapsed)/props.rate)+' '+label('flyby_playback_seconds_short','s of playback'):
         label('flyby_final_reveal','Continue to the final panorama.')),
       h('div',{className:'uf-flyby-actions'},
         h('button',{id:prefix+'-flyby-follow',type:'button',disabled:!props.ready||completed||flyby.autoLook,onClick:props.onFollow},label('flyby_follow','Follow route view')),

@@ -2747,6 +2747,40 @@ describe('Universe flight scenic highlights', () => {
 });
 
 describe('Universe flyby automatic highlight stops', () => {
+  it('eases away from rest, cruises, and slows to an exact finite highlight', () => {
+    scene.set({ region: 'neighborhood', pauseAtHighlights: true, flybyRate: 1 });
+    scene.startFlyby('nebula'); advance();
+    const samples = [];
+    for (let i=0;i<93;i++) { advance(100); scene.set({}); samples.push(telemetry.flyby.elapsedSeconds); }
+    const increments=samples.map((value,i)=>value-(i?samples[i-1]:0));
+    expect(increments[0]).toBeLessThan(.01);
+    expect(increments[5]).toBeGreaterThan(increments[0]);
+    expect(increments[20]).toBeCloseTo(.1,10);
+    expect(increments[88]).toBeLessThan(increments[83]);
+    expect(telemetry).toMatchObject({ running:false, flyby:{elapsedSeconds:8} });
+    expect(pauseEvents.filter(([,e])=>e?.kind==='flyby-stop')).toHaveLength(1);
+    expect(telemetry.flyby.remainingPlaybackSeconds).toBeCloseTo(5.2,10);
+  });
+
+  it('integrates eased route progress consistently across frame subdivisions and pace changes', () => {
+    function sample(dt,count){scene.set({region:'neighborhood',pauseAtHighlights:true,flybyRate:1});scene.startFlyby('nebula');advance();for(let i=0;i<count;i++)advance(dt);scene.set({});return scene.snapshot();}
+    const coarse=sample(100,35),fine=sample(20,175);
+    coarse.state.position.forEach((v,i)=>expect(fine.state.position[i]).toBeCloseTo(v,9));
+    expect(fine.state.distanceLy).toBeCloseTo(coarse.state.distanceLy,9);
+    const remaining=telemetry.flyby.remainingPlaybackSeconds;
+    scene.set({flybyRate:2});expect(telemetry.flyby.remainingPlaybackSeconds).toBeCloseTo(remaining/2,10);
+    const before=scene.snapshot();scene.set({running:false});advance(50000);expect(scene.snapshot()).toEqual(before);
+    scene.set({running:true});advance();expect(scene.snapshot().state.position).toEqual(before.state.position);
+    advance(100);scene.set({});expect(telemetry.flyby.elapsedSeconds).toBeGreaterThan(2.9);
+  });
+
+  it('can disable easing during travel and continues at the ordinary route rate', () => {
+    scene.set({region:'neighborhood',pauseAtHighlights:true});scene.startFlyby('nebula');advance();advance(300);scene.set({});
+    const at=telemetry.flyby.elapsedSeconds;scene.set({pauseAtHighlights:false});advance(300);scene.set({});
+    expect(telemetry.flyby.elapsedSeconds).toBeCloseTo(at+.3,10);
+    expect(telemetry.flyby.remainingPlaybackSeconds).toBe(null);
+  });
+
   function launch(id, enabled = true) {
     const route = flight.flybys().find(item => item.id === id);
     scene.set({ mode: 'explore', region: route.region, pauseAtHighlights: enabled });

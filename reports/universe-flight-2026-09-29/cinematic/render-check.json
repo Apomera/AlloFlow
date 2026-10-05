@@ -1,0 +1,442 @@
+{
+  "completed": true,
+  "sourceHash": "574df0078ca2da78a2c46ed4d7e1f943bb695983ae8a9e6cb106fb3a57543701",
+  "baselineHash": "0f05fbd190f77ecdbd8d410f92354ebc69995c28ff8f8aa6d281bde5729e90af",
+  "harnessHash": "7ddb4907564726d14e2e290e97479f2315d7bdec547e27cf0659ccc37b95b06a",
+  "world": [
+    {
+      "id": "neighborhood",
+      "points": 19203,
+      "hash": "f0933322797366fbee8bbdc9ce8d2263700b1c07a71caa1bcfa1224d68edc2a3"
+    },
+    {
+      "id": "galaxy",
+      "points": 36400,
+      "hash": "f5dbc73e3ae0b2751dcf15f6fffce2753ae4994b089c62d020975e414889b2ab"
+    },
+    {
+      "id": "cosmic",
+      "points": 41470,
+      "hash": "156c66d7c6805406f2d231fb18affab8e613952ec32b5fdf9e9e805104966b85"
+    }
+  ],
+  "captures": [
+    {
+      "phase": "before",
+      "name": "nebula-approach",
+      "hash": "56e666a9b4b4fcf49f7e7c14f3830691b8f5a4a2e37a78f602ed83e29bcb3264",
+      "mean": 28.735296875,
+      "clipped": 0.00011328125,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "before",
+      "name": "nebula-filaments",
+      "hash": "1a0d9f22f03e2a1a27d3b744549ec57d52d8973d684904916920873bf07cd60e",
+      "mean": 21.54537890625,
+      "clipped": 0.00007421875,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "before",
+      "name": "nebula-violet",
+      "hash": "ff9e60bbef0796890e5e1082408cdee8df749672607c742077830870a3205e35",
+      "mean": 21.486278645833334,
+      "clipped": 0.00006640625,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "before",
+      "name": "stellar-amber",
+      "hash": "98036773e6c5307c9c5a3e33b1fc1b34a154794168a689dbc9060eeb0eb8a12b",
+      "mean": 5.46047265625,
+      "clipped": 0.00003515625,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "before",
+      "name": "stellar-blue",
+      "hash": "67f8bda654bf746990708dd2cc4280be2f01eb8ea4fdfe04d7ba6229a130e8ef",
+      "mean": 6.1813346354166665,
+      "clipped": 0.0000234375,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "before",
+      "name": "stellar-pale",
+      "hash": "7f6cfc7c76e3930e32031d5f095b612c357ad5df1904e2d229ab92d0096360c5",
+      "mean": 27.6607265625,
+      "clipped": 0.00002734375,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "before",
+      "name": "halo-arm",
+      "hash": "99d62114a7f8b63981d6200b1874086579d1d4e87157d645dfbf8b2570fd6b77",
+      "mean": 22.83341015625,
+      "clipped": 0.00001953125,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "before",
+      "name": "halo-cluster",
+      "hash": "1cca27c7764c07f0ba83043c08b56768c943439c3661357947619d0ca2eebc42",
+      "mean": 34.92631510416667,
+      "clipped": 0.00047265625,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "before",
+      "name": "halo-panorama",
+      "hash": "397ea14f88cffefb9a823639f4e724d7c6f93177a952e0a3836caaa29e10931d",
+      "mean": 18.733639322916666,
+      "clipped": 0.0000625,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "before",
+      "name": "group-spiral",
+      "hash": "2e5f3f6b99c67ac0cc428945f81be903cf15b9b79751b20a15c66ac88d6ea668",
+      "mean": 9.857942708333333,
+      "clipped": 0,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "before",
+      "name": "group-elliptical",
+      "hash": "688d55a1d651948f4f853198c69f6fa5d9e08d57eae5e79abb0d46d3e6241dc9",
+      "mean": 6.615799479166666,
+      "clipped": 0,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "before",
+      "name": "group-panorama",
+      "hash": "d9dd32b713ec210df4a38911e0f7da5bf2283b1944f26ce78d37822c39196f21",
+      "mean": 4.270044270833333,
+      "clipped": 0,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "before",
+      "name": "wisp-4",
+      "hash": "67b80be9745a6019067f7bfea4c21623b058934c53526b40af77eeae73c062d1",
+      "mean": 3.684684895833333,
+      "clipped": 0,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "before",
+      "name": "wisp-2.8",
+      "hash": "eeb9ce0cbe41437d6dc21a6ec201651dc662fd1e4e8dcad443823396a81cf6e1",
+      "mean": 4.050548177083333,
+      "clipped": 0,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "before",
+      "name": "wisp-2",
+      "hash": "5782323d83d86ac13c4d827183968950cf9c134a40a4e8a91186d1e2ec60eb82",
+      "mean": 4.7395546875,
+      "clipped": 0,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "before",
+      "name": "wisp-1",
+      "hash": "7129fd4f1dbffbf4a75c1da7350e5011a68493bbc4e1dcdab0e70a937360ac18",
+      "mean": 5.356752604166667,
+      "clipped": 0,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "before",
+      "name": "wisp-0.35",
+      "hash": "7129fd4f1dbffbf4a75c1da7350e5011a68493bbc4e1dcdab0e70a937360ac18",
+      "mean": 5.356752604166667,
+      "clipped": 0,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "before",
+      "name": "wisp-0.05",
+      "hash": "7129fd4f1dbffbf4a75c1da7350e5011a68493bbc4e1dcdab0e70a937360ac18",
+      "mean": 5.356752604166667,
+      "clipped": 0,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "after",
+      "name": "nebula-approach",
+      "hash": "1cef17451fb756f9e70295b956a8d9008eb844280c26857f06a6d88e4db4da02",
+      "mean": 28.64229296875,
+      "clipped": 0.00011328125,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "after",
+      "name": "nebula-filaments",
+      "hash": "af1c532b208664794fe51b5ad1b6dec2b29570bac7874306835efe571910cfd4",
+      "mean": 21.5226171875,
+      "clipped": 0.00007421875,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "after",
+      "name": "nebula-violet",
+      "hash": "2693cf6d88c70122619681a9edfc2204ecb366a1ad131a146d9d6d7d95f0402d",
+      "mean": 21.45086328125,
+      "clipped": 0.00006640625,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "after",
+      "name": "stellar-amber",
+      "hash": "98036773e6c5307c9c5a3e33b1fc1b34a154794168a689dbc9060eeb0eb8a12b",
+      "mean": 5.46047265625,
+      "clipped": 0.00003515625,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "after",
+      "name": "stellar-blue",
+      "hash": "67f8bda654bf746990708dd2cc4280be2f01eb8ea4fdfe04d7ba6229a130e8ef",
+      "mean": 6.1813346354166665,
+      "clipped": 0.0000234375,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "after",
+      "name": "stellar-pale",
+      "hash": "e11ce8b64ddc442d92be7c4228c59d2a45f3e98feecef1edff6338cb1ac76109",
+      "mean": 27.56330859375,
+      "clipped": 0.00002734375,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "after",
+      "name": "halo-arm",
+      "hash": "99d62114a7f8b63981d6200b1874086579d1d4e87157d645dfbf8b2570fd6b77",
+      "mean": 22.83341015625,
+      "clipped": 0.00001953125,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "after",
+      "name": "halo-cluster",
+      "hash": "1cca27c7764c07f0ba83043c08b56768c943439c3661357947619d0ca2eebc42",
+      "mean": 34.92631510416667,
+      "clipped": 0.00047265625,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "after",
+      "name": "halo-panorama",
+      "hash": "397ea14f88cffefb9a823639f4e724d7c6f93177a952e0a3836caaa29e10931d",
+      "mean": 18.733639322916666,
+      "clipped": 0.0000625,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "after",
+      "name": "group-spiral",
+      "hash": "2e5f3f6b99c67ac0cc428945f81be903cf15b9b79751b20a15c66ac88d6ea668",
+      "mean": 9.857942708333333,
+      "clipped": 0,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "after",
+      "name": "group-elliptical",
+      "hash": "688d55a1d651948f4f853198c69f6fa5d9e08d57eae5e79abb0d46d3e6241dc9",
+      "mean": 6.615799479166666,
+      "clipped": 0,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "after",
+      "name": "group-panorama",
+      "hash": "d9dd32b713ec210df4a38911e0f7da5bf2283b1944f26ce78d37822c39196f21",
+      "mean": 4.270044270833333,
+      "clipped": 0,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "after",
+      "name": "wisp-4",
+      "hash": "b87834e7c188e4c0feba9728debd7f30cfeb8ea5ca733d80e0fd4336b1a66fe1",
+      "mean": 3.6841315104166665,
+      "clipped": 0,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "after",
+      "name": "wisp-2.8",
+      "hash": "2529360fe8b457ab540fbaca2f555493f2a029080d146a28ff91fbfb2030d387",
+      "mean": 4.049598958333333,
+      "clipped": 0,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "after",
+      "name": "wisp-2",
+      "hash": "8f7c79e4126e060b8159ba4992190192a88c87d056a9085e66a2aa78bc716616",
+      "mean": 4.383598958333334,
+      "clipped": 0,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "after",
+      "name": "wisp-1",
+      "hash": "4496288adea646958952286514566e6124a4a5c0fdbde7d531994bbee0764ae2",
+      "mean": 3.66930078125,
+      "clipped": 0,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "after",
+      "name": "wisp-0.35",
+      "hash": "8eca208ae9b5047b4aeebb81704804cc893f450f0ed04e511031f2e3ad28927f",
+      "mean": 3.3333333333333335,
+      "clipped": 0,
+      "pausedPixelsStable": true
+    },
+    {
+      "phase": "after",
+      "name": "wisp-0.05",
+      "hash": "8eca208ae9b5047b4aeebb81704804cc893f450f0ed04e511031f2e3ad28927f",
+      "mean": 3.3333333333333335,
+      "clipped": 0,
+      "pausedPixelsStable": true
+    }
+  ],
+  "comparisons": [
+    {
+      "name": "nebula-approach",
+      "meanAbsolute": 0.8349596354166666,
+      "poseMatches": true
+    },
+    {
+      "name": "nebula-filaments",
+      "meanAbsolute": 0.4723059895833333,
+      "poseMatches": true
+    },
+    {
+      "name": "nebula-violet",
+      "meanAbsolute": 0.37534244791666665,
+      "poseMatches": true
+    },
+    {
+      "name": "stellar-amber",
+      "meanAbsolute": 0,
+      "poseMatches": true
+    },
+    {
+      "name": "stellar-blue",
+      "meanAbsolute": 0,
+      "poseMatches": true
+    },
+    {
+      "name": "stellar-pale",
+      "meanAbsolute": 0.84836328125,
+      "poseMatches": true
+    },
+    {
+      "name": "halo-arm",
+      "meanAbsolute": 0,
+      "poseMatches": true
+    },
+    {
+      "name": "halo-cluster",
+      "meanAbsolute": 0,
+      "poseMatches": true
+    },
+    {
+      "name": "halo-panorama",
+      "meanAbsolute": 0,
+      "poseMatches": true
+    },
+    {
+      "name": "group-spiral",
+      "meanAbsolute": 0,
+      "poseMatches": true
+    },
+    {
+      "name": "group-elliptical",
+      "meanAbsolute": 0,
+      "poseMatches": true
+    },
+    {
+      "name": "group-panorama",
+      "meanAbsolute": 0,
+      "poseMatches": true
+    },
+    {
+      "name": "wisp-4",
+      "meanAbsolute": 0.021196614583333332,
+      "poseMatches": true
+    },
+    {
+      "name": "wisp-2.8",
+      "meanAbsolute": 0.04331640625,
+      "poseMatches": true
+    },
+    {
+      "name": "wisp-2",
+      "meanAbsolute": 0.3616510416666667,
+      "poseMatches": true
+    },
+    {
+      "name": "wisp-1",
+      "meanAbsolute": 1.6874518229166666,
+      "poseMatches": true
+    },
+    {
+      "name": "wisp-0.35",
+      "meanAbsolute": 2.023419270833333,
+      "poseMatches": true
+    },
+    {
+      "name": "wisp-0.05",
+      "meanAbsolute": 2.023419270833333,
+      "poseMatches": true
+    }
+  ],
+  "graphics": [
+    {
+      "phase": "before",
+      "created": {
+        "Program": 2,
+        "Shader": 4,
+        "Buffer": 2,
+        "Texture": 2
+      },
+      "deleted": {
+        "Buffer": 2,
+        "Texture": 2,
+        "Program": 2,
+        "Shader": 4
+      },
+      "uploads": 146,
+      "error": 0
+    },
+    {
+      "phase": "after",
+      "created": {
+        "Program": 2,
+        "Shader": 4,
+        "Buffer": 2,
+        "Texture": 2
+      },
+      "deleted": {
+        "Buffer": 2,
+        "Texture": 2,
+        "Program": 2,
+        "Shader": 4
+      },
+      "uploads": 146,
+      "error": 0
+    }
+  ],
+  "errors": []
+}
