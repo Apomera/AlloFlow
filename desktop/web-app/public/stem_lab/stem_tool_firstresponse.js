@@ -853,8 +853,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         normals.setXYZ(i,normal.x,normal.y,normal.z);
       }
     }
-    function shapedSegment(parent, a, b, contour, mat, name) {
+    function shapedSegment(parent, a, b, contour, mat, name, section) {
       var delta = new THREE.Vector3().subVectors(b, a), length = delta.length();
+      var sectionX = section ? section[0] : 1, sectionZ = section ? section[1] : 1;
       var geometry = new THREE.CylinderGeometry(1, 1, length, 24, 16);
       var positions = geometry.attributes.position, normals = geometry.attributes.normal;
       var sideVertices = 25 * 17;
@@ -867,11 +868,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           / ((contour[at + 1][0] - contour[at][0]) * length);
         u = u * u * (3 - 2 * u);
         var radius = contour[at][1] + (contour[at + 1][1] - contour[at][1]) * u;
-        positions.setXYZ(vi, radialX * radius, positions.getY(vi), radialZ * radius);
+        positions.setXYZ(vi, radialX * radius * sectionX, positions.getY(vi), radialZ * radius * sectionZ);
         // Side shading follows the taper. Hidden end caps keep their own normals
         // so averaging them into a joint cannot leave a dark ring on the limb.
         if (vi < sideVertices) {
-          var normal = new THREE.Vector3(radialX, -slope, radialZ).normalize();
+          var normal = new THREE.Vector3(radialX / sectionX, -slope, radialZ / sectionZ).normalize();
           normals.setXYZ(vi, normal.x, normal.y, normal.z);
         }
       }
@@ -1882,12 +1883,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       // The wrist-to-elbow axis stays straight as the whole rig follows the chest.
       var elbow = new THREE.Vector3(0, 0.46-y, wrist.z);
       var shoulder = new THREE.Vector3(0, 0.90-y, wrist.z);
-      joint(hand, wrist, 0.053 * handSize, skin);
-      var forearm = shapedSegment(hand, wrist, elbow, [[0,.048*handSize],[.35,.068*handSize],[.7,.063*handSize],[1,.055*handSize]], skin, 'fr-rescuer-' + id + '-forearm');
-      joint(hand, elbow, 0.057 * handSize, skin);
-      shapedSegment(hand, elbow, shoulder, [[0,.055*handSize],[.4,.070*handSize],[.8,.068*handSize],[1,.060*handSize]], skin, 'fr-rescuer-' + id + '-upper-arm');
+      var wristJoint = joint(hand, wrist, 0.053 * handSize, skin);
+      wristJoint.scale.z *= .84;
+      // The same oval section and zero-slope end rings meet at the elbow.
+      // A shared skin contour replaces the exposed spherical joint, keeping
+      // the straight load-bearing axis readable without a bead or dark seam.
+      var armSection = [1, .84];
+      var forearm = shapedSegment(hand, wrist, elbow,
+        [[0,.048*handSize],[.32,.067*handSize],[.62,.072*handSize],[.86,.065*handSize],[1,.061*handSize]],
+        skin, 'fr-rescuer-' + id + '-forearm', armSection);
+      shapedSegment(hand, elbow, shoulder,
+        [[0,.061*handSize],[.38,.073*handSize],[.75,.068*handSize],[1,.060*handSize]],
+        skin, 'fr-rescuer-' + id + '-upper-arm', armSection);
       shapedSegment(hand, new THREE.Vector3(0,shoulder.y-.17,shoulder.z), new THREE.Vector3(0,shoulder.y+.10,shoulder.z),
-        [[0,.072*handSize],[.45,.075*handSize],[1,.068*handSize]], trousers, 'fr-rescuer-' + id + '-sleeve');
+        [[0,.076*handSize],[.15,.079*handSize],[.60,.077*handSize],[1,.070*handSize]],
+        trousers, 'fr-rescuer-' + id + '-sleeve', armSection);
       return hand;
     }
     rescuerHand(0, Math.PI / 2, 'lower');

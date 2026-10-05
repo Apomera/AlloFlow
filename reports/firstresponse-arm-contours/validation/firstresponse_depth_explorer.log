@@ -1,0 +1,12 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+(node:23332) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/setup.js?vitest=1791205054462 is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  1 passed (1)
+      Tests  115 passed (115)
+   Start at  08:57:33
+   Duration  27.76s (transform 0ms, setup 12ms, import 307ms, tests 26.49s, environment 777ms)

@@ -1,0 +1,2098 @@
+{
+  "schema": 1,
+  "timestamp": "2026-10-05T12:59:17.908Z",
+  "inputs": {
+    "before": {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-arm-work\\before.js",
+      "sha256": "c6a8f79706a7eac768f80775a84f345051df06ef95211fc997996d724741a040"
+    },
+    "after": {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_firstresponse.js",
+      "sha256": "2ab3e962db7192a555b31799ac920ef939236cbe545f310fe01f5c843b98ccd2"
+    },
+    "three": {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\vendor\\three-r128\\three.min.js",
+      "sha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
+    }
+  },
+  "scope": "Actual bundled Three.js scene construction and reduced-motion release/press frame evaluation; no WebGL rendering or UI interaction.",
+  "comparison": "Every object: geometry attribute/index bytes, material JSON excluding UUID/metadata, exact local/world matrices, visibility/shadow/render flags and userData. Geometry topology counts retained. Only rescuer forearm/upper-arm/sleeve geometry, wrist flattening and removed elbow spheres are allowed.",
+  "cases": [
+    {
+      "age": "adult",
+      "tab": "recovery",
+      "phase": 0,
+      "motion": "release",
+      "contrast": false,
+      "beforeObjects": 211,
+      "afterObjects": 209,
+      "unchangedObjects": 201,
+      "preservedDigestBefore": "41c4be05b274397f3e8f9d17ac12034fe82555f37ae92cb85ef680b6cd55d67c",
+      "preservedDigestAfter": "41c4be05b274397f3e8f9d17ac12034fe82555f37ae92cb85ef680b6cd55d67c",
+      "geometryBefore": {
+        "vertices": 84261
+      },
+      "geometryAfter": {
+        "vertices": 83159
+      },
+      "expectedDifferences": [
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        }
+      ],
+      "unexpectedDifferences": [],
+      "removedElbowGeometry": {
+        "meshes": 2,
+        "vertices": 1102,
+        "triangles": 1904
+      }
+    },
+    {
+      "age": "adult",
+      "tab": "recovery",
+      "phase": 4,
+      "motion": "release",
+      "contrast": false,
+      "beforeObjects": 217,
+      "afterObjects": 215,
+      "unchangedObjects": 207,
+      "preservedDigestBefore": "b4d4ab395acb1cae9de56e33d12c977365d914d6b242c5b06b211f836a70a503",
+      "preservedDigestAfter": "b4d4ab395acb1cae9de56e33d12c977365d914d6b242c5b06b211f836a70a503",
+      "geometryBefore": {
+        "vertices": 84725
+      },
+      "geometryAfter": {
+        "vertices": 83623
+      },
+      "expectedDifferences": [
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        }
+      ],
+      "unexpectedDifferences": [],
+      "removedElbowGeometry": {
+        "meshes": 2,
+        "vertices": 1102,
+        "triangles": 1904
+      }
+    },
+    {
+      "age": "adult",
+      "tab": "recovery",
+      "phase": 6,
+      "motion": "release",
+      "contrast": false,
+      "beforeObjects": 217,
+      "afterObjects": 215,
+      "unchangedObjects": 207,
+      "preservedDigestBefore": "a657ec2e31615e42d674fec2e38e7a458480543c8c897fc6bff01186030681e9",
+      "preservedDigestAfter": "a657ec2e31615e42d674fec2e38e7a458480543c8c897fc6bff01186030681e9",
+      "geometryBefore": {
+        "vertices": 84725
+      },
+      "geometryAfter": {
+        "vertices": 83623
+      },
+      "expectedDifferences": [
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        }
+      ],
+      "unexpectedDifferences": [],
+      "removedElbowGeometry": {
+        "meshes": 2,
+        "vertices": 1102,
+        "triangles": 1904
+      }
+    },
+    {
+      "age": "adult",
+      "tab": "recovery",
+      "phase": 8,
+      "motion": "release",
+      "contrast": false,
+      "beforeObjects": 217,
+      "afterObjects": 215,
+      "unchangedObjects": 207,
+      "preservedDigestBefore": "57cf3b7d57b31bcaa352d32c3684ab8b2a77156b460945b87b4b0da723c077ae",
+      "preservedDigestAfter": "57cf3b7d57b31bcaa352d32c3684ab8b2a77156b460945b87b4b0da723c077ae",
+      "geometryBefore": {
+        "vertices": 84725
+      },
+      "geometryAfter": {
+        "vertices": 83623
+      },
+      "expectedDifferences": [
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        }
+      ],
+      "unexpectedDifferences": [],
+      "removedElbowGeometry": {
+        "meshes": 2,
+        "vertices": 1102,
+        "triangles": 1904
+      }
+    },
+    {
+      "age": "adult",
+      "tab": "depth",
+      "phase": 0,
+      "motion": "release",
+      "contrast": false,
+      "beforeObjects": 210,
+      "afterObjects": 208,
+      "unchangedObjects": 200,
+      "preservedDigestBefore": "2305f976e74e63e9024d9579e93c37ca1066c49754046376571e7f1c002d1095",
+      "preservedDigestAfter": "2305f976e74e63e9024d9579e93c37ca1066c49754046376571e7f1c002d1095",
+      "geometryBefore": {
+        "vertices": 84261
+      },
+      "geometryAfter": {
+        "vertices": 83159
+      },
+      "expectedDifferences": [
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        }
+      ],
+      "unexpectedDifferences": [],
+      "removedElbowGeometry": {
+        "meshes": 2,
+        "vertices": 1102,
+        "triangles": 1904
+      }
+    },
+    {
+      "age": "adult",
+      "tab": "depth",
+      "phase": 0,
+      "motion": "press",
+      "contrast": false,
+      "beforeObjects": 210,
+      "afterObjects": 208,
+      "unchangedObjects": 200,
+      "preservedDigestBefore": "b5118677eb0c8fcabd234e2b8e129602e80e9c2e4fb12cb892da9abb19ae64ea",
+      "preservedDigestAfter": "b5118677eb0c8fcabd234e2b8e129602e80e9c2e4fb12cb892da9abb19ae64ea",
+      "geometryBefore": {
+        "vertices": 84261
+      },
+      "geometryAfter": {
+        "vertices": 83159
+      },
+      "expectedDifferences": [
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        }
+      ],
+      "unexpectedDifferences": [],
+      "removedElbowGeometry": {
+        "meshes": 2,
+        "vertices": 1102,
+        "triangles": 1904
+      }
+    },
+    {
+      "age": "child",
+      "tab": "recovery",
+      "phase": 0,
+      "motion": "release",
+      "contrast": false,
+      "beforeObjects": 210,
+      "afterObjects": 208,
+      "unchangedObjects": 200,
+      "preservedDigestBefore": "4220865a9633e28bfbd6a7a05b42619f451dd2b66876603b7dd2a91b661c7dc1",
+      "preservedDigestAfter": "4220865a9633e28bfbd6a7a05b42619f451dd2b66876603b7dd2a91b661c7dc1",
+      "geometryBefore": {
+        "vertices": 84237
+      },
+      "geometryAfter": {
+        "vertices": 83135
+      },
+      "expectedDifferences": [
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        }
+      ],
+      "unexpectedDifferences": [],
+      "removedElbowGeometry": {
+        "meshes": 2,
+        "vertices": 1102,
+        "triangles": 1904
+      }
+    },
+    {
+      "age": "child",
+      "tab": "recovery",
+      "phase": 4,
+      "motion": "release",
+      "contrast": false,
+      "beforeObjects": 216,
+      "afterObjects": 214,
+      "unchangedObjects": 206,
+      "preservedDigestBefore": "a34998cd140c9029cd12665ce44eb6ca7e47f279bf344cb827fd27c24f18c191",
+      "preservedDigestAfter": "a34998cd140c9029cd12665ce44eb6ca7e47f279bf344cb827fd27c24f18c191",
+      "geometryBefore": {
+        "vertices": 84701
+      },
+      "geometryAfter": {
+        "vertices": 83599
+      },
+      "expectedDifferences": [
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        }
+      ],
+      "unexpectedDifferences": [],
+      "removedElbowGeometry": {
+        "meshes": 2,
+        "vertices": 1102,
+        "triangles": 1904
+      }
+    },
+    {
+      "age": "child",
+      "tab": "recovery",
+      "phase": 6,
+      "motion": "release",
+      "contrast": false,
+      "beforeObjects": 216,
+      "afterObjects": 214,
+      "unchangedObjects": 206,
+      "preservedDigestBefore": "7048ce6cd1a4001de4ee3ec8d9c948decf0bff248951bcb794af41326f1b1f17",
+      "preservedDigestAfter": "7048ce6cd1a4001de4ee3ec8d9c948decf0bff248951bcb794af41326f1b1f17",
+      "geometryBefore": {
+        "vertices": 84701
+      },
+      "geometryAfter": {
+        "vertices": 83599
+      },
+      "expectedDifferences": [
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        }
+      ],
+      "unexpectedDifferences": [],
+      "removedElbowGeometry": {
+        "meshes": 2,
+        "vertices": 1102,
+        "triangles": 1904
+      }
+    },
+    {
+      "age": "child",
+      "tab": "recovery",
+      "phase": 8,
+      "motion": "release",
+      "contrast": false,
+      "beforeObjects": 216,
+      "afterObjects": 214,
+      "unchangedObjects": 206,
+      "preservedDigestBefore": "e7ea6eadc2c21df9a511b2712b002da13ef331c16f420dbd3f5b5de6fe8a9b25",
+      "preservedDigestAfter": "e7ea6eadc2c21df9a511b2712b002da13ef331c16f420dbd3f5b5de6fe8a9b25",
+      "geometryBefore": {
+        "vertices": 84701
+      },
+      "geometryAfter": {
+        "vertices": 83599
+      },
+      "expectedDifferences": [
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        }
+      ],
+      "unexpectedDifferences": [],
+      "removedElbowGeometry": {
+        "meshes": 2,
+        "vertices": 1102,
+        "triangles": 1904
+      }
+    },
+    {
+      "age": "child",
+      "tab": "depth",
+      "phase": 0,
+      "motion": "release",
+      "contrast": false,
+      "beforeObjects": 209,
+      "afterObjects": 207,
+      "unchangedObjects": 199,
+      "preservedDigestBefore": "a020fec61f3993a6617ad11034c506cf1f8c882590f92a8b5f7555bb0cac6b4b",
+      "preservedDigestAfter": "a020fec61f3993a6617ad11034c506cf1f8c882590f92a8b5f7555bb0cac6b4b",
+      "geometryBefore": {
+        "vertices": 84237
+      },
+      "geometryAfter": {
+        "vertices": 83135
+      },
+      "expectedDifferences": [
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        }
+      ],
+      "unexpectedDifferences": [],
+      "removedElbowGeometry": {
+        "meshes": 2,
+        "vertices": 1102,
+        "triangles": 1904
+      }
+    },
+    {
+      "age": "child",
+      "tab": "depth",
+      "phase": 0,
+      "motion": "press",
+      "contrast": false,
+      "beforeObjects": 209,
+      "afterObjects": 207,
+      "unchangedObjects": 199,
+      "preservedDigestBefore": "342321f6437cc82782bb777ade7a4501898eeef6366cb3e95a7132f367f160d6",
+      "preservedDigestAfter": "342321f6437cc82782bb777ade7a4501898eeef6366cb3e95a7132f367f160d6",
+      "geometryBefore": {
+        "vertices": 84237
+      },
+      "geometryAfter": {
+        "vertices": 83135
+      },
+      "expectedDifferences": [
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        }
+      ],
+      "unexpectedDifferences": [],
+      "removedElbowGeometry": {
+        "meshes": 2,
+        "vertices": 1102,
+        "triangles": 1904
+      }
+    },
+    {
+      "age": "infant",
+      "tab": "recovery",
+      "phase": 0,
+      "motion": "release",
+      "contrast": false,
+      "beforeObjects": 180,
+      "afterObjects": 179,
+      "unchangedObjects": 175,
+      "preservedDigestBefore": "69568cf6ca1d297c5bf2bda6f0cf93898d5bce698227dccd217b6c59a76941b0",
+      "preservedDigestAfter": "69568cf6ca1d297c5bf2bda6f0cf93898d5bce698227dccd217b6c59a76941b0",
+      "geometryBefore": {
+        "vertices": 73142
+      },
+      "geometryAfter": {
+        "vertices": 72591
+      },
+      "expectedDifferences": [
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        }
+      ],
+      "unexpectedDifferences": [],
+      "removedElbowGeometry": {
+        "meshes": 1,
+        "vertices": 551,
+        "triangles": 952
+      }
+    },
+    {
+      "age": "infant",
+      "tab": "recovery",
+      "phase": 4,
+      "motion": "release",
+      "contrast": false,
+      "beforeObjects": 186,
+      "afterObjects": 185,
+      "unchangedObjects": 181,
+      "preservedDigestBefore": "dc677c693c68c7a8265306994a35487414dff199b029f127d982134e987247f0",
+      "preservedDigestAfter": "dc677c693c68c7a8265306994a35487414dff199b029f127d982134e987247f0",
+      "geometryBefore": {
+        "vertices": 73606
+      },
+      "geometryAfter": {
+        "vertices": 73055
+      },
+      "expectedDifferences": [
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        }
+      ],
+      "unexpectedDifferences": [],
+      "removedElbowGeometry": {
+        "meshes": 1,
+        "vertices": 551,
+        "triangles": 952
+      }
+    },
+    {
+      "age": "infant",
+      "tab": "recovery",
+      "phase": 6,
+      "motion": "release",
+      "contrast": false,
+      "beforeObjects": 186,
+      "afterObjects": 185,
+      "unchangedObjects": 181,
+      "preservedDigestBefore": "d38a84095b3f954756c2a7a65be13cec94fb43e6359e7a21da12f1646eeff951",
+      "preservedDigestAfter": "d38a84095b3f954756c2a7a65be13cec94fb43e6359e7a21da12f1646eeff951",
+      "geometryBefore": {
+        "vertices": 73606
+      },
+      "geometryAfter": {
+        "vertices": 73055
+      },
+      "expectedDifferences": [
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        }
+      ],
+      "unexpectedDifferences": [],
+      "removedElbowGeometry": {
+        "meshes": 1,
+        "vertices": 551,
+        "triangles": 952
+      }
+    },
+    {
+      "age": "infant",
+      "tab": "recovery",
+      "phase": 8,
+      "motion": "release",
+      "contrast": false,
+      "beforeObjects": 186,
+      "afterObjects": 185,
+      "unchangedObjects": 181,
+      "preservedDigestBefore": "7d1ce03302ab42e7e45cc547c92068316db6cf91e40296cbc0f9c95dbe4ab23a",
+      "preservedDigestAfter": "7d1ce03302ab42e7e45cc547c92068316db6cf91e40296cbc0f9c95dbe4ab23a",
+      "geometryBefore": {
+        "vertices": 73606
+      },
+      "geometryAfter": {
+        "vertices": 73055
+      },
+      "expectedDifferences": [
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        }
+      ],
+      "unexpectedDifferences": [],
+      "removedElbowGeometry": {
+        "meshes": 1,
+        "vertices": 551,
+        "triangles": 952
+      }
+    },
+    {
+      "age": "infant",
+      "tab": "depth",
+      "phase": 0,
+      "motion": "release",
+      "contrast": false,
+      "beforeObjects": 179,
+      "afterObjects": 178,
+      "unchangedObjects": 174,
+      "preservedDigestBefore": "7a78f3d68d06a8eb05af0b0095407d25e03458753d69c143f8dc963536f3f515",
+      "preservedDigestAfter": "7a78f3d68d06a8eb05af0b0095407d25e03458753d69c143f8dc963536f3f515",
+      "geometryBefore": {
+        "vertices": 73142
+      },
+      "geometryAfter": {
+        "vertices": 72591
+      },
+      "expectedDifferences": [
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        }
+      ],
+      "unexpectedDifferences": [],
+      "removedElbowGeometry": {
+        "meshes": 1,
+        "vertices": 551,
+        "triangles": 952
+      }
+    },
+    {
+      "age": "infant",
+      "tab": "depth",
+      "phase": 0,
+      "motion": "press",
+      "contrast": false,
+      "beforeObjects": 179,
+      "afterObjects": 178,
+      "unchangedObjects": 174,
+      "preservedDigestBefore": "18dc7c2cdac806d7660fdf3a83b4712ce9ce331c8d39bd40cf4f8b0f265f14c2",
+      "preservedDigestAfter": "18dc7c2cdac806d7660fdf3a83b4712ce9ce331c8d39bd40cf4f8b0f265f14c2",
+      "geometryBefore": {
+        "vertices": 73142
+      },
+      "geometryAfter": {
+        "vertices": 72591
+      },
+      "expectedDifferences": [
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        }
+      ],
+      "unexpectedDifferences": [],
+      "removedElbowGeometry": {
+        "meshes": 1,
+        "vertices": 551,
+        "triangles": 952
+      }
+    },
+    {
+      "age": "adult",
+      "tab": "depth",
+      "phase": 0,
+      "motion": "release",
+      "contrast": true,
+      "beforeObjects": 209,
+      "afterObjects": 207,
+      "unchangedObjects": 199,
+      "preservedDigestBefore": "c912498caf2b7787fb882ab1c09075602694a2250f6e13a0d249702316b9f3d8",
+      "preservedDigestAfter": "c912498caf2b7787fb882ab1c09075602694a2250f6e13a0d249702316b9f3d8",
+      "geometryBefore": {
+        "vertices": 84261
+      },
+      "geometryAfter": {
+        "vertices": 83159
+      },
+      "expectedDifferences": [
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        }
+      ],
+      "unexpectedDifferences": [],
+      "removedElbowGeometry": {
+        "meshes": 2,
+        "vertices": 1102,
+        "triangles": 1904
+      }
+    },
+    {
+      "age": "adult",
+      "tab": "depth",
+      "phase": 0,
+      "motion": "press",
+      "contrast": true,
+      "beforeObjects": 209,
+      "afterObjects": 207,
+      "unchangedObjects": 199,
+      "preservedDigestBefore": "297962796a20fe86d8fb0d3b4b46672e4fe97e25e0649ab2125fe57054ba0339",
+      "preservedDigestAfter": "297962796a20fe86d8fb0d3b4b46672e4fe97e25e0649ab2125fe57054ba0339",
+      "geometryBefore": {
+        "vertices": 84261
+      },
+      "geometryAfter": {
+        "vertices": 83159
+      },
+      "expectedDifferences": [
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        }
+      ],
+      "unexpectedDifferences": [],
+      "removedElbowGeometry": {
+        "meshes": 2,
+        "vertices": 1102,
+        "triangles": 1904
+      }
+    },
+    {
+      "age": "child",
+      "tab": "depth",
+      "phase": 0,
+      "motion": "release",
+      "contrast": true,
+      "beforeObjects": 208,
+      "afterObjects": 206,
+      "unchangedObjects": 198,
+      "preservedDigestBefore": "43310d9121d1127a54ac2d67dc9d4073a59728fe1bf5bb002eba54dff248b7f4",
+      "preservedDigestAfter": "43310d9121d1127a54ac2d67dc9d4073a59728fe1bf5bb002eba54dff248b7f4",
+      "geometryBefore": {
+        "vertices": 84237
+      },
+      "geometryAfter": {
+        "vertices": 83135
+      },
+      "expectedDifferences": [
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        }
+      ],
+      "unexpectedDifferences": [],
+      "removedElbowGeometry": {
+        "meshes": 2,
+        "vertices": 1102,
+        "triangles": 1904
+      }
+    },
+    {
+      "age": "child",
+      "tab": "depth",
+      "phase": 0,
+      "motion": "press",
+      "contrast": true,
+      "beforeObjects": 208,
+      "afterObjects": 206,
+      "unchangedObjects": 198,
+      "preservedDigestBefore": "36bf18cadb3b03ce9f0f9c4355daed0bea0d914befab132b75b78d2dd28a69aa",
+      "preservedDigestAfter": "36bf18cadb3b03ce9f0f9c4355daed0bea0d914befab132b75b78d2dd28a69aa",
+      "geometryBefore": {
+        "vertices": 84237
+      },
+      "geometryAfter": {
+        "vertices": 83135
+      },
+      "expectedDifferences": [
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-upper/fr-rescuer-upper-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        }
+      ],
+      "unexpectedDifferences": [],
+      "removedElbowGeometry": {
+        "meshes": 2,
+        "vertices": 1102,
+        "triangles": 1904
+      }
+    },
+    {
+      "age": "infant",
+      "tab": "depth",
+      "phase": 0,
+      "motion": "release",
+      "contrast": true,
+      "beforeObjects": 178,
+      "afterObjects": 177,
+      "unchangedObjects": 173,
+      "preservedDigestBefore": "fd97eb3b55bb012de570bce73b719faf837325c9a51752a77b2d62bbc440e955",
+      "preservedDigestAfter": "fd97eb3b55bb012de570bce73b719faf837325c9a51752a77b2d62bbc440e955",
+      "geometryBefore": {
+        "vertices": 73142
+      },
+      "geometryAfter": {
+        "vertices": 72591
+      },
+      "expectedDifferences": [
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        }
+      ],
+      "unexpectedDifferences": [],
+      "removedElbowGeometry": {
+        "meshes": 1,
+        "vertices": 551,
+        "triangles": 952
+      }
+    },
+    {
+      "age": "infant",
+      "tab": "depth",
+      "phase": 0,
+      "motion": "press",
+      "contrast": true,
+      "beforeObjects": 178,
+      "afterObjects": 177,
+      "unchangedObjects": 173,
+      "preservedDigestBefore": "6fdfff5c2c7b7c8b85be359248042e1938fe3646739d84fdc06617e4aeaf5edc",
+      "preservedDigestAfter": "6fdfff5c2c7b7c8b85be359248042e1938fe3646739d84fdc06617e4aeaf5edc",
+      "geometryBefore": {
+        "vertices": 73142
+      },
+      "geometryAfter": {
+        "vertices": 72591
+      },
+      "expectedDifferences": [
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh",
+          "fields": [
+            "localPose",
+            "worldPose"
+          ],
+          "kind": "wristScale"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-forearm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/@Mesh:1",
+          "fields": [
+            "removed"
+          ],
+          "kind": "removedElbow"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-upper-arm",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        },
+        {
+          "key": "scene/fr-depth-hands/fr-rescuer-lower/fr-rescuer-lower-sleeve",
+          "fields": [
+            "geometry"
+          ],
+          "kind": "armGeometry"
+        }
+      ],
+      "unexpectedDifferences": [],
+      "removedElbowGeometry": {
+        "meshes": 1,
+        "vertices": 551,
+        "triangles": 952
+      }
+    }
+  ],
+  "unexpectedDifferences": [],
+  "totals": {
+    "cases": 24,
+    "beforeObjects": 4844,
+    "afterObjects": 4804,
+    "unchangedObjects": 4644,
+    "expectedChangedObjects": 160,
+    "expectedRemovedObjects": 40
+  },
+  "inputUnchangedAtEnd": true,
+  "ok": true,
+  "summaryNote": "Aggregate triangle totals were omitted because line geometry had been counted as triangles. Removed elbow mesh triangle deltas remain exact; source comparison and all object preservation verdicts come from the completed original run. The corrected count-only rerun was interrupted to avoid competing with browser validation."
+}
