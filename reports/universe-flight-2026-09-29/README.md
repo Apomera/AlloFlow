@@ -67,6 +67,18 @@ The sightline instrument uses the observer-frame relation D = 1/[γ(1−βμ′)
 
 ## Verification
 
+### Automatic highlight stops pass
+
+Enable **Pause at highlights** in a flyby's controls or fullscreen Explore to stop automatically at its three named views. **Continue flyby** resumes from that position at the selected pace. The next-stop readout gives remaining playback time at the current pace. The preference stays available across route launches during the current explorer session.
+
+Automatic stops land on the exact authored position, including at fast playback speeds and across long frames. Guided gaze resolves to the preview's view; free look retains the viewer's direction. Lens and exposure are retained. Forward seeks continue toward the next highlight; backward seeks allow earlier highlights to be revisited. Completed routes still finish at their final panoramas. Continuous playback remains the default.
+
+Fullscreen arrivals show the highlight name, route and stop number, with **Continue flyby** and **Save viewpoint** kept visible even in short landscape windows. Details can scroll and receive keyboard focus when space is tight. The route controls also show a brief paused-view description.
+
+Verification passes **153 tests across five files** in 27.29 seconds. Browser checks cover 16 automatic arrivals, 18 existing preview selections, 20 accessibility scopes, exact paused pixels, retained free look, keyboard and touch controls, and fully visible primary actions at 1280 × 850, 320 × 740 and 568 × 320. All twelve generated preview images and pictured poses remain identical; their manifest now records the updated renderer.
+
+Screenshots: [route controls](highlight-stops/stops-normal.png), [fullscreen arrival](highlight-stops/stops-1280.png), [phone](highlight-stops/stops-320.png), [short landscape](highlight-stops/stops-568.png).
+
 ### Visual flyby previews pass
 
 The twelve named highlights now have preview images rendered from their authored camera positions, with route times and a visible current-stop border. The cards work in normal controls and fullscreen Explore. Choosing one pauses at the pictured moment while retaining the current lens, exposure and playback pace. The images use each route's launch lens and exposure. Their names, descriptions and times remain available if an image cannot load.

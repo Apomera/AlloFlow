@@ -2746,6 +2746,113 @@ describe('Universe flight scenic highlights', () => {
   });
 });
 
+describe('Universe flyby automatic highlight stops', () => {
+  function launch(id, enabled = true) {
+    const route = flight.flybys().find(item => item.id === id);
+    scene.set({ mode: 'explore', region: route.region, pauseAtHighlights: enabled });
+    expect(scene.startFlyby(id)).toBe(true);
+    advance();
+    return route;
+  }
+
+  function cross(seconds, rate = 1) {
+    scene.seekFlyby(seconds - 0.01);
+    scene.set({ running: true, flybyRate: rate });
+    advance();
+    advance(500);
+  }
+
+  for (const id of ['halo', 'nebula', 'group', 'stellar']) {
+    it(`stops at every ${id} highlight exactly, across all supported engine paces`, () => {
+      const route = launch(id), allocations = { ...graphicsCreates };
+      for (const rate of [0.25, 0.5, 1, 2, 4]) {
+        for (const [index, highlight] of route.highlights.entries()) {
+          scene.seekFlybyHighlight(highlight.id);
+          const expected = scene.snapshot();
+          cross(highlight.seconds, rate);
+          expect(scene.snapshot()).toEqual(expected);
+          expect(telemetry).toMatchObject({ running: false, motion: { paceLyPerSecond: 0 }, flyby: { active: true, completed: false, elapsedSeconds: highlight.seconds, pauseAtHighlights: true, rate } });
+          expect(pauseEvents.at(-1)[1]).toMatchObject({ kind: 'flyby-stop', region: route.region, mode: 'explore', routeId: id, highlightId: highlight.id, targetId: highlight.targetId, seconds: highlight.seconds, stopIndex: index + 1, stopCount: 3 });
+          const eventCount = pauseEvents.length;
+          advance(60000);
+          expect(scene.snapshot()).toEqual(expected);
+          expect(pauseEvents).toHaveLength(eventCount);
+          scene.set({ running: true }); advance(); advance(300);
+          expect(telemetry.running).toBe(true);
+          expect(telemetry.flyby.elapsedSeconds).toBeGreaterThan(highlight.seconds);
+          expect(pauseEvents).toHaveLength(eventCount);
+        }
+      }
+      expect(graphicsCreates).toEqual(allocations);
+      expect(scene.snapshot().state.universeYears).toBe(0);
+      expect(scene.snapshot().state.travelerYears).toBe(0);
+    });
+  }
+
+  it('preserves manual gaze and display settings at an automatic stop', () => {
+    const route = launch('stellar'), highlight = route.highlights[1];
+    scene.seekFlyby(highlight.seconds - 0.01);
+    scene.look(0.7, -0.1);
+    scene.set({ fov: 37, exposure: 0.61 });
+    const before = scene.snapshot();
+    scene.set({ running: true }); advance(); advance(500);
+    const after = scene.snapshot();
+    expect(after.state.yaw).toBe(before.state.yaw);
+    expect(after.state.pitch).toBe(before.state.pitch);
+    expect(after.settings).toEqual(before.settings);
+    expect(telemetry.flyby.autoLook).toBe(false);
+    expect(telemetry.flyby.elapsedSeconds).toBe(highlight.seconds);
+    expect(after.targetId).toBe(highlight.targetId);
+  });
+
+  it('keeps continuous playback by default and applies the setting immediately', () => {
+    const route = launch('nebula', false), highlight = route.highlights[0];
+    cross(highlight.seconds, 2);
+    expect(telemetry.running).toBe(true);
+    expect(telemetry.flyby.elapsedSeconds).toBeGreaterThan(highlight.seconds);
+    scene.set({ pauseAtHighlights: true });
+    expect(telemetry.flyby.pauseAtHighlights).toBe(true);
+    cross(highlight.seconds, 2);
+    expect(telemetry.running).toBe(false);
+    scene.seekFlyby(highlight.seconds - 0.01);
+    scene.set({ pauseAtHighlights: false, running: true }); advance(); advance(500);
+    expect(telemetry.running).toBe(true);
+  });
+
+  it('honors forward seeks, revisits backward seeks, and completes once after the last stop', () => {
+    const route = launch('halo');
+    cross(route.highlights[2].seconds);
+    expect(pauseEvents.filter(([,e]) => e?.kind === 'flyby-stop').map(([,e]) => e.highlightId)).toEqual([route.highlights[2].id]);
+    cross(route.highlights[0].seconds);
+    expect(pauseEvents.at(-1)[1].highlightId).toBe(route.highlights[0].id);
+    scene.seekFlyby(route.durationSeconds - 0.01);
+    scene.set({ running: true }); advance(); advance(500);
+    expect(telemetry.flyby.completed).toBe(true);
+    expect(pauseEvents.filter(([,e]) => e?.kind === 'flyby')).toHaveLength(1);
+    advance(1000);
+    expect(pauseEvents.filter(([,e]) => e?.kind === 'flyby')).toHaveLength(1);
+    scene.startFlyby('halo');
+    expect(telemetry.flyby.pauseAtHighlights).toBe(true);
+    cross(route.highlights[0].seconds);
+    expect(pauseEvents.at(-1)[1].highlightId).toBe(route.highlights[0].id);
+  });
+
+  it('does not trigger a stop while hidden or after a route is canceled', () => {
+    const route = launch('group'), highlight = route.highlights[0];
+    scene.seekFlyby(highlight.seconds - 0.01);
+    scene.set({ running: true }); advance();
+    vi.spyOn(document, 'hidden', 'get').mockReturnValue(true);
+    document.dispatchEvent(new Event('visibilitychange')); advance(60000);
+    expect(telemetry.flyby.elapsedSeconds).toBe(highlight.seconds - 0.01);
+    expect(pauseEvents.filter(([,e]) => e?.kind === 'flyby-stop')).toHaveLength(0);
+    vi.spyOn(document, 'hidden', 'get').mockReturnValue(false);
+    document.dispatchEvent(new Event('visibilitychange')); advance(); advance(500);
+    expect(pauseEvents.filter(([,e]) => e?.kind === 'flyby-stop')).toHaveLength(1);
+    scene.cancelFlyby(); scene.set({ running: true }); advance(); advance(500);
+    expect(pauseEvents.filter(([,e]) => e?.kind === 'flyby-stop')).toHaveLength(1);
+  });
+});
+
 describe('Universe flight continuous route timeline', () => {
   function launch(id, rate = 1) {
     const route = flight.flybys().find(item => item.id === id);

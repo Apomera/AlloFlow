@@ -1426,7 +1426,7 @@
 
   function create(canvas, options) {
     options = options || {};
-    var settings = { mode: 'explore', region: 'neighborhood', speed: 2, beta: 0.9, timeScale: 1, running: false, compareRest: false, fov: 70, exposure: 1, quality: 'auto', orbitRate: 3, orbitDirection: 1, smoothTravel: false, flybyRate: 1 };
+    var settings = { mode: 'explore', region: 'neighborhood', speed: 2, beta: 0.9, timeScale: 1, running: false, compareRest: false, fov: 70, exposure: 1, quality: 'auto', orbitRate: 3, orbitDirection: 1, smoothTravel: false, flybyRate: 1, pauseAtHighlights: false };
     var state, gl, program, buffer, pointCount = 0, uniforms = {}, disposed = false, lost = false;
     var galaxyProgram, galaxyBuffer, galaxyTexture, cloudTexture, galaxyCount = 0, galaxyUniforms = {};
     var galaxySurfaces = null, galaxyObserver = null;
@@ -1475,7 +1475,7 @@
       var sample = route ? route.atTime(flyby.elapsedSeconds) : null;
       return { active:flyby.active, completed:flyby.completed, id:flyby.id, name:route?route.name:null,
         progress:route?flyby.elapsedSeconds/route.durationSeconds:0, elapsedSeconds:flyby.elapsedSeconds,
-        durationSeconds:route?route.durationSeconds:0, autoLook:flyby.autoLook, phase:sample?sample.phase:null, rate:settings.flybyRate };
+        durationSeconds:route?route.durationSeconds:0, autoLook:flyby.autoLook, phase:sample?sample.phase:null, rate:settings.flybyRate, pauseAtHighlights:settings.pauseAtHighlights };
     }
     var freePace = 0;
     var trail = [];
@@ -1872,6 +1872,10 @@
     function stepFlyby(dt) {
       var seconds = clamp(finite(dt,0),0,0.5), route = flybyRoute(flyby.id);
       var oldElapsed = flyby.elapsedSeconds, elapsed = Math.min(route.durationSeconds,oldElapsed+seconds*settings.flybyRate);
+      // Stop at the first crossed highlight, even when a slow frame or fast pace
+      // would step beyond it. Strictly later stops allow Continue to advance.
+      var stop = settings.pauseAtHighlights ? route.highlights.filter(function(item){return item.seconds > oldElapsed && item.seconds <= elapsed;})[0] : null;
+      if (stop) elapsed = stop.seconds;
       var oldSample = route.atTime(oldElapsed), sample = route.atTime(elapsed);
       flyby.elapsedSeconds = elapsed;
       // Camera displacement follows the sampled curve regardless of gaze.
@@ -1884,7 +1888,14 @@
         state.yaw = ((state.yaw+yawDelta*follow)%TAU+TAU)%TAU;
         state.pitch = clamp(state.pitch+(sample.pitch-state.pitch)*follow,-Math.PI/2+0.01,Math.PI/2-0.01);
       }
-      if (elapsed >= route.durationSeconds) {
+      if (stop) {
+        flybyPace = 0; targetId = stop.targetId; clearFraming();
+        // Resolve the authored view when following, while respecting free look.
+        if (flyby.autoLook) { state.yaw = sample.yaw; state.pitch = sample.pitch; }
+        var stopTarget = getLandmark(targetId);
+        pauseWithMessage(stop.name + '. Travel is paused; look around or continue the flyby.',
+          {kind:'flyby-stop',region:settings.region,mode:settings.mode,position:state.position.slice(),targetId:targetId,targetName:stopTarget?stopTarget.name:null,routeId:route.id,routeName:route.name,highlightId:stop.id,highlightName:stop.name,description:stop.description,seconds:stop.seconds,stopIndex:route.highlights.indexOf(stop)+1,stopCount:route.highlights.length});
+      } else if (elapsed >= route.durationSeconds) {
         flyby.active = false; flyby.completed = true; flybyPace = 0;
         targetId = route.completionTargetId; clearFraming();
         var destination = getLandmark(targetId);
@@ -2006,6 +2017,7 @@
         if (next.speed !== undefined) settings.speed = clamp(finite(next.speed, 0), 0, 1e10);
         if (next.smoothTravel !== undefined) settings.smoothTravel = !!next.smoothTravel;
         if (next.flybyRate !== undefined) settings.flybyRate = clamp(finite(next.flybyRate,1),0.25,4);
+        if (next.pauseAtHighlights !== undefined) settings.pauseAtHighlights = !!next.pauseAtHighlights;
         if (next.orbitRate !== undefined) settings.orbitRate = clamp(finite(next.orbitRate, 3), 0.25, 12);
         if (next.orbitDirection === 1 || next.orbitDirection === -1) settings.orbitDirection = next.orbitDirection;
         if (next.beta !== undefined) settings.beta = safeBeta(next.beta);
@@ -2031,7 +2043,7 @@
           else if (!previousSmooth) freePace = previousSpeed;
         }
         if (previousQuality !== settings.quality) resize();
-        if (targetId || previousRegion !== settings.region || (wasRunning && !settings.running) || next.speed !== undefined || next.smoothTravel !== undefined || next.flybyRate !== undefined || next.running !== undefined) emitTelemetry(true);
+        if (targetId || previousRegion !== settings.region || (wasRunning && !settings.running) || next.speed !== undefined || next.smoothTravel !== undefined || next.flybyRate !== undefined || next.pauseAtHighlights !== undefined || next.running !== undefined) emitTelemetry(true);
         requestDraw();
       },
       look: function (yawDelta, pitchDelta) {

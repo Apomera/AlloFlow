@@ -45,7 +45,7 @@ async function main(){
   // A contact sheet makes all twelve generated views easy to review together.
   const cards=views.map(v=>'<figure><img src="data:image/webp;base64,'+fs.readFileSync(path.join(folder,v.file)).toString('base64')+'"><figcaption>'+v.routeId+' · '+v.name+' · '+v.seconds+'s</figcaption></figure>').join('');
   await page.setViewportSize({width:1200,height:880});await page.setContent('<!doctype html><html><head><style>body{margin:0;padding:18px;background:#07111e;color:#d8eaf4;font:14px sans-serif;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}figure{margin:0}img{display:block;width:100%;aspect-ratio:1.6;border-radius:8px}figcaption{padding:8px 0;line-height:1.4}</style></head><body>'+cards+'</body></html>');
-  const report=path.join(root,'reports/universe-flight-2026-09-29/storyboard');fs.mkdirSync(report,{recursive:true});await page.screenshot({path:path.join(report,'contact-sheet.png'),fullPage:true});
+  const report=process.env.UNIVERSE_PREVIEW_REPORT||path.join(root,'reports/universe-flight-2026-09-29/storyboard');fs.mkdirSync(report,{recursive:true});await page.screenshot({path:path.join(report,'contact-sheet.png'),fullPage:true});
   console.log(JSON.stringify({completed:true,views:views.length,bytes:views.reduce((n,v)=>n+v.bytes,0),rendererHash:manifest.rendererHash}));
  }finally{await browser.close();}
 }

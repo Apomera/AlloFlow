@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),crypto=require('node:crypto');
-const repo=path.resolve(__dirname,'..'),report=path.join(repo,'reports/universe-flight-2026-09-29/storyboard'),asset='stem_lab/assets/universe-flight/highlights/';
+const repo=path.resolve(__dirname,'..'),report=process.env.UNIVERSE_STORYBOARD_REPORT||path.join(repo,'reports/universe-flight-2026-09-29/storyboard'),asset='stem_lab/assets/universe-flight/highlights/';
 const hash=b=>crypto.createHash('sha256').update(b).digest('hex'),read=f=>fs.readFileSync(path.join(repo,f));
 const manifest=JSON.parse(read(asset+'manifest.json')),sourceHash=hash(read('stem_lab/universe_flight_scene.js')),uiHash=hash(read('stem_lab/stem_tool_universe.js'));
 assert.equal(sourceHash,manifest.rendererHash);assert.equal(manifest.views.length,12);
