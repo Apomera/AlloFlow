@@ -3462,7 +3462,8 @@
 
     window.AlloModules = window.AlloModules || {};
     // STEM_AUTOSAVE_START
-    var _STEM_SAVED_KEYS = ['calculus', 'wave', 'physics', 'punnett', 'chemBalance', 'galaxy', 'rockCycle', 'waterCycle', 'lumen', 'companionPlanting', 'cellProgress', 'butterfly', '_tutorialSeen'];
+    // Keep the illusion gallery's progress and observations across visits.
+    var _STEM_SAVED_KEYS = ['calculus', 'wave', 'physics', 'punnett', 'chemBalance', 'galaxy', 'rockCycle', 'waterCycle', 'lumen', 'companionPlanting', 'cellProgress', 'butterfly', 'perceptionGallery', 'perceptionWalk', '_tutorialSeen'];
     // Kitchen Lab keeps progress and preferences only: never a live cook, its
     // timers or dialogs. The tool type-checks what comes back (klCleanState).
     var _KITCHEN_LAB_SAVED = ['recipeHistory', 'recipeCompletedIds', 'aGradedRecipeIds', 'klUnlockedAchievements', 'competitionBests', 'tournamentBestTotal', 'tournamentLastTotal', 'tournamentsCompleted', 'klDetectiveSolved', 'klDetectiveCases', 'klBenchRuns', 'klUnits', 'klAltitudeFt', 'klIndependent', 'klRealKitchen', 'klPanMaterial', 'sandboxFood', 'klHandwashCompleted', 'maillardHunt'];
