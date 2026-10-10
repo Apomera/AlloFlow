@@ -1,0 +1,25 @@
+{
+  "runtimeCopies": [
+    {
+      "path": "stem_lab/stem_tool_firstresponse.js",
+      "sha256": "f551cf0c50073315effbf3fa5bcd9ce2dd3e1b806dbfcbd3f1434ba7e831af2c",
+      "bytes": 793392
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js",
+      "sha256": "f551cf0c50073315effbf3fa5bcd9ce2dd3e1b806dbfcbd3f1434ba7e831af2c",
+      "bytes": 793392
+    },
+    {
+      "path": "desktop/app-build/stem_lab/stem_tool_firstresponse.js",
+      "sha256": "f551cf0c50073315effbf3fa5bcd9ce2dd3e1b806dbfcbd3f1434ba7e831af2c",
+      "bytes": 793392
+    },
+    {
+      "path": "desktop/web-app/build/stem_lab/stem_tool_firstresponse.js",
+      "sha256": "f551cf0c50073315effbf3fa5bcd9ce2dd3e1b806dbfcbd3f1434ba7e831af2c",
+      "bytes": 793392
+    }
+  ],
+  "sourceSHA256": "f551cf0c50073315effbf3fa5bcd9ce2dd3e1b806dbfcbd3f1434ba7e831af2c"
+}

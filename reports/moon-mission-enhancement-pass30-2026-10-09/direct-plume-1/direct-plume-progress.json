@@ -1,0 +1,32 @@
+{
+  "schema": "moon-pass30-direct-browser-v1",
+  "runner": "direct-playwright-api",
+  "playwrightCliResult": false,
+  "mode": "plume",
+  "status": "running",
+  "startedAt": "2026-10-09T19:50:30.646Z",
+  "repo": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "specPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-plume.spec.ts",
+  "output": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass30-2026-10-09\\direct-plume-1",
+  "browserCache": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+  "timeouts": {
+    "action": 20000,
+    "navigation": 60000,
+    "expect": 15000,
+    "launch": 60000
+  },
+  "launchOptions": {
+    "headless": true,
+    "timeout": 60000
+  },
+  "workflowCompleted": false,
+  "cleanupCompleted": false,
+  "milestones": [
+    {
+      "name": "load:before",
+      "elapsedMs": 1
+    }
+  ],
+  "errors": [],
+  "attachments": []
+}

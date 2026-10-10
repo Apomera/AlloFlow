@@ -1,0 +1,125 @@
+{
+  "storm": {
+    "scale": 3,
+    "polarScale": 0.935,
+    "geometry": "ED2F65CD-4FEF-442C-BF0A-69DF5950E4C5",
+    "daySize": [
+      3600,
+      1598
+    ],
+    "repeat": [
+      1,
+      1.1264080100125156
+    ],
+    "offset": [
+      0,
+      -0.06320400500625778
+    ],
+    "overlay": true,
+    "sceneChild": true,
+    "visible": true,
+    "earthVisible": true,
+    "latitudeVisible": false,
+    "earthRadius": 0.13365734265734266,
+    "earthGeometry": "76519D58-E0E6-4FA5-827D-D42BACDD5160",
+    "latitudeGeometry": "0D7CFFD5-076D-4CD2-9343-F8C5DF74B463",
+    "normal": [
+      -0.8061325234739742,
+      -0.38107037635027413,
+      -0.45269826912165534
+    ],
+    "localPoint": [
+      0.28173385286776054,
+      -0.1816938572622414,
+      -0.37769973721316363
+    ],
+    "modelBody": [
+      3.36152791424398,
+      2.805,
+      3.36152791424398
+    ],
+    "geometries": 20
+  },
+  "north": {
+    "scale": 3,
+    "polarScale": 0.935,
+    "geometry": "ED2F65CD-4FEF-442C-BF0A-69DF5950E4C5",
+    "daySize": [
+      3600,
+      1598
+    ],
+    "repeat": [
+      1,
+      1.1264080100125156
+    ],
+    "offset": [
+      0,
+      -0.06320400500625778
+    ],
+    "overlay": true,
+    "sceneChild": true,
+    "visible": true,
+    "earthVisible": true,
+    "latitudeVisible": true,
+    "earthRadius": 0.13365734265734266,
+    "earthGeometry": "76519D58-E0E6-4FA5-827D-D42BACDD5160",
+    "latitudeGeometry": "0D7CFFD5-076D-4CD2-9343-F8C5DF74B463",
+    "normal": [
+      -0.43596126864787715,
+      0.8660254037844386,
+      -0.2448219194413223
+    ],
+    "localPoint": [
+      0.15860823166272167,
+      0.4298344926437287,
+      -0.21263432423569342
+    ],
+    "modelBody": [
+      3.36152791424398,
+      2.805,
+      3.36152791424398
+    ],
+    "geometries": 21
+  },
+  "compared": {
+    "scale": 3,
+    "polarScale": 0.935,
+    "geometry": "ED2F65CD-4FEF-442C-BF0A-69DF5950E4C5",
+    "daySize": [
+      3600,
+      1598
+    ],
+    "repeat": [
+      1,
+      1.1264080100125156
+    ],
+    "offset": [
+      0,
+      -0.06320400500625778
+    ],
+    "overlay": true,
+    "sceneChild": true,
+    "visible": false,
+    "earthVisible": true,
+    "latitudeVisible": true,
+    "earthRadius": 0.13365734265734266,
+    "earthGeometry": "76519D58-E0E6-4FA5-827D-D42BACDD5160",
+    "latitudeGeometry": "0D7CFFD5-076D-4CD2-9343-F8C5DF74B463",
+    "normal": [
+      -0.6165423387912086,
+      -0.7071067811865476,
+      -0.34623047884013125
+    ],
+    "localPoint": [
+      0.3369044063822595,
+      -0.8450457419529208,
+      -1.1913678896164375
+    ],
+    "modelBody": [
+      3.3615279142439793,
+      2.805,
+      3.36152791424398
+    ],
+    "geometries": 25
+  }
+}

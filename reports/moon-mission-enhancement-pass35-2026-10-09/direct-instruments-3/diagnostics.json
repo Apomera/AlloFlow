@@ -1,0 +1,10 @@
+{
+  "checkpoints": [
+    "paused resize, ignored arrows and reload preserve all saved state",
+    "inclusive, just-outside, zero, tiny, separating and missed fixtures",
+    "real guided contact, receipt and terminal reload",
+    "unsafe real contact and retry preserve insertion",
+    "button pulse and keyboard radial pulse update instruments, then pause consistently"
+  ],
+  "errors": []
+}

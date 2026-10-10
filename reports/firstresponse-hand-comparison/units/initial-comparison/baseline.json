@@ -1,0 +1,20 @@
+{
+  "files": {
+    "stem_lab/stem_tool_firstresponse.js": "8715d3c0b340af782cdc2b6fa455a16f63f69739e973228277dc358bf2a103f1",
+    "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js": "8715d3c0b340af782cdc2b6fa455a16f63f69739e973228277dc358bf2a103f1",
+    "tests/firstresponse_hand_comparison.test.js": "bf9869c0f117c4a2ebaa2beff874743658ea6a033dcc0a45b922206c22dd95a9",
+    "tests/setup.js": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+    "vitest.config.js": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04",
+    "package.json": "e880a66350e09285d4a43457de9765b7a0ad107fa7aa8d2ef566583a4bfd1c77",
+    "package-lock.json": "8fde867720a10e402bf57ea0bcac4ba68121859a9b50191bfe88cb3663805e94",
+    "tests/helpers/firstresponse_hand_study_delta.cjs": "0c04e0064f1bfc9b7ec9029cc1d2454550373d7531878f0dc3d5ea4c0230860f",
+    "tests/helpers/firstresponse_hand_study_delta.json": "f946d1a844a2fcaf691476a0cba0358ebc053442b9a36b812a2c4ccdae4c46bb",
+    "tests/helpers/firstresponse_hand_comparison_delta.cjs": "0c4364ada7809ff9e7ae5b53a78438e3d450a2b039d048b6dfaf5386c9811d73",
+    "tests/helpers/firstresponse_hand_comparison_delta.json": "d105f8533a09a6f740e78c5bb51e3fda0ffd24bb3c73b39d14f4d3fe2a331577"
+  },
+  "startedAt": "2026-10-07T01:35:44.993Z",
+  "job": {
+    "file": "tests/firstresponse_hand_comparison.test.js",
+    "count": 21
+  }
+}

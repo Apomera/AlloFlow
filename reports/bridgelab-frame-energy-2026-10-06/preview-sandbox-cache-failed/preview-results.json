@@ -1,0 +1,255 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\playwright-video-off.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/Documents/Codex/2026-09-29/great-work-how-can-we-holistically/frame-energy-2026-10-06/validation/browser-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "26-bridgelab-gl.spec.ts",
+      "file": "26-bridgelab-gl.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Bridge Lab — real WebGL",
+          "file": "26-bridgelab-gl.spec.ts",
+          "line": 1119,
+          "column": 6,
+          "specs": [
+            {
+              "title": "frame energy: stored components, cumulative dissipation and paired scale at 1000px",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 938,
+                      "error": {
+                        "message": "Error: browserType.launch: Executable doesn't exist at C:\\Users\\cabba\\AppData\\Local\\Packages\\sandbox.{c87ab47f-ea41-44b0-a46d-03760255ce47}\\AC\\ms-playwright\\chromium_headless_shell-1223\\chrome-headless-shell-win64\\chrome-headless-shell.exe\n╔════════════════════════════════════════════════════════════╗\n║ Looks like Playwright was just installed or updated.       ║\n║ Please run the following command to download new browsers: ║\n║                                                            ║\n║     npx playwright install                                 ║\n║                                                            ║\n║ <3 Playwright Team                                         ║\n╚════════════════════════════════════════════════════════════╝",
+                        "stack": "Error: browserType.launch: Executable doesn't exist at C:\\Users\\cabba\\AppData\\Local\\Packages\\sandbox.{c87ab47f-ea41-44b0-a46d-03760255ce47}\\AC\\ms-playwright\\chromium_headless_shell-1223\\chrome-headless-shell-win64\\chrome-headless-shell.exe\n╔════════════════════════════════════════════════════════════╗\n║ Looks like Playwright was just installed or updated.       ║\n║ Please run the following command to download new browsers: ║\n║                                                            ║\n║     npx playwright install                                 ║\n║                                                            ║\n║ <3 Playwright Team                                         ║\n╚════════════════════════════════════════════════════════════╝"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: browserType.launch: Executable doesn't exist at C:\\Users\\cabba\\AppData\\Local\\Packages\\sandbox.{c87ab47f-ea41-44b0-a46d-03760255ce47}\\AC\\ms-playwright\\chromium_headless_shell-1223\\chrome-headless-shell-win64\\chrome-headless-shell.exe\n╔════════════════════════════════════════════════════════════╗\n║ Looks like Playwright was just installed or updated.       ║\n║ Please run the following command to download new browsers: ║\n║                                                            ║\n║     npx playwright install                                 ║\n║                                                            ║\n║ <3 Playwright Team                                         ║\n╚════════════════════════════════════════════════════════════╝"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-07T00:25:35.582Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\browser-artifacts\\26-bridgelab-gl-Bridge-Lab-0e961--and-paired-scale-at-1000px-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\browser-artifacts\\26-bridgelab-gl-Bridge-Lab-0e961--and-paired-scale-at-1000px-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\browser-artifacts\\26-bridgelab-gl-Bridge-Lab-0e961--and-paired-scale-at-1000px-chromium\\trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-d3708ad6a291077309c4",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 3552,
+              "column": 9
+            },
+            {
+              "title": "frame energy: stored components, cumulative dissipation and paired scale at 320px",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 45,
+                      "error": {
+                        "message": "Error: browserType.launch: Executable doesn't exist at C:\\Users\\cabba\\AppData\\Local\\Packages\\sandbox.{c87ab47f-ea41-44b0-a46d-03760255ce47}\\AC\\ms-playwright\\chromium_headless_shell-1223\\chrome-headless-shell-win64\\chrome-headless-shell.exe\n╔════════════════════════════════════════════════════════════╗\n║ Looks like Playwright was just installed or updated.       ║\n║ Please run the following command to download new browsers: ║\n║                                                            ║\n║     npx playwright install                                 ║\n║                                                            ║\n║ <3 Playwright Team                                         ║\n╚════════════════════════════════════════════════════════════╝",
+                        "stack": "Error: browserType.launch: Executable doesn't exist at C:\\Users\\cabba\\AppData\\Local\\Packages\\sandbox.{c87ab47f-ea41-44b0-a46d-03760255ce47}\\AC\\ms-playwright\\chromium_headless_shell-1223\\chrome-headless-shell-win64\\chrome-headless-shell.exe\n╔════════════════════════════════════════════════════════════╗\n║ Looks like Playwright was just installed or updated.       ║\n║ Please run the following command to download new browsers: ║\n║                                                            ║\n║     npx playwright install                                 ║\n║                                                            ║\n║ <3 Playwright Team                                         ║\n╚════════════════════════════════════════════════════════════╝"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: browserType.launch: Executable doesn't exist at C:\\Users\\cabba\\AppData\\Local\\Packages\\sandbox.{c87ab47f-ea41-44b0-a46d-03760255ce47}\\AC\\ms-playwright\\chromium_headless_shell-1223\\chrome-headless-shell-win64\\chrome-headless-shell.exe\n╔════════════════════════════════════════════════════════════╗\n║ Looks like Playwright was just installed or updated.       ║\n║ Please run the following command to download new browsers: ║\n║                                                            ║\n║     npx playwright install                                 ║\n║                                                            ║\n║ <3 Playwright Team                                         ║\n╚════════════════════════════════════════════════════════════╝"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-07T00:27:08.356Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\browser-artifacts\\26-bridgelab-gl-Bridge-Lab-49124-n-and-paired-scale-at-320px-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\browser-artifacts\\26-bridgelab-gl-Bridge-Lab-49124-n-and-paired-scale-at-320px-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\browser-artifacts\\26-bridgelab-gl-Bridge-Lab-49124-n-and-paired-scale-at-320px-chromium\\trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-297e9926f91881fd5713",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 3552,
+              "column": 9
+            },
+            {
+              "title": "frame energy: graphics loss exposes current amounts and deliberate recovery resumes saved A",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 86,
+                      "error": {
+                        "message": "Error: browserType.launch: Executable doesn't exist at C:\\Users\\cabba\\AppData\\Local\\Packages\\sandbox.{c87ab47f-ea41-44b0-a46d-03760255ce47}\\AC\\ms-playwright\\chromium_headless_shell-1223\\chrome-headless-shell-win64\\chrome-headless-shell.exe\n╔════════════════════════════════════════════════════════════╗\n║ Looks like Playwright was just installed or updated.       ║\n║ Please run the following command to download new browsers: ║\n║                                                            ║\n║     npx playwright install                                 ║\n║                                                            ║\n║ <3 Playwright Team                                         ║\n╚════════════════════════════════════════════════════════════╝",
+                        "stack": "Error: browserType.launch: Executable doesn't exist at C:\\Users\\cabba\\AppData\\Local\\Packages\\sandbox.{c87ab47f-ea41-44b0-a46d-03760255ce47}\\AC\\ms-playwright\\chromium_headless_shell-1223\\chrome-headless-shell-win64\\chrome-headless-shell.exe\n╔════════════════════════════════════════════════════════════╗\n║ Looks like Playwright was just installed or updated.       ║\n║ Please run the following command to download new browsers: ║\n║                                                            ║\n║     npx playwright install                                 ║\n║                                                            ║\n║ <3 Playwright Team                                         ║\n╚════════════════════════════════════════════════════════════╝"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: browserType.launch: Executable doesn't exist at C:\\Users\\cabba\\AppData\\Local\\Packages\\sandbox.{c87ab47f-ea41-44b0-a46d-03760255ce47}\\AC\\ms-playwright\\chromium_headless_shell-1223\\chrome-headless-shell-win64\\chrome-headless-shell.exe\n╔════════════════════════════════════════════════════════════╗\n║ Looks like Playwright was just installed or updated.       ║\n║ Please run the following command to download new browsers: ║\n║                                                            ║\n║     npx playwright install                                 ║\n║                                                            ║\n║ <3 Playwright Team                                         ║\n╚════════════════════════════════════════════════════════════╝"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-07T00:30:11.285Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\browser-artifacts\\26-bridgelab-gl-Bridge-Lab-a0066-te-recovery-resumes-saved-A-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\browser-artifacts\\26-bridgelab-gl-Bridge-Lab-a0066-te-recovery-resumes-saved-A-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\browser-artifacts\\26-bridgelab-gl-Bridge-Lab-a0066-te-recovery-resumes-saved-A-chromium\\trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-20911acda3ec6044f1a4",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 3655,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-07T00:22:47.695Z",
+    "duration": 453671.324,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  }
+}

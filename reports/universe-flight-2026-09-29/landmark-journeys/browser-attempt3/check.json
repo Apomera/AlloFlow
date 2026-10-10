@@ -1,0 +1,300 @@
+{
+  "completed": false,
+  "pins": {
+    "stem_lab/universe_flight_scene.js": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7",
+    "stem_lab/stem_tool_universe.js": "63d163e9c11f6b00853e0910de5518ba02c6ff792c7cf2638334c8683c080a8e"
+  },
+  "harnessSha256": "92a87c39da7079db05d7e8b1c25c776ef5136c95052a5c52f7305afba28feeb9",
+  "workflows": [
+    {
+      "name": "opening-preserves-scene-and-focus",
+      "ids": [
+        "pale-star",
+        "blue-nebula",
+        "violet-nebula",
+        "blue-star"
+      ]
+    },
+    {
+      "name": "exact-desktop-marker-centers",
+      "markers": [
+        {
+          "id": "pale-star",
+          "inView": true,
+          "actual": [
+            479.9375,
+            197.046875
+          ],
+          "expected": [
+            479.947882344982,
+            197.26935749545072
+          ],
+          "size": [
+            44,
+            44
+          ],
+          "covered": false,
+          "overlap": false
+        },
+        {
+          "id": "blue-nebula",
+          "inView": true,
+          "actual": [
+            567.21875,
+            255.328125
+          ],
+          "expected": [
+            567.2281713355716,
+            255.60626029679366
+          ],
+          "size": [
+            44,
+            44
+          ],
+          "covered": false,
+          "overlap": false
+        },
+        {
+          "id": "violet-nebula",
+          "inView": true,
+          "actual": [
+            372.640625,
+            185.109375
+          ],
+          "expected": [
+            372.64167046986944,
+            185.3208352349347
+          ],
+          "size": [
+            44,
+            44
+          ],
+          "covered": false,
+          "overlap": false
+        }
+      ]
+    },
+    {
+      "name": "escape-from-numbered-marker"
+    },
+    {
+      "name": "marker-focus-recovers-to-stable-row-on-resize"
+    },
+    {
+      "name": "coincident-center-has-no-invented-bearing"
+    },
+    {
+      "name": "preview-assets-match-their-actual-landmarks"
+    },
+    {
+      "name": "preview-failure-keeps-placeholder-and-actions-usable"
+    },
+    {
+      "name": "in-range-destination-prevents-redundant-flight"
+    },
+    {
+      "name": "direct-flight-pause-and-exact-origin-return"
+    },
+    {
+      "name": "guided-flight-reaches-correct-range-and-returns-exactly",
+      "arrivalRange": 0.999999999999999,
+      "expectedRange": 1
+    },
+    {
+      "name": "marker-inspection-and-exact-back"
+    },
+    {
+      "name": "panned-markers-remain-accurate",
+      "markers": []
+    },
+    {
+      "name": "stable-list-through-pan"
+    },
+    {
+      "name": "offscreen-row-inspection-and-exact-back"
+    },
+    {
+      "name": "escape-closes-with-focus-recovery"
+    },
+    {
+      "name": "browser-keeps-free-travel-running-and-row-identities"
+    },
+    {
+      "name": "phone-markers-avoid-controls",
+      "markers": []
+    },
+    {
+      "name": "fullscreen-markers-avoid-controls",
+      "markers": []
+    },
+    {
+      "name": "landscape-markers-avoid-controls",
+      "markers": []
+    },
+    {
+      "name": "phone-fullscreen-high-contrast-and-landscape"
+    }
+  ],
+  "accessibility": [
+    {
+      "name": "desktop-landmark-browser",
+      "violations": []
+    },
+    {
+      "name": "phone-landmark-browser",
+      "violations": []
+    },
+    {
+      "name": "fullscreen-landmark-browser",
+      "violations": []
+    },
+    {
+      "name": "forced-colors-landmark-browser",
+      "violations": []
+    },
+    {
+      "name": "landscape-landmark-browser",
+      "violations": []
+    }
+  ],
+  "captures": [
+    {
+      "name": "desktop-landmarks",
+      "file": "desktop-landmarks.png",
+      "sha256": "40a8f2008c825b9df713d8879eb087ea7c2af806a2f47a78eaa38dfb3fad427d"
+    },
+    {
+      "name": "destination-preview-cards",
+      "file": "destination-preview-cards.png",
+      "sha256": "abd5dae3659c958b83655bb01502710b9861de66aec1a93f1bb96adee08644c5"
+    },
+    {
+      "name": "guided-flight-paused",
+      "file": "guided-flight-paused.png",
+      "sha256": "aa86bdd5cea01d29a37d4c484539b3b3afdcdd655c4994563846c6d9fe90e3f1"
+    },
+    {
+      "name": "guided-flight-arrival",
+      "file": "guided-flight-arrival.png",
+      "sha256": "35f6a3dc1274b53a32037567faed7505f98ce447869fb63f6c23d05bc5116cc4"
+    },
+    {
+      "name": "phone-landmarks",
+      "file": "phone-landmarks.png",
+      "sha256": "607750e2f7dc710742464bfd0c10d02338ed58b92257f2d0f7f7c1066a1c6d1e"
+    },
+    {
+      "name": "fullscreen-landmarks",
+      "file": "fullscreen-landmarks.png",
+      "sha256": "8bdcb87e85e861d729d323d08133f261692acc34030923511af96669ebd1f0d9"
+    },
+    {
+      "name": "forced-colors-landmarks",
+      "file": "forced-colors-landmarks.png",
+      "sha256": "02ef0e4be3560c791f90e59c3bb324ab8534e79130bc50048800ff04f94e0d12"
+    },
+    {
+      "name": "landscape-landmarks",
+      "file": "landscape-landmarks.png",
+      "sha256": "88a9f03ccd6bf92fd847b5254ad2f44e0070e7a31665ad32d93ee3e782ad121a"
+    }
+  ],
+  "bounds": [
+    {
+      "name": "phone Close",
+      "left": 221,
+      "right": 265,
+      "top": 229.21875,
+      "bottom": 273.21875,
+      "width": 44,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "phone last landmark",
+      "left": 66,
+      "right": 157,
+      "top": 318,
+      "bottom": 362,
+      "width": 91,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "phone last Fly here",
+      "left": 163,
+      "right": 254,
+      "top": 318,
+      "bottom": 362,
+      "width": 91,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "landscape Close",
+      "left": 439,
+      "right": 483,
+      "top": 24,
+      "bottom": 68,
+      "width": 44,
+      "height": 44,
+      "viewport": [
+        740,
+        320
+      ],
+      "covered": false
+    },
+    {
+      "name": "landscape last landmark",
+      "left": 268,
+      "right": 367,
+      "top": 240.1875,
+      "bottom": 284.1875,
+      "width": 99,
+      "height": 44,
+      "viewport": [
+        740,
+        320
+      ],
+      "covered": false
+    },
+    {
+      "name": "landscape last Fly here",
+      "left": 373,
+      "right": 472,
+      "top": 240.1875,
+      "bottom": 284.1875,
+      "width": 99,
+      "height": 44,
+      "viewport": [
+        740,
+        320
+      ],
+      "covered": false
+    }
+  ],
+  "served": [
+    {
+      "file": "stem_lab/stem_tool_universe.js",
+      "sha256": "63d163e9c11f6b00853e0910de5518ba02c6ff792c7cf2638334c8683c080a8e"
+    },
+    {
+      "file": "stem_lab/universe_flight_scene.js",
+      "sha256": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7"
+    }
+  ],
+  "errors": [],
+  "failure": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n... Skipped lines\n\n  {\n    settings: {\n      beta: 0.9,\n      compareRest: false,\n      dust: true,\n...\n      universeYears: 0,\n+     yaw: 0.02707671430845693\n-     yaw: 0.02707671430845675\n    },\n    targetId: 'pale-star',\n    version: 1\n  }\n\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-landmark-journeys71\\browser-check.cjs:66:563"
+}

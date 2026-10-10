@@ -1,0 +1,151 @@
+{
+  "date": "2026-10-05",
+  "feature": "An interactive microscope for the recorded neutral-marker genetic map",
+  "sourceSha256": "0995275085cae710052df73e6c128907afae3a2d850990e1eedffbdf4c6f06ee",
+  "sourceBytes": 2147273,
+  "sourceMirrorsIdentical": true,
+  "sourceLineEndings": "LF",
+  "noCommitByUserRequest": true,
+  "deployed": false,
+  "preview": {
+    "url": "http://127.0.0.1:56559/?preview=archipelago",
+    "sourceSha256": "0995275085cae710052df73e6c128907afae3a2d850990e1eedffbdf4c6f06ee",
+    "sourceBytes": 2147273,
+    "sourceMirrorsIdentical": true,
+    "sourceLineEndings": "LF",
+    "servedSourceMatches": true,
+    "assets": [
+      {
+        "path": "/",
+        "status": 200,
+        "bytes": 1129
+      },
+      {
+        "path": "/evolab.js",
+        "status": 200,
+        "bytes": 2147273
+      },
+      {
+        "path": "/app.css",
+        "status": 200,
+        "bytes": 624950
+      },
+      {
+        "path": "/react.js",
+        "status": 200,
+        "bytes": 10751
+      },
+      {
+        "path": "/react-dom.js",
+        "status": 200,
+        "bytes": 131835
+      },
+      {
+        "path": "/three.js",
+        "status": 200,
+        "bytes": 603445
+      }
+    ]
+  },
+  "changes": [
+    "Explore marker copies navigation opens a lazy two-copy microscope inside the existing Read the genetic map card.",
+    "Nine ordered island-pair controls and native source/copy selectors show exact independent-with-replacement probabilities, ordered outcomes, copy mosaics, selected organism IDs and marker-copy slots.",
+    "Deliberately find matching or differing examples. Impossible examples report that none exists, and do not change the inspected copies. These operations consume no random draws.",
+    "Recorded copies connect to the existing organism inspector. Teaching-case copies cannot open the expedition inspector.",
+    "Static separated and mixed teaching maps preserve the exact ID+genotype pools and total 48 A plus 96 a copies per species across 72 organisms. The same pooled H=4/9 coexists with within H=0 or 4/9.",
+    "The three-island census distinguishes independent marker-copy H from actual observed Aa resident fractions, and explains the pooled-minus-within frequency-structure gap in percentage points.",
+    "View-specific explanations save to a separate Learning Journal entry. Complete source-checkpoint and map-recipe exports reconstruct evidence rather than trusting saved results.",
+    "Changing the captured generation or species returns the microscope to the corresponding recorded map and clears the view explanation. Changing only queued settings retains the view and recorded evidence."
+  ],
+  "validation": {
+    "distinctModelAndRenderChecks": 102,
+    "modelAndComponent": {
+      "passed": 100,
+      "files": 11,
+      "log": "marker-map-units-final.log",
+      "newTests": 11,
+      "coverage": [
+        "Recorded censuses for both species and generations, independently counted A/a and Aa residents.",
+        "Every ordered pair matches exhaustive copy-pair enumeration, with replacement and ordered outcome symmetry.",
+        "Unequal census weights, one/all-empty cohorts, invalid contexts, sparse/malformed arrays and copied return values.",
+        "Pooled probability equals weighted ordered-pair probabilities; pooled-minus-within matches twice the weighted frequency variance.",
+        "Both teaching cases conserve exact IDs/genotypes/copy counts, differ only in geography, and return fresh fixture records.",
+        "Recorded world, RNG and next random future remain unchanged; existing route, chance, partner, research, history and gene-flow model checks."
+      ]
+    },
+    "renderGoldens": {
+      "passed": 2,
+      "log": "marker-map-goldens-final.log",
+      "scope": "Only the two EvoLab digest entries were updated for the new scoped CSS. Default primer structure remains 49 buttons, six inputs and one SVG.",
+      "digest": {
+        "buttons": 49,
+        "inputs": 6,
+        "lengthBucket": 672,
+        "sha": "1f990b5bd322d34f",
+        "svgs": 1
+      }
+    },
+    "browser": {
+      "distinctPassedScenarios": 13,
+      "log": "marker-map-browser-final.log",
+      "newJourneys": 2,
+      "coverage": [
+        "Every visible pair probability, ordered outcome probability, census H and observed Aa fraction independently checked from marker arrays.",
+        "Native copy identity, slot and letter, same physical copy selected twice, deliberate matching/differing examples and impossible-example handling.",
+        "Teaching cases conserve total copies, retain pooled H, change within H and leave the recorded source and queued future intact.",
+        "Full exports reconstruct the captured world and selected map; journal findings stay separate from expedition evidence.",
+        "Recorded-generation/species resets, archived copies, stable evidence under queued settings and exact next-generation continuity.",
+        "Desktop drawn WebGL scene; phone reduced-motion/no-WebGL fallback, native keyboard controls, 44px targets, zero axe WCAG2 A/AA and2.1 AA violations and no horizontal page overflow.",
+        "Eleven existing advanced expedition, repeated research, sea-route, crossing-chance and partner microscope journeys passed."
+      ]
+    },
+    "visualReview": [
+      "Desktop and phone microscope screenshots inspected for readable island-pair matrix, copy mosaics, source selectors, ordered outcomes, diversity comparison, observed Aa cards and journal controls."
+    ],
+    "translationKeysPrepared": 1717,
+    "sharedTranslationCatalogApplied": false
+  },
+  "scientificBoundaries": [
+    "These are census-copy probabilities at a single neutral marker, not inferred genome-wide diversity, speciation or estimated FST.",
+    "D(i,j)=pi(1-pj)+(1-pi)pj assumes uniform, independent draws with replacement from selected copy pools. The same physical copy can be selected twice in a diagonal pair.",
+    "Observed Aa resident count/N uses actual genotypes and can differ from H=2p(1-p). A difference alone does not diagnose inbreeding, selection or another causal mechanism.",
+    "Within H chooses one island by census weight wi=Ni/sumN, then two copies from that island. It is not the conditional same-island portion of globally pooled draws, which would use squared weights.",
+    "Pooled H weights each ordered island pair by wi*wj. The gap is algebraically twice the census-weighted allele-frequency variance, and its displayed difference is in percentage points.",
+    "The artificial teaching arrangements are static comparisons of identical organism genotypes and IDs, not successive generations or simulated evolutionary events.",
+    "Deliberately selected or searched examples are not random trials. No breeding, migration, mutation or expedition RNG consumption occurs during inspection.",
+    "Empty-source pair probabilities and observed fractions are undefined rather than zero. Empty islands contribute zero weight to nonempty aggregate censuses."
+  ],
+  "scienceAudit": "reports/evolab-living-island/marker-map-science-audit.md",
+  "scienceReferences": [
+    {
+      "title": "Measuring genetic diversity across populations, PLOS Computational Biology (2024)",
+      "url": "https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1012651"
+    },
+    {
+      "title": "Detecting selection-induced departures from Hardy-Weinberg proportions, Genetics Selection Evolution (2009)",
+      "url": "https://link.springer.com/article/10.1186/1297-9686-41-15"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "tests/evolab_marker_map.test.js",
+      "bytes": 13475,
+      "sha256": "1d12b33d08e1d32bbaea5f6a786ee7d6975ced6abf664c44277a1004fca46921"
+    },
+    {
+      "path": "tests/e2e/evolab-marker-map.spec.ts",
+      "bytes": 23764,
+      "sha256": "7806dc4b9642c2c24b1f00a1b794e3e61f48a17b76caa5293ec80706786566f5"
+    },
+    {
+      "path": "reports/evolab-living-island/marker-map-desktop.png",
+      "bytes": 168159,
+      "sha256": "38d08664fb06d352e85bf40a3dc97c71662aaae20524e3a96aa43f7b2fff1693"
+    },
+    {
+      "path": "reports/evolab-living-island/marker-map-phone.png",
+      "bytes": 174062,
+      "sha256": "0a479b4b95a0eb981fc08f63912fe026eb70cd5a32537c85de413d073cd19bf0"
+    }
+  ]
+}

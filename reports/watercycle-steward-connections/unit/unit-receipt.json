@@ -1,0 +1,135 @@
+{
+  "sourceSha256": "ad07af85cc74677dacb388dd27a29b5d874fc498773f6688a62953bccaa42a0a",
+  "files": [
+    "tests/watercycle_steward_connections.test.js",
+    "tests/watercycle_steward_decisions.test.js",
+    "tests/watercycle_steward_history.test.js"
+  ],
+  "startedAt": "2026-10-07T16:23:19.871Z",
+  "completedAt": "2026-10-07T16:23:42.068Z",
+  "exitCode": 0,
+  "signal": null,
+  "errors": [],
+  "environment": "node",
+  "pool": "forks",
+  "configLoader": "native",
+  "nodeVersion": "v24.11.1",
+  "configFile": "steward-vitest.config.mjs",
+  "configSha256": "f6ac1fdb872d7eb694f4d4246342c2a9d1b4fff00fb4cec448d7431b59925eb5",
+  "finalConfigSha256": "f6ac1fdb872d7eb694f4d4246342c2a9d1b4fff00fb4cec448d7431b59925eb5",
+  "runnerFile": "run-tests-node.cjs",
+  "runnerSha256": "ec75d3c8f182ccf960227870ec263e9b7b09cb7728ba0e78f660806177d1be55",
+  "finalRunnerSha256": "ec75d3c8f182ccf960227870ec263e9b7b09cb7728ba0e78f660806177d1be55",
+  "setupFile": "ssr-node-setup.mjs",
+  "setupSha256": "bd64d23abf78b7d3b1c5817e4162136f6edc2a4b86a8f17e04fc95f2f3239022",
+  "finalSetupSha256": "bd64d23abf78b7d3b1c5817e4162136f6edc2a4b86a8f17e04fc95f2f3239022",
+  "runtimeBefore": [
+    {
+      "file": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "ad07af85cc74677dacb388dd27a29b5d874fc498773f6688a62953bccaa42a0a"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "ad07af85cc74677dacb388dd27a29b5d874fc498773f6688a62953bccaa42a0a"
+    }
+  ],
+  "runtimeAfter": [
+    {
+      "file": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "ad07af85cc74677dacb388dd27a29b5d874fc498773f6688a62953bccaa42a0a"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "ad07af85cc74677dacb388dd27a29b5d874fc498773f6688a62953bccaa42a0a"
+    }
+  ],
+  "testsBefore": [
+    {
+      "file": "tests/watercycle_steward_connections.test.js",
+      "sha256": "7d41a496b51f433ca233a5a9200710420ad71ea8864d3d993fcd5ab06c03d2db"
+    },
+    {
+      "file": "tests/watercycle_steward_decisions.test.js",
+      "sha256": "0c70b8e0d89c4ef652754635e26970ece1719d791a489cdf43c10a0232fa17e6"
+    },
+    {
+      "file": "tests/watercycle_steward_history.test.js",
+      "sha256": "11f87287d3a8c47411d64676829539a66dfbea7b83eed0fa05b98c09c3388d0b"
+    }
+  ],
+  "testsAfter": [
+    {
+      "file": "tests/watercycle_steward_connections.test.js",
+      "sha256": "7d41a496b51f433ca233a5a9200710420ad71ea8864d3d993fcd5ab06c03d2db"
+    },
+    {
+      "file": "tests/watercycle_steward_decisions.test.js",
+      "sha256": "0c70b8e0d89c4ef652754635e26970ece1719d791a489cdf43c10a0232fa17e6"
+    },
+    {
+      "file": "tests/watercycle_steward_history.test.js",
+      "sha256": "11f87287d3a8c47411d64676829539a66dfbea7b83eed0fa05b98c09c3388d0b"
+    }
+  ],
+  "helpersBefore": [
+    {
+      "file": "dev-tools/campaign-adventure-pilot/build.cjs",
+      "sha256": "3f5b2123f4f11ff43ebba4b81bdb354ced87152ee947de6f99c51ed029326e9f"
+    },
+    {
+      "file": "reports/watercycle-cloud-evidence/tested-runtime.js",
+      "sha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c"
+    }
+  ],
+  "helpersAfter": [
+    {
+      "file": "dev-tools/campaign-adventure-pilot/build.cjs",
+      "sha256": "3f5b2123f4f11ff43ebba4b81bdb354ced87152ee947de6f99c51ed029326e9f"
+    },
+    {
+      "file": "reports/watercycle-cloud-evidence/tested-runtime.js",
+      "sha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c"
+    }
+  ],
+  "supportBefore": [],
+  "supportAfter": [],
+  "executionInputsBefore": [
+    {
+      "file": "run-tests-node.cjs",
+      "sha256": "ec75d3c8f182ccf960227870ec263e9b7b09cb7728ba0e78f660806177d1be55"
+    },
+    {
+      "file": "steward-vitest.config.mjs",
+      "sha256": "f6ac1fdb872d7eb694f4d4246342c2a9d1b4fff00fb4cec448d7431b59925eb5"
+    },
+    {
+      "file": "ssr-node-setup.mjs",
+      "sha256": "bd64d23abf78b7d3b1c5817e4162136f6edc2a4b86a8f17e04fc95f2f3239022"
+    }
+  ],
+  "executionInputsAfter": [
+    {
+      "file": "run-tests-node.cjs",
+      "sha256": "ec75d3c8f182ccf960227870ec263e9b7b09cb7728ba0e78f660806177d1be55"
+    },
+    {
+      "file": "steward-vitest.config.mjs",
+      "sha256": "f6ac1fdb872d7eb694f4d4246342c2a9d1b4fff00fb4cec448d7431b59925eb5"
+    },
+    {
+      "file": "ssr-node-setup.mjs",
+      "sha256": "bd64d23abf78b7d3b1c5817e4162136f6edc2a4b86a8f17e04fc95f2f3239022"
+    }
+  ],
+  "resultFile": "unit-final3-results.json",
+  "resultSha256": "392f024140725ee7af5a972850059aca5e320066b40fd40ecb6dc302d0b648d1",
+  "successful": true,
+  "total": 84,
+  "passed": 84,
+  "failed": 0,
+  "skipped": 0,
+  "assertionCount": 84,
+  "suiteCount": 3,
+  "logFile": "unit-final3-run.log",
+  "logSha256": "21583761e80610096a7d1e05a14bcb2eb76a270cc5da48500af061fd146671ee"
+}

@@ -1,0 +1,48 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/solar_system_signal_inspection.test.js
+[deferred-jsdom] Initializing the official DOM environment.
+
+stdout | tests/solar_system_signal_inspection.test.js
+[deferred-jsdom] DOM environment ready.
+
+stdout | tests/solar_system_signal_inspection.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/solar_system_signal_inspection.test.js
+[deferred-jsdom] Existing repository setup loaded.
+
+ ✓ tests/solar_system_signal_inspection.test.js > Solar System signal inspection bench > keeps the named investigation, eight native destinations and established readout hooks 15630ms
+ ✓ tests/solar_system_signal_inspection.test.js > Solar System signal inspection bench > uses equal outbound and immediate-return time segments with independent raw light times 57843ms
+ ✓ tests/solar_system_signal_inspection.test.js > Solar System signal inspection bench > contains every modeled destination and Earth dot at near, right-angle and far alignments 67013ms
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker threads emitted error.
+ ❯ EventEmitter.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3445:22
+ ❯ EventEmitter.emit node:events:509:28
+ ❯ Worker.emitWorkerError node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:2999:22
+ ❯ Worker.emit node:events:509:28
+ ❯ Worker.[kOnExit] node:internal/worker:398:12
+ ❯ Worker.<computed>.onexit node:internal/worker:295:20
+
+Caused by: Error: Worker terminated due to reaching memory limit: JS heap out of memory
+ ❯ Worker.[kOnExit] node:internal/worker:398:26
+ ❯ Worker.<computed>.onexit node:internal/worker:295:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'ERR_WORKER_OUT_OF_MEMORY' }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files   (1)
+      Tests  4 passed (20)
+     Errors  1 error
+   Start at  20:23:54
+   Duration  150.75s (transform 144ms, setup 1.97s, import 225ms, tests 0ms, environment 0ms)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/solar-activity-context-enhancement-2026-10-09/unit-inspection-results.json

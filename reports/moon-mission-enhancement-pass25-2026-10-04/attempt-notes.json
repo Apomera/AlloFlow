@@ -1,0 +1,256 @@
+{
+  "pass": 25,
+  "auditDate": "2026-10-07",
+  "clientTimezone": "America/New_York",
+  "startedDate": "2026-10-04",
+  "status": "Final attempt snapshot: focused unit checks and six native browser workflows passed; the full unit recovery reached its 900-second process limit without a result JSON. Broader unit verification remains incomplete.",
+  "evidenceBasis": {
+    "reportInventory": "Read directly by this audit agent with rg --files.",
+    "terrainProbe": "Created and run directly by this audit agent against the current source.",
+    "unitBrowserAndPreservationResults": "Focused units and the broader unit process outcomes were reported by root from direct tool output. This resumed audit directly read preservation.json, visual-review.json, terrain-probe.json, all three surface evidence files, both scoped axe files, and the shadow and dust regression result JSON files through a bounded Python read helper. The audit also directly read the full recovery log and confirmed its result JSON was absent; root confirmed the process later reached its limit with exit code 1. The full unit result remains explicitly incomplete.",
+    "scope": "Read-only evidence audit plus this report file. No tests or browser workflows were run during this audit."
+  },
+  "focusedUnits": [
+    {
+      "report": "unit-focused.json",
+      "passed": 28,
+      "total": 29,
+      "status": "failed",
+      "issue": "A new unit assertion used an endpoint expectation that did not account for the geometry's Float32 storage.",
+      "resolution": "Root corrected the test's endpoint expectation and retained the original result as attempt evidence."
+    },
+    {
+      "report": "unit-focused-corrected.json",
+      "passed": 29,
+      "total": 29,
+      "status": "passed",
+      "commandExitCode": 0,
+      "basis": "Root-provided direct tool result."
+    }
+  ],
+  "broaderUnits": [
+    {
+      "commandReport": "unit-final-command.json",
+      "log": "unit-final.log",
+      "status": "incomplete",
+      "observed": "The initial broad command reached its 600-second process limit. Its log was empty.",
+      "limit": "No passing total is inferred from this attempt."
+    },
+    {
+      "report": "unit-final-1.json",
+      "status": "failed and incomplete",
+      "passed": 51,
+      "totalReportedTests": 52,
+      "failedReportedTests": 1,
+      "observedFailures": [
+        {
+          "area": "Dust stress test",
+          "issue": "Exceeded the configured 30-second test timeout.",
+          "reportedDurationSeconds": 50.9
+        },
+        {
+          "area": "Worker startup",
+          "count": 3,
+          "issue": "Three worker startup failures were reported."
+        }
+      ],
+      "limit": "This result covers only the tests reported by this attempt and does not establish success for the full unit set.",
+      "recoveryAtAudit": "At this earlier snapshot, root planned isolated recovery with additional wall-clock room while preserving the assertions. The subsequent recovery attempt is recorded separately below."
+    },
+    {
+      "log": "unit-recovery.log",
+      "missingReport": "unit-recovery.json",
+      "status": "incomplete after process timeout",
+      "processTimeoutSeconds": 900,
+      "commandExitCode": 1,
+      "pool": "forks",
+      "workers": 1,
+      "fileParallelism": false,
+      "testTimeoutSeconds": 60,
+      "hookTimeoutSeconds": 60,
+      "logicalAssertionsChanged": false,
+      "resultJsonExists": false,
+      "observedLogBytes": 312,
+      "zeroTestFileLines": [
+        "tests/moonmission_landing_restore.test.js (0 test)",
+        "tests/moonmission_descent_prediction_visuals.test.js (0 test)",
+        "tests/moonmission_descent_prediction_landmarks.test.js (0 test)",
+        "tests/moonmission_flight_recorder.test.js (0 test)"
+      ],
+      "observed": "The log contains the Vitest RUN banner and those four zero-test file lines. It contains no import-error stack trace, worker-start error, timeout message or assertion failure details.",
+      "processOutcomeBasis": "Root-provided completed runner outcome: the 900-second process limit was reached and the command exited with code 1.",
+      "logBasis": "Read directly by the audit helper; root confirmed the final log remained 312 bytes and no result JSON was produced.",
+      "limit": "The zero-test lines do not identify a cause. No passing total or test-assertion failure is inferred from this attempt, and the full unit set is not represented as verified."
+    }
+  ],
+  "nativeBrowserWorkflows": [
+    {
+      "workflow": "Lighter graphics: banked approaches and contact",
+      "report": "browser-surface-1-attempt1/result.json",
+      "evidence": "browser-surface-1-attempt1/lighter-surface.json",
+      "status": "passed",
+      "basis": "Root-provided direct tool result."
+    },
+    {
+      "workflow": "Detailed graphics: approach, contact, camera and resize",
+      "report": "browser-surface-2-final/result.json",
+      "evidence": "browser-surface-2-final/detailed-surface.json",
+      "status": "passed",
+      "basis": "Root-provided direct tool result."
+    },
+    {
+      "workflow": "Phone contact and graphics-loss fallback",
+      "report": "browser-surface-3-final/result.json",
+      "status": "passed",
+      "basis": "Root-provided direct tool result received during this audit."
+    }
+  ],
+  "portableNumericalProbe": {
+    "script": "terrain-probe.cjs",
+    "report": "terrain-probe.json",
+    "status": "passed",
+    "sourceSha256": "8a17b3ded263d9c526aa7edd97af69c5829bbd5927d0e21bd9b66e6377f0617a",
+    "sourceBytes": 1399533,
+    "samplerRayComparisons": 44400,
+    "traceInteriorRayChecks": 2172,
+    "traceVertexRayChecks": 732,
+    "maximumSamplerErrorSceneUnits": 3.637978807091713e-12,
+    "maximumTraceInteriorErrorSceneUnits": 3.192279773855944e-12,
+    "limits": "The probe checks geometry consistency near approach using actual indexed faces. It does not establish landing collision physics, render-buffer rounding, or behavior outside the finite drawn field."
+  },
+  "preservation": {
+    "report": "preservation.json",
+    "indexChangeReport": "index-changes.json",
+    "sourcePairEqual": true,
+    "sourceSha256": "8a17b3ded263d9c526aa7edd97af69c5829bbd5927d0e21bd9b66e6377f0617a",
+    "guardedReverseOperations": 18,
+    "priorTestFilesUnchanged": 25,
+    "scopedIndexEqualBeforeAfter": false,
+    "externalCommitObserved": "6a0c48749",
+    "indexExplanation": "Root observed an external commit during this pass. The new unit file was already tracked after that commit, while the new browser file remained untracked at the audit snapshot.",
+    "agentStagingOrCommitCommands": false,
+    "currentlyStagedOwnedPaths": [],
+    "basis": "Direct audit read of preservation.json; the observation that the shared commit happened during this pass was provided by root.",
+    "limit": "Source and old-test preservation are verified separately from the changed index snapshot. The changed index is not represented as unchanged."
+  },
+  "environmentObservations": [
+    {
+      "area": "Windows sandbox",
+      "observed": "The Node REPL failed to initialize and reported: windows sandbox failed: helper_unknown_error: apply deny-read ACLs.",
+      "response": "The light Node probe and read commands used the working cmd shell after escalation approval."
+    },
+    {
+      "area": "Review and shell operations",
+      "observed": "Root reported review timeouts and shell stalls. This audit also observed a PowerShell JSON read producing no output; the audit stopped that read.",
+      "limit": "These observations do not establish a cause for the test failures."
+    },
+    {
+      "area": "Disk space",
+      "observedAtClientTime": "2026-10-07 00:06",
+      "observed": "Root observed less than 400 MB of free disk space.",
+      "basis": "Root-provided direct tool evidence.",
+      "limit": "No causal relationship between available disk space, shell stalls, and unit timeouts has been confirmed."
+    },
+    {
+      "area": "Audit JSON read command",
+      "observed": "An unquoted JavaScript query in cmd did not survive shell parsing of arrow-function tokens and exited with a syntax error.",
+      "response": "No tests were run by that command. The audit uses root-provided result evidence instead of claiming the failed query inspected the JSON."
+    }
+  ],
+  "installedVitestStartupTimeout": {
+    "basis": "Read directly from the installed local Vitest code without running tests.",
+    "definition": "node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3382",
+    "use": "node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3447",
+    "constant": "WORKER_START_TIMEOUT",
+    "milliseconds": 90000,
+    "configurationFinding": "The worker-start timer uses a fixed 9e4 constant in this installation. Raising testTimeout or hookTimeout does not change that timer. The optional search found no VITEST_POOL_START_TIMEOUT setting.",
+    "limit": "No runner code was changed and no recovery test was run by this audit agent."
+  },
+  "auditArtifactCleanup": {
+    "absolutePath": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/({title",
+    "absoluteParent": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated",
+    "parentCheck": "The literal absolute artifact path has the repository root as its direct parent and contains no traversal components.",
+    "kind": "Regular file",
+    "sizeBytes": 0,
+    "sha256BeforeRemoval": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "birthAndModifiedUtc": "2026-10-07T04:10:27.137Z",
+    "birthAndModifiedClientTime": "2026-10-07 00:10:27.137 America/New_York",
+    "provenance": "The failed audit cmd query included an unquoted arrow expression ending in a ({title token. cmd interpreted the arrow as output redirection. The resulting file was empty, matching a syntax error written to stderr, and its timestamp matched the audit command window. The audit confirmed size, empty content, regular-file metadata and the matching token before cleanup.",
+    "authorization": "Root explicitly authorized removal of this exact confirmed audit artifact after those checks.",
+    "removalMethod": "apply_patch Delete File with the literal absolute path",
+    "status": "Removed successfully; resumed audit directly confirmed the literal artifact path is absent",
+    "otherSuspectedNames": {
+      "({name": "Did not exist",
+      "(r": "Did not exist",
+      "t.status": "Did not exist",
+      "a.status": "Did not exist"
+    },
+    "scope": "Only this confirmed audit artifact was removed. No unrelated workspace cleanup was performed."
+  },
+  "regressionBrowserAttempts": [
+    {
+      "workflow": "Earlier lighter shadow and graphics-loss behavior",
+      "report": "browser-shadow-3-final/result.json",
+      "status": "failed",
+      "stats": {"expected": 0, "unexpected": 1, "flaky": 0, "skipped": 0},
+      "issue": "Root reported failure during local harness navigation before scene assertions.",
+      "basis": "Stats read directly by the audit; failure phase provided by root.",
+      "resolution": "Retained the failed result and ran a fresh-process recovery."
+    },
+    {
+      "workflow": "Earlier lighter shadow and graphics-loss behavior",
+      "report": "browser-shadow-3-recovery/result.json",
+      "status": "passed",
+      "stats": {"expected": 1, "unexpected": 0, "flaky": 0, "skipped": 0},
+      "basis": "Result JSON read directly by the resumed audit."
+    },
+    {
+      "workflow": "Earlier detailed shadow behavior",
+      "log": "browser-shadow-4-final.log",
+      "missingReport": "browser-shadow-4-final/result.json",
+      "status": "incomplete",
+      "issue": "The command was started before a long backend interruption. Root later confirmed that its known worker process no longer existed. The resumed audit confirmed there is no result JSON.",
+      "limit": "No passing result is inferred from the log or the vanished process.",
+      "resolution": "Retained the incomplete attempt and ran a fresh-process recovery."
+    },
+    {
+      "workflow": "Earlier detailed shadow behavior",
+      "report": "browser-shadow-4-recovery/result.json",
+      "status": "passed",
+      "stats": {"expected": 1, "unexpected": 0, "flaky": 0, "skipped": 0},
+      "basis": "Result JSON read directly by the resumed audit."
+    },
+    {
+      "workflow": "Earlier actual WebGL ballistic dust and graphics-loss behavior",
+      "report": "browser-dust-4-final/result.json",
+      "commandReport": "browser-dust-4-final-command.json",
+      "log": "browser-dust-4-final.log",
+      "status": "passed",
+      "stats": {"expected": 1, "unexpected": 0, "flaky": 0, "skipped": 0},
+      "durationMilliseconds": 127701.83799999999,
+      "basis": "Result JSON, command JSON, log and output-file inventory read directly by the resumed audit.",
+      "launchObservation": "Root received a generic code-mode host timeout before a command session identifier was returned. The retained result and log establish that the launched browser workflow completed successfully; the host timeout was not represented as a test failure."
+    }
+  ],
+  "resumedAudit": {
+    "clientDate": "2026-10-07",
+    "sourceSha256": "8a17b3ded263d9c526aa7edd97af69c5829bbd5927d0e21bd9b66e6377f0617a",
+    "acceptedNativeVisualCaptureCount": 11,
+    "visualReviewStatus": "accepted",
+    "blockingVisualIssues": [],
+    "listedVisualCaptureFilesAllExist": true,
+    "scopedAxeFiles": ["browser-surface-1-attempt1/desktop-axe.json", "browser-surface-3-final/phone-forced-axe.json"],
+    "scopedAxeScans": 2,
+    "scopedAxeViolations": 0,
+    "unitRecoveryResultExistsAtSnapshot": false,
+    "unitRecoveryProcessOutcome": "Reached the 900-second process limit; command exit code 1; full unit verification incomplete.",
+    "dustFinalResultExistsAtSnapshot": true,
+    "literalAuditArtifactExistsAtSnapshot": false,
+    "scope": "Read-only evidence and installed-code inspection plus edits to this attempt-notes file. No tests, browser workflows, source edits, staging or commit commands were run by this audit."
+  },
+  "remainingAtAudit": [
+    "Broader unit verification remains incomplete; retain that limit in the final report.",
+    "Recheck preservation and write final completion evidence before reporting the pass complete."
+  ],
+  "commitPreference": "Do not commit."
+}

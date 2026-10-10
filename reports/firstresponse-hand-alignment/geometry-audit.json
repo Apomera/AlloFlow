@@ -1,0 +1,329 @@
+{
+  "units": "Model coordinates; not clinical measurements",
+  "startingSourceSha256": "9231fee2cc147d13d23f2dd8872354cd6968939f24236d182c12f54e07c76e36",
+  "validatedSourceSha256": "ca13866bd0534e69c7f7762ea416f878b71c48a74af559e677e51a3d360acdd8",
+  "before": {
+    "lower": {
+      "heel": [
+        0,
+        0.5860000000000001,
+        -0.17999999999999997
+      ],
+      "palm": [
+        -0.1,
+        0.5900000000000001,
+        -0.18
+      ],
+      "wrist": [
+        0.075,
+        0.6410000000000001,
+        -0.17999999999999997
+      ],
+      "elbow": [
+        0.075,
+        1.0460000000000003,
+        -0.17999999999999997
+      ],
+      "meanFingerTip": [
+        -0.32,
+        0.641,
+        -0.18000000000000005
+      ],
+      "fingerDirection": [
+        -1,
+        0,
+        -2.6020852139652106e-16
+      ],
+      "thumbTip": [
+        -0.15000000000000002,
+        0.6320000000000001,
+        -0.03999999999999998
+      ],
+      "localYaw": 1.5707963267948966
+    },
+    "upper": {
+      "heel": [
+        0,
+        0.657,
+        -0.17999999999999997
+      ],
+      "palm": [
+        0.1,
+        0.661,
+        -0.18
+      ],
+      "wrist": [
+        -0.075,
+        0.712,
+        -0.17999999999999997
+      ],
+      "elbow": [
+        -0.075,
+        1.046,
+        -0.17999999999999997
+      ],
+      "meanFingerTip": [
+        0.32,
+        0.712,
+        -0.18000000000000005
+      ],
+      "fingerDirection": [
+        1,
+        0,
+        -2.6020852139652106e-16
+      ],
+      "thumbTip": [
+        0.15000000000000002,
+        0.7030000000000001,
+        -0.03999999999999998
+      ],
+      "localYaw": -1.5707963267948966
+    },
+    "fingerDirectionDot": -1,
+    "fingerDirectionAngleDeg": 180,
+    "wristsSameSideDot": -1,
+    "heelHorizontalGap": 0,
+    "upperPalmHorizontalGap": 0.2,
+    "upperPalmDistanceToLowerPalm": 0.21222865028077617
+  },
+  "after": [
+    {
+      "age": "adult",
+      "lower": {
+        "heel": [
+          0,
+          0.5860000000000001,
+          -0.17999999999999997
+        ],
+        "wrist": [
+          0.10999999999999997,
+          0.6410000000000001,
+          -0.09999999999999996
+        ],
+        "elbow": [
+          0.10999999999999997,
+          1.0460000000000003,
+          -0.04248520710059166
+        ],
+        "shoulder": [
+          0.10999999999999997,
+          1.486,
+          0.020000000000000056
+        ],
+        "armStraightDot": 0.9999999999999999,
+        "armAngleToVertical": 8.082632787955827,
+        "wristWithinBridgeUnitSphere": 0.9869782990631276
+      },
+      "upper": {
+        "heel": [
+          0,
+          0.664,
+          -0.17999999999999997
+        ],
+        "wrist": [
+          0.11000000000000003,
+          0.7190000000000001,
+          -0.25999999999999995
+        ],
+        "elbow": [
+          0.11000000000000003,
+          1.046,
+          -0.3111603650586701
+        ],
+        "shoulder": [
+          0.11000000000000004,
+          1.486,
+          -0.38
+        ],
+        "armStraightDot": 1,
+        "armAngleToVertical": 8.892052679544635,
+        "wristWithinBridgeUnitSphere": 0.9869782990631282
+      },
+      "upperHandToLowerMesh": {
+        "minGap": 0.00024162733434907047,
+        "maxGap": 0.09678994958310672,
+        "samples": 3464,
+        "penetrating": 0,
+        "contact": {
+          "upper": "fr-rescuer-upper-heel",
+          "lower": "fr-rescuer-lower-wrist-bridge",
+          "upperPoint": [
+            0.044861843585968016,
+            0.6408596451282501,
+            -0.15174819171428675
+          ],
+          "lowerPoint": [
+            0.04486184358596804,
+            0.640618017793901,
+            -0.15174819171428675
+          ]
+        },
+        "byMesh": {
+          "fr-rescuer-upper-palm": 0.013999999999999013,
+          "fr-rescuer-upper-heel": 0.00024162733434907047,
+          "fr-rescuer-upper-wrist-bridge": 0.030455350441387585
+        }
+      },
+      "independentGridSupport": {
+        "gridMin": 0.0005071552535509394,
+        "gridSamples": 1184
+      },
+      "upperHeelCenterBottomGap": 0.00599999999999945,
+      "upperHandAgainstAllLowerWristAndArm": {
+        "worstAll": 0.00024162733434907047,
+        "worstAllPair": {
+          "upper": "fr-rescuer-upper-heel",
+          "lower": "fr-rescuer-lower-wrist-bridge",
+          "upperPoint": [
+            0.044861843585968016,
+            0.6408596451282501,
+            -0.15174819171428675
+          ],
+          "lowerPoint": [
+            0.04486184358596804,
+            0.640618017793901,
+            -0.15174819171428675
+          ]
+        }
+      },
+      "upperVerticesInsideLowerArm": {
+        "collisionCounts": {},
+        "collisionExamples": {}
+      },
+      "forearmMinimumCrossSectionGap": 0.06338625809738963
+    },
+    {
+      "age": "child",
+      "lower": {
+        "heel": [
+          0,
+          0.432,
+          -0.12959999999999997
+        ],
+        "wrist": [
+          0.09679999999999997,
+          0.487,
+          -0.05919999999999994
+        ],
+        "elbow": [
+          0.09679999999999997,
+          0.892,
+          -0.008586982248520648
+        ],
+        "shoulder": [
+          0.09679999999999997,
+          1.332,
+          0.046400000000000045
+        ],
+        "armStraightDot": 1,
+        "armAngleToVertical": 7.123347280517505,
+        "wristWithinBridgeUnitSphere": 0.98697829906313
+      },
+      "upper": {
+        "heel": [
+          0,
+          0.51,
+          -0.12959999999999997
+        ],
+        "wrist": [
+          0.09680000000000002,
+          0.5650000000000001,
+          -0.19999999999999996
+        ],
+        "elbow": [
+          0.09680000000000002,
+          0.892,
+          -0.24502112125162967
+        ],
+        "shoulder": [
+          0.09680000000000002,
+          1.332,
+          -0.3056
+        ],
+        "armStraightDot": 0.9999999999999999,
+        "armAngleToVertical": 7.839157083303815,
+        "wristWithinBridgeUnitSphere": 0.9869782990631306
+      },
+      "upperHandToLowerMesh": {
+        "minGap": 0.000241627334349237,
+        "maxGap": 0.09678994958310733,
+        "samples": 3472,
+        "penetrating": 0,
+        "contact": {
+          "upper": "fr-rescuer-upper-heel",
+          "lower": "fr-rescuer-lower-wrist-bridge",
+          "upperPoint": [
+            0.03947842235565185,
+            0.48685964512825014,
+            -0.10473840870857234
+          ],
+          "lowerPoint": [
+            0.03947842235565184,
+            0.4866180177939009,
+            -0.10473840870857234
+          ]
+        },
+        "byMesh": {
+          "fr-rescuer-upper-palm": 0.013999999999999069,
+          "fr-rescuer-upper-heel": 0.000241627334349237,
+          "fr-rescuer-upper-wrist-bridge": 0.030455350441387696
+        }
+      },
+      "independentGridSupport": {
+        "gridMin": 0.0005071552535505508,
+        "gridSamples": 1184
+      },
+      "upperHeelCenterBottomGap": 0.006000000000000061,
+      "upperHandAgainstAllLowerWristAndArm": {
+        "worstAll": 0.000241627334349237,
+        "worstAllPair": {
+          "upper": "fr-rescuer-upper-heel",
+          "lower": "fr-rescuer-lower-wrist-bridge",
+          "upperPoint": [
+            0.03947842235565185,
+            0.48685964512825014,
+            -0.10473840870857234
+          ],
+          "lowerPoint": [
+            0.03947842235565184,
+            0.4866180177939009,
+            -0.10473840870857234
+          ]
+        }
+      },
+      "upperVerticesInsideLowerArm": {
+        "collisionCounts": {},
+        "collisionExamples": {}
+      },
+      "forearmMinimumCrossSectionGap": 0.05558332601811811
+    },
+    {
+      "age": "infant",
+      "lower": {
+        "heel": [
+          0,
+          0.289,
+          -0.08279999999999998
+        ],
+        "wrist": [
+          0.08359999999999998,
+          0.344,
+          -0.02199999999999997
+        ],
+        "elbow": [
+          0.08359999999999998,
+          0.749,
+          0.021711242603550347
+        ],
+        "shoulder": [
+          0.08359999999999998,
+          1.189,
+          0.06920000000000007
+        ],
+        "armStraightDot": 1,
+        "armAngleToVertical": 6.160030978976983,
+        "wristWithinBridgeUnitSphere": 0.9869782990631301
+      }
+    }
+  ]
+}

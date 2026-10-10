@@ -1,0 +1,19 @@
+.wc-explorer-root .wc-chapter-card>.wc-groundwater-lens{grid-column:1/-1}
+.wc-groundwater-lens .wc-gw-content{padding:0 12px 14px}
+.wc-groundwater-lens .wc-gw-options{gap:8px;margin:12px 0}
+.wc-groundwater-lens .wc-gw-reading{margin-top:0;padding:12px;background:var(--gw-tint);border-left:4px solid var(--gw-accent)}
+.wc-groundwater-lens .wc-gw-reading>p{margin-top:8px;line-height:1.55}
+.wc-groundwater-lens .wc-gw-diagrams{gap:12px;margin-top:12px;align-items:stretch}
+.wc-groundwater-lens .wc-gw-diagrams>figure{padding:12px;background:var(--gw-paper)}
+.wc-groundwater-lens .wc-gw-diagrams figcaption{padding-bottom:8px;border-bottom:1px solid var(--gw-line)}
+.wc-explorer-root .wc-groundwater-lens .wc-gw-diagrams svg.wc-gw-pore-view{height:auto;aspect-ratio:26/21;max-height:300px}
+.wc-groundwater-lens .wc-gw-layer-labels>div{cursor:default;border-radius:0}
+.wc-groundwater-lens .wc-gw-context{margin-top:12px;padding:0 10px;border:1px solid var(--gw-line);border-radius:10px;background:var(--gw-paper)}
+.wc-groundwater-lens .wc-gw-context>summary{display:list-item;list-style:revert;min-height:44px;padding:10px 0;font-size:14px;font-weight:800;cursor:pointer}
+.wc-groundwater-lens .wc-gw-context>p{margin:0 0 12px;line-height:1.6}
+.wc-groundwater-lens .wc-gw-context+details.wc-gw-check{margin-top:10px}
+.wc-groundwater-lens .wc-gw-announcement{position:absolute;width:1px;height:1px;padding:0;margin:-1px!important;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@container groundwater-lens (max-width:300px){.wc-groundwater-lens .wc-gw-content{padding-inline:8px}.wc-groundwater-lens .wc-gw-diagrams>figure{padding:8px}.wc-groundwater-lens .wc-gw-reading{padding:10px}.wc-groundwater-lens .wc-gw-cutaway{grid-template-columns:82px minmax(0,1fr);gap:8px;align-items:center;justify-items:stretch}.wc-explorer-root .wc-groundwater-lens .wc-gw-cutaway>svg{width:82px;height:auto;aspect-ratio:4/7}.wc-groundwater-lens .wc-gw-cutaway .wc-gw-layer-labels{width:100%;grid-template-columns:minmax(0,1fr);grid-template-rows:repeat(3,minmax(44px,auto));gap:2px}.wc-groundwater-lens .wc-gw-layer-labels>div{padding:6px;border-top:0;border-left:3px solid var(--gw-line);align-items:center;font-size:13px;line-height:1.45}.wc-groundwater-lens .wc-gw-layer-labels>div[data-active=true]{border-left-color:var(--gw-accent);background:var(--gw-tint)}}
+@container groundwater-lens (max-width:190px){.wc-groundwater-lens .wc-gw-cutaway{grid-template-columns:minmax(0,1fr);justify-items:center}.wc-explorer-root .wc-groundwater-lens .wc-gw-cutaway>svg{width:100%;max-width:120px}.wc-groundwater-lens .wc-gw-cutaway .wc-gw-layer-labels{grid-template-rows:repeat(3,minmax(44px,auto))}}
+@media(max-width:480px){.wc-explorer-root .wc-chapter-card>.wc-groundwater-lens{margin-inline:-8px}}
+@media(forced-colors:active){.wc-groundwater-lens .wc-gw-reading{border-left-color:Highlight}.wc-groundwater-lens .wc-gw-context{background:Canvas;border-color:CanvasText}.wc-groundwater-lens .wc-gw-context>summary{color:CanvasText}.wc-groundwater-lens .wc-gw-layer-labels>div[data-active=true]{border-left-color:Highlight!important}}

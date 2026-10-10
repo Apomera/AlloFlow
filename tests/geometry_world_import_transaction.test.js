@@ -1,7 +1,7 @@
 import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
 import {readFileSync} from 'node:fs';
 
-let THREE, api, makeShape;
+let THREE, api, makeShape, math, coreMath, nativeMeasurement;
 beforeAll(() => {
   const exports={};
   new Function('exports','module',readFileSync('vendor/three-r128/three.min.js','utf8'))(exports,{exports});
@@ -11,8 +11,12 @@ beforeAll(() => {
   api=window.StemLab.geometryWorldBuilderPure;
   const core=readFileSync('stem_lab/stem_tool_geometryworld.js','utf8');
   makeShape=new Function(core.slice(core.indexOf('  function createShapeGeometry('),core.indexOf('  // Format fractional volume for display'))+'\nreturn createShapeGeometry;')();
+  coreMath=core.slice(core.indexOf('  function formatVolume(vol)'),core.indexOf('  var ACHIEVEMENTS = ['));
+  math=new Function(coreMath+'\nreturn {retrievalMeasurementCount,buildRetrievalCheckpoint,checkRetrievalAnswer};')();
+  const start=core.indexOf('engine.performMeasurement = function(inputMode) {');
+  nativeMeasurement=core.slice(start,core.indexOf('\n        };',start)+'\n        };'.length);
 });
-afterEach(()=>{vi.restoreAllMocks();delete window.__geoWorldEngine;});
+afterEach(()=>{vi.clearAllTimers();vi.useRealTimers();vi.restoreAllMocks();delete window.__geoWorldEngine;});
 const key=b=>[b.x,b.y,b.z].join(',');
 const incoming={schema:'alloflow-geometry-world/2',title:'New tower',blocks:[
   {x:0,y:1,z:0,type:'stone',shape:'cube',rotation:0},
@@ -36,7 +40,7 @@ function fixture(blocks=original){
   })};
   const engine={scene:new THREE.Scene(),blocks:{},_undoStack:[],_redoStack:[],_currentLesson:{title:'Custom lesson',sandbox:false,ground:{xMin:0,xMax:0,zMin:0,zMax:0,y:0},structures:[{type:'fill',x1:8,x2:8,y1:1,y2:1,z1:-3,z2:-3,block:'stone'}],npcs:[]},
     camera:new THREE.PerspectiveCamera(48,1.5,.1,300),velocity:new THREE.Vector3(.25,-.5,.75),euler:new THREE.Euler(0,0,0,'YXZ'),yaw:.43,pitch:-.22,flyMode:true,
-    blocksPlaced:37,_playerBlockCount:3,_sessionXP:19,_blockMilestones:{ten:true},_historyRevision:8,_predictionState:{commitment:7,history:[{value:6}]},_progressKey:'saved-progress',
+    blocksPlaced:37,_playerBlockCount:3,_sessionXP:19,_blockMilestones:{ten:true},_historyRevision:8,_predictionState:{commitment:7,history:state.measureHistory},_progressKey:'saved-progress',
     completionTriggered:true,completionProgress:.75,_placingLessonBlocks:false,_measurementLayer:null,_replayingHistory:false,_entryAnim:null,_viewPreset:'free',_fillTruncated:false,
     sessionLog:[{type:'previous-action',data:{test:true}}],refreshAllAO:vi.fn(),refreshLandscape:vi.fn()};
   engine.camera.zoom=1.2;engine.camera.up.set(0,0,1);engine.camera.updateProjectionMatrix();engine.camera.position.set(4,6,12);engine.camera.quaternion.setFromEuler(new THREE.Euler(-.22,.43,0,'YXZ'));
@@ -88,7 +92,50 @@ function faultSecondStudent(app,kind){
     return real(...args);
   });
 }
+function nextNativeScan(app){
+  const noop=()=>{},engine=app.engine;
+  engine.blockUnderCrosshair=()=>({object:{userData:{gridPos:{x:2,y:1,z:3}}}});
+  engine.measureStructure=()=>({L:2,W:3,H:4,count:24,occupiedVolume:24,formattedOccupiedVolume:'24',
+    boundingVolume:24,fillPercent:100,hasFractions:false,isSolidPrism:true,isComplete:true,
+    minX:0,minY:1,minZ:0,materialCounts:{stone:24},blocks:[{x:2,y:1,z:3}]});
+  engine.logEvent=noop;
+  new Function('engine','upd','setLayerFocus','sfxMeasure','showDimLines','showSelectionGlow',
+    'spawnPlaceParticles','announceToSR','runAchievementCheck','awardXP',coreMath+'\n'+nativeMeasurement)
+  (engine,(key,value)=>app.ctx.updateMulti('geometryWorld',typeof key==='object'?key:{[key]:value}),noop,noop,noop,noop,noop,noop,noop,noop);
+  engine.performMeasurement('key');
+}
 describe('Editable Geometry World import transactions',()=>{
+  it.each(['draft','correct'])('recovers odd-scan practice %s after an import rollback and preserves the next native cadence',status=>{
+    vi.useFakeTimers();
+    const app=fixture(),records=Array.from({length:10},(_,index)=>({L:2,W:3,H:4,occupiedVolume:24,
+      vol:'24',boundingVolume:24,blocks:24,isSolidPrism:true,isComplete:true,t:index+1002}));
+    const expected=math.buildRetrievalCheckpoint(records,11);
+    const result=status==='correct'?{...math.checkRetrievalAnswer(expected,'6',1),checkpointId:expected.id,attempt:1}:null;
+    app.ctx.updateMulti('geometryWorld',{measureHistory:records,retrievalAnswer:status==='correct'?'6':'3/2',
+      retrievalResult:result,retrievalAttemptCount:status==='correct'?1:0});
+    app.engine._predictionState={...app.engine._predictionState,history:records};
+    app.engine._retrievalMeasurementProgress={history:records,completeCount:11};
+    const before=frozen(app),publish=app.ctx.updateMulti;
+    app.ctx.updateMulti=vi.fn(function(tool,patch){
+      if(patch.measureHistory && patch.measureHistory.length===10){
+        expect(app.engine._retrievalMeasurementProgress.history).toBe(patch.measureHistory);
+        expect(app.engine._predictionState.history).toBe(patch.measureHistory);
+      }
+      publish.call(this,tool,patch);
+    });
+    faultSecondStudent(app,'null');
+    expect(api.restoreEditableWorld(app.engine,incoming,app.ctx)).toMatchObject({ok:false,restored:true});
+    expect(frozen(app)).toEqual(before);
+    expect(app.state()).toMatchObject({retrievalAnswer:status==='correct'?'6':'3/2',retrievalResult:result,
+      retrievalAttemptCount:status==='correct'?1:0});
+    expect(math.buildRetrievalCheckpoint(app.state().measureHistory,
+      math.retrievalMeasurementCount(app.state().measureHistory,app.engine._retrievalMeasurementProgress))).toEqual(expected);
+    nextNativeScan(app);
+    expect(app.engine._retrievalMeasurementProgress.completeCount).toBe(12);
+    expect(math.buildRetrievalCheckpoint(app.state().measureHistory,12)).toMatchObject({concept:'scale_height',expected:8});
+    expect(app.state()).toMatchObject({score:3,answeredNpcs:{1:true}});
+  });
+
   it('rejects invalid files without loading, capturing or mutating the workspace',()=>{
     const app=fixture(),before=frozen(app);
     expect(api.restoreEditableWorld(app.engine,{...incoming,schema:'unknown'},app.ctx).ok).toBe(false);

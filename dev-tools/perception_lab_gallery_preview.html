@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Perception Lab</title>
+  <link rel="stylesheet" href=".cache/sweep-tailwind.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f8fafc; color: #172033; font-family: system-ui, sans-serif; }
+    #app { max-width: 1600px; margin: auto; padding: 16px; }
+    @media (max-width: 600px) { #app { padding: 8px; } }
+  </style>
+  <script src="../desktop/web-app/node_modules/react/umd/react.production.min.js"></script>
+  <script src="../desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js"></script>
+  <script>window.react = window.React;</script>
+  <script src="../desktop/web-app/node_modules/lucide-react/dist/umd/lucide-react.js"></script>
+  <script src="../vendor/three-r128/three.min.js"></script>
+  <script src="../stem_lab/stem_lab_module.js"></script>
+  <script src="../stem_lab/stem_tool_perception.js"></script>
+</head>
+<body>
+  <main id="app"></main>
+  <script>
+    (function () {
+      'use strict';
+      var storageKey = 'perception-gallery-preview-v1';
+      var noop = function () {};
+      var root = ReactDOM.createRoot(document.getElementById('app'));
+      var params = new URLSearchParams(location.search);
+      var theme = params.get('theme') || 'light';
+      var seed = { perceptionLab: {}, otherTool: { preserved: 37 } };
+      try { seed = JSON.parse(localStorage.getItem(storageKey)) || seed; } catch (_) {}
+      window.__perceptionPreview = { state: seed, announcements: [], theme: theme };
+      StemLab.ensureThree = function () {
+        return params.has('no-webgl') ? Promise.reject(new Error('3D unavailable in this preview')) : Promise.resolve(window.THREE);
+      };
+      function Harness() {
+        var pair = React.useState(seed), data = pair[0], setData = pair[1];
+        window.__perceptionPreview.state = data;
+        window.__perceptionPreview.replace = setData;
+        React.useEffect(function () { localStorage.setItem(storageKey, JSON.stringify(data)); }, [data]);
+        var ctx = {
+          React: React, toolData: data, setToolData: setData, activeProfileId: 'perception-preview',
+          theme: theme, isDark: theme === 'dark', isContrast: theme === 'contrast',
+          icons: window.lucideReact || window.LucideReact || {},
+          gradeBand: 'g68', gradeLevel: '7th Grade',
+          t: function (key, fallback) { return fallback == null ? key : fallback; },
+          announceToSR: function (message) { window.__perceptionPreview.announcements.push(message); },
+          addToast: noop, setStemLabTool: noop, setStemLabTab: noop,
+          setToolSnapshots: noop, awardXP: noop, beep: noop, celebrate: noop,
+          canvasNarrate: noop, canvasA11yDesc: noop, toolSnapshots: [], props: {},
+          labToolData: data, setLabToolData: setData, update: noop, updateMulti: noop,
+          callGemini: null, callTTS: null, callImagen: null, callGeminiVision: null,
+          a11yClick: function (fn) { return { onClick: fn }; }, getXP: function () { return 0; }
+        };
+        return StemLab._registry.perceptionLab.render(ctx);
+      }
+      window.__perceptionPreview.unmount = function () { ReactDOM.flushSync(function () { root.unmount(); }); };
+      root.render(React.createElement(Harness));
+    }());
+  </script>
+</body>
+</html>

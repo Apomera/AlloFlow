@@ -1,0 +1,18 @@
+PASS Exercise previews begin collapsed and remain read-only at 1440px
+PASS Separation coaching and actual measurements fit accessibly at 1440px
+PASS Exercise previews begin collapsed and remain read-only at 390px
+PASS Separation coaching and actual measurements fit accessibly at 390px
+PASS Exercise previews begin collapsed and remain read-only at 320px
+PASS Separation coaching and actual measurements fit accessibly at 320px
+PASS The first_landing preview accurately describes its actual starting traffic and direct start stays available
+PASS The arrival_sequence preview accurately describes its actual starting traffic and direct start stays available
+PASS The separation_recovery preview accurately describes its actual starting traffic and direct start stays available
+PASS The crossing_priority preview accurately describes its actual starting traffic and direct start stays available
+PASS Native preview disclosure supports keyboard toggling and visible focus without starting traffic
+PASS Welcome descriptions identify the selected airport and actual standard or guided launch pace
+PASS Quick guided training names and starts its fixed paused exercise independently of the selected shift airport
+PASS A requested altitude target stays distinct from actual motion and measured six-second completion
+PASS Preview and separation progress remain readable in forced colors at 200 percent zoom
+PASS Actual arrival-sequence coaching follows the next aircraft after a landing
+PASS A real separation alert gives review coaching instead of presenting remaining work as safely completable
+{"passed":17,"failed":0,"runtimeErrors":[],"sourceStable":true}

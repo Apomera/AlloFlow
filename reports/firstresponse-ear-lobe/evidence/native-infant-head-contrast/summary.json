@@ -1,0 +1,38 @@
+{
+  "pixelComparisons": [
+    {
+      "id": "infant-head-contrast",
+      "contrast": true,
+      "changedPixels": 8,
+      "totalPixels": 97976
+    }
+  ],
+  "baselineSHA": "bb4526d583db90d928008a1fa9b7540dfef8c8acdfd4055c0fd71225454011bf",
+  "finalSHA": "0af58d9afd30ed0de275caf53197320ddabed9308f08b191cce7bf4927d83f84",
+  "workflows": 1,
+  "matchingViewPairs": 1,
+  "selectedViews": [
+    "infant-head-contrast"
+  ],
+  "evidenceCount": 2,
+  "workers": 1,
+  "retries": 0,
+  "perWorkflowTimeoutMs": 450000,
+  "runnerTimeoutMs": 900000,
+  "images": [
+    "infant-head-contrast-baseline-ear.png",
+    "infant-head-contrast-baseline-stage.png",
+    "infant-head-contrast-candidate-ear.png",
+    "infant-head-contrast-candidate-stage.png"
+  ],
+  "stats": {
+    "startTime": "2026-10-09T21:44:21.876Z",
+    "duration": 17855.553,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "inputsUnchanged": true,
+  "privateCandidate": true
+}

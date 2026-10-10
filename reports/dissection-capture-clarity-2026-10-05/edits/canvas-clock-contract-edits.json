@@ -1,0 +1,15 @@
+{
+  "file": "tests/dissection_canvas_loop.test.js",
+  "baselineSha256": "b4683197d074d2a54199d964b225f7c7fd72bb1dcbd06aad91eedce966ceb3ab",
+  "finalSha256": "b31bbe5cc07efe789e0b2262d12441366c3425966f2e804ad818513a6d22e5ca",
+  "edits": [
+    {
+      "label": "Require normalized manual/scheduled clock contract",
+      "old": "      expect(source).toContain('if (!dissMotionReduced) { dissLastDrawAt = arguments[0] || Date.now(); dissTick++; }');",
+      "new": "      expect(source).toContain(\"var scheduledFrameAt = typeof arguments[0] === 'number' && isFinite(arguments[0]) ? arguments[0] : null;\");\n      expect(source).toContain('if (!dissMotionReduced && dissLastDrawAt && scheduledFrameAt !== null && arguments[1] !== true && scheduledFrameAt - dissLastDrawAt < minFrameMs)');\n      expect(source).toContain('if (!dissMotionReduced) { dissLastDrawAt = scheduledFrameAt !== null ? scheduledFrameAt : frameStartedAt; dissTick++; }');\n      expect(source).not.toContain('dissLastDrawAt = arguments[0] || Date.now()');",
+      "offset": 5993
+    }
+  ],
+  "parsed": true,
+  "exactReversal": true
+}

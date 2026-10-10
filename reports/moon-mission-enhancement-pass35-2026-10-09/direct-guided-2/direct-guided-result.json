@@ -1,0 +1,169 @@
+{
+  "schema": "moon-pass35-direct-browser-v1",
+  "runner": "direct-playwright-api",
+  "playwrightCliResult": false,
+  "mode": "guided",
+  "status": "passed",
+  "startedAt": "2026-10-10T00:18:16.374Z",
+  "repo": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "specPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-ascent.spec.ts",
+  "output": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass35-2026-10-09\\direct-guided-2",
+  "browserCache": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+  "timeouts": {
+    "action": 20000,
+    "navigation": 60000,
+    "expect": 15000,
+    "launch": 60000,
+    "workflow": 180000
+  },
+  "launchOptions": {
+    "headless": true,
+    "timeout": 60000,
+    "downloadsPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass35-2026-10-09\\direct-guided-2\\downloads"
+  },
+  "workflowCompleted": true,
+  "cleanupCompleted": true,
+  "milestones": [
+    {
+      "name": "load:before",
+      "elapsedMs": 1
+    },
+    {
+      "name": "load:after",
+      "elapsedMs": 4814,
+      "workflow": "a separate guided docking exercise works with reduced motion and earns TEI only once",
+      "registered": [
+        "powered lunar ascent instruments follow thrust, mass loss and the computed orbit",
+        "a paused ascent preserves physical readings through resize, review and reload",
+        "an old docked flag and malformed saved ascent cannot authorize the return burn",
+        "ascent resets its active clock while hidden and resumes without catch-up",
+        "a separate guided docking exercise works with reduced motion and earns TEI only once",
+        "fast contact refuses docking and retry preserves insertion while resetting the exercise",
+        "precision thrusters use fuel while playing, then the spacecraft coasts without a held command",
+        "docking pause, resize, reload and hidden-tab transitions keep one physical clock",
+        "320px keyboard docking ignores paused arrows, burns deliberately and pauses from the keyboard"
+      ]
+    },
+    {
+      "name": "harness-start:before",
+      "elapsedMs": 4818
+    },
+    {
+      "name": "harness-start:after",
+      "elapsedMs": 4842
+    },
+    {
+      "name": "browser-launch:before",
+      "elapsedMs": 4843
+    },
+    {
+      "name": "browser-launch:after",
+      "elapsedMs": 5547
+    },
+    {
+      "name": "context-create:before",
+      "elapsedMs": 5547
+    },
+    {
+      "name": "context-create:after",
+      "elapsedMs": 5556
+    },
+    {
+      "name": "page-create:before",
+      "elapsedMs": 5557
+    },
+    {
+      "name": "page-create:after",
+      "elapsedMs": 6020
+    },
+    {
+      "name": "workflow:before",
+      "elapsedMs": 6053
+    },
+    {
+      "name": "workflow:after",
+      "elapsedMs": 17476
+    },
+    {
+      "name": "cleanup:before",
+      "elapsedMs": 17476
+    },
+    {
+      "name": "after-each:before",
+      "elapsedMs": 17477
+    },
+    {
+      "name": "after-each:after",
+      "elapsedMs": 17498
+    },
+    {
+      "name": "context-close:before",
+      "elapsedMs": 17499
+    },
+    {
+      "name": "page-close",
+      "elapsedMs": 17504
+    },
+    {
+      "name": "context-close:after",
+      "elapsedMs": 17604
+    },
+    {
+      "name": "browser-close:before",
+      "elapsedMs": 17604
+    },
+    {
+      "name": "browser-close:after",
+      "elapsedMs": 60292
+    },
+    {
+      "name": "harness-stop:before",
+      "elapsedMs": 60295
+    },
+    {
+      "name": "harness-stop:after",
+      "elapsedMs": 60297
+    },
+    {
+      "name": "cleanup:after",
+      "elapsedMs": 60314,
+      "status": "passed"
+    }
+  ],
+  "errors": [],
+  "attachments": [
+    {
+      "name": "docking-guided-phone",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass35-2026-10-09\\direct-guided-2\\docking-guided-phone-chromium.png",
+      "contentType": "image/png"
+    }
+  ],
+  "inputHashes": {
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-ascent.spec.ts": "4d015a0c8685e98f7f425587f33de64a2839c5994b8bc6d2fc63772257d275c0",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_moonmission.js": "f8689059ea0aca089544f891a798107b094d84ebd02e64711342a86ec50e6dea",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_moonmission.js": "f8689059ea0aca089544f891a798107b094d84ebd02e64711342a86ec50e6dea"
+  },
+  "transform": {
+    "name": "Playwright bundled babelTransform",
+    "bundlePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\transform\\babelBundle.js",
+    "sha256": "9201df11ae9c9ee1febd587c5013c4f862aa7e9981b92b86ccbbbd37e71f9124"
+  },
+  "workflowAdaptation": "Only the historical screenshot destination is redirected to the current owned report directory.",
+  "workflow": "a separate guided docking exercise works with reduced motion and earns TEI only once",
+  "suiteOptions": {
+    "timeout": 180000,
+    "retries": 0
+  },
+  "browserVersion": "148.0.7778.96",
+  "pageEvents": [
+    {
+      "event": "close",
+      "elapsedMs": 17504,
+      "message": null
+    }
+  ],
+  "finishedAt": "2026-10-10T00:19:16.688Z",
+  "elapsedMs": 60314
+}

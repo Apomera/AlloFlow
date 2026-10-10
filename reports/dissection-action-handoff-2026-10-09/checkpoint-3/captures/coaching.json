@@ -1,0 +1,99 @@
+{
+  "width": 390,
+  "scrollWidth": 388,
+  "clientWidth": 388,
+  "choices": [
+    {
+      "height": 118.78125,
+      "scrollWidth": 364,
+      "clientWidth": 364
+    },
+    {
+      "height": 152.34375,
+      "scrollWidth": 364,
+      "clientWidth": 364
+    },
+    {
+      "height": 95.984375,
+      "scrollWidth": 364,
+      "clientWidth": 364
+    }
+  ],
+  "text": [
+    {
+      "text": "Pause before contact",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Plan the orientation check",
+      "size": 18.4,
+      "clipped": false
+    },
+    {
+      "text": "What must be confirmed before any instrument contacts this specimen?",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "1 PredictCurrent",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Current",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "2 PerformUpcoming",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Upcoming",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "3 ExplainUpcoming",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Upcoming",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Confirm the ventral view, center the shallow ventral midline corridor, and account for Heart (3-chamber), Liver (3 lobes), Lungs.",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Open at the deepest-looking region first; the shallow ventral midline corridor can be re-established once the first opening is made.",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Review choice",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Select a cutting instrument first and let the opening incision reveal where Heart (3-chamber), Liver (3 lobes), Lungs sit.",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Arrow keys browse choices. Enter or Space checks the focused choice.",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Look for the recommended view, planned route, and protected landmarks before contact.",
+      "size": 14,
+      "clipped": false
+    }
+  ]
+}

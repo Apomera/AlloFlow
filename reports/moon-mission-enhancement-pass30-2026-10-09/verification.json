@@ -1,0 +1,477 @@
+{
+  "schema": "moon-pass30-verification-v1",
+  "sourceSha256": "98327517728da200d877cb7a1332e59519a7701ad5133bbb496a6824be23e324",
+  "preservation": {
+    "sourceSha256": "98327517728da200d877cb7a1332e59519a7701ad5133bbb496a6824be23e324",
+    "sourceBytes": 1417796,
+    "canonicalPublicIdentical": true,
+    "guardedOperations": 2,
+    "reverseMatchesAcceptedPass29": true,
+    "priorTestsUnchanged": 123,
+    "newTests": {
+      "tests/e2e/moon-mission-descent-plume.spec.ts": "00843c4cecbd9410cc243505d6bdbf1c09214c34a6096564e07c8252765b540a"
+    },
+    "scopedIndexUnchanged": true,
+    "currentlyStagedOwnedPaths": [],
+    "syntaxAndDiffWhitespaceChecksPassed": true
+  },
+  "runs": [
+    {
+      "mode": "plume",
+      "tag": "direct-plume-3",
+      "status": "passed",
+      "runner": "direct-playwright-api",
+      "playwrightCliResult": false,
+      "browserVersion": "148.0.7778.96",
+      "workflow": "2D descent plume follows output and clips banked exhaust at the surface",
+      "elapsedMs": 11026,
+      "process": {
+        "exitCode": 0,
+        "processTimedOut": false,
+        "durationSeconds": 11.127285700000357
+      },
+      "stageNames": [
+        "high-low",
+        "high-off",
+        "high-full",
+        "near-level",
+        "near-left",
+        "near-right",
+        "empty-fuel",
+        "below-threshold",
+        "touchdown",
+        "desktop-full"
+      ],
+      "stageCount": 10,
+      "screenshots": [
+        {
+          "name": "high-low",
+          "path": "direct-plume-3/high-low.png",
+          "sha256": "cbdeadc1965857563e5117670af41c4de4f53dc87403480542ec408aa8b48c98"
+        },
+        {
+          "name": "high-off",
+          "path": "direct-plume-3/high-off.png",
+          "sha256": "f1e31aa0d6fab4099b5ea53ba467f4f9ad0af76486cdf5cea6cca7bed6f52ccd"
+        },
+        {
+          "name": "high-full",
+          "path": "direct-plume-3/high-full.png",
+          "sha256": "2209ea447b01150aaff2c174c472e3e52053f307def5267f8d647eaa2b10c1f8"
+        },
+        {
+          "name": "near-level",
+          "path": "direct-plume-3/near-level.png",
+          "sha256": "20c45584034508fd3ad6a8d764f10c8a27dae9d8aaab50689b64d67ec92df2f4"
+        },
+        {
+          "name": "near-left",
+          "path": "direct-plume-3/near-left.png",
+          "sha256": "e8be180c7a0b8687a9b733fe35afd18f244b21d7fde7861cf7692814dd43fea5"
+        },
+        {
+          "name": "near-right",
+          "path": "direct-plume-3/near-right.png",
+          "sha256": "8031d4e45546f30f2e886d86a08444ae839676a31a1b33d0a62fb42b45b798f8"
+        },
+        {
+          "name": "empty-fuel",
+          "path": "direct-plume-3/empty-fuel.png",
+          "sha256": "1f856dfb1df2a49dd990b4636f4c7e546cc4f6ae33acae0eaff7bfc69709b835"
+        },
+        {
+          "name": "below-threshold",
+          "path": "direct-plume-3/below-threshold.png",
+          "sha256": "e92a9487e7a1d0b6e9e97402507ad82c72edeb6a7634e7dfe3dd8636fe6a8578"
+        },
+        {
+          "name": "touchdown",
+          "path": "direct-plume-3/touchdown.png",
+          "sha256": "690386d56937acf2664e9bfba18da661afaa446ac6a171543f263f05137e164e"
+        },
+        {
+          "name": "desktop-full",
+          "path": "direct-plume-3/desktop-full.png",
+          "sha256": "30cc409e441e58dfa7b8d4e94c7dc60b73238afc6236ce2b777d31bb6e34bc8e"
+        }
+      ],
+      "screenshotCount": 10,
+      "pixelChecks": {
+        "high-low": {
+          "pixels": {
+            "changed": 1775,
+            "totalLight": 37340,
+            "groundChanged": 0,
+            "upstreamChanged": 0,
+            "nozzleConnected": 40,
+            "maxChangedY": 234.25,
+            "surface": 331.8,
+            "pivot": 194,
+            "width": 310,
+            "height": 420,
+            "backingWidth": 620,
+            "backingHeight": 840
+          },
+          "stability": {
+            "comparedAnimationFrames": 2,
+            "bytes": 2083200,
+            "changedBytes": 0
+          }
+        },
+        "high-full": {
+          "pixels": {
+            "changed": 9056,
+            "totalLight": 222132,
+            "groundChanged": 0,
+            "upstreamChanged": 0,
+            "nozzleConnected": 40,
+            "maxChangedY": 261.75,
+            "surface": 331.8,
+            "pivot": 194,
+            "width": 310,
+            "height": 420,
+            "backingWidth": 620,
+            "backingHeight": 840
+          },
+          "stability": {
+            "comparedAnimationFrames": 2,
+            "bytes": 2083200,
+            "changedBytes": 0
+          }
+        },
+        "near-level": {
+          "pixels": {
+            "changed": 748,
+            "totalLight": 63966,
+            "groundChanged": 0,
+            "upstreamChanged": 0,
+            "nozzleConnected": 40,
+            "maxChangedY": 331.75,
+            "surface": 331.8,
+            "pivot": 300.47159303644776,
+            "width": 310,
+            "height": 420,
+            "backingWidth": 620,
+            "backingHeight": 840
+          },
+          "stability": {
+            "comparedAnimationFrames": 2,
+            "bytes": 2083200,
+            "changedBytes": 0
+          }
+        },
+        "near-left": {
+          "pixels": {
+            "changed": 2427,
+            "totalLight": 133649,
+            "groundChanged": 0,
+            "upstreamChanged": 0,
+            "nozzleConnected": 40,
+            "maxChangedY": 331.75,
+            "surface": 331.8,
+            "pivot": 294.04934787016,
+            "width": 310,
+            "height": 420,
+            "backingWidth": 620,
+            "backingHeight": 840
+          },
+          "stability": {
+            "comparedAnimationFrames": 2,
+            "bytes": 2083200,
+            "changedBytes": 0
+          }
+        },
+        "near-right": {
+          "pixels": {
+            "changed": 2426,
+            "totalLight": 133576,
+            "groundChanged": 0,
+            "upstreamChanged": 0,
+            "nozzleConnected": 40,
+            "maxChangedY": 331.75,
+            "surface": 331.8,
+            "pivot": 294.04934787016,
+            "width": 310,
+            "height": 420,
+            "backingWidth": 620,
+            "backingHeight": 840
+          },
+          "stability": {
+            "comparedAnimationFrames": 2,
+            "bytes": 2083200,
+            "changedBytes": 0
+          }
+        },
+        "empty-fuel": {
+          "pixels": {
+            "changed": 0,
+            "totalLight": 0,
+            "groundChanged": 0,
+            "upstreamChanged": 0,
+            "nozzleConnected": 0,
+            "maxChangedY": null,
+            "surface": 331.8,
+            "pivot": 201.68193133532907,
+            "width": 310,
+            "height": 420,
+            "backingWidth": 620,
+            "backingHeight": 840
+          },
+          "stability": {
+            "comparedAnimationFrames": 2,
+            "bytes": 2083200,
+            "changedBytes": 0
+          }
+        },
+        "below-threshold": {
+          "pixels": {
+            "changed": 0,
+            "totalLight": 0,
+            "groundChanged": 0,
+            "upstreamChanged": 0,
+            "nozzleConnected": 0,
+            "maxChangedY": null,
+            "surface": 331.8,
+            "pivot": 194,
+            "width": 310,
+            "height": 420,
+            "backingWidth": 620,
+            "backingHeight": 840
+          },
+          "stability": {
+            "comparedAnimationFrames": 2,
+            "bytes": 2083200,
+            "changedBytes": 0
+          }
+        },
+        "touchdown": {
+          "pixels": {
+            "changed": 0,
+            "totalLight": 0,
+            "groundChanged": 0,
+            "upstreamChanged": 0,
+            "nozzleConnected": 0,
+            "maxChangedY": null,
+            "surface": 331.8,
+            "pivot": 301.3,
+            "width": 310,
+            "height": 420,
+            "backingWidth": 620,
+            "backingHeight": 840
+          },
+          "stability": {
+            "comparedAnimationFrames": 2,
+            "bytes": 2083200,
+            "changedBytes": 0
+          }
+        },
+        "desktop-full": {
+          "pixels": {
+            "changed": 9097,
+            "totalLight": 221943,
+            "groundChanged": 0,
+            "upstreamChanged": 0,
+            "nozzleConnected": 40,
+            "maxChangedY": 222.25,
+            "surface": 331.8,
+            "pivot": 154.3,
+            "width": 1014,
+            "height": 420,
+            "backingWidth": 2028,
+            "backingHeight": 840
+          },
+          "stability": {
+            "comparedAnimationFrames": 2,
+            "bytes": 6814080,
+            "changedBytes": 0
+          }
+        }
+      },
+      "inputHashes": {
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-plume.spec.ts": "00843c4cecbd9410cc243505d6bdbf1c09214c34a6096564e07c8252765b540a",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_moonmission.js": "98327517728da200d877cb7a1332e59519a7701ad5133bbb496a6824be23e324",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_moonmission.js": "98327517728da200d877cb7a1332e59519a7701ad5133bbb496a6824be23e324"
+      }
+    },
+    {
+      "mode": "fallback",
+      "tag": "direct-fallback-2",
+      "status": "passed",
+      "runner": "direct-playwright-api",
+      "playwrightCliResult": false,
+      "browserVersion": "148.0.7778.96",
+      "workflow": "2D fallback recorded HUD follows the official scrubber and preserves honest legacy fuel displays",
+      "elapsedMs": 7197,
+      "process": {
+        "exitCode": 0,
+        "processTimedOut": false,
+        "durationSeconds": 7.30205419997219
+      },
+      "stageNames": [
+        "recorded-0",
+        "recorded-1",
+        "recorded-touchdown",
+        "far-east",
+        "far-west",
+        "legacy-percent-fuel",
+        "legacy-missing-fuel",
+        "retry-live",
+        "retry-desktop"
+      ],
+      "stageCount": 9,
+      "screenshots": [
+        {
+          "name": "recorded-0",
+          "path": "direct-fallback-2/fallback/recorded-0.png",
+          "sha256": "5ebffb125fa36eaef4b62fb94c15f0df344c6bdfbd1f8026581da9a6bf3506c5"
+        },
+        {
+          "name": "recorded-1",
+          "path": "direct-fallback-2/fallback/recorded-1.png",
+          "sha256": "adb1648d0a0def727248c6812aa741f263434a63c8a503459fc819544a56fbb8"
+        },
+        {
+          "name": "recorded-touchdown",
+          "path": "direct-fallback-2/fallback/recorded-touchdown.png",
+          "sha256": "0716f342cff0d90fb4c53df98865d33cea8bd2ec69ee67aaf9d549f3ce922eca"
+        },
+        {
+          "name": "far-east",
+          "path": "direct-fallback-2/fallback/far-east.png",
+          "sha256": "9029fc787b044ef58269cbe67d1350f70dbb65b6d3916318d0b1842aedc9965c"
+        },
+        {
+          "name": "far-west",
+          "path": "direct-fallback-2/fallback/far-west.png",
+          "sha256": "9bf22f53f7cd1d3e91278e62c48f3fbd10e23a5315343fd279732a0a20f4cfee"
+        },
+        {
+          "name": "legacy-percent-fuel",
+          "path": "direct-fallback-2/fallback/legacy-percent-fuel.png",
+          "sha256": "5fd94f5855874f080541f840e7dd0543cffe5895b4f51acbe94dbce7047297cc"
+        },
+        {
+          "name": "legacy-missing-fuel",
+          "path": "direct-fallback-2/fallback/legacy-missing-fuel.png",
+          "sha256": "f5fe9d9bbc9af0c3592bcc2ae02ce076ff773bb5a35888827168abb06f858d75"
+        },
+        {
+          "name": "retry-live",
+          "path": "direct-fallback-2/fallback/retry-live.png",
+          "sha256": "8fdded76790fe071d59b81dd4b154518fe63b7956bc4f5ce3b33054e7f67df80"
+        },
+        {
+          "name": "retry-desktop",
+          "path": "direct-fallback-2/fallback/retry-desktop.png",
+          "sha256": "0a279c1e3422b0788f7667abd6fc6dfe17b2b201e3aab3d05ef07fbf2903ed90"
+        }
+      ],
+      "screenshotCount": 9,
+      "pixelChecks": {},
+      "inputHashes": {
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-hud.spec.ts": "098409742cea8c455ac4b7cae0292792c6e1bd187027cfc698e4f1c62dd6f2ce",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_moonmission.js": "98327517728da200d877cb7a1332e59519a7701ad5133bbb496a6824be23e324",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_moonmission.js": "98327517728da200d877cb7a1332e59519a7701ad5133bbb496a6824be23e324"
+      }
+    },
+    {
+      "mode": "native",
+      "tag": "direct-native-1",
+      "status": "passed",
+      "runner": "direct-playwright-api",
+      "playwrightCliResult": false,
+      "browserVersion": "148.0.7778.96",
+      "workflow": "lighter native HUD keeps paused telemetry readable across desktop, phone, camera and context loss",
+      "elapsedMs": 6103,
+      "process": {
+        "exitCode": 0,
+        "processTimedOut": false,
+        "durationSeconds": 6.19829229998868
+      },
+      "stageNames": [
+        "desktop",
+        "phone",
+        "phone-landing-camera",
+        "phone-overhead-camera",
+        "desktop-restored",
+        "phone-context-loss"
+      ],
+      "stageCount": 6,
+      "screenshots": [
+        {
+          "name": "desktop",
+          "path": "direct-native-1/native/desktop.png",
+          "sha256": "c495de654c17e7af7f4a9503f4a2e57fa5bf576bd9dc33784311483b75a58a5d"
+        },
+        {
+          "name": "phone",
+          "path": "direct-native-1/native/phone.png",
+          "sha256": "407629c9b662a4722fb4a36b919850cd9a341918a118eb78e79b40f5e72c85ca"
+        },
+        {
+          "name": "phone-landing-camera",
+          "path": "direct-native-1/native/phone-landing-camera.png",
+          "sha256": "3f2ed73e691d35efc4c4ab41ce9963f4f744247cfeb8be6c180cba1f440c33d4"
+        },
+        {
+          "name": "phone-overhead-camera",
+          "path": "direct-native-1/native/phone-overhead-camera.png",
+          "sha256": "c3eddea491dbdd44fc4e1413b0954adf11b2e8bc242abdd33e0b34b44bb9de24"
+        },
+        {
+          "name": "phone-context-loss",
+          "path": "direct-native-1/native/phone-context-loss.png",
+          "sha256": "3d778a714a8782bd8ce2ef3577a5bb431f264dde5959e09530f04c015f95d3ff"
+        }
+      ],
+      "screenshotCount": 5,
+      "pixelChecks": {},
+      "inputHashes": {
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-hud.spec.ts": "098409742cea8c455ac4b7cae0292792c6e1bd187027cfc698e4f1c62dd6f2ce",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_moonmission.js": "98327517728da200d877cb7a1332e59519a7701ad5133bbb496a6824be23e324",
+        "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_moonmission.js": "98327517728da200d877cb7a1332e59519a7701ad5133bbb496a6824be23e324"
+      }
+    }
+  ],
+  "stageCount": 25,
+  "screenshotCount": 24,
+  "attemptHistory": [
+    {
+      "tag": "direct-fallback-1",
+      "status": "incomplete",
+      "note": "Tool call aborted during refresh; partial captures retained, no final result. Exact owned PID 53432 was absent when checked (OpenProcess error 87)."
+    },
+    {
+      "tag": "direct-plume-1",
+      "status": "startup-failed",
+      "process": {
+        "exitCode": 3221226505,
+        "processTimedOut": false,
+        "durationSeconds": 1.1775281999725848
+      },
+      "note": "Exited after load:before, before browser assertions. Later runs used Node --max-old-space-size=512."
+    },
+    {
+      "tag": "direct-plume-2",
+      "status": "fixture-failed",
+      "note": "Final scrubber index returns to the saved outcome. Added a terminal row so both touchdown comparison samples remain selectable; runtime unchanged. Original spec retained in that attempt directory."
+    }
+  ],
+  "scope": "2D descent exhaust artwork only; no changes to integration, grading, dust model or native 3D plume.",
+  "limits": [
+    "Illustrative faint exhaust fan, not a gas-flow or plume-surface interaction solver.",
+    "Direct Playwright API assertions; not a Playwright CLI worker result.",
+    "No full build, broad prior suite, audio or physical-device performance run."
+  ],
+  "visualReview": {
+    "plume": "All 10 captures reviewed by final plume reviewer; root also inspected final near-left and desktop-full.",
+    "hud": "All 14 native/fallback captures reviewed by final HUD reviewer.",
+    "materialIssues": []
+  }
+}

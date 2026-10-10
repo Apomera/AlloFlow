@@ -1,0 +1,42 @@
+{
+  "sourceSha256": "af1691011a2c4b8bbbf035d36ac658d570e1cc57c41b6e6e9594170f988043e1",
+  "runs": [
+    {
+      "directory": "direct-outcome2d-3",
+      "workflow": "2D landing outcome stays readable across saved results, replay and retry",
+      "stages": 9,
+      "screenshots": 7,
+      "browserVersion": "148.0.7778.96",
+      "passed": true
+    },
+    {
+      "directory": "direct-outcome3d-2",
+      "workflow": "native landing outcome keeps success and impact readable on desktop and phone",
+      "stages": 6,
+      "screenshots": 6,
+      "browserVersion": "148.0.7778.96",
+      "passed": true
+    },
+    {
+      "directory": "direct-outcomelive-1",
+      "workflow": "live landing outcome displays earned points from an integrated practice flight",
+      "stages": 1,
+      "screenshots": 1,
+      "browserVersion": "148.0.7778.96",
+      "passed": true
+    },
+    {
+      "directory": "direct-native-1",
+      "workflow": "lighter native HUD keeps paused telemetry readable across desktop, phone, camera and context loss",
+      "stages": 6,
+      "screenshots": 5,
+      "browserVersion": "148.0.7778.96",
+      "passed": true
+    }
+  ],
+  "stages": 22,
+  "screenshots": 19,
+  "unitTestsPassed": 7,
+  "runner": "direct Playwright API with real expect and Chromium; Vitest thread pool",
+  "interruptedHarnessAlreadyExited": true
+}

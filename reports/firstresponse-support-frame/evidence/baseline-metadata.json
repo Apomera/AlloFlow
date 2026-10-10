@@ -1,0 +1,31 @@
+{
+  "baselineSHA256": "164407bb58546fc91584761e51e9a907d2eacd33442a0a5fae31da0c22ef37c0",
+  "candidateSHA256": "69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242",
+  "candidateBytes": 798252,
+  "sourceSpans": 3,
+  "runtimeBefore": [
+    {
+      "relative": "stem_lab/stem_tool_firstresponse.js",
+      "bytes": 796956,
+      "SHA256": "164407bb58546fc91584761e51e9a907d2eacd33442a0a5fae31da0c22ef37c0"
+    },
+    {
+      "relative": "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js",
+      "bytes": 796956,
+      "SHA256": "164407bb58546fc91584761e51e9a907d2eacd33442a0a5fae31da0c22ef37c0"
+    },
+    {
+      "relative": "desktop/app-build/stem_lab/stem_tool_firstresponse.js",
+      "bytes": 796956,
+      "SHA256": "164407bb58546fc91584761e51e9a907d2eacd33442a0a5fae31da0c22ef37c0"
+    },
+    {
+      "relative": "desktop/web-app/build/stem_lab/stem_tool_firstresponse.js",
+      "bytes": 796956,
+      "SHA256": "164407bb58546fc91584761e51e9a907d2eacd33442a0a5fae31da0c22ef37c0"
+    }
+  ],
+  "schema": "inspection.faceFrame = {center:[x,y,z], radius:number}",
+  "threshold": "viewer aspect < 1.15",
+  "createdAt": "2026-10-09T22:56:48.245Z"
+}

@@ -19,11 +19,12 @@ function contrast(panel){
    [1060,true,'Earth','Jupiter','pair'],[1060,false,'Earth','Jupiter','pair'],[736,true,'Uranus','Neptune','counterexample'],
    [320,false,'Earth','Jupiter','pair'],[320,true,'Pluto','Jupiter','floor'],[1060,true,'Jupiter','Pluto','swapped-floor'],
    [320,false,'Mercury','Mars','equal-gravity'],[320,true,'Earth','Earth','same'],[320,false,'broken','Mars','invalid'],
-   [1060,false,'Earth','Jupiter','malformed-draft'],[320,false,'Earth','Jupiter','table'],[320,true,'Uranus','Neptune','saved']];
+   [1060,false,'Earth','Jupiter','malformed-draft'],[320,false,'Earth','Jupiter','table'],[320,true,'Uranus','Neptune','saved'],
+   [320,false,'Earth','Jupiter','sidebar'],[320,true,'Saturn','Earth','sidebar']];
   for(const[width,dark,from,to,state]of cases){
    await page.setViewportSize({width,height:1600});await page.goto(harness.url+'/__harness');await page.waitForFunction(()=>!!window.StemLab?._registry?.solarSystem);
    await page.locator('#wrap').evaluate((n,w)=>n.style.width=w+'px',width);
-   const saved={tutorialDismissed:true,solarMissionDashboardOpen:false,selectedPlanet:'Earth',viewTab:'overview',orreryMode:false,showVisualCompare:true,compare1:from,compare2:to,paused:true,isDark:dark};
+   const saved={tutorialDismissed:true,solarMissionDashboardOpen:false,selectedPlanet:'Earth',viewTab:'overview',orreryMode:false,showVisualCompare:state!=='sidebar',compare1:from,compare2:to,paused:true,isDark:dark};
    if(state==='malformed-draft')saved.compareReasoningDrafts={'Earth:Jupiter':{text:'broken'}};
    if(state==='saved'){saved.compareReasoningDrafts={'Neptune:Uranus':'Neptune is slightly smaller, yet has stronger listed gravity.'};saved.compareEvidenceSavedFor='Neptune:Uranus';}
    await page.evaluate(data=>{
@@ -31,7 +32,7 @@ function contrast(panel){
     const worlds=['Mercury','Venus','Earth','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
     window.__ctx.t=(key,fallback)=>worlds.find(name=>key==='stem.solar_sys.'+name.toLowerCase())||fallback||key;window.__rerender();
    },saved);
-   const panel=page.locator('#solar-visual-comparison');await panel.waitFor();
+   const panel=page.locator(state==='sidebar'?'[data-solar-planet-comparison]':'#solar-visual-comparison');await panel.waitFor();
    if(state==='table')await panel.getByRole('region',{name:'Exact world comparison values',exact:true}).evaluate(n=>n.scrollLeft=n.scrollWidth);
    const name=`${before?'before':'after'}-comparison-${width}-${dark?'dark':'light'}-${from}-${to}-${state}`;
    await panel.screenshot({path:path.join(dir,name+'.png')});

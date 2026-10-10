@@ -1,0 +1,29 @@
+{
+  "root": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated",
+  "sourceSHA256": "af6ecb094af6d67ebb0955170a55e0a9726308c59f4ddd9b196d56cfe434e4c7",
+  "byteLength": 792755,
+  "copies": [
+    {
+      "relativePath": "stem_lab/stem_tool_firstresponse.js",
+      "sha256": "af6ecb094af6d67ebb0955170a55e0a9726308c59f4ddd9b196d56cfe434e4c7",
+      "byteLength": 792755
+    },
+    {
+      "relativePath": "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js",
+      "sha256": "af6ecb094af6d67ebb0955170a55e0a9726308c59f4ddd9b196d56cfe434e4c7",
+      "byteLength": 792755
+    },
+    {
+      "relativePath": "desktop/app-build/stem_lab/stem_tool_firstresponse.js",
+      "sha256": "af6ecb094af6d67ebb0955170a55e0a9726308c59f4ddd9b196d56cfe434e4c7",
+      "byteLength": 792755
+    },
+    {
+      "relativePath": "desktop/web-app/build/stem_lab/stem_tool_firstresponse.js",
+      "sha256": "af6ecb094af6d67ebb0955170a55e0a9726308c59f4ddd9b196d56cfe434e4c7",
+      "byteLength": 792755
+    }
+  ],
+  "candidateSHA256": "9c05c086f710ce14387153275b36e780bf2d0069239b725a42e560680da9bc2e",
+  "candidateByteLength": 793391
+}

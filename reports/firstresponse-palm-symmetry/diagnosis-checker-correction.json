@@ -1,0 +1,33 @@
+{
+  "checkerBefore": "6f463f0d905fb78c80bcbd431b9e0fa834046f262bf13043966ce0064968e1e7",
+  "checkerAfter": "1d79b2be4f68f5a63ec0a22bafcc9defda227a8c65ee677ae7c9d83f9f50eb00",
+  "sourceSHA256": "dfe3e01f38a419187e468c749cc37827f486a47401b9916afaa9ec6f98a3f86a",
+  "scope": "Checker correction only; candidate and browser files unchanged.",
+  "findings": {
+    "preservation": "Only right patient primary/thumb crease boundingBox min.y/max.y changed. Bounds are computed from scoped position arrays; revised checker requires exact recomputation while preserving cache presence and every other bound.",
+    "patient": {
+      "baselineMaxChord": 0.007009142948124047,
+      "candidateMaxChord": 0.002616975759205534,
+      "baselineMeanChord": 0.0024414059089292815,
+      "candidateMeanChord": 0.000057543507780495854,
+      "worseVertices": 9,
+      "maximumChordIncrease": 0.0005794621147487149
+    },
+    "rescuer": {
+      "baselineMaxChord": 0.004984416571573216,
+      "candidateMaxChord": 0.0014670063502938216,
+      "baselineMeanChord": 0.001628419520280838,
+      "candidateMeanChord": 0.000035955700522092805,
+      "worseVertices": 8,
+      "maximumChordIncrease": 0.0004234380349031374
+    },
+    "cause": "smoothCoincidentNormals first computes normalized per-index normals, then averages duplicate-position seam normals. A mirrored seam can land on a non-seam vertex, so exact triangle mirroring does not imply exact averaged shader normals."
+  },
+  "acceptance": {
+    "mirroredTriangles": "unchanged strict geometry hash",
+    "creaseSymmetry": "unchanged 1e-7 path check",
+    "shaderNormals": "Maximum <=0.2 degrees, maximum <50% baseline, mean <5% baseline, plus unchanged finite/unit/outward checks.",
+    "creaseBounds": "Every present scoped crease boundingBox exactly equals Box3 computed from positions before normalized scene comparison."
+  },
+  "tests": "Syntax checked only here. Root will run the full 24-case checker with selftest."
+}

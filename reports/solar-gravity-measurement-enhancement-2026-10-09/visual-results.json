@@ -1,0 +1,126 @@
+{
+  "sourceSha256": "7220922323828d60b08b6b8d003032bc9078ef4a91fbd6737b57d131aeb4df8a",
+  "completed": true,
+  "results": [
+    {
+      "name": "gravity-measurement-1060-dark",
+      "target": "Mars",
+      "height": 10,
+      "dark": true,
+      "scrollWidth": 1060,
+      "minimumText": 13,
+      "minimumControlHeight": 44,
+      "minimumTextContrast": 12.024320295980338,
+      "overflow": [],
+      "rulerAndShaftsAligned": true,
+      "sharedClockSamples": true,
+      "chartColorsMatch": true,
+      "keyboardInspector": true,
+      "reducedMotionEndpoints": true,
+      "physicalAnimationTiming": {
+        "durations": [
+          1430,
+          2320
+        ],
+        "time": 580,
+        "positions": [
+          34.0439,
+          20.375
+        ]
+      },
+      "predictionAndHeightReset": true,
+      "journalAndDraftsPreserved": true,
+      "browserErrors": []
+    },
+    {
+      "name": "gravity-measurement-1060-light",
+      "target": "Mars",
+      "height": 10,
+      "dark": false,
+      "scrollWidth": 1060,
+      "minimumText": 13,
+      "minimumControlHeight": 44,
+      "minimumTextContrast": 7.577663953533317,
+      "overflow": [],
+      "rulerAndShaftsAligned": true,
+      "sharedClockSamples": true,
+      "chartColorsMatch": true,
+      "keyboardInspector": true,
+      "reducedMotionEndpoints": true,
+      "physicalAnimationTiming": {
+        "durations": [
+          1430,
+          2320
+        ],
+        "time": 580,
+        "positions": [
+          34.0439,
+          20.375
+        ]
+      },
+      "predictionAndHeightReset": true,
+      "journalAndDraftsPreserved": true,
+      "browserErrors": []
+    },
+    {
+      "name": "gravity-measurement-320-dark",
+      "target": "Jupiter",
+      "height": 1,
+      "dark": true,
+      "scrollWidth": 320,
+      "minimumText": 13,
+      "minimumControlHeight": 44,
+      "minimumTextContrast": 12.024320295980338,
+      "overflow": [],
+      "rulerAndShaftsAligned": true,
+      "sharedClockSamples": true,
+      "chartColorsMatch": true,
+      "keyboardInspector": true,
+      "reducedMotionEndpoints": true,
+      "physicalAnimationTiming": {
+        "durations": [
+          870,
+          550
+        ],
+        "time": 217.5,
+        "positions": [
+          20.375,
+          32.9555
+        ]
+      },
+      "predictionAndHeightReset": true,
+      "journalAndDraftsPreserved": true,
+      "browserErrors": []
+    },
+    {
+      "name": "gravity-measurement-320-light",
+      "target": "Jupiter",
+      "height": 1,
+      "dark": false,
+      "scrollWidth": 320,
+      "minimumText": 13,
+      "minimumControlHeight": 44,
+      "minimumTextContrast": 7.577663953533317,
+      "overflow": [],
+      "rulerAndShaftsAligned": true,
+      "sharedClockSamples": true,
+      "chartColorsMatch": true,
+      "keyboardInspector": true,
+      "reducedMotionEndpoints": true,
+      "physicalAnimationTiming": {
+        "durations": [
+          870,
+          550
+        ],
+        "time": 217.5,
+        "positions": [
+          20.375,
+          32.9555
+        ]
+      },
+      "predictionAndHeightReset": true,
+      "journalAndDraftsPreserved": true,
+      "browserErrors": []
+    }
+  ]
+}

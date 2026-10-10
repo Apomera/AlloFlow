@@ -1,0 +1,185 @@
+{
+  "completed": true,
+  "pins": {
+    "stem_lab/stem_tool_universe.js": "d2e525773ac73d3e44acda40e3069391eda9c048605ea82080f5a7248a66be70",
+    "stem_lab/universe_flight_scene.js": "5db5e95273edd2e32e96efd54ef79eaa16cc1732d2b073e0ef735dee953bbd69"
+  },
+  "harnessHash": "7e9b09060f8f011d8ca8c2e24f2e2da2e8e2679b860f914f1853814c9201edbd",
+  "checks": [
+    "Closer views of a star, emission cloud, spiral, galaxy group and elliptical retain bearing, lens and clocks, add only radial travel, preserve focus and undo without GPU allocation",
+    "Reciprocal distance steps return to the original position and six Back entries restore exact paused snapshots in order",
+    "A distance step takes over from a running tilted orbit and Back restores its position while keeping travel paused",
+    "The minimum landmark range and scene sphere disable the blocked direction, reject native moves without mutation, and keep the return direction available",
+    "Phone, short landscape, system colors, text spacing and Escape keep the distance actions readable, reachable and reversible",
+    "Distance moves remain unavailable in the physical light-chase mode"
+  ],
+  "accessibility": [
+    {
+      "name": "distance-amber-star",
+      "violations": []
+    },
+    {
+      "name": "distance-blue-nebula",
+      "violations": []
+    },
+    {
+      "name": "distance-galactic-center",
+      "violations": []
+    },
+    {
+      "name": "distance-near-galaxy",
+      "violations": []
+    },
+    {
+      "name": "distance-golden-elliptical",
+      "violations": []
+    },
+    {
+      "name": "distance-320",
+      "violations": []
+    },
+    {
+      "name": "distance-568",
+      "violations": []
+    },
+    {
+      "name": "system-colors",
+      "violations": []
+    },
+    {
+      "name": "text-spacing",
+      "violations": []
+    }
+  ],
+  "captures": [
+    {
+      "name": "distance-amber-star",
+      "hash": "eea6ad2dde99d2a746aa72eddf08cf5c3dd142e390dddd682312e8e805ed4d0d"
+    },
+    {
+      "name": "distance-blue-nebula",
+      "hash": "60027d8e74a09edc5974d12448f5bbde6438400a7c4fda09ae3bd070432f1c71"
+    },
+    {
+      "name": "distance-galactic-center",
+      "hash": "694efc9504ff0e055653422df8aa11f478db9df6c5b547fa7047931ca376ce25"
+    },
+    {
+      "name": "distance-near-galaxy",
+      "hash": "a7e6a6ccb4a6d0e4c469771483444d98bcbf7fc98ddb4151fd8239933e98ce19"
+    },
+    {
+      "name": "distance-golden-elliptical",
+      "hash": "ce1f3f2f038d6e2cd02b0b90ed53a84186bf4587ec8872936ea0d4871c35c41e"
+    },
+    {
+      "name": "distance-320",
+      "hash": "6ca189bd93281a657f3b0ac2e486773700a042819391b35116a1863df4e2ea3e"
+    },
+    {
+      "name": "distance-568",
+      "hash": "8b844c84cfaa741fe47af3bf845fe4c184ba86043482bc26dc557ecac1c26158"
+    },
+    {
+      "name": "distance-system-colors",
+      "hash": "c1419cf560c4d2e201700d572b05018cfebc7708896da94a318a8e20dc95495d"
+    },
+    {
+      "name": "distance-text-spacing",
+      "hash": "2849df9062cdb022b26140854cb6424082e3b5e4ea0b4e951417f0cdebd7a943"
+    }
+  ],
+  "views": [
+    {
+      "region": "neighborhood",
+      "id": "amber-star",
+      "view": "stellar-amber",
+      "from": [
+        -3.78,
+        1.2,
+        8.65
+      ],
+      "to": [
+        -3.644,
+        1.16,
+        8.620000000000001
+      ],
+      "rangeLy": 0.5795998619737585
+    },
+    {
+      "region": "neighborhood",
+      "id": "blue-nebula",
+      "view": "nebula-filaments",
+      "from": [
+        6.73258751546719,
+        2.7454985975874995,
+        25.541291740103556
+      ],
+      "to": [
+        7.186070012373753,
+        1.7963988780699993,
+        27.233033392082845
+      ],
+      "rangeLy": 7.96836391702128
+    },
+    {
+      "region": "galaxy",
+      "id": "galactic-center",
+      "view": "halo-panorama",
+      "from": [
+        57537.37470667912,
+        28979.93440151232,
+        22193.098330829456
+      ],
+      "to": [
+        46029.899765343296,
+        23183.94752120986,
+        17754.478664663566
+      ],
+      "rangeLy": 54511.1787409496
+    },
+    {
+      "region": "cosmic",
+      "id": "near-galaxy",
+      "view": "group-spiral",
+      "from": [
+        3800.993548201688,
+        204667.20352500066,
+        -21799.8971191808
+      ],
+      "to": [
+        3040.794838561351,
+        163733.76282000056,
+        -17439.917695344644
+      ],
+      "rangeLy": 164688.0148938192
+    },
+    {
+      "region": "cosmic",
+      "id": "golden-elliptical",
+      "view": "group-elliptical",
+      "from": [
+        720000,
+        410000,
+        565000
+      ],
+      "to": [
+        736000,
+        438000,
+        622000
+      ],
+      "rangeLy": 261961.82928052705
+    }
+  ],
+  "served": [
+    {
+      "path": "/stem_lab/stem_tool_universe.js",
+      "hash": "d2e525773ac73d3e44acda40e3069391eda9c048605ea82080f5a7248a66be70"
+    },
+    {
+      "path": "/stem_lab/universe_flight_scene.js",
+      "hash": "5db5e95273edd2e32e96efd54ef79eaa16cc1732d2b073e0ef735dee953bbd69"
+    }
+  ],
+  "errors": []
+}

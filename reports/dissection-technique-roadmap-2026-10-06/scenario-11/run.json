@@ -1,0 +1,49 @@
+{
+  "mode": "scenario",
+  "label": "scenario-11",
+  "start": "2026-10-09T22:17:07.143Z",
+  "startHashes": {
+    "stem_lab/stem_tool_dissection.js": "9b77f87c70bd2789cdd450bff5d371bfd81d2973abf12c491706da7fbbf78a3a",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "9b77f87c70bd2789cdd450bff5d371bfd81d2973abf12c491706da7fbbf78a3a",
+    "tests/dissection_lab_improvements.test.js": "24bda465f604372660464162bdfed58663edd60c0e879d5ff61b9b2f2c34b7ae",
+    "tests/dissection_canvas_loop.test.js": "d3851e389c78866a4475f13cef2067305d937b86cb339615caf009f7c7553916",
+    "tests/dissection_workspace_bands.test.js": "9c59fde98d1fd7e103edf4dffb72b1b9dbea39524d5acfd5bc67760dcf56f98c",
+    "tests/e2e/dissection-study-chooser.spec.ts": "7941e1e85ac47ec7005ac1cf529f488f7173a39079a4b811e7d3a04b8e46031e",
+    "tests/e2e/dissection-tools-cohesion.spec.ts": "1b34409ba5e1c7d2f81f98f206eb01b1b6e1c5417a2b5aec5dab053e4f44ad5b",
+    "tests/e2e/dissection-view-chooser.spec.ts": "81f8f90725f510092b8a20468175be7862bda9d93c5afbb16a07240a5bb2c614",
+    "tests/e2e/dissection-scenario-clarity.spec.ts": "d0b5a0ab9c9343963f9bb070ca48eb194d0e42ef51f3c2c331b0731191ba0246",
+    "tests/e2e/dissection-technique-roadmap.spec.ts": "70bbdf48c371174b553e6a7b0d88b3a0d49e5921e886f58a86b6e2cb7085cf58"
+  },
+  "args": [
+    "node_modules/@playwright/test/cli.js",
+    "test",
+    "tests/e2e/dissection-scenario-clarity.spec.ts",
+    "--workers=1",
+    "--retries=0",
+    "--project=chromium",
+    "--reporter=list,json",
+    "--output=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-technique-roadmap-2026-10-06\\scenario-11\\test-results"
+  ],
+  "ownedTemporaryDirectory": "C:\\Users\\cabba\\Documents\\Codex\\.diss-roadmap-20261006\\scenario-11",
+  "servedRenderer": {
+    "sha256": "9b77f87c70bd2789cdd450bff5d371bfd81d2973abf12c491706da7fbbf78a3a",
+    "substituted": false
+  },
+  "pid": 20744,
+  "watchdogMs": 2400000,
+  "exitCode": 0,
+  "signal": null,
+  "end": "2026-10-09T22:18:27.592Z",
+  "endHashes": {
+    "stem_lab/stem_tool_dissection.js": "9b77f87c70bd2789cdd450bff5d371bfd81d2973abf12c491706da7fbbf78a3a",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "9b77f87c70bd2789cdd450bff5d371bfd81d2973abf12c491706da7fbbf78a3a",
+    "tests/dissection_lab_improvements.test.js": "24bda465f604372660464162bdfed58663edd60c0e879d5ff61b9b2f2c34b7ae",
+    "tests/dissection_canvas_loop.test.js": "d3851e389c78866a4475f13cef2067305d937b86cb339615caf009f7c7553916",
+    "tests/dissection_workspace_bands.test.js": "9c59fde98d1fd7e103edf4dffb72b1b9dbea39524d5acfd5bc67760dcf56f98c",
+    "tests/e2e/dissection-study-chooser.spec.ts": "7941e1e85ac47ec7005ac1cf529f488f7173a39079a4b811e7d3a04b8e46031e",
+    "tests/e2e/dissection-tools-cohesion.spec.ts": "1b34409ba5e1c7d2f81f98f206eb01b1b6e1c5417a2b5aec5dab053e4f44ad5b",
+    "tests/e2e/dissection-view-chooser.spec.ts": "81f8f90725f510092b8a20468175be7862bda9d93c5afbb16a07240a5bb2c614",
+    "tests/e2e/dissection-scenario-clarity.spec.ts": "d0b5a0ab9c9343963f9bb070ca48eb194d0e42ef51f3c2c331b0731191ba0246",
+    "tests/e2e/dissection-technique-roadmap.spec.ts": "70bbdf48c371174b553e6a7b0d88b3a0d49e5921e886f58a86b6e2cb7085cf58"
+  }
+}

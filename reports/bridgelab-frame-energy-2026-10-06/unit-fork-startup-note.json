@@ -1,0 +1,45 @@
+{
+  "archivedAt": "2026-10-06T20:55:58.632Z",
+  "reason": "The first isolated Vitest fork timed out before test collection. This attempt is failed evidence and contributes no passed tests.",
+  "sourceRun": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\unit-run.json",
+  "targetRun": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\unit-fork-startup-run.json",
+  "sourceBatches": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\unit-batches",
+  "targetBatches": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\unit-fork-startup-batches",
+  "runHash": {
+    "sha256": "d9dfba86b1d8535ee8ae007d5cd81a84ede5898bf267c0e7a49652ca76045186",
+    "bytes": 8914
+  },
+  "files": {
+    "catalogue.json": {
+      "sha256": "16630ce1310dd40e4463d4bb33c660d3dfc8771aa308a81c6633aba9844b41d7",
+      "bytes": 42351
+    },
+    "ui-01.results.json": {
+      "sha256": "9d76fc052bfdb1c044ae25a2077d21657a98dec70d157fac5a15facf5c23360b",
+      "bytes": 483
+    },
+    "ui-01.run.json": {
+      "sha256": "a215c18318d35e62c44d2813f098acd05d77e11ae518362af7ffae25a51e5aac",
+      "bytes": 9573
+    },
+    "ui-01.stderr.log": {
+      "sha256": "61ae0732493150cda3295591520cf831b1796552f702585fdc08d9595944c91d",
+      "bytes": 923
+    },
+    "ui-01.stdout.log": {
+      "sha256": "177438a29a0db9fff9cee08e2daf889fbbb09be6cc845ab406a93d1146a88b92",
+      "bytes": 387
+    },
+    "ui-01.unhandled.json": {
+      "sha256": "3ef8251636be196fb2fe9a4af5ffb4560df55ac6ec9169d7924fe022703a06e2",
+      "bytes": 820
+    }
+  },
+  "originalError": "AssertionError [ERR_ASSERTION]: Fresh batch failed: ui-01\n\n'failed' !== 'passed'\n\n    at run (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\run-unit-batches.cjs:66:14)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)",
+  "originalStartedAt": "2026-10-06T20:38:14.484Z",
+  "pathMapping": {
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\unit-batches": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\unit-fork-startup-batches"
+  },
+  "note": "Original metadata and raw files remain byte-identical. Their recorded absolute batch paths refer to the former directory; the pathMapping identifies the archive.",
+  "byteIdentical": true
+}

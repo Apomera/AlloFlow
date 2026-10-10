@@ -1,0 +1,77 @@
+{
+  "kind": "unit",
+  "startedAt": "2026-10-06T03:36:02.741Z",
+  "workingDirectory": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "--max-old-space-size=4096",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/bridgelab_immersive_motion.test.js",
+    "tests/bridgelab_seismic_model.test.js",
+    "tests/bridgelab_seismic_inertia.test.js",
+    "--pool=forks",
+    "--maxWorkers=1",
+    "--testTimeout=120000",
+    "--hookTimeout=120000",
+    "--teardownTimeout=60000",
+    "--silent",
+    "--reporter=dot",
+    "--reporter=json",
+    "--outputFile=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-motion-position-2026-10-05\\unit-results.json"
+  ],
+  "inputsBefore": {
+    "stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "e336a37ec3e3c7e47d978810051590b7f6a4d712701f12a51f12902534689a73",
+      "bytes": 1067329
+    },
+    "desktop/web-app/public/stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "e336a37ec3e3c7e47d978810051590b7f6a4d712701f12a51f12902534689a73",
+      "bytes": 1067329
+    },
+    "tests/bridgelab_immersive_motion.test.js": {
+      "sha256": "11775411f275ba6adb74aff98004b9fdaeb7187050e5d57f2cf2eb70b693aea1",
+      "bytes": 293469
+    },
+    "tests/bridgelab_seismic_model.test.js": {
+      "sha256": "224fb18e9b73a4d06e0c376759be329ed7fb51357a4537fbfa57b71f9306ea7e",
+      "bytes": 74373
+    },
+    "tests/bridgelab_seismic_inertia.test.js": {
+      "sha256": "b4ce34ebd70dfaebb6f6368e48c5bcc7100250476ee883470d77081982b23e5f",
+      "bytes": 4774
+    }
+  },
+  "note": "English registries are checked separately; the harness uses literal fallbacks.",
+  "finishedAt": "2026-10-06T03:45:34.793Z",
+  "exitCode": 0,
+  "signal": null,
+  "inputsAfter": {
+    "stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "e336a37ec3e3c7e47d978810051590b7f6a4d712701f12a51f12902534689a73",
+      "bytes": 1067329
+    },
+    "desktop/web-app/public/stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "e336a37ec3e3c7e47d978810051590b7f6a4d712701f12a51f12902534689a73",
+      "bytes": 1067329
+    },
+    "tests/bridgelab_immersive_motion.test.js": {
+      "sha256": "11775411f275ba6adb74aff98004b9fdaeb7187050e5d57f2cf2eb70b693aea1",
+      "bytes": 293469
+    },
+    "tests/bridgelab_seismic_model.test.js": {
+      "sha256": "224fb18e9b73a4d06e0c376759be329ed7fb51357a4537fbfa57b71f9306ea7e",
+      "bytes": 74373
+    },
+    "tests/bridgelab_seismic_inertia.test.js": {
+      "sha256": "b4ce34ebd70dfaebb6f6368e48c5bcc7100250476ee883470d77081982b23e5f",
+      "bytes": 4774
+    }
+  },
+  "inputsUnchanged": true,
+  "result": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-motion-position-2026-10-05\\unit-results.json",
+    "sha256": "2cbfacc6e0a569112949be278aecf7eaced5084a766b21bbcec8ae7877e84867",
+    "bytes": 115557
+  }
+}

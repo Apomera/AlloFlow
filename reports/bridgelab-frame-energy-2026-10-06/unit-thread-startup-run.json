@@ -1,0 +1,200 @@
+{
+  "schema": "bridge-unit-batches-v1",
+  "kind": "unit",
+  "mode": "isolated-batches",
+  "status": "failed",
+  "startedAt": "2026-10-06T21:08:18.009Z",
+  "workingDirectory": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "--max-old-space-size=256",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\run-unit-batches-threads.cjs"
+  ],
+  "inputsBefore": {
+    "stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "fd5362d52c5b2515606f211c273adf0d4afb58be699898a5d1fbe10697517d2d",
+      "bytes": 1074903
+    },
+    "desktop/web-app/public/stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "fd5362d52c5b2515606f211c273adf0d4afb58be699898a5d1fbe10697517d2d",
+      "bytes": 1074903
+    },
+    "tests/bridgelab_immersive_motion.test.js": {
+      "sha256": "2d807a49139cc6a3d52b4f1588096857561b4625bca5eb2f6f879ba3d88a5f34",
+      "bytes": 314387
+    },
+    "tests/bridgelab_seismic_model.test.js": {
+      "sha256": "224fb18e9b73a4d06e0c376759be329ed7fb51357a4537fbfa57b71f9306ea7e",
+      "bytes": 74373
+    },
+    "tests/bridgelab_seismic_inertia.test.js": {
+      "sha256": "b4ce34ebd70dfaebb6f6368e48c5bcc7100250476ee883470d77081982b23e5f",
+      "bytes": 4774
+    }
+  },
+  "batchSize": 16,
+  "pool": "threads",
+  "workers": 1,
+  "workerHeapMiB": 1024,
+  "retries": 0,
+  "wrapperHeapLimitBytes": 469762048,
+  "catalogue": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\unit-batches\\catalogue.json",
+    "sha256": "16630ce1310dd40e4463d4bb33c660d3dfc8771aa308a81c6633aba9844b41d7",
+    "bytes": 42351
+  },
+  "tooling": [
+    {
+      "role": "runner",
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\run-unit-batches-threads.cjs",
+      "sha256": "75be93e5abf96e4e17c6aba466973020f211b00655c4584653d5f6fff62a09f6",
+      "bytes": 11964
+    },
+    {
+      "role": "proof-checker",
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\verify-unit-batches-threads.cjs",
+      "sha256": "3a79ff053dd1a85bb2413f3175beb15e792077df22edb8e96103f1fcdc3e0122",
+      "bytes": 13097
+    },
+    {
+      "role": "error-reporter",
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\batch-errors-reporter.cjs",
+      "sha256": "2bb24a7d05fb32b6342b67af4814bc375f5cba1c97520126bb3d517370bc0530",
+      "bytes": 1038
+    }
+  ],
+  "plannedBatches": [
+    {
+      "id": "ui-01",
+      "file": "tests/bridgelab_immersive_motion.test.js",
+      "selectedCases": 16
+    },
+    {
+      "id": "ui-02",
+      "file": "tests/bridgelab_immersive_motion.test.js",
+      "selectedCases": 16
+    },
+    {
+      "id": "ui-03",
+      "file": "tests/bridgelab_immersive_motion.test.js",
+      "selectedCases": 16
+    },
+    {
+      "id": "ui-04",
+      "file": "tests/bridgelab_immersive_motion.test.js",
+      "selectedCases": 16
+    },
+    {
+      "id": "ui-05",
+      "file": "tests/bridgelab_immersive_motion.test.js",
+      "selectedCases": 16
+    },
+    {
+      "id": "ui-06",
+      "file": "tests/bridgelab_immersive_motion.test.js",
+      "selectedCases": 16
+    },
+    {
+      "id": "ui-07",
+      "file": "tests/bridgelab_immersive_motion.test.js",
+      "selectedCases": 16
+    },
+    {
+      "id": "ui-08",
+      "file": "tests/bridgelab_immersive_motion.test.js",
+      "selectedCases": 16
+    },
+    {
+      "id": "ui-09",
+      "file": "tests/bridgelab_immersive_motion.test.js",
+      "selectedCases": 16
+    },
+    {
+      "id": "ui-10",
+      "file": "tests/bridgelab_immersive_motion.test.js",
+      "selectedCases": 16
+    },
+    {
+      "id": "ui-11",
+      "file": "tests/bridgelab_immersive_motion.test.js",
+      "selectedCases": 16
+    },
+    {
+      "id": "ui-12",
+      "file": "tests/bridgelab_immersive_motion.test.js",
+      "selectedCases": 16
+    },
+    {
+      "id": "ui-13",
+      "file": "tests/bridgelab_immersive_motion.test.js",
+      "selectedCases": 16
+    },
+    {
+      "id": "model",
+      "file": "tests/bridgelab_seismic_model.test.js",
+      "selectedCases": 75
+    },
+    {
+      "id": "inertia",
+      "file": "tests/bridgelab_seismic_inertia.test.js",
+      "selectedCases": 4
+    }
+  ],
+  "batches": [
+    {
+      "id": "ui-01",
+      "file": "tests/bridgelab_immersive_motion.test.js",
+      "selectedFullNames": [
+        "Bridge Lab immersive earthquake interaction frame energy native: separates stored and cumulative loss while preserving tiny, zero and undamped readings",
+        "Bridge Lab immersive earthquake interaction frame energy native: follows unequal saved A/B on one scale while fallback retains the current experiment",
+        "Bridge Lab immersive earthquake interaction shaking visual: compares measured amounts on one scale and keeps the 0–16 second bars fixed while inspecting later times",
+        "Bridge Lab immersive earthquake interaction shaking visual: preserves amplitude scaling and arbitrarily small nonzero segments without a minimum display width",
+        "Bridge Lab immersive earthquake interaction shaking visual: leaves exact-zero rows empty and shows undamped stored energy without a loss segment",
+        "Bridge Lab immersive earthquake interaction shaking visual: freezes a saved confounded comparison and rebuilds its bars from the original inputs in a fresh print",
+        "Bridge Lab immersive earthquake interaction starting energy: keeps the optional disclosure open and focused while its 0–16 second values stay fixed",
+        "Bridge Lab immersive earthquake interaction starting energy: rebuilds saved confounded inputs in a fresh disabled-model print after the live pair changes",
+        "Bridge Lab immersive earthquake interaction starting energy: retains tiny input work and distinguishes zero shaking from undamped storage",
+        "Bridge Lab immersive earthquake interaction starting energy: explains damping as the changed input only for a controlled nonzero pair",
+        "Bridge Lab immersive earthquake interaction starting energy: keeps guide provenance independent of notebook selection, scene selection and learner writing",
+        "Bridge Lab immersive earthquake interaction decay time: preserves focused drafts, pauses motion, commits bounded times and keeps saved evidence static",
+        "Bridge Lab immersive earthquake interaction decay fraction: opens a native optional view and follows each model ratio from 16 seconds through the event end",
+        "Bridge Lab immersive earthquake interaction decay fraction: preserves amplitude-independent ratios and bar widths for tiny nonzero energy",
+        "Bridge Lab immersive earthquake interaction decay fraction: leaves zero-initial trials undefined instead of presenting zero percent remaining",
+        "Bridge Lab immersive earthquake interaction decay fraction: displays the measured undamped ratio without forcing it to exactly one"
+      ],
+      "metadata": {
+        "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\unit-batches\\ui-01.run.json",
+        "sha256": "4a3bcdc7f7d8ba2db471136493a27a37332a87a44c0777731b80116f641b65ec",
+        "bytes": 9594
+      }
+    }
+  ],
+  "note": "Every aggregate assertion is copied from one fresh actual Vitest result. Other UI assertions are intentionally pending/skipped in each batch. English registries are checked separately.",
+  "finishedAt": "2026-10-06T21:10:53.484Z",
+  "exitCode": 1,
+  "signal": null,
+  "error": "AssertionError [ERR_ASSERTION]: Fresh batch failed: ui-01\n\n'failed' !== 'passed'\n\n    at run (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\run-unit-batches-threads.cjs:70:14)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)",
+  "inputsAfter": {
+    "stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "fd5362d52c5b2515606f211c273adf0d4afb58be699898a5d1fbe10697517d2d",
+      "bytes": 1074903
+    },
+    "desktop/web-app/public/stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "fd5362d52c5b2515606f211c273adf0d4afb58be699898a5d1fbe10697517d2d",
+      "bytes": 1074903
+    },
+    "tests/bridgelab_immersive_motion.test.js": {
+      "sha256": "2d807a49139cc6a3d52b4f1588096857561b4625bca5eb2f6f879ba3d88a5f34",
+      "bytes": 314387
+    },
+    "tests/bridgelab_seismic_model.test.js": {
+      "sha256": "224fb18e9b73a4d06e0c376759be329ed7fb51357a4537fbfa57b71f9306ea7e",
+      "bytes": 74373
+    },
+    "tests/bridgelab_seismic_inertia.test.js": {
+      "sha256": "b4ce34ebd70dfaebb6f6368e48c5bcc7100250476ee883470d77081982b23e5f",
+      "bytes": 4774
+    }
+  },
+  "inputsUnchanged": true
+}

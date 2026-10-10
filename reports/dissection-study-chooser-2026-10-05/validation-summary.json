@@ -1,0 +1,107 @@
+{
+  "date": "2026-10-05",
+  "currentHashes": {
+    "stem_lab/stem_tool_dissection.js": "72c75cc596b0ee7307b7b7549fcd34e02cefdf9cdfb00f445bb21a26cc2dfeed",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "72c75cc596b0ee7307b7b7549fcd34e02cefdf9cdfb00f445bb21a26cc2dfeed",
+    "tests/dissection_lab_improvements.test.js": "f43f0a739eacc816fe11ddf96037205795b783f8dc47c59091e4e5249829130c",
+    "tests/e2e/dissection-study-chooser.spec.ts": "7941e1e85ac47ec7005ac1cf529f488f7173a39079a4b811e7d3a04b8e46031e"
+  },
+  "unchangedInputs": {
+    "tests/dissection_canvas_loop.test.js": "b31bbe5cc07efe789e0b2262d12441366c3425966f2e804ad818513a6d22e5ca",
+    "tests/dissection_workspace_bands.test.js": "9c59fde98d1fd7e103edf4dffb72b1b9dbea39524d5acfd5bc67760dcf56f98c",
+    "tests/e2e/dissection-tools-cohesion.spec.ts": "1b34409ba5e1c7d2f81f98f206eb01b1b6e1c5417a2b5aec5dab053e4f44ad5b",
+    "tests/e2e/dissection-capture-clarity.spec.ts": "007db45b401ce6470082eb456b845ee48dfb5ab5ecaec0b55a5ea713177ae2f7",
+    "tests/e2e/dissection-evidence-gallery.spec.ts": "fd03716a63f5cdbe3e7010ec309eba3128d2a0284b67eef9bb94cb0d235f2c89",
+    "tests/e2e/dissection-reference-workbench.spec.ts": "fb436d8471bf847c377bb8e6603784e5a725067bb53c7eec1e273dc9b813ff6e"
+  },
+  "results": {
+    "baseline": {
+      "passed": 6,
+      "failed": 0,
+      "flaky": 0,
+      "skipped": 0
+    },
+    "study": {
+      "passed": 12,
+      "failed": 0,
+      "flaky": 0,
+      "skipped": 0
+    },
+    "unit-main": {
+      "passed": 248,
+      "failed": 0,
+      "pending": 1
+    },
+    "unit-axe": {
+      "passed": 1,
+      "failed": 0,
+      "pending": 139
+    },
+    "tools": {
+      "passed": 11,
+      "failed": 0,
+      "flaky": 0,
+      "skipped": 0
+    }
+  },
+  "latestJobs": {
+    "baseline": "baseline-1",
+    "study": "study-3",
+    "unit-main": "unit-main-3",
+    "unit-axe": "unit-axe-3",
+    "tools": "tools-3"
+  },
+  "unitPassed": 249,
+  "browserPassed": 23,
+  "baselineLayouts": 6,
+  "axeAudits": [
+    {
+      "file": "study-3/captures/desktop-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "study-3/captures/embedded-large-contrast-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "study-3/captures/embedded-medium-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "study-3/captures/forced-colors-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "study-3/captures/forced-resize-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "study-3/captures/keyboard-compare-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "study-3/captures/phone-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "study-3/captures/tablet-axe.json",
+      "violations": 0,
+      "incomplete": []
+    }
+  ],
+  "previousReportEntriesPreserved": 195,
+  "sourceReversal": true,
+  "unitReversal": true,
+  "stagedPaths": "",
+  "headAtStart": "2f9789e0bba98c9795492beb226202cf34f0d675",
+  "headAtFinish": "2f9789e0bba98c9795492beb226202cf34f0d675",
+  "noGitMutations": true,
+  "deployed": false
+}

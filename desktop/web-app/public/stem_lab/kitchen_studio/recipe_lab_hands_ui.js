@@ -3,7 +3,7 @@
   'use strict';
   function mount(host){
     var H=root.KitchenHands,R=root.KitchenRecipes,$=function(id){return document.getElementById(id);};
-    var view=null,zone='prep',locked=false,selected=null,drag=null,tilt=0,pouring=false,frame=null,lastTime=0,remainder=0,poured=0,session=null;
+    var view=null,zone='prep',locked=false,selected=null,drag=null,tilt=0,pouring=false,frame=null,lastTime=0,remainder=0,poured=0,session=null,dialCancels=[];
     function element(tag,text,cls){var e=document.createElement(tag);if(text)e.textContent=text;if(cls)e.className=cls;return e;}
     var panel=element('section',null,'hands-workbench');panel.setAttribute('aria-labelledby','handsTitle');
     panel.innerHTML='<div class="hands-heading"><div><p class="eyebrow">MOVE · OBSERVE · ADJUST</p><h4 id="handsTitle">Work with your ingredients</h4></div><span class="hands-badge">Hands-on bench</span></div><p id="handsHelp">Drag an ingredient or tool onto cookware. Or select it, then choose its destination. Escape puts it down.</p><div id="handsShelf" class="hands-shelf" role="group" aria-label="Ingredients and tools"></div><div id="handsTargets" class="hands-targets" role="group" aria-label="Cookware destinations"></div><p id="handsFeedback" role="status" aria-live="polite" aria-atomic="true">Choose what to move. Preparation and heat still matter.</p><p class="hands-note">The clock pauses while you handle an item. Run the kitchen between actions to watch both vessels cook.</p>';
@@ -70,7 +70,7 @@
     }
     function cancel(){
       if(drag){var d=drag;drag=null;if(d.node.hasPointerCapture(d.id))d.node.releasePointerCapture(d.id);}
-      ghost.hidden=true;Object.values(targetNodes).forEach(function(t){t.classList.remove('hands-over');});pick(null);stopPour();
+      ghost.hidden=true;Object.values(targetNodes).forEach(function(t){t.classList.remove('hands-over');});pick(null);dialCancels.forEach(function(stop){stop();});stopPour();
     }
     panel.addEventListener('keydown',function(e){if(e.key==='Escape'){e.preventDefault();cancel();say('Item put down.');}});
     // Quick actions remain a complete alternative, kept below the work surface.
@@ -83,10 +83,12 @@
       dial.innerHTML='<svg viewBox="0 0 160 130" aria-hidden="true"><path d="M42 98A49 49 0 1 1 118 98" fill="none" stroke="#9ba98d" stroke-width="9"/><circle cx="80" cy="65" r="35" fill="#304e3e"/><path class="hands-dial-needle" d="M80 65V38" stroke="#fff3ce" stroke-width="5" stroke-linecap="round"/><text x="15" y="125">OFF</text><text x="117" y="125">HIGH</text></svg>';
       var reading=element('span','','hands-dial-reading');card.append(label,dial,reading);dials.append(card);var pointer=null;
       function set(value,method){if(locked)return;host.pause();if(host.getState()[v].heat!==value)host.apply(v+'Heat',value,method);}
+      function stopDial(){var id=pointer;pointer=null;if(id!==null&&dial.hasPointerCapture(id))dial.releasePointerCapture(id);}
+      dialCancels.push(stopDial);
       function move(e){var b=dial.getBoundingClientRect(),x=(e.clientX-b.left)*160/b.width-80,y=(e.clientY-b.top)*130/b.height-65;if(Math.hypot(x,y)<15)return;var angle=Math.atan2(x,-y)*180/Math.PI;set(Math.max(0,Math.min(3,Math.round((angle+135)/90))),'dial');}
       dial.addEventListener('pointerdown',function(e){if(locked||e.button!==0||!e.isPrimary)return;pointer=e.pointerId;dial.setPointerCapture(pointer);move(e);});
       dial.addEventListener('pointermove',function(e){if(pointer===e.pointerId)move(e);});
-      ['pointerup','pointercancel','lostpointercapture'].forEach(function(type){dial.addEventListener(type,function(e){if(pointer===e.pointerId){pointer=null;if(dial.hasPointerCapture(e.pointerId))dial.releasePointerCapture(e.pointerId);}});});
+      ['pointerup','pointercancel','lostpointercapture'].forEach(function(type){dial.addEventListener(type,function(e){if(pointer===e.pointerId)stopDial();});});
       dial.addEventListener('keydown',function(e){var value=host.getState()[v].heat;if(e.key==='ArrowRight'||e.key==='ArrowUp')value++;else if(e.key==='ArrowLeft'||e.key==='ArrowDown')value--;else if(e.key==='Home')value=0;else if(e.key==='End')value=3;else return;e.preventDefault();set(Math.min(3,Math.max(0,value)),'keyboard');});
     });
     var dialHelp=element('p','Turn a dial, or focus it and use the arrow keys. Heat changes gradually.','hands-note');dialHelp.id='handsDialHelp';dials.after(dialHelp);
@@ -107,7 +109,7 @@
       paintPour();if(host.getState().pot.reserve<10){stopPour();return;}frame=requestAnimationFrame(tick);
     }
     function startPour(){if(locked||!host.getState().pan.produce||host.getState().pot.reserve<10)return false;host.pause();pouring=true;session=host.getState().log[0];poured=0;remainder=0;lastTime=0;frame=requestAnimationFrame(tick);return true;}
-    function stopPour(){if(frame!==null)cancelAnimationFrame(frame);frame=null;if(pouring)$('handsPourResult').textContent=poured?poured+' mL added. Water already poured stays in the sauce. Mix through, then check the coating.':'No water poured. Tilt farther to start the flow.';pouring=false;tilt=0;remainder=0;lastTime=0;if($('handsJug'))paintPour();}
+    function stopPour(){var id=jugPointer;jugPointer=null;if(id!==null&&id!==undefined&&$('handsJug').hasPointerCapture(id))$('handsJug').releasePointerCapture(id);if(frame!==null)cancelAnimationFrame(frame);frame=null;if(pouring)$('handsPourResult').textContent=poured?poured+' mL added. Water already poured stays in the sauce. Mix through, then check the coating.':'No water poured. Tilt farther to start the flow.';pouring=false;tilt=0;remainder=0;lastTime=0;if($('handsJug'))paintPour();}
     var jugPointer=null,jugStart=0;
     $('handsJug').addEventListener('pointerdown',function(e){if(e.button!==0||!e.isPrimary||pouring||!startPour())return;jugPointer=e.pointerId;jugStart=e.clientX;this.setPointerCapture(e.pointerId);e.preventDefault();});
     $('handsJug').addEventListener('pointermove',function(e){if(jugPointer!==e.pointerId||!pouring)return;tilt=Math.min(80,Math.max(0,(e.clientX-jugStart)*320/this.getBoundingClientRect().width));paintPour();});

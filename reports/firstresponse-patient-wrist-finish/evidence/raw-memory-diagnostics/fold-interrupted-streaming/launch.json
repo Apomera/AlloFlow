@@ -1,0 +1,19 @@
+{
+  "startedAt": "2026-10-10T01:16:08.249Z",
+  "pid": 26816,
+  "parentPid": 7508,
+  "args": [
+    "--no-opt",
+    "--no-sparkplug",
+    "--max-old-space-size=256",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\vitest\\vitest.mjs",
+    "run",
+    "--config",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\raw-wrist-fold-tests\\vitest.config.cjs"
+  ],
+  "cwd": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\raw-wrist-fold-tests",
+  "sourceSHA256": "147670787861ae0251c9b4c65c90847a613c6b879d41737533749c19a5f6f891",
+  "runnerSHA256": "302b92f1c0373601296fe52621547e6c4f751bd34a146eeb24dcc6aae0a49fc6",
+  "timeoutMs": 240000,
+  "streamedOutput": true
+}

@@ -1,0 +1,7 @@
+const fs=require('fs'),path=require('path'),crypto=require('crypto'),base=path.join(__dirname,'..'),file=path.join(base,'source-work','renderer-next.js'),s=fs.readFileSync(file,'utf8');
+const parser=require('C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@babel/parser');
+const sha=v=>crypto.createHash('sha256').update(v).digest('hex');
+function walk(n,parents=[]){if(!n||typeof n!=='object')return;if(n.type==='CallExpression'&&n.arguments?.[1]?.type==='ObjectExpression'&&n.arguments[1].properties.some(p=>p.key?.name==='className'&&p.value?.value==='diss-scenario-console'))console.log(JSON.stringify({consoleAncestors:parents.filter(p=>p.type==='LogicalExpression'||p.type==='ConditionalExpression').map(p=>s.slice((p.left||p.test).start,(p.left||p.test).end))}));for(const[k,v]of Object.entries(n)){if(k==='loc')continue;if(Array.isArray(v))v.forEach(p=>walk(p,[...parents,n]));else if(v&&typeof v==='object')walk(v,[...parents,n]);}}
+walk(parser.parse(s));
+for(const[name,end]of [['procedureScenarioRestartScope','activateProcedureScenario'],['setStudyRoute','function'],['mountMarkingFixture','function']]){const i=s.indexOf('function '+name+'(');if(i>=0)console.log(s.slice(i,name==='procedureScenarioRestartScope'?s.indexOf('function activateProcedureScenario(',i):i+1200));}
+console.log(JSON.stringify({sourceSha256:sha(s),unitSha256:sha(fs.readFileSync(path.join(base,'unit-work','unit-next.js'))),browserSha256:sha(fs.readFileSync(path.join(__dirname,'dissection-scenario-clarity.spec.ts')))}));

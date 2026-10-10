@@ -1,0 +1,115 @@
+{
+  "completed": true,
+  "allPassed": true,
+  "distinctFiles": 3,
+  "distinctTests": 36,
+  "fullDomSuiteRun": false,
+  "environment": "Node canvas/event mock with one shared fork worker; this is not a full DOM or native WebGL suite.",
+  "inputsUnchanged": true,
+  "diagnosticsUnchanged": true,
+  "configUnchanged": true,
+  "rendererHash": "255f57893385f5e0ae1a932d00f3ba8e7e98cacc8851bc6ce8985003bd025a75",
+  "runDriver": {
+    "file": "run-focused-unit.cjs",
+    "sha256": "3221b4dcc6378fd59774e98c33d6a13a7984a90a46cf582793426521e32ef8eb"
+  },
+  "summaryDriver": {
+    "file": "summarize-focused-unit.cjs",
+    "sha256": "0ab7daa94b062e5d1ccf8a7756953ebf3d7fa5d2986f7ff25748fe5befa65efb"
+  },
+  "inputs": [
+    {
+      "path": "stem_lab/universe_flight_scene.js",
+      "sha256": "255f57893385f5e0ae1a932d00f3ba8e7e98cacc8851bc6ce8985003bd025a75"
+    },
+    {
+      "path": "tests/universe_flight_navigation.test.js",
+      "sha256": "e35154d951bd6875c27fb06e284734f31362d53408e56636b4f332a74f57d81d"
+    },
+    {
+      "path": "tests/universe_flight_physics.test.js",
+      "sha256": "c181ce38faaa0a0f66b1f202222149fcc7aef2e08019ce4c05d8281107dbccaf"
+    },
+    {
+      "path": "tests/universe_flight_disk_passage.test.js",
+      "sha256": "b7659ac07be1dd76a8679b9560402e3810d43fbf002ce7eef64f1a0ad7cc0b1e"
+    }
+  ],
+  "repairedTest": {
+    "file": "tests/universe_flight_disk_passage.test.js",
+    "sha256": "b7659ac07be1dd76a8679b9560402e3810d43fbf002ce7eef64f1a0ad7cc0b1e",
+    "originalSha256": "b2bc0c1e3f0e26d7062330ae6699d15d42eef4379e481df32dec5de1234b9d1a",
+    "manifest": {
+      "file": "disk-test-repair-manifest.json",
+      "sha256": "03ed6fa6fc7def29ec399b1d0ccadec24007827695a1bd0799cb8924eaafca1a"
+    }
+  },
+  "rerunHistory": [
+    {
+      "directory": "attempts/unit-v1/focused-unit",
+      "completed": true,
+      "exitCode": 1,
+      "passed": 32,
+      "failed": 4,
+      "skipped": 141,
+      "resultsSha256": "47cf285b819a5379eb2a83b3cb200b941e4dc615a3624ec7ffc2ac03e772f3ee",
+      "executionSha256": "9dcdea363a546d63c234f9182d0937f1105c205b6acfc9f74d20968b33993caf",
+      "driverSha256": "e2dd9a46629f14693ffea71a8d9adcf7a110e0c7e9488b7002d8e6a8a66bdff1",
+      "failures": [
+        {
+          "file": "tests/universe_flight_disk_passage.test.js",
+          "title": "Universe spiral disk passage starts a fresh route, survives the settings echo and freezes travel during pause and free look",
+          "durationMs": 409803.9253
+        },
+        {
+          "file": "tests/universe_flight_disk_passage.test.js",
+          "title": "Universe spiral disk passage uses all supported authored playback rates without adding physical clock time",
+          "durationMs": 9491.52669999993
+        },
+        {
+          "file": "tests/universe_flight_disk_passage.test.js",
+          "title": "Universe spiral disk passage completes once at the exact endpoint and restores a saved paused pose as free exploration",
+          "durationMs": 2061.360100000049
+        },
+        {
+          "file": "tests/universe_flight_navigation.test.js",
+          "title": "Universe flight Halo flyby adds six distinct generated destinations while preserving existing catalog IDs and independent metadata",
+          "durationMs": 223818.70430000004
+        }
+      ]
+    },
+    {
+      "directory": "focused-unit",
+      "completed": true,
+      "exitCode": 0,
+      "passed": 36,
+      "failed": 0,
+      "skipped": 141,
+      "resultsSha256": "183aca6786bd80471f6a571311739448bd38bbc5ea052be32b8d752a989babf9",
+      "executionSha256": "ead2c6e584411034aa0570cd3aa180910540d7fe622fd00a9ea3a2538fce2fc4",
+      "driverSha256": "3221b4dcc6378fd59774e98c33d6a13a7984a90a46cf582793426521e32ef8eb"
+    }
+  ],
+  "resultsHash": "183aca6786bd80471f6a571311739448bd38bbc5ea052be32b8d752a989babf9",
+  "executionHash": "ead2c6e584411034aa0570cd3aa180910540d7fe622fd00a9ea3a2538fce2fc4",
+  "suites": [
+    {
+      "path": "tests/universe_flight_disk_passage.test.js",
+      "passed": 9,
+      "skipped": 0,
+      "failed": 0
+    },
+    {
+      "path": "tests/universe_flight_navigation.test.js",
+      "passed": 5,
+      "skipped": 141,
+      "failed": 0
+    },
+    {
+      "path": "tests/universe_flight_physics.test.js",
+      "passed": 22,
+      "skipped": 0,
+      "failed": 0
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+const repo=process.env.WC_REPO||path.resolve(__dirname,'../..');
+const hash=b=>crypto.createHash('sha256').update(b).digest('hex');
+const manifest=JSON.parse(fs.readFileSync(path.join(__dirname,'presentation-changes.json'),'utf8'));
+if(manifest.baselinePath!=='reports/watercycle-hydro-readability/candidate-runtime.js'||manifest.baselineSha256!=='6252fd6fd2ccfc1159a9df831ff6857dd1d09ca36e3179e279a8726a44974a4f')throw Error('Unexpected baseline');
+const baseline=fs.readFileSync(path.join(repo,manifest.baselinePath));
+if(hash(baseline)!==manifest.baselineSha256)throw Error('Baseline hash differs');
+const css=fs.readFileSync(path.join(__dirname,'readouts.css'),'utf8').replace(/\r\n/g,'\n').trimEnd();
+if(hash(Buffer.from(css))!==manifest.cssSha256)throw Error('Styles differ');
+if(!manifest.presentationOnly||manifest.changes.length!==2)throw Error('Theme and CSS slices required');
+const [theme,style]=manifest.changes,text=baseline.toString('utf8');
+if(theme.id!=='storm-readout-theme'||theme.original!=="h('div', { className: 'wc-precip-visual' },"||theme.replacement!=="h('div', { className: 'wc-precip-visual', 'data-wc-storm-readout-theme': isContrast ? 'contrast' : isDark ? 'dark' : 'light' },")throw Error('Unexpected theme hook');
+if(style.id!=='storm-readout-presentation'||style.replacement!==style.original+'    if (wcFiveStyle) wcFiveStyle.textContent += '+JSON.stringify(css)+';\n')throw Error('Unexpected style replacement');
+let candidate=text;
+for(const change of manifest.changes){if(candidate.indexOf(change.original)<0||candidate.indexOf(change.original)!==candidate.lastIndexOf(change.original))throw Error('Source anchor differs');candidate=candidate.replace(change.original,change.replacement);}
+let reversed=candidate;for(const change of [...manifest.changes].reverse())reversed=reversed.replace(change.replacement,change.original);
+if(reversed!==text||hash(Buffer.from(candidate))!==manifest.sourceSha256)throw Error('Presentation reversal differs');
+new Function(candidate);
+const snapshotOnly=process.argv.includes('--snapshot-only');
+if(!snapshotOnly)for(const file of ['stem_lab/stem_tool_watercycle.js','desktop/web-app/public/stem_lab/stem_tool_watercycle.js'])if(hash(fs.readFileSync(path.join(repo,file)))!==manifest.sourceSha256)throw Error('Installed source differs: '+file);
+console.log(JSON.stringify({successful:true,sourceSha256:manifest.sourceSha256,baselineSha256:manifest.baselineSha256,onlyThemeHookAndStyles:true,unchangedModelTextStateAndHandlers:true,snapshotOnly}));

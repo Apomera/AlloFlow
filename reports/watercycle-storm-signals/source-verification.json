@@ -1,0 +1,30 @@
+{
+  "passed": true,
+  "sha256": "03874d513249cf4aa85947ee51b05e8aca9317d9a1191642cc573ab2775710b8",
+  "bytes": 3347026,
+  "mirrorEqual": true,
+  "syntaxPassed": true,
+  "exactReversal": true,
+  "baselineSHA256": "f29310e7d0bd78fdbb444e52ea36d6abae393ff268960aa956ae200dd139850a",
+  "changedSections": [
+    "renderStormMoments",
+    "WC_STORM_MOMENTS_STYLE"
+  ],
+  "stages": [
+    {
+      "name": "feedback-changes.json",
+      "before": "8c4d1ed57b2282fe5d9be03df4642aa769858f58fdf4e5bb0ab5b1a8dff2f759",
+      "after": "03874d513249cf4aa85947ee51b05e8aca9317d9a1191642cc573ab2775710b8"
+    },
+    {
+      "name": "refine-changes.json",
+      "before": "1b1abb8400181464f5d75991cc40e3f239927ffa55c77ecc78e7f0b925d91fa1",
+      "after": "8c4d1ed57b2282fe5d9be03df4642aa769858f58fdf4e5bb0ab5b1a8dff2f759"
+    },
+    {
+      "name": "changes.json",
+      "before": "f29310e7d0bd78fdbb444e52ea36d6abae393ff268960aa956ae200dd139850a",
+      "after": "1b1abb8400181464f5d75991cc40e3f239927ffa55c77ecc78e7f0b925d91fa1"
+    }
+  ]
+}

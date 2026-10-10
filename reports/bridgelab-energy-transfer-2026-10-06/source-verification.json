@@ -1,0 +1,264 @@
+{
+  "status": "passed",
+  "checkedAt": "2026-10-06T13:51:07.385Z",
+  "sourceSha256": "c866926d167b5dc5699578d33ee5a20a72c1d73c1722d2d0ebd4c974456789ec",
+  "sourceMirrorsIdentical": true,
+  "syntaxValid": true,
+  "literalEnglishFallbacks": 1353,
+  "independentlyCheckedEnglishFiles": [
+    {
+      "file": "ui_strings.js",
+      "sha256": "7a307331e41db30f49679bf5fbfd9595653a8ad11b6810e519e581684a924307",
+      "literalFallbacksMatched": 1353
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "sha256": "7a307331e41db30f49679bf5fbfd9595653a8ad11b6810e519e581684a924307",
+      "literalFallbacksMatched": 1353
+    }
+  ],
+  "unit": {
+    "passed": 285,
+    "newChecks": 2,
+    "files": 3,
+    "startedAt": "2026-10-06T13:33:48.982Z",
+    "finishedAt": "2026-10-06T13:38:07.751Z"
+  },
+  "browser": {
+    "passed": 32,
+    "groups": {
+      "bridge landscape:": 2,
+      "starting energy:": 2,
+      "decay time:": 2,
+      "decay fraction:": 3,
+      "guide energy:": 3,
+      "guided damping:": 4,
+      "claim interval:": 4,
+      "energy questions:": 3,
+      "motion guide:": 3,
+      "motion coherence:": 3,
+      "energy transfer:": 3
+    },
+    "cleanFreshRun": true,
+    "retries": 0,
+    "video": "off",
+    "startedAt": "2026-10-06T13:44:14.088Z",
+    "finishedAt": "2026-10-06T13:49:56.113Z"
+  },
+  "numericConfigurations": 144,
+  "featureCaptures": [
+    "starting-energy-1000-controlled.png",
+    "starting-energy-1000-recorded.png",
+    "starting-energy-1000-print.png",
+    "bridge-1000-landscape-orbit.png",
+    "bridge-1000-landscape-walkway.png",
+    "bridge-1000-landscape-river.png",
+    "bridge-1000-landscape-bank.png",
+    "decay-time-1000-controls.png",
+    "decay-time-1000-fallback.png",
+    "bridge-1000-position-diagram.png",
+    "bridge-1000-position-fallback.png",
+    "bridge-1000-position-small.png",
+    "energy-transfer-1000-native.png",
+    "energy-transfer-1000-tiny.png",
+    "energy-transfer-1000-fallback.png",
+    "starting-energy-320-controlled.png",
+    "starting-energy-320-recorded.png",
+    "starting-energy-320-print.png",
+    "bridge-320-landscape-orbit.png",
+    "bridge-320-landscape-walkway.png",
+    "bridge-320-landscape-river.png",
+    "bridge-320-landscape-bank.png",
+    "decay-time-320-controls.png",
+    "decay-time-320-fallback.png",
+    "bridge-320-position-diagram.png",
+    "bridge-320-position-fallback.png",
+    "bridge-320-position-small.png",
+    "energy-transfer-320-native.png",
+    "energy-transfer-320-tiny.png",
+    "energy-transfer-320-fallback.png"
+  ],
+  "featureCaptureFiles": [
+    {
+      "name": "starting-energy-1000-controlled.png",
+      "sha256": "095722d9450e679ba75a81bf85151192aed3cfe80e3b3d107a1f7e6332677977",
+      "bytes": 57477,
+      "modifiedAt": "2026-10-06T13:49:20.097Z"
+    },
+    {
+      "name": "starting-energy-1000-recorded.png",
+      "sha256": "2bc9b6fff8d7a1d1b7a43e7b1e8d6d523fa5e3a9175bda9cb9efe942c2863a2f",
+      "bytes": 59156,
+      "modifiedAt": "2026-10-06T13:49:30.290Z"
+    },
+    {
+      "name": "starting-energy-1000-print.png",
+      "sha256": "02a962115b0df7875e4283d02ab39f251fc279d6ae0350f6a4db748fe8a6637c",
+      "bytes": 57493,
+      "modifiedAt": "2026-10-06T13:49:34.609Z"
+    },
+    {
+      "name": "bridge-1000-landscape-orbit.png",
+      "sha256": "f0e7027572ed79ed474c226230967896be9e3037f01aed2e07af7d21a3ae2056",
+      "bytes": 131562,
+      "modifiedAt": "2026-10-06T13:44:19.402Z"
+    },
+    {
+      "name": "bridge-1000-landscape-walkway.png",
+      "sha256": "596b4ceb6c35184a9200624288f5653efa6fd8d6c867c2502b645dc197455084",
+      "bytes": 201090,
+      "modifiedAt": "2026-10-06T13:44:24.703Z"
+    },
+    {
+      "name": "bridge-1000-landscape-river.png",
+      "sha256": "4c81ba86a469be18f81f84d25d0b967f3e34ac825e74c583246ff916db7c50c0",
+      "bytes": 134476,
+      "modifiedAt": "2026-10-06T13:44:25.018Z"
+    },
+    {
+      "name": "bridge-1000-landscape-bank.png",
+      "sha256": "dc71a64a6c0a49231c3f8411311f0a1c3d90c7b82b9814980e8bfd13f85f3fcb",
+      "bytes": 146555,
+      "modifiedAt": "2026-10-06T13:44:25.508Z"
+    },
+    {
+      "name": "decay-time-1000-controls.png",
+      "sha256": "06aebbf135cd3de178907480ffe4279aa6bd5add67eaed0924726258632dedee",
+      "bytes": 33159,
+      "modifiedAt": "2026-10-06T13:48:43.835Z"
+    },
+    {
+      "name": "decay-time-1000-fallback.png",
+      "sha256": "94cef9beb52d9e7782120bb5a150d1d5f34d669142ae7f4f5b83ca4aee19f984",
+      "bytes": 33273,
+      "modifiedAt": "2026-10-06T13:48:48.465Z"
+    },
+    {
+      "name": "bridge-1000-position-diagram.png",
+      "sha256": "371fc495c8016d12a2266aa1df77ad68624a207cb37f5faefcdf1c69f8b0c306",
+      "bytes": 14557,
+      "modifiedAt": "2026-10-06T13:45:02.696Z"
+    },
+    {
+      "name": "bridge-1000-position-fallback.png",
+      "sha256": "025c2442a81ec82b8a4565a887af40f7369a8e646c7490d8e4cd3948d7c8e941",
+      "bytes": 8769,
+      "modifiedAt": "2026-10-06T13:45:10.412Z"
+    },
+    {
+      "name": "bridge-1000-position-small.png",
+      "sha256": "e1da92165d1459de11269162ff71464f6f3d8ff36d446b6dda1fadd4146dc069",
+      "bytes": 8826,
+      "modifiedAt": "2026-10-06T13:46:20.491Z"
+    },
+    {
+      "name": "energy-transfer-1000-native.png",
+      "sha256": "641ad4334a77328806b13a56e4b8b1671532ea7b3f0afda3f6fa509f7929d6d8",
+      "bytes": 30238,
+      "modifiedAt": "2026-10-06T13:47:00.669Z"
+    },
+    {
+      "name": "energy-transfer-1000-tiny.png",
+      "sha256": "7082ecec0056dd6d3a97d5b91229c68dd14d1eb3efbf428ab07e90b423825099",
+      "bytes": 36214,
+      "modifiedAt": "2026-10-06T13:47:10.028Z"
+    },
+    {
+      "name": "energy-transfer-1000-fallback.png",
+      "sha256": "5f045e3258daf8841d6c1031208ad18a32df2d2b2f15855633026df617f1994d",
+      "bytes": 24325,
+      "modifiedAt": "2026-10-06T13:47:16.830Z"
+    },
+    {
+      "name": "starting-energy-320-controlled.png",
+      "sha256": "2b8a7a901e3b0ce3a2f5a64ee83512b5a89b599782e3a60bbce57d28be060d9e",
+      "bytes": 61135,
+      "modifiedAt": "2026-10-06T13:49:45.505Z"
+    },
+    {
+      "name": "starting-energy-320-recorded.png",
+      "sha256": "ead484d82b4be80b9172d1b374b0526bc7db1bf577863a2e61ed23ddc17d26a5",
+      "bytes": 57436,
+      "modifiedAt": "2026-10-06T13:49:52.895Z"
+    },
+    {
+      "name": "starting-energy-320-print.png",
+      "sha256": "1be113666b4b3c0c990f0e8f5b4c04caa595ba10a85815cd063e154439cc29cd",
+      "bytes": 52721,
+      "modifiedAt": "2026-10-06T13:49:55.638Z"
+    },
+    {
+      "name": "bridge-320-landscape-orbit.png",
+      "sha256": "74c55ee2ab2ffa785779c05fb67c391930bfdde4639612a06025ef9adfc12c37",
+      "bytes": 53356,
+      "modifiedAt": "2026-10-06T13:44:28.490Z"
+    },
+    {
+      "name": "bridge-320-landscape-walkway.png",
+      "sha256": "ba92b00e94f5792017cadd278ff6ca9cb860236a76b3d829dca1fa7e009afb05",
+      "bytes": 92006,
+      "modifiedAt": "2026-10-06T13:44:33.306Z"
+    },
+    {
+      "name": "bridge-320-landscape-river.png",
+      "sha256": "b1843d3ff233ca5871d2cf83e330fc5ed97356e54c304b892536e77b797e76ad",
+      "bytes": 43152,
+      "modifiedAt": "2026-10-06T13:44:33.528Z"
+    },
+    {
+      "name": "bridge-320-landscape-bank.png",
+      "sha256": "596413d912311956aa4d95c50f6a5110d58170a0dfbb7fa2fcce0435bfc9bcfd",
+      "bytes": 70365,
+      "modifiedAt": "2026-10-06T13:44:33.924Z"
+    },
+    {
+      "name": "decay-time-320-controls.png",
+      "sha256": "39736f4f139b23827e19fbb3193b558f5bdf992b6b6c5c0d68a420ad7d93e618",
+      "bytes": 32419,
+      "modifiedAt": "2026-10-06T13:49:02.861Z"
+    },
+    {
+      "name": "decay-time-320-fallback.png",
+      "sha256": "0e2d7f7e596d15a3dfb92f9973a9d2529eb6c04138e91fb9ad0068461bbd5670",
+      "bytes": 33785,
+      "modifiedAt": "2026-10-06T13:49:08.999Z"
+    },
+    {
+      "name": "bridge-320-position-diagram.png",
+      "sha256": "09c6d1c103e486d5a62fd35292d5761f80f7db0c65902a2fef8db27f5c47e19b",
+      "bytes": 19434,
+      "modifiedAt": "2026-10-06T13:45:14.198Z"
+    },
+    {
+      "name": "bridge-320-position-fallback.png",
+      "sha256": "ff6b9f48f8dc3faed8713897f3dec49bfb8ed08b744a039fbbf98174340b18b4",
+      "bytes": 8226,
+      "modifiedAt": "2026-10-06T13:45:21.141Z"
+    },
+    {
+      "name": "bridge-320-position-small.png",
+      "sha256": "3d36cc04604cb4c0c9ad3f20b424ccbb241ccd483e561d2ddec778b485addc5d",
+      "bytes": 8476,
+      "modifiedAt": "2026-10-06T13:46:29.689Z"
+    },
+    {
+      "name": "energy-transfer-320-native.png",
+      "sha256": "9b826dc3e717e0dbf99a9ead0fc8dabe90f7066a2fba9a6328c3f6487e97acd6",
+      "bytes": 32376,
+      "modifiedAt": "2026-10-06T13:47:25.702Z"
+    },
+    {
+      "name": "energy-transfer-320-tiny.png",
+      "sha256": "1abb6506ea30f82489e3ec00bc3f6ed25cee4ab1c74d00a7c1e63994ab34dbdb",
+      "bytes": 37337,
+      "modifiedAt": "2026-10-06T13:47:34.727Z"
+    },
+    {
+      "name": "energy-transfer-320-fallback.png",
+      "sha256": "a09da638fb3858924609d74045324e8a3cd79a695b306f6225b8a190f6a8c5a9",
+      "bytes": 24805,
+      "modifiedAt": "2026-10-06T13:47:41.359Z"
+    }
+  ],
+  "note": "Source/test hashes match both completed runs. The current English registries are independently checked because browser and unit harnesses use literal fallbacks."
+}

@@ -1,0 +1,125 @@
+{
+  "rice": {
+    "roots": {
+      "rice": {
+        "scale": 0.368421052631579,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "modelVisible": true,
+        "axis": "y",
+        "anchor": [
+          0.31,
+          0,
+          0
+        ],
+        "geometry": [
+          "BB9B2762-6D19-4A36-A179-D024F6A0DA6B"
+        ]
+      },
+      "egg": {
+        "scale": 3,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "modelVisible": true,
+        "axis": "y",
+        "anchor": [
+          0.5276463663578034,
+          0,
+          0
+        ],
+        "geometry": []
+      }
+    },
+    "stats": {
+      "active": true,
+      "bigId": "egg",
+      "width": 1280,
+      "height": 912,
+      "maskPasses": 1
+    },
+    "mask": {
+      "coverage": 0.15817057291666667,
+      "width": 1280,
+      "height": 912
+    },
+    "identity": [
+      "00765DC4-36DA-4F9E-B385-A50156EACF8E",
+      "A462CA8E-6AC5-412F-BA6F-35C4F3D9259B",
+      "C1E762EC-C55A-42BB-BC4C-1E8A7BBCC6AB"
+    ],
+    "quadVisible": true,
+    "renderTarget": true,
+    "projection": "OrthographicCamera",
+    "canvasHeight": 747,
+    "theme": "101f2a",
+    "type": "webgl"
+  },
+  "canyon": {
+    "roots": {
+      "chicxulub": {
+        "scale": 1.210762331838565,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "modelVisible": true,
+        "axis": "x",
+        "anchor": [
+          0,
+          -0.31999999642372134,
+          0
+        ],
+        "geometry": []
+      },
+      "grand-canyon": {
+        "scale": 3,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "modelVisible": true,
+        "axis": "x",
+        "anchor": [
+          0.0012317077255336328,
+          0.002571926923623771,
+          -0.004330248971552261
+        ],
+        "geometry": [
+          "E573069A-7DF7-4C21-B317-004DB0CD26C3"
+        ]
+      }
+    },
+    "stats": {
+      "active": true,
+      "bigId": "grand-canyon",
+      "width": 1280,
+      "height": 912,
+      "maskPasses": 5
+    },
+    "mask": {
+      "coverage": 0.21213678728070176,
+      "width": 1280,
+      "height": 912
+    },
+    "identity": [
+      "00765DC4-36DA-4F9E-B385-A50156EACF8E",
+      "A462CA8E-6AC5-412F-BA6F-35C4F3D9259B",
+      "C1E762EC-C55A-42BB-BC4C-1E8A7BBCC6AB"
+    ],
+    "quadVisible": true,
+    "renderTarget": true,
+    "projection": "OrthographicCamera",
+    "canvasHeight": 747,
+    "theme": "101f2a",
+    "type": "webgl"
+  },
+  "errors": []
+}

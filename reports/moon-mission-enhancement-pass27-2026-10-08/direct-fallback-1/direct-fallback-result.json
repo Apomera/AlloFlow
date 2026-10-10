@@ -1,0 +1,66 @@
+{
+  "schema": "moon-pass27-direct-browser-v1",
+  "runner": "direct-playwright-api",
+  "playwrightCliResult": false,
+  "mode": "fallback",
+  "status": "failed",
+  "startedAt": "2026-10-09T00:24:28.138Z",
+  "repo": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "specPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-hud.spec.ts",
+  "output": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass27-2026-10-08\\direct-fallback-1",
+  "browserCache": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+  "timeouts": {
+    "action": 20000,
+    "navigation": 60000,
+    "expect": 15000,
+    "launch": 60000
+  },
+  "launchOptions": {
+    "headless": true,
+    "timeout": 60000
+  },
+  "workflowCompleted": false,
+  "cleanupCompleted": true,
+  "milestones": [
+    {
+      "name": "load:before",
+      "elapsedMs": 4
+    },
+    {
+      "name": "execution-failed",
+      "elapsedMs": 60617,
+      "error": {
+        "name": "Error",
+        "message": "Cannot find module 'typescript'\nRequire stack:\n- C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\package.json",
+        "stack": "Error: Cannot find module 'typescript'\nRequire stack:\n- C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\package.json\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)\n    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)\n    at Module._load (node:internal/modules/cjs/loader:1227:37)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)\n    at Module.require (node:internal/modules/cjs/loader:1504:12)\n    at require (node:internal/modules/helpers:152:16)\n    at run (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass27-direct.cjs:74:16)\n    at Object.<anonymous> (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass27-direct.cjs:178:30)"
+      }
+    },
+    {
+      "name": "cleanup:before",
+      "elapsedMs": 60623
+    },
+    {
+      "name": "cleanup:after",
+      "elapsedMs": 61082,
+      "status": "failed"
+    }
+  ],
+  "errors": [
+    {
+      "phase": "execution",
+      "name": "Error",
+      "message": "Cannot find module 'typescript'\nRequire stack:\n- C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\package.json",
+      "stack": "Error: Cannot find module 'typescript'\nRequire stack:\n- C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\package.json\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)\n    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)\n    at Module._load (node:internal/modules/cjs/loader:1227:37)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)\n    at Module.require (node:internal/modules/cjs/loader:1504:12)\n    at require (node:internal/modules/helpers:152:16)\n    at run (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass27-direct.cjs:74:16)\n    at Object.<anonymous> (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass27-direct.cjs:178:30)"
+    }
+  ],
+  "attachments": [],
+  "inputHashes": {
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-hud.spec.ts": "6235e4e4cea7b10dee698e64ab2f142664358809d828002825ea7512f1e6f4d1",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_moonmission.js": "cb9bc2190a58ed06c8bb2019e18dab89b0a0e102aa1c0787960b5946f4cf6900",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_moonmission.js": "cb9bc2190a58ed06c8bb2019e18dab89b0a0e102aa1c0787960b5946f4cf6900"
+  },
+  "finishedAt": "2026-10-09T00:25:29.220Z",
+  "elapsedMs": 61082
+}

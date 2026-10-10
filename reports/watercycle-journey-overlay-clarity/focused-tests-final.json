@@ -1,0 +1,149 @@
+{
+  "completed": true,
+  "successful": true,
+  "pid": 34068,
+  "passed": 33,
+  "tests": [
+    {
+      "name": "source parses and exposes both actual pure helpers",
+      "passed": true
+    },
+    {
+      "name": "original route hit rectangles and path identifiers remain exact",
+      "passed": true
+    },
+    {
+      "name": "idle produces no parcel or route card",
+      "passed": true
+    },
+    {
+      "name": "exact phase science and readable natural text: ocean",
+      "passed": true
+    },
+    {
+      "name": "exact phase science and readable natural text: evaporating",
+      "passed": true
+    },
+    {
+      "name": "exact phase science and readable natural text: condensing",
+      "passed": true
+    },
+    {
+      "name": "exact phase science and readable natural text: precipitating",
+      "passed": true
+    },
+    {
+      "name": "exact phase science and readable natural text: ground_choice",
+      "passed": true
+    },
+    {
+      "name": "exact phase science and readable natural text: river_runoff",
+      "passed": true
+    },
+    {
+      "name": "exact phase science and readable natural text: infiltrating",
+      "passed": true
+    },
+    {
+      "name": "exact phase science and readable natural text: aquifer_flow",
+      "passed": true
+    },
+    {
+      "name": "exact phase science and readable natural text: plant_absorb",
+      "passed": true
+    },
+    {
+      "name": "exact phase science and readable natural text: transpiring",
+      "passed": true
+    },
+    {
+      "name": "exact phase science and readable natural text: complete",
+      "passed": true
+    },
+    {
+      "name": "narrow/wide and DPR card layout: 320@1",
+      "passed": true
+    },
+    {
+      "name": "narrow/wide and DPR card layout: 320@2",
+      "passed": true
+    },
+    {
+      "name": "narrow/wide and DPR card layout: 390@1",
+      "passed": true
+    },
+    {
+      "name": "narrow/wide and DPR card layout: 390@2",
+      "passed": true
+    },
+    {
+      "name": "narrow/wide and DPR card layout: 1040@1",
+      "passed": true
+    },
+    {
+      "name": "narrow/wide and DPR card layout: 1040@2",
+      "passed": true
+    },
+    {
+      "name": "pause and late progress preserve the complete phase explanation",
+      "passed": true
+    },
+    {
+      "name": "animation progress stays bounded and choice/storage completion omit a moving bar",
+      "passed": true
+    },
+    {
+      "name": "ground choices have R/U/P captions and exact original target anchors",
+      "passed": true
+    },
+    {
+      "name": "drawing balances the context and uses opaque plates and natural foreground text",
+      "passed": true
+    },
+    {
+      "name": "layout remains deterministic and does not consume model progress",
+      "passed": true
+    },
+    {
+      "name": "upper free lane clears a lower HUD that blocks every downward candidate",
+      "passed": true
+    },
+    {
+      "name": "nearest vertical lane uses the closer upper gap before a farther downward gap",
+      "passed": true
+    },
+    {
+      "name": "nearest lane preserves the desired location and has a stable downward tie break",
+      "passed": true
+    },
+    {
+      "name": "stage label leader connects the semantic origin to the closest plate edge without arrowheads",
+      "passed": true
+    },
+    {
+      "name": "stage label leader remains quiet when the semantic origin is inside or close to its plate",
+      "passed": true
+    },
+    {
+      "name": "lookahead matches the existing progression gate including transition states and speed fallback",
+      "passed": true
+    },
+    {
+      "name": "choice and completion transition-frame cards reserve the actual foreground geometry",
+      "passed": true
+    },
+    {
+      "name": "manifest reversal restores every nonpresentation byte to the fresh baseline",
+      "passed": true
+    }
+  ],
+  "sourcePath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\journey-overlay-review\\candidate-runtime.js",
+  "sourceSha256": "f2360e271a96e40308aeb0b45a4ded56aaecec4366eafa92781278713a6f2a36",
+  "sourceBytes": 3163319,
+  "testPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\journey-overlay-tests.cjs",
+  "testSha256": "5eaa39034e5f9826b5ba7123476fe557953dded439ad899b439d71ac90f8ef06",
+  "baselinePath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\journey-overlay-review\\baseline-runtime.js",
+  "baselineSha256": "4bb912b9f1d00c1b54be26d29197f0c1bd9c1277161664d21842532f973f4bf3",
+  "manifestPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\journey-overlay-review\\presentation-changes.json",
+  "manifestSha256": "25ca5c798202408d27a18dd59b00541d2324ef974b3212d0404b3195d9635298"
+}

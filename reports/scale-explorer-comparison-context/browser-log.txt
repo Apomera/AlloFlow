@@ -1,0 +1,12 @@
+
+Running 3 tests using 1 worker
+
+(node:54252) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:54252) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\e2e\scale-explorer-comparison-context.spec.ts:20:5 › measured labels and direct references preserve scale, presentation and focus (10.8s)
+  ok 2 tests\e2e\scale-explorer-comparison-context.spec.ts:26:5 › measurement anchors follow the specimen axis and measured river route (8.2s)
+  ok 3 tests\e2e\scale-explorer-comparison-context.spec.ts:30:5 › phone reference steps keep personal height, readable badges and subpixel locators (7.7s)
+
+  3 passed (27.8s)

@@ -1,0 +1,187 @@
+{
+  "width": 320,
+  "inputs": {
+    "tiny": {
+      "archetype": "balanced",
+      "groundFrequencyHz": 1.1,
+      "intensityG": 0.000001,
+      "dampingRatio": 0.05
+    },
+    "saved": {
+      "archetype": "balanced",
+      "groundFrequencyHz": 1.1,
+      "intensityG": 0.000001,
+      "dampingRatio": 0.05
+    },
+    "current": {
+      "archetype": "balanced",
+      "groundFrequencyHz": 1.1,
+      "intensityG": 0.12,
+      "dampingRatio": 0.2
+    },
+    "zero": {
+      "archetype": "balanced",
+      "groundFrequencyHz": 1.1,
+      "intensityG": 0,
+      "dampingRatio": 0.2
+    }
+  },
+  "tiny": {
+    "motion": {
+      "id": "motion",
+      "trial": "current",
+      "time": 10,
+      "value": 0.0001525198535678616,
+      "unit": "cm",
+      "quantity": "relativeMotion",
+      "text": "1.53e-4 cm",
+      "scientific": true
+    },
+    "acceleration": {
+      "id": "acceleration",
+      "trial": "current",
+      "time": 9.983333333333333,
+      "value": 0.000007467110988984509,
+      "unit": "g",
+      "quantity": "absoluteAcceleration",
+      "text": "7.47e-6 g",
+      "scientific": true
+    },
+    "free": {
+      "id": "free",
+      "trial": "current",
+      "time": 16,
+      "value": 3.272067166516567e-12,
+      "unit": "J/kg",
+      "quantity": "storedEnergy",
+      "text": "3.27e-12 J/kg",
+      "scientific": true
+    },
+    "end": {
+      "id": "end",
+      "trial": "current",
+      "time": 24,
+      "value": 1.1789647591900615e-14,
+      "unit": "J/kg",
+      "quantity": "storedEnergy",
+      "text": "1.18e-14 J/kg",
+      "scientific": true
+    }
+  },
+  "savedMotion": {
+    "id": "motion",
+    "trial": "reference",
+    "time": 10,
+    "value": 0.0001525198535678616,
+    "unit": "cm",
+    "quantity": "relativeMotion",
+    "text": "1.53e-4 cm",
+    "scientific": true
+  },
+  "savedFree": {
+    "id": "free",
+    "trial": "reference",
+    "time": 16,
+    "value": 3.272067166516567e-12,
+    "unit": "J/kg",
+    "quantity": "storedEnergy",
+    "text": "3.27e-12 J/kg",
+    "scientific": true
+  },
+  "savedEnd": {
+    "id": "end",
+    "trial": "reference",
+    "time": 24,
+    "value": 1.1789647591900615e-14,
+    "unit": "J/kg",
+    "quantity": "storedEnergy",
+    "text": "1.18e-14 J/kg",
+    "scientific": true
+  },
+  "normalMotion": {
+    "id": "motion",
+    "trial": "current",
+    "time": 8.633333333333333,
+    "value": 5.920660182675944,
+    "unit": "cm",
+    "quantity": "relativeMotion",
+    "text": "5.921 cm",
+    "scientific": false
+  },
+  "normalAcceleration": {
+    "id": "acceleration",
+    "trial": "current",
+    "time": 8.583333333333334,
+    "value": 0.31079549241676163,
+    "unit": "g",
+    "quantity": "absoluteAcceleration",
+    "text": "0.311 g",
+    "scientific": false
+  },
+  "normalFree": {
+    "id": "free",
+    "trial": "current",
+    "time": 16,
+    "value": 0.000005066325221785859,
+    "unit": "J/kg",
+    "quantity": "storedEnergy",
+    "text": "5.07e-6 J/kg",
+    "scientific": true
+  },
+  "normalEnd": {
+    "id": "end",
+    "trial": "current",
+    "time": 24,
+    "value": 1.097280605388231e-15,
+    "unit": "J/kg",
+    "quantity": "storedEnergy",
+    "text": "1.10e-15 J/kg",
+    "scientific": true
+  },
+  "zeros": {
+    "start": {
+      "id": "start",
+      "trial": "current",
+      "time": 0,
+      "value": 0,
+      "unit": "J/kg",
+      "quantity": "storedEnergy",
+      "text": "0.000 J/kg",
+      "scientific": false
+    },
+    "free": {
+      "id": "free",
+      "trial": "current",
+      "time": 16,
+      "value": 0,
+      "unit": "J/kg",
+      "quantity": "storedEnergy",
+      "text": "0.000 J/kg",
+      "scientific": false
+    },
+    "end": {
+      "id": "end",
+      "trial": "current",
+      "time": 24,
+      "value": 0,
+      "unit": "J/kg",
+      "quantity": "storedEnergy",
+      "text": "0.000 J/kg",
+      "scientific": false
+    }
+  },
+  "offPeakTimeS": 10.001,
+  "savedTrial": {
+    "version": "bridge-seismic-v1",
+    "name": "Tiny moment reference",
+    "inputs": {
+      "archetype": "balanced",
+      "groundFrequencyHz": 1.1,
+      "intensityG": 0.000001,
+      "dampingRatio": 0.05
+    },
+    "timeS": 24,
+    "prediction": "",
+    "observation": "Compare the exact moments."
+  }
+}

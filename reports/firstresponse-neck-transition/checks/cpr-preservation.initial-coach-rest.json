@@ -1,0 +1,3296 @@
+{
+  "passed": true,
+  "checkerSHA256": "3376b0cd142ce7a6889e083612bf4069cb6819eb0ed4ff42acb5f5cdd244df42",
+  "meshHelperSHA256": "199157f91711eef18270c8aa22f540fd9ab7eff51c7d248459d6e633cfc3efbf",
+  "candidateSHA256": "38f468c92a949621adcf6eea4765c8a3aaf2626d35132996df1d17239b97a542",
+  "beforeSHA256": "24dbe22375df2c8c3e7739d00d4621f4cc2c1e4db68d2bb05dfd15cca56c8a8a",
+  "cases": 2,
+  "results": [
+    {
+      "age": "adult",
+      "tab": "depth",
+      "status": "passed",
+      "input": {
+        "depth": 100,
+        "motion": "press",
+        "lean": 0,
+        "note": "Input100 intentionally exercises the existing internal maximum-depth clamp; it is not a clinical measurement."
+      },
+      "chestRigScale": [
+        1,
+        0.6111111111111112,
+        1
+      ],
+      "chestRigPosition": [
+        0,
+        -0.09722222222222222,
+        0
+      ],
+      "outsideNeck": {
+        "SHA256": "77a651d9ac12a39562d18b24d7485decf89cecc78237bb3b0578d167d40ac767",
+        "nodes": 209,
+        "meshes": 143,
+        "geometries": 141,
+        "materials": 25,
+        "allocatedGeometries": 0,
+        "allocatedMaterials": 0
+      },
+      "baselineCaps": [
+        {
+          "age": "adult",
+          "tab": "depth",
+          "end": "head",
+          "target": "fr-manikin-head",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 70,
+          "outside": 28,
+          "minimumRayIntervalMargin": 0.004415896607502079,
+          "failures": [
+            {
+              "kind": "capVertex",
+              "index": 449,
+              "world": [
+                0,
+                0.4694292788845393,
+                -1.1085570714508164
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.4110222069260243,
+                  "face": 2066
+                },
+                {
+                  "distance": 1.7650483194521895,
+                  "face": 452
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "capVertex",
+              "index": 450,
+              "world": [
+                0.029764190316200256,
+                0.46553018982599503,
+                -1.1089469803566707
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.3849344267405597,
+                  "face": 2258
+                },
+                {
+                  "distance": 1.7697366609246248,
+                  "face": 459
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "capVertex",
+              "index": 451,
+              "world": [
+                0.057500001043081284,
+                0.4540986559001896,
+                -1.1100901337492513
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.37319482458908,
+                  "face": 2355
+                },
+                {
+                  "distance": 1.775469547963558,
+                  "face": 463
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "capVertex",
+              "index": 452,
+              "world": [
+                0.08131727576255798,
+                0.4359137135248877,
+                -1.1119086279867816
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.3747907909822352,
+                  "face": 2546
+                },
+                {
+                  "distance": 1.7830980334295548,
+                  "face": 563
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "capVertex",
+              "index": 453,
+              "world": [
+                0.0995929166674614,
+                0.41221463940956027,
+                -1.1142785353983142
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.3891417753378301,
+                  "face": 2644
+                },
+                {
+                  "distance": 1.7931857554290227,
+                  "face": 661
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "capVertex",
+              "index": 454,
+              "world": [
+                0.11108146607875824,
+                0.3846164762356885,
+                -1.1170383517157014
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.4129704734458477,
+                  "face": 2742
+                },
+                {
+                  "distance": 1.8066358636667899,
+                  "face": 757
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "capVertex",
+              "index": 468,
+              "world": [
+                -0.11108146607875824,
+                0.3846164762356885,
+                -1.1170383517157014
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.6345758129548422,
+                  "face": 1493
+                },
+                {
+                  "distance": 1.8013984790840791,
+                  "face": 827
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "capVertex",
+              "index": 469,
+              "world": [
+                -0.0995929166674614,
+                0.41221463940956027,
+                -1.1142785353983142
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.5999596807834378,
+                  "face": 1493
+                },
+                {
+                  "distance": 1.7744214001994816,
+                  "face": 729
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "capVertex",
+              "index": 470,
+              "world": [
+                -0.08131727576255798,
+                0.4359137135248877,
+                -1.1119086279867816
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.5504521920732415,
+                  "face": 1589
+                },
+                {
+                  "distance": 1.7627045151550935,
+                  "face": 730
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "capVertex",
+              "index": 471,
+              "world": [
+                -0.057500001043081284,
+                0.4540986559001896,
+                -1.1100901337492513
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.497688117159801,
+                  "face": 1778
+                },
+                {
+                  "distance": 1.76019118783847,
+                  "face": 541
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "capVertex",
+              "index": 472,
+              "world": [
+                -0.029764190316200256,
+                0.46553018982599503,
+                -1.1089469803566707
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.449505630743736,
+                  "face": 1875
+                },
+                {
+                  "distance": 1.7617256927609912,
+                  "face": 449
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "capVertex",
+              "index": 473,
+              "world": [
+                -2.816687628596988e-17,
+                0.4694292788845393,
+                -1.1085570714508164
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.4110222069260243,
+                  "face": 2066
+                },
+                {
+                  "distance": 1.7650483194521895,
+                  "face": 452
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 0,
+              "world": [
+                0,
+                0.4694292788845393,
+                -1.1085570714508164
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.4110222069260243,
+                  "face": 2066
+                },
+                {
+                  "distance": 1.7650483194521895,
+                  "face": 452
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 1,
+              "world": [
+                0.029764190316200256,
+                0.46553018982599503,
+                -1.1089469803566707
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.3849344267405597,
+                  "face": 2258
+                },
+                {
+                  "distance": 1.7697366609246248,
+                  "face": 459
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 2,
+              "world": [
+                0.057500001043081284,
+                0.4540986559001896,
+                -1.1100901337492513
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.37319482458908,
+                  "face": 2355
+                },
+                {
+                  "distance": 1.775469547963558,
+                  "face": 463
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 3,
+              "world": [
+                0.08131727576255798,
+                0.4359137135248877,
+                -1.1119086279867816
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.3747907909822352,
+                  "face": 2546
+                },
+                {
+                  "distance": 1.7830980334295548,
+                  "face": 563
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 4,
+              "world": [
+                0.0995929166674614,
+                0.41221463940956027,
+                -1.1142785353983142
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.3891417753378301,
+                  "face": 2644
+                },
+                {
+                  "distance": 1.7931857554290227,
+                  "face": 661
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 5,
+              "world": [
+                0.11108146607875824,
+                0.3846164762356885,
+                -1.1170383517157014
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.4129704734458477,
+                  "face": 2742
+                },
+                {
+                  "distance": 1.8066358636667899,
+                  "face": 757
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 19,
+              "world": [
+                -0.11108146607875824,
+                0.3846164762356885,
+                -1.1170383517157014
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.6345758129548422,
+                  "face": 1493
+                },
+                {
+                  "distance": 1.8013984790840791,
+                  "face": 827
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 20,
+              "world": [
+                -0.0995929166674614,
+                0.41221463940956027,
+                -1.1142785353983142
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.5999596807834378,
+                  "face": 1493
+                },
+                {
+                  "distance": 1.7744214001994816,
+                  "face": 729
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 21,
+              "world": [
+                -0.08131727576255798,
+                0.4359137135248877,
+                -1.1119086279867816
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.5504521920732415,
+                  "face": 1589
+                },
+                {
+                  "distance": 1.7627045151550935,
+                  "face": 730
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 22,
+              "world": [
+                -0.057500001043081284,
+                0.4540986559001896,
+                -1.1100901337492513
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.497688117159801,
+                  "face": 1778
+                },
+                {
+                  "distance": 1.76019118783847,
+                  "face": 541
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 23,
+              "world": [
+                -0.029764190316200256,
+                0.46553018982599503,
+                -1.1089469803566707
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.449505630743736,
+                  "face": 1875
+                },
+                {
+                  "distance": 1.7617256927609912,
+                  "face": 449
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 24,
+              "world": [
+                -2.816687628596988e-17,
+                0.4694292788845393,
+                -1.1085570714508164
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.4110222069260243,
+                  "face": 2066
+                },
+                {
+                  "distance": 1.7650483194521895,
+                  "face": 452
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 768,
+              "world": [
+                0.009921396772066752,
+                0.4299864895483718,
+                -1.112501350384433
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.4301204204627056,
+                  "face": 2163
+                },
+                {
+                  "distance": 1.807411000079809,
+                  "face": 456
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 769,
+              "world": [
+                0.029088063786427178,
+                0.42487628188692195,
+                -1.1130123711505782
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.418155736716628,
+                  "face": 2259
+                },
+                {
+                  "distance": 1.8099968779845708,
+                  "face": 461
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 790,
+              "world": [
+                -0.029088063786427178,
+                0.42487628188692195,
+                -1.1130123711505782
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.4741032666572615,
+                  "face": 1970
+                },
+                {
+                  "distance": 1.8099000945389365,
+                  "face": 451
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 791,
+              "world": [
+                -0.00992139677206676,
+                0.4299864895483718,
+                -1.112501350384433
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 1.4493400068615303,
+                  "face": 2067
+                },
+                {
+                  "distance": 1.8072972040113484,
+                  "face": 455
+                }
+              ],
+              "pointDistance": 1.81060796087109
+            }
+          ]
+        },
+        {
+          "age": "adult",
+          "tab": "depth",
+          "end": "torso",
+          "target": "fr-manikin-torso",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 32,
+          "outside": 66,
+          "minimumRayIntervalMargin": 0.012416853034231234,
+          "failures": [
+            {
+              "kind": "capVertex",
+              "index": 499,
+              "world": [
+                0.04141104593873024,
+                0.47878113060407934,
+                -0.8046218876003217
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.802817891496208,
+                  "face": 50
+                },
+                {
+                  "distance": 2.9723590652261414,
+                  "face": 102
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 498,
+              "world": [
+                0,
+                0.48420594694048663,
+                -0.8040794059666809
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.8175476347530135,
+                  "face": 47
+                },
+                {
+                  "distance": 2.957604994690847,
+                  "face": 105
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 474,
+              "world": [
+                0,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9611758932279493,
+                  "face": 132
+                },
+                {
+                  "distance": 3.161565744348489,
+                  "face": 180
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 500,
+              "world": [
+                0.07999999821186066,
+                0.46287639806536535,
+                -0.8062123608541931
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.8068221023592477,
+                  "face": 54
+                },
+                {
+                  "distance": 2.993905439367797,
+                  "face": 99
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 475,
+              "world": [
+                0,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9611758932279493,
+                  "face": 132
+                },
+                {
+                  "distance": 3.161565744348489,
+                  "face": 180
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 501,
+              "world": [
+                0.11313708126544952,
+                0.43757560351635083,
+                -0.8087424403090946
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.8278672354167154,
+                  "face": 57
+                },
+                {
+                  "distance": 3.021680284532068,
+                  "face": 97
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 476,
+              "world": [
+                0,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9611758932279493,
+                  "face": 132
+                },
+                {
+                  "distance": 3.161565744348489,
+                  "face": 180
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 502,
+              "world": [
+                0.1385640650987625,
+                0.4046029735029527,
+                -0.8120397033104343
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.8634474956171627,
+                  "face": 61
+                },
+                {
+                  "distance": 3.056109936433245,
+                  "face": 174
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 477,
+              "world": [
+                0,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9611758932279493,
+                  "face": 132
+                },
+                {
+                  "distance": 3.161565744348489,
+                  "face": 180
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 503,
+              "world": [
+                0.15454812347888947,
+                0.3662055308599496,
+                -0.8158794475747346
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9085904210451967,
+                  "face": 63
+                },
+                {
+                  "distance": 3.09685683208381,
+                  "face": 173
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 478,
+              "world": [
+                0,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9611758932279493,
+                  "face": 132
+                },
+                {
+                  "distance": 3.161565744348489,
+                  "face": 180
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 504,
+              "world": [
+                0.1599999964237213,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.957520137194122,
+                  "face": 144
+                },
+                {
+                  "distance": 3.142095541463652,
+                  "face": 172
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 479,
+              "world": [
+                0,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9611758932279493,
+                  "face": 132
+                },
+                {
+                  "distance": 3.161565744348489,
+                  "face": 180
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 480,
+              "world": [
+                0,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9611758932279493,
+                  "face": 132
+                },
+                {
+                  "distance": 3.161565744348489,
+                  "face": 180
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 481,
+              "world": [
+                0,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9611758932279493,
+                  "face": 132
+                },
+                {
+                  "distance": 3.161565744348489,
+                  "face": 180
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 482,
+              "world": [
+                0,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9611758932279493,
+                  "face": 132
+                },
+                {
+                  "distance": 3.161565744348489,
+                  "face": 180
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 483,
+              "world": [
+                0,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9611758932279493,
+                  "face": 132
+                },
+                {
+                  "distance": 3.161565744348489,
+                  "face": 180
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 484,
+              "world": [
+                0,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9611758932279493,
+                  "face": 132
+                },
+                {
+                  "distance": 3.161565744348489,
+                  "face": 180
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 485,
+              "world": [
+                0,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9611758932279493,
+                  "face": 132
+                },
+                {
+                  "distance": 3.161565744348489,
+                  "face": 180
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 486,
+              "world": [
+                0,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9611758932279493,
+                  "face": 132
+                },
+                {
+                  "distance": 3.161565744348489,
+                  "face": 180
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 487,
+              "world": [
+                0,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9611758932279493,
+                  "face": 132
+                },
+                {
+                  "distance": 3.161565744348489,
+                  "face": 180
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 488,
+              "world": [
+                0,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9611758932279493,
+                  "face": 132
+                },
+                {
+                  "distance": 3.161565744348489,
+                  "face": 180
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 489,
+              "world": [
+                0,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9611758932279493,
+                  "face": 132
+                },
+                {
+                  "distance": 3.161565744348489,
+                  "face": 180
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 490,
+              "world": [
+                0,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9611758932279493,
+                  "face": 132
+                },
+                {
+                  "distance": 3.161565744348489,
+                  "face": 180
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 516,
+              "world": [
+                -0.1599999964237213,
+                0.3250000000654187,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 3.0370000054626463,
+                  "face": 121
+                },
+                {
+                  "distance": 3.1254848838490252,
+                  "face": 189
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 491,
+              "world": [
+                0,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9611758932279493,
+                  "face": 132
+                },
+                {
+                  "distance": 3.161565744348489,
+                  "face": 180
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 517,
+              "world": [
+                -0.15454812347888947,
+                0.3662055308599496,
+                -0.8158794475747346
+              ],
+              "inside": false,
+              "intersections": [],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 492,
+              "world": [
+                0,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9611758932279493,
+                  "face": 132
+                },
+                {
+                  "distance": 3.161565744348489,
+                  "face": 180
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 518,
+              "world": [
+                -0.1385640650987625,
+                0.4046029735029527,
+                -0.8120397033104343
+              ],
+              "inside": false,
+              "intersections": [],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 493,
+              "world": [
+                0,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9611758932279493,
+                  "face": 132
+                },
+                {
+                  "distance": 3.161565744348489,
+                  "face": 180
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 519,
+              "world": [
+                -0.11313708126544952,
+                0.43757560351635083,
+                -0.8087424403090946
+              ],
+              "inside": false,
+              "intersections": [],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 494,
+              "world": [
+                0,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9611758932279493,
+                  "face": 132
+                },
+                {
+                  "distance": 3.161565744348489,
+                  "face": 180
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 520,
+              "world": [
+                -0.07999999821186066,
+                0.46287639806536535,
+                -0.8062123608541931
+              ],
+              "inside": false,
+              "intersections": [],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 495,
+              "world": [
+                0,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9611758932279493,
+                  "face": 132
+                },
+                {
+                  "distance": 3.161565744348489,
+                  "face": 180
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 521,
+              "world": [
+                -0.04141104593873024,
+                0.47878113060407934,
+                -0.8046218876003217
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.8529798504290924,
+                  "face": 43
+                },
+                {
+                  "distance": 2.947566220728446,
+                  "face": 109
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 496,
+              "world": [
+                0,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9611758932279493,
+                  "face": 132
+                },
+                {
+                  "distance": 3.161565744348489,
+                  "face": 180
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 522,
+              "world": [
+                -3.918870060621435e-17,
+                0.48420594694048663,
+                -0.8040794059666809
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.8175476347530135,
+                  "face": 47
+                },
+                {
+                  "distance": 2.957604994690847,
+                  "face": 105
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 497,
+              "world": [
+                0,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9611758932279493,
+                  "face": 132
+                },
+                {
+                  "distance": 3.161565744348489,
+                  "face": 180
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 400,
+              "world": [
+                0,
+                0.48420594694048663,
+                -0.8040794059666809
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.8175476347530135,
+                  "face": 47
+                },
+                {
+                  "distance": 2.957604994690847,
+                  "face": 105
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 401,
+              "world": [
+                0.04141104593873024,
+                0.47878113060407934,
+                -0.8046218876003217
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.802817891496208,
+                  "face": 50
+                },
+                {
+                  "distance": 2.9723590652261414,
+                  "face": 102
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 402,
+              "world": [
+                0.07999999821186066,
+                0.46287639806536535,
+                -0.8062123608541931
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.8068221023592477,
+                  "face": 54
+                },
+                {
+                  "distance": 2.993905439367797,
+                  "face": 99
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 403,
+              "world": [
+                0.11313708126544952,
+                0.43757560351635083,
+                -0.8087424403090946
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.8278672354167154,
+                  "face": 57
+                },
+                {
+                  "distance": 3.021680284532068,
+                  "face": 97
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 404,
+              "world": [
+                0.1385640650987625,
+                0.4046029735029527,
+                -0.8120397033104343
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.8634474956171627,
+                  "face": 61
+                },
+                {
+                  "distance": 3.056109936433245,
+                  "face": 174
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 405,
+              "world": [
+                0.15454812347888947,
+                0.3662055308599496,
+                -0.8158794475747346
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9085904210451967,
+                  "face": 63
+                },
+                {
+                  "distance": 3.09685683208381,
+                  "face": 173
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 406,
+              "world": [
+                0.1599999964237213,
+                0.32500000006541874,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.957520137194122,
+                  "face": 144
+                },
+                {
+                  "distance": 3.142095541463652,
+                  "face": 172
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 418,
+              "world": [
+                -0.1599999964237213,
+                0.3250000000654187,
+                -0.8200000006541878
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 3.0370000054626463,
+                  "face": 121
+                },
+                {
+                  "distance": 3.1254848838490252,
+                  "face": 189
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 419,
+              "world": [
+                -0.15454812347888947,
+                0.3662055308599496,
+                -0.8158794475747346
+              ],
+              "inside": false,
+              "intersections": [],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 420,
+              "world": [
+                -0.1385640650987625,
+                0.4046029735029527,
+                -0.8120397033104343
+              ],
+              "inside": false,
+              "intersections": [],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 421,
+              "world": [
+                -0.11313708126544952,
+                0.43757560351635083,
+                -0.8087424403090946
+              ],
+              "inside": false,
+              "intersections": [],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 422,
+              "world": [
+                -0.07999999821186066,
+                0.46287639806536535,
+                -0.8062123608541931
+              ],
+              "inside": false,
+              "intersections": [],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 423,
+              "world": [
+                -0.04141104593873024,
+                0.47878113060407934,
+                -0.8046218876003217
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.8529798504290924,
+                  "face": 43
+                },
+                {
+                  "distance": 2.947566220728446,
+                  "face": 109
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 424,
+              "world": [
+                -3.918870060621435e-17,
+                0.48420594694048663,
+                -0.8040794059666809
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.8175476347530135,
+                  "face": 47
+                },
+                {
+                  "distance": 2.957604994690847,
+                  "face": 105
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 792,
+              "world": [
+                0.013803681979576746,
+                0.4293290258699949,
+                -0.8095670980737302
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.8583476055403585,
+                  "face": 51
+                },
+                {
+                  "distance": 3.031891179600063,
+                  "face": 103
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 793,
+              "world": [
+                0.04047034805019696,
+                0.4222191762449545,
+                -0.8102780830362342
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.856567668961949,
+                  "face": 53
+                },
+                {
+                  "distance": 3.042536718080086,
+                  "face": 180
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 794,
+              "world": [
+                0.06437902649243672,
+                0.408484000549045,
+                -0.8116516006058252
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.864845403225551,
+                  "face": 55
+                },
+                {
+                  "distance": 3.059372236002117,
+                  "face": 178
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 795,
+              "world": [
+                0.08390038212140401,
+                0.3890595256949074,
+                -0.8135940480912389
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.8822518724082964,
+                  "face": 57
+                },
+                {
+                  "distance": 3.081729103985704,
+                  "face": 177
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 796,
+              "world": [
+                0.09770406285921732,
+                0.365269501476107,
+                -0.815973050513119
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9068842358652796,
+                  "face": 59
+                },
+                {
+                  "distance": 3.1081387995787795,
+                  "face": 176
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 797,
+              "world": [
+                0.10484937330087025,
+                0.338735176996929,
+                -0.8186264829610368
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9359496232651057,
+                  "face": 61
+                },
+                {
+                  "distance": 3.1382704231373535,
+                  "face": 175
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 798,
+              "world": [
+                0.10484937330087025,
+                0.3112648231339084,
+                -0.8213735183473387
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9661596224959483,
+                  "face": 140
+                },
+                {
+                  "distance": 3.169950992035668,
+                  "face": 175
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 809,
+              "world": [
+                -0.10484937330087025,
+                0.3112648231339084,
+                -0.8213735183473387
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 3.008676981452214,
+                  "face": 126
+                },
+                {
+                  "distance": 3.16731401532231,
+                  "face": 185
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 810,
+              "world": [
+                -0.10484937330087025,
+                0.338735176996929,
+                -0.8186264829610368
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9883940122713,
+                  "face": 125
+                },
+                {
+                  "distance": 3.129442283462209,
+                  "face": 186
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 811,
+              "world": [
+                -0.09770406285921732,
+                0.365269501476107,
+                -0.815973050513119
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.966194830266876,
+                  "face": 124
+                },
+                {
+                  "distance": 3.0933499723579585,
+                  "face": 186
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 812,
+              "world": [
+                -0.08390038212140401,
+                0.3890595256949074,
+                -0.8135940480912389
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9418746923043595,
+                  "face": 124
+                },
+                {
+                  "distance": 3.0637902705933624,
+                  "face": 186
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 813,
+              "world": [
+                -0.06437902649243672,
+                0.408484000549045,
+                -0.8116516006058252
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.916919698101911,
+                  "face": 124
+                },
+                {
+                  "distance": 3.042832483034918,
+                  "face": 107
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 814,
+              "world": [
+                -0.04047034805019696,
+                0.4222191762449545,
+                -0.8102780830362342
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.8905235971738934,
+                  "face": 47
+                },
+                {
+                  "distance": 3.0314000290198346,
+                  "face": 105
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 815,
+              "world": [
+                -0.01380368197957676,
+                0.4293290258699949,
+                -0.8095670980737302
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.8700900012140234,
+                  "face": 48
+                },
+                {
+                  "distance": 3.028020865266301,
+                  "face": 105
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            }
+          ]
+        }
+      ],
+      "candidateCaps": [
+        {
+          "age": "adult",
+          "tab": "depth",
+          "end": "head",
+          "target": "fr-manikin-head",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.061240663965360875,
+          "failures": []
+        },
+        {
+          "age": "adult",
+          "tab": "depth",
+          "end": "torso",
+          "target": "fr-manikin-torso",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 34,
+          "outside": 64,
+          "minimumRayIntervalMargin": 0.01241622818210475,
+          "failures": [
+            {
+              "kind": "capVertex",
+              "index": 499,
+              "world": [
+                0.04141104593873024,
+                0.4762243545979422,
+                -0.78187972784203
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.798948447986898,
+                  "face": 130
+                },
+                {
+                  "distance": 2.9873827981026406,
+                  "face": 181
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 498,
+              "world": [
+                0,
+                0.4815589775478144,
+                -0.7830043240314625
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.810347655482693,
+                  "face": 128
+                },
+                {
+                  "distance": 2.974697133755664,
+                  "face": 184
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 474,
+              "world": [
+                0,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": true,
+              "entryMargin": 0.24734705354758058,
+              "exitMargin": 2.4257436059826887e-9,
+              "entryFace": 3226,
+              "exitFace": 419,
+              "attempt": 0
+            },
+            {
+              "kind": "capVertex",
+              "index": 500,
+              "world": [
+                0.07999999821186066,
+                0.46058405528620683,
+                -0.7785825836627993
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.802763333145262,
+                  "face": 134
+                },
+                {
+                  "distance": 3.0099340587229273,
+                  "face": 179
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 475,
+              "world": [
+                0,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": true,
+              "entryMargin": 0.24734705354758058,
+              "exitMargin": 2.4257436059826887e-9,
+              "entryFace": 3226,
+              "exitFace": 419,
+              "attempt": 0
+            },
+            {
+              "kind": "capVertex",
+              "index": 501,
+              "world": [
+                0.11313708126544952,
+                0.43570391356687244,
+                -0.7733375808138585
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.821216732217552,
+                  "face": 138
+                },
+                {
+                  "distance": 3.0416638404385683,
+                  "face": 257
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 476,
+              "world": [
+                0,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": true,
+              "entryMargin": 0.24734705354758058,
+              "exitMargin": 2.4257436059826887e-9,
+              "entryFace": 3226,
+              "exitFace": 419,
+              "attempt": 0
+            },
+            {
+              "kind": "capVertex",
+              "index": 502,
+              "world": [
+                0.1385640650987625,
+                0.4032794888713059,
+                -0.766502161553712
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.85159650198662,
+                  "face": 141
+                },
+                {
+                  "distance": 3.0811588082483574,
+                  "face": 256
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 477,
+              "world": [
+                0,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": true,
+              "entryMargin": 0.24734705354758058,
+              "exitMargin": 2.4257436059826887e-9,
+              "entryFace": 3226,
+              "exitFace": 419,
+              "attempt": 0
+            },
+            {
+              "kind": "capVertex",
+              "index": 503,
+              "world": [
+                0.15454812347888947,
+                0.36552044487103996,
+                -0.7585421468725749
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.887923602429186,
+                  "face": 221
+                },
+                {
+                  "distance": 3.1251804203522098,
+                  "face": 334
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 478,
+              "world": [
+                0,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": true,
+              "entryMargin": 0.24734705354758058,
+              "exitMargin": 2.4257436059826887e-9,
+              "entryFace": 3226,
+              "exitFace": 419,
+              "attempt": 0
+            },
+            {
+              "kind": "capVertex",
+              "index": 504,
+              "world": [
+                0.1599999964237213,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.926916421495437,
+                  "face": 302
+                },
+                {
+                  "distance": 3.1711003319126956,
+                  "face": 335
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 479,
+              "world": [
+                0,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": true,
+              "entryMargin": 0.24734705354758058,
+              "exitMargin": 2.4257436059826887e-9,
+              "entryFace": 3226,
+              "exitFace": 419,
+              "attempt": 0
+            },
+            {
+              "kind": "capVertex",
+              "index": 480,
+              "world": [
+                0,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": true,
+              "entryMargin": 0.24734705354758058,
+              "exitMargin": 2.4257436059826887e-9,
+              "entryFace": 3226,
+              "exitFace": 419,
+              "attempt": 0
+            },
+            {
+              "kind": "capVertex",
+              "index": 481,
+              "world": [
+                0,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": true,
+              "entryMargin": 0.24734705354758058,
+              "exitMargin": 2.4257436059826887e-9,
+              "entryFace": 3226,
+              "exitFace": 419,
+              "attempt": 0
+            },
+            {
+              "kind": "capVertex",
+              "index": 482,
+              "world": [
+                0,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": true,
+              "entryMargin": 0.24734705354758058,
+              "exitMargin": 2.4257436059826887e-9,
+              "entryFace": 3226,
+              "exitFace": 419,
+              "attempt": 0
+            },
+            {
+              "kind": "capVertex",
+              "index": 483,
+              "world": [
+                0,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": true,
+              "entryMargin": 0.24734705354758058,
+              "exitMargin": 2.4257436059826887e-9,
+              "entryFace": 3226,
+              "exitFace": 419,
+              "attempt": 0
+            },
+            {
+              "kind": "capVertex",
+              "index": 484,
+              "world": [
+                0,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": true,
+              "entryMargin": 0.24734705354758058,
+              "exitMargin": 2.4257436059826887e-9,
+              "entryFace": 3226,
+              "exitFace": 419,
+              "attempt": 0
+            },
+            {
+              "kind": "capVertex",
+              "index": 485,
+              "world": [
+                0,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": true,
+              "entryMargin": 0.24734705354758058,
+              "exitMargin": 2.4257436059826887e-9,
+              "entryFace": 3226,
+              "exitFace": 419,
+              "attempt": 0
+            },
+            {
+              "kind": "capVertex",
+              "index": 486,
+              "world": [
+                0,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": true,
+              "entryMargin": 0.24734705354758058,
+              "exitMargin": 2.4257436059826887e-9,
+              "entryFace": 3226,
+              "exitFace": 419,
+              "attempt": 0
+            },
+            {
+              "kind": "capVertex",
+              "index": 487,
+              "world": [
+                0,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": true,
+              "entryMargin": 0.24734705354758058,
+              "exitMargin": 2.4257436059826887e-9,
+              "entryFace": 3226,
+              "exitFace": 419,
+              "attempt": 0
+            },
+            {
+              "kind": "capVertex",
+              "index": 488,
+              "world": [
+                0,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": true,
+              "entryMargin": 0.24734705354758058,
+              "exitMargin": 2.4257436059826887e-9,
+              "entryFace": 3226,
+              "exitFace": 419,
+              "attempt": 0
+            },
+            {
+              "kind": "capVertex",
+              "index": 489,
+              "world": [
+                0,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": true,
+              "entryMargin": 0.24734705354758058,
+              "exitMargin": 2.4257436059826887e-9,
+              "entryFace": 3226,
+              "exitFace": 419,
+              "attempt": 0
+            },
+            {
+              "kind": "capVertex",
+              "index": 490,
+              "world": [
+                0,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": true,
+              "entryMargin": 0.24734705354758058,
+              "exitMargin": 2.4257436059826887e-9,
+              "entryFace": 3226,
+              "exitFace": 419,
+              "attempt": 0
+            },
+            {
+              "kind": "capVertex",
+              "index": 516,
+              "world": [
+                -0.1599999964237213,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.96644640615496,
+                  "face": 288
+                },
+                {
+                  "distance": 3.169337973029005,
+                  "face": 345
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 491,
+              "world": [
+                0,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": true,
+              "entryMargin": 0.24734705354758058,
+              "exitMargin": 2.4257436059826887e-9,
+              "entryFace": 3226,
+              "exitFace": 419,
+              "attempt": 0
+            },
+            {
+              "kind": "capVertex",
+              "index": 517,
+              "world": [
+                -0.15454812347888947,
+                0.36552044487103996,
+                -0.7585421468725749
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.939726967535251,
+                  "face": 207
+                },
+                {
+                  "distance": 3.115621628482058,
+                  "face": 346
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 492,
+              "world": [
+                0,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": true,
+              "entryMargin": 0.24734705354758058,
+              "exitMargin": 2.4257436059826887e-9,
+              "entryFace": 3226,
+              "exitFace": 419,
+              "attempt": 0
+            },
+            {
+              "kind": "capVertex",
+              "index": 518,
+              "world": [
+                -0.1385640650987625,
+                0.4032794888713059,
+                -0.766502161553712
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.915648325361456,
+                  "face": 204
+                },
+                {
+                  "distance": 3.062623316798468,
+                  "face": 267
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 493,
+              "world": [
+                0,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": true,
+              "entryMargin": 0.24734705354758058,
+              "exitMargin": 2.4257436059826887e-9,
+              "entryFace": 3226,
+              "exitFace": 419,
+              "attempt": 0
+            },
+            {
+              "kind": "capVertex",
+              "index": 519,
+              "world": [
+                -0.11313708126544952,
+                0.43570391356687244,
+                -0.7733375808138585
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.891892196655752,
+                  "face": 202
+                },
+                {
+                  "distance": 3.0179345069933827,
+                  "face": 189
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 494,
+              "world": [
+                0,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": true,
+              "entryMargin": 0.24734705354758058,
+              "exitMargin": 2.4257436059826887e-9,
+              "entryFace": 3226,
+              "exitFace": 419,
+              "attempt": 0
+            },
+            {
+              "kind": "capVertex",
+              "index": 520,
+              "world": [
+                -0.07999999821186066,
+                0.46058405528620683,
+                -0.7785825836627993
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.8628151036907674,
+                  "face": 123
+                },
+                {
+                  "distance": 2.986511489762623,
+                  "face": 187
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 495,
+              "world": [
+                0,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": true,
+              "entryMargin": 0.24734705354758058,
+              "exitMargin": 2.4257436059826887e-9,
+              "entryFace": 3226,
+              "exitFace": 419,
+              "attempt": 0
+            },
+            {
+              "kind": "capVertex",
+              "index": 521,
+              "world": [
+                -0.04141104593873024,
+                0.4762243545979422,
+                -0.78187972784203
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.833495846955489,
+                  "face": 125
+                },
+                {
+                  "distance": 2.973049375778133,
+                  "face": 186
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 496,
+              "world": [
+                0,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": true,
+              "entryMargin": 0.24734705354758058,
+              "exitMargin": 2.4257436059826887e-9,
+              "entryFace": 3226,
+              "exitFace": 419,
+              "attempt": 0
+            },
+            {
+              "kind": "capVertex",
+              "index": 522,
+              "world": [
+                -3.918870060621435e-17,
+                0.4815589775478144,
+                -0.7830043240314625
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.810347655482693,
+                  "face": 128
+                },
+                {
+                  "distance": 2.974697133755664,
+                  "face": 184
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capVertex",
+              "index": 497,
+              "world": [
+                0,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": true,
+              "entryMargin": 0.24734705354758058,
+              "exitMargin": 2.4257436059826887e-9,
+              "entryFace": 3226,
+              "exitFace": 419,
+              "attempt": 0
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 400,
+              "world": [
+                0,
+                0.4815589775478144,
+                -0.7830043240314625
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.810347655482693,
+                  "face": 128
+                },
+                {
+                  "distance": 2.974697133755664,
+                  "face": 184
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 401,
+              "world": [
+                0.04141104593873024,
+                0.4762243545979422,
+                -0.78187972784203
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.798948447986898,
+                  "face": 130
+                },
+                {
+                  "distance": 2.9873827981026406,
+                  "face": 181
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 402,
+              "world": [
+                0.07999999821186066,
+                0.46058405528620683,
+                -0.7785825836627993
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.802763333145262,
+                  "face": 134
+                },
+                {
+                  "distance": 3.0099340587229273,
+                  "face": 179
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 403,
+              "world": [
+                0.11313708126544952,
+                0.43570391356687244,
+                -0.7733375808138585
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.821216732217552,
+                  "face": 138
+                },
+                {
+                  "distance": 3.0416638404385683,
+                  "face": 257
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 404,
+              "world": [
+                0.1385640650987625,
+                0.4032794888713059,
+                -0.766502161553712
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.85159650198662,
+                  "face": 141
+                },
+                {
+                  "distance": 3.0811588082483574,
+                  "face": 256
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 405,
+              "world": [
+                0.15454812347888947,
+                0.36552044487103996,
+                -0.7585421468725749
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.887923602429186,
+                  "face": 221
+                },
+                {
+                  "distance": 3.1251804203522098,
+                  "face": 334
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 406,
+              "world": [
+                0.1599999964237213,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.926916421495437,
+                  "face": 302
+                },
+                {
+                  "distance": 3.1711003319126956,
+                  "face": 335
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 418,
+              "world": [
+                -0.1599999964237213,
+                0.3250000001947973,
+                -0.7499999990759616
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.96644640615496,
+                  "face": 288
+                },
+                {
+                  "distance": 3.169337973029005,
+                  "face": 345
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 419,
+              "world": [
+                -0.15454812347888947,
+                0.36552044487103996,
+                -0.7585421468725749
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.939726967535251,
+                  "face": 207
+                },
+                {
+                  "distance": 3.115621628482058,
+                  "face": 346
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 420,
+              "world": [
+                -0.1385640650987625,
+                0.4032794888713059,
+                -0.766502161553712
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.915648325361456,
+                  "face": 204
+                },
+                {
+                  "distance": 3.062623316798468,
+                  "face": 267
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 421,
+              "world": [
+                -0.11313708126544952,
+                0.43570391356687244,
+                -0.7733375808138585
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.891892196655752,
+                  "face": 202
+                },
+                {
+                  "distance": 3.0179345069933827,
+                  "face": 189
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 422,
+              "world": [
+                -0.07999999821186066,
+                0.46058405528620683,
+                -0.7785825836627993
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.8628151036907674,
+                  "face": 123
+                },
+                {
+                  "distance": 2.986511489762623,
+                  "face": 187
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 423,
+              "world": [
+                -0.04141104593873024,
+                0.4762243545979422,
+                -0.78187972784203
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.833495846955489,
+                  "face": 125
+                },
+                {
+                  "distance": 2.973049375778133,
+                  "face": 186
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "perimeterVertex",
+              "index": 424,
+              "world": [
+                -3.918870060621435e-17,
+                0.4815589775478144,
+                -0.7830043240314625
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.810347655482693,
+                  "face": 128
+                },
+                {
+                  "distance": 2.974697133755664,
+                  "face": 184
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 792,
+              "world": [
+                0.013803681979576746,
+                0.427594444113518,
+                -0.7716280169831513
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.843587259456938,
+                  "face": 133
+                },
+                {
+                  "distance": 3.053617027517205,
+                  "face": 261
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 793,
+              "world": [
+                0.04047034805019696,
+                0.4206028033596488,
+                -0.7701541035269303
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.843713621688344,
+                  "face": 134
+                },
+                {
+                  "distance": 3.063999540264593,
+                  "face": 260
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 794,
+              "world": [
+                0.06437902649243672,
+                0.4070959896826255,
+                -0.7673067211842064
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.8519750919931037,
+                  "face": 137
+                },
+                {
+                  "distance": 3.0815012000217616,
+                  "face": 259
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 795,
+              "world": [
+                0.08390038212140401,
+                0.3879944675443252,
+                -0.7632799138145108
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.8673105451189578,
+                  "face": 217
+                },
+                {
+                  "distance": 3.1060336700001665,
+                  "face": 259
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 796,
+              "world": [
+                0.09770406285921732,
+                0.3645999779790477,
+                -0.7583481025007495
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.888221901070844,
+                  "face": 219
+                },
+                {
+                  "distance": 3.1325574153393787,
+                  "face": 336
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 797,
+              "world": [
+                0.10484937330087025,
+                0.3385068150868782,
+                -0.7528473816748327
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9121120958128124,
+                  "face": 219
+                },
+                {
+                  "distance": 3.162543520117674,
+                  "face": 337
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 810,
+              "world": [
+                -0.10484937330087025,
+                0.3385068150868782,
+                -0.7528473816748327
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.940051561736669,
+                  "face": 290
+                },
+                {
+                  "distance": 3.1608919282456545,
+                  "face": 343
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 811,
+              "world": [
+                -0.09770406285921732,
+                0.3645999779790477,
+                -0.7583481025007495
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9196199254056223,
+                  "face": 209
+                },
+                {
+                  "distance": 3.128062348242579,
+                  "face": 344
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 812,
+              "world": [
+                -0.08390038212140401,
+                0.3879944675443252,
+                -0.7632799138145108
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.9000198572183837,
+                  "face": 209
+                },
+                {
+                  "distance": 3.0991233718787594,
+                  "face": 265
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 813,
+              "world": [
+                -0.06437902649243672,
+                0.4070959896826255,
+                -0.7673067211842064
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.881596104837156,
+                  "face": 208
+                },
+                {
+                  "distance": 3.074598494900491,
+                  "face": 264
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 814,
+              "world": [
+                -0.04047034805019696,
+                0.4206028033596488,
+                -0.7701541035269303
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.864552262655071,
+                  "face": 129
+                },
+                {
+                  "distance": 3.0584275151260885,
+                  "face": 263
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            },
+            {
+              "kind": "capTriangleCentroid",
+              "triangle": 815,
+              "world": [
+                -0.01380368197957676,
+                0.427594444113518,
+                -0.7716280169831513
+              ],
+              "inside": false,
+              "intersections": [
+                {
+                  "distance": 2.851156618453346,
+                  "face": 131
+                },
+                {
+                  "distance": 3.0514748400721716,
+                  "face": 262
+                }
+              ],
+              "pointDistance": 3.184093472456454
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "age": "infant",
+      "tab": "coach",
+      "status": "passed",
+      "input": {
+        "depth": 100,
+        "motion": "press",
+        "lean": 0,
+        "note": "Input100 intentionally exercises the existing internal maximum-depth clamp; it is not a clinical measurement."
+      },
+      "chestRigScale": [
+        1,
+        1,
+        1
+      ],
+      "chestRigPosition": [
+        0,
+        0,
+        0
+      ],
+      "outsideNeck": {
+        "SHA256": "f4e0629ca8472f883cf80a4cb5f0d26f91887b00e6c3614bc4fd49b4620b84de",
+        "nodes": 179,
+        "meshes": 124,
+        "geometries": 122,
+        "materials": 25,
+        "allocatedGeometries": 0,
+        "allocatedMaterials": 0
+      },
+      "baselineCaps": [
+        {
+          "age": "infant",
+          "tab": "coach",
+          "end": "head",
+          "target": "fr-manikin-head",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.2313867003499356,
+          "failures": []
+        },
+        {
+          "age": "infant",
+          "tab": "coach",
+          "end": "torso",
+          "target": "fr-manikin-torso",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.03838244818785021,
+          "failures": []
+        }
+      ],
+      "candidateCaps": [
+        {
+          "age": "infant",
+          "tab": "coach",
+          "end": "head",
+          "target": "fr-manikin-head",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.1917355851989363,
+          "failures": []
+        },
+        {
+          "age": "infant",
+          "tab": "coach",
+          "end": "torso",
+          "target": "fr-manikin-torso",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.06530444323702037,
+          "failures": []
+        }
+      ]
+    }
+  ],
+  "scope": "Two maximum-compression regressions; complete cap-burial claims are scoped to the12 recovery cases."
+}

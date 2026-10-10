@@ -1,0 +1,33 @@
+{
+  "file": "tests/e2e/dissection-study-chooser.spec.ts",
+  "oldSha256": "0e0b95cede56526da322fb578d98315c4b59239f32ecd1c923479671f7ed4b90",
+  "newSha256": "e5008f6133bcbfcf596e27d67247c0b3ee0fda0ce70ca9dab3a19ada6d0d32b6",
+  "reason": "Read visible native directory IDs by opening and restoring recorded selection; seed the transition after paused clock setup with no selection",
+  "edits": [
+    {
+      "before": "async function visibleIds(page: Page) {\n  return page.locator('.diss-directory-item[data-exposure-state=\"visible\"]').evaluateAll(nodes => nodes.map(node => node.id.replace(/^diss-organ-/, '')));\n}",
+      "after": "async function visibleIds(page: Page) {\n  const current = await state(page), selected = current.selectedOrgan;\n  // The native directory is mounted only while no structure is selected. Open\n  // it through its real return control, then restore an already observed record.\n  if (selected) {\n    expect(!!current.exploredOrgans?.[`${current.specimen}|${selected}`]).toBe(true);\n    await page.getByRole('button', { name: 'Back to structure directory', exact: true }).click();\n  }\n  await expect(page.locator('#diss-directory-results')).toBeVisible();\n  const ids = await page.locator('#diss-directory-results button[id^=\"diss-organ-\"][data-exposure-state=\"visible\"]').evaluateAll(nodes => nodes.map(node => node.id.replace(/^diss-organ-/, '')));\n  if (selected) {\n    await page.locator(`#diss-organ-${selected}`).click();\n    await expect(page.locator('#diss-selection-title')).toBeFocused();\n    expect((await state(page)).selectedOrgan).toBe(selected);\n  }\n  return ids;\n}"
+    },
+    {
+      "before": "  // Mount first: the harness waits long enough for a seeded native incision to\n  // finish. Pause time before activating the exact native state so the product's\n  // own 500 ms animation cannot settle before the keyboard guard is exercised.",
+      "after": "  // Pause time after mount, then seed the native transition state so the keyboard guard is deterministic."
+    },
+    {
+      "before": "  await mount(page, {}, 390, 390);",
+      "after": "  await mount(page, { selectedOrgan: null }, 390, 390);"
+    }
+  ],
+  "coveredInternalFixture": {
+    "activeLayer": "organs",
+    "selectedOrgan": null,
+    "verifiedFromSpec": true
+  },
+  "syntaxCheck": {
+    "tool": "esbuild.transformSync",
+    "loader": "ts",
+    "format": "cjs",
+    "passed": true
+  },
+  "suitesRun": false,
+  "repositoryEdits": false
+}

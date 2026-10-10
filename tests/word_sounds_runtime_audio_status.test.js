@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 
 const source = readFileSync('word_sounds_module.js', 'utf8').replace(/\r\n/g, '\n');
+const core = new Function(`${readFileSync('word_sounds_core.js', 'utf8')}\nreturn createWordSoundsCore();`)();
 function between(start, end) {
   const from = source.indexOf(start);
   const to = source.indexOf(end, from);
@@ -13,9 +14,9 @@ const preflightSource = between('      React.useEffect(() => {\n        if (!pla
 const manifestSource = between('      const portableTtsLibrary = React.useMemo', '      const [preparedAudioRetryEpoch,');
 const flush = async () => { for (let i = 0; i < 16; i += 1) await Promise.resolve(); };
 
-function coverageFor(words) {
-  return new Function('React', 'preloadedWords', `${manifestSource}\nreturn { portableTtsLibrary, preparedAudioTargets, preparedAudioStartupTargets, preparedAudioCoverage };`)(
-    { useMemo: fn => fn() }, words,
+function coverageFor(words, language = 'en-US') {
+  return new Function('React', 'preloadedWords', 'WS_CORE', 'wordSoundsLanguage', `${manifestSource}\nreturn { portableTtsLibrary, preparedAudioTargets, preparedAudioStartupTargets, preparedAudioCoverage };`)(
+    { useMemo: fn => fn() }, words, core, language,
   );
 }
 function runtime(previous, total = 4, enabled = true, code = callbackSource) {

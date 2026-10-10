@@ -1,0 +1,14 @@
+  const interruptedRaw=[];
+  for(const name of ['fold-interrupted-no-result','fold-interrupted-streaming']){
+    const directory=local('raw-memory-diagnostics/'+name),failure=json(path.join(directory,'failure.json'));
+    const entries=Array.isArray(failure.files)?failure.files:Object.entries(failure.files).map(([name,sha256])=>({path:name,sha256}));
+    must((failure.candidateSHA256||failure.sourceSHA256)===sourceSHA,'Interrupted raw source drift');
+    must(entries.length===(name==='fold-interrupted-no-result'?44:46),'Interrupted raw input inventory incomplete');
+    same(walk(directory).map(file=>path.relative(directory,file).split(path.sep).join('/')).sort(),[...entries.map(entry=>entry.path.split('\\').join('/')),'failure.json','runner.cjs.saved'].sort(),'Interrupted raw archive inventory drift');
+    for(const entry of entries){const file=path.resolve(directory,entry.path);must(file.startsWith(path.resolve(directory)+path.sep),'Interrupted raw path escapes archive');guardFile(file,entry.sha256);if(entry.bytes!==undefined)must(read(file).length===entry.bytes,'Interrupted raw file size changed');}
+    guardFile(path.join(directory,'runner.cjs.saved'),failure.runnerSHA256);guardFile(path.join(directory,'saved-candidate.js'),sourceSHA);guardFile(path.join(directory,'stem_lab/stem_tool_firstresponse.js'),sourceSHA);
+    for(const name of ['candidate-results.json','summary.json','exit.json'])must(!fs.existsSync(path.join(directory,name)),'Interrupted archive unexpectedly contains a result');
+    if(name==='fold-interrupted-no-result')must(failure.accepted===false&&failure.verifiedAfterMove===true&&failure.sharedWrites===0&&typeof failure.reason==='string'&&failure.reason.length>0,'Buffered raw interruption diagnosis missing');
+    else{const launch=json(path.join(directory,'launch.json'));same(launch,failure.launch,'Interrupted raw launch record changed');must(failure.status==='interrupted-no-result'&&failure.testOutcome===null&&failure.verifiedReread===true&&typeof failure.processCheck==='string'&&failure.processCheck.length>0,'Streaming raw interruption diagnosis missing');must(launch.sourceSHA256===sourceSHA&&launch.runnerSHA256===failure.runnerSHA256&&launch.streamedOutput===true,'Interrupted raw launch source/runner mismatch');}
+    interruptedRaw.push({directory:'raw-memory-diagnostics/'+name,files:entries.length,outcome:null});
+  }

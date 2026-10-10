@@ -1,0 +1,19 @@
+{
+  "sourceSHA256": "15ed562020a011994c79ae707d448fa47b830cf8ff03352c7b82515110b77964",
+  "baselineSHA256": "64e1feeb153f179311bbed8f7ee11dbb2ca188c6deaa5a64d8382387c1f24749",
+  "newImpressionShortcutBrowserGroups": 18,
+  "totalBrowserGroups": 18,
+  "baselineSceneCases": 84,
+  "englishCatalogEntries": 586,
+  "newEnglishEntries": 2,
+  "updatedEnglishEntries": 0,
+  "sourceDesktopParity": true,
+  "catalogParity": true,
+  "engineImplementationUnchanged": true,
+  "browserErrors": [],
+  "screenshots": 9,
+  "emptyAccessibilityAudits": 9,
+  "formalDOMSuite": "Not run: existing Vitest/jsdom worker stalls before collection.",
+  "legacyRegressionScope": "No older browser suite was rerun in this pass. Focused native checks cover the current-drawing impression shortcut, opening adjustment controls, keyboard focus, saved-state preservation, matching boundaries, responsive layouts, and presentation.",
+  "gitAction": "No staging or commit performed."
+}

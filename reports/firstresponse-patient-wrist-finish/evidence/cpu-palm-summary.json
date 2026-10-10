@@ -1,0 +1,73 @@
+{
+  "passed": true,
+  "cases": 30,
+  "wrists": 60,
+  "assertions": 473654,
+  "beforeSHA256": "69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242",
+  "candidateSHA256": "147670787861ae0251c9b4c65c90847a613c6b879d41737533749c19a5f6f891",
+  "checkerSHA256": "31f822223b4cb356d6fc0c5d077a6f269e1a120f57ca17b550206b81de5a1217",
+  "root": {
+    "samples": 2880,
+    "maximumBeforeAngleDegrees": 8.016510967744201,
+    "maximumCandidateAngleDegrees": 0.7701186459373915,
+    "beforeMeanAngleDegrees": 4.528445972986871,
+    "candidateMeanAngleDegrees": 0.05993970428981662
+  },
+  "palm": {
+    "samples": 2462,
+    "totalCrossings": 2516,
+    "excludedOccluded": 0,
+    "excludedOpposing": 54,
+    "maximumBeforeAngleDegrees": 63.11951418982464,
+    "maximumCandidateAngleDegrees": 30.78576304145564,
+    "beforeMeanAngleDegrees": 32.11912035535805,
+    "candidateMeanAngleDegrees": 0.23027188362228607
+  },
+  "normalChangedRange": [
+    920,
+    1161
+  ],
+  "newNegativeFaces": 0,
+  "negative": [
+    {
+      "type": "omit-patient-wrist-blend",
+      "phase": 5,
+      "rejected": true,
+      "error": "every forearm-side root normal was fitted\n\n0 !== 336\n",
+      "restored": true,
+      "restoredSHA256": "147670787861ae0251c9b4c65c90847a613c6b879d41737533749c19a5f6f891"
+    },
+    {
+      "type": "omit-patient-palm-blend",
+      "phase": 5,
+      "rejected": true,
+      "error": "palm seam mean normal mismatch improved by at least 35 percent",
+      "restored": true,
+      "restoredSHA256": "147670787861ae0251c9b4c65c90847a613c6b879d41737533749c19a5f6f891"
+    },
+    {
+      "type": "off-scope-palm-normal",
+      "phase": 5,
+      "rejected": true,
+      "error": "complete scene parity except two patient wrist normal arrays\n+ actual - expected\n\n  {\n+   SHA256: '2dd0c6b637d9df3db99f3f846096e1760691ba3821b5bbe20187d493192d6674',\n-   SHA256: 'e7b800429d29ecec49426d5475d35e0f8f9eb53fe3ae60bbb292585214b042e6',\n    meshes: 145,\n    nodes: 213\n  }\n",
+      "restored": true,
+      "restoredSHA256": "147670787861ae0251c9b4c65c90847a613c6b879d41737533749c19a5f6f891"
+    },
+    {
+      "type": "omit-palm-alignment-guard",
+      "phase": 5,
+      "rejected": true,
+      "error": "no newly reversed wrist face shading",
+      "restored": true,
+      "restoredSHA256": "147670787861ae0251c9b4c65c90847a613c6b879d41737533749c19a5f6f891"
+    },
+    {
+      "type": "omit-palm-fold-skip",
+      "phase": 8,
+      "rejected": true,
+      "error": "pre-existing negative face shading is not worsened",
+      "restored": true,
+      "restoredSHA256": "147670787861ae0251c9b4c65c90847a613c6b879d41737533749c19a5f6f891"
+    }
+  ]
+}

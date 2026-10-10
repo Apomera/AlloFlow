@@ -1,0 +1,43 @@
+{
+  "mode": "study",
+  "label": "study-3",
+  "start": "2026-10-06T03:50:17.488Z",
+  "startHashes": {
+    "stem_lab/stem_tool_dissection.js": "72c75cc596b0ee7307b7b7549fcd34e02cefdf9cdfb00f445bb21a26cc2dfeed",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "72c75cc596b0ee7307b7b7549fcd34e02cefdf9cdfb00f445bb21a26cc2dfeed",
+    "tests/dissection_lab_improvements.test.js": "f43f0a739eacc816fe11ddf96037205795b783f8dc47c59091e4e5249829130c",
+    "tests/dissection_canvas_loop.test.js": "b31bbe5cc07efe789e0b2262d12441366c3425966f2e804ad818513a6d22e5ca",
+    "tests/dissection_workspace_bands.test.js": "9c59fde98d1fd7e103edf4dffb72b1b9dbea39524d5acfd5bc67760dcf56f98c",
+    "tests/e2e/dissection-study-chooser.spec.ts": "7941e1e85ac47ec7005ac1cf529f488f7173a39079a4b811e7d3a04b8e46031e",
+    "tests/e2e/dissection-tools-cohesion.spec.ts": "1b34409ba5e1c7d2f81f98f206eb01b1b6e1c5417a2b5aec5dab053e4f44ad5b"
+  },
+  "args": [
+    "node_modules/@playwright/test/cli.js",
+    "test",
+    "tests/e2e/dissection-study-chooser.spec.ts",
+    "--workers=1",
+    "--retries=0",
+    "--project=chromium",
+    "--reporter=list,json",
+    "--output=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-3\\test-results"
+  ],
+  "ownedTemporaryDirectory": "C:\\Users\\cabba\\Documents\\Codex\\.diss-study-20261005\\study-3",
+  "servedRenderer": {
+    "sha256": "72c75cc596b0ee7307b7b7549fcd34e02cefdf9cdfb00f445bb21a26cc2dfeed",
+    "substituted": false
+  },
+  "pid": 35644,
+  "watchdogMs": 1200000,
+  "exitCode": 0,
+  "signal": null,
+  "end": "2026-10-06T03:51:06.065Z",
+  "endHashes": {
+    "stem_lab/stem_tool_dissection.js": "72c75cc596b0ee7307b7b7549fcd34e02cefdf9cdfb00f445bb21a26cc2dfeed",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "72c75cc596b0ee7307b7b7549fcd34e02cefdf9cdfb00f445bb21a26cc2dfeed",
+    "tests/dissection_lab_improvements.test.js": "f43f0a739eacc816fe11ddf96037205795b783f8dc47c59091e4e5249829130c",
+    "tests/dissection_canvas_loop.test.js": "b31bbe5cc07efe789e0b2262d12441366c3425966f2e804ad818513a6d22e5ca",
+    "tests/dissection_workspace_bands.test.js": "9c59fde98d1fd7e103edf4dffb72b1b9dbea39524d5acfd5bc67760dcf56f98c",
+    "tests/e2e/dissection-study-chooser.spec.ts": "7941e1e85ac47ec7005ac1cf529f488f7173a39079a4b811e7d3a04b8e46031e",
+    "tests/e2e/dissection-tools-cohesion.spec.ts": "1b34409ba5e1c7d2f81f98f206eb01b1b6e1c5417a2b5aec5dab053e4f44ad5b"
+  }
+}

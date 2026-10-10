@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "moduleCopies": 8,
+  "hostPins": 2,
+  "relativeHostReferences": 4,
+  "editorSourceParity": true,
+  "unchangedCoreAndReadiness": true,
+  "scopedWhitespace": true,
+  "hashes": {
+    "word_sounds_module.js": "acc859b56ff06e91b45b7bc63ddbd98e8a2e5398a6e521c3d933d4463dfbb599",
+    "word_sounds_setup_source.jsx": "0e2e40bc398d90dfdbddab88b18ae9ec1d6ab8adc2b7c241b5383c194d79b4ca",
+    "word_sounds_setup_module.js": "7873b051773795f7f24c0c4823202e2752e3e0363a1b89155064b5b1351bbc8e",
+    "dev-tools/word_sounds_draft_editing_regression.cjs": "dbf7d7a7cfea0531b5d4cb4dfb056fee13910d74ef12d63949a2900dd6cbd326",
+    "dev-tools/word_sounds_draft_editing_acceptance.cjs": "4782d87a1b7860ad6530cdd71d160b918b152d9ecbac38add6dfd98a66e62163",
+    "dev-tools/word_sounds_recording_cancel_regression.cjs": "b59d8fdf4085281401b85229ed02cf189ab4f33903d569481f2a2caadc767b9c",
+    "dev-tools/word_sounds_recorded_syllable_dom_regression.cjs": "df38a116a6c3e0ffd7b7569eed1e4f6acc1a43140dca88f5d5d81e4198b799e2",
+    "word_sounds_core.js": "7b6498f2261942266cb461288f0b08db7200583d37535e03f7122ca12a11e0b0",
+    "word_sounds_readiness_contract.js": "99fe1efc2f0f159ce35524b14249177dfd7dbf5c3f8bff6ff96c8f72332ed52b"
+  }
+}

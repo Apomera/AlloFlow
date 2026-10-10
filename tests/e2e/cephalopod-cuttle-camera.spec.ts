@@ -1,3 +1,4 @@
+import { useCephalopodAudioFallback } from './helpers/cephalopod_audio';
 import {test,expect,Page} from '@playwright/test';
 import {GlHarness} from './helpers/stem_gl_harness';
 import {clickCephalopodControl} from './helpers/cephalopod_controls';
@@ -5,7 +6,7 @@ const harness=new GlHarness({toolFile:'stem_lab/stem_tool_cephalopodlab.js',tool
 async function step(page:Page,n=1){await page.evaluate(async n=>{const w=window as any;for(let i=0;i<n;i++){w.__ccStep=.05;do{await new Promise<void>(r=>requestAnimationFrame(()=>r()));}while(w.__ccStep!==0);}},n);}
 async function read(page:Page){return page.evaluate(()=>(window as any).__ccRead());}
 async function mount(page:Page,phone:boolean){
- await harness.mount(page,{cephalopodLab:{activeSection:'hunt',hunt3DActive:true,huntSpeciesId:'cuttlefish',huntMode:'observe',huntSeed:2743,huntQuality:phone?'low':'balanced',_threeLoaded:true}});
+ await useCephalopodAudioFallback(page);await harness.mount(page,{cephalopodLab:{activeSection:'hunt',hunt3DActive:true,huntSpeciesId:'cuttlefish',huntMode:'observe',huntSeed:2743,huntQuality:phone?'low':'balanced',_threeLoaded:true}});
  if(phone)await page.evaluate(()=>{document.getElementById('wrap')!.style.width='100%';window.dispatchEvent(new Event('resize'));});
  await page.evaluate(()=>{
   const w=window as any,T=w.THREE,record=w.__glRecorder.records.filter((r:any)=>r.scene&&r.canvas.isConnected).at(-1),scene=record.scene,player=scene.getObjectByName('cl-player'),siphon=player.getObjectByName('cl-siphon'),tube=siphon.getObjectByName('cl-siphon-tube'),halo=scene.getObjectByName('cl-target');
@@ -16,7 +17,7 @@ async function mount(page:Page,phone:boolean){
   const after=scene.onAfterRender;scene.onAfterRender=function(renderer:any,s:any,camera:any){w.__ccCamera=camera;after.apply(this,arguments);};
   const rendered=tube.onAfterRender;tube.onAfterRender=function(renderer:any,s:any,c:any,g:any,m:any){rendered.apply(this,arguments);const gl=renderer.getContext(),p=gl.getParameter(gl.CURRENT_PROGRAM);w.__ccProgram={linked:gl.getProgramParameter(p,gl.LINK_STATUS),compiled:gl.getAttachedShaders(p).every((s:any)=>gl.getShaderParameter(s,gl.COMPILE_STATUS)),type:m.type,name:m.name,vertexColors:m.vertexColors,roughness:m.roughness,bound:['position','normal','color'].every(name=>{const at=gl.getAttribLocation(p,name);return at>=0&&!!gl.getVertexAttrib(at,gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING);})};};
   document.querySelector(canvasSelector())!.addEventListener('keydown',(e:any)=>{if(e.code==='KeyV')w.__ccEvents.push(w.__ccRead());});
-  const view=[...document.querySelectorAll('button')].find(b=>b.textContent==='View');if(!view)throw Error('Native View button required');view.addEventListener('click',()=>w.__ccEvents.push(w.__ccRead()));
+  const view=[...document.querySelectorAll('button')].find(b=>b.getAttribute('aria-label')==='View');if(!view)throw Error('Native View button required');view.addEventListener('click',()=>w.__ccEvents.push(w.__ccRead()));
   function canvasSelector(){return 'canvas[role=application]';}
  });await step(page,2);
 }
@@ -34,7 +35,7 @@ for(const phone of [false,true])test.describe(phone?'Phone low quality':'Desktop
   await page.evaluate(()=>{const w=window as any,prey=w.__ccScene.children.filter((o:any)=>o.userData.alive),crab=prey.find((o:any)=>o.userData.cfg);if(!crab)throw Error('Actual seeded crab required');prey.forEach((o:any)=>o.position.set(80,o.position.y,80));crab.position.copy(w.__ccPlayer.position).add(new w.THREE.Vector3(0,0,2));});
   await page.locator(canvas).focus();await page.keyboard.press('KeyT');await step(page,1);const paused=await read(page);expect(paused.haloVisible).toBe(true);
   const views=[];let last=paused;
-  for(let i=0;i<3;i++){
+  for(let i=0;i<4;i++){
    if(phone){const button=page.getByRole('button',{name:'View',exact:true});if(!await button.isVisible())await page.getByRole('button',{name:'Tools',exact:true}).click();await button.click();}
    else{await page.locator(canvas).focus();await page.keyboard.press('KeyV');}
    const event=await page.evaluate(()=>(window as any).__ccEvents.at(-1));expect(event.camera).not.toEqual(last.camera);expect(event.facingDot).toBeGreaterThan(1-1e-8);frozen(event,paused);surface(event);views.push(event);last=event;

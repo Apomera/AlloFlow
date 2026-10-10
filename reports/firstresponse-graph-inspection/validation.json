@@ -1,0 +1,129 @@
+{
+  "date": "2026-10-05T13:47:02.792Z",
+  "status": "validated",
+  "sourceSha256": "9231fee2cc147d13d23f2dd8872354cd6968939f24236d182c12f54e07c76e36",
+  "publicMirrorMatches": true,
+  "baselineCommit": "2f9789e0bba98c9795492beb226202cf34f0d675",
+  "unitTests": {
+    "passed": 130,
+    "suites": [
+      {
+        "log": "validation/depth-regression.log",
+        "passed": 115,
+        "runtimeSha256": "3fdfa442f8de5ea8998baca21f4cd77745973a3dca070f0d18c8bc98b483223f"
+      },
+      {
+        "log": "validation/firstresponse_graph_inspection.log",
+        "passed": 11,
+        "runtimeSha256": "93a21b2571fa069cb9cdd4110b41e6fec7bac66f5b2bafeb8864d71fb708e3c0"
+      },
+      {
+        "log": "validation/stem_firstresponse_hook_order.log",
+        "passed": 4,
+        "runtimeSha256": "93a21b2571fa069cb9cdd4110b41e6fec7bac66f5b2bafeb8864d71fb708e3c0"
+      }
+    ],
+    "subsequentChanges": "Only CSS touch-action and plot spacing changed after the unit runs; the final browser run exercised the final runtime."
+  },
+  "browser": {
+    "distinctWorkflows": 2,
+    "finalPassed": 2,
+    "firstPassed": 2,
+    "retries": 0,
+    "skipped": 0,
+    "renderer": "Chromium ANGLE SwiftShader",
+    "coverage": [
+      "actual rendered chest and direction at 25%/75%",
+      "click, drag, clamps and right-click",
+      "native touch tap",
+      "keyboard, range and graph synchronization",
+      "all age scales",
+      "saved predictions, notes and progress",
+      "stationary chest and no arrow",
+      "320px focus visibility",
+      "text spacing",
+      "forced colors",
+      "app contrast",
+      "axe WCAG checks",
+      "renderer cleanup"
+    ]
+  },
+  "reviewedCaptures": [
+    {
+      "file": "adult-graph-releasing.png",
+      "sha256": "e721705f75196a69d908ac80aa8d74ea67771042988bc8a22159a985f3a76661"
+    },
+    {
+      "file": "adult-manikin-releasing.png",
+      "sha256": "69a8682d258950a4962fbb6067e8ec58cf05e29835702e4882bad6e63a4c0fe4"
+    },
+    {
+      "file": "phone-graph-zero-travel.png",
+      "sha256": "d4e2930c77967d0a80100f53c4fcd3be6e9d844be5dc91561ede7598ecdbae42"
+    },
+    {
+      "file": "phone-graph-forced-colors.png",
+      "sha256": "523a714e25bbcd512ad70a4a9d0e5b3ba99c7f934508dd9b39f274990fb78510"
+    },
+    {
+      "file": "phone-graph-app-contrast.png",
+      "sha256": "fc12c9463dff7755acfcacf4ba8e1630b3b86de7500025ac0f9cae5bf5d016ba"
+    }
+  ],
+  "inputHashes": [
+    {
+      "file": "stem_lab/stem_tool_firstresponse.js",
+      "sha256": "9231fee2cc147d13d23f2dd8872354cd6968939f24236d182c12f54e07c76e36"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js",
+      "sha256": "9231fee2cc147d13d23f2dd8872354cd6968939f24236d182c12f54e07c76e36"
+    },
+    {
+      "file": "stem_lab/stem_lab_module.js",
+      "sha256": "cf56996d420aa6112626c4979d4a8e3963c9b199bf31deebb3e29d3910227de1"
+    },
+    {
+      "file": "vendor/three-r128/three.min.js",
+      "sha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
+    },
+    {
+      "file": "tests/firstresponse_graph_inspection.test.js",
+      "sha256": "5f91c00bf43726176ab9d354da73b5c67f7248cd78d6bed29b272b87e29e4a24"
+    },
+    {
+      "file": "tests/firstresponse_depth_explorer.test.js",
+      "sha256": "8d95fe9bf754bf6029adb91a4f7b2339700cfa315144a77b90123018244132b0"
+    },
+    {
+      "file": "tests/stem_firstresponse_hook_order.test.js",
+      "sha256": "50bac19e05d1cb634cdbe7e1ef3927ff730bb9838be311cf01feb2bd58373dc0"
+    },
+    {
+      "file": "tests/e2e/firstresponse-graph-inspection.spec.ts",
+      "sha256": "c6576b73b8e6ec4236d6b4e3f6f24d08ea8924067d6d9db3dcef7226102dc462"
+    },
+    {
+      "file": "tests/e2e/helpers/stem_gl_harness.ts",
+      "sha256": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6"
+    },
+    {
+      "file": "reports/firstresponse-graph-inspection/playwright.config.ts",
+      "sha256": "d78dc8e8e04856f2eb0f26b2cc3a47736a147b35a794baf576dff7f622dd118d"
+    }
+  ],
+  "localization": {
+    "newKeys": 8,
+    "delta": "ui-strings.delta.json",
+    "status": "English runtime fallbacks provided; translations pending integration."
+  },
+  "limitations": [
+    "Software renderer checks do not measure hardware GPU performance.",
+    "Native pinch magnification was not exercised; the final computed touch-action permits pinch zoom.",
+    "Existing arm/sleeve surface speckles remain outside this graph-focused pass."
+  ],
+  "staged": false,
+  "committed": false,
+  "pushed": false,
+  "deployed": false
+}

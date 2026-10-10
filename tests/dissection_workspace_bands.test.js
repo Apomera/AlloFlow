@@ -834,7 +834,8 @@ describe('dissection workspace bands', () => {
     // The blur clear STAYS: without it Enter could commit a preview the user had since replaced
     // with a pointer selection. Continuity comes from the Arrow branch instead, which resumes
     // from whatever is selected however that selection was made.
-    expect(source).toContain('onBlur: function (e) { e.currentTarget._keyboardFocus = false; e.currentTarget._keyboardPreviewOrganId = null; }');
+    expect(source).toMatch(/onBlur: function \(e\) \{[\s\S]{0,400}blurredCanvas\._keyboardFocus = false; blurredCanvas\._keyboardPreviewOrganId = null;/);
+    expect(source).toContain("if (hadPointAnchor && blurredCanvas._dissMotionReduced && typeof blurredCanvas._drawDissectionNow === 'function') blurredCanvas._drawDissectionNow();");
     expect(source).toContain('var keyboardPreviewId = target._keyboardPreviewOrganId || d.selectedOrgan;');
     // The commit path still clears it only when there was nothing to commit.
     expect(source).toContain('var keyboardCommitId = target._keyboardPreviewOrganId;');

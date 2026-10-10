@@ -25,7 +25,7 @@ describe('Landmark inspector neighbors', () => {
     expect(neighbors([], null)).toEqual([]);
     expect(neighbors([], point('invalid', [NaN, 0, 0]))).toEqual([]);
   });
-  it('preserves every scene catalog and produces finite distances for all eighteen landmarks', () => {
+  it('preserves every scene catalog and produces finite distances for all twenty-one landmarks', () => {
     let count = 0;
     for (const region of ['neighborhood', 'galaxy', 'cosmic']) {
       const catalog = api.landmarks(region), before = JSON.stringify(catalog);
@@ -39,9 +39,9 @@ describe('Landmark inspector neighbors', () => {
       }
       expect(JSON.stringify(catalog)).toBe(before);
     }
-    expect(count).toBe(18);
+    expect(count).toBe(21);
   });
-  it('connects all twelve authored scenic previews to their actual landmark and scene', () => {
+  it('connects all eighteen authored scenic previews to their actual landmark and scene', () => {
     const manifest = JSON.parse(readFileSync('stem_lab/assets/universe-flight/highlights/manifest.json', 'utf8'));
     let count = 0;
     for (const region of ['neighborhood', 'galaxy', 'cosmic']) {
@@ -54,7 +54,7 @@ describe('Landmark inspector neighbors', () => {
         }
       }
     }
-    expect(count).toBe(12);
+    expect(count).toBe(18);
     expect(views(api.flybys(), 'not-a-landmark')).toEqual([]);
     expect(views(api.flybys('galaxy'), 'amber-star')).toEqual([]);
   });

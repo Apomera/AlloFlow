@@ -1,0 +1,82 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+ ✓ tests/scale_explorer_backup.test.js > Scale Explorer portable saved notebook > backs up saved evidence only and preserves exact captured heights, questions and drawings 149ms
+ ✓ tests/scale_explorer_backup.test.js > Scale Explorer portable saved notebook > round-trips lighting, cutaways, terrain flight poses and camera views without introducing duplicates 170ms
+ ✓ tests/scale_explorer_backup.test.js > Scale Explorer portable saved notebook > rejects malformed files, foreign formats and unsupported versions without attempting restoration 2ms
+ ✓ tests/scale_explorer_backup.test.js > Scale Explorer portable saved notebook > bounds file size, collection shape and per-file notebook capacity 210ms
+ ✓ tests/scale_explorer_backup.test.js > Scale Explorer portable saved notebook > recovers known records while rebuilding catalog references and discarding hostile extra properties 5ms
+ ✓ tests/scale_explorer_backup.test.js > Scale Explorer portable saved notebook > does not claim comparison or drawing evidence from inconsistent captured measurements 2ms
+ ✓ tests/scale_explorer_backup.test.js > Scale Explorer portable saved notebook > keeps legacy saved investigations usable without inventing new evidence 1ms
+ ✓ tests/scale_explorer_backup.test.js > Scale Explorer portable saved notebook > bounds recovered prose and preserves literal text 4ms
+ ✓ tests/scale_explorer_backup.test.js > Scale Explorer portable saved notebook > adds new records while keeping existing saved work by default 3ms
+ ✓ tests/scale_explorer_backup.test.js > Scale Explorer portable saved notebook > requires selection before replacing a changed observation, model or standalone drawing 7ms
+ ✓ tests/scale_explorer_backup.test.js > Scale Explorer portable saved notebook > imports a changed investigation as an independent copy with a valid collision-free ID 98ms
+ ✓ tests/scale_explorer_backup.test.js > Scale Explorer portable saved notebook > recognizes identical investigations across IDs and suppresses duplicates in one incoming backup 5ms
+ ✓ tests/scale_explorer_backup.test.js > Scale Explorer portable saved notebook > permits choosing which new records fit the remaining slots and reports over-capacity selections 14ms
+ ✓ tests/scale_explorer_backup.test.js > Scale Explorer portable saved notebook > allows explicit observation replacement at capacity while preventing added investigation copies 113ms
+ ✓ tests/scale_explorer_backup.test.js > Scale Explorer portable saved notebook > gives restored evidence independent nested objects and leaves import selections as plain data 1ms
+ ✓ tests/scale_explorer_backup.test.js > Scale Explorer portable saved notebook > preserves an eight-measurement linked drawing at one exact physical scale 2ms
+ ✓ tests/scale_explorer_backup.test.js > Scale Explorer portable saved notebook > keeps undo fingerprints stable across camera normalization but distinguishes later saved edits 4ms
+ ✓ tests/scale_explorer_backup.test.js > Scale Explorer portable saved notebook > keeps backup labels and desktop source synchronized without rewording existing strings 6795ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > represents all197 nucleons with79 protons and118 neutrons in a finite illustrative layout 18ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > normalizes only the strict whole/section view and finite numeric section depth 3ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > provides four cited native stops with correct species targets and isolated camera data 440ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > migrates legacy notes and preserves exact native cameras and section settings through backup 123ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > uses actual retained species instances and a fixed14fm reference with finite WebGL1 buffers 167ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > cuts real species ray hits at the model-local plane and admits only active cap instances 1281ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > updates reversible section caps and comparison without reallocating any retained resource 1592ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > releases all tracked GPU resources exactly once after section and comparison changes 33ms
+ ✓ tests/scale_explorer_hydrogen.test.js > Scale Explorer hydrogen ground-state probability > matches integrated radial probability and inverts independently specified containment fractions 18ms
+ ✓ tests/scale_explorer_hydrogen.test.js > Scale Explorer hydrogen ground-state probability > accepts only finite numeric probabilities and the strict cloud/section view enum 3ms
+ ✓ tests/scale_explorer_hydrogen.test.js > Scale Explorer hydrogen ground-state probability > provides four cited inspection stops while retaining the106pm reference diameter 91ms
+ ✓ tests/scale_explorer_hydrogen.test.js > Scale Explorer hydrogen ground-state probability > migrates legacy notes and preserves exact native cameras and strict guide settings through backup 287ms
+ ✓ tests/scale_explorer_hydrogen.test.js > Scale Explorer hydrogen ground-state probability > samples a deterministic isotropic1s cloud with the correct truncated radial distribution 2596ms
+ ✓ tests/scale_explorer_hydrogen.test.js > Scale Explorer hydrogen ground-state probability > owns finite bounded WebGL1 buffers and preserves a reference separate from the cloud tail 2229ms
+ ✓ tests/scale_explorer_hydrogen.test.js > Scale Explorer hydrogen ground-state probability > retains prebuilt cloud, section and radial shell resources across reversible inspection 2017ms
+ ✓ tests/scale_explorer_hydrogen.test.js > Scale Explorer hydrogen ground-state probability > releases every retained GPU resource exactly once after guide changes 1174ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > restores bounded canyon relief and preserves its new Earth entry point 16ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > restores deep orbital views without extending other specimens’ zoom limits 3ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > recovers nebula visibility and uses the corrected 24-light-year reference 2ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > preserves galaxy landmarks and the recorded viewing direction 5ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > preserves solar layer observations and rejects an unknown solar target 2ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > keeps distinct microscopic structures and their saved cutaway state 1ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > restores planetary lighting and landmarks while accepting older notebook entries 1ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > ignores invalid targets and duplicate records without discarding valid notes 2ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > retains a recorded personal height and bounds damaged camera and note values 2ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > keeps drafts attached to known objects and features, including an intentionally blank edit 3ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > bounds a notebook loaded from oversized storage 2ms
+ ✓ tests/scale_explorer_scaling.test.js > Scale Explorer similar-shape model > accepts finite complete factors in its stated range and rejects malformed persisted values 121ms
+ ✓ tests/scale_explorer_scaling.test.js > Scale Explorer similar-shape model > uses squares and cubes of the edge factor, including shrinking and surface-to-volume changes 1490ms
+ ✓ tests/scale_explorer_scaling.test.js > Scale Explorer similar-shape model > keeps both diagrams at the true shared scale and grids only countable integer ratios 28ms
+ ✓ tests/scale_explorer_scaling.test.js > Scale Explorer similar-shape model > restores literal explanations and only matching object-length references 8ms
+ ✓ tests/scale_explorer_scaling.test.js > Scale Explorer similar-shape model > uses three significant figures without rounding extreme finite results to zero 1ms
+ ✓ tests/scale_explorer_comparison.test.js > Scale Explorer compares characteristic measurements > preserves the chosen order while giving a unit-independent length ratio 33ms
+ × tests/scale_explorer_comparison.test.js > Scale Explorer compares characteristic measurements > keeps exact endpoints, tenfold intermediate steps and a fractional final step for every catalog pair 659313ms
+   → Test timed out in 180000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ✓ tests/scale_explorer_comparison.test.js > Scale Explorer compares characteristic measurements > does not duplicate an endpoint at an exact whole decade or replace an exact step by its example 5ms
+ ✓ tests/scale_explorer_comparison.test.js > Scale Explorer compares characteristic measurements > uses personal height for the ratio and validates remembered comparison identifiers 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/scale_explorer_comparison.test.js > Scale Explorer compares characteristic measurements > keeps exact endpoints, tenfold intermediate steps and a fractional final step for every catalog pair
+Error: Test timed out in 180000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/scale_explorer_comparison.test.js:26:3
+     24|   });
+     25|
+     26|   it('keeps exact endpoints, tenfold intermediate steps and a fraction…
+       |   ^
+     27|     for (const a of items) for (const b of items) {
+     28|       const comparison = pair(a, b), steps = bridge(comparison, items);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 5 passed (6)
+      Tests  1 failed | 53 passed (54)
+   Start at  16:21:14
+   Duration  734.66s (transform 963ms, setup 0ms, import 8.35s, tests 680.86s, environment 2ms)
+
+JSON report written to C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-nucleus/unit-verified-results.json

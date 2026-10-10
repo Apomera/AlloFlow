@@ -1,0 +1,175 @@
+{
+  "schema": "moon-pass38-direct-browser-v1",
+  "runner": "direct-playwright-api",
+  "playwrightCliResult": false,
+  "mode": "instruments",
+  "status": "passed",
+  "startedAt": "2026-10-10T04:07:42.781Z",
+  "repo": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "specPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-return-orbit.spec.ts",
+  "output": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\browser\\direct-instruments-1",
+  "browserCache": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+  "timeouts": {
+    "action": 20000,
+    "navigation": 60000,
+    "expect": 15000,
+    "launch": 60000,
+    "workflow": 180000
+  },
+  "launchOptions": {
+    "headless": true,
+    "timeout": 60000,
+    "downloadsPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\browser\\direct-instruments-1\\downloads"
+  },
+  "workflowCompleted": true,
+  "cleanupCompleted": true,
+  "milestones": [
+    {
+      "name": "load:before",
+      "elapsedMs": 3
+    },
+    {
+      "name": "load:after",
+      "elapsedMs": 2603,
+      "workflow": "both return cameras use measured positions, distinct speed components and no engine plume",
+      "registered": [
+        "both return cameras use measured positions, distinct speed components and no engine plume",
+        "recorded arrival survives review and reload, then passes the same boundary state into entry",
+        "planner changes clear arrival and maintain the new selected angle through the handoff",
+        "legacy and malformed saved arrival claims stay blocked until a measured review",
+        "the clock slows automatically, freezes when hidden and resumes without wall-time catch-up",
+        "320px keyboard, pause, resize, reload and accessibility preserve the physical coast"
+      ]
+    },
+    {
+      "name": "harness-start:before",
+      "elapsedMs": 2607
+    },
+    {
+      "name": "harness-start:after",
+      "elapsedMs": 2615
+    },
+    {
+      "name": "browser-launch:before",
+      "elapsedMs": 2616
+    },
+    {
+      "name": "browser-launch:after",
+      "elapsedMs": 3676
+    },
+    {
+      "name": "context-create:before",
+      "elapsedMs": 3677
+    },
+    {
+      "name": "context-create:after",
+      "elapsedMs": 3689
+    },
+    {
+      "name": "page-create:before",
+      "elapsedMs": 3690
+    },
+    {
+      "name": "page-create:after",
+      "elapsedMs": 4126
+    },
+    {
+      "name": "workflow:before",
+      "elapsedMs": 4126
+    },
+    {
+      "name": "workflow:after",
+      "elapsedMs": 10052
+    },
+    {
+      "name": "cleanup:before",
+      "elapsedMs": 10052
+    },
+    {
+      "name": "after-each:before",
+      "elapsedMs": 10053
+    },
+    {
+      "name": "after-each:after",
+      "elapsedMs": 10072
+    },
+    {
+      "name": "context-close:before",
+      "elapsedMs": 10073
+    },
+    {
+      "name": "page-close",
+      "elapsedMs": 10078
+    },
+    {
+      "name": "context-close:after",
+      "elapsedMs": 10115
+    },
+    {
+      "name": "browser-close:before",
+      "elapsedMs": 10116
+    },
+    {
+      "name": "browser-close:after",
+      "elapsedMs": 13799
+    },
+    {
+      "name": "harness-stop:before",
+      "elapsedMs": 13800
+    },
+    {
+      "name": "harness-stop:after",
+      "elapsedMs": 13801
+    },
+    {
+      "name": "cleanup:after",
+      "elapsedMs": 13816,
+      "status": "passed"
+    }
+  ],
+  "errors": [],
+  "attachments": [
+    {
+      "name": "return-whole-orbit",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\browser\\direct-instruments-1\\return-whole-orbit-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "return-final-approach",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\browser\\direct-instruments-1\\return-final-approach-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "return-sm-separation",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\browser\\direct-instruments-1\\return-sm-separation-chromium.png",
+      "contentType": "image/png"
+    }
+  ],
+  "inputHashes": {
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-return-orbit.spec.ts": "8a40df272960dfa43de81d44b373dc78115d2447a56eab2dd6aac097d9b12b97",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_moonmission.js": "0d89fb6277c1c6cb9ff4f0785f2d8be953c27f4bd613836367cf777625820778",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_moonmission.js": "0d89fb6277c1c6cb9ff4f0785f2d8be953c27f4bd613836367cf777625820778"
+  },
+  "transform": {
+    "name": "Playwright bundled babelTransform",
+    "bundlePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\transform\\babelBundle.js",
+    "sha256": "9201df11ae9c9ee1febd587c5013c4f862aa7e9981b92b86ccbbbd37e71f9124"
+  },
+  "workflow": "both return cameras use measured positions, distinct speed components and no engine plume",
+  "suiteOptions": {
+    "timeout": 180000,
+    "retries": 0
+  },
+  "browserVersion": "148.0.7778.96",
+  "pageEvents": [
+    {
+      "event": "close",
+      "elapsedMs": 10078,
+      "message": null
+    }
+  ],
+  "finishedAt": "2026-10-10T04:07:56.597Z",
+  "elapsedMs": 13816
+}

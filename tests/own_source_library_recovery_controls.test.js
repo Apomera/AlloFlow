@@ -37,19 +37,22 @@ const wizardProps = { isOpen: true, onClose: noop, onComplete: noop, onUpload: n
   onCallGemini: noop, onWebSearch: noop, addToast: noop, isParentMode: false, isIndependentMode: false,
   isHelpMode: false, setIsHelpMode: noop, initialSourceMode: 'generate', onInitialModeConsumed: noop };
 function Harness({ visible = true, initialIds = ['a'], strict = false, use = true, generate = noop }) {
+  const setSourceTopic = React.useCallback(() => {}, []);
   const [ids, setIds] = React.useState(initialIds);
   const [documentsOnly, setDocumentsOnly] = React.useState(strict);
   const [useOwnSources, setUseOwnSources] = React.useState(use);
   const [includeSourceCitations, setIncludeSourceCitations] = React.useState(!strict);
   return React.createElement('div', { 'data-ids': JSON.stringify(ids), 'data-use': String(useOwnSources) },
-    React.createElement(Panel, { ...baseProps, handleGenerateSource: generate, showSourceGen: visible, selectedOwnSourceIds: ids, setSelectedOwnSourceIds: setIds,
+    React.createElement(Panel, { ...baseProps, setSourceTopic, handleGenerateSource: generate, showSourceGen: visible, selectedOwnSourceIds: ids, setSelectedOwnSourceIds: setIds,
       documentsOnly, setDocumentsOnly, useOwnSources, setUseOwnSources, includeSourceCitations, setIncludeSourceCitations }));
 }
 function mount(Component = Harness, props = {}) {
   const container = document.createElement('div'); document.body.appendChild(container);
   const root = createRoot(container);
   const render = next => flushSync(() => root.render(React.createElement(Component, next)));
-  render(props); const item = { root, container, render }; mounts.push(item); return item;
+  render(props);
+  if (Component === Harness) click(container.querySelector('[aria-label="Research settings"]'));
+  const item = { root, container, render }; mounts.push(item); return item;
 }
 async function until(check) {
   const start = Date.now();
@@ -116,13 +119,15 @@ describe('source panel library recovery', () => {
     importFile(panel.container);
     await until(() => !!finishRead);
     await new Promise(resolve => setTimeout(resolve, 30));
-    expect(panel.container.firstChild.dataset.use).toBe('true');
+    expect(panel.container.firstChild.dataset.use).toBe('false');
+    expect(panel.container.querySelector('[name="source-research-mode"][value="combined"]').checked).toBe(true);
     expect(panel.container.firstChild.dataset.ids).toBe('["a"]');
     pressEnter(panel.container);
     expect(generate).not.toHaveBeenCalled();
     finishRead(good(rows));
-    await until(() => !!panel.container.querySelector('#useOwnSources') && !panel.container.querySelector('#ownSourcesImport').disabled);
-    expect(panel.container.querySelector('#useOwnSources').checked).toBe(true);
+    await until(() => !panel.container.querySelector('#ownSourcesImport').disabled);
+    click(textButton(panel.container, 'Apply settings'));
+    expect(panel.container.firstChild.dataset.use).toBe('true');
     pressEnter(panel.container);
     expect(generate).toHaveBeenCalledTimes(1);
   });
@@ -134,8 +139,9 @@ describe('source panel library recovery', () => {
     await until(() => !!textButton(panel.container, 'Retry loading documents'));
     pressEnter(panel.container);
     expect(generate).not.toHaveBeenCalled();
-    click(panel.container.querySelector('#includeCitations'));
-    expect(panel.container.querySelector('#documentsOnly').checked).toBe(false);
+    click(panel.container.querySelector('[name="source-research-mode"][value="web"]'));
+    click(textButton(panel.container, 'Apply settings'));
+    expect(panel.container.querySelector('[data-research-summary]').textContent).toBe('Web search');
     pressEnter(panel.container);
     expect(generate).toHaveBeenCalledTimes(1);
   });
@@ -184,10 +190,18 @@ describe('truthful import results in both controls', () => {
     expect(item.container.textContent).toContain('Cloud notes');
   });
 
-  it.each(['panel', 'wizard'])('only describes web search as off when documents-only is selected in %s', async mode => {
+  it.each(['panel', 'wizard'])('makes supplied-source selection distinct from web discovery in %s', async mode => {
     window.AlloOwnSources = api(async () => good(rows));
     const item = mode === 'panel' ? mount() : mount(Wizard, wizardProps);
     await until(() => item.container.textContent.includes('Cloud notes'));
+    if (mode === 'panel') {
+      expect(item.container.querySelector('[data-research-summary]').textContent).toContain('Web and my sources');
+      click(item.container.querySelector('[name="source-research-mode"][value="sources"]'));
+      click(textButton(item.container, 'Apply settings'));
+      expect(item.container.querySelector('[data-research-summary]').textContent).toContain('My sources');
+      expect(item.container.querySelector('[data-research-summary]').textContent).not.toContain('Web');
+      return;
+    }
     const useSelector = mode === 'panel' ? '#useOwnSources' : '#wiz-own-sources';
     const useInput = item.container.querySelector(useSelector);
     if (useInput && !useInput.checked) click(useInput);

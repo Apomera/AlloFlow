@@ -457,7 +457,7 @@ test('actual speed stays tied to the selected record after controls change and u
   for (const showVectors of [true, false, true]) {
     await setState(page, { showVectors }); const draw = await readDraw(page);
     expect(draw.selected).toEqual(sample); expect(selectedCardText(draw)).toEqual(originalCard); expect(header(draw)).toContain('v₀ 15 m/s');
-    expect(header(draw)).toContain('|v| ' + expectedSpeed + ' m/s'); expect(header(draw)).toContain('g 9.8 m/s²  ·  2 kg');
+    expect(header(draw)).toContain('|v| ' + expectedSpeed + ' m/s'); expect(header(draw).replace(/\s+/g, ' ')).toContain('g 9.8 m/s² · 2 kg');
     if (showVectors) { expectVelocityArrows(draw, sample); await assertLegend(page); }
     else { expect(draw.vectors).toBeNull(); await expect(page.locator('[data-physics-velocity-key-group]')).toHaveCount(0); }
     expectReadable(draw, 'retained selected speed'); expect(await evidence(page)).toEqual(before);

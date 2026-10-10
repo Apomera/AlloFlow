@@ -1,0 +1,851 @@
+{
+  "completed": false,
+  "diagnosticOnly": true,
+  "pins": {
+    "stem_lab/universe_flight_scene.js": "a8de9ef0c0dc7362dc1284917b106ff82072f3a6b4943d947a3c8de6354dadcf",
+    "stem_lab/stem_tool_universe.js": "98cce7fbc3bdebe424f8cdac77e871e001267d568e3ebe8c9904cb3a6f5e2959"
+  },
+  "harnessHash": "66a0c0b1b95af845677a4f51635ab47f7d0e0162da46e4d8f4f7abbc6dba44b1",
+  "checks": [],
+  "sampling": [
+    {
+      "name": "initial-auto",
+      "quality": "auto",
+      "queries": [
+        {
+          "name": "EXT_texture_filter_anisotropic",
+          "available": true
+        }
+      ],
+      "maximumQueries": 1,
+      "allocations": {
+        "Buffer": 2,
+        "Texture": 2,
+        "Program": 2
+      },
+      "deleted": {
+        "Buffer": 0,
+        "Texture": 0,
+        "Program": 0
+      },
+      "writes": [
+        {
+          "texture": 0,
+          "value": 4
+        }
+      ],
+      "galaxy": 4,
+      "cloud": 1,
+      "error": 0
+    },
+    {
+      "name": "reduced-colors-low",
+      "quality": "low",
+      "queries": [
+        {
+          "name": "EXT_texture_filter_anisotropic",
+          "available": true
+        }
+      ],
+      "maximumQueries": 1,
+      "allocations": {
+        "Buffer": 2,
+        "Texture": 2,
+        "Program": 2
+      },
+      "deleted": {
+        "Buffer": 0,
+        "Texture": 0,
+        "Program": 0
+      },
+      "writes": [
+        {
+          "texture": 0,
+          "value": 4
+        },
+        {
+          "texture": 0,
+          "value": 1
+        }
+      ],
+      "galaxy": 1,
+      "cloud": 1,
+      "error": 0
+    },
+    {
+      "name": "reduced-colors-auto",
+      "quality": "auto",
+      "queries": [
+        {
+          "name": "EXT_texture_filter_anisotropic",
+          "available": true
+        }
+      ],
+      "maximumQueries": 1,
+      "allocations": {
+        "Buffer": 2,
+        "Texture": 2,
+        "Program": 2
+      },
+      "deleted": {
+        "Buffer": 0,
+        "Texture": 0,
+        "Program": 0
+      },
+      "writes": [
+        {
+          "texture": 0,
+          "value": 4
+        },
+        {
+          "texture": 0,
+          "value": 1
+        },
+        {
+          "texture": 0,
+          "value": 4
+        }
+      ],
+      "galaxy": 4,
+      "cloud": 1,
+      "error": 0
+    }
+  ],
+  "accessibility": [
+    {
+      "name": "compose-reduced-motion-colors",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              "#uf-inview-title"
+            ],
+            [
+              ".uf-inview-display > h4"
+            ],
+            [
+              "label[for=\"uf-inview-fov\"]"
+            ],
+            [
+              "label[for=\"uf-inview-exposure\"]"
+            ],
+            [
+              "label[for=\"uf-inview-quality\"]"
+            ],
+            [
+              "#uf-inview-quality"
+            ],
+            [
+              ".uf-inview-display > .uf-note"
+            ],
+            [
+              ".uf-composition-controls > h4"
+            ]
+          ],
+          "details": [
+            {
+              "target": [
+                "#uf-inview-title"
+              ],
+              "html": "<h3 id=\"uf-inview-title\">Flight controls</h3>",
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.12 (foreground color: #ddf7ee, background color: #ffffff, font size: 12.0pt (16px), font weight: bold). Expected contrast ratio of 4.5:1",
+              "checks": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fgColor": "#ddf7ee",
+                    "bgColor": "#ffffff",
+                    "contrastRatio": 1.12,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "bold",
+                    "messageKey": null,
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "message": "Element has insufficient color contrast of 1.12 (foreground color: #ddf7ee, background color: #ffffff, font size: 12.0pt (16px), font weight: bold). Expected contrast ratio of 4.5:1"
+                }
+              ]
+            },
+            {
+              "target": [
+                ".uf-inview-display > h4"
+              ],
+              "html": "<h4>View settings</h4>",
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.14 (foreground color: #d5f7eb, background color: #ffffff, font size: 10.5pt (14px), font weight: bold). Expected contrast ratio of 4.5:1",
+              "checks": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fgColor": "#d5f7eb",
+                    "bgColor": "#ffffff",
+                    "contrastRatio": 1.14,
+                    "fontSize": "10.5pt (14px)",
+                    "fontWeight": "bold",
+                    "messageKey": null,
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "message": "Element has insufficient color contrast of 1.14 (foreground color: #d5f7eb, background color: #ffffff, font size: 10.5pt (14px), font weight: bold). Expected contrast ratio of 4.5:1"
+                }
+              ]
+            },
+            {
+              "target": [
+                "label[for=\"uf-inview-fov\"]"
+              ],
+              "html": "<label for=\"uf-inview-fov\">Field of view · 50°</label>",
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.27 (foreground color: #d3e7f3, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+              "checks": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fgColor": "#d3e7f3",
+                    "bgColor": "#ffffff",
+                    "contrastRatio": 1.27,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": null,
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "message": "Element has insufficient color contrast of 1.27 (foreground color: #d3e7f3, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+                }
+              ]
+            },
+            {
+              "target": [
+                "label[for=\"uf-inview-exposure\"]"
+              ],
+              "html": "<label for=\"uf-inview-exposure\">Display exposure · 1×</label>",
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.27 (foreground color: #d3e7f3, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+              "checks": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fgColor": "#d3e7f3",
+                    "bgColor": "#ffffff",
+                    "contrastRatio": 1.27,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": null,
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "message": "Element has insufficient color contrast of 1.27 (foreground color: #d3e7f3, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+                }
+              ]
+            },
+            {
+              "target": [
+                "label[for=\"uf-inview-quality\"]"
+              ],
+              "html": "<label for=\"uf-inview-quality\">Rendering quality</label>",
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.27 (foreground color: #d3e7f3, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+              "checks": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fgColor": "#d3e7f3",
+                    "bgColor": "#ffffff",
+                    "contrastRatio": 1.27,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": null,
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "message": "Element has insufficient color contrast of 1.27 (foreground color: #d3e7f3, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+                }
+              ]
+            },
+            {
+              "target": [
+                "#uf-inview-quality"
+              ],
+              "html": "<select id=\"uf-inview-quality\"><option value=\"auto\">Balanced</option><option value=\"low\">Lower resolution</option><option value=\"high\">Sharper view</option></select>",
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.09 (foreground color: #e9f7ff, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+              "checks": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fgColor": "#e9f7ff",
+                    "bgColor": "#ffffff",
+                    "contrastRatio": 1.09,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": null,
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "message": "Element has insufficient color contrast of 1.09 (foreground color: #e9f7ff, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+                }
+              ]
+            },
+            {
+              "target": [
+                ".uf-inview-display > .uf-note"
+              ],
+              "html": "<p class=\"uf-note\">Zoom and exposure change the display, not the travel speed or physics. Lower resolution can help on slower devices.</p>",
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.59 (foreground color: #bdcfe2, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
+              "checks": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fgColor": "#bdcfe2",
+                    "bgColor": "#ffffff",
+                    "contrastRatio": 1.59,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "normal",
+                    "messageKey": null,
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "message": "Element has insufficient color contrast of 1.59 (foreground color: #bdcfe2, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+                }
+              ]
+            },
+            {
+              "target": [
+                ".uf-composition-controls > h4"
+              ],
+              "html": "<h4>Compose your view</h4>",
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.15 (foreground color: #d8f5ed, background color: #ffffff, font size: 10.5pt (14px), font weight: bold). Expected contrast ratio of 4.5:1",
+              "checks": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fgColor": "#d8f5ed",
+                    "bgColor": "#ffffff",
+                    "contrastRatio": 1.15,
+                    "fontSize": "10.5pt (14px)",
+                    "fontWeight": "bold",
+                    "messageKey": null,
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "message": "Element has insufficient color contrast of 1.15 (foreground color: #d8f5ed, background color: #ffffff, font size: 10.5pt (14px), font weight: bold). Expected contrast ratio of 4.5:1"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "captures": [
+    {
+      "name": "angle-compose-reduced-motion-colors",
+      "hash": "e0cf55114dcd1fdaa4d6bcd28b90f30e168c60671dda9412c427352985ac0bcf"
+    }
+  ],
+  "served": [
+    {
+      "path": "/stem_lab/stem_tool_universe.js",
+      "hash": "98cce7fbc3bdebe424f8cdac77e871e001267d568e3ebe8c9904cb3a6f5e2959"
+    },
+    {
+      "path": "/stem_lab/universe_flight_scene.js",
+      "hash": "a8de9ef0c0dc7362dc1284917b106ff82072f3a6b4943d947a3c8de6354dadcf"
+    }
+  ],
+  "errors": [],
+  "forcedColors": {
+    "active": true,
+    "nodes": [
+      {
+        "selector": "#uf-inview-title",
+        "computed": {
+          "tag": "H3",
+          "id": "uf-inview-title",
+          "className": "",
+          "color": "rgb(0, 0, 0)",
+          "backgroundColor": "rgba(255, 255, 255, 0)",
+          "backgroundImage": "none",
+          "forcedColorAdjust": "auto",
+          "opacity": "1"
+        },
+        "ancestors": [
+          {
+            "tag": "DIV",
+            "id": "",
+            "className": "uf-inview-heading",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgba(255, 255, 255, 0)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "SECTION",
+            "id": "uf-inview-controls",
+            "className": "uf-inview-controls",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "DIV",
+            "id": "",
+            "className": "uf-stage uf-flight-controls-open",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          }
+        ]
+      },
+      {
+        "selector": ".uf-inview-display > h4",
+        "computed": {
+          "tag": "H4",
+          "id": "",
+          "className": "",
+          "color": "rgb(0, 0, 0)",
+          "backgroundColor": "rgba(255, 255, 255, 0)",
+          "backgroundImage": "none",
+          "forcedColorAdjust": "auto",
+          "opacity": "1"
+        },
+        "ancestors": [
+          {
+            "tag": "DIV",
+            "id": "",
+            "className": "uf-inview-display",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "DIV",
+            "id": "uf-inview-panel-compose",
+            "className": "uf-inview-panel",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgba(255, 255, 255, 0)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "DIV",
+            "id": "uf-inview-body",
+            "className": "uf-inview-body",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgba(255, 255, 255, 0)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "SECTION",
+            "id": "uf-inview-controls",
+            "className": "uf-inview-controls",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "DIV",
+            "id": "",
+            "className": "uf-stage uf-flight-controls-open",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          }
+        ]
+      },
+      {
+        "selector": "label[for=\"uf-inview-fov\"]",
+        "computed": {
+          "tag": "LABEL",
+          "id": "",
+          "className": "",
+          "color": "rgb(0, 0, 0)",
+          "backgroundColor": "rgba(255, 255, 255, 0)",
+          "backgroundImage": "none",
+          "forcedColorAdjust": "auto",
+          "opacity": "1"
+        },
+        "ancestors": [
+          {
+            "tag": "DIV",
+            "id": "",
+            "className": "uf-inview-display",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "DIV",
+            "id": "uf-inview-panel-compose",
+            "className": "uf-inview-panel",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgba(255, 255, 255, 0)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "DIV",
+            "id": "uf-inview-body",
+            "className": "uf-inview-body",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgba(255, 255, 255, 0)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "SECTION",
+            "id": "uf-inview-controls",
+            "className": "uf-inview-controls",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "DIV",
+            "id": "",
+            "className": "uf-stage uf-flight-controls-open",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          }
+        ]
+      },
+      {
+        "selector": "label[for=\"uf-inview-exposure\"]",
+        "computed": {
+          "tag": "LABEL",
+          "id": "",
+          "className": "",
+          "color": "rgb(0, 0, 0)",
+          "backgroundColor": "rgba(255, 255, 255, 0)",
+          "backgroundImage": "none",
+          "forcedColorAdjust": "auto",
+          "opacity": "1"
+        },
+        "ancestors": [
+          {
+            "tag": "DIV",
+            "id": "",
+            "className": "uf-inview-display",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "DIV",
+            "id": "uf-inview-panel-compose",
+            "className": "uf-inview-panel",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgba(255, 255, 255, 0)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "DIV",
+            "id": "uf-inview-body",
+            "className": "uf-inview-body",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgba(255, 255, 255, 0)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "SECTION",
+            "id": "uf-inview-controls",
+            "className": "uf-inview-controls",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "DIV",
+            "id": "",
+            "className": "uf-stage uf-flight-controls-open",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          }
+        ]
+      },
+      {
+        "selector": "label[for=\"uf-inview-quality\"]",
+        "computed": {
+          "tag": "LABEL",
+          "id": "",
+          "className": "",
+          "color": "rgb(0, 0, 0)",
+          "backgroundColor": "rgba(255, 255, 255, 0)",
+          "backgroundImage": "none",
+          "forcedColorAdjust": "auto",
+          "opacity": "1"
+        },
+        "ancestors": [
+          {
+            "tag": "DIV",
+            "id": "",
+            "className": "uf-inview-display",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "DIV",
+            "id": "uf-inview-panel-compose",
+            "className": "uf-inview-panel",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgba(255, 255, 255, 0)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "DIV",
+            "id": "uf-inview-body",
+            "className": "uf-inview-body",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgba(255, 255, 255, 0)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "SECTION",
+            "id": "uf-inview-controls",
+            "className": "uf-inview-controls",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "DIV",
+            "id": "",
+            "className": "uf-stage uf-flight-controls-open",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          }
+        ]
+      },
+      {
+        "selector": "#uf-inview-quality",
+        "computed": {
+          "tag": "SELECT",
+          "id": "uf-inview-quality",
+          "className": "",
+          "color": "rgb(0, 0, 0)",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "backgroundImage": "none",
+          "forcedColorAdjust": "auto",
+          "opacity": "1"
+        },
+        "ancestors": [
+          {
+            "tag": "DIV",
+            "id": "",
+            "className": "uf-inview-display",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "DIV",
+            "id": "uf-inview-panel-compose",
+            "className": "uf-inview-panel",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgba(255, 255, 255, 0)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "DIV",
+            "id": "uf-inview-body",
+            "className": "uf-inview-body",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgba(255, 255, 255, 0)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "SECTION",
+            "id": "uf-inview-controls",
+            "className": "uf-inview-controls",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "DIV",
+            "id": "",
+            "className": "uf-stage uf-flight-controls-open",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          }
+        ]
+      },
+      {
+        "selector": ".uf-inview-display > .uf-note",
+        "computed": {
+          "tag": "P",
+          "id": "",
+          "className": "uf-note",
+          "color": "rgb(0, 0, 0)",
+          "backgroundColor": "rgba(255, 255, 255, 0)",
+          "backgroundImage": "none",
+          "forcedColorAdjust": "auto",
+          "opacity": "1"
+        },
+        "ancestors": [
+          {
+            "tag": "DIV",
+            "id": "",
+            "className": "uf-inview-display",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "DIV",
+            "id": "uf-inview-panel-compose",
+            "className": "uf-inview-panel",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgba(255, 255, 255, 0)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "DIV",
+            "id": "uf-inview-body",
+            "className": "uf-inview-body",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgba(255, 255, 255, 0)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "SECTION",
+            "id": "uf-inview-controls",
+            "className": "uf-inview-controls",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "DIV",
+            "id": "",
+            "className": "uf-stage uf-flight-controls-open",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          }
+        ]
+      },
+      {
+        "selector": ".uf-composition-controls > h4",
+        "computed": {
+          "tag": "H4",
+          "id": "",
+          "className": "",
+          "color": "rgb(0, 0, 0)",
+          "backgroundColor": "rgba(255, 255, 255, 0)",
+          "backgroundImage": "none",
+          "forcedColorAdjust": "auto",
+          "opacity": "1"
+        },
+        "ancestors": [
+          {
+            "tag": "DIV",
+            "id": "",
+            "className": "uf-composition-controls",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgba(255, 255, 255, 0)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "DIV",
+            "id": "uf-inview-panel-compose",
+            "className": "uf-inview-panel",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgba(255, 255, 255, 0)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "DIV",
+            "id": "uf-inview-body",
+            "className": "uf-inview-body",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgba(255, 255, 255, 0)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "SECTION",
+            "id": "uf-inview-controls",
+            "className": "uf-inview-controls",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          {
+            "tag": "DIV",
+            "id": "",
+            "className": "uf-stage uf-flight-controls-open",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          }
+        ]
+      }
+    ]
+  },
+  "failure": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   {\n+     details: [\n+       {\n+         checks: [\n+           {\n+             data: {\n+               bgColor: '#ffffff',\n+               colorParse: undefined,\n+               contrastRatio: 1.12,\n+               expectedContrastRatio: '4.5:1',\n+               fgColor: '#ddf7ee',\n+               fontSize: '12.0pt (16px)',\n+               fontWeight: 'bold',\n+               messageKey: null,\n+               shadowColor: undefined\n+             },\n+             id: 'color-contrast',\n+             message: 'Element has insufficient color contrast of 1.12 (foreground color: #ddf7ee, background color: #ffffff, font size: 12.0pt (16px), font weight: bold). Expected contrast ratio of 4.5:1'\n+           }\n+         ],\n+         failureSummary: 'Fix any of the following:\\n' +\n+           '  Element has insufficient color contrast of 1.12 (foreground color: #ddf7ee, background color: #ffffff, font size: 12.0pt (16px), font weight: bold). Expected contrast ratio of 4.5:1',\n+         html: '<h3 id=\"uf-inview-title\">Flight controls</h3>',\n+         target: [\n+           '#uf-inview-title'\n+         ]\n+       },\n+       {\n+         checks: [\n+           {\n+             data: {\n+               bgColor: '#ffffff',\n+               colorParse: undefined,\n+               contrastRatio: 1.14,\n+               expectedContrastRatio: '4.5:1',\n+               fgColor: '#d5f7eb',\n+               fontSize: '10.5pt (14px)',\n+               fontWeight: 'bold',\n+               messageKey: null,\n+               shadowColor: undefined\n+             },\n+             id: 'color-contrast',\n+             message: 'Element has insufficient color contrast of 1.14 (foreground color: #d5f7eb, background color: #ffffff, font size: 10.5pt (14px), font weight: bold). Expected contrast ratio of 4.5:1'\n+           }\n+         ],\n+         failureSummary: 'Fix any of the following:\\n' +\n+           '  Element has insufficient color contrast of 1.14 (foreground color: #d5f7eb, background color: #ffffff, font size: 10.5pt (14px), font weight: bold). Expected contrast ratio of 4.5:1',\n+         html: '<h4>View settings</h4>',\n+         target: [\n+           '.uf-inview-display > h4'\n+         ]\n+       },\n+       {\n+         checks: [\n+           {\n+             data: {\n+               bgColor: '#ffffff',\n+               colorParse: undefined,\n+               contrastRatio: 1.27,\n+               expectedContrastRatio: '4.5:1',\n+               fgColor: '#d3e7f3',\n+               fontSize: '9.0pt (12px)',\n+               fontWeight: 'normal',\n+               messageKey: null,\n+               shadowColor: undefined\n+             },\n+             id: 'color-contrast',\n+             message: 'Element has insufficient color contrast of 1.27 (foreground color: #d3e7f3, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1'\n+           }\n+         ],\n+         failureSummary: 'Fix any of the following:\\n' +\n+           '  Element has insufficient color contrast of 1.27 (foreground color: #d3e7f3, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1',\n+         html: '<label for=\"uf-inview-fov\">Field of view · 50°</label>',\n+         target: [\n+           'label[for=\"uf-inview-fov\"]'\n+         ]\n+       },\n+       {\n+         checks: [\n+           {\n+             data: {\n+               bgColor: '#ffffff',\n+               colorParse: undefined,\n+               contrastRatio: 1.27,\n+               expectedContrastRatio: '4.5:1',\n+               fgColor: '#d3e7f3',\n+               fontSize: '9.0pt (12px)',\n+               fontWeight: 'normal',\n+               messageKey: null,\n+               shadowColor: undefined\n+             },\n+             id: 'color-contrast',\n+             message: 'Element has insufficient color contrast of 1.27 (foreground color: #d3e7f3, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1'\n+           }\n+         ],\n+         failureSummary: 'Fix any of the following:\\n' +\n+           '  Element has insufficient color contrast of 1.27 (foreground color: #d3e7f3, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1',\n+         html: '<label for=\"uf-inview-exposure\">Display exposure · 1×</label>',\n+         target: [\n+           'label[for=\"uf-inview-exposure\"]'\n+         ]\n+       },\n+       {\n+         checks: [\n+           {\n+             data: {\n+               bgColor: '#ffffff',\n+               colorParse: undefined,\n+               contrastRatio: 1.27,\n+               expectedContrastRatio: '4.5:1',\n+               fgColor: '#d3e7f3',\n+               fontSize: '9.0pt (12px)',\n+               fontWeight: 'normal',\n+               messageKey: null,\n+               shadowColor: undefined\n+             },\n+             id: 'color-contrast',\n+             message: 'Element has insufficient color contrast of 1.27 (foreground color: #d3e7f3, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1'\n+           }\n+         ],\n+         failureSummary: 'Fix any of the following:\\n' +\n+           '  Element has insufficient color contrast of 1.27 (foreground color: #d3e7f3, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1',\n+         html: '<label for=\"uf-inview-quality\">Rendering quality</label>',\n+         target: [\n+           'label[for=\"uf-inview-quality\"]'\n+         ]\n+       },\n+       {\n+         checks: [\n+           {\n+             data: {\n+               bgColor: '#ffffff',\n+               colorParse: undefined,\n+               contrastRatio: 1.09,\n+               expectedContrastRatio: '4.5:1',\n+               fgColor: '#e9f7ff',\n+               fontSize: '9.0pt (12px)',\n+               fontWeight: 'normal',\n+               messageKey: null,\n+               shadowColor: undefined\n+             },\n+             id: 'color-contrast',\n+             message: 'Element has insufficient color contrast of 1.09 (foreground color: #e9f7ff, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1'\n+           }\n+         ],\n+         failureSummary: 'Fix any of the following:\\n' +\n+           '  Element has insufficient color contrast of 1.09 (foreground color: #e9f7ff, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1',\n+         html: '<select id=\"uf-inview-quality\"><option value=\"auto\">Balanced</option><option value=\"low\">Lower resolution</option><option value=\"high\">Sharper view</option></select>',\n+         target: [\n+           '#uf-inview-quality'\n+         ]\n+       },\n+       {\n+         checks: [\n+           {\n+             data: {\n+               bgColor: '#ffffff',\n+               colorParse: undefined,\n+               contrastRatio: 1.59,\n+               expectedContrastRatio: '4.5:1',\n+               fgColor: '#bdcfe2',\n+               fontSize: '8.3pt (11px)',\n+               fontWeight: 'normal',\n+               messageKey: null,\n+               shadowColor: undefined\n+             },\n+             id: 'color-contrast',\n+             message: 'Element has insufficient color contrast of 1.59 (foreground color: #bdcfe2, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1'\n+           }\n+         ],\n+         failureSummary: 'Fix any of the following:\\n' +\n+           '  Element has insufficient color contrast of 1.59 (foreground color: #bdcfe2, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1',\n+         html: '<p class=\"uf-note\">Zoom and exposure change the display, not the travel speed or physics. Lower resolution can help on slower devices.</p>',\n+         target: [\n+           '.uf-inview-display > .uf-note'\n+         ]\n+       },\n+       {\n+         checks: [\n+           {\n+             data: {\n+               bgColor: '#ffffff',\n+               colorParse: undefined,\n+               contrastRatio: 1.15,\n+               expectedContrastRatio: '4.5:1',\n+               fgColor: '#d8f5ed',\n+               fontSize: '10.5pt (14px)',\n+               fontWeight: 'bold',\n+               messageKey: null,\n+               shadowColor: undefined\n+             },\n+             id: 'color-contrast',\n+             message: 'Element has insufficient color contrast of 1.15 (foreground color: #d8f5ed, background color: #ffffff, font size: 10.5pt (14px), font weight: bold). Expected contrast ratio of 4.5:1'\n+           }\n+         ],\n+         failureSummary: 'Fix any of the following:\\n' +\n+           '  Element has insufficient color contrast of 1.15 (foreground color: #d8f5ed, background color: #ffffff, font size: 10.5pt (14px), font weight: bold). Expected contrast ratio of 4.5:1',\n+         html: '<h4>Compose your view</h4>',\n+         target: [\n+           '.uf-composition-controls > h4'\n+         ]\n+       }\n+     ],\n+     id: 'color-contrast',\n+     targets: [\n+       [\n+         '#uf-inview-title'\n+       ],\n+       [\n+         '.uf-inview-display > h4'\n+       ],\n+       [\n+         'label[for=\"uf-inview-fov\"]'\n+       ],\n+       [\n+         'label[for=\"uf-inview-exposure\"]'\n+       ],\n+       [\n+         'label[for=\"uf-inview-quality\"]'\n+       ],\n+       [\n+         '#uf-inview-quality'\n+       ],\n+       [\n+         '.uf-inview-display > .uf-note'\n+       ],\n+       [\n+         '.uf-composition-controls > h4'\n+       ]\n+     ]\n+   }\n+ ]\n- []\n"
+}

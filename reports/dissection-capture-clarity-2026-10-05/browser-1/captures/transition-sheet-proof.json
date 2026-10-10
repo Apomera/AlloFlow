@@ -1,0 +1,514 @@
+[
+  {
+    "contents": "specimen",
+    "width": 220,
+    "height": 264,
+    "entryOffscreen": true,
+    "entryMotionReduced": false,
+    "stageCopies": 1,
+    "textBeforeCopy": [
+      "1",
+      "2",
+      "Section A",
+      "Section B",
+      "Section C",
+      "Heart (3-chamber) · covered",
+      "Lungs · covered",
+      "Liver (3 lobes) · occluded",
+      "Gallbladder · covered",
+      "Stomach · occluded",
+      "Small Intestine · occluded",
+      "Large Intestine · occluded",
+      "Spleen · covered",
+      "Kidneys · covered",
+      "Fat Bodies · covered",
+      "Pancreas · covered",
+      "Cloaca · covered"
+    ],
+    "textAfterCopy": [
+      "🫁 Organs Layer",
+      "🐸 Frog (Rana)  /  DORSAL",
+      "A ↑  ↓ P",
+      "anterior-posterior",
+      "1 cm  /  1.5x"
+    ],
+    "entryClock": [
+      0,
+      null,
+      0
+    ],
+    "gradientStopsBeforeCopy": [
+      {
+        "offset": 0,
+        "colour": "#f8fafc"
+      },
+      {
+        "offset": 1,
+        "colour": "#ffffff"
+      },
+      {
+        "offset": 0,
+        "colour": "rgba(230,244,239,0.06)"
+      },
+      {
+        "offset": 1,
+        "colour": "rgba(43,86,90,0.065)"
+      },
+      {
+        "offset": 0,
+        "colour": "rgba(255,255,255,0.06)"
+      },
+      {
+        "offset": 1,
+        "colour": "rgba(255,255,255,0)"
+      },
+      {
+        "offset": 0,
+        "colour": "#fbbf24"
+      },
+      {
+        "offset": 0.7,
+        "colour": "#fbbf24"
+      },
+      {
+        "offset": 1,
+        "colour": "#d97706"
+      },
+      {
+        "offset": 0,
+        "colour": "#4ade80"
+      },
+      {
+        "offset": 0.48,
+        "colour": "#22c55e"
+      },
+      {
+        "offset": 1,
+        "colour": "#15803d"
+      },
+      {
+        "offset": 0,
+        "colour": "#4ade80"
+      },
+      {
+        "offset": 0.48,
+        "colour": "#22c55e"
+      },
+      {
+        "offset": 1,
+        "colour": "#15803d"
+      },
+      {
+        "offset": 0,
+        "colour": "#4ade80"
+      },
+      {
+        "offset": 0.48,
+        "colour": "#22c55e"
+      },
+      {
+        "offset": 1,
+        "colour": "#15803d"
+      },
+      {
+        "offset": 0,
+        "colour": "#4ade80"
+      },
+      {
+        "offset": 0.48,
+        "colour": "#22c55e"
+      },
+      {
+        "offset": 1,
+        "colour": "#15803d"
+      },
+      {
+        "offset": 0,
+        "colour": "#4ade80"
+      },
+      {
+        "offset": 0.48,
+        "colour": "#22c55e"
+      },
+      {
+        "offset": 1,
+        "colour": "#15803d"
+      },
+      {
+        "offset": 0,
+        "colour": "rgba(194,168,84,0.94)"
+      },
+      {
+        "offset": 0.5,
+        "colour": "rgba(116,91,42,0.98)"
+      },
+      {
+        "offset": 1,
+        "colour": "rgba(35,29,18,1)"
+      },
+      {
+        "offset": 0,
+        "colour": "#6f7746"
+      },
+      {
+        "offset": 0.72,
+        "colour": "#424d31"
+      },
+      {
+        "offset": 1,
+        "colour": "#253026"
+      },
+      {
+        "offset": 0,
+        "colour": "rgba(194,168,84,0.94)"
+      },
+      {
+        "offset": 0.5,
+        "colour": "rgba(116,91,42,0.98)"
+      },
+      {
+        "offset": 1,
+        "colour": "rgba(35,29,18,1)"
+      },
+      {
+        "offset": 0,
+        "colour": "#6f7746"
+      },
+      {
+        "offset": 0.72,
+        "colour": "#424d31"
+      },
+      {
+        "offset": 1,
+        "colour": "#253026"
+      },
+      {
+        "offset": 0,
+        "colour": "#f4d39a"
+      },
+      {
+        "offset": 1,
+        "colour": "#c88852"
+      },
+      {
+        "offset": 0,
+        "colour": "rgba(241,245,249,0.129)"
+      },
+      {
+        "offset": 0.46,
+        "colour": "rgba(241,245,249,0.019)"
+      },
+      {
+        "offset": 1,
+        "colour": "rgba(2,6,23,0.176)"
+      },
+      {
+        "offset": 0,
+        "colour": "rgba(241,245,249,0.162)"
+      },
+      {
+        "offset": 0.55,
+        "colour": "rgba(241,245,249,0.042)"
+      },
+      {
+        "offset": 1,
+        "colour": "rgba(2,6,23,0.130)"
+      }
+    ],
+    "gradientStopsAfterCopy": [],
+    "stageCamera": [
+      1.5,
+      15,
+      -8
+    ],
+    "stageView": "dorsal",
+    "result": true,
+    "gradientObserverRestored": true,
+    "bitmapRestored": true,
+    "datasetRestored": true,
+    "keysRestored": true,
+    "changedReferences": [],
+    "changedValues": [],
+    "requestCleared": true,
+    "exitClock": [
+      0,
+      null,
+      0
+    ]
+  },
+  {
+    "contents": "canvas",
+    "width": 220,
+    "height": 264,
+    "entryOffscreen": true,
+    "entryMotionReduced": false,
+    "stageCopies": 1,
+    "textBeforeCopy": [
+      "SAFE · VENTRAL MIDLINE",
+      "NEXT 1/6 · READY PROBE",
+      "Inspect ventral landmarks and confirm symmetry",
+      "1",
+      "2",
+      "Section A",
+      "Section B",
+      "Section C",
+      "1/37 viewed · observation 3%",
+      "View: dorsal",
+      "Heart (3-chamber) · covered",
+      "Lungs · covered",
+      "Liver (3 lobes) · occluded",
+      "Gallbladder · covered",
+      "Stomach · occluded",
+      "Small Intestine · occluded",
+      "Large Intestine · occluded",
+      "Spleen · covered",
+      "Kidneys · covered",
+      "Fat Bodies · covered",
+      "Pancreas · covered",
+      "Cloaca · covered",
+      "🫁 Organs Layer",
+      "🐸 Frog (Rana)  /  DORSAL",
+      "A ↑  ↓ P",
+      "anterior-posterior",
+      "1 cm  /  1.5x",
+      "LAYER REVEALED",
+      " Muscle  →   Organs"
+    ],
+    "textAfterCopy": [],
+    "entryClock": [
+      0,
+      null,
+      0
+    ],
+    "gradientStopsBeforeCopy": [
+      {
+        "offset": 0,
+        "colour": "#f8fafc"
+      },
+      {
+        "offset": 1,
+        "colour": "#ffffff"
+      },
+      {
+        "offset": 0,
+        "colour": "rgba(230,244,239,0.06)"
+      },
+      {
+        "offset": 1,
+        "colour": "rgba(43,86,90,0.065)"
+      },
+      {
+        "offset": 0,
+        "colour": "rgba(255,255,255,0.06)"
+      },
+      {
+        "offset": 1,
+        "colour": "rgba(255,255,255,0)"
+      },
+      {
+        "offset": 0,
+        "colour": "#fbbf24"
+      },
+      {
+        "offset": 0.7,
+        "colour": "#fbbf24"
+      },
+      {
+        "offset": 1,
+        "colour": "#d97706"
+      },
+      {
+        "offset": 0,
+        "colour": "#4ade80"
+      },
+      {
+        "offset": 0.48,
+        "colour": "#22c55e"
+      },
+      {
+        "offset": 1,
+        "colour": "#15803d"
+      },
+      {
+        "offset": 0,
+        "colour": "#4ade80"
+      },
+      {
+        "offset": 0.48,
+        "colour": "#22c55e"
+      },
+      {
+        "offset": 1,
+        "colour": "#15803d"
+      },
+      {
+        "offset": 0,
+        "colour": "#4ade80"
+      },
+      {
+        "offset": 0.48,
+        "colour": "#22c55e"
+      },
+      {
+        "offset": 1,
+        "colour": "#15803d"
+      },
+      {
+        "offset": 0,
+        "colour": "#4ade80"
+      },
+      {
+        "offset": 0.48,
+        "colour": "#22c55e"
+      },
+      {
+        "offset": 1,
+        "colour": "#15803d"
+      },
+      {
+        "offset": 0,
+        "colour": "#4ade80"
+      },
+      {
+        "offset": 0.48,
+        "colour": "#22c55e"
+      },
+      {
+        "offset": 1,
+        "colour": "#15803d"
+      },
+      {
+        "offset": 0,
+        "colour": "rgba(194,168,84,0.94)"
+      },
+      {
+        "offset": 0.5,
+        "colour": "rgba(116,91,42,0.98)"
+      },
+      {
+        "offset": 1,
+        "colour": "rgba(35,29,18,1)"
+      },
+      {
+        "offset": 0,
+        "colour": "#6f7746"
+      },
+      {
+        "offset": 0.72,
+        "colour": "#424d31"
+      },
+      {
+        "offset": 1,
+        "colour": "#253026"
+      },
+      {
+        "offset": 0,
+        "colour": "rgba(194,168,84,0.94)"
+      },
+      {
+        "offset": 0.5,
+        "colour": "rgba(116,91,42,0.98)"
+      },
+      {
+        "offset": 1,
+        "colour": "rgba(35,29,18,1)"
+      },
+      {
+        "offset": 0,
+        "colour": "#6f7746"
+      },
+      {
+        "offset": 0.72,
+        "colour": "#424d31"
+      },
+      {
+        "offset": 1,
+        "colour": "#253026"
+      },
+      {
+        "offset": 0,
+        "colour": "#f4d39a"
+      },
+      {
+        "offset": 1,
+        "colour": "#c88852"
+      },
+      {
+        "offset": 0,
+        "colour": "#0173e9"
+      },
+      {
+        "offset": 0.72,
+        "colour": "#0173e9"
+      },
+      {
+        "offset": 1,
+        "colour": "rgba(30,20,24,0.96)"
+      },
+      {
+        "offset": 0,
+        "colour": "rgba(15,23,42,0)"
+      },
+      {
+        "offset": 0.5,
+        "colour": "#fbbf24"
+      },
+      {
+        "offset": 1,
+        "colour": "rgba(255,255,255,0.34)"
+      },
+      {
+        "offset": 0,
+        "colour": "rgba(241,245,249,0.129)"
+      },
+      {
+        "offset": 0.46,
+        "colour": "rgba(241,245,249,0.019)"
+      },
+      {
+        "offset": 1,
+        "colour": "rgba(2,6,23,0.176)"
+      },
+      {
+        "offset": 0,
+        "colour": "rgba(241,245,249,0.162)"
+      },
+      {
+        "offset": 0.55,
+        "colour": "rgba(241,245,249,0.042)"
+      },
+      {
+        "offset": 1,
+        "colour": "rgba(2,6,23,0.130)"
+      },
+      {
+        "offset": 0,
+        "colour": "rgba(15,23,42,0.96)"
+      },
+      {
+        "offset": 1,
+        "colour": "rgba(15,118,110,0.94)"
+      }
+    ],
+    "gradientStopsAfterCopy": [],
+    "stageCamera": [
+      1.5,
+      15,
+      -8
+    ],
+    "stageView": "dorsal",
+    "result": true,
+    "gradientObserverRestored": true,
+    "bitmapRestored": true,
+    "datasetRestored": true,
+    "keysRestored": true,
+    "changedReferences": [],
+    "changedValues": [],
+    "requestCleared": true,
+    "exitClock": [
+      0,
+      null,
+      0
+    ]
+  }
+]

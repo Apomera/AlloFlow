@@ -1,0 +1,88 @@
+{
+  "checks": [],
+  "errors": [
+    "page.waitForFunction: Timeout 12000ms exceeded.\n    at spelling (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\word_sounds_voice_modes_acceptance.cjs:100:13)\n    at async run (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\word_sounds_voice_modes_acceptance.cjs:172:734)"
+  ],
+  "externalRequests": [],
+  "runs": [
+    {
+      "name": "failure",
+      "word": "cat",
+      "activity": "spelling_bee",
+      "score": {
+        "correct": 0,
+        "total": 0,
+        "streak": 0
+      },
+      "feedback": null,
+      "recognitionEvents": [],
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "instruction:inst_spelling_bee",
+          "at": 3198.5999999996275
+        },
+        {
+          "id": 0,
+          "type": "loadedmetadata",
+          "label": "instruction:inst_spelling_bee",
+          "duration": 2.520097,
+          "playbackRate": 1,
+          "at": 3656.39999999851,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "playing",
+          "label": "instruction:inst_spelling_bee",
+          "duration": 2.520097,
+          "playbackRate": 1,
+          "at": 4406.5999999996275,
+          "active": [
+            0
+          ]
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    }
+  ],
+  "consoleMessages": [
+    "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "[PureHelpers] 7 helpers registered",
+    "[MiscComponentsModule] 3 components registered.",
+    "[MiscComponentsModule] 3 components registered (incl. WordSoundsReviewPanel with Sound Swap)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] loadProbeBanks stub (CDN)",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] WordSoundsModal MOUNTED. initialShowReviewPanel: false, activity: spelling_bee",
+    "[WS-DBG] initialShowReviewPanel changed to: false",
+    "[WS-DBG] 🔄 Reset hasStartedFromReview for new word set: cat",
+    "[WS-DBG] 🚀 Initializing Session Queue for spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] Streak preserved across activity change to: spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] 🔄 Synced currentWordIndex to 1 to skip: cat",
+    "[WS-DBG] 🚀 Using preloaded data for: cat",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]"
+  ],
+  "runtimeSha256": "68200204d6d7d1f049d4889cef8336bb06a67566042494922d2f9e3947ef5c75",
+  "voiceSha256": "ab8f03324c8eac75f229d2dc98b2a314e06fa5f847485d5f4ddd03fde0e4d6b9",
+  "limitations": [
+    "Controlled SpeechRecognition callbacks exercise browser UI lifetimes; no physical microphone or speech service was tested.",
+    "Native playback uses existing local Kokoro word-bank clips and standard instruction/phoneme bank clips. No live Kokoro synthesis, cloud calls, physical microphone, or pronunciation judgment was performed."
+  ]
+}

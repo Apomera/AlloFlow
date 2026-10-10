@@ -1,0 +1,1 @@
+const fs=require('fs');const r=JSON.parse(fs.readFileSync('C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-scenario-clarity-2026-10-06/'+(process.argv[2]||'scenario-3')+'/captures/desktop-axe.json'));console.log(JSON.stringify(r.incomplete.map(x=>({id:x.id,nodes:x.nodes})),null,2));

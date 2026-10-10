@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "scriptSHA256": "4f356f5c176ba66296eedad27afecc1f7f0f38cf68eca169e1f183c5a5b3794b",
+  "sourceSHA256": "bb4526d583db90d928008a1fa9b7540dfef8c8acdfd4055c0fd71225454011bf",
+  "mutationRejected": true,
+  "reviewRejected": true,
+  "restoredAndReread": true,
+  "mutationScope": "private finish-selftest-sandbox only",
+  "reason": "Changed guarded file C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-mouth-surface-work\\finish-selftest-sandbox\\candidate.js"
+}

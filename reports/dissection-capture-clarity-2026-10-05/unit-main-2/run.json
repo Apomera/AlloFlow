@@ -1,0 +1,45 @@
+{
+  "mode": "unit-main",
+  "start": "2026-10-05T21:06:58.860Z",
+  "startHashes": {
+    "stem_lab/stem_tool_dissection.js": "552654074f6136fd415f7cdb8c0c03a788b96a4c6e85c657e4cf1673fb8e9f75",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "552654074f6136fd415f7cdb8c0c03a788b96a4c6e85c657e4cf1673fb8e9f75",
+    "tests/dissection_lab_improvements.test.js": "a8154bdfe3220be90876c32e93e870cba750979234fe262fbbc274ce5c8706b2",
+    "tests/dissection_workspace_bands.test.js": "9c59fde98d1fd7e103edf4dffb72b1b9dbea39524d5acfd5bc67760dcf56f98c",
+    "tests/dissection_canvas_loop.test.js": "b4683197d074d2a54199d964b225f7c7fd72bb1dcbd06aad91eedce966ceb3ab",
+    "tests/e2e/dissection-capture-clarity.spec.ts": "93bcee1300e50a32740d815eb1fa396b810422d59ff7432242ac9b9b33c51a9f",
+    "tests/e2e/dissection-evidence-gallery.spec.ts": "fd03716a63f5cdbe3e7010ec309eba3128d2a0284b67eef9bb94cb0d235f2c89"
+  },
+  "args": [
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/dissection_lab_improvements.test.js",
+    "tests/dissection_workspace_bands.test.js",
+    "tests/dissection_canvas_loop.test.js",
+    "--pool=forks",
+    "--maxWorkers=1",
+    "--reporter=verbose",
+    "--reporter=json",
+    "--outputFile=C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-capture-clarity-2026-10-05\\unit-main-2\\results.json",
+    "--testNamePattern=^(?!.*has no axe-detectable WCAG A or AA violations).*"
+  ],
+  "ownedTemporaryDirectory": "C:\\Users\\cabba\\Documents\\Codex\\.diss-cap-20261005\\unit-main-2",
+  "servedRenderer": {
+    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_dissection.js",
+    "sha256": "552654074f6136fd415f7cdb8c0c03a788b96a4c6e85c657e4cf1673fb8e9f75",
+    "substituted": false
+  },
+  "pid": 35348,
+  "end": "2026-10-05T21:08:55.011Z",
+  "exitCode": 0,
+  "signal": null,
+  "endHashes": {
+    "stem_lab/stem_tool_dissection.js": "552654074f6136fd415f7cdb8c0c03a788b96a4c6e85c657e4cf1673fb8e9f75",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "552654074f6136fd415f7cdb8c0c03a788b96a4c6e85c657e4cf1673fb8e9f75",
+    "tests/dissection_lab_improvements.test.js": "a8154bdfe3220be90876c32e93e870cba750979234fe262fbbc274ce5c8706b2",
+    "tests/dissection_workspace_bands.test.js": "9c59fde98d1fd7e103edf4dffb72b1b9dbea39524d5acfd5bc67760dcf56f98c",
+    "tests/dissection_canvas_loop.test.js": "b4683197d074d2a54199d964b225f7c7fd72bb1dcbd06aad91eedce966ceb3ab",
+    "tests/e2e/dissection-capture-clarity.spec.ts": "93bcee1300e50a32740d815eb1fa396b810422d59ff7432242ac9b9b33c51a9f",
+    "tests/e2e/dissection-evidence-gallery.spec.ts": "fd03716a63f5cdbe3e7010ec309eba3128d2a0284b67eef9bb94cb0d235f2c89"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "baselineSourceSha": "cc354bd12dd0712e1e628ebfc16689ba584c3b988d1b085df5a41e1f67cecc26",
+  "finalSourceSha": "476c1562ef879cb20ac65efdbf290edff9b98fafde9dbd7866f3e612c5750935",
+  "evidence": [
+    {
+      "age": "adult",
+      "width": 1280,
+      "referenceCameras": 4,
+      "comparisonCameraChecks": 8,
+      "finalDraw": {
+        "id": 1,
+        "createdBy": "page",
+        "draws": 136183,
+        "sequence": 1184,
+        "calls": 49,
+        "triangles": 67160,
+        "geometries": 77,
+        "programs": 3
+      }
+    },
+    {
+      "age": "infant",
+      "width": 320,
+      "referenceCameras": 4,
+      "comparisonCameraChecks": 8,
+      "finalDraw": {
+        "id": 1,
+        "createdBy": "page",
+        "draws": 78227,
+        "sequence": 663,
+        "calls": 50,
+        "triangles": 67952,
+        "geometries": 77,
+        "programs": 3
+      }
+    }
+  ]
+}

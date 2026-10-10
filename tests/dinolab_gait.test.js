@@ -27,11 +27,13 @@ function swingFn() {
     SRC.slice(open, close) + '\nreturn { swing: swing, amount: amount };');
 }
 
+// A live limb entry always has a mesh and its Three.js userData metadata.
+// Empty metadata exercises the existing unplanted idle weight-shift contract.
 const LEGS = {
-  hindL: { front: false, side: 1 },
-  hindR: { front: false, side: -1 },
-  foreL: { front: true, side: 1 },
-  foreR: { front: true, side: -1 },
+  hindL: { front: false, side: 1, mesh: { userData: {} } },
+  hindR: { front: false, side: -1, mesh: { userData: {} } },
+  foreL: { front: true, side: 1, mesh: { userData: {} } },
+  foreR: { front: true, side: -1, mesh: { userData: {} } },
 };
 
 function swings(t) {

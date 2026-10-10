@@ -66,7 +66,7 @@ describe('beehive — simulation modes render without throwing', () => {
       expect(html).toContain('data-beehive-hero="true"');
       expect(html).toContain('data-beehive-mode-switcher="true"');
       expect(html).toContain('data-beehive-mode-tab=');
-      expect(html).toContain('data-beehive-visual-version="50"');
+      expect(html.includes('data-beehive-visual-version="77"')).toBe(true);
       expect(html).toContain('data-beehive-theme=');
       expect(html).toContain('data-beehive-mode-signal="true"');
       expect(html).toContain('data-beehive-pulse="true"');
@@ -117,14 +117,14 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(keeper).toContain('data-topic-pathway="signals"');
     expect(keeper).toContain('data-topic-pathway="ecology"');
     expect(keeper).toContain('Colony Life');
-    expect(keeper).toContain('1 / 18 explored');
+    expect(keeper).toContain('1 / 18 views opened');
     expect(keeper).toContain('data-topic-progress="true"');
     expect(keeper).toContain('aria-valuenow="1"');
     expect(keeper).toContain('data-topic-continue="lifecycle"');
-    expect(keeper).toContain('Continue: Lifecycle');
+    expect(keeper).toContain('Open next: Lifecycle');
     expect(keeper).toContain('data-topic-explored="true"');
     const exploredKeeper = render({ viewMode: 'beekeeper', beeView: 'honey', visitedBeeViews: ['scene', 'lifecycle', 'honey'] });
-    expect(exploredKeeper).toContain('3 / 18 explored');
+    expect(exploredKeeper).toContain('3 / 18 views opened');
     expect(exploredKeeper).toContain('aria-valuenow="3"');
     expect(exploredKeeper).toContain('data-topic-continue="thermo"');
     expect(exploredKeeper).toContain('3/5');
@@ -137,7 +137,7 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(keeper).toContain('aria-keyshortcuts="N"');
     expect(keeper).toContain('data-beehive-cause-effect="true"');
     expect(keeper).toContain('data-beehive-coach-watch="true"');
-    expect(keeper).toContain('Watch workers, honey, mites, and morale change together.');
+    expect(keeper).toContain('Compare workers, combined food, mites, and stability before and after the day.');
     const pausedKeeper = render({ viewMode: 'beekeeper', day: 12, motionPaused: true });
     expect(pausedKeeper).toContain('data-motion-state="paused"');
     expect(pausedKeeper).toContain('data-beehive-beekeeper-paused-overlay="true"');
@@ -209,7 +209,7 @@ describe('beehive — simulation modes render without throwing', () => {
       expect(html).toContain('data-layout-state="stage-first"');
       expect(html).toContain('aria-pressed="true"');
       expect(html).toContain('Stage-first layout');
-      expect(html).toContain('Live stage appears before supporting dashboards.');
+      expect(html).toContain('Scene before supporting dashboards.');
       expect(html.indexOf('data-beehive-pulse="true"')).toBeLessThan(html.indexOf('id="' + targetId + '"'));
       expect(html.indexOf('id="' + targetId + '"')).toBeLessThan(html.indexOf('data-beehive-learning-brief="true"'));
       expect(html.indexOf('id="' + targetId + '"')).toBeLessThan(html.indexOf('data-beehive-notebook='));
@@ -224,7 +224,8 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(keeper).toContain('data-notebook-field="evidence"');
     expect(keeper).toContain('data-notebook-field="explanation"');
     expect(keeper).toContain('What do you expect after the next management decision or time advance?');
-    expect(keeper).toContain('Capture current evidence');
+    expect(keeper).toContain('data-colony-notebook-capture="true"');
+    expect(keeper).toContain('Add these readings');
     expect(keeper).toContain('1 / 3');
     expect(keeper).toContain('data-beehive-notebook-portfolio="true"');
     expect(keeper).toContain('data-notebook-role="beekeeper"');
@@ -238,7 +239,7 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(keeper.match(/data-notebook-review=/g)).toHaveLength(3);
     expect(keeper).toContain('Testable prediction');
     expect(keeper).toContain('Specific evidence');
-    expect(keeper).toContain('Causal explanation');
+    expect(keeper).toContain('Supported explanation');
     expect(keeper).toContain('It supports self-review; it does not grade your ideas.');
     expect(keeper).toContain('data-beehive-review-next="prediction"');
 
@@ -260,14 +261,14 @@ describe('beehive — simulation modes render without throwing', () => {
       synthesis: 'Individual choices become colony strategy and ecosystem effects.'
     } });
     expect(completePortfolio).toContain('data-notebook-portfolio-complete="true"');
-    expect(completePortfolio).toContain('aria-label="10 of 10 portfolio sections complete"');
+    expect(completePortfolio).toContain('aria-valuetext="10 of 10 sections written"');
     expect(completePortfolio).toContain('10 / 10');
-    expect(completePortfolio).toContain('Synthesis saved. Your portfolio is ready to revisit or share.');
+    expect(completePortfolio).toContain('Synthesis saved. Revisit the evidence and self-review before sharing.');
     expect(completePortfolio).toContain('data-review-complete="true"');
     expect(completePortfolio).toContain('aria-label="3 of 3 CER self-review checks ready"');
     expect(completePortfolio).toContain('data-beehive-review-next="synthesis"');
-    expect(completePortfolio).toContain('3 of 3 written');
-    expect(completePortfolio).toContain('review 3 of 3');
+    expect(completePortfolio).toContain('3 / 3 written');
+    expect(completePortfolio).toContain('3 / 3 self-reviewed');
   });
 
   it('makes every primary action explain its effect, readiness, and immediate control outcome', () => {
@@ -329,7 +330,7 @@ describe('beehive — simulation modes render without throwing', () => {
     const html = render({ viewMode: 'beekeeper', day: 8 });
     expect(html).toContain('data-beehive-learning-brief="true"');
     expect(html).toContain('data-beehive-journey-disclosure="true"');
-    expect(html).toContain('Open dashboard');
+    expect(html).toContain('Show brief');
     expect(html).toContain('Experience path');
 
     const modeIndex = html.indexOf('data-beehive-mode-switcher');
@@ -345,17 +346,19 @@ describe('beehive — simulation modes render without throwing', () => {
 
     const expanded = render({ viewMode: 'beekeeper', missionBriefOpen: true, journeyOpen: true });
     expect((expanded.match(/ open=""/g) || []).length).toBeGreaterThanOrEqual(2);
-    expect(expanded).toContain('Hide dashboard');
+    expect(expanded).toContain('Hide brief');
   });
 
-  it('uses consistent mobile snap rails while restoring desktop grids', () => {
+  it('exposes every perspective purpose and preserves supporting mobile rails', () => {
     const keeper = render({ viewMode: 'beekeeper' });
     expect(keeper).toContain('data-mobile-rail="perspectives"');
     expect(keeper).toContain('data-mobile-rail="educational-views"');
-    expect(keeper).toContain('auto-cols-[84%]');
-    expect(keeper).toContain('snap-mandatory');
-    expect(keeper).toContain('sm:grid-cols-3');
-    expect(keeper).toContain('sm:overflow-visible');
+    expect(keeper).toContain('Choose a perspective');
+    expect(keeper).toContain('Manage daily colony health and resources');
+    expect(keeper).toContain('Explore decentralized signals and trade-offs');
+    expect(keeper).toContain('Practice energy-aware nuptial flight in 3D');
+    expect(keeper.match(/role="radio"[^>]*data-beehive-mode-tab=/g)).toHaveLength(3);
+    expect(keeper.match(/data-perspective-selected="true"/g)).toHaveLength(1);
 
     const queenBriefing = render({ viewMode: 'queen', queen: { active: false } });
     expect(queenBriefing).toContain('data-mobile-rail="queen-difficulty"');

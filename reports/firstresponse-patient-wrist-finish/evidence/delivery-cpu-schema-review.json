@@ -1,0 +1,27 @@
+{
+  "accepted": true,
+  "sourceSHA256": "147670787861ae0251c9b4c65c90847a613c6b879d41737533749c19a5f6f891",
+  "checkerSHA256": "31f822223b4cb356d6fc0c5d077a6f269e1a120f57ca17b550206b81de5a1217",
+  "reportSHA256": "086e6502b00cb04b937a6affa3510f6005dc18bd7a2da744bfca9601dcb10384",
+  "gateFragmentSHA256": "a651e27fcf02525b72e4c6e98b06c9611071c6e8601d7cbedec2090f9de600b1",
+  "auditorSHA256": "64fd1293ea638bd83afb01f4ee8c45d1f79436899539648d2ba9e2cda2296afe",
+  "cases": 30,
+  "assertions": 473654,
+  "negative": [
+    {
+      "type": "failed-report",
+      "rejected": true,
+      "error": "CPU source/checker mismatch",
+      "restoredAndReread": true,
+      "restoredSHA256": "086e6502b00cb04b937a6affa3510f6005dc18bd7a2da744bfca9601dcb10384"
+    },
+    {
+      "type": "newly-reversed-face",
+      "rejected": true,
+      "error": "CPU normal geometry failed",
+      "restoredAndReread": true,
+      "restoredSHA256": "086e6502b00cb04b937a6affa3510f6005dc18bd7a2da744bfca9601dcb10384"
+    }
+  ],
+  "sharedWrites": 0
+}

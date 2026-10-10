@@ -1,0 +1,16 @@
+{
+  "scope": "Permit the full axe audit to execute deferred browser work, while retaining deterministic native restart confirmation and focus assertions",
+  "beforeSha256": "4e499f53af25c029d8447fed342edacfb1593cd22e22dec24b1a66bae56ff487",
+  "afterSha256": "c8f137ac82785d93be027ffb0cd750a12f48507786d0e30ca2b32ef16c2d97bc",
+  "syntax": "passed",
+  "exactReversal": true,
+  "repositoryWrites": false,
+  "suitesRun": false,
+  "edits": [
+    {
+      "name": "Run the full restart-review axe audit with its deferred timers resumed, then pause for deterministic confirmation",
+      "old": "await audit(page, 'restart-review'); const restartedAt = await page.evaluate(() => Date.now()); await page.keyboard.press('Space');",
+      "new": "await page.clock.resume(); await audit(page, 'restart-review'); await page.clock.pauseAt(new Date((await page.evaluate(() => Date.now())) + 1000)); await expect(confirm(page)).toBeFocused(); const restartedAt = await page.evaluate(() => Date.now()); await page.keyboard.press('Space');"
+    }
+  ]
+}

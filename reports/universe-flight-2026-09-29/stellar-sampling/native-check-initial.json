@@ -1,0 +1,6756 @@
+{
+  "completed": false,
+  "baselineHash": "a8de9ef0c0dc7362dc1284917b106ff82072f3a6b4943d947a3c8de6354dadcf",
+  "rendererHash": "604a7f50df297c5c1d9c9c3db3007e2425ba828eadc408d6006330dee8f91889",
+  "diagnosticHash": "20da51a8fac59ce4323582ca6a974bd2488c456c9c35303aa864e7d6b5f41abd",
+  "diagnostic": "Baseline shader with its 0.085 fine-granule coefficient set to zero; QA only.",
+  "harnessHash": "c9aeb976b2025c4a6137acaafa8f6ee2884f2b83399eeb6bc42a2444cd8b3e2d",
+  "checks": [
+    "All point populations, two atlas byte streams, twelve scenic camera poses, and two textures/buffers/programs per scene remain unchanged",
+    "Unresolved stars, full galaxy scenery and cloud control retain exact native pixels",
+    "All three medium photospheres reduce fine-granule residual energy; sub-48-pixel disks match the coarse diagnostic",
+    "Well-resolved core pixels and emission outside the photosphere remain exactly unchanged across quality, DPR, point caps, hemispheres and relativity",
+    "Angular-size sweeps around both sampling thresholds and the point/quad handoff retain bounded continuous display flux"
+  ],
+  "captures": [
+    {
+      "configuration": "dpr1",
+      "phase": "baseline",
+      "name": "amber-192-high",
+      "file": "dpr1-baseline-amber-192-high.png",
+      "pixelHash": "b386c733b5f165224250d18a9857f4b4e0e93bd799ace1db6997fb3e001d5c8e",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 192,
+      "diskPixels": 67.19999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.107578605720628
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.017315155405567,
+        "maximum": 218,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 10030
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "baseline",
+      "name": "amber-384-high",
+      "file": "dpr1-baseline-amber-384-high.png",
+      "pixelHash": "de0e6a2224dd65c297fd16b30196b7cbe6a3fd2726e63488d86b44665a7814fa",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.303789302860313
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.68503296874499,
+        "maximum": 225,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 40112
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "baseline",
+      "name": "blue-192-high",
+      "file": "dpr1-baseline-blue-192-high.png",
+      "pixelHash": "dd116c1d8fe12d41378513dde874dc1da4c32491a861884d27680b2a66c8264f",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 192,
+      "diskPixels": 67.19999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "statistics": {
+        "meanLuminance": 3.980192987072967,
+        "maximum": 205,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 9636
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "baseline",
+      "name": "blue-384-high",
+      "file": "dpr1-baseline-blue-384-high.png",
+      "pixelHash": "28cd556785746194728b877853aca9ab8b49d093cbec19c28f18ccb408e22b09",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.754736628575392
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.555404071234991,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 38596
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "baseline",
+      "name": "pale-192-high",
+      "file": "dpr1-baseline-pale-192-high.png",
+      "pixelHash": "b5f56134cebf6c967436c073c5405a28c4fb889b32d2aef206fedf9730318556",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 192,
+      "diskPixels": 67.19999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.214025873322246,
+        "maximum": 206,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 10674
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "baseline",
+      "name": "pale-384-high",
+      "file": "dpr1-baseline-pale-384-high.png",
+      "pixelHash": "12791942d81d53ed3478d311c720d8e5a1ac11a832e3713d119c7d180bb665eb",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23.754736628575394
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "statistics": {
+        "meanLuminance": 8.489220322077808,
+        "maximum": 215,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 42726
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "baseline",
+      "name": "blue-192-low",
+      "file": null,
+      "pixelHash": "594138c207d65caf3668c8e946890d10b6872286a764c317354bf59bfde61c4f",
+      "width": 680,
+      "height": 510,
+      "ratio": 0.85,
+      "spritePixels": 163.2,
+      "diskPixels": 57.11999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "statistics": {
+        "meanLuminance": 3.980997807371643,
+        "maximum": 206,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 6978
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "baseline",
+      "name": "blue-192-auto",
+      "file": null,
+      "pixelHash": "dd116c1d8fe12d41378513dde874dc1da4c32491a861884d27680b2a66c8264f",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 192,
+      "diskPixels": 67.19999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "statistics": {
+        "meanLuminance": 3.980192987072967,
+        "maximum": 205,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 9636
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "baseline",
+      "name": "pale-192-low",
+      "file": null,
+      "pixelHash": "417011fbfaa07f016e400a2d2c1c203d77cbfa03514f96905ab4af1de3c9fc6c",
+      "width": 680,
+      "height": 510,
+      "ratio": 0.85,
+      "spritePixels": 163.2,
+      "diskPixels": 57.11999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.214550233553595,
+        "maximum": 208,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 7716
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "baseline",
+      "name": "pale-192-auto",
+      "file": null,
+      "pixelHash": "b5f56134cebf6c967436c073c5405a28c4fb889b32d2aef206fedf9730318556",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 192,
+      "diskPixels": 67.19999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.214025873322246,
+        "maximum": 206,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 10674
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "baseline",
+      "name": "amber-136-high",
+      "file": "dpr1-baseline-amber-136-high.png",
+      "pixelHash": "32a1dd8f27223c9204fbbf77ecd60f32c424c65275a9c0cd5d84df9b2f16eb7b",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 136,
+      "diskPixels": 47.599999999999994,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            7.945993325723239
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 3.4086959704056077,
+        "maximum": 213,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 5032
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "baseline",
+      "name": "amber-384-right",
+      "file": "dpr1-baseline-amber-384-right.png",
+      "pixelHash": "a8b7ec25cb07307aca51f3f39d66538af107037e863016de85584cf90bf4c0a0",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -2.903789302860314,
+            1,
+            8.5
+          ],
+          "yaw": 4.71238898038469,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.635987203328344,
+        "maximum": 231,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 40112
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "baseline",
+      "name": "amber-384-back",
+      "file": "dpr1-baseline-amber-384-back.png",
+      "pixelHash": "9aa20c16f284c7bbe24f2f7f96ee9f7955d1156f6b1ee507ad24a5f4623f0139",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.696210697139687
+          ],
+          "yaw": 3.141592653589793,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.666743406661719,
+        "maximum": 226,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 40112
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "baseline",
+      "name": "amber-384-relativity-shifted",
+      "file": "dpr1-baseline-amber-384-relativity-shifted.png",
+      "pixelHash": "e85b6d763c8d49908ce5f543dd37c1c9668ebbeaa7c3447fdc1de48f7c7f465a",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.401894651430156
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 12.577368829752606,
+        "maximum": 255,
+        "clippedWhiteFraction": 0.028270833333333332,
+        "visiblePixels": 66136
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "baseline",
+      "name": "amber-384-relativity-rest",
+      "file": "dpr1-baseline-amber-384-relativity-rest.png",
+      "pixelHash": "de0e6a2224dd65c297fd16b30196b7cbe6a3fd2726e63488d86b44665a7814fa",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": true,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.303789302860313
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.68503296874499,
+        "maximum": 225,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 40112
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "baseline",
+      "name": "unresolved-star",
+      "file": "dpr1-baseline-unresolved-star.png",
+      "pixelHash": "109199ca1f94df41316219d3c2454fd639f2e72e06d620f63251cc8aeda070dd",
+      "statistics": {
+        "meanLuminance": 2.792580591655358,
+        "maximum": 139,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 12
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "baseline",
+      "name": "full-galaxy",
+      "file": "dpr1-baseline-full-galaxy.png",
+      "pixelHash": "3a5822ac4332ed4ed9735e286b0f96be3244a65b45274748171fea177fd28258",
+      "statistics": {
+        "meanLuminance": 3.699848023322547,
+        "maximum": 255,
+        "clippedWhiteFraction": 0.000014583333333333333,
+        "visiblePixels": 13740
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "baseline",
+      "name": "cloud",
+      "file": "dpr1-baseline-cloud.png",
+      "pixelHash": "e7a37a494eb3bd5e3bfcd03434a4b448860238b9aedd39ed2e0df54bc4a2a5ad",
+      "statistics": {
+        "meanLuminance": 22.825313485451446,
+        "maximum": 255,
+        "clippedWhiteFraction": 0.00003125,
+        "visiblePixels": 296671
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "refined",
+      "name": "amber-192-high",
+      "file": "dpr1-refined-amber-192-high.png",
+      "pixelHash": "db2fae884052ba2f99e324c395a3f9ad2da8ef795c5f8a6485a23f9d9cbe8f7c",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 192,
+      "diskPixels": 67.19999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.107578605720628
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.017985476238899,
+        "maximum": 213,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 10030
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "refined",
+      "name": "amber-384-high",
+      "file": "dpr1-refined-amber-384-high.png",
+      "pixelHash": "e9e72f526b4c2d1bc52726cfe65916ec4d930be32693aa9ca057da37eb05bc64",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.303789302860313
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.687843292495013,
+        "maximum": 225,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 40112
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "refined",
+      "name": "blue-192-high",
+      "file": "dpr1-refined-blue-192-high.png",
+      "pixelHash": "e9747f50e580c7049c9b4b9d60af2c7dc6a20476765285f905fa6496392c203f",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 192,
+      "diskPixels": 67.19999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "statistics": {
+        "meanLuminance": 3.9795560629063047,
+        "maximum": 200,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 9636
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "refined",
+      "name": "blue-384-high",
+      "file": "dpr1-refined-blue-384-high.png",
+      "pixelHash": "6224c488e13dbd653ffcf070427eb32468ad5833c5ec18ca8060e417481d559a",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.754736628575392
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.556995243735006,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 38596
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "refined",
+      "name": "pale-192-high",
+      "file": "dpr1-refined-pale-192-high.png",
+      "pixelHash": "22e7ffa5d46b4d7b68d5addbd134f3ce7a24b6e49effe6323b022270ed3f8143",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 192,
+      "diskPixels": 67.19999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.215122260405578,
+        "maximum": 202,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 10674
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "refined",
+      "name": "pale-384-high",
+      "file": "dpr1-refined-pale-384-high.png",
+      "pixelHash": "60a938b65aecbe5518a10628058fffe3aafdf819ff5ec828404af37c2d4c8093",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23.754736628575394
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "statistics": {
+        "meanLuminance": 8.489800281661205,
+        "maximum": 215,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 42726
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "refined",
+      "name": "blue-192-low",
+      "file": null,
+      "pixelHash": "c16e1252efff3fddddcf2eec4a65dfb85acc506165c1537ef4718176ab6723c5",
+      "width": 680,
+      "height": 510,
+      "ratio": 0.85,
+      "spritePixels": 163.2,
+      "diskPixels": 57.11999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "statistics": {
+        "meanLuminance": 3.980295053046375,
+        "maximum": 199,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 6978
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "refined",
+      "name": "blue-192-auto",
+      "file": null,
+      "pixelHash": "e9747f50e580c7049c9b4b9d60af2c7dc6a20476765285f905fa6496392c203f",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 192,
+      "diskPixels": 67.19999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "statistics": {
+        "meanLuminance": 3.9795560629063047,
+        "maximum": 200,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 9636
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "refined",
+      "name": "pale-192-low",
+      "file": null,
+      "pixelHash": "4df1aa9ad50fa8a33fff5caecadf07d725f7a16b494c8149a0030a9ea3be74b0",
+      "width": 680,
+      "height": 510,
+      "ratio": 0.85,
+      "spritePixels": 163.2,
+      "diskPixels": 57.11999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.215936164926136,
+        "maximum": 201,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 7716
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "refined",
+      "name": "pale-192-auto",
+      "file": null,
+      "pixelHash": "22e7ffa5d46b4d7b68d5addbd134f3ce7a24b6e49effe6323b022270ed3f8143",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 192,
+      "diskPixels": 67.19999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.215122260405578,
+        "maximum": 202,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 10674
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "refined",
+      "name": "amber-136-high",
+      "file": "dpr1-refined-amber-136-high.png",
+      "pixelHash": "94bdb7db2b180e920c5fe28a15b9c4fe5355ca913b56ddc06cfe374f1902d56a",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 136,
+      "diskPixels": 47.599999999999994,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            7.945993325723239
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 3.4087084704056068,
+        "maximum": 213,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 5032
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "refined",
+      "name": "amber-384-right",
+      "file": "dpr1-refined-amber-384-right.png",
+      "pixelHash": "c0716d2a186417e6ba29e4b651805349458960a69889e02f2855ba158bf9ec03",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -2.903789302860314,
+            1,
+            8.5
+          ],
+          "yaw": 4.71238898038469,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.637438329161674,
+        "maximum": 231,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 40112
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "refined",
+      "name": "amber-384-back",
+      "file": "dpr1-refined-amber-384-back.png",
+      "pixelHash": "356706ae80276cbe37486370246672d79553021fe6c1ac295f6a7f362ebb6eaf",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.696210697139687
+          ],
+          "yaw": 3.141592653589793,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.666454119995013,
+        "maximum": 226,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 40112
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "refined",
+      "name": "amber-384-relativity-shifted",
+      "file": "dpr1-refined-amber-384-relativity-shifted.png",
+      "pixelHash": "703b664495cb6b76e0132ec34297db1b3268abe54585aba97794e63c6c87beaf",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.401894651430156
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 12.578272918919266,
+        "maximum": 255,
+        "clippedWhiteFraction": 0.028402083333333335,
+        "visiblePixels": 66136
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "refined",
+      "name": "amber-384-relativity-rest",
+      "file": "dpr1-refined-amber-384-relativity-rest.png",
+      "pixelHash": "e9e72f526b4c2d1bc52726cfe65916ec4d930be32693aa9ca057da37eb05bc64",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": true,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.303789302860313
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.687843292495013,
+        "maximum": 225,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 40112
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "refined",
+      "name": "unresolved-star",
+      "file": "dpr1-refined-unresolved-star.png",
+      "pixelHash": "109199ca1f94df41316219d3c2454fd639f2e72e06d620f63251cc8aeda070dd",
+      "statistics": {
+        "meanLuminance": 2.792580591655358,
+        "maximum": 139,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 12
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "refined",
+      "name": "full-galaxy",
+      "file": "dpr1-refined-full-galaxy.png",
+      "pixelHash": "3a5822ac4332ed4ed9735e286b0f96be3244a65b45274748171fea177fd28258",
+      "statistics": {
+        "meanLuminance": 3.699848023322547,
+        "maximum": 255,
+        "clippedWhiteFraction": 0.000014583333333333333,
+        "visiblePixels": 13740
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "refined",
+      "name": "cloud",
+      "file": "dpr1-refined-cloud.png",
+      "pixelHash": "e7a37a494eb3bd5e3bfcd03434a4b448860238b9aedd39ed2e0df54bc4a2a5ad",
+      "statistics": {
+        "meanLuminance": 22.825313485451446,
+        "maximum": 255,
+        "clippedWhiteFraction": 0.00003125,
+        "visiblePixels": 296671
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "coarse",
+      "name": "amber-192-high",
+      "file": "dpr1-coarse-amber-192-high.png",
+      "pixelHash": "5e2255e92ad5b25df0bf22bd5ccedebc21eda7184b4863570dff168d1854c1a6",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 192,
+      "diskPixels": 67.19999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.107578605720628
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.018100272072237,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 10030
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "coarse",
+      "name": "amber-384-high",
+      "file": "dpr1-coarse-amber-384-high.png",
+      "pixelHash": "4a716fa0b31a19e8af9d1a4c7d86de3b1c8816b07696488a008558eb7af6e2e9",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.303789302860313
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.6905875962450745,
+        "maximum": 211,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 40112
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "coarse",
+      "name": "blue-192-high",
+      "file": "dpr1-coarse-blue-192-high.png",
+      "pixelHash": "d7eb60cf66beacb424cc9d47da2f4f8d6915f2b061d126e08ef26372696de92a",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 192,
+      "diskPixels": 67.19999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "statistics": {
+        "meanLuminance": 3.9795398516563067,
+        "maximum": 198,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 9636
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "coarse",
+      "name": "blue-384-high",
+      "file": "dpr1-coarse-blue-384-high.png",
+      "pixelHash": "78931523dc2e0338c46d46cc356086e15136936842ee1ebc4e2689f4293d5ddc",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.754736628575392
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.551030997068111,
+        "maximum": 199,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 38596
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "coarse",
+      "name": "pale-192-high",
+      "file": "dpr1-coarse-pale-192-high.png",
+      "pixelHash": "52d2af42832acaac036380a06f413b005dab8dc809570c90c6e3eb026998712f",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 192,
+      "diskPixels": 67.19999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.215317945822237,
+        "maximum": 200,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 10674
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "coarse",
+      "name": "pale-384-high",
+      "file": "dpr1-coarse-pale-384-high.png",
+      "pixelHash": "d7e10f1519927226fbb34d1260f9026511079c473c0911bdd022fbc805c3f787",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23.754736628575394
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "statistics": {
+        "meanLuminance": 8.497935756244674,
+        "maximum": 201,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 42726
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "coarse",
+      "name": "blue-192-low",
+      "file": null,
+      "pixelHash": "aef83d64a2e9774e4a4e5ef77fe8f2d6ae0826cf7770fb1f7f7de647bff781b0",
+      "width": 680,
+      "height": 510,
+      "ratio": 0.85,
+      "spritePixels": 163.2,
+      "diskPixels": 57.11999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "statistics": {
+        "meanLuminance": 3.9802892791132676,
+        "maximum": 198,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 6978
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "coarse",
+      "name": "blue-192-auto",
+      "file": null,
+      "pixelHash": "d7eb60cf66beacb424cc9d47da2f4f8d6915f2b061d126e08ef26372696de92a",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 192,
+      "diskPixels": 67.19999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "statistics": {
+        "meanLuminance": 3.9795398516563067,
+        "maximum": 198,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 9636
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "coarse",
+      "name": "pale-192-low",
+      "file": null,
+      "pixelHash": "e7bc15d55b29574f5dece5983c95cc106fdb5b3e55ca77240974082564e119cf",
+      "width": 680,
+      "height": 510,
+      "ratio": 0.85,
+      "spritePixels": 163.2,
+      "diskPixels": 57.11999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.215988721442859,
+        "maximum": 200,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 7716
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "coarse",
+      "name": "pale-192-auto",
+      "file": null,
+      "pixelHash": "52d2af42832acaac036380a06f413b005dab8dc809570c90c6e3eb026998712f",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 192,
+      "diskPixels": 67.19999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.215317945822237,
+        "maximum": 200,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 10674
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "coarse",
+      "name": "amber-136-high",
+      "file": "dpr1-coarse-amber-136-high.png",
+      "pixelHash": "94bdb7db2b180e920c5fe28a15b9c4fe5355ca913b56ddc06cfe374f1902d56a",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 136,
+      "diskPixels": 47.599999999999994,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            7.945993325723239
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 3.4087084704056068,
+        "maximum": 213,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 5032
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "coarse",
+      "name": "amber-384-right",
+      "file": "dpr1-coarse-amber-384-right.png",
+      "pixelHash": "ba9e5ae858a7ac83aa8f2e8b15fd734dbe0d8892a6a5da3dd8cafacc934c7d3a",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -2.903789302860314,
+            1,
+            8.5
+          ],
+          "yaw": 4.71238898038469,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.638606563328339,
+        "maximum": 218,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 40112
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "coarse",
+      "name": "amber-384-back",
+      "file": "dpr1-coarse-amber-384-back.png",
+      "pixelHash": "64ef63a8e9f750f526dfa6449288d148965b82733ed2bdcd8360ef12379273d8",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.696210697139687
+          ],
+          "yaw": 3.141592653589793,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.666235733745038,
+        "maximum": 211,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 40112
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "coarse",
+      "name": "amber-384-relativity-shifted",
+      "file": "dpr1-coarse-amber-384-relativity-shifted.png",
+      "pixelHash": "f479778452f401ab6beda30be9cea812f531739270ea781c0fbbde9a2fdd7170",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.401894651430156
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 12.578272317252601,
+        "maximum": 255,
+        "clippedWhiteFraction": 0.028397916666666665,
+        "visiblePixels": 66136
+      }
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "coarse",
+      "name": "amber-384-relativity-rest",
+      "file": "dpr1-coarse-amber-384-relativity-rest.png",
+      "pixelHash": "4a716fa0b31a19e8af9d1a4c7d86de3b1c8816b07696488a008558eb7af6e2e9",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": true,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.303789302860313
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.6905875962450745,
+        "maximum": 211,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 40112
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "amber-192-high",
+      "file": "dpr2-baseline-amber-192-high.png",
+      "pixelHash": "14770dd6cbd9ad51af184baaa98a454480ec741916619dcdde4f2cd574b3afc3",
+      "width": 1600,
+      "height": 1200,
+      "ratio": 2,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.107578605720628
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.017602141249557,
+        "maximum": 220,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 40112
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "amber-384-high",
+      "file": "dpr2-baseline-amber-384-high.png",
+      "pixelHash": "c189896a5bf6a51624025dbd7b4d6bccba1d147b15176444e1ae1dc7d43462d8",
+      "width": 1600,
+      "height": 1200,
+      "ratio": 2,
+      "spritePixels": 768,
+      "diskPixels": 268.79999999999995,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.303789302860313
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.68510910595354,
+        "maximum": 226,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 160484
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "blue-192-high",
+      "file": "dpr2-baseline-blue-192-high.png",
+      "pixelHash": "864817543e31759c8c8eea5a39f982947d171ff4e2a69a9ff89107ca97360880",
+      "width": 1600,
+      "height": 1200,
+      "ratio": 2,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "statistics": {
+        "meanLuminance": 3.980489305620575,
+        "maximum": 206,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 38596
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "blue-384-high",
+      "file": "dpr2-baseline-blue-384-high.png",
+      "pixelHash": "c40311053e6121f42fbed6c736e924db2f100710c29e3992cee09dfd1cc6478a",
+      "width": 1600,
+      "height": 1200,
+      "ratio": 2,
+      "spritePixels": 768,
+      "diskPixels": 268.79999999999995,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.754736628575392
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.5554960129417825,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 154346
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "pale-192-high",
+      "file": "dpr2-baseline-pale-192-high.png",
+      "pixelHash": "9517363fb2061a2a3b0c2595c90111e73f1726c8303d38540bc333f2a277c553",
+      "width": 1600,
+      "height": 1200,
+      "ratio": 2,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.214330025838159,
+        "maximum": 207,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 42726
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "pale-384-high",
+      "file": "dpr2-baseline-pale-384-high.png",
+      "pixelHash": "54f50deedda240313a1bd917b825171947ccaaac0b551c0cecab4f5d67f415fa",
+      "width": 1600,
+      "height": 1200,
+      "ratio": 2,
+      "spritePixels": 768,
+      "diskPixels": 268.79999999999995,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23.754736628575394
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "statistics": {
+        "meanLuminance": 8.488834826471924,
+        "maximum": 215,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 170858
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "amber-192-low",
+      "file": "dpr2-baseline-amber-192-low.png",
+      "pixelHash": "7d38e167553e27f3b62b1de34ef70daa31a88b6c0f90075b2ea92f0b50960ffd",
+      "width": 680,
+      "height": 510,
+      "ratio": 0.85,
+      "spritePixels": 163.2,
+      "diskPixels": 57.11999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.107578605720628
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.0180497854571495,
+        "maximum": 219,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 7242
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "amber-192-auto",
+      "file": "dpr2-baseline-amber-192-auto.png",
+      "pixelHash": "4d6432a01c9095ea97d0a2a26cc201f0634b4448eb743e13c16e2903f96cd7f1",
+      "width": 1200,
+      "height": 900,
+      "ratio": 1.5,
+      "spritePixels": 288,
+      "diskPixels": 100.8,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.107578605720628
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.017548909826223,
+        "maximum": 220,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 22570
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "amber-192-high",
+      "file": "dpr2-refined-amber-192-high.png",
+      "pixelHash": "bfd1754f8fddb1e9dbad331be193dc90d21c1d04c0ddc6cf68743c367f6c5f1e",
+      "width": 1600,
+      "height": 1200,
+      "ratio": 2,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.107578605720628
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.018003667707879,
+        "maximum": 220,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 40112
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "amber-384-high",
+      "file": "dpr2-refined-amber-384-high.png",
+      "pixelHash": "0fa6fc911ce0db4a3c4b270655e0c6b2cdb4d5df9839aebac55f3364e0c7f3d8",
+      "width": 1600,
+      "height": 1200,
+      "ratio": 2,
+      "spritePixels": 768,
+      "diskPixels": 268.79999999999995,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.303789302860313
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.68544766543273,
+        "maximum": 226,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 160484
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "blue-192-high",
+      "file": "dpr2-refined-blue-192-high.png",
+      "pixelHash": "fdc753a106bca9bf2897d898aa792ba5f87bf461610c0e56a14c076d403ba69c",
+      "width": 1600,
+      "height": 1200,
+      "ratio": 2,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "statistics": {
+        "meanLuminance": 3.9807317936414153,
+        "maximum": 206,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 38596
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "blue-384-high",
+      "file": "dpr2-refined-blue-384-high.png",
+      "pixelHash": "77286d1c3b176e82aaa7c4e0b6d5a5d2d987e8bd68bf02b9a778346353df09b3",
+      "width": 1600,
+      "height": 1200,
+      "ratio": 2,
+      "spritePixels": 768,
+      "diskPixels": 268.79999999999995,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.754736628575392
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.555634377316814,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 154346
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "pale-192-high",
+      "file": "dpr2-refined-pale-192-high.png",
+      "pixelHash": "0dbf8b868dac772b2f3ef074daf3b3ba453719f9b10f3f5ff18ed295d4e846e5",
+      "width": 1600,
+      "height": 1200,
+      "ratio": 2,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.214419235108986,
+        "maximum": 207,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 42726
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "pale-384-high",
+      "file": "dpr2-refined-pale-384-high.png",
+      "pixelHash": "13c2f606950e0a00214a100b95b502cfebc9206234764ba168dba81f06e63174",
+      "width": 1600,
+      "height": 1200,
+      "ratio": 2,
+      "spritePixels": 768,
+      "diskPixels": 268.79999999999995,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23.754736628575394
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "statistics": {
+        "meanLuminance": 8.489301208138574,
+        "maximum": 215,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 170858
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "amber-192-low",
+      "file": "dpr2-refined-amber-192-low.png",
+      "pixelHash": "4cddad3f2c031b5136f1704653d55a642cc52e8cd7649797461141a6c84fed17",
+      "width": 680,
+      "height": 510,
+      "ratio": 0.85,
+      "spritePixels": 163.2,
+      "diskPixels": 57.11999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.107578605720628
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.018715905411017,
+        "maximum": 211,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 7242
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "amber-192-auto",
+      "file": "dpr2-refined-amber-192-auto.png",
+      "pixelHash": "14abde9b2d95a679591f931d2b35178f25cef5a5a534ddb730728998cb3fdec9",
+      "width": 1200,
+      "height": 900,
+      "ratio": 1.5,
+      "spritePixels": 288,
+      "diskPixels": 100.8,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.107578605720628
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.017974985381819,
+        "maximum": 220,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 22570
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "coarse",
+      "name": "amber-192-high",
+      "file": "dpr2-coarse-amber-192-high.png",
+      "pixelHash": "46a97ba31b492bf90f0d2400462f85c3a1c6e1ba37fc0973cd793292c0c83caf",
+      "width": 1600,
+      "height": 1200,
+      "ratio": 2,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.107578605720628
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.018392823853715,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 40112
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "coarse",
+      "name": "amber-384-high",
+      "file": "dpr2-coarse-amber-384-high.png",
+      "pixelHash": "3fcc73d73e3ddef298ce3ae8fcd53f658c64c99edf727f822430d1267cf33a48",
+      "width": 1600,
+      "height": 1200,
+      "ratio": 2,
+      "spritePixels": 768,
+      "diskPixels": 268.79999999999995,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.303789302860313
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.690460020432974,
+        "maximum": 211,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 160484
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "coarse",
+      "name": "blue-192-high",
+      "file": "dpr2-coarse-blue-192-high.png",
+      "pixelHash": "78353b0088065e50f73b4e5b0a06942369bf4dfe397bf4c3da7f259145c2c9f3",
+      "width": 1600,
+      "height": 1200,
+      "ratio": 2,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "statistics": {
+        "meanLuminance": 3.9798320244747436,
+        "maximum": 198,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 38596
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "coarse",
+      "name": "blue-384-high",
+      "file": "dpr2-coarse-blue-384-high.png",
+      "pixelHash": "b0cf9ca291bf5b8d91c2e48afc2549983181808b4ea3a23ae2dff53945ba47bd",
+      "width": 1600,
+      "height": 1200,
+      "ratio": 2,
+      "spritePixels": 768,
+      "diskPixels": 268.79999999999995,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.754736628575392
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.55097194585838,
+        "maximum": 199,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 154346
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "coarse",
+      "name": "pale-192-high",
+      "file": "dpr2-coarse-pale-192-high.png",
+      "pixelHash": "e82b65a943d369a5d762957a099ef251d64ccbb4ff624ef96ab12a7f562431ae",
+      "width": 1600,
+      "height": 1200,
+      "ratio": 2,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.215627092192446,
+        "maximum": 200,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 42726
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "coarse",
+      "name": "pale-384-high",
+      "file": "dpr2-coarse-pale-384-high.png",
+      "pixelHash": "67763a4ea24397c4d5a54d231cde1279cc94a58309ec44d834389041bf1e0868",
+      "width": 1600,
+      "height": 1200,
+      "ratio": 2,
+      "spritePixels": 768,
+      "diskPixels": 268.79999999999995,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23.754736628575394
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "statistics": {
+        "meanLuminance": 8.49767281803392,
+        "maximum": 201,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 170858
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "coarse",
+      "name": "amber-192-low",
+      "file": "dpr2-coarse-amber-192-low.png",
+      "pixelHash": "bee4079d379340df50ec8d5e6ecd989a96a6956c133291f21ebdf3003622201f",
+      "width": 680,
+      "height": 510,
+      "ratio": 0.85,
+      "spritePixels": 163.2,
+      "diskPixels": 57.11999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "low"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.107578605720628
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.018755218559807,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 7242
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "coarse",
+      "name": "amber-192-auto",
+      "file": "dpr2-coarse-amber-192-auto.png",
+      "pixelHash": "ec610bbee2c7ab7ecaea5dfe616231f31e71e35ad7e1f9ae7cc2c5db8c20f6be",
+      "width": 1200,
+      "height": 900,
+      "ratio": 1.5,
+      "spritePixels": 288,
+      "diskPixels": 100.8,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.107578605720628
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.018318427418936,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 22570
+      }
+    },
+    {
+      "configuration": "cap16",
+      "phase": "baseline",
+      "name": "amber-192-high",
+      "file": "cap16-baseline-amber-192-high.png",
+      "pixelHash": "b386c733b5f165224250d18a9857f4b4e0e93bd799ace1db6997fb3e001d5c8e",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 192,
+      "diskPixels": 67.19999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.107578605720628
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.017315155405567,
+        "maximum": 218,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 10030
+      }
+    },
+    {
+      "configuration": "cap16",
+      "phase": "baseline",
+      "name": "amber-384-high",
+      "file": "cap16-baseline-amber-384-high.png",
+      "pixelHash": "de0e6a2224dd65c297fd16b30196b7cbe6a3fd2726e63488d86b44665a7814fa",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.303789302860313
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.68503296874499,
+        "maximum": 225,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 40112
+      }
+    },
+    {
+      "configuration": "cap16",
+      "phase": "baseline",
+      "name": "blue-192-high",
+      "file": "cap16-baseline-blue-192-high.png",
+      "pixelHash": "dd116c1d8fe12d41378513dde874dc1da4c32491a861884d27680b2a66c8264f",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 192,
+      "diskPixels": 67.19999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "statistics": {
+        "meanLuminance": 3.980192987072967,
+        "maximum": 205,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 9636
+      }
+    },
+    {
+      "configuration": "cap16",
+      "phase": "baseline",
+      "name": "blue-384-high",
+      "file": "cap16-baseline-blue-384-high.png",
+      "pixelHash": "28cd556785746194728b877853aca9ab8b49d093cbec19c28f18ccb408e22b09",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.754736628575392
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.555404071234991,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 38596
+      }
+    },
+    {
+      "configuration": "cap16",
+      "phase": "baseline",
+      "name": "pale-192-high",
+      "file": "cap16-baseline-pale-192-high.png",
+      "pixelHash": "b5f56134cebf6c967436c073c5405a28c4fb889b32d2aef206fedf9730318556",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 192,
+      "diskPixels": 67.19999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.214025873322246,
+        "maximum": 206,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 10674
+      }
+    },
+    {
+      "configuration": "cap16",
+      "phase": "baseline",
+      "name": "pale-384-high",
+      "file": "cap16-baseline-pale-384-high.png",
+      "pixelHash": "12791942d81d53ed3478d311c720d8e5a1ac11a832e3713d119c7d180bb665eb",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23.754736628575394
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "statistics": {
+        "meanLuminance": 8.489220322077808,
+        "maximum": 215,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 42726
+      }
+    },
+    {
+      "configuration": "cap16",
+      "phase": "refined",
+      "name": "amber-192-high",
+      "file": "cap16-refined-amber-192-high.png",
+      "pixelHash": "db2fae884052ba2f99e324c395a3f9ad2da8ef795c5f8a6485a23f9d9cbe8f7c",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 192,
+      "diskPixels": 67.19999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.107578605720628
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.017985476238899,
+        "maximum": 213,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 10030
+      }
+    },
+    {
+      "configuration": "cap16",
+      "phase": "refined",
+      "name": "amber-384-high",
+      "file": "cap16-refined-amber-384-high.png",
+      "pixelHash": "e9e72f526b4c2d1bc52726cfe65916ec4d930be32693aa9ca057da37eb05bc64",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.303789302860313
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.687843292495013,
+        "maximum": 225,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 40112
+      }
+    },
+    {
+      "configuration": "cap16",
+      "phase": "refined",
+      "name": "blue-192-high",
+      "file": "cap16-refined-blue-192-high.png",
+      "pixelHash": "e9747f50e580c7049c9b4b9d60af2c7dc6a20476765285f905fa6496392c203f",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 192,
+      "diskPixels": 67.19999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "statistics": {
+        "meanLuminance": 3.9795560629063047,
+        "maximum": 200,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 9636
+      }
+    },
+    {
+      "configuration": "cap16",
+      "phase": "refined",
+      "name": "blue-384-high",
+      "file": "cap16-refined-blue-384-high.png",
+      "pixelHash": "6224c488e13dbd653ffcf070427eb32468ad5833c5ec18ca8060e417481d559a",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.754736628575392
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.556995243735006,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 38596
+      }
+    },
+    {
+      "configuration": "cap16",
+      "phase": "refined",
+      "name": "pale-192-high",
+      "file": "cap16-refined-pale-192-high.png",
+      "pixelHash": "22e7ffa5d46b4d7b68d5addbd134f3ce7a24b6e49effe6323b022270ed3f8143",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 192,
+      "diskPixels": 67.19999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.215122260405578,
+        "maximum": 202,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 10674
+      }
+    },
+    {
+      "configuration": "cap16",
+      "phase": "refined",
+      "name": "pale-384-high",
+      "file": "cap16-refined-pale-384-high.png",
+      "pixelHash": "60a938b65aecbe5518a10628058fffe3aafdf819ff5ec828404af37c2d4c8093",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23.754736628575394
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "statistics": {
+        "meanLuminance": 8.489800281661205,
+        "maximum": 215,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 42726
+      }
+    },
+    {
+      "configuration": "cap16",
+      "phase": "coarse",
+      "name": "amber-192-high",
+      "file": "cap16-coarse-amber-192-high.png",
+      "pixelHash": "5e2255e92ad5b25df0bf22bd5ccedebc21eda7184b4863570dff168d1854c1a6",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 192,
+      "diskPixels": 67.19999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.107578605720628
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.018100272072237,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 10030
+      }
+    },
+    {
+      "configuration": "cap16",
+      "phase": "coarse",
+      "name": "amber-384-high",
+      "file": "cap16-coarse-amber-384-high.png",
+      "pixelHash": "4a716fa0b31a19e8af9d1a4c7d86de3b1c8816b07696488a008558eb7af6e2e9",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.303789302860313
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.6905875962450745,
+        "maximum": 211,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 40112
+      }
+    },
+    {
+      "configuration": "cap16",
+      "phase": "coarse",
+      "name": "blue-192-high",
+      "file": "cap16-coarse-blue-192-high.png",
+      "pixelHash": "d7eb60cf66beacb424cc9d47da2f4f8d6915f2b061d126e08ef26372696de92a",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 192,
+      "diskPixels": 67.19999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "statistics": {
+        "meanLuminance": 3.9795398516563067,
+        "maximum": 198,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 9636
+      }
+    },
+    {
+      "configuration": "cap16",
+      "phase": "coarse",
+      "name": "blue-384-high",
+      "file": "cap16-coarse-blue-384-high.png",
+      "pixelHash": "78931523dc2e0338c46d46cc356086e15136936842ee1ebc4e2689f4293d5ddc",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.3,
+            -2.2,
+            15.754736628575392
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "statistics": {
+        "meanLuminance": 7.551030997068111,
+        "maximum": 199,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 38596
+      }
+    },
+    {
+      "configuration": "cap16",
+      "phase": "coarse",
+      "name": "pale-192-high",
+      "file": "cap16-coarse-pale-192-high.png",
+      "pixelHash": "52d2af42832acaac036380a06f413b005dab8dc809570c90c6e3eb026998712f",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 192,
+      "diskPixels": 67.19999999999999,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23.509473257150784
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "statistics": {
+        "meanLuminance": 4.215317945822237,
+        "maximum": 200,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 10674
+      }
+    },
+    {
+      "configuration": "cap16",
+      "phase": "coarse",
+      "name": "pale-384-high",
+      "file": "cap16-coarse-pale-384-high.png",
+      "pixelHash": "d7e10f1519927226fbb34d1260f9026511079c473c0911bdd022fbc805c3f787",
+      "width": 800,
+      "height": 600,
+      "ratio": 1,
+      "spritePixels": 384,
+      "diskPixels": 134.39999999999998,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.65,
+            2.4,
+            23.754736628575394
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "statistics": {
+        "meanLuminance": 8.497935756244674,
+        "maximum": 201,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 42726
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "configuration": "dpr1",
+      "name": "amber-192-high",
+      "diskPixels": 67.19999999999999,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 9432,
+          "meanAbsolute": 2.080788804071247,
+          "rms": 2.680427282282891,
+          "maximumChannelDifference": 10,
+          "changedPixels": 2909
+        },
+        "refined": {
+          "sampledChannels": 9432,
+          "meanAbsolute": 0.17546649703138253,
+          "rms": 0.46631666264010985,
+          "maximumChannelDifference": 3,
+          "changedPixels": 846
+        },
+        "rmsRatio": 0.17397101787553548
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 3360,
+          "meanAbsolute": 1.9172619047619048,
+          "rms": 2.4435288689379817,
+          "maximumChannelDifference": 8,
+          "changedPixels": 1035
+        },
+        "refined": {
+          "sampledChannels": 3360,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 0,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 1427352,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 1440000,
+        "meanAbsolute": 0.013882638888888889,
+        "rms": 0.207392877301887,
+        "maximumChannelDifference": 9,
+        "changedPixels": 3362
+      },
+      "brightnessRatio": 1.0001668579156482
+    },
+    {
+      "configuration": "dpr1",
+      "name": "amber-384-high",
+      "diskPixels": 134.39999999999998,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 3.531673644338118,
+          "rms": 4.517672523755781,
+          "maximumChannelDifference": 17,
+          "changedPixels": 12830
+        },
+        "refined": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 2.7324312200956937,
+          "rms": 3.930577158921175,
+          "maximumChannelDifference": 17,
+          "changedPixels": 11063
+        },
+        "rmsRatio": 0.8700447272910072
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 3.1129326047358834,
+          "rms": 3.906349042460243,
+          "maximumChannelDifference": 12,
+          "changedPixels": 694
+        },
+        "refined": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 18984,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 1393560,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 1440000,
+        "meanAbsolute": 0.026964583333333333,
+        "rms": 0.32780943820728803,
+        "maximumChannelDifference": 12,
+        "changedPixels": 5927
+      },
+      "brightnessRatio": 1.0003656879237153
+    },
+    {
+      "configuration": "dpr1",
+      "name": "blue-192-high",
+      "diskPixels": 67.19999999999999,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 9432,
+          "meanAbsolute": 2.187765055131467,
+          "rms": 2.7508384102465073,
+          "maximumChannelDifference": 9,
+          "changedPixels": 2925
+        },
+        "refined": {
+          "sampledChannels": 9432,
+          "meanAbsolute": 0.18659881255301103,
+          "rms": 0.47364824846499853,
+          "maximumChannelDifference": 3,
+          "changedPixels": 841
+        },
+        "rmsRatio": 0.17218323210142836
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 3360,
+          "meanAbsolute": 1.9642857142857142,
+          "rms": 2.480759292367292,
+          "maximumChannelDifference": 8,
+          "changedPixels": 1031
+        },
+        "refined": {
+          "sampledChannels": 3360,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 0,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 1427352,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 1440000,
+        "meanAbsolute": 0.014643055555555555,
+        "rms": 0.2135870886651261,
+        "maximumChannelDifference": 8,
+        "changedPixels": 3376
+      },
+      "brightnessRatio": 0.9998399765617569
+    },
+    {
+      "configuration": "dpr1",
+      "name": "blue-384-high",
+      "diskPixels": 134.39999999999998,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 3.7334280303030303,
+          "rms": 4.660190917329987,
+          "maximumChannelDifference": 16,
+          "changedPixels": 12843
+        },
+        "refined": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 2.8876345693779903,
+          "rms": 4.043877541934558,
+          "maximumChannelDifference": 16,
+          "changedPixels": 11136
+        },
+        "rmsRatio": 0.8677493290878863
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 3.2709471766848814,
+          "rms": 4.025363575202656,
+          "maximumChannelDifference": 12,
+          "changedPixels": 703
+        },
+        "refined": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 18984,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 1393560,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 1440000,
+        "meanAbsolute": 0.028147222222222223,
+        "rms": 0.33609687756822604,
+        "maximumChannelDifference": 12,
+        "changedPixels": 5999
+      },
+      "brightnessRatio": 1.0002106005827105
+    },
+    {
+      "configuration": "dpr1",
+      "name": "pale-192-high",
+      "diskPixels": 67.19999999999999,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 9432,
+          "meanAbsolute": 2.4004452926208653,
+          "rms": 3.0089455263699234,
+          "maximumChannelDifference": 9,
+          "changedPixels": 2962
+        },
+        "refined": {
+          "sampledChannels": 9432,
+          "meanAbsolute": 0.19698897370653096,
+          "rms": 0.49552706665867263,
+          "maximumChannelDifference": 3,
+          "changedPixels": 866
+        },
+        "rmsRatio": 0.16468462533334408
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 3360,
+          "meanAbsolute": 2.1279761904761907,
+          "rms": 2.657200460205117,
+          "maximumChannelDifference": 7,
+          "changedPixels": 1064
+        },
+        "refined": {
+          "sampledChannels": 3360,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 0,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 1427352,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 1440000,
+        "meanAbsolute": 0.016049305555555556,
+        "rms": 0.23306681207089286,
+        "maximumChannelDifference": 9,
+        "changedPixels": 3412
+      },
+      "brightnessRatio": 1.000260175688591
+    },
+    {
+      "configuration": "dpr1",
+      "name": "pale-384-high",
+      "diskPixels": 134.39999999999998,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 4.102197966507177,
+          "rms": 5.0965043958988465,
+          "maximumChannelDifference": 16,
+          "changedPixels": 12850
+        },
+        "refined": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 3.2039972089314195,
+          "rms": 4.477732653131343,
+          "maximumChannelDifference": 16,
+          "changedPixels": 11108
+        },
+        "rmsRatio": 0.8785889906686967
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 3.65528233151184,
+          "rms": 4.4859119689399085,
+          "maximumChannelDifference": 11,
+          "changedPixels": 694
+        },
+        "refined": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 18984,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 1393560,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 1440000,
+        "meanAbsolute": 0.03038333333333333,
+        "rms": 0.3583062005231466,
+        "maximumChannelDifference": 12,
+        "changedPixels": 6078
+      },
+      "brightnessRatio": 1.000068317178892
+    },
+    {
+      "configuration": "dpr1",
+      "name": "blue-192-low",
+      "diskPixels": 57.11999999999999,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 6636,
+          "meanAbsolute": 2.2124773960216997,
+          "rms": 2.7746918764146753,
+          "maximumChannelDifference": 9,
+          "changedPixels": 2073
+        },
+        "refined": {
+          "sampledChannels": 6636,
+          "meanAbsolute": 0.027124773960216998,
+          "rms": 0.16469600468808282,
+          "maximumChannelDifference": 1,
+          "changedPixels": 144
+        },
+        "rmsRatio": 0.05935650227977571
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 3504,
+          "meanAbsolute": 2.103595890410959,
+          "rms": 2.645589506256864,
+          "maximumChannelDifference": 9,
+          "changedPixels": 1091
+        },
+        "refined": {
+          "sampledChannels": 3504,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 0,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 1031016,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 1040400,
+        "meanAbsolute": 0.015762206843521722,
+        "rms": 0.22878034439679143,
+        "maximumChannelDifference": 9,
+        "changedPixels": 2493
+      },
+      "brightnessRatio": 0.9998234728178029
+    },
+    {
+      "configuration": "dpr1",
+      "name": "blue-192-auto",
+      "diskPixels": 67.19999999999999,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 9432,
+          "meanAbsolute": 2.187765055131467,
+          "rms": 2.7508384102465073,
+          "maximumChannelDifference": 9,
+          "changedPixels": 2925
+        },
+        "refined": {
+          "sampledChannels": 9432,
+          "meanAbsolute": 0.18659881255301103,
+          "rms": 0.47364824846499853,
+          "maximumChannelDifference": 3,
+          "changedPixels": 841
+        },
+        "rmsRatio": 0.17218323210142836
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 3360,
+          "meanAbsolute": 1.9642857142857142,
+          "rms": 2.480759292367292,
+          "maximumChannelDifference": 8,
+          "changedPixels": 1031
+        },
+        "refined": {
+          "sampledChannels": 3360,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 0,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 1427352,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 1440000,
+        "meanAbsolute": 0.014643055555555555,
+        "rms": 0.2135870886651261,
+        "maximumChannelDifference": 8,
+        "changedPixels": 3376
+      },
+      "brightnessRatio": 0.9998399765617569
+    },
+    {
+      "configuration": "dpr1",
+      "name": "pale-192-low",
+      "diskPixels": 57.11999999999999,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 6636,
+          "meanAbsolute": 2.4413803496081976,
+          "rms": 3.0277747823459404,
+          "maximumChannelDifference": 9,
+          "changedPixels": 2075
+        },
+        "refined": {
+          "sampledChannels": 6636,
+          "meanAbsolute": 0.025015069318866788,
+          "rms": 0.15816152919995047,
+          "maximumChannelDifference": 1,
+          "changedPixels": 130
+        },
+        "rmsRatio": 0.052236887010930794
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 3504,
+          "meanAbsolute": 2.3430365296803655,
+          "rms": 2.867707148967175,
+          "maximumChannelDifference": 8,
+          "changedPixels": 1099
+        },
+        "refined": {
+          "sampledChannels": 3504,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 0,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 1031016,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 1040400,
+        "meanAbsolute": 0.017450980392156864,
+        "rms": 0.2507390076968014,
+        "maximumChannelDifference": 9,
+        "changedPixels": 2488
+      },
+      "brightnessRatio": 1.0003288444307785
+    },
+    {
+      "configuration": "dpr1",
+      "name": "pale-192-auto",
+      "diskPixels": 67.19999999999999,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 9432,
+          "meanAbsolute": 2.4004452926208653,
+          "rms": 3.0089455263699234,
+          "maximumChannelDifference": 9,
+          "changedPixels": 2962
+        },
+        "refined": {
+          "sampledChannels": 9432,
+          "meanAbsolute": 0.19698897370653096,
+          "rms": 0.49552706665867263,
+          "maximumChannelDifference": 3,
+          "changedPixels": 866
+        },
+        "rmsRatio": 0.16468462533334408
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 3360,
+          "meanAbsolute": 2.1279761904761907,
+          "rms": 2.657200460205117,
+          "maximumChannelDifference": 7,
+          "changedPixels": 1064
+        },
+        "refined": {
+          "sampledChannels": 3360,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 0,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 1427352,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 1440000,
+        "meanAbsolute": 0.016049305555555556,
+        "rms": 0.23306681207089286,
+        "maximumChannelDifference": 9,
+        "changedPixels": 3412
+      },
+      "brightnessRatio": 1.000260175688591
+    },
+    {
+      "configuration": "dpr1",
+      "name": "amber-136-high",
+      "diskPixels": 47.599999999999994,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 4500,
+          "meanAbsolute": 0.01577777777777778,
+          "rms": 0.1256096245427785,
+          "maximumChannelDifference": 1,
+          "changedPixels": 70
+        },
+        "refined": {
+          "sampledChannels": 4500,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        },
+        "rmsRatio": 0
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 3732,
+          "meanAbsolute": 0.015005359056806002,
+          "rms": 0.12249636344318962,
+          "maximumChannelDifference": 1,
+          "changedPixels": 55
+        },
+        "refined": {
+          "sampledChannels": 3732,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 0,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 1433220,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 1440000,
+        "meanAbsolute": 0.000056944444444444445,
+        "rms": 0.00754615428178118,
+        "maximumChannelDifference": 1,
+        "changedPixels": 81
+      },
+      "brightnessRatio": 1.000003667091494
+    },
+    {
+      "configuration": "dpr1",
+      "name": "amber-384-right",
+      "diskPixels": 134.39999999999998,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 3.6325508373205744,
+          "rms": 4.62901782462907,
+          "maximumChannelDifference": 17,
+          "changedPixels": 12822
+        },
+        "refined": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 2.825109649122807,
+          "rms": 4.0525788253365524,
+          "maximumChannelDifference": 17,
+          "changedPixels": 11087
+        },
+        "rmsRatio": 0.8754727198876776
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 3.1411657559198543,
+          "rms": 3.9577688697332376,
+          "maximumChannelDifference": 12,
+          "changedPixels": 703
+        },
+        "refined": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 18984,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 1393560,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 1440000,
+        "meanAbsolute": 0.02660138888888889,
+        "rms": 0.32480549735358716,
+        "maximumChannelDifference": 12,
+        "changedPixels": 5924
+      },
+      "brightnessRatio": 1.0001900377508095
+    },
+    {
+      "configuration": "dpr1",
+      "name": "amber-384-back",
+      "diskPixels": 134.39999999999998,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 3.5596341706539074,
+          "rms": 4.5292526739727155,
+          "maximumChannelDifference": 17,
+          "changedPixels": 12840
+        },
+        "refined": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 2.767494019138756,
+          "rms": 3.9323488178034745,
+          "maximumChannelDifference": 17,
+          "changedPixels": 11089
+        },
+        "rmsRatio": 0.868211402821631
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 3.0305100182149363,
+          "rms": 3.910601628929,
+          "maximumChannelDifference": 12,
+          "changedPixels": 693
+        },
+        "refined": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 18984,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 1393560,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 1440000,
+        "meanAbsolute": 0.02659027777777778,
+        "rms": 0.32514526668005556,
+        "maximumChannelDifference": 12,
+        "changedPixels": 5865
+      },
+      "brightnessRatio": 0.9999622673342041
+    },
+    {
+      "configuration": "dpr1",
+      "name": "amber-384-relativity-shifted",
+      "diskPixels": 134.39999999999998,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 0.032072368421052634,
+          "rms": 0.5305884684075008,
+          "maximumChannelDifference": 19,
+          "changedPixels": 179
+        },
+        "refined": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 0.00024920255183413076,
+          "rms": 0.01578615063383505,
+          "maximumChannelDifference": 1,
+          "changedPixels": 10
+        },
+        "rmsRatio": 0.029752155528776063
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 0.39162112932604737,
+          "rms": 1.8947727922962767,
+          "maximumChannelDifference": 19,
+          "changedPixels": 105
+        },
+        "refined": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 18984,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 1393560,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 1440000,
+        "meanAbsolute": 0.00595,
+        "rms": 0.20866307238650966,
+        "maximumChannelDifference": 22,
+        "changedPixels": 1067
+      },
+      "brightnessRatio": 1.0000718822178867
+    },
+    {
+      "configuration": "dpr1",
+      "name": "amber-384-relativity-rest",
+      "diskPixels": 134.39999999999998,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 3.531673644338118,
+          "rms": 4.517672523755781,
+          "maximumChannelDifference": 17,
+          "changedPixels": 12830
+        },
+        "refined": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 2.7324312200956937,
+          "rms": 3.930577158921175,
+          "maximumChannelDifference": 17,
+          "changedPixels": 11063
+        },
+        "rmsRatio": 0.8700447272910072
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 3.1129326047358834,
+          "rms": 3.906349042460243,
+          "maximumChannelDifference": 12,
+          "changedPixels": 694
+        },
+        "refined": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 18984,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 1393560,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 1440000,
+        "meanAbsolute": 0.026964583333333333,
+        "rms": 0.32780943820728803,
+        "maximumChannelDifference": 12,
+        "changedPixels": 5927
+      },
+      "brightnessRatio": 1.0003656879237153
+    },
+    {
+      "configuration": "dpr2",
+      "name": "amber-192-high",
+      "diskPixels": 134.39999999999998,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 2.0536533094098885,
+          "rms": 2.648570790606674,
+          "maximumChannelDifference": 10,
+          "changedPixels": 12448
+        },
+        "refined": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 1.5895633971291867,
+          "rms": 2.3087427449157163,
+          "maximumChannelDifference": 10,
+          "changedPixels": 10494
+        },
+        "rmsRatio": 0.8716938029762392
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 1.8064663023679417,
+          "rms": 2.2813291431489433,
+          "maximumChannelDifference": 7,
+          "changedPixels": 681
+        },
+        "refined": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 18984,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 5713560,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 5760000,
+        "meanAbsolute": 0.0039232638888888885,
+        "rms": 0.09739488635903268,
+        "maximumChannelDifference": 8,
+        "changedPixels": 5370
+      },
+      "brightnessRatio": 1.0000999418170853
+    },
+    {
+      "configuration": "dpr2",
+      "name": "amber-384-high",
+      "diskPixels": 268.79999999999995,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 165168,
+          "meanAbsolute": 3.5100140463043688,
+          "rms": 4.4927894376572635,
+          "maximumChannelDifference": 17,
+          "changedPixels": 52749
+        },
+        "refined": {
+          "sampledChannels": 165168,
+          "meanAbsolute": 3.377209871161484,
+          "rms": 4.403608151121031,
+          "maximumChannelDifference": 17,
+          "changedPixels": 51830
+        },
+        "rmsRatio": 0.9801501299418263
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 0,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        },
+        "refined": {
+          "sampledChannels": 0,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 146808,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 5582076,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 5760000,
+        "meanAbsolute": 0.006176736111111111,
+        "rms": 0.14807913612509885,
+        "maximumChannelDifference": 11,
+        "changedPixels": 6149
+      },
+      "brightnessRatio": 1.000044053958704
+    },
+    {
+      "configuration": "dpr2",
+      "name": "blue-192-high",
+      "diskPixels": 134.39999999999998,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 2.176560007974482,
+          "rms": 2.737252060680594,
+          "maximumChannelDifference": 9,
+          "changedPixels": 12474
+        },
+        "refined": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 1.684733851674641,
+          "rms": 2.3794971273248824,
+          "maximumChannelDifference": 9,
+          "changedPixels": 10583
+        },
+        "rmsRatio": 0.8693014287961631
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 1.8866120218579234,
+          "rms": 2.3667590222878747,
+          "maximumChannelDifference": 7,
+          "changedPixels": 672
+        },
+        "refined": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 18984,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 5713560,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 5760000,
+        "meanAbsolute": 0.0040984375,
+        "rms": 0.09983928056854398,
+        "maximumChannelDifference": 7,
+        "changedPixels": 5434
+      },
+      "brightnessRatio": 1.0000609191489342
+    },
+    {
+      "configuration": "dpr2",
+      "name": "blue-384-high",
+      "diskPixels": 268.79999999999995,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 165168,
+          "meanAbsolute": 3.706601763053376,
+          "rms": 4.631014694810973,
+          "maximumChannelDifference": 16,
+          "changedPixels": 52841
+        },
+        "refined": {
+          "sampledChannels": 165168,
+          "meanAbsolute": 3.574409086505861,
+          "rms": 4.544657964334277,
+          "maximumChannelDifference": 16,
+          "changedPixels": 51904
+        },
+        "rmsRatio": 0.9813525250581784
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 0,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        },
+        "refined": {
+          "sampledChannels": 0,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 146808,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 5582076,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 5760000,
+        "meanAbsolute": 0.006042013888888889,
+        "rms": 0.14116086174605513,
+        "maximumChannelDifference": 11,
+        "changedPixels": 6137
+      },
+      "brightnessRatio": 1.0000183130763083
+    },
+    {
+      "configuration": "dpr2",
+      "name": "pale-192-high",
+      "diskPixels": 134.39999999999998,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 2.39376495215311,
+          "rms": 2.9908527812066703,
+          "maximumChannelDifference": 9,
+          "changedPixels": 12516
+        },
+        "refined": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 1.868421052631579,
+          "rms": 2.6293112238686622,
+          "maximumChannelDifference": 9,
+          "changedPixels": 10585
+        },
+        "rmsRatio": 0.8791175682033594
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 2.144353369763206,
+          "rms": 2.651339146809127,
+          "maximumChannelDifference": 7,
+          "changedPixels": 670
+        },
+        "refined": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 18984,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 5713560,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 5760000,
+        "meanAbsolute": 0.004440972222222222,
+        "rms": 0.1063259532444141,
+        "maximumChannelDifference": 7,
+        "changedPixels": 5589
+      },
+      "brightnessRatio": 1.0000211680789783
+    },
+    {
+      "configuration": "dpr2",
+      "name": "pale-384-high",
+      "diskPixels": 268.79999999999995,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 165168,
+          "meanAbsolute": 4.0718298944105396,
+          "rms": 5.0624753710698815,
+          "maximumChannelDifference": 17,
+          "changedPixels": 52892
+        },
+        "refined": {
+          "sampledChannels": 165168,
+          "meanAbsolute": 3.9232417901772743,
+          "rms": 4.964779565389294,
+          "maximumChannelDifference": 17,
+          "changedPixels": 51973
+        },
+        "rmsRatio": 0.9807019691910241
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 0,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        },
+        "refined": {
+          "sampledChannels": 0,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 146808,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 5582076,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 5760000,
+        "meanAbsolute": 0.006999652777777777,
+        "rms": 0.16296514623958366,
+        "maximumChannelDifference": 11,
+        "changedPixels": 6188
+      },
+      "brightnessRatio": 1.0000549405985844
+    },
+    {
+      "configuration": "dpr2",
+      "name": "amber-192-low",
+      "diskPixels": 57.11999999999999,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 6636,
+          "meanAbsolute": 2.063592525617842,
+          "rms": 2.679651178796246,
+          "maximumChannelDifference": 10,
+          "changedPixels": 2056
+        },
+        "refined": {
+          "sampledChannels": 6636,
+          "meanAbsolute": 0.026220614828209764,
+          "rms": 0.16192780745816873,
+          "maximumChannelDifference": 1,
+          "changedPixels": 153
+        },
+        "rmsRatio": 0.06042868890528879
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 3504,
+          "meanAbsolute": 1.966038812785388,
+          "rms": 2.5385722985702994,
+          "maximumChannelDifference": 8,
+          "changedPixels": 1074
+        },
+        "refined": {
+          "sampledChannels": 3504,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 0,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 1031016,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 1040400,
+        "meanAbsolute": 0.014779892349096501,
+        "rms": 0.22202581670461782,
+        "maximumChannelDifference": 9,
+        "changedPixels": 2448
+      },
+      "brightnessRatio": 1.0001657819065055
+    },
+    {
+      "configuration": "dpr2",
+      "name": "amber-192-auto",
+      "diskPixels": 100.8,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 22056,
+          "meanAbsolute": 2.06841675734494,
+          "rms": 2.6670775209431667,
+          "maximumChannelDifference": 10,
+          "changedPixels": 6872
+        },
+        "refined": {
+          "sampledChannels": 22056,
+          "meanAbsolute": 1.132208922742111,
+          "rms": 1.8831960269777186,
+          "maximumChannelDifference": 10,
+          "changedPixels": 4777
+        },
+        "rmsRatio": 0.7060897226233448
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 2712,
+          "meanAbsolute": 1.896755162241888,
+          "rms": 2.4019104981863784,
+          "maximumChannelDifference": 8,
+          "changedPixels": 846
+        },
+        "refined": {
+          "sampledChannels": 2712,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 360,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 3213168,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 3240000,
+        "meanAbsolute": 0.0073641975308641975,
+        "rms": 0.13656500283747663,
+        "maximumChannelDifference": 8,
+        "changedPixels": 5475
+      },
+      "brightnessRatio": 1.0001060536076
+    },
+    {
+      "configuration": "cap16",
+      "name": "amber-192-high",
+      "diskPixels": 67.19999999999999,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 9432,
+          "meanAbsolute": 2.080788804071247,
+          "rms": 2.680427282282891,
+          "maximumChannelDifference": 10,
+          "changedPixels": 2909
+        },
+        "refined": {
+          "sampledChannels": 9432,
+          "meanAbsolute": 0.17546649703138253,
+          "rms": 0.46631666264010985,
+          "maximumChannelDifference": 3,
+          "changedPixels": 846
+        },
+        "rmsRatio": 0.17397101787553548
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 3360,
+          "meanAbsolute": 1.9172619047619048,
+          "rms": 2.4435288689379817,
+          "maximumChannelDifference": 8,
+          "changedPixels": 1035
+        },
+        "refined": {
+          "sampledChannels": 3360,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 0,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 1427352,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 1440000,
+        "meanAbsolute": 0.013882638888888889,
+        "rms": 0.207392877301887,
+        "maximumChannelDifference": 9,
+        "changedPixels": 3362
+      },
+      "brightnessRatio": 1.0001668579156482
+    },
+    {
+      "configuration": "cap16",
+      "name": "amber-384-high",
+      "diskPixels": 134.39999999999998,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 3.531673644338118,
+          "rms": 4.517672523755781,
+          "maximumChannelDifference": 17,
+          "changedPixels": 12830
+        },
+        "refined": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 2.7324312200956937,
+          "rms": 3.930577158921175,
+          "maximumChannelDifference": 17,
+          "changedPixels": 11063
+        },
+        "rmsRatio": 0.8700447272910072
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 3.1129326047358834,
+          "rms": 3.906349042460243,
+          "maximumChannelDifference": 12,
+          "changedPixels": 694
+        },
+        "refined": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 18984,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 1393560,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 1440000,
+        "meanAbsolute": 0.026964583333333333,
+        "rms": 0.32780943820728803,
+        "maximumChannelDifference": 12,
+        "changedPixels": 5927
+      },
+      "brightnessRatio": 1.0003656879237153
+    },
+    {
+      "configuration": "cap16",
+      "name": "blue-192-high",
+      "diskPixels": 67.19999999999999,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 9432,
+          "meanAbsolute": 2.187765055131467,
+          "rms": 2.7508384102465073,
+          "maximumChannelDifference": 9,
+          "changedPixels": 2925
+        },
+        "refined": {
+          "sampledChannels": 9432,
+          "meanAbsolute": 0.18659881255301103,
+          "rms": 0.47364824846499853,
+          "maximumChannelDifference": 3,
+          "changedPixels": 841
+        },
+        "rmsRatio": 0.17218323210142836
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 3360,
+          "meanAbsolute": 1.9642857142857142,
+          "rms": 2.480759292367292,
+          "maximumChannelDifference": 8,
+          "changedPixels": 1031
+        },
+        "refined": {
+          "sampledChannels": 3360,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 0,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 1427352,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 1440000,
+        "meanAbsolute": 0.014643055555555555,
+        "rms": 0.2135870886651261,
+        "maximumChannelDifference": 8,
+        "changedPixels": 3376
+      },
+      "brightnessRatio": 0.9998399765617569
+    },
+    {
+      "configuration": "cap16",
+      "name": "blue-384-high",
+      "diskPixels": 134.39999999999998,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 3.7334280303030303,
+          "rms": 4.660190917329987,
+          "maximumChannelDifference": 16,
+          "changedPixels": 12843
+        },
+        "refined": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 2.8876345693779903,
+          "rms": 4.043877541934558,
+          "maximumChannelDifference": 16,
+          "changedPixels": 11136
+        },
+        "rmsRatio": 0.8677493290878863
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 3.2709471766848814,
+          "rms": 4.025363575202656,
+          "maximumChannelDifference": 12,
+          "changedPixels": 703
+        },
+        "refined": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 18984,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 1393560,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 1440000,
+        "meanAbsolute": 0.028147222222222223,
+        "rms": 0.33609687756822604,
+        "maximumChannelDifference": 12,
+        "changedPixels": 5999
+      },
+      "brightnessRatio": 1.0002106005827105
+    },
+    {
+      "configuration": "cap16",
+      "name": "pale-192-high",
+      "diskPixels": 67.19999999999999,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 9432,
+          "meanAbsolute": 2.4004452926208653,
+          "rms": 3.0089455263699234,
+          "maximumChannelDifference": 9,
+          "changedPixels": 2962
+        },
+        "refined": {
+          "sampledChannels": 9432,
+          "meanAbsolute": 0.19698897370653096,
+          "rms": 0.49552706665867263,
+          "maximumChannelDifference": 3,
+          "changedPixels": 866
+        },
+        "rmsRatio": 0.16468462533334408
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 3360,
+          "meanAbsolute": 2.1279761904761907,
+          "rms": 2.657200460205117,
+          "maximumChannelDifference": 7,
+          "changedPixels": 1064
+        },
+        "refined": {
+          "sampledChannels": 3360,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 0,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 1427352,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 1440000,
+        "meanAbsolute": 0.016049305555555556,
+        "rms": 0.23306681207089286,
+        "maximumChannelDifference": 9,
+        "changedPixels": 3412
+      },
+      "brightnessRatio": 1.000260175688591
+    },
+    {
+      "configuration": "cap16",
+      "name": "pale-384-high",
+      "diskPixels": 134.39999999999998,
+      "fineResidual": {
+        "baseline": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 4.102197966507177,
+          "rms": 5.0965043958988465,
+          "maximumChannelDifference": 16,
+          "changedPixels": 12850
+        },
+        "refined": {
+          "sampledChannels": 40128,
+          "meanAbsolute": 3.2039972089314195,
+          "rms": 4.477732653131343,
+          "maximumChannelDifference": 16,
+          "changedPixels": 11108
+        },
+        "rmsRatio": 0.8785889906686967
+      },
+      "limbResidual": {
+        "baseline": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 3.65528233151184,
+          "rms": 4.4859119689399085,
+          "maximumChannelDifference": 11,
+          "changedPixels": 694
+        },
+        "refined": {
+          "sampledChannels": 2196,
+          "meanAbsolute": 0,
+          "rms": 0,
+          "maximumChannelDifference": 0,
+          "changedPixels": 0
+        }
+      },
+      "fullyResolvedCore": {
+        "sampledChannels": 18984,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "outerGlow": {
+        "sampledChannels": 1393560,
+        "meanAbsolute": 0,
+        "rms": 0,
+        "maximumChannelDifference": 0,
+        "changedPixels": 0
+      },
+      "overall": {
+        "sampledChannels": 1440000,
+        "meanAbsolute": 0.03038333333333333,
+        "rms": 0.3583062005231466,
+        "maximumChannelDifference": 12,
+        "changedPixels": 6078
+      },
+      "brightnessRatio": 1.000068317178892
+    }
+  ],
+  "fluxSweeps": [
+    {
+      "phase": "baseline",
+      "profiles": [
+        {
+          "cssSize": 96,
+          "normalizedFlux": 16.276289930556132,
+          "error": 0
+        },
+        {
+          "cssSize": 100,
+          "normalizedFlux": 16.210036160000552,
+          "error": 0
+        },
+        {
+          "cssSize": 104,
+          "normalizedFlux": 16.18105630547403,
+          "error": 0
+        },
+        {
+          "cssSize": 108,
+          "normalizedFlux": 16.143071210562884,
+          "error": 0
+        },
+        {
+          "cssSize": 112,
+          "normalizedFlux": 16.048360889669073,
+          "error": 0
+        },
+        {
+          "cssSize": 116,
+          "normalizedFlux": 15.983429384661779,
+          "error": 0
+        },
+        {
+          "cssSize": 120,
+          "normalizedFlux": 16.017874708334073,
+          "error": 0
+        },
+        {
+          "cssSize": 124,
+          "normalizedFlux": 16.01688911290397,
+          "error": 0
+        },
+        {
+          "cssSize": 128,
+          "normalizedFlux": 16.02290659179786,
+          "error": 0
+        },
+        {
+          "cssSize": 132,
+          "normalizedFlux": 16.023359423783848,
+          "error": 0
+        },
+        {
+          "cssSize": 134,
+          "normalizedFlux": 16.021386756516538,
+          "error": 0
+        },
+        {
+          "cssSize": 136,
+          "normalizedFlux": 16.019791619810203,
+          "error": 0
+        },
+        {
+          "cssSize": 138,
+          "normalizedFlux": 16.021889666037065,
+          "error": 0
+        },
+        {
+          "cssSize": 140,
+          "normalizedFlux": 16.019965214286266,
+          "error": 0
+        },
+        {
+          "cssSize": 144,
+          "normalizedFlux": 16.019754996142545,
+          "error": 0
+        },
+        {
+          "cssSize": 160,
+          "normalizedFlux": 16.00549896093793,
+          "error": 0
+        },
+        {
+          "cssSize": 176,
+          "normalizedFlux": 15.985028932076833,
+          "error": 0
+        },
+        {
+          "cssSize": 192,
+          "normalizedFlux": 15.96243691948536,
+          "error": 0
+        },
+        {
+          "cssSize": 224,
+          "normalizedFlux": 15.926046392694795,
+          "error": 0
+        },
+        {
+          "cssSize": 240,
+          "normalizedFlux": 15.918716062496996,
+          "error": 0
+        },
+        {
+          "cssSize": 264,
+          "normalizedFlux": 15.921431973134526,
+          "error": 0
+        },
+        {
+          "cssSize": 270,
+          "normalizedFlux": 15.92207260081681,
+          "error": 0
+        },
+        {
+          "cssSize": 272,
+          "normalizedFlux": 15.922029106286931,
+          "error": 0
+        },
+        {
+          "cssSize": 274,
+          "normalizedFlux": 15.921384583615552,
+          "error": 0
+        },
+        {
+          "cssSize": 276,
+          "normalizedFlux": 15.924375790268735,
+          "error": 0
+        },
+        {
+          "cssSize": 278,
+          "normalizedFlux": 15.923070640747023,
+          "error": 0
+        },
+        {
+          "cssSize": 280,
+          "normalizedFlux": 15.922269693870941,
+          "error": 0
+        },
+        {
+          "cssSize": 288,
+          "normalizedFlux": 15.925308179005658,
+          "error": 0
+        },
+        {
+          "cssSize": 320,
+          "normalizedFlux": 15.927707273430139,
+          "error": 0
+        },
+        {
+          "cssSize": 384,
+          "normalizedFlux": 15.929794820160456,
+          "error": 0
+        }
+      ]
+    },
+    {
+      "phase": "refined",
+      "profiles": [
+        {
+          "cssSize": 96,
+          "normalizedFlux": 16.276289930556132,
+          "error": 0
+        },
+        {
+          "cssSize": 100,
+          "normalizedFlux": 16.210036160000552,
+          "error": 0
+        },
+        {
+          "cssSize": 104,
+          "normalizedFlux": 16.18105630547403,
+          "error": 0
+        },
+        {
+          "cssSize": 108,
+          "normalizedFlux": 16.143071210562884,
+          "error": 0
+        },
+        {
+          "cssSize": 112,
+          "normalizedFlux": 16.048360889669073,
+          "error": 0
+        },
+        {
+          "cssSize": 116,
+          "normalizedFlux": 15.983429384661779,
+          "error": 0
+        },
+        {
+          "cssSize": 120,
+          "normalizedFlux": 16.017874708334073,
+          "error": 0
+        },
+        {
+          "cssSize": 124,
+          "normalizedFlux": 16.01688911290397,
+          "error": 0
+        },
+        {
+          "cssSize": 128,
+          "normalizedFlux": 16.02290659179786,
+          "error": 0
+        },
+        {
+          "cssSize": 132,
+          "normalizedFlux": 16.023359423783848,
+          "error": 0
+        },
+        {
+          "cssSize": 134,
+          "normalizedFlux": 16.021486366674704,
+          "error": 0
+        },
+        {
+          "cssSize": 136,
+          "normalizedFlux": 16.02011601427387,
+          "error": 0
+        },
+        {
+          "cssSize": 138,
+          "normalizedFlux": 16.02173236715026,
+          "error": 0
+        },
+        {
+          "cssSize": 140,
+          "normalizedFlux": 16.02017023469443,
+          "error": 0
+        },
+        {
+          "cssSize": 144,
+          "normalizedFlux": 16.02034756944498,
+          "error": 0
+        },
+        {
+          "cssSize": 160,
+          "normalizedFlux": 16.00747747656292,
+          "error": 0
+        },
+        {
+          "cssSize": 176,
+          "normalizedFlux": 15.99011747804789,
+          "error": 0
+        },
+        {
+          "cssSize": 192,
+          "normalizedFlux": 15.971165055336005,
+          "error": 0
+        },
+        {
+          "cssSize": 224,
+          "normalizedFlux": 15.937357330194757,
+          "error": 0
+        },
+        {
+          "cssSize": 240,
+          "normalizedFlux": 15.930459163191394,
+          "error": 0
+        },
+        {
+          "cssSize": 264,
+          "normalizedFlux": 15.932121054286855,
+          "error": 0
+        },
+        {
+          "cssSize": 270,
+          "normalizedFlux": 15.932563668032095,
+          "error": 0
+        },
+        {
+          "cssSize": 272,
+          "normalizedFlux": 15.932393241775571,
+          "error": 0
+        },
+        {
+          "cssSize": 274,
+          "normalizedFlux": 15.932130270652637,
+          "error": 0
+        },
+        {
+          "cssSize": 276,
+          "normalizedFlux": 15.93442325141126,
+          "error": 0
+        },
+        {
+          "cssSize": 278,
+          "normalizedFlux": 15.932366161165149,
+          "error": 0
+        },
+        {
+          "cssSize": 280,
+          "normalizedFlux": 15.933513071422007,
+          "error": 0
+        },
+        {
+          "cssSize": 288,
+          "normalizedFlux": 15.93533920958043,
+          "error": 0
+        },
+        {
+          "cssSize": 320,
+          "normalizedFlux": 15.938681906242545,
+          "error": 0
+        },
+        {
+          "cssSize": 384,
+          "normalizedFlux": 15.938943009450785,
+          "error": 0
+        }
+      ]
+    },
+    {
+      "phase": "coarse",
+      "profiles": [
+        {
+          "cssSize": 96,
+          "normalizedFlux": 16.276289930556132,
+          "error": 0
+        },
+        {
+          "cssSize": 100,
+          "normalizedFlux": 16.210036160000552,
+          "error": 0
+        },
+        {
+          "cssSize": 104,
+          "normalizedFlux": 16.18105630547403,
+          "error": 0
+        },
+        {
+          "cssSize": 108,
+          "normalizedFlux": 16.143071210562884,
+          "error": 0
+        },
+        {
+          "cssSize": 112,
+          "normalizedFlux": 16.048360889669073,
+          "error": 0
+        },
+        {
+          "cssSize": 116,
+          "normalizedFlux": 15.983429384661779,
+          "error": 0
+        },
+        {
+          "cssSize": 120,
+          "normalizedFlux": 16.017874708334073,
+          "error": 0
+        },
+        {
+          "cssSize": 124,
+          "normalizedFlux": 16.01688911290397,
+          "error": 0
+        },
+        {
+          "cssSize": 128,
+          "normalizedFlux": 16.02290659179786,
+          "error": 0
+        },
+        {
+          "cssSize": 132,
+          "normalizedFlux": 16.023359423783848,
+          "error": 0
+        },
+        {
+          "cssSize": 134,
+          "normalizedFlux": 16.021486366674704,
+          "error": 0
+        },
+        {
+          "cssSize": 136,
+          "normalizedFlux": 16.02011601427387,
+          "error": 0
+        },
+        {
+          "cssSize": 138,
+          "normalizedFlux": 16.02173236715026,
+          "error": 0
+        },
+        {
+          "cssSize": 140,
+          "normalizedFlux": 16.02017023469443,
+          "error": 0
+        },
+        {
+          "cssSize": 144,
+          "normalizedFlux": 16.02034756944498,
+          "error": 0
+        },
+        {
+          "cssSize": 160,
+          "normalizedFlux": 16.007525250000416,
+          "error": 0
+        },
+        {
+          "cssSize": 176,
+          "normalizedFlux": 15.990474625516912,
+          "error": 0
+        },
+        {
+          "cssSize": 192,
+          "normalizedFlux": 15.972659792749214,
+          "error": 0
+        },
+        {
+          "cssSize": 224,
+          "normalizedFlux": 15.94181335299449,
+          "error": 0
+        },
+        {
+          "cssSize": 240,
+          "normalizedFlux": 15.936462225691356,
+          "error": 0
+        },
+        {
+          "cssSize": 264,
+          "normalizedFlux": 15.93902699436953,
+          "error": 0
+        },
+        {
+          "cssSize": 270,
+          "normalizedFlux": 15.939260156372283,
+          "error": 0
+        },
+        {
+          "cssSize": 272,
+          "normalizedFlux": 15.939179679383738,
+          "error": 0
+        },
+        {
+          "cssSize": 274,
+          "normalizedFlux": 15.939242735355087,
+          "error": 0
+        },
+        {
+          "cssSize": 276,
+          "normalizedFlux": 15.941439579388597,
+          "error": 0
+        },
+        {
+          "cssSize": 278,
+          "normalizedFlux": 15.93953791987335,
+          "error": 0
+        },
+        {
+          "cssSize": 280,
+          "normalizedFlux": 15.939742948973079,
+          "error": 0
+        },
+        {
+          "cssSize": 288,
+          "normalizedFlux": 15.94189950327253,
+          "error": 0
+        },
+        {
+          "cssSize": 320,
+          "normalizedFlux": 15.9457527109301,
+          "error": 0
+        },
+        {
+          "cssSize": 384,
+          "normalizedFlux": 15.947876289887201,
+          "error": 0
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "configuration": "dpr1",
+      "phase": "baseline",
+      "created": {
+        "textures": 2,
+        "buffers": 2,
+        "programs": 2
+      },
+      "deleted": {
+        "textures": 2,
+        "buffers": 2,
+        "programs": 2
+      },
+      "pointRange": [
+        1,
+        1023
+      ],
+      "error": 0
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "refined",
+      "created": {
+        "textures": 2,
+        "buffers": 2,
+        "programs": 2
+      },
+      "deleted": {
+        "textures": 2,
+        "buffers": 2,
+        "programs": 2
+      },
+      "pointRange": [
+        1,
+        1023
+      ],
+      "error": 0
+    },
+    {
+      "configuration": "dpr1",
+      "phase": "coarse",
+      "created": {
+        "textures": 2,
+        "buffers": 2,
+        "programs": 2
+      },
+      "deleted": {
+        "textures": 2,
+        "buffers": 2,
+        "programs": 2
+      },
+      "pointRange": [
+        1,
+        1023
+      ],
+      "error": 0
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "created": {
+        "textures": 2,
+        "buffers": 2,
+        "programs": 2
+      },
+      "deleted": {
+        "textures": 2,
+        "buffers": 2,
+        "programs": 2
+      },
+      "pointRange": [
+        1,
+        1023
+      ],
+      "error": 0
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "created": {
+        "textures": 2,
+        "buffers": 2,
+        "programs": 2
+      },
+      "deleted": {
+        "textures": 2,
+        "buffers": 2,
+        "programs": 2
+      },
+      "pointRange": [
+        1,
+        1023
+      ],
+      "error": 0
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "coarse",
+      "created": {
+        "textures": 2,
+        "buffers": 2,
+        "programs": 2
+      },
+      "deleted": {
+        "textures": 2,
+        "buffers": 2,
+        "programs": 2
+      },
+      "pointRange": [
+        1,
+        1023
+      ],
+      "error": 0
+    },
+    {
+      "configuration": "cap16",
+      "phase": "baseline",
+      "created": {
+        "textures": 2,
+        "buffers": 2,
+        "programs": 2
+      },
+      "deleted": {
+        "textures": 2,
+        "buffers": 2,
+        "programs": 2
+      },
+      "pointRange": [
+        1,
+        1023
+      ],
+      "error": 0
+    },
+    {
+      "configuration": "cap16",
+      "phase": "refined",
+      "created": {
+        "textures": 2,
+        "buffers": 2,
+        "programs": 2
+      },
+      "deleted": {
+        "textures": 2,
+        "buffers": 2,
+        "programs": 2
+      },
+      "pointRange": [
+        1,
+        1023
+      ],
+      "error": 0
+    },
+    {
+      "configuration": "cap16",
+      "phase": "coarse",
+      "created": {
+        "textures": 2,
+        "buffers": 2,
+        "programs": 2
+      },
+      "deleted": {
+        "textures": 2,
+        "buffers": 2,
+        "programs": 2
+      },
+      "pointRange": [
+        1,
+        1023
+      ],
+      "error": 0
+    }
+  ],
+  "errors": [],
+  "geometry": [
+    {
+      "phase": "baseline",
+      "pausedPixelsStable": true,
+      "frameUploads": 0
+    },
+    {
+      "phase": "refined",
+      "pausedPixelsStable": true,
+      "frameUploads": 0
+    },
+    {
+      "phase": "coarse",
+      "pausedPixelsStable": true,
+      "frameUploads": 0
+    }
+  ],
+  "pointHashes": [
+    {
+      "count": 19203,
+      "hash": "f0933322797366fbee8bbdc9ce8d2263700b1c07a71caa1bcfa1224d68edc2a3"
+    },
+    {
+      "count": 36400,
+      "hash": "f5dbc73e3ae0b2751dcf15f6fffce2753ae4994b089c62d020975e414889b2ab"
+    },
+    {
+      "count": 41470,
+      "hash": "156c66d7c6805406f2d231fb18affab8e613952ec32b5fdf9e9e805104966b85"
+    }
+  ],
+  "atlasHashes": [
+    {
+      "texture": 0,
+      "hash": "47e61b0e871129a48cbe8f814a5d629263750e16d068766c84e8beeeb057ad53"
+    },
+    {
+      "texture": 1,
+      "hash": "b57c6fd38bbb173b026084c3f7977e0a27c8a91bb5446e045cef067a043b2c88"
+    }
+  ],
+  "highlightSnapshots": [
+    {
+      "route": "halo",
+      "highlight": "arm",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            22724.818661805766,
+            764.2975448371061,
+            -23731.190602363153
+          ],
+          "yaw": 0.3971716750079444,
+          "pitch": -0.1340432388598812,
+          "distanceLy": 33228.50056033181,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      }
+    },
+    {
+      "route": "halo",
+      "highlight": "cluster",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            24275.830893203198,
+            616.3122834547021,
+            -22155.11210475688
+          ],
+          "yaw": -0.7411254211463322,
+          "pitch": -0.19657409909881018,
+          "distanceLy": 35468.93970130353,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "halo-cluster-2"
+      }
+    },
+    {
+      "route": "halo",
+      "highlight": "panorama",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            57537.37470667912,
+            28979.93440151232,
+            22193.098330829456
+          ],
+          "yaw": -1.9389287766079062,
+          "pitch": -0.4393002888319791,
+          "distanceLy": 103341.01252584036,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      }
+    },
+    {
+      "route": "nebula",
+      "highlight": "approach",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0,
+            3,
+            22
+          ],
+          "yaw": 0.6435011087932844,
+          "pitch": -0.3217505543966422,
+          "distanceLy": 23.913401320764855,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      }
+    },
+    {
+      "route": "nebula",
+      "highlight": "filaments",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            6.73258751546719,
+            2.7454985975874995,
+            25.541291740103556
+          ],
+          "yaw": 0.2618995875860214,
+          "pitch": -0.49659423354569576,
+          "distanceLy": 31.56416830318879,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      }
+    },
+    {
+      "route": "nebula",
+      "highlight": "violet",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -22.38725712952419,
+            25.70579394327133,
+            58.62722092594534
+          ],
+          "yaw": 0.01588758280673589,
+          "pitch": -0.542837637181226,
+          "distanceLy": 104.16154108867093,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "violet-nebula"
+      }
+    },
+    {
+      "route": "group",
+      "highlight": "spiral",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            3800.993548201688,
+            204667.20352500066,
+            -21799.8971191808
+          ],
+          "yaw": -0.17262299110657067,
+          "pitch": -1.4630939016137092,
+          "distanceLy": 1194256.9640433749,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      }
+    },
+    {
+      "route": "group",
+      "highlight": "elliptical",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            720000,
+            410000,
+            565000
+          ],
+          "yaw": 0.2736593210820904,
+          "pitch": 0.4417733155472801,
+          "distanceLy": 2160583.4405737584,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "golden-elliptical"
+      }
+    },
+    {
+      "route": "group",
+      "highlight": "panorama",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            1220075.2125317845,
+            1101203.4267783898,
+            -482445.2588986326
+          ],
+          "yaw": -0.7787208485114655,
+          "pitch": -0.6026017328474189,
+          "distanceLy": 3713467.250913006,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "golden-elliptical"
+      }
+    },
+    {
+      "route": "stellar",
+      "highlight": "amber",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.78,
+            1.2,
+            8.65
+          ],
+          "yaw": 1.7879076415298025,
+          "pitch": -0.27968459767612264,
+          "distanceLy": 11.50742869127847,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      }
+    },
+    {
+      "route": "stellar",
+      "highlight": "blue",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            5.16,
+            -1.96,
+            15.86
+          ],
+          "yaw": -1.4094212163742044,
+          "pitch": -0.2687788443866794,
+          "distanceLy": 25.082842742047433,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-star"
+      }
+    },
+    {
+      "route": "stellar",
+      "highlight": "pale",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -0.007,
+            2.747,
+            23.214
+          ],
+          "yaw": 0.6962380875955602,
+          "pitch": -0.32659684684871687,
+          "distanceLy": 39.689500667423516,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "pale-star"
+      }
+    }
+  ],
+  "fluxComparison": [
+    {
+      "cssSize": 96,
+      "brightnessRatio": 1
+    },
+    {
+      "cssSize": 100,
+      "brightnessRatio": 1
+    },
+    {
+      "cssSize": 104,
+      "brightnessRatio": 1
+    },
+    {
+      "cssSize": 108,
+      "brightnessRatio": 1
+    },
+    {
+      "cssSize": 112,
+      "brightnessRatio": 1
+    },
+    {
+      "cssSize": 116,
+      "brightnessRatio": 1
+    },
+    {
+      "cssSize": 120,
+      "brightnessRatio": 1
+    },
+    {
+      "cssSize": 124,
+      "brightnessRatio": 1
+    },
+    {
+      "cssSize": 128,
+      "brightnessRatio": 1
+    },
+    {
+      "cssSize": 132,
+      "brightnessRatio": 1
+    },
+    {
+      "cssSize": 134,
+      "brightnessRatio": 1.0000062173243602
+    },
+    {
+      "cssSize": 136,
+      "brightnessRatio": 1.0000202496056982
+    },
+    {
+      "cssSize": 138,
+      "brightnessRatio": 0.9999901822512772
+    },
+    {
+      "cssSize": 140,
+      "brightnessRatio": 1.0000127978060764
+    },
+    {
+      "cssSize": 144,
+      "brightnessRatio": 1.0000369901601227
+    },
+    {
+      "cssSize": 160,
+      "brightnessRatio": 1.0001236147420218
+    },
+    {
+      "cssSize": 176,
+      "brightnessRatio": 1.0003183319838005
+    },
+    {
+      "cssSize": 192,
+      "brightnessRatio": 1.000546792190608
+    },
+    {
+      "cssSize": 224,
+      "brightnessRatio": 1.0007102162847616
+    },
+    {
+      "cssSize": 240,
+      "brightnessRatio": 1.0007376914474946
+    },
+    {
+      "cssSize": 264,
+      "brightnessRatio": 1.0006713643075802
+    },
+    {
+      "cssSize": 270,
+      "brightnessRatio": 1.0006589008528166
+    },
+    {
+      "cssSize": 272,
+      "brightnessRatio": 1.0006509305704352
+    },
+    {
+      "cssSize": 274,
+      "brightnessRatio": 1.0006749216426907
+    },
+    {
+      "cssSize": 276,
+      "brightnessRatio": 1.0006309485078007
+    },
+    {
+      "cssSize": 278,
+      "brightnessRatio": 1.0005837768749415
+    },
+    {
+      "cssSize": 280,
+      "brightnessRatio": 1.0007061416347818
+    },
+    {
+      "cssSize": 288,
+      "brightnessRatio": 1.0006298798404414
+    },
+    {
+      "cssSize": 320,
+      "brightnessRatio": 1.0006890277818399
+    },
+    {
+      "cssSize": 384,
+      "brightnessRatio": 1.0005742816774232
+    }
+  ],
+  "fluxContinuity": [
+    {
+      "cssRange": [
+        96,
+        132
+      ],
+      "maximumRelativeStep": 0.005866933228408144
+    },
+    {
+      "cssRange": [
+        134,
+        144
+      ],
+      "maximumRelativeStep": 0.00010089520418898879
+    },
+    {
+      "cssRange": [
+        264,
+        288
+      ],
+      "maximumRelativeStep": 0.00014392179323619025
+    }
+  ],
+  "failure": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert.ok(result.captures.every(item=>item.statistics.clippedWhiteFraction<.025))\n"
+}

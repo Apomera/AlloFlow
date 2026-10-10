@@ -1,0 +1,121 @@
+{
+  "sourceChecksPassed": true,
+  "browserPassed": true,
+  "sourceSha256": "2a4b88dd0a42e8f275280eaf9e437149a1ed4e0424fdb547b3d640a0f04e9f78",
+  "sourceMirrorEqual": true,
+  "priorSourcePreserved": true,
+  "unitCoverageComplete": true,
+  "cleanCombinedRun": false,
+  "unitTestsPassedAcrossRuns": 68,
+  "newSuitePassed": true,
+  "suites": [
+    {
+      "name": "circuit_measurement_navigation.test.js",
+      "tests": 15,
+      "report": "before-final-focus/regression.json",
+      "sourceSha256": "837cc384ae514266ea78d582dd93a90706d33ffc506a909e5140d73523182561",
+      "testSha256": "3dec76e5b9fd04b54fe9723a3244c98635ec7576381e8e47781392932deac8a0"
+    },
+    {
+      "name": "circuit_edit_preview.test.js",
+      "tests": 14,
+      "report": "before-single-worker/regression.json",
+      "sourceSha256": "6852560f7db4b87c3b45e22b0094fdcf99fc5bfe35b01e3cbffe33b07f0b4482",
+      "testSha256": "1612d19114dedd941b979dedabf44f3eab23485083569fc4779202e8e619a5f6"
+    },
+    {
+      "name": "circuit_guided_entry.test.js",
+      "tests": 26,
+      "report": "before-single-worker/regression.json",
+      "sourceSha256": "6852560f7db4b87c3b45e22b0094fdcf99fc5bfe35b01e3cbffe33b07f0b4482",
+      "testSha256": "ce2b192e0eac94157452902b2b3cc159370c9c776397d17252026853031ed0a8"
+    },
+    {
+      "name": "circuit_workbench_map.test.js",
+      "tests": 13,
+      "report": "regression-map.json",
+      "sourceSha256": "2a4b88dd0a42e8f275280eaf9e437149a1ed4e0424fdb547b3d640a0f04e9f78",
+      "testSha256": "64ea87eda86fbf03c5ab47f7e8d6a49beca4410bef2422d63003ced8dc8ee6b9"
+    }
+  ],
+  "attempts": [
+    {
+      "file": "before-final-focus/regression.json",
+      "sourceSha256": "837cc384ae514266ea78d582dd93a90706d33ffc506a909e5140d73523182561",
+      "success": false,
+      "passedTests": 28,
+      "failedTests": 1,
+      "testFiles": 2
+    },
+    {
+      "file": "before-single-worker/regression.json",
+      "sourceSha256": "6852560f7db4b87c3b45e22b0094fdcf99fc5bfe35b01e3cbffe33b07f0b4482",
+      "success": false,
+      "passedTests": 51,
+      "failedTests": 4,
+      "testFiles": 3
+    },
+    {
+      "file": "regression.json",
+      "sourceSha256": "2a4b88dd0a42e8f275280eaf9e437149a1ed4e0424fdb547b3d640a0f04e9f78",
+      "success": false,
+      "passedTests": 0,
+      "failedTests": 0,
+      "testFiles": 0
+    },
+    {
+      "file": "regression-map.json",
+      "sourceSha256": "2a4b88dd0a42e8f275280eaf9e437149a1ed4e0424fdb547b3d640a0f04e9f78",
+      "success": true,
+      "passedTests": 13,
+      "failedTests": 0,
+      "testFiles": 1
+    }
+  ],
+  "browserViews": 8,
+  "browserWorkflows": 4,
+  "scopedAxeViews": 8,
+  "keyboardFocusChecks": [
+    {
+      "key": "input",
+      "heading": "01 · Change the input",
+      "nextControl": "Preview Undo and Redo"
+    },
+    {
+      "key": "connections",
+      "heading": "02 · Follow the connections",
+      "nextControl": "3D experiment board"
+    },
+    {
+      "key": "response",
+      "heading": "03 · Discover the response",
+      "nextControl": "Export active sweep CSV"
+    },
+    {
+      "key": "explain",
+      "heading": "04 · Explain what changes",
+      "nextControl": "Where does the energy come from?"
+    }
+  ],
+  "forcedFocus": {
+    "visible": true,
+    "outline": "3px",
+    "color": "rgb(55, 0, 110)",
+    "shadow": "rgb(255, 255, 255) 0px 0px 0px 4px"
+  },
+  "scopedDiffCheck": true,
+  "scopedIndexEmpty": true,
+  "visualReview": {
+    "reviewedBy": "Root agent",
+    "finalDirectlyReviewed": [
+      "desktop-map.png",
+      "desktop-input-return.png",
+      "tablet-map.png",
+      "phone-map.png",
+      "small-phone-map.png",
+      "forced-map.png",
+      "forced-response-return.png",
+      "rtl-map.png"
+    ]
+  }
+}

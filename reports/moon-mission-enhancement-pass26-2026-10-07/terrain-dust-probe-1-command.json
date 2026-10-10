@@ -1,0 +1,12 @@
+{
+  "args": [
+    "node",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass26-2026-10-07\\terrain-dust-probe.cjs",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass26-2026-10-07\\terrain-dust-probe-1.json"
+  ],
+  "cwd": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "processTimeoutSeconds": 240,
+  "retryCount": 0,
+  "startUtc": "2026-10-08T02:25:31Z"
+}

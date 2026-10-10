@@ -1,0 +1,1 @@
+/* module parity fixture */

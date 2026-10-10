@@ -1,0 +1,25 @@
+{
+  "scope": "Manual review of six incomplete select contrast checks; all six rendered layouts inspected. The selector color declaration is unchanged from the captured baseline.",
+  "selectorStyle": ".diss-capture-options select { width: 100%; min-width: 0; min-height: 48px; padding: .65rem; border: 1px solid #71849c; border-radius: .5rem; background: #fff; color: #183f43; font-size: 1rem; }",
+  "text": {
+    "foreground": "#183f43",
+    "background": "#ffffff",
+    "ratio": 11.46982987620742
+  },
+  "border": {
+    "foreground": "#71849c",
+    "background": "#ffffff",
+    "ratio": 3.8302242077228055
+  },
+  "focus": {
+    "foreground": "#1766d2",
+    "background": "#ffffff",
+    "ratio": 5.429711502097148
+  },
+  "confirmFocus": {
+    "foreground": "#ffffff",
+    "background": "#991b1b",
+    "ratio": 8.310050481211189
+  },
+  "forcedColors": "Native Canvas/CanvasText/Highlight; scoped axe audit has no incomplete checks."
+}

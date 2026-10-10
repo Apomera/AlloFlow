@@ -1,0 +1,42 @@
+{
+  "status": "finished",
+  "code": 0,
+  "tests": 99,
+  "files": 9,
+  "batches": [
+    {
+      "name": "learning-final-1",
+      "code": 0,
+      "tests": 37,
+      "files": 3,
+      "receipt": {
+        "status": "finished",
+        "code": 0,
+        "finished": "2026-10-10T01:22:16.167Z"
+      }
+    },
+    {
+      "name": "learning-final-2",
+      "code": 0,
+      "tests": 39,
+      "files": 3,
+      "receipt": {
+        "status": "finished",
+        "code": 0,
+        "finished": "2026-10-10T01:22:19.440Z"
+      }
+    },
+    {
+      "name": "learning-final-3",
+      "code": 0,
+      "tests": 23,
+      "files": 3,
+      "receipt": {
+        "status": "finished",
+        "code": 0,
+        "finished": "2026-10-10T01:22:22.116Z"
+      }
+    }
+  ],
+  "finished": "2026-10-10T01:22:22.127Z"
+}

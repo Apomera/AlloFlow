@@ -1,0 +1,316 @@
+[
+  {
+    "condition": "adult-dark-pose-4-support",
+    "evidence": {
+      "width": 559,
+      "height": 359,
+      "changed": 86872,
+      "noise": 0,
+      "skinProjection": 99014,
+      "exteriorChanged": 0,
+      "exteriorNoise": 0,
+      "originalBright": 35836,
+      "finalBright": 0,
+      "originalMean": 213.43134131836044,
+      "finalMean": 174.15261390336667,
+      "originalRange": 92.06279999999995,
+      "finalRange": 72.66240000000002,
+      "sampleStats": {
+        "clothing": {
+          "count": 19,
+          "changed": 0,
+          "noise": 0,
+          "dark": 17,
+          "min": 56.6648,
+          "max": 160.92,
+          "names": [
+            "fr-training-mat",
+            "fr-manikin-torso",
+            "fr-patient-left-sleeve"
+          ]
+        },
+        "skin": {
+          "count": 228,
+          "changed": 223,
+          "noise": 0,
+          "dark": 16,
+          "min": 47.8338,
+          "max": 209.3758,
+          "names": [
+            "fr-manikin-neck",
+            "fr-manikin-head",
+            "fr-manikin-nose",
+            "fr-manikin-upper-lid-left",
+            "fr-manikin-lower-lid-left",
+            "fr-manikin-upper-lid-right",
+            "fr-manikin-lower-lid-right",
+            "fr-manikin-ear-right-base",
+            "fr-manikin-ear-right-helix",
+            "fr-manikin-ear-right-antihelix",
+            "fr-manikin-ear-right-tragus",
+            "fr-patient-right-forearm",
+            "fr-patient-right-wrist",
+            "fr-patient-right-palm",
+            "fr-patient-right-finger-0-surface",
+            "fr-patient-right-finger-1-surface",
+            "fr-patient-right-finger-2-surface",
+            "fr-patient-right-finger-3-surface",
+            "fr-patient-right-thumb-surface"
+          ]
+        },
+        "fold": {
+          "count": 12,
+          "changed": 0,
+          "noise": 0,
+          "dark": 2,
+          "min": 132.7712,
+          "max": 205.37859999999998,
+          "names": [
+            "fr-manikin-brow-right"
+          ]
+        },
+        "lip": {
+          "count": 24,
+          "changed": 0,
+          "noise": 0,
+          "dark": 0,
+          "min": 212.67659999999998,
+          "max": 236.36399999999998,
+          "names": [
+            "fr-manikin-upper-lip",
+            "fr-manikin-lower-lip"
+          ]
+        }
+      },
+      "rayTests": 1477,
+      "projection": {
+        "meshes": 35,
+        "sourceTriangles": 57488,
+        "clippedPolygons": 40266
+      },
+      "maskDilationPixels": 2,
+      "contrast": false
+    }
+  },
+  {
+    "condition": "adult-dark-pose-8-head",
+    "evidence": {
+      "width": 559,
+      "height": 359,
+      "changed": 30510,
+      "noise": 0,
+      "skinProjection": 37790,
+      "exteriorChanged": 0,
+      "exteriorNoise": 0,
+      "originalBright": 2199,
+      "finalBright": 0,
+      "originalMean": 154.76177611930981,
+      "finalMean": 123.08124211733964,
+      "originalRange": 102.18739999999998,
+      "finalRange": 79.82,
+      "sampleStats": {
+        "clothing": {
+          "count": 43,
+          "changed": 0,
+          "noise": 0,
+          "dark": 43,
+          "min": 57.23159999999999,
+          "max": 142.285,
+          "names": [
+            "fr-training-mat",
+            "fr-manikin-torso",
+            "fr-patient-left-sleeve",
+            "fr-patient-right-sleeve"
+          ]
+        },
+        "skin": {
+          "count": 356,
+          "changed": 321,
+          "noise": 0,
+          "dark": 244,
+          "min": 17.5226,
+          "max": 205.4428,
+          "names": [
+            "fr-manikin-neck",
+            "fr-manikin-head",
+            "fr-manikin-nose",
+            "fr-manikin-upper-lid-left",
+            "fr-manikin-lower-lid-left",
+            "fr-manikin-upper-lid-right",
+            "fr-manikin-lower-lid-right",
+            "fr-manikin-ear-left-base",
+            "fr-manikin-ear-left-helix",
+            "fr-manikin-ear-left-antihelix",
+            "fr-manikin-ear-left-tragus",
+            "fr-manikin-ear-right-base",
+            "fr-manikin-ear-right-helix",
+            "fr-manikin-ear-right-antihelix",
+            "fr-manikin-ear-right-tragus",
+            "fr-patient-left-upper-arm",
+            "fr-patient-left-forearm",
+            "fr-patient-left-elbow",
+            "fr-patient-left-wrist",
+            "fr-patient-left-palm",
+            "fr-patient-left-thumb-surface",
+            "fr-patient-right-upper-arm",
+            "fr-patient-right-forearm",
+            "fr-patient-right-elbow",
+            "fr-patient-right-wrist",
+            "fr-patient-right-palm",
+            "fr-patient-right-finger-0-surface",
+            "fr-patient-right-finger-1-surface",
+            "fr-patient-right-finger-2-surface",
+            "fr-patient-right-finger-3-surface",
+            "fr-patient-right-thumb-surface"
+          ]
+        }
+      },
+      "rayTests": 1732,
+      "projection": {
+        "meshes": 35,
+        "sourceTriangles": 57488,
+        "clippedPolygons": 47192
+      },
+      "maskDilationPixels": 2,
+      "contrast": false
+    }
+  },
+  {
+    "condition": "adult-light-pose-8-support",
+    "evidence": {
+      "width": 559,
+      "height": 359,
+      "changed": 84639,
+      "noise": 0,
+      "skinProjection": 92491,
+      "exteriorChanged": 0,
+      "exteriorNoise": 0,
+      "originalBright": 6470,
+      "finalBright": 0,
+      "originalMean": 158.73691763610023,
+      "finalMean": 125.96910458776865,
+      "originalRange": 98.0562,
+      "finalRange": 79.3134,
+      "sampleStats": {
+        "clothing": {
+          "count": 6,
+          "changed": 0,
+          "noise": 0,
+          "dark": 6,
+          "min": 85.21379999999999,
+          "max": 110.3938,
+          "names": [
+            "fr-manikin-torso"
+          ]
+        },
+        "skin": {
+          "count": 230,
+          "changed": 228,
+          "noise": 0,
+          "dark": 161,
+          "min": 78.7862,
+          "max": 206.87720000000002,
+          "names": [
+            "fr-manikin-neck",
+            "fr-manikin-head",
+            "fr-manikin-nose",
+            "fr-manikin-upper-lid-left",
+            "fr-manikin-lower-lid-left",
+            "fr-manikin-upper-lid-right",
+            "fr-manikin-lower-lid-right",
+            "fr-manikin-ear-right-base",
+            "fr-manikin-ear-right-helix",
+            "fr-manikin-ear-right-antihelix",
+            "fr-manikin-ear-right-tragus",
+            "fr-patient-right-upper-arm",
+            "fr-patient-right-forearm",
+            "fr-patient-right-wrist",
+            "fr-patient-right-palm",
+            "fr-patient-right-finger-0-surface",
+            "fr-patient-right-finger-1-surface",
+            "fr-patient-right-finger-2-surface",
+            "fr-patient-right-finger-3-surface",
+            "fr-patient-right-thumb-surface"
+          ]
+        },
+        "fold": {
+          "count": 12,
+          "changed": 0,
+          "noise": 0,
+          "dark": 12,
+          "min": 92.8698,
+          "max": 118.5076,
+          "names": [
+            "fr-manikin-brow-right"
+          ]
+        },
+        "lip": {
+          "count": 24,
+          "changed": 0,
+          "noise": 0,
+          "dark": 24,
+          "min": 110.2818,
+          "max": 133.20039999999997,
+          "names": [
+            "fr-manikin-upper-lip",
+            "fr-manikin-lower-lip"
+          ]
+        }
+      },
+      "rayTests": 1396,
+      "projection": {
+        "meshes": 35,
+        "sourceTriangles": 57488,
+        "clippedPolygons": 40079
+      },
+      "maskDilationPixels": 2,
+      "contrast": false
+    }
+  },
+  {
+    "condition": "adult-light-pose-5-palm",
+    "evidence": {
+      "width": 559,
+      "height": 359,
+      "changed": 41609,
+      "noise": 0,
+      "skinProjection": 45383,
+      "exteriorChanged": 0,
+      "exteriorNoise": 0,
+      "originalBright": 15882,
+      "finalBright": 0,
+      "originalMean": 207.51586266912372,
+      "finalMean": 165.23964688889555,
+      "originalRange": 108.18199999999996,
+      "finalRange": 79.224,
+      "sampleStats": {
+        "skin": {
+          "count": 96,
+          "changed": 88,
+          "noise": 0,
+          "dark": 18,
+          "min": 45.902,
+          "max": 208.80499999999998,
+          "names": [
+            "fr-patient-left-forearm",
+            "fr-patient-left-wrist",
+            "fr-patient-left-palm",
+            "fr-patient-left-finger-0-surface",
+            "fr-patient-left-finger-1-surface",
+            "fr-patient-left-finger-2-surface",
+            "fr-patient-left-finger-3-surface",
+            "fr-patient-left-thumb-surface"
+          ]
+        }
+      },
+      "rayTests": 701,
+      "projection": {
+        "meshes": 35,
+        "sourceTriangles": 57488,
+        "clippedPolygons": 13836
+      },
+      "maskDilationPixels": 2,
+      "contrast": false
+    }
+  }
+]

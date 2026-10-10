@@ -1,0 +1,40 @@
+{
+  "pixelComparisons": [
+    {
+      "id": "child-narrow",
+      "contrast": false,
+      "changedPixels": 1312,
+      "totalPixels": 97976,
+      "palmChangedPixels": 1312,
+      "palmTotalPixels": 13875
+    }
+  ],
+  "baselineSHA": "147670787861ae0251c9b4c65c90847a613c6b879d41737533749c19a5f6f891",
+  "finalSHA": "dfe3e01f38a419187e468c749cc37827f486a47401b9916afaa9ec6f98a3f86a",
+  "workflows": 1,
+  "matchingViewPairs": 1,
+  "selectedViews": [
+    "child-narrow"
+  ],
+  "evidenceCount": 2,
+  "workers": 1,
+  "retries": 0,
+  "perWorkflowTimeoutMs": 450000,
+  "runnerTimeoutMs": 900000,
+  "images": [
+    "child-narrow-baseline-palm.png",
+    "child-narrow-baseline-stage.png",
+    "child-narrow-candidate-palm.png",
+    "child-narrow-candidate-stage.png"
+  ],
+  "stats": {
+    "startTime": "2026-10-10T03:36:14.124Z",
+    "duration": 31620.675,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "inputsUnchanged": true,
+  "privateCandidate": true
+}

@@ -1,0 +1,118 @@
+{
+  "top": 19.078125,
+  "left": 0,
+  "width": 1180,
+  "height": 282.484375,
+  "client": 1178,
+  "scroll": 1178,
+  "columns": 3,
+  "containerWidth": 1180,
+  "groups": [
+    {
+      "name": "practice",
+      "top": 33.671875,
+      "left": 14.59375,
+      "width": 763.734375,
+      "height": 251.6875,
+      "span": "span 2"
+    },
+    {
+      "name": "practical",
+      "top": 33.671875,
+      "left": 788.71875,
+      "width": 376.6875,
+      "height": 253.296875,
+      "span": "auto"
+    }
+  ],
+  "activityColumns": 2,
+  "activities": [
+    {
+      "name": "flashcards",
+      "top": 125.328125,
+      "left": 28.390625,
+      "width": 362.875,
+      "height": 124.546875
+    },
+    {
+      "name": "compare",
+      "top": 125.328125,
+      "left": 401.65625,
+      "width": 362.875,
+      "height": 146.234375
+    }
+  ],
+  "text": [
+    {
+      "text": "Review and compare",
+      "font": 16,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Untimed activities for recall and reference study.",
+      "font": 14,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Recall functions, reveal the reference answer, and mark cards to review.",
+      "font": 14,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "No cross-specimen comparison is mapped for Nictitating Membrane. Select another structure to compare.",
+      "font": 14,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Timed identification",
+      "font": 16,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Two-minute identification check with structure labels hidden.",
+      "font": 14,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "3 visible structures available. Starts a new timed identification attempt.",
+      "font": 14,
+      "clipped": false,
+      "textOverflow": "clip"
+    }
+  ],
+  "buttons": [
+    {
+      "name": "Flashcard",
+      "top": 136.71875,
+      "left": 39.78125,
+      "width": 340.09375,
+      "height": 48,
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "name": "Compare",
+      "top": 136.71875,
+      "left": 413.046875,
+      "width": 340.09375,
+      "height": 48,
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "name": "Start 2-minute timed practical",
+      "top": 225.171875,
+      "left": 802.515625,
+      "width": 349.09375,
+      "height": 48,
+      "font": 16,
+      "clipped": false
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "driverSha256": "6c1b4705ad484e134944eb38fafe618256cb8b986bfc33677e7d22316e97a205",
+  "followsRealUiSemantics": "Scenic launch, highlight, follow and Continue actions call inspectScene, which closes the full-screen controls. The driver explicitly reopens them for each next action.",
+  "replacements": [
+    {
+      "before": "await paused(name+'-'+h.id,h.seconds);const image=control.locator('img');",
+      "after": "await paused(name+'-'+h.id,h.seconds);if(fullscreen)await openControls();const image=control.locator('img');"
+    },
+    {
+      "before": "const before=await snapshot(),elapsed=await page.evaluate(()=>__routeInfo.flyby.elapsedSeconds);await canvas.focus();",
+      "after": "const before=await snapshot(),elapsed=await page.evaluate(()=>__routeInfo.flyby.elapsedSeconds);if(fullscreen&&await panel.isVisible()){await stage.getByRole('button',{name:'Flight controls',exact:true}).click();await panel.waitFor({state:'hidden'});}await canvas.focus();"
+    },
+    {
+      "before": "assert.equal(await page.evaluate(()=>__routeInfo.flyby.elapsedSeconds),elapsed);\n  const play=",
+      "after": "assert.equal(await page.evaluate(()=>__routeInfo.flyby.elapsedSeconds),elapsed);if(fullscreen)await openControls();\n  const play="
+    },
+    {
+      "before": "await page.waitForTimeout(300);await play.click();",
+      "after": "await page.waitForTimeout(300);if(fullscreen)await openControls();await play.click();"
+    }
+  ]
+}

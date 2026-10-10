@@ -1,0 +1,30 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/solar_system_mission_dashboard.test.js
+[deferred-jsdom] Initializing the official DOM environment.
+
+stdout | tests/solar_system_mission_dashboard.test.js
+[deferred-jsdom] DOM environment ready.
+
+stdout | tests/solar_system_mission_dashboard.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/solar_system_mission_dashboard.test.js
+[deferred-jsdom] Existing repository setup loaded.
+
+ ✓ tests/solar_system_mission_dashboard.test.js > mission dashboard derives saved progress > offers six empty journeys without changing state 4ms
+ ✓ tests/solar_system_mission_dashboard.test.js > mission dashboard derives saved progress > remembers selection and otherwise resumes an unfinished journey 1ms
+ ✓ tests/solar_system_mission_dashboard.test.js > mission dashboard derives saved progress > counts only nonempty journal observations and fresh Mars surface evidence 1ms
+ ✓ tests/solar_system_mission_dashboard.test.js > mission dashboard derives saved progress > requires a matching seasonal save and valid observations 1ms
+ ✓ tests/solar_system_mission_dashboard.test.js > mission dashboard derives saved progress > prioritizes explaining actual linked evidence and ignores legacy completion flags 0ms
+ ✓ tests/solar_system_mission_dashboard.test.js > mission dashboard derives saved progress > recognizes all five explained labs and never grades their prose 23ms
+ ✓ tests/solar_system_mission_dashboard.test.js > mission dashboard derives saved progress > requires a real specimen and both review fields, and resumes its world 2ms
+ ✓ tests/solar_system_mission_dashboard.test.js > mission dashboard derives saved progress > keeps comparison view checkpoints distinct from saved journal work 0ms
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  19:38:30
+   Duration  1.93s (transform 71ms, setup 1.45s, import 70ms, tests 37ms, environment 0ms)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/solar-investigation-discovery-enhancement-2026-10-09/unit-dashboard-results.json

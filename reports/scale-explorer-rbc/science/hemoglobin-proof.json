@@ -1,0 +1,105 @@
+{
+  "pdbId": "2HHB",
+  "sourceURL": "https://files.rcsb.org/download/2HHB.pdb",
+  "dataSha": "d04b447c1177616e37d39e5af23b44d6aa85b5de74ed7ead84e1f0f5ff1fd40d",
+  "outputSha256": "6abfaa23e317fb979122a64894bc8789152e88b2a82070f0d097b5c21bd6a8b5",
+  "pdbBytes": 453438,
+  "outputBytes": 32006,
+  "chains": [
+    {
+      "id": "A",
+      "type": "alpha",
+      "length": 141
+    },
+    {
+      "id": "B",
+      "type": "beta",
+      "length": 146
+    },
+    {
+      "id": "C",
+      "type": "alpha",
+      "length": 141
+    },
+    {
+      "id": "D",
+      "type": "beta",
+      "length": 146
+    }
+  ],
+  "alphaCarbons": 574,
+  "hemes": [
+    {
+      "chain": "A",
+      "residue": 142,
+      "heavyAtoms": 43,
+      "inferredBonds": 46,
+      "ironCoordinationDistances": [
+        2.028,
+        2.158,
+        2.149,
+        2.061
+      ]
+    },
+    {
+      "chain": "B",
+      "residue": 148,
+      "heavyAtoms": 43,
+      "inferredBonds": 46,
+      "ironCoordinationDistances": [
+        2.053,
+        2.003,
+        1.99,
+        2.059
+      ]
+    },
+    {
+      "chain": "C",
+      "residue": 142,
+      "heavyAtoms": 43,
+      "inferredBonds": 46,
+      "ironCoordinationDistances": [
+        2.081,
+        2.092,
+        2.028,
+        2.028
+      ]
+    },
+    {
+      "chain": "D",
+      "residue": 148,
+      "heavyAtoms": 43,
+      "inferredBonds": 46,
+      "ironCoordinationDistances": [
+        2.127,
+        2.034,
+        2.086,
+        2.056
+      ]
+    }
+  ],
+  "center": [
+    10.091999999999999,
+    13.315999999999999,
+    39.8575
+  ],
+  "extent": 62.269999999999996,
+  "bounds": {
+    "min": [
+      -21.043,
+      -12.939,
+      12.673
+    ],
+    "max": [
+      41.227,
+      39.571,
+      67.042
+    ],
+    "span": [
+      62.269999999999996,
+      52.51,
+      54.369
+    ]
+  },
+  "downloadedAt": "2026-10-07T01:33:41.332Z"
+}

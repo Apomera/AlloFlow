@@ -1,0 +1,164 @@
+diff --git "a/C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-flyby-detours60\\renderer-before.js" "b/C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-flyby-detours60\\renderer-after.js"
+index cf3fa44..70e72bb 100644
+--- "a/C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-flyby-detours60\\renderer-before.js"
++++ "b/C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-flyby-detours60\\renderer-after.js"
+@@ -1769,6 +1769,7 @@
+     var orbitId = null, orbitPath = null;
+     var flyby = { active:false, completed:false, id:null, elapsedSeconds:0, autoLook:false };
+     var flybyPace = 0, easedLeg = null;
++    var flybyDetour = null;
+     var distanceGlide = { active:false, completed:false, targetId:null, direction:null, elapsedSeconds:0, durationSeconds:3 };
+     function clearDistanceGlide() { distanceGlide = { active:false, completed:false, targetId:null, direction:null, elapsedSeconds:0, durationSeconds:3 }; }
+     function endDistanceGlide(message) {
+@@ -1847,6 +1848,54 @@
+         durationSeconds:route?route.durationSeconds:0, autoLook:flyby.autoLook, phase:sample?sample.phase:null, rate:settings.flybyRate, pauseAtHighlights:settings.pauseAtHighlights,
+         remainingPlaybackSeconds:settings.pauseAtHighlights&&flyby.active?((easedLeg||nextFlybyLeg(!settings.running)).duration-(easedLeg?easedLeg.clock:0))/settings.flybyRate:null };
+     }
++    // A detour is a private return point, separate from version-1 saved views.
++    // Inspection moves may clear the live route without touching this record.
++    function flybyDetourTelemetry() {
++      if (!flybyDetour) return { active:false };
++      var route=flybyRoute(flybyDetour.flyby.id);
++      return { active:true, id:route.id, name:route.name, elapsedSeconds:flybyDetour.flyby.elapsedSeconds,
++        durationSeconds:route.durationSeconds, targetId:flybyDetour.targetId };
++    }
++    function copyCameraMoves(moves) {
++      return moves.map(function(move){return {position:move.position.slice(),distanceLy:move.distanceLy,trail:move.trail.map(function(point){return point.slice();})};});
++    }
++    function beginFlybyDetour() {
++      var route=flybyRoute(flyby.id);
++      if (disposed || lost || !gl || !program || settings.mode!=='explore' || settings.running || !flyby.active || !route || settings.region!==route.region || flybyDetour) return false;
++      flybyDetour={settings:Object.assign({},settings),state:Object.assign({},state,{position:state.position.slice()}),targetId:targetId,
++        flyby:Object.assign({},flyby),flybyPace:flybyPace,easedLeg:easedLeg&&Object.assign({},easedLeg),
++        trail:trail.map(function(point){return point.slice();}),cameraMoves:copyCameraMoves(cameraMoves),
++        frameUndo:frameUndo&&Object.assign({},frameUndo),framePlacement:framePlacement};
++      cancelFrame(); clearFlyby(); navigation={active:false,targetId:null}; orbitId=null; orbitPath=null;
++      pauseWithMessage('Flyby return point saved. Explore this view, then return to continue the flyby.',
++        {kind:'flyby-detour',routeId:route.id,routeName:route.name,seconds:flybyDetour.flyby.elapsedSeconds,targetId:targetId});
++      requestDraw(); return true;
++    }
++    function returnToFlyby() {
++      if (disposed || lost || !gl || !program || !flybyDetour || settings.mode!==flybyDetour.settings.mode || settings.region!==flybyDetour.settings.region) return false;
++      var saved=flybyDetour, route=flybyRoute(saved.flyby.id);
++      flybyDetour=null; cancelFrame(); clearFlyby();
++      settings=Object.assign({},saved.settings,{running:false});
++      state=Object.assign({},saved.state,{position:saved.state.position.slice()}); targetId=saved.targetId;
++      flyby=Object.assign({},saved.flyby); flybyPace=saved.flybyPace; easedLeg=saved.easedLeg&&Object.assign({},saved.easedLeg);
++      navigation={active:false,targetId:null}; orbitId=null; orbitPath=null;
++      trail=saved.trail.map(function(point){return point.slice();}); cameraMoves=copyCameraMoves(saved.cameraMoves);
++      lastFrame=0; freePace=0; resize();
++      frameUndo=saved.frameUndo&&Object.assign({},saved.frameUndo); framePlacement=saved.framePlacement;
++      // Do not normalize the saved gaze or advance the route during return.
++      // Pausing through the generic helper would discard its saved leg state.
++      var message='Returned to '+route.name+'. Travel is paused; continue whenever you are ready.';
++      emitTelemetry(true); status('ready',message);
++      if (typeof options.onPause==='function') options.onPause(message,
++        {kind:'flyby-return',routeId:route.id,routeName:route.name,seconds:flyby.elapsedSeconds,targetId:targetId});
++      requestDraw(); return true;
++    }
++    function cancelFlybyDetour() {
++      if (disposed || !flybyDetour) return false;
++      flybyDetour=null; emitTelemetry(true);
++      status('ready','Flyby return point cleared. Continue exploring from this view.');
++      return true;
++    }
+     var freePace = 0;
+     var trail = [];
+     var cameraMoves = [];
+@@ -1975,7 +2024,7 @@
+       if (typeof options.onTelemetry === 'function') options.onTelemetry({
+         distanceLy: state.distanceLy, universeYears: state.universeYears, travelerYears: state.travelerYears,
+         position: state.position.slice(), yaw: state.yaw, pitch: state.pitch, running: settings.running,
+-        target: targetTelemetry(), navigation: navigationTelemetry(), flyby: flybyTelemetry(), distanceGlide: distanceGlideTelemetry(), viewpointGlide: viewpointGlideTelemetry(), orbit: { active: !!orbitId, targetId: orbitId }, motion: motionTelemetry(), framing: framingTelemetry(), trail: trail.map(function(p) { return p.slice(); }), cameraMoves: cameraMoves.length
++        target: targetTelemetry(), navigation: navigationTelemetry(), flyby: flybyTelemetry(), flybyDetour: flybyDetourTelemetry(), distanceGlide: distanceGlideTelemetry(), viewpointGlide: viewpointGlideTelemetry(), orbit: { active: !!orbitId, targetId: orbitId }, motion: motionTelemetry(), framing: framingTelemetry(), trail: trail.map(function(p) { return p.slice(); }), cameraMoves: cameraMoves.length
+       });
+     }
+     function initialState() {
+@@ -2421,7 +2470,7 @@
+     }
+     function dispose() {
+       if (disposed) return;
+-      disposed = true; clearFlyby(); cancelFrame();
++      disposed = true; flybyDetour=null; clearFlyby(); cancelFrame();
+       if (resizeObserver) resizeObserver.disconnect();
+       if (intersectionObserver) intersectionObserver.disconnect();
+       global.removeEventListener('resize', resize);
+@@ -2449,7 +2498,7 @@
+         targetId: targetId
+       };
+     }
+-    function restore(saved) {
++    function restoreView(saved, preserveDetour) {
+       if (disposed || !saved || saved.version !== 1 || !saved.settings || !saved.state) return false;
+       var input = saved.settings, savedState = saved.state;
+       if (input.mode !== 'explore' && input.mode !== 'relativity') return false;
+@@ -2458,6 +2507,7 @@
+       if (Math.hypot.apply(Math, savedState.position) > REGIONS[input.region].boundary * (1 + 1e-10)) return false;
+       if (!['yaw', 'pitch', 'distanceLy', 'universeYears', 'travelerYears'].every(function (key) { return Number.isFinite(savedState[key]); })) return false;
+       if (![input.beta, input.fov, input.exposure].every(Number.isFinite)) return false;
++      if (!preserveDetour) flybyDetour=null;
+       clearFlyby();
+       var oldRegion = settings.region;
+       settings.mode = input.mode; settings.region = input.region;
+@@ -2479,7 +2529,7 @@
+       lastFrame = 0; freePace = 0;
+       if (oldRegion !== settings.region) uploadRegion();
+       resize(); requestDraw();
+-      pauseWithMessage('Saved view restored. Travel is paused.');
++      pauseWithMessage(preserveDetour?'Inspection view restored. Travel is paused.':'Saved view restored. Travel is paused.');
+       return true;
+     }
+     var api = {
+@@ -2519,7 +2569,7 @@
+         if (next.running && navigation.completed) navigation = { active:false, targetId:null };
+         if (previousRegion !== settings.region) { state = initialState(); targetId = null; uploadRegion(); }
+         if (previousRegion !== settings.region || previousMode !== settings.mode) {
+-          navigation = { active: false, targetId: null }; orbitId = null; orbitPath = null; clearFlyby(); trail = []; cameraMoves = []; settings.running = false;
++          flybyDetour=null; navigation = { active: false, targetId: null }; orbitId = null; orbitPath = null; clearFlyby(); trail = []; cameraMoves = []; settings.running = false;
+         }
+         if(orbitId&&previousTilt!==settings.orbitTilt){
+           var orbitTarget=getLandmark(orbitId);
+@@ -2755,7 +2805,7 @@
+         var route=flybyRoute(id);
+         if (disposed || lost || !gl || !program || settings.mode !== 'explore' || !route || settings.region !== route.region) return false;
+         var sample=route.atTime(0);
+-        clearInspectionGlides();
++        flybyDetour=null; clearInspectionGlides();
+         state={position:sample.position.slice(),yaw:sample.yaw,pitch:sample.pitch,distanceLy:0,universeYears:0,travelerYears:0};
+         targetId=route.targetId; navigation={active:false,targetId:null}; orbitId=null;orbitPath=null;
+         flyby={active:true,completed:false,id:route.id,elapsedSeconds:0,autoLook:true}; flybyPace=0; easedLeg=null;
+@@ -2775,16 +2825,32 @@
+         if (!settings.running) { var sample=flybyRoute(flyby.id).atTime(flyby.elapsedSeconds); state.yaw=sample.yaw; state.pitch=sample.pitch; }
+         emitTelemetry(true); requestDraw(); return true;
+       },
++      beginFlybyDetour: beginFlybyDetour,
++      returnToFlyby: returnToFlyby,
++      cancelFlybyDetour: cancelFlybyDetour,
+       snapshot: snapshot,
+       capture: function () {
+         if (disposed || lost || !gl) return null;
+         draw();
+         return { dataUrl: canvas.toDataURL('image/png'), snapshot: snapshot() };
+       },
+-      restore: restore,
++      restore: function (saved) { return restoreView(saved,false); },
++      inspectFlybyHighlight: function (routeId, highlightId) {
++        var route=flybyRoute(routeId), highlight=route&&route.highlights.filter(function(item){return item.id===highlightId;})[0];
++        if (disposed || lost || !gl || !program || settings.mode!=='explore' || !route || settings.region!==route.region || !highlight) return false;
++        var sample=route.atTime(highlight.seconds), saved=snapshot();
++        saved.settings.fov=route.fov; saved.settings.exposure=route.id==='stellar'?0.86:1;
++        saved.state={position:sample.position.slice(),yaw:sample.yaw,pitch:sample.pitch,distanceLy:sample.distance,universeYears:0,travelerYears:0};
++        saved.targetId=highlight.targetId;
++        return restoreView(saved,true);
++      },
++      restoreInspectionView: function (saved) {
++        if (disposed || lost || !gl || !program || settings.mode!=='explore' || !saved || !saved.settings || saved.settings.mode!==settings.mode || saved.settings.region!==settings.region) return false;
++        return restoreView(saved,true);
++      },
+       reset: function () {
+         if (!disposed) {
+-          clearFlyby();
++          flybyDetour=null; clearFlyby();
+           state = initialState(); targetId = null; navigation = { active: false, targetId: null };
+           orbitId = null; orbitPath = null;
+           trail = [];

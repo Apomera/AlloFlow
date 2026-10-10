@@ -1,0 +1,61 @@
+{
+  "type": "Read-only installed Vitest startup investigation",
+  "installedVersion": "4.1.5",
+  "recommendation": {
+    "pool": "threads",
+    "maxWorkers": 1,
+    "fileParallelism": false,
+    "cliDelta": "--pool=threads --maxWorkers=1 --no-file-parallelism",
+    "retain": [
+      "Selected test files",
+      "Existing testTimeout and hookTimeout values",
+      "Default isolate: true",
+      "Existing jsdom environment and setupFiles",
+      "Installed dependencies and package sources"
+    ],
+    "reason": "The supported threads pool creates a Node Worker rather than a new forked process. This can avoid slow fork startup while keeping the unit tests and installed package unchanged.",
+    "limit": "Threads use the same hardcoded startup deadlines. This retry does not extend them and success must be checked in the root-owned retry."
+  },
+  "startupDeadlines": [
+    {
+      "name": "Runner start handshake",
+      "milliseconds": 60000,
+      "source": "node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:2782",
+      "use": "node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:2894"
+    },
+    {
+      "name": "Pool worker startup",
+      "milliseconds": 90000,
+      "source": "node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3382",
+      "use": "node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3447"
+    }
+  ],
+  "configurationFinding": "Both startup deadlines are hardcoded constants in this installed build. No supported configuration or environment variable for those deadlines was found. testTimeout and hookTimeout govern test execution and do not change these worker startup constants.",
+  "localDocumentation": [
+    "node_modules/vitest/dist/chunks/reporters.d.CEnv6XRv.d.ts:2832 lists threads as a supported pool.",
+    "node_modules/vitest/dist/chunks/reporters.d.CEnv6XRv.d.ts:2805-2811 documents isolate default true; the vmThreads exception does not apply to regular threads.",
+    "node_modules/vitest/dist/chunks/reporters.d.CEnv6XRv.d.ts:2842-2847 documents fileParallelism false as overriding maxWorkers to 1.",
+    "node_modules/vitest/dist/chunks/reporters.d.CEnv6XRv.d.ts:2813-2823 warns that execArgv options such as --prof or --title can crash workers; the retry requires no added execArgv.",
+    "node_modules/vitest/dist/chunks/cac.DJJmV0dT.js:912-929 defines --pool, --no-file-parallelism, and --maxWorkers CLI flags.",
+    "node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3122-3154 implements ThreadsPoolWorker using Node Worker."
+  ],
+  "suiteScreen": {
+    "config": "vitest.config.js uses environment jsdom and tests/setup.js; no pool or isolation override is present.",
+    "filesRead": [
+      "tests/dissection_lab_improvements.test.js",
+      "tests/dissection_canvas_loop.test.js",
+      "tests/dissection_workspace_bands.test.js",
+      "tests/dissection_reference_workbench.test.js",
+      "tests/setup.js",
+      "tests/helpers/stem_widgets_smoke_harness.js"
+    ],
+    "result": "No process.chdir, child_process, worker_threads, or explicit native-addon usage was found in these unit files or shared harness. Shared setup reads process.cwd and an existing environment flag; the React harness uses createRequire and repo-relative paths, so keep the retry working directory at the repository root. No local source constraint preventing regular threads was found.",
+    "coverageLimit": "Static compatibility inspection only; no suite was run."
+  },
+  "reviewerActions": {
+    "suitesRun": false,
+    "repositoryMutations": false,
+    "installedPackageMutations": false,
+    "startupPreloadsApplied": false
+  }
+}

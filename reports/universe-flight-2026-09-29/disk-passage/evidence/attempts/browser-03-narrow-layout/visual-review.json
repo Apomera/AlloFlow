@@ -1,0 +1,64 @@
+{
+  "reviewed": true,
+  "reviewMethod": "All eight captured PNGs opened with view_image and visually inspected after clean browser exit0.",
+  "automatedChecksPassed": true,
+  "driverSha256": "c5c7062586c087b05484228120905411e07feb32c95195650ba76a88a04ee7d3",
+  "checkSha256": "4bfd73a20c0246a07e7d6eecf8ba41592e6b5f48bc38395b78ffc02217b82909",
+  "captures": [
+    {
+      "name": "desktop-highlights",
+      "file": "desktop-highlights.png",
+      "hash": "aa5753c2fcd6b7f0394fb7f15e7112cd844a5d4814df981d9a64ee496630e9ac"
+    },
+    {
+      "name": "desktop-completion",
+      "file": "desktop-completion.png",
+      "hash": "c841e14dc724cebe192a2951ae47a9ebcbd0621deb11cad53fcf52761b017577"
+    },
+    {
+      "name": "desktop-fullscreen-highlights",
+      "file": "desktop-fullscreen-highlights.png",
+      "hash": "dd4fcc1f3c177d5cac99f82d159485b6f3c207c0b1b9c187edaacc4b92ca9a55"
+    },
+    {
+      "name": "desktop-fullscreen-completion",
+      "file": "desktop-fullscreen-completion.png",
+      "hash": "4a4246ec8d9afc4b679d25c2d305500cfac59a13a361b176e410229a42e46bd3"
+    },
+    {
+      "name": "phone-reduced-motion-highlights",
+      "file": "phone-reduced-motion-highlights.png",
+      "hash": "1ca889107b1a3365a340da5b9ca3fb5fb3881675967d779e67816c8e6e244d36"
+    },
+    {
+      "name": "phone-reduced-motion-completion",
+      "file": "phone-reduced-motion-completion.png",
+      "hash": "52e60012d677eeb87d0f63c3b98d0a5428c44a74b6b589967c19e2c380338552"
+    },
+    {
+      "name": "phone-fullscreen-reduced-motion-highlights",
+      "file": "phone-fullscreen-reduced-motion-highlights.png",
+      "hash": "6135ccc1d0e52550095e27899ce8f8da2ec37229843ec5a4530d1d7ed34f9fc3"
+    },
+    {
+      "name": "phone-fullscreen-reduced-motion-completion",
+      "file": "phone-fullscreen-reduced-motion-completion.png",
+      "hash": "6759df0e79321d0b6e73cec43ae0454a9431c9bde06d4b4ace6785b84a2c4415"
+    }
+  ],
+  "findings": [
+    {
+      "severity": "cosmetic",
+      "file": "phone-reduced-motion-highlights.png",
+      "detail": "At the 320px phone viewport, the scene stage is260px wide. The paused HUD wraps onto two lines; its third line phase text Revealing the whole spiral is partly covered by the lens control group at top64px. Primary controls remain readable and were tested reachable.",
+      "source": "stem_lab/stem_tool_universe.js .uf-lens-controls at line1730 and .uf-flight-phase at line1973.",
+      "disposition": "Reported to root for final decision."
+    }
+  ],
+  "otherObservations": [
+    "Desktop panorama and completion are visible with the galaxy centered.",
+    "Both fullscreen control panels scroll within their bounds; highlight images and text are readable.",
+    "Phone fullscreen completion shows the route at44.0/44.0 and Spiral panorama ready.",
+    "No screenshot shows a missing thumbnail or horizontal content overflow."
+  ]
+}

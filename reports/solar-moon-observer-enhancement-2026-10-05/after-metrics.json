@@ -1,0 +1,322 @@
+[
+  {
+    "dark": true,
+    "state": "default",
+    "phase": 45,
+    "node": 30,
+    "south": false,
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "minimumContrast": 7.273159068421229,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "portrait": {
+      "x": 21,
+      "right": 271,
+      "view": "0 0 220 220",
+      "orientation": "north"
+    },
+    "illumination": 0.1464466094067262
+  },
+  {
+    "dark": false,
+    "state": "new",
+    "phase": 0,
+    "node": 0,
+    "south": false,
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "minimumContrast": 7.058342386517619,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "portrait": {
+      "x": 21,
+      "right": 271,
+      "view": "0 0 220 220",
+      "orientation": "north"
+    },
+    "illumination": 0
+  },
+  {
+    "dark": true,
+    "state": "quarter",
+    "phase": 90,
+    "node": 30,
+    "south": false,
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "minimumContrast": 7.273159068421229,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "portrait": {
+      "x": 21,
+      "right": 271,
+      "view": "0 0 220 220",
+      "orientation": "north"
+    },
+    "illumination": 0.49999999999999994
+  },
+  {
+    "dark": false,
+    "state": "gibbous",
+    "phase": 135,
+    "node": 30,
+    "south": false,
+    "width": 736,
+    "scrollWidth": 736,
+    "errors": [],
+    "minimumContrast": 7.058342386517619,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "portrait": {
+      "x": 21,
+      "right": 271,
+      "view": "0 0 220 220",
+      "orientation": "north"
+    },
+    "illumination": 0.8535533905932737
+  },
+  {
+    "dark": true,
+    "state": "full",
+    "phase": 180,
+    "node": 0,
+    "south": false,
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "minimumContrast": 7.273159068421229,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "portrait": {
+      "x": 21,
+      "right": 271,
+      "view": "0 0 220 220",
+      "orientation": "north"
+    },
+    "illumination": 1
+  },
+  {
+    "dark": true,
+    "state": "waning",
+    "phase": 225,
+    "node": 30,
+    "south": false,
+    "width": 736,
+    "scrollWidth": 736,
+    "errors": [],
+    "minimumContrast": 7.273159068421229,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "portrait": {
+      "x": 21,
+      "right": 271,
+      "view": "0 0 220 220",
+      "orientation": "north"
+    },
+    "illumination": 0.8535533905932738
+  },
+  {
+    "dark": false,
+    "state": "third-quarter",
+    "phase": 270,
+    "node": 30,
+    "south": false,
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "minimumContrast": 7.058342386517619,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "portrait": {
+      "x": 13,
+      "right": 307,
+      "view": "0 0 220 220",
+      "orientation": "north"
+    },
+    "illumination": 0.5000000000000001
+  },
+  {
+    "dark": true,
+    "state": "crescent",
+    "phase": 315,
+    "node": 30,
+    "south": false,
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "minimumContrast": 7.273159068421229,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "portrait": {
+      "x": 13,
+      "right": 307,
+      "view": "0 0 220 220",
+      "orientation": "north"
+    },
+    "illumination": 0.14644660940672632
+  },
+  {
+    "dark": false,
+    "state": "southern",
+    "phase": 45,
+    "node": 30,
+    "south": true,
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "minimumContrast": 7.058342386517619,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "portrait": {
+      "x": 13,
+      "right": 307,
+      "view": "0 0 220 220",
+      "orientation": "south"
+    },
+    "illumination": 0.1464466094067262
+  },
+  {
+    "dark": true,
+    "state": "committed-solar",
+    "phase": 0,
+    "node": 0,
+    "south": false,
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "minimumContrast": 8.19787904804663,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "portrait": {
+      "x": 21,
+      "right": 271,
+      "view": "0 0 220 220",
+      "orientation": "north"
+    },
+    "illumination": 0
+  },
+  {
+    "dark": true,
+    "state": "committed-lunar",
+    "phase": 180,
+    "node": 0,
+    "south": true,
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "minimumContrast": 8.19787904804663,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "portrait": {
+      "x": 13,
+      "right": 307,
+      "view": "0 0 220 220",
+      "orientation": "south"
+    },
+    "illumination": 1
+  },
+  {
+    "dark": false,
+    "state": "missed-node",
+    "phase": 0,
+    "node": 90,
+    "south": false,
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "minimumContrast": 7.058342386517619,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "portrait": {
+      "x": 13,
+      "right": 307,
+      "view": "0 0 220 220",
+      "orientation": "north"
+    },
+    "illumination": 0
+  },
+  {
+    "dark": false,
+    "state": "fractional",
+    "phase": 89.6,
+    "node": 12.4,
+    "south": false,
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "minimumContrast": 7.058342386517619,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "portrait": {
+      "x": 21,
+      "right": 271,
+      "view": "0 0 220 220",
+      "orientation": "north"
+    },
+    "illumination": 0.4965093698510192
+  },
+  {
+    "dark": true,
+    "state": "malformed",
+    "phase": 45,
+    "node": 30,
+    "south": false,
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "minimumContrast": 7.273159068421229,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "portrait": {
+      "x": 13,
+      "right": 307,
+      "view": "0 0 220 220",
+      "orientation": "north"
+    },
+    "illumination": 0.1464466094067262
+  },
+  {
+    "dark": false,
+    "state": "invalid-prediction",
+    "phase": 45,
+    "node": 30,
+    "south": false,
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "minimumContrast": 7.058342386517619,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "portrait": {
+      "x": 13,
+      "right": 307,
+      "view": "0 0 220 220",
+      "orientation": "north"
+    },
+    "illumination": 0.1464466094067262
+  },
+  {
+    "dark": true,
+    "state": "saved",
+    "phase": 0,
+    "node": 0,
+    "south": false,
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "minimumContrast": 8.955192687305324,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "portrait": {
+      "x": 21,
+      "right": 271,
+      "view": "0 0 220 220",
+      "orientation": "north"
+    },
+    "illumination": 0
+  }
+]

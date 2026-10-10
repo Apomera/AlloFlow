@@ -1,0 +1,18 @@
+{
+  "currentHashes": {
+    "stem_lab/stem_tool_dissection.js": "72c75cc596b0ee7307b7b7549fcd34e02cefdf9cdfb00f445bb21a26cc2dfeed",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "72c75cc596b0ee7307b7b7549fcd34e02cefdf9cdfb00f445bb21a26cc2dfeed",
+    "tests/dissection_lab_improvements.test.js": "f43f0a739eacc816fe11ddf96037205795b783f8dc47c59091e4e5249829130c",
+    "tests/e2e/dissection-study-chooser.spec.ts": "7941e1e85ac47ec7005ac1cf529f488f7173a39079a4b811e7d3a04b8e46031e"
+  },
+  "unitPassed": 249,
+  "browserPassed": 23,
+  "checkedManifestEntries": 211,
+  "checkedLinks": 30,
+  "priorReportEntries": 195,
+  "head": "2f9789e0bba98c9795492beb226202cf34f0d675",
+  "stagedPaths": "",
+  "whitespaceCheckPassed": true,
+  "ownHandoffRowMatches": true,
+  "ownedTemporaryDirectoriesRemoved": true
+}

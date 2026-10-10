@@ -1,0 +1,353 @@
+{
+  "preparedAt": "2026-10-06T23:21:56.402Z",
+  "launchCommand": "node reports\\universe-flight-2026-09-29\\prominence-edges\\run-unit-suite.cjs --run",
+  "shell": "cmd.exe",
+  "login": false,
+  "vitestVersion": "4.1.5",
+  "temp": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-3/universe-detail-lens/temp",
+  "environmentOverrides": {
+    "TEMP": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-3/universe-detail-lens/temp",
+    "TMP": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-3/universe-detail-lens/temp"
+  },
+  "pins": {
+    "stem_lab/universe_flight_scene.js": "c0cc2486b3d5edd620e5975daec3d23b8f2e995a24db151be27ac30820d058c7",
+    "desktop/web-app/public/stem_lab/universe_flight_scene.js": "c0cc2486b3d5edd620e5975daec3d23b8f2e995a24db151be27ac30820d058c7",
+    "stem_lab/stem_tool_universe.js": "166dd6c8a059c03fd21e79c646c14bd104ea0be93d8cc43105231fd6f5576742",
+    "desktop/web-app/public/stem_lab/stem_tool_universe.js": "166dd6c8a059c03fd21e79c646c14bd104ea0be93d8cc43105231fd6f5576742"
+  },
+  "inputTestFiles": [
+    {
+      "file": "tests\\universe_accessibility.test.js",
+      "sha256": "5e8118a00e6b095e378e3a87e520ad3dcca543081dde460186fdb1075cf45536"
+    },
+    {
+      "file": "tests\\universe_content_invariants.test.js",
+      "sha256": "a0610f4e8fed10d9583325bedc900b467e0e80e8b6009a46abbf284f7bcfccdd"
+    },
+    {
+      "file": "tests\\universe_evidence_svg_a11y.test.js",
+      "sha256": "1bac1d15945edca8c5441ceb592099aca35eaca3759bd841d52d0d05e972d071"
+    },
+    {
+      "file": "tests\\universe_flight_barred_detail.test.js",
+      "sha256": "00f04916ef6a550ffead04adbdcaafa06a00d8ba68cb9d49135c2a7840b3c291"
+    },
+    {
+      "file": "tests\\universe_flight_blue_shell.test.js",
+      "sha256": "a8031ddbdbbad66f528cd258e5fa94afd99a2ffa8be96c54bedbb83d791239a1"
+    },
+    {
+      "file": "tests\\universe_flight_bulges.test.js",
+      "sha256": "9b61f7a35348356446df39920849af057cd5d36cab571d21cb30f3b51bb13a32"
+    },
+    {
+      "file": "tests\\universe_flight_cinematic.test.js",
+      "sha256": "457cf0f20ff471abe47f2d167a9a05d410958c8a4a17381708617d414f84189e"
+    },
+    {
+      "file": "tests\\universe_flight_cloud_surfaces.test.js",
+      "sha256": "68ecc0c20f0fe6096e6dca3f63a4be9923dddf6c0b0629dc8414ba9b1bcd7b59"
+    },
+    {
+      "file": "tests\\universe_flight_detail_lens.test.js",
+      "sha256": "f93e1e419d1a73b0e5e549e31a4b9eef7c72280c21908d055ae59f49f32c7881"
+    },
+    {
+      "file": "tests\\universe_flight_discovery.test.js",
+      "sha256": "87a780c8691a09d547ddce748c3790531db0f2d62a7f66f30b73d15d19197385"
+    },
+    {
+      "file": "tests\\universe_flight_distance.test.js",
+      "sha256": "53bfd6a21cadedcbb9b24116c6755f24d43270695a07fbfb03448e687dc3ae59"
+    },
+    {
+      "file": "tests\\universe_flight_elliptical_projection.test.js",
+      "sha256": "47a5a5e603ab843964a5bf7fa33f7a99f62ca87678e6c7fd43bb1e431747a6e3"
+    },
+    {
+      "file": "tests\\universe_flight_galactic_band.test.js",
+      "sha256": "73ecd89777e7f8c4aa17e1339d7d188e70271d55422c81bd0a434ffd14cfcc4e"
+    },
+    {
+      "file": "tests\\universe_flight_inspector.test.js",
+      "sha256": "afd11ae03a9a485dce15343851eb7190e10383a8f903dad9809ef1524ff27125"
+    },
+    {
+      "file": "tests\\universe_flight_navigation.test.js",
+      "sha256": "8eecef1702ceb0802e81acdb4416383c2f9e74e95c81583d801ee8f735a0ca2e"
+    },
+    {
+      "file": "tests\\universe_flight_perspective.test.js",
+      "sha256": "e7ba6785b2a87b2862409b425505a62a3dae8df967824df43977e5f30a849c36"
+    },
+    {
+      "file": "tests\\universe_flight_physics.test.js",
+      "sha256": "c181ce38faaa0a0f66b1f202222149fcc7aef2e08019ce4c05d8281107dbccaf"
+    },
+    {
+      "file": "tests\\universe_flight_preview_urls.test.js",
+      "sha256": "34a4ad55d40bca7618f85ac3b9f8aed20b89d1b41b51c58c46f00dd35e29f3b0"
+    },
+    {
+      "file": "tests\\universe_flight_spiral_detail.test.js",
+      "sha256": "7c4a18dcd248e45342c7795e1f1fad632166dec2ff42c88dd2f2c1cd6d5d8913"
+    },
+    {
+      "file": "tests\\universe_flight_stellar_structure.test.js",
+      "sha256": "37904baf7fc0690b8dea3b41526adea66d49bc01535171a290a1e81563d7a25d"
+    },
+    {
+      "file": "tests\\universe_flight_stellar_surfaces.test.js",
+      "sha256": "93a10e16b57e6dee9a48e9ad5b6e395bf981b996f9a1eab2c65b1cc09423b654"
+    },
+    {
+      "file": "tests\\universe_flight_texture_filtering.test.js",
+      "sha256": "b30d866b3ed12150dac69e9669de3ac4d588f9a30eb235e42978f52182594293"
+    },
+    {
+      "file": "tests\\universe_flight_tilted_orbit.test.js",
+      "sha256": "367223d105d01d65f85f53c49c29f80afb303052306615cb6b32b6eb318649e0"
+    },
+    {
+      "file": "tests\\universe_flight_two_arm_detail.test.js",
+      "sha256": "585920a902a6f540f6f71f45690e9847639d6e06253609125d144911a49174ac"
+    },
+    {
+      "file": "tests\\universe_flight_viewpoint_glide.test.js",
+      "sha256": "787b0ad058a723a28ac12e03bf85ea12191c157e89cb52c5a49654527fb9f094"
+    },
+    {
+      "file": "tests\\universe_flight_violet_ridges.test.js",
+      "sha256": "a78b74880bf46d11a769b70781530b08ff5a024ad4bdcf34dea8ee0a007568eb"
+    },
+    {
+      "file": "tests\\universe_form_controls_a11y.test.js",
+      "sha256": "3450734d59a2edcff20d2a265a41f2717ec1eb1afbd9ebc102346f252d0e9f94"
+    },
+    {
+      "file": "tests\\universe_guided_navigation.test.js",
+      "sha256": "8f43e69940b3924566a6e15effd8e6b9952fdd45dc375a4d94566c42ce2e04f5"
+    },
+    {
+      "file": "tests\\universe_playback_a11y.test.js",
+      "sha256": "b6641e90536441bffbaa14d3c9609709694a4a25f272498977603587bb4a3d39"
+    },
+    {
+      "file": "tests\\universe_tutorial_dialog_a11y.test.js",
+      "sha256": "688e37b3340e439c40c00f25305ebef316e262549d7db7e616f4685c1e02d656"
+    },
+    {
+      "file": "tests\\universe_web_geometry.test.js",
+      "sha256": "4e97295bad9118f156b5dace695d3717cfe0d626bfe74726c3f482c28839407d"
+    }
+  ],
+  "preservedEvidence": [
+    {
+      "file": "diagnostic-attempts.json",
+      "sha256": "9cabdf5875d33c2738b1a34abf73607cc5aaf7166e9b968cfc4de5ef31e1d86f"
+    },
+    {
+      "file": "unit-suite-abandoned-attempt.json",
+      "sha256": "1ab89910b9560aa007ee5b38acc1154287778f6abd8372c2c9e5446aaa856024"
+    }
+  ],
+  "progress": [
+    {
+      "observedAt": "2026-10-06T23:23:39.142Z",
+      "event": "launched",
+      "runStarted": true,
+      "runCompleted": false
+    },
+    {
+      "observedAt": "2026-10-07T00:18:16.929Z",
+      "event": "final",
+      "runStarted": true,
+      "runCompleted": false
+    },
+    {
+      "observedAt": "2026-10-07T00:22:06.806Z",
+      "event": "final",
+      "runStarted": true,
+      "runCompleted": false
+    }
+  ],
+  "execution": {
+    "sessionId": 13427,
+    "startedAt": "2026-10-06T23:22:41.239Z",
+    "args": [
+      "node_modules/vitest/vitest.mjs",
+      "--run",
+      "tests\\universe_accessibility.test.js",
+      "tests\\universe_content_invariants.test.js",
+      "tests\\universe_evidence_svg_a11y.test.js",
+      "tests\\universe_flight_barred_detail.test.js",
+      "tests\\universe_flight_blue_shell.test.js",
+      "tests\\universe_flight_bulges.test.js",
+      "tests\\universe_flight_cinematic.test.js",
+      "tests\\universe_flight_cloud_surfaces.test.js",
+      "tests\\universe_flight_detail_lens.test.js",
+      "tests\\universe_flight_discovery.test.js",
+      "tests\\universe_flight_distance.test.js",
+      "tests\\universe_flight_elliptical_projection.test.js",
+      "tests\\universe_flight_galactic_band.test.js",
+      "tests\\universe_flight_inspector.test.js",
+      "tests\\universe_flight_navigation.test.js",
+      "tests\\universe_flight_perspective.test.js",
+      "tests\\universe_flight_physics.test.js",
+      "tests\\universe_flight_preview_urls.test.js",
+      "tests\\universe_flight_spiral_detail.test.js",
+      "tests\\universe_flight_stellar_structure.test.js",
+      "tests\\universe_flight_stellar_surfaces.test.js",
+      "tests\\universe_flight_texture_filtering.test.js",
+      "tests\\universe_flight_tilted_orbit.test.js",
+      "tests\\universe_flight_two_arm_detail.test.js",
+      "tests\\universe_flight_viewpoint_glide.test.js",
+      "tests\\universe_flight_violet_ridges.test.js",
+      "tests\\universe_form_controls_a11y.test.js",
+      "tests\\universe_guided_navigation.test.js",
+      "tests\\universe_playback_a11y.test.js",
+      "tests\\universe_tutorial_dialog_a11y.test.js",
+      "tests\\universe_web_geometry.test.js",
+      "--pool=forks",
+      "--maxWorkers=1",
+      "--no-file-parallelism",
+      "--isolate",
+      "--testTimeout",
+      "60000",
+      "--hookTimeout",
+      "60000",
+      "--reporter=default",
+      "--reporter=json",
+      "--outputFile",
+      "reports/universe-flight-2026-09-29/prominence-edges/unit-tests.json"
+    ],
+    "vitestVersion": "4.1.5",
+    "environmentOverrides": {
+      "TEMP": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-3/universe-detail-lens/temp",
+      "TMP": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-3/universe-detail-lens/temp"
+    }
+  },
+  "finishedAt": "2026-10-07T00:22:06.842Z",
+  "run": {
+    "started": true,
+    "completed": false,
+    "startedAt": "2026-10-06T23:22:41.239Z",
+    "vitestVersion": "4.1.5",
+    "pins": {
+      "stem_lab/universe_flight_scene.js": "c0cc2486b3d5edd620e5975daec3d23b8f2e995a24db151be27ac30820d058c7",
+      "stem_lab/stem_tool_universe.js": "166dd6c8a059c03fd21e79c646c14bd104ea0be93d8cc43105231fd6f5576742"
+    },
+    "files": [
+      "tests\\universe_accessibility.test.js",
+      "tests\\universe_content_invariants.test.js",
+      "tests\\universe_evidence_svg_a11y.test.js",
+      "tests\\universe_flight_barred_detail.test.js",
+      "tests\\universe_flight_blue_shell.test.js",
+      "tests\\universe_flight_bulges.test.js",
+      "tests\\universe_flight_cinematic.test.js",
+      "tests\\universe_flight_cloud_surfaces.test.js",
+      "tests\\universe_flight_detail_lens.test.js",
+      "tests\\universe_flight_discovery.test.js",
+      "tests\\universe_flight_distance.test.js",
+      "tests\\universe_flight_elliptical_projection.test.js",
+      "tests\\universe_flight_galactic_band.test.js",
+      "tests\\universe_flight_inspector.test.js",
+      "tests\\universe_flight_navigation.test.js",
+      "tests\\universe_flight_perspective.test.js",
+      "tests\\universe_flight_physics.test.js",
+      "tests\\universe_flight_preview_urls.test.js",
+      "tests\\universe_flight_spiral_detail.test.js",
+      "tests\\universe_flight_stellar_structure.test.js",
+      "tests\\universe_flight_stellar_surfaces.test.js",
+      "tests\\universe_flight_texture_filtering.test.js",
+      "tests\\universe_flight_tilted_orbit.test.js",
+      "tests\\universe_flight_two_arm_detail.test.js",
+      "tests\\universe_flight_viewpoint_glide.test.js",
+      "tests\\universe_flight_violet_ridges.test.js",
+      "tests\\universe_form_controls_a11y.test.js",
+      "tests\\universe_guided_navigation.test.js",
+      "tests\\universe_playback_a11y.test.js",
+      "tests\\universe_tutorial_dialog_a11y.test.js",
+      "tests\\universe_web_geometry.test.js"
+    ],
+    "args": [
+      "node_modules/vitest/vitest.mjs",
+      "--run",
+      "tests\\universe_accessibility.test.js",
+      "tests\\universe_content_invariants.test.js",
+      "tests\\universe_evidence_svg_a11y.test.js",
+      "tests\\universe_flight_barred_detail.test.js",
+      "tests\\universe_flight_blue_shell.test.js",
+      "tests\\universe_flight_bulges.test.js",
+      "tests\\universe_flight_cinematic.test.js",
+      "tests\\universe_flight_cloud_surfaces.test.js",
+      "tests\\universe_flight_detail_lens.test.js",
+      "tests\\universe_flight_discovery.test.js",
+      "tests\\universe_flight_distance.test.js",
+      "tests\\universe_flight_elliptical_projection.test.js",
+      "tests\\universe_flight_galactic_band.test.js",
+      "tests\\universe_flight_inspector.test.js",
+      "tests\\universe_flight_navigation.test.js",
+      "tests\\universe_flight_perspective.test.js",
+      "tests\\universe_flight_physics.test.js",
+      "tests\\universe_flight_preview_urls.test.js",
+      "tests\\universe_flight_spiral_detail.test.js",
+      "tests\\universe_flight_stellar_structure.test.js",
+      "tests\\universe_flight_stellar_surfaces.test.js",
+      "tests\\universe_flight_texture_filtering.test.js",
+      "tests\\universe_flight_tilted_orbit.test.js",
+      "tests\\universe_flight_two_arm_detail.test.js",
+      "tests\\universe_flight_viewpoint_glide.test.js",
+      "tests\\universe_flight_violet_ridges.test.js",
+      "tests\\universe_form_controls_a11y.test.js",
+      "tests\\universe_guided_navigation.test.js",
+      "tests\\universe_playback_a11y.test.js",
+      "tests\\universe_tutorial_dialog_a11y.test.js",
+      "tests\\universe_web_geometry.test.js",
+      "--pool=forks",
+      "--maxWorkers=1",
+      "--no-file-parallelism",
+      "--isolate",
+      "--testTimeout",
+      "60000",
+      "--hookTimeout",
+      "60000",
+      "--reporter=default",
+      "--reporter=json",
+      "--outputFile",
+      "reports/universe-flight-2026-09-29/prominence-edges/unit-tests.json"
+    ],
+    "temp": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-3/universe-detail-lens/temp",
+    "exitCode": 1,
+    "finishedAt": "2026-10-07T00:00:17.583Z"
+  },
+  "inputHashesUnchanged": true,
+  "runtimePinsUnchanged": true,
+  "preservedEvidenceUnchanged": true,
+  "result": {
+    "success": true,
+    "cases": 61,
+    "failures": 0,
+    "files": 6,
+    "reportSha256": "3d8d2db72b86e27a9dd474eb19e858aee54f003d0cd4f8eb9b5d1196ceb2631a",
+    "counters": {
+      "numTotalTestSuites": 15,
+      "numPassedTestSuites": 15,
+      "numFailedTestSuites": 0,
+      "numPendingTestSuites": 0,
+      "numTotalTests": 61,
+      "numPassedTests": 61,
+      "numFailedTests": 0,
+      "numPendingTests": 0,
+      "numTodoTests": 0
+    },
+    "reportedFileNames": [
+      "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_accessibility.test.js",
+      "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_content_invariants.test.js",
+      "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_detail_lens.test.js",
+      "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_discovery.test.js",
+      "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_preview_urls.test.js",
+      "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_guided_navigation.test.js"
+    ]
+  }
+}

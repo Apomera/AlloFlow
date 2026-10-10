@@ -1,0 +1,586 @@
+{
+  "name": "success-phone-overhead",
+  "outcome": {
+    "generation": 22,
+    "width": 310,
+    "height": 420,
+    "rows": [
+      {
+        "text": "Altitude",
+        "x": 20,
+        "y": 26,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 19,
+          "right": 64.23046875,
+          "top": 17,
+          "bottom": 26
+        }
+      },
+      {
+        "text": "0.0 m",
+        "x": 20,
+        "y": 52,
+        "font": "bold 24px system-ui, sans-serif",
+        "size": 24,
+        "cssSize": 24,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 20,
+          "right": 81.734375,
+          "top": 35,
+          "bottom": 52
+        }
+      },
+      {
+        "text": "Hover reserve",
+        "x": 163,
+        "y": 26,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 163,
+          "right": 239.275390625,
+          "top": 17,
+          "bottom": 26
+        }
+      },
+      {
+        "text": "30 s",
+        "x": 163,
+        "y": 52,
+        "font": "bold 22px system-ui, sans-serif",
+        "size": 22,
+        "cssSize": 22,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 163,
+          "right": 204.3779296875,
+          "top": 36,
+          "bottom": 52
+        }
+      },
+      {
+        "text": "Vertical",
+        "x": 20,
+        "y": 79,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 19,
+          "right": 60.470703125,
+          "top": 70,
+          "bottom": 79
+        }
+      },
+      {
+        "text": "Drift",
+        "x": 163,
+        "y": 79,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 163,
+          "right": 188.54296875,
+          "top": 70,
+          "bottom": 79
+        }
+      },
+      {
+        "text": "1.2 m/s",
+        "x": 20,
+        "y": 102,
+        "font": "bold 20px system-ui, sans-serif",
+        "size": 20,
+        "cssSize": 20,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 21,
+          "right": 90.1328125,
+          "top": 88,
+          "bottom": 104
+        }
+      },
+      {
+        "text": "0.8 m/s",
+        "x": 163,
+        "y": 102,
+        "font": "bold 20px system-ui, sans-serif",
+        "size": 20,
+        "cssSize": 20,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 163,
+          "right": 233.1328125,
+          "top": 88,
+          "bottom": 104
+        }
+      },
+      {
+        "text": "Down · land <3",
+        "x": 20,
+        "y": 121,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 20,
+          "right": 103.60546875,
+          "top": 112,
+          "bottom": 121
+        }
+      },
+      {
+        "text": "Left · land <5",
+        "x": 163,
+        "y": 121,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 163,
+          "right": 235.689453125,
+          "top": 112,
+          "bottom": 121
+        }
+      },
+      {
+        "text": "Engine 0%",
+        "x": 20,
+        "y": 146,
+        "font": "600 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 20,
+          "right": 76.916015625,
+          "top": 137,
+          "bottom": 149
+        }
+      },
+      {
+        "text": "🌕 \"The Eagle has landed!\"",
+        "x": 155,
+        "y": 186,
+        "font": "bold 16px system-ui",
+        "size": 16,
+        "cssSize": 16,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 54.4375,
+          "right": 256.671875,
+          "top": 172,
+          "bottom": 190
+        }
+      },
+      {
+        "text": "Touchdown at 1.2 m/s, drift 0.8 m/s",
+        "x": 155,
+        "y": 206,
+        "font": "12px system-ui",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 60.7099609375,
+          "right": 248.1982421875,
+          "top": 197,
+          "bottom": 208
+        }
+      },
+      {
+        "text": "30 s of fuel left",
+        "x": 155,
+        "y": 222,
+        "font": "12px system-ui",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 115.6513671875,
+          "right": 195.2822265625,
+          "top": 213,
+          "bottom": 222
+        }
+      },
+      {
+        "text": "Landing score 69/100 (grade C)",
+        "x": 155,
+        "y": 240,
+        "font": "bold 14px system-ui",
+        "size": 14,
+        "cssSize": 14,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 51.76025390625,
+          "right": 258.07177734375,
+          "top": 230,
+          "bottom": 243
+        }
+      },
+      {
+        "text": "Begin EVA below to walk on the Moon.",
+        "x": 155,
+        "y": 256,
+        "font": "12px system-ui",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 52.3203125,
+          "right": 258.078125,
+          "top": 247,
+          "bottom": 259
+        }
+      }
+    ],
+    "layout": "compact",
+    "reviewTime": "",
+    "renderer": "on",
+    "horizontalOverflow": false,
+    "outcomeRows": [
+      {
+        "text": "🌕 \"The Eagle has landed!\"",
+        "x": 155,
+        "y": 186,
+        "font": "bold 16px system-ui",
+        "size": 16,
+        "cssSize": 16,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 54.4375,
+          "right": 256.671875,
+          "top": 172,
+          "bottom": 190
+        }
+      },
+      {
+        "text": "Touchdown at 1.2 m/s, drift 0.8 m/s",
+        "x": 155,
+        "y": 206,
+        "font": "12px system-ui",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 60.7099609375,
+          "right": 248.1982421875,
+          "top": 197,
+          "bottom": 208
+        }
+      },
+      {
+        "text": "30 s of fuel left",
+        "x": 155,
+        "y": 222,
+        "font": "12px system-ui",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 115.6513671875,
+          "right": 195.2822265625,
+          "top": 213,
+          "bottom": 222
+        }
+      },
+      {
+        "text": "Landing score 69/100 (grade C)",
+        "x": 155,
+        "y": 240,
+        "font": "bold 14px system-ui",
+        "size": 14,
+        "cssSize": 14,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 51.76025390625,
+          "right": 258.07177734375,
+          "top": 230,
+          "bottom": 243
+        }
+      },
+      {
+        "text": "Begin EVA below to walk on the Moon.",
+        "x": 155,
+        "y": 256,
+        "font": "12px system-ui",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 52.3203125,
+          "right": 258.078125,
+          "top": 247,
+          "bottom": 259
+        }
+      }
+    ],
+    "mainRows": [
+      {
+        "text": "🌕 \"The Eagle has landed!\"",
+        "x": 155,
+        "y": 186,
+        "font": "bold 16px system-ui",
+        "size": 16,
+        "cssSize": 16,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 54.4375,
+          "right": 256.671875,
+          "top": 172,
+          "bottom": 190
+        }
+      },
+      {
+        "text": "Touchdown at 1.2 m/s, drift 0.8 m/s",
+        "x": 155,
+        "y": 206,
+        "font": "12px system-ui",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 60.7099609375,
+          "right": 248.1982421875,
+          "top": 197,
+          "bottom": 208
+        }
+      },
+      {
+        "text": "30 s of fuel left",
+        "x": 155,
+        "y": 222,
+        "font": "12px system-ui",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 115.6513671875,
+          "right": 195.2822265625,
+          "top": 213,
+          "bottom": 222
+        }
+      },
+      {
+        "text": "Landing score 69/100 (grade C)",
+        "x": 155,
+        "y": 240,
+        "font": "bold 14px system-ui",
+        "size": 14,
+        "cssSize": 14,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 51.76025390625,
+          "right": 258.07177734375,
+          "top": 230,
+          "bottom": 243
+        }
+      },
+      {
+        "text": "Begin EVA below to walk on the Moon.",
+        "x": 155,
+        "y": 256,
+        "font": "12px system-ui",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 52.3203125,
+          "right": 258.078125,
+          "top": 247,
+          "bottom": 259
+        }
+      }
+    ],
+    "detailRows": [],
+    "joined": "🌕 \"The Eagle has landed!\" Touchdown at 1.2 m/s, drift 0.8 m/s 30 s of fuel left Landing score 69/100 (grade C) Begin EVA below to walk on the Moon.",
+    "bottom": 259,
+    "collisions": []
+  },
+  "native": {
+    "draws": 334,
+    "renders": 38,
+    "width": 310,
+    "height": 420,
+    "lost": false
+  },
+  "framing": {
+    "width": 310,
+    "height": 420,
+    "mode": "overhead",
+    "zoom": 1,
+    "viewEnabled": true,
+    "lander": {
+      "left": 114.50001662949946,
+      "right": 200.6829769404756,
+      "top": 302.0905321563894,
+      "bottom": 386.09581379588553,
+      "near": 0.9946766723686608,
+      "far": 0.9954698612175197,
+      "vertices": 2925,
+      "objects": 67
+    },
+    "nadir": {
+      "left": 105.77883695020518,
+      "right": 202.5396349257894,
+      "top": 302.9612709323173,
+      "bottom": 391.96754919318033,
+      "near": 0.9950777733949321,
+      "far": 0.9955750837490615,
+      "vertices": 64,
+      "objects": 1
+    }
+  },
+  "held": {
+    "alt": 0,
+    "vVel": -1.2,
+    "hVel": -0.8,
+    "fuel": 29.7,
+    "thrust": 0,
+    "tilt": -0.1,
+    "x": -80.4,
+    "elapsed": 72.5,
+    "contact": true
+  },
+  "saved": {
+    "missionXP": 42,
+    "landingResult": {
+      "crashed": false,
+      "score": 69,
+      "grade": "C",
+      "vVel": 1.2,
+      "hVel": 0.8,
+      "fuel": 30,
+      "fuelUnit": "s",
+      "recording": {
+        "version": 1,
+        "samples": [
+          {
+            "t": 0,
+            "alt": 300,
+            "v": -12,
+            "h": 4,
+            "fuel": 100,
+            "throttle": 0,
+            "tilt": 0,
+            "x": 0
+          },
+          {
+            "t": 72.5,
+            "alt": 0,
+            "v": -1.2,
+            "h": -0.8,
+            "fuel": 29.7,
+            "throttle": 0.5,
+            "tilt": -0.1,
+            "x": -80.4
+          }
+        ]
+      }
+    },
+    "landingAttempts": [
+      {
+        "crashed": false,
+        "score": 69,
+        "grade": "C",
+        "vVel": 1.2,
+        "hVel": 0.8,
+        "fuel": 30,
+        "fuelUnit": "s",
+        "recording": {
+          "version": 1,
+          "samples": [
+            {
+              "t": 0,
+              "alt": 300,
+              "v": -12,
+              "h": 4,
+              "fuel": 100,
+              "throttle": 0,
+              "tilt": 0,
+              "x": 0
+            },
+            {
+              "t": 72.5,
+              "alt": 0,
+              "v": -1.2,
+              "h": -0.8,
+              "fuel": 29.7,
+              "throttle": 0.5,
+              "tilt": -0.1,
+              "x": -80.4
+            }
+          ]
+        }
+      }
+    ],
+    "landingRewarded": false
+  },
+  "errors": [],
+  "shaderErrors": [],
+  "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass32-2026-10-09\\direct-outcome3d-2\\native\\success-phone-overhead.png"
+}

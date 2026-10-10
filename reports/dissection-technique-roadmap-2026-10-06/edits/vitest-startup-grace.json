@@ -1,0 +1,14 @@
+{
+  "installedPath": "node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js",
+  "installedSha256": "d991d80584acd5fc622aefce5f907feff6c531059165a05d75c66e3ed8697d79",
+  "startupHandshakeMs": [
+    60000,
+    180000
+  ],
+  "poolStartupMs": [
+    90000,
+    210000
+  ],
+  "inMemoryOnly": true,
+  "perTestDeadlinesUnchanged": true
+}

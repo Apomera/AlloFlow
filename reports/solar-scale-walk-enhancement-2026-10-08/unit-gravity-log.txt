@@ -1,0 +1,31 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/solar_system_gravity_inspection_chart.test.js
+[deferred-jsdom] Initializing the official DOM environment.
+
+stdout | tests/solar_system_gravity_inspection_chart.test.js
+[deferred-jsdom] DOM environment ready.
+
+stdout | tests/solar_system_gravity_inspection_chart.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/solar_system_gravity_inspection_chart.test.js
+[deferred-jsdom] Existing repository setup loaded.
+
+ ✓ tests/solar_system_gravity_inspection_chart.test.js > Solar System gravity inspection chart and repeatable experiments > keeps results hidden and explicitly positions both objects at release before running 39105ms
+ ✓ tests/solar_system_gravity_inspection_chart.test.js > Solar System gravity inspection chart and repeatable experiments > links the Mars inspector to quadratic common-scale curves and the elapsed-time cursor 12642ms
+ ✓ tests/solar_system_gravity_inspection_chart.test.js > Solar System gravity inspection chart and repeatable experiments > includes the exact Jupiter arrival and keeps the faster curve capped at the endpoint 12399ms
+ ✓ tests/solar_system_gravity_inspection_chart.test.js > Solar System gravity inspection chart and repeatable experiments > rejects malformed restored predictions without revealing or repairing persisted evidence 11341ms
+ ✓ tests/solar_system_gravity_inspection_chart.test.js > Solar System gravity inspection chart and repeatable experiments > reopens saving after replay without changing the previously saved inspected observation 3931ms
+ ✓ tests/solar_system_gravity_inspection_chart.test.js > Solar System gravity inspection chart and repeatable experiments > resets only the prediction and current run while retaining settings, journal and other learning 1658ms
+ ✓ tests/solar_system_gravity_inspection_chart.test.js > Solar System gravity inspection chart and repeatable experiments > changes weight force without changing either fall curve or inspected position when mass changes 5876ms
+ ✓ tests/solar_system_gravity_inspection_chart.test.js > Solar System gravity inspection chart and repeatable experiments > hides stale charts on a height change and computes fresh evidence after running again 4732ms
+ ✓ tests/solar_system_gravity_inspection_chart.test.js > Solar System gravity inspection chart and repeatable experiments > does not attach a cursor or frozen position to an inspection from another run 6475ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  16:21:51
+   Duration  174.46s (transform 6.65s, setup 62.88s, import 6.28s, tests 98.50s, environment 0ms)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/solar-scale-walk-enhancement-2026-10-08/unit-gravity-results.json

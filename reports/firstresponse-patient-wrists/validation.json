@@ -1,0 +1,120 @@
+{
+  "sourceSHA256": "877389b664177956a4801ab12952a247bc3a2c462961f92b648613dc83f08a5d",
+  "sourceBytes": 746208,
+  "mirrored": true,
+  "preservation": {
+    "beforeSHA256": "325df745631dcfaea740d28767e3194f85f622f273c153b58bcacfdb619a2a02",
+    "afterSHA256": "877389b664177956a4801ab12952a247bc3a2c462961f92b648613dc83f08a5d",
+    "beforeBytes": 742702,
+    "afterBytes": 746208,
+    "outsideScopeExact": true,
+    "targets": [
+      "stem_lab/stem_tool_firstresponse.js",
+      "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js"
+    ]
+  },
+  "unit": {
+    "files": 11,
+    "passed": 335,
+    "tests": [
+      "tests/firstresponse_patient_wrists.test.js",
+      "tests/firstresponse_patient_sleeves.test.js",
+      "tests/firstresponse_finger_folds.test.js",
+      "tests/firstresponse_hand_surface.test.js",
+      "tests/firstresponse_palm_detail.test.js",
+      "tests/firstresponse_body_3d.test.js",
+      "tests/firstresponse_rescuer_arm_contours.test.js",
+      "tests/firstresponse_hand_alignment.test.js",
+      "tests/firstresponse_contact_reference.test.js",
+      "tests/firstresponse_contact_exploration.test.js",
+      "tests/firstresponse_surface_clarity.test.js"
+    ]
+  },
+  "native": {
+    "passed": 3,
+    "optionalBaselineSkipped": 1,
+    "savedBaselineCapturePassed": 1,
+    "retries": 0,
+    "workers": 1,
+    "scopedAxeScans": 4,
+    "scopedAxeViolations": 0,
+    "recordedViews": 29,
+    "wrists": 58,
+    "coverage": {
+      "cap": {
+        "samples": 4176,
+        "minimumClearance": 0.00133942969801552,
+        "fallbackAttempts": 0,
+        "fallbacks": 0,
+        "fallbackMinimumClearance": null
+      },
+      "root": {
+        "samples": 2784,
+        "minimumClearance": 0.0009262115515053104,
+        "fallbackAttempts": 0,
+        "fallbacks": 0,
+        "fallbackMinimumClearance": null
+      },
+      "palmEnd": {
+        "samples": 2784,
+        "minimumClearance": 0.015267298352070165,
+        "fallbackAttempts": 0,
+        "fallbacks": 0,
+        "fallbackMinimumClearance": null
+      }
+    }
+  },
+  "numerical": {
+    "poseAgeConfigurations": 27,
+    "wrists": 54,
+    "faces": 124416,
+    "minimumFaceAverageNormalDot": 0.9566765514066811,
+    "capSamples": 7776,
+    "buriedEndSamples": 5184,
+    "capCoverage": "pass; 0.00002 model-unit tolerance",
+    "baselineProbeConfigurations": 30,
+    "earlierProbeCandidateSHA256": "a64b1ca44466a5d6cba5462bddf38fedfcc7ddf21c4e60cceffa68bd84e00250",
+    "baselineMaximumGap": 0.011270090913759169,
+    "baselineUncoveredRange": [
+      29,
+      48
+    ]
+  },
+  "foldedControl": {
+    "configurations": 54,
+    "maximumUpperYInset": 0.027999589998893737,
+    "allLateralLongitudinalAndUndersideCoordinatesExact": true
+  },
+  "preservationFrames": {
+    "patientArmsExceptTwoWristGeometryBuffers": 27,
+    "rescuerGeometryAndFrames": 27
+  },
+  "screenshots": [
+    "adult-pose-2-palm.png",
+    "adult-pose-5-arms.png",
+    "adult-pose-5-cheek.png",
+    "child-pose-2-palm.png",
+    "child-pose-5-cheek.png",
+    "phone-infant-contrast-cheek.png",
+    "phone-infant-contrast-palm.png",
+    "phone-infant-pose-2-palm.png",
+    "phone-infant-pose-5-cheek.png"
+  ],
+  "limitations": [
+    "Clearance values use normalized scene coordinates.",
+    "The oblique-ray radialExcessEstimate in the numerical diagnostic is not a global surface-growth bound.",
+    "In app contrast mode, white hand and head surfaces still merge around fine cheek-contact details."
+  ],
+  "initialDiagnostics": [
+    "Initial loft amplified the unit-sphere upper wrist fold; corrected by patient-only height limit.",
+    "Initial native child pose 8 had one missing palm ray on a triangulation seam; only zero-hit rays now require two opposite microscopic offsets and use the worse projected clearance. Thresholds and sample sets are unchanged.",
+    "The first native run did not record a completed phone workflow; its log, metrics and artifacts remain preserved.",
+    "The initial 335-case regression passed 332 cases and found an inner-bend loft pinch in three adult poses. The geometry was corrected while keeping the strict triangle-normal assertion."
+  ],
+  "actions": {
+    "staged": false,
+    "committed": false,
+    "pushed": false,
+    "deployed": false
+  }
+}

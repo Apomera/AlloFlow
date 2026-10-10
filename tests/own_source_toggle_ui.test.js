@@ -13,15 +13,13 @@ const ROOT = path.resolve(__dirname, '..');
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 
 describe('the toggle is offered where source material is generated', () => {
-  it('renders in the source generation panel, next to web search', () => {
+  it('combines source selection and web discovery in research settings', () => {
     const panel = read('view_misc_panels_source.jsx');
-    // Same card as the web-search toggle: this is the same kind of choice.
-    const verifyAt = panel.indexOf("t('input.verify_facts')");
-    const ownAt = panel.indexOf("t('input.use_my_sources')");
-    expect(verifyAt).toBeGreaterThan(-1);
-    expect(ownAt).toBeGreaterThan(verifyAt);
-    expect(panel).toMatch(/id="useOwnSources"/);
-    expect(panel).toMatch(/checked=\{!!useOwnSources\}/);
+    expect(panel).toContain("sourceText('input.research_settings', 'Research settings')");
+    expect(panel).toContain('name="source-research-mode"');
+    expect(panel).toContain("['sources', sourceText('input.research_sources', 'My sources')]");
+    expect(panel).toContain("['combined', sourceText('input.research_combined', 'Web and my sources')]");
+    expect(panel).toContain("setUseOwnSources(config.enabled && config.mode !== 'web')");
   });
 
   it('renders in the Quick Start wizard too', () => {

@@ -1,0 +1,35 @@
+{
+  "passed": true,
+  "browserLaunched": false,
+  "fixtureSHA256": "31752b029ccdb82c4b8a7707f7acdcb117aeb9c533cf7c0f340c55cbe3ce561c",
+  "candidateSHA256": "8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940",
+  "baselineInfinityValidated": true,
+  "exactTriangleReduction": 144,
+  "negative": [
+    {
+      "name": "wrist normals changed",
+      "rejected": true
+    },
+    {
+      "name": "arm vertex buffer changed",
+      "rejected": true
+    },
+    {
+      "name": "arm normal buffer changed",
+      "rejected": true
+    },
+    {
+      "name": "actual rendered triangle reduction missing",
+      "rejected": true
+    },
+    {
+      "name": "arm range excludes extra side triangle",
+      "rejected": true
+    },
+    {
+      "name": "camera changed",
+      "rejected": true
+    }
+  ],
+  "restoredMatcherPassed": true
+}

@@ -1,0 +1,19 @@
+{
+  "file": "tests/e2e/dissection-study-chooser.spec.ts",
+  "oldSha256": "7673d8d528e6670dcb4416832fa6a499e6bc32f25eb8859645b82c93aabef5c2",
+  "newSha256": "0e0b95cede56526da322fb578d98315c4b59239f32ecd1c923479671f7ed4b90",
+  "edits": [
+    {
+      "before": "  // Exact native incision state, seeded without inventing a countdown or replacing a handler.\n  await mount(page, { _incisionAnim: { active: true, startTick: Date.now(), layerName: 'skin' } }, 390, 390); const transitionBefore = await proof(page);",
+      "after": "  // Mount first: the harness waits long enough for a seeded native incision to\n  // finish. Pause time before activating the exact native state so the product's\n  // own 500 ms animation cannot settle before the keyboard guard is exercised.\n  await mount(page, {}, 390, 390);\n  const transitionEpoch = new Date('2026-10-05T15:00:00.000Z'); await page.clock.install({ time: transitionEpoch }); await page.clock.pauseAt(new Date(transitionEpoch.getTime() + 1000));\n  await page.evaluate(() => (window as any).__ctx.update('dissection', '_incisionAnim', { active: true, startTick: Date.now(), layerName: 'skin' }));\n  const transitionBefore = await proof(page);"
+    }
+  ],
+  "syntaxCheck": {
+    "tool": "esbuild.transformSync",
+    "loader": "ts",
+    "format": "cjs",
+    "passed": true
+  },
+  "suitesRun": false,
+  "repositoryEdits": false
+}

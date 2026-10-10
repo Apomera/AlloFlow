@@ -1,0 +1,24 @@
+{
+  "completed": false,
+  "pins": {
+    "stem_lab/universe_flight_scene.js": "255f57893385f5e0ae1a932d00f3ba8e7e98cacc8851bc6ce8985003bd025a75",
+    "stem_lab/stem_tool_universe.js": "a679c684270d23bb8558017543b8f283b57ef0db675b6dbe9590895ceb7c7b12"
+  },
+  "harnessSha256": "6045d7fe62c67f051b048d0224b98bae6063dc1626c58ebec69762e391bf4359",
+  "workflows": [],
+  "accessibility": [],
+  "captures": [],
+  "poses": [],
+  "imageLoads": [],
+  "hudBounds": [],
+  "served": [
+    {
+      "file": "stem_lab/stem_tool_universe.js",
+      "hash": "a679c684270d23bb8558017543b8f283b57ef0db675b6dbe9590895ceb7c7b12"
+    }
+  ],
+  "loaderRetries": [],
+  "sourceReadErrors": [],
+  "errors": [],
+  "failure": "TimeoutError: page.goto: Timeout 60000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3187/reports/universe-flight-2026-09-29/preview.html?enhanced=59#universe-flight\", waiting until \"load\"\u001b[22m\n"
+}

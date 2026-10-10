@@ -1,16 +1,19 @@
+import { restoreCLSquidFinReference } from './helpers/cephalopod_squid_fin_reference.js';
 import { afterEach, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 
 const require=createRequire(import.meta.url),THREE=require('../vendor/three-r128/three.min.js');
-const source=readFileSync('stem_lab/stem_tool_cephalopodlab.js','utf8').replace(/\r\n/g,'\n');
+const source=readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE||'stem_lab/stem_tool_cephalopodlab.js','utf8').replace(/\r\n/g,'\n');
 const begin=source.indexOf('function createCLHuntAnimal('),end=source.indexOf('// Compact, individually owned prey rig.',begin);
 if(begin<0||end<=begin)throw Error('Cannot find production animal factory');
 const rigSource=source.slice(begin,end),build=new Function('T','species','Math',rigSource+';return createCLHuntAnimal(T,species);');
-const {restorePass42AnimalSource}=require('./helpers/cephalopod_pass42_reference.cjs');
+const {restorePass42AnimalSource:restorePass42AnimalOnly}=require('./helpers/cephalopod_pass42_reference.cjs');
 // The historical twelve-rig hash uses the exact approved siphon inverse; live skin assertions use current geometry.
-const priorBuild=new Function('T','species','Math',restorePass42AnimalSource(rigSource)+';return createCLHuntAnimal(T,species);');
+const restoredSource=restorePass42AnimalSource(source);
+const restoredBegin=restoredSource.indexOf('function createCLHuntAnimal('),restoredEnd=restoredSource.indexOf('// Compact, individually owned prey rig.',restoredBegin);
+const priorBuild=new Function('T','species','Math',restoreCLSquidFinReference(restoredSource.slice(restoredBegin,restoredEnd),true)+';return createCLHuntAnimal(T,species);');
 const noRandom=Object.assign(Object.create(Math),{random(){throw Error('Cuttle surface consumed dive RNG');}}),allocated=[];
 const key='cl-cuttle-surface-v14',state=(extra={})=>({moving:false,jet:false,strike:0,camo:0,substrate:'sand',display:false,reducedMotion:false,...extra});
 const renderer={capabilities:{isWebGL2:true},extensions:{has(){throw Error('WebGL2 does not need a derivative extension query');}}};
@@ -140,3 +143,6 @@ describe('Cuttlefish anatomical camouflage surface',()=>{
     }
   },240000);
 });
+
+// Historical fingerprints predate the approved fin roll, layered pigment, oral finish and octopus cups.
+function restorePass42AnimalSource(source){return require('./helpers/cephalopod_pass34_animal_reference.cjs').restorePass34AnimalSource(require('./helpers/cephalopod_pass36_animal_reference.cjs').restorePass36AnimalSource(restorePass42AnimalOnly(require('./helpers/cephalopod_pass50_reference.cjs').restorePass50Source(require('./helpers/cephalopod_pass51_reference.cjs').restorePass51Source(require('./helpers/cephalopod_pass52_reference.cjs').restorePass52Source(require('./helpers/cephalopod_pass53_reference.cjs').restorePass53Source(require('./helpers/cephalopod_pass54_reference.cjs').restorePass54Source(source))))))));}

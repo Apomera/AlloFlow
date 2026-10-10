@@ -17,7 +17,7 @@ const fallbackSource = region('function reefSurface(shader){', '// ─── Ree
 const block = region('var DEN_RADIUS = 2.0;', '// ─── Clams');
 const noRandom = Object.create(Math);
 noRandom.random = () => { throw new Error('Den shaping must not consume seeded dive randomness'); };
-const { rock, shadow } = new Function('Math', geometrySource + ';return{rock:createCLHuntDenRockGeometry,shadow:createCLHuntDenShadowGeometry};')(noRandom);
+const { rock, shadow } = new Function('Math', geometrySource + ';return{rock:createCLHuntDenWeatheredGeometry,shadow:createCLHuntDenShadowGeometry};')(noRandom);
 const poses = [
   { position: [-.9, .7, 0], scale: [.7, 1.05, .8] },
   { position: [.9, .7, 0], scale: [.8, 1.02, .8] },
@@ -59,7 +59,7 @@ function bufferBytes(geometry) {
 }
 
 describe('Cephalopod Hunter natural den stones', () => {
-  it('builds twelve deterministic angular stones inside the original boxes with exact support heights and bounded finite topology', () => {
+  it('builds twelve deterministic weathered stones inside the original boxes with exact support heights and bounded finite topology', () => {
     const fingerprints = new Set();
     for (let den = 0; den < 4; den++) for (let part = 0; part < 3; part++) {
       const radius = part === 2 ? 1 : .7, width = part === 2 ? 24 : 20, height = part === 2 ? 16 : 14;
@@ -67,8 +67,8 @@ describe('Cephalopod Hunter natural den stones', () => {
       try {
         finiteGeometry(next);
         assert.deepEqual(Object.keys(next.attributes).sort(), ['normal', 'position', 'uv']);
-        assert.equal(next.attributes.position.count, part === 2 ? 144 : 176);
-        assert.equal(next.index.count / 3, part === 2 ? 64 : 80);
+        assert.equal(next.attributes.position.count, part === 2 ? 288 : 352);
+        assert.equal(next.index.count / 3, part === 2 ? 128 : 160);
         old.computeBoundingBox();
         assert.equal(next.boundingBox.min.y, old.boundingBox.min.y);assert.equal(next.boundingBox.max.y, old.boundingBox.max.y);
         assert.ok(next.boundingBox.min.x >= old.boundingBox.min.x - 1e-6 && next.boundingBox.max.x <= old.boundingBox.max.x + 1e-6);
@@ -80,11 +80,11 @@ describe('Cephalopod Hunter natural den stones', () => {
         // Each broad side is an independently shaded four-vertex panel. Adjacent
         // panels must meet exactly, even though their normals may form a crease.
         const bands = part === 2 ? 3 : 4;
-        for (let band = 0; band < bands; band++) for (let side = 0; side < 8; side++) {
-          const first = (band * 8 + side) * 4, following = (band * 8 + (side + 1) % 8) * 4;
+        for (let band = 0; band < bands; band++) for (let side = 0; side < 16; side++) {
+          const first = (band * 16 + side) * 4, following = (band * 16 + (side + 1) % 16) * 4;
           const point = index => new THREE.Vector3().fromBufferAttribute(p, index).toArray();
           assert.deepEqual(point(first + 3), point(following));assert.deepEqual(point(first + 2), point(following + 1));
-          if (band < bands - 1) { assert.deepEqual(point(first + 1), point(first + 32));assert.deepEqual(point(first + 2), point(first + 35)); }
+          if (band < bands - 1) { assert.deepEqual(point(first + 1), point(first + 64));assert.deepEqual(point(first + 2), point(first + 67)); }
         }
         if (part < 2) {
           const sole = new Set();
@@ -172,9 +172,9 @@ describe('Cephalopod Hunter natural den stones', () => {
         assert.deepEqual(ring.geometry.index.array, expectedRing.index.array);
         for (const [name, attr] of Object.entries(expectedRing.attributes)) assert.deepEqual(ring.geometry.attributes[name].array, attr.array);
       });
-      assert.equal(materials.size, 12);assert.equal(vertices, 2260);assert.equal(triangles, 1208);assert.equal(bytes, 80480);
+      assert.equal(materials.size, 12);assert.equal(vertices, 4244);assert.equal(triangles, 2104);assert.equal(bytes, 149344);
       const pillar = new THREE.SphereGeometry(.7, 20, 14), lintel = new THREE.SphereGeometry(1, 24, 16);
-      try { const baselineBytes = 4 * (2 * bufferBytes(pillar) + bufferBytes(lintel) + bufferBytes(oldShadow) + bufferBytes(expectedRing));assert.equal(bytes - baselineBytes, -104912); }
+      try { const baselineBytes = 4 * (2 * bufferBytes(pillar) + bufferBytes(lintel) + bufferBytes(oldShadow) + bufferBytes(expectedRing));assert.equal(bytes - baselineBytes, -36048); }
       finally { pillar.dispose();lintel.dispose(); }
     } finally { oldShadow.dispose();expectedRing.dispose();dispose(fixture); }
   });
@@ -201,4 +201,45 @@ describe('Cephalopod Hunter natural den stones', () => {
       } finally { dispose(fixture); }
     }
   });
+
+  it('softens shallow side joints while retaining the separately shaded cap boundaries', () => {
+    for (const radius of [.7, 1]) {
+      const next = rock(THREE, radius, radius === 1 ? 24 : 20, radius === 1 ? 16 : 14, 7);
+      const faceted = next.clone();
+      try {
+        faceted.computeVertexNormals();
+        const a = next.attributes.normal, b = faceted.attributes.normal;
+        const sideCount = a.count - 96;
+        let softened = 0;
+        for (let i = 0; i < sideCount; i++) if (Math.hypot(a.getX(i)-b.getX(i), a.getY(i)-b.getY(i), a.getZ(i)-b.getZ(i)) > .001) softened++;
+        assert.ok(softened > 0, 'A useful number of shallow stone joints receive softened normals');
+        for (let i = sideCount; i < a.count; i++) for (const axis of ['getX','getY','getZ']) assert.equal(a[axis](i), b[axis](i), 'Cap normals retain their independent shading');
+        const sole = new Set();
+        const p = next.attributes.position;
+        for (let i = 0; i < p.count; i++) if (p.getY(i) === -Math.fround(radius)) sole.add(p.getX(i) + ',' + p.getZ(i));
+        if (radius === .7) assert.ok(sole.size >= 12, 'Weathering retains a broad multi-edge grounded footing');
+      } finally { next.dispose();faceted.dispose(); }
+    }
+  });
+
+  it('reuses the original geometry allocation and preserves global UUID randomness and the moray stone factory', () => {
+    const originalFactory = new Function('Math', geometrySource + ';return createCLHuntDenRockGeometry;')(noRandom);
+    const originalDispose = THREE.BufferGeometry.prototype.dispose, originalRandom = Math.random;
+    let disposals = 0, next, accepted, draws = 0, seed;
+    function seededRandom() { draws++;seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296; }
+    try {
+      Math.random=seededRandom;seed=8127;draws=0;
+      accepted = originalFactory(THREE, .7, 20, 14, 40);
+      const acceptedDraws=draws;
+      const positions = accepted.attributes.position.array.slice(), normals = accepted.attributes.normal.array.slice();
+      assert.equal(accepted.attributes.position.count, 176);assert.equal(accepted.index.count / 3, 80);
+      THREE.BufferGeometry.prototype.dispose = function () { disposals++;return originalDispose.call(this); };
+      seed=8127;draws=0;
+      next = rock(THREE, .7, 20, 14, 40);
+      assert.equal(disposals, 0, 'Weathering updates the original allocation without an extra construction-only geometry');
+      assert.equal(draws,acceptedDraws,'Three consumes exactly the same global RNG draws');assert.equal(next.uuid,accepted.uuid);
+      assert.deepEqual(accepted.attributes.position.array, positions);assert.deepEqual(accepted.attributes.normal.array, normals);
+    } finally { Math.random=originalRandom;THREE.BufferGeometry.prototype.dispose = originalDispose;if (accepted) accepted.dispose();if (next) next.dispose(); }
+  });
+
 });

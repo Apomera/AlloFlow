@@ -23,6 +23,15 @@ afterEach(() => vi.useRealTimers());
 const state = (wave = { frequency: 2 }) => ({ _persisted: true, wave });
 
 describe('STEM autosave scheduling and durability', () => {
+  it('persists walk-through progress alongside existing gallery observations', () => {
+    const h = harness();
+    const perceptionWalk = { activity: 'context', player: { x: 48, z: 7, yaw: 0, pitch: 0 }, blockZ: 3, collected: [0], precise: true, parallax: { samples: [{ x: 24, z: 9, yaw: 0, pitch: 0 }, { x: 25.4, z: 9, yaw: 0, pitch: 0 }], choice: 'C' }, contour: { angles: [315, 225, 135, 45], selected: 3, choice: 'square' }, context: { selected: ['A', 'C'], neutral: true }, progress: { scale: { solved: true, assisted: false }, parallax: { solved: true, assisted: false, hints: 1 }, contour: { solved: true, assisted: false }, context: { solved: false, assisted: false, hints: 2 } }, notes: { scale: 'Distance changes apparent size.', parallax: 'C shifts farther sideways.', contour: 'The outline seems to continue across the gaps.', context: 'The center gray stays fixed.' } };
+    const perceptionGallery = { observations: [{ id: 'existing', station: 'room', model: { note: 'Equal heights.' } }] };
+    h.saver.queue({ _persisted: true, perceptionWalk, perceptionGallery });
+    vi.advanceTimersByTime(400);
+    expect(JSON.parse(h.storage.setItem.mock.lastCall[1])).toEqual({ perceptionWalk, perceptionGallery });
+    h.saver.dispose();
+  });
   it('waits for hydration, then combines a burst into one serialization and write', () => {
     const h = harness();
     h.saver.queue({ wave: { frequency: 0 } });

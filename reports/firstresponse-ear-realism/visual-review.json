@@ -1,0 +1,26 @@
+{
+  "sourceSHA256": "24dbe22375df2c8c3e7739d00d4621f4cc2c1e4db68d2bb05dfd15cca56c8a8a",
+  "accepted": true,
+  "reviewer": "root: direct inspection of all native images",
+  "images": [
+    "adult-pose5-baseline-ear.png",
+    "adult-pose5-baseline-stage.png",
+    "adult-pose5-candidate-ear.png",
+    "adult-pose5-candidate-stage.png",
+    "child-pose8-baseline-ear.png",
+    "child-pose8-baseline-stage.png",
+    "child-pose8-candidate-ear.png",
+    "child-pose8-candidate-stage.png",
+    "infant-pose5-contrast-baseline-ear.png",
+    "infant-pose5-contrast-baseline-stage.png",
+    "infant-pose5-contrast-candidate-ear.png",
+    "infant-pose5-contrast-candidate-stage.png"
+  ],
+  "observations": [
+    "Ordinary adult and child views show a flatter, slimmer ear profile and a less dominant cylindrical base.",
+    "The curved outer rim and inner relief remain continuous and seated on the pinna in the rendered close-ups.",
+    "The 320px infant contrast view retains the gray cavity against white skin after the silhouette change.",
+    "Matching views preserve the hand, cheek, face and scene framing; no new detached details or clipping was observed.",
+    "The ear remains an illustrative mannequin shape with the existing closed rim and inner-fold topology."
+  ]
+}

@@ -32,7 +32,7 @@ async function mount(page: Page) {
     w.__fish = w.__scene.children.filter((o: any) => o.name === 'cl-prey-fish' && o.userData.alive);
     w.__testStep = 0;
     w.THREE.Clock.prototype.getDelta = function () { const dt = w.__testStep; w.__testStep = 0; return dt; };
-    // Observe the real school containing the selected scene fish during a frozen frame.
+    // Observe the real school containing the selected scene fish during one positive tick.
     // Restore the temporary array hook immediately; keep the original encounter and assertions.
     const each = Array.prototype.forEach;
     let center: any;
@@ -44,7 +44,11 @@ async function mount(page: Page) {
       }
       return each.call(this, callback, thisArg);
     };
-    try { await new Promise<void>(resolve => requestAnimationFrame(() => resolve())); }
+    try {
+      w.__testStep = .05;
+      for (let frame = 0; frame < 120 && w.__testStep; frame++) await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+      if (w.__testStep) throw new Error('School discovery tick was not consumed');
+    }
     finally { Array.prototype.forEach = each; }
     if (!center) throw new Error('Could not locate the real fish-school center');
     w.__schoolCenter = center;
@@ -228,6 +232,8 @@ test('the full native strike stays continuous through contact and recovery while
   });
   await page.keyboard.press('KeyT');
   await page.keyboard.press('KeyE');
+  // Consume the queued request first; elapsed strike time begins on this positive tick.
+  await advance(page, 1);
   let previous = await pose(page), largestStep = 0;
   for (let frame = 1; frame <= 70; frame++) {
     if (frame === 27) {
@@ -279,6 +285,8 @@ test('reduced motion preserves a successful native strike without animating the 
   await page.locator(canvas).focus();
   await page.keyboard.press('KeyT');
   await page.keyboard.press('KeyE');
+  // Consume the queued request first; elapsed strike time begins on this positive tick.
+  await advance(page, 1);
   await advance(page, 3);
   expect(await buffers(page)).toEqual(still);
   expect(await page.evaluate(() => (window as any).__fish[0].userData.alive)).toBe(true);

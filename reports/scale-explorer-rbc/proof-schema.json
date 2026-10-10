@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "status": "prepared",
+  "finalSummaryPath": "scale-rbc/final-summary.json",
+  "artifactManifestPath": "scale-rbc/final-artifacts.json",
+  "source": { "fields": ["sourceSha256", "sourceMirrorsEqual", "previewSourceVerified"], "mirrorCount": 2, "baselineSha256": "d0ae641fe53e2aaa579a9c2102e5ae2f571df5fb402269b834aadf286493b1f7" },
+  "english": { "fields": ["englishKeys", "englishCopiesEqual"], "copyCount": 4, "expectedKeys": 1712, "addedKeys": 14, "changedExistingKeys": [], "preserveBytesOutsideScaleExplorer": true },
+  "actualUnits": { "expectedTests": 96, "expectedFiles": 13, "report": "final-units/report.json", "before": "final-units/before.json", "after": "final-units/after.json", "workers": 1, "retries": 0, "substitution": null },
+  "actualBrowsers": { "expectedTests": 10, "expectedPerFile": { "rbc": 2, "egg": 2, "specimens": 3, "comparison": 3 }, "report": "final-browser/report.json", "before": "final-browser/before.json", "after": "final-browser/after.json", "workers": 1, "retries": 0, "substitution": null },
+  "guardFields": ["sourceSha256", "mirrorSha256", "tests", "english", "workers", "retries", "substitution", "exitCode", "unchanged"],
+  "artifactEntryFields": ["path", "sha256", "bytes"],
+  "scienceAndGeometry": { "report": "rbc-science-review.json", "referenceMeters": 0.0000075, "axis": "x", "extent": 1, "measureCenter": 0, "maximumTriangles": 180000, "maximumVerticesPerGeometry": 65535, "uint32Meshes": 0, "nonfinite": 0, "unsafeIndices": 0, "degenerate": 0, "wrongWinding": 0, "failures": [], "nativeLandmarks": 5, "hemoglobinPdb": "2HHB", "alphaCarbons": 574, "hemes": 4, "coordinateTolerance": 0.000001, "poseResourcesStable": true, "allResourcesDisposed": true },
+  "scientificLimits": ["A resting mature human erythrocyte; no deformation simulation.", "The ruler measures cell diameter in every pose.", "Molecular sizes, spacing, colours and particle counts are enlarged or sampled illustrations.", "The featured hemoglobin guide retains four C-alpha traces and four hemes from deoxygenated 2HHB; it does not depict bound oxygen.", "The local window is an educational section, not an anatomical opening in a living cell."],
+  "interactionProof": ["continuous scale navigation enters a closed cell after a previous open specimen", "five native first-surface picks", "legacy whole notes stay closed unless the explicit rbcWindow flag is true", "new whole-window observations restore open", "center and rim observations remain closed", "exact notebook cameras restore", "comparison closes the section and retains the physical ratio", "330-pixel WebGL 1 framing and controls", "unmount releases resources"],
+  "exploratoryAttempts": { "directory": "exploratory", "policy": "Retain raw failed geometry or test reports with their original hashes. Final pass counts are derived only from the actual final reports; exploratory failures stay visible." },
+  "commit": false
+}

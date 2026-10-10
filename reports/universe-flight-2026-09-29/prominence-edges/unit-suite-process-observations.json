@@ -1,0 +1,46 @@
+{
+  "sessionId": 13427,
+  "scope": "run-unit-suite.cjs --run and its descendants only",
+  "method": "Escalated cscript / Win32_Process",
+  "samples": [
+    {
+      "observedAt": "2026-10-06T23:30:34Z",
+      "rawLocalTimestamp": "10/6/2026 7:30:34 PM",
+      "processes": [
+        { "role": "wrapper", "pid": 43028, "parentPid": 8980, "created": "20261006192239.495167-240", "kernel100ns": 781250, "user100ns": 2500000, "workingSetBytes": 54845440 },
+        { "role": "vitest", "pid": 27368, "parentPid": 43028, "created": "20261006192241.310031-240", "kernel100ns": 12187500, "user100ns": 63906250, "workingSetBytes": 95277056 },
+        { "role": "fork", "pid": 45392, "parentPid": 27368, "created": "20261006192324.023107-240", "kernel100ns": 67031250, "user100ns": 576093750, "workingSetBytes": 631812096 }
+      ],
+      "stdout": "Vitest started and universe_guided_navigation.test.js emitted PureHelpers registration. No test-file result or assertion summary observed.",
+      "reportedCaseCount": null
+    },
+    {
+      "snapshotStartedAt": "2026-10-06T23:33:31Z",
+      "rawLocalTimestamp": "10/6/2026 7:33:31 PM",
+      "processes": [
+        { "role": "wrapper", "pid": 43028, "parentPid": 8980, "created": "20261006192239.495167-240", "kernel100ns": 781250, "user100ns": 2500000, "workingSetBytes": 54894592 },
+        { "role": "vitest", "pid": 27368, "parentPid": 43028, "created": "20261006192241.310031-240", "kernel100ns": 12968750, "user100ns": 64218750, "workingSetBytes": 95334400 },
+        { "role": "fork", "pid": 32664, "parentPid": 27368, "created": "20261006193342.912178-240", "kernel100ns": 625000, "user100ns": 468750, "workingSetBytes": 47636480 }
+      ],
+      "snapshotIsSequential": true,
+      "stdout": "universe_guided_navigation.test.js passed all 39 tests in 471791ms; Vitest moved to a new isolated fork.",
+      "reportedPassedCases": 39,
+      "reportedPassedFiles": 1,
+      "reportedFailures": 0,
+      "finalJsonReportExists": false
+    },
+    {
+      "snapshotStartedAt": "2026-10-06T23:52:57Z",
+      "rawLocalTimestamp": "10/6/2026 7:52:57 PM",
+      "processes": [
+        { "role": "wrapper", "pid": 43028, "parentPid": 8980, "created": "20261006192239.495167-240", "kernel100ns": 781250, "user100ns": 2500000, "workingSetBytes": 36278272 },
+        { "role": "vitest", "pid": 27368, "parentPid": 43028, "created": "20261006192241.310031-240", "kernel100ns": 15468750, "user100ns": 65781250, "workingSetBytes": 86401024 },
+        { "role": "fork", "pid": 3400, "parentPid": 27368, "created": "20261006195250.090667-240", "kernel100ns": 9531250, "user100ns": 14062500, "workingSetBytes": 78168064 }
+      ],
+      "snapshotIsSequential": true,
+      "stdout": "At snapshot only 39 cases were confirmed; the subsequent drain reported 3 accessibility passes at 23:53:22.055Z.",
+      "reportedPassedCasesAtSnapshot": 39,
+      "reportedPassedFilesAtSnapshot": 1
+    }
+  ]
+}

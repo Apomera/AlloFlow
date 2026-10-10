@@ -1,0 +1,235 @@
+{
+  "schema": "moon-pass36-direct-browser-v1",
+  "runner": "direct-playwright-api",
+  "playwrightCliResult": false,
+  "mode": "closeup",
+  "status": "passed",
+  "startedAt": "2026-10-10T00:59:39.052Z",
+  "repo": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "specPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-docking-closeup.spec.ts",
+  "output": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass36-2026-10-09\\direct-closeup-3",
+  "browserCache": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+  "timeouts": {
+    "action": 20000,
+    "navigation": 60000,
+    "expect": 15000,
+    "launch": 60000,
+    "workflow": 240000
+  },
+  "launchOptions": {
+    "headless": true,
+    "timeout": 60000,
+    "downloadsPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass36-2026-10-09\\direct-closeup-3\\downloads"
+  },
+  "workflowCompleted": true,
+  "cleanupCompleted": true,
+  "milestones": [
+    {
+      "name": "load:before",
+      "elapsedMs": 2
+    },
+    {
+      "name": "load:after",
+      "elapsedMs": 933,
+      "workflow": "docking port close-up preserves physical geometry, saved state and uninterrupted control outcomes",
+      "registered": [
+        "docking port close-up preserves physical geometry, saved state and uninterrupted control outcomes"
+      ]
+    },
+    {
+      "name": "harness-start:before",
+      "elapsedMs": 934
+    },
+    {
+      "name": "harness-start:after",
+      "elapsedMs": 942
+    },
+    {
+      "name": "browser-launch:before",
+      "elapsedMs": 943
+    },
+    {
+      "name": "browser-launch:after",
+      "elapsedMs": 1273
+    },
+    {
+      "name": "context-create:before",
+      "elapsedMs": 1273
+    },
+    {
+      "name": "context-create:after",
+      "elapsedMs": 1282
+    },
+    {
+      "name": "page-create:before",
+      "elapsedMs": 1291
+    },
+    {
+      "name": "page-create:after",
+      "elapsedMs": 1613
+    },
+    {
+      "name": "workflow:before",
+      "elapsedMs": 1613
+    },
+    {
+      "name": "workflow:after",
+      "elapsedMs": 18070
+    },
+    {
+      "name": "cleanup:before",
+      "elapsedMs": 18070
+    },
+    {
+      "name": "after-each:before",
+      "elapsedMs": 18071
+    },
+    {
+      "name": "after-each:after",
+      "elapsedMs": 18107
+    },
+    {
+      "name": "context-close:before",
+      "elapsedMs": 18108
+    },
+    {
+      "name": "page-close",
+      "elapsedMs": 18136
+    },
+    {
+      "name": "context-close:after",
+      "elapsedMs": 18142
+    },
+    {
+      "name": "browser-close:before",
+      "elapsedMs": 18143
+    },
+    {
+      "name": "browser-close:after",
+      "elapsedMs": 24273
+    },
+    {
+      "name": "harness-stop:before",
+      "elapsedMs": 24273
+    },
+    {
+      "name": "harness-stop:after",
+      "elapsedMs": 24275
+    },
+    {
+      "name": "cleanup:after",
+      "elapsedMs": 24468,
+      "status": "passed"
+    }
+  ],
+  "errors": [],
+  "attachments": [
+    {
+      "name": "phone-offscreen-approach",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass36-2026-10-09\\direct-closeup-3\\phone-offscreen-approach.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "phone-offscreen-approach-geometry",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass36-2026-10-09\\direct-closeup-3\\phone-offscreen-approach.json",
+      "contentType": "application/json"
+    },
+    {
+      "name": "phone-closeup-accessibility",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass36-2026-10-09\\direct-closeup-3\\phone-closeup-accessibility.json",
+      "contentType": "application/json"
+    },
+    {
+      "name": "desktop-offscreen-approach",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass36-2026-10-09\\direct-closeup-3\\desktop-offscreen-approach.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "desktop-offscreen-approach-geometry",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass36-2026-10-09\\direct-closeup-3\\desktop-offscreen-approach.json",
+      "contentType": "application/json"
+    },
+    {
+      "name": "phone-contact-corridor",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass36-2026-10-09\\direct-closeup-3\\phone-contact-corridor.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "phone-contact-corridor-geometry",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass36-2026-10-09\\direct-closeup-3\\phone-contact-corridor.json",
+      "contentType": "application/json"
+    },
+    {
+      "name": "desktop-contact-corridor",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass36-2026-10-09\\direct-closeup-3\\desktop-contact-corridor.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "desktop-contact-corridor-geometry",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass36-2026-10-09\\direct-closeup-3\\desktop-contact-corridor.json",
+      "contentType": "application/json"
+    },
+    {
+      "name": "desktop-closeup-accessibility",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass36-2026-10-09\\direct-closeup-3\\desktop-closeup-accessibility.json",
+      "contentType": "application/json"
+    },
+    {
+      "name": "desktop-guided-contact",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass36-2026-10-09\\direct-closeup-3\\desktop-guided-contact.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "desktop-guided-contact-geometry",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass36-2026-10-09\\direct-closeup-3\\desktop-guided-contact.json",
+      "contentType": "application/json"
+    },
+    {
+      "name": "phone-unsafe-contact",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass36-2026-10-09\\direct-closeup-3\\phone-unsafe-contact.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "phone-unsafe-contact-geometry",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass36-2026-10-09\\direct-closeup-3\\phone-unsafe-contact.json",
+      "contentType": "application/json"
+    },
+    {
+      "name": "phone-pulse-after-view-switch",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass36-2026-10-09\\direct-closeup-3\\phone-pulse-after-view-switch.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "phone-pulse-after-view-switch-geometry",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass36-2026-10-09\\direct-closeup-3\\phone-pulse-after-view-switch.json",
+      "contentType": "application/json"
+    }
+  ],
+  "inputHashes": {
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-docking-closeup.spec.ts": "8bb9e9e222a9cedaef8bbf074f8b77576a854329f67964ef3b7453888e6f90cd",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_moonmission.js": "f333e9fa1499e11765610e063bd329c0d251b5fcab0cd2b89f6fb0bef6cd6cd5",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_moonmission.js": "f333e9fa1499e11765610e063bd329c0d251b5fcab0cd2b89f6fb0bef6cd6cd5"
+  },
+  "transform": {
+    "name": "Playwright bundled babelTransform",
+    "bundlePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\transform\\babelBundle.js",
+    "sha256": "9201df11ae9c9ee1febd587c5013c4f862aa7e9981b92b86ccbbbd37e71f9124"
+  },
+  "workflow": "docking port close-up preserves physical geometry, saved state and uninterrupted control outcomes",
+  "suiteOptions": {
+    "timeout": 240000,
+    "retries": 0
+  },
+  "browserVersion": "148.0.7778.96",
+  "pageEvents": [
+    {
+      "event": "close",
+      "elapsedMs": 18136,
+      "message": null
+    }
+  ],
+  "finishedAt": "2026-10-10T01:00:03.520Z",
+  "elapsedMs": 24468
+}

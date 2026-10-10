@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "scope": "Native comparison next-action copy only",
+  "source": "stem_lab/stem_tool_dissection.js",
+  "applyStatus": "staged only; repository source unchanged by this agent",
+  "edits": [
+    {
+      "id": "comparison-selected-mapping-guidance",
+      "old": "title: 'Compare this structure across specimens', description: 'Use the selected structure as the shared anatomical reference.'",
+      "new": "title: dissectionComparisonGroup(specimen, sel.id) ? 'Compare this structure across specimens' : 'No cross-specimen comparison is mapped for ' + sel.name, description: dissectionComparisonGroup(specimen, sel.id) ? 'Use the selected structure as the shared anatomical reference.' : 'Open the comparison panel to review its scope, or inspect another visible structure to check reference availability.'",
+      "occurrences": 1,
+      "evidenceLine": 17856
+    },
+    {
+      "id": "comparison-unselected-availability-guidance",
+      "old": "description: 'Inspect any visible structure first; the cross-specimen comparison will open automatically.'",
+      "new": "description: 'Inspect a visible structure first to check whether cross-specimen references are mapped for it.'",
+      "occurrences": 1,
+      "evidenceLine": 17859
+    }
+  ],
+  "invariants": [
+    "Existing mapped title and description retained verbatim.",
+    "Step, tone, phase, action, label and activation route retained.",
+    "Existing pure dissectionComparisonGroup lookup only; no new state.",
+    "No changes to native handlers, focus, inspection rules, work records or scoring."
+  ],
+  "recommendedAssertions": {
+    "unit": {
+      "existingFixture": "tests/dissection_lab_improvements.test.js:6789",
+      "cases": [
+        {
+          "state": "compareMode true; selectedOrgan null",
+          "expectedTitle": "Select a structure to compare",
+          "expectedDescription": "Inspect a visible structure first to check whether cross-specimen references are mapped for it.",
+          "expectedAction": "canvas",
+          "expectedButton": "Go to specimen",
+          "expectedPanel": null
+        },
+        {
+          "state": "compareMode true; selectedOrgan nictitating; frog skin",
+          "expectedTitle": "No cross-specimen comparison is mapped for Nictitating Membrane",
+          "expectedDescription": "Open the comparison panel to review its scope, or inspect another visible structure to check reference availability.",
+          "expectedAction": "comparison",
+          "expectedButton": "Go to comparison",
+          "expectedPanel": "unmapped"
+        },
+        {
+          "state": "compareMode true; selectedOrgan heart; frog organs; ventral",
+          "expectedTitle": "Compare this structure across specimens",
+          "expectedDescription": "Use the selected structure as the shared anatomical reference.",
+          "expectedAction": "comparison",
+          "expectedButton": "Go to comparison",
+          "expectedPanel": "pumps"
+        }
+      ],
+      "preservation": "Extend existing meaningful mapped/unmapped/unselected cases after native Compare toggle. Assert next-action h3 and description, data-next-action, native panel state, and same studyChooserWorkProof. Keep zero XP and Compare-toggle focus assertions."
+    },
+    "browser": {
+      "existingFixture": "tests/e2e/dissection-study-chooser.spec.ts",
+      "cases": [
+        "Unselected Compare next action names selection and checking mapped references; activating primary focuses #diss-canvas and preserves work, selection null, and inspection credit.",
+        "Unmapped Nictitating Membrane next action explicitly says unavailable; activating unchanged Go to comparison focuses #diss-comparison-panel whose data-comparison-group is unmapped, preserving native work/XP.",
+        "Mapped Frog Heart keeps original copy and focuses pumps comparison panel.",
+        "Each state stage handoff title matches the next-action title because both share nextActionModel. Do not create duplicate conditional model logic.",
+        "While assessment or practical is active, existing assessment next action retains priority and comparison copy does not appear."
+      ]
+    }
+  }
+}

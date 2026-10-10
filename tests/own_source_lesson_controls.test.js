@@ -46,12 +46,13 @@ const panelProps = {
   standardMode: 'manual', studentInterests: [], suggestedStandards: [], t, targetStandards: [],
 };
 function PanelHarness({ visible = true, initialIds = null }) {
+  const setSourceTopic = React.useCallback(() => {}, []);
   const [selectedOwnSourceIds, setSelectedOwnSourceIds] = React.useState(initialIds);
   const [documentsOnly, setDocumentsOnly] = React.useState(false);
   const [useOwnSources, setUseOwnSources] = React.useState(true);
   const [includeSourceCitations, setIncludeSourceCitations] = React.useState(true);
   return React.createElement('div', { 'data-selected': JSON.stringify(selectedOwnSourceIds) },
-    React.createElement(Panel, { ...panelProps, showSourceGen: visible, selectedOwnSourceIds, setSelectedOwnSourceIds,
+    React.createElement(Panel, { ...panelProps, setSourceTopic, showSourceGen: visible, selectedOwnSourceIds, setSelectedOwnSourceIds,
       documentsOnly, setDocumentsOnly, useOwnSources, setUseOwnSources, includeSourceCitations, setIncludeSourceCitations }));
 }
 function mount(Component = PanelHarness, props = {}) {
@@ -59,6 +60,7 @@ function mount(Component = PanelHarness, props = {}) {
   const root = createRoot(container);
   const render = (next) => flushSync(() => root.render(React.createElement(Component, next)));
   render(props);
+  if (Component === PanelHarness) click(container.querySelector('[aria-label="Research settings"]'));
   const item = { root, container, render }; mounted.push(item); return item;
 }
 async function until(check, timeout = 3000) {
@@ -107,18 +109,18 @@ describe('lesson source selection', () => {
     expect(first.container.textContent).toContain('input.my_sources_included:0');
   });
 
-  it('makes documents only and web search mutually exclusive and blocks strict generation with no selection', async () => {
+  it('keeps exact quotations independent of discovery and blocks supplied-source generation with no selection', async () => {
     window.AlloOwnSources = api(); const { container } = mount();
     await until(() => !!sourceButton(container, 'Cloud notes'));
     click(container.querySelector('#documentsOnly'));
     expect(container.querySelector('#documentsOnly').checked).toBe(true);
-    expect(container.querySelector('#includeCitations').checked).toBe(false);
-    click(container.querySelector('#includeCitations'));
-    expect(container.querySelector('#documentsOnly').checked).toBe(false);
-    click(container.querySelector('#documentsOnly'));
+    click(container.querySelector('[name="source-research-mode"][value="web"]'));
+    expect(container.querySelector('#documentsOnly').checked).toBe(true);
+    click(container.querySelector('[name="source-research-mode"][value="sources"]'));
     click(sourceButton(container, 'Cloud notes'));
+    click(byText(container, 'Apply settings'));
     expect(container.querySelector('[data-help-key="source_generate_button"]').disabled).toBe(true);
-    expect(container.textContent).toContain('Select at least one available document');
+    expect(container.textContent).toContain('Select a document, add a webpage');
   });
 
   it('ignores a delayed library snapshot after a lesson selection changes', async () => {

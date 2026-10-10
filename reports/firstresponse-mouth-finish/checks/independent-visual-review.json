@@ -1,0 +1,82 @@
+{
+  "candidateSHA256": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76",
+  "reviewer": "/root/mouth_visual_final",
+  "date": "2026-10-09",
+  "status": "adult-and-infant-contrast-reviewed",
+  "accepted": true,
+  "viewedImages": [
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\native-adult-pose5\\adult-pose5-baseline-face.png",
+      "sha256": "f2088e5fdb8214aa408a56a5bdde26be8dd5cf056bc08cd564b938326394b415",
+      "reviewed": true
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\native-adult-pose5\\adult-pose5-candidate-face.png",
+      "sha256": "3f767d22809ef40549a2a83e31d6723d7a2766e556434c2f1478f845346cb197",
+      "reviewed": true
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\native-adult-pose5\\adult-pose5-baseline-stage.png",
+      "sha256": "acafb933e4afac4991a327e7e45187cfd73164a1d0b7dd50e37d191940f4dbd0",
+      "reviewed": true
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\native-adult-pose5\\adult-pose5-candidate-stage.png",
+      "sha256": "3d7b015fd0b4d3044967001a5b4956366b4b4d970963aca036f5a2874ec4ebad",
+      "reviewed": true
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\native-infant-contrast-recovered\\infant-pose8-contrast-baseline-face.png",
+      "sha256": "03eee3ef65985b17fc1bd0a14727dd4fd297f38910ecbf0acbf21a063fd3a12c",
+      "reviewed": true
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\native-infant-contrast-recovered\\infant-pose8-contrast-candidate-face.png",
+      "sha256": "03eee3ef65985b17fc1bd0a14727dd4fd297f38910ecbf0acbf21a063fd3a12c",
+      "reviewed": true
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\native-infant-contrast-recovered\\infant-pose8-contrast-baseline-stage.png",
+      "sha256": "82983ed84035bb9ff558c3c236d63344dea8eba562a0c5ca297bcf5bdfab08ea",
+      "reviewed": true
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\native-infant-contrast-recovered\\infant-pose8-contrast-candidate-stage.png",
+      "sha256": "82983ed84035bb9ff558c3c236d63344dea8eba562a0c5ca297bcf5bdfab08ea",
+      "reviewed": true
+    }
+  ],
+  "adult": {
+    "outcome": "modest visual improvement",
+    "observations": [
+      "The candidate reduces the pale reflective stripe along the outer lip edge in the face crop.",
+      "At stage scale the lip edge is quieter while the mouth remains distinct against the cheek.",
+      "The dark mouth seam, lip corners, and raised lip contour remain visibly defined.",
+      "The head, nose, supporting hand, and scene framing show no visible change in the reviewed pairs.",
+      "This material-only change leaves the raised lip silhouette intact; it should be described as reduced glare, not corrected mouth geometry."
+    ]
+  },
+  "contrast": {
+    "status": "reviewed",
+    "outcome": "no visible change in the control pair",
+    "observations": [
+      "The infant contrast face crops have the same gray lip silhouette, central mouth seam, and pointed corners.",
+      "The stage pair preserves the supporting-hand outline, head outline, mouth visibility, and framing.",
+      "No visible contrast-mode regression appears at face-crop or stage scale."
+    ]
+  },
+  "limitations": [
+    "Review covers the eight saved PNGs for adult pose 5 normal shading and infant pose 8 contrast mode; it does not validate the full application loader or deployment."
+  ],
+  "sourceSHA256": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76",
+  "imageHashes": {
+    "adult-pose5-baseline-face.png": "f2088e5fdb8214aa408a56a5bdde26be8dd5cf056bc08cd564b938326394b415",
+    "adult-pose5-candidate-face.png": "3f767d22809ef40549a2a83e31d6723d7a2766e556434c2f1478f845346cb197",
+    "adult-pose5-baseline-stage.png": "acafb933e4afac4991a327e7e45187cfd73164a1d0b7dd50e37d191940f4dbd0",
+    "adult-pose5-candidate-stage.png": "3d7b015fd0b4d3044967001a5b4956366b4b4d970963aca036f5a2874ec4ebad",
+    "infant-pose8-contrast-baseline-face.png": "03eee3ef65985b17fc1bd0a14727dd4fd297f38910ecbf0acbf21a063fd3a12c",
+    "infant-pose8-contrast-candidate-face.png": "03eee3ef65985b17fc1bd0a14727dd4fd297f38910ecbf0acbf21a063fd3a12c",
+    "infant-pose8-contrast-baseline-stage.png": "82983ed84035bb9ff558c3c236d63344dea8eba562a0c5ca297bcf5bdfab08ea",
+    "infant-pose8-contrast-candidate-stage.png": "82983ed84035bb9ff558c3c236d63344dea8eba562a0c5ca297bcf5bdfab08ea"
+  }
+}

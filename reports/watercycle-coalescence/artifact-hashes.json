@@ -1,0 +1,102 @@
+[
+  {
+    "file": "source-proof.json",
+    "bytes": 39674,
+    "sha256": "af379c3cffbb14ac571c6e29cde13a3779dfaf5082d43ad7ef099f25930d5492"
+  },
+  {
+    "file": "verify.cjs",
+    "bytes": 3267,
+    "sha256": "82a373ef0a2302ef70907c0bfc232543189b491b6d84b204eeadd17595d3c2a6"
+  },
+  {
+    "file": "unit/unit-receipt.json",
+    "bytes": 3780,
+    "sha256": "bfc29e969293e3f3df1f83c834f9f8abc4ba3b659f4fbd4a8c9dca06e4d5e43e"
+  },
+  {
+    "file": "unit/vitest-results.json",
+    "bytes": 4501,
+    "sha256": "c5f1ad661d290ad3be30618117aa3f1e6866690d8be0659c60ca1459fab635d7"
+  },
+  {
+    "file": "unit/vitest.log",
+    "bytes": 132,
+    "sha256": "79b80ce77ae8c84bf658677165e222a7ae6e75e6246e1e64c9b116da40e0a058"
+  },
+  {
+    "file": "unit/loaded-source.json",
+    "bytes": 661,
+    "sha256": "e1638fb2bcad336ad14d352f9e134b3e13d430bb5b9d7c48d7c865861792147b"
+  },
+  {
+    "file": "unit/run-unit.cjs",
+    "bytes": 3819,
+    "sha256": "89fe44d7c051fce5cf4a18e2a5e32377c57530b0a9f87c0394ab1647a9269752"
+  },
+  {
+    "file": "unit/coalescence-vitest.config.mjs",
+    "bytes": 228,
+    "sha256": "16d240857e71965903f710bf3fdf848658514d8859e451b0ac035ec0f454a912"
+  },
+  {
+    "file": "unit/watercycle_coalescence_visual.test.js",
+    "bytes": 7996,
+    "sha256": "026c1335a2f254b562055819f09da0118ec581e0c4324a74698dd49a98836d03"
+  },
+  {
+    "file": "browser/result.json",
+    "bytes": 121316,
+    "sha256": "7cd49237c19389248c3e0e0e9898e4b96686cb5fd2e2145e02c2f23355833bbb"
+  },
+  {
+    "file": "browser/visible-copy.txt",
+    "bytes": 5931,
+    "sha256": "41a148cb9c46e749b02b1e4a956b6ca1c56dabc63ed3fbe071ae166e79b99b9a"
+  },
+  {
+    "file": "browser/tested-harness.cjs",
+    "bytes": 22680,
+    "sha256": "352888a36b9509a17e12a623e47b25eba92b9aa649d2a4175b8349cca597398a"
+  },
+  {
+    "file": "browser/desktop-2d-paused.png",
+    "bytes": 173687,
+    "sha256": "0d6de6b4a677d83ce87809807e49d141e1959ac9ab4e870dea7de8db589f1615"
+  },
+  {
+    "file": "browser/desktop-3d-paused.png",
+    "bytes": 233709,
+    "sha256": "30213f70818d50fe250f885f2e5f25548bc9fe3f65225c526b47db192224b27c"
+  },
+  {
+    "file": "browser/desktop-3d-reduced.png",
+    "bytes": 249677,
+    "sha256": "0085cc38d98b35efe3abb02988070b2f4955331de40e4cc6b78585b292330e64"
+  },
+  {
+    "file": "browser/phone-3d-reduced.png",
+    "bytes": 120420,
+    "sha256": "545d7049f875aaed5e05cd413630f4953c89fa8d22c5b7cf2ee4ca92f13cfd7a"
+  },
+  {
+    "file": "browser/phone-science-copy.png",
+    "bytes": 24187,
+    "sha256": "11819a1c415b5733f13f16414b1c014ae410c1dee82891dec2a9ffc71fc6be49"
+  },
+  {
+    "file": "browser/phone-cold-control.png",
+    "bytes": 108435,
+    "sha256": "6100741ea438d890d35e4b488f163f6d1b850b121197750fd8d860b33517b323"
+  },
+  {
+    "file": "browser/phone-2d-reduced.png",
+    "bytes": 78467,
+    "sha256": "47878f5e4a8fd8c5d74702f1b288510c32075f028f3020e8eee5c314bde9c54d"
+  },
+  {
+    "file": "README.md",
+    "bytes": 2741,
+    "sha256": "cc738869f8812e6016f27dd732604415556bb685d0cd22d3b80a3fdda278dd32"
+  }
+]

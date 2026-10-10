@@ -1,0 +1,169 @@
+{
+  "beforeSHA256": "0cc79f45f9a57ce3c4f1d5fa674b56f462a2418c4b253dbc648557b37a6b2639",
+  "candidateSHA256": "2f2fa5c594ad85c69d64bf1a09b2fb4bb749fa2bdf2ae608a1b932c6ed9446a0",
+  "checkerSHA256": "6c53a99c74c4586060281291643a40e0db7441d42ff34600db73dd9e230d74d6",
+  "meshHelperSHA256": "199157f91711eef18270c8aa22f540fd9ab7eff51c7d248459d6e633cfc3efbf",
+  "inputPinsHeld": true,
+  "assertions": 49326,
+  "negativeTests": [
+    {
+      "type": "eye",
+      "rejected": true,
+      "error": "eye ribbon vertex clears actual lid/skin surface"
+    },
+    {
+      "type": "lid",
+      "rejected": true,
+      "error": "lid back stays beneath actual skull"
+    }
+  ],
+  "passed": 1,
+  "failed": 1,
+  "results": [
+    {
+      "age": "adult",
+      "phase": 8,
+      "contrast": false,
+      "outsideEyes": {
+        "SHA256": "e2542835abef0e3bdd8de8ce29e537c64560c25d7ed9facbc15e6e667f9f23ad",
+        "nodes": 211,
+        "meshes": 142,
+        "geometries": 140,
+        "materials": 28,
+        "allocatedGeometries": 144,
+        "allocatedMaterials": 26
+      },
+      "eyes": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "vertices": 561,
+          "triangles": 960,
+          "nondegenerate": 960,
+          "minNorm": 0.9999999658081523,
+          "maxNorm": 1.000000037438799,
+          "minAgreement": 0.38021041408179734,
+          "backs": 297,
+          "maxBackGap": -0.001199990582562712,
+          "boundaries": 33,
+          "maxBoundaryGap": -0.001199990582562712,
+          "minFrontGap": -0.0010097038260235274,
+          "maxFrontGap": 0.0037999919979988485
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "vertices": 561,
+          "triangles": 960,
+          "nondegenerate": 960,
+          "minNorm": 0.9999999675412288,
+          "maxNorm": 1.0000000391833865,
+          "minAgreement": 0.43483554550892345,
+          "backs": 297,
+          "maxBackGap": -0.0011999869073133804,
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0011999869073133804,
+          "minFrontGap": -0.0010667899703966223,
+          "maxFrontGap": 0.002299992764749963
+        },
+        {
+          "name": "fr-manikin-eye-left",
+          "vertices": 287,
+          "triangles": 380,
+          "nondegenerate": 380,
+          "minNorm": 0.9999999620341503,
+          "maxNorm": 1.0000000321238702,
+          "minAgreement": 0.8731943505999409,
+          "minGap": 0.0007499862527494023,
+          "maxGap": 0.0007500133054377576,
+          "minCentroidGap": 0.0006223392758143971
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "vertices": 561,
+          "triangles": 960,
+          "nondegenerate": 960,
+          "minNorm": 0.9999999677567216,
+          "maxNorm": 1.0000000335114465,
+          "minAgreement": 0.3448713102416118,
+          "backs": 297,
+          "maxBackGap": -0.001199991298115179,
+          "boundaries": 33,
+          "maxBoundaryGap": -0.001199991298115179,
+          "minFrontGap": -0.001009693694991778,
+          "maxFrontGap": 0.0038000003300975604
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "vertices": 561,
+          "triangles": 960,
+          "nondegenerate": 960,
+          "minNorm": 0.99999996667982,
+          "maxNorm": 1.0000000381033811,
+          "minAgreement": 0.2648411899709825,
+          "backs": 297,
+          "maxBackGap": -0.0011999888129553158,
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0011999888129553158,
+          "minFrontGap": -0.0010667906629490192,
+          "maxFrontGap": 0.0022999902362976655
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "vertices": 287,
+          "triangles": 380,
+          "nondegenerate": 380,
+          "minNorm": 0.9999999611029341,
+          "maxNorm": 1.0000000365077952,
+          "minAgreement": 0.8260543307313462,
+          "minGap": 0.00074998834314914,
+          "maxGap": 0.000750013917491521,
+          "minCentroidGap": 0.0001769375694668882
+        },
+        {
+          "kind": "upper-lid",
+          "maximumPairedYDifference": 0.002152110273773606
+        },
+        {
+          "kind": "lower-lid",
+          "maximumPairedYDifference": 0.0011984359573673558
+        },
+        {
+          "kind": "eye",
+          "maximumPairedYDifference": 0.0014647438719465925
+        }
+      ],
+      "resources": {
+        "geometries": 146,
+        "materials": 28,
+        "allocatedGeometries": 144,
+        "allocatedMaterials": 26
+      },
+      "status": "passed",
+      "checks": 45341,
+      "durationMs": 16166
+    },
+    {
+      "age": "child",
+      "phase": 8,
+      "contrast": false,
+      "outsideEyes": {
+        "SHA256": "cad3c15322bc863006759b840cd86501f2982eb003719c7b56db7cb003fac136",
+        "nodes": 210,
+        "meshes": 141,
+        "geometries": 139,
+        "materials": 28,
+        "allocatedGeometries": 143,
+        "allocatedMaterials": 26
+      },
+      "resources": {
+        "geometries": 145,
+        "materials": 28,
+        "allocatedGeometries": 143,
+        "allocatedMaterials": 26
+      },
+      "status": "failed",
+      "checks": 3980,
+      "durationMs": 4025,
+      "error": "AssertionError [ERR_ASSERTION]: eye normals agree with triangle winding\n    at check (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-jaw-work\\firstresponse_eye_surface_check.cjs:11:58)\n    at meshMetrics (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-jaw-work\\firstresponse_eye_surface_check.cjs:28:967)\n    at inspectEyes (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-jaw-work\\firstresponse_eye_surface_check.cjs:31:92)\n    at Object.<anonymous> (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-jaw-work\\firstresponse_eye_surface_check.cjs:50:419)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)"
+    }
+  ]
+}

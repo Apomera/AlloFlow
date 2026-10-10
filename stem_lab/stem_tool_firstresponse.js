@@ -602,7 +602,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
   // Both pad layouts contribute labels: the viewer has to be able to name the
   // infant front/back targets too, and padTogether/padBelly are shared ids.
   var frHandInspectionFocus = false, frHandInspectionNode = null, frHandInspectionSize = null;
+  function isHandContactInspection() {
+    return frHandInspectionFocus === 'contact' || frHandInspectionFocus === 'heelSide';
+  }
   var frPalmDetailInfo = null, frPalmDetailDirty = false;
+  var frHeelSideInfo = null, frHeelSideDirty = false;
+  var frSupportingHandInfo = null, frSupportingHandDirty = false;
   var FR_BODY_CAMERA_HOME = { yaw: 0.1, pitch: 0.86, dist: 6.8, target: { x: 0, y: 0.30, z: 0.55 } };
   var BODY_SCENE_PARTS = BODY_PARTS.concat(AED_PADS.concat(AED_PADS_INFANT)
     .filter(function (pad, i, all) {
@@ -614,6 +619,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
     .concat([{ id: 'head', label: 'Head' }, { id: 'arms', label: 'Rescuer hands and arms' },
       { id: 'patientArms', label: 'Manikin arms and hands' }, { id: 'legs', label: 'Manikin legs and feet' },
       { id: 'handContact', label: 'Hand contact' }, { id: 'nearPalm', label: 'Near palm' },
+      { id: 'supportingHand', label: 'Supporting hand' },
       { id: 'manikin', label: 'Whole manikin' }]);
 
   // -- Body scene content --
@@ -756,7 +762,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
     var amount = (1 - Math.cos(phase * Math.PI * 2)) / 2;
     var depression = settings.lean + (settings.depth - settings.lean) * amount;
     return { depression: depression, fraction: depression / settings.chestCm, amount: amount, phase: phase,
-      direction: phase > 0 && phase < 0.5 ? -1 : phase > 0.5 && phase < 1 ? 1 : 0 };
+      direction: settings.depth <= settings.lean ? 0 : phase > 0 && phase < 0.5 ? -1 : phase > 0.5 && phase < 1 ? 1 : 0 };
   }
 
   function compressionLabReference(age, raw) {
@@ -796,11 +802,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         if (CPR_AGES[ai].airwayTilt != null) ageAirwayTilt = CPR_AGES[ai].airwayTilt;
       }
     }
+    // Representative head-to-body proportions for the three age illustrations.
     var profile = age === 'infant'
-      ? { head: 1.40, torso: 0.86, width: 0.88, limb: 0.72 }
+      ? { head: 1.17, torso: 0.86, width: 0.88, limb: 0.72 }
       : (age === 'child'
-        ? { head: 1.15, torso: 0.94, width: 0.94, limb: 0.88 }
-        : { head: 1, torso: 1, width: 1, limb: 1 });
+        ? { head: 0.83, torso: 0.94, width: 0.94, limb: 0.88 }
+        : { head: 0.74, torso: 1, width: 1, limb: 1 });
 
     function material(hex, shiny, opacity, contrastHex) {
       var m = api.contrast ? new THREE.MeshBasicMaterial({ color: contrastHex == null ? 0xffffff : contrastHex }) : api.trim(hex, shiny);
@@ -853,6 +860,227 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         normals.setXYZ(i,normal.x,normal.y,normal.z);
       }
     }
+    function patientSleeve(parent, shoulder, elbow, mat, name) {
+      // A hollow garment joins inside the torso and clears the unchanged arm.
+      // Its cuff has cloth thickness, without a filled disk competing with skin.
+      var axis = elbow.clone().sub(shoulder).normalize();
+      var cuff = shoulder.clone().lerp(elbow, .42);
+      var root = shoulder.clone(); root.x *= .70; root.y -= .08;
+      var controlA = root.clone().lerp(shoulder, 1 / 3);
+      var rootDepth = shoulder.clone().sub(root).dot(axis);
+      var controlB = shoulder.clone().addScaledVector(axis, -rootDepth / 3);
+      var rootCurve = new THREE.CubicBezierCurve3(root, controlA, controlB, shoulder);
+      var rings = [], around = 24, rootSteps = 12, sleeveSteps = 16;
+      var cuffSkin = .112 + (.085 - .112) * (.3 * .3 * (3 - 2 * .3));
+      var innerRadius = cuffSkin + .002, outerRadius = cuffSkin + .008;
+      for (var row = 0; row < rootSteps; row++) {
+        var t = row / rootSteps, eased = t * t * (3 - 2 * t);
+        // Parallel section planes keep the root wholly behind the skin cap.
+        rings.push({ centre: rootCurve.getPoint(t), tangent: axis, radius: .055 + (.132 - .055) * eased });
+      }
+      for (var row = 0; row <= sleeveSteps; row++) {
+        var t = row / sleeveSteps, eased = t * t * (3 - 2 * t);
+        rings.push({ centre: shoulder.clone().lerp(cuff, t), tangent: axis, radius: .132 + (outerRadius - .132) * eased });
+      }
+      var vertices = [], indices = [];
+      rings.forEach(function (ring, row) {
+        var orientation = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), ring.tangent);
+        for (var j = 0; j < around; j++) {
+          var angle = j / around * Math.PI * 2;
+          var point = new THREE.Vector3(Math.cos(angle) * ring.radius, 0, Math.sin(angle) * ring.radius)
+            .applyQuaternion(orientation).add(ring.centre);
+          vertices.push(point.x, point.y, point.z);
+          if (row < rings.length - 1) {
+            var p = row * around + j, q = (row + 1) * around + j;
+            var nextP = row * around + (j + 1) % around, nextQ = (row + 1) * around + (j + 1) % around;
+            indices.push(p, q, nextP, nextP, q, nextQ);
+          }
+        }
+      });
+      // Separate cuff vertices keep the thin edge crisp without flattening the sleeve shading.
+      var cuffOuterStart = vertices.length / 3, cuffInnerStart = cuffOuterStart + around;
+      var orientation = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), axis);
+      [outerRadius, innerRadius].forEach(function (radius) {
+        for (var j = 0; j < around; j++) {
+          var angle = j / around * Math.PI * 2;
+          var point = new THREE.Vector3(Math.cos(angle) * radius, 0, Math.sin(angle) * radius)
+            .applyQuaternion(orientation).add(cuff);
+          vertices.push(point.x, point.y, point.z);
+        }
+      });
+      for (var j = 0; j < around; j++) {
+        var next = (j + 1) % around;
+        indices.push(cuffOuterStart + j, cuffInnerStart + j, cuffOuterStart + next,
+          cuffOuterStart + next, cuffInnerStart + j, cuffInnerStart + next);
+      }
+      var geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+      geometry.setIndex(indices); geometry.computeVertexNormals();
+      geometry.parameters = { radialSegments: around, ringCount: rings.length,
+        shoulderRing: rootSteps, cuffOuterStart: cuffOuterStart, cuffInnerStart: cuffInnerStart,
+        cuffFraction: .42, innerRadius: innerRadius, outerRadius: outerRadius };
+      var mesh = new THREE.Mesh(geometry, mat); mesh.name = name; parent.add(mesh); return mesh;
+    }
+
+    function patientWristConnector(parent, forearmStart, wristPoint, mat, name) {
+      // Join the existing circular forearm to the flattened palm without a cuff.
+      // Both open ends sit inside the unchanged skin meshes they connect.
+      var forearmLength = forearmStart.distanceTo(wristPoint);
+      var axis = wristPoint.clone().sub(forearmStart).normalize()
+        .applyQuaternion(parent.quaternion.clone().invert());
+      var handForward = new THREE.Vector3(0, 0, 1);
+      var ringRotation = new THREE.Quaternion().setFromUnitVectors(handForward, axis);
+      var around = 48, rootSteps = 8, palmSteps = 16, rootDistance = .06, palmDepth = .100;
+      var vertices = [], indices = [], joinRadius = .050;
+      function forearmRadius(distance) {
+        var u = Math.max(0, Math.min(1, (1 - distance / forearmLength - .65) / .35));
+        return .068 + (.048 - .068) * u * u * (3 - 2 * u);
+      }
+      function append(point) {
+        // Retain the original wrist Mesh transform and its small upper fold.
+        vertices.push(point.x / .048, point.y / .04, (point.z - .015) / .055);
+      }
+      for (var row = 0; row <= rootSteps; row++) {
+        var t = row / rootSteps, eased = t * t * (3 - 2 * t), distance = rootDistance * (1 - t);
+        var radius = forearmRadius(distance) - .0015 + .0035 * eased;
+        for (var j = 0; j < around; j++) {
+          var angle = j / around * Math.PI * 2;
+          append(new THREE.Vector3(Math.cos(angle) * radius, Math.sin(angle) * radius, 0)
+            .applyQuaternion(ringRotation).addScaledVector(axis, -distance));
+        }
+      }
+      for (var row = 1; row <= palmSteps; row++) {
+        var t = row / palmSteps, one = 1 - t;
+        for (var j = 0; j < around; j++) {
+          var angle = j / around * Math.PI * 2;
+          var start = new THREE.Vector3(Math.cos(angle) * joinRadius, Math.sin(angle) * joinRadius, 0).applyQuaternion(ringRotation);
+          var end = new THREE.Vector3(Math.cos(angle) * .059, Math.sin(angle) * .029, palmDepth);
+          var controlA = start.clone().addScaledVector(axis, .020);
+          var controlB = end.clone().addScaledVector(handForward, -.012);
+          append(start.multiplyScalar(one * one * one).addScaledVector(controlA, 3 * one * one * t)
+            .addScaledVector(controlB, 3 * one * t * t).addScaledVector(end, t * t * t));
+        }
+      }
+      var ringCount = rootSteps + palmSteps + 1;
+      for (var row = 0; row < ringCount - 1; row++) for (var j = 0; j < around; j++) {
+        var next = (j + 1) % around, p = row * around + j, q = (row + 1) * around + j;
+        indices.push(p, row * around + next, q, row * around + next, (row + 1) * around + next, q);
+      }
+      var geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+      geometry.setIndex(indices); geometry.computeVertexNormals();
+      geometry.parameters = { radialSegments: around, ringCount: ringCount, rootRing: 0,
+        jointRing: rootSteps, palmRing: ringCount - 1, forearmRootDistance: rootDistance, palmDepth: palmDepth };
+      var mesh = new THREE.Mesh(geometry, mat); mesh.name = name;
+      mesh.position.set(0, 0, .015); mesh.scale.set(.048, .04, .055); parent.add(mesh); return mesh;
+    }
+
+    function finishPatientWristNormals(wrist, forearm) {
+      var positions = wrist.geometry.attributes.position, normals = wrist.geometry.attributes.normal;
+      var armPositions = forearm.geometry.attributes.position, armNormals = forearm.geometry.attributes.normal;
+      var armIndices = forearm.geometry.index.array, armShape = forearm.geometry.parameters;
+      var armInverse = forearm.quaternion.clone().invert(), handInverse = wrist.parent.quaternion.clone().invert();
+      var around = wrist.geometry.parameters.radialSegments, normalRay = new THREE.Ray();
+      // Match the forearm where the wrist emerges, then fade into the existing hand shading.
+      for (var wi = 0; wi < 8 * around; wi++) {
+        var row = Math.floor(wi / around), fade = Math.max(0, (row - 4) / 4);
+        var weight = 1 - fade * fade * (3 - 2 * fade);
+        var point = new THREE.Vector3().fromBufferAttribute(positions, wi).multiply(wrist.scale)
+          .add(wrist.position).applyQuaternion(wrist.parent.quaternion).add(wrist.parent.position)
+          .sub(forearm.position).applyQuaternion(armInverse);
+        var armRow = Math.min(armShape.heightSegments - 1, Math.max(0,
+          Math.floor((.5 - point.y / armShape.height) * armShape.heightSegments)));
+        var angle = (Math.atan2(point.x, point.z) + Math.PI * 2) % (Math.PI * 2);
+        var sector = Math.min(armShape.radialSegments - 1, Math.floor(angle / (Math.PI * 2) * armShape.radialSegments));
+        normalRay.set(new THREE.Vector3(0, point.y, 0), new THREE.Vector3(point.x, 0, point.z).normalize());
+        for (var probe = 0; probe < 6; probe++) {
+          var neighbor = (sector + [0, 1, -1][Math.floor(probe / 2)] + armShape.radialSegments) % armShape.radialSegments;
+          var offset = (neighbor * armShape.heightSegments + armRow) * 6 + (probe % 2) * 3;
+          var ids = [armIndices[offset], armIndices[offset + 1], armIndices[offset + 2]];
+          var triangle = ids.map(function (vertex) { return new THREE.Vector3().fromBufferAttribute(armPositions, vertex); });
+          var hit = normalRay.intersectTriangle(triangle[0], triangle[1], triangle[2], false, new THREE.Vector3());
+          if (!hit) continue;
+          var weights = THREE.Triangle.getBarycoord(hit, triangle[0], triangle[1], triangle[2], new THREE.Vector3());
+          var fitted = new THREE.Vector3();
+          for (var corner = 0; corner < 3; corner++) fitted.addScaledVector(
+            new THREE.Vector3().fromBufferAttribute(armNormals, ids[corner]), weights.getComponent(corner));
+          fitted.normalize().applyQuaternion(forearm.quaternion).applyQuaternion(handInverse);
+          var normal = new THREE.Vector3().fromBufferAttribute(normals, wi).divide(wrist.scale).normalize();
+          normal.lerp(fitted, weight).normalize().multiply(wrist.scale).normalize();
+          normals.setXYZ(wi, normal.x, normal.y, normal.z);
+          break;
+        }
+      }
+    }
+
+    function finishPatientPalmNormals(wrist, palm) {
+      var positions = wrist.geometry.attributes.position, normals = wrist.geometry.attributes.normal;
+      var palmPositions = palm.geometry.attributes.position, palmNormals = palm.geometry.attributes.normal;
+      var palmIndices = palm.geometry.index.array, shape = palm.geometry.parameters;
+      var around = wrist.geometry.parameters.radialSegments, neighbors = [0, 1, -1, 2, -2, 3, -3];
+      var normalRay = new THREE.Ray(new THREE.Vector3(), new THREE.Vector3());
+      var wristIndices = wrist.geometry.index.array, folded = new Uint8Array(positions.count);
+      var a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
+      var faceNormal = new THREE.Vector3(), averageNormal = new THREE.Vector3(), cornerNormal = new THREE.Vector3();
+      // Preserve shading around tightly folded faces before fitting the palm join.
+      for (var triangleIndex = 0; triangleIndex < wristIndices.length; triangleIndex += 3) {
+        var ia = wristIndices[triangleIndex], ib = wristIndices[triangleIndex + 1], ic = wristIndices[triangleIndex + 2];
+        a.fromBufferAttribute(positions, ia).multiply(wrist.scale);
+        b.fromBufferAttribute(positions, ib).multiply(wrist.scale);
+        c.fromBufferAttribute(positions, ic).multiply(wrist.scale);
+        faceNormal.copy(b).sub(a).cross(c.sub(a));
+        averageNormal.set(0, 0, 0);
+        for (var cornerIndex = 0; cornerIndex < 3; cornerIndex++) {
+          cornerNormal.fromBufferAttribute(normals, wristIndices[triangleIndex + cornerIndex]).divide(wrist.scale).normalize();
+          averageNormal.add(cornerNormal);
+        }
+        if (faceNormal.dot(averageNormal) <= 0) folded[ia] = folded[ib] = folded[ic] = 1;
+      }
+      // Blend only beside the real palm surface, retaining the wrist's bend away from the join.
+      for (var wi = 7 * around; wi < positions.count; wi++) {
+        if (folded[wi]) continue;
+        var row = Math.floor(wi / around), rowFade = Math.min(1, (row - 6) / 2);
+        var point = new THREE.Vector3().fromBufferAttribute(positions, wi).multiply(wrist.scale).add(wrist.position);
+        var local = point.clone().sub(palm.position).divide(palm.scale), direction = local.clone().normalize();
+        var latitude = Math.min(shape.heightSegments - 1, Math.floor(Math.acos(Math.max(-1, Math.min(1, direction.y))) / Math.PI * shape.heightSegments));
+        var angle = (Math.atan2(direction.z, -direction.x) + Math.PI * 2) % (Math.PI * 2);
+        var sector = Math.min(shape.widthSegments - 1, Math.floor(angle / (Math.PI * 2) * shape.widthSegments));
+        normalRay.direction.copy(direction);
+        var matched = false;
+        for (var lat = 0; lat < neighbors.length && !matched; lat++) {
+          var ring = latitude + neighbors[lat];
+          if (ring < 0 || ring >= shape.heightSegments) continue;
+          for (var lon = 0; lon < neighbors.length && !matched; lon++) {
+            var column = (sector + neighbors[lon] + shape.widthSegments) % shape.widthSegments;
+            var start = ring === 0 ? column * 3 : shape.widthSegments * 3 + (ring - 1) * shape.widthSegments * 6 + column * (ring === shape.heightSegments - 1 ? 3 : 6);
+            for (var face = 0; face < (ring === 0 || ring === shape.heightSegments - 1 ? 1 : 2); face++) {
+              var offset = start + face * 3, ids = [palmIndices[offset], palmIndices[offset + 1], palmIndices[offset + 2]];
+              var triangle = ids.map(function (vertex) { return new THREE.Vector3().fromBufferAttribute(palmPositions, vertex); });
+              var hit = normalRay.intersectTriangle(triangle[0], triangle[1], triangle[2], false, new THREE.Vector3());
+              if (!hit) continue;
+              matched = true;
+              var gap = hit.clone().multiply(palm.scale).add(palm.position).distanceTo(point);
+              var fade = Math.max(0, Math.min(1, (gap - .006) / .020));
+              var weight = (1 - fade * fade * (3 - 2 * fade)) * rowFade * rowFade * (3 - 2 * rowFade);
+              if (weight <= 0) break;
+              var weights = THREE.Triangle.getBarycoord(hit, triangle[0], triangle[1], triangle[2], new THREE.Vector3());
+              var fitted = new THREE.Vector3();
+              for (var corner = 0; corner < 3; corner++) fitted.addScaledVector(
+                new THREE.Vector3().fromBufferAttribute(palmNormals, ids[corner]).divide(palm.scale).normalize(), weights.getComponent(corner));
+              var normal = new THREE.Vector3().fromBufferAttribute(normals, wi).divide(wrist.scale).normalize();
+              fitted.normalize();
+              var alignment = Math.max(0, Math.min(1, (normal.dot(fitted) - .15) / .30));
+              weight *= alignment * alignment * (3 - 2 * alignment);
+              if (weight <= 0) break;
+              normal.lerp(fitted, weight).normalize().multiply(wrist.scale).normalize();
+              normals.setXYZ(wi, normal.x, normal.y, normal.z);
+              break;
+            }
+          }
+        }
+      }
+    }
+
     function shapedSegment(parent, a, b, contour, mat, name, section) {
       var delta = new THREE.Vector3().subVectors(b, a), length = delta.length();
       var sectionX = section ? section[0] : 1, sectionZ = section ? section[1] : 1;
@@ -884,6 +1112,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       return mesh;
     }
     function sculptPalm(mesh, thumbSide, forwardSign) {
+      // Mirror each interior diagonal as well as the contour so fitted folds
+      // follow equivalent triangles on the two hands.
+      if (thumbSide > 0) {
+        var indices = mesh.geometry.index.array, shape = mesh.geometry.parameters;
+        var first = shape.widthSegments * 3, last = indices.length - shape.widthSegments * 3;
+        for (var face = first; face < last; face += 6) {
+          var a = indices[face], c = indices[face + 4];
+          indices[face + 2] = c; indices[face + 3] = a;
+        }
+      }
       var positions = mesh.geometry.attributes.position;
       for (var i = 0; i < positions.count; i++) {
         var x = positions.getX(i), y = positions.getY(i), z = positions.getZ(i), forward = z*forwardSign;
@@ -894,7 +1132,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       }
       smoothCoincidentNormals(mesh.geometry);
     }
-    function sculptWristFold(mesh, centreZ) {
+    function sculptWristFold(mesh, centreZ, heightLimit) {
       var positions = mesh.geometry.attributes.position;
       for (var i = 0; i < positions.count; i++) {
         var x = positions.getX(i), y = positions.getY(i), z = positions.getZ(i);
@@ -902,9 +1140,97 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         var fold = Math.abs(across) < 1 ? Math.pow(1-across*across,2) : 0;
         // These ellipsoids use local +Y for the exposed wrist surface. An
         // inward fold leaves the contact-facing -Y hemisphere unchanged.
-        positions.setY(i,y*(1-.028*fold*Math.pow(Math.max(0,y),4)));
+        // Lofts can extend beyond the unit sphere used by the original hands.
+        var upper = Math.max(0,y);
+        if (heightLimit != null) upper = Math.min(upper,heightLimit);
+        positions.setY(i,y*(1-.028*fold*Math.pow(upper,4)));
       }
       smoothCoincidentNormals(mesh.geometry);
+    }
+    function patientFingerSurface(palm) {
+      // A small projection grid bounds the triangle work for each finger.
+      // Keep the cache outside scene and geometry metadata.
+      var positions = palm.geometry.attributes.position, normals = palm.geometry.attributes.normal;
+      var indices = palm.geometry.index.array, triangles = [], bins = [], divisions = 16;
+      var minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+      var points = [], fittedNormals = [];
+      for (var i = 0; i < positions.count; i++) {
+        var point = new THREE.Vector3().fromBufferAttribute(positions,i)
+          .multiply(palm.scale).applyQuaternion(palm.quaternion).add(palm.position);
+        points.push(point);
+        fittedNormals.push(new THREE.Vector3().fromBufferAttribute(normals,i)
+          .divide(palm.scale).applyQuaternion(palm.quaternion).normalize());
+        minX = Math.min(minX,point.x); maxX = Math.max(maxX,point.x);
+        minZ = Math.min(minZ,point.z); maxZ = Math.max(maxZ,point.z);
+      }
+      function cell(value,min,max) {
+        return Math.max(0,Math.min(divisions-1,Math.floor((value-min)/(max-min)*divisions)));
+      }
+      for (var bin = 0; bin < divisions*divisions; bin++) bins.push([]);
+      for (var face = 0; face < indices.length; face += 3) {
+        var a = points[indices[face]], b = points[indices[face+1]], c = points[indices[face+2]];
+        var determinant = (b.z-c.z)*(a.x-c.x)+(c.x-b.x)*(a.z-c.z);
+        if (Math.abs(determinant) < 1e-14) continue;
+        var triangle = { a:a, b:b, c:c, determinant:determinant,
+          normals:[fittedNormals[indices[face]],fittedNormals[indices[face+1]],fittedNormals[indices[face+2]]] };
+        var id = triangles.length; triangles.push(triangle);
+        var x0 = cell(Math.min(a.x,b.x,c.x),minX,maxX), x1 = cell(Math.max(a.x,b.x,c.x),minX,maxX);
+        var z0 = cell(Math.min(a.z,b.z,c.z),minZ,maxZ), z1 = cell(Math.max(a.z,b.z,c.z),minZ,maxZ);
+        for (var iz = z0; iz <= z1; iz++) for (var ix = x0; ix <= x1; ix++) bins[iz*divisions+ix].push(id);
+      }
+      return { triangles:triangles, bins:bins, divisions:divisions,
+        minX:minX, maxX:maxX, minZ:minZ, maxZ:maxZ, centreY:palm.position.y };
+    }
+    function finishPatientFingerNormals(mesh,surface) {
+      var positions = mesh.geometry.attributes.position, normals = mesh.geometry.attributes.normal;
+      var indices = mesh.geometry.index.array, folded = new Uint8Array(positions.count);
+      var a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
+      var faceNormal = new THREE.Vector3(), average = new THREE.Vector3(), sample = new THREE.Vector3();
+      // Preserve the shading of any existing fold whose face and normals disagree.
+      for (var face = 0; face < indices.length; face += 3) {
+        var ia = indices[face], ib = indices[face+1], ic = indices[face+2];
+        a.fromBufferAttribute(positions,ia); b.fromBufferAttribute(positions,ib); c.fromBufferAttribute(positions,ic);
+        faceNormal.subVectors(b,a).cross(c.sub(a));
+        if (faceNormal.lengthSq() < 1e-20) continue;
+        average.fromBufferAttribute(normals,ia).add(sample.fromBufferAttribute(normals,ib))
+          .add(sample.fromBufferAttribute(normals,ic));
+        if (faceNormal.dot(average) <= 0) folded[ia] = folded[ib] = folded[ic] = 1;
+      }
+      var around = 16, sections = (positions.count-2)/around;
+      var point = new THREE.Vector3(), normal = new THREE.Vector3(), fitted = new THREE.Vector3();
+      for (var vi = 0; vi < sections*around; vi++) {
+        var t = Math.floor(vi/around)/sections;
+        if (t >= .36) break;
+        if (folded[vi]) continue;
+        point.fromBufferAttribute(positions,vi);
+        if (point.x < surface.minX || point.x > surface.maxX || point.z < surface.minZ || point.z > surface.maxZ) continue;
+        var ix = Math.min(surface.divisions-1,Math.floor((point.x-surface.minX)/(surface.maxX-surface.minX)*surface.divisions));
+        var iz = Math.min(surface.divisions-1,Math.floor((point.z-surface.minZ)/(surface.maxZ-surface.minZ)*surface.divisions));
+        var candidates = surface.bins[iz*surface.divisions+ix], sign = point.y >= surface.centreY ? 1 : -1;
+        for (var ci = 0; ci < candidates.length; ci++) {
+          var triangle = surface.triangles[candidates[ci]], pa = triangle.a, pb = triangle.b, pc = triangle.c;
+          var u = ((pb.z-pc.z)*(point.x-pc.x)+(pc.x-pb.x)*(point.z-pc.z))/triangle.determinant;
+          var v = ((pc.z-pa.z)*(point.x-pc.x)+(pa.x-pc.x)*(point.z-pc.z))/triangle.determinant, w = 1-u-v;
+          if (u < -1e-9 || v < -1e-9 || w < -1e-9) continue;
+          var y = u*pa.y+v*pb.y+w*pc.y;
+          if ((y-surface.centreY)*sign < -1e-10) continue;
+          var signedDistance = (point.y-y)*sign, gap = Math.abs(signedDistance);
+          var distanceFade = Math.max(0,Math.min(1,(gap-.0025)/.0065));
+          var rowFade = Math.max(0,Math.min(1,(.36-t)/.18));
+          var weight = (1-distanceFade*distanceFade*(3-2*distanceFade))*rowFade*rowFade*(3-2*rowFade);
+          if (weight <= 0) break;
+          fitted.copy(triangle.normals[0]).multiplyScalar(u).addScaledVector(triangle.normals[1],v)
+            .addScaledVector(triangle.normals[2],w).normalize();
+          normal.fromBufferAttribute(normals,vi);
+          var alignment = Math.max(0,Math.min(1,(normal.dot(fitted)-.15)/.30));
+          weight *= alignment*alignment*(3-2*alignment);
+          if (weight > 0) {
+            normal.lerp(fitted,weight).normalize();
+            normals.setXYZ(vi,normal.x,normal.y,normal.z);
+          }
+          break;
+        }
+      }
     }
     function roundedDigit(parent, points, radius, name, dorsalSign) {
       var curve = new THREE.CatmullRomCurve3(points), sections = 48, around = 16;
@@ -993,14 +1319,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       return nail;
     }
     function fittedPalmCrease(parent,palm,points,name) {
-      // Ray fitting uses the same sculpted palm triangles that are rendered.
-      var surface = new THREE.Mesh(palm.geometry,skin); surface.position.copy(palm.position); surface.scale.copy(palm.scale); surface.updateMatrixWorld(true);
-      var fitted = points.map(function (point) {
-        var hit = new THREE.Raycaster(new THREE.Vector3(point[0],.10,point[1]),new THREE.Vector3(0,-1,0)).intersectObject(surface,false)[0];
-        return hit ? hit.point.clone().add(new THREE.Vector3(0,.0008,0)) : null;
-      });
-      if (fitted.some(function (point) { return !point; })) return;
-      var crease = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(fitted),24,.0014,6,false),skinDetail);
+      // Fit both edges throughout the fold so interpolation cannot bury a
+      // detail in the curved palm or leave a raised tube crossing its surface.
+      var surface = new THREE.Mesh(palm.geometry,skin);
+      surface.position.copy(palm.position); surface.scale.copy(palm.scale);
+      surface.quaternion.copy(palm.quaternion); surface.updateMatrixWorld(true);
+      var curve = new THREE.CatmullRomCurve3(points.map(function (point) {
+        return new THREE.Vector3(point[0],0,point[1]);
+      }));
+      var ray = new THREE.Raycaster(), down = new THREE.Vector3(0,-1,0);
+      var vertices = [], indices = [], centres = [], sections = 48;
+      for (var row = 0; row <= sections; row++) {
+        var t = row/sections, centre = curve.getPoint(t), tangent = curve.getTangent(t).normalize();
+        var across = new THREE.Vector3(tangent.z,0,-tangent.x);
+        var edge = Math.min(1,t/.15,(1-t)/.15);
+        // A narrow fold fades to a fine tip at either end of the palm.
+        var halfWidth = .0011*(.08+.92*edge*edge*(3-2*edge));
+        var rowStart = vertices.length;
+        for (var side = -1; side <= 1; side += 2) {
+          var point = centre.clone().addScaledVector(across,side*halfWidth);
+          ray.set(new THREE.Vector3(point.x,.10,point.z),down);
+          var hit = ray.intersectObject(surface,false)[0];
+          if (!hit) return;
+          vertices.push(hit.point.x,hit.point.y+.00035,hit.point.z);
+        }
+        centres.push(new THREE.Vector3(centre.x,(vertices[rowStart+1]+vertices[rowStart+4])*.5,centre.z));
+        if (row < sections) {
+          var p = row*2, q = p+2;
+          indices.push(p,q,p+1,p+1,q,q+1);
+        }
+      }
+      var geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));
+      geometry.setIndex(indices); geometry.computeVertexNormals();
+      geometry.parameters = { path:new THREE.CatmullRomCurve3(centres) };
+      var crease = new THREE.Mesh(geometry,skinDetail);
       crease.name = name; parent.add(crease);
     }
     function pelvisSurface() {
@@ -1052,12 +1405,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
     function torsoSurface() {
       // One continuous shell, with the contact surface at y=.25. The existing
       // chest rig still owns depression and recoil around the fixed back plane.
-      var sections = [[-0.91, .16, .13], [-0.75, .38, .20], [-0.55, .56, .23],
+      var sections = [[-0.91, .16, age === 'infant' ? .19 : .15], [-0.75, .38, .20], [-0.55, .56, .23],
         [-0.34, .56, .25], [-0.18, .55, .25], [.08, .49, .23], [.38, .41, .20], [.70, .42, .20], [.94, .38, .18]];
       var vertices = [], indices = [], rings = [], around = 40;
       for (var si = 0; si < sections.length - 1; si++) {
-        for (var step = 0; step < 5; step++) {
-          var u = step / 5, smooth = u * u * (3 - 2 * u), a = sections[si], b = sections[si + 1];
+        // Shorter collar triangles keep the shirt/neck intersection smooth.
+        var steps = si < 2 ? 20 : 5;
+        for (var step = 0; step < steps; step++) {
+          var u = step / steps, smooth = u * u * (3 - 2 * u), a = sections[si], b = sections[si + 1];
           rings.push([a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * smooth, a[2] + (b[2] - a[2]) * smooth]);
         }
       }
@@ -1189,11 +1544,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
     var torso = torsoSurface();
     pelvisSurface();
 
-    shapedSegment(body, new THREE.Vector3(0, .025, -.82 * profile.torso),
-      new THREE.Vector3(0, .055, -1.12 * profile.torso),
+    var headRestY = 0.025 / ageScale - 0.30 + 0.30 * profile.head;
+    // Seat the neck inside the age-scaled skull, including its lowered rest.
+    // The head keeps its own airway pivot while the neck's end cap stays buried.
+    shapedSegment(body, new THREE.Vector3(0, .025, -.75 * profile.torso),
+      new THREE.Vector3(0, headRestY, -1.12 * profile.torso),
       [[0,.16*profile.width],[.35,.14*profile.width],[.75,.12*profile.width],[1,.115*profile.width]], skin, 'fr-manikin-neck');
     var headPivot = new THREE.Group();
-    headPivot.position.set(0, 0.07, -1.25 * profile.torso);
+    headPivot.position.set(0, headRestY, -1.25 * profile.torso);
     body.add(headPivot);
     meshes.head = headPivot;
     headPivot.name = 'fr-manikin-head-pivot';
@@ -1226,7 +1584,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
     }
     smoothCoincidentNormals(skull.geometry);
     function noseWidth(z) { return .014 + .025*Math.exp(-Math.pow((z-.012)/.046,2)); }
-    function noseDepth(z) { return .009 + .052*Math.exp(-Math.pow((z-.010)/.051,2)); }
+    function noseDepth(z) { return .014 + .038*Math.exp(-Math.pow((z-.010)/.051,2)); }
     function noseFrontY(x,z) {
       var u = (z+.105)/.0825-1, across = x/noseWidth(z);
       return faceSurfaceY(x,z)-.0015 + Math.sqrt(Math.max(0,1-u*u-across*across))*noseDepth(z);
@@ -1253,7 +1611,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       normal.add(new THREE.Vector3(-reflected.x,reflected.y,reflected.z)).normalize();
       nasalNormals.setXYZ(ni,normal.x,normal.y,normal.z);
     }
-    var nose = new THREE.Mesh(noseGeometry,skin);
+    var noseSkin = skin;
+    if (api.contrast) {
+      // A curved edge keeps the white nose visible against the white cheek.
+      noseSkin = skin.clone(); noseSkin.name = 'fr-patient-nose-skin';
+      var noseContourStrength = { value: 1 };
+      noseSkin.userData.frNoseContourStrength = noseContourStrength;
+      noseSkin.onBeforeCompile = function (shader) {
+        shader.uniforms.frNoseContourStrength = noseContourStrength;
+        shader.vertexShader = shader.vertexShader
+          .replace('#include <common>', '#include <common>\nvarying vec3 frNoseSurfaceNormal;\nvarying vec3 frNoseViewPosition;')
+          .replace('#include <project_vertex>', '#include <project_vertex>\nfrNoseSurfaceNormal = normalize(normalMatrix * normal);\nfrNoseViewPosition = -mvPosition.xyz;');
+        shader.fragmentShader = shader.fragmentShader
+          .replace('#include <common>', '#include <common>\nvarying vec3 frNoseSurfaceNormal;\nvarying vec3 frNoseViewPosition;\nuniform float frNoseContourStrength;')
+          .replace('#include <color_fragment>', '#include <color_fragment>\nfloat frNoseFacing = abs(dot(normalize(frNoseSurfaceNormal), normalize(frNoseViewPosition)));\nfloat frNoseContour = mix(0.08, 1.0, smoothstep(0.20, 0.45, frNoseFacing));\ndiffuseColor.rgb *= mix(1.0, frNoseContour, frNoseContourStrength);');
+      };
+      noseSkin.customProgramCacheKey = function () { return 'fr-patient-nose-contrast-contours-v1'; };
+    }
+    var nose = new THREE.Mesh(noseGeometry,noseSkin);
     nose.name = 'fr-manikin-nose'; headPivot.add(nose);
     var pairedNostrilGeometry;
     [-1,1].forEach(function (side) {
@@ -1288,27 +1663,103 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
     function fittedFaceLine(points,lift,radius,name,mat) {
       faceLine(points.map(function (p) { return [p[0],faceSurfaceY(p[0],p[1])+lift,p[1]]; }),radius,name,mat);
     }
-    function fittedLid(points,side,upper,name) {
-      var seam = new THREE.CatmullRomCurve3(points.map(function (p) { return new THREE.Vector3(p[0],0,p[1]); }));
-      var geometry = new THREE.SphereGeometry(1,32,16), positions = geometry.attributes.position;
-      // Closed lid surfaces settle into the face at the seam and corners.
-      // The upper lid has a wider, softer fold than the lower lid.
-      for (var i = 0; i < positions.count; i++) {
-        var u = positions.getX(i), y = positions.getY(i), z = positions.getZ(i);
-        var q = Math.max(0,1-u*u), root = Math.sqrt(q), point = seam.getPoint((u+1)/2);
-        var width = upper ? .020 : .010;
-        var lidZ = point.z + (upper ? -width*(q-z*root)/2 : width*(q+z*root)/2);
-        var lidY = faceSurfaceY(point.x,lidZ)-.0012 + y*root*(y >= 0 ? (upper ? .005 : .0035) : .0012);
-        positions.setXYZ(i,point.x*profile.head,lidY*profile.head,lidZ*profile.head);
+    function eyeSurfaceTriangles(geometry,scale) {
+      var positions = geometry.attributes.position, indices = geometry.index.array, triangles = [];
+      for (var i = 0; i < indices.length; i += 3) {
+        var points = [0,1,2].map(function (offset) {
+          return new THREE.Vector3().fromBufferAttribute(positions,indices[i+offset]).multiply(scale);
+        });
+        if (points.some(function (p) { return p.y <= 0; })) continue;
+        var xs = points.map(function (p) { return p.x; }), zs = points.map(function (p) { return p.z; });
+        var bounds = { minX:Math.min.apply(null,xs), maxX:Math.max.apply(null,xs),
+          minZ:Math.min.apply(null,zs), maxZ:Math.max.apply(null,zs) };
+        if (bounds.maxZ < -.14 || bounds.minZ > -.075 || bounds.maxX < -.17 || bounds.minX > .17) continue;
+        var a = points[0], b = points[1], c = points[2];
+        var denominator = (b.z-c.z)*(a.x-c.x)+(c.x-b.x)*(a.z-c.z);
+        if (Math.abs(denominator) > 1e-12) triangles.push({a:a,b:b,c:c,bounds:bounds,denominator:denominator});
       }
-      // Mirroring the left eye reverses orientation; keep its shell outward.
+      return triangles;
+    }
+    function eyeSurfaceY(triangles,x,z) {
+      var surface = -Infinity;
+      triangles.forEach(function (triangle) {
+        var bounds = triangle.bounds;
+        if (x < bounds.minX-1e-7 || x > bounds.maxX+1e-7 || z < bounds.minZ-1e-7 || z > bounds.maxZ+1e-7) return;
+        var a = triangle.a, b = triangle.b, c = triangle.c;
+        var u = ((b.z-c.z)*(x-c.x)+(c.x-b.x)*(z-c.z))/triangle.denominator;
+        var v = ((c.z-a.z)*(x-c.x)+(a.x-c.x)*(z-c.z))/triangle.denominator;
+        if (u >= -1e-6 && v >= -1e-6 && u+v <= 1+1e-6) surface = Math.max(surface,u*a.y+v*b.y+(1-u-v)*c.y);
+      });
+      return isFinite(surface) ? surface : faceSurfaceY(x,z);
+    }
+    var eyeSkin = eyeSurfaceTriangles(skull.geometry,new THREE.Vector3(headHalfWidth,headHalfDepth,headHalfLength));
+    function fittedEyeLine(points,id) {
+      var curve = new THREE.CatmullRomCurve3(points.map(function (p) { return new THREE.Vector3(p[0],0,p[1]); }));
+      var surface = eyeSkin.slice(), scale = new THREE.Vector3(1,1,1).divideScalar(profile.head);
+      ['upper','lower'].forEach(function (part) {
+        surface = surface.concat(eyeSurfaceTriangles(headPivot.getObjectByName('fr-manikin-'+part+'-lid-'+id).geometry,scale));
+      });
+      var vertices = [], indices = [], rows = [], intervals = 96;
+      // A shallow tapered crease follows the rendered lids and skin at every sample.
+      for (var i = 0; i <= intervals; i++) {
+        var t = i/intervals, point = curve.getPoint(t), tangent = curve.getTangent(t);
+        var width = .0018*Math.pow(Math.sin(Math.PI*t),.55), row = [];
+        var across = i === 0 || i === intervals ? [0] : [-1,0,1];
+        across.forEach(function (v) {
+          var x = point.x-tangent.z*width*v, z = point.z+tangent.x*width*v;
+          row.push(vertices.length/3);
+          vertices.push(x*profile.head,(eyeSurfaceY(surface,x,z)+.00075)*profile.head,z*profile.head);
+        });
+        rows.push(row);
+      }
+      function triangle(a,b,c) {
+        var p = new THREE.Vector3().fromArray(vertices,a*3), q = new THREE.Vector3().fromArray(vertices,b*3), r = new THREE.Vector3().fromArray(vertices,c*3);
+        if (q.sub(p).cross(r.sub(p)).y < 0) indices.push(a,c,b); else indices.push(a,b,c);
+      }
+      for (var i = 0; i < intervals; i++) {
+        var a = rows[i], b = rows[i+1];
+        for (var j = 0; j < 2; j++) {
+          if (a.length === 1) triangle(a[0],b[j],b[j+1]);
+          else if (b.length === 1) triangle(a[j],b[0],a[j+1]);
+          else { triangle(a[j],b[j],a[j+1]); triangle(a[j+1],b[j],b[j+1]); }
+        }
+      }
+      var geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3)); geometry.setIndex(indices); geometry.computeVertexNormals();
+      var line = new THREE.Mesh(geometry,skinDetail); line.name = 'fr-manikin-eye-'+id; headPivot.add(line);
+    }
+    var pairedLidGeometry = {};
+    function fittedLid(points,side,upper,name) {
+      var geometry, positions, kind = upper ? 'upper' : 'lower';
       if (side < 0) {
+        var seam = new THREE.CatmullRomCurve3(points.map(function (p) { return new THREE.Vector3(p[0],0,p[1]); }));
+        geometry = new THREE.SphereGeometry(1,48,24); positions = geometry.attributes.position;
+        // Seat the closed shells beneath the rendered skin on both sides.
+        for (var i = 0; i < positions.count; i++) {
+          var u = positions.getY(i), y = -positions.getX(i), z = positions.getZ(i);
+          var q = Math.max(0,1-u*u), root = Math.sqrt(q), point = seam.getPoint((u+1)/2);
+          var width = upper ? .020 : .010;
+          var lidZ = point.z + (upper ? -width*(q-z*root)/2 : width*(q+z*root)/2);
+          var skinY = Math.min(eyeSurfaceY(eyeSkin,point.x,lidZ),eyeSurfaceY(eyeSkin,-point.x,lidZ));
+          var lidY = skinY-.0012 + y*root*(y >= 0 ? (upper ? .005 : .0035) : .0012);
+          positions.setXYZ(i,point.x*profile.head,lidY*profile.head,lidZ*profile.head);
+        }
         var indices = geometry.index.array;
         for (var i = 0; i < indices.length; i += 3) {
           var swap = indices[i+1]; indices[i+1] = indices[i+2]; indices[i+2] = swap;
         }
+        smoothCoincidentNormals(geometry); pairedLidGeometry[kind] = geometry;
+      } else {
+        geometry = pairedLidGeometry[kind].clone(); geometry.parameters = pairedLidGeometry[kind].parameters;
+        positions = geometry.attributes.position;
+        var normals = geometry.attributes.normal, indices = geometry.index.array;
+        for (var i = 0; i < positions.count; i++) {
+          positions.setX(i,-positions.getX(i)); normals.setX(i,-normals.getX(i));
+        }
+        for (var i = 0; i < indices.length; i += 3) {
+          var swap = indices[i+1]; indices[i+1] = indices[i+2]; indices[i+2] = swap;
+        }
       }
-      smoothCoincidentNormals(geometry);
       var lid = new THREE.Mesh(geometry,skin); lid.name = name; headPivot.add(lid);
     }
     var pairedBrowGeometry;
@@ -1345,9 +1796,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       if (side < 0) {
         var arch = new THREE.CatmullRomCurve3(points.map(function (p) { return new THREE.Vector3(p[0],0,p[1]); }));
         geometry = new THREE.SphereGeometry(1,64,32); positions = geometry.attributes.position;
-        // A shallow closed brow widens along the arch and tapers into the skin.
+        // Latitude rings follow the shallow brow arch and taper into the skin.
         for (var i = 0; i < positions.count; i++) {
-          var u = positions.getX(i), y = positions.getY(i), z = positions.getZ(i);
+          var u = positions.getY(i), y = -positions.getX(i), z = positions.getZ(i);
           var root = Math.sqrt(Math.max(0,1-u*u)), point = arch.getPoint((u+1)/2);
           var browZ = point.z + z*root*.0055;
           // Fit both sides beneath the actual skull facets before mirroring.
@@ -1379,24 +1830,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         .map(function (p) { return [p[0]*side,p[1]]; });
       fittedLid(lid,side,true,'fr-manikin-upper-lid-'+id);
       fittedLid(lid,side,false,'fr-manikin-lower-lid-'+id);
-      fittedFaceLine(lid,.0025,.0018,'fr-manikin-eye-'+id);
+      fittedEyeLine(lid,id);
       var brow = [[.046,-.148],[.074,-.154],[.105,-.154],[.134,-.146],[.159,-.132]]
         .map(function (p) { return [p[0]*side,p[1]]; });
       fittedBrow(brow,side,'fr-manikin-brow-'+id);
     });
     var lipMaterial = material(0xb8876f, 8, null, 0x888888);
+    if (!api.contrast && lipMaterial.specular) lipMaterial.specular.setHex(0x060606);
     function mouthSeamZ(u) { return .125 + .008*Math.max(0,1-u*u); }
+    function mouthSurfaceTriangles(geometry,scale) {
+      var positions = geometry.attributes.position, indices = geometry.index.array, triangles = [];
+      for (var i = 0; i < indices.length; i += 3) {
+        var points = [0,1,2].map(function (offset) {
+          return new THREE.Vector3().fromBufferAttribute(positions,indices[i+offset]).multiply(scale);
+        });
+        if (points.some(function (p) { return p.y <= 0; })) continue;
+        var xs = points.map(function (p) { return p.x; }), zs = points.map(function (p) { return p.z; });
+        var bounds = { minX:Math.min.apply(null,xs), maxX:Math.max.apply(null,xs),
+          minZ:Math.min.apply(null,zs), maxZ:Math.max.apply(null,zs) };
+        if (bounds.maxZ < .105 || bounds.minZ > .155 || bounds.maxX < -.065 || bounds.minX > .065) continue;
+        var a = points[0], b = points[1], c = points[2];
+        var denominator = (b.z-c.z)*(a.x-c.x)+(c.x-b.x)*(a.z-c.z);
+        if (Math.abs(denominator) > 1e-12) triangles.push({a:a,b:b,c:c,bounds:bounds,denominator:denominator});
+      }
+      return triangles;
+    }
+    var mouthSkin = mouthSurfaceTriangles(skull.geometry,new THREE.Vector3(headHalfWidth,headHalfDepth,headHalfLength));
     function fittedLip(upper, name) {
-      // A closed shell follows the facial skin. Its buried boundary and shallow
-      // rounded front both taper to the mouth corners, joining the closed seam.
+      // Latitude rings keep the closed lip shell even along its tapered contour.
       var geometry = new THREE.SphereGeometry(1,48,24), positions = geometry.attributes.position;
       for (var i = 0; i < positions.count; i++) {
-        var u = positions.getX(i), y = positions.getY(i), z = positions.getZ(i);
+        var u = positions.getY(i), y = -positions.getX(i), z = positions.getZ(i);
         var q = Math.max(0,1-u*u), root = Math.sqrt(q), x = .058*u;
         var width = upper ? .013 + .004*(Math.exp(-Math.pow((x-.022)/.011,2))
           + Math.exp(-Math.pow((x+.022)/.011,2))) : .017;
         var lipZ = mouthSeamZ(u) + (upper ? -width*(q-z*root)/2 : width*(q+z*root)/2);
-        var lipY = faceSurfaceY(x,lipZ)-.0012 + y*root*(y >= 0 ? .008 : .0012);
+        var skinY = Math.min(eyeSurfaceY(mouthSkin,x,lipZ),eyeSurfaceY(mouthSkin,-x,lipZ));
+        var lipY = skinY-.0012 + y*root*(y >= 0 ? .008 : .0012);
         positions.setXYZ(i,x*profile.head,lipY*profile.head,lipZ*profile.head);
       }
       smoothCoincidentNormals(geometry);
@@ -1404,25 +1874,82 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
     }
     fittedLip(true,'fr-manikin-upper-lip');
     fittedLip(false,'fr-manikin-lower-lip');
-    var mouthSeam = [];
-    for (var mi = 0; mi <= 16; mi++) {
-      var mu = mi/8-1; mouthSeam.push([.058*mu,mouthSeamZ(mu)]);
+    var mouthSurface = mouthSkin.slice(), mouthScale = new THREE.Vector3(1,1,1).divideScalar(profile.head);
+    ['upper','lower'].forEach(function (part) {
+      mouthSurface = mouthSurface.concat(mouthSurfaceTriangles(headPivot.getObjectByName('fr-manikin-'+part+'-lip').geometry,mouthScale));
+    });
+    var mouthVertices = [], mouthIndices = [], mouthRows = [], mouthIntervals = 96;
+    var mouthAcross = [-1,-.75,-.5,-.25,-.125,-.0625,0,.0625,.125,.25,.5,.75,1];
+    // A tapered crease follows the visible lip and skin triangles without a tube rim.
+    for (var mi = 0; mi <= mouthIntervals; mi++) {
+      var mt = mi/mouthIntervals, mu = mt*2-1, mx = .058*mu, mz = mouthSeamZ(mu);
+      var mouthWidth = .0018*Math.pow(Math.sin(Math.PI*mt),.55), mouthRow = [];
+      (mi === 0 || mi === mouthIntervals ? [0] : mouthAcross).forEach(function (across) {
+        var z = mz+across*mouthWidth;
+        mouthRow.push(mouthVertices.length/3);
+        var surfaceY = Math.max(eyeSurfaceY(mouthSurface,mx,z),eyeSurfaceY(mouthSurface,-mx,z));
+        mouthVertices.push(mx*profile.head,(surfaceY+.00075)*profile.head,z*profile.head);
+      });
+      mouthRows.push(mouthRow);
     }
-    fittedFaceLine(mouthSeam,.0004,.0018,'fr-manikin-mouth');
+    function mouthTriangle(a,b,c) {
+      var p = new THREE.Vector3().fromArray(mouthVertices,a*3), q = new THREE.Vector3().fromArray(mouthVertices,b*3), r = new THREE.Vector3().fromArray(mouthVertices,c*3);
+      if (q.sub(p).cross(r.sub(p)).y < 0) mouthIndices.push(a,c,b); else mouthIndices.push(a,b,c);
+    }
+    for (var mi = 0; mi < mouthIntervals; mi++) {
+      var a = mouthRows[mi], b = mouthRows[mi+1];
+      for (var mj = 0; mj < mouthAcross.length-1; mj++) {
+        if (a.length === 1) mouthTriangle(a[0],b[mj],b[mj+1]);
+        else if (b.length === 1) mouthTriangle(a[mj],b[0],a[mj+1]);
+        else { mouthTriangle(a[mj],b[mj],a[mj+1]); mouthTriangle(a[mj+1],b[mj],b[mj+1]); }
+      }
+    }
+    var mouthGeometry = new THREE.BufferGeometry();
+    mouthGeometry.setAttribute('position',new THREE.Float32BufferAttribute(mouthVertices,3)); mouthGeometry.setIndex(mouthIndices); mouthGeometry.computeVertexNormals();
+    mouthGeometry.parameters = { halfWidth:.0018, longitudinalSegments:mouthIntervals, transverseSamples:mouthAcross.length };
+    var mouth = new THREE.Mesh(mouthGeometry,skinDetail); mouth.name = 'fr-manikin-mouth'; headPivot.add(mouth);
     var earInnerMaterial = material(0xaf8166,6,null,0x777777);
     [-1,1].forEach(function (side) {
       var id = side < 0 ? 'left' : 'right', ear = new THREE.Group();
       ear.name = 'fr-manikin-ear-'+id; ear.position.set(side*.285,.006,-.014);
       ear.position.multiplyScalar(profile.head); ear.scale.setScalar(profile.head); headPivot.add(ear);
-      blob(ear,.039,.062,.070,skin,0,0,0).name = ear.name+'-base';
-      function earSurfaceX(y,z) {
-        return .039*Math.sqrt(Math.max(0,1-Math.pow(y/.062,2)-Math.pow(z/.070,2)));
+      // Narrow the lower lobe and flatten the pinna where it joins the head.
+      // All relief shares the sculpted shell so folds stay seated in the skin.
+      function earWidth(z) {
+        var t = Math.max(0,Math.min(1,(z/.070+1)/2));
+        return .88-.18*t*t*(3-2*t);
       }
-      function earPoint(y,z,lift) { return new THREE.Vector3(side*(earSurfaceX(y,z)+lift),y,z); }
-      var recessVertices = [side*(.039+.0008),0,0], recessIndices = [];
+      function earBasin(y,z) {
+        var radius = Math.pow((y-.004*earWidth(z))/(.024*earWidth(z)),2)+Math.pow((z+.004)/.034,2);
+        return .0028*Math.pow(Math.max(0,1-radius),2);
+      }
+      function earSurfaceX(y,z) {
+        return .029*Math.sqrt(Math.max(0,1-Math.pow(y/(.062*earWidth(z)),2)-Math.pow(z/.070,2)))-earBasin(y,z);
+      }
+      function earPoint(y,z,lift) {
+        y *= earWidth(z);
+        return new THREE.Vector3(side*(earSurfaceX(y,z)+lift),y,z);
+      }
+      var earBase = blob(ear,.039,.062,.070,skin,0,0,0), baseVertices = earBase.geometry.attributes.position;
+      earBase.name = ear.name+'-base';
+      for (var bi = 0; bi < baseVertices.count; bi++) {
+        var x = baseVertices.getX(bi), y = baseVertices.getY(bi)*.062, z = baseVertices.getZ(bi)*.070;
+        y *= earWidth(z);
+        var sculptedX = x*.029/.039-(x > 0 ? earBasin(y,z)/.039 : 0);
+        baseVertices.setXYZ(bi,side*sculptedX,y/.062,z/.070);
+      }
+      if (side < 0) {
+        var baseIndices = earBase.geometry.index.array;
+        for (var bi = 0; bi < baseIndices.length; bi += 3) {
+          var swap = baseIndices[bi+1]; baseIndices[bi+1] = baseIndices[bi+2]; baseIndices[bi+2] = swap;
+        }
+      }
+      smoothCoincidentNormals(earBase.geometry);
+      var recessCentre = earPoint(.004,-.004,.0008);
+      var recessVertices = recessCentre.toArray(), recessIndices = [];
       for (var row = 1; row <= 4; row++) {
         for (var j = 0; j < 24; j++) {
-          var angle = j/24*Math.PI*2, point = earPoint(Math.cos(angle)*.026*row/4,Math.sin(angle)*.032*row/4,.0008);
+          var angle = j/24*Math.PI*2, point = earPoint(.004+Math.cos(angle)*.024*row/4,-.004+Math.sin(angle)*.030*row/4,.0008);
           recessVertices.push(point.x,point.y,point.z);
           var p = 1+(row-1)*24+j, next = 1+(row-1)*24+(j+1)%24;
           if (row === 1) recessIndices.push(0,p,next);
@@ -1448,7 +1975,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       for (var ri = 0; ri < rimGeometry.parameters.tubularSegments; ri++) {
         var point = rimPath.getPoint(ri/rimGeometry.parameters.tubularSegments);
         var tangent = rimPath.getTangent(ri/rimGeometry.parameters.tubularSegments);
-        rimFrames.push({point: point,
+        var lower = Math.max(0,Math.min(1,(point.z-.010)/.040));
+        // The helix fades into the soft lower lobe instead of closing as a raised ring.
+        rimFrames.push({point: point, relief: .0065-.0057*lower*lower*(3-2*lower),
           transverse: new THREE.Vector3(0,tangent.z,-tangent.y).normalize(),
           width: .00625-.00075*Math.max(-1,Math.min(1,point.z/.059))});
       }
@@ -1459,7 +1988,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         var across = Math.cos(angle), front = Math.sin(angle);
         var y = frame.point.y+frame.transverse.y*across*frame.width;
         var z = frame.point.z+frame.transverse.z*across*frame.width;
-        var x = earSurfaceX(y,z)-.0018+front*(front >= 0 ? .0065 : .0012);
+        var x = earSurfaceX(y,z)-.0018+front*(front >= 0 ? frame.relief : .0012);
         rimVertices.setXYZ(ri,side*x,y,z);
       }
       if (side < 0) {
@@ -1506,7 +2035,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       smoothCoincidentNormals(foldGeometry);
       var fold = new THREE.Mesh(foldGeometry,skin);
       fold.name = ear.name+'-antihelix'; ear.add(fold);
-      blob(ear,.010,.016,.013,skin,side*(earSurfaceX(.023,.026)+.003),.023,.026).name = ear.name+'-tragus';
+      var tragusPoint = earPoint(.023,.026,.003);
+      blob(ear,.008,.013,.011,skin,tragusPoint.x,tragusPoint.y,tragusPoint.z).name = ear.name+'-tragus';
     });
 
     // The airway step is the whole reason the recovery position exists, and it
@@ -1612,10 +2142,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       [leftShoulder, leftElbow, leftWrist],
       [rightShoulder, rightElbow, rightWrist]
     ].forEach(function (arm, index) {
-      var id = index ? 'right' : 'left', sleeveEnd = arm[0].clone().lerp(arm[1], .42);
-      shapedSegment(patientArms, arm[0], arm[1], [[0,.11],[.3,.112],[.7,.085],[1,.072]], skin, 'fr-patient-' + id + '-upper-arm');
-      shapedSegment(patientArms, arm[0], sleeveEnd, [[0,.122],[.6,.12],[1,.098]], shirt, 'fr-patient-' + id + '-sleeve');
-      shapedSegment(patientArms, arm[1], arm[2], [[0,.072],[.28,.087],[.65,.068],[1,.048]], skin, 'fr-patient-' + id + '-forearm');
+      var id = index ? 'right' : 'left';
+      var upperArm = shapedSegment(patientArms, arm[0], arm[1], [[0,.11],[.3,.112],[.7,.085],[1,.072]], skin, 'fr-patient-' + id + '-upper-arm');
+      // The arm opens into the shoulder; its artificial proximal disk is hidden.
+      upperArm.geometry.setDrawRange(0, upperArm.geometry.groups[2].start);
+      patientSleeve(patientArms, arm[0], arm[1], shirt, 'fr-patient-' + id + '-sleeve');
+      var patientForearm = shapedSegment(patientArms, arm[1], arm[2], [[0,.072],[.28,.087],[.65,.068],[1,.048]], skin, 'fr-patient-' + id + '-forearm');
       joint(patientArms, arm[1], .078, skin).name = 'fr-patient-' + id + '-elbow';
       var patientHand = new THREE.Group();
       patientHand.name = 'fr-patient-' + id + '-hand'; patientHand.position.copy(arm[2]);
@@ -1634,15 +2166,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       patientHand.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(handSide,palmNormal,handForward));
       patientArms.add(patientHand);
       var thumbSide = index ? 1 : -1;
-      var patientWrist = blob(patientHand,.048,.04,.055,skin,0,0,.015,true);
-      patientWrist.name = 'fr-patient-'+id+'-wrist'; sculptWristFold(patientWrist,.15);
+      var patientWrist = patientWristConnector(patientHand,arm[1],arm[2],skin,'fr-patient-'+id+'-wrist');
+      patientWrist.name = 'fr-patient-'+id+'-wrist'; sculptWristFold(patientWrist,.15,1);
+      finishPatientWristNormals(patientWrist,patientForearm);
       var patientPalm = blob(patientHand,.078,.044,.095,skin,0,0,.085,true);
       patientPalm.name = 'fr-patient-'+id+'-palm'; sculptPalm(patientPalm,thumbSide,1);
+      finishPatientPalmNormals(patientWrist,patientPalm);
+      var patientFingerNormalSurface = patientFingerSurface(patientPalm);
       for (var f = 0; f < 4; f++) {
         var x = (f-1.5)*.037, reach = [.225,.25,.235,.205][index ? 3-f : f];
         var digit = roundedDigit(patientHand,[new THREE.Vector3(x,0,.145),
           new THREE.Vector3(x,.007,.145+(reach-.145)*.38),new THREE.Vector3(x,.018,.145+(reach-.145)*.78),
           new THREE.Vector3(x,.027,reach)],.017,'fr-patient-'+id+'-finger-'+f,-1);
+        finishPatientFingerNormals(digit.mesh,patientFingerNormalSurface);
         fittedNail(patientHand,digit,'fr-patient-'+id+'-nail-'+f);
       }
       var patientThumb = roundedDigit(patientHand,[new THREE.Vector3(thumbSide*.060,-.007,.055),
@@ -1848,6 +2384,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
     var baseHandsY = (0.64 * ageScale) + (age === 'infant' ? 0.08 : 0.03);
     hands.position.set(0, baseHandsY, -0.18 * ageScale);
     api.scene.add(hands);
+    // Separate rescuer finishes keep the teaching hands readable without
+    // changing the patient's materials or the colored depth references.
+    var rescuerSkin = skin.clone(), rescuerNail = nailMaterial.clone();
+    rescuerSkin.name = 'fr-rescuer-skin'; rescuerNail.name = 'fr-rescuer-nail';
+    if (api.contrast) {
+      // Surface normals supply a dark contour at grazing angles. The same
+      // opaque geometry still handles contact, occlusion and camera bounds.
+      var contourStrength = { value: 1 };
+      rescuerSkin.userData.frContourStrength = contourStrength;
+      rescuerSkin.onBeforeCompile = function (shader) {
+        shader.uniforms.frContourStrength = contourStrength;
+        shader.vertexShader = shader.vertexShader
+          .replace('#include <common>', '#include <common>\nvarying vec3 frSurfaceNormal;\nvarying vec3 frViewPosition;')
+          .replace('#include <project_vertex>', '#include <project_vertex>\nfrSurfaceNormal = normalize(normalMatrix * normal);\nfrViewPosition = -mvPosition.xyz;');
+        shader.fragmentShader = shader.fragmentShader
+          .replace('#include <common>', '#include <common>\nvarying vec3 frSurfaceNormal;\nvarying vec3 frViewPosition;\nuniform float frContourStrength;')
+          .replace('#include <color_fragment>', '#include <color_fragment>\nfloat frFacing = abs(dot(normalize(frSurfaceNormal), normalize(frViewPosition)));\nfloat frContour = mix(0.08, 1.0, smoothstep(0.12, 0.28, frFacing));\ndiffuseColor.rgb *= mix(1.0, frContour, frContourStrength);');
+      };
+      rescuerSkin.customProgramCacheKey = function () { return 'fr-rescuer-contrast-contours-v1'; };
+    } else {
+      // The shared viewer uses several lights. Reduce diffuse washout and
+      // broad highlights so the finger curves retain their midtones.
+      rescuerSkin.color.multiplyScalar(0.76);
+      rescuerNail.color.multiplyScalar(0.82);
+      if (rescuerSkin.specular) rescuerSkin.specular.setHex(0x000000);
+      if (rescuerNail.specular) rescuerNail.specular.setHex(0x090909);
+    }
+    if (!api.contrast) {
+      // Keep the patient's face and hands on one finish. These viewer lights
+      // need quieter skin highlights to retain cheek and finger curvature.
+      // Rescuer finishes were cloned above and keep their own settings.
+      skin.color.multiplyScalar(0.86);
+      if (skin.specular) skin.specular.setHex(0x060606);
+    }
+    if (api.contrast) {
+      // Separate the supporting hand from the cheek and reveal finger curves.
+      // Keep the face, clothing, nails and teaching marks on their own finishes.
+      var patientArmSkin = skin.clone(), patientContourStrength = { value: 1 };
+      patientArmSkin.name = 'fr-patient-arm-skin';
+      patientArmSkin.userData.frPatientContourStrength = patientContourStrength;
+      patientArmSkin.onBeforeCompile = function (shader) {
+        shader.uniforms.frPatientContourStrength = patientContourStrength;
+        shader.vertexShader = shader.vertexShader
+          .replace('#include <common>', '#include <common>\nvarying vec3 frPatientSurfaceNormal;\nvarying vec3 frPatientViewPosition;')
+          .replace('#include <project_vertex>', '#include <project_vertex>\nfrPatientSurfaceNormal = normalize(normalMatrix * normal);\nfrPatientViewPosition = -mvPosition.xyz;');
+        shader.fragmentShader = shader.fragmentShader
+          .replace('#include <common>', '#include <common>\nvarying vec3 frPatientSurfaceNormal;\nvarying vec3 frPatientViewPosition;\nuniform float frPatientContourStrength;')
+          .replace('#include <color_fragment>', '#include <color_fragment>\nfloat frPatientFacing = abs(dot(normalize(frPatientSurfaceNormal), normalize(frPatientViewPosition)));\nfloat frPatientContour = mix(0.08, 1.0, smoothstep(0.34, 0.60, frPatientFacing));\ndiffuseColor.rgb *= mix(1.0, frPatientContour, frPatientContourStrength);');
+      };
+      patientArmSkin.customProgramCacheKey = function () { return 'fr-patient-arm-contrast-contours-v1'; };
+      patientArms.traverse(function (part) {
+        if (part.isMesh && part.material === skin) part.material = patientArmSkin;
+      });
+    }
     function rescuerHand(y, turn, id) {
       var hand = new THREE.Group();
       hand.name = 'fr-rescuer-' + id;
@@ -1865,7 +2455,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       // load-bearing part of the hand distinguishable from the fingertips.
       var heel = blob(hand, 0.085 * handSize, 0.036, 0.065 * handSize, skin, 0, 0, 0.075 * handSize);
       heel.name = 'fr-rescuer-' + id + '-heel';
-      var wristBridge = blob(hand,.070*handSize,.034,.062*handSize,skin,0,.030,.125*handSize,true);
+      // Offset each wrist toward its own arm, behind the heel contact patch.
+      // This keeps the two aligned palms supported without crossing the wrists.
+      var wristBridge = blob(hand,.070*handSize,.034,.052*handSize,skin,thumbSide*.05*handSize,.032,.155*handSize,true);
       wristBridge.name = 'fr-rescuer-' + id + '-wrist-bridge'; sculptWristFold(wristBridge,-.48);
       for (var fi = 0; fi < 4; fi++) {
         var fx = (fi-1.5)*.047*handSize, length = [.245,.265,.250,.220][id === 'upper' ? 3-fi : fi]*handSize;
@@ -1878,13 +2470,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         new THREE.Vector3(thumbSide*.115*handSize,.020,-.025*handSize),new THREE.Vector3(thumbSide*.137*handSize,.038,-.060*handSize),
         new THREE.Vector3(thumbSide*.140*handSize,.046,-.075*handSize)],.027*handSize,'fr-rescuer-'+id+'-thumb',1);
       fittedNail(hand,rescuerThumb,'fr-rescuer-'+id+'-thumb-nail');
-      var wrist = new THREE.Vector3(0, 0.055, 0.15 * handSize);
-      // Both elbows and sleeve ends share a height despite the stacked palms.
-      // The wrist-to-elbow axis stays straight as the whole rig follows the chest.
-      var elbow = new THREE.Vector3(0, 0.46-y, wrist.z);
-      var shoulder = new THREE.Vector3(0, 0.90-y, wrist.z);
-      var wristJoint = joint(hand, wrist, 0.053 * handSize, skin);
-      wristJoint.scale.z *= .84;
+      var wrist = new THREE.Vector3(thumbSide*.08*handSize, 0.055, 0.185 * handSize);
+      // Gently separate the arms while keeping each wrist, elbow and shoulder
+      // on one straight axis. The two elbows share a height above the stack.
+      var shoulder = new THREE.Vector3(thumbSide*.20*handSize, 0.90-y, wrist.z);
+      var elbow = wrist.clone().lerp(shoulder, (.46-y-wrist.y)/(shoulder.y-wrist.y));
+      // A continuous wrist bend settles inside the forearm and palm bridge.
+      // Its end rings are buried, leaving the load-bearing heel unchanged.
+      var wristAxis = elbow.clone().sub(wrist).normalize();
+      var wristRootDistance = .040 * handSize;
+      var wristRoot = wrist.clone().addScaledVector(wristAxis, wristRootDistance);
+      var wristEnd = wristBridge.position.clone();
+      var wristAcross = new THREE.Vector3(1, 0, 0).addScaledVector(wristAxis, -wristAxis.x).normalize();
+      var wristVertical = new THREE.Vector3().crossVectors(wristAxis.clone().negate(), wristAcross).normalize();
+      var wristU = wristRootDistance / wrist.distanceTo(elbow) / .32;
+      var wristRootRadius = (.048 + (.067 - .048) * wristU * wristU * (3 - 2 * wristU)) * handSize - .0015 * handSize;
+      var wristVertices = [], wristIndices = [], wristSections = 24, wristAround = 48, wristRootSteps = 8;
+      var wristBend = wrist.clone().addScaledVector(wristAxis, -.006 * handSize);
+      var wristScale = new THREE.Vector3(.053 * handSize, .053 * handSize, .053 * handSize * .84);
+      function appendWristPoint(point) {
+        point.sub(wrist).divide(wristScale);
+        wristVertices.push(point.x, point.y, point.z);
+      }
+      for (var wi = 0; wi <= wristSections; wi++) {
+        var wt = Math.max(0, (wi - wristRootSteps) / (wristSections - wristRootSteps)), wo = 1 - wt;
+        for (var wj = 0; wj < wristAround; wj++) {
+          var wa = wj / wristAround * Math.PI * 2;
+          if (wi <= wristRootSteps) {
+            var rootT = wi / wristRootSteps, rootEase = rootT * rootT * (3 - 2 * rootT);
+            var rootRadius = wristRootRadius + (.050 * handSize - wristRootRadius) * rootEase;
+            appendWristPoint(wristRoot.clone().lerp(wristBend, rootT)
+              .addScaledVector(wristAcross, Math.cos(wa) * rootRadius)
+              .addScaledVector(wristVertical, Math.sin(wa) * rootRadius * .84));
+          } else {
+          var start = wristBend.clone().addScaledVector(wristAcross, Math.cos(wa) * .050 * handSize)
+            .addScaledVector(wristVertical, Math.sin(wa) * .050 * handSize * .84);
+          var end = wristEnd.clone().add(new THREE.Vector3(Math.cos(wa) * .050 * handSize, 0, Math.sin(wa) * .035 * handSize));
+          var controlA = start.clone().addScaledVector(wristAxis, -.006 * handSize);
+          var controlB = end.clone().add(new THREE.Vector3(0, .006 * handSize, 0));
+          appendWristPoint(start.multiplyScalar(wo * wo * wo).addScaledVector(controlA, 3 * wo * wo * wt)
+            .addScaledVector(controlB, 3 * wo * wt * wt).addScaledVector(end, wt * wt * wt));
+          }
+          if (wi < wristSections) {
+            var wp = wi * wristAround + wj, wn = wi * wristAround + (wj + 1) % wristAround;
+            wristIndices.push(wp, wn, wp + wristAround, wn, wn + wristAround, wp + wristAround);
+          }
+        }
+      }
+      var wristRootCap = wristVertices.length / 3; appendWristPoint(wristRoot.clone());
+      var wristEndCap = wristVertices.length / 3; appendWristPoint(wristEnd.clone());
+      for (var wj = 0; wj < wristAround; wj++) {
+        var wn = (wj + 1) % wristAround, last = wristSections * wristAround;
+        wristIndices.push(wristRootCap, wn, wj, wristEndCap, last + wj, last + wn);
+      }
+      var wristGeometry = new THREE.BufferGeometry();
+      wristGeometry.setAttribute('position', new THREE.Float32BufferAttribute(wristVertices, 3));
+      wristGeometry.setIndex(wristIndices); wristGeometry.computeVertexNormals();
+      wristGeometry.parameters = { radialSegments: wristAround, ringCount: wristSections + 1,
+        rootRing: 0, bendRing: wristRootSteps, palmRing: wristSections, forearmRootDistance: wristRootDistance };
+      var wristJoint = new THREE.Mesh(wristGeometry, skin);
+      wristJoint.position.copy(wrist); wristJoint.scale.copy(wristScale); hand.add(wristJoint);
       // The same oval section and zero-slope end rings meet at the elbow.
       // A shared skin contour replaces the exposed spherical joint, keeping
       // the straight load-bearing axis readable without a bead or dark seam.
@@ -1892,16 +2537,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       var forearm = shapedSegment(hand, wrist, elbow,
         [[0,.048*handSize],[.32,.067*handSize],[.62,.072*handSize],[.86,.065*handSize],[1,.061*handSize]],
         skin, 'fr-rescuer-' + id + '-forearm', armSection);
-      shapedSegment(hand, elbow, shoulder,
+      // Internal end disks can flicker through the continuous elbow surface.
+      forearm.geometry.setDrawRange(0, forearm.geometry.groups[0].count);
+      // Match the visible collar to the forearm's existing side shading.
+      // Only normals change; the buried ends and hand-contact surfaces stay put.
+      var wristPositions = wristGeometry.attributes.position, wristNormals = wristGeometry.attributes.normal;
+      var armPositions = forearm.geometry.attributes.position, armNormals = forearm.geometry.attributes.normal;
+      var armIndices = forearm.geometry.index.array, armShape = forearm.geometry.parameters;
+      var armInverse = forearm.quaternion.clone().invert(), normalRay = new THREE.Ray();
+      for (var wi = 0; wi < 7 * wristAround; wi++) {
+        var row = Math.floor(wi / wristAround), fade = Math.max(0, (row - 3) / 4);
+        var weight = 1 - fade * fade * (3 - 2 * fade);
+        var point = new THREE.Vector3().fromBufferAttribute(wristPositions, wi).multiply(wristScale)
+          .add(wrist).sub(forearm.position).applyQuaternion(armInverse);
+        var armRow = Math.min(armShape.heightSegments - 1, Math.max(0,
+          Math.floor((.5 - point.y / armShape.height) * armShape.heightSegments)));
+        var angle = (Math.atan2(point.x, point.z / armSection[1]) + Math.PI * 2) % (Math.PI * 2);
+        var sector = Math.min(armShape.radialSegments - 1, Math.floor(angle / (Math.PI * 2) * armShape.radialSegments));
+        normalRay.set(new THREE.Vector3(0, point.y, 0), new THREE.Vector3(point.x, 0, point.z).normalize());
+        // Adjacent sectors cover rounding at the shared Float32 edges.
+        for (var probe = 0; probe < 6; probe++) {
+          var neighbor = (sector + [0, 1, -1][Math.floor(probe / 2)] + armShape.radialSegments) % armShape.radialSegments;
+          var offset = (neighbor * armShape.heightSegments + armRow) * 6 + (probe % 2) * 3;
+          var ids = [armIndices[offset], armIndices[offset + 1], armIndices[offset + 2]];
+          var points = ids.map(function (vertex) { return new THREE.Vector3().fromBufferAttribute(armPositions, vertex); });
+          var hit = normalRay.intersectTriangle(points[0], points[1], points[2], false, new THREE.Vector3());
+          if (!hit) continue;
+          var weights = THREE.Triangle.getBarycoord(hit, points[0], points[1], points[2], new THREE.Vector3());
+          var fitted = new THREE.Vector3();
+          for (var corner = 0; corner < 3; corner++) fitted.addScaledVector(
+            new THREE.Vector3().fromBufferAttribute(armNormals, ids[corner]), weights.getComponent(corner));
+          fitted.normalize().applyQuaternion(forearm.quaternion);
+          var normal = new THREE.Vector3().fromBufferAttribute(wristNormals, wi).divide(wristScale).normalize();
+          normal.lerp(fitted, weight).normalize().multiply(wristScale).normalize();
+          wristNormals.setXYZ(wi, normal.x, normal.y, normal.z);
+          break;
+        }
+      }
+      var upperArm = shapedSegment(hand, elbow, shoulder,
         [[0,.061*handSize],[.38,.073*handSize],[.75,.068*handSize],[1,.060*handSize]],
         skin, 'fr-rescuer-' + id + '-upper-arm', armSection);
-      shapedSegment(hand, new THREE.Vector3(0,shoulder.y-.17,shoulder.z), new THREE.Vector3(0,shoulder.y+.10,shoulder.z),
+      upperArm.geometry.setDrawRange(0, upperArm.geometry.groups[2].start);
+      var armAxis = shoulder.clone().sub(wrist).normalize();
+      shapedSegment(hand, shoulder.clone().addScaledVector(armAxis,-.17), shoulder.clone().addScaledVector(armAxis,.10),
         [[0,.076*handSize],[.15,.079*handSize],[.60,.077*handSize],[1,.070*handSize]],
         trousers, 'fr-rescuer-' + id + '-sleeve', armSection);
+      hand.traverse(function (part) {
+        if (part.material === skin) part.material = rescuerSkin;
+        else if (part.material === nailMaterial) part.material = rescuerNail;
+      });
       return hand;
     }
     rescuerHand(0, Math.PI / 2, 'lower');
-    var upperHand = age === 'adult' || age === 'child' ? rescuerHand(0.071, -Math.PI / 2, 'upper') : null;
+    // Both palms face the same direction. This offset is calibrated against
+    // the lower hand mesh so the upper heel rests on its dorsal wrist surface.
+    var upperHand = age === 'adult' || age === 'child' ? rescuerHand(0.078, Math.PI / 2, 'upper') : null;
     if (upperHand) upperHand.visible = age === 'adult' || sp.childHands === 'two';
     meshes.arms = hands;
     // Fit hand surfaces without the long arm bones. The invisible target is
@@ -1910,6 +2600,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
     var contactBounds = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshBasicMaterial());
     contactBounds.name = 'fr-hand-contact-bounds'; handContact.add(contactBounds);
     handContact.name = 'fr-hand-contact-focus'; handContact.visible = false;
+    // Stable numeric metadata lets a side view refit after the depth range or
+    // child-hand choice changes, without retaining any scene meshes.
+    handContact.userData.inspection = { center: [0,0,0], radius: 0 };
     api.scene.add(handContact);
     if (mode === 'place' || mode === 'depth' || mode === 'coach') meshes.handContact = handContact;
     if (mode === 'recovery' && armOut) {
@@ -1935,6 +2628,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         normal: new THREE.Vector3(0,1,0).applyQuaternion(palmRotation).toArray(),
         forward: new THREE.Vector3(0,0,1).applyQuaternion(palmRotation).toArray()
       };
+    }
+    if (mode === 'recovery' && handAtCheek) {
+      // Alias the existing hand for camera inspection; no extra scene or pick target.
+      api.scene.updateMatrixWorld(true);
+      var supportingHand = patientArms.getObjectByName('fr-patient-right-hand');
+      var supportBox = new THREE.Box3().setFromObject(supportingHand);
+      var supportRotation = supportingHand.getWorldQuaternion(new THREE.Quaternion());
+      var supportNormal = new THREE.Vector3(0,1,0).applyQuaternion(supportRotation);
+      var supportForward = new THREE.Vector3(0,0,1).applyQuaternion(supportRotation);
+      var supportAcross = new THREE.Vector3().crossVectors(supportNormal, supportForward).normalize();
+      var supportCheek = cheekSurface.clone().applyMatrix4(body.matrixWorld);
+      var supportContextRadius = 0.14 * ageScale * profile.head;
+      // Include a small cheek patch so the close-up explains the hand's position.
+      var supportContext = [supportCheek,
+        supportCheek.clone().addScaledVector(supportForward, supportContextRadius),
+        supportCheek.clone().addScaledVector(supportForward, -supportContextRadius),
+        supportCheek.clone().addScaledVector(supportAcross, supportContextRadius),
+        supportCheek.clone().addScaledVector(supportAcross, -supportContextRadius)];
+      supportContext.forEach(function (point) { supportBox.expandByPoint(point); });
+      var supportSphere = supportBox.getBoundingSphere(new THREE.Sphere());
+      var supportFaceSphere = supportBox.clone().union(new THREE.Box3().setFromObject(headPivot)).getBoundingSphere(new THREE.Sphere());
+      var supportFacePoint = new THREE.Vector3(), supportFaceRadiusSq = 0;
+      [supportingHand, headPivot].forEach(function (group) {
+        group.traverse(function (part) {
+          var positions = part.geometry && part.geometry.attributes && part.geometry.attributes.position;
+          if (!positions) return;
+          for (var i = 0; i < positions.count; i++) {
+            supportFacePoint.fromBufferAttribute(positions, i).applyMatrix4(part.matrixWorld);
+            supportFaceRadiusSq = Math.max(supportFaceRadiusSq, supportFacePoint.distanceToSquared(supportFaceSphere.center));
+          }
+        });
+      });
+      supportContext.forEach(function (point) { supportFaceRadiusSq = Math.max(supportFaceRadiusSq, point.distanceToSquared(supportFaceSphere.center)); });
+      supportFaceSphere.radius = Math.sqrt(supportFaceRadiusSq);
+      supportingHand.userData.inspection = {
+        center: supportSphere.center.toArray(), radius: supportSphere.radius,
+        faceFrame: { center: supportFaceSphere.center.toArray(), radius: supportFaceSphere.radius },
+        normal: supportNormal.toArray(), forward: supportForward.toArray(),
+        context: supportContext.map(function (point) { return point.toArray(); })
+      };
+      meshes.supportingHand = supportingHand;
     }
     var contactShape = null, contactUpper = null, contactSignature = null;
     function fitHandContact(settings) {
@@ -1972,6 +2706,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       bounds.max.z = Math.max(bounds.max.z, 0);
       contactBounds.position.copy(bounds.getCenter(new THREE.Vector3()));
       contactBounds.scale.copy(bounds.getSize(new THREE.Vector3()));
+      var contactSphere = bounds.getBoundingSphere(new THREE.Sphere());
+      var inspection = handContact.userData.inspection;
+      inspection.center[0] = contactSphere.center.x; inspection.center[1] = contactSphere.center.y; inspection.center[2] = contactSphere.center.z;
+      inspection.radius = contactSphere.radius;
       return true;
     }
     // The existing centre-of-chest part also provides a focus target on this
@@ -2056,9 +2794,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
     rail.position.set(-0.82 * ageScale, restHeight - 0.16 * ageScale, -0.18 * ageScale);
     rail.scale.y = ageScale;
     depthGuide.add(rail);
-    var restLine = new THREE.Mesh(new THREE.BoxGeometry(1.65 * ageScale, 0.008, 0.016), referenceMat);
+    // Keep the fixed resting-height reference outside the hands and torso.
+    // Its central gap includes both hand choices and the full wrist/arm rig,
+    // so compression and child-hand switching never sweep a bar through them.
+    api.scene.updateMatrixWorld(true);
+    var restClearance = new THREE.Box3().setFromObject(torso);
+    restClearance.union(new THREE.Box3().setFromObject(hands));
+    var restMargin = .055 * handSize, restExtent = .825 * ageScale;
+    var restLeft = Math.min(-restMargin, restClearance.min.x - restMargin);
+    var restRight = Math.max(restMargin, restClearance.max.x + restMargin);
+    var restLine = new THREE.Group();
     restLine.name = 'fr-depth-resting-line';
     restLine.position.set(0, restHeight, -0.18 * ageScale);
+    function restSide(name, from, to) {
+      if (to <= from) return;
+      var line = new THREE.Mesh(new THREE.BoxGeometry(to-from, 0.008, 0.016), referenceMat);
+      line.name = 'fr-depth-resting-'+name;
+      line.position.x = (from+to)/2;
+      restLine.add(line);
+    }
+    restSide('left', -restExtent, restLeft);
+    restSide('right', restRight, restExtent);
     depthGuide.add(restLine);
     var depthMark = new THREE.Mesh(new THREE.BoxGeometry(0.24 * ageScale, 0.018, 0.05), referenceMat);
     depthMark.name = 'fr-depth-reference';
@@ -2287,7 +3043,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         guideMat.opacity = reduced ? 0.55 : (0.42 + guidePulse * 0.45);
         if (heartMat.emissive) heartMat.emissive.setRGB(0.18 + compression * 0.42, 0.01, 0.04);
         var contactChanged = fitHandContact(depthLab);
-        if ((meshes.handContact || meshes.nearPalm) && typeof api.handInspectionSync === 'function') {
+        if ((meshes.handContact || meshes.nearPalm || meshes.supportingHand) && typeof api.handInspectionSync === 'function') {
           api.handInspectionSync(contactChanged, meshes.handContact ? hands.visible : true);
         }
       }
@@ -2344,10 +3100,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
     frPalmDetailDirty = false;
     return focused;
   }
+  function focusSupportingHand() {
+    if (typeof BODY3D.focus !== 'function' || !frSupportingHandInfo) return false;
+    var width = frHandInspectionNode && frHandInspectionNode.clientWidth;
+    var height = frHandInspectionNode && frHandInspectionNode.clientHeight;
+    var aspect = width > 0 && height > 0 ? width / height : 1;
+    var info = frSupportingHandInfo;
+    if (aspect < 1.15 && info.faceFrame) info = { center: info.faceFrame.center, radius: info.faceFrame.radius,
+      normal: info.normal, forward: info.forward };
+    var fit = palmDetailCamera(info, aspect, FR_BODY_CAMERA_HOME);
+    if (!fit) return false;
+    BODY3D.reset();
+    BODY3D.nudge(fit.yaw - FR_BODY_CAMERA_HOME.yaw, fit.pitch - FR_BODY_CAMERA_HOME.pitch);
+    var focused = BODY3D.focus('supportingHand', { distance: fit.distance, target: fit.target, immediate: true }) !== false;
+    frHandInspectionFocus = focused ? 'supportingHand' : false;
+    frHandInspectionSize = width > 0 && height > 0 ? width + ':' + height : null;
+    frSupportingHandDirty = false;
+    return focused;
+  }
+  function focusHeelSide() {
+    if (typeof BODY3D.focus !== 'function' || !frHeelSideInfo) return false;
+    var width = frHandInspectionNode && frHandInspectionNode.clientWidth;
+    var height = frHandInspectionNode && frHandInspectionNode.clientHeight;
+    var yaw = .25, pitch = .28;
+    // Reuse the palm camera's sphere/FOV fit and translated-orbit correction.
+    // A zero forward vector requests this fixed world-space side direction.
+    var fit = palmDetailCamera({ center: frHeelSideInfo.center, radius: frHeelSideInfo.radius,
+      normal: [Math.sin(yaw)*Math.cos(pitch), Math.sin(pitch), Math.cos(yaw)*Math.cos(pitch)],
+      forward: [0,0,0] }, width > 0 && height > 0 ? width / height : 1, FR_BODY_CAMERA_HOME);
+    if (!fit) return false;
+    BODY3D.reset();
+    BODY3D.nudge(fit.yaw - FR_BODY_CAMERA_HOME.yaw, fit.pitch - FR_BODY_CAMERA_HOME.pitch);
+    var focused = BODY3D.focus('handContact', { distance: fit.distance, target: fit.target, immediate: true }) !== false;
+    frHandInspectionFocus = focused ? 'heelSide' : false;
+    frHandInspectionSize = width > 0 && height > 0 ? width + ':' + height : null;
+    frHeelSideDirty = false;
+    return focused;
+  }
   function buildInspectableBodyScene(THREE, api) {
     api.handInspectionSync = function (changed, visible) {
       if (!frHandInspectionFocus || typeof BODY3D.focus !== 'function') return;
-      if (frHandInspectionFocus === 'contact' && !visible) { BODY3D.reset(); return; }
+      if (isHandContactInspection() && !visible) { BODY3D.reset(); return; }
       // The shell updates projection before the content frame. Fit again when
       // this inspection's mount changes size, including fullscreen and panels.
       var width = frHandInspectionNode && frHandInspectionNode.clientWidth;
@@ -2355,21 +3148,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       var size = width > 0 && height > 0 ? width + ':' + height : null;
       var resized = size !== null && size !== frHandInspectionSize;
       if (size !== null) frHandInspectionSize = size;
+      if (frHandInspectionFocus === 'heelSide') {
+        if (frHeelSideDirty || resized || changed) focusHeelSide();
+        return;
+      }
       if (frHandInspectionFocus === 'palmDetail') {
         if (frPalmDetailDirty || resized) focusPalmDetail();
         return;
       }
-      if (resized || (frHandInspectionFocus === 'contact' && changed)) {
-        var contact = frHandInspectionFocus === 'contact';
+      if (frHandInspectionFocus === 'supportingHand') {
+        if (frSupportingHandDirty || resized) focusSupportingHand();
+        return;
+      }
+      if (resized || (isHandContactInspection() && changed)) {
+        var contact = isHandContactInspection();
         BODY3D.focus(contact ? 'handContact' : 'nearPalm', { padding: contact ? 1.14 : 1.12, immediate: true });
       }
     };
     var content = buildBodyScene(THREE, api);
     frPalmDetailInfo = content.meshes.nearPalm ? content.meshes.nearPalm.userData.inspection : null;
     frPalmDetailDirty = !!frPalmDetailInfo;
+    frHeelSideInfo = content.meshes.handContact ? content.meshes.handContact.userData.inspection : null;
+    frHeelSideDirty = !!frHeelSideInfo;
+    frSupportingHandInfo = content.meshes.supportingHand ? content.meshes.supportingHand.userData.inspection : null;
+    frSupportingHandDirty = !!frSupportingHandInfo;
     // Clear the shell's cached request when the new activity or pose lacks it.
-    if ((frHandInspectionFocus === 'contact' && !content.meshes.handContact)
-        || ((frHandInspectionFocus === 'palm' || frHandInspectionFocus === 'palmDetail') && !content.meshes.nearPalm)) BODY3D.reset();
+    if ((isHandContactInspection() && !content.meshes.handContact)
+        || ((frHandInspectionFocus === 'palm' || frHandInspectionFocus === 'palmDetail') && !content.meshes.nearPalm)
+        || (frHandInspectionFocus === 'supportingHand' && !content.meshes.supportingHand)) BODY3D.reset();
     return content;
   }
   var FR_NULL_VIEWER = {
@@ -2392,12 +3198,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
   BODY3D.attach = function (node) {
     if (node !== frHandInspectionNode) {
       frHandInspectionSize = null; frPalmDetailInfo = null; frPalmDetailDirty = false;
+      frHeelSideInfo = null; frHeelSideDirty = false;
+      frSupportingHandInfo = null; frSupportingHandDirty = false;
     }
     frHandInspectionNode = node || null;
     if (!node) frHandInspectionFocus = false;
     frBodyAttach(node);
   };
-  BODY3D.reset = function () { frHandInspectionFocus = false; frHandInspectionSize = null; frPalmDetailDirty = false; frBodyReset(); };
+  BODY3D.reset = function () { frHandInspectionFocus = false; frHandInspectionSize = null; frPalmDetailDirty = false; frHeelSideDirty = false; frSupportingHandDirty = false; frBodyReset(); };
 
   // ── Live-region announcers (rate-limited; mirror RoadReady pattern) ──
   var _frPoliteTimer = null, _frAssertTimer = null;
@@ -2793,7 +3601,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
     ].join('\n');
     depthStyle.textContent += '\n' + [
       '.fr-model-key{margin-top:12px;padding:12px 14px;border:1px solid #527087;border-radius:10px;background:#101e30;color:#e2e8f0}.fr-model-key h3{margin:0 0 10px;font-size:13px;line-height:1.5;font-weight:800;color:#f1f5f9}.fr-model-key ul{list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px;padding:0;margin:0}.fr-model-key li{display:flex;align-items:center;gap:8px;min-width:0;font-size:12px;line-height:1.5}.fr-model-symbol{flex-shrink:0;overflow:visible}.fr-model-symbol.is-rest,.fr-model-symbol.is-reference{color:#5eead4}.fr-model-symbol.is-current{color:#fbbf24}.fr-model-symbol.is-saved{color:#c4b5fd}.fr-model-symbol.is-travel{color:#f1f5f9}.fr-model-symbol.is-direction{color:#7dd3fc}.fr-model-key.is-contrast .fr-model-symbol{color:#fff}@media(max-width:760px){.fr-body3d-layout.is-depth .fr-model-key{grid-row:3}.fr-body3d-layout.is-depth .fr-depth-inspector{grid-row:4}.fr-body3d-layout.is-depth>.fr-body3d-content{grid-row:5}.fr-body3d-layout.is-depth .fr-depth-profile{grid-row:6}.fr-body3d-layout.is-depth .fr-body3d-orbit{grid-row:7}.fr-body3d-layout.is-depth .fr-body3d-visual-help{grid-row:8}}@media(forced-colors:active){.fr-model-key{background:Canvas;border-color:CanvasText;color:CanvasText}.fr-model-key h3{color:CanvasText}.fr-model-key .fr-model-symbol{color:CanvasText}}',
-      '.fr-hand-inspection button[aria-pressed=true]{box-shadow:inset 0 0 0 2px currentColor}@media(max-width:760px){.fr-body3d-layout.is-depth .fr-hand-inspection{grid-row:3}.fr-body3d-layout.is-depth .fr-model-key{grid-row:4}.fr-body3d-layout.is-depth .fr-depth-inspector{grid-row:5}.fr-body3d-layout.is-depth>.fr-body3d-content{grid-row:6}.fr-body3d-layout.is-depth .fr-depth-profile{grid-row:7}.fr-body3d-layout.is-depth .fr-body3d-orbit{grid-row:8}.fr-body3d-layout.is-depth .fr-body3d-visual-help{grid-row:9}}@media(forced-colors:active){.fr-hand-inspection{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.fr-hand-inspection p{color:CanvasText!important}.fr-hand-inspection button{background:ButtonFace!important;color:ButtonText!important;border:1px solid ButtonText!important}.fr-hand-inspection button:disabled{color:GrayText!important;border-color:GrayText!important}}',
+      '.fr-depth-scale-title{margin:12px 0 2px;font-size:12px;font-weight:700;color:#f1f5f9}.fr-depth-plot-row{display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;margin:10px 0 0}.fr-depth-scale{position:relative;min-width:0;font-size:11px;line-height:1.2;font-variant-numeric:tabular-nums;color:#e2e8f0}.fr-depth-scale span{position:absolute;right:0;transform:translateY(-50%)}.fr-depth-plot-control{min-width:0;min-height:44px;border-radius:5px;cursor:crosshair;touch-action:pan-y pinch-zoom;user-select:none}.fr-depth-plot-control:focus-visible{outline:3px solid #fbbf24;outline-offset:3px}.fr-depth-profile .fr-depth-plot-control svg{margin:0}.fr-depth-profile .fr-depth-axis{margin-left:calc(5.814% + 39.558px);margin-right:calc(5.814% - 2.442px)}.fr-depth-graph-help,.fr-depth-scale-note{font-size:12px;line-height:1.6}.fr-depth-scale-note{padding:8px 10px;border-left:2px solid #94a3b8;background:#0c1d2d}.fr-depth-height-guide{pointer-events:none}@media(forced-colors:active){.fr-depth-plot-control:focus-visible{outline-color:Highlight}.fr-depth-scale,.fr-depth-scale-title{color:CanvasText}.fr-depth-scale-note{background:Canvas;color:CanvasText;border-color:CanvasText}}',
+      '.fr-hand-inspection button[aria-pressed=true],.fr-recovery-comparison button[aria-pressed=true]{box-shadow:inset 0 0 0 2px currentColor}@media(max-width:760px){.fr-body3d-layout.is-depth .fr-hand-inspection{grid-row:3}.fr-body3d-layout.is-depth .fr-model-key{grid-row:4}.fr-body3d-layout.is-depth .fr-depth-inspector{grid-row:5}.fr-body3d-layout.is-depth>.fr-body3d-content{grid-row:6}.fr-body3d-layout.is-depth .fr-depth-profile{grid-row:7}.fr-body3d-layout.is-depth .fr-body3d-orbit{grid-row:8}.fr-body3d-layout.is-depth .fr-body3d-visual-help{grid-row:9}}@media(forced-colors:active){.fr-hand-inspection{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.fr-hand-inspection p{color:CanvasText!important}.fr-hand-inspection button{background:ButtonFace!important;color:ButtonText!important;border:1px solid ButtonText!important}.fr-hand-inspection button:disabled{color:GrayText!important;border-color:GrayText!important}}',
+      '@media(forced-colors:active){.fr-recovery-comparison{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.fr-recovery-comparison button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}.fr-recovery-comparison button:disabled{color:GrayText!important;border-color:GrayText!important}.fr-recovery-comparison button[aria-pressed=true]{outline:2px solid Highlight;outline-offset:-3px}.fr-hand-study summary,.fr-hand-study-card,.fr-hand-study-feedback,.fr-hand-study textarea{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.fr-hand-study-option input{forced-color-adjust:auto}.fr-hand-study-key{color:CanvasText!important}}',
       '.fr-child-hands{min-width:0;margin:16px 0;padding:14px;border:1px solid #647e95;border-radius:10px;background:#112638;color:#f1f5f9}.fr-child-hands legend{max-width:100%;padding:0 5px;font-size:15px;font-weight:800;color:#f1f5f9}.fr-child-hands p{font-size:13px;line-height:1.6;color:#cbd5e1;margin:8px 0 12px}.fr-child-hand-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.fr-child-hand-option{display:flex;align-items:flex-start;gap:9px;min-height:48px;padding:12px;border:1px solid #72849b;border-radius:8px;background:#162d41;color:#f1f5f9;font-size:13px;line-height:1.5;cursor:pointer}.fr-child-hand-option input{width:18px;height:18px;flex-shrink:0;margin:1px 0 0;accent-color:#0f766e}.fr-child-hand-option.is-selected{border-color:#5eead4;box-shadow:inset 0 0 0 1px #5eead4;background:#153c41}.fr-child-hands .fr-child-hand-reading{color:#f1f5f9;border-left:3px solid #5eead4;padding-left:10px}.fr-child-hands .fr-child-hand-scope{font-size:12px}.fr-child-hands a{color:#93c5fd;text-decoration:underline;font-size:12px}.fr-placement-demo-note{font-size:13px;line-height:1.6;color:#e2e8f0}.fr-child-hands:disabled .fr-child-hand-option{cursor:default}.fr-child-hands input:focus-visible{outline:3px solid #fbbf24;outline-offset:4px}@media(max-width:420px){.fr-child-hand-options{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.fr-child-hand-option.is-selected{outline:2px solid Highlight}.fr-child-hands .fr-child-hand-reading{border-color:CanvasText}}',
       '.fr-body3d-layout.is-depth .fr-body3d-visual{align-self:stretch}',
       '.fr-depth-measurement{margin:14px 0;padding:14px;border:1px solid #7890a6;border-radius:10px;background:#0c1d2d;color:#f1f5f9}.fr-depth-measurement h3{font-size:16px;line-height:1.5;margin:0 0 6px}.fr-depth-measure-values{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0}.fr-depth-measure-values>div{padding:9px;border:1px solid #475569;border-radius:7px}.fr-depth-measure-values dt{font-size:12px;line-height:1.5;color:#cbd5e1}.fr-depth-measure-values dd{margin:5px 0 0;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;color:#f1f5f9}.fr-depth-measure-values>div:last-child{border-color:#cbd5e1}.fr-depth-measurement .fr-depth-measure-equation{color:#f1f5f9;font-weight:700;font-variant-numeric:tabular-nums}.fr-depth-measurement .fr-depth-measure-comparison{border-left:3px solid #c4b5fd;padding-left:10px;color:#e9d5ff}.fr-depth-measurement .fr-depth-measure-scope{font-size:11px;margin-bottom:0}@media(max-width:760px){.fr-depth-measure-values{grid-template-columns:repeat(2,minmax(0,1fr))}.fr-depth-measure-values>div:last-child{grid-column:1/-1}}',
@@ -2801,6 +3611,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       '@media(forced-colors:active){.fr-depth-prediction-option{border-color:CanvasText}.fr-depth-prediction-option.is-selected{outline:2px solid Highlight}.fr-depth-inquiry textarea{border-color:CanvasText}.fr-depth-evidence button[aria-pressed=true]{outline:2px solid Highlight}}'
     ].join('\n');
     document.head.appendChild(depthStyle);
+  }
+
+  // Normalize only the hand notebook at persistence boundaries. Live tool
+  // records keep their identities until the learner changes or restores them.
+  function handStudyPersistenceMap(rawMap) {
+    if (!rawMap || typeof rawMap !== 'object' || Array.isArray(rawMap)) return null;
+    var records = {}, own = Object.prototype.hasOwnProperty, choices = ['palm', 'back', 'unsure'];
+    ['adult', 'child', 'infant'].forEach(function (key) {
+      if (!own.call(rawMap, key)) return;
+      var stored = rawMap[key];
+      if (!stored || typeof stored !== 'object' || Array.isArray(stored)
+          || !own.call(stored, 'version') || stored.version !== 1) return;
+      var near = own.call(stored, 'near') && choices.indexOf(stored.near) >= 0 ? stored.near : '';
+      var support = own.call(stored, 'support') && choices.indexOf(stored.support) >= 0 ? stored.support : '';
+      records[key] = { version: 1, near: near, support: support,
+        checked: own.call(stored, 'checked') && stored.checked === true && !!near && !!support,
+        note: own.call(stored, 'note') && typeof stored.note === 'string' ? stored.note.slice(0, 2000) : '' };
+    });
+    return records;
   }
 
   window.StemLab.registerTool('firstResponse', {
@@ -2920,10 +3749,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       var faMastery = d.faMastery || {};
       var quizState = d.quizState || { idx: 0, score: 0, answered: false, lastChoice: null };
 
+      // A selected hand is a view choice. Keep it in memory, outside saved practice data.
+      var _frRecoveryHandSelection = useState(null);
+      var frRecoveryHandSelection = _frRecoveryHandSelection[0];
+      var setFrRecoveryHandSelection = _frRecoveryHandSelection[1];
+      var frComparisonCompleted = Array.isArray(d.b3dRec) ? d.b3dRec.length : 0;
+      var frComparisonPose = typeof d.b3dRecView === 'number' && isFinite(d.b3dRecView)
+        ? Math.max(0, Math.min(frComparisonCompleted, Math.floor(d.b3dRecView))) : frComparisonCompleted;
+      var frComparisonReady = BODY3D.status() === 'ready' && d.b3dStatus === 'ready';
+      useEffect(function () {
+        if (view !== 'body3d' || (d.b3dTab || 'gate') !== 'recovery' || !frComparisonReady
+            || (frRecoveryHandSelection === 'near' && frComparisonPose < 2)
+            || (frRecoveryHandSelection === 'support' && frComparisonPose < 3)) {
+          setFrRecoveryHandSelection(null);
+        }
+      }, [view, d.b3dTab, frComparisonReady, frComparisonPose, frRecoveryHandSelection]);
+
       // ── Hydration + Canvas-survival persistence ──
       // The StemLab host's localStorage block does not include firstResponse,
       // so reloads wipe state by default. Layer our own: window slot →
       // localStorage → host state, plus project-JSON ride-along.
+      var _frHandStudyPersistence = useRef({ source: d.b3dHandStudy, map: null });
+      if (_frHandStudyPersistence.current.map === null || _frHandStudyPersistence.current.source !== d.b3dHandStudy) {
+        _frHandStudyPersistence.current.source = d.b3dHandStudy;
+        _frHandStudyPersistence.current.map = handStudyPersistenceMap(d.b3dHandStudy) || {};
+      }
       var _frHydrated = useRef(false);
       if (!_frHydrated.current) {
         _frHydrated.current = true;
@@ -2938,6 +3788,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             if (seed.badges && d.badges === undefined) merge.badges = seed.badges;
             if (seed.modulesVisited && d.modulesVisited === undefined) merge.modulesVisited = seed.modulesVisited;
             if (seed.faMastery && d.faMastery === undefined) merge.faMastery = seed.faMastery;
+            if (d.b3dHandStudy === undefined && Object.prototype.hasOwnProperty.call(seed, 'b3dHandStudy')) {
+              var savedHandStudy = handStudyPersistenceMap(seed.b3dHandStudy);
+              if (savedHandStudy !== null) {
+                _frHandStudyPersistence.current.map = handStudyPersistenceMap(savedHandStudy);
+                merge.b3dHandStudy = savedHandStudy;
+              }
+            }
             if (Object.keys(merge).length > 0) updMulti(merge);
           }
         } catch (e) {}
@@ -3065,12 +3922,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             badges: d.badges || {},
             modulesVisited: d.modulesVisited || {},
             faMastery: d.faMastery || {},
+            b3dHandStudy: _frHandStudyPersistence.current.map || {},
             _ts: Date.now()
           };
           window.__alloflowFirstResponse = snapshot;
           try { localStorage.setItem('firstResponse.state.v1', JSON.stringify(snapshot)); } catch (e) {}
         } catch (e) {}
-      }, [d.consentAccepted, d.badges, d.modulesVisited, d.faMastery]);
+      }, [d.consentAccepted, d.badges, d.modulesVisited, d.faMastery, d.b3dHandStudy]);
 
       // Hot-reload from project-JSON load mid-session.
       useEffect(function () {
@@ -3082,6 +3940,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             if (w.badges) patch.badges = w.badges;
             if (w.modulesVisited) patch.modulesVisited = w.modulesVisited;
             if (w.faMastery) patch.faMastery = w.faMastery;
+            if (Object.prototype.hasOwnProperty.call(w, 'b3dHandStudy')) {
+              var restoredHandStudy = handStudyPersistenceMap(w.b3dHandStudy);
+              if (restoredHandStudy !== null) {
+                _frHandStudyPersistence.current.source = restoredHandStudy;
+                _frHandStudyPersistence.current.map = handStudyPersistenceMap(restoredHandStudy);
+                patch.b3dHandStudy = restoredHandStudy;
+              }
+            }
+            var restoredSnapshot = {};
+            Object.keys(w).forEach(function (key) {
+              Object.defineProperty(restoredSnapshot, key, { value: w[key], enumerable: true, configurable: true, writable: true });
+            });
+            restoredSnapshot.b3dHandStudy = _frHandStudyPersistence.current.map || {};
+            window.__alloflowFirstResponse = restoredSnapshot;
+            try { localStorage.setItem('firstResponse.state.v1', JSON.stringify(restoredSnapshot)); } catch (e) {}
             if (Object.keys(patch).length > 0) updMulti(patch);
           } catch (e) {}
         }
@@ -6830,6 +7703,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         var recRolled = RECOVERY_STEPS.slice(0, recPose).some(function (s) { return s.id === 'roll'; });
         var violations = d.b3dViolations || [];
         var st3 = (BODY3D.status() === 'failed') ? 'failed' : (d.b3dStatus || 'idle');
+        var comparisonHand = tab === 'recovery' && frComparisonReady
+          && ((frRecoveryHandSelection === 'near' && recPose >= 2)
+            || (frRecoveryHandSelection === 'support' && recPose >= 3)) ? frRecoveryHandSelection : null;
+        function recoveryComparisonPressed(kind, pose) { return comparisonHand === kind && recPose === pose; }
         // The correct AED layout depends on the age, so the pad list does too.
         var agePads = aedPadsForAge(age);
         function padInLayout(id) {
@@ -7098,7 +7975,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         var savedInspection = savedDepth && compressionLabSample(Object.assign({}, depthLab, savedDepth), 0, true);
         var inspectionPhase = Math.round(inspected.phase * 100);
         var inspecting = depthLab.motion !== 'cycle';
+        var stationaryDepth = depthLab.depth === depthLab.lean;
         function cycleLabel(phase) {
+          if (stationaryDepth) return __alloT('stem.firstresponse.depth_cycle_stationary', 'No movement');
           if (phase === 0) return __alloT('stem.firstresponse.depth_cycle_start', 'Before the push');
           if (phase < 50) return __alloT('stem.firstresponse.depth_cycle_down', 'Pressing down');
           if (phase === 50) return __alloT('stem.firstresponse.depth_cycle_peak', 'Deepest point');
@@ -7125,7 +8004,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           });
         }
         function renderDepthInspector() {
-          var explanation = inspectionPhase === 0
+          var explanation = stationaryDepth
+            ? __alloT('stem.firstresponse.depth_cycle_stationary_hint', 'The peak and released heights match, so the chest stays {depth} cm below rest throughout this cycle. Movement per push is 0.0 cm, and no direction arrow is shown. Lower depression at release or increase peak depth to compare movement.').replace('{depth}', depthNumber(depthLab.depth))
+            : inspectionPhase === 0
             ? __alloT('stem.firstresponse.depth_cycle_start_hint', 'Notice the starting height. With leaning, the next push begins before the chest has returned to the resting line.')
             : inspectionPhase < 50
               ? __alloT('stem.firstresponse.depth_cycle_down_hint', 'The chest is moving toward its deepest point. Follow the downward arrow and the marker on the graph.')
@@ -7150,9 +8031,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               [0, 25, 50, 75, 100].map(function (phase) { return h('button', { key: phase, type: 'button', 'aria-pressed': inspecting && inspectionPhase === phase,
                 'data-fr-focusable': true, onClick: function () { inspectCycle(phase); } }, h('span', null, phase + '%'), cycleLabel(phase)); })),
             h('div', { className: 'fr-depth-inspection-note', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
-              h('strong', null, inspecting ? cycleLabel(inspectionPhase) : __alloT('stem.firstresponse.depth_cycle_animated', 'Animation selected')),
+              h('strong', null, stationaryDepth || inspecting ? cycleLabel(inspectionPhase) : __alloT('stem.firstresponse.depth_cycle_animated', 'Animation selected')),
               inspecting && h('div', { className: 'fr-depth-selected-depth' }, __alloT('stem.firstresponse.depth_cycle_depression', 'Chest depression at this position: {depth} cm.').replace('{depth}', depthNumber(inspected.depression))),
-              h('p', null, inspecting ? explanation : __alloT('stem.firstresponse.depth_cycle_pause_hint', 'Choose a stage or move the slider to inspect a still position. Reduced-motion mode holds the released position.'))));
+              h('p', null, stationaryDepth || inspecting ? explanation : __alloT('stem.firstresponse.depth_cycle_pause_hint', 'Choose a stage or move the slider to inspect a still position. Reduced-motion mode holds the released position.'))));
         }
         function renderDepthInquiry() {
           var signature = JSON.stringify([age, savedDepth.depth, savedDepth.lean, depthLab.depth, depthLab.lean]);
@@ -7259,6 +8140,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               h('p', { className: 'fr-depth-comparison-scope' }, __alloT('stem.firstresponse.depth_compare_scope', 'A stores depth and recoil for one age. Both markers use the current cycle position and animation rate.'))));
         }
         function renderDepthProfile() {
+          var graphPhase = inspecting ? inspectionPhase : depthLab.phase;
+          var graphSample = compressionLabSample(Object.assign({}, depthLab, { motion: 'inspect', phase: graphPhase }), 0, true);
+          function inspectGraphPointer(e) {
+            var svg = e.currentTarget.querySelector('svg'), bounds = svg && svg.getBoundingClientRect();
+            if (!bounds || !bounds.width || !Number.isFinite(e.clientX)) return;
+            var x = (e.clientX - bounds.left) / bounds.width * 430;
+            inspectCycle(Math.round(Math.max(0, Math.min(100, (x - 25) / 380 * 100))));
+          }
+          function inspectGraphKey(e) {
+            var phase = graphPhase;
+            if (e.altKey || e.ctrlKey || e.metaKey) return;
+            if (e.key === 'ArrowRight' || e.key === 'ArrowUp') phase++;
+            else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') phase--;
+            else if (e.key === 'PageUp') phase += 10;
+            else if (e.key === 'PageDown') phase -= 10;
+            else if (e.key === 'Home') phase = 0;
+            else if (e.key === 'End') phase = 100;
+            else return;
+            e.preventDefault(); e.stopPropagation();
+            inspectCycle(Math.max(0, Math.min(100, phase)));
+          }
           var points = [], referencePoints = [];
           for (var i = 0; i <= 80; i++) {
             var wave = (1 - Math.cos(i / 80 * Math.PI * 2)) / 2;
@@ -7272,16 +8174,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             h('div', { className: 'fr-depth-key' + (savedDepth ? ' is-comparing' : '') },
               h('span', null, savedDepth ? __alloT('stem.firstresponse.depth_compare_a_dashed', 'Saved A · dashed') : __alloT('stem.firstresponse.depth_explorer_reference_key', 'Reference with full recoil')),
               h('span', null, savedDepth ? __alloT('stem.firstresponse.depth_compare_b_solid', 'Current B · solid') : __alloT('stem.firstresponse.depth_explorer_settings_key', 'Your model settings'))),
-            h('svg', { viewBox: '0 0 430 140', 'aria-hidden': 'true', focusable: 'false' },
-              h('path', { d: 'M25 22H405 M25 22V124', stroke: '#94a3b8', strokeWidth: 1, fill: 'none' }),
+            h('p', { className: 'fr-depth-scale-title' }, __alloT('stem.firstresponse.depth_graph_units', 'Chest depression (cm)')),
+            h('div', { className: 'fr-depth-plot-row' },
+              h('div', { className: 'fr-depth-scale', 'aria-hidden': 'true' }, [0, depthLab.maximum / 2, depthLab.maximum].map(function (value, index) {
+                return h('span', { key: index, style: { top: (22 + index * 47.5) / 140 * 100 + '%' } }, value === Math.round(value * 10) / 10 ? depthNumber(value) : value.toFixed(2));
+              })),
+              h('div', { className: 'fr-depth-plot-control', role: 'slider', tabIndex: 0,
+                'aria-label': __alloT('stem.firstresponse.depth_graph_inspect', 'Inspect cycle on graph'),
+                'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': graphPhase,
+                'aria-valuetext': __alloT('stem.firstresponse.depth_graph_value', '{phase}% · {stage} · {depth} cm depressed').replace('{phase}', graphPhase).replace('{stage}', cycleLabel(graphPhase)).replace('{depth}', depthNumber(graphSample.depression)),
+                'aria-describedby': 'fr-depth-graph-help', 'data-fr-focusable': true,
+                onFocusCapture: revealDepthControl, onKeyDownCapture: revealDepthControl, onKeyDown: inspectGraphKey,
+                onPointerDown: function (e) {
+                  if (e.button !== 0 || e.isPrimary === false) return;
+                  e.currentTarget.focus({ preventScroll: true });
+                  e.currentTarget.setPointerCapture(e.pointerId); inspectGraphPointer(e);
+                },
+                onPointerMove: function (e) { if (e.currentTarget.hasPointerCapture(e.pointerId)) inspectGraphPointer(e); },
+                onPointerUp: function (e) {
+                  if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
+                  inspectGraphPointer(e); e.currentTarget.releasePointerCapture(e.pointerId);
+                } },
+              h('svg', { viewBox: '0 0 430 140', 'aria-hidden': 'true', focusable: 'false' },
+              h('path', { className: 'fr-depth-grid', d: 'M25 69.5H405 M25 117H405', stroke: '#64748b', strokeWidth: 1, strokeDasharray: '2 5', fill: 'none' }),
+              h('path', { className: 'fr-depth-rest-axis', d: 'M25 22H405 M25 22V124', stroke: '#94a3b8', strokeWidth: 1.5, fill: 'none' }),
+              inspecting && h('path', { className: 'fr-depth-height-guide', d: 'M25 ' + (22 + inspected.depression / depthLab.maximum * 95) + 'H405', stroke: '#f1f5f9', strokeWidth: 1, strokeDasharray: '3 4', fill: 'none' }),
               h('path', { className: 'fr-depth-reference-line', d: referencePoints.join(' '), stroke: savedDepth ? '#c4b5fd' : '#5eead4', strokeWidth: 3, strokeDasharray: '5 4', fill: 'none' }),
               h('path', { d: points.join(' '), stroke: '#fbbf24', strokeWidth: 3, fill: 'none' }),
               h('circle', { cx: 405, cy: 22 + depthLab.lean / depthLab.maximum * 95, r: 5, fill: '#fbbf24' }),
               inspecting && savedDepth && h('rect', { className: 'fr-depth-saved-cursor', x: 20 + inspectionPhase * 3.8, y: 17 + savedInspection.depression / depthLab.maximum * 95, width: 10, height: 10, fill: '#c4b5fd', stroke: '#111e31', strokeWidth: 1.5 }),
               inspecting && h('g', { className: 'fr-depth-cursor' },
                 h('path', { d: 'M' + (25 + inspectionPhase * 3.8) + ' 14V124', stroke: '#f1f5f9', strokeWidth: 1.5, strokeDasharray: '3 4' }),
-                h('circle', { cx: 25 + inspectionPhase * 3.8, cy: 22 + inspected.depression / depthLab.maximum * 95, r: 6, fill: '#111e31', stroke: '#f1f5f9', strokeWidth: 2 }))),
+                h('circle', { cx: 25 + inspectionPhase * 3.8, cy: 22 + inspected.depression / depthLab.maximum * 95, r: 6, fill: '#111e31', stroke: '#f1f5f9', strokeWidth: 2 }))))),
             h('div', { className: 'fr-depth-axis' }, h('span', null, '0%'), h('span', null, '50%'), h('span', null, '100%')),
+            h('p', { id: 'fr-depth-graph-help', className: 'fr-depth-graph-help' }, __alloT('stem.firstresponse.depth_graph_help', 'Tap or drag across the graph to freeze the same moment in 3D. Arrow keys move 1%; Page Up and Page Down move 10%; Home and End select the start and release.')),
+            h('p', { className: 'fr-depth-scale-note' }, __alloT('stem.firstresponse.depth_graph_scale', '0 cm is the resting height. The scale increases downward and changes with age.')),
+            inspecting && savedDepth && h('p', { className: 'fr-depth-graph-comparison' }, __alloT('stem.firstresponse.depth_graph_comparison', 'Saved A: {a} cm · Current B: {b} cm · Difference: {difference} cm.').replace('{a}', depthNumber(savedInspection.depression)).replace('{b}', depthNumber(inspected.depression)).replace('{difference}', depthNumber(Math.abs(savedInspection.depression - inspected.depression)))),
             h('p', { className: 'fr-depth-cursor-caption' }, inspecting
               ? __alloT('stem.firstresponse.depth_cycle_graph_cursor', 'Outlined marker: {phase}% of the cycle · {depth} cm depressed.').replace('{phase}', inspectionPhase).replace('{depth}', depthNumber(inspected.depression))
               : __alloT('stem.firstresponse.depth_cycle_graph_whole', 'The curve shows one whole cycle. Select a still position to place a marker.')),
@@ -7345,7 +8273,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             h('a', { href: age === 'adult' ? 'https://cpr.heart.org/en/resuscitation-science/cpr-and-ecc-guidelines/adult-basic-life-support' : 'https://cpr.heart.org/en/resuscitation-science/cpr-and-ecc-guidelines/pediatric-basic-life-support', target: '_blank', rel: 'noopener noreferrer' }, __alloT('stem.firstresponse.depth_explorer_source', 'AHA guidance: depth, rate, and full recoil')));
         }
         function cameraPreset(kind) {
-          if (kind === 'palmDetail' && tab === 'recovery' && recPose >= 2) { focusPalmDetail(); return; }
+          if (kind === 'supportingHand' && tab === 'recovery' && recPose >= 3) {
+            var supportingFocused = focusSupportingHand();
+            setFrRecoveryHandSelection(frComparisonReady && supportingFocused ? 'support' : null); return;
+          }
+          if (kind === 'palmDetail' && tab === 'recovery' && recPose >= 2) {
+            var palmFocused = focusPalmDetail();
+            setFrRecoveryHandSelection(frComparisonReady && palmFocused ? 'near' : null); return;
+          }
+          setFrRecoveryHandSelection(null);
+          if (kind === 'heelSide') { focusHeelSide(); return; }
           BODY3D.reset();
           if (kind === 'contact' && typeof BODY3D.focus === 'function') {
             BODY3D.nudge(-.9-0.1, .65-.86);
@@ -7355,6 +8292,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           if (kind === 'palm' && tab === 'recovery' && recPose >= 2 && typeof BODY3D.focus === 'function') {
             BODY3D.nudge(-1.55-0.1, 1.15-.86);
             frHandInspectionFocus = BODY3D.focus('nearPalm', { padding: 1.12, immediate: true }) !== false ? 'palm' : false;
+            setFrRecoveryHandSelection(frComparisonReady && frHandInspectionFocus === 'palm' ? 'near' : null);
             return;
           }
           if (kind === 'head' && typeof BODY3D.focus === 'function') {
@@ -7396,9 +8334,216 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           if (kind !== 'home') BODY3D.zoom(sceneAge === 'infant' ? -1.9 : sceneAge === 'child' ? -0.75 : 0.45);
         }
 
+        function inspectRecoveryHandPose(kind, pose) {
+          if (tab !== 'recovery' || ['near', 'support'].indexOf(kind) < 0
+              || [4, 5].indexOf(pose) < 0 || recDone.length < pose) return;
+          BODY3D.reset();
+          if (kind === 'near') {
+            frHandInspectionFocus = 'palmDetail'; frPalmDetailDirty = true;
+            if (recPose === pose) focusPalmDetail();
+          } else {
+            frHandInspectionFocus = 'supportingHand'; frSupportingHandDirty = true;
+            if (recPose === pose) focusSupportingHand();
+          }
+          setFrRecoveryHandSelection(frComparisonReady && frHandInspectionFocus === (kind === 'near' ? 'palmDetail' : 'supportingHand') ? kind : null);
+          if (recPose !== pose) upd('b3dRecView', pose);
+          var handLabel = kind === 'near'
+            ? __alloT('stem.firstresponse.hand_study_near_label', 'Near palm')
+            : __alloT('stem.firstresponse.hand_study_support_label', 'Supporting hand');
+          frAnnounce(handLabel + '. ' + (pose === 4
+            ? __alloT('stem.firstresponse.hand_study_before_label', 'Pose before the turn.')
+            : __alloT('stem.firstresponse.hand_study_after_label', 'Pose after the turn.')));
+          // An evidence action can sit far below the model on a phone. Bring
+          // the fitted view into focus after the queued pose has been drawn.
+          if (st3 === 'ready' && window.requestAnimationFrame) {
+            var stage = frHandInspectionNode, wanted = kind === 'near' ? 'palmDetail' : 'supportingHand';
+            var initiatingFocus = document.activeElement, remainingFrames = 60, revealed = false;
+            // The viewer pauses while offscreen. Reveal it first so a queued
+            // rebuild and inspection fit can run on the next visible frames.
+            function focusFittedStage() {
+              if (stage !== frHandInspectionNode || frHandInspectionFocus !== wanted
+                  || !stage || typeof stage.focus !== 'function'
+                  || stage.isConnected === false
+                  || BODY3D.status() !== 'ready'
+                  || (document.activeElement !== initiatingFocus && document.activeElement !== stage)) return;
+              if (!revealed) {
+                revealed = true;
+                if (typeof stage.scrollIntoView === 'function') stage.scrollIntoView({ block: 'center', behavior: 'instant' });
+              }
+              if (kind === 'near' ? frPalmDetailDirty : frSupportingHandDirty) {
+                if (--remainingFrames > 0) window.requestAnimationFrame(focusFittedStage);
+                return;
+              }
+              stage.focus({ preventScroll: true });
+              if (typeof stage.scrollIntoView === 'function') stage.scrollIntoView({ block: 'center', behavior: 'instant' });
+            }
+            window.requestAnimationFrame(focusFittedStage);
+          }
+        }
+        function inspectSupportingPose(pose) { inspectRecoveryHandPose('support', pose); }
+
+        function renderRecoveryComparison() {
+          if (tab !== 'recovery' || recDone.length < 4) return null;
+          var handLabel = comparisonHand === 'near'
+            ? __alloT('stem.firstresponse.recovery_compare_near', 'Near hand')
+            : __alloT('stem.firstresponse.recovery_compare_support', 'Supporting hand');
+          var poseLabel = recPose === 4 ? __alloT('stem.firstresponse.recovery_compare_before', 'Before the turn')
+            : recPose === 5 ? __alloT('stem.firstresponse.recovery_compare_after', 'After the turn')
+              : recPose > 0 ? RECOVERY_STEPS[recPose - 1].label
+                : __alloT('stem.firstresponse.recovery_review_before', 'Before the sequence');
+          var caption = !frComparisonReady
+            ? __alloT('stem.firstresponse.recovery_compare_unavailable', '3D view unavailable. Use the hand descriptions and study below.')
+            : comparisonHand
+              ? __alloT('stem.firstresponse.recovery_compare_selected', 'Selected hand: {hand} · Pose {pose} — {label}')
+                .replace('{hand}', handLabel).replace('{pose}', recPose).replace('{label}', poseLabel)
+              : __alloT('stem.firstresponse.recovery_compare_choose', 'Choose a hand close-up to compare the completed poses.');
+          return h('section', { className: 'fr-recovery-comparison', 'aria-labelledby': 'fr-recovery-comparison-title',
+            style: { marginTop: 10, padding: 12, border: '1px solid ' + T.border, borderRadius: 10,
+              background: T.card, color: T.text, minWidth: 0, fontSize: 12, lineHeight: 1.55 } },
+            h('h3', { id: 'fr-recovery-comparison-title', style: { margin: '0 0 6px', fontSize: 13 } },
+              __alloT('stem.firstresponse.recovery_compare_title', 'Compare hand poses')),
+            h('p', { id: 'fr-recovery-comparison-caption', className: 'fr-recovery-comparison-caption',
+              style: { margin: '0 0 10px', fontWeight: 600 } }, caption),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.firstresponse.recovery_compare_hand_group', 'Hand to inspect'),
+              style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 6 } },
+              [['near', 2, 'palmDetail', __alloT('stem.firstresponse.recovery_compare_near', 'Near hand')],
+                ['support', 3, 'supportingHand', __alloT('stem.firstresponse.recovery_compare_support', 'Supporting hand')]].map(function (item) {
+                return h('button', { key: item[0], type: 'button', disabled: !frComparisonReady || recPose < item[1],
+                  'aria-pressed': comparisonHand === item[0], 'data-fr-focusable': true,
+                  style: btn({ minHeight: 44, fontSize: 12, flex: '1 1 125px' }),
+                  onClick: function () {
+                    if (recPose === 4 || recPose === 5) inspectRecoveryHandPose(item[0], recPose);
+                    else cameraPreset(item[2]);
+                  } }, item[3]);
+              })),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.firstresponse.recovery_compare_pose_group', 'Completed poses to compare'),
+              style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+              [[4, __alloT('stem.firstresponse.recovery_compare_before', 'Before the turn')],
+                [5, __alloT('stem.firstresponse.recovery_compare_after', 'After the turn')]].map(function (item) {
+                return h('button', { key: item[0], type: 'button', disabled: !comparisonHand || recDone.length < item[0],
+                  'aria-pressed': !!comparisonHand && recPose === item[0], 'data-fr-focusable': true,
+                  style: btn({ minHeight: 44, fontSize: 12, flex: '1 1 125px' }),
+                  onClick: function () { inspectRecoveryHandPose(comparisonHand, item[0]); } }, item[1]);
+              })));
+        }
+
+        function renderHandStudy() {
+          if (tab !== 'recovery' || recDone.length < 5) return null;
+          var studyAge = ageInfo.id;
+          var rawMap = d.b3dHandStudy;
+          var records = {};
+          if (rawMap && typeof rawMap === 'object' && !Array.isArray(rawMap)) {
+            ['adult', 'child', 'infant'].forEach(function (key) {
+              if (Object.prototype.hasOwnProperty.call(rawMap, key)) records[key] = rawMap[key];
+            });
+          }
+          var stored = records[studyAge];
+          var inquiry = stored && typeof stored === 'object' && !Array.isArray(stored) && stored.version === 1 ? stored : {};
+          var choices = ['palm', 'back', 'unsure'];
+          var nearChoice = choices.indexOf(inquiry.near) >= 0 ? inquiry.near : '';
+          var supportChoice = choices.indexOf(inquiry.support) >= 0 ? inquiry.support : '';
+          var studyNote = typeof inquiry.note === 'string' ? inquiry.note.slice(0, 2000) : '';
+          var reviewed = inquiry.checked === true && !!nearChoice && !!supportChoice;
+          function saveHandStudy(values) {
+            var next = Object.assign({}, records);
+            next[studyAge] = Object.assign({ version: 1, near: nearChoice, support: supportChoice,
+              checked: reviewed, note: studyNote }, values);
+            upd('b3dHandStudy', next);
+          }
+          function studyCard(kind, question, selected) {
+            var near = kind === 'near';
+            return h('fieldset', { className: 'fr-hand-study-card', key: kind,
+              style: { margin: '12px 0', padding: 12, minWidth: 0, border: '1px solid ' + T.border, borderRadius: 8 } },
+              h('legend', { style: { padding: '0 4px', fontWeight: 700 } }, question),
+              choices.map(function (choice) {
+                var label = choice === 'palm' ? __alloT('stem.firstresponse.hand_study_palm', 'Palm side')
+                  : choice === 'back' ? __alloT('stem.firstresponse.hand_study_back', 'Back of hand')
+                  : __alloT('stem.firstresponse.hand_study_unsure', 'Not sure yet');
+                return h('label', { key: choice, className: 'fr-hand-study-option',
+                  style: { display: 'flex', alignItems: 'center', gap: 9, minHeight: 44, cursor: 'pointer' } },
+                  h('input', { type: 'radio', name: 'fr-hand-study-' + kind, value: choice, checked: selected === choice,
+                    style: { width: 18, height: 18, flexShrink: 0, accentColor: T.accent },
+                    onChange: function () { var next = { checked: false }; next[kind] = choice; saveHandStudy(next); } }),
+                  h('span', null, label));
+              }),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 } },
+                [[4, near ? __alloT('stem.firstresponse.hand_study_near_before', 'Near palm before turn')
+                    : __alloT('stem.firstresponse.hand_study_support_before', 'Supporting hand before turn')],
+                  [5, near ? __alloT('stem.firstresponse.hand_study_near_after', 'Near palm after turn')
+                    : __alloT('stem.firstresponse.hand_study_support_after', 'Supporting hand after turn')]].map(function (item) {
+                  return h('button', { key: item[0], type: 'button', 'data-fr-focusable': true,
+                    'aria-pressed': recoveryComparisonPressed(kind, item[0]),
+                    style: btn({ minHeight: 44, fontSize: 12 }), onClick: function () { inspectRecoveryHandPose(kind, item[0]); } }, item[1]);
+                })));
+          }
+          function studyResult(kind, selected, correct, explanation) {
+            var lead = selected === correct
+              ? __alloT('stem.firstresponse.hand_study_matches', 'Your choice matches this model. ')
+              : selected === 'unsure'
+                ? __alloT('stem.firstresponse.hand_study_follow_cues', 'Follow the surface cues in both poses. ')
+                : __alloT('stem.firstresponse.hand_study_compare_again', 'Compare this surface in both poses again. ');
+            return h('p', { className: 'fr-hand-study-result', key: kind, style: { margin: '8px 0 0' } },
+              h('strong', null, kind === 'near' ? __alloT('stem.firstresponse.hand_study_near_label', 'Near palm')
+                : __alloT('stem.firstresponse.hand_study_support_label', 'Supporting hand')), ': ', lead, explanation);
+          }
+          return h('details', { className: 'fr-hand-study', style: { marginTop: 14 } },
+            h('summary', { id: 'fr-hand-study-title', style: { minHeight: 44, padding: '10px 12px', cursor: 'pointer',
+              fontWeight: 700, border: '1px solid ' + T.accent, borderRadius: 8, background: T.cardAlt, color: T.text } },
+              __alloT('stem.firstresponse.hand_study_title', 'Hand orientation study')),
+            h('section', { 'aria-labelledby': 'fr-hand-study-title', style: { paddingTop: 10, minWidth: 0 } },
+              h('h4', { style: { margin: '0 0 6px', fontSize: 13 } },
+                __alloT('stem.firstresponse.hand_study_steps', 'Predict, inspect, explain')),
+              h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.firstresponse.hand_study_intro',
+                'Choose a hand surface, inspect the same hand before and after the turn, then check your observation. These questions describe this illustration.')),
+              h('ul', { className: 'fr-hand-study-key', style: { display: 'flex', flexWrap: 'wrap', gap: '8px 14px',
+                listStyle: 'none', padding: 0, margin: '8px 0', fontSize: 11.5 } },
+                [['folds', __alloT('stem.firstresponse.hand_study_folds', 'Folds mark the palm side')],
+                  ['nails', __alloT('stem.firstresponse.hand_study_nails', 'Nails mark the back')],
+                  ['cheek', __alloT('stem.firstresponse.hand_study_cheek', 'Follow the cheek boundary')]].map(function (item) {
+                  return h('li', { key: item[0], style: { display: 'flex', alignItems: 'center', gap: 7 } },
+                    h('svg', { width: 28, height: 24, viewBox: '0 0 28 24', 'aria-hidden': 'true', focusable: 'false',
+                      fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round',
+                      style: { flexShrink: 0 } },
+                      item[0] === 'folds' ? h('path', { d: 'M5 5C13 5 18 10 22 18M7 18C10 12 14 10 22 9' })
+                        : item[0] === 'nails' ? h('path', { d: 'M7 21V9C7 1 21 1 21 9V21M9 5C12 3 16 3 19 5V12C16 14 12 14 9 12Z' })
+                          : h('path', { d: 'M21 3C14 5 11 10 13 20M4 7L9 9M4 15L9 13' })), h('span', null, item[1]));
+                })),
+              studyCard('near', __alloT('stem.firstresponse.hand_study_near_question',
+                'After the turn, which side of the near hand stays facing upward?'), nearChoice),
+              studyCard('support', __alloT('stem.firstresponse.hand_study_support_question',
+                'As the body turns, which surface of the supporting hand stays beside the cheek?'), supportChoice),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                h('button', { type: 'button', disabled: !nearChoice || !supportChoice, 'data-fr-focusable': true,
+                  style: btn({ minHeight: 44, fontSize: 12 }), onClick: function () { saveHandStudy({ checked: true }); } },
+                  __alloT('stem.firstresponse.hand_study_check', 'Check hand observations')),
+                h('button', { type: 'button', disabled: !Object.prototype.hasOwnProperty.call(records, studyAge), 'data-fr-focusable': true,
+                  style: btn({ minHeight: 44, fontSize: 12 }), onClick: function () {
+                    var next = Object.assign({}, records); delete next[studyAge]; upd('b3dHandStudy', next);
+                  } }, __alloT('stem.firstresponse.hand_study_reset', 'Reset this hand study'))),
+              h('div', { className: 'fr-hand-study-feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+                style: { marginTop: reviewed ? 12 : 0, padding: reviewed ? 12 : 0,
+                  border: reviewed ? '1px solid ' + T.border : 'none', borderRadius: 8, background: T.cardAlt } },
+                reviewed && h('strong', null, __alloT('stem.firstresponse.hand_study_feedback_title', 'Compare your choices with the model')),
+                reviewed && studyResult('near', nearChoice, 'palm', __alloT('stem.firstresponse.hand_study_near_answer',
+                  'The palm side stays facing upward in poses 4 and 5. Its folds help you follow the same surface.')),
+                reviewed && studyResult('support', supportChoice, 'back', __alloT('stem.firstresponse.hand_study_support_answer',
+                  'The back of the supporting hand stays beside the cheek in poses 4 and 5. Its palm folds face outward.'))),
+              h('label', { htmlFor: 'fr-hand-study-note', style: { display: 'block', margin: '12px 0 4px', fontWeight: 600 } },
+                __alloT('stem.firstresponse.hand_study_explain', 'Explain your hand comparison')),
+              h('textarea', { id: 'fr-hand-study-note', rows: 3, maxLength: 2000, value: studyNote,
+                'aria-describedby': 'fr-hand-study-note-help', onChange: function (e) { saveHandStudy({ note: e.target.value.slice(0, 2000) }); },
+                style: { display: 'block', boxSizing: 'border-box', width: '100%', maxWidth: '100%', minWidth: 0,
+                  padding: 10, fontSize: 12, lineHeight: 1.6, border: '1px solid ' + T.border, borderRadius: 6,
+                  background: T.card, color: T.text, resize: 'vertical' } }),
+              h('p', { id: 'fr-hand-study-note-help', style: { margin: '6px 0 0', color: T.muted, fontSize: 11.5 } },
+                __alloT('stem.firstresponse.hand_study_note_help',
+                  'Use a fold, nail, or cheek boundary as evidence. Your choices and note are saved for {age}; they do not score the recovery sequence.').replace('{age}', ageInfo.label))));
+        }
+
         function renderHandInspection() {
           if (['place','depth','coach','recovery'].indexOf(tab) < 0) return null;
           var recovery = tab === 'recovery';
+          var stacked = sceneAge === 'adult' || (sceneAge === 'child' && childHands === 'two');
           var hidden = tab === 'depth' && !depthLab.hands;
           var pending = tab === 'place' && placed !== 'correct';
           var available = recovery ? recPose >= 2 : !hidden && !pending;
@@ -7417,13 +8562,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 style: btn({ minHeight: 44, fontSize: 12 }), onClick: function () { cameraPreset(recovery ? 'palm' : 'contact'); } },
                 recovery ? __alloT('stem.firstresponse.hand_inspection_palm_view', 'Palm close-up')
                   : __alloT('stem.firstresponse.hand_inspection_contact_view', 'Hand contact close-up')),
+              !recovery && h('button', { type: 'button', disabled: st3 !== 'ready' || !available, 'data-fr-focusable': true,
+                style: btn({ minHeight: 44, fontSize: 12 }), onClick: function () { cameraPreset('heelSide'); } },
+                __alloT('stem.firstresponse.hand_inspection_heel_side_view', 'Heel side view')),
               recovery && h('button', { type: 'button', disabled: st3 !== 'ready' || !available, 'data-fr-focusable': true,
                 style: btn({ minHeight: 44, fontSize: 12 }), onClick: function () { cameraPreset('palmDetail'); } },
-                __alloT('stem.firstresponse.palm_detail_view', 'Palm detail view'))),
+                __alloT('stem.firstresponse.palm_detail_view', 'Palm detail view')),
+              recovery && h('button', { type: 'button', disabled: st3 !== 'ready' || recPose < 3, 'data-fr-focusable': true,
+                style: btn({ minHeight: 44, fontSize: 12 }), onClick: function () { cameraPreset('supportingHand'); } },
+                __alloT('stem.firstresponse.supporting_hand_view', 'Supporting hand close-up'))),
             !available && h('p', { style: { margin: '8px 0 0', color: T.muted } }, recovery
               ? __alloT('stem.firstresponse.hand_inspection_palm_pending', 'The palm close-up is available when the shown pose includes the near-arm step.')
               : hidden ? __alloT('stem.firstresponse.hand_choice_hidden', 'Turn on rescuer hands to inspect this choice.')
                 : __alloT('stem.firstresponse.hand_choice_pending', 'Locate the centre of the chest to reveal the selected hand arrangement.')),
+            !recovery && available && h('div', { className: 'fr-contact-exploration' },
+              h('p', { style: { margin: '12px 0 8px' } },
+                __alloT('stem.firstresponse.hand_contact_question', 'Compare the two close-ups. During compressions, which part of the hand follows the chest while the fingers remain raised?')),
+              h('details', { className: 'fr-contact-observation', style: { minWidth: 0 } },
+                h('summary', { style: { minHeight: 44, padding: '10px 12px', cursor: 'pointer', fontWeight: 600,
+                  border: '1px solid ' + T.border, borderRadius: 8, color: T.text, background: T.card } },
+                  __alloT('stem.firstresponse.hand_contact_check', 'Check your observation')),
+                h('p', { style: { margin: '8px 0 0' } }, stacked
+                  ? __alloT('stem.firstresponse.hand_contact_stacked_answer', 'During compressions, the heel of the lower hand follows the chest. The upper hand rests on the lower hand, and the fingers remain raised in this model. Use the side view to follow the heel and the oblique close-up to compare the two hands.')
+                  : __alloT('stem.firstresponse.hand_contact_single_answer', 'During compressions, the heel follows the chest while the fingers remain raised in this model. Use the side view to follow the heel and the oblique close-up to trace the fingers back toward the wrist.')))),
             recovery && h('div', { className: 'fr-palm-detail-comparison' },
               h('p', { style: { margin: '10px 0 8px' } },
                 __alloT('stem.firstresponse.palm_detail_cue', 'Inspect the palm folds and fingers from a view aligned with the near hand. The view refits when you change the shown pose, arm guides, age, or viewer size.')),
@@ -7433,8 +8594,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 [[4, __alloT('stem.firstresponse.palm_detail_before', 'Inspect before the turn')],
                   [5, __alloT('stem.firstresponse.palm_detail_after', 'Inspect after the turn')]].map(function (item) {
                   return h('button', { key: item[0], type: 'button', disabled: recDone.length < item[0],
-                    'aria-pressed': recPose === item[0], 'data-fr-focusable': true,
-                    style: btn({ minHeight: 44, fontSize: 12 }), onClick: function () { upd('b3dRecView', item[0]); } }, item[1]);
+                    'aria-pressed': recoveryComparisonPressed('near', item[0]), 'data-fr-focusable': true,
+                    style: btn({ minHeight: 44, fontSize: 12 }), onClick: function () { inspectRecoveryHandPose('near', item[0]); } }, item[1]);
                 })),
               available && h('div', { className: 'fr-hand-landmark-cue' },
                 h('p', { className: 'fr-hand-landmark-prompt', style: { margin: '12px 0 8px' } },
@@ -7445,9 +8606,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                     __alloT('stem.firstresponse.hand_landmark_check', 'Check your observation')),
                   h('p', { style: { margin: '8px 0 0' } },
                     __alloT('stem.firstresponse.hand_landmark_answer', 'The palm side faces upward in both poses. The folds help you follow its surface; the nails mark the back of the hand.'))))),
+            recovery && h('div', { className: 'fr-support-hand-comparison' },
+              h('h4', { style: { margin: '14px 0 6px', fontSize: 13 } },
+                __alloT('stem.firstresponse.supporting_hand_title', 'Follow the supporting hand')),
+              h('p', { style: { margin: '0 0 8px' } },
+                __alloT('stem.firstresponse.supporting_hand_cue', 'Inspect the far hand beside the cheek. Follow its palm folds and fingertips before and after the body turns.')),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                [[4, __alloT('stem.firstresponse.supporting_hand_before', 'Inspect support before turn')],
+                  [5, __alloT('stem.firstresponse.supporting_hand_after', 'Inspect support after turn')]].map(function (item) {
+                  return h('button', { key: item[0], type: 'button', disabled: recDone.length < item[0],
+                    'aria-pressed': recoveryComparisonPressed('support', item[0]), 'data-fr-focusable': true,
+                    style: btn({ minHeight: 44, fontSize: 12 }), onClick: function () { inspectSupportingPose(item[0]); } }, item[1]);
+                })),
+              recPose < 3 && h('p', { style: { margin: '8px 0 0', color: T.muted } },
+                __alloT('stem.firstresponse.supporting_hand_pending', 'The close-up is available when the shown pose places the far hand beside the cheek. Compare poses as you complete the sequence.')),
+              recPose >= 3 && h('div', { className: 'fr-support-hand-observation' },
+                h('p', { style: { margin: '12px 0 8px' } },
+                  __alloT('stem.firstresponse.supporting_hand_prompt', 'Which hand surface stays beside the cheek as the body turns?')),
+                h('details', { style: { minWidth: 0 } },
+                  h('summary', { style: { minHeight: 44, padding: '10px 12px', cursor: 'pointer', fontWeight: 600,
+                    border: '1px solid ' + T.border, borderRadius: 8, color: T.text, background: T.card } },
+                    __alloT('stem.firstresponse.supporting_hand_check', 'Check supporting-hand observation')),
+                  h('p', { style: { margin: '8px 0 0' } },
+                    __alloT('stem.firstresponse.supporting_hand_answer', 'In this model, the back of the far hand stays beside the cheek. The palm folds face outward. Compare the same hand in both poses.'))))),
+            recovery && renderHandStudy(),
             tab === 'depth' && h('div', null,
               h('p', { style: { margin: '10px 0 8px' } },
-                __alloT('stem.firstresponse.hand_inspection_recoil_cue', 'Compare release and peak: the heel follows the chest in both positions. Contact alone does not show full recoil; compare the chest with the resting-height line and graph.')),
+                __alloT('stem.firstresponse.hand_inspection_recoil_sides', 'Compare release and peak: the heel follows the chest in both positions. Contact alone does not show full recoil; compare the chest with the resting-height side marks and graph. The side marks stay fixed and leave the hands clear.')),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                 [[0, __alloT('stem.firstresponse.hand_inspection_release', 'Inspect released contact')],
                   [50, __alloT('stem.firstresponse.hand_inspection_peak', 'Inspect deepest contact')]].map(function (item) {
@@ -7515,7 +8700,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
 
         function renderModelKey() {
           function symbol(kind) {
-            var marks = kind === 'rest' ? [h('path', { key: 'line', d: 'M2 9H30' })]
+            var marks = kind === 'rest' ? [h('path', { key: 'line', d: 'M2 9H11M21 9H30' })]
               : kind === 'reference' ? [h('rect', { key: 'bar', x: 8, y: 7, width: 16, height: 4, fill: 'currentColor' })]
               : kind === 'current' ? [h('path', { key: 'rail', d: 'M16 1V17', opacity: 0.45 }), h('circle', { key: 'dot', cx: 16, cy: 9, r: 4, fill: 'currentColor' })]
               : kind === 'saved' ? [h('rect', { key: 'box', x: 11, y: 4, width: 10, height: 10 })]
@@ -7525,7 +8710,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               'aria-hidden': 'true', focusable: 'false', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }, marks);
           }
           var keys = [
-            ['rest', __alloT('stem.firstresponse.visual_key_rest', 'Resting height')],
+            ['rest', __alloT('stem.firstresponse.visual_key_rest_sides', 'Resting height · side marks')],
             ['reference', __alloT('stem.firstresponse.visual_key_reference', 'Reference depth')],
             ['current', savedDepth ? __alloT('stem.firstresponse.visual_key_current_b', 'Current B height') : __alloT('stem.firstresponse.visual_key_current', 'Current chest height')]
           ];
@@ -7747,6 +8932,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               h('div', {
                 ref: BODY3D.attach, tabIndex: 0, role: 'group',
                 'data-allo-fs-stage': 'true',
+                'aria-describedby': tab === 'recovery' && recDone.length >= 4 ? 'fr-recovery-comparison-caption' : undefined,
                 'aria-label': __alloT('stem.firstresponse.b3d_viewer_label', 'Body diagram, 3D. Interactive. Arrow keys rotate, plus and minus zoom, zero resets. Every target here is also a button below.'),
                 onKeyDown: function (e) {
                   var k = e.key, handled = true;
@@ -7778,6 +8964,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                     ? __alloT('stem.firstresponse.b3d_failed', '3D view unavailable on this device or network. Every target and every step is a button below — nothing here needs the picture.')
                     : __alloT('stem.firstresponse.b3d_loading', 'Loading the body diagram…'))
               ),
+              renderRecoveryComparison(),
               h('div', { className: 'fr-body3d-camera', role: 'group', 'aria-label': __alloT('stem.firstresponse.depth_explorer_camera_group', 'Camera viewpoints') },
                 (tab === 'depth' || tab === 'place' ? [['close', __alloT('stem.firstresponse.depth_inspect_close', 'Chest close-up')]] : []).concat(
                   tab === 'depth' || tab === 'place' || tab === 'coach' || tab === 'recovery' ? [['arms', __alloT('stem.firstresponse.realism_camera_arms', 'Hands + arms')]] : [],
@@ -7798,7 +8985,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                  ['Tilt view down', '▼', function () { BODY3D.nudge(0, -0.16); }],
                  ['Zoom in', '＋', function () { BODY3D.zoom(-0.5); }],
                  ['Zoom out', '－', function () { BODY3D.zoom(0.5); }],
-                 ['Reset the view', '⌂', function () { BODY3D.reset(); }]].map(function (c) {
+                 ['Reset the view', '⌂', function () { setFrRecoveryHandSelection(null); BODY3D.reset(); }]].map(function (c) {
                   return h('button', { key: c[0], 'aria-label': c[0], disabled: st3 !== 'ready', onClick: c[2],
                     style: btn({ padding: '6px 10px', fontSize: 12, minWidth: 34, opacity: st3 === 'ready' ? 1 : 0.45 }) }, c[1]);
                 })

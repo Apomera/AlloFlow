@@ -1644,6 +1644,7 @@ window.StemLab = window.StemLab || {
 
             var launcherX = 40; // CSS-px offset from left for cannon
 
+            var telemetryExtraHeight = 0, energyExtraHeight = 0;
             var groundYCSS = cH / dpr - 122; // CSS-px y of ground line
 
             function resizePhysicsCanvas() {
@@ -1653,7 +1654,7 @@ window.StemLab = window.StemLab || {
               if (nextW === cW && nextH === cH && dpr === nextDpr) return;
               dpr = nextDpr; cW = canvasEl.width = nextW; cH = canvasEl.height = nextH;
               baseScale = Math.max(0.01, (cW / dpr - 80) / 350);
-              groundYCSS = cH / dpr - 122;
+              groundYCSS = cH / dpr - 122 - energyExtraHeight;
               scale = Math.min(scale, baseScale);
               schedulePhysicsFrame();
             }
@@ -1674,6 +1675,121 @@ window.StemLab = window.StemLab || {
 
             function mToScreenY(mY) { return groundYCSS - mY * scale; } // mY: height in meters (0 = ground)
 
+            // Text bands grow independently so translation never consumes the meter plot.
+            var bandMeasureCache = new Map(), bandSegmenter;
+            function bandWidth(text, size, weight) {
+              var font = (weight ? weight + ' ' : '') + (size * dpr) + 'px sans-serif';
+              var key = font + '\u0000' + text;
+              if (bandMeasureCache.has(key)) return bandMeasureCache.get(key);
+              ctx.font = font;
+              var width = ctx.measureText(text).width / dpr;
+              if (bandMeasureCache.size >= 256) bandMeasureCache.clear();
+              bandMeasureCache.set(key, width);
+              return width;
+            }
+            function bandWrap(text, size, weight, available) {
+              var lines = [], line = '';
+              String(text).split(/\s+/).filter(Boolean).forEach(function(word) {
+                var joined = line ? line + ' ' + word : word;
+                if (bandWidth(joined, size, weight) <= available) { line = joined; return; }
+                if (line) { lines.push(line); line = ''; }
+                if (bandWidth(word, size, weight) <= available) { line = word; return; }
+                if (bandSegmenter === undefined) bandSegmenter = typeof Intl !== 'undefined' && Intl.Segmenter ? new Intl.Segmenter(undefined, { granularity: 'grapheme' }) : null;
+                var parts = bandSegmenter ? Array.from(bandSegmenter.segment(word), function(part) { return part.segment; }) : Array.from(word);
+                parts.forEach(function(part) {
+                  // An indivisible glyph wider than the entire band has no readable fit.
+                  // The complete original string remains in the canvas description.
+                  if (bandWidth(part, size, weight) > available) part = '…';
+                  if (line && bandWidth(line + part, size, weight) > available) { lines.push(line); line = ''; }
+                  line += part;
+                });
+              });
+              if (line) lines.push(line);
+              return lines.length ? lines : [''];
+            }
+            function makeReadoutBands(parameters, selected, active, pace, palette) {
+              var labels = canvasEl._L || {}, width = cW / dpr, available = Math.max(1, width - 28);
+              var header = { lines: [], text: [], height: 100, extraHeight: 0 }, footer = { lines: [], text: [], height: 0, extraHeight: 0, energies: [] };
+              function add(band, text, y, size, color, weight) {
+                band.text.push(String(text));
+                var lines = bandWrap(text, size, weight, available), step = size === 14 ? 20 : 18;
+                lines.forEach(function(line, i) { band.lines.push({ text: line, x: 14, y: y + i * step, fontSize: size, weight: weight || '', color: color }); });
+                return y + (lines.length - 1) * step;
+              }
+              function fields(band, values, y) {
+                values.forEach(function(item) { band.text.push(item.text); });
+                var cell = available / values.length;
+                if (values.every(function(item) { return bandWidth(item.text, 12, '') <= cell - 10; })) {
+                  values.forEach(function(item, i) { band.lines.push({ text: item.text, x: 14 + i * cell, y: y, fontSize: 12, weight: '', color: item.color }); });
+                  return y;
+                }
+                var x = 14;
+                values.forEach(function(item) {
+                  var itemWidth = bandWidth(item.text, 12, '');
+                  if (x > 14 && x + itemWidth > width - 14) { y += 18; x = 14; }
+                  if (itemWidth > available) {
+                    var wrapped = bandWrap(item.text, 12, '', available);
+                    wrapped.forEach(function(line, i) { band.lines.push({ text: line, x: 14, y: y + i * 18, fontSize: 12, weight: '', color: item.color }); });
+                    y += (wrapped.length - 1) * 18; x = width;
+                  } else {
+                    band.lines.push({ text: item.text, x: x, y: y, fontSize: 12, weight: '', color: item.color });
+                    x += itemWidth + 18;
+                  }
+                });
+                return y;
+              }
+              function liveValue(value) { return value !== 0 && Math.abs(value) < .05 ? physFormatSampleValue(value) : value.toFixed(1); }
+              var y = add(header, parameters.angle + '°  ·  v₀ ' + parameters.velocity + ' m/s  ·  h₀ ' + (parameters.launchHeight || 0) + ' m', 25, 14, palette.ink, '600');
+              var conditions = 'g ' + parameters.gravity + ' m/s²  ·  ' + parameters.mass + ' kg';
+              y = add(header, conditions, y + 22, 12, palette.muted);
+              if (selected || active) {
+                var speed = '|v| ' + (selected ? physFormatSampleValue(selected.speed) : liveValue(Math.hypot(ball.mVx, ball.mVy))) + ' m/s';
+                if (bandWidth(conditions, 12, '') + bandWidth(speed, 12, '') + 18 <= available) {
+                  header.text.push(speed);
+                  header.lines.push({ text: speed, x: width - 14 - bandWidth(speed, 12, ''), y: y, fontSize: 12, weight: '', color: '#93c5fd' });
+                } else y = add(header, speed, y + 18, 12, '#93c5fd');
+              }
+              var scope = selected ? (selected.run != null ? (labels.runPrefix || 'Run ') + selected.run + ' · ' : '') + (labels.selectedPoint || 'Recorded point') : active ? labels.currentFlight : labels.nextLaunch;
+              var status = active && !selected ? ' · ' + (pace === 0 ? labels.paused : labels.flying) : '';
+              y = add(header, scope + ' · ' + (parameters.airResist ? labels.dragOn : labels.vacuum) + status, y + 21, 12, palette.accent);
+              y += 21;
+              if (selected || active) {
+                var vectors = canvasEl.dataset.showVectors === 'true', reading = selected || { t: ball.t, x: ball.mX, y: ball.mY, vx: ball.mVx, vy: ball.mVy };
+                function value(number) { return selected ? physFormatSampleValue(number) : liveValue(number); }
+                y = fields(header, [
+                  { text: 't ' + reading.t.toFixed(selected ? 3 : 2) + ' s', color: palette.ink },
+                  { text: vectors ? 'Vx ' + value(reading.vx) + ' m/s' : 'x ' + value(reading.x) + ' m', color: vectors ? '#6ee7b7' : palette.ink },
+                  { text: vectors ? 'Vy ' + value(reading.vy) + ' m/s' : 'y ' + value(reading.y) + ' m', color: vectors ? '#c4b5fd' : palette.ink }
+                ], y);
+              } else if (canvasEl.dataset.constraintType) {
+                y = add(header, '🔒 ' + (canvasEl.dataset.constraintType === 'fixedAngle' ? 'θ ' + canvasEl.dataset.constraintValue + '°' : 'v ' + canvasEl.dataset.constraintValue + ' m/s'), y, 12, '#fde68a');
+              }
+              header.extraHeight = Math.max(0, y - 89); header.height += header.extraHeight;
+              if ((selected || ball) && canvasEl.dataset.showEnergy === 'true') {
+                var mass = selected ? selected.parameters.mass : ball.mass;
+                var ke = selected ? selected.ke : .5 * mass * ball.speed * ball.speed;
+                var pe = selected ? selected.pe : mass * ball.grav * Math.max(0, ball.mY);
+                var total = selected ? selected.initialEnergy : ball.drag > 0 ? ball.E0 : Math.max(ball.E0, ke + pe);
+                var loss = selected ? selected.dragLoss : ball.drag > 0 ? Math.max(0, total - ke - pe) : 0;
+                y = add(footer, (labels.initialEnergy || 'Initial energy') + ' · ' + total.toFixed(0) + ' J', 14, 12, palette.ink, '600');
+                var energyScope = selected ? labels.selectedEnergy : active ? labels.currentFlight : labels.latestFlight + ' · ' + (ball.landed ? labels.atImpact : labels.lastRecorded);
+                y = add(footer, energyScope, y + 16, 12, palette.muted);
+                footer.energies = [{ label: labels.ke || 'KE', value: ke, color: '#7dd3fc' }, { label: labels.pe || 'PE', value: pe, color: '#6ee7b7' }, { label: labels.dragLoss || 'Drag', value: loss, color: '#fda4af' }];
+                y = fields(footer, footer.energies.map(function(item) { return { text: item.label + ' ' + item.value.toFixed(0) + ' J', color: item.color }; }), y + 16);
+                footer.extraHeight = Math.max(0, y - 46); footer.height = 74 + footer.extraHeight; footer.total = total;
+              }
+              header.text = header.text.join(' · '); footer.text = footer.text.join(' · ');
+              return { header: header, footer: footer };
+            }
+            function paintReadoutBand(band, top, palette) {
+              ctx.fillStyle = palette.panel; ctx.fillRect(0, top * dpr, cW, band.height * dpr);
+              ctx.textAlign = 'left';
+              band.lines.forEach(function(line) {
+                ctx.fillStyle = line.color; ctx.font = (line.weight ? line.weight + ' ' : '') + (line.fontSize * dpr) + 'px sans-serif';
+                ctx.fillText(line.text, line.x * dpr, (top + line.y) * dpr);
+              });
+            }
+
             function fitPhysicsView(settings, inspection) {
               var ideal = window.StemLab._physics.vacuum(settings.angle, settings.velocity, settings.gravity, settings.launchHeight);
               var rangeBound = Math.max(1, ideal.range || 0);
@@ -1689,13 +1805,13 @@ window.StemLab = window.StemLab || {
               }
               if (!inspection && canvasEl._settings.challengeTier) rangeBound = Math.max(rangeBound, [50, 100, 200][canvasEl._settings.challengeTier - 1] || 0);
               var availableW = Math.max(40, cW / dpr - 88);
-              var availableH = Math.max(40, groundYCSS - 138);
+              var availableH = Math.max(40, groundYCSS - 138 - telemetryExtraHeight);
               // Elevated short flights need enough space to see the platform.
               // Every position, ruler and trajectory uses this same scale.
               scale = Math.max(0.001, Math.min(12,
                 availableW / (rangeBound * 1.2), availableH / (heightBound * 1.2)));
               canvasEl._dynScale = scale;
-              canvasEl._viewKey = [settings.angle, settings.velocity, settings.gravity, settings.launchHeight, cW, cH, canvasEl.dataset.showOverlay, canvasEl.dataset.targetList, canvasEl._settings.challengeTier, trails.length, inspection ? trails.indexOf(canvasEl._inspection.trail) + ':' + inspection.index + ':' + inspection.count + ':' + inspection.t : 'live'].join('|');
+              canvasEl._viewKey = [settings.angle, settings.velocity, settings.gravity, settings.launchHeight, cW, cH, telemetryExtraHeight, energyExtraHeight, canvasEl.dataset.showOverlay, canvasEl.dataset.targetList, canvasEl._settings.challengeTier, trails.length, inspection ? trails.indexOf(canvasEl._inspection.trail) + ':' + inspection.index + ':' + inspection.count + ':' + inspection.t : 'live'].join('|');
             }
 
             function launch(settings) {
@@ -1863,18 +1979,56 @@ window.StemLab = window.StemLab || {
               if (launched) canvasEl._accumulator = (canvasEl._accumulator || 0) + dt;
               physMotionReduced = !!(motionQuery && motionQuery.matches) || !!canvasEl.closest('.reduce-motion');
               tick += physMotionReduced ? 0 : 1;
+              // Advance once before measuring and painting the current observation.
+              if (ball && launched) {
+                // Playback controls the simulation clock, never the step size.
+                // The prediction and every display refresh rate use these same
+                // steps and canonical event samples, including short flights.
+                while (!ball.landed && (canvasEl._accumulator || 0) + 1e-12 >= PHYS_DT) {
+                  canvasEl._accumulator = Math.max(0, canvasEl._accumulator - PHYS_DT);
+                  physStep(ball, PHYS_DT);
+                  if (trails.length > 0) physRecordSample(trails[trails.length - 1], ball);
+                }
+
+                ball.speed = Math.sqrt(ball.mVx * ball.mVx + ball.mVy * ball.mVy);
+
+                // The engine resolves the exact apex between simulation ticks.
+                if (ball.apex && !canvasEl._apex) {
+                  canvasEl._apex = {
+                    mX: ball.apex.mX,
+                    mY: ball.apex.mY,
+                    vx: ball.apex.mVx,
+                    tSec: ball.apex.t,
+                    fadeAt: tick + 90 // ~3 seconds at 30fps before fading out
+                  };
+                  if (trails.length) trails[trails.length - 1].apex = Object.freeze({
+                    mX: ball.apex.mX, mY: ball.apex.mY, vx: ball.apex.mVx, tSec: ball.apex.t
+                  });
+                }
+
+              }
               var inspection = physSelectedInspection(canvasEl);
               var flightTrail = launched && trails.length ? trails[trails.length - 1] : null;
               var displayParams = inspection ? inspection.parameters : flightTrail ? { angle: flightTrail.angle, velocity: flightTrail.velocity, gravity: flightTrail.gravity, mass: flightTrail.mass, launchHeight: flightTrail.launchHeight, airResist: flightTrail.drag } : canvasEl._settings;
-              var viewKey = [displayParams.angle, displayParams.velocity, displayParams.gravity, displayParams.launchHeight, cW, cH, canvasEl.dataset.showOverlay, canvasEl.dataset.targetList, canvasEl._settings.challengeTier, trails.length, inspection ? trails.indexOf(canvasEl._inspection.trail) + ':' + inspection.index + ':' + inspection.count + ':' + inspection.t : 'live'].join('|');
+              var highContrast = canvasEl.dataset.sceneTheme === 'contrast';
+              var scene = { ink: '#f8fafc', muted: '#cbd5e1', grid: highContrast ? '#94a3b8' : '#25394f', axis: highContrast ? '#ffffff' : '#6e8ba6', panel: highContrast ? '#000000' : '#101f32', accent: highContrast ? '#ffff00' : '#67e8f9' };
+              var bands = makeReadoutBands(displayParams, inspection, !!(ball && launched && !ball.landed), _ss, scene);
+              if (telemetryExtraHeight !== bands.header.extraHeight || energyExtraHeight !== bands.footer.extraHeight) {
+                telemetryExtraHeight = bands.header.extraHeight; energyExtraHeight = bands.footer.extraHeight;
+                canvasEl.parentElement.style.setProperty('--physics-band-extra', (telemetryExtraHeight + energyExtraHeight) + 'px');
+                resizePhysicsCanvas();
+                groundYCSS = cH / dpr - 122 - energyExtraHeight;
+              }
+              canvasEl._visualTelemetry = bands.header; canvasEl._visualEnergy = bands.footer;
+              var description = bands.header.text + (bands.footer.text ? ' · ' + bands.footer.text : '');
+              if (canvasEl.getAttribute('aria-description') !== description) canvasEl.setAttribute('aria-description', description);
+              var viewKey = [displayParams.angle, displayParams.velocity, displayParams.gravity, displayParams.launchHeight, cW, cH, telemetryExtraHeight, energyExtraHeight, canvasEl.dataset.showOverlay, canvasEl.dataset.targetList, canvasEl._settings.challengeTier, trails.length, inspection ? trails.indexOf(canvasEl._inspection.trail) + ':' + inspection.index + ':' + inspection.count + ':' + inspection.t : 'live'].join('|');
               if (canvasEl._viewKey !== viewKey) fitPhysicsView(displayParams, inspection);
 
               ctx.clearRect(0, 0, cW, cH);
 
               // A meter-aligned plot with reserved telemetry and energy bands.
-              var cssW = cW / dpr, cssH = cH / dpr, plotTop = 128;
-              var highContrast = canvasEl.dataset.sceneTheme === 'contrast';
-              var scene = { ink: '#f8fafc', muted: '#cbd5e1', grid: highContrast ? '#94a3b8' : '#25394f', axis: highContrast ? '#ffffff' : '#6e8ba6', panel: highContrast ? '#000000' : '#101f32', accent: highContrast ? '#ffff00' : '#67e8f9' };
+              var cssW = cW / dpr, cssH = cH / dpr, plotTop = 128 + telemetryExtraHeight;
               var groundY = groundYCSS * dpr;
               var sky = ctx.createLinearGradient(0, 0, 0, cH);
               sky.addColorStop(0, highContrast ? '#000000' : '#0a1423'); sky.addColorStop(1, highContrast ? '#000000' : '#152c43');
@@ -2214,31 +2368,6 @@ window.StemLab = window.StemLab || {
 
               if (ball && launched) {
 
-                // Playback controls the simulation clock, never the step size.
-                // The prediction and every display refresh rate use these same
-                // steps and canonical event samples, including short flights.
-                while (!ball.landed && (canvasEl._accumulator || 0) + 1e-12 >= PHYS_DT) {
-                  canvasEl._accumulator = Math.max(0, canvasEl._accumulator - PHYS_DT);
-                  physStep(ball, PHYS_DT);
-                  if (trails.length > 0) physRecordSample(trails[trails.length - 1], ball);
-                }
-
-                ball.speed = Math.sqrt(ball.mVx * ball.mVx + ball.mVy * ball.mVy);
-
-                // The engine resolves the exact apex between simulation ticks.
-                if (ball.apex && !canvasEl._apex) {
-                  canvasEl._apex = {
-                    mX: ball.apex.mX,
-                    mY: ball.apex.mY,
-                    vx: ball.apex.mVx,
-                    tSec: ball.apex.t,
-                    fadeAt: tick + 90 // ~3 seconds at 30fps before fading out
-                  };
-                  if (trails.length) trails[trails.length - 1].apex = Object.freeze({
-                    mX: ball.apex.mX, mY: ball.apex.mY, vx: ball.apex.mVx, tSec: ball.apex.t
-                  });
-                }
-
                 // Targets score the actual impact within their stated tolerance;
                 // they never snap the scientific trajectory to a crate center.
 
@@ -2264,9 +2393,9 @@ window.StemLab = window.StemLab || {
 
                 }
 
-                if (ballScreenY < 20) {
+                if (ballScreenY < plotTop + 10) {
 
-                  var neededScaleH = (groundYCSS - 40) / (ball.mY * 1.15);
+                  var neededScaleH = (groundYCSS - plotTop - 20) / (ball.mY * 1.15);
 
                   if (neededScaleH < scale) { scale = scale * 0.92 + neededScaleH * 0.08; needZoom = true; }
 
@@ -2605,56 +2734,16 @@ window.StemLab = window.StemLab || {
                   canvasEl._visualInspection = { x: selectedX, y: selectedY, t: inspection.t, index: inspection.index, run: inspection.run };
                 }
               }
-              // A dedicated top band keeps live readings away from trajectory labels.
-              var labels = canvasEl._L || {};
-              ctx.fillStyle = scene.panel; ctx.fillRect(0, 0, cW, 100 * dpr);
-              ctx.textAlign = 'left'; ctx.fillStyle = scene.ink; ctx.font = '600 ' + (14 * dpr) + 'px sans-serif';
-              ctx.fillText(displayParams.angle + '°  ·  v₀ ' + displayParams.velocity + ' m/s  ·  h₀ ' + (displayParams.launchHeight || 0) + ' m', 14 * dpr, 25 * dpr);
-              ctx.font = (12 * dpr) + 'px sans-serif'; ctx.fillStyle = scene.muted;
-              ctx.fillText('g ' + displayParams.gravity + ' m/s²  ·  ' + displayParams.mass + ' kg', 14 * dpr, 47 * dpr);
-              function liveReadingValue(value) {
-                return value !== 0 && Math.abs(value) < .05 ? physFormatSampleValue(value) : value.toFixed(1);
-              }
-              if (inspection || (ball && launched)) {
-                var displayedSpeed = inspection ? physFormatSampleValue(inspection.speed) : liveReadingValue(Math.hypot(ball.mVx, ball.mVy));
-                ctx.textAlign = 'right'; ctx.fillStyle = '#93c5fd';
-                ctx.fillText('|v| ' + displayedSpeed + ' m/s', cW - 14 * dpr, 47 * dpr);
-                ctx.textAlign = 'left';
-              }
-              var scope = inspection ? (inspection.run != null ? labels.runPrefix + inspection.run + ' · ' : '') + labels.selectedPoint : launched ? labels.currentFlight : labels.nextLaunch;
-              var status = launched && !inspection ? ' · ' + (_ss === 0 ? labels.paused : labels.flying) : '';
-              ctx.fillStyle = scene.accent; ctx.fillText(scope + ' · ' + (displayParams.airResist ? labels.dragOn : labels.vacuum) + status, 14 * dpr, 68 * dpr);
-              if (inspection || (ball && launched)) {
-                ctx.fillStyle = scene.ink;
-                var vectorReadout = canvasEl.dataset.showVectors === 'true';
-                var reading = inspection || { t: ball.t, x: ball.mX, y: ball.mY, vx: ball.mVx, vy: ball.mVy };
-                function readingValue(value) { return inspection ? physFormatSampleValue(value) : liveReadingValue(value); }
-                var readouts = ['t ' + reading.t.toFixed(inspection ? 3 : 2) + ' s', vectorReadout ? 'Vx ' + readingValue(reading.vx) + ' m/s' : 'x ' + readingValue(reading.x) + ' m', vectorReadout ? 'Vy ' + readingValue(reading.vy) + ' m/s' : 'y ' + readingValue(reading.y) + ' m'];
-                readouts.forEach(function(reading, i) { ctx.fillStyle = vectorReadout && i > 0 ? (i === 1 ? '#6ee7b7' : '#c4b5fd') : scene.ink; ctx.fillText(reading, (14 + i * (cssW - 28) / 3) * dpr, 89 * dpr); });
-              } else if (canvasEl.dataset.constraintType) {
-                ctx.fillStyle = '#fde68a'; ctx.fillText('🔒 ' + (canvasEl.dataset.constraintType === 'fixedAngle' ? 'θ ' + canvasEl.dataset.constraintValue + '°' : 'v ' + canvasEl.dataset.constraintValue + ' m/s'), 14 * dpr, 89 * dpr);
-              }
-              // Energy stays in a footer, clear of landing points and axes.
-              if ((inspection || ball) && canvasEl.dataset.showEnergy === 'true') {
-                var mass = inspection ? inspection.parameters.mass : ball.mass;
-                var KE = inspection ? inspection.ke : .5 * mass * ball.speed * ball.speed;
-                var PE = inspection ? inspection.pe : mass * ball.grav * Math.max(0, ball.mY);
-                var totalE = inspection ? inspection.initialEnergy : ball.drag > 0 ? ball.E0 : Math.max(ball.E0, KE + PE);
-                var dragLoss = inspection ? inspection.dragLoss : ball.drag > 0 ? Math.max(0, totalE - KE - PE) : 0;
-                var ebX = 14, ebY = cssH - 66, ebW = cssW - 28;
-                ctx.fillStyle = scene.panel; ctx.fillRect(0, (cssH - 74) * dpr, cW, 74 * dpr);
-                ctx.fillStyle = scene.ink; ctx.font = '600 ' + (12 * dpr) + 'px sans-serif'; ctx.textAlign = 'left';
-                ctx.fillText((labels.initialEnergy || 'Initial energy') + ' · ' + totalE.toFixed(0) + ' J', ebX * dpr, (ebY + 6) * dpr);
-                var energyScope = inspection ? labels.selectedEnergy : launched ? labels.currentFlight : labels.latestFlight + ' · ' + (ball.landed ? labels.atImpact : labels.lastRecorded);
-                ctx.font = (12 * dpr) + 'px sans-serif'; ctx.fillStyle = scene.muted;
-                ctx.fillText(energyScope, ebX * dpr, (ebY + 22) * dpr);
-                var energies = [{ label: labels.ke || 'KE', value: KE, color: '#7dd3fc' }, { label: labels.pe || 'PE', value: PE, color: '#6ee7b7' }, { label: labels.dragLoss || 'Drag', value: dragLoss, color: '#fda4af' }];
-                var offset = 0;
-                energies.forEach(function(e, i) {
-                  ctx.fillStyle = e.color; ctx.font = (12 * dpr) + 'px sans-serif';
-                  ctx.fillText(e.label + ' ' + e.value.toFixed(0) + ' J', (ebX + i * ebW / 3) * dpr, (ebY + 38) * dpr);
-                  var ew = totalE > 0 ? e.value / totalE * ebW : 0;
-                  ctx.fillRect((ebX + offset) * dpr, (ebY + 49) * dpr, ew * dpr, 7 * dpr); offset += ew;
+              // Complete measured text bands stay outside the trajectory and axis gutters.
+              paintReadoutBand(bands.header, 0, scene);
+              if (bands.footer.height) {
+                paintReadoutBand(bands.footer, cssH - bands.footer.height, scene);
+                var energyOffset = 0, energyWidth = cssW - 28;
+                bands.footer.energies.forEach(function(item) {
+                  var width = bands.footer.total > 0 ? item.value / bands.footer.total * energyWidth : 0;
+                  ctx.fillStyle = item.color;
+                  ctx.fillRect((14 + energyOffset) * dpr, (cssH - 17) * dpr, width * dpr, 7 * dpr);
+                  energyOffset += width;
                 });
               }
 
@@ -3287,9 +3376,129 @@ window.StemLab = window.StemLab || {
                     __alloT('stem.physics.force_zero', 'Zero force: no arrow.')) : length < 4.5 ? h('p', { className: 'phys-force-note' },
                     __alloT('stem.physics.force_tiny', 'The arrow is too short to see clearly at this scale; the values above retain its size.')) : null);
               }
+              function energyPaint(key) {
+                return key === 'ke' ? 'var(--phys-energy-ke)' : 'repeating-linear-gradient(' + (key === 'pe' ? '0deg' : '135deg') + ',var(--phys-energy-' + key + '),var(--phys-energy-' + key + ') 4px,var(--phys-panel) 4px,var(--phys-panel) 6px)';
+              }
               function measurement(key, label, value, unit) {
-                var swatch = key === 'ke' ? 'var(--phys-accent)' : key === 'pe' ? 'var(--phys-muted)' : key === 'dragLoss' ? 'repeating-linear-gradient(135deg,var(--phys-line),var(--phys-line) 2px,var(--phys-panel) 2px,var(--phys-panel) 4px)' : null;
+                var swatch = key === 'ke' || key === 'pe' || key === 'dragLoss' ? energyPaint(key) : null;
                 return h('div', { key: key, 'data-physics-measurement': key }, h('dt', null, swatch && h('span', { className: 'phys-energy-key', 'aria-hidden': true, style: { background: swatch } }), label), h('dd', null, physFormatSampleValue(value) + ' ' + unit));
+              }
+              function velocityDiagram() {
+                // One scale for the selected flight preserves length comparisons
+                // between recorded moments. An unfinished flight can add samples.
+                var scaleSpeed = sample.speed;
+                trail.forEach(function(point) {
+                  var speed = Math.hypot(point.mVx, point.mVy);
+                  if (isFinite(speed) && speed > scaleSpeed) scaleSpeed = speed;
+                });
+                var ox = 140, oy = 104, radius = 70;
+                var dx = scaleSpeed > 0 ? radius * (sample.vx / scaleSpeed) : 0;
+                var dy = scaleSpeed > 0 ? -radius * (sample.vy / scaleSpeed) : 0;
+                var tipX = ox + dx, tipY = oy + dy;
+                function arrow(key, x1, y1, x2, y2, value, dash, width) {
+                  if (value === 0) return null;
+                  var length = Math.hypot(x2 - x1, y2 - y1);
+                  var direction = Math.atan2(y2 - y1, x2 - x1), head = Math.min(8, length / 3);
+                  var color = 'var(--phys-velocity-' + key + ')';
+                  return h('g', { key: key, fill: 'none', stroke: color, strokeWidth: width, strokeLinecap: 'round', strokeLinejoin: 'round' },
+                    h('line', { 'data-physics-velocity-vector': key, 'data-value': value, 'data-scale-speed': scaleSpeed,
+                      x1: x1, y1: y1, x2: x2, y2: y2, strokeDasharray: dash }),
+                    h('path', { 'data-physics-velocity-head': key, 'data-head-length': head,
+                      d: 'M' + (x2 - Math.cos(direction - .45) * head) + ' ' + (y2 - Math.sin(direction - .45) * head) +
+                        'L' + x2 + ' ' + y2 + 'L' + (x2 - Math.cos(direction + .45) * head) + ' ' + (y2 - Math.sin(direction + .45) * head) }));
+                }
+                function axisLabel(x, y, text, anchor) { return h('text', { x: x, y: y, fill: 'var(--phys-muted)', fontSize: 18, textAnchor: anchor || 'middle', fontFamily: 'system-ui, sans-serif' }, text); }
+                var notes = [];
+                ['vx', 'vy'].forEach(function(key) {
+                  if (sample[key] === 0) notes.push(h('li', { key: key, 'data-physics-velocity-zero': key }, key === 'vx'
+                    ? __alloT('stem.physics.velocity_zero_x', 'Vx is zero: no horizontal arrow.')
+                    : __alloT('stem.physics.velocity_zero_y', 'Vy is zero: no vertical arrow.')));
+                  else if (scaleSpeed > 0 && radius * (Math.abs(sample[key]) / scaleSpeed) < 4.5) notes.push(h('li', { key: key, 'data-physics-velocity-tiny': key },
+                    (key === 'vx' ? 'Vx' : 'Vy') + ': ' + __alloT('stem.physics.velocity_tiny_component', 'too short to see clearly at this scale; the reading retains its sign and size.')));
+                });
+                if (sample.speed === 0) notes.push(h('li', { key: 'speed', 'data-physics-velocity-zero': 'speed' }, __alloT('stem.physics.velocity_zero_speed', 'Speed is zero at this recorded moment.')));
+                else if (sample.vy === 0 && sample.vx !== 0) notes.push(h('li', { key: 'horizontal' }, __alloT('stem.physics.velocity_horizontal_speed', 'Horizontal motion continues, so speed is not zero.')));
+                var selectedLabel = selected ? __alloT('stem.physics.graph_selected_sample', 'Selected sample') : __alloT('stem.physics.analysis_latest', 'Latest recorded sample');
+                return h('figure', { className: 'phys-velocity-construction' },
+                  h('figcaption', null, h('h5', null, __alloT('stem.physics.velocity_components_title', 'Velocity components')),
+                    h('p', { 'data-physics-velocity-time': true }, selectedLabel + ' · t = ' + sample.t.toFixed(3) + ' s')),
+                  h('svg', { 'data-physics-velocity-diagram': true, 'data-sample-index': sample.index, 'data-time': sample.t, 'data-run': sample.run == null ? 'unfinished' : sample.run,
+                    'data-speed': sample.speed, 'data-scale-speed': scaleSpeed, viewBox: '0 0 280 228', role: 'img',
+                    'aria-label': __alloT('stem.physics.velocity_diagram_aria', 'Recorded velocity components') + ': t = ' + sample.t.toFixed(3) + ' s; Vx = ' + physFormatSampleValue(sample.vx) +
+                      ' m/s; Vy = ' + physFormatSampleValue(sample.vy) + ' m/s; ' + __alloT('stem.physics.metric_speed', 'Speed') + ' = ' + physFormatSampleValue(sample.speed) + ' m/s.',
+                    'aria-describedby': 'physics-velocity-construction-help physics-velocity-scale-help physics-velocity-component-note' },
+                    h('circle', { 'data-physics-velocity-scale-circle': true, cx: ox, cy: oy, r: radius, fill: 'none', stroke: 'var(--phys-muted)', strokeWidth: 1.25, strokeDasharray: '2 5' }),
+                    h('path', { d: 'M28 104H252M140 22V186', fill: 'none', stroke: 'var(--phys-muted)', strokeWidth: 1.25 }),
+                    axisLabel(250, 127, '+x', 'end'), axisLabel(30, 127, '−x', 'start'), axisLabel(150, 25, '+y', 'start'), axisLabel(150, 195, '−y', 'start'), axisLabel(140, 221, 'm/s'),
+                    sample.vx !== 0 && sample.vy !== 0 && h('path', { d: 'M' + ox + ' ' + oy + 'L' + tipX + ' ' + oy + 'L' + tipX + ' ' + tipY + 'Z', fill: 'var(--phys-velocity-resultant)', fillOpacity: .08 }),
+                    arrow('resultant', ox, oy, tipX, tipY, sample.speed, undefined, 5),
+                    arrow('vx', ox, oy, tipX, oy, sample.vx, '7 4', 2.5),
+                    arrow('vy', tipX, oy, tipX, tipY, sample.vy, '2 3', 2.5),
+                    h('circle', { cx: ox, cy: oy, r: 3, fill: 'var(--phys-ink)' }),
+                    sample.speed > 0 && h('circle', { 'data-physics-velocity-tip': true, cx: tipX, cy: tipY, r: 4, fill: 'var(--phys-velocity-resultant)', stroke: 'var(--phys-panel)', strokeWidth: 1.5 })),
+                  h('ul', { className: 'phys-velocity-key', 'aria-label': __alloT('stem.physics.velocity_diagram_key', 'Velocity arrow key') }, [
+                    { key: 'vx', text: __alloT('stem.physics.velocity_key_x', 'Dashed · Vx'), dash: 'dashed' },
+                    { key: 'vy', text: __alloT('stem.physics.velocity_key_y', 'Dotted · Vy'), dash: 'dotted' },
+                    { key: 'resultant', text: __alloT('stem.physics.velocity_key_total', 'Solid · velocity'), dash: 'solid' }
+                  ].map(function(item) { return h('li', { key: item.key }, h('span', { 'aria-hidden': true, style: { borderTopColor: 'var(--phys-velocity-' + item.key + ')', borderTopStyle: item.dash } }), item.text); })),
+                  h('p', { id: 'physics-velocity-construction-help', className: 'phys-velocity-help' }, __alloT('stem.physics.velocity_construction_help', 'Follow Vx horizontally, then Vy vertically. The solid arrow connects the start to their combined endpoint. Right and up are positive. These arrows show velocity in m/s.')),
+                  h('p', { id: 'physics-velocity-scale-help', 'data-physics-velocity-scale-help': true, className: 'phys-velocity-help' }, scaleSpeed > 0
+                    ? __alloT('stem.physics.velocity_scale_help', 'One scale for this flight: the circle radius represents') + ' ' + physFormatSampleValue(scaleSpeed) + ' m/s. ' +
+                      __alloT('stem.physics.velocity_scale_live_help', 'The scale uses every recorded point and updates as an unfinished flight grows.')
+                    : __alloT('stem.physics.velocity_scale_zero', 'Every recorded velocity in this flight is zero.')),
+                  h('ul', { id: 'physics-velocity-component-note', className: 'phys-velocity-notes' }, notes));
+              }
+              function energyAccounting() {
+                // Read the captured snapshot without redistributing an energy
+                // difference to make the bars fill the launch reference.
+                var accounted = sample.totalEnergy + sample.dragLoss;
+                var scale = Math.max(sample.initialEnergy, accounted);
+                var representable = isFinite(scale) && scale >= 0;
+                function width(value) { return representable && scale > 0 ? 300 * (value / scale) : 0; }
+                var labels = { ke: __alloT('stem.physics.sample_kinetic_energy', 'Kinetic · KE'), pe: __alloT('stem.physics.sample_potential_energy', 'Potential · PE'), dragLoss: __alloT('stem.physics.energy_transferred', 'Transferred by drag') };
+                var selectedLabel = selected ? __alloT('stem.physics.graph_selected_sample', 'Selected sample') : __alloT('stem.physics.analysis_latest', 'Latest recorded sample');
+                var notes = [];
+                ['ke', 'pe', 'dragLoss'].forEach(function(key) {
+                  if (sample[key] === 0) notes.push(h('li', { key: key, 'data-physics-energy-zero': key }, labels[key] + ': ' + __alloT('stem.physics.energy_zero_part', 'zero at this moment; no filled segment.')));
+                  else if (representable && scale > 0 && sample[key] / scale < .01) notes.push(h('li', { key: key, 'data-physics-energy-tiny': key }, labels[key] + ': ' + __alloT('stem.physics.energy_tiny_part', 'too small to distinguish at this scale; the reading retains its size.')));
+                });
+                var difference = accounted - sample.initialEnergy;
+                if (representable && Math.abs(difference) > sample.initialEnergy * 1e-6) notes.push(h('li', { key: 'difference', 'data-physics-energy-difference': true, 'data-value': difference },
+                  __alloT('stem.physics.energy_accounting_difference', 'Recorded sum − initial energy:') + ' ' + physFormatSampleValue(difference) + ' J. ' + __alloT('stem.physics.energy_accounting_difference_help', 'The bars retain this difference.')));
+                function rowLabel(label, value, field) {
+                  return h('div', { className: 'phys-energy-accounting-row-label' }, h('span', null, label), h('strong', { 'data-physics-energy-accounting-value': field, 'data-value': value },
+                    isFinite(value) ? physFormatSampleValue(value) + ' J' : __alloT('stem.physics.energy_sum_unavailable', 'Beyond the display range')));
+                }
+                return h('figure', { 'data-physics-energy-accounting': true, className: 'phys-energy-accounting',
+                    'data-run': sample.run == null ? 'unfinished' : sample.run, 'data-sample-index': sample.index, 'data-time': sample.t,
+                    'data-initial-energy': sample.initialEnergy, 'data-accounted-energy': accounted, 'data-scale-energy': representable ? scale : undefined,
+                    'aria-labelledby': 'physics-energy-accounting-heading', 'aria-describedby': 'physics-energy-accounting-help physics-energy-accounting-scale-help' },
+                  h('figcaption', null, h('h5', { id: 'physics-energy-accounting-heading' }, __alloT('stem.physics.energy_accounting_title', 'Energy accounting')),
+                    h('p', { 'data-physics-energy-accounting-time': true }, selectedLabel + ' · t = ' + sample.t.toFixed(3) + ' s')),
+                  rowLabel(__alloT('stem.physics.energy_reference_label', 'At launch · initial energy'), sample.initialEnergy, 'initialEnergy'),
+                  representable && h('svg', { viewBox: '0 0 300 36', className: 'phys-energy-accounting-bar', 'aria-hidden': true, focusable: 'false' },
+                    h('rect', { x: 0, y: 4, width: 300, height: 28, fill: 'var(--phys-panel)', stroke: 'var(--phys-muted)', strokeWidth: 1, strokeDasharray: '3 3' }),
+                    h('rect', { 'data-physics-energy-reference': true, 'data-value': sample.initialEnergy, x: 0, y: 4, width: width(sample.initialEnergy), height: 28,
+                      fill: 'var(--phys-soft)', stroke: 'var(--phys-muted)', strokeWidth: 2 })),
+                  rowLabel(__alloT('stem.physics.energy_accounted_label', 'At this moment · recorded sum'), accounted, 'accounted'),
+                  representable && h('svg', { 'data-physics-energy-allocation': true, viewBox: '0 0 300 36', className: 'phys-energy-accounting-bar', 'aria-hidden': true, focusable: 'false' },
+                    h('defs', null, ['pe', 'dragLoss'].map(function(key) { return h('pattern', { key: key, id: 'physics-energy-accounting-' + key + '-pattern', patternUnits: 'userSpaceOnUse', width: 6, height: 6 },
+                      h('rect', { width: 6, height: 6, fill: 'var(--phys-energy-' + key + ')' }),
+                      h('path', { d: key === 'pe' ? 'M0 5H6' : 'M-1 1L1-1M0 6L6 0M5 7L7 5', stroke: 'var(--phys-panel)', strokeWidth: 2 })); })),
+                    h('rect', { x: 0, y: 4, width: 300, height: 28, fill: 'var(--phys-panel)', stroke: 'var(--phys-muted)', strokeWidth: 1, strokeDasharray: '3 3' }),
+                    ['ke', 'pe', 'dragLoss'].map(function(key) { return h('rect', { key: key, 'data-physics-energy-budget': key, 'data-value': sample[key],
+                      x: key === 'ke' ? 0 : key === 'pe' ? width(sample.ke) : width(sample.totalEnergy), y: 4, width: width(sample[key]), height: 28,
+                      fill: key === 'ke' ? 'var(--phys-energy-ke)' : 'url(#physics-energy-accounting-' + key + '-pattern)' }); })),
+                  representable && sample.totalEnergy > 0 && h('svg', { viewBox: '0 0 300 18', className: 'phys-energy-accounting-bracket', 'aria-hidden': true, focusable: 'false' },
+                    h('path', { 'data-physics-energy-mechanical-bracket': true, 'data-value': sample.totalEnergy, 'data-width': width(sample.totalEnergy),
+                      d: 'M0 2V10H' + width(sample.totalEnergy) + 'V2', fill: 'none', stroke: 'var(--phys-ink)', strokeWidth: 2 })),
+                  h('p', { className: 'phys-energy-accounting-mechanical' }, __alloT('stem.physics.sample_mechanical_energy', 'Mechanical · KE + PE') + ': ' + physFormatSampleValue(sample.totalEnergy) + ' J'),
+                  h('ul', { className: 'phys-energy-accounting-key', 'aria-label': __alloT('stem.physics.energy_accounting_key', 'Energy segment key') }, ['ke', 'pe', 'dragLoss'].map(function(key) {
+                    return h('li', { key: key }, h('span', { 'aria-hidden': true, style: { background: energyPaint(key) } }), labels[key] + ' · ' + (key === 'ke' ? __alloT('stem.physics.energy_solid_key', 'solid') : key === 'pe' ? __alloT('stem.physics.energy_horizontal_key', 'horizontal stripes') : __alloT('stem.physics.energy_diagonal_key', 'diagonal stripes')));
+                  })),
+                  h('p', { id: 'physics-energy-accounting-scale-help', className: 'phys-energy-accounting-help' }, !representable ? __alloT('stem.physics.energy_scale_unavailable', 'The recorded sum is beyond the display range; the individual readings remain available.')
+                    : scale > 0 ? __alloT('stem.physics.energy_accounting_scale', 'Both rows use the same scale. Full width represents') + ' ' + physFormatSampleValue(scale) + ' J.' : __alloT('stem.physics.energy_accounting_zero', 'The launch reference and recorded sum are both zero.')),
+                  h('ul', { className: 'phys-energy-accounting-notes' }, notes));
               }
               var sampleLabel = __alloT('stem.physics.sample_number', 'Sample') + ' ' + (sample.index + 1) + ' / ' + sample.count;
               var settings = [
@@ -3365,14 +3574,15 @@ window.StemLab = window.StemLab || {
                     h('div', null, h('dt', null, __alloT('stem.physics.sample_vertical_acceleration', 'Vertical acceleration · ay')), h('dd', { 'data-physics-phase-value': 'ay', 'data-value': sample.ay }, physFormatSampleValue(sample.ay) + ' m/s²'))),
                   h('div', { 'data-physics-vertical-balance': true },
                     h('p', null, __alloT('stem.physics.force_vertical_equation', 'Gravity + vertical air drag = net vertical force')),
-                    h('strong', null, physFormatSampleValue(sample.gravityFy) + ' N + (' + physFormatSampleValue(sample.dragFy) + ' N) = ' + physFormatSampleValue(sample.fy) + ' N'))), h('section', { className: 'phys-measured-card', 'aria-labelledby': 'physics-sample-motion' },
+                    h('strong', null, physFormatSampleValue(sample.gravityFy) + ' N + (' + physFormatSampleValue(sample.dragFy) + ' N) = ' + physFormatSampleValue(sample.fy) + ' N'))), h('section', { className: 'phys-measured-card', 'data-physics-motion-readings': true, 'aria-labelledby': 'physics-sample-motion' },
                     h('h4', { id: 'physics-sample-motion' }, __alloT('stem.physics.sample_motion', 'Position & velocity')),
-                    h('dl', null,
+                    h('div', { className: 'phys-motion-readings' }, velocityDiagram(), h('dl', null,
                       measurement('x', __alloT('stem.physics.sample_horizontal_position', 'Horizontal position · x'), sample.x, 'm'),
                       measurement('y', __alloT('stem.physics.sample_height', 'Height above ground · y'), sample.y, 'm'),
                       measurement('vx', __alloT('stem.physics.sample_horizontal_velocity', 'Horizontal velocity · vx'), sample.vx, 'm/s'),
                       measurement('vy', __alloT('stem.physics.sample_vertical_velocity', 'Vertical velocity · vy'), sample.vy, 'm/s'),
-                      measurement('speed', __alloT('stem.physics.metric_speed', 'Speed'), sample.speed, 'm/s')))),
+                      measurement('speed', __alloT('stem.physics.metric_speed', 'Speed'), sample.speed, 'm/s'))),
+                    h('p', { 'data-physics-velocity-formula': true, 'data-value': sample.speed, className: 'phys-velocity-formula' }, __alloT('stem.physics.velocity_speed_equation', 'Speed = √(vx² + vy²)') + ' = ' + physFormatSampleValue(sample.speed) + ' m/s.'))),
               forces: h('details', { 'data-physics-sample-forces': true, open: analysisView === 'forces' },
                   h('summary', null, __alloT('stem.physics.sample_forces', 'Forces & acceleration')),
                   h('section', { 'data-physics-force-balance': true, 'data-force-scale': forceScale, 'aria-labelledby': 'physics-force-heading' },
@@ -3393,18 +3603,21 @@ window.StemLab = window.StemLab || {
                     h('div', { className: 'phys-measured-card' }, h('dl', null,
                       measurement('gravityForce', __alloT('stem.physics.inspect_gravity_force', 'Gravitational force downward'), sample.gravityForce, 'N'),
                       measurement('dragForce', __alloT('stem.physics.inspect_drag_force', 'Drag force opposite velocity'), sample.dragForce, 'N'))))),
-              energy: h('section', { className: 'phys-measured-card', 'aria-labelledby': 'physics-sample-energy' },
+              energy: h('section', { className: 'phys-measured-card', 'data-physics-energy-readings': true, 'aria-labelledby': 'physics-sample-energy' },
                     h('h4', { id: 'physics-sample-energy' }, __alloT('stem.physics.sample_energy', 'Energy at this moment')),
-                    h('dl', null,
+                    h('div', { className: 'phys-energy-accounting-layout' }, energyAccounting(), h('dl', null,
                       measurement('ke', __alloT('stem.physics.sample_kinetic_energy', 'Kinetic · KE'), sample.ke, 'J'),
                       measurement('pe', __alloT('stem.physics.sample_potential_energy', 'Potential · PE'), sample.pe, 'J'),
                       measurement('totalEnergy', __alloT('stem.physics.sample_mechanical_energy', 'Mechanical · KE + PE'), sample.totalEnergy, 'J'),
                       measurement('dragLoss', __alloT('stem.physics.inspect_energy_transferred', 'Energy transferred to the air'), sample.dragLoss, 'J'),
-                      measurement('initialEnergy', __alloT('stem.physics.sample_initial_energy', 'Initial energy'), sample.initialEnergy, 'J')),
-                    sample.initialEnergy > 0 && h('div', { className: 'phys-energy-budget', 'aria-hidden': true },
-                      h('span', { style: { width: Math.max(0, Math.min(100, sample.ke / sample.initialEnergy * 100)) + '%', background: 'var(--phys-accent)' } }),
-                      h('span', { style: { width: Math.max(0, Math.min(100, sample.pe / sample.initialEnergy * 100)) + '%', background: 'var(--phys-muted)' } }),
-                      h('span', { style: { width: Math.max(0, Math.min(100, sample.dragLoss / sample.initialEnergy * 100)) + '%', background: 'repeating-linear-gradient(135deg,var(--phys-line),var(--phys-line) 3px,var(--phys-panel) 3px,var(--phys-panel) 6px)' } }))),
+                      measurement('initialEnergy', __alloT('stem.physics.sample_initial_energy', 'Initial energy'), sample.initialEnergy, 'J'))),
+                    h('p', { 'data-physics-energy-accounting-equation': true, 'data-mechanical': sample.totalEnergy, 'data-transferred': sample.dragLoss,
+                        'data-accounted': sample.totalEnergy + sample.dragLoss, className: 'phys-energy-accounting-equation' },
+                      __alloT('stem.physics.energy_accounting_equation', 'Mechanical + transferred') + ': ' + physFormatSampleValue(sample.totalEnergy) + ' J + ' +
+                        physFormatSampleValue(sample.dragLoss) + ' J' + (isFinite(sample.totalEnergy + sample.dragLoss) ? ' ≈ ' + physFormatSampleValue(sample.totalEnergy + sample.dragLoss) + ' J.' : '.')),
+                    h('p', { id: 'physics-energy-accounting-help', className: 'phys-energy-accounting-help' }, parameters.airResist
+                      ? __alloT('stem.physics.energy_accounting_drag_help', 'With air drag, the model estimates energy transferred to the air from the decrease in mechanical energy since launch. The diagonal segment shows that estimate.')
+                      : __alloT('stem.physics.energy_accounting_vacuum_help', 'Without air drag, kinetic and potential energy exchange while mechanical energy stays approximately constant. No energy transfer to the air is counted.'))),
               help: React.createElement(React.Fragment, null, h('p', { className: 'phys-measured-help' }, __alloT('stem.physics.sample_inspection_help', 'These are recorded measurements. Moving the time control pauses playback and leaves the flight evidence intact. Highest recorded point selects the highest sampled position.')), h('p', { className: 'phys-measured-help' }, __alloT('stem.physics.inspect_axes', 'Right and up are positive; potential energy is measured from the ground.')), sample.impact && h('p', { className: 'phys-measured-help', 'data-physics-impact-note': true, style: { padding: '10px 12px', background: 'var(--phys-soft)', borderLeft: '3px solid var(--phys-accent)', borderRadius: 6 } }, __alloT('stem.physics.sample_impact_note', 'Impact values describe the arriving projectile immediately before ground contact. The model stops at contact and does not simulate the collision force.')), typeof d.inspectionSnapshot === 'string' && h('p', { className: 'sr-only' }, d.inspectionSnapshot))
             };
           }
@@ -3476,6 +3689,36 @@ window.StemLab = window.StemLab || {
                 if (low > 0 && wanted - pts[low - 1].t <= pts[low].t - wanted) low--;
                 physSelectSample(low, lastTrail);
               }
+              function selectGraphKey(event) {
+                if (!graphCanInspect || event.altKey || event.ctrlKey || event.metaKey) return;
+                var livePoint = physSelectedInspection(cv);
+                var index = livePoint && cv._inspection.trail === lastTrail ? livePoint.index : lastTrail.length - 1;
+                var target;
+                switch (event.key) {
+                  case 'ArrowLeft': case 'ArrowDown': target = index - 1; break;
+                  case 'ArrowRight': case 'ArrowUp': target = index + 1; break;
+                  case 'PageDown': target = index - 10; break;
+                  case 'PageUp': target = index + 10; break;
+                  case 'Home': target = 0; break;
+                  case 'End': target = lastTrail.length - 1; break;
+                  case 'Enter': case ' ': case 'Spacebar': target = index; break;
+                  default: return;
+                }
+                event.preventDefault();
+                event.stopPropagation();
+                physSelectSample(Math.max(0, Math.min(lastTrail.length - 1, target)), lastTrail);
+              }
+              function graphControlProps(label, valueText, descriptionId) {
+                if (!graphCanInspect) return { role: 'img', 'aria-label': label + '. ' + valueText, 'aria-describedby': descriptionId };
+                return {
+                  'data-physics-graph-control': 'time', tabIndex: 0, role: 'slider',
+                  'aria-label': label, 'aria-orientation': 'horizontal',
+                  'aria-valuemin': 0, 'aria-valuemax': pts.length - 1, 'aria-valuenow': graphIndex,
+                  'aria-valuetext': 't = ' + graphTime.toFixed(3) + ' s; ' + __alloT('stem.physics.graph_sample', 'sample') + ' ' + (graphIndex + 1) + ' / ' + pts.length + '; ' + valueText,
+                  'aria-describedby': 'physics-graph-time-help physics-graph-keyboard-help ' + descriptionId,
+                  onKeyDown: selectGraphKey
+                };
+              }
               var vxAbs = 0, vyMax = 0, vyMin = 0;
               samples.forEach(function (s) {
                 if (Math.abs(s.vx) > vxAbs) vxAbs = Math.abs(s.vx);
@@ -3544,7 +3787,7 @@ window.StemLab = window.StemLab || {
                   level: __alloT('stem.physics.sample_phase_level', 'Vertical velocity is zero'),
                   impact: __alloT('stem.physics.sample_ground_impact', 'Ground impact')
                 }[selectedPoint.phase] : '';
-                var selectionText = selectedPoint ? __alloT('stem.physics.graph_selected_sample', 'Selected sample') + ': t = ' + selectedPoint.t.toFixed(3) + ' s; ' + (field === 'vx' ? 'Vx' : 'Vy') + ' = ' + physFormatSampleValue(selectedValue) + ' m/s.' : '';
+                var graphValueText = (field === 'vx' ? 'Vx' : 'Vy') + ' = ' + physFormatSampleValue(selectedPoint ? selectedValue : latest[field]) + ' m/s';
                 return React.createElement('div', { style: graphCardStyle },
                   React.createElement('h4', { style: { margin: '0 0 5px', fontSize: 14, lineHeight: 1.45, fontWeight: 750, color: color } }, title),
                   React.createElement('div', { 'data-physics-graph-selected': selectedPoint ? field : undefined,
@@ -3558,7 +3801,7 @@ window.StemLab = window.StemLab || {
                   React.createElement('dl', { className: 'phys-graph-endpoints' },
                     React.createElement('div', null, React.createElement('dt', { style: { color: graphColors.muted } }, __alloT('stem.physics.sample_launch_point', 'Launch point')), React.createElement('dd', null, physFormatSampleValue(first[field]) + ' m/s')),
                     React.createElement('div', null, React.createElement('dt', { style: { color: graphColors.muted } }, graphLatest && graphLatest.impact ? __alloT('stem.physics.sample_ground_impact', 'Ground impact') : __alloT('stem.physics.sample_latest_point', 'Latest point')), React.createElement('dd', null, physFormatSampleValue(latest[field]) + ' m/s'))),
-                  React.createElement('svg', { 'data-physics-graph': field, 'data-plotted-indices': plotIndices.join(','), 'data-plotted-count': plotIndices.length, onClick: graphCanInspect ? selectGraphTime : undefined, 'aria-describedby': graphCanInspect ? 'physics-graph-time-help' : undefined, style: { cursor: graphCanInspect ? 'crosshair' : 'default', display: 'block', background: graphColors.surface, borderRadius: 8, width: '100%', maxWidth: 320, height: 'auto', margin: '0 auto' }, viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': description + (selectionText ? ' ' + selectionText : '') },
+                  React.createElement('svg', Object.assign({ 'data-physics-graph': field, 'data-plotted-indices': plotIndices.join(','), 'data-plotted-count': plotIndices.length, onClick: graphCanInspect ? selectGraphTime : undefined, style: { cursor: graphCanInspect ? 'crosshair' : 'default', display: 'block', background: graphColors.surface, borderRadius: 8, width: '100%', maxWidth: 320, height: 'auto', margin: '0 auto' }, viewBox: '0 0 ' + W + ' ' + H, width: '100%' }, graphControlProps(graphCanInspect ? title : description, graphValueText, 'physics-graph-' + field + '-description')),
                     timeAxis(),
                     ticks.map(function(value) { return React.createElement('g', { key: value },
                       axisLine(padL, zero - value * scale, W - padR, zero - value * scale, value !== 0),
@@ -3570,20 +3813,25 @@ window.StemLab = window.StemLab || {
                     selectedPoint && React.createElement('line', {
                       'data-physics-graph-cursor': field, 'data-sample-index': selectedPoint.index, 'data-time': selectedPoint.t,
                       x1: selectedX, x2: selectedX, y1: padT, y2: padT + innerH,
-                      stroke: graphColors.marker, strokeWidth: 1.5, strokeDasharray: '6 3'
+                      stroke: graphColors.marker, strokeWidth: 1.5
                     }),
+                    selectedPoint && React.createElement('line', { 'data-physics-graph-value-guide': field,
+                      x1: padL, x2: selectedX, y1: selectedY, y2: selectedY, stroke: graphColors.marker, strokeWidth: 1.2 }),
                     React.createElement('path', { d: path, stroke: color, strokeWidth: 2.8, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }),
                     endpoint(first, field, zero, scale, color),
                     endpoint(latest, field, zero, scale, color),
                     selectedPoint && React.createElement('circle', {
                       'data-physics-graph-marker': field, 'data-sample-index': selectedPoint.index, 'data-time': selectedPoint.t, 'data-value': selectedValue,
-                      cx: selectedX, cy: selectedY, r: 6.5, fill: graphColors.marker, stroke: graphColors.ink, strokeWidth: 2
+                      cx: selectedX, cy: selectedY, r: 6.5, fill: graphColors.surface, stroke: graphColors.marker, strokeWidth: 2.5
                     }),
+                    selectedPoint && React.createElement('circle', { 'data-physics-graph-marker-center': field, cx: selectedX, cy: selectedY, r: 2, fill: graphColors.marker }),
                     lbl(padL + innerW / 2, H - 5, __alloT('stem.physics.axis_time_s', 'time (s)'))
                   ),
+                  selectedPoint && React.createElement('p', { 'data-physics-graph-selection-key': field, className: 'phys-graph-guide-key', style: { color: graphColors.muted } }, React.createElement('span', { 'aria-hidden': true, style: { borderColor: graphColors.marker, borderTopStyle: 'solid' } }),
+                    __alloT('stem.physics.graph_selected_guide', 'Solid guides: selected recorded point') + ' · t = ' + selectedPoint.t.toFixed(3) + ' s'),
                   graphApex && React.createElement('p', { className: 'phys-graph-guide-key', style: { color: graphColors.muted } }, React.createElement('span', { 'aria-hidden': true, style: { borderColor: graphColors.marker } }),
                     __alloT('stem.physics.graph_apex_guide', 'Dashed guide: recorded apex') + ' · t = ' + graphApex.t.toFixed(3) + ' s'),
-                  React.createElement('p', { style: { margin: '8px 0 0', fontSize: 14, lineHeight: 1.55, color: graphColors.muted } }, description)
+                  React.createElement('p', { id: 'physics-graph-' + field + '-description', style: { margin: '8px 0 0', fontSize: 14, lineHeight: 1.55, color: graphColors.muted } }, description)
                 );
               };
 
@@ -3602,6 +3850,8 @@ window.StemLab = window.StemLab || {
                       style: { minHeight: 44, padding: '9px 12px', border: '1px solid ' + graphColors.axis, background: graphColors.panel, color: graphColors.ink, borderRadius: 9, fontSize: 12, fontWeight: 700 } }, __alloT('stem.physics.graph_inspect_time', 'Inspect this time')),
                     React.createElement('p', { id: 'physics-graph-time-help', style: { flex: '1 1 240px', margin: 0, color: graphColors.muted, fontSize: 12, lineHeight: 1.6 } },
                       __alloT('stem.physics.graph_time_help', 'Tap a graph or move the time control to inspect the nearest recorded point. Selecting a point pauses playback.'))),
+                  React.createElement('p', { id: 'physics-graph-keyboard-help', style: { margin: '8px 0', color: graphColors.muted, fontSize: 12, lineHeight: 1.6 } },
+                    __alloT('stem.physics.graph_keyboard_help', 'Focus a motion or energy chart to inspect with the keyboard. Arrow keys move one recorded point; Page Up / Page Down move ten. Home / End go to the first / last point. Enter or Space pins the current point.')),
                   React.createElement('div', { className: 'phys-sample-buttons' },
                     React.createElement('button', { type: 'button', 'data-physics-sample-prev': true, disabled: graphIndex === 0, onClick: function() { physSelectSample(graphIndex - 1, lastTrail); } }, __alloT('stem.physics.sample_previous', 'Previous point')),
                     React.createElement('button', { type: 'button', 'data-physics-sample-next': true, disabled: graphIndex >= pts.length - 1, onClick: function() { physSelectSample(graphIndex + 1, lastTrail); } }, __alloT('stem.physics.sample_next', 'Next point'))),
@@ -3678,7 +3928,7 @@ window.StemLab = window.StemLab || {
                   function energyReading(key, label) {
                     return React.createElement('div', { key: key, className: 'phys-energy-reading' },
                       React.createElement('span', null, colors[key] && swatch(key), label),
-                      React.createElement('strong', { 'data-physics-energy-value': key, 'data-value': current[key] }, current[key].toFixed(2) + ' J'));
+                      React.createElement('strong', { 'data-physics-energy-value': key, 'data-value': current[key] }, physFormatSampleValue(current[key]) + ' J'));
                   }
                   var timeLabel = selectedPoint ? __alloT('stem.physics.graph_selected_sample', 'Selected sample') : __alloT('stem.physics.energy_latest_sample', 'Latest recorded sample');
                   var description = __alloT('stem.physics.energy_chart_description', 'Recorded energy over time. Stacked bands show kinetic energy, gravitational potential energy, and energy transferred by air drag.');
@@ -3691,10 +3941,11 @@ window.StemLab = window.StemLab || {
                       'm = ' + p.mass + ' kg · v₀ = ' + p.velocity + ' m/s · g = ' + p.gravity + ' m/s² · h₀ = ' + p.launchHeight + ' m · ' + (p.airResist ? __alloT('stem.physics.sample_drag_on', 'Air drag on') : __alloT('stem.physics.sample_drag_off', 'Air drag off'))),
                     React.createElement('div', { className: 'phys-energy-layout' },
                       React.createElement('div', null,
-                        energies.length > 1 ? React.createElement('svg', { 'data-physics-energy-graph': true, 'data-plotted-count': energies.length, 'data-initial-energy': eMax,
-                          onClick: function(event) { selectGraphTime(event, { width: eW, left: eL, plotWidth: eIW }); }, 'aria-describedby': 'physics-graph-time-help physics-energy-sampling-help',
-                          viewBox: '0 0 ' + eW + ' ' + eH, role: 'img', 'aria-label': description + ' ' + timeLabel + ': t = ' + current.t.toFixed(3) + ' s.',
-                          style: { display: 'block', width: '100%', maxWidth: 400, height: 'auto', margin: '0 auto', background: graphColors.surface, cursor: 'crosshair' } },
+                        energies.length > 1 ? React.createElement('svg', Object.assign({ 'data-physics-energy-graph': true, 'data-plotted-count': energies.length, 'data-initial-energy': eMax,
+                          onClick: graphCanInspect ? function(event) { selectGraphTime(event, { width: eW, left: eL, plotWidth: eIW }); } : undefined,
+                          viewBox: '0 0 ' + eW + ' ' + eH,
+                          style: { display: 'block', width: '100%', maxWidth: 400, height: 'auto', margin: '0 auto', background: graphColors.surface, cursor: graphCanInspect ? 'crosshair' : 'default' } }, graphControlProps(__alloT('stem.physics.energy_timeline_title', 'Energy through the recorded flight'),
+                            labels.ke + ' = ' + physFormatSampleValue(current.ke) + ' J; ' + labels.pe + ' = ' + physFormatSampleValue(current.pe) + ' J; ' + labels.dragLoss + ' = ' + physFormatSampleValue(current.dragLoss) + ' J', 'physics-energy-chart-description physics-energy-sampling-help')),
                           React.createElement('defs', null, ['pe', 'dragLoss'].map(function(part) {
                             return React.createElement('pattern', { key: part, id: patterns[part], patternUnits: 'userSpaceOnUse', width: 8, height: 8 },
                               React.createElement('rect', { width: 8, height: 8, fill: colors[part] }),
@@ -3710,8 +3961,10 @@ window.StemLab = window.StemLab || {
                           [0, .5, 1].map(function(fraction) { return React.createElement('g', { key: fraction }, lbl(eL + fraction * eIW, eH - 29, tickNumber(tMax * fraction), fraction === 0 ? 'start' : fraction === 1 ? 'end' : 'middle')); }),
                           lbl(eL, 22, kilo ? __alloT('stem.physics.energy_axis_kj', 'energy (kJ)') : __alloT('stem.physics.energy_axis_j', 'energy (J)'), 'start'),
                           lbl(eL + eIW / 2, eH - 5, __alloT('stem.physics.axis_time_s', 'time (s)')),
+                          selectedPoint && React.createElement('line', { 'data-physics-energy-cursor-outline': true,
+                            x1: energyX(current), x2: energyX(current), y1: eT, y2: eZero, stroke: graphColors.surface, strokeWidth: 5 }),
                           selectedPoint && React.createElement('line', { 'data-physics-energy-cursor': true, 'data-sample-index': current.index, 'data-time': current.t,
-                            x1: energyX(current), x2: energyX(current), y1: eT, y2: eZero, stroke: graphColors.surface, strokeWidth: 2.5, strokeDasharray: '6 3' }),
+                            x1: energyX(current), x2: energyX(current), y1: eT, y2: eZero, stroke: graphColors.ink, strokeWidth: 2 }),
                           selectedPoint && React.createElement('circle', { 'data-physics-energy-boundary': 'mechanical', 'data-value': current.totalEnergy,
                             cx: energyX(current), cy: energyY(current.totalEnergy), r: 6, fill: colors.pe, stroke: graphColors.surface, strokeWidth: 2.5 }),
                           selectedPoint && React.createElement('circle', { 'data-physics-energy-boundary': 'ke', 'data-value': current.ke,
@@ -3719,12 +3972,11 @@ window.StemLab = window.StemLab || {
                           : React.createElement('p', { 'data-physics-energy-single-sample': true, className: 'phys-energy-help', style: { color: graphColors.muted } }, __alloT('stem.physics.energy_single_sample', 'The launch sample is recorded. Step or resume to draw the energy timeline.'))),
                       React.createElement('div', { className: 'phys-energy-readings' },
                         ['ke', 'pe', 'dragLoss'].map(function(key) { return energyReading(key, labels[key]); }),
-                        React.createElement('div', { className: 'phys-energy-current-budget', 'aria-hidden': true }, ['ke', 'pe', 'dragLoss'].map(function(key) {
-                          return React.createElement('span', { key: key, 'data-physics-energy-budget': key, style: { width: Math.max(0, Math.min(100, current[key] / eMax * 100)) + '%',
-                            background: key === 'ke' ? colors.ke : 'repeating-linear-gradient(' + (key === 'pe' ? '0deg' : '135deg') + ',' + colors[key] + ',' + colors[key] + ' 4px,' + graphColors.surface + ' 4px,' + graphColors.surface + ' 6px)' } });
-                        })),
                         energyReading('totalEnergy', __alloT('stem.physics.sample_mechanical_energy', 'Mechanical · KE + PE')),
                         energyReading('initialEnergy', __alloT('stem.physics.sample_initial_energy', 'Initial energy')))),
+                    selectedPoint && energies.length > 1 && React.createElement('p', { 'data-physics-energy-selection-key': true, className: 'phys-graph-guide-key', style: { color: graphColors.muted } }, React.createElement('span', { 'aria-hidden': true, style: { borderColor: graphColors.ink, borderTopStyle: 'solid' } }),
+                      __alloT('stem.physics.energy_selected_guide', 'Solid guide: selected recorded time. Dashed horizontal line: initial energy.')),
+                    React.createElement('p', { id: 'physics-energy-chart-description', className: 'phys-energy-help', style: { color: graphColors.muted } }, description),
                     React.createElement('p', { className: 'phys-energy-help', style: { color: graphColors.muted } }, __alloT('stem.physics.energy_budget_help', 'Kinetic energy depends on mass and speed. Potential energy depends on mass, gravity, and height above ground. The diagonal band shows energy transferred by drag.')),
                     React.createElement('p', { id: 'physics-energy-sampling-help', className: 'phys-energy-help', style: { color: graphColors.muted } }, __alloT('stem.physics.energy_sampling_help', 'The timeline connects a representative set of recorded samples. The time control uses every recorded point.')),
                     current.impact && React.createElement('p', { 'data-physics-energy-impact': true, className: 'phys-energy-help', style: { color: graphColors.muted } }, __alloT('stem.physics.energy_impact_note', 'The final flight sample is at ground contact, before collision energy is redistributed.')));
@@ -4145,8 +4397,6 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               #physics-fs-outer .phys-energy-reading>span{display:flex;align-items:center;gap:7px;font-size:12px;line-height:1.6}
               #physics-fs-outer .phys-energy-reading>strong{font-size:18px;line-height:1.5;font-weight:750;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
               #physics-fs-outer .phys-energy-swatch{display:inline-block;flex-shrink:0;width:14px;height:12px;border-radius:2px}
-              #physics-fs-outer .phys-energy-current-budget{display:flex;height:14px;overflow:hidden;border-radius:3px;box-shadow:0 0 0 1px var(--phys-line)}
-              #physics-fs-outer .phys-energy-current-budget>span{display:block;height:100%;flex-shrink:0}
 
               #physics-fs-outer .phys-command-eyebrow,#physics-fs-outer .phys-command-metric>div:last-child,#physics-fs-outer .phys-next-label,#physics-fs-outer .phys-parameter-limits{font-size:11px}
               #physics-fs-outer .phys-parameter label,#physics-fs-outer .phys-outcome>div:nth-child(3){font-size:12px}
@@ -4268,6 +4518,22 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               #physics-fs-outer .phys-phase-values{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0;padding-top:9px;border-top:1px solid var(--phys-accent)}
               #physics-fs-outer .phys-phase-values dt{font-size:12px;color:var(--phys-muted);line-height:1.5}
               #physics-fs-outer .phys-phase-values dd{margin:4px 0 0;font-size:18px;line-height:1.4;font-weight:750;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+              #physics-fs-outer [data-physics-motion-readings]{--phys-velocity-vx:#1767b2;--phys-velocity-vy:#793dbb;--phys-velocity-resultant:#087687}
+              #physics-fs-outer[data-physics-theme="dark"] [data-physics-motion-readings]{--phys-velocity-vx:#67b8ff;--phys-velocity-vy:#cfb4ff;--phys-velocity-resultant:#67e8f9}
+              #physics-fs-outer[data-physics-theme="contrast"] [data-physics-motion-readings]{--phys-velocity-vx:#fff;--phys-velocity-vy:#ff0;--phys-velocity-resultant:#0ff}
+              #physics-fs-outer .phys-motion-readings{display:grid;grid-template-columns:minmax(220px,1.1fr) minmax(200px,1fr);gap:18px;align-items:start}
+              #physics-fs-outer .phys-velocity-construction{min-width:0;margin:0}
+              #physics-fs-outer .phys-velocity-construction h5{margin:0;font-size:14px;line-height:1.5;font-weight:750;color:var(--phys-ink)}
+              #physics-fs-outer [data-physics-velocity-time]{margin:4px 0 8px;font-size:12px;line-height:1.6;color:var(--phys-muted);font-variant-numeric:tabular-nums}
+              #physics-fs-outer [data-physics-velocity-diagram]{display:block;width:100%;max-width:360px;height:auto;margin:0 auto;border:1px solid var(--phys-line);border-radius:10px;background:var(--phys-panel)}
+              #physics-fs-outer .phys-velocity-key{display:flex;flex-wrap:wrap;gap:7px 14px;margin:10px 0;padding:0;list-style:none;font-size:12px;line-height:1.6;color:var(--phys-ink)}
+              #physics-fs-outer .phys-velocity-key li{display:flex;align-items:center;gap:6px}
+              #physics-fs-outer .phys-velocity-key span{width:22px;flex:none;border-top:3px solid}
+              #physics-fs-outer .phys-velocity-help{margin:8px 0 0;font-size:12px;line-height:1.65;color:var(--phys-muted);overflow-wrap:anywhere}
+              #physics-fs-outer .phys-velocity-notes{margin:8px 0 0;padding-left:18px;font-size:12px;line-height:1.65;color:var(--phys-ink);overflow-wrap:anywhere}
+              #physics-fs-outer .phys-velocity-notes:empty{display:none}
+              #physics-fs-outer .phys-velocity-formula{margin:14px 0 0;padding-top:12px;border-top:1px solid var(--phys-line);font-size:14px;line-height:1.6;font-weight:750;color:var(--phys-ink);overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+              @container(max-width:620px){#physics-fs-outer .phys-motion-readings{grid-template-columns:minmax(0,1fr);gap:14px}}
               #physics-fs-outer .phys-measured-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}
               #physics-fs-outer .phys-measured-card{min-width:0;border:1px solid var(--phys-line);border-radius:12px;background:var(--phys-soft);padding:14px}
               #physics-fs-outer .phys-measured-card h4{margin:0 0 10px;font-size:.875rem;font-weight:750;color:var(--phys-ink)}
@@ -4275,7 +4541,25 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               #physics-fs-outer .phys-measured-card dl>div{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:3px 12px;padding-bottom:7px;border-bottom:1px solid var(--phys-line)}
               #physics-fs-outer .phys-measured-card dt{font-size:.75rem;color:var(--phys-muted)}
               #physics-fs-outer .phys-measured-card dd{margin:0;font-size:1rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--phys-ink)}
-              #physics-fs-outer .phys-energy-budget{display:flex;width:100%;height:10px;overflow:hidden;border-radius:5px;background:var(--phys-panel);border:1px solid var(--phys-line);margin:12px 0}
+              #physics-fs-outer [data-physics-energy-readings]{--phys-energy-ke:#1767b2;--phys-energy-pe:#793dbb;--phys-energy-dragLoss:#a95b05}
+              #physics-fs-outer[data-physics-theme="dark"] [data-physics-energy-readings]{--phys-energy-ke:#67b8ff;--phys-energy-pe:#cfb4ff;--phys-energy-dragLoss:#fbbf24}
+              #physics-fs-outer[data-physics-theme="contrast"] [data-physics-energy-readings]{--phys-energy-ke:#ff0;--phys-energy-pe:#fff;--phys-energy-dragLoss:#ff0}
+              #physics-fs-outer .phys-energy-accounting-layout{display:grid;grid-template-columns:minmax(220px,1.1fr) minmax(200px,1fr);gap:18px;align-items:start}
+              #physics-fs-outer .phys-energy-accounting{min-width:0;margin:0}
+              #physics-fs-outer .phys-energy-accounting h5{margin:0;font-size:14px;line-height:1.5;font-weight:750;color:var(--phys-ink)}
+              #physics-fs-outer .phys-energy-accounting figcaption p{margin:4px 0 12px;font-size:12px;line-height:1.65;color:var(--phys-muted)}
+              #physics-fs-outer .phys-energy-accounting-row-label{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:3px 10px;margin:12px 0 4px;font-size:12px;line-height:1.65;color:var(--phys-ink)}
+              #physics-fs-outer .phys-energy-accounting-row-label strong{font-size:14px;overflow-wrap:anywhere}
+              #physics-fs-outer .phys-energy-accounting-bar,#physics-fs-outer .phys-energy-accounting-bracket{display:block;width:100%;height:auto;overflow:visible}
+              #physics-fs-outer .phys-energy-accounting-mechanical{margin:2px 0 8px;font-size:12px;line-height:1.65;font-weight:700;color:var(--phys-ink);overflow-wrap:anywhere}
+              #physics-fs-outer .phys-energy-accounting-key{display:grid;gap:6px;list-style:none;margin:12px 0;padding:0;font-size:12px;line-height:1.65;color:var(--phys-ink)}
+              #physics-fs-outer .phys-energy-accounting-key li{display:flex;align-items:center;gap:7px;min-width:0}
+              #physics-fs-outer .phys-energy-accounting-key li>span{display:block;flex:none;width:20px;height:14px}
+              #physics-fs-outer .phys-energy-accounting-help{margin:8px 0 0;font-size:12px;line-height:1.65;color:var(--phys-muted);overflow-wrap:anywhere}
+              #physics-fs-outer .phys-energy-accounting-notes{margin:8px 0 0;padding-left:18px;font-size:12px;line-height:1.65;color:var(--phys-ink);overflow-wrap:anywhere}
+              #physics-fs-outer .phys-energy-accounting-notes:empty{display:none}
+              #physics-fs-outer .phys-energy-accounting-equation{margin:14px 0 0;padding-top:12px;border-top:1px solid var(--phys-line);font-size:14px;line-height:1.65;font-weight:750;color:var(--phys-ink);overflow-wrap:anywhere}
+              @container(max-width:620px){#physics-fs-outer .phys-energy-accounting-layout{grid-template-columns:minmax(0,1fr);gap:14px}}
               #physics-fs-outer .phys-energy-key{display:inline-block;width:9px;height:9px;margin-right:6px;border-radius:2px;border:1px solid var(--phys-line)}
               #physics-fs-outer [data-physics-vertical-balance]{border-top:1px solid var(--phys-accent);padding-top:10px;min-width:0}
               #physics-fs-outer [data-physics-vertical-balance] p{margin:0 0 5px;font-size:12px;line-height:1.6}
@@ -4368,6 +4652,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               #physics-fs-outer .phys-graph-endpoints{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 12px}
               #physics-fs-outer .phys-graph-endpoints dt{font-size:12px;line-height:1.5}
               #physics-fs-outer .phys-graph-endpoints dd{margin:3px 0 0;font-size:14px;line-height:1.5;font-weight:650;font-variant-numeric:tabular-nums}
+              #physics-fs-outer [data-physics-graph-control]:focus-visible{outline:3px solid var(--phys-accent);outline-offset:3px;border-radius:8px}
               #physics-fs-outer .phys-graph-guide-key{display:flex;align-items:center;gap:7px;margin:8px 0 0;font-size:12px;line-height:1.5}
               #physics-fs-outer .phys-graph-guide-key>span{width:22px;flex:none;border-top:2px dashed}
               #physics-fs-outer [data-physics-table-moment]{display:block;margin-top:3px;font-size:12px;line-height:1.5;white-space:normal}
@@ -4524,7 +4809,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                 className: 'phys-fullscreen-control'
               }, React.createElement('span', { 'aria-hidden': true }, physicsFullscreen ? '✕' : '⛶'), React.createElement('span', null, physicsFullscreen ? __alloT('stem.physics.exit_fullscreen', 'Exit fullscreen') : __alloT('stem.physics.fullscreen', 'Fullscreen'))),
               ),
-            React.createElement("div", { id: "physics-fs-wrap", className: "relative rounded-xl overflow-hidden border-2 border-sky-300 shadow-lg mb-3", style: d.physFsMode ? { position: 'relative', height: '75vh', minHeight: 480 } : { height: "480px" } },
+            React.createElement("div", { id: "physics-fs-wrap", className: "relative rounded-xl overflow-hidden border-2 border-sky-300 shadow-lg mb-3", style: d.physFsMode ? { position: 'relative', height: 'calc(75vh + var(--physics-band-extra, 0px))', minHeight: 'calc(480px + var(--physics-band-extra, 0px))' } : { height: 'calc(480px + var(--physics-band-extra, 0px))' } },
 
               React.createElement("canvas", {
 

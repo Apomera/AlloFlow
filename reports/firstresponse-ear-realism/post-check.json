@@ -1,0 +1,37 @@
+{
+  "sourceSHA256": "24dbe22375df2c8c3e7739d00d4621f4cc2c1e4db68d2bb05dfd15cca56c8a8a",
+  "bytes": 780092,
+  "mirrorsIdentical": true,
+  "sharedFixtureFilesUnchanged": true,
+  "syntax": true,
+  "newCodeWhitespace": true,
+  "reportLinks": 14,
+  "previewImages": 12,
+  "ownershipReleased": true,
+  "portableCheckerMetadata": {
+    "privateCheckerSHA256": "5011f504c93ef1c90659d86ccabc30317b9ee91907f7cdc82ff4c7fbd9de8fad",
+    "portableCheckerSHA256": "204b571f68a558cd1b8f07a65a2c37bf9b65cef6f70aa81dddb70f89dcf8918d",
+    "output": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-ear-work\\firstresponse_ear_refinement_check.cjs",
+    "edits": [
+      {
+        "before": "const repo = 'C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated';",
+        "after": "const repo = process.env.FIRST_RESPONSE_REPO || process.cwd();"
+      },
+      {
+        "before": "const work = __dirname;",
+        "after": "const work = process.env.FIRST_RESPONSE_EAR_REPORT_DIR || path.join(repo, 'reports', 'firstresponse-ear-refinement', 'checks');\nfs.mkdirSync(work, { recursive: true });"
+      },
+      {
+        "before": "const before = fs.readFileSync(path.join(work, 'before.js'), 'utf8');\nconst candidate = fs.readFileSync(path.join(work, 'candidate.js'), 'utf8');",
+        "after": "const candidate = fs.readFileSync(path.join(repo, 'stem_lab/stem_tool_firstresponse.js'), 'utf8');\nconst before = process.argv[3] ? fs.readFileSync(path.resolve(process.argv[3]), 'utf8')\n  : require(path.join(repo, 'tests/helpers/firstresponse_ear_refinement_delta.cjs')).revertEarRefinement(candidate);"
+      },
+      {
+        "before": "const launchedCheckerSHA256 = global.__earCheckerSHA256 || null;",
+        "after": "const launchedCheckerSHA256 = global.__earCheckerSHA256 || hash(fs.readFileSync(__filename));"
+      }
+    ],
+    "assertionBodiesChanged": false,
+    "executed": false,
+    "note": "Path and input handling variant only. Validation evidence comes from the pinned private launcher; no passing cases repeated solely for portability."
+  }
+}

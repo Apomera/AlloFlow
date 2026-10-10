@@ -58,12 +58,12 @@ describe('local document citations during adaptation', () => {
   });
 });
 
-function adaptationHarness({ keepCitations, model }) {
+function adaptationHarness({ keepCitations, model, overrides = {} }) {
   const state = { shown: null, history: [] };
   const prompts = [];
   const noop = () => {};
   const values = {
-    gradeLevel: '5th Grade', history: [], inputText: '', differentiationRange: 'None',
+    gradeLevel: '5th Grade', history: [], inputText: '', differentiationRange: 'None', activeUnitId: null, selectedReadingSourceId: '',
     leveledTextLanguage: 'English', selectedLanguages: [], studentInterests: [], guidedMode: false, guidedStep: 0,
     standardsInput: '', targetStandards: [], standardsPromptString: '', sourceTopic: 'Plants',
     currentUiLanguage: 'English', generatedContent: null, audioRef: { current: null }, alloBotRef: { current: null },
@@ -89,6 +89,7 @@ function adaptationHarness({ keepCitations, model }) {
     resolveTranslationPolicy: () => ({ enabled: false, target: 'English', mode: 'auto' }),
     repairGeneratedText: async text => text,
     glossaryImageStyle: '', universalImageStyle: '', imageGenerationStyle: '',
+    ...overrides,
   };
   return { state, prompts, deps: new Proxy(values, { get: (target, key) => key in target ? target[key] : noop }) };
 }
@@ -174,14 +175,114 @@ describe('uploaded document reference appendices during adaptation', () => {
     expect(saved.data).toContain('Plants use sunlight to grow');
     expect(saved.config.citationAudit.sourceCitationCount).toBe(1);
     if (keepCitations) {
-      expect(saved.data.endsWith(appendix)).toBe(true);
       expect(saved.data.split('### Your Document References')).toHaveLength(2);
-      expect(saved.data.split('This exact supporting passage')).toHaveLength(2);
+      expect(saved.data).not.toContain('This exact supporting passage');
+      expect(saved.data).not.toContain('Plant notes');
+      expect(saved.data).toContain('Teacher-provided source');
+      expect(saved.data).toContain('Source excerpt not shared.');
       expect(saved.data).toContain(documentOne);
     } else {
       expect(saved.data).not.toContain('### Your Document References');
       expect(saved.data).not.toContain('This exact supporting passage');
       expect(saved.data).not.toContain(documentOne);
+    }
+  });
+});
+
+describe('student source records through adaptation', () => {
+  const citation = '[⁽¹⁾](https://example.org/plants)';
+  const reading = `Plants need light to grow ${citation}.`;
+  const references = '\n\n### Source Text References\n\n1. [Plant research](https://example.org/plants)';
+  const recordFor = (text, extraSources = []) => ({
+    version: 1, writingMode: 'quotes', bodyKey: window.AlloModules.StudentSources.bodyKey(text),
+    sources: [{ citationHref: 'https://example.org/plants', title: 'Plant research', shareExcerpt: true,
+      passages: [{ text: 'The observed plants grew with light.', evidenceType: 'Page excerpt', locatorLabel: 'Paragraph 2' }] }, ...extraSources],
+  });
+
+  it('carries exact source excerpts into a citation-safe rewrite as synthesis, not exact quotation', async () => {
+    const source = reading + references;
+    const h = adaptationHarness({ keepCitations: true, model: segment => segment.replace('need light', 'use sunlight'),
+      overrides: { sourceProvenance: { studentSources: recordFor(source) } } });
+    const saved = await dispatcher.handleGenerate('simplified', null, false, source, {}, true, h.deps);
+    expect(saved.studentSources.writingMode).toBe('synthesis');
+    expect(saved.studentSources.bodyKey).toBe(window.AlloModules.StudentSources.bodyKey(saved.data));
+    expect(saved.studentSources.sources[0].passages).toEqual([{ text: 'The observed plants grew with light.', evidenceType: 'Page excerpt', locatorLabel: 'Paragraph 2' }]);
+    expect(saved).not.toHaveProperty('researchEvidence');
+    expect(h.state.history[0].studentSources).toEqual(saved.studentSources);
+  });
+
+  it('uses the saved selected reading record after serialization instead of ambient source metadata', async () => {
+    const original = reading + references;
+    const stored = JSON.parse(JSON.stringify({ id: 'saved-reading', type: 'simplified', data: original,
+      studentSources: recordFor(original), instructionalText: { role: 'supplemental', form: 'adapted' } }));
+    const ambient = recordFor(original);
+    ambient.sources[0].passages[0].text = 'An unrelated ambient excerpt.';
+    const h = adaptationHarness({ keepCitations: true, model: segment => segment.replace('need light', 'use sunlight'),
+      overrides: { history: [stored], sourceProvenance: { studentSources: ambient } } });
+    const saved = await dispatcher.handleGenerate('simplified', null, false, null, { inputArtifactId: stored.id }, true, h.deps);
+    expect(saved.studentSources.sources[0].passages[0].text).toBe('The observed plants grew with light.');
+  });
+
+  it('retains links but drops stale excerpts and writing attribution after a source edit', async () => {
+    const h = adaptationHarness({ keepCitations: true, model: segment => segment,
+      overrides: { sourceProvenance: { studentSources: recordFor(reading) } } });
+    const saved = await dispatcher.handleGenerate('simplified', null, false, reading.replace('need light', 'do not need light') + references, {}, true, h.deps);
+    expect(saved.studentSources.writingMode).toBe('unknown');
+    expect(saved.studentSources.sources).toHaveLength(1);
+    expect(saved.studentSources.sources[0].passages).toEqual([]);
+  });
+
+  it('does not carry unused source records when citations are turned off', async () => {
+    const h = adaptationHarness({ keepCitations: false, model: segment => segment,
+      overrides: { sourceProvenance: { studentSources: recordFor(reading) } } });
+    const saved = await dispatcher.handleGenerate('simplified', null, false, reading + references, {}, true, h.deps);
+    expect(saved).not.toHaveProperty('studentSources');
+    expect(saved.data).not.toContain('https://example.org/plants');
+  });
+
+  it('drops excerpt associations if display normalization retargets a citation after the model guard', async () => {
+    const h = adaptationHarness({ keepCitations: true, model: segment => segment,
+      overrides: { sourceProvenance: { studentSources: recordFor(reading) },
+        normalizeCitationPlacement: value => value.replace('https://example.org/plants', 'https://example.org/other') } });
+    const saved = await dispatcher.handleGenerate('simplified', null, false, reading + references, {}, true, h.deps);
+    expect(saved.studentSources.writingMode).toBe('unknown');
+    expect(saved.studentSources.sources.every(source => source.passages.length === 0)).toBe(true);
+  });
+
+  it('redacts local source names and excerpts unless the teacher separately permits student sharing', async () => {
+    const localReading = `Plants need light ${documentOne}.`;
+    const raw = localReading + '\n\n### Your Document References\n\nPrivate assessment, page 4\n\n> Private learner details.\n\n### Research Review\n\nTeacher-only search notes.';
+    const sourceRecord = shareExcerpt => ({ version: 1, writingMode: 'synthesis', bodyKey: window.AlloModules.StudentSources.bodyKey(raw), sources: [{
+      citationHref: '#allo-doc-lesson-passage-1', title: 'Private assessment', shareExcerpt,
+      passages: [{ text: 'Approved plant passage.', evidenceType: 'Document passage', locatorLabel: 'Page 4' }],
+    }] });
+    for (const permitted of [false, true]) {
+      const h = adaptationHarness({ keepCitations: true, model: segment => segment.replace('need light', 'use sunlight'),
+        overrides: { sourceProvenance: { studentSources: sourceRecord(permitted) } } });
+      const saved = await dispatcher.handleGenerate('simplified', null, false, raw, {}, true, h.deps);
+      expect(saved.data).not.toContain('Private learner details.');
+      expect(saved.data).not.toContain('Teacher-only search notes.');
+      expect(saved.data.includes('Private assessment')).toBe(permitted);
+      expect(saved.data.includes('Approved plant passage.')).toBe(permitted);
+      expect(saved.studentSources.sources[0].passages.length).toBe(permitted ? 1 : 0);
+    }
+  });
+
+  it.each(['', ':'])('does not publish private appendices when the student privacy helper is unavailable (suffix %s)', async suffix => {
+    const api = window.AlloModules.StudentSources;
+    const helperApi = window.AlloModules.TextPipelineHelpers.studentSources;
+    delete window.AlloModules.StudentSources;
+    delete window.AlloModules.TextPipelineHelpers.studentSources;
+    try {
+      const h = adaptationHarness({ keepCitations: true, model: segment => segment });
+      await expect(dispatcher.handleGenerate('simplified', null, false,
+        `Plants need light ${documentOne}.\n\n### Your Document References${suffix}\n\n> Private assessment notes.`,
+        { rethrowErrors: true }, true, h.deps)).rejects.toThrow('Student source privacy controls are unavailable');
+      expect(h.state.history).toEqual([]);
+      expect(h.state.shown).toBeNull();
+    } finally {
+      window.AlloModules.StudentSources = api;
+      window.AlloModules.TextPipelineHelpers.studentSources = helperApi;
     }
   });
 });

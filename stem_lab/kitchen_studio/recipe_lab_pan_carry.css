@@ -1,0 +1,19 @@
+/* Clear support, held preview and step controls for the equivalent cookware carry. */
+#panPlacementTools.pan-carry-tools{padding:14px;background:linear-gradient(135deg,#f8f7ec,#eff2e7);border-color:#9daf94}
+#panPlacementTools.pan-carry-tools summary{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;min-height:44px;font-size:14px}
+#panPlacementTools.pan-carry-tools summary span{margin:0;font-size:12px}
+#panPlacementTools.pan-carry-tools svg{max-width:480px;border:1px solid #b7c5a9;border-radius:14px;background:#fffdf5;overflow:visible}
+#panPlacementTools .pan-carry-steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
+#panPlacementTools .pan-carry-steps button{min-height:44px;min-width:0;padding:8px 10px;white-space:normal;font-size:13px;line-height:1.35;margin:0}
+#panPlacementToggle{grid-column:1/-1}
+#panPlacementRelease:not(:disabled){border-color:#45694b;background:#345943;color:#fffdf0}
+#panPlacementHandle:focus-visible .pan-carry-handle-target{fill:#e6f0dc;fill-opacity:.55;stroke:#244e3a;stroke-width:3}
+#panPlacementHandle:focus-visible .pan-carry-grip{stroke:#244e3a}
+#panPlacementHandle[aria-disabled=true]{cursor:default}
+#panPlacementTools[data-pan-carry-held=true] #panPlacementHandle{cursor:grabbing}
+#panPlacementTools #panPlacementFeedback{padding:10px;border-radius:9px;background:#e7eddf;min-height:3.2em}
+#panPlacementTools #panPlacementKeyboard{font-size:12px;line-height:1.55}
+#panPlacementTools #panPlacementReading{margin-bottom:10px}
+@media(max-width:480px){#panPlacementTools.pan-carry-tools{padding:10px}#panPlacementTools .pan-carry-steps{gap:6px}#panPlacementTools .pan-carry-steps button{font-size:12px}#panPlacementTools.pan-carry-tools summary{font-size:13px}}
+@media(prefers-reduced-motion:reduce){#panPlacementTools *{transition:none!important;animation:none!important}}
+@media(forced-colors:active){#panPlacementTools.pan-carry-tools,#panPlacementTools.pan-carry-tools svg,#panPlacementTools #panPlacementFeedback{background:Canvas;border-color:CanvasText;color:CanvasText}#panPlacementTools.pan-carry-tools svg{forced-color-adjust:auto}#panPlacementTools svg text{fill:CanvasText}#panPlacementTools .pan-carry-bowl{fill:Canvas;stroke:CanvasText}#panPlacementTools .pan-carry-trivet,#panPlacementTools .pan-carry-grip,#panPlacementTools #panPlacementLanding,#panPlacementTools #panPlacementLiftCue{stroke:CanvasText}#panPlacementTools #panPlacementFood,#panPlacementTools #panPlacementBurner{fill:Canvas}#panPlacementTools .pan-carry-burner-ring{fill:Canvas;stroke:CanvasText}#panPlacementRelease:not(:disabled){background:Highlight;color:HighlightText;border-color:Highlight}#panPlacementHandle:focus-visible .pan-carry-handle-target{fill:Canvas;stroke:Highlight}#panPlacementHandle:focus-visible .pan-carry-grip{stroke:Highlight}}

@@ -1,0 +1,66 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/solar_system_activity_topics.test.js
+[deferred-jsdom] Initializing the official DOM environment.
+
+stdout | tests/solar_system_activity_topics.test.js
+[deferred-jsdom] DOM environment ready.
+
+stdout | tests/solar_system_activity_topics.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/solar_system_activity_topics.test.js
+[deferred-jsdom] Existing repository setup loaded.
+
+ ✓ tests/solar_system_activity_topics.test.js > Solar System topic discovery and empty-state recovery > exposes eight named native topic buttons with one selected state and retains the native select 1200ms
+ ✓ tests/solar_system_activity_topics.test.js > Solar System topic discovery and empty-state recovery > partitions the full catalog into topic counts and decorates every result card without using icons as names 329ms
+ ✓ tests/solar_system_activity_topics.test.js > Solar System topic discovery and empty-state recovery > counts search matches across topics even when the selected topic currently has no results 90ms
+ × tests/solar_system_activity_topics.test.js > Solar System topic discovery and empty-state recovery > uses the same normalized all-word, description, and translated-label search for counts and results 150ms
+   → expected [ 'sun-path-across-latitudes', …(1) ] to deeply equal [ 'seasons-lab' ]
+ ✓ tests/solar_system_activity_topics.test.js > Solar System topic discovery and empty-state recovery > counts known unique saved activities and preserves duplicate and unknown raw saved records 257ms
+ ✓ tests/solar_system_activity_topics.test.js > Solar System topic discovery and empty-state recovery > counts six investigations independently of the selected topic and intersects description search 229ms
+ ✓ tests/solar_system_activity_topics.test.js > Solar System topic discovery and empty-state recovery > keeps topic buttons and select synchronized without redirecting focus to results 320ms
+ ✓ tests/solar_system_activity_topics.test.js > Solar System topic discovery and empty-state recovery > changes only finder topic and pagination while keeping saved work and recent shortcuts intact 226ms
+ ✓ tests/solar_system_activity_topics.test.js > Solar System topic discovery and empty-state recovery > recovers another-topic match by clearing only topic 60ms
+ ✓ tests/solar_system_activity_topics.test.js > Solar System topic discovery and empty-state recovery > recovers from an unmatched search without changing topic or collection 82ms
+ ✓ tests/solar_system_activity_topics.test.js > Solar System topic discovery and empty-state recovery > widens an empty collection only when the current topic and search match activities elsewhere 185ms
+ ✓ tests/solar_system_activity_topics.test.js > Solar System topic discovery and empty-state recovery > falls back to a full filter reset when no narrower recovery can reveal a result 162ms
+ ✓ tests/solar_system_activity_topics.test.js > Solar System topic discovery and empty-state recovery > focuses a connected results heading exactly once after a recovery commits 124ms
+ ✓ tests/solar_system_activity_topics.test.js > Solar System topic discovery and empty-state recovery > ignores detached recovery controls and old recovery callbacks after the finder closes 72ms
+ ✓ tests/solar_system_activity_topics.test.js > Solar System topic discovery and empty-state recovery > rejects recovery callbacks superseded by a different query, topic, or collection 222ms
+ ✓ tests/solar_system_activity_topics.test.js > Solar System topic discovery and empty-state recovery > rejects stale recovery after the valid saved collection changes even if its node is connected 271ms
+ ✓ tests/solar_system_activity_topics.test.js > Solar System topic discovery and empty-state recovery > cancels pending recovery focus after another filter action or finder collapse 378ms
+ ✓ tests/solar_system_activity_topics.test.js > Solar System topic discovery and empty-state recovery > cancels pending destination focus when a topic shortcut changes the results 183ms
+ ✓ tests/solar_system_activity_topics.test.js > Solar System topic discovery and empty-state recovery > projects malformed restored preferences and empty-state guidance without writing or grabbing focus 188ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/solar_system_activity_topics.test.js > Solar System topic discovery and empty-state recovery > uses the same normalized all-word, description, and translated-label search for counts and results
+AssertionError: expected [ 'sun-path-across-latitudes', …(1) ] to deeply equal [ 'seasons-lab' ]
+
+- Expected
++ Received
+
+  [
++   "sun-path-across-latitudes",
+    "seasons-lab",
+  ]
+
+ ❯ tests/solar_system_activity_topics.test.js:125:23
+    123|     const translated = (key, fallback) => key === 'stem.solarsystem.st…
+    124|     const env = renderTopics({}, translated); env.change(env.search, '…
+    125|     expect(env.ids()).toEqual(['seasons-lab']); expect(env.count('all'…
+       |                       ^
+    126|     env.change(env.search, 'ÉTOILE chronologie'); expect(env.ids()).to…
+    127|     env.change(env.search, 'Stellar Evolution'); expect(env.ids()).toE…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 18 passed (19)
+   Start at  20:45:24
+   Duration  7.38s (transform 184ms, setup 2.11s, import 150ms, tests 4.73s, environment 0ms)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/solar-topic-discovery-enhancement-2026-10-09/unit-topics-results.json

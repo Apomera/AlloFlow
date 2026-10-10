@@ -1,0 +1,16 @@
+.wc-explorer-root .wc-journey-chapters .wc-chapter-land{container:wc-land-pathways / inline-size}
+.wc-explorer-root .wc-journey-chapters .wc-chapter-land .wc-chapter-land-options{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+.wc-explorer-root .wc-journey-chapters .wc-chapter-land-overview{width:100%;text-align:left}
+.wc-explorer-root .wc-journey-chapters .wc-chapter-land-routes{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+.wc-explorer-root .wc-journey-chapters .wc-chapter-land-pathway{padding:12px;border:1px solid var(--wc-viz-line);border-radius:13px;background:var(--wc-viz-paper);min-width:0}
+.wc-explorer-root .wc-journey-chapters .wc-chapter-land-pathway[data-active=true]{border-color:var(--wc-viz-accent);box-shadow:inset 3px 0 var(--wc-viz-accent)}
+.wc-explorer-root .wc-journey-chapters .wc-chapter-land-pathway header{display:grid;grid-template-columns:28px minmax(0,1fr);align-items:center;gap:8px}
+.wc-explorer-root .wc-journey-chapters .wc-chapter-land-pathway h6{margin:0;font-size:16px;line-height:1.45;font-weight:800;color:var(--wc-viz-ink);overflow-wrap:normal;word-break:normal}
+.wc-explorer-root .wc-journey-chapters .wc-chapter-land-pathway svg{width:28px;height:28px;color:var(--wc-viz-accent)}
+.wc-explorer-root .wc-journey-chapters .wc-chapter-land-pathway .wc-land-pathway-cue{margin:8px 0 10px;font-size:13px;line-height:1.6;color:var(--wc-viz-muted)}
+.wc-explorer-root .wc-journey-chapters .wc-land-pathway-choices{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+.wc-explorer-root .wc-journey-chapters .wc-land-pathway-choices button{text-align:left;width:100%;margin:0;font-size:14px;line-height:1.5}
+.wc-explorer-root .wc-journey-chapters .wc-chapter-land-pathway .wc-land-pathway-active{margin:8px 0 0;font-size:13px;line-height:1.5;font-weight:750;color:var(--wc-viz-ink)}
+@container wc-land-pathways (min-width:620px){.wc-explorer-root .wc-journey-chapters .wc-chapter-land-routes{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@container wc-land-pathways (max-width:190px){.wc-explorer-root .wc-journey-chapters .wc-chapter-land-pathway header{grid-template-columns:minmax(0,1fr);gap:6px}}
+@media(forced-colors:active){.wc-explorer-root .wc-journey-chapters .wc-chapter-land-pathway[data-active=true]{border:2px solid Highlight!important;box-shadow:none}.wc-explorer-root .wc-journey-chapters .wc-chapter-land-pathway svg{color:CanvasText!important}.wc-explorer-root .wc-journey-chapters .wc-land-pathway-active{color:CanvasText!important}}

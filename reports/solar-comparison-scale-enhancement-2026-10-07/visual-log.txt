@@ -1,0 +1,8 @@
+Starting comparison-1060-dark-Earth-Jupiter
+Checked comparison-1060-dark-Earth-Jupiter
+Starting comparison-1060-light-Uranus-Neptune
+Checked comparison-1060-light-Uranus-Neptune
+Starting comparison-320-dark-Mercury-Mars
+Checked comparison-320-dark-Mercury-Mars
+Starting comparison-320-light-Earth-Neptune
+Checked comparison-320-light-Earth-Neptune

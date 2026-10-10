@@ -1,0 +1,476 @@
+{
+  "date": "2026-10-06",
+  "reviewer": "view_browser",
+  "scope": "Independent inspection of five actual current captures, six full layout metrics, and seven complete scoped axe result files from a successful eleven-case run.",
+  "pins": {
+    "source": "b959aea16e1580738efb2d21388b5173613fcf37a91cbede2d17dd36daa696c9",
+    "mirror": "b959aea16e1580738efb2d21388b5173613fcf37a91cbede2d17dd36daa696c9",
+    "unit": "e2468a2b7e90db503e29ca3ae5c4c4d29f663e2c61de2c875ea1a9116b3eaba1",
+    "browser": "d0b5a0ab9c9343963f9bb070ca48eb194d0e42ef51f3c2c331b0731191ba0246",
+    "startEndHashesEqual": true
+  },
+  "browserResult": {
+    "cases": 11,
+    "passed": 11,
+    "retries": 0,
+    "run": "scenario-6",
+    "exitCode": 0
+  },
+  "screenshots": [
+    {
+      "name": "after-desktop-scenario.png",
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-scenario-clarity-2026-10-06/scenario-6/captures/after-desktop-scenario.png",
+      "sha256": "ab82c9cbecc476b2d2592e066cd20e330e0d330405c281dfe654d593a5710109"
+    },
+    {
+      "name": "after-phone-scenario.png",
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-scenario-clarity-2026-10-06/scenario-6/captures/after-phone-scenario.png",
+      "sha256": "2bfc27b9894c4f368196a1f5952506ba8953e0f636883d6afbe5a49fe6fae698"
+    },
+    {
+      "name": "after-embedded-large-contrast-scenario.png",
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-scenario-clarity-2026-10-06/scenario-6/captures/after-embedded-large-contrast-scenario.png",
+      "sha256": "784fb263790e93ef783c37c43224ab3788a663c896c0c82830f36c4985b81616"
+    },
+    {
+      "name": "after-forced-colors-scenario.png",
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-scenario-clarity-2026-10-06/scenario-6/captures/after-forced-colors-scenario.png",
+      "sha256": "1d37fa818c1258bdf49c60e4ecc8df81ce660728c2b21fcde4c06888dbf62d87"
+    },
+    {
+      "name": "restart-review-scenario.png",
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-scenario-clarity-2026-10-06/scenario-6/captures/restart-review-scenario.png",
+      "sha256": "38a49314b4ce1f0d657485e2e61205a9fe700f9d87bc3d03898d926d5315f3cf"
+    }
+  ],
+  "metrics": [
+    {
+      "name": "phone",
+      "panelWidth": 274.40625,
+      "clientWidth": 270,
+      "scrollWidth": 270,
+      "minimumTextFont": 16,
+      "minimumControlFont": 16,
+      "minimumControlHeight": 48,
+      "clippedText": 0,
+      "clippedControls": 0,
+      "select": {
+        "name": "Choose procedure scenario",
+        "width": 246.40625,
+        "height": 72.78125,
+        "font": 16,
+        "clipped": false,
+        "color": "rgb(59, 29, 104)",
+        "backgroundColor": "rgb(255, 255, 255)",
+        "backgroundImage": "url(\"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23475569%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27><path d=%27M6 9l6 6 6-6%27/></svg>\")",
+        "backgroundPosition": "calc(100% - 9.6px) 50%",
+        "backgroundSize": "16px 16px"
+      },
+      "selectTextContrastRatio": 13.447724149283857
+    },
+    {
+      "name": "tablet",
+      "panelWidth": 711.21875,
+      "clientWidth": 707,
+      "scrollWidth": 707,
+      "minimumTextFont": 16,
+      "minimumControlFont": 16,
+      "minimumControlHeight": 48,
+      "clippedText": 0,
+      "clippedControls": 0,
+      "select": {
+        "name": "Choose procedure scenario",
+        "width": 675.21875,
+        "height": 48,
+        "font": 16,
+        "clipped": false,
+        "color": "rgb(59, 29, 104)",
+        "backgroundColor": "rgb(255, 255, 255)",
+        "backgroundImage": "url(\"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23475569%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27><path d=%27M6 9l6 6 6-6%27/></svg>\")",
+        "backgroundPosition": "calc(100% - 9.6px) 50%",
+        "backgroundSize": "16px 16px"
+      },
+      "selectTextContrastRatio": 13.447724149283857
+    },
+    {
+      "name": "desktop",
+      "panelWidth": 771.21875,
+      "clientWidth": 767,
+      "scrollWidth": 767,
+      "minimumTextFont": 16,
+      "minimumControlFont": 16,
+      "minimumControlHeight": 48,
+      "clippedText": 0,
+      "clippedControls": 0,
+      "select": {
+        "name": "Choose procedure scenario",
+        "width": 735.21875,
+        "height": 48,
+        "font": 16,
+        "clipped": false,
+        "color": "rgb(59, 29, 104)",
+        "backgroundColor": "rgb(255, 255, 255)",
+        "backgroundImage": "url(\"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23475569%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27><path d=%27M6 9l6 6 6-6%27/></svg>\")",
+        "backgroundPosition": "calc(100% - 9.6px) 50%",
+        "backgroundSize": "16px 16px"
+      },
+      "selectTextContrastRatio": 13.447724149283857
+    },
+    {
+      "name": "embedded-medium",
+      "panelWidth": 474.40625,
+      "clientWidth": 470,
+      "scrollWidth": 470,
+      "minimumTextFont": 16,
+      "minimumControlFont": 16,
+      "minimumControlHeight": 48,
+      "clippedText": 0,
+      "clippedControls": 0,
+      "select": {
+        "name": "Choose procedure scenario",
+        "width": 446.40625,
+        "height": 48,
+        "font": 16,
+        "clipped": false,
+        "color": "rgb(59, 29, 104)",
+        "backgroundColor": "rgb(255, 255, 255)",
+        "backgroundImage": "url(\"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23475569%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27><path d=%27M6 9l6 6 6-6%27/></svg>\")",
+        "backgroundPosition": "calc(100% - 9.6px) 50%",
+        "backgroundSize": "16px 16px"
+      },
+      "selectTextContrastRatio": 13.447724149283857
+    },
+    {
+      "name": "embedded-large-contrast",
+      "panelWidth": 274.40625,
+      "clientWidth": 270,
+      "scrollWidth": 270,
+      "minimumTextFont": 18,
+      "minimumControlFont": 18,
+      "minimumControlHeight": 50.1875,
+      "clippedText": 0,
+      "clippedControls": 0,
+      "select": {
+        "name": "Choose procedure scenario",
+        "width": 246.40625,
+        "height": 78.96875,
+        "font": 18,
+        "clipped": false,
+        "color": "rgb(0, 0, 0)",
+        "backgroundColor": "rgb(255, 255, 255)",
+        "backgroundImage": "none",
+        "backgroundPosition": "0% 0%",
+        "backgroundSize": "auto"
+      },
+      "selectTextContrastRatio": 21
+    },
+    {
+      "name": "forced-colors",
+      "panelWidth": 344.40625,
+      "clientWidth": 340,
+      "scrollWidth": 340,
+      "minimumTextFont": 16,
+      "minimumControlFont": 16,
+      "minimumControlHeight": 48,
+      "clippedText": 0,
+      "clippedControls": 0,
+      "select": {
+        "name": "Choose procedure scenario",
+        "width": 316.40625,
+        "height": 48,
+        "font": 16,
+        "clipped": false,
+        "color": "rgb(0, 0, 0)",
+        "backgroundColor": "rgb(255, 255, 255)",
+        "backgroundImage": "none",
+        "backgroundPosition": "0% 0%",
+        "backgroundSize": "auto"
+      },
+      "selectTextContrastRatio": 21
+    }
+  ],
+  "visualObservations": [
+    "Desktop separates purpose, objective, progress, scenario choice, Start, and Restart. Text remains readable and the current selected option fits.",
+    "Phone reflows controls into one column. The current scenario name and difficulty wrap fully and the normal SVG arrow occupies a separate right-hand area.",
+    "Large text with high contrast keeps the full selected option on two lines and shows a clear decorative chevron. Control borders and labels remain distinct without color.",
+    "Restart review states the current native Skin layer and the full current Frog specimen scope. The focused Confirm control has a strong blue inset ring. Keep current attempt remains visible and separate.",
+    "No text or control clipping appears in the inspected ordinary or high-contrast captures. Native forced-colors selected-option painting has the separate remaining finding below."
+  ],
+  "visualFindings": [
+    {
+      "severity": "minor",
+      "state": "reported to root and source reviewer",
+      "capture": "after-forced-colors-scenario.png",
+      "finding": "The main selected scenario name is visible, but its trailing difficulty suffix is cropped after the separator. The arrow also appears doubled where native and decorative chevrons meet. DOM scroll-width metrics report no clipping, so they do not establish complete native selected-option painting.",
+      "runtimeBehaviorAffected": false
+    }
+  ],
+  "axe": {
+    "audits": [
+      {
+        "name": "phone",
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-scenario-clarity-2026-10-06/scenario-6/captures/phone-axe.json",
+        "sha256": "ebdabb332b0604cf2abf2860f56b03997900fa73926cffb8ca6e8551ee3f6be4",
+        "violations": 0,
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "nodes": [
+              {
+                "target": [
+                  "#diss-scenario-select"
+                ],
+                "checks": [
+                  {
+                    "id": "color-contrast",
+                    "message": "Element's background color could not be determined due to a background image",
+                    "data": {
+                      "contrastRatio": 0,
+                      "fontSize": "12.0pt (16px)",
+                      "fontWeight": "bold",
+                      "messageKey": "bgImage",
+                      "expectedContrastRatio": "4.5:1"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "passedRules": 16,
+        "inapplicableRules": 45
+      },
+      {
+        "name": "tablet",
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-scenario-clarity-2026-10-06/scenario-6/captures/tablet-axe.json",
+        "sha256": "829f6d8785f35863e1f291fea47f7fa44ee01fe3c94ccf58f7b38ae22498ddf0",
+        "violations": 0,
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "nodes": [
+              {
+                "target": [
+                  "#diss-scenario-select"
+                ],
+                "checks": [
+                  {
+                    "id": "color-contrast",
+                    "message": "Element's background color could not be determined due to a background image",
+                    "data": {
+                      "contrastRatio": 0,
+                      "fontSize": "12.0pt (16px)",
+                      "fontWeight": "bold",
+                      "messageKey": "bgImage",
+                      "expectedContrastRatio": "4.5:1"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "passedRules": 16,
+        "inapplicableRules": 45
+      },
+      {
+        "name": "desktop",
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-scenario-clarity-2026-10-06/scenario-6/captures/desktop-axe.json",
+        "sha256": "717bda30e4068892ca294ead2a063fb581a8743f7e65e4f4486224ecb4453686",
+        "violations": 0,
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "nodes": [
+              {
+                "target": [
+                  "#diss-scenario-select"
+                ],
+                "checks": [
+                  {
+                    "id": "color-contrast",
+                    "message": "Element's background color could not be determined due to a background image",
+                    "data": {
+                      "contrastRatio": 0,
+                      "fontSize": "12.0pt (16px)",
+                      "fontWeight": "bold",
+                      "messageKey": "bgImage",
+                      "expectedContrastRatio": "4.5:1"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "passedRules": 16,
+        "inapplicableRules": 45
+      },
+      {
+        "name": "embedded-medium",
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-scenario-clarity-2026-10-06/scenario-6/captures/embedded-medium-axe.json",
+        "sha256": "ff88de7db15696587d9909d8c3457963c564a54431d036448f304e51fb57e94f",
+        "violations": 0,
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "nodes": [
+              {
+                "target": [
+                  "#diss-scenario-select"
+                ],
+                "checks": [
+                  {
+                    "id": "color-contrast",
+                    "message": "Element's background color could not be determined due to a background image",
+                    "data": {
+                      "contrastRatio": 0,
+                      "fontSize": "12.0pt (16px)",
+                      "fontWeight": "bold",
+                      "messageKey": "bgImage",
+                      "expectedContrastRatio": "4.5:1"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "passedRules": 16,
+        "inapplicableRules": 45
+      },
+      {
+        "name": "embedded-large-contrast",
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-scenario-clarity-2026-10-06/scenario-6/captures/embedded-large-contrast-axe.json",
+        "sha256": "97215c3f42bb5ff82f8db5eb5b49f5ce930773500bc6647827f6c62832b3732a",
+        "violations": 0,
+        "incomplete": [],
+        "passedRules": 16,
+        "inapplicableRules": 45
+      },
+      {
+        "name": "forced-colors",
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-scenario-clarity-2026-10-06/scenario-6/captures/forced-colors-axe.json",
+        "sha256": "3c0606db4bf444a86c1aebc2584c370e18d1c3f214a96c79ea1ae714557e22ed",
+        "violations": 0,
+        "incomplete": [],
+        "passedRules": 16,
+        "inapplicableRules": 45
+      },
+      {
+        "name": "restart-review",
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-scenario-clarity-2026-10-06/scenario-6/captures/restart-review-axe.json",
+        "sha256": "1d512facf0cb43ef13f8d682c007045ba3220b8fafdf27c94beea78579f80aa8",
+        "violations": 0,
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "nodes": [
+              {
+                "target": [
+                  "#diss-scenario-select"
+                ],
+                "checks": [
+                  {
+                    "id": "color-contrast",
+                    "message": "Element's background color could not be determined due to a background image",
+                    "data": {
+                      "contrastRatio": 0,
+                      "fontSize": "12.0pt (16px)",
+                      "fontWeight": "bold",
+                      "messageKey": "bgImage",
+                      "expectedContrastRatio": "4.5:1"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "passedRules": 16,
+        "inapplicableRules": 45
+      }
+    ],
+    "confirmedViolations": 0,
+    "rawIncompleteRules": 5,
+    "rawIncompleteNodes": 5,
+    "manualResolutions": [
+      {
+        "audit": "phone",
+        "target": "#diss-scenario-select",
+        "reason": "Automated background-color inference stops at the existing SVG arrow background image.",
+        "foreground": "rgb(59, 29, 104)",
+        "background": "rgb(255, 255, 255)",
+        "textContrastRatio": 13.447724149283857,
+        "requiredTextContrastRatio": 4.5,
+        "arrowStroke": "#475569",
+        "arrowContrastRatio": 7.577663953533317,
+        "arrowPosition": "calc(100% - 9.6px) 50%",
+        "arrowSize": "16px 16px",
+        "manualEvidence": "Computed styles in the actual layout metrics and inspected normal/restart captures show an opaque white text background and the small arrow placed away from the wrapped text.",
+        "result": "Text contrast resolved manually; the original full axe incomplete result remains retained."
+      },
+      {
+        "audit": "tablet",
+        "target": "#diss-scenario-select",
+        "reason": "Automated background-color inference stops at the existing SVG arrow background image.",
+        "foreground": "rgb(59, 29, 104)",
+        "background": "rgb(255, 255, 255)",
+        "textContrastRatio": 13.447724149283857,
+        "requiredTextContrastRatio": 4.5,
+        "arrowStroke": "#475569",
+        "arrowContrastRatio": 7.577663953533317,
+        "arrowPosition": "calc(100% - 9.6px) 50%",
+        "arrowSize": "16px 16px",
+        "manualEvidence": "Computed styles in the actual layout metrics and inspected normal/restart captures show an opaque white text background and the small arrow placed away from the wrapped text.",
+        "result": "Text contrast resolved manually; the original full axe incomplete result remains retained."
+      },
+      {
+        "audit": "desktop",
+        "target": "#diss-scenario-select",
+        "reason": "Automated background-color inference stops at the existing SVG arrow background image.",
+        "foreground": "rgb(59, 29, 104)",
+        "background": "rgb(255, 255, 255)",
+        "textContrastRatio": 13.447724149283857,
+        "requiredTextContrastRatio": 4.5,
+        "arrowStroke": "#475569",
+        "arrowContrastRatio": 7.577663953533317,
+        "arrowPosition": "calc(100% - 9.6px) 50%",
+        "arrowSize": "16px 16px",
+        "manualEvidence": "Computed styles in the actual layout metrics and inspected normal/restart captures show an opaque white text background and the small arrow placed away from the wrapped text.",
+        "result": "Text contrast resolved manually; the original full axe incomplete result remains retained."
+      },
+      {
+        "audit": "embedded-medium",
+        "target": "#diss-scenario-select",
+        "reason": "Automated background-color inference stops at the existing SVG arrow background image.",
+        "foreground": "rgb(59, 29, 104)",
+        "background": "rgb(255, 255, 255)",
+        "textContrastRatio": 13.447724149283857,
+        "requiredTextContrastRatio": 4.5,
+        "arrowStroke": "#475569",
+        "arrowContrastRatio": 7.577663953533317,
+        "arrowPosition": "calc(100% - 9.6px) 50%",
+        "arrowSize": "16px 16px",
+        "manualEvidence": "Computed styles in the actual layout metrics and inspected normal/restart captures show an opaque white text background and the small arrow placed away from the wrapped text.",
+        "result": "Text contrast resolved manually; the original full axe incomplete result remains retained."
+      },
+      {
+        "audit": "restart-review",
+        "target": "#diss-scenario-select",
+        "reason": "Automated background-color inference stops at the existing SVG arrow background image.",
+        "foreground": "rgb(59, 29, 104)",
+        "background": "rgb(255, 255, 255)",
+        "textContrastRatio": 13.447724149283857,
+        "requiredTextContrastRatio": 4.5,
+        "arrowStroke": "#475569",
+        "arrowContrastRatio": 7.577663953533317,
+        "arrowPosition": "calc(100% - 9.6px) 50%",
+        "arrowSize": "16px 16px",
+        "manualEvidence": "Computed styles in the actual layout metrics and inspected normal/restart captures show an opaque white text background and the small arrow placed away from the wrapped text.",
+        "result": "Text contrast resolved manually; the original full axe incomplete result remains retained."
+      }
+    ]
+  },
+  "validationLimit": "This review covers the saved scenario-6 state. The reported forced-colors native selected-option paint issue remains for the source reviewer to assess. It is distinct from the zero confirmed axe violations and the manually resolved contrast incompletes."
+}

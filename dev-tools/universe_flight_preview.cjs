@@ -11,7 +11,7 @@ const routes = new Map([
   ['/stem_lab/stem_tool_universe.js', 'text/javascript; charset=utf-8'],
   ['/stem_lab/universe_flight_scene.js', 'text/javascript; charset=utf-8'],
 ]);
-for (const name of ['halo-arm','halo-cluster','halo-panorama','nebula-approach','nebula-filaments','nebula-violet','group-spiral','group-elliptical','group-panorama','stellar-amber','stellar-blue','stellar-pale']) {
+for (const name of ['halo-arm','halo-cluster','halo-panorama','nebula-approach','nebula-filaments','nebula-violet','group-spiral','group-elliptical','group-panorama','stellar-amber','stellar-blue','stellar-pale','disk-arms','disk-crossing','disk-panorama']) {
   routes.set('/stem_lab/assets/universe-flight/highlights/' + name + '.webp', 'image/webp');
 }
 if (!fs.existsSync(path.join(root, preview))) throw new Error('Build the preview first: node dev-tools/universe_flight_browser.cjs');

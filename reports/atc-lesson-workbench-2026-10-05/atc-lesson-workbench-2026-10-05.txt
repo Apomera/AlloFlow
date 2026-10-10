@@ -1,0 +1,16 @@
+PASS Visual lesson library and all five workbenches fit with accessible controls at 1440px
+PASS Visual lesson library and all five workbenches fit with accessible controls at 390px
+PASS Visual lesson library and all five workbenches fit with accessible controls at 320px
+PASS Separation responds to exact boundaries, wake category, and keyboard altitude changes
+PASS Sequencing shows a farther arrival first, a true tie, changed order, and bounded markers
+PASS Heading compass follows the short route across north and handles equal and half-turn headings
+PASS Wind-from diagrams match headwind, crosswind, tailwind, and calm calculations
+PASS Readback comparison explains mismatches and clears earlier feedback when the example changes
+PASS Each lesson retains its own example while reset changes only the current lesson
+PASS Exploring every topic preserves a real saved shift and leaves it ready to resume
+PASS Keyboard navigation announces the new lesson and slider arrows stay on the active control
+PASS Lesson-to-practice actions launch the actual matching paused exercise and weather opens the pathway
+PASS The visual workbenches remain usable when the optional AI tutor is unavailable
+PASS Custom high contrast follows all five topics and keeps diagrams and selected controls visible
+PASS Forced colors and 200 percent zoom preserve every topic without horizontal overflow
+{"passed":15,"failed":0,"errors":[],"sourceStable":true}

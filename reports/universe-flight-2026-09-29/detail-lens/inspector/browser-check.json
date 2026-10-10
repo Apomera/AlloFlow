@@ -1,0 +1,218 @@
+{
+  "completed": true,
+  "pins": {
+    "stem_lab/stem_tool_universe.js": "2bb53f1a04663471b0b90a231080c516277d1a5f0cc822a36fc4b54ca0705f35",
+    "stem_lab/universe_flight_scene.js": "1a205ad9a5f6362f09596d37984cb0f3e1317a2de4ccf41308ef32eeba06a9ea"
+  },
+  "harnessHash": "3ed567528ccd9b97a48ce4cfc75fc04aa17d220f7629cd550962ca28ba6e34b6",
+  "checks": [
+    "Discovery opens a stationary inspector; details and closing preserve the camera and return focus",
+    "Camera orbit keeps its radius and height, pauses exactly, resumes, ends and keeps neighbor ordering stable",
+    "Nearby selection changes the inspected landmark without moving or resetting the journey",
+    "An inspector approach can pause and resume, then returns the inspector automatically at arrival",
+    "Fullscreen controls and hidden overlays preserve inspection; phone and short landscape keep actions reachable",
+    "All twelve pictured scenic views open at their exact authored pose, pause, and return to the inspector",
+    "System colors, text spacing, Escape, journey inspection and mode changes keep controls consistent"
+  ],
+  "accessibility": [
+    {
+      "name": "desktop-details",
+      "violations": []
+    },
+    {
+      "name": "amber-details",
+      "violations": []
+    },
+    {
+      "name": "fullscreen-compact",
+      "violations": []
+    },
+    {
+      "name": "compact-320",
+      "violations": []
+    },
+    {
+      "name": "details-320",
+      "violations": []
+    },
+    {
+      "name": "compact-568",
+      "violations": []
+    },
+    {
+      "name": "details-568",
+      "violations": []
+    },
+    {
+      "name": "scenic-view",
+      "violations": []
+    },
+    {
+      "name": "system-colors",
+      "violations": []
+    },
+    {
+      "name": "text-spacing",
+      "violations": []
+    }
+  ],
+  "captures": [
+    {
+      "name": "inspector-compact",
+      "hash": "0bc5cf1f0b1067c6ab4330bdc46db07b85866881d86a72d999697b890071a77b"
+    },
+    {
+      "name": "inspector-details",
+      "hash": "66a57e6cbb13af39d4381308024ecb2a6d524636b8769fe6fb8e4f783cd28bf8"
+    },
+    {
+      "name": "inspector-arrival",
+      "hash": "0cc44739068eab640f4c0109fd8bee57a0e80bbd70142d5824ac63784dfe4dc0"
+    },
+    {
+      "name": "inspector-fullscreen",
+      "hash": "c07cdb2ac15f0bb49baf3af32a8883c4ba1160b8835070040b7e2f191270bf26"
+    },
+    {
+      "name": "inspector-compact-320",
+      "hash": "88dd93f62253c19344d6b2608ae323fc2ccae5551b7e7f9b227fa3a18638fe3d"
+    },
+    {
+      "name": "inspector-details-320",
+      "hash": "dbdbafaa02b4acb63a8d04896b46b58d9cca84e005af37701bf889358e870a3e"
+    },
+    {
+      "name": "inspector-compact-568",
+      "hash": "b53050b59ed25d05c5cfdf63e908c48a4507b7944d578a314f427578c9fc4730"
+    },
+    {
+      "name": "inspector-details-568",
+      "hash": "273d0f7d282d8f637c0b79e38aad334db7e53c60321b530c9a54ed82aa4e328d"
+    },
+    {
+      "name": "inspector-view-halo-panorama",
+      "hash": "52a43553c6ac53d713e52e4fb95474a1f43c1f217f2e6b943368bdf346e9ef82"
+    },
+    {
+      "name": "inspector-view-nebula-filaments",
+      "hash": "8e7b0fbc3e926d4e2a89e78123f73a1ec5fb84f38d665f84c600f46b03b6ee7a"
+    },
+    {
+      "name": "inspector-view-stellar-amber",
+      "hash": "0591fbe93152665e867af5d5f43fb4ae56bd7e18e7a621f5e2311dc58706cc9f"
+    },
+    {
+      "name": "inspector-system-colors",
+      "hash": "12021ef38d9ee0ebdfcb935190d710f7cda073f9d9f3ddcf20972c385fe1228d"
+    }
+  ],
+  "views": [
+    {
+      "route": "halo",
+      "highlight": "arm",
+      "seconds": 12,
+      "targetId": "galactic-center",
+      "pausedPixelsStable": true,
+      "imageHash": "c72de3610d5ac6357568ceda4029354ff1ad1e29b41e2e6ad590565f6ebaa883"
+    },
+    {
+      "route": "halo",
+      "highlight": "cluster",
+      "seconds": 18,
+      "targetId": "halo-cluster-2",
+      "pausedPixelsStable": true,
+      "imageHash": "34745137430f98aa2f34df29e263aed3e2d4ab433c4aab39d82a058044e4e927"
+    },
+    {
+      "route": "halo",
+      "highlight": "panorama",
+      "seconds": 32,
+      "targetId": "galactic-center",
+      "pausedPixelsStable": true,
+      "imageHash": "ab08b9c073a3feb368aafc857299cda67d6c9eaee480db76b3748806d5fde3d5"
+    },
+    {
+      "route": "nebula",
+      "highlight": "approach",
+      "seconds": 8,
+      "targetId": "blue-nebula",
+      "pausedPixelsStable": true,
+      "imageHash": "13e82041d9392bb5ace94ac4762bbc23207222ebe220684c782a87a223ff79d7"
+    },
+    {
+      "route": "nebula",
+      "highlight": "filaments",
+      "seconds": 12,
+      "targetId": "blue-nebula",
+      "pausedPixelsStable": true,
+      "imageHash": "60e3239fa07f5590094e54716dfdb9056f19be1eacf899f6913dd71d835fda77"
+    },
+    {
+      "route": "nebula",
+      "highlight": "violet",
+      "seconds": 36,
+      "targetId": "violet-nebula",
+      "pausedPixelsStable": true,
+      "imageHash": "aebe969efa05300fadff4b93bdab049065e92ed9adc46723d0922644dfd26225"
+    },
+    {
+      "route": "group",
+      "highlight": "spiral",
+      "seconds": 12,
+      "targetId": "near-galaxy",
+      "pausedPixelsStable": true,
+      "imageHash": "5715e177d752a1e7c7ef9fcf81eafbd82d09ac1714ba2e07023db9f3aa54f877"
+    },
+    {
+      "route": "group",
+      "highlight": "elliptical",
+      "seconds": 30,
+      "targetId": "golden-elliptical",
+      "pausedPixelsStable": true,
+      "imageHash": "39c0df7ce16f1ff0c169654be2e0275688565b5268233c7edb8a4264073038bf"
+    },
+    {
+      "route": "group",
+      "highlight": "panorama",
+      "seconds": 44,
+      "targetId": "golden-elliptical",
+      "pausedPixelsStable": true,
+      "imageHash": "a5feae6dfbf82b9792557aa1af88db3517b9669f2f86e5a0a5c992554126b322"
+    },
+    {
+      "route": "stellar",
+      "highlight": "amber",
+      "seconds": 10,
+      "targetId": "amber-star",
+      "pausedPixelsStable": true,
+      "imageHash": "b9dd5c00603e4287f3f05c406f9f098334526c929fb1e9e34e92638887f937f9"
+    },
+    {
+      "route": "stellar",
+      "highlight": "blue",
+      "seconds": 24,
+      "targetId": "blue-star",
+      "pausedPixelsStable": true,
+      "imageHash": "ea9400fc71a91bd5a909a2462b1379c2557994251ce77cc77c8b7180020e921e"
+    },
+    {
+      "route": "stellar",
+      "highlight": "pale",
+      "seconds": 38,
+      "targetId": "pale-star",
+      "pausedPixelsStable": true,
+      "imageHash": "7a72973e20e9b8eb1fcc1e84522d16d403ce4d7e5007b5ad06e5cff7ac73e16d"
+    }
+  ],
+  "served": [
+    {
+      "path": "/stem_lab/stem_tool_universe.js",
+      "hash": "2bb53f1a04663471b0b90a231080c516277d1a5f0cc822a36fc4b54ca0705f35"
+    },
+    {
+      "path": "/stem_lab/universe_flight_scene.js",
+      "hash": "1a205ad9a5f6362f09596d37984cb0f3e1317a2de4ccf41308ef32eeba06a9ea"
+    }
+  ],
+  "errors": []
+}

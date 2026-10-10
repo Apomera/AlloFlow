@@ -1,0 +1,65 @@
+{
+  "kind": "preview",
+  "startedAt": "2026-10-07T01:39:07.801Z",
+  "workingDirectory": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "--max-old-space-size=1536",
+    "node_modules/@playwright/test/cli.js",
+    "test",
+    "tests/e2e/26-bridgelab-gl.spec.ts",
+    "--config=C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\moment-precision-2026-10-06\\validation\\playwright-video-off.config.ts",
+    "--project=chromium",
+    "--workers=1",
+    "--retries=0",
+    "--reporter=json",
+    "--grep=frame.energy:|moment.precision:|key.moments:"
+  ],
+  "inputsBefore": {
+    "stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "b0f0cf46dba121cee27a9fe047680c091869d6c2715feea46cc53099860907fc",
+      "bytes": 1075891
+    },
+    "desktop/web-app/public/stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "b0f0cf46dba121cee27a9fe047680c091869d6c2715feea46cc53099860907fc",
+      "bytes": 1075891
+    },
+    "tests/e2e/26-bridgelab-gl.spec.ts": {
+      "sha256": "8d6e8457d5ef379a65d9c98f54c014a0dbaf48857d6c5e8d6985a13b9ee7b708",
+      "bytes": 424048
+    }
+  },
+  "config": {
+    "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\moment-precision-2026-10-06\\validation\\playwright-video-off.config.ts",
+    "sha256": "b8a12a364ef5f47a42daad3b78fcf3ed986badb9619ed2ddf96ed9235cfafb20",
+    "bytes": 817
+  },
+  "video": "off",
+  "retries": 0,
+  "workers": 1,
+  "browserCache": "C:/Users/cabba/AppData/Local/ms-playwright",
+  "note": "English registries are checked separately; the harness uses literal fallbacks.",
+  "finishedAt": "2026-10-07T01:57:20.456Z",
+  "exitCode": 0,
+  "signal": null,
+  "inputsAfter": {
+    "stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "b0f0cf46dba121cee27a9fe047680c091869d6c2715feea46cc53099860907fc",
+      "bytes": 1075891
+    },
+    "desktop/web-app/public/stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "b0f0cf46dba121cee27a9fe047680c091869d6c2715feea46cc53099860907fc",
+      "bytes": 1075891
+    },
+    "tests/e2e/26-bridgelab-gl.spec.ts": {
+      "sha256": "8d6e8457d5ef379a65d9c98f54c014a0dbaf48857d6c5e8d6985a13b9ee7b708",
+      "bytes": 424048
+    }
+  },
+  "inputsUnchanged": true,
+  "result": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-moment-precision-2026-10-06\\preview-results.json",
+    "sha256": "f08e1c466e05b21d59f9513858fe8f34de8d94fbf91251314f42172b57742a3e",
+    "bytes": 12018
+  }
+}

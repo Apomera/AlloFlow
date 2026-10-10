@@ -1,0 +1,34 @@
+{
+  "mode": "browser",
+  "label": "browser-8",
+  "start": "2026-10-10T02:41:53.084Z",
+  "startHashes": {
+    "stem_lab/stem_tool_dissection.js": "b25b1ee6909035f1da4c51ec4c949942a3ccb9853785f321c822ae7e3690e7f2",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "b25b1ee6909035f1da4c51ec4c949942a3ccb9853785f321c822ae7e3690e7f2",
+    "tests/e2e/dissection-replay-evidence.spec.ts": "d3464c23964e182da33c73cdd0a0624420903ece2ed1432686613cb4be457f43",
+    "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6"
+  },
+  "args": [
+    "node_modules/@playwright/test/cli.js",
+    "test",
+    "tests/e2e/dissection-replay-evidence.spec.ts",
+    "--workers=1",
+    "--retries=0",
+    "--max-failures=1",
+    "--project=chromium",
+    "--reporter=list,json",
+    "--output=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-replay-evidence-2026-10-09\\browser-8\\test-results"
+  ],
+  "freeMiB": 1523.13671875,
+  "pid": 34940,
+  "exitCode": 1,
+  "signal": null,
+  "end": "2026-10-10T02:42:19.068Z",
+  "endHashes": {
+    "stem_lab/stem_tool_dissection.js": "b25b1ee6909035f1da4c51ec4c949942a3ccb9853785f321c822ae7e3690e7f2",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "b25b1ee6909035f1da4c51ec4c949942a3ccb9853785f321c822ae7e3690e7f2",
+    "tests/e2e/dissection-replay-evidence.spec.ts": "d3464c23964e182da33c73cdd0a0624420903ece2ed1432686613cb4be457f43",
+    "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6"
+  },
+  "inputHashesStable": true
+}

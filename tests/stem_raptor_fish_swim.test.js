@@ -4,7 +4,7 @@ import {createRequire} from 'node:module';
 const THREE=createRequire(import.meta.url)('../vendor/three-r128/three.min.js');
 const source=readFileSync('stem_lab/stem_tool_raptorhunt.js','utf8');
 function body(name){const start=source.indexOf('function '+name+'(');let end=source.indexOf('{',start),depth=1;while(depth){end++;if(source[end]==='{')depth++;if(source[end]==='}')depth--;}return source.slice(start,end+1);}
-const api=Function('THREE',['createFishBodyGeometry','createFishFinGeometry','advanceFishSwim','preyKindFor','buildPreyVisual'].map(body).join('\n')+';return {build:buildPreyVisual,body:createFishBodyGeometry,fin:createFishFinGeometry,advance:advanceFishSwim};')(THREE);
+const api=Function('THREE',['bendFishPreyGeometry','createFishBodyGeometry','createFishFinGeometry','advanceFishSwim','preyKindFor','buildPreyVisual'].map(body).join('\n')+';return {build:buildPreyVisual,body:createFishBodyGeometry,fin:createFishFinGeometry,advance:advanceFishSwim};')(THREE);
 const state=()=>({phase:null,rate:Math.PI*1.3,amplitude:0,tailYaw:0,bodyYaw:0,roll:0});
 describe('Raptor fish surfaces and swimming',()=>{
   it('builds a three-mesh fish with finite shaded surfaces and a connected forked tail',()=>{

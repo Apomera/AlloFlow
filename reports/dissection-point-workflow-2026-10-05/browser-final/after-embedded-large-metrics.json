@@ -1,0 +1,56 @@
+{
+  "width": 300.40625,
+  "client": 298,
+  "scroll": 298,
+  "text": [
+    {
+      "text": "Mode: Add observation mark",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Select the specimen to place a visible observation mark.",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "2 annotation points. Add another point to extend the line.",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Select a point with the pointer. For keyboard points, focus the canvas, choose an exposed structure with Arrow keys, Home, or End, then press Enter or Space. Escape returns to instruments.",
+      "font": 16,
+      "clipped": false
+    }
+  ],
+  "buttons": [
+    {
+      "text": "Place points on specimen",
+      "font": 18,
+      "width": 271.21875,
+      "height": 49.78125,
+      "clipped": false,
+      "top": 3578.78125,
+      "left": 24.390625
+    },
+    {
+      "text": "Undo last point",
+      "font": 18,
+      "width": 271.21875,
+      "height": 49.78125,
+      "clipped": false,
+      "top": 3636.5625,
+      "left": 24.390625
+    },
+    {
+      "text": "Return to instruments",
+      "font": 18,
+      "width": 271.21875,
+      "height": 49.78125,
+      "clipped": false,
+      "top": 3694.34375,
+      "left": 24.390625
+    }
+  ]
+}

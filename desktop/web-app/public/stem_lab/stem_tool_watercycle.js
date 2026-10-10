@@ -111,6 +111,178 @@
       h('path',{d:'M0 132 Q60 117 110 132 T220 130 V140 H0 Z',fill:'#204b56'}),shapes);
   }
 
+  // A magnified illustration of one successful merger, not a collision-rate model.
+  function wcCoalescenceFrame(cycle) {
+    var phase = typeof cycle === 'number' && isFinite(cycle) ? Math.max(0, Math.min(1, cycle)) : 0;
+    var approach = Math.min(1, phase / 0.5);
+    var ease = approach * approach * (3 - 2 * approach);
+    var merged = phase >= 0.62;
+    return {
+      cycle: phase,
+      stage: merged ? 'merged' : phase >= 0.5 ? 'touch' : 'approach',
+      incomingCount: merged ? 0 : 2,
+      mergedCount: merged ? 1 : 0,
+      incomingRadius: 1,
+      mergedRadius: Math.pow(2, 1 / 3),
+      separation: merged ? 0 : 4.8 - 3.8 * ease,
+      fall: merged ? (phase - 0.62) / 0.38 * 3.2 : 0
+    };
+  }
+  if (typeof window !== 'undefined') window.WaterCycleCoalescenceFrame = wcCoalescenceFrame;
+
+
+  // Enlarged teaching illustration of vapor deposition onto an existing ice crystal.
+  // Geometry and timing are schematic; this does not calculate cloud phase or ice mass.
+  function wcIceGrowthFrame(cycle) {
+    var phase = typeof cycle === 'number' && isFinite(cycle) ? Math.max(0, Math.min(1, cycle)) : 0;
+    var growth = Math.max(0, Math.min(1, (phase - 0.25) / 0.57));
+    growth = growth * growth * (3 - 2 * growth);
+    var radius = 0.45 + growth * 0.55;
+    var segments = [];
+    for (var arm = 0; arm < 6; arm++) {
+      var angle = arm * Math.PI / 3;
+      var dx = Math.cos(angle), dy = Math.sin(angle);
+      segments.push({ x1: 0, y1: 0, x2: dx * radius, y2: dy * radius });
+      for (var branch = 0; branch < 2; branch++) {
+        var join = (branch === 0 ? 0.55 : 0.78) * radius;
+        var length = (branch === 0 ? 0.22 : 0.14) * growth;
+        for (var side = -1; side <= 1; side += 2) {
+          var branchAngle = angle + side * Math.PI / 3;
+          segments.push({ x1: dx * join, y1: dy * join,
+            x2: dx * join + Math.cos(branchAngle) * length,
+            y2: dy * join + Math.sin(branchAngle) * length });
+        }
+      }
+    }
+    return {
+      cycle: phase,
+      stage: phase < 0.25 ? 'seed' : phase < 0.82 ? 'growing' : 'grown',
+      radius: radius,
+      segments: segments,
+      tracerRadius: 2.8 - Math.min(1, phase / 0.82) * 1.8,
+      tracerAlpha: 1 - Math.max(0, Math.min(1, (phase - 0.72) / 0.1)),
+      tracerCount: phase < 0.82 ? 3 : 0
+    };
+  }
+  if (typeof window !== 'undefined') window.WaterCycleIceGrowthFrame = wcIceGrowthFrame;
+
+  // Fixed reference frames use the same geometry as the moving chamber samples.
+  // They explain a process without implying that every cloud particle follows it.
+  var WC_CLOUD_GROWTH_READING_STYLE = '.wc-cloud-growth-reading{margin:10px 0 0;padding:14px;border:1px solid #a8ced2;border-radius:14px;background:#f2f9f9;color:#163e4b}.wc-cloud-growth-heading{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 12px}.wc-cloud-growth-heading h4{font-size:15px;margin:0}.wc-cloud-growth-heading span{font-size:11px;color:#43616b}.wc-cloud-growth-reading ol{list-style:none;padding:0;margin:12px 0 10px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.wc-cloud-growth-reading li{min-width:0;border:1px solid #bed8dc;border-radius:10px;overflow:hidden;background:#fff}.wc-cloud-growth-art{position:relative;background:radial-gradient(ellipse at 50% 70%,#164258,#081e32);border-bottom:1px solid #bed8dc}.wc-cloud-growth-art svg{display:block;width:100%;height:94px}.wc-cloud-growth-number{position:absolute;left:8px;top:7px;color:#b7e9f1;font-size:11px;font-weight:700}.wc-cloud-growth-copy{padding:9px 10px}.wc-cloud-growth-copy h5{font-size:12px;margin:0 0 5px;color:inherit}.wc-cloud-growth-copy p,.wc-cloud-growth-reading>p{font-size:12px;line-height:1.5;margin:0}.wc-cloud-growth-reading>p{color:#43616b}.wc-precip-science-details{margin-top:8px;border:1px solid #bed8dc;border-radius:9px;background:#f4f9fa;color:#163e4b}.wc-precip-science-details>summary{cursor:pointer;padding:10px 12px;font-size:12px;font-weight:700;min-height:40px;box-sizing:border-box}.wc-precip-science-details>summary:focus-visible{outline:3px solid #0e7490;outline-offset:2px}.wc-precip-science-details .wc-precip-3d-science{margin:0 10px 10px;font-size:12px;line-height:1.55}.dark .wc-cloud-growth-reading{background:#102b3a;color:#d9f3f7;border-color:#38606e}.dark .wc-cloud-growth-heading span,.dark .wc-cloud-growth-reading>p{color:#b5d0d9}.dark .wc-cloud-growth-reading li{background:#143345;border-color:#38606e}.dark .wc-cloud-growth-art{border-color:#38606e}.dark .wc-precip-science-details{background:#102b3a;color:#d9f3f7;border-color:#38606e}@media(max-width:520px){.wc-cloud-growth-reading{padding:11px}.wc-cloud-growth-reading ol{grid-template-columns:minmax(0,1fr);gap:7px}.wc-cloud-growth-reading li{display:grid;grid-template-columns:94px minmax(0,1fr)}.wc-cloud-growth-art{border-bottom:0;border-right:1px solid #bed8dc;display:flex;align-items:center}.wc-cloud-growth-art svg{height:78px}.wc-cloud-growth-copy{align-self:center}}@media(forced-colors:active){.wc-cloud-growth-reading,.wc-cloud-growth-reading li,.wc-precip-science-details{background:Canvas;color:CanvasText;border-color:CanvasText}.wc-cloud-growth-heading span,.wc-cloud-growth-reading>p{color:CanvasText}.wc-cloud-growth-art{forced-color-adjust:none}.wc-precip-science-details>summary:focus-visible{outline-color:Highlight}}';
+
+  function wcCloudGrowthSequence(h, temperature) {
+    if (!isFinite(temperature) || temperature === 0) return null;
+    var cold = temperature < 0;
+    var steps = cold ? [
+      { phase: 0.12, title: 'An existing crystal', copy: 'Ice is already present. Hollow rings trace invisible water vapor.' },
+      { phase: 0.54, title: 'Vapor adds to ice', copy: 'Deposition changes water directly from gas to solid.' },
+      { phase: 0.92, title: 'A larger crystal', copy: 'Added water builds the ice. Liquid droplets can still coexist nearby.' }
+    ] : [
+      { phase: 0.2, title: 'Two droplets approach', copy: 'Cloud droplets are liquid water. Their paths bring them together.' },
+      { phase: 0.55, title: 'The droplets touch', copy: 'This example follows a collision that successfully joins the drops.' },
+      { phase: 0.82, title: 'One larger drop', copy: 'The new drop contains their combined water. Further growth may be needed for rain.' }
+    ];
+    return h('section', { className: 'wc-cloud-growth-reading', 'aria-labelledby': 'wcCloudGrowthReadingTitle',
+      'data-growth-process': cold ? 'deposition' : 'coalescence' },
+      h('div', { className: 'wc-cloud-growth-heading' },
+        h('h4', { id: 'wcCloudGrowthReadingTitle' }, cold ? 'How ice grows · deposition' : 'How drops join · coalescence'),
+        h('span', null, 'Three reference frames')),
+      h('ol', null, steps.map(function(step, index) {
+        var shapes = [];
+        if (cold) {
+          var ice = wcIceGrowthFrame(step.phase), scale = 26;
+          ice.segments.forEach(function(segment, segmentIndex) {
+            shapes.push(h('line', { key: 'ice-' + segmentIndex, x1: 90 + segment.x1 * scale, y1: 48 + segment.y1 * scale,
+              x2: 90 + segment.x2 * scale, y2: 48 + segment.y2 * scale, stroke: '#e0f2fe', strokeWidth: 1.8, strokeLinecap: 'round' }));
+          });
+          for (var tracer = 0; tracer < ice.tracerCount; tracer++) {
+            var angle = tracer * Math.PI * 2 / 3 - Math.PI / 2;
+            shapes.push(h('circle', { key: 'vapor-' + tracer, cx: 90 + Math.cos(angle) * ice.tracerRadius * 15,
+              cy: 48 + Math.sin(angle) * ice.tracerRadius * 15, r: 3, stroke: '#67e8f9', strokeWidth: 1.6, fill: 'none', opacity: ice.tracerAlpha }));
+          }
+        } else {
+          var drops = wcCoalescenceFrame(step.phase), radius = 13;
+          for (var drop = 0; drop < drops.incomingCount + drops.mergedCount; drop++) {
+            var cx = 90 + (drop === 0 ? -1 : 1) * drops.separation * radius;
+            var r = radius * (drops.mergedCount ? drops.mergedRadius : drops.incomingRadius);
+            shapes.push(h('circle', { key: 'drop-' + drop, cx: cx, cy: 47, r: r, fill: '#2387b8', stroke: '#c6f1ff', strokeWidth: 1.7 }));
+            shapes.push(h('path', { key: 'shine-' + drop, d: 'M' + (cx - r * 0.5) + ' 45 Q' + (cx - r * 0.45) + ' ' + (47 - r * 0.5) + ' ' + cx + ' ' + (47 - r * 0.56),
+              fill: 'none', stroke: '#e0faff', strokeWidth: 2, strokeLinecap: 'round' }));
+          }
+        }
+        return h('li', { key: index },
+          h('div', { className: 'wc-cloud-growth-art' },
+            h('span', { className: 'wc-cloud-growth-number', 'aria-hidden': 'true' }, '0' + (index + 1)),
+            h('svg', { viewBox: cold ? '35 0 110 94' : '0 0 180 94', 'aria-hidden': 'true', focusable: 'false' }, shapes)),
+          h('div', { className: 'wc-cloud-growth-copy' }, h('h5', null, step.title), h('p', null, step.copy)));
+      })),
+      h('p', null, cold
+        ? 'Read left to right, or top to bottom. Shapes and timing are illustrative. Below 0°C, some droplets may remain liquid (supercooled).'
+        : 'Read left to right, or top to bottom. Enlarged teaching samples; this sequence does not measure collision frequency or rainfall.'));
+  }
+
+// Display-only analysis of the temperature chart; simulation thresholds stay separate.
+function wcPrecipAirProfile(points) {
+  if (!Array.isArray(points) || points.length !== 3) return null;
+  for (let i = 0; i < points.length; i++) {
+    const point = points[i];
+    if (!point || typeof point !== 'object' || Array.isArray(point) ||
+        typeof point.progress !== 'number' || !Number.isFinite(point.progress) ||
+        point.progress < 0 || point.progress > 1 ||
+        typeof point.temperatureC !== 'number' || !Number.isFinite(point.temperatureC) ||
+        typeof point.label !== 'string' ||
+        (i > 0 && point.progress <= points[i - 1].progress)) return null;
+  }
+
+  const crossings = [], touches = [], zeroBands = [];
+  const oppositeSigns = (a, b) => (a < 0 && b > 0) || (a > 0 && b < 0);
+  for (let i = 0; i < points.length - 1; i++) {
+    const left = points[i], right = points[i + 1];
+    if (left.temperatureC === 0 && right.temperatureC === 0) {
+      const previous = zeroBands[zeroBands.length - 1];
+      if (previous && previous.end === left.progress) previous.end = right.progress;
+      else zeroBands.push({ start:left.progress, end:right.progress });
+    } else if (oppositeSigns(left.temperatureC, right.temperatureC)) {
+      const a = Math.abs(left.temperatureC), b = Math.abs(right.temperatureC);
+      const total = a + b;
+      // Scaling only protects finite extreme inputs from overflow; there is no position clamp.
+      const scale = Math.max(a, b);
+      const fraction = Number.isFinite(total) ? a / total : (a / scale) / (a / scale + b / scale);
+      crossings.push({
+        progress:left.progress + (right.progress - left.progress) * fraction,
+        direction:left.temperatureC < 0 ? 'warming' : 'cooling',
+      });
+    }
+  }
+  for (let i = 0; i < points.length; i++) {
+    const point = points[i];
+    if (point.temperatureC !== 0 || zeroBands.some(band => point.progress >= band.start && point.progress <= band.end)) continue;
+    if (i > 0 && i < points.length - 1 && oppositeSigns(points[i - 1].temperatureC, points[i + 1].temperatureC)) {
+      crossings.push({ progress:point.progress, direction:points[i - 1].temperatureC < 0 ? 'warming' : 'cooling' });
+    } else {
+      touches.push({ progress:point.progress, label:point.label });
+    }
+  }
+  crossings.sort((a, b) => a.progress - b.progress);
+
+  const hasWarm = points.some(point => point.temperatureC > 0);
+  const hasCold = points.some(point => point.temperatureC < 0);
+  const hasZero = points.some(point => point.temperatureC === 0);
+  let summary;
+  if (!hasWarm && !hasCold) summary = 'Air stays at 0°C throughout the profile.';
+  else if (crossings.length === 2) summary = 'Air crosses 0°C twice (' + crossings.map(crossing => crossing.direction).join(', then ') + ').';
+  else if (crossings.length === 1) summary = 'Air crosses 0°C once (' + crossings[0].direction + ').';
+  else if (hasWarm && hasZero) summary = 'Air stays at or above 0°C throughout the profile.';
+  else if (hasCold && hasZero) summary = 'Air stays at or below 0°C throughout the profile.';
+  else if (hasWarm) summary = 'Air stays above 0°C throughout the profile.';
+  else summary = 'Air stays below 0°C throughout the profile.';
+  return { crossings, touches, zeroBands, summary };
+}
+
+if (typeof window !== 'undefined') window.WaterCycleAirProfile = wcPrecipAirProfile;
+
+  var WC_PRECIP_AIR_PROFILE_STYLE = '.wc-air-profile{padding:12px!important;background:#f4f8fb!important;border-color:#b8cbd8!important}.wc-air-profile-heading{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;justify-content:space-between;color:#163e4b}.wc-air-profile-heading strong{font-size:14px}.wc-air-profile-heading>span{font-size:11px;color:#486373}.wc-air-profile-readings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:12px 0}.wc-air-profile-readings>div{min-width:0;border:1px solid #c9d9e4;border-radius:8px;padding:7px 5px;background:#fff;text-align:center}.wc-air-profile-readings[data-fine-temperatures=true]{grid-template-columns:1fr}.wc-air-profile-readings[data-fine-temperatures=true]>div{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:5px 8px}.wc-air-profile-readings[data-fine-temperatures=true] dd{margin:0;overflow-wrap:normal}.wc-air-profile-readings dt{font-size:11px;color:#486373}.wc-air-profile-readings dd{margin:3px 0 0;font-size:13px;font-weight:700;color:#163e4b;overflow-wrap:anywhere}.wc-air-profile .wc-precip-profile-chart{max-height:none;overflow:visible}.wc-air-profile .wc-profile-level-label{font-size:14px;letter-spacing:0}.wc-air-profile .wc-profile-zone-label{font-size:12px;letter-spacing:.03em}.wc-air-profile .wc-profile-tick-label{font-size:13px}.wc-air-profile .wc-profile-temperature-line{stroke:#6d28d9}.wc-air-profile .wc-profile-temperature-point{stroke:#6d28d9;stroke-width:2}.wc-air-crossing-leader{fill:none;stroke:#8c6522;stroke-width:1;stroke-dasharray:3 2}.wc-air-crossing-badge{fill:#fef3c7;stroke:#9a6700;stroke-width:1.25}.wc-air-crossing-number{font:700 10px system-ui,sans-serif;fill:#713f12}.wc-air-touch{fill:none;stroke:#a16207;stroke-width:2}.wc-air-zero-band{stroke:#d97706;stroke-width:6;stroke-linecap:round;opacity:.6}.wc-air-profile-summary{font-size:12px;font-weight:700;color:#163e4b;margin:9px 0}.wc-air-crossing-list{list-style:none;padding:0;margin:8px 0;display:grid;gap:6px}.wc-air-crossing-list li{display:flex;align-items:flex-start;gap:8px;color:#334155;font-size:12px;line-height:1.45}.wc-air-crossing-key{display:inline-flex;flex:none;justify-content:center;align-items:center;width:20px;height:20px;border-radius:50%;border:1px solid #9a6700;background:#fef3c7;color:#713f12;font-size:11px;font-weight:700}.wc-air-zero-note,.wc-air-profile .wc-precip-profile-hint{font-size:12px;line-height:1.5;color:#486373;margin:9px 0}.wc-air-profile .wc-precip-profile-verdict{font-size:12px;line-height:1.5}.wc-air-inspect-link{width:100%;min-height:42px;padding:9px 10px;border:1px solid #0e7490;border-radius:8px;background:#fff;color:#075985;font:700 12px/1.4 system-ui,sans-serif;cursor:pointer;text-align:center}.wc-air-inspect-link:hover{background:#e0f2fe}.wc-air-inspect-link:focus-visible{outline:3px solid #0e7490;outline-offset:3px}.dark .wc-air-profile{background:#102535!important;border-color:#355568!important}.dark .wc-air-profile-heading,.dark .wc-air-profile-readings dd,.dark .wc-air-profile-summary{color:#e0f2fe}.dark .wc-air-profile-heading>span,.dark .wc-air-profile-readings dt,.dark .wc-air-zero-note,.dark .wc-air-profile .wc-precip-profile-hint{color:#bdcedb}.dark .wc-air-profile-readings>div{background:#173247;border-color:#355568}.dark .wc-air-crossing-list li{color:#d5e5f1}.dark .wc-air-profile .wc-profile-temperature-line,.dark .wc-air-profile .wc-profile-temperature-point{stroke:#c4b5fd}.dark .wc-air-crossing-leader{stroke:#fde68a}.dark .wc-air-touch{stroke:#fbbf24}.dark .wc-air-inspect-link{background:#12374b;color:#e0f2fe;border-color:#7dd3fc}.dark .wc-air-inspect-link:hover{background:#1d4c64}@media(forced-colors:active){.wc-air-profile,.wc-air-profile-readings>div,.wc-air-inspect-link,.wc-air-crossing-key{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.wc-air-profile-heading,.wc-air-profile-heading>span,.wc-air-profile-readings dt,.wc-air-profile-readings dd,.wc-air-profile-summary,.wc-air-zero-note,.wc-air-profile .wc-precip-profile-hint,.wc-air-crossing-list li{color:CanvasText}.wc-air-crossing-leader,.wc-air-crossing-badge,.wc-air-touch,.wc-air-zero-band,.wc-air-profile .wc-profile-temperature-line,.wc-air-profile .wc-profile-temperature-point{stroke:CanvasText}.wc-air-crossing-badge{fill:Canvas}.wc-air-crossing-number{fill:CanvasText}.wc-air-inspect-link:focus-visible{outline-color:Highlight}}@media(forced-colors:active){.wc-air-profile svg text{fill:CanvasText!important}.wc-air-profile svg line,.wc-air-profile svg path,.wc-air-profile svg circle{stroke:CanvasText!important}.wc-air-profile svg .wc-profile-temperature-point,.wc-air-profile svg .wc-air-crossing-badge{fill:Canvas!important}.wc-air-profile svg .wc-profile-crossing-point{fill:CanvasText!important}.wc-air-profile svg .wc-profile-cold-zone,.wc-air-profile svg .wc-profile-warm-zone{fill:Canvas!important;stroke:CanvasText!important;stroke-width:.5}.wc-air-profile svg .wc-profile-cold-layer-band{fill:Highlight!important;fill-opacity:.15;stroke:CanvasText!important}.wc-air-profile svg .wc-air-crossing-number{stroke:none!important}}';
+
   // ── Water Cycle Audio System ──
   var _wcAC = null;
   function getWCAC() { if (!_wcAC) { try { _wcAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_wcAC && _wcAC.state === 'suspended') { try { _wcAC.resume(); } catch(e) {} } return _wcAC; }
@@ -926,6 +1098,64 @@
     { id: 'runRestoration', when: function(s) { var m = _wcById(s, 'riverMainstem'); var b = _wcById(s, 'forestBuffer'); return !!m && !!b && m.connectivity > 60 && b.quality > 60; }, apply: function(s) { s.forEach(function(c) { c.support = Math.min(100, c.support + 2); }); }, }
   ];
 
+  // Inspect the existing yearly feedback rules without applying their effects.
+  var WCStewardConnections = (function() {
+    var ids = ['headwaterStreams', 'riverMainstem', 'floodplainWetlands', 'forestBuffer', 'agriculturalWatershed', 'suburbanEdges'];
+    var specs = [
+      { id: 'bufferFeedsHeadwaters', title: 'Forest buffers feed headwaters', conditions: [['forestBuffer', 'quality', 70]], effects: [['headwaterStreams', 'quality', 4]] },
+      { id: 'beaverHelpsFloodplain', title: 'Wetlands help the river', conditions: [['floodplainWetlands', 'quality', 60]], effects: [['riverMainstem', 'quality', 3], ['riverMainstem', 'connectivity', 2]] },
+      { id: 'agCleansUp', title: 'Cleaner farm runoff helps the river', conditions: [['agriculturalWatershed', 'quality', 60]], effects: [['riverMainstem', 'quality', 4]] },
+      { id: 'runRestoration', title: 'Connected, shaded rivers support fish returns', conditions: [['riverMainstem', 'connectivity', 60], ['forestBuffer', 'quality', 60]], effects: ids.map(function(id) { return [id, 'support', 2]; }) }
+    ];
+    function own(value, key) {
+      if (!value || typeof value !== 'object') return undefined;
+      var property = Object.getOwnPropertyDescriptor(value, key);
+      return property && Object.prototype.hasOwnProperty.call(property, 'value') ? property.value : undefined;
+    }
+    function read(list, id, field) {
+      if (!Array.isArray(list)) return null;
+      var matches = list.filter(function(item) { return own(item, 'id') === id; });
+      if (matches.length !== 1 || Array.isArray(matches[0])) return null;
+      var value = own(matches[0], field);
+      return typeof value === 'number' && isFinite(value) && value >= 0 && value <= 100 ? value : null;
+    }
+    function campaignIds(list) {
+      if (!Array.isArray(list) || list.length !== ids.length) return null;
+      var found = list.map(function(item) { return Array.isArray(item) ? undefined : own(item, 'id'); });
+      return ids.every(function(id) { return found.filter(function(value) { return value === id; }).length === 1; }) ? ids.join('|') : null;
+    }
+    function unique(values) { return values.filter(function(value, index) { return values.indexOf(value) === index; }); }
+    function status(list, spec) {
+      if (campaignIds(list) === null) return 'unknown';
+      var required = spec.conditions.concat(spec.effects);
+      if (required.some(function(item) { return read(list, item[0], item[1]) === null; })) return 'unknown';
+      var matching = STEWARD_FEEDBACK_RULES.filter(function(rule) { return rule.id === spec.id; });
+      return matching.length === 1 ? (matching[0].when(list) ? 'met' : 'unmet') : 'unknown';
+    }
+    function describe(components, previewComponents) {
+      var hasPreview = previewComponents !== undefined && previewComponents !== null;
+      var currentIds = campaignIds(components);
+      var matchingPreview = hasPreview && currentIds !== null && campaignIds(previewComponents) === currentIds;
+      return specs.map(function(spec) {
+        return {
+          id: spec.id, title: spec.title,
+          sourceIds: unique(spec.conditions.map(function(item) { return item[0]; })),
+          targetIds: unique(spec.effects.map(function(item) { return item[0]; })),
+          conditions: spec.conditions.map(function(item) {
+            var value = read(components, item[0], item[1]);
+            var previewValue = matchingPreview ? read(previewComponents, item[0], item[1]) : null;
+            return { componentId: item[0], field: item[1], threshold: item[2], value: value, met: value === null ? null : value > item[2], previewValue: previewValue, previewMet: previewValue === null ? null : previewValue > item[2] };
+          }),
+          effects: spec.effects.map(function(item) { return { targetId: item[0], field: item[1], delta: item[2] }; }),
+          status: status(components, spec),
+          previewStatus: !hasPreview ? null : matchingPreview ? status(previewComponents, spec) : 'unknown'
+        };
+      });
+    }
+    return { describe: describe };
+  })();
+  if (typeof window !== 'undefined') window.WaterCycleStewardConnections = WCStewardConnections;
+
   // Parallel "coaching" view of the feedback rules above: the same thresholds,
   // but readable so the year-review debrief can (a) explain WHY a cascade fired
   // and (b) flag a near-miss — a component sitting just under a threshold, so the
@@ -1173,6 +1403,8 @@
   })();
   var WC_STEWARD_HISTORY_STYLE = ".wc-steward-history{--sh-paper:#f7fcfc;--sh-tint:#eaf4f3;--sh-ink:#123842;--sh-muted:#365d68;--sh-line:#97b8be;--sh-accent:#086979;--sh-mark:#b45309;container-type:inline-size;container-name:steward-history;margin:16px 0;padding:20px;border:1px solid var(--sh-line);border-radius:20px;background:var(--sh-paper);color:var(--sh-ink);font-size:14px;line-height:1.6;min-width:0;box-shadow:0 8px 22px rgba(18,56,66,.06)}\n.wc-steward-history.is-dark{--sh-paper:#102a36;--sh-tint:#193c48;--sh-ink:#effaff;--sh-muted:#c5dee5;--sh-line:#50717d;--sh-accent:#6de0e3;--sh-mark:#fbbf24}\n.wc-steward-history.is-contrast{--sh-paper:#fff;--sh-tint:#fff;--sh-ink:#111;--sh-muted:#222;--sh-line:#111;--sh-accent:#005266;--sh-mark:#733800}\n.wc-steward-history :is(p,h4,h5,figure,dl){margin:0}.wc-steward-history p{margin-top:10px}.wc-steward-history h4{font-size:21px;line-height:1.3;color:var(--sh-ink)}.wc-steward-history h5{font-size:16px;line-height:1.4}.wc-history-kicker{display:block;margin-bottom:5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:12px;color:var(--sh-muted)}\n.wc-history-controls{display:grid;gap:12px;margin:18px 0}.wc-history-controls label{display:grid;gap:5px;font-weight:800;color:var(--sh-ink)}.wc-steward-history select,.wc-steward-history button{width:100%;min-height:44px;padding:9px 12px;border:1px solid var(--sh-line);border-radius:10px;background:var(--sh-paper);color:var(--sh-ink);font:inherit;font-weight:700;white-space:normal}.wc-steward-history select{padding-right:28px;min-width:0}.wc-steward-history button{cursor:pointer}\n.wc-steward-history :is(select,button,summary):focus-visible,.wc-steward-history [tabindex='-1']:focus{outline:3px solid var(--sh-accent);outline-offset:3px}.wc-steward-history button[aria-pressed=true]{border:2px solid var(--sh-accent);background:var(--sh-tint)}\n.wc-history-readings{display:grid;gap:10px;margin:16px 0!important}.wc-history-readings>div{padding:14px;border:1px solid var(--sh-line);border-radius:13px;background:var(--sh-tint);min-width:0}.wc-history-readings dt{font-size:13px;font-weight:700;color:var(--sh-muted)}.wc-history-readings dd{margin:4px 0 0;font-size:28px;font-weight:800;line-height:1.2;overflow-wrap:anywhere}.wc-history-readings dd small{font-size:13px;font-weight:600;margin-left:5px}\n.wc-history-chart{margin:18px 0!important;padding:16px;border:1px solid var(--sh-line);border-radius:14px;background:var(--sh-paper)}.wc-history-chart figcaption{font-weight:800}.wc-history-key{display:flex;gap:10px;align-items:center;margin-top:6px;color:var(--sh-muted);font-size:13px}.wc-history-key-mark{position:relative;flex:0 0 38px;height:16px}.wc-history-key-mark:before{content:'';position:absolute;left:0;right:0;top:7px;border-top:2px solid var(--sh-accent)}[data-history-metric=connectivity] .wc-history-key-mark:before{border-top-style:dashed}[data-history-metric=support] .wc-history-key-mark:before{border-top-style:dotted}\n.wc-history-chart-grid{display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px;margin-top:22px}.wc-history-y-axis{height:180px;position:relative;color:var(--sh-muted);font-size:12px;line-height:1}.wc-history-y-axis span{position:absolute;right:0;transform:translateY(-50%)}.wc-history-plot{position:relative;height:180px;min-width:0}.wc-history-plot svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}.wc-history-grid-line{stroke:var(--sh-line);stroke-width:1;stroke-dasharray:2 5;vector-effect:non-scaling-stroke}.wc-history-series{fill:none;stroke:var(--sh-accent);stroke-width:2.5;vector-effect:non-scaling-stroke}\n.wc-history-point{position:absolute;width:10px;height:10px;box-sizing:border-box;display:block;background:var(--sh-accent);border:1px solid var(--sh-paper);border-radius:50%;transform:translate(-50%,-50%);z-index:1}.wc-history-point[data-shape=square]{border-radius:1px}.wc-history-point[data-shape=diamond]{border-radius:0;transform:translate(-50%,-50%) rotate(45deg)}.wc-history-point[data-selected=true]{background:var(--sh-mark);outline:2px solid var(--sh-ink);outline-offset:3px;z-index:2}.wc-history-key-mark .wc-history-point{left:50%;top:50%;width:9px;height:9px}\n.wc-history-x-axis{display:flex;justify-content:space-between;gap:0;margin:12px 0 0 40px;color:var(--sh-muted);font-size:12px;line-height:1.2}.wc-history-x-axis.single{justify-content:center}.wc-history-x-axis span{width:0;text-align:center;display:flex;justify-content:center;white-space:nowrap}.wc-history-axis-label{margin-top:8px!important;text-align:center;color:var(--sh-muted);font-size:13px}.wc-history-chart-note{font-size:13px;color:var(--sh-muted)}\n.wc-steward-history details{margin-top:16px;border-top:1px solid var(--sh-line)}.wc-steward-history summary{display:list-item;list-style:revert;min-height:44px;padding:12px 2px;cursor:pointer;font-weight:800}.wc-history-table{width:100%;border-collapse:collapse;font-size:14px;table-layout:fixed}.wc-history-table caption{text-align:left;padding:6px 0 10px;color:var(--sh-muted);font-size:13px}.wc-history-table :is(th,td){padding:9px 5px;text-align:left;border-bottom:1px solid var(--sh-line);overflow-wrap:normal}.wc-history-table th{font-weight:800}.wc-history-table tr[data-selected=true]{background:var(--sh-tint);outline:2px solid var(--sh-accent);outline-offset:-2px}\n.wc-history-context{padding:12px 14px;background:var(--sh-tint);border-radius:12px;margin:16px 0}.wc-history-context p{margin-top:3px}.wc-history-stages{list-style:none;margin:14px 0;padding:0;display:grid;gap:8px}.wc-history-stages li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:start;padding:12px;border:1px solid var(--sh-line);border-radius:10px}.wc-history-step-score{text-align:right;font-weight:800}.wc-history-step-score small{display:block;font-size:13px;font-weight:600;color:var(--sh-muted)}.wc-history-question{padding:14px;border:1px solid var(--sh-line);border-radius:14px;background:var(--sh-tint)}.wc-history-answer-options{display:grid;gap:8px;margin-top:12px}.wc-history-feedback{margin-top:12px;padding:12px;border-left:3px solid var(--sh-accent);background:var(--sh-paper);border-radius:0 10px 10px 0}.wc-history-feedback p{margin-top:4px}.wc-history-scope{font-size:13px;color:var(--sh-muted)}.wc-history-review{margin:14px 0;padding:10px 14px;border:1px solid #97b8be;border-radius:14px}.wc-history-review>summary{display:list-item;list-style:revert;min-height:44px;padding:8px 0;font-size:14px;font-weight:800;cursor:pointer}\n@container steward-history (min-width:560px){.wc-history-controls{grid-template-columns:1.3fr 1fr .8fr}.wc-history-readings{grid-template-columns:repeat(3,minmax(0,1fr))}.wc-history-answer-options{grid-template-columns:repeat(2,minmax(0,1fr))}}\n@container steward-history (max-width:300px){.wc-history-chart{padding:12px}.wc-history-stages li{grid-template-columns:minmax(0,1fr)}.wc-history-step-score{text-align:left}.wc-history-readings dd{font-size:25px}.wc-history-chart-grid{grid-template-columns:26px minmax(0,1fr);gap:8px}.wc-history-x-axis{margin-left:34px}}\n@media(forced-colors:active){.wc-steward-history{--sh-paper:Canvas!important;--sh-tint:Canvas!important;--sh-ink:CanvasText!important;--sh-muted:CanvasText!important;--sh-line:CanvasText!important;--sh-accent:Highlight!important;--sh-mark:Highlight!important;forced-color-adjust:none;box-shadow:none}.wc-steward-history :is(select,button){background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}.wc-history-review{border-color:CanvasText}.wc-history-series{stroke:Highlight!important}.wc-history-point{background:Highlight!important;border-color:Canvas!important}.wc-history-point[data-selected=true]{outline-color:CanvasText!important}}\n";
 
+  var WC_STEWARD_CONNECTION_STYLE = ".wc-steward-connections{--sc-paper:#fff;--sc-tint:#eff7f3;--sc-ink:#183e38;--sc-muted:#45635b;--sc-line:#a6c4b7;--sc-accent:#176451;--sc-river:#087486;--sc-mark:#945008;container-type:inline-size;container-name:steward-connections;min-width:0;margin:16px 0;border:1px solid var(--sc-line);border-radius:18px;background:var(--sc-paper);color:var(--sc-ink);font-size:14px;line-height:1.6;box-shadow:0 6px 20px #183e3808;overflow-wrap:normal;word-break:normal}\n.wc-steward-connections[data-wc-connections-theme=dark]{--sc-paper:#102c2a;--sc-tint:#193c35;--sc-ink:#edfff7;--sc-muted:#bbd8cc;--sc-line:#547c6c;--sc-accent:#8be6bd;--sc-river:#78dce8;--sc-mark:#f5c46d}\n.wc-steward-connections[data-wc-connections-theme=contrast]{--sc-paper:#000;--sc-tint:#000;--sc-ink:#ff0;--sc-muted:#ff0;--sc-line:#ff0;--sc-accent:#ff0;--sc-river:#ff0;--sc-mark:#ff0;box-shadow:none}\n.wc-steward-connections>summary{display:flex;align-items:center;gap:14px;list-style:none;min-height:70px;padding:16px 18px;cursor:pointer;border-radius:18px;background:var(--sc-tint);color:var(--sc-ink)}\n.wc-steward-connections>summary::-webkit-details-marker{display:none}\n.wc-steward-connections>summary>span{flex:1;min-width:0}\n.wc-steward-connections>summary strong{display:block;font-size:18px;line-height:1.35}\n.wc-steward-connections>summary span span{display:block;margin-top:3px;font-size:13px;color:var(--sc-muted)}\n.wc-steward-connections>summary:after{content:\"+\";font-size:24px;line-height:1;flex:0 0 20px;text-align:center;font-weight:700}\n.wc-steward-connections[open]>summary:after{content:\"−\"}\n.wc-steward-connections[open]>summary{border-bottom:1px solid var(--sc-line);border-radius:18px 18px 0 0}\n.wc-connection-icon{width:34px;height:38px;flex:0 0 34px;color:var(--sc-accent)}\n.wc-connection-body{padding:18px;min-width:0}\n.wc-steward-connections p{margin:10px 0;font-size:14px;line-height:1.6;color:var(--sc-muted)}\n.wc-steward-connections .wc-connection-intro{margin:0 0 16px}\n.wc-connection-options{display:grid;gap:9px;margin-bottom:18px}\n.wc-connection-options button{display:grid;grid-template-columns:26px minmax(0,1fr);gap:3px 10px;align-items:start;min-width:0;min-height:72px;padding:12px;text-align:left;background:var(--sc-paper);border:1px solid var(--sc-line);border-radius:12px;color:var(--sc-ink);font:inherit;cursor:pointer}\n.wc-connection-options button strong{font-size:14px;line-height:1.45}\n.wc-connection-options button[aria-pressed=true]{background:var(--sc-tint);border:2px solid var(--sc-accent);padding:11px;box-shadow:inset 4px 0 0 var(--sc-accent)}\n.wc-connection-number{display:grid;place-items:center;width:26px;height:26px;border:1px solid var(--sc-line);border-radius:50%;font-size:13px;font-weight:800}\n.wc-connection-option-status{grid-column:2;font-size:13px;line-height:1.5;color:var(--sc-muted)}\n.wc-connection-detail{padding:16px;border:1px solid var(--sc-line);border-radius:15px;background:var(--sc-paper);min-width:0}\n.wc-connection-kicker{display:block;font-size:13px;font-weight:750;color:var(--sc-muted)}\n.wc-steward-experience .wc-connection-detail h4{margin:4px 0 18px;font-size:22px;line-height:1.3;color:var(--sc-ink)}\n.wc-steward-connections h5{margin:18px 0 10px;font-size:15px;font-weight:800;color:var(--sc-ink);line-height:1.4}\n.wc-connection-route{display:grid;gap:12px;margin-bottom:14px}\n.wc-connection-endpoint{padding:14px;background:var(--sc-tint);border:1px solid var(--sc-line);border-radius:12px;min-width:0}\n.wc-connection-place{display:flex;gap:10px;align-items:center;margin-top:8px;min-width:0}\n.wc-connection-place strong{font-size:15px;line-height:1.45}\n.wc-connection-endpoint.is-receiving .wc-connection-icon{color:var(--sc-river)}\n.wc-connection-link{display:flex;align-items:center;justify-content:center;gap:10px;color:var(--sc-river);font-size:13px;font-weight:750}\n.wc-connection-link svg{width:48px;height:24px;transform:rotate(90deg);flex:0 0 48px}\n.wc-connection-status{padding:10px 12px;border-left:3px solid var(--sc-accent);border-radius:0 8px 8px 0;background:var(--sc-tint);color:var(--sc-ink);font-weight:750;font-size:14px}\n.wc-connection-conditions{display:grid;gap:12px}\n.wc-connection-condition{padding:14px;border:1px solid var(--sc-line);border-radius:12px;background:var(--sc-tint);min-width:0}\n.wc-connection-condition>strong{display:block;font-size:14px;line-height:1.45}\n.wc-connection-reading{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline;margin:12px 0;color:var(--sc-muted);font-size:13px}\n.wc-connection-reading strong{font-size:24px;font-weight:800;color:var(--sc-ink);line-height:1.3}\n.wc-connection-scale{position:relative;height:12px;margin:0 6px;background:var(--sc-paper);border:1px solid var(--sc-line);border-radius:6px}\n.wc-connection-threshold{position:absolute;height:22px;top:-6px;border-left:2px dashed var(--sc-mark);transform:translateX(-1px)}\n.wc-connection-score-mark{position:absolute;width:12px;height:12px;top:-1px;background:var(--sc-accent);border:2px solid var(--sc-paper);border-radius:50%;outline:1px solid var(--sc-accent);transform:translateX(-50%)}\n.wc-connection-scale-labels{display:flex;justify-content:space-between;margin-top:8px;font-size:13px;color:var(--sc-muted)}\n.wc-steward-connections .wc-connection-requirement{font-size:13px;margin:10px 0 6px}\n.wc-connection-condition-state{font-size:13px;font-weight:750;color:var(--sc-ink)}\n.wc-steward-connections .wc-connection-condition-preview{border-top:1px solid var(--sc-line);padding-top:10px;font-size:13px;margin-bottom:0}\n.wc-connection-effects{padding:14px 16px;border:1px solid var(--sc-line);border-radius:12px;margin-top:16px;background:var(--sc-tint)}\n.wc-connection-effects h5{margin-top:0}\n.wc-connection-effects ul{list-style:disc;padding-left:18px;margin:0;font-size:14px}\n.wc-connection-effects li+li{margin-top:6px}\n.wc-connection-effects li strong{color:var(--sc-accent)}\n.wc-steward-connections .wc-connection-effects p{font-size:13px;margin-bottom:0}\n.wc-connection-preview{margin-top:16px;padding:14px;border:2px dashed var(--sc-mark);border-radius:12px;background:var(--sc-tint);font-size:14px}\n.wc-connection-preview p:last-child{font-size:13px;margin-bottom:0}\n.wc-connection-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}\n.wc-connection-actions h5{flex-basis:100%;margin:0 0 2px}\n.wc-connection-actions button{min-height:44px;padding:10px 14px;border:1px solid var(--sc-accent);border-radius:10px;background:var(--sc-paper);color:var(--sc-accent);font:inherit;font-size:14px;font-weight:750;white-space:normal;text-align:left;cursor:pointer;min-width:0}\n.wc-connection-actions button:disabled{opacity:.6;cursor:not-allowed}\n.wc-connection-timing{margin-top:18px;padding-top:16px;border-top:1px solid var(--sc-line)}\n.wc-connection-timing h5{margin-top:0}\n.wc-steward-connections .wc-connection-timing p{font-size:13px}\n.wc-steward-connections .wc-connection-timing p:last-child{margin-bottom:0}\n.wc-steward-experience .wc-steward-connections :is(button,summary):focus-visible{outline:3px solid var(--sc-river);outline-offset:3px}\n@container steward-connections (min-width:520px){.wc-connection-options{grid-template-columns:repeat(2,minmax(0,1fr))}.wc-connection-route{grid-template-columns:minmax(0,1fr) 84px minmax(0,1fr);align-items:center}.wc-connection-link{flex-direction:column;gap:4px;text-align:center}.wc-connection-link svg{transform:none;flex:auto}.wc-connection-conditions{grid-template-columns:repeat(2,minmax(0,1fr))}.wc-connection-condition:only-child{grid-column:1/-1}}\n@container steward-connections (max-width:300px){.wc-connection-body{padding:12px}.wc-connection-detail{padding:12px}.wc-connection-endpoint,.wc-connection-condition{padding:12px}.wc-steward-connections>summary{padding:14px 12px;gap:10px}.wc-steward-experience .wc-connection-detail h4{font-size:20px}.wc-connection-actions button{width:100%}}\n@media(forced-colors:active){.wc-steward-connections{--sc-paper:Canvas!important;--sc-tint:Canvas!important;--sc-ink:CanvasText!important;--sc-muted:CanvasText!important;--sc-line:CanvasText!important;--sc-accent:Highlight!important;--sc-river:CanvasText!important;--sc-mark:CanvasText!important;forced-color-adjust:none;box-shadow:none}.wc-connection-options button,.wc-connection-actions button{color:ButtonText;background:ButtonFace;border-color:ButtonText}.wc-connection-options button[aria-pressed=true]{border-color:Highlight;box-shadow:none}.wc-connection-score-mark{background:Highlight}.wc-connection-threshold{border-color:CanvasText}}\n";
+
   function getWatershedComponent(id) {
     var list = watershedComponents();
     for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
@@ -1384,7 +1616,78 @@
     return { get: get, resolve: resolve, key: key, createSession: createSession, normalizeSession: normalizeSession, navigation: navigation, isCurrent: isCurrent, allowedAnswer: allowedAnswer, updateReview: updateReview, saveReview: saveReview, history: history };
   })();
 
+  var WC_LAND_CUTAWAY_STYLE = ".wc-explorer-root .wc-land-workbench{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;margin-top:14px}\n.wc-explorer-root .wc-land-evidence,.wc-explorer-root .wc-land-controls-stack{min-width:0}\n.wc-explorer-root .wc-land-return{display:block;width:100%;min-height:44px;margin-top:12px;padding:10px 14px;border:1px solid var(--wc-viz-accent);border-radius:10px;background:var(--wc-viz-paper);color:var(--wc-viz-ink);font:inherit;font-size:13px;font-weight:750;cursor:pointer}\n.wc-explorer-root .wc-land-return:focus-visible{outline:3px solid var(--wc-viz-focus);outline-offset:3px}\n.wc-explorer-root .wc-land-cutaway{--lc-sky:#d7e9ef;--lc-horizon:#eff7f5;--lc-distance:#b5cfd0;--lc-soil:#dfc8a1;--lc-depth:#bca484;--lc-topsoil:#78694f;--lc-grain:#a79376;--lc-grain-line:#584f42;--lc-water:#287b9a;--lc-air:#faf5e9;--lc-tree:#3d705b;--lc-leaf:#5c9475;--lc-trunk:#6e5943;--lc-building:#9daeb4;--lc-roof:#607883;--lc-window:#f8ecc2;--lc-runoff:#006b96;--lc-infiltration:#005e58;container:land-cutaway / inline-size;min-width:0;margin:0;padding:14px;border:1px solid var(--wc-viz-line);border-radius:16px;background:var(--wc-viz-paper);color:var(--wc-viz-ink);overflow:hidden;box-shadow:0 7px 20px #143b4307}\n.wc-explorer-root .wc-land-cutaway.is-dark{--lc-sky:#17384d;--lc-horizon:#2c535b;--lc-distance:#365d65;--lc-soil:#6f6b56;--lc-depth:#444e49;--lc-topsoil:#344943;--lc-grain:#a9a28a;--lc-grain-line:#1e383a;--lc-water:#66c8e4;--lc-air:#263f46;--lc-tree:#286756;--lc-leaf:#52917d;--lc-trunk:#b1a482;--lc-building:#668793;--lc-roof:#b4cbd1;--lc-window:#f6de97;--lc-runoff:#97e2ff;--lc-infiltration:#b3f4d6}\n.wc-explorer-root .wc-land-cutaway.is-contrast{--lc-sky:#e4f2f7;--lc-horizon:#fff;--lc-distance:#719596;--lc-soil:#eddbb8;--lc-depth:#d8c4a0;--lc-topsoil:#484138;--lc-grain:#c5b08b;--lc-grain-line:#172a2d;--lc-water:#006285;--lc-air:#fff;--lc-tree:#16492f;--lc-leaf:#276b45;--lc-trunk:#302718;--lc-building:#b3c2cb;--lc-roof:#243d48;--lc-window:#fff;--lc-runoff:#004c76;--lc-infiltration:#004a34}\n.wc-explorer-root .wc-land-cutaway-head{margin:0 0 12px;text-align:left}\n.wc-explorer-root .wc-land-cutaway-kicker{display:block;color:var(--wc-viz-muted);font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}\n.wc-explorer-root .wc-land-cutaway h5{margin:4px 0 0;color:var(--wc-viz-ink);font-size:19px;font-weight:800;line-height:1.35}\n.wc-explorer-root .wc-land-cutaway-head p{margin:8px 0 0;color:var(--wc-viz-muted);font-size:13px;line-height:1.6}\n.wc-explorer-root .wc-land-cutaway-scene{border:1px solid var(--wc-viz-line);border-radius:13px;overflow:hidden;background:var(--wc-viz-tint)}\n.wc-explorer-root .wc-land-cutaway-scene>svg{display:block;width:100%;height:auto;max-height:none;aspect-ratio:12/7}\n.wc-explorer-root .wc-land-cutaway-weather{margin:0;padding:9px 11px;border-top:1px solid var(--wc-viz-line);color:var(--wc-viz-ink);background:var(--wc-viz-paper);font-size:12px;font-weight:650;line-height:1.5}\n.wc-explorer-root .wc-land-cutaway-key{display:flex;flex-wrap:wrap;gap:8px 18px;margin:12px 0;color:var(--wc-viz-ink);font-size:12px;line-height:1.5}\n.wc-explorer-root .wc-land-cutaway-key>span{display:flex;align-items:center;gap:7px}\n.wc-explorer-root .wc-land-cutaway-key i{display:inline-block;width:22px;height:0;border-top:3px solid var(--lc-runoff)}\n.wc-explorer-root .wc-land-cutaway-key i.is-infiltration{border-color:var(--lc-infiltration);border-top-style:dashed}\n.wc-explorer-root .wc-land-cutaway-features{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}\n.wc-explorer-root .wc-land-cutaway-features>button{min-width:0;min-height:78px;padding:10px;border:1px solid var(--wc-viz-line);border-radius:10px;background:var(--wc-viz-card);color:var(--wc-viz-ink);text-align:left;font:inherit;cursor:pointer;box-shadow:none;line-height:1.4;white-space:normal;overflow-wrap:anywhere}\n.wc-explorer-root .wc-land-cutaway-features>button:hover{border-color:var(--wc-viz-accent);background:var(--wc-viz-tint)}\n.wc-explorer-root .wc-land-cutaway-feature-title{display:block;font-size:12px;font-weight:650;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-land-cutaway-features strong{display:flex;justify-content:space-between;gap:5px;margin:4px 0 3px;color:var(--wc-viz-ink);font-size:15px;font-weight:800}\n.wc-explorer-root .wc-land-cutaway-features small{display:block;color:var(--wc-viz-muted);font-size:11px;line-height:1.5}\n.wc-explorer-root .wc-land-cutaway-link{color:var(--wc-viz-ink);font-size:15px;font-weight:800}\n.wc-explorer-root .wc-land-cutaway-scope{margin:12px 0 0;padding-top:10px;border-top:1px solid var(--wc-viz-line);color:var(--wc-viz-muted);font-size:12px;line-height:1.6}\n.wc-explorer-root .wc-land-cutaway :is(button,h5):focus-visible,.wc-explorer-root .wc-land-cutaway h5:focus{outline:3px solid var(--wc-viz-focus);outline-offset:3px;border-radius:5px}\n.wc-explorer-root .wc-land-cutaway .wc-lc-sky{fill:url(#wcLandSceneSky)}\n.wc-explorer-root .wc-land-cutaway .wc-lc-horizon{fill:var(--lc-distance);opacity:.5}\n.wc-explorer-root .wc-land-cutaway .wc-lc-cloud{fill:var(--lc-air);opacity:.75}\n.wc-explorer-root .wc-land-cutaway .wc-lc-soil{fill:url(#wcLandSceneSoil);stroke:var(--lc-grain-line);stroke-width:1}\n.wc-explorer-root .wc-land-cutaway .wc-lc-topsoil{fill:var(--lc-topsoil);opacity:.8}\n.wc-explorer-root .wc-land-cutaway .wc-lc-stratum{fill:none;stroke:var(--lc-grain-line);stroke-width:1;stroke-dasharray:3 5;opacity:.3}\n.wc-explorer-root .wc-land-cutaway .wc-lc-moisture{fill:var(--lc-water)}\n.wc-explorer-root .wc-land-cutaway :is(.wc-lc-rain,.wc-lc-roots,.wc-lc-trunk,.wc-lc-grass,.wc-lc-hatch,.wc-lc-connections,.wc-lc-turf,.wc-lc-paving,.wc-lc-gap,.wc-lc-runoff,.wc-lc-infiltration){fill:none;stroke-linecap:round;stroke-linejoin:round}\n.wc-explorer-root .wc-land-cutaway .wc-lc-rain{stroke:var(--lc-water);stroke-width:2}\n.wc-explorer-root .wc-land-cutaway .wc-lc-roots{stroke:var(--lc-trunk);stroke-width:1.6;opacity:.8}\n.wc-explorer-root .wc-land-cutaway .wc-lc-connections{stroke:var(--lc-water);stroke-width:2;opacity:.75}\n.wc-explorer-root .wc-land-cutaway .wc-lc-grain{fill:var(--lc-grain);stroke:var(--lc-grain-line);stroke-width:1.2}\n.wc-explorer-root .wc-land-cutaway .wc-lc-hatch{stroke:var(--lc-grain-line);stroke-width:1}\n.wc-explorer-root .wc-land-cutaway .wc-lc-pore{fill:var(--lc-air);stroke:var(--lc-grain-line);stroke-width:1}\n.wc-explorer-root .wc-land-cutaway .wc-lc-pore-water{fill:var(--lc-water)}\n.wc-explorer-root .wc-land-cutaway .wc-lc-trunk{stroke:var(--lc-trunk);stroke-width:4}\n.wc-explorer-root .wc-land-cutaway .wc-lc-canopy{fill:var(--lc-tree)}\n.wc-explorer-root .wc-land-cutaway .wc-lc-canopy.is-light{fill:var(--lc-leaf)}\n.wc-explorer-root .wc-land-cutaway .wc-lc-building{fill:var(--lc-building);stroke:var(--lc-roof);stroke-width:1}\n.wc-explorer-root .wc-land-cutaway .wc-lc-roof{fill:var(--lc-roof)}\n.wc-explorer-root .wc-land-cutaway .wc-lc-window{fill:var(--lc-window)}\n.wc-explorer-root .wc-land-cutaway .wc-lc-grass{stroke:var(--lc-tree);stroke-width:2}\n.wc-explorer-root .wc-land-cutaway .wc-lc-turf{stroke:var(--lc-tree);stroke-width:5}\n.wc-explorer-root .wc-land-cutaway .wc-lc-paving{stroke:var(--lc-roof);stroke-width:8}\n.wc-explorer-root .wc-land-cutaway .wc-lc-gap{stroke:var(--lc-soil);stroke-width:9}\n.wc-explorer-root .wc-land-cutaway .wc-lc-runoff{stroke:var(--lc-runoff);stroke-width:3;vector-effect:non-scaling-stroke}\n.wc-explorer-root .wc-land-cutaway .wc-lc-infiltration{stroke:var(--lc-infiltration);stroke-width:3;stroke-dasharray:6 4;vector-effect:non-scaling-stroke}\n@container land-cutaway (min-width:440px){.wc-explorer-root .wc-land-cutaway-features{grid-template-columns:repeat(3,minmax(0,1fr))}}\n@container wc-land-controls (min-width:820px){.wc-explorer-root .wc-land-workbench{grid-template-columns:minmax(0,1.2fr) minmax(290px,.8fr);align-items:start}.wc-explorer-root .wc-land-controls-stack .wc-land-grid{grid-template-columns:minmax(0,1fr)}}\n@container land-cutaway (max-width:240px){.wc-explorer-root .wc-land-cutaway-features{grid-template-columns:minmax(0,1fr)}.wc-explorer-root .wc-land-cutaway h5{font-size:17px}}\n@media(forced-colors:active){.wc-explorer-root .wc-land-cutaway,.wc-explorer-root .wc-land-cutaway:is(.is-dark,.is-contrast){--lc-sky:Canvas;--lc-horizon:Canvas;--lc-distance:CanvasText;--lc-soil:Canvas;--lc-depth:Canvas;--lc-topsoil:CanvasText;--lc-grain:Canvas;--lc-grain-line:CanvasText;--lc-water:Highlight;--lc-air:Canvas;--lc-tree:CanvasText;--lc-leaf:CanvasText;--lc-trunk:CanvasText;--lc-building:Canvas;--lc-roof:CanvasText;--lc-window:CanvasText;--lc-runoff:CanvasText;--lc-infiltration:CanvasText;forced-color-adjust:none;box-shadow:none}.wc-explorer-root .wc-land-cutaway-features>button,.wc-explorer-root .wc-land-return{forced-color-adjust:none;background:ButtonFace;color:ButtonText;border-color:ButtonText}.wc-explorer-root .wc-land-cutaway-features :is(strong,small,span){color:ButtonText}.wc-explorer-root .wc-land-cutaway :is(h5,p),.wc-explorer-root .wc-land-cutaway-key{color:CanvasText}.wc-explorer-root .wc-land-cutaway :focus,.wc-explorer-root .wc-land-return:focus-visible{outline-color:Highlight}.wc-explorer-root .wc-land-cutaway .wc-lc-soil{fill:Canvas}.wc-explorer-root .wc-land-cutaway .wc-lc-grain{fill:Canvas;stroke:CanvasText}}";
+
   // Read a pore-scale schematic independently of the live water parcel.
+  // A schematic head comparison in one connected, uniform aquifer.
+    // Internal levels position the drawing; they are not measurements or flow rates.
+    var WCGroundwaterFlow = (function() {
+      var rows = [
+        { id:'left-high', label:'Left well is higher', leftHead:3, rightHead:1, leftLabel:'Higher head', rightLabel:'Lower head', direction:'right' },
+        { id:'equal', label:'Both wells are level', leftHead:2, rightHead:2, leftLabel:'Equal head', rightLabel:'Equal head', direction:'still' },
+        { id:'right-high', label:'Right well is higher', leftHead:1, rightHead:3, leftLabel:'Lower head', rightLabel:'Higher head', direction:'left' }
+      ];
+      function own(value, key) {
+        try {
+          if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
+          var field = Object.getOwnPropertyDescriptor(value, key);
+          return field && Object.prototype.hasOwnProperty.call(field, 'value') ? field.value : undefined;
+        } catch (_) { return undefined; }
+      }
+      function descriptor(id) {
+        if (typeof id !== 'string') return null;
+        for (var i=0;i<rows.length;i++) {
+          if (rows[i].id === id) return Object.assign({}, rows[i]);
+        }
+        return null;
+      }
+      function validIdentity(value) { return typeof value === 'string' && value.length > 0; }
+      function validAnswer(value) { return value === 'left' || value === 'right' || value === 'still'; }
+      function slot(raw) {
+        var setup = own(raw, 'setup');
+        if (!descriptor(setup)) return { setup:'left-high', answer:null, checked:false };
+        var answer = own(raw, 'answer');
+        answer = validAnswer(answer) ? answer : null;
+        return { setup:setup, answer:answer, checked:answer !== null && own(raw, 'checked') === true };
+      }
+      function storedCheck(raw) {
+        var record = own(raw, 'check'), identity = own(record, 'identity');
+        if (!validIdentity(identity)) return null;
+        return Object.assign({ identity:identity }, slot(record));
+      }
+      function read(raw, scope, identity) {
+        if (scope !== 'explorer' && scope !== 'check') return null;
+        if (scope === 'explorer') return slot(own(raw, 'explorer'));
+        if (!validIdentity(identity)) return null;
+        var record = storedCheck(raw);
+        return record && record.identity === identity ? slot(record) : slot(null);
+      }
+      function transition(raw, scope, identity, action) {
+        var current = read(raw, scope, identity);
+        if (!current) return null;
+        var next = { explorer:slot(own(raw, 'explorer')), check:storedCheck(raw) };
+        var type = own(action, 'type');
+        if (type === 'setup') {
+          var id = own(action, 'id');
+          if (descriptor(id) && id !== current.setup) current = { setup:id, answer:null, checked:false };
+        } else if (type === 'answer') {
+          var value = own(action, 'value');
+          if (validAnswer(value)) current = { setup:current.setup, answer:value, checked:false };
+        } else if (type === 'check' && current.answer !== null) {
+          current = { setup:current.setup, answer:current.answer, checked:true };
+        }
+        next[scope] = scope === 'check' ? Object.assign({ identity:identity }, current) : current;
+        return next;
+      }
+      return {
+        setups:function() { return rows.map(function(row) { return Object.assign({}, row); }); },
+        descriptor:descriptor, read:read, transition:transition
+      };
+    })();
+    if (typeof window !== 'undefined') window.WaterCycleGroundwaterFlow = WCGroundwaterFlow;
+
+  var WC_GROUNDWATER_FLOW_STYLE = ".wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow{container:groundwater-flow/inline-size;min-width:0;margin:14px 0;border:1px solid var(--gw-line);border-radius:14px;background:var(--gw-paper);color:var(--gw-ink)}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow *{box-sizing:border-box}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow>summary{display:flex;align-items:center;gap:10px;padding:14px;min-height:56px;cursor:pointer;list-style:none;border-radius:13px}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow>summary::-webkit-details-marker{display:none}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow>summary>svg{width:30px;height:30px;flex:none;stroke:var(--gw-accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow>summary>span{display:grid;gap:3px;min-width:0}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow>summary strong{font-size:15px;line-height:1.4}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow>summary small{font-size:13px;line-height:1.5;color:var(--gw-muted)}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow>summary::after{content:'+';margin-left:auto;flex:none;display:grid;place-items:center;width:26px;height:26px;border:1px solid var(--gw-line);border-radius:7px;color:var(--gw-accent);font-size:19px;font-weight:800}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow[open]>summary::after{content:'−'}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow>summary:hover{background:var(--gw-tint)}\n.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-body{padding:12px 14px 14px;min-width:0}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-intro{margin:0 0 14px;font-size:14px;line-height:1.6}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-setups{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 16px}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow button{min-width:0;min-height:44px;padding:10px;border:1px solid var(--gw-line);border-radius:10px;background:var(--gw-paper);color:var(--gw-ink);font:inherit;font-size:14px;line-height:1.5;font-weight:700;text-align:left;white-space:normal;word-break:normal;overflow-wrap:normal;cursor:pointer}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow button:hover:not(:disabled){background:var(--gw-tint);border-color:var(--gw-accent)}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow button[aria-pressed=true]{padding:9px;border:2px solid var(--gw-accent);background:var(--gw-tint)}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow button:disabled{opacity:1;cursor:default;color:var(--gw-muted);background:var(--gw-tint)}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow :is(button,summary):focus-visible,.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow [tabindex='-1']:focus{outline:3px solid var(--gw-accent);outline-offset:3px}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-setups button{display:grid;gap:5px;align-content:start}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-setups button>small{font-size:13px;font-weight:500;line-height:1.5;color:var(--gw-muted)}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-selection{font-size:13px;color:var(--gw-accent);font-weight:700}\n.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-workspace{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;align-items:start}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-figure{margin:0;padding:14px;border:1px solid var(--gw-line);border-radius:12px;background:var(--gw-tint);min-width:0}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-figure h5{font-size:18px;line-height:1.4;margin:0 0 12px}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-well-readings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:10px}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-well-readings>div{display:grid;gap:4px;text-align:center;padding:10px 6px;background:var(--gw-paper);border:1px solid var(--gw-line);border-radius:9px;min-width:0}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-well-readings strong{font-size:14px;line-height:1.5}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-well-readings small{font-size:13px;line-height:1.5;color:var(--gw-muted)}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-diagram{display:block;width:100%;height:auto;max-height:290px;aspect-ratio:32/21;margin:12px 0;overflow:visible}.wc-gwf-soil{fill:var(--gw-soil);stroke:var(--gw-line);stroke-width:1.5}.wc-gwf-water{fill:var(--gw-water)}.wc-gwf-grain{fill:var(--gw-grain);stroke:var(--gw-grain-line);stroke-width:2}.wc-gwf-hatch{fill:none;stroke:var(--gw-grain-line);stroke-width:1.7;stroke-linecap:round}.wc-gwf-table{fill:none;stroke:var(--gw-grain-line);stroke-width:3;stroke-dasharray:5 5}.wc-gwf-well{fill:var(--gw-air);stroke:var(--gw-ink);stroke-width:2}.wc-gwf-level{stroke:var(--gw-grain-line);stroke-width:4;stroke-linecap:round}.wc-gwf-screen{fill:none;stroke:var(--gw-ink);stroke-width:2}.wc-gwf-head-measure{fill:none;stroke:var(--gw-ink);stroke-width:2;stroke-linecap:round}.wc-gwf-reference{stroke:var(--gw-ink);stroke-width:2;stroke-dasharray:3 4}.wc-gwf-arrow{fill:none;stroke:var(--gw-air);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}\n.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-key{display:grid;gap:8px;margin:10px 0 0;padding:0;list-style:none}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-key li{display:flex;align-items:start;gap:8px;font-size:13px;line-height:1.5;color:var(--gw-ink)}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-key i{width:24px;flex:none;display:block;margin-top:9px;border-top:3px dashed var(--gw-ink)}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-key i[data-key=screen]{height:14px;margin-top:3px;border:1px solid var(--gw-ink);background:repeating-linear-gradient(0deg,transparent,transparent 3px,var(--gw-ink) 3px,var(--gw-ink) 4px)}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-reading-note{font-size:13px;line-height:1.55;margin:12px 0 0;color:var(--gw-muted)}\n.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-inquiry{padding:14px;border:1px solid var(--gw-line);border-radius:12px;min-width:0}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-question{margin:0;padding:0;border:0;min-width:0}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-question legend{padding:0 0 12px;font-size:15px;line-height:1.5;font-weight:800}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-answers{display:grid;gap:8px}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-check{margin:12px 0 0;width:100%;text-align:center}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-feedback{margin-top:16px;padding-top:14px;border-top:1px solid var(--gw-line)}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-feedback h6{margin:0 0 10px;font-size:16px;line-height:1.5}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-feedback p{margin:0 0 10px;font-size:14px;line-height:1.6}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-feedback p:last-child{margin-bottom:0}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-no-flow{padding:10px;border:1px solid var(--gw-line);border-radius:8px;background:var(--gw-paper);margin:10px 0 0;font-size:14px;line-height:1.5;font-weight:700}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-footer{margin:16px 0 0;padding-top:14px;border-top:1px solid var(--gw-line);font-size:13px;line-height:1.6;color:var(--gw-muted)}\n@container groundwater-flow (max-width:650px){.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-workspace{grid-template-columns:minmax(0,1fr)}}\n@container groundwater-flow (max-width:340px){.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-body{padding:12px 10px 10px}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-setups{grid-template-columns:minmax(0,1fr)}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-figure,.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-inquiry{padding:10px}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-well-readings{gap:6px}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-well-readings>div{padding:9px 5px}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-figure h5{font-size:16px}}\n@container groundwater-flow (max-width:220px){.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-well-readings{grid-template-columns:minmax(0,1fr)}}\n@media(forced-colors:active){.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow{color:CanvasText;background:Canvas;border-color:CanvasText}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-soil{fill:Canvas;stroke:CanvasText}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-water{forced-color-adjust:none;fill:Highlight}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-grain{fill:Canvas;stroke:CanvasText}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-hatch{stroke:CanvasText}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-table{stroke:CanvasText}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-well{fill:Canvas;stroke:CanvasText}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow .wc-gwf-arrow{forced-color-adjust:none;stroke:HighlightText}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow button[aria-pressed=true]{forced-color-adjust:none;background:Canvas;color:CanvasText;border-color:Highlight}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow button[aria-pressed=true] :is(small,span){color:CanvasText}.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow :is(button,summary):focus-visible,.wc-explorer-root .wc-groundwater-lens .wc-groundwater-flow [tabindex='-1']:focus{outline-color:Highlight}}\n\n/* Protected child layout */\n.wc-groundwater-lens .wc-groundwater-flow>summary{display:flex!important;grid-template-columns:none!important;grid-template-rows:none!important;align-items:center!important;justify-content:flex-start!important;gap:10px!important}\n.wc-groundwater-lens .wc-groundwater-flow>summary>svg{width:30px!important;height:30px!important;min-width:30px!important;max-width:30px!important;flex:0 0 30px!important;grid-column:auto!important;justify-self:auto!important}\n.wc-groundwater-lens .wc-groundwater-flow>summary>span{display:grid!important;flex:1 1 0!important;min-width:0!important;width:auto!important;grid-column:auto!important;justify-self:stretch!important;white-space:normal!important}\n.wc-groundwater-lens .wc-groundwater-flow>summary::after{flex:0 0 26px;grid-column:auto;justify-self:auto}\n@container groundwater-flow (max-width:250px){.wc-groundwater-lens .wc-groundwater-flow>summary>svg{display:none!important}}\n.wc-gwf-head-halo{fill:none;stroke:var(--gw-air);stroke-width:5;stroke-linecap:round;vector-effect:non-scaling-stroke}\n.wc-gwf-head-measure,.wc-gwf-level{fill:none;stroke:var(--gw-ink);stroke-width:2;vector-effect:non-scaling-stroke}\n.wc-groundwater-lens.is-contrast .wc-groundwater-flow,.wc-explorer-root[data-visual-contrast=true] .wc-groundwater-flow{--gw-paper:#000;--gw-tint:#000;--gw-ink:#fff;--gw-muted:#fff;--gw-line:#fff;--gw-accent:#ff0;--gw-water:#ff0;--gw-air:#000;--gw-grain:#aaa;--gw-grain-line:#000;--gw-soil:#333;background:var(--gw-paper)!important;color:var(--gw-ink)!important}\n.wc-groundwater-lens.is-contrast .wc-groundwater-flow :is(h5,h6,p,legend,figcaption,strong,small,span,li,button),.wc-explorer-root[data-visual-contrast=true] .wc-groundwater-flow :is(h5,h6,p,legend,figcaption,strong,small,span,li,button){color:var(--gw-ink)!important}\n.wc-groundwater-lens.is-contrast .wc-groundwater-flow button,.wc-groundwater-lens.is-contrast .wc-groundwater-flow button:hover,.wc-groundwater-lens.is-contrast .wc-groundwater-flow button:focus,.wc-explorer-root[data-visual-contrast=true] .wc-groundwater-flow button,.wc-explorer-root[data-visual-contrast=true] .wc-groundwater-flow button:hover,.wc-explorer-root[data-visual-contrast=true] .wc-groundwater-flow button:focus{background:var(--gw-paper)!important;color:var(--gw-ink)!important;border-color:var(--gw-line)}\n.wc-groundwater-lens.is-contrast .wc-groundwater-flow button[aria-pressed=true],.wc-explorer-root[data-visual-contrast=true] .wc-groundwater-flow button[aria-pressed=true]{border-color:var(--gw-accent)!important;outline:1px solid var(--gw-accent);outline-offset:2px}\n@media(forced-colors:active){.wc-groundwater-flow,.wc-groundwater-lens.is-contrast .wc-groundwater-flow,.wc-explorer-root[data-visual-contrast=true] .wc-groundwater-flow{--gw-paper:Canvas;--gw-tint:Canvas;--gw-ink:CanvasText;--gw-muted:CanvasText;--gw-line:CanvasText;--gw-accent:Highlight;--gw-water:Highlight;--gw-air:Canvas;--gw-grain:Canvas;--gw-grain-line:CanvasText;--gw-soil:Canvas}.wc-gwf-head-halo{stroke:Canvas}.wc-gwf-head-measure,.wc-gwf-level{stroke:CanvasText}}\n";
+
   var WCGroundwaterLens = (function() {
     var parts = [
       { id: 'soil', label: 'Soil pore water', title: 'Air and water share pore space', condition: 'Unsaturated soil', reading: 'Some spaces contain air; others hold liquid water or water films.', detail: 'Water entering soil is infiltration. It can remain as soil water, move toward roots, evaporate, or continue deeper.', look: 'Find water beside air between the solid grains. Unsaturated does not mean completely dry.' },
@@ -1432,6 +1735,8 @@
   WC_GROUNDWATER_LENS_STYLE += ".wc-groundwater-lens{--gw-grain-line:#062b35}.wc-groundwater-lens.is-dark{--gw-grain-line:#102c37}.wc-groundwater-lens.is-contrast{--gw-grain-line:#111}.wc-groundwater-lens .wc-gw-pore-dot{fill:var(--gw-ink)}.wc-groundwater-lens .wc-gw-swatch[data-material=grain]{background:repeating-linear-gradient(135deg,var(--gw-grain),var(--gw-grain) 3px,var(--gw-grain-line) 3px,var(--gw-grain-line) 4px)}.wc-groundwater-lens .wc-gw-boundary{stroke:var(--gw-grain-line)}.wc-groundwater-lens[data-gw-part=boundary] .wc-gw-outline{stroke:var(--gw-grain-line)}.wc-groundwater-lens[data-gw-part=groundwater] .wc-gw-outline{stroke:var(--gw-air)}@media(forced-colors:active){.wc-groundwater-lens .wc-gw-boundary{stroke:Canvas!important}.wc-groundwater-lens[data-gw-part=boundary] .wc-gw-outline{stroke:Canvas!important}}\n";
   WC_GROUNDWATER_LENS_STYLE += ".wc-groundwater-lens .wc-gw-swatch[data-material=air]{border-color:var(--gw-ink)}\n";
   WC_GROUNDWATER_LENS_STYLE += ".wc-explorer-root .wc-groundwater-lens.wc-check-pores [tabindex='-1']:focus{outline:3px solid var(--gw-accent);outline-offset:3px;border-radius:5px}\n";
+
+  WC_GROUNDWATER_LENS_STYLE += ".wc-explorer-root .wc-chapter-card>.wc-groundwater-lens{grid-column:1/-1}\n.wc-groundwater-lens .wc-gw-content{padding:0 12px 14px}\n.wc-groundwater-lens .wc-gw-options{gap:8px;margin:12px 0}\n.wc-groundwater-lens .wc-gw-reading{margin-top:0;padding:12px;background:var(--gw-tint);border-left:4px solid var(--gw-accent)}\n.wc-groundwater-lens .wc-gw-reading>p{margin-top:8px;line-height:1.55}\n.wc-groundwater-lens .wc-gw-diagrams{gap:12px;margin-top:12px;align-items:stretch}\n.wc-groundwater-lens .wc-gw-diagrams>figure{padding:12px;background:var(--gw-paper)}\n.wc-groundwater-lens .wc-gw-diagrams figcaption{padding-bottom:8px;border-bottom:1px solid var(--gw-line)}\n.wc-explorer-root .wc-groundwater-lens .wc-gw-diagrams svg.wc-gw-pore-view{height:auto;aspect-ratio:26/21;max-height:300px}\n.wc-groundwater-lens .wc-gw-layer-labels>div{cursor:default;border-radius:0}\n.wc-groundwater-lens .wc-gw-context{margin-top:12px;padding:0 10px;border:1px solid var(--gw-line);border-radius:10px;background:var(--gw-paper)}\n.wc-groundwater-lens .wc-gw-context>summary{display:list-item;list-style:revert;min-height:44px;padding:10px 0;font-size:14px;font-weight:800;cursor:pointer}\n.wc-groundwater-lens .wc-gw-context>p{margin:0 0 12px;line-height:1.6}\n.wc-groundwater-lens .wc-gw-context+details.wc-gw-check{margin-top:10px}\n.wc-groundwater-lens .wc-gw-announcement{position:absolute;width:1px;height:1px;padding:0;margin:-1px!important;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}\n@container groundwater-lens (max-width:300px){.wc-groundwater-lens .wc-gw-content{padding-inline:8px}.wc-groundwater-lens .wc-gw-diagrams>figure{padding:8px}.wc-groundwater-lens .wc-gw-reading{padding:10px}.wc-groundwater-lens .wc-gw-cutaway{grid-template-columns:82px minmax(0,1fr);gap:8px;align-items:center;justify-items:stretch}.wc-explorer-root .wc-groundwater-lens .wc-gw-cutaway>svg{width:82px;height:auto;aspect-ratio:4/7}.wc-groundwater-lens .wc-gw-cutaway .wc-gw-layer-labels{width:100%;grid-template-columns:minmax(0,1fr);grid-template-rows:repeat(3,minmax(44px,auto));gap:2px}.wc-groundwater-lens .wc-gw-layer-labels>div{padding:6px;border-top:0;border-left:3px solid var(--gw-line);align-items:center;font-size:13px;line-height:1.45}.wc-groundwater-lens .wc-gw-layer-labels>div[data-active=true]{border-left-color:var(--gw-accent);background:var(--gw-tint)}}\n@container groundwater-lens (max-width:190px){.wc-groundwater-lens .wc-gw-cutaway{grid-template-columns:minmax(0,1fr);justify-items:center}.wc-explorer-root .wc-groundwater-lens .wc-gw-cutaway>svg{width:100%;max-width:120px}.wc-groundwater-lens .wc-gw-cutaway .wc-gw-layer-labels{grid-template-rows:repeat(3,minmax(44px,auto))}}\n@media(max-width:480px){.wc-explorer-root .wc-chapter-card>.wc-groundwater-lens{margin-inline:-8px}}\n@media(forced-colors:active){.wc-groundwater-lens .wc-gw-reading{border-left-color:Highlight}.wc-groundwater-lens .wc-gw-context{background:Canvas;border-color:CanvasText}.wc-groundwater-lens .wc-gw-context>summary{color:CanvasText}.wc-groundwater-lens .wc-gw-layer-labels>div[data-active=true]{border-left-color:Highlight!important}}";
   // Compare fixed positions in the existing precipitation model without moving the chamber.
   var WCStormMoments = (function() {
     var stageItems = [
@@ -1534,7 +1839,13 @@
     return { stages: function() { return catalog(stageItems); }, metrics: function() { return catalog(metricItems); }, choices: function() { return catalog(answerItems); },
       build: build, compare: compare, read: read, selectStage: selectMomentStage, selectMetric: selectMetric, answer: answer, currentCopy: currentCopy };
   })();
-  var WC_STORM_MOMENTS_STYLE = ".wc-precip-lab {container:storm-lab / inline-size}\n.wc-storm-lifecycle {\n  --sm-paper:#f4fbfd; --sm-card:#fff; --sm-tint:#e8f2f5; --sm-ink:#173f4c;\n  --sm-muted:#3b626f; --sm-line:#6f939f; --sm-focus:#0b6579;\n  --sm-activity:#126680; --sm-ground:#276849; --sm-cloud:#d5e6ee; --sm-cloud-line:#153f4c;\n  container:storm-lifecycle / inline-size;\n}\n.dark .wc-storm-lifecycle,.wc-storm-moments.is-dark {\n  --sm-paper:#112c37; --sm-card:#173743; --sm-tint:#1d424e; --sm-ink:#f0fbff;\n  --sm-muted:#c7dfe8; --sm-line:#668a96; --sm-focus:#7ae4e8;\n  --sm-activity:#73cde7; --sm-ground:#a7d5ac; --sm-cloud:#345a6b; --sm-cloud-line:#edfafe;\n}\n.wc-storm-moments.is-contrast {\n  --sm-paper:#fff; --sm-card:#fff; --sm-tint:#fff; --sm-ink:#111;\n  --sm-muted:#222; --sm-line:#111; --sm-focus:#005369;\n  --sm-activity:#005d79; --sm-ground:#205638; --sm-cloud:#e4e4e4; --sm-cloud-line:#111;\n}\n.wc-precip-lab .wc-storm-lifecycle {\n  padding:16px; border:1px solid var(--sm-line); border-radius:16px;\n  background:var(--sm-paper); color:var(--sm-ink); min-width:0;\n}\n.wc-precip-lab .wc-storm-lifecycle-head {font-size:14px;gap:8px;flex-wrap:wrap;color:var(--sm-ink)}\n.wc-precip-lab .wc-storm-lifecycle-head>strong {font-size:16px;line-height:1.4}\n.wc-precip-lab #wcStormLifecycleTitle {color:var(--sm-ink)}\n.wc-precip-lab .wc-storm-lifecycle-head>span {font-size:13px;color:var(--sm-muted)}\n.wc-precip-lab .wc-storm-lifecycle .wc-precip-btn {\n  min-height:44px;font-size:14px;line-height:1.4;white-space:normal;\n  background:var(--sm-card);color:var(--sm-ink);border-color:var(--sm-line);\n}\n.wc-precip-lab .wc-storm-lifecycle .wc-precip-btn.is-primary {background:var(--sm-focus);color:var(--sm-paper);border-color:var(--sm-focus)}\n.wc-precip-lab .wc-storm-lifecycle .wc-storm-stage-segments button[aria-pressed=true] {background:var(--sm-tint);color:var(--sm-ink);border:2px solid var(--sm-focus)}\n.wc-precip-lab .wc-storm-stage-segments {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}\n.wc-precip-lab .wc-storm-time-row {display:grid;grid-template-columns:1fr;gap:10px}\n.wc-precip-lab .wc-storm-time-row label {min-width:0}\n.wc-precip-lab .wc-storm-time-head {font-size:14px;line-height:1.5;color:var(--sm-ink);display:block}\n.wc-precip-lab .wc-storm-time-row input[type=range] {width:100%;min-height:44px;accent-color:var(--sm-focus)}\n.wc-precip-lab .wc-storm-playback {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;width:100%}\n.wc-precip-lab .wc-storm-stage-copy {font-size:14px;line-height:1.6;color:var(--sm-ink);margin:12px 0}\n.wc-precip-lab .wc-storm-accumulation {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,110px),1fr));gap:8px}\n.wc-precip-lab .wc-storm-accumulation-item {min-width:0;padding:9px;background:var(--sm-card);border-radius:8px}\n.wc-precip-lab .wc-storm-accumulation-item>span {font-size:13px;line-height:1.4;color:var(--sm-muted)}\n.wc-precip-lab .wc-storm-accumulation-item>strong {font-size:14px;color:var(--sm-ink)}\n.wc-precip-lab .wc-storm-accumulation-track {height:8px;background:var(--sm-tint);border:1px solid var(--sm-line)}\n.wc-precip-lab .wc-storm-accumulation-track i {background:var(--sm-ground)}\n.wc-storm-moments {margin-top:16px;border-top:1px solid var(--sm-line);color:var(--sm-ink);font-size:14px;line-height:1.6;min-width:0}\n.wc-storm-moments>summary {display:list-item;list-style:revert;min-height:44px;padding:12px 0;cursor:pointer;font-size:16px;font-weight:800;color:var(--sm-ink)}\n.wc-sm-body {min-width:0;padding-top:2px}\n.wc-precip-lab .wc-storm-moments p {font-size:14px;line-height:1.6;color:var(--sm-ink);margin:10px 0}\n.wc-sm-controls {margin:16px 0;display:grid;gap:6px}\n.wc-sm-controls label {font-size:14px;font-weight:750;color:var(--sm-ink)}\n.wc-precip-lab .wc-storm-moments select {width:100%;min-height:44px;font:inherit;padding:8px 10px;border:1px solid var(--sm-line);border-radius:9px;background:var(--sm-card);color:var(--sm-ink)}\n.wc-precip-lab .wc-storm-moments .wc-sm-scale-note {font-size:13px;color:var(--sm-muted);margin:5px 0}\n.wc-sm-cards {display:grid;grid-template-columns:1fr;gap:12px}\n.wc-sm-card {min-width:0;padding:12px;border:1px solid var(--sm-line);border-radius:14px;background:var(--sm-card);box-shadow:0 8px 20px #18394a0a}\n.wc-sm-card[data-selected=true] {border:2px solid var(--sm-focus);padding:11px;background:var(--sm-tint)}\n.wc-precip-lab .wc-storm-moments button {min-height:44px;width:100%;font:inherit;font-weight:750;line-height:1.45;white-space:normal;border:1px solid var(--sm-line);border-radius:9px;padding:8px 10px;background:var(--sm-card);color:var(--sm-ink);cursor:pointer}\n.wc-precip-lab .wc-storm-moments button[aria-pressed=true] {border:2px solid var(--sm-focus);background:var(--sm-tint)}\n.wc-precip-lab .wc-storm-moments .wc-sm-stage-button {display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;min-height:72px;text-align:left}\n.wc-sm-stage-button>span:first-child {font-size:15px}\n.wc-sm-stage-button>span:last-child {font-size:13px;font-weight:600;white-space:nowrap}\n.wc-sm-scene {display:block;width:100%;height:104px;margin:8px 0;background:radial-gradient(ellipse at 50% 30%,var(--sm-tint),var(--sm-card) 75%);border-radius:9px}\n.wc-sm-cloud {fill:var(--sm-cloud);stroke:var(--sm-cloud-line);stroke-width:2;vector-effect:non-scaling-stroke}\n.wc-sm-particle {fill:var(--sm-activity);stroke:var(--sm-activity);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}\n.wc-sm-ground-line {stroke:var(--sm-ground);stroke-width:3;vector-effect:non-scaling-stroke}\n.wc-sm-lightning {fill:none;stroke:var(--sm-cloud-line);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}\n.wc-sm-readouts {margin:0;display:grid;gap:10px}\n.wc-sm-readouts>div {min-width:0}\n.wc-sm-readouts dt {font-size:13px;color:var(--sm-muted);line-height:1.4;margin:0 0 3px}\n.wc-sm-readouts dd {display:flex;justify-content:space-between;gap:5px;font-size:14px;font-weight:750;color:var(--sm-ink);margin:0 0 4px}\n.wc-sm-track {height:10px;border:1px solid var(--sm-line);border-radius:4px;background:var(--sm-card);overflow:hidden}\n.wc-sm-track>span {display:block;height:100%;background:var(--sm-activity)}\n.wc-sm-track[data-track=ground]>span {background:repeating-linear-gradient(135deg,var(--sm-ground),var(--sm-ground) 4px,var(--sm-card) 4px,var(--sm-card) 6px)}\n.wc-precip-lab .wc-storm-moments .wc-sm-phase {font-size:13px;line-height:1.5;margin:10px 0 0;color:var(--sm-muted)}\n.wc-sm-phase strong,.wc-sm-phase span {display:block}\n.wc-sm-reading {margin-top:16px;border:1px solid var(--sm-line);border-radius:12px;padding:14px;background:var(--sm-tint)}\n.wc-precip-lab .wc-storm-moments h4 {font-size:18px;line-height:1.4;margin:0;color:var(--sm-ink)}\n.wc-precip-lab .wc-storm-moments h5 {font-size:16px;line-height:1.4;margin:0;color:var(--sm-ink)}\n.wc-sm-reading dl {margin:10px 0;display:grid;gap:8px}\n.wc-sm-reading dl>div {display:grid;gap:2px}\n.wc-sm-reading dt {font-size:13px;color:var(--sm-muted)}\n.wc-sm-reading dd {margin:0;font-size:14px;color:var(--sm-ink);font-weight:650}\n.wc-sm-question {margin-top:16px;padding-top:4px;border-top:1px solid var(--sm-line)}\n.wc-sm-question>summary {display:list-item;list-style:revert;min-height:44px;padding:12px 0;cursor:pointer;font-size:14px;font-weight:750}\n.wc-sm-answers {display:grid;gap:8px;margin:12px 0}\n.wc-sm-answers button {text-align:left}\n.wc-precip-lab .wc-storm-moments button:disabled {opacity:1;cursor:default;color:var(--sm-muted)}\n.wc-sm-feedback {padding:12px;border-left:3px solid var(--sm-focus);border-radius:0 10px 10px 0;background:var(--sm-tint)}\n.wc-precip-lab .wc-storm-moments .wc-sm-limit {font-size:13px;line-height:1.6;color:var(--sm-muted);margin-top:14px}\n.wc-precip-lab .wc-storm-moments a {display:inline-flex;align-items:center;min-height:44px;color:var(--sm-focus);text-decoration:underline;text-underline-offset:3px}\n.wc-precip-lab .wc-storm-lifecycle :is(button,input,select,summary,a):focus-visible,\n.wc-precip-lab .wc-storm-moments [tabindex='-1']:focus {outline:3px solid var(--sm-focus);outline-offset:3px;border-radius:5px}\n@container storm-lab (max-width:820px) {\n  .wc-precip-lab .wc-precip-layout {grid-template-columns:minmax(0,1fr)}\n  .wc-precip-lab .wc-precip-controls {grid-template-columns:repeat(2,minmax(0,1fr))}\n  .wc-precip-lab .wc-precip-control-group:last-child {grid-column:1/-1}\n  .wc-precip-lab .wc-precip-head-actions {width:100%}\n}\n@container storm-lab (max-width:560px) {\n  .wc-precip-lab .wc-precip-controls,.wc-precip-lab .wc-precip-metrics,\n  .wc-precip-lab .wc-precip-notebook-body,.wc-precip-lab .wc-precip-select-grid {grid-template-columns:minmax(0,1fr)}\n  .wc-precip-lab .wc-precip-control-group:last-child {grid-column:auto}\n  .wc-precip-lab .wc-precip-canvas {height:290px}\n}\n@container storm-lifecycle (min-width:620px) {.wc-sm-cards{grid-template-columns:repeat(3,minmax(0,1fr))}}\n@container storm-lifecycle (max-width:330px) {\n  .wc-precip-lab .wc-storm-stage-segments {grid-template-columns:1fr}\n  .wc-precip-lab .wc-storm-playback {grid-template-columns:1fr}\n  .wc-sm-stage-button {flex-wrap:wrap}\n}\n@media(forced-colors:active) {\n  .wc-storm-lifecycle,.wc-storm-moments {\n    --sm-paper:Canvas!important;--sm-card:Canvas!important;--sm-tint:Canvas!important;\n    --sm-ink:CanvasText!important;--sm-muted:CanvasText!important;--sm-line:CanvasText!important;\n    --sm-focus:Highlight!important;--sm-activity:Highlight!important;--sm-ground:CanvasText!important;\n    --sm-cloud:Canvas!important;--sm-cloud-line:CanvasText!important;forced-color-adjust:none;\n  }\n  .wc-precip-lab .wc-storm-lifecycle .wc-precip-btn,.wc-precip-lab .wc-storm-moments button,.wc-precip-lab .wc-storm-moments select {background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}\n  .wc-precip-lab .wc-storm-lifecycle .wc-precip-btn.is-primary {background:Highlight!important;color:HighlightText!important}\n  .wc-sm-scene {background:Canvas;box-shadow:none}\n  .wc-sm-card {box-shadow:none}\n}\n";
+  var WC_LIGHTNING_STUDY_STYLE = ".wc-precip-lab .wc-storm-anatomy {\n  --ls-paper:#f2f8fa;--ls-card:#fff;--ls-ink:#173e4c;--ls-muted:#476470;--ls-line:#8ba7b2;\n  --ls-accent:#096b83;--ls-tint:#e3f2f6;--ls-charge:#8a5c10;--ls-cloud:#d9eaf1;--ls-land:#dcece4;\n  margin-top:16px;padding:16px;border:1px solid var(--ls-line);border-radius:18px;background:var(--ls-paper);color:var(--ls-ink);\n}\n.wc-precip-lab [data-wc-storm-readout-theme=dark] .wc-storm-anatomy {\n  --ls-paper:#102d39;--ls-card:#193c49;--ls-ink:#f0faff;--ls-muted:#c8dfe7;--ls-line:#7497a6;\n  --ls-accent:#85dcec;--ls-tint:#234d5c;--ls-charge:#f0cd85;--ls-cloud:#294f60;--ls-land:#294f48;\n}\n.wc-precip-lab [data-wc-storm-readout-theme=contrast] .wc-storm-anatomy {\n  --ls-paper:#fff;--ls-card:#fff;--ls-ink:#111;--ls-muted:#222;--ls-line:#111;\n  --ls-accent:#005269;--ls-tint:#f2f5f5;--ls-charge:#694600;--ls-cloud:#edf0f2;--ls-land:#edf1ee;\n}\n.wc-precip-lab .wc-storm-anatomy .wc-storm-anatomy-head {gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}\n.wc-precip-lab .wc-storm-anatomy .wc-storm-anatomy-head h4 {font-size:20px;line-height:1.2;letter-spacing:-.02em;color:var(--ls-ink)}\n.wc-precip-lab .wc-storm-anatomy .wc-storm-anatomy-head>span {font-size:11px;line-height:1.4;color:var(--ls-muted)}\n.wc-precip-lab .wc-storm-anatomy>p {font-size:13px;line-height:1.55;color:var(--ls-muted);margin:7px 0}\n.wc-precip-lab .wc-storm-anatomy .wc-storm-anatomy-readouts {grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:16px}\n.wc-precip-lab .wc-storm-anatomy .wc-storm-anatomy-readouts>div {padding:10px;background:var(--ls-card);border:1px solid var(--ls-line);border-radius:10px;min-width:0}\n.wc-precip-lab .wc-storm-anatomy .wc-storm-anatomy-readouts dt {font-size:11px;color:var(--ls-muted);line-height:1.4}\n.wc-precip-lab .wc-storm-anatomy .wc-storm-anatomy-readouts dd {margin:4px 0 0;font-size:19px;color:var(--ls-ink);font-weight:800;font-variant-numeric:tabular-nums}\n.wc-precip-lab .wc-lightning-study.wc-ls {container:lightning-study / inline-size;margin:17px 0 0;padding:16px 0 0;border:0;border-top:1px solid var(--ls-line);border-radius:0;background:transparent;color:var(--ls-ink)}\n.wc-precip-lab .wc-ls * {box-sizing:border-box}\n.wc-precip-lab .wc-ls p {font-size:13px;line-height:1.55;color:var(--ls-muted);margin:0}\n.wc-precip-lab .wc-ls .wc-ls-head {display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}\n.wc-precip-lab .wc-ls .wc-ls-kicker {font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}\n.wc-precip-lab .wc-ls h5 {font-size:20px;line-height:1.2;letter-spacing:-.02em;margin:0;color:var(--ls-ink)}\n.wc-precip-lab .wc-ls .wc-ls-auto {min-height:44px;padding:9px 12px;border:1px solid var(--ls-line);border-radius:10px;background:var(--ls-card);color:var(--ls-ink);font-size:12px;font-weight:750;cursor:pointer}\n.wc-precip-lab .wc-ls .wc-ls-auto[aria-pressed=true] {background:var(--ls-accent);border-color:var(--ls-accent);color:var(--ls-card)}\n.wc-precip-lab .wc-ls .wc-ls-intro {margin:12px 0}\n.wc-precip-lab .wc-ls .wc-ls-steps {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;list-style:none;margin:0;padding:0}\n.wc-precip-lab .wc-ls .wc-ls-steps li {min-width:0;margin:0;padding:0;display:flex}\n.wc-precip-lab .wc-ls .wc-ls-step {display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:8px;min-height:100px;width:100%;padding:10px;text-align:left;font-size:12px;line-height:1.35;font-weight:750;background:var(--ls-card);color:var(--ls-ink);border:1px solid var(--ls-line);border-radius:11px;box-shadow:none;cursor:pointer}\n.wc-precip-lab .wc-ls .wc-ls-step .wc-ls-number {display:grid;place-items:center;width:27px;height:27px;flex:0 0 27px;border:1px solid var(--ls-line);border-radius:50%;background:var(--ls-tint);color:var(--ls-ink);font-size:12px;font-weight:800}\n.wc-precip-lab .wc-ls .wc-ls-step small {font-size:10px;font-weight:600;line-height:1.35;color:var(--ls-muted)}\n.wc-precip-lab .wc-ls .wc-ls-step[data-ls-available=false] {border-style:dashed}\n.wc-precip-lab .wc-ls .wc-ls-step:hover,.wc-precip-lab .wc-ls .wc-ls-auto:hover {border-color:var(--ls-accent);background:var(--ls-tint);color:var(--ls-ink)}\n.wc-precip-lab .wc-ls .wc-ls-step[aria-pressed=true] {border:2px solid var(--ls-accent);padding:9px;background:var(--ls-tint);color:var(--ls-ink);box-shadow:inset 0 -3px 0 var(--ls-accent)}\n.wc-precip-lab .wc-ls .wc-ls-step[aria-pressed=true] .wc-ls-number {background:var(--ls-accent);border-color:var(--ls-accent);color:var(--ls-card)}\n.wc-precip-lab .wc-ls .wc-ls-availability {font-size:11px;margin-top:9px}\n.wc-precip-lab .wc-ls .wc-ls-status {margin:14px 0 10px;font-size:12px;font-weight:750;color:var(--ls-ink)}\n.wc-precip-lab .wc-ls .wc-ls-detail {display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:16px;padding:14px;background:var(--ls-card);border:1px solid var(--ls-line);border-radius:13px}\n.wc-precip-lab .wc-ls[data-ls-state=unavailable] .wc-ls-detail {grid-template-columns:1fr}\n.wc-precip-lab .wc-ls .wc-ls-figure {margin:0;min-width:0;align-self:start}\n.wc-precip-lab .wc-ls svg {display:block;width:100%;height:auto;border:1px solid var(--ls-line);border-radius:10px;background:var(--ls-paper);color:var(--ls-ink)}\n.wc-precip-lab .wc-ls .wc-ls-cloud {fill:var(--ls-cloud);stroke:var(--ls-line);stroke-width:1.5}\n.wc-precip-lab .wc-ls .wc-ls-ground {fill:var(--ls-land);stroke:var(--ls-line);stroke-width:1.5}\n.wc-precip-lab .wc-ls .wc-ls-charge circle,.wc-precip-lab .wc-ls .wc-ls-charge path {fill:var(--ls-card);stroke:var(--ls-charge);stroke-width:1.5}\n.wc-precip-lab .wc-ls .wc-ls-charge text,.wc-precip-lab .wc-ls .wc-ls-ground-charge text {fill:var(--ls-charge);font:800 17px system-ui;text-anchor:middle}\n.wc-precip-lab .wc-ls .wc-ls-negative path {stroke:var(--ls-accent)}\n.wc-precip-lab .wc-ls .wc-ls-negative text {fill:var(--ls-accent)}\n.wc-precip-lab .wc-ls .wc-ls-leader {stroke:var(--ls-accent);stroke-width:3.5;stroke-linecap:round}\n.wc-precip-lab .wc-ls .wc-ls-streamer {stroke:var(--ls-charge);stroke-width:4;stroke-linecap:round}\n.wc-precip-lab .wc-ls .wc-ls-channel {stroke:var(--ls-charge);stroke-width:6;stroke-linejoin:round;stroke-linecap:round}\n.wc-precip-lab .wc-ls .wc-ls-arrow {fill:var(--ls-accent);stroke:var(--ls-accent)}\n.wc-precip-lab .wc-ls .wc-ls-wave>circle {stroke:var(--ls-accent);stroke-width:2;stroke-dasharray:5 3}\n.wc-precip-lab .wc-ls .wc-ls-scene-label {fill:var(--ls-muted);font:600 12px system-ui}\n.wc-precip-lab .wc-ls figcaption {font-size:11px;line-height:1.45;margin-top:8px;color:var(--ls-muted)}\n.wc-precip-lab .wc-ls .wc-ls-legend {font-size:11px;margin-top:5px}\n.wc-precip-lab .wc-ls h6 {font-size:16px;line-height:1.3;margin:0 0 10px;color:var(--ls-ink)}\n.wc-precip-lab .wc-ls .wc-lightning-study-copy {font-size:13px;line-height:1.55;margin:0;color:var(--ls-muted);min-height:0}\n.wc-precip-lab .wc-ls .wc-ls-cue,.wc-precip-lab .wc-ls .wc-ls-unavailable {margin-top:14px;padding-top:12px;border-top:1px solid var(--ls-line)}\n.wc-precip-lab .wc-ls strong {font-size:12px;line-height:1.5;color:var(--ls-ink)}\n.wc-precip-lab .wc-ls .wc-ls-cue p,.wc-precip-lab .wc-ls .wc-ls-unavailable p {margin-top:5px}\n.wc-precip-lab .wc-ls .wc-ls-show {min-height:44px;width:100%;margin-top:12px;font-size:12px;border:1px solid var(--ls-accent);background:var(--ls-accent);color:var(--ls-card);white-space:normal}\n.wc-precip-lab .wc-ls .wc-lightning-study-note {font-size:11px;line-height:1.5;margin:12px 0 0;color:var(--ls-muted)}\n.wc-precip-lab .wc-ls .wc-ls-auto-copy {padding:13px;border:1px solid var(--ls-line);border-radius:10px;background:var(--ls-card)}\n.wc-precip-lab .wc-ls :is(button,h5):focus-visible {outline:3px solid var(--ls-accent);outline-offset:4px}\n.wc-precip-lab .wc-ls-return {display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 12px;background:#143c4d;color:#effaff;border-top:1px solid #789bab}\n.wc-precip-lab .wc-ls-return span {font-size:12px;line-height:1.45}\n.wc-precip-lab .wc-ls-return button {min-height:44px;padding:8px 12px;font-size:12px;font-weight:750;border:1px solid #b2d5e0;border-radius:9px;background:#effaff;color:#173e4c}\n.wc-precip-lab .wc-ls-return button:focus-visible,.wc-precip-lab .wc-precip-chamber canvas:focus-visible {outline:3px solid #edc76e;outline-offset:-4px}\n@container lightning-study (max-width:520px) {\n  .wc-precip-lab .wc-ls .wc-ls-steps {grid-template-columns:1fr;gap:6px}\n  .wc-precip-lab .wc-ls .wc-ls-step {display:grid;grid-template-columns:27px minmax(0,1fr);align-items:center;gap:7px 10px;min-height:49px;padding:10px;font-size:13px}\n  .wc-precip-lab .wc-ls .wc-ls-step[aria-pressed=true] {padding:9px}\n  .wc-precip-lab .wc-ls .wc-ls-step small {grid-column:2}\n  .wc-precip-lab .wc-ls .wc-ls-detail {grid-template-columns:1fr;gap:14px;padding:12px}\n  .wc-precip-lab .wc-ls .wc-ls-figure {width:100%;max-width:320px;justify-self:center}\n}\n@media(forced-colors:active) {\n  .wc-precip-lab [data-wc-storm-readout-theme] .wc-storm-anatomy {--ls-paper:Canvas;--ls-card:Canvas;--ls-ink:CanvasText;--ls-muted:CanvasText;--ls-line:CanvasText;--ls-accent:LinkText;--ls-tint:Canvas;--ls-charge:CanvasText;--ls-cloud:Canvas;--ls-land:Canvas}\n  .wc-precip-lab .wc-ls svg {forced-color-adjust:none}\n  .wc-precip-lab .wc-ls .wc-ls-auto[aria-pressed=true],.wc-precip-lab .wc-ls .wc-ls-show {background:ButtonFace;color:ButtonText;border-color:ButtonText}\n  .wc-precip-lab .wc-ls .wc-ls-auto[aria-pressed=true] {border:2px solid Highlight}\n  .wc-precip-lab .wc-ls .wc-ls-step[aria-pressed=true] .wc-ls-number {background:Canvas;color:CanvasText;border:2px solid Highlight}\n  .wc-precip-lab .wc-ls-return {background:Canvas;color:CanvasText;border-color:CanvasText}\n  .wc-precip-lab .wc-ls-return button {background:ButtonFace;color:ButtonText;border-color:ButtonText}\n  .wc-precip-lab .wc-ls-return button:focus-visible,.wc-precip-lab .wc-precip-chamber canvas:focus-visible {outline-color:Highlight}\n}\n";
+
+  var WC_THUNDER_MEASURE_STYLE = ".wc-precip-lab .wc-thunder-lesson {\n  --tl-ink:#173d49; --tl-muted:#47636c;\n  display:block; margin:16px 0; padding:0; border:0; border-radius:0;\n  background:transparent; color:var(--tl-ink); box-shadow:none;\n}\n.wc-precip-lab [data-wc-storm-readout-theme=dark] .wc-thunder-lesson {--tl-ink:#f0faff;--tl-muted:#c7dce5}\n.wc-precip-lab [data-wc-storm-readout-theme=contrast] .wc-thunder-lesson {--tl-ink:#111;--tl-muted:#222}\n.wc-precip-lab .wc-thunder-lesson>strong {display:block; margin:0 0 7px; font-size:14px; line-height:1.4; color:var(--tl-ink)}\n.wc-precip-lab .wc-thunder-lesson>span {display:block; margin:4px 0; font-size:13px; line-height:1.55; color:var(--tl-muted)}\n@media(forced-colors:active) {\n  .wc-precip-lab .wc-thunder-lesson {--tl-ink:CanvasText;--tl-muted:CanvasText}\n}\n.wc-precip-lab .wc-thunder-measure.wc-tm {\n  --tm-paper:#f5fafb; --tm-card:#fff; --tm-ink:#173d49; --tm-muted:#47636c;\n  --tm-line:#8ba6af; --tm-rail:#deeaef; --tm-model:#815616; --tm-guess:#086981;\n  --tm-soft:#fff0d3; --tm-focus:#075d75;\n  margin:14px 0 0; padding:clamp(14px,3vw,22px); border:1px solid var(--tm-line);\n  border-radius:18px; background:var(--tm-paper); color:var(--tm-ink); min-width:0;\n  font-size:13px; line-height:1.55; box-shadow:0 8px 22px #173d4908;\n}\n.wc-precip-lab .wc-tm.is-dark {\n  --tm-paper:#112e3a; --tm-card:#193b48; --tm-ink:#f0faff; --tm-muted:#c7dce5;\n  --tm-line:#7596a6; --tm-rail:#365562; --tm-model:#efc77b; --tm-guess:#7bd7ec;\n  --tm-soft:#3e3728; --tm-focus:#87e7ec;\n}\n.wc-precip-lab .wc-tm.is-contrast {\n  --tm-paper:#fff; --tm-card:#fff; --tm-ink:#111; --tm-muted:#222; --tm-line:#111;\n  --tm-rail:#fff; --tm-model:#694400; --tm-guess:#005269; --tm-soft:#fff; --tm-focus:#005269;\n}\n.wc-precip-lab .wc-tm * {box-sizing:border-box}\n.wc-precip-lab .wc-tm p {margin:0; color:var(--tm-muted); font-size:13px; line-height:1.55}\n.wc-precip-lab .wc-tm span {display:inline; color:inherit; font-size:inherit; line-height:inherit}\n.wc-precip-lab .wc-tm .wc-tm-head {display:flex; align-items:center; gap:12px; margin-bottom:12px}\n.wc-precip-lab .wc-tm .wc-tm-icon {width:48px; height:48px; flex:0 0 48px; padding:7px; border:1px solid var(--tm-line); border-radius:14px; background:var(--tm-soft); color:var(--tm-model)}\n.wc-precip-lab .wc-tm .wc-tm-kicker {font-size:10px; font-weight:800; letter-spacing:.11em; text-transform:uppercase; color:var(--tm-muted); margin-bottom:3px}\n.wc-precip-lab .wc-tm h4 {font-size:clamp(18px,2vw,21px); line-height:1.2; letter-spacing:-.025em; margin:0; color:var(--tm-ink)}\n.wc-precip-lab .wc-tm .wc-tm-intro {margin-bottom:15px}\n.wc-precip-lab .wc-tm .wc-tm-chart {margin:0; padding:15px; background:var(--tm-card); border:1px solid var(--tm-line); border-radius:12px}\n.wc-precip-lab .wc-tm figcaption {color:var(--tm-ink); font-size:13px; font-weight:800; margin:0 0 15px}\n.wc-precip-lab .wc-tm .wc-tm-lanes {display:grid; gap:18px; margin:0; padding:0}\n.wc-precip-lab .wc-tm .wc-tm-lane-label {display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:3px 10px; margin:0 0 7px; padding:0}\n.wc-precip-lab .wc-tm .wc-tm-lane dt {font-size:12px; font-weight:750; color:var(--tm-ink)}\n.wc-precip-lab .wc-tm .wc-tm-lane dd {margin:0; font-size:17px; line-height:1.2; font-weight:800; font-variant-numeric:tabular-nums; color:var(--tm-model)}\n.wc-precip-lab .wc-tm .wc-tm-lane[data-tm-lane=estimate] dd {color:var(--tm-guess)}\n.wc-precip-lab .wc-tm .wc-tm-rail {height:18px; border:1px solid var(--tm-line); border-radius:4px; position:relative; background-color:var(--tm-rail); background-image:linear-gradient(90deg,transparent calc(100% - 1px),var(--tm-line) 0); background-size:25% 100%}\n.wc-precip-lab .wc-tm .wc-tm-fill {display:block; height:100%; position:relative; background:var(--tm-model); border-radius:3px 0 0 3px}\n.wc-precip-lab .wc-tm .wc-tm-fill b {position:absolute; right:-4px; top:-3px; bottom:-3px; width:8px; border:2px solid var(--tm-card); border-radius:3px; background:var(--tm-model); box-shadow:0 0 0 1px var(--tm-model)}\n.wc-precip-lab .wc-tm [data-tm-lane=estimate] .wc-tm-fill {background:repeating-linear-gradient(135deg,var(--tm-guess) 0 5px,var(--tm-card) 5px 7px)}\n.wc-precip-lab .wc-tm [data-tm-lane=estimate] .wc-tm-fill b {background:var(--tm-guess); box-shadow:0 0 0 1px var(--tm-guess)}\n.wc-precip-lab .wc-tm .wc-tm-axis {display:flex; justify-content:space-between; margin-top:8px; font-size:11px; font-variant-numeric:tabular-nums; color:var(--tm-muted)}\n.wc-precip-lab .wc-tm .wc-tm-axis span {width:0; text-align:center; overflow:visible}\n.wc-precip-lab .wc-tm .wc-tm-axis span:first-child {text-align:left}\n.wc-precip-lab .wc-tm .wc-tm-axis span:last-child {text-align:right}\n.wc-precip-lab .wc-tm .wc-tm-axis-caption {font-size:11px; margin-top:5px}\n.wc-precip-lab .wc-tm .wc-tm-caption {font-size:12px; margin-top:10px; padding-top:10px; border-top:1px solid var(--tm-line)}\n.wc-precip-lab .wc-tm .wc-tm-estimate {margin-top:18px}\n.wc-precip-lab .wc-tm label.wc-tm-input-label {display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:5px 12px; font-size:13px; font-weight:750; margin:0; color:var(--tm-ink)}\n.wc-precip-lab .wc-tm output {font-size:24px; font-weight:800; line-height:1.2; font-variant-numeric:tabular-nums; color:var(--tm-guess)}\n.wc-precip-lab .wc-tm output small {font-size:13px; font-weight:600}\n.wc-precip-lab .wc-tm input[type=range] {display:block; width:100%; min-width:0; height:44px; margin:2px 0 0; padding:0; accent-color:var(--tm-guess); cursor:pointer}\n.wc-precip-lab .wc-tm .wc-tm-range-ends {display:flex; justify-content:space-between; color:var(--tm-muted); font-size:11px; margin:-3px 0 9px}\n.wc-precip-lab .wc-tm #wcThunderEstimateHelp {font-size:12px}\n.wc-precip-lab .wc-tm .wc-tm-check {display:block; width:100%; min-height:44px; margin-top:12px; border-color:var(--tm-guess); background:var(--tm-guess); color:var(--tm-card); font-size:13px}\n.wc-precip-lab .wc-tm .wc-tm-result:not(:empty) {margin-top:14px; padding:13px; border:1px solid var(--tm-line); border-left:4px solid var(--tm-guess); border-radius:10px; background:var(--tm-card)}\n.wc-precip-lab .wc-tm .wc-tm-result h5 {margin:0 0 5px; font-size:15px; color:var(--tm-ink)}\n.wc-precip-lab .wc-tm .wc-tm-answer {display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0; padding:0}\n.wc-precip-lab .wc-tm .wc-tm-answer dt {font-size:11px; color:var(--tm-muted)}\n.wc-precip-lab .wc-tm .wc-tm-answer dd {margin:2px 0 0; font-size:19px; font-weight:800; color:var(--tm-ink)}\n.wc-precip-lab .wc-tm .wc-tm-tolerance {font-size:11px}\n.wc-precip-lab .wc-tm .wc-tm-working {margin-top:16px; border-top:1px solid var(--tm-line)}\n.wc-precip-lab .wc-tm .wc-tm-working summary {font-size:13px; min-height:44px; padding:12px 0; color:var(--tm-ink); font-weight:750; cursor:pointer}\n.wc-precip-lab .wc-tm .wc-tm-working>div {padding:0 0 2px}\n.wc-precip-lab .wc-tm .wc-tm-working p+p {margin-top:8px}\n.wc-precip-lab .wc-tm .wc-tm-equation {padding:10px; border:1px solid var(--tm-line); border-radius:8px; background:var(--tm-card); color:var(--tm-ink); font-size:15px; font-weight:750; font-variant-numeric:tabular-nums}\n.wc-precip-lab .wc-tm .wc-tm-empty p+p {margin-top:9px}\n.wc-precip-lab .wc-tm :is(input,button,summary):focus-visible {outline:3px solid var(--tm-focus); outline-offset:4px}\n@media(forced-colors:active) {\n  .wc-precip-lab .wc-thunder-measure.wc-tm {--tm-paper:Canvas;--tm-card:Canvas;--tm-ink:CanvasText;--tm-muted:CanvasText;--tm-line:CanvasText;--tm-rail:Canvas;--tm-model:CanvasText;--tm-guess:LinkText;--tm-soft:Canvas;--tm-focus:Highlight;box-shadow:none}\n  .wc-precip-lab .wc-tm .wc-tm-rail,.wc-precip-lab .wc-tm .wc-tm-fill,.wc-precip-lab .wc-tm .wc-tm-fill b {forced-color-adjust:none}\n  .wc-precip-lab .wc-tm .wc-tm-check {background:ButtonFace;color:ButtonText;border:1px solid ButtonText}\n}\n";
+
+  var WC_STORM_GROUND_STYLE = ".wc-precip-lab .wc-storm-ground {\n  --sg-paper:#f5f8f4;--sg-card:#fff;--sg-tint:#edf4f2;--sg-ink:#173f49;--sg-muted:#49666a;--sg-line:#83a09f;\n  --sg-accent:#176f72;--sg-frozen:#216b86;--sg-water:#1c7060;--sg-sky-top:#e2f0f4;--sg-sky-bottom:#f4f9f7;\n  --sg-earth:#dddfc9;--sg-earth-line:#718571;--sg-ice:#f9ffff;--sg-ice-line:#3d758c;--sg-pool:#72c8d4;--sg-shine:#faffff;\n  padding:16px 0 4px;margin-top:14px;border-top:1px solid var(--sg-line);color:var(--sg-ink);min-width:0;\n}\n.wc-precip-lab [data-wc-storm-readout-theme=dark] .wc-storm-ground {\n  --sg-paper:#132f35;--sg-card:#173942;--sg-tint:#21464e;--sg-ink:#effbfc;--sg-muted:#c8dedf;--sg-line:#789b9e;\n  --sg-accent:#8ee4dc;--sg-frozen:#91d8ed;--sg-water:#83dcc2;--sg-sky-top:#204957;--sg-sky-bottom:#19363d;\n  --sg-earth:#495d4d;--sg-earth-line:#a4bfa3;--sg-ice:#d6f1f5;--sg-ice-line:#94cedf;--sg-pool:#4aafbd;--sg-shine:#e5ffff;\n}\n.wc-precip-lab [data-wc-storm-readout-theme=contrast] .wc-storm-ground {\n  --sg-paper:#fff;--sg-card:#fff;--sg-tint:#f1f4f4;--sg-ink:#111;--sg-muted:#222;--sg-line:#111;\n  --sg-accent:#005461;--sg-frozen:#00506e;--sg-water:#005540;--sg-sky-top:#edf2f3;--sg-sky-bottom:#fff;\n  --sg-earth:#d7ddce;--sg-earth-line:#273e25;--sg-ice:#fff;--sg-ice-line:#00506e;--sg-pool:#69b9c8;--sg-shine:#fff;\n}\n.wc-precip-lab .wc-storm-ground .wc-sg-head {display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px}\n.wc-precip-lab .wc-storm-ground h4 {margin:0;color:var(--sg-ink);font-size:19px;line-height:1.3;letter-spacing:-.02em}\n.wc-precip-lab .wc-storm-ground .wc-sg-position {font-size:11px;line-height:1.5;padding:3px 8px;border:1px solid var(--sg-line);border-radius:20px;color:var(--sg-muted);background:var(--sg-card);font-variant-numeric:tabular-nums}\n.wc-precip-lab .wc-storm-ground .wc-sg-intro {font-size:12px;line-height:1.6;color:var(--sg-muted);margin:9px 0 16px}\n.wc-precip-lab .wc-storm-ground .wc-sg-group {--sg-track:var(--sg-frozen);margin:14px 0}\n.wc-precip-lab .wc-storm-ground .wc-sg-group[data-sg-group=water] {--sg-track:var(--sg-water)}\n.wc-precip-lab .wc-storm-ground .wc-sg-group h5 {margin:0 0 8px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.03em;line-height:1.5;color:var(--sg-ink)}\n.wc-precip-lab .wc-storm-ground .wc-sg-group h5::before {content:'';width:18px;height:3px;background:var(--sg-track);border-radius:3px}\n.wc-precip-lab .wc-storm-ground .wc-sg-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:start}\n.wc-precip-lab .wc-storm-ground [data-sg-group=water] .wc-sg-grid {grid-template-columns:repeat(2,minmax(0,1fr))}\n.wc-precip-lab .wc-storm-ground .wc-sg-card {min-width:0;border:1px solid var(--sg-line);border-radius:12px;background:var(--sg-card);color:var(--sg-ink);box-shadow:0 3px 8px #173f4906;overflow:visible}\n.wc-precip-lab .wc-storm-ground .wc-sg-card>summary {position:relative;list-style:none;display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1fr);align-items:center;gap:8px 9px;min-height:100px;padding:11px;border-radius:11px;cursor:pointer}\n.wc-precip-lab .wc-storm-ground .wc-sg-card>summary::-webkit-details-marker {display:none}\n.wc-precip-lab .wc-storm-ground .wc-sg-card>summary:hover {background:var(--sg-tint)}\n.wc-precip-lab .wc-storm-ground .wc-sg-card-title {grid-column:1/-1;font-size:13px;font-weight:800;line-height:1.4;padding-right:15px;color:var(--sg-ink)}\n.wc-precip-lab .wc-storm-ground .wc-sg-chevron {position:absolute;right:11px;top:15px;width:12px;height:12px;color:var(--sg-track)}\n.wc-precip-lab .wc-storm-ground .wc-sg-card[open] {border-color:var(--sg-track);box-shadow:0 0 0 1px var(--sg-track)}\n.wc-precip-lab .wc-storm-ground .wc-sg-card[open] .wc-sg-chevron {transform:rotate(180deg)}\n.wc-precip-lab .wc-storm-ground .wc-sg-symbol {display:block;width:100%;height:65px;overflow:visible}\n.wc-precip-lab .wc-storm-ground .wc-sg-sky-top {stop-color:var(--sg-sky-top)}\n.wc-precip-lab .wc-storm-ground .wc-sg-sky-bottom {stop-color:var(--sg-sky-bottom)}\n.wc-precip-lab .wc-storm-ground .wc-sg-earth {fill:var(--sg-earth)}\n.wc-precip-lab .wc-storm-ground .wc-sg-soil-line {fill:none;stroke:var(--sg-earth-line);stroke-width:1;opacity:.75}\n.wc-precip-lab .wc-storm-ground .wc-sg-surface {stroke:var(--sg-earth-line);stroke-width:2}\n.wc-precip-lab .wc-storm-ground .wc-sg-ice {fill:var(--sg-ice);stroke:var(--sg-ice-line);stroke-width:1.7;stroke-linejoin:round}\n.wc-precip-lab .wc-storm-ground .wc-sg-crystal {fill:none;stroke:var(--sg-ice-line);stroke-width:2;stroke-linecap:round}\n.wc-precip-lab .wc-storm-ground .wc-sg-shine {stroke:var(--sg-ice-line);stroke-width:1.7;stroke-linecap:round}\n.wc-precip-lab .wc-storm-ground .wc-sg-water {fill:var(--sg-pool);stroke:var(--sg-track);stroke-width:1.7}\n.wc-precip-lab .wc-storm-ground .wc-sg-ripple {stroke:var(--sg-track);stroke-width:1.5;stroke-linecap:round}\n.wc-precip-lab .wc-storm-ground .wc-sg-flow {stroke:var(--sg-track);stroke-width:5;stroke-linecap:round}\n.wc-precip-lab .wc-storm-ground .wc-sg-flow-tip,.wc-precip-lab .wc-storm-ground .wc-sg-pebble {fill:var(--sg-track)}\n.wc-precip-lab .wc-storm-ground .wc-sg-reading {display:flex;flex-direction:column;gap:7px;min-width:0}\n.wc-precip-lab .wc-storm-ground .wc-sg-value {color:var(--sg-ink);font-variant-numeric:tabular-nums;line-height:1.15;white-space:nowrap}\n.wc-precip-lab .wc-storm-ground .wc-sg-value strong {font-size:25px;font-weight:800;letter-spacing:-.03em}\n.wc-precip-lab .wc-storm-ground .wc-sg-value small {font-size:11px;font-weight:500;color:var(--sg-muted)}\n.wc-precip-lab .wc-storm-ground .wc-sg-value strong.wc-sg-missing {font-size:12px;letter-spacing:0;white-space:normal;overflow-wrap:anywhere}\n.wc-precip-lab .wc-storm-ground .wc-sg-rail {position:relative;display:block;height:8px;border:1px solid var(--sg-line);border-radius:3px;background:var(--sg-tint);overflow:hidden}\n.wc-precip-lab .wc-storm-ground .wc-sg-fill {display:block;height:100%;background:repeating-linear-gradient(120deg,transparent 0 5px,#ffffff40 5px 7px),var(--sg-track)}\n.wc-precip-lab .wc-storm-ground .wc-sg-zero {position:absolute;left:0;top:0;width:3px;height:100%;background:var(--sg-ink)}\n.wc-precip-lab .wc-storm-ground [data-sg-state=unavailable] .wc-sg-rail {border-style:dashed;background:none}\n.wc-precip-lab .wc-storm-ground .wc-sg-state {font-size:10.5px;line-height:1.4;color:var(--sg-muted)}\n.wc-precip-lab .wc-storm-ground .wc-sg-explanation {padding:0 11px 11px;border-top:1px solid var(--sg-line)}\n.wc-precip-lab .wc-storm-ground .wc-sg-explanation p,.wc-precip-lab .wc-storm-ground .wc-sg-method p {font-size:12px;line-height:1.6;margin:9px 0 0;color:var(--sg-muted)}\n.wc-precip-lab .wc-storm-ground .wc-sg-method {margin-top:14px;padding:0 11px;border:1px solid var(--sg-line);border-radius:10px;background:var(--sg-card)}\n.wc-precip-lab .wc-storm-ground .wc-sg-method>summary {min-height:44px;display:list-item;align-content:center;padding:10px 0;font-size:12px;font-weight:750;color:var(--sg-ink);cursor:pointer}\n.wc-precip-lab .wc-storm-ground .wc-sg-method>div {padding-bottom:12px}\n.wc-precip-lab .wc-storm-ground summary:focus-visible {outline:3px solid var(--sg-accent);outline-offset:3px}\n@container storm-lifecycle (max-width:500px) {\n  .wc-precip-lab .wc-storm-ground .wc-sg-grid,.wc-precip-lab .wc-storm-ground [data-sg-group=water] .wc-sg-grid {grid-template-columns:1fr}\n  .wc-precip-lab .wc-storm-ground .wc-sg-card>summary {grid-template-columns:76px minmax(0,1fr);gap:5px 14px;min-height:94px}\n  .wc-precip-lab .wc-storm-ground .wc-sg-card-title {grid-column:2;grid-row:1}\n  .wc-precip-lab .wc-storm-ground .wc-sg-symbol {grid-column:1;grid-row:1/3;height:72px}\n  .wc-precip-lab .wc-storm-ground .wc-sg-reading {grid-column:2;grid-row:2;gap:5px}\n}\n@media(max-width:560px) {\n  .wc-precip-lab .wc-storm-ground .wc-sg-grid,.wc-precip-lab .wc-storm-ground [data-sg-group=water] .wc-sg-grid {grid-template-columns:1fr}\n  .wc-precip-lab .wc-storm-ground .wc-sg-card>summary {grid-template-columns:68px minmax(0,1fr);gap:5px 10px;min-height:92px;padding:10px}\n  .wc-precip-lab .wc-storm-ground .wc-sg-card-title {grid-column:2;grid-row:1;font-size:12px}\n  .wc-precip-lab .wc-storm-ground .wc-sg-symbol {grid-column:1;grid-row:1/3;height:68px}\n  .wc-precip-lab .wc-storm-ground .wc-sg-reading {grid-column:2;grid-row:2;gap:5px}\n  .wc-precip-lab .wc-storm-ground .wc-sg-value strong {font-size:23px}\n}\n@media(forced-colors:active) {\n  .wc-precip-lab [data-wc-storm-readout-theme] .wc-storm-ground {--sg-paper:Canvas;--sg-card:Canvas;--sg-tint:Canvas;--sg-ink:CanvasText;--sg-muted:CanvasText;--sg-line:ButtonText;--sg-accent:Highlight;--sg-frozen:CanvasText;--sg-water:CanvasText;--sg-sky-top:Canvas;--sg-sky-bottom:Canvas;--sg-earth:Canvas;--sg-earth-line:CanvasText;--sg-ice:Canvas;--sg-ice-line:CanvasText;--sg-pool:Canvas;--sg-shine:CanvasText}\n  .wc-precip-lab .wc-storm-ground .wc-sg-fill {background:CanvasText;forced-color-adjust:none}\n  .wc-precip-lab .wc-storm-ground .wc-sg-card[open] {outline:2px solid Highlight;outline-offset:1px;box-shadow:none}\n  .wc-precip-lab .wc-storm-ground .wc-sg-soil-line {opacity:1}\n}\n";
+  var WC_STORM_NAVIGATOR_STYLE = ".wc-precip-lab .wc-storm-navigator {\n  --sn-card:#fff;--sn-tint:#e9f4f6;--sn-ink:#163f4d;--sn-muted:#416674;\n  --sn-line:#7597a3;--sn-accent:#086b80;--sn-cloud:#c9e5ec;--sn-sky:#f0f8fa;\n  color:var(--sn-ink);min-width:0;\n}\n.wc-precip-lab [data-wc-storm-readout-theme=dark] .wc-storm-navigator {\n  --sn-card:#173743;--sn-tint:#254c59;--sn-ink:#effbff;--sn-muted:#c5dfe7;\n  --sn-line:#759eac;--sn-accent:#8ae3ed;--sn-cloud:#3a697b;--sn-sky:#102f3c;\n}\n.wc-precip-lab [data-wc-storm-readout-theme=contrast] .wc-storm-navigator {\n  --sn-card:#fff;--sn-tint:#f1f4f4;--sn-ink:#111;--sn-muted:#222;\n  --sn-line:#111;--sn-accent:#005369;--sn-cloud:#e3e8ea;--sn-sky:#fff;\n}\n.wc-precip-lab .wc-storm-navigator .wc-sn-head {display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;margin-bottom:8px}\n.wc-precip-lab .wc-storm-navigator h4 {margin:0;font-size:20px;line-height:1.25;letter-spacing:-.02em;color:var(--sn-ink)}\n.wc-precip-lab .wc-storm-navigator .wc-sn-current {display:inline-flex;align-items:center;gap:7px;padding:5px 9px;border:1px solid var(--sn-line);border-radius:20px;background:var(--sn-card);font-size:12px;font-weight:750}\n.wc-precip-lab .wc-storm-navigator .wc-sn-current::before {content:'';width:7px;height:7px;border:2px solid currentColor;border-radius:50%;background:var(--sn-accent)}\n.wc-precip-lab .wc-storm-navigator p {margin:8px 0;font-size:13px;line-height:1.6;color:var(--sn-muted)}\n.wc-precip-lab .wc-storm-navigator .wc-sn-stages {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:14px 0}\n.wc-precip-lab .wc-storm-navigator .wc-sn-stage {position:relative;display:grid;grid-template-rows:auto 76px 1fr;gap:8px;min-width:0;padding:11px;border:1px solid var(--sn-line);border-radius:12px;background:var(--sn-card);color:var(--sn-ink);text-align:left;font-family:inherit;cursor:pointer}\n.wc-precip-lab .wc-storm-navigator .wc-sn-stage[aria-pressed=true] {border:2px solid var(--sn-accent);padding:10px;background:var(--sn-tint);box-shadow:0 3px 0 var(--sn-accent)}\n.wc-precip-lab .wc-storm-navigator .wc-sn-stage:hover {border-color:var(--sn-accent);background:var(--sn-tint)}\n.wc-precip-lab .wc-storm-navigator .wc-sn-stage-top {display:flex;align-items:center;gap:7px;font-size:14px;font-weight:800;line-height:1.3}\n.wc-precip-lab .wc-storm-navigator .wc-sn-number {display:grid;place-items:center;flex:none;width:22px;height:22px;border:1px solid var(--sn-line);border-radius:50%;font-size:11px;font-weight:750}\n.wc-precip-lab .wc-storm-navigator .wc-sn-picture {display:block;width:100%;height:76px;background:var(--sn-sky);border-radius:8px}\n.wc-precip-lab .wc-storm-navigator .wc-sn-cloud {fill:var(--sn-cloud);stroke:var(--sn-ink);stroke-width:1.5;stroke-linejoin:round}\n.wc-precip-lab .wc-storm-navigator .wc-sn-lift {fill:none;stroke:var(--sn-accent);stroke-linecap:round;stroke-linejoin:round}\n.wc-precip-lab .wc-storm-navigator .wc-sn-stage-copy {display:flex;flex-direction:column;gap:6px;min-width:0}\n.wc-precip-lab .wc-storm-navigator .wc-sn-cue {font-size:12px;line-height:1.5;color:var(--sn-muted)}\n.wc-precip-lab .wc-storm-navigator .wc-sn-jump {margin-top:auto;font-size:11px;line-height:1.4;font-weight:650;color:var(--sn-muted)}\n.wc-precip-lab .wc-storm-navigator .wc-sn-selection {font-size:11px;line-height:1.3;font-weight:800;color:var(--sn-accent);min-height:15px}\n.wc-precip-lab .wc-storm-navigator .wc-sn-position {padding:13px;background:var(--sn-card);border:1px solid var(--sn-line);border-radius:12px}\n.wc-precip-lab .wc-storm-navigator .wc-sn-position label {display:block;font-size:14px;font-weight:750;color:var(--sn-ink)}\n.wc-precip-lab .wc-storm-navigator .wc-sn-position-head {display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px}\n.wc-precip-lab .wc-storm-navigator .wc-sn-position output {font-size:18px;font-variant-numeric:tabular-nums;font-weight:800;line-height:1.2;color:var(--sn-accent)}\n.wc-precip-lab .wc-storm-navigator .wc-sn-position output small {font-size:12px;font-weight:500;color:var(--sn-muted)}\n.wc-precip-lab .wc-storm-navigator input[type=range] {display:block;width:100%;height:40px;margin:2px 0;accent-color:var(--sn-accent);cursor:pointer}\n.wc-precip-lab .wc-storm-navigator .wc-sn-scale {display:flex;justify-content:space-between;gap:12px;font-size:11px;line-height:1.4;color:var(--sn-muted)}\n.wc-precip-lab .wc-storm-navigator .wc-sn-playback {display:grid;grid-template-columns:1fr 1.35fr 1fr;gap:8px;margin-top:12px}\n.wc-precip-lab .wc-storm-navigator .wc-sn-playback button {min-width:0;min-height:44px;padding:8px;border:1px solid var(--sn-line);border-radius:8px;background:var(--sn-card);color:var(--sn-ink);font-family:inherit;font-size:12px;font-weight:750;line-height:1.4;cursor:pointer}\n.wc-precip-lab .wc-storm-navigator .wc-sn-playback button[data-storm-playback=play] {border-width:2px;border-color:var(--sn-accent);background:var(--sn-tint)}\n.wc-precip-lab .wc-storm-navigator .wc-sn-playback button:disabled,.wc-precip-lab .wc-storm-navigator .wc-sn-playback button[aria-disabled=true] {color:var(--sn-muted);border-style:dashed;cursor:default}\n.wc-precip-lab .wc-storm-navigator .wc-sn-playback button:disabled {opacity:.65}\n.wc-precip-lab .wc-storm-navigator .wc-sn-stage:focus-visible,.wc-precip-lab .wc-storm-navigator .wc-sn-playback button:focus-visible,.wc-precip-lab .wc-storm-navigator input:focus-visible {outline:3px solid var(--sn-accent);outline-offset:3px}\n.wc-precip-lab .wc-storm-navigator .wc-sn-context {margin:14px 0 10px;padding:10px 12px;border-left:3px solid var(--sn-accent);background:var(--sn-tint);border-radius:0 8px 8px 0;color:var(--sn-ink)}\n@container storm-lifecycle (max-width:500px) {\n  .wc-precip-lab .wc-storm-navigator .wc-sn-stages {grid-template-columns:1fr}\n  .wc-precip-lab .wc-storm-navigator .wc-sn-stage {grid-template-columns:86px minmax(0,1fr);grid-template-rows:auto auto;gap:5px 12px}\n  .wc-precip-lab .wc-storm-navigator .wc-sn-stage-top {grid-column:2}\n  .wc-precip-lab .wc-storm-navigator .wc-sn-picture {grid-column:1;grid-row:1/3;align-self:center}\n  .wc-precip-lab .wc-storm-navigator .wc-sn-stage-copy {grid-column:2;gap:4px}\n}\n@media(max-width:560px) {\n  .wc-precip-lab .wc-storm-navigator .wc-sn-stages {grid-template-columns:1fr}\n  .wc-precip-lab .wc-storm-navigator .wc-sn-stage {grid-template-columns:68px minmax(0,1fr);grid-template-rows:auto auto;gap:5px 9px;padding:9px}\n  .wc-precip-lab .wc-storm-navigator .wc-sn-stage[aria-pressed=true] {padding:8px}\n  .wc-precip-lab .wc-storm-navigator .wc-sn-stage-top {grid-column:2;font-size:13px;gap:5px}\n  .wc-precip-lab .wc-storm-navigator .wc-sn-picture {grid-column:1;grid-row:1/3;align-self:center;height:70px}\n  .wc-precip-lab .wc-storm-navigator .wc-sn-stage-copy {grid-column:2;gap:4px}\n  .wc-precip-lab .wc-storm-navigator .wc-sn-position {padding:10px}\n  .wc-precip-lab .wc-storm-navigator .wc-sn-playback {gap:5px;grid-template-columns:1fr 1.2fr 1fr}\n  .wc-precip-lab .wc-storm-navigator .wc-sn-playback button {padding:7px 4px}\n}\n@media(forced-colors:active) {\n  .wc-precip-lab [data-wc-storm-readout-theme] .wc-storm-navigator {--sn-card:Canvas;--sn-tint:Canvas;--sn-ink:CanvasText;--sn-muted:CanvasText;--sn-line:ButtonText;--sn-accent:Highlight;--sn-cloud:Canvas;--sn-sky:Canvas}\n  .wc-precip-lab .wc-storm-navigator .wc-sn-stage[aria-pressed=true] {outline:2px solid Highlight;outline-offset:1px;box-shadow:none}\n  .wc-precip-lab .wc-storm-navigator .wc-sn-lift {stroke:CanvasText}\n  .wc-precip-lab .wc-storm-navigator .wc-sn-cloud {stroke:CanvasText;fill:Canvas}\n}\n";
+  var WC_STORM_MOMENTS_STYLE = ".wc-precip-lab {container:storm-lab / inline-size}\n.wc-storm-lifecycle {\n  --sm-paper:#f4fbfd; --sm-card:#fff; --sm-tint:#e8f2f5; --sm-ink:#173f4c;\n  --sm-muted:#3b626f; --sm-line:#6f939f; --sm-focus:#0b6579;\n  --sm-activity:#126680; --sm-ground:#276849; --sm-cloud:#d5e6ee; --sm-cloud-line:#153f4c;\n  container:storm-lifecycle / inline-size;\n}\n.dark .wc-storm-lifecycle,.wc-storm-moments.is-dark {\n  --sm-paper:#112c37; --sm-card:#173743; --sm-tint:#1d424e; --sm-ink:#f0fbff;\n  --sm-muted:#c7dfe8; --sm-line:#668a96; --sm-focus:#7ae4e8;\n  --sm-activity:#73cde7; --sm-ground:#a7d5ac; --sm-cloud:#345a6b; --sm-cloud-line:#edfafe;\n}\n.wc-storm-moments.is-contrast {\n  --sm-paper:#fff; --sm-card:#fff; --sm-tint:#fff; --sm-ink:#111;\n  --sm-muted:#222; --sm-line:#111; --sm-focus:#005369;\n  --sm-activity:#005d79; --sm-ground:#205638; --sm-cloud:#e4e4e4; --sm-cloud-line:#111;\n}\n.wc-precip-lab .wc-storm-lifecycle {\n  padding:16px; border:1px solid var(--sm-line); border-radius:16px;\n  background:var(--sm-paper); color:var(--sm-ink); min-width:0;\n}\n.wc-precip-lab .wc-storm-lifecycle-head {font-size:14px;gap:8px;flex-wrap:wrap;color:var(--sm-ink)}\n.wc-precip-lab .wc-storm-lifecycle-head>strong {font-size:16px;line-height:1.4}\n.wc-precip-lab #wcStormLifecycleTitle {color:var(--sm-ink)}\n.wc-precip-lab .wc-storm-lifecycle-head>span {font-size:13px;color:var(--sm-muted)}\n.wc-precip-lab .wc-storm-lifecycle .wc-precip-btn {\n  min-height:44px;font-size:14px;line-height:1.4;white-space:normal;\n  background:var(--sm-card);color:var(--sm-ink);border-color:var(--sm-line);\n}\n.wc-precip-lab .wc-storm-lifecycle .wc-precip-btn.is-primary {background:var(--sm-focus);color:var(--sm-paper);border-color:var(--sm-focus)}\n.wc-precip-lab .wc-storm-lifecycle .wc-storm-stage-segments button[aria-pressed=true] {background:var(--sm-tint);color:var(--sm-ink);border:2px solid var(--sm-focus)}\n.wc-precip-lab .wc-storm-stage-segments {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}\n.wc-precip-lab .wc-storm-time-row {display:grid;grid-template-columns:1fr;gap:10px}\n.wc-precip-lab .wc-storm-time-row label {min-width:0}\n.wc-precip-lab .wc-storm-time-head {font-size:14px;line-height:1.5;color:var(--sm-ink);display:block}\n.wc-precip-lab .wc-storm-time-row input[type=range] {width:100%;min-height:44px;accent-color:var(--sm-focus)}\n.wc-precip-lab .wc-storm-playback {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;width:100%}\n.wc-precip-lab .wc-storm-stage-copy {font-size:14px;line-height:1.6;color:var(--sm-ink);margin:12px 0}\n.wc-precip-lab .wc-storm-accumulation {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,110px),1fr));gap:8px}\n.wc-precip-lab .wc-storm-accumulation-item {min-width:0;padding:9px;background:var(--sm-card);border-radius:8px}\n.wc-precip-lab .wc-storm-accumulation-item>span {font-size:13px;line-height:1.4;color:var(--sm-muted)}\n.wc-precip-lab .wc-storm-accumulation-item>strong {font-size:14px;color:var(--sm-ink)}\n.wc-precip-lab .wc-storm-accumulation-track {height:8px;background:var(--sm-tint);border:1px solid var(--sm-line)}\n.wc-precip-lab .wc-storm-accumulation-track i {background:var(--sm-ground)}\n.wc-storm-moments {margin-top:16px;border-top:1px solid var(--sm-line);color:var(--sm-ink);font-size:14px;line-height:1.6;min-width:0}\n.wc-storm-moments>summary {display:list-item;list-style:revert;min-height:44px;padding:12px 0;cursor:pointer;font-size:16px;font-weight:800;color:var(--sm-ink)}\n.wc-sm-body {min-width:0;padding-top:2px}\n.wc-precip-lab .wc-storm-moments p {font-size:14px;line-height:1.6;color:var(--sm-ink);margin:10px 0}\n.wc-sm-controls {margin:16px 0;display:grid;gap:6px}\n.wc-sm-controls label {font-size:14px;font-weight:750;color:var(--sm-ink)}\n.wc-precip-lab .wc-storm-moments select {width:100%;min-height:44px;font:inherit;padding:8px 10px;border:1px solid var(--sm-line);border-radius:9px;background:var(--sm-card);color:var(--sm-ink)}\n.wc-precip-lab .wc-storm-moments .wc-sm-scale-note {font-size:13px;color:var(--sm-muted);margin:5px 0}\n.wc-sm-cards {display:grid;grid-template-columns:1fr;gap:12px}\n.wc-sm-card {min-width:0;padding:12px;border:1px solid var(--sm-line);border-radius:14px;background:var(--sm-card);box-shadow:0 8px 20px #18394a0a}\n.wc-sm-card[data-selected=true] {border:2px solid var(--sm-focus);padding:11px;background:var(--sm-tint)}\n.wc-precip-lab .wc-storm-moments button {min-height:44px;width:100%;font:inherit;font-weight:750;line-height:1.45;white-space:normal;border:1px solid var(--sm-line);border-radius:9px;padding:8px 10px;background:var(--sm-card);color:var(--sm-ink);cursor:pointer}\n.wc-precip-lab .wc-storm-moments button[aria-pressed=true] {border:2px solid var(--sm-focus);background:var(--sm-tint)}\n.wc-precip-lab .wc-storm-moments .wc-sm-stage-button {display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;min-height:72px;text-align:left}\n.wc-sm-stage-button>span:first-child {font-size:15px}\n.wc-sm-stage-button>span:last-child {font-size:13px;font-weight:600;white-space:nowrap}\n.wc-sm-stage-choices {display:grid;grid-template-columns:1fr;gap:7px;margin:14px 0}\n.wc-precip-lab .wc-storm-moments .wc-sm-stage-choices .wc-sm-stage-button {min-height:56px;padding:8px 10px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1px 8px}\n.wc-sm-stage-choices .wc-sm-stage-button>span:first-child {font-size:14px}\n.wc-sm-stage-choices .wc-sm-stage-button>span:nth-child(2) {grid-row:2;font-size:12px;font-weight:500;white-space:normal}\n.wc-sm-stage-choices .wc-sm-stage-button>.wc-sm-selected-label {grid-column:2;grid-row:1/3;align-self:center;font-size:12px}\n.wc-sm-comparison {display:grid;gap:12px;margin-top:14px}\n.wc-sm-lane {min-width:0;padding:12px 10px;border:1px solid var(--sm-line);border-radius:12px;background:var(--sm-card)}\n.wc-sm-lane-head {display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:3px 10px;margin-bottom:10px}\n.wc-precip-lab .wc-sm-lane-head h5 {font-size:15px;line-height:1.4}\n.wc-sm-lane-head>span {font-size:12px;color:var(--sm-muted)}\n.wc-sm-plot {position:relative;min-width:0}\n.wc-sm-scale {position:absolute;left:0;top:28px;height:100px;width:24px;color:var(--sm-muted);font-size:11px;line-height:1}\n.wc-sm-scale>span {position:absolute;right:4px;transform:translateY(-50%)}\n.wc-sm-scale>span:first-child {top:0}.wc-sm-scale>span:nth-child(2) {top:50%}.wc-sm-scale>span:last-child {top:100%}\n.wc-sm-series {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 0 0 26px;padding:0}\n.wc-sm-series>div {display:grid;grid-template-rows:22px 100px 20px;row-gap:6px;min-width:0;border-radius:6px;padding:0 3px}\n.wc-sm-series>div[data-selected=true] {background:var(--sm-tint);outline:1px solid var(--sm-focus)}\n.wc-sm-series dt {grid-row:3;margin:0;text-align:center;font-size:12px;line-height:20px;color:var(--sm-muted)}\n.wc-sm-series dd {grid-row:1;margin:0;text-align:center;font-size:15px;line-height:22px;color:var(--sm-ink);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}\n.wc-sm-series dd>span:not(.sr-only) {font-size:10px;line-height:11px;display:block}\n.wc-sm-bar-space {grid-row:2;position:relative;height:100px;min-width:0;background:linear-gradient(to top,var(--sm-line) 1px,transparent 1px),linear-gradient(to bottom,var(--sm-line) 1px,transparent 1px),linear-gradient(to bottom,transparent 49px,var(--sm-line) 49px,var(--sm-line) 50px,transparent 50px)}\n.wc-sm-bar {position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:24px;max-width:75%;background:var(--sm-activity);border-radius:3px 3px 0 0}\n.wc-sm-lane[data-sm-lane=ground] .wc-sm-bar {background:repeating-linear-gradient(135deg,var(--sm-ground),var(--sm-ground) 4px,var(--sm-card) 4px,var(--sm-card) 6px)}\n.wc-sm-zero-dot {position:absolute;bottom:-3px;left:50%;transform:translateX(-50%);width:6px;height:6px;box-sizing:border-box;border:1.5px solid var(--sm-ink);border-radius:50%;background:var(--sm-card)}\n.wc-sm-missing {position:absolute;top:40%;width:100%;text-align:center;color:var(--sm-muted)}\n.wc-precip-lab .wc-storm-moments .wc-sm-position-label {margin:4px 0 0 26px;text-align:center;font-size:11px;color:var(--sm-muted)}\n.wc-precip-lab .wc-storm-moments .wc-sm-zero-note {margin:10px 0 0;font-size:12px;line-height:1.5;color:var(--sm-muted)}\n@container storm-lifecycle (min-width:480px) {.wc-sm-stage-choices {grid-template-columns:repeat(3,minmax(0,1fr))}.wc-precip-lab .wc-storm-moments .wc-sm-stage-choices .wc-sm-stage-button {grid-template-columns:1fr}.wc-sm-stage-choices .wc-sm-stage-button>.wc-sm-selected-label {grid-column:1;grid-row:3}.wc-sm-comparison {grid-template-columns:repeat(2,minmax(0,1fr))}}\n.wc-sm-scene {display:block;width:100%;height:104px;margin:8px 0;background:radial-gradient(ellipse at 50% 30%,var(--sm-tint),var(--sm-card) 75%);border-radius:9px}\n.wc-sm-cloud {fill:var(--sm-cloud);stroke:var(--sm-cloud-line);stroke-width:2;vector-effect:non-scaling-stroke}\n.wc-sm-particle {fill:var(--sm-activity);stroke:var(--sm-activity);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}\n.wc-sm-ground-line {stroke:var(--sm-ground);stroke-width:3;vector-effect:non-scaling-stroke}\n.wc-sm-lightning {fill:none;stroke:var(--sm-cloud-line);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}\n.wc-sm-readouts {margin:0;display:grid;gap:10px}\n.wc-sm-readouts>div {min-width:0}\n.wc-sm-readouts dt {font-size:13px;color:var(--sm-muted);line-height:1.4;margin:0 0 3px}\n.wc-sm-readouts dd {display:flex;justify-content:space-between;gap:5px;font-size:14px;font-weight:750;color:var(--sm-ink);margin:0 0 4px}\n.wc-sm-track {height:10px;border:1px solid var(--sm-line);border-radius:4px;background:var(--sm-card);overflow:hidden}\n.wc-sm-track>span {display:block;height:100%;background:var(--sm-activity)}\n.wc-sm-track[data-track=ground]>span {background:repeating-linear-gradient(135deg,var(--sm-ground),var(--sm-ground) 4px,var(--sm-card) 4px,var(--sm-card) 6px)}\n.wc-precip-lab .wc-storm-moments .wc-sm-phase {font-size:13px;line-height:1.5;margin:10px 0 0;color:var(--sm-muted)}\n.wc-sm-phase strong,.wc-sm-phase span {display:block}\n.wc-sm-reading {margin-top:16px;border:1px solid var(--sm-line);border-radius:12px;padding:14px;background:var(--sm-tint)}\n.wc-precip-lab .wc-storm-moments h4 {font-size:18px;line-height:1.4;margin:0;color:var(--sm-ink)}\n.wc-precip-lab .wc-storm-moments h5 {font-size:16px;line-height:1.4;margin:0;color:var(--sm-ink)}\n.wc-sm-reading dl {margin:10px 0;display:grid;gap:8px}\n.wc-sm-reading dl>div {display:grid;gap:2px}\n.wc-sm-reading dt {font-size:13px;color:var(--sm-muted)}\n.wc-sm-reading dd {margin:0;font-size:14px;color:var(--sm-ink);font-weight:650}\n.wc-sm-question {margin-top:16px;padding-top:4px;border-top:1px solid var(--sm-line)}\n.wc-sm-question>summary {display:list-item;list-style:revert;min-height:44px;padding:12px 0;cursor:pointer;font-size:14px;font-weight:750}\n.wc-sm-answers {display:grid;gap:8px;margin:12px 0}\n.wc-sm-answers button {text-align:left}\n.wc-precip-lab .wc-storm-moments button:disabled {opacity:1;cursor:default;color:var(--sm-muted)}\n.wc-sm-feedback {padding:12px;border-left:3px solid var(--sm-focus);border-radius:0 10px 10px 0;background:var(--sm-tint)}\n.wc-precip-lab .wc-storm-moments .wc-sm-limit {font-size:13px;line-height:1.6;color:var(--sm-muted);margin-top:14px}\n.wc-precip-lab .wc-storm-moments a {display:inline-flex;align-items:center;min-height:44px;color:var(--sm-focus);text-decoration:underline;text-underline-offset:3px}\n.wc-precip-lab .wc-storm-lifecycle :is(button,input,select,summary,a):focus-visible,\n.wc-precip-lab .wc-storm-moments [tabindex='-1']:focus {outline:3px solid var(--sm-focus);outline-offset:3px;border-radius:5px}\n@container storm-lab (max-width:820px) {\n  .wc-precip-lab .wc-precip-layout {grid-template-columns:minmax(0,1fr)}\n  .wc-precip-lab .wc-precip-controls {grid-template-columns:repeat(2,minmax(0,1fr))}\n  .wc-precip-lab .wc-precip-control-group:last-child {grid-column:1/-1}\n  .wc-precip-lab .wc-precip-head-actions {width:100%}\n}\n@container storm-lab (max-width:560px) {\n  .wc-precip-lab .wc-precip-controls,.wc-precip-lab .wc-precip-metrics,\n  .wc-precip-lab .wc-precip-notebook-body,.wc-precip-lab .wc-precip-select-grid {grid-template-columns:minmax(0,1fr)}\n  .wc-precip-lab .wc-precip-control-group:last-child {grid-column:auto}\n  .wc-precip-lab .wc-precip-canvas {height:290px}\n}\n@container storm-lifecycle (min-width:620px) {.wc-sm-cards{grid-template-columns:repeat(3,minmax(0,1fr))}}\n@container storm-lifecycle (max-width:330px) {\n  .wc-precip-lab .wc-storm-stage-segments {grid-template-columns:1fr}\n  .wc-precip-lab .wc-storm-playback {grid-template-columns:1fr}\n  .wc-sm-stage-button {flex-wrap:wrap}\n}\n@media(forced-colors:active) {\n  .wc-storm-lifecycle,.wc-storm-moments {\n    --sm-paper:Canvas!important;--sm-card:Canvas!important;--sm-tint:Canvas!important;\n    --sm-ink:CanvasText!important;--sm-muted:CanvasText!important;--sm-line:CanvasText!important;\n    --sm-focus:Highlight!important;--sm-activity:Highlight!important;--sm-ground:CanvasText!important;\n    --sm-cloud:Canvas!important;--sm-cloud-line:CanvasText!important;forced-color-adjust:none;\n  }\n  .wc-precip-lab .wc-storm-lifecycle .wc-precip-btn,.wc-precip-lab .wc-storm-moments button,.wc-precip-lab .wc-storm-moments select {background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}\n  .wc-precip-lab .wc-storm-lifecycle .wc-precip-btn.is-primary {background:Highlight!important;color:HighlightText!important}\n  .wc-sm-scene {background:Canvas;box-shadow:none}\n  .wc-sm-card {box-shadow:none}\n}\n";
   var WCThermalLayerInspector = (function() {
     var tlNodeCatalog = [
       { id: 'cloud', label: 'Cloud base', progress: 0 },
@@ -1694,7 +2005,7 @@
     function tlChoices() { return tlChoiceCatalog.map(function(tlItem) { return Object.assign({}, tlItem); }); }
     return { build: tlBuild, read: tlRead, select: tlSelect, answer: tlAnswer, nodes: tlNodes, choices: tlChoices };
   })();
-  var WC_THERMAL_LAYER_INSPECTOR_STYLE = ".wc-thermal-layer-inspector {\n  --tl-paper:#f4f9fb;--tl-card:#fff;--tl-ink:#183c4a;--tl-muted:#355766;\n  --tl-line:#68828d;--tl-focus:#075f78;--tl-cold:#d6edf4;--tl-warm:#fbe8ce;\n  --tl-path:#174f64;--tl-cold-ink:#245c72;--tl-warm-ink:#774811;\n  margin:12px 0;border:1px solid var(--tl-line);border-radius:16px;\n  background:var(--tl-paper);color:var(--tl-ink);min-width:0;\n}\n.dark .wc-thermal-layer-inspector,.wc-thermal-layer-inspector.is-dark {\n  --tl-paper:#102d38;--tl-card:#173b48;--tl-ink:#eefbff;--tl-muted:#c7dfe8;\n  --tl-line:#7195a3;--tl-focus:#82e4ef;--tl-cold:#234f63;--tl-warm:#59432c;\n  --tl-path:#b9edf7;--tl-cold-ink:#c1edf9;--tl-warm-ink:#ffe0ad;\n}\n.wc-thermal-layer-inspector.is-contrast {\n  --tl-paper:#fff;--tl-card:#fff;--tl-ink:#111;--tl-muted:#222;--tl-line:#111;\n  --tl-focus:#005269;--tl-cold:#e9f3f7;--tl-warm:#fff1dc;--tl-path:#111;\n  --tl-cold-ink:#123b4b;--tl-warm-ink:#603700;\n}\n.wc-precip-lab .wc-thermal-layer-inspector>summary {\n  min-height:48px;box-sizing:border-box;padding:13px 14px;cursor:pointer;\n  color:var(--tl-ink);font-size:15px;font-weight:750;line-height:1.45;\n}\n.wc-tl-body {container:thermal-inspector / inline-size;padding:0 12px 14px;min-width:0}\n.wc-precip-lab .wc-thermal-layer-inspector p {font-size:14px;line-height:1.6;color:var(--tl-muted);margin:8px 0;overflow-wrap:anywhere}\n.wc-precip-lab .wc-thermal-layer-inspector h4,.wc-precip-lab .wc-thermal-layer-inspector h5 {\n  color:var(--tl-ink);font-size:16px;line-height:1.45;margin:0 0 8px;\n}\n.wc-tl-layout {display:grid;grid-template-columns:1fr;gap:14px}\n.wc-tl-chart {padding:12px;border:1px solid var(--tl-line);border-radius:12px;background:var(--tl-card);min-width:0}\n.wc-tl-chart-title {display:block;font-size:14px;line-height:1.4;margin-bottom:10px;color:var(--tl-ink)}\n.wc-tl-zones,.wc-tl-axis {display:flex;justify-content:space-between;gap:8px;font-size:13px;line-height:1.4;color:var(--tl-ink)}\n.wc-tl-zones span:first-child {color:var(--tl-cold-ink)}\n.wc-tl-zones span:last-child {color:var(--tl-warm-ink)}\n.wc-tl-axis {position:relative;height:20px;margin-top:6px}\n.wc-tl-axis span {position:absolute;top:0}\n.wc-tl-axis span:first-child {left:6.67%}\n.wc-tl-axis span:nth-child(2) {left:50%;transform:translateX(-50%)}\n.wc-tl-axis span:last-child {right:6.67%}\n.wc-tl-plot {display:block;width:100%;height:228px;margin-top:8px;border-radius:10px}\n.wc-tl-cold {fill:var(--tl-cold)}.wc-tl-warm {fill:var(--tl-warm)}\n.wc-tl-hatch {fill:none;stroke:var(--tl-cold-ink);stroke-width:1;opacity:.28}\n.wc-tl-guide {stroke:var(--tl-line);stroke-width:1;fill:none;vector-effect:non-scaling-stroke}\n.wc-tl-zero {stroke:var(--tl-path);stroke-width:1.5;stroke-dasharray:3 4;vector-effect:non-scaling-stroke}\n.wc-tl-cross {stroke:var(--tl-path);stroke-width:1.5;stroke-dasharray:7 4;vector-effect:non-scaling-stroke;fill:var(--tl-card)}\n.wc-tl-path {fill:none;stroke:var(--tl-path);stroke-width:3;vector-effect:non-scaling-stroke}\n.wc-tl-point {fill:var(--tl-card);stroke:var(--tl-path);stroke-width:2;vector-effect:non-scaling-stroke}\n.wc-tl-point[data-selected=true] {fill:var(--tl-path);stroke:var(--tl-card);stroke-width:2}\n.wc-tl-selected-ring {fill:none;stroke:var(--tl-path);stroke-width:2;vector-effect:non-scaling-stroke}\n.wc-tl-crossing-list {display:grid;gap:8px;margin:12px 0 0;padding:0;list-style:none;font-size:13px;line-height:1.5;color:var(--tl-muted)}\n.wc-tl-crossing-list li {padding:8px;border:1px dashed var(--tl-line);border-radius:8px}\n.wc-tl-crossing-list strong {color:var(--tl-ink)}\n.wc-tl-nodes {display:grid;gap:8px;align-content:start;min-width:0}\n.wc-precip-lab .wc-tl-node {\n  width:100%;min-height:76px;text-align:left;display:grid;grid-template-columns:1fr auto;gap:5px 8px;\n  padding:11px 12px;border:1px solid var(--tl-line);border-radius:12px;\n  background:var(--tl-card);color:var(--tl-ink);font:inherit;font-size:14px;line-height:1.5;cursor:pointer;\n}\n.wc-tl-node>strong {font-size:15px}.wc-tl-node>span {grid-column:1/-1;color:var(--tl-muted);font-size:13px}\n.wc-tl-node>em {font-size:13px;font-style:normal;font-weight:700}\n.wc-precip-lab .wc-tl-node[aria-pressed=true] {border:2px solid var(--tl-focus);padding:10px 11px}\n.wc-tl-node-temperature {font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:750}\n.wc-tl-detail,.wc-tl-surface,.wc-tl-question {margin-top:14px;padding:12px;border:1px solid var(--tl-line);border-radius:12px;background:var(--tl-card);min-width:0}\n.wc-tl-detail-head {display:flex;align-items:center;gap:12px}\n.wc-tl-particle {width:52px;height:52px;flex:0 0 52px;fill:var(--tl-cold);stroke:var(--tl-path);stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}\n.wc-tl-reading {display:grid;grid-template-columns:1fr;gap:10px;margin:12px 0}\n.wc-tl-reading>div {padding:10px;border:1px solid var(--tl-line);border-radius:10px;background:var(--tl-paper);min-width:0}\n.wc-tl-reading dt {font-size:13px;line-height:1.4;color:var(--tl-muted);margin-bottom:4px}\n.wc-tl-reading dd {font-size:15px;line-height:1.5;font-weight:750;margin:0;color:var(--tl-ink)}\n.wc-tl-surface>strong {font-size:14px;color:var(--tl-ink);line-height:1.5}\n.wc-precip-lab .wc-tl-question>summary {min-height:44px;box-sizing:border-box;padding:9px 0;font-size:14px;line-height:1.5;font-weight:750;cursor:pointer;color:var(--tl-ink)}\n.wc-tl-answers {display:grid;gap:8px}\n.wc-precip-lab .wc-tl-answers button {min-height:44px;border:1px solid var(--tl-line);border-radius:9px;background:var(--tl-paper);color:var(--tl-ink);padding:10px 12px;font:inherit;font-size:14px;line-height:1.5;text-align:left;cursor:pointer}\n.wc-precip-lab .wc-tl-answers button[aria-pressed=true] {border:2px solid var(--tl-focus);padding:9px 11px;font-weight:750}\n.wc-tl-feedback {margin-top:12px;padding:12px;border-left:3px solid var(--tl-focus);background:var(--tl-paper);border-radius:0 9px 9px 0}\n.wc-precip-lab .wc-thermal-layer-inspector :is(button,summary,h4,h5):focus-visible {outline:3px solid var(--tl-focus);outline-offset:3px}\n@container thermal-inspector (min-width:560px) {.wc-tl-layout {grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.wc-tl-reading {grid-template-columns:1fr 1fr}}\n@media(forced-colors:active) {\n  .wc-thermal-layer-inspector {--tl-paper:Canvas!important;--tl-card:Canvas!important;--tl-ink:CanvasText!important;--tl-muted:CanvasText!important;--tl-line:CanvasText!important;--tl-focus:Highlight!important;--tl-cold:Canvas!important;--tl-warm:Canvas!important;--tl-path:CanvasText!important;--tl-cold-ink:CanvasText!important;--tl-warm-ink:CanvasText!important;forced-color-adjust:none}\n  .wc-precip-lab .wc-thermal-layer-inspector button {background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}\n  .wc-tl-hatch {opacity:1}\n}\n";
+  var WC_THERMAL_LAYER_INSPECTOR_STYLE = ".wc-thermal-layer-inspector {\n  --tl-paper:#f4f9fb;--tl-card:#fff;--tl-ink:#183c4a;--tl-muted:#355766;\n  --tl-line:#68828d;--tl-focus:#075f78;--tl-cold:#d6edf4;--tl-warm:#fbe8ce;\n  --tl-path:#174f64;--tl-cold-ink:#245c72;--tl-warm-ink:#774811;\n  margin:12px 0;border:1px solid var(--tl-line);border-radius:16px;\n  background:var(--tl-paper);color:var(--tl-ink);min-width:0;\n}\n.dark .wc-thermal-layer-inspector,.wc-thermal-layer-inspector.is-dark {\n  --tl-paper:#102d38;--tl-card:#173b48;--tl-ink:#eefbff;--tl-muted:#c7dfe8;\n  --tl-line:#7195a3;--tl-focus:#82e4ef;--tl-cold:#234f63;--tl-warm:#59432c;\n  --tl-path:#b9edf7;--tl-cold-ink:#c1edf9;--tl-warm-ink:#ffe0ad;\n}\n.wc-thermal-layer-inspector.is-contrast {\n  --tl-paper:#fff;--tl-card:#fff;--tl-ink:#111;--tl-muted:#222;--tl-line:#111;\n  --tl-focus:#005269;--tl-cold:#e9f3f7;--tl-warm:#fff1dc;--tl-path:#111;\n  --tl-cold-ink:#123b4b;--tl-warm-ink:#603700;\n}\n.wc-precip-lab .wc-thermal-layer-inspector>summary {\n  min-height:48px;box-sizing:border-box;padding:13px 14px;cursor:pointer;\n  color:var(--tl-ink);font-size:15px;font-weight:750;line-height:1.45;\n}\n.wc-tl-body {container:thermal-inspector / inline-size;padding:0 12px 14px;min-width:0}\n.wc-precip-lab .wc-thermal-layer-inspector p {font-size:14px;line-height:1.6;color:var(--tl-muted);margin:8px 0;overflow-wrap:anywhere}\n.wc-precip-lab .wc-thermal-layer-inspector h4,.wc-precip-lab .wc-thermal-layer-inspector h5 {\n  color:var(--tl-ink);font-size:16px;line-height:1.45;margin:0 0 8px;\n}\n.wc-tl-layout {display:grid;grid-template-columns:1fr;gap:14px}\n.wc-tl-chart {padding:12px;border:1px solid var(--tl-line);border-radius:12px;background:var(--tl-card);min-width:0}\n.wc-tl-chart-title {display:block;font-size:14px;line-height:1.4;margin-bottom:10px;color:var(--tl-ink)}\n.wc-tl-zones,.wc-tl-axis {display:flex;justify-content:space-between;gap:8px;font-size:13px;line-height:1.4;color:var(--tl-ink)}\n.wc-tl-zones span:first-child {color:var(--tl-cold-ink)}\n.wc-tl-zones span:last-child {color:var(--tl-warm-ink)}\n.wc-tl-axis {position:relative;height:20px;margin-top:6px}\n.wc-tl-axis span {position:absolute;top:0}\n.wc-tl-axis span:first-child {left:6.67%}\n.wc-tl-axis span:nth-child(2) {left:50%;transform:translateX(-50%)}\n.wc-tl-axis span:last-child {right:6.67%}\n.wc-tl-plot {display:block;width:100%;height:228px;margin-top:8px;border-radius:10px}\n.wc-tl-cold {fill:var(--tl-cold)}.wc-tl-warm {fill:var(--tl-warm)}\n.wc-tl-hatch {fill:none;stroke:var(--tl-cold-ink);stroke-width:1;opacity:.28}\n.wc-tl-guide {stroke:var(--tl-line);stroke-width:1;fill:none;vector-effect:non-scaling-stroke}\n.wc-tl-zero {stroke:var(--tl-path);stroke-width:1.5;stroke-dasharray:3 4;vector-effect:non-scaling-stroke}\n.wc-tl-cross {stroke:var(--tl-path);stroke-width:1.5;stroke-dasharray:7 4;vector-effect:non-scaling-stroke;fill:var(--tl-card)}\n.wc-tl-path {fill:none;stroke:var(--tl-path);stroke-width:3;vector-effect:non-scaling-stroke}\n.wc-tl-point {fill:var(--tl-card);stroke:var(--tl-path);stroke-width:2;vector-effect:non-scaling-stroke}\n.wc-tl-point[data-selected=true] {fill:var(--tl-path);stroke:var(--tl-card);stroke-width:2}\n.wc-tl-selected-ring {fill:none;stroke:var(--tl-path);stroke-width:2;vector-effect:non-scaling-stroke}\n.wc-tl-crossing-list {display:grid;gap:8px;margin:12px 0 0;padding:0;list-style:none;font-size:13px;line-height:1.5;color:var(--tl-muted)}\n.wc-tl-crossing-list li {padding:8px;border:1px dashed var(--tl-line);border-radius:8px}\n.wc-tl-crossing-list strong {color:var(--tl-ink)}\n.wc-tl-plot-frame {position:relative;padding-left:48px;margin-top:8px}\n.wc-tl-plot-frame .wc-tl-plot {margin-top:0}\n.wc-tl-levels {position:absolute;inset:0 auto 0 0;width:44px}\n.wc-tl-level {position:absolute;left:0;transform:translateY(-50%);display:grid;justify-items:center;gap:2px;width:44px;color:var(--tl-muted);font-size:11px;line-height:1.3}\n.wc-tl-level b,.wc-tl-letter {display:inline-flex;justify-content:center;align-items:center;width:24px;height:24px;box-sizing:border-box;border:1px solid var(--tl-line);border-radius:50%;background:var(--tl-card);color:var(--tl-ink);font-size:13px;font-weight:750;flex-shrink:0}\n.wc-tl-level[data-selected=true] b {background:var(--tl-path);color:var(--tl-card);border-color:var(--tl-path)}\n.wc-tl-level[data-selected=true] {font-weight:750;color:var(--tl-ink)}\n.wc-tl-chart .wc-tl-zones,.wc-tl-chart .wc-tl-axis {margin-left:48px}\n.wc-precip-lab .wc-thermal-layer-inspector .wc-tl-chart-selection {border-left:3px solid var(--tl-focus);padding:6px 8px;background:var(--tl-paper);color:var(--tl-ink);font-size:13px;line-height:1.5;margin:0 0 12px}\n.wc-tl-guide[data-selected=true] {stroke:var(--tl-focus);stroke-width:2}\n.wc-tl-zero-band {stroke:var(--tl-cold-ink);stroke-width:10;stroke-linecap:round;opacity:.4;vector-effect:non-scaling-stroke}\n.wc-tl-touch {fill:none;stroke:var(--tl-path);stroke-width:1.5;vector-effect:non-scaling-stroke}\n.wc-precip-lab .wc-thermal-layer-inspector .wc-tl-air-summary {font-weight:750;color:var(--tl-ink);margin:14px 0 8px}\n.wc-tl-crossing-list:empty {display:none}\n.wc-tl-key-cross,.wc-tl-key-touch,.wc-tl-key-band {display:inline-block;vertical-align:middle;margin-right:8px;width:18px;box-sizing:border-box}\n.wc-tl-key-cross {border-top:2px dashed var(--tl-path)}\n.wc-tl-key-touch {width:9px;height:9px;border:1.5px solid var(--tl-path);transform:rotate(45deg);margin-left:4px;margin-right:13px}\n.wc-tl-key-band {height:7px;border-radius:3px;background:var(--tl-cold-ink);opacity:.6}\n.wc-tl-nodes {display:grid;gap:8px;align-content:start;min-width:0}\n.wc-precip-lab .wc-tl-node {\n  width:100%;min-height:76px;text-align:left;display:grid;grid-template-columns:1fr auto;gap:5px 8px;\n  padding:11px 12px;border:1px solid var(--tl-line);border-radius:12px;\n  background:var(--tl-card);color:var(--tl-ink);font:inherit;font-size:14px;line-height:1.5;cursor:pointer;\n}\n.wc-tl-node>strong {font-size:15px}.wc-tl-node>span {grid-column:1/-1;color:var(--tl-muted);font-size:13px}\n.wc-tl-node>strong {display:flex;align-items:center;gap:7px;min-width:0}\n.wc-tl-node[aria-pressed=true] .wc-tl-letter {border:2px solid var(--tl-focus)}\n.wc-tl-node>em {font-size:13px;font-style:normal;font-weight:700}\n.wc-precip-lab .wc-tl-node[aria-pressed=true] {border:2px solid var(--tl-focus);padding:10px 11px}\n.wc-tl-node-temperature {font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:750}\n.wc-tl-detail,.wc-tl-surface,.wc-tl-question {margin-top:14px;padding:12px;border:1px solid var(--tl-line);border-radius:12px;background:var(--tl-card);min-width:0}\n.wc-tl-detail-head {display:flex;align-items:center;gap:12px}\n.wc-tl-particle {width:52px;height:52px;flex:0 0 52px;fill:var(--tl-cold);stroke:var(--tl-path);stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}\n.wc-tl-reading {display:grid;grid-template-columns:1fr;gap:10px;margin:12px 0}\n.wc-tl-reading>div {padding:10px;border:1px solid var(--tl-line);border-radius:10px;background:var(--tl-paper);min-width:0}\n.wc-tl-reading dt {font-size:13px;line-height:1.4;color:var(--tl-muted);margin-bottom:4px}\n.wc-tl-reading dd {font-size:15px;line-height:1.5;font-weight:750;margin:0;color:var(--tl-ink)}\n.wc-tl-surface>strong {font-size:14px;color:var(--tl-ink);line-height:1.5}\n.wc-precip-lab .wc-tl-question>summary {min-height:44px;box-sizing:border-box;padding:9px 0;font-size:14px;line-height:1.5;font-weight:750;cursor:pointer;color:var(--tl-ink)}\n.wc-tl-answers {display:grid;gap:8px}\n.wc-precip-lab .wc-tl-answers button {min-height:44px;border:1px solid var(--tl-line);border-radius:9px;background:var(--tl-paper);color:var(--tl-ink);padding:10px 12px;font:inherit;font-size:14px;line-height:1.5;text-align:left;cursor:pointer}\n.wc-precip-lab .wc-tl-answers button[aria-pressed=true] {border:2px solid var(--tl-focus);padding:9px 11px;font-weight:750}\n.wc-tl-feedback {margin-top:12px;padding:12px;border-left:3px solid var(--tl-focus);background:var(--tl-paper);border-radius:0 9px 9px 0}\n.wc-precip-lab .wc-thermal-layer-inspector :is(button,summary,h4,h5):focus-visible {outline:3px solid var(--tl-focus);outline-offset:3px}\n@container thermal-inspector (min-width:560px) {.wc-tl-layout {grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.wc-tl-reading {grid-template-columns:1fr 1fr}}\n@container thermal-inspector (max-width:340px) {.wc-precip-lab .wc-tl-node {grid-template-columns:minmax(0,1fr)}.wc-tl-node-temperature {padding-left:31px;white-space:normal;overflow-wrap:anywhere}}\n@media(forced-colors:active) {\n  .wc-thermal-layer-inspector {--tl-paper:Canvas!important;--tl-card:Canvas!important;--tl-ink:CanvasText!important;--tl-muted:CanvasText!important;--tl-line:CanvasText!important;--tl-focus:Highlight!important;--tl-cold:Canvas!important;--tl-warm:Canvas!important;--tl-path:CanvasText!important;--tl-cold-ink:CanvasText!important;--tl-warm-ink:CanvasText!important;forced-color-adjust:none}\n  .wc-precip-lab .wc-thermal-layer-inspector button {background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}\n  .wc-tl-hatch {opacity:1}\n  .wc-tl-zero-band {opacity:1;stroke:GrayText}\n  .wc-tl-key-band {opacity:1;background:GrayText}\n}\n";
   var WCLiveTransferStory = (function() {
     var ltStories = {
       ocean: { label: 'Ocean storage', cue: 'Water remains in the ocean store in this frame.', kind: 'storage' },
@@ -1720,6 +2031,7 @@
     return { describe: ltDescribe };
   })();
   var WC_LIVE_TRANSFER_STYLE = ".wc-live-transfer,.wc-live-data {\n  --lt-paper:#f2f8f8;--lt-card:#fff;--lt-ink:#173e49;--lt-muted:#385d68;\n  --lt-line:#7997a1;--lt-water:#0b657b;--lt-water-fill:#c8edf3;--lt-heat:#805322;\n  --lt-heat-fill:#fae7c8;--lt-focus:#005d76;\n}\n.dark .wc-live-transfer,.dark .wc-live-data,.wc-live-transfer.is-dark,.wc-live-data.is-dark {\n  --lt-paper:#102b36;--lt-card:#173945;--lt-ink:#f0fbff;--lt-muted:#c6dfe8;\n  --lt-line:#7097a6;--lt-water:#97e0f0;--lt-water-fill:#214f62;--lt-heat:#ffdfa6;\n  --lt-heat-fill:#4a3c2d;--lt-focus:#80e7ef;\n}\n.wc-live-transfer.is-contrast,.wc-live-data.is-contrast {\n  --lt-paper:#fff;--lt-card:#fff;--lt-ink:#111;--lt-muted:#222;--lt-line:#111;\n  --lt-water:#004c63;--lt-water-fill:#e5f4f8;--lt-heat:#563800;--lt-heat-fill:#fff2d6;--lt-focus:#004c63;\n}\n.wc-live-transfer.wc-stage-focus {container:live-transfer / inline-size;display:block;min-width:0;padding:18px;border:1px solid var(--lt-line);border-left:4px solid var(--lt-water)!important;border-radius:18px;background:var(--lt-paper);color:var(--lt-ink)}\n.wc-live-transfer .wc-stage-focus-copy {min-width:0}\n.wc-live-transfer .wc-stage-focus-kicker {font-size:13px;line-height:1.5;letter-spacing:.035em;color:var(--lt-muted)}\n.wc-live-transfer .wc-stage-focus-title {font-size:21px;line-height:1.4;color:var(--lt-ink);gap:10px;align-items:center}\n.wc-live-transfer .wc-stage-focus-title strong {font-size:21px;line-height:1.4;color:var(--lt-ink);overflow-wrap:anywhere}\n.wc-live-transfer .wc-stage-focus-summary,.wc-live-transfer .wc-subsurface-note {font-size:14px;line-height:1.65;color:var(--lt-muted);margin:8px 0 12px}\n.wc-live-transfer .wc-subsurface-note {padding:12px;border:1px solid var(--lt-line);border-radius:10px;background:var(--lt-card)}\n.wc-live-transfer .wc-stage-focus-meta {position:static;margin-top:12px;font-size:13px;line-height:1.5;color:var(--lt-muted);background:transparent;border:0;display:block;text-align:right}\n.wc-live-transfer .wc-matter-energy {padding:14px 0 0;margin:14px 0 0;border:0;border-top:1px solid var(--lt-line);background:transparent}\n.wc-live-transfer #wcMatterEnergyTitle {font-size:18px;line-height:1.45;color:var(--lt-ink);margin:0 0 8px}\n.wc-live-transfer .wc-matter-energy-note {font-size:14px;line-height:1.6;color:var(--lt-muted);margin:0 0 12px}\n.wc-live-transfer .wc-science-story {margin:0 0 14px;padding:13px;border:1px solid var(--lt-line);border-radius:13px;background:var(--lt-card);color:var(--lt-ink)}\n.wc-live-transfer .wc-science-story-title {font-size:14px;line-height:1.5;color:var(--lt-ink);margin-bottom:10px;display:block}\n.wc-live-transfer .wc-science-story-chain {display:grid;grid-template-columns:1fr;gap:8px;align-items:stretch}\n.wc-live-transfer .wc-science-story-step {padding:10px 12px;background:var(--lt-paper);border:1px solid var(--lt-line);border-radius:10px;min-width:0}\n.wc-live-transfer .wc-science-story-step>span {display:block;font-size:13px;line-height:1.5;color:var(--lt-muted);margin-bottom:4px}\n.wc-live-transfer .wc-science-story-step>strong {display:block;font-size:14px;line-height:1.6;color:var(--lt-ink)}\n.wc-live-transfer .wc-science-story-arrow {font-size:20px;line-height:1;color:var(--lt-water);justify-self:center;transform:rotate(90deg)}\n.wc-live-transfer .wc-matter-energy-grid {display:grid;grid-template-columns:1fr;gap:12px;margin:0}\n.wc-live-transfer .wc-matter-energy-grid>div {padding:13px;border:1px solid var(--lt-line);border-radius:13px;background:var(--lt-card);min-width:0}\n.wc-live-transfer .wc-matter-energy-grid dt {font-size:13px;line-height:1.5;font-weight:700;color:var(--lt-muted);margin-bottom:7px}\n.wc-live-transfer .wc-matter-energy-grid dd {font-size:14px;line-height:1.6;color:var(--lt-ink);margin:0}\n.wc-live-transfer .wc-matter-energy-grid dd strong {font-size:15px;line-height:1.5;color:var(--lt-ink)}\n.wc-live-transfer .wc-matter-energy-grid dd>span {display:block;margin-top:6px;font-size:14px;line-height:1.6;color:var(--lt-muted)}\n.wc-live-water-transfer {margin:12px 0;padding:14px;border:1px solid var(--lt-line);border-radius:14px;background:var(--lt-card);min-width:0}\n.wc-live-water-transfer figcaption {font-size:14px;line-height:1.5;font-weight:750;margin-bottom:12px;color:var(--lt-ink)}\n.wc-lt-water-path {display:grid;grid-template-columns:1fr;gap:10px;align-items:center;min-width:0}\n.wc-lt-water-node {display:flex;gap:12px;align-items:center;padding:12px;border:1px solid var(--lt-line);border-radius:12px;background:var(--lt-paper);min-width:0}\n.wc-lt-water-node>div {display:grid;gap:4px;min-width:0}\n.wc-lt-node-role {font-size:13px;line-height:1.4;color:var(--lt-muted)}\n.wc-lt-water-node strong {font-size:15px;line-height:1.5;color:var(--lt-ink)}\n.wc-lt-node-phase {font-size:14px;line-height:1.5;color:var(--lt-muted)}\n.wc-lt-water-symbol {flex:0 0 56px;width:56px;height:56px;overflow:visible}\n.wc-lt-drop {stroke:var(--lt-water);fill:var(--lt-water-fill);stroke-width:2.3;stroke-linejoin:round}\n.wc-lt-ice {stroke:var(--lt-water);fill:none;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}\n.wc-lt-vapor {stroke:var(--lt-water);fill:var(--lt-card);stroke-width:2}\n.wc-lt-water-connector {display:grid;justify-items:center;gap:4px;font-size:13px;line-height:1.5;color:var(--lt-muted)}\n.wc-lt-water-connector svg {width:40px;height:28px;transform:rotate(90deg);margin:8px 0}\n.wc-lt-water-connector path,.wc-lt-heat-arrow path {fill:none;stroke:var(--lt-water);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}\n.wc-live-transfer .wc-lt-symbol-note {font-size:13px;line-height:1.6;color:var(--lt-muted);margin:10px 0 0}\n.wc-live-heat-path {min-width:0;container:live-heat / inline-size}\n.wc-lt-heat-flow {display:grid;grid-template-columns:1fr;gap:8px;align-items:center;padding:10px;border:1px solid var(--lt-line);border-radius:10px;background:var(--lt-paper)}\n.wc-lt-heat-actor {display:flex;justify-content:center;align-items:center;gap:8px;font-size:14px;line-height:1.5;color:var(--lt-ink);text-align:center}\n.wc-lt-heat-actor i {display:inline-block;flex:0 0 22px;width:22px;height:22px;border:2px solid var(--lt-heat);background:var(--lt-heat-fill);border-radius:4px;box-sizing:border-box}\n.wc-lt-heat-actor .wc-lt-water-mark {border-color:var(--lt-water);background:var(--lt-water-fill);border-radius:50% 50% 50% 5%;transform:rotate(-45deg)}\n.wc-lt-heat-arrow {display:grid;justify-items:center;gap:2px;font-size:13px;line-height:1.5;color:var(--lt-heat)}\n.wc-lt-heat-arrow svg {width:56px;height:28px;transform:rotate(90deg);margin:8px 0}\n.wc-lt-heat-arrow path {stroke:var(--lt-heat)}\n.wc-live-transfer .wc-lt-no-latent,.wc-live-transfer .wc-lt-heat-reading {font-size:14px;line-height:1.6;color:var(--lt-ink);margin:8px 0 0}\n.wc-live-transfer .wc-lt-no-latent {padding:10px;border:1px dashed var(--lt-line);border-radius:10px;background:var(--lt-paper)}\n.wc-live-data.wc-data-view {container:live-data / inline-size;background:var(--lt-paper);color:var(--lt-ink);border-color:var(--lt-line)}\n.wc-live-data .wc-data-summary {min-height:48px;padding:12px;font-size:15px;line-height:1.5;color:var(--lt-ink)}\n.wc-live-data .wc-data-summary-title {font-size:15px;color:var(--lt-ink)}\n.wc-live-data .wc-data-summary-note {font-size:13px;line-height:1.5;color:var(--lt-muted)}\n.wc-live-data .wc-data-table {width:100%;table-layout:fixed;border-collapse:collapse;font-size:14px;line-height:1.6;background:var(--lt-card);color:var(--lt-ink)}\n.wc-live-data .wc-data-table th,.wc-live-data .wc-data-table td {padding:12px;vertical-align:top;border-color:var(--lt-line);color:var(--lt-ink);font-size:14px;line-height:1.6;overflow-wrap:anywhere}\n.wc-live-data .wc-data-table th {width:29%;font-size:13px;color:var(--lt-muted);background:var(--lt-paper)}\n.wc-live-data .wc-data-table strong {font-size:14px;line-height:1.6;color:var(--lt-ink)}\n.wc-live-data .wc-data-table td>span {display:block;font-size:13px;line-height:1.6;color:var(--lt-muted);margin-top:5px}\n.wc-live-data summary:focus-visible {outline:3px solid var(--lt-focus);outline-offset:3px}\n@container live-transfer (min-width:620px) {\n  .wc-lt-water-path {grid-template-columns:minmax(0,1fr) 64px minmax(0,1fr)}\n  .wc-live-water-transfer[data-lt-kind=storage] .wc-lt-water-path {grid-template-columns:1fr}\n  .wc-lt-water-connector svg {width:52px;transform:none;margin:0}\n  .wc-live-transfer .wc-science-story-chain {grid-template-columns:minmax(0,1fr) 20px minmax(0,1fr) 20px minmax(0,1fr);align-items:center}\n  .wc-live-transfer .wc-science-story-arrow {transform:none}\n  .wc-live-transfer .wc-matter-energy-grid {grid-template-columns:1fr 1fr}\n}\n@container live-heat (min-width:360px) {\n  .wc-lt-heat-flow {grid-template-columns:minmax(0,1fr) 64px minmax(0,1fr)}\n  .wc-lt-heat-arrow svg {transform:none;margin:0}\n  .wc-lt-heat-actor {flex-wrap:wrap}\n}\n@container live-data (max-width:360px) {\n  .wc-live-data .wc-data-table th {width:40%}\n  .wc-live-data .wc-data-table th,.wc-live-data .wc-data-table td {padding:10px 8px}\n}\n@media(forced-colors:active) {\n  .wc-live-transfer,.wc-live-data {--lt-paper:Canvas!important;--lt-card:Canvas!important;--lt-ink:CanvasText!important;--lt-muted:CanvasText!important;--lt-line:CanvasText!important;--lt-water:CanvasText!important;--lt-water-fill:Canvas!important;--lt-heat:CanvasText!important;--lt-heat-fill:Canvas!important;--lt-focus:Highlight!important;forced-color-adjust:none}\n  .wc-live-transfer.wc-stage-focus {box-shadow:none}\n}\n\n.wc-stage-focus.wc-live-transfer .wc-matter-energy-grid > div {\n  display: block;\n  min-width: 0;\n}\n.wc-stage-focus.wc-live-transfer .wc-matter-energy-grid dt {\n  display: block;\n  width: auto;\n  margin: 0 0 8px;\n}\n.wc-stage-focus.wc-live-transfer .wc-matter-energy-grid dd {\n  display: block;\n  width: auto;\n  min-width: 0;\n  max-width: none;\n  margin: 0;\n}\n.wc-stage-focus.wc-live-transfer .wc-live-heat-path {\n  display: block;\n  width: 100%;\n  min-width: 0;\n}\n.wc-stage-focus.wc-live-transfer .wc-lt-heat-actor {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  gap: 8px;\n  font-size: 14px;\n  line-height: 1.5;\n  color: var(--lt-ink);\n  text-align: center;\n}\n.wc-stage-focus.wc-live-transfer .wc-lt-heat-arrow > span {\n  font-size: 13px;\n  line-height: 1.5;\n  color: var(--lt-heat);\n}\n.wc-stage-focus.wc-live-transfer .wc-lt-heat-flow {\n  display: grid;\n  grid-template-columns: minmax(0, 1fr);\n  align-items: center;\n  gap: 12px;\n  min-width: 0;\n}\n.wc-stage-focus.wc-live-transfer .wc-lt-heat-arrow {\n  display: grid;\n  grid-template-columns: minmax(0, 1fr);\n  justify-items: center;\n  align-items: center;\n  gap: 2px;\n  min-width: 0;\n}\n@container live-heat (min-width: 360px) {\n  .wc-stage-focus.wc-live-transfer .wc-lt-heat-flow {\n    grid-template-columns: minmax(0, 1fr) 84px minmax(0, 1fr);\n  }\n}\n\n.wc-live-data.wc-data-view .wc-data-table td strong {\n  color: var(--lt-ink);\n}\n";
+  WC_LIVE_TRANSFER_STYLE += ".wc-stage-focus.wc-live-transfer .wc-lt-heat-direction{margin:0 0 12px;padding:10px 12px;border-left:4px solid var(--lt-heat);background:var(--lt-heat-fill);border-radius:0 8px 8px 0;color:var(--lt-ink)}\n.wc-stage-focus.wc-live-transfer .wc-lt-heat-direction strong{display:block;font-size:16px;line-height:1.5;color:var(--lt-ink)}\n.wc-stage-focus.wc-live-transfer .wc-lt-heat-flow{padding:12px;gap:12px;grid-template-columns:minmax(0,1fr)}\n.wc-stage-focus.wc-live-transfer .wc-lt-heat-actor{min-width:0;min-height:76px;padding:10px;border:1px solid var(--lt-line);border-bottom:3px solid var(--lt-heat);border-radius:10px;background:var(--lt-card);flex-wrap:nowrap;text-align:left;justify-content:flex-start;box-sizing:border-box}\n.wc-stage-focus.wc-live-transfer .wc-lt-heat-actor[data-lt-heat-role=receives]{border-bottom-style:double}\n.wc-stage-focus.wc-live-transfer .wc-lt-heat-actor .wc-lt-heat-actor-copy{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;min-width:0;margin:0;font-size:14px;line-height:1.5;color:var(--lt-ink)}\n.wc-stage-focus.wc-live-transfer .wc-lt-heat-actor-copy strong{font-size:14px;line-height:1.5;font-weight:750;color:var(--lt-ink)}\n.wc-stage-focus.wc-live-transfer .wc-lt-heat-actor-copy small{display:block;font-size:13px;line-height:1.5;color:var(--lt-muted);margin:0}\n.wc-stage-focus.wc-live-transfer .wc-lt-heat-arrow>span{font-weight:750}\n.wc-stage-focus.wc-live-transfer .wc-lt-heat-arrow svg{transform:rotate(90deg);margin:8px 0}\n@container live-heat (min-width:440px){.wc-stage-focus.wc-live-transfer .wc-lt-heat-flow{gap:10px;grid-template-columns:minmax(0,1fr) 74px minmax(0,1fr)}.wc-stage-focus.wc-live-transfer .wc-lt-heat-arrow svg{transform:none;margin:0}}\n@container live-heat (max-width:190px){.wc-stage-focus.wc-live-transfer .wc-lt-heat-actor{flex-direction:column;align-items:flex-start}.wc-stage-focus.wc-live-transfer .wc-lt-heat-actor-copy{width:100%}}\n@media(forced-colors:active){.wc-stage-focus.wc-live-transfer .wc-lt-heat-direction{border-left-color:Highlight;background:Canvas}.wc-stage-focus.wc-live-transfer .wc-lt-heat-actor{border-color:CanvasText}.wc-stage-focus.wc-live-transfer .wc-lt-heat-actor[data-lt-heat-role=receives]{border-bottom-color:Highlight}}";
   // Chapter inspection has its own state; it never moves the animated parcel.
   var WCJourneyChapters = (function() {
     var chapters = [
@@ -1818,6 +2130,60 @@
       normalizeLandStep: normalizeLandStep, resolve: resolve, describe: describe,
       definitions: definitions, landDefinitions: landDefinitions };
   })();
+
+  var WCPhaseChangeMap = (function(){
+    var changes = [
+      { id:'melting', label:'Melting', from:'solid', to:'liquid', fromLabel:'Ice (solid)', toLabel:'Liquid water', energy:'absorbed', reverse:'freezing', description:'Ice absorbs energy as it changes into liquid water.', example:'Snow melts into water on a warm day.' },
+      { id:'freezing', label:'Freezing', from:'liquid', to:'solid', fromLabel:'Liquid water', toLabel:'Ice (solid)', energy:'released', reverse:'melting', description:'Liquid water releases energy as it changes into ice.', example:'Liquid water at the surface of a pond freezes into ice.' },
+      { id:'evaporation', label:'Evaporation', from:'liquid', to:'gas', fromLabel:'Liquid water', toLabel:'Water vapor (gas)', energy:'absorbed', reverse:'condensation', description:'Liquid water absorbs energy as it changes into water vapor at its surface.', example:'Water in a puddle evaporates into the air.' },
+      { id:'condensation', label:'Condensation', from:'gas', to:'liquid', fromLabel:'Water vapor (gas)', toLabel:'Liquid water', energy:'released', reverse:'evaporation', description:'Water vapor releases energy as it changes into liquid droplets.', example:'Water vapor condenses into the tiny liquid droplets in fog.' },
+      { id:'sublimation', label:'Sublimation', from:'solid', to:'gas', fromLabel:'Ice (solid)', toLabel:'Water vapor (gas)', energy:'absorbed', reverse:'deposition', description:'Ice absorbs energy as it changes directly into water vapor, skipping the liquid state.', example:'Snow can lose ice directly to the air without first melting.' },
+      { id:'deposition', label:'Deposition', from:'gas', to:'solid', fromLabel:'Water vapor (gas)', toLabel:'Ice (solid)', energy:'released', reverse:'sublimation', description:'Water vapor releases energy as it changes directly into ice, skipping the liquid state.', example:'Water vapor forms frost directly on a cold surface; liquid water is not freezing first.' }
+    ];
+    function own(value, key){
+      if(!value || typeof value !== 'object') return undefined;
+      try {
+        if(Array.isArray(value)) return undefined;
+        var property = Object.getOwnPropertyDescriptor(value, key);
+        return property && Object.prototype.hasOwnProperty.call(property, 'value') ? property.value : undefined;
+      } catch(_error) { return undefined; }
+    }
+    function find(id){
+      if(typeof id !== 'string') return null;
+      for(var i=0;i<changes.length;i++) if(changes[i].id === id) return changes[i];
+      return null;
+    }
+    function copy(change){
+      return change ? { id:change.id, label:change.label, from:change.from, to:change.to, fromLabel:change.fromLabel, toLabel:change.toLabel, energy:change.energy, reverse:change.reverse, description:change.description, example:change.example } : null;
+    }
+    function validAnswer(value){ return value === 'absorbed' || value === 'released'; }
+    function normalize(raw){
+      var selected = own(raw, 'selected');
+      if(!find(selected)) return { selected:'evaporation', answer:null, checked:false };
+      var answer = own(raw, 'answer');
+      answer = validAnswer(answer) ? answer : null;
+      return { selected:selected, answer:answer, checked:answer !== null && own(raw, 'checked') === true };
+    }
+    function transition(raw, action){
+      var state = normalize(raw), type = own(action, 'type');
+      if(type === 'select'){
+        var id = own(action, 'id');
+        if(find(id) && id !== state.selected) return { selected:id, answer:null, checked:false };
+      } else if(type === 'reverse'){
+        return { selected:find(state.selected).reverse, answer:null, checked:false };
+      } else if(type === 'answer'){
+        var answer = own(action, 'value');
+        if(validAnswer(answer)) return { selected:state.selected, answer:answer, checked:false };
+      } else if(type === 'check' && state.answer !== null){
+        return { selected:state.selected, answer:state.answer, checked:true };
+      }
+      return state;
+    }
+    return { rows:function(){ return changes.map(copy); }, descriptor:function(id){ return copy(find(id)); }, normalize:normalize, transition:transition };
+  })();
+  window.WaterCyclePhaseChangeMap = WCPhaseChangeMap;
+
+  var WC_PHASE_CHANGE_MAP_STYLE = ".wc-phase-map{--pm-ink:#17394b;--pm-muted:#486474;--pm-paper:#fff;--pm-soft:#f1f8fa;--pm-line:#b8ced7;--pm-accent:#086b78;--pm-selected:#e2f3f2;--pm-heat:#994215;margin:16px 0;border:1px solid var(--pm-line);border-radius:18px;background:var(--pm-paper);color:var(--pm-ink);container:wc-phase-map/inline-size;overflow-wrap:break-word}\n.wc-phase-map *{box-sizing:border-box}.wc-phase-map summary{display:flex;align-items:center;gap:12px;min-height:64px;padding:16px;cursor:pointer;list-style:none;border-radius:17px}.wc-phase-map summary::-webkit-details-marker{display:none}.wc-phase-map summary>svg{width:32px;height:32px;flex:none;color:var(--pm-accent)}.wc-phase-map summary>span{display:grid;gap:4px;min-width:0}.wc-phase-map summary strong{font-size:16px;line-height:1.35}.wc-phase-map summary small{font-size:13px;line-height:1.5;color:var(--pm-muted)}.wc-phase-map summary::after{content:'+';display:grid;place-items:center;width:28px;height:28px;flex:none;margin-left:auto;border:1px solid var(--pm-line);border-radius:8px;color:var(--pm-accent);font-size:20px;font-weight:700}.wc-phase-map[open]>summary::after{content:'−'}.wc-phase-map summary:hover{background:var(--pm-soft)}\n.wc-pm-body{padding:0 18px 18px}.wc-pm-body p{font-size:14px;line-height:1.6;margin:0 0 12px}.wc-pm-scope{color:var(--pm-muted)}.wc-pm-states{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0}.wc-pm-state{display:grid;justify-items:center;align-content:start;gap:7px;padding:15px 10px;text-align:center;border:1px solid var(--pm-line);border-radius:14px;background:var(--pm-soft);min-width:0}.wc-pm-state strong{font-size:15px;line-height:1.4}.wc-pm-state small{font-size:13px;line-height:1.5;color:var(--pm-muted)}.wc-pm-glyph{width:58px;height:58px;color:var(--pm-accent);fill:currentColor;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.wc-pm-glyph [data-outline]{fill:none}.wc-pm-glyph[data-phase-glyph=solid]{fill:none}\n.wc-pm-workspace{display:grid;grid-template-columns:minmax(220px,.85fr) minmax(0,1.5fr);gap:18px;align-items:start}.wc-pm-chooser{display:grid;gap:14px;min-width:0}.wc-pm-pair{margin:0;padding:0;border:0;min-width:0}.wc-pm-pair legend{padding:0 0 7px;font-size:13px;line-height:1.5;font-weight:700;color:var(--pm-muted)}.wc-pm-pair-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.wc-phase-map button{font:inherit;font-size:14px;line-height:1.4;min-height:44px;border:1px solid var(--pm-line);border-radius:10px;background:var(--pm-paper);color:var(--pm-ink);padding:10px;cursor:pointer;white-space:normal;overflow-wrap:normal;word-break:normal;min-width:0}.wc-phase-map button:hover:not(:disabled){background:var(--pm-soft);border-color:var(--pm-accent)}.wc-phase-map button:disabled{cursor:default;background:var(--pm-soft);color:var(--pm-muted)}.wc-phase-map :is(button,summary):focus-visible{outline:3px solid var(--pm-accent);outline-offset:3px}.wc-phase-map [tabindex='-1']:focus{outline:3px solid var(--pm-accent);outline-offset:3px}.wc-phase-map button[aria-pressed=true]{border:2px solid var(--pm-accent);padding:9px;background:var(--pm-selected);color:var(--pm-ink)}.wc-pm-route{display:grid;gap:5px;text-align:left;align-content:start}.wc-pm-route strong{font-size:14px;line-height:1.4}.wc-pm-route small{font-size:13px;line-height:1.5;color:var(--pm-muted)}.wc-pm-route-mark{font-size:13px;font-weight:700;color:var(--pm-accent)}\n.wc-pm-detail{padding:18px;border:1px solid var(--pm-line);border-radius:16px;background:var(--pm-soft);min-width:0}.wc-pm-detail-header{display:flex;align-items:start;justify-content:space-between;gap:12px;margin-bottom:14px}.wc-pm-detail h4{margin:3px 0 0;font-size:22px;line-height:1.25;letter-spacing:-.02em}.wc-pm-kicker{font-size:13px;font-weight:700;color:var(--pm-muted)}.wc-pm-reverse{flex:none;max-width:150px}.wc-pm-flow{display:grid;grid-template-columns:minmax(0,1fr) 30px minmax(0,1fr);align-items:center;gap:8px;margin:0 0 14px}.wc-pm-flow-node{display:grid;justify-items:center;gap:6px;text-align:center;min-width:0}.wc-pm-flow-node>small{font-size:13px;color:var(--pm-muted)}.wc-pm-flow-node>strong{font-size:15px;line-height:1.4}.wc-pm-flow-arrow{width:30px;height:30px;color:var(--pm-accent);fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}.wc-pm-example{padding:12px;border-left:3px solid var(--pm-accent);border-radius:0 9px 9px 0;background:var(--pm-paper)}.wc-pm-direct{font-weight:700;color:var(--pm-accent)}\n.wc-pm-question{border:0;margin:18px 0 10px;padding:0;min-width:0}.wc-pm-question legend{font-size:15px;line-height:1.5;font-weight:700;padding:0 0 10px}.wc-pm-answers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.wc-pm-answers button{display:grid;gap:4px;text-align:left}.wc-pm-answers button>small{font-size:13px;line-height:1.5;color:var(--pm-muted)}.wc-pm-check{width:100%;font-weight:700!important}.wc-pm-feedback{margin:16px 0 0;padding-top:16px;border-top:1px solid var(--pm-line)}.wc-pm-feedback h5{margin:0 0 10px;font-size:16px;line-height:1.4}.wc-pm-feedback p:last-child{margin-bottom:0}.wc-pm-feedback[data-phase-result=unchecked]{color:var(--pm-muted)}.wc-pm-heat{display:grid;grid-template-columns:minmax(0,1fr) 52px minmax(0,1fr);align-items:center;gap:8px;margin:12px 0;padding:12px;border:1px solid var(--pm-line);border-radius:12px;background:var(--pm-paper);color:var(--pm-heat)}.wc-pm-heat>span{display:grid;gap:4px;text-align:center}.wc-pm-heat strong{font-size:14px;line-height:1.4}.wc-pm-heat small{font-size:13px;line-height:1.5}.wc-pm-heat svg{width:52px;height:30px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}.wc-pm-note{margin:16px 0 0!important;padding-top:14px;border-top:1px solid var(--pm-line);color:var(--pm-muted);font-size:13px!important}\n@container wc-phase-map (max-width:720px){.wc-pm-workspace{grid-template-columns:minmax(0,1fr)}.wc-pm-chooser{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.wc-pm-pair-buttons{grid-template-columns:minmax(0,1fr)}}\n@container wc-phase-map (max-width:480px){.wc-pm-body{padding:0 14px 14px}.wc-phase-map summary{padding:14px}.wc-pm-chooser{grid-template-columns:minmax(0,1fr)}.wc-pm-pair-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}.wc-pm-detail{padding:14px}.wc-pm-states{gap:6px}.wc-pm-state{padding:12px 5px}.wc-pm-state .wc-pm-glyph{width:44px;height:44px}.wc-pm-state strong{font-size:14px}.wc-pm-detail-header{display:block}.wc-pm-reverse{max-width:none;width:100%;margin-top:12px}.wc-pm-answers{grid-template-columns:minmax(0,1fr)}}\n.dark .wc-phase-map{--pm-ink:#edf6fa;--pm-muted:#bdd0da;--pm-paper:#102a39;--pm-soft:#153544;--pm-line:#4e6d7d;--pm-accent:#7ae3e2;--pm-selected:#244c59;--pm-heat:#ffd2ac}\n.wc-explorer-root[data-visual-contrast=true] .wc-phase-map{--pm-ink:#fff;--pm-muted:#fff;--pm-paper:#000;--pm-soft:#000;--pm-line:#fff;--pm-accent:#ff0;--pm-selected:#000;--pm-heat:#ff0}.wc-explorer-root[data-visual-contrast=true] .wc-phase-map button[aria-pressed=true]{outline:1px solid #ff0;outline-offset:2px}\n@media(forced-colors:active){.wc-phase-map{--pm-ink:CanvasText;--pm-muted:CanvasText;--pm-paper:Canvas;--pm-soft:Canvas;--pm-line:CanvasText;--pm-accent:Highlight;--pm-selected:Canvas;--pm-heat:CanvasText}.wc-phase-map button[aria-pressed=true]{forced-color-adjust:none;border-color:Highlight;background:Canvas;color:CanvasText}.wc-phase-map button[aria-pressed=true] :is(small,.wc-pm-route-mark){color:CanvasText}.wc-phase-map :is(button,summary):focus-visible,.wc-phase-map [tabindex='-1']:focus{outline-color:Highlight}.wc-phase-map svg{forced-color-adjust:auto}}\n@container wc-phase-map (max-width:480px){.wc-pm-heat{grid-template-columns:minmax(0,1fr)}.wc-pm-heat svg{justify-self:center;transform:rotate(90deg)}}\n@container wc-phase-map (max-width:260px){.wc-pm-states{grid-template-columns:minmax(0,1fr)}.wc-pm-state{grid-template-columns:44px minmax(0,1fr);text-align:left;justify-items:start;align-items:center;gap:4px 10px;padding:12px}.wc-pm-state>.wc-pm-glyph{grid-column:1;grid-row:1/3}.wc-pm-state>:is(strong,small){grid-column:2}.wc-pm-pair-buttons{grid-template-columns:minmax(0,1fr)}.wc-pm-flow{grid-template-columns:minmax(0,1fr);justify-items:center}.wc-pm-flow-arrow{transform:rotate(90deg)}.wc-pm-detail h4{font-size:18px}}\n@media(forced-colors:active){.dark .wc-phase-map,.wc-explorer-root[data-visual-contrast=true] .wc-phase-map{--pm-ink:CanvasText;--pm-muted:CanvasText;--pm-paper:Canvas;--pm-soft:Canvas;--pm-line:CanvasText;--pm-accent:Highlight;--pm-selected:Canvas;--pm-heat:CanvasText}}\n.wc-phase-map .wc-pm-body{padding-top:12px}\n@container wc-phase-map (max-width:480px){.wc-pm-heat svg{width:52px;height:52px}}\n";
 
   var WCProcessCompare = (function() {
     var ids = ['evaporation', 'condensation', 'precipitation', 'collection', 'transpiration', 'infiltration'];
@@ -5042,10 +5408,15 @@
     wcFiveStyle.textContent += "\n/* Read saved evidence at the notebook's available width. */\n.wc-explorer-root [data-wc-notebook] { container: wc-evidence-notebook / inline-size; padding: 18px; gap: 16px; }\n.wc-explorer-root [data-wc-notebook] .wc-log-list { grid-template-columns: minmax(0,1fr)!important; align-items: start; gap: 14px; }\n.wc-explorer-root [data-wc-notebook] .wc-log-entry { container: wc-saved-observation / inline-size; padding: 16px; gap: 12px; border: 1px solid var(--wc-viz-line); border-top: 3px solid var(--wc-viz-accent); border-radius: 14px; background: var(--wc-viz-paper); color: var(--wc-viz-ink); align-self: start; }\n.wc-explorer-root [data-wc-notebook] .wc-experiment-log-kicker { font-size: 15px; line-height: 1.5; }\n.wc-explorer-root [data-wc-notebook] .wc-experiment-log-copy > strong { font-size: 17px; line-height: 1.5; }\n.wc-explorer-root [data-wc-notebook] .wc-experiment-log-copy > span { font-size: 13px; line-height: 1.6; color: var(--wc-viz-muted); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-guide { grid-column: 1/-1; margin: 0; padding: 12px 14px; border: 1px solid var(--wc-viz-line); border-radius: 10px; background: var(--wc-viz-paper); color: var(--wc-viz-muted); font-size: 13px; line-height: 1.6; }\n.wc-explorer-root [data-wc-notebook] .wc-log-entry-index { display: grid; place-items: center; width: 24px; height: 28px; border: 1px solid var(--wc-viz-line); border-radius: 7px; background: var(--wc-viz-tint); color: var(--wc-viz-ink); font-size: 12px; font-weight: 800; }\n.wc-explorer-root [data-wc-notebook] .wc-log-entry-copy { min-width: 0; display: grid; gap: 8px; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-record-title { margin: 0; font-size: 17px; line-height: 1.45; font-weight: 800; color: var(--wc-viz-ink); overflow-wrap: anywhere; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-record-method { justify-self: start; margin: 0; padding: 4px 8px; border: 1px solid var(--wc-viz-line); border-radius: 7px; background: var(--wc-viz-tint); font-size: 12px; line-height: 1.5; color: var(--wc-viz-ink); font-weight: 750; }\n.wc-explorer-root [data-wc-notebook] :is(.wc-notebook-record-claim,.wc-log-entry-evidence) { font-size: 13px; line-height: 1.6; color: var(--wc-viz-muted); font-weight: 450; overflow-wrap: anywhere; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-changes { grid-column: 1/-1; min-width: 0; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-changes h6 { margin: 0; font-size: 14px; line-height: 1.5; font-weight: 800; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-changes p { margin: 4px 0 9px; font-size: 12px; line-height: 1.6; color: var(--wc-viz-muted); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-changes dl { display: grid; grid-template-columns: minmax(0,1fr); gap: 6px; margin: 0; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-changes dl > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 5px 12px; min-width: 0; padding: 8px 10px; border: 1px solid var(--wc-viz-line); border-radius: 8px; background: var(--wc-viz-card); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-changes dt { flex: 1 1 100px; font-size: 13px; line-height: 1.5; color: var(--wc-viz-muted); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-changes dd { margin: 0; font-size: 15px; line-height: 1.5; font-weight: 800; color: var(--wc-viz-ink); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }\n.wc-explorer-root [data-wc-notebook] .wc-log-entry-actions { display: grid; grid-template-columns: minmax(0,1fr); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-reflection { margin-top: 0; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-reflection > summary { display: flex; align-items: center; gap: 12px; padding: 11px 0; list-style: none; font-size: 14px; line-height: 1.5; color: var(--wc-viz-ink); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-reflection > summary::-webkit-details-marker { display: none; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-reflection > summary::after { content: '+'; display: grid; place-items: center; flex: 0 0 26px; height: 26px; margin-left: auto; border: 1px solid var(--wc-viz-line); border-radius: 6px; background: var(--wc-viz-tint); color: var(--wc-viz-ink); font-size: 18px; font-weight: 800; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-reflection[open] > summary::after { content: '−'; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-reflection :is(p,li) { font-size: 13px; line-height: 1.6; color: var(--wc-viz-muted); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-values { overflow-x: visible; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-values table { table-layout: fixed; font-size: 12px; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-values :is(th,td) { font-size: 12px!important; line-height: 1.5; padding: 9px 4px; width: 31%; white-space: normal!important; word-break: normal; overflow-wrap: anywhere; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-values th:first-child { width: 38%; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-values caption { font-size: 14px; line-height: 1.5; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-values thead { background: var(--wc-viz-tint); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-saved-scope { padding: 10px 12px; border-left: 3px solid var(--wc-viz-accent); background: var(--wc-viz-tint); border-radius: 0 8px 8px 0; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-note { margin-top: 16px; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-note label { font-size: 14px; line-height: 1.5; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-note textarea { font-size: 14px; line-height: 1.6; }\n@container wc-saved-observation (min-width: 300px) { .wc-explorer-root [data-wc-notebook] .wc-log-entry-actions { grid-template-columns: repeat(2,minmax(0,1fr)); } }\n@container wc-saved-observation (min-width: 480px) { .wc-explorer-root [data-wc-notebook] .wc-notebook-changes dl { grid-template-columns: repeat(3,minmax(0,1fr)); } .wc-explorer-root [data-wc-notebook] .wc-notebook-changes dl > div { display: block; } .wc-explorer-root [data-wc-notebook] .wc-notebook-changes dd { margin-top: 4px; } }\n@container wc-evidence-notebook (min-width: 900px) { .wc-explorer-root [data-wc-notebook] .wc-log-list { grid-template-columns: repeat(2,minmax(0,1fr))!important; } }\n@media (forced-colors: active) {\n .wc-explorer-root [data-wc-notebook], .wc-explorer-root [data-wc-notebook] :is(.wc-log-entry,.wc-notebook-guide,.wc-log-entry-index,.wc-notebook-record-method,.wc-notebook-changes dl > div,.wc-notebook-values thead,.wc-notebook-saved-scope,.wc-notebook-note textarea,.wc-notebook-capacity,.wc-notebook-undo,.wc-experiment-log-replay-badge) { background: Canvas!important; border-color: CanvasText!important; box-shadow: none!important; }\n .wc-explorer-root [data-wc-notebook] :is(h4,h5,h6,p,span,dt,dd,th,td,caption,label,summary,textarea,strong) { color: CanvasText!important; border-color: CanvasText!important; }\n .wc-explorer-root [data-wc-notebook] button { background: ButtonFace!important; color: ButtonText!important; border-color: ButtonText!important; }\n .wc-explorer-root [data-wc-notebook] .wc-notebook-reflection > summary::after { forced-color-adjust: none; background: Canvas!important; color: CanvasText!important; border-color: CanvasText!important; }\n .wc-explorer-root [data-wc-notebook] :is(button,summary,textarea):focus-visible { outline-color: Highlight!important; }\n}\n";
     wcFiveStyle.textContent += "\n/* Keep card actions consistent and the folded evidence concise. */\n.wc-explorer-root [data-wc-notebook] .wc-log-entry-actions button { width: 100%; min-width: 0; margin: 0; justify-self: stretch; white-space: normal; }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-record-claim { font-weight: 750; color: var(--wc-viz-ink); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-reflection :is(.wc-notebook-recorded-claim,.wc-log-entry-evidence) { margin: 10px 0; font-size: 13px; line-height: 1.6; font-weight: 450; color: var(--wc-viz-muted); }\n.wc-explorer-root [data-wc-notebook] .wc-notebook-reflection :is(.wc-notebook-recorded-claim,.wc-log-entry-evidence) strong { color: var(--wc-viz-ink); }\n@container wc-saved-observation (min-width: 200px) { .wc-explorer-root [data-wc-notebook] .wc-log-entry-actions { grid-template-columns: repeat(2,minmax(0,1fr)); } }\n@media (forced-colors: active) { .wc-explorer-root [data-wc-notebook] :is(.wc-notebook-record-claim,.wc-notebook-recorded-claim,.wc-log-entry-evidence,.wc-notebook-recorded-claim strong,.wc-log-entry-evidence strong) { color: CanvasText!important; } }\n";
     wcFiveStyle.textContent += "/* Check yourself: readable tasks and a separate investigation notebook. */\n.wc-explorer-root :is(.wc-check,.wc-check-investigation){container:wc-check / inline-size;color:var(--wc-viz-ink);font-size:14px;line-height:1.65;min-width:0}\n.wc-explorer-root :is(.wc-check,.wc-check-investigation) *{box-sizing:border-box}\n.wc-explorer-root :is(.wc-check,.wc-check-investigation) :is(h3,h4,h5,p,figure){margin:0}\n.wc-explorer-root :is(.wc-check,.wc-check-investigation) :is(h3,h4,h5){color:var(--wc-viz-ink);line-height:1.4;overflow-wrap:anywhere}\n.wc-explorer-root .wc-check-intro{padding:6px 0 18px;display:grid;gap:8px}\n.wc-explorer-root .wc-check-intro h3{font-size:22px;font-weight:800}\n.wc-explorer-root .wc-check-eyebrow{color:var(--wc-viz-muted);font-size:12px;font-weight:700;letter-spacing:.035em}\n.wc-explorer-root .wc-check-card{padding:18px;margin-bottom:18px;border:1px solid var(--wc-viz-line);border-radius:20px;background:var(--wc-viz-card);box-shadow:0 4px 16px #10273508}\n.wc-explorer-root :is(.wc-check-task-header,.wc-check-panel-header){display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;margin-bottom:14px}\n.wc-explorer-root .wc-check-task-header h4{font-size:16px;font-weight:800;margin-top:3px}\n.wc-explorer-root .wc-check-actions{display:flex;flex-wrap:wrap;gap:8px}\n.wc-explorer-root :is(.wc-check,.wc-check-investigation) button{appearance:none;display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;padding:10px 14px;border:1px solid var(--wc-viz-line);border-radius:12px;background:var(--wc-viz-paper);color:var(--wc-viz-ink);font:inherit;font-size:14px;font-weight:700;line-height:1.5;white-space:normal;overflow-wrap:anywhere;cursor:pointer;box-shadow:none}\n.wc-explorer-root :is(.wc-check,.wc-check-investigation) button:hover:not(:disabled){border-color:var(--wc-viz-accent);background:var(--wc-viz-tint)}\n.wc-explorer-root :is(.wc-check,.wc-check-investigation) :is(button,textarea,input,summary):focus-visible{outline:3px solid var(--wc-viz-accent);outline-offset:3px}\n.wc-explorer-root :is(.wc-check,.wc-check-investigation) :is(h3,h4,h5,p)[tabindex='-1']:focus{outline:2px solid var(--wc-viz-accent);outline-offset:4px;border-radius:3px}\n.wc-explorer-root :is(.wc-check,.wc-check-investigation) button:disabled{cursor:default;color:var(--wc-viz-muted);opacity:1}\n.wc-explorer-root :is(.wc-check-progress,.wc-check-detail){font-size:13px;line-height:1.6;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-check-progress{border-bottom:1px solid var(--wc-viz-line);padding-bottom:12px;margin-bottom:16px}\n.wc-explorer-root .wc-check-question{font-size:18px;font-weight:800;margin:0 0 8px;line-height:1.5}\n.wc-explorer-root .wc-check-choices{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;margin:16px 0}\n.wc-explorer-root .wc-check-choices button{justify-content:flex-start;text-align:left;display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:54px;padding:12px 15px}\n.wc-explorer-root .wc-check-choices small{font-size:12px;font-weight:700;line-height:1.5}\n.wc-explorer-root .wc-check-choices button[data-answer-state='other']{color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-check-choices button[data-answer-state='correct']{color:var(--wc-viz-ink);border:2px solid var(--wc-viz-accent);background:var(--wc-viz-tint)}\n.wc-explorer-root .wc-check-choices button[data-answer-state='chosen']{color:var(--wc-viz-ink);border:2px dashed var(--wc-viz-accent)}\n.wc-explorer-root .wc-check-feedback{display:grid;gap:10px;padding:16px;border:1px solid var(--wc-viz-line);border-radius:15px;background:var(--wc-viz-paper)}\n.wc-explorer-root .wc-check-feedback>h4{font-size:17px;font-weight:800}\n.wc-explorer-root :is(.wc-check-concept,.wc-check-next){display:grid;gap:10px;padding-top:15px;margin-top:4px;border-top:1px solid var(--wc-viz-line)}\n.wc-explorer-root :is(.wc-check-concept,.wc-check-next) h5{font-size:14px;font-weight:800}\n.wc-explorer-root .wc-check-next button{justify-self:start;background:var(--wc-viz-accent);color:var(--wc-viz-accent-ink,#fff);border-color:var(--wc-viz-accent)}\n.wc-explorer-root .wc-check-next button:hover:not(:disabled){background:var(--wc-viz-accent);color:var(--wc-viz-accent-ink,#fff);filter:brightness(.94)}\n.wc-explorer-root .wc-check-empty{padding:14px;border-radius:12px;background:var(--wc-viz-paper);color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-check-investigation{margin:18px 0;padding:20px;border:2px solid var(--wc-viz-accent);border-radius:20px;background:var(--wc-viz-card);display:grid;gap:14px;box-shadow:0 8px 26px #1027350d}\n.wc-explorer-root .wc-check-panel-header{margin:0}.wc-explorer-root .wc-check-panel-header h4{font-size:19px;font-weight:800;margin-top:4px}\n.wc-explorer-root .wc-check-context{padding-left:12px;border-left:3px solid var(--wc-viz-accent);overflow-wrap:anywhere}\n.wc-explorer-root .wc-check-boundary{padding:12px 14px;border:1px solid var(--wc-viz-line);border-radius:12px;background:var(--wc-viz-paper);font-size:13px;line-height:1.65}\n.wc-explorer-root .wc-check-processes{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}\n.wc-explorer-root .wc-check-process{padding:16px;border:1px solid var(--wc-viz-line);border-radius:16px;background:var(--wc-viz-paper);min-width:0}\n.wc-explorer-root .wc-check-process h5{font-size:15px;font-weight:800}\n.wc-explorer-root .wc-check-state-flow{display:grid;grid-template-columns:minmax(0,1fr) 20px minmax(0,1fr);align-items:center;gap:8px;margin:12px 0}\n.wc-explorer-root .wc-check-state-flow>div{display:grid;justify-items:center;gap:5px;text-align:center;min-width:0}\n.wc-explorer-root .wc-check-state-flow small{font-size:12px;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-check-state-flow svg{height:54px;width:54px;color:var(--wc-viz-accent)}\n.wc-explorer-root .wc-check-state-flow strong{font-size:13px;overflow-wrap:anywhere;line-height:1.5}\n.wc-explorer-root .wc-check-process dl{display:grid;gap:8px;margin:12px 0}\n.wc-explorer-root .wc-check-process dl>div{display:grid;grid-template-columns:72px minmax(0,1fr);gap:8px;font-size:13px;line-height:1.55}\n.wc-explorer-root .wc-check-process dt{color:var(--wc-viz-muted)}.wc-explorer-root .wc-check-process dd{margin:0;overflow-wrap:anywhere}\n.wc-explorer-root .wc-check-pores{padding:14px;border-radius:16px;background:var(--wc-viz-paper);border:1px solid var(--wc-viz-line);color:var(--wc-viz-accent)}\n.wc-explorer-root .wc-check-pores svg{width:100%;max-height:120px}.wc-explorer-root .wc-check-pores figcaption{color:var(--wc-viz-muted);font-size:13px;line-height:1.6}\n.wc-explorer-root .wc-check-field-label{font-size:14px;font-weight:800}\n.wc-explorer-root .wc-check-investigation textarea{width:100%;max-width:100%;min-height:108px;resize:vertical;border:1px solid var(--wc-viz-line);border-radius:12px;padding:12px;background:var(--wc-viz-paper);color:var(--wc-viz-ink);font:inherit;font-size:14px;line-height:1.65}\n.wc-explorer-root .wc-check-investigation>button{justify-self:start}\n.wc-explorer-root .wc-check-review{display:grid;gap:12px;border-top:1px solid var(--wc-viz-line);padding-top:16px}\n.wc-explorer-root .wc-check-review fieldset{border:0;padding:0;margin:0;display:grid;gap:8px;min-width:0}\n.wc-explorer-root .wc-check-review legend{font-size:15px;font-weight:800;margin-bottom:10px}\n.wc-explorer-root .wc-check-revised-choice{display:flex;align-items:center;gap:12px;min-height:48px;padding:10px 12px;border:1px solid var(--wc-viz-line);border-radius:12px;background:var(--wc-viz-paper);cursor:pointer;overflow-wrap:anywhere}\n.wc-explorer-root .wc-check-revised-choice input{width:18px;height:18px;margin:0;flex-shrink:0;accent-color:var(--wc-viz-accent)}\n.wc-explorer-root .wc-check-review>button{justify-self:start}\n.wc-explorer-root .wc-check-history{border:1px solid var(--wc-viz-line);border-radius:15px;background:var(--wc-viz-card);margin-top:16px}\n.wc-explorer-root .wc-check-history summary{min-height:52px;padding:14px 16px;font-size:14px;font-weight:800;cursor:pointer;color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-check-history>div{padding:0 16px 16px;display:grid;gap:14px}\n.wc-explorer-root .wc-check-history article{display:grid;gap:8px;padding-top:14px;border-top:1px solid var(--wc-viz-line)}\n.wc-explorer-root .wc-check-history h4{font-size:15px;font-weight:800}\n.wc-explorer-root .wc-check-history-note{white-space:pre-wrap;overflow-wrap:anywhere}\n@container wc-check (min-width:560px){.wc-explorer-root .wc-check-choices,.wc-explorer-root .wc-check-processes{grid-template-columns:repeat(2,minmax(0,1fr))}}\n@container wc-check (max-width:360px){.wc-explorer-root .wc-check-card,.wc-explorer-root .wc-check-investigation{padding:14px}.wc-explorer-root .wc-check-task-header>button,.wc-explorer-root .wc-check-actions,.wc-explorer-root .wc-check-actions button{width:100%}.wc-explorer-root .wc-check-feedback{padding:12px}.wc-explorer-root .wc-check-next button{width:100%}}\n@media(forced-colors:active){\n .wc-explorer-root :is([data-wc-check],[data-wc-check-investigation]){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important}\n .wc-explorer-root :is([data-wc-check],[data-wc-check-investigation]) :is(section,article,header,fieldset,details,figure,textarea,.wc-check-feedback,.wc-check-concept,.wc-check-next,.wc-check-boundary,.wc-check-empty,.wc-check-revised-choice){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important}\n .wc-explorer-root :is([data-wc-check],[data-wc-check-investigation]) :is(h3,h4,h5,p,span,strong,small,dl,dt,dd,label,legend,summary,figcaption,svg){color:CanvasText!important;border-color:CanvasText!important}\n .wc-explorer-root :is([data-wc-check],[data-wc-check-investigation]) button{forced-color-adjust:none;background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;filter:none!important}\n .wc-explorer-root :is([data-wc-check],[data-wc-check-investigation]) :is(button,input,textarea,summary):focus-visible{outline-color:Highlight!important}\n .wc-explorer-root :is([data-wc-check],[data-wc-check-investigation]) [tabindex='-1']:focus{outline-color:Highlight!important}\n}\n";
+    if (wcFiveStyle) wcFiveStyle.textContent += ".wc-explorer-root .wc-process-compare{container:wc-compare-panel / inline-size}\n.wc-explorer-root .wc-process-compare .wc-process-cards,.wc-explorer-root .wc-process-compare .wc-process-selectors,.wc-explorer-root .wc-process-compare .wc-process-question-modes,.wc-explorer-root .wc-process-compare .wc-process-answer{grid-template-columns:minmax(0,1fr)}\n.wc-explorer-root .wc-process-compare .wc-process-pairs>button{flex-basis:100%;font-size:14px;line-height:1.55}\n.wc-explorer-root .wc-process-compare .wc-process-card{container:wc-compare-card / inline-size;padding:16px;border-radius:14px}\n.wc-explorer-root .wc-process-compare .wc-process-card h4{font-size:17px;line-height:1.45}\n.wc-explorer-root .wc-process-compare .wc-process-letter{font-size:14px;width:30px;height:30px}\n.wc-explorer-root .wc-process-compare .wc-process-state-flow{grid-template-columns:minmax(0,1fr);gap:9px;align-items:stretch;margin-bottom:16px}\n.wc-explorer-root .wc-process-compare .wc-process-state{grid-template-rows:auto 64px auto;align-content:start;min-height:156px;padding:14px 12px;gap:7px}\n.wc-explorer-root .wc-process-compare .wc-process-state svg{width:64px;height:64px;max-width:100%}\n.wc-explorer-root .wc-process-compare .wc-process-state-arrow{transform:rotate(90deg);align-self:center;justify-self:center;font-size:20px;line-height:32px;width:20px;height:32px}\n.wc-explorer-root .wc-process-compare .wc-process-state small{font-size:13px;line-height:1.5;letter-spacing:.025em}\n.wc-explorer-root .wc-process-compare .wc-process-state strong{font-size:14px;line-height:1.5;max-width:100%;text-align:center}\n.wc-explorer-root .wc-process-compare .wc-process-facts{gap:9px}\n.wc-explorer-root .wc-process-compare .wc-process-facts>div{padding:10px 12px;border:1px solid var(--wc-viz-line);border-radius:9px;background:var(--wc-viz-card)}\n.wc-explorer-root .wc-process-compare .wc-process-facts dt{font-size:13px;line-height:1.5}\n.wc-explorer-root .wc-process-compare .wc-process-facts dd{margin:4px 0 0;font-size:14px;line-height:1.65}\n.wc-explorer-root .wc-process-compare .wc-process-caveat{font-size:13px;line-height:1.65;margin-top:14px;padding:11px 12px}\n.wc-explorer-root .wc-process-compare .wc-process-energy>strong{font-size:13px;line-height:1.5}\n.wc-explorer-root .wc-process-compare .wc-process-energy>p{font-size:14px;line-height:1.65}\n.wc-explorer-root .wc-process-compare .wc-process-selectors label,.wc-explorer-root .wc-process-compare .wc-process-reflection label{font-size:13px;line-height:1.5}\n.wc-explorer-root .wc-process-compare .wc-process-selectors select,.wc-explorer-root .wc-process-compare .wc-process-reflection textarea{font-size:14px;line-height:1.6}\n.wc-explorer-root .wc-process-compare .wc-process-intro,.wc-explorer-root .wc-process-compare .wc-process-reflection p,.wc-explorer-root .wc-process-compare .wc-process-feedback ul,.wc-explorer-root .wc-process-compare .wc-process-question-modes small,.wc-explorer-root .wc-process-compare .wc-process-answer small{font-size:13px;line-height:1.65}\n.wc-explorer-root .wc-process-compare .wc-process-question-modes strong,.wc-explorer-root .wc-process-compare .wc-process-answer strong,.wc-explorer-root .wc-process-compare .wc-process-check{font-size:14px;line-height:1.5}\n.wc-explorer-root .wc-process-compare .wc-process-compare-summary small{font-size:13px;line-height:1.55}\n.wc-explorer-root .wc-process-compare :is(strong,small,h4,p,li,dt,dd,label,button){overflow-wrap:normal;word-break:normal}\n.wc-explorer-root.dark .wc-process-compare .wc-process-card[data-slot=first]{--wc-process-slot-color:#72ded3}\n@container wc-compare-panel (min-width:440px){.wc-explorer-root .wc-process-compare .wc-process-selectors,.wc-explorer-root .wc-process-compare .wc-process-question-modes,.wc-explorer-root .wc-process-compare .wc-process-answer{grid-template-columns:repeat(2,minmax(0,1fr))}}\n@container wc-compare-panel (min-width:680px){.wc-explorer-root .wc-process-compare .wc-process-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.wc-explorer-root .wc-process-compare .wc-process-pairs>button{flex-basis:180px}}\n@container wc-compare-card (min-width:280px){.wc-explorer-root .wc-process-compare .wc-process-state-flow{grid-template-columns:minmax(0,1fr) 20px minmax(0,1fr);gap:7px}.wc-explorer-root .wc-process-compare .wc-process-state-arrow{transform:none}}\n@media(forced-colors:active){.wc-explorer-root .wc-process-compare .wc-process-card{--wc-process-slot-color:CanvasText!important;--wc-process-slot-tint:Canvas!important}.wc-explorer-root .wc-process-compare .wc-process-facts>div{background:Canvas;border-color:CanvasText}.wc-explorer-root .wc-process-compare .wc-process-facts :is(dt,dd){color:CanvasText}}";
+    if (wcFiveStyle) wcFiveStyle.textContent += ".wc-pilot-root .wc-pilot-rainbow-science{container:wc-ray-lab / inline-size;margin-top:16px;padding-top:12px;border-top-color:var(--wc-pilot-line);background:var(--wc-pilot-paper);border-radius:12px}\n.wc-pilot-root .wc-pilot-rainbow-science>summary{min-height:44px;padding:10px 6px;font-size:15px;line-height:1.6;color:var(--wc-pilot-accent);border-radius:8px}\n.wc-pilot-root .wc-pilot-rainbow-science>summary:hover{background:var(--wc-pilot-tint)}\n.wc-pilot-root .wc-pilot-rainbow-science>summary:focus-visible{outline:3px solid var(--wc-pilot-accent);outline-offset:3px}\n.wc-pilot-root .wc-pilot-rainbow-raylab{grid-template-columns:minmax(0,1fr);gap:12px;margin-top:12px}\n.wc-pilot-root .wc-pilot-rainbow-ray-card{display:grid;grid-template-rows:auto auto 1fr;gap:8px;align-content:start;padding:14px;border:1px solid var(--wc-pilot-line);border-radius:14px;background:var(--wc-pilot-card)}\n.wc-pilot-root .wc-pilot-rainbow-ray-card>strong,.wc-pilot-root .wc-pilot-rainbow-science-grid strong{font-size:16px;line-height:1.45;color:var(--wc-pilot-ink)}\n.wc-pilot-root .wc-pilot-rainbow-ray-card>span,.wc-pilot-root .wc-pilot-rainbow-science-grid span{margin:0;font-size:13px;line-height:1.65;color:var(--wc-pilot-muted)}\n.wc-pilot-root .wc-pilot-drop-diagram{width:min(100%,240px);height:auto;max-height:none;margin:0 auto 4px;border:1px solid #486b6b;border-radius:12px;background:#0a1f31}\n.wc-pilot-root .wc-pilot-drop-shell{fill:rgba(125,211,252,.12);stroke:#7dd3fc;stroke-width:2}\n.wc-pilot-root .wc-pilot-drop-highlight{stroke:#bae6fd;stroke-width:2;opacity:.8}\n.wc-pilot-root .wc-pilot-ray-sun{stroke:#fde047}\n.wc-pilot-root .wc-pilot-ray-inside{stroke:#eaf8ff;animation:none}\n.wc-pilot-root .wc-pilot-ray-red{stroke:#f87171}\n.wc-pilot-root .wc-pilot-ray-violet{stroke:#a78bfa;stroke-dasharray:3 2}\n.wc-pilot-root .wc-pilot-ray-bounce{fill:#fde047;stroke:#0a1f31;stroke-width:1.5}\n.wc-pilot-root .wc-pilot-ray-count{fill:#e0f2fe;font-size:14px}\n.wc-pilot-root .wc-pilot-dark-band-mini{width:min(100%,220px);height:108px;margin:0 auto 4px;border:1px solid #64748b;border-radius:12px;background:#d8edf7}\n.wc-pilot-root .wc-pilot-dark-band-mini .is-secondary{width:192px;height:157.5px;bottom:-70.5px;border-width:10.5px;border-color:#6940bf;opacity:.8}\n.wc-pilot-root .wc-pilot-dark-band-mini .is-band{width:163.5px;height:132px;bottom:-57px;border-width:22.5px;border-color:#243747}\n.wc-pilot-root .wc-pilot-dark-band-mini .is-primary{width:132px;height:103.5px;bottom:-40.5px;border-width:10.5px;border-color:#b45309;opacity:1}\n.wc-pilot-root .wc-pilot-rainbow-science-grid{grid-template-columns:minmax(0,1fr);margin-top:12px}\n.wc-pilot-root .wc-pilot-rainbow-science-grid>div{padding:14px;border:1px solid var(--wc-pilot-line);border-radius:12px;background:var(--wc-pilot-tint)}\n.wc-pilot-root .wc-pilot-rainbow-science-grid span{margin-top:6px}\n.wc-pilot-root .wc-pilot-rainbow-science-note{margin-top:12px;font-size:13px;line-height:1.65;color:var(--wc-pilot-muted)}\n.wc-pilot-root .wc-pilot-rainbow-science :is(strong,span,p,summary){overflow-wrap:normal;word-break:normal}\n@container wc-ray-lab (max-width:280px){.wc-pilot-root .wc-pilot-rainbow-ray-card{padding:8px}}\n@container wc-ray-lab (min-width:560px){.wc-pilot-root .wc-pilot-rainbow-raylab{grid-template-columns:repeat(2,minmax(0,1fr))}.wc-pilot-root .wc-pilot-rainbow-ray-card:last-child{grid-column:1/-1;grid-template-columns:minmax(0,220px) minmax(0,1fr);grid-template-rows:auto 1fr;column-gap:18px}.wc-pilot-root .wc-pilot-rainbow-ray-card:last-child>.wc-pilot-dark-band-mini{grid-row:1/3;align-self:center}.wc-pilot-root .wc-pilot-rainbow-ray-card:last-child>strong{align-self:end}}\n@media(forced-colors:active){.wc-pilot-root .wc-pilot-drop-diagram,.wc-pilot-root .wc-pilot-dark-band-mini{background:Canvas;border-color:CanvasText}.wc-pilot-root .wc-pilot-drop-shell{fill:none;stroke:CanvasText}.wc-pilot-root :is(.wc-pilot-drop-highlight,.wc-pilot-ray-sun,.wc-pilot-ray-inside,.wc-pilot-ray-red,.wc-pilot-ray-violet){stroke:CanvasText}.wc-pilot-root .wc-pilot-ray-count{fill:CanvasText}.wc-pilot-root .wc-pilot-ray-bounce{fill:CanvasText;stroke:Canvas}.wc-pilot-root .wc-pilot-dark-band-mini :is(.is-primary,.is-secondary){border-color:CanvasText;opacity:1}.wc-pilot-root .wc-pilot-dark-band-mini .is-secondary{border-style:double}.wc-pilot-root .wc-pilot-dark-band-mini .is-band{border-color:CanvasText;border-style:dashed}}";
+    if (wcFiveStyle) wcFiveStyle.textContent += ".wc-hydro-quest{--wc-hydro-paper:#eef7f4;--wc-hydro-card:#ffffff;--wc-hydro-ink:#123f37;--wc-hydro-muted:#385e55;--wc-hydro-line:#98bdb1;--wc-hydro-accent:#176450;--wc-hydro-complete:#ddf2e6;container:wc-hydro-quest / inline-size;margin:0 0 16px;padding:18px;border:1px solid var(--wc-hydro-line);border-radius:18px;background:var(--wc-hydro-paper);color:var(--wc-hydro-ink);box-shadow:0 8px 24px rgba(18,63,55,.06)}\n.wc-hydro-quest[data-wc-hydro-theme=dark]{--wc-hydro-paper:#102c29;--wc-hydro-card:#173b35;--wc-hydro-ink:#f0fdf4;--wc-hydro-muted:#c2e2d5;--wc-hydro-line:#648d7f;--wc-hydro-accent:#88e1bc;--wc-hydro-complete:#214b3c;background:var(--wc-hydro-paper)}\n.wc-hydro-quest .wc-hydro-head{align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px}\n.wc-hydro-quest .wc-hydro-kicker{font-size:13px;line-height:1.5;letter-spacing:.06em;color:var(--wc-hydro-muted)}\n.wc-hydro-quest .wc-hydro-head .wc-hydro-rank{margin:4px 0 0;font-size:24px;line-height:1.45;font-weight:900;color:var(--wc-hydro-ink)}\n.wc-hydro-quest .wc-hydro-score{padding:8px 12px;border:1px solid var(--wc-hydro-line);border-radius:12px;background:var(--wc-hydro-card);color:var(--wc-hydro-ink);font-size:22px;line-height:1.4;white-space:nowrap;font-variant-numeric:tabular-nums}\n.wc-hydro-quest .wc-hydro-progress{height:12px;margin:0 0 16px;border:1px solid var(--wc-hydro-line);border-radius:999px;background:var(--wc-hydro-card)}\n.wc-hydro-quest .wc-hydro-progress>span{height:100%;border-radius:inherit;background:var(--wc-hydro-accent);transition:none}\n.wc-hydro-quest #wcHydroQuestStatus{position:static;width:auto;height:auto;margin:0 0 14px;padding:0;overflow:visible;clip:auto;clip-path:none;white-space:normal;font-size:13px;line-height:1.6;color:var(--wc-hydro-muted)}\n.wc-hydro-quest .wc-hydro-missions{grid-template-columns:minmax(0,1fr);gap:12px}\n.wc-hydro-quest .wc-hydro-mission{grid-template-columns:28px minmax(0,1fr);gap:8px 10px;align-items:start;min-width:0;padding:14px;border:1px solid var(--wc-hydro-line);border-radius:12px;background:var(--wc-hydro-card);color:var(--wc-hydro-ink)}\n.wc-hydro-quest .wc-hydro-mission.is-complete{background:var(--wc-hydro-complete);border-color:var(--wc-hydro-accent)}\n.wc-hydro-quest .wc-hydro-mark{display:grid;place-items:center;width:28px;height:28px;border:1px solid var(--wc-hydro-line);border-radius:50%;background:var(--wc-hydro-paper);color:var(--wc-hydro-ink);font-size:18px;line-height:1}\n.wc-hydro-quest .wc-hydro-mission.is-complete .wc-hydro-mark{border-color:var(--wc-hydro-accent);color:var(--wc-hydro-ink)}\n.wc-hydro-quest .wc-hydro-mission>span:nth-child(2){min-width:0}\n.wc-hydro-quest .wc-hydro-mission strong{display:block;font-size:15px;line-height:1.5;color:var(--wc-hydro-ink);overflow-wrap:normal;word-break:normal}\n.wc-hydro-quest .wc-hydro-mission small{display:block;margin-top:4px;font-size:13px;line-height:1.6;color:var(--wc-hydro-muted);overflow-wrap:normal;word-break:normal}\n.wc-hydro-quest .wc-hydro-state{grid-column:2;justify-self:start;padding:3px 8px;border:1px solid var(--wc-hydro-line);border-radius:999px;background:var(--wc-hydro-paper);color:var(--wc-hydro-ink);font-size:13px;line-height:1.5;font-weight:700}\n@container wc-hydro-quest (min-width:560px){.wc-hydro-quest .wc-hydro-missions{grid-template-columns:repeat(2,minmax(0,1fr))}}\n@container wc-hydro-quest (min-width:900px){.wc-hydro-quest .wc-hydro-missions{grid-template-columns:repeat(3,minmax(0,1fr))}}\n@container wc-hydro-quest (max-width:280px){.wc-hydro-quest .wc-hydro-mission{padding:10px;gap:8px}.wc-hydro-quest .wc-hydro-head{gap:10px}.wc-hydro-quest .wc-hydro-head .wc-hydro-rank{font-size:21px}}\n@media(forced-colors:active){.wc-hydro-quest,.wc-hydro-quest :is(.wc-hydro-score,.wc-hydro-mission,.wc-hydro-mark,.wc-hydro-state){background:Canvas;color:CanvasText;border-color:CanvasText;box-shadow:none}.wc-hydro-quest :is(.wc-hydro-kicker,.wc-hydro-head .wc-hydro-rank,.wc-hydro-mission strong,.wc-hydro-mission small,#wcHydroQuestStatus){color:CanvasText}.wc-hydro-quest .wc-hydro-progress{background:Canvas;border-color:CanvasText}.wc-hydro-quest .wc-hydro-progress>span{background:Highlight}.wc-hydro-quest .wc-hydro-mission.is-complete{border-style:double;border-width:3px}.wc-hydro-quest .wc-hydro-mission.is-complete .wc-hydro-mark{border-color:CanvasText}}";
+    if (wcFiveStyle) wcFiveStyle.textContent += ".wc-precip-lab .wc-precip-layout .wc-precip-visual{container:wc-storm-readouts / inline-size}\n.wc-precip-lab .wc-precip-layout .wc-precip-visual .wc-precip-result{margin-top:16px;padding:18px;border:1px solid var(--storm-line);border-left:4px solid var(--wc-precip-accent-ink);border-radius:16px;background:var(--storm-card);color:var(--storm-ink);box-shadow:0 5px 18px #173c4508}\n.wc-precip-lab .wc-precip-layout .wc-precip-visual .wc-precip-result-top{align-items:center;gap:10px 14px;flex-wrap:wrap}\n.wc-precip-lab .wc-precip-layout .wc-precip-visual .wc-precip-result-label{font-size:22px;line-height:1.45;letter-spacing:0;overflow-wrap:normal;word-break:normal}\n.wc-precip-lab .wc-precip-layout .wc-precip-visual .wc-precip-result-badge{padding:4px 9px;border:1px solid var(--storm-line);border-radius:999px;background:var(--storm-tint);color:var(--storm-ink);font-size:13px;line-height:1.5;letter-spacing:.025em;white-space:normal;overflow-wrap:normal;word-break:normal}\n.wc-precip-lab .wc-precip-layout .wc-precip-visual .wc-precip-result p{margin:10px 0 0;font-size:14px;line-height:1.65;color:var(--storm-muted);overflow-wrap:normal;word-break:normal}\n.wc-precip-lab .wc-precip-layout .wc-precip-visual .wc-precip-result p.wc-precip-causal{margin-top:12px;padding-top:12px;border-top:1px solid var(--storm-line);font-size:14px!important;line-height:1.65;color:var(--storm-ink)!important;font-weight:650}\n.wc-precip-lab .wc-precip-layout .wc-precip-visual .wc-precip-metrics{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin-top:12px;align-items:stretch}\n.wc-precip-lab .wc-precip-layout .wc-precip-visual .wc-precip-metric{display:grid;align-content:start;gap:6px;min-width:0;padding:16px;border:1px solid var(--storm-line);border-radius:14px;background:var(--storm-card);color:var(--storm-ink);box-shadow:none}\n.wc-precip-lab .wc-precip-layout .wc-precip-visual .wc-precip-metric>span{font-size:13px;line-height:1.5;font-weight:750;letter-spacing:.01em;text-transform:none;color:var(--storm-muted);overflow-wrap:normal;word-break:normal}\n.wc-precip-lab .wc-precip-layout .wc-precip-visual .wc-precip-metric>strong{margin:0;font-size:16px;line-height:1.55;font-weight:800;color:var(--storm-ink);white-space:normal;overflow-wrap:normal;word-break:normal;font-variant-numeric:tabular-nums}\n.wc-precip-lab .wc-precip-layout .wc-precip-visual[data-wc-storm-readout-theme=dark] :is(.wc-precip-result,.wc-precip-metrics){--storm-card:#173741;--storm-ink:#edf8f4;--storm-muted:#bed4d6;--storm-line:#456a70;--storm-tint:#1d424b}\n.wc-precip-lab .wc-precip-layout .wc-precip-visual[data-wc-storm-readout-theme=contrast] :is(.wc-precip-result,.wc-precip-metrics){--storm-card:#000000;--storm-ink:#ffff00;--storm-muted:#ffff00;--storm-line:#ffff00;--storm-tint:#000000;--wc-precip-accent-ink:#ffff00}\n@container wc-storm-readouts (min-width:400px){.wc-precip-lab .wc-precip-layout .wc-precip-visual .wc-precip-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}\n@container wc-storm-readouts (min-width:680px){.wc-precip-lab .wc-precip-layout .wc-precip-visual .wc-precip-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}\n@media(forced-colors:active){.wc-precip-lab .wc-precip-layout .wc-precip-visual :is(.wc-precip-result,.wc-precip-result-badge,.wc-precip-metric){background:Canvas;color:CanvasText;border-color:CanvasText;box-shadow:none}.wc-precip-lab .wc-precip-layout .wc-precip-visual :is(.wc-precip-result-label,.wc-precip-result p,.wc-precip-metric>span,.wc-precip-metric>strong){color:CanvasText}.wc-precip-lab .wc-precip-layout .wc-precip-visual .wc-precip-result p.wc-precip-causal{color:CanvasText!important;border-color:CanvasText}}";
   }
   if (typeof document !== 'undefined') {
     var wcChapterStyle = document.getElementById('wc-five-mode-style');
     if (wcChapterStyle) wcChapterStyle.textContent += "/* Read a chapter without moving the parcel. */\n.wc-explorer-root .wc-journey-panel{container:wc-journey / inline-size}\n.wc-explorer-root .wc-journey-panel>div:first-child{flex-wrap:wrap;gap:12px}\n.wc-explorer-root .wc-journey-panel>div:first-child>div:first-child{flex-wrap:wrap}\n.wc-explorer-root .wc-journey-chapters{margin:16px 0;min-width:0;color:var(--wc-viz-ink);font-size:14px;line-height:1.6}\n.wc-explorer-root .wc-journey-chapters *{box-sizing:border-box;min-width:0}\n.wc-explorer-root .wc-journey-chapters :is(h4,h5,p,dl,dd){margin:0}\n.wc-explorer-root .wc-chapters-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}\n.wc-explorer-root .wc-chapters-head h4{font-size:20px;font-weight:800;line-height:1.4;color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-chapters-kicker{display:block;font-size:12px!important;line-height:1.5;color:var(--wc-viz-muted);font-weight:700;letter-spacing:.025em}\n.wc-explorer-root .wc-journey-chapters button{appearance:none;min-height:44px;min-width:44px;padding:10px 12px;border:1px solid var(--wc-viz-line);border-radius:12px;background:var(--wc-viz-card);color:var(--wc-viz-ink);font:inherit;font-size:14px;font-weight:700;line-height:1.5;white-space:normal;overflow-wrap:anywhere;cursor:pointer;box-shadow:none}\n.wc-explorer-root .wc-journey-chapters button:hover{background:var(--wc-viz-tint);border-color:var(--wc-viz-accent)}\n.wc-explorer-root .wc-journey-chapters button[aria-pressed=true]{background:var(--wc-viz-tint);border:2px solid var(--wc-viz-accent)}\n.wc-explorer-root .wc-journey-chapters button:focus-visible{outline:3px solid var(--wc-viz-accent);outline-offset:3px}\n.wc-explorer-root #wcJourneyChapterTitle:focus{outline:2px solid var(--wc-viz-accent);outline-offset:5px;border-radius:3px}\n.wc-explorer-root .wc-journey-chapters .wc-chapters-help{margin-top:10px;color:var(--wc-viz-muted);font-size:13px;line-height:1.65}\n.wc-explorer-root .wc-chapters-parcel{margin:12px 0!important;padding:10px 12px;border-left:3px solid var(--wc-viz-accent);background:var(--wc-viz-paper);border-radius:0 10px 10px 0;overflow-wrap:anywhere}\n.wc-explorer-root .wc-journey-chapters .wc-journey-timeline{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}\n.wc-explorer-root .wc-journey-chapters .wc-timeline-step{padding:0;border:0;color:inherit;background:none;text-align:left;box-shadow:none}\n.wc-explorer-root .wc-timeline-step>button{display:flex;align-items:flex-start;gap:8px;text-align:left;width:100%;height:100%;min-height:98px;padding:12px 10px}\n.wc-explorer-root .wc-chapter-number{display:grid;place-items:center;flex:0 0 24px;width:24px;height:24px;border:1px solid var(--wc-viz-line);border-radius:8px;background:var(--wc-viz-paper);font-size:13px;color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-chapter-label{display:grid;align-content:start;gap:4px}\n.wc-explorer-root .wc-journey-chapters .wc-timeline-step strong{font-size:14px;line-height:1.4;color:var(--wc-viz-ink);font-weight:800;white-space:normal;overflow-wrap:anywhere}\n.wc-explorer-root .wc-chapter-label small{font-size:12px;line-height:1.5;color:var(--wc-viz-muted);font-weight:500}\n.wc-explorer-root .wc-chapter-current{display:block;font-size:12px;font-weight:800;color:var(--wc-viz-ink);text-decoration:underline;text-underline-offset:3px}\n.wc-explorer-root .wc-chapter-card{display:grid;gap:14px;padding:18px;border:1px solid var(--wc-viz-line);border-top:3px solid var(--wc-viz-accent);border-radius:17px;background:var(--wc-viz-card);box-shadow:0 4px 18px #10273508}\n.wc-explorer-root .wc-chapter-card h5{color:var(--wc-viz-ink);font-size:19px;font-weight:800;line-height:1.45;overflow-wrap:anywhere}\n.wc-explorer-root .wc-chapter-land{display:grid;gap:8px}\n.wc-explorer-root .wc-chapter-land>p{font-weight:800;font-size:14px}\n.wc-explorer-root .wc-chapter-land-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}\n.wc-explorer-root .wc-chapter-land-options button{font-size:13px}\n.wc-explorer-root .wc-chapter-flow{display:grid;grid-template-columns:minmax(0,1fr) 20px minmax(0,1fr);align-items:stretch;gap:7px}\n.wc-explorer-root .wc-chapter-water{display:grid;align-content:start;justify-items:center;gap:7px;text-align:center;padding:12px 8px;border:1px solid var(--wc-viz-line);border-radius:13px;background:var(--wc-viz-paper);overflow-wrap:anywhere}\n.wc-explorer-root .wc-chapter-water small{font-size:12px;line-height:1.5;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-chapter-water strong{font-size:14px;line-height:1.45;color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-chapter-water>span{font-size:13px;line-height:1.5;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-chapter-water svg{width:62px;height:62px;color:var(--wc-viz-accent)}\n.wc-explorer-root .wc-chapter-direction{display:grid;place-items:center;color:var(--wc-viz-accent);font-size:25px;font-weight:700}\n.wc-explorer-root .wc-chapter-facts{display:grid;gap:10px}\n.wc-explorer-root .wc-chapter-facts>div{padding:11px 13px;border:1px solid var(--wc-viz-line);border-radius:12px;background:var(--wc-viz-paper)}\n.wc-explorer-root .wc-chapter-facts dt{font-size:12px;font-weight:800;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-chapter-facts dd{margin-top:4px;font-size:14px;line-height:1.6;color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-chapter-facts dd small{display:block;margin-top:4px;font-size:13px;line-height:1.6;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-chapter-energy{border-left:4px solid var(--wc-viz-accent)!important}\n.wc-explorer-root .wc-chapter-energy[data-energy-transfer=absorbed]{border-left-style:double!important;border-left-width:6px!important}\n.wc-explorer-root .wc-chapter-energy[data-energy-transfer=released]{border-left-style:dashed!important}\n.wc-explorer-root .wc-chapter-question{padding-top:12px;border-top:1px solid var(--wc-viz-line);font-size:14px}\n.wc-explorer-root .wc-chapter-question strong{display:block;margin-bottom:5px;color:var(--wc-viz-ink)}\n.wc-explorer-root .wc-journey-chapters .wc-chapter-note{padding:12px;border-radius:12px;background:var(--wc-viz-tint);color:var(--wc-viz-ink);font-size:13px;line-height:1.65}\n.wc-explorer-root .wc-journey-panel .wc-journey-icon-btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;width:auto;min-width:44px;padding:9px 13px;font-size:14px;line-height:1.5;border-radius:10px}\n.wc-explorer-root .wc-journey-panel .wc-speed-segments button{min-height:44px;min-width:48px;font-size:14px}\n.wc-explorer-root .wc-journey-panel .wc-replay-controls{padding:14px;border-radius:14px}\n.wc-explorer-root .wc-journey-panel .wc-replay-head strong{font-size:15px}\n.wc-explorer-root .wc-journey-panel .wc-replay-head span{font-size:13px;line-height:1.5}\n.wc-explorer-root .wc-journey-panel .wc-journey-scrub{min-height:44px;margin:8px 0;accent-color:var(--wc-viz-accent)}\n.wc-explorer-root .wc-journey-panel .wc-replay-scale{font-size:12px;line-height:1.5;flex-wrap:wrap}\n.wc-explorer-root .wc-journey-panel .wc-replay-resume{min-height:44px;padding:10px 12px;font-size:14px}\n.wc-explorer-root .wc-journey-panel .wc-journey-choice-receipt{grid-template-columns:minmax(0,1fr);gap:12px;padding:14px}\n.wc-explorer-root .wc-journey-panel .wc-journey-choice-receipt>div{min-width:0}\n.wc-explorer-root .wc-journey-panel .wc-journey-choice-receipt-kicker{font-size:12px;line-height:1.5}\n.wc-explorer-root .wc-journey-panel .wc-journey-choice-receipt strong{font-size:16px;line-height:1.45;overflow-wrap:normal;word-break:normal}\n.wc-explorer-root .wc-journey-panel .wc-journey-choice-receipt-copy{font-size:13px;line-height:1.65;overflow-wrap:normal;word-break:normal}\n.wc-explorer-root .wc-journey-panel .wc-journey-choice-signal{font-size:12px;line-height:1.6}\n.wc-explorer-root .wc-journey-panel .wc-journey-choice-count{font-size:13px;line-height:1.5}\n.wc-explorer-root .wc-journey-panel>div:first-child button{min-height:44px;min-width:44px;font-size:14px;line-height:1.5;white-space:normal}\n@container wc-journey (min-width:640px){.wc-explorer-root .wc-journey-panel .wc-journey-choice-receipt{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr) auto}}\n@container wc-journey (min-width:640px){.wc-explorer-root .wc-journey-chapters .wc-journey-timeline{grid-template-columns:repeat(3,minmax(0,1fr))}.wc-explorer-root .wc-chapter-card{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:14px 20px}.wc-explorer-root .wc-chapter-card>:is(p,h5,.wc-chapter-land,.wc-chapter-question){grid-column:1/-1}.wc-explorer-root .wc-chapter-land-options{grid-template-columns:repeat(3,minmax(0,1fr))}.wc-explorer-root .wc-chapter-flow{align-self:start}.wc-explorer-root .wc-chapter-water{min-height:218px}.wc-explorer-root .wc-chapter-note{grid-column:1/-1}}\n@container wc-journey (max-width:360px){.wc-explorer-root .wc-chapter-card{padding:14px}.wc-explorer-root .wc-chapters-head>button{width:100%}.wc-explorer-root .wc-timeline-step>button{display:grid;gap:6px;padding:10px}.wc-explorer-root .wc-chapter-flow{gap:4px;grid-template-columns:minmax(0,1fr) 16px minmax(0,1fr)}.wc-explorer-root .wc-chapter-water{padding:10px 5px}.wc-explorer-root .wc-chapter-water strong{font-size:13px}.wc-explorer-root .wc-chapter-water svg{width:48px;height:48px}}\n@media(forced-colors:active){.wc-explorer-root .wc-journey-chapters,.wc-explorer-root .wc-journey-chapters :is(article,div,span,p,small,strong,h4,h5,dl,dt,dd,svg){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important}.wc-explorer-root .wc-journey-chapters button{forced-color-adjust:none;background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}.wc-explorer-root .wc-journey-chapters button[aria-pressed=true]{border-color:Highlight!important;border-width:3px!important}.wc-explorer-root .wc-journey-chapters button>span,.wc-explorer-root .wc-journey-chapters button :is(strong,small,span){forced-color-adjust:none;background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}.wc-explorer-root .wc-journey-chapters button:focus-visible,.wc-explorer-root #wcJourneyChapterTitle:focus{outline-color:Highlight!important}.wc-explorer-root .wc-journey-chapters .wc-timeline-step[data-replay-focus=true]{outline:none}}\n";
+    if (wcChapterStyle) wcChapterStyle.textContent += ".wc-explorer-root .wc-journey-chapters .wc-chapter-land{container:wc-land-pathways / inline-size}\n.wc-explorer-root .wc-journey-chapters .wc-chapter-land .wc-chapter-land-options{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}\n.wc-explorer-root .wc-journey-chapters .wc-chapter-land-overview{width:100%;text-align:left}\n.wc-explorer-root .wc-journey-chapters .wc-chapter-land-routes{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}\n.wc-explorer-root .wc-journey-chapters .wc-chapter-land-pathway{padding:12px;border:1px solid var(--wc-viz-line);border-radius:13px;background:var(--wc-viz-paper);min-width:0}\n.wc-explorer-root .wc-journey-chapters .wc-chapter-land-pathway[data-active=true]{border-color:var(--wc-viz-accent);box-shadow:inset 3px 0 var(--wc-viz-accent)}\n.wc-explorer-root .wc-journey-chapters .wc-chapter-land-pathway header{display:grid;grid-template-columns:28px minmax(0,1fr);align-items:center;gap:8px}\n.wc-explorer-root .wc-journey-chapters .wc-chapter-land-pathway h6{margin:0;font-size:16px;line-height:1.45;font-weight:800;color:var(--wc-viz-ink);overflow-wrap:normal;word-break:normal}\n.wc-explorer-root .wc-journey-chapters .wc-chapter-land-pathway svg{width:28px;height:28px;color:var(--wc-viz-accent)}\n.wc-explorer-root .wc-journey-chapters .wc-chapter-land-pathway .wc-land-pathway-cue{margin:8px 0 10px;font-size:13px;line-height:1.6;color:var(--wc-viz-muted)}\n.wc-explorer-root .wc-journey-chapters .wc-land-pathway-choices{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}\n.wc-explorer-root .wc-journey-chapters .wc-land-pathway-choices button{text-align:left;width:100%;margin:0;font-size:14px;line-height:1.5}\n.wc-explorer-root .wc-journey-chapters .wc-chapter-land-pathway .wc-land-pathway-active{margin:8px 0 0;font-size:13px;line-height:1.5;font-weight:750;color:var(--wc-viz-ink)}\n@container wc-land-pathways (min-width:620px){.wc-explorer-root .wc-journey-chapters .wc-chapter-land-routes{grid-template-columns:repeat(3,minmax(0,1fr))}}\n@container wc-land-pathways (max-width:190px){.wc-explorer-root .wc-journey-chapters .wc-chapter-land-pathway header{grid-template-columns:minmax(0,1fr);gap:6px}}\n@media(forced-colors:active){.wc-explorer-root .wc-journey-chapters .wc-chapter-land-pathway[data-active=true]{border:2px solid Highlight!important;box-shadow:none}.wc-explorer-root .wc-journey-chapters .wc-chapter-land-pathway svg{color:CanvasText!important}.wc-explorer-root .wc-journey-chapters .wc-land-pathway-active{color:CanvasText!important}}";
   }
   if (typeof document !== 'undefined') {
     var wcChapterLayoutStyle = document.getElementById('wc-five-mode-style');
@@ -6413,6 +6784,99 @@ const d = labToolData.waterCycle || {};
             );
           }
 
+          function renderStewardConnections() {
+            var pending = steward.decisionPreview;
+            var decision = pending ? applyStewardTech(pending.techId, pending.componentId, true) : null;
+            var rows = WCStewardConnections.describe(steward.components, decision && decision.canApply ? decision.after : undefined);
+            var selected = rows.find(function(row) { return row.id === d.wcStewardConnection; }) || rows[0];
+            if (!selected) return null;
+            var titles = {
+              bufferFeedsHeadwaters: t('stem.watercycle.steward_connections_buffers_title', 'Buffers to headwaters'),
+              beaverHelpsFloodplain: t('stem.watercycle.steward_connections_wetlands_title', 'Wetlands to river'),
+              agCleansUp: t('stem.watercycle.steward_connections_farms_title', 'Farms to river'),
+              runRestoration: t('stem.watercycle.steward_connections_fish_title', 'Passage and shade to support')
+            };
+            var explanations = {
+              bufferFeedsHeadwaters: t('stem.watercycle.steward_connections_buffers_why', 'The campaign links healthy forest buffers with cleaner headwater streams.'),
+              beaverHelpsFloodplain: t('stem.watercycle.steward_connections_wetlands_why', 'The campaign links functioning wetlands with better river quality and habitat connection.'),
+              agCleansUp: t('stem.watercycle.steward_connections_farms_why', 'The campaign links improved agricultural quality with cleaner river water.'),
+              runRestoration: t('stem.watercycle.steward_connections_fish_why', 'This connection needs both river passage and healthy buffers. When both conditions hold at its year-end check, support rises across the watershed.')
+            };
+            function metric(field) { return field === 'connectivity' ? t('stem.watercycle.steward_connections_connection', 'Habitat connection') : field === 'support' ? t('stem.watercycle.steward_connections_support', 'Community support') : t('stem.watercycle.steward_connections_quality', 'Quality'); }
+            function status(value, compound) { return value === 'met' ? (compound ? t('stem.watercycle.steward_connections_conditions_met', 'Both conditions met now') : t('stem.watercycle.steward_connections_condition_met', 'Condition met now')) : value === 'unknown' ? t('stem.watercycle.steward_connections_unavailable', 'Score unavailable') : t('stem.watercycle.steward_connections_not_met', 'Not yet met in current scores'); }
+            function score(value) {
+              if (value === null || value === undefined) return t('stem.watercycle.steward_connections_missing', 'Not recorded');
+              var rounded = Math.round(value * 100) / 100;
+              return (rounded === value ? '' : '≈') + String(rounded);
+            }
+            function icon(id) {
+              var paths = {
+                forestBuffer: ['M6 22V14M18 22V14', 'M6 3 1 12h3l-3 5h10l-3-5h3ZM18 5l-4 7h2l-2 5h8l-2-5h2Z'],
+                headwaterStreams: ['M1 14 8 4l7 10M11 11l6-8 6 11', 'M9 14c-8 5 12 3 4 9'],
+                floodplainWetlands: ['M1 20c4-3 6 3 10 0s6 3 12 0M1 23c4-3 6 3 10 0s6 3 12 0', 'M7 19V5M5 6v5M9 4v6M18 19V8M16 7v6M20 9v5'],
+                agriculturalWatershed: ['M2 9 12 2l10 7M4 8v9h16V8M10 17v-6h4v6', 'M1 21h22M2 24l5-3M10 24l5-3M18 24l5-3'],
+                riverMainstem: ['M9 1c-12 9 19 7 6 15s1 7 1 7', 'M15 2c-6 6 13 5 8 11M3 16l-2 4M22 19l1 4'],
+                all: ['M2 20c3-4 5 4 10 0s7 4 10 0', 'M12 2 3 9v8M12 2l9 7v8M8 17v-6h8v6']
+              };
+              return h('svg', { className: 'wc-connection-icon', viewBox: '0 0 24 26', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true, focusable: false }, (paths[id] || paths.all).map(function(path, index) { return h('path', { key: index, d: path }); }));
+            }
+            function place(id) {
+              var def = getWatershedComponent(id);
+              return h('div', { key: id, className: 'wc-connection-place' }, icon(id), h('strong', null, def ? def.name : id));
+            }
+            var compound = selected.conditions.length > 1;
+            var allTargets = selected.targetIds.length === watershedComponents().length;
+            var displayEffects = selected.effects;
+            if (allTargets && selected.effects.length && selected.effects.every(function(effect) { return effect.field === selected.effects[0].field && effect.delta === selected.effects[0].delta; })) {
+              displayEffects = [{ targetId: 'all', field: selected.effects[0].field, delta: selected.effects[0].delta }];
+            }
+            var actions = [];
+            STEWARD_TECHNIQUES.forEach(function(tech) {
+              if (tech.appliesTo === 'any') return;
+              selected.sourceIds.forEach(function(id) { if (tech.appliesTo.indexOf(id) >= 0) actions.push({ tech: tech, id: id }); });
+            });
+            return h('details', { className: 'wc-steward-connections', 'data-wc-connections-theme': isContrast ? 'contrast' : isDark ? 'dark' : 'light' },
+              h('summary', null, icon('riverMainstem'), h('span', null, h('strong', null, t('stem.watercycle.steward_connections_open', 'Explore connected effects')), h('span', null, t('stem.watercycle.steward_connections_summary', 'Trace four year-end connections')))),
+              h('style', null, WC_STEWARD_CONNECTION_STYLE),
+              h('div', { className: 'wc-connection-body' },
+                h('p', { className: 'wc-connection-intro' }, t('stem.watercycle.steward_connections_intro', 'A change in one place can affect another. Choose a connection, read its conditions, then preview a relevant action.')),
+                h('div', { className: 'wc-connection-options', role: 'group', 'aria-label': t('stem.watercycle.steward_connections_choose', 'Choose a watershed connection') }, rows.map(function(row, index) {
+                  return h('button', { key: row.id, type: 'button', 'data-wc-connection': row.id, 'aria-pressed': selected.id === row.id, 'aria-controls': 'wcStewardConnectionDetail', onClick: function() { upd('wcStewardConnection', row.id); } },
+                    h('span', { className: 'wc-connection-number', 'aria-hidden': true }, index + 1), h('strong', null, titles[row.id]), h('span', { className: 'wc-connection-option-status' }, status(row.status, row.conditions.length > 1)));
+                })),
+                h('section', { id: 'wcStewardConnectionDetail', className: 'wc-connection-detail', 'data-wc-connection-detail': selected.id, 'aria-labelledby': 'wcStewardConnectionTitle' },
+                  h('div', { className: 'wc-connection-detail-heading' }, h('span', { className: 'wc-connection-kicker' }, t('stem.watercycle.steward_connections_selected', 'Selected connection')), h('h4', { id: 'wcStewardConnectionTitle' }, titles[selected.id])),
+                  h('div', { className: 'wc-connection-route' },
+                    h('div', { className: 'wc-connection-endpoint' }, h('span', { className: 'wc-connection-kicker' }, t('stem.watercycle.steward_connections_starts', 'Starts with')), selected.sourceIds.map(place)),
+                    h('div', { className: 'wc-connection-link' }, h('svg', { viewBox: '0 0 60 24', 'aria-hidden': true, focusable: false, fill: 'none', stroke: 'currentColor', strokeWidth: 2.5 }, h('path', { d: 'M3 12h50M44 4l10 8-10 8' })), h('span', null, t('stem.watercycle.steward_connections_year_end', 'Year-end check'))),
+                    h('div', { className: 'wc-connection-endpoint is-receiving' }, h('span', { className: 'wc-connection-kicker' }, t('stem.watercycle.steward_connections_affects', 'Can affect')), allTargets ? h('div', { className: 'wc-connection-place' }, icon('all'), h('strong', null, t('stem.watercycle.steward_connections_watershed', 'All six watershed places'))) : selected.targetIds.map(place))),
+                  h('p', null, explanations[selected.id]),
+                  h('div', { className: 'wc-connection-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': true, 'data-wc-current-status': selected.status }, titles[selected.id] + ' · ' + status(selected.status, compound)),
+                  h('h5', null, compound ? t('stem.watercycle.steward_connections_both', 'Both conditions must hold') : t('stem.watercycle.steward_connections_condition', 'Read the condition')),
+                  h('div', { className: 'wc-connection-conditions' }, selected.conditions.map(function(condition) {
+                    var def = getWatershedComponent(condition.componentId);
+                    var valid = typeof condition.value === 'number' && isFinite(condition.value);
+                    return h('div', { key: condition.componentId + condition.field, className: 'wc-connection-condition', 'data-wc-condition': condition.componentId + ':' + condition.field },
+                      h('strong', null, (def ? def.name : condition.componentId) + ' · ' + metric(condition.field)),
+                      h('div', { className: 'wc-connection-reading' }, h('span', null, t('stem.watercycle.steward_connections_current', 'Current score')), h('strong', null, score(condition.value)), h('span', null, t('stem.watercycle.steward_connections_out_of', '/ 100'))),
+                      h('div', { className: 'wc-connection-scale', 'aria-hidden': true }, h('span', { className: 'wc-connection-threshold', style: { left: condition.threshold + '%' } }), valid ? h('span', { className: 'wc-connection-score-mark', style: { left: Math.max(0, Math.min(100, condition.value)) + '%' } }) : null),
+                      h('div', { className: 'wc-connection-scale-labels', 'aria-hidden': true }, h('span', null, '0'), h('span', null, '100')),
+                      h('p', { className: 'wc-connection-requirement' }, t('stem.watercycle.steward_connections_scale_key', 'Dot: current score. Dashed line: threshold.')),
+                      h('p', { className: 'wc-connection-requirement' }, t('stem.watercycle.steward_connections_requirement', 'Requires a score above {threshold}. Exactly {threshold} does not meet the condition.').replace(/\{threshold\}/g, condition.threshold)),
+                      h('span', { className: 'wc-connection-condition-state' }, condition.met === null ? t('stem.watercycle.steward_connections_unavailable', 'Score unavailable') : condition.met ? t('stem.watercycle.steward_connections_above', 'Above the threshold') : t('stem.watercycle.steward_connections_below', 'At or below the threshold')),
+                      selected.previewStatus !== null ? h('p', { className: 'wc-connection-condition-preview' }, t('stem.watercycle.steward_connections_preview_score', 'After this action: {score} · {state}').replace('{score}', score(condition.previewValue)).replace('{state}', condition.previewMet === null ? t('stem.watercycle.steward_connections_unavailable', 'Score unavailable') : condition.previewMet ? t('stem.watercycle.steward_connections_above', 'Above the threshold') : t('stem.watercycle.steward_connections_below', 'At or below the threshold'))) : null);
+                  })),
+                  h('div', { className: 'wc-connection-effects' }, h('h5', null, t('stem.watercycle.steward_connections_effect', 'If the condition holds at the check')),
+                    h('ul', null, displayEffects.map(function(effect, index) { var def = getWatershedComponent(effect.targetId); return h('li', { key: index }, h('strong', null, t('stem.watercycle.steward_connections_up_to', 'Up to +{points} {metric}').replace('{points}', effect.delta).replace('{metric}', metric(effect.field))), ' · ', effect.targetId === 'all' ? t('stem.watercycle.steward_connections_each', 'Every watershed place') : def ? def.name : effect.targetId); })),
+                    h('p', null, t('stem.watercycle.steward_connections_cap', 'Game-score points; each score is capped at 100. Eligibility uses unrounded scores. ≈ marks a rounded display.'))),
+                  selected.previewStatus !== null && h('div', { className: 'wc-connection-preview', 'data-wc-preview-status': selected.previewStatus }, h('strong', null, t('stem.watercycle.steward_connections_if_applied', 'If this action is applied') + ' · ' + decision.tech.name), h('p', null, selected.previewStatus === 'met' ? (compound ? t('stem.watercycle.steward_connections_preview_both_met', 'Both conditions would be met after this action') : t('stem.watercycle.steward_connections_preview_met', 'Condition would be met after this action')) : selected.previewStatus === 'unknown' ? t('stem.watercycle.steward_connections_preview_unknown', 'After-action scores unavailable') : t('stem.watercycle.steward_connections_preview_unmet', 'The condition would still be unmet after this action')), h('p', null, t('stem.watercycle.steward_connections_immediate', 'This checks the immediate preview scores only. Applying the action spends hours; inspecting this connection does not.'))),
+                  h('div', { className: 'wc-connection-actions' }, h('h5', null, t('stem.watercycle.steward_connections_try', 'Preview a relevant action')), actions.map(function(action) {
+                    var def = getWatershedComponent(action.id);
+                    return h('button', { key: action.tech.id + action.id, type: 'button', 'data-wc-connection-action': action.tech.id + ':' + action.id, disabled: steward.hoursLeft < action.tech.hours, 'aria-label': t('stem.watercycle.steward_connections_action_aria', 'Inspect {action} for {place} from the connection guide').replace('{action}', action.tech.name).replace('{place}', def.name), onClick: function() { openStewardDecision(action.tech.id, action.id); } }, action.tech.name + ' · ' + action.tech.hours + 'h' + (steward.hoursLeft < action.tech.hours ? ' · ' + t('stem.watercycle.steward_connections_hours_needed', 'More hours needed') : ''));
+                  })),
+                  h('div', { className: 'wc-connection-timing' }, h('h5', null, t('stem.watercycle.steward_connections_timing', 'When does this happen?')), h('p', null, t('stem.watercycle.steward_connections_sequence', 'Actions → routine change and event → difficulty adjustment → connected effects.')), h('p', null, t('stem.watercycle.steward_connections_order', 'Conditions are checked again at year end, in the connection order shown above. Earlier effects can change later conditions. Current and preview scores do not guarantee the year-end outcome.')), h('p', null, t('stem.watercycle.steward_connections_model', 'These are rules of the teaching campaign and use 0–100 game scores. They do not predict changes in a real watershed.'))))));
+          }
+
           function stewardScore(value) { return String(Math.round(value * 10) / 10); }
           function focusStewardElement(id) {
             setTimeout(function() { var element = document.getElementById(id); if (element) element.focus(); }, 0);
@@ -7006,6 +7470,7 @@ const d = labToolData.waterCycle || {};
                 h('strong', null, t('stem.watercycle.steward_decision_planning_title', 'Choose a place. Preview a move. See the tradeoff.')),
                 h('p', null, t('stem.watercycle.steward_decision_planning_note', 'Water quality, habitat connection, and community support are 0–100 game scores. A higher score means a healthier condition in the game. Select an action to inspect its effect before spending hours.'))
               ),
+              renderStewardConnections(),
               // Component cards with actions
               h('div', { className: 'wc-steward-places', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 310px), 1fr))', gap: 10 } },
                 steward.components.map(function(c) {
@@ -7207,7 +7672,12 @@ const d = labToolData.waterCycle || {};
             var activePrecipPreset = WC_PRECIP_PRESETS[iq.preset] ? iq.preset : 'custom';
 
             function setIQ(patch) {
-              upd('precipHunt', Object.assign({}, iq, patch));
+              var next = Object.assign({}, iq, patch);
+              if (Object.prototype.hasOwnProperty.call(patch, 'stormDistanceKm') &&
+                  normalizeWcPrecipConfig(next).stormDistanceKm !== precipConfig.stormDistanceKm) {
+                next.thunderEstimateChecked = false;
+              }
+              upd('precipHunt', next);
             }
 
             // A is a frozen set of model inputs; B always describes the chamber.
@@ -7486,7 +7956,7 @@ const d = labToolData.waterCycle || {};
               setIQ({ viewMode: nextView, cameraFocus: nextView === '3d' ? 'immersive' : precipConfig.cameraFocus });
               if (typeof announceToSR === 'function') {
                 announceToSR(nextView === '3d'
-                  ? '3D cloud chamber selected. Drag to orbit and follow the cloud particles, updraft, thermal layers, and precipitation path.'
+                  ? '3D cloud chamber selected. Inside the storm, drag to look around and use the movement controls to explore. Choose Whole storm for an overview.'
                   : '2D cross-section selected. Follow the same precipitation model in the labeled side view.');
               }
             }
@@ -7502,6 +7972,8 @@ const d = labToolData.waterCycle || {};
                   ? 'Cloud interior viewpoint selected. Condensation nuclei, droplets, ice, and charge separation are emphasized.'
                   : focusMode === 'surface'
                     ? 'Surface pathway viewpoint selected. Falling particles, melting layers, and accumulation are emphasized.'
+                    : focusMode === 'immersive'
+                    ? 'Inside the storm viewpoint selected. Drag to look around or use the movement controls to explore.'
                     : 'Whole storm viewpoint selected. Cloud structure, airflow, and the ground pathway are visible together.');
               }
             }
@@ -7838,7 +8310,7 @@ const d = labToolData.waterCycle || {};
 
               function scheduleStormLifecycleTick() {
                 if (lifecycleTimer) { clearTimeout(lifecycleTimer); lifecycleTimer = null; }
-                if (!alive || motionReduced || !model.config.stormAutoPlay || isPrecipCanvasHidden()) return;
+                if (!alive || motionReduced || model.config.paused || !model.config.stormAutoPlay || isPrecipCanvasHidden()) return;
                 lifecycleTimer = setTimeout(function() {
                   lifecycleTimer = null;
                   if (!alive || !canvasEl._wcPrecipAdvanceLifecycle) return;
@@ -7902,20 +8374,20 @@ const d = labToolData.waterCycle || {};
                     Math.sin(positiveChargeIndex * 2.1) * 5;
                   var positiveChargeY = cloudY - 28 + Math.floor(positiveChargeIndex / 4) * 18;
                   ctx2.fillStyle = 'rgba(253,230,138,' + chargeAlpha + ')';
-                  ctx2.fillText('+', positiveChargeX, positiveChargeY);
+                  wcStormScientificInk2d(ctx2, '+', positiveChargeX, positiveChargeY);
                 }
                 for (var negativeChargeIndex = 0; negativeChargeIndex < markerCount; negativeChargeIndex++) {
                   var negativeChargeX = cloudCenter - 58 + (negativeChargeIndex % 4) * 39 +
                     Math.cos(negativeChargeIndex * 1.8) * 5;
                   var negativeChargeY = cloudBase - 28 + Math.floor(negativeChargeIndex / 4) * 15;
                   ctx2.fillStyle = 'rgba(165,243,252,' + chargeAlpha + ')';
-                  ctx2.fillText('\u2212', negativeChargeX, negativeChargeY);
+                  wcStormScientificInk2d(ctx2, '\u2212', negativeChargeX, negativeChargeY);
                 }
                 if (chargeIndex >= 35) {
                   ctx2.fillStyle = 'rgba(253,230,138,' + Math.min(0.88, chargeAlpha) + ')';
                   for (var groundChargeIndex = 0; groundChargeIndex < 5; groundChargeIndex++) {
                     var groundChargeX = cloudCenter - 52 + groundChargeIndex * 26;
-                    ctx2.fillText('+', groundChargeX, terrainSurfaceYAt(groundChargeX, w, h, groundY) - 10);
+                    wcStormScientificInk2d(ctx2, '+', groundChargeX, terrainSurfaceYAt(groundChargeX, w, h, groundY) - 10);
                   }
                 }
                 ctx2.font = '800 8px system-ui, sans-serif';
@@ -8045,45 +8517,102 @@ const d = labToolData.waterCycle || {};
 
               function drawCloudPuff(ctx2, x, y, radius, depth, moistureValue) {
                 y = Math.max(radius * 0.9 + 10, y); // Keep the illuminated crown inside the chamber.
-                // Soft volumetric lobe. The old single gradient ended DARK at the
-                // rim all the way around, so every puff read as a glossy sphere.
-                // The rim now fades out, and the depth/moisture darkening sits in
-                // a second bottom-weighted pass so shading hangs under the lobe.
-                var shade = model.isDark ? 189 : 218;
-                var cloudGradient = ctx2.createRadialGradient(
-                  x - radius * 0.25,
-                  y - radius * 0.32,
-                  radius * 0.1,
-                  x,
-                  y,
-                  radius
-                );
-                cloudGradient.addColorStop(0, 'rgba(248,250,252,' + (0.72 + moistureValue * 0.22) + ')');
-                cloudGradient.addColorStop(0.55, 'rgba(' + shade + ',' + (shade + 6) + ',243,' + (0.5 + moistureValue * 0.2) + ')');
-                cloudGradient.addColorStop(1, 'rgba(148,163,184,0)');
-                ctx2.fillStyle = cloudGradient;
-                ctx2.beginPath();
-                ctx2.arc(x, y, radius, 0, Math.PI * 2);
-                ctx2.fill();
-                var underGradient = ctx2.createRadialGradient(
-                  x, y + radius * 0.45, radius * 0.15,
-                  x, y + radius * 0.4, radius * 0.95
-                );
-                underGradient.addColorStop(0, 'rgba(71,85,105,' + (0.16 + depth * 0.16 + moistureValue * 0.1) + ')');
-                underGradient.addColorStop(1, 'rgba(71,85,105,0)');
-                ctx2.fillStyle = underGradient;
-                ctx2.beginPath();
-                ctx2.arc(x, y + radius * 0.18, radius * 0.92, 0, Math.PI * 2);
-                ctx2.fill();
-                // Stable small lobes soften each silhouette without frame-random noise.
+                // Light fields share the cloud's outer clip. They have no private rim.
                 ctx2.save();
-                for(var cloudDetail=0;cloudDetail<5;cloudDetail++){
-                  var angle=3.35+cloudDetail*.55,detailR=radius*(.2+(cloudDetail%2)*.05);
-                  var detailX=x+Math.cos(angle)*radius*.54,detailY=y+Math.sin(angle)*radius*.53;
-                  var detailLight=ctx2.createRadialGradient(detailX-detailR*.2,detailY-detailR*.2,0,detailX,detailY,detailR);
-                  detailLight.addColorStop(0,'rgba(248,250,252,.15)');detailLight.addColorStop(1,'rgba(248,250,252,0)');
-                  ctx2.fillStyle=detailLight;ctx2.beginPath();ctx2.arc(detailX,detailY,detailR,0,Math.PI*2);ctx2.fill();
+                var crownLight = ctx2.createRadialGradient(
+                  x - radius * 0.32, y - radius * 0.42, radius * 0.06,
+                  x - radius * 0.12, y - radius * 0.16, radius * 1.12
+                );
+                crownLight.addColorStop(0, 'rgba(255,255,255,' + (0.2 + moistureValue * 0.1) + ')');
+                crownLight.addColorStop(0.52, 'rgba(240,248,251,0.09)');
+                crownLight.addColorStop(1, 'rgba(240,248,251,0)');
+                ctx2.fillStyle = crownLight;
+                ctx2.fillRect(x - radius * 1.3, y - radius * 1.3, radius * 2.6, radius * 2.6);
+                var depthShade = ctx2.createRadialGradient(
+                  x + radius * 0.16, y + radius * 0.62, radius * 0.12,
+                  x + radius * 0.1, y + radius * 0.46, radius * 1.2
+                );
+                depthShade.addColorStop(0, 'rgba(43,68,88,' + (0.07 + depth * 0.08 + moistureValue * 0.04) + ')');
+                depthShade.addColorStop(0.58, 'rgba(60,88,107,0.04)');
+                depthShade.addColorStop(1, 'rgba(60,88,107,0)');
+                ctx2.fillStyle = depthShade;
+                ctx2.fillRect(x - radius * 1.3, y - radius * 1.3, radius * 2.6, radius * 2.6);
+                // Quiet, stable crown texture; the surface does not flicker between frames.
+                for (var detail = 0; detail < 5; detail++) {
+                  var angle = 3.35 + detail * 0.55;
+                  var detailR = radius * (0.24 + (detail % 2) * 0.06);
+                  var detailX = x + Math.cos(angle) * radius * 0.48;
+                  var detailY = y + Math.sin(angle) * radius * 0.5;
+                  var detailLight = ctx2.createRadialGradient(detailX, detailY, 0, detailX, detailY, detailR);
+                  detailLight.addColorStop(0, 'rgba(255,255,255,0.07)');
+                  detailLight.addColorStop(1, 'rgba(255,255,255,0)');
+                  ctx2.fillStyle = detailLight;
+                  ctx2.fillRect(detailX - detailR, detailY - detailR, detailR * 2, detailR * 2);
                 }
+                ctx2.restore();
+              }
+
+              function wcStormCloudSilhouette2d(ctx2, lobes, body) {
+                ctx2.beginPath();
+                lobes.forEach(function(lobe) {
+                  var y = Math.max(lobe.radius * 0.9 + 10, lobe.y);
+                  ctx2.moveTo(lobe.x + lobe.radius, y);
+                  ctx2.arc(lobe.x, y, lobe.radius, 0, Math.PI * 2);
+                  ctx2.closePath();
+                });
+                // The original cloud-base envelope joins the crowns into one volume.
+                var w = body.width, cloudCenter = body.center, cloudY = body.y, cloudBase = body.base;
+                ctx2.moveTo(cloudCenter - w * 0.21, cloudY + 25);
+                ctx2.bezierCurveTo(cloudCenter - w * 0.12, cloudY + 13,
+                  cloudCenter + w * 0.12, cloudY + 17, cloudCenter + w * 0.21, cloudY + 28);
+                ctx2.bezierCurveTo(cloudCenter + w * 0.23, cloudBase - 14,
+                  cloudCenter + w * 0.14, cloudBase + 5, cloudCenter + w * 0.07, cloudBase + 1);
+                ctx2.bezierCurveTo(cloudCenter - w * 0.015, cloudBase + 10,
+                  cloudCenter - w * 0.12, cloudBase + 4, cloudCenter - w * 0.19, cloudBase - 2);
+                ctx2.quadraticCurveTo(cloudCenter - w * 0.23, cloudBase - 16, cloudCenter - w * 0.21, cloudY + 25);
+                ctx2.closePath();
+              }
+
+              function wcDrawStormCloudVolume2d(ctx2, lobes, body) {
+                if (!lobes.length) return;
+                var top = Math.min.apply(null, lobes.map(function(lobe) {
+                  return Math.max(lobe.radius * 0.9 + 10, lobe.y) - lobe.radius;
+                }));
+                var bottom = Math.max(body.base + 10, Math.max.apply(null, lobes.map(function(lobe) {
+                  return Math.max(lobe.radius * 0.9 + 10, lobe.y) + lobe.radius;
+                })));
+                var light = ctx2.createLinearGradient(0, top, 0, bottom);
+                light.addColorStop(0, model.isDark ? 'rgba(231,239,247,0.94)' : 'rgba(240,248,251,0.94)');
+                light.addColorStop(0.28, model.isDark ? 'rgba(197,213,228,0.94)' : 'rgba(218,233,239,0.94)');
+                light.addColorStop(0.64, model.isDark ? 'rgba(125,151,177,0.91)' : 'rgba(147,174,190,0.91)');
+                light.addColorStop(1, model.isDark ? 'rgba(73,105,133,0.86)' : 'rgba(96,133,152,0.86)');
+                ctx2.save();
+                wcStormCloudSilhouette2d(ctx2, lobes, body);
+                ctx2.fillStyle = light;
+                ctx2.shadowColor = model.isDark ? 'rgba(220,236,248,0.12)' : 'rgba(236,246,250,0.2)';
+                ctx2.shadowBlur = 3;
+                ctx2.fill();
+                ctx2.shadowBlur = 0;
+                ctx2.clip();
+                lobes.forEach(function(lobe) {
+                  drawCloudPuff(ctx2, lobe.x, lobe.y, lobe.radius, lobe.depth, lobe.moisture);
+                });
+                var underside = ctx2.createLinearGradient(0, body.y + 10, 0, body.base + 10);
+                underside.addColorStop(0, 'rgba(38,64,86,0)');
+                underside.addColorStop(0.6, 'rgba(38,64,86,0.05)');
+                underside.addColorStop(1, 'rgba(38,64,86,0.18)');
+                ctx2.fillStyle = underside;
+                ctx2.fillRect(0, top, body.width, bottom - top);
+                ctx2.restore();
+              }
+
+              function wcStormScientificInk2d(ctx2, text, x, y) {
+                ctx2.save();
+                ctx2.strokeStyle = '#16364b';
+                ctx2.lineWidth = 2.5;
+                ctx2.lineJoin = 'round';
+                ctx2.strokeText(text, x, y);
+                ctx2.fillText(text, x, y);
                 ctx2.restore();
               }
 
@@ -8392,7 +8921,7 @@ const d = labToolData.waterCycle || {};
                   0,
                   1
                 );
-                var microphysicsTime2d = motionReduced || model.config.paused ? 0 : visualTime;
+                var microphysicsTime2d = motionReduced ? 0 : visualTime;
                 var cloudBaseHalfWidth2d = Math.min(w * 0.21, 174);
                 var cloudBaseLeft2d = cloudCenter - cloudBaseHalfWidth2d;
                 var cloudBaseRight2d = cloudCenter + cloudBaseHalfWidth2d;
@@ -8416,7 +8945,7 @@ const d = labToolData.waterCycle || {};
                 var formationTracerCount2d = Math.round(18 + formationStrength2d * 20);
                 for (var formationTracerIndex2d = 0; formationTracerIndex2d < formationTracerCount2d; formationTracerIndex2d++) {
                   var formationTracerSeed2d = ((formationTracerIndex2d * 43) % 67) / 67;
-                  var formationTracerProgress2d = motionReduced || model.config.paused
+                  var formationTracerProgress2d = motionReduced
                     ? (formationTracerIndex2d + 1) / (formationTracerCount2d + 1)
                     : (formationTracerSeed2d + microphysicsTime2d * (0.034 + liftStrength2d * 0.035)) % 1;
                   var formationTracerAngle2d = formationTracerIndex2d * 1.83 + microphysicsTime2d * 0.34;
@@ -8471,53 +9000,67 @@ const d = labToolData.waterCycle || {};
                   ? wcPrecipClamp((model.growthIndex / 100 - 0.3) / 0.48, 0, 1) : 0;
                 if (warmCoalescenceStrength2d > 0.025) {
                   var coalescencePairCount2d = 9;
+                  var coalescenceRadius2d = 2.2 + warmCoalescenceStrength2d * 0.55;
                   for (var coalescencePairIndex2d = 0; coalescencePairIndex2d < coalescencePairCount2d; coalescencePairIndex2d++) {
                     var coalescenceSeed2d = ((coalescencePairIndex2d * 31) % 43) / 43;
-                    var coalescenceCycle2d = motionReduced || model.config.paused
+                    var coalescenceCycle2d = motionReduced
                       ? coalescenceSeed2d
                       : (coalescenceSeed2d + microphysicsTime2d * (0.075 + liftStrength2d * 0.04)) % 1;
-                    var coalescenceEase2d = coalescenceCycle2d * coalescenceCycle2d * (3 - 2 * coalescenceCycle2d);
+                    var coalescenceFrame2d = wcCoalescenceFrame(coalescenceCycle2d);
                     var collectorX2d = cloudCenter + (coalescenceSeed2d - 0.5) * cloudBaseHalfWidth2d * 1.45;
                     var collectorY2d = cloudY + 20 + (coalescencePairIndex2d % 3) * 13 +
                       Math.sin(coalescencePairIndex2d * 1.7) * 3;
-                    var coalescenceAngle2d = coalescencePairIndex2d * 1.19 + microphysicsTime2d * 0.18;
-                    var coalescenceDistance2d = 9.5 - coalescenceEase2d * 7.2;
-                    var coalescenceDx2d = Math.cos(coalescenceAngle2d) * coalescenceDistance2d;
-                    var coalescenceDy2d = Math.sin(coalescenceAngle2d) * coalescenceDistance2d * 0.48;
-                    ctx2.globalAlpha = (0.14 + warmCoalescenceStrength2d * 0.34) * (1 - coalescenceEase2d * 0.45);
-                    ctx2.strokeStyle = '#0369a1';
-                    ctx2.lineWidth = 1.35;
-                    ctx2.beginPath();
-                    ctx2.moveTo(collectorX2d - coalescenceDx2d, collectorY2d - coalescenceDy2d);
-                    ctx2.lineTo(collectorX2d + coalescenceDx2d, collectorY2d + coalescenceDy2d);
-                    ctx2.stroke();
-                    ctx2.fillStyle = '#0ea5e9';
-                    ctx2.beginPath();
-                    ctx2.arc(collectorX2d - coalescenceDx2d, collectorY2d - coalescenceDy2d, 1.35, 0, Math.PI * 2);
-                    ctx2.arc(collectorX2d + coalescenceDx2d, collectorY2d + coalescenceDy2d, 1.35, 0, Math.PI * 2);
-                    ctx2.fill();
-                    ctx2.globalAlpha = 0.42 + warmCoalescenceStrength2d * 0.48;
-                    ctx2.fillStyle = '#0369a1';
-                    ctx2.beginPath();
-                    ctx2.arc(collectorX2d, collectorY2d + Math.max(0, coalescenceCycle2d - 0.72) * 8,
-                      1.65 + warmCoalescenceStrength2d * 1.35 + coalescenceEase2d * 0.45, 0, Math.PI * 2);
-                    ctx2.fill();
-                  }
-                } else if (model.config.tempC <= 0) {
-                  ctx2.strokeStyle = '#e0f2fe';
-                  ctx2.lineWidth = 1;
-                  for (var cloudIceGlintIndex2d = 0; cloudIceGlintIndex2d < 8; cloudIceGlintIndex2d++) {
-                    var cloudIceGlintX2d = cloudCenter + (((cloudIceGlintIndex2d * 37) % 61) / 61 - 0.5) * cloudBaseHalfWidth2d * 1.5;
-                    var cloudIceGlintY2d = cloudY + 15 + ((cloudIceGlintIndex2d * 19) % 47) / 47 * Math.max(22, cloudBase - cloudY - 28);
-                    var cloudIceGlintSize2d = 2.4 + (cloudIceGlintIndex2d % 3) * 0.65;
-                    ctx2.globalAlpha = 0.34 + formationStrength2d * 0.38;
-                    for (var cloudIceArm2d = 0; cloudIceArm2d < 3; cloudIceArm2d++) {
-                      var cloudIceAngle2d = cloudIceArm2d * Math.PI / 3 + cloudIceGlintIndex2d * 0.31 + microphysicsTime2d * 0.12;
+                    var coalescenceAngle2d = coalescencePairIndex2d * 1.19;
+                    ctx2.globalAlpha = 0.72 + warmCoalescenceStrength2d * 0.25;
+                    ctx2.fillStyle = '#0284c7';
+                    ctx2.strokeStyle = '#e0f2fe';
+                    ctx2.lineWidth = 1;
+                    // The incoming pair disappears when the single combined drop appears.
+                    for (var coalescenceDropIndex2d = 0; coalescenceDropIndex2d <
+                      coalescenceFrame2d.incomingCount + coalescenceFrame2d.mergedCount; coalescenceDropIndex2d++) {
+                      var coalescenceSide2d = coalescenceDropIndex2d === 0 ? -1 : 1;
+                      var coalescenceOffset2d = coalescenceFrame2d.separation * coalescenceRadius2d * coalescenceSide2d;
+                      var coalescenceDrawX2d = collectorX2d + Math.cos(coalescenceAngle2d) * coalescenceOffset2d;
+                      var coalescenceDrawY2d = collectorY2d + Math.sin(coalescenceAngle2d) * coalescenceOffset2d + coalescenceFrame2d.fall * coalescenceRadius2d;
+                      var coalescenceDrawRadius2d = coalescenceRadius2d *
+                        (coalescenceFrame2d.mergedCount ? coalescenceFrame2d.mergedRadius : coalescenceFrame2d.incomingRadius);
                       ctx2.beginPath();
-                      ctx2.moveTo(cloudIceGlintX2d - Math.cos(cloudIceAngle2d) * cloudIceGlintSize2d,
-                        cloudIceGlintY2d - Math.sin(cloudIceAngle2d) * cloudIceGlintSize2d);
-                      ctx2.lineTo(cloudIceGlintX2d + Math.cos(cloudIceAngle2d) * cloudIceGlintSize2d,
-                        cloudIceGlintY2d + Math.sin(cloudIceAngle2d) * cloudIceGlintSize2d);
+                      ctx2.arc(coalescenceDrawX2d, coalescenceDrawY2d, coalescenceDrawRadius2d, 0, Math.PI * 2);
+                      ctx2.fill();
+                      ctx2.stroke();
+                    }
+                  }
+                } else if (model.config.tempC < 0 && formationStrength2d > 0.16) {
+                  var iceGrowthRadius2d = 6.5 + formationStrength2d * 2;
+                  for (var iceGrowthIndex2d = 0; iceGrowthIndex2d < 8; iceGrowthIndex2d++) {
+                    var iceGrowthSeed2d = ((iceGrowthIndex2d * 7) % 11) / 11;
+                    var iceGrowthCycle2d = motionReduced ? iceGrowthSeed2d
+                      : (iceGrowthSeed2d + microphysicsTime2d * 0.065) % 1;
+                    var iceGrowthFrame2d = wcIceGrowthFrame(iceGrowthCycle2d);
+                    var iceGrowthX2d = cloudCenter + (((iceGrowthIndex2d * 37) % 61) / 61 - 0.5) * cloudBaseHalfWidth2d * 1.5;
+                    var iceGrowthY2d = cloudY + 15 + ((iceGrowthIndex2d * 19) % 47) / 47 * Math.max(22, cloudBase - cloudY - 28);
+                    var iceGrowthAngle2d = iceGrowthIndex2d * 0.31;
+                    var iceGrowthCos2d = Math.cos(iceGrowthAngle2d), iceGrowthSin2d = Math.sin(iceGrowthAngle2d);
+                    ctx2.globalAlpha = 0.7 + formationStrength2d * 0.25;
+                    ctx2.strokeStyle = '#e0f2fe';
+                    ctx2.lineWidth = 1.2;
+                    ctx2.beginPath();
+                    iceGrowthFrame2d.segments.forEach(function(segment) {
+                      ctx2.moveTo(iceGrowthX2d + (segment.x1 * iceGrowthCos2d - segment.y1 * iceGrowthSin2d) * iceGrowthRadius2d,
+                        iceGrowthY2d + (segment.x1 * iceGrowthSin2d + segment.y1 * iceGrowthCos2d) * iceGrowthRadius2d);
+                      ctx2.lineTo(iceGrowthX2d + (segment.x2 * iceGrowthCos2d - segment.y2 * iceGrowthSin2d) * iceGrowthRadius2d,
+                        iceGrowthY2d + (segment.x2 * iceGrowthSin2d + segment.y2 * iceGrowthCos2d) * iceGrowthRadius2d);
+                    });
+                    ctx2.stroke();
+                    // Hollow marks are teaching tracers for invisible vapor, not liquid droplets.
+                    ctx2.strokeStyle = '#67e8f9';
+                    ctx2.lineWidth = 0.8;
+                    ctx2.globalAlpha = 0.58 * iceGrowthFrame2d.tracerAlpha;
+                    for (var iceVaporIndex2d = 0; iceVaporIndex2d < iceGrowthFrame2d.tracerCount; iceVaporIndex2d++) {
+                      var iceVaporAngle2d = iceGrowthAngle2d + iceVaporIndex2d * Math.PI * 2 / 3;
+                      ctx2.beginPath();
+                      ctx2.arc(iceGrowthX2d + Math.cos(iceVaporAngle2d) * iceGrowthFrame2d.tracerRadius * iceGrowthRadius2d,
+                        iceGrowthY2d + Math.sin(iceVaporAngle2d) * iceGrowthFrame2d.tracerRadius * iceGrowthRadius2d, 1.25, 0, Math.PI * 2);
                       ctx2.stroke();
                     }
                   }
@@ -8603,8 +9146,8 @@ const d = labToolData.waterCycle || {};
                   context.stroke();
                   context.setLineDash([]);
                   // A 0°C air crossing does not itself prove a particle froze.
-                  stormCaptionRequests2d.push({ id: 'air-crossing-' + thermalCrossingIndex, title: '0°C crossing',
-                    body: (thermalCrossing.kind === 'melting' ? 'Warmer below' : 'Colder below') + ' · schematic',
+                  stormCaptionRequests2d.push({ id: 'air-crossing-' + thermalCrossingIndex, title: '0°C air band',
+                    body: 'Temperature cue · schematic',
                     x: w - 8, y: freezingLevelY - 22, align: 'right', width: w < 420 ? Math.max(92, w - 120) : 180,
                     anchorX: w - 5, anchorY: freezingLevelY,
                     accent: thermalCrossing.kind === 'melting' ? '#fde68a' : '#a5f3fc', priority: 3 });
@@ -8700,6 +9243,10 @@ const d = labToolData.waterCycle || {};
                   context.closePath();
                   context.fill();
                 }
+                var stormCloudLobes2d = [];
+                function collectStormCloudLobe2d(ctx2, x, y, radius, depth, moistureValue) {
+                  stormCloudLobes2d.push({ x: x, y: y, radius: radius, depth: depth, moisture: moistureValue });
+                }
                 if (convectiveBuild > 0.56) {
                   var anvilDirection = windSign;
                   var anvilLight = context.createLinearGradient(0, cloudY - 42, 0, cloudY + 14);
@@ -8721,7 +9268,7 @@ const d = labToolData.waterCycle || {};
                   context.fill();
                   var towerLevels = Math.max(2, Math.round(2 + convectiveBuild * 3));
                   for (var towerIndex = 0; towerIndex < towerLevels; towerIndex++) {
-                    drawCloudPuff(
+                    collectStormCloudLobe2d(
                       context,
                       cloudCenter - windSign * 10 + Math.sin(towerIndex * 1.7) * 8,
                       Math.max((24+towerIndex*4)*cloudScale*.82+8,cloudY + 18 - towerIndex * (13 + convectiveBuild * 4)),
@@ -8731,26 +9278,12 @@ const d = labToolData.waterCycle || {};
                     );
                   }
                 }
-                drawCloudPuff(context, cloudCenter - w * 0.16, cloudY + 12, 38 * cloudScale, 0.4, model.config.moisture / 100);
-                drawCloudPuff(context, cloudCenter - w * 0.06, cloudY - 5, 52 * cloudScale, 0.75, model.config.moisture / 100);
-                drawCloudPuff(context, cloudCenter + w * 0.07, cloudY, 47 * cloudScale, 0.65, model.config.moisture / 100);
-                drawCloudPuff(context, cloudCenter + w * 0.17, cloudY + 15, 35 * cloudScale, 0.35, model.config.moisture / 100);
-                // Transparent top stop dissolves the slab's hard seam into the puffs
-                var cloudBaseGradient = context.createLinearGradient(0, cloudY + 14, 0, cloudBase + 8);
-                cloudBaseGradient.addColorStop(0, 'rgba(71,85,105,0)');
-                cloudBaseGradient.addColorStop(0.38, 'rgba(71,85,105,' + (0.18 + model.config.moisture / 300) + ')');
-                cloudBaseGradient.addColorStop(.78, 'rgba(30,41,59,' + (0.28 + model.config.moisture / 320) + ')');
-                cloudBaseGradient.addColorStop(1, 'rgba(51,65,85,0)');
-                context.fillStyle = cloudBaseGradient;
-                context.beginPath();
-                context.moveTo(cloudCenter - w * 0.21, cloudY + 25);
-                context.bezierCurveTo(cloudCenter - w * 0.12, cloudY + 13,
-                  cloudCenter + w * 0.12, cloudY + 17, cloudCenter + w * 0.21, cloudY + 28);
-                context.bezierCurveTo(cloudCenter+w*.23,cloudBase-14,cloudCenter+w*.14,cloudBase+5,cloudCenter+w*.07,cloudBase+1);
-                context.bezierCurveTo(cloudCenter-w*.015,cloudBase+10,cloudCenter-w*.12,cloudBase+4,cloudCenter-w*.19,cloudBase-2);
-                context.quadraticCurveTo(cloudCenter-w*.23,cloudBase-16,cloudCenter-w*.21,cloudY+25);
-                context.closePath();
-                context.fill();
+                collectStormCloudLobe2d(context, cloudCenter - w * 0.16, cloudY + 12, 38 * cloudScale, 0.4, model.config.moisture / 100);
+                collectStormCloudLobe2d(context, cloudCenter - w * 0.06, cloudY - 5, 52 * cloudScale, 0.75, model.config.moisture / 100);
+                collectStormCloudLobe2d(context, cloudCenter + w * 0.07, cloudY, 47 * cloudScale, 0.65, model.config.moisture / 100);
+                collectStormCloudLobe2d(context, cloudCenter + w * 0.17, cloudY + 15, 35 * cloudScale, 0.35, model.config.moisture / 100);
+                wcDrawStormCloudVolume2d(context, stormCloudLobes2d,
+                  { width: w, center: cloudCenter, y: cloudY, base: cloudBase });
                 drawStormChargeSeparation(context, w, h, cloudCenter, cloudY, cloudBase, groundY);
 
                 drawPrecipThermalRail(context, w, cloudBase, groundY);
@@ -9071,13 +9604,12 @@ const d = labToolData.waterCycle || {};
                     context.stroke();
                   }
                   context.setLineDash([]);
-                  context.font = '800 8px system-ui, sans-serif';
-                  context.fillStyle = '#fef3c7';
-                  context.fillText(lightningStudyAvailable
+                  stormCaptionRequests2d.push({ id: 'lightning-path', title: lightningStudyAvailable
                     ? getWcLightningStudyStep(lightningStudyStep).label.toUpperCase() + ' \u00B7 STUDY'
                     : motionReduced ? 'LIGHTNING PATHWAY \u00B7 STATIC' :
                       (lightningLeaderProgress > 0.72 ? 'UPWARD STREAMER' : 'STEPPED LEADER'),
-                    Math.max(8, boltX - 68), Math.max(18, boltTop - 7));
+                    x: w - 8, y: Math.max(8, boltTop - 13), align: 'right', titleSize: 11, width: Math.min(210, w - 16),
+                    anchorX: boltX, anchorY: boltTop, accent: '#fde68a', priority: 0.5 });
                   context.restore();
                 }
                 if (lightningReturnVisible) {
@@ -9093,10 +9625,9 @@ const d = labToolData.waterCycle || {};
                   context.lineTo(boltX + 24, boltTop + (boltBottom - boltTop) * 0.58);
                   context.stroke();
                   if (lightningStudyAvailable) {
-                    context.shadowBlur = 0;
-                    context.font = '800 8px system-ui, sans-serif';
-                    context.fillStyle = '#fef9c3';
-                    context.fillText('RETURN STROKE \u00B7 STUDY', Math.max(8, boltX - 62), Math.max(18, boltTop - 7));
+                    stormCaptionRequests2d.push({ id: 'lightning-path', title: 'RETURN STROKE \u00B7 STUDY',
+                      x: w - 8, y: Math.max(8, boltTop - 13), align: 'right', titleSize: 11, width: Math.min(210, w - 16),
+                      anchorX: boltX, anchorY: boltTop, accent: '#fde68a', priority: 0.5 });
                   }
                   context.restore();
                 }
@@ -9109,10 +9640,7 @@ const d = labToolData.waterCycle || {};
                   captionReservations2d.push({ x: Math.max(5, cloudCenter - 112), y: Math.max(4, cloudY - 56), width: 92, height: 14 });
                   captionReservations2d.push({ x: Math.max(5, cloudCenter - 112), y: cloudBase - 18, width: 82, height: 14 });
                 }
-                if (lightningLeaderVisible || (lightningReturnVisible && lightningStudyAvailable)) {
-                  captionReservations2d.push({ x: Math.max(8, boltX - 68), y: Math.max(18, boltTop - 7) - 9,
-                    width: Math.min(190, w - 16), height: 12 });
-                }
+                // Lightning captions reserve their measured card bounds during layout.
                 if (canvasEl.dataset.thunderWave === 'expanding' || canvasEl.dataset.thunderWave === 'study-static') {
                   var captionWaveProgress2d = parseFloat(canvasEl.dataset.thunderWaveProgress || '0');
                   var captionWaveX2d = cloudCenter + (model.config.windDirection === 'west' ? -1 : 1) * 12;
@@ -9450,7 +9978,20 @@ const d = labToolData.waterCycle || {};
                 particleContextPrecip3d.clearRect(0, 0, 64, 64);
                 particleContextPrecip3d.save();
                 particleContextPrecip3d.translate(32, 32);
-                if (kindPrecip3d === 'snow') {
+                if (kindPrecip3d === 'cloud-drop') {
+                  var cloudDropGradientPrecip3d = particleContextPrecip3d.createRadialGradient(-10, -11, 2, 0, 0, 31.5);
+                  cloudDropGradientPrecip3d.addColorStop(0, '#f0f9ff');
+                  cloudDropGradientPrecip3d.addColorStop(0.3, '#7dd3fc');
+                  cloudDropGradientPrecip3d.addColorStop(0.76, '#0284c7');
+                  cloudDropGradientPrecip3d.addColorStop(1, '#075985');
+                  particleContextPrecip3d.fillStyle = cloudDropGradientPrecip3d;
+                  particleContextPrecip3d.beginPath();
+                  particleContextPrecip3d.arc(0, 0, 31.5, 0, Math.PI * 2);
+                  particleContextPrecip3d.fill();
+                  particleContextPrecip3d.strokeStyle = '#e0f2fe';
+                  particleContextPrecip3d.lineWidth = 1;
+                  particleContextPrecip3d.stroke();
+                } else if (kindPrecip3d === 'snow') {
                   particleContextPrecip3d.strokeStyle = 'rgba(255,255,255,.96)';
                   particleContextPrecip3d.lineWidth = 2.4;
                   particleContextPrecip3d.lineCap = 'round';
@@ -9662,6 +10203,7 @@ const d = labToolData.waterCycle || {};
               var softDotTexturePrecip3d = makePrecip3dParticleTexture('soft');
               var airflowTexturePrecip3d = makePrecip3dParticleTexture('air');
               var rainDropTexturePrecip3d = makePrecip3dParticleTexture('drop');
+              var coalescenceDropTexturePrecip3d = makePrecip3dParticleTexture('cloud-drop');
               var snowFlakeTexturePrecip3d = makePrecip3dParticleTexture('snow');
               var hailStoneTexturePrecip3d = makePrecip3dParticleTexture('hail');
               var positiveChargeTexturePrecip3d = makePrecip3dChargeTexture('positive');
@@ -11187,7 +11729,8 @@ const d = labToolData.waterCycle || {};
               }
 
               var coalescencePairCountPrecip3d = 18;
-              var coalescenceLinePositionsPrecip3d = new Float32Array(coalescencePairCountPrecip3d * 6);
+              var coalescenceWorldToLocalPrecip3d = new THREE.Matrix4();
+              var coalescenceIncomingPositionsPrecip3d = new Float32Array(coalescencePairCountPrecip3d * 6);
               var coalescenceCollectorPositionsPrecip3d = new Float32Array(coalescencePairCountPrecip3d * 3);
               var coalescenceSeedsPrecip3d = [];
               for (var coalescenceSeedIndexPrecip3d = 0; coalescenceSeedIndexPrecip3d < coalescencePairCountPrecip3d; coalescenceSeedIndexPrecip3d++) {
@@ -11199,30 +11742,52 @@ const d = labToolData.waterCycle || {};
                   angle: coalescenceSeedIndexPrecip3d * 1.31
                 });
               }
-              var coalescenceLineGeometryPrecip3d = new THREE.BufferGeometry();
-              coalescenceLineGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(coalescenceLinePositionsPrecip3d, 3));
-              var coalescenceLineMaterialPrecip3d = new THREE.LineBasicMaterial({
-                color: 0x0284c7, transparent: true, opacity: 0,
-                depthTest: false, depthWrite: false, blending: THREE.NormalBlending
-              });
-              var coalescenceLinesPrecip3d = new THREE.LineSegments(
-                coalescenceLineGeometryPrecip3d,
-                coalescenceLineMaterialPrecip3d
-              );
-              coalescenceLinesPrecip3d.renderOrder = 10;
-              cloudFormationGroupPrecip3d.add(coalescenceLinesPrecip3d);
+              var coalescenceIncomingGeometryPrecip3d = new THREE.BufferGeometry();
+              coalescenceIncomingGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(coalescenceIncomingPositionsPrecip3d, 3));
+              coalescenceIncomingGeometryPrecip3d.setDrawRange(0, 0);
+              var coalescenceIncomingDropsPrecip3d = new THREE.Points(coalescenceIncomingGeometryPrecip3d,
+                new THREE.PointsMaterial({ color: 0xffffff, map: coalescenceDropTexturePrecip3d, alphaTest: 0.04,
+                  size: 0.1, transparent: true, opacity: 0, depthTest: false, depthWrite: false, blending: THREE.NormalBlending }));
+              coalescenceIncomingDropsPrecip3d.name = 'wc-coalescence-incoming';
+              coalescenceIncomingDropsPrecip3d.renderOrder = 11;
+              coalescenceIncomingDropsPrecip3d.frustumCulled = false;
+              cloudFormationGroupPrecip3d.add(coalescenceIncomingDropsPrecip3d);
               var coalescenceCollectorGeometryPrecip3d = new THREE.BufferGeometry();
               coalescenceCollectorGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(coalescenceCollectorPositionsPrecip3d, 3));
-              var coalescenceCollectorDropsPrecip3d = new THREE.Points(
-                coalescenceCollectorGeometryPrecip3d,
-                new THREE.PointsMaterial({
-                  color: 0x0284c7, map: rainDropTexturePrecip3d, alphaTest: 0.025,
-                  size: 0.12, transparent: true, opacity: 0,
-                  depthTest: false, depthWrite: false, blending: THREE.NormalBlending
-                })
-              );
+              coalescenceCollectorGeometryPrecip3d.setDrawRange(0, 0);
+              var coalescenceCollectorDropsPrecip3d = new THREE.Points(coalescenceCollectorGeometryPrecip3d,
+                new THREE.PointsMaterial({ color: 0xffffff, map: coalescenceDropTexturePrecip3d, alphaTest: 0.04,
+                  size: 0.1 * Math.pow(2, 1 / 3), transparent: true, opacity: 0, depthTest: false, depthWrite: false, blending: THREE.NormalBlending }));
+              coalescenceCollectorDropsPrecip3d.name = 'wc-coalescence-merged';
               coalescenceCollectorDropsPrecip3d.renderOrder = 11;
+              coalescenceCollectorDropsPrecip3d.frustumCulled = false;
               cloudFormationGroupPrecip3d.add(coalescenceCollectorDropsPrecip3d);
+              var iceGrowthCountPrecip3d = 12;
+              var iceGrowthPositionsPrecip3d = new Float32Array(iceGrowthCountPrecip3d * 30 * 6);
+              var iceGrowthVaporPositionsPrecip3d = new Float32Array(iceGrowthCountPrecip3d * 3 * 8 * 6);
+              var iceGrowthGeometryPrecip3d = new THREE.BufferGeometry();
+              iceGrowthGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(iceGrowthPositionsPrecip3d, 3));
+              iceGrowthGeometryPrecip3d.setDrawRange(0, 0);
+              var iceGrowthCrystalsPrecip3d = new THREE.LineSegments(iceGrowthGeometryPrecip3d,
+                new THREE.LineBasicMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0.95,
+                  depthTest: false, depthWrite: false }));
+              iceGrowthCrystalsPrecip3d.name = 'wc-ice-growth-crystals';
+              iceGrowthCrystalsPrecip3d.renderOrder = 12;
+              iceGrowthCrystalsPrecip3d.frustumCulled = false;
+              cloudFormationGroupPrecip3d.add(iceGrowthCrystalsPrecip3d);
+              var iceGrowthVaporGeometryPrecip3d = new THREE.BufferGeometry();
+              iceGrowthVaporGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(iceGrowthVaporPositionsPrecip3d, 3));
+              iceGrowthVaporGeometryPrecip3d.setDrawRange(0, 0);
+              var iceGrowthVaporPrecip3d = new THREE.LineSegments(iceGrowthVaporGeometryPrecip3d,
+                new THREE.LineBasicMaterial({ color: 0x67e8f9, transparent: true, opacity: 0.48,
+                  depthTest: false, depthWrite: false }));
+              iceGrowthVaporPrecip3d.name = 'wc-ice-growth-vapor';
+              iceGrowthVaporPrecip3d.renderOrder = 12;
+              iceGrowthVaporPrecip3d.frustumCulled = false;
+              cloudFormationGroupPrecip3d.add(iceGrowthVaporPrecip3d);
+              var iceGrowthWorldToLocalPrecip3d = new THREE.Matrix4();
+              var iceGrowthRightPrecip3d = new THREE.Vector3();
+              var iceGrowthUpPrecip3d = new THREE.Vector3();
 
               var chargeParticleCountPrecip3d = 18;
               var positiveChargePositionsPrecip3d = new Float32Array(chargeParticleCountPrecip3d * 3);
@@ -11784,6 +12349,7 @@ const d = labToolData.waterCycle || {};
                 icePointsPrecip3d.material.opacity = iceVisible3d
                   ? 0.26 + Math.min(0.42, modelPrecip3d.electrificationIndex / 150) + cloudLensBoostPrecip3d * 0.18 : 0;
                 icePointsPrecip3d.material.size = 0.06 + cloudLensBoostPrecip3d * 0.022;
+                if (cloudFocusActivePrecip3d && cfg3d.tempC < 0) icePointsPrecip3d.material.opacity *= 0.2;
                 // Reserve the enlarged microphysics samples for the inspection lens.
                 if (!cloudFocusActivePrecip3d) {
                   nucleusPointsPrecip3d.material.opacity *= 0.18;
@@ -11811,14 +12377,15 @@ const d = labToolData.waterCycle || {};
                 var warmCoalescenceStrengthPrecip3d = cfg3d.tempC > 0
                   ? Math.max(0, Math.min(1, (modelPrecip3d.growthIndex / 100 - 0.3) / 0.48)) : 0;
                 var warmCoalescenceActivePrecip3d = warmCoalescenceStrengthPrecip3d > 0.025;
-                coalescenceLinesPrecip3d.visible = warmCoalescenceActivePrecip3d;
+                coalescenceIncomingDropsPrecip3d.visible = warmCoalescenceActivePrecip3d;
                 coalescenceCollectorDropsPrecip3d.visible = warmCoalescenceActivePrecip3d;
-                coalescenceLineMaterialPrecip3d.opacity = warmCoalescenceActivePrecip3d
-                  ? 0.12 + warmCoalescenceStrengthPrecip3d * 0.28 + cloudLensBoostPrecip3d * 0.15 : 0;
-                coalescenceCollectorDropsPrecip3d.material.opacity = warmCoalescenceActivePrecip3d
-                  ? 0.34 + warmCoalescenceStrengthPrecip3d * 0.38 + cloudLensBoostPrecip3d * 0.18 : 0;
-                coalescenceCollectorDropsPrecip3d.material.size = 0.085 +
-                  warmCoalescenceStrengthPrecip3d * 0.07 + cloudLensBoostPrecip3d * 0.025;
+                var coalescenceOpacityPrecip3d = warmCoalescenceActivePrecip3d
+                  ? 0.62 + warmCoalescenceStrengthPrecip3d * 0.24 + cloudLensBoostPrecip3d * 0.12 : 0;
+                coalescenceIncomingDropsPrecip3d.material.opacity = coalescenceOpacityPrecip3d;
+                coalescenceCollectorDropsPrecip3d.material.opacity = coalescenceOpacityPrecip3d;
+                coalescenceIncomingDropsPrecip3d.material.size = 0.09 +
+                  warmCoalescenceStrengthPrecip3d * 0.05 + cloudLensBoostPrecip3d * 0.025;
+                coalescenceCollectorDropsPrecip3d.material.size = coalescenceIncomingDropsPrecip3d.material.size * wcCoalescenceFrame(1).mergedRadius;
                 var chargeRegionsActive3d = cfg3d.showStormAnatomy && modelPrecip3d.stormAnatomy &&
                   modelPrecip3d.stormAnatomy.chargeSeparation && modelPrecip3d.stormAnatomy.chargeSeparation.active;
                 positiveChargePointsPrecip3d.visible = !!chargeRegionsActive3d;
@@ -12217,39 +12784,136 @@ const d = labToolData.waterCycle || {};
 
                 var warmCoalescenceStrengthUpdatePrecip3d = cfg3d.tempC > 0
                   ? Math.max(0, Math.min(1, (microphysicsGrowthPrecip3d - 0.3) / 0.48)) : 0;
+                var coalescenceIncomingCountPrecip3d = 0, coalescenceMergedCountPrecip3d = 0;
+                var coalescenceFramesPrecip3d = [];
                 if (warmCoalescenceStrengthUpdatePrecip3d > 0.025) {
+                  // PointsMaterial scales sprites with viewport height, rather than the camera focal length.
+                  // Convert that sprite diameter to world units and put each pair in the camera plane.
+                  cameraPrecip3d.updateMatrixWorld();
+                  cloudFormationGroupPrecip3d.updateWorldMatrix(true, false);
+                  coalescenceWorldToLocalPrecip3d.copy(cloudFormationGroupPrecip3d.matrixWorld).invert();
+                  var coalescenceInverseBasisPrecip3d = coalescenceWorldToLocalPrecip3d.elements;
+                  var coalescenceCameraBasisPrecip3d = cameraPrecip3d.matrixWorld.elements;
+                  var coalescenceRadiusPrecip3d = coalescenceIncomingDropsPrecip3d.material.size /
+                    (2 * cameraPrecip3d.projectionMatrix.elements[5]);
                   for (var coalescenceMotionIndexPrecip3d = 0; coalescenceMotionIndexPrecip3d < coalescencePairCountPrecip3d; coalescenceMotionIndexPrecip3d++) {
                     var coalescenceMotionSeedPrecip3d = coalescenceSeedsPrecip3d[coalescenceMotionIndexPrecip3d];
-                    var coalescenceCyclePrecip3d = (coalescenceMotionSeedPrecip3d.phase +
-                      microphysicsTimePrecip3d * (0.095 + microphysicsLiftPrecip3d * 0.055)) % 1;
-                    var coalescenceEasePrecip3d = coalescenceCyclePrecip3d * coalescenceCyclePrecip3d *
-                      (3 - 2 * coalescenceCyclePrecip3d);
-                    var coalescenceAngleUpdatePrecip3d = coalescenceMotionSeedPrecip3d.angle +
-                      microphysicsTimePrecip3d * 0.12;
-                    var coalescenceSeparationPrecip3d = 0.19 - coalescenceEasePrecip3d * 0.16;
-                    var coalescenceDxPrecip3d = Math.cos(coalescenceAngleUpdatePrecip3d) * coalescenceSeparationPrecip3d;
-                    var coalescenceDyPrecip3d = Math.sin(coalescenceAngleUpdatePrecip3d) * coalescenceSeparationPrecip3d * 0.55;
-                    var coalescenceDzPrecip3d = Math.sin(coalescenceAngleUpdatePrecip3d * 0.71) * coalescenceSeparationPrecip3d * 0.48;
-                    var coalescenceLineOffsetPrecip3d = coalescenceMotionIndexPrecip3d * 6;
-                    coalescenceLinePositionsPrecip3d[coalescenceLineOffsetPrecip3d] = coalescenceMotionSeedPrecip3d.x - coalescenceDxPrecip3d;
-                    coalescenceLinePositionsPrecip3d[coalescenceLineOffsetPrecip3d + 1] = coalescenceMotionSeedPrecip3d.y - coalescenceDyPrecip3d;
-                    coalescenceLinePositionsPrecip3d[coalescenceLineOffsetPrecip3d + 2] = coalescenceMotionSeedPrecip3d.z - coalescenceDzPrecip3d;
-                    coalescenceLinePositionsPrecip3d[coalescenceLineOffsetPrecip3d + 3] = coalescenceMotionSeedPrecip3d.x + coalescenceDxPrecip3d;
-                    coalescenceLinePositionsPrecip3d[coalescenceLineOffsetPrecip3d + 4] = coalescenceMotionSeedPrecip3d.y + coalescenceDyPrecip3d;
-                    coalescenceLinePositionsPrecip3d[coalescenceLineOffsetPrecip3d + 5] = coalescenceMotionSeedPrecip3d.z + coalescenceDzPrecip3d;
-                    coalescenceCollectorPositionsPrecip3d[coalescenceMotionIndexPrecip3d * 3] = coalescenceMotionSeedPrecip3d.x;
-                    coalescenceCollectorPositionsPrecip3d[coalescenceMotionIndexPrecip3d * 3 + 1] =
-                      coalescenceMotionSeedPrecip3d.y - Math.max(0, coalescenceCyclePrecip3d - 0.72) * 0.32;
-                    coalescenceCollectorPositionsPrecip3d[coalescenceMotionIndexPrecip3d * 3 + 2] = coalescenceMotionSeedPrecip3d.z;
+                    var coalescenceCyclePrecip3d = motionReducedPrecip3d
+                      ? coalescenceMotionSeedPrecip3d.phase
+                      : (coalescenceMotionSeedPrecip3d.phase + microphysicsTimePrecip3d * (0.095 + microphysicsLiftPrecip3d * 0.055)) % 1;
+                    var coalescenceFramePrecip3d = wcCoalescenceFrame(coalescenceCyclePrecip3d);
+                    var coalescenceAnglePrecip3d = coalescenceMotionSeedPrecip3d.angle;
+                    var coalescenceCosPrecip3d = Math.cos(coalescenceAnglePrecip3d);
+                    var coalescenceSinPrecip3d = Math.sin(coalescenceAnglePrecip3d);
+                    var coalescenceAxisXPrecip3d = coalescenceCameraBasisPrecip3d[0] * coalescenceCosPrecip3d + coalescenceCameraBasisPrecip3d[4] * coalescenceSinPrecip3d;
+                    var coalescenceAxisYPrecip3d = coalescenceCameraBasisPrecip3d[1] * coalescenceCosPrecip3d + coalescenceCameraBasisPrecip3d[5] * coalescenceSinPrecip3d;
+                    var coalescenceAxisZPrecip3d = coalescenceCameraBasisPrecip3d[2] * coalescenceCosPrecip3d + coalescenceCameraBasisPrecip3d[6] * coalescenceSinPrecip3d;
+                    var coalescenceAxisLengthPrecip3d = Math.sqrt(coalescenceAxisXPrecip3d * coalescenceAxisXPrecip3d +
+                      coalescenceAxisYPrecip3d * coalescenceAxisYPrecip3d + coalescenceAxisZPrecip3d * coalescenceAxisZPrecip3d);
+                    coalescenceFramePrecip3d.index = coalescenceMotionIndexPrecip3d;
+                    coalescenceFramePrecip3d.inputOffset = coalescenceFramePrecip3d.incomingCount ? coalescenceIncomingCountPrecip3d : -1;
+                    coalescenceFramePrecip3d.mergedOffset = coalescenceFramePrecip3d.mergedCount ? coalescenceMergedCountPrecip3d : -1;
+                    coalescenceFramesPrecip3d.push(coalescenceFramePrecip3d);
+                    if (coalescenceFramePrecip3d.incomingCount) {
+                      var coalescenceDistancePrecip3d = coalescenceFramePrecip3d.separation * coalescenceRadiusPrecip3d / coalescenceAxisLengthPrecip3d;
+                      // Cloud depth stretches the parent group; undo that transform for these camera-facing offsets.
+                      var coalescenceLocalDxPrecip3d = (coalescenceInverseBasisPrecip3d[0] * coalescenceAxisXPrecip3d + coalescenceInverseBasisPrecip3d[4] * coalescenceAxisYPrecip3d + coalescenceInverseBasisPrecip3d[8] * coalescenceAxisZPrecip3d) * coalescenceDistancePrecip3d;
+                      var coalescenceLocalDyPrecip3d = (coalescenceInverseBasisPrecip3d[1] * coalescenceAxisXPrecip3d + coalescenceInverseBasisPrecip3d[5] * coalescenceAxisYPrecip3d + coalescenceInverseBasisPrecip3d[9] * coalescenceAxisZPrecip3d) * coalescenceDistancePrecip3d;
+                      var coalescenceLocalDzPrecip3d = (coalescenceInverseBasisPrecip3d[2] * coalescenceAxisXPrecip3d + coalescenceInverseBasisPrecip3d[6] * coalescenceAxisYPrecip3d + coalescenceInverseBasisPrecip3d[10] * coalescenceAxisZPrecip3d) * coalescenceDistancePrecip3d;
+                      for (var coalescenceSidePrecip3d = -1; coalescenceSidePrecip3d <= 1; coalescenceSidePrecip3d += 2) {
+                        var coalescenceInputOffsetPrecip3d = coalescenceIncomingCountPrecip3d++ * 3;
+                        coalescenceIncomingPositionsPrecip3d[coalescenceInputOffsetPrecip3d] = coalescenceMotionSeedPrecip3d.x + coalescenceSidePrecip3d * coalescenceLocalDxPrecip3d;
+                        coalescenceIncomingPositionsPrecip3d[coalescenceInputOffsetPrecip3d + 1] = coalescenceMotionSeedPrecip3d.y + coalescenceSidePrecip3d * coalescenceLocalDyPrecip3d;
+                        coalescenceIncomingPositionsPrecip3d[coalescenceInputOffsetPrecip3d + 2] = coalescenceMotionSeedPrecip3d.z + coalescenceSidePrecip3d * coalescenceLocalDzPrecip3d;
+                      }
+                    } else {
+                      var coalescenceMergedOffsetPrecip3d = coalescenceMergedCountPrecip3d++ * 3;
+                      var coalescenceFallPrecip3d = coalescenceFramePrecip3d.fall * coalescenceRadiusPrecip3d;
+                      coalescenceCollectorPositionsPrecip3d[coalescenceMergedOffsetPrecip3d] = coalescenceMotionSeedPrecip3d.x - coalescenceInverseBasisPrecip3d[4] * coalescenceFallPrecip3d;
+                      coalescenceCollectorPositionsPrecip3d[coalescenceMergedOffsetPrecip3d + 1] = coalescenceMotionSeedPrecip3d.y - coalescenceInverseBasisPrecip3d[5] * coalescenceFallPrecip3d;
+                      coalescenceCollectorPositionsPrecip3d[coalescenceMergedOffsetPrecip3d + 2] = coalescenceMotionSeedPrecip3d.z - coalescenceInverseBasisPrecip3d[6] * coalescenceFallPrecip3d;
+                    }
                   }
-                  coalescenceLineGeometryPrecip3d.attributes.position.needsUpdate = true;
-                  coalescenceCollectorGeometryPrecip3d.attributes.position.needsUpdate = true;
-                  coalescenceLinesPrecip3d.visible = true;
-                  coalescenceCollectorDropsPrecip3d.visible = true;
-                } else {
-                  coalescenceLinesPrecip3d.visible = false;
-                  coalescenceCollectorDropsPrecip3d.visible = false;
                 }
+                coalescenceIncomingGeometryPrecip3d.setDrawRange(0, coalescenceIncomingCountPrecip3d);
+                coalescenceCollectorGeometryPrecip3d.setDrawRange(0, coalescenceMergedCountPrecip3d);
+                coalescenceIncomingGeometryPrecip3d.attributes.position.needsUpdate = true;
+                coalescenceCollectorGeometryPrecip3d.attributes.position.needsUpdate = true;
+                coalescenceIncomingDropsPrecip3d.userData.coalescenceFrames = coalescenceFramesPrecip3d;
+                coalescenceCollectorDropsPrecip3d.userData.coalescenceFrames = coalescenceFramesPrecip3d;
+                coalescenceIncomingDropsPrecip3d.visible = coalescenceIncomingCountPrecip3d > 0;
+                coalescenceCollectorDropsPrecip3d.visible = coalescenceMergedCountPrecip3d > 0;
+                var iceGrowthVertexCountPrecip3d = 0, iceGrowthVaporCountPrecip3d = 0;
+                var iceGrowthFramesPrecip3d = [];
+                var iceGrowthActivePrecip3d = cfg3d.tempC < 0 && cfg3d.cameraFocus === 'cloud' && cloudFormationGroupPrecip3d.visible;
+                if (iceGrowthActivePrecip3d) {
+                  cameraPrecip3d.updateMatrixWorld();
+                  cloudFormationGroupPrecip3d.updateWorldMatrix(true, false);
+                  iceGrowthWorldToLocalPrecip3d.copy(cloudFormationGroupPrecip3d.matrixWorld).invert();
+                  iceGrowthRightPrecip3d.setFromMatrixColumn(cameraPrecip3d.matrixWorld, 0).normalize();
+                  iceGrowthUpPrecip3d.setFromMatrixColumn(cameraPrecip3d.matrixWorld, 1).normalize();
+                  var iceGrowthInversePrecip3d = iceGrowthWorldToLocalPrecip3d.elements;
+                  // Cancel the cloud's nonuniform stretch so each enlarged crystal keeps six equal arms.
+                  var iceGrowthLocalRightPrecip3d = [
+                    iceGrowthInversePrecip3d[0] * iceGrowthRightPrecip3d.x + iceGrowthInversePrecip3d[4] * iceGrowthRightPrecip3d.y + iceGrowthInversePrecip3d[8] * iceGrowthRightPrecip3d.z,
+                    iceGrowthInversePrecip3d[1] * iceGrowthRightPrecip3d.x + iceGrowthInversePrecip3d[5] * iceGrowthRightPrecip3d.y + iceGrowthInversePrecip3d[9] * iceGrowthRightPrecip3d.z,
+                    iceGrowthInversePrecip3d[2] * iceGrowthRightPrecip3d.x + iceGrowthInversePrecip3d[6] * iceGrowthRightPrecip3d.y + iceGrowthInversePrecip3d[10] * iceGrowthRightPrecip3d.z];
+                  var iceGrowthLocalUpPrecip3d = [
+                    iceGrowthInversePrecip3d[0] * iceGrowthUpPrecip3d.x + iceGrowthInversePrecip3d[4] * iceGrowthUpPrecip3d.y + iceGrowthInversePrecip3d[8] * iceGrowthUpPrecip3d.z,
+                    iceGrowthInversePrecip3d[1] * iceGrowthUpPrecip3d.x + iceGrowthInversePrecip3d[5] * iceGrowthUpPrecip3d.y + iceGrowthInversePrecip3d[9] * iceGrowthUpPrecip3d.z,
+                    iceGrowthInversePrecip3d[2] * iceGrowthUpPrecip3d.x + iceGrowthInversePrecip3d[6] * iceGrowthUpPrecip3d.y + iceGrowthInversePrecip3d[10] * iceGrowthUpPrecip3d.z];
+                  var iceGrowthWorldRadiusPrecip3d = 0.095;
+                  for (var iceGrowthIndexPrecip3d = 0; iceGrowthIndexPrecip3d < iceGrowthCountPrecip3d; iceGrowthIndexPrecip3d++) {
+                    var iceGrowthSeedPrecip3d = ((iceGrowthIndexPrecip3d * 7) % 17) / 17;
+                    var iceGrowthCyclePrecip3d = motionReducedPrecip3d ? iceGrowthSeedPrecip3d
+                      : (iceGrowthSeedPrecip3d + microphysicsTimePrecip3d * 0.065) % 1;
+                    var iceGrowthFramePrecip3d = wcIceGrowthFrame(iceGrowthCyclePrecip3d);
+                    var iceGrowthAnchorPrecip3d = [(iceGrowthIndexPrecip3d % 4 - 1.5) * 0.72,
+                      1.35 + Math.floor(iceGrowthIndexPrecip3d / 4) * 0.43,
+                      (((iceGrowthIndexPrecip3d * 5) % 7) / 7 - 0.5) * 0.65];
+                    var iceGrowthAnglePrecip3d = iceGrowthIndexPrecip3d * 0.31;
+                    var iceGrowthCosPrecip3d = Math.cos(iceGrowthAnglePrecip3d), iceGrowthSinPrecip3d = Math.sin(iceGrowthAnglePrecip3d);
+                    function writeIceGrowthVertexPrecip3d(buffer, offset, x, y) {
+                      var rx = (x * iceGrowthCosPrecip3d - y * iceGrowthSinPrecip3d) * iceGrowthWorldRadiusPrecip3d;
+                      var ry = (x * iceGrowthSinPrecip3d + y * iceGrowthCosPrecip3d) * iceGrowthWorldRadiusPrecip3d;
+                      for (var axis = 0; axis < 3; axis++) buffer[offset * 3 + axis] = iceGrowthAnchorPrecip3d[axis] +
+                        rx * iceGrowthLocalRightPrecip3d[axis] + ry * iceGrowthLocalUpPrecip3d[axis];
+                    }
+                    iceGrowthFramePrecip3d.index = iceGrowthIndexPrecip3d;
+                    iceGrowthFramePrecip3d.segmentOffset = iceGrowthVertexCountPrecip3d;
+                    iceGrowthFramePrecip3d.vaporOffset = iceGrowthVaporCountPrecip3d;
+                    iceGrowthFramePrecip3d.anchor = iceGrowthAnchorPrecip3d;
+                    iceGrowthFramePrecip3d.worldRadius = iceGrowthWorldRadiusPrecip3d;
+                    iceGrowthFramesPrecip3d.push(iceGrowthFramePrecip3d);
+                    iceGrowthFramePrecip3d.segments.forEach(function(segment) {
+                      writeIceGrowthVertexPrecip3d(iceGrowthPositionsPrecip3d, iceGrowthVertexCountPrecip3d++, segment.x1, segment.y1);
+                      writeIceGrowthVertexPrecip3d(iceGrowthPositionsPrecip3d, iceGrowthVertexCountPrecip3d++, segment.x2, segment.y2);
+                    });
+                    for (var iceGrowthTracerPrecip3d = 0; iceGrowthTracerPrecip3d < iceGrowthFramePrecip3d.tracerCount; iceGrowthTracerPrecip3d++) {
+                      var iceGrowthTracerAnglePrecip3d = iceGrowthTracerPrecip3d * Math.PI * 2 / 3;
+                      var iceGrowthTracerXPrecip3d = Math.cos(iceGrowthTracerAnglePrecip3d) * iceGrowthFramePrecip3d.tracerRadius;
+                      var iceGrowthTracerYPrecip3d = Math.sin(iceGrowthTracerAnglePrecip3d) * iceGrowthFramePrecip3d.tracerRadius;
+                      var iceGrowthRingRadiusPrecip3d = 0.12 * iceGrowthFramePrecip3d.tracerAlpha;
+                      for (var iceGrowthRingPrecip3d = 0; iceGrowthRingPrecip3d < 8; iceGrowthRingPrecip3d++) {
+                        var ringA = iceGrowthRingPrecip3d * Math.PI / 4, ringB = (iceGrowthRingPrecip3d + 1) * Math.PI / 4;
+                        writeIceGrowthVertexPrecip3d(iceGrowthVaporPositionsPrecip3d, iceGrowthVaporCountPrecip3d++,
+                          iceGrowthTracerXPrecip3d + Math.cos(ringA) * iceGrowthRingRadiusPrecip3d,
+                          iceGrowthTracerYPrecip3d + Math.sin(ringA) * iceGrowthRingRadiusPrecip3d);
+                        writeIceGrowthVertexPrecip3d(iceGrowthVaporPositionsPrecip3d, iceGrowthVaporCountPrecip3d++,
+                          iceGrowthTracerXPrecip3d + Math.cos(ringB) * iceGrowthRingRadiusPrecip3d,
+                          iceGrowthTracerYPrecip3d + Math.sin(ringB) * iceGrowthRingRadiusPrecip3d);
+                      }
+                    }
+                  }
+                }
+                iceGrowthGeometryPrecip3d.setDrawRange(0, iceGrowthVertexCountPrecip3d);
+                iceGrowthVaporGeometryPrecip3d.setDrawRange(0, iceGrowthVaporCountPrecip3d);
+                iceGrowthGeometryPrecip3d.attributes.position.needsUpdate = true;
+                iceGrowthVaporGeometryPrecip3d.attributes.position.needsUpdate = true;
+                iceGrowthCrystalsPrecip3d.visible = iceGrowthVertexCountPrecip3d > 0;
+                iceGrowthVaporPrecip3d.visible = iceGrowthVaporCountPrecip3d > 0;
+                iceGrowthCrystalsPrecip3d.userData.iceGrowthFrames = iceGrowthFramesPrecip3d;
+                iceGrowthVaporPrecip3d.userData.iceGrowthFrames = iceGrowthFramesPrecip3d;
                 for (var particleIndex3d = 0; particleIndex3d < activeCount3d; particleIndex3d++) {
                   var seed3d = precipitationSeeds3d[particleIndex3d];
                   var progress3d = (seed3d.phase + time3d * baseFallSpeed3d * (0.72 + (seed3d.z + 0.5) * 0.5)) % 1;
@@ -12699,9 +13363,9 @@ const d = labToolData.waterCycle || {};
                 }
                 var elapsed3d = lastTimestampPrecip3d ? Math.min(0.05, (timestamp3d - lastTimestampPrecip3d) / 1000) : 0.016;
                 lastTimestampPrecip3d = timestamp3d;
-                weatherClockPrecip3d += weatherTimestampPrecip3d ? Math.max(0, (timestamp3d - weatherTimestampPrecip3d) / 1000) : 0.016;
+                if (!modelPrecip3d.config.paused) weatherClockPrecip3d += weatherTimestampPrecip3d ? Math.max(0, (timestamp3d - weatherTimestampPrecip3d) / 1000) : 0.016;
                 weatherTimestampPrecip3d = timestamp3d;
-                if (weatherClockPrecip3d >= 0.08) {
+                if (!modelPrecip3d.config.paused && weatherClockPrecip3d >= 0.08) {
                   var liveConfig = advanceWcStormWeather(modelPrecip3d.config, targetModelPrecip3d.config, weatherClockPrecip3d, motionReducedPrecip3d);
                   weatherClockPrecip3d = 0;
                   var difference = 0;
@@ -12716,7 +13380,6 @@ const d = labToolData.waterCycle || {};
                 }
 
                 if (!modelPrecip3d.config.paused && !motionReducedPrecip3d) visualTimePrecip3d += elapsed3d;
-                updatePrecip3dParticles(visualTimePrecip3d);
                 updateStormLandscape(elapsed3d);
                 if (cameraTransitionPrecip3d) {
                   var cameraEasePrecip3d = motionReducedPrecip3d ? 1 : Math.min(1, Math.max(0.08, elapsed3d * 5.4));
@@ -12737,6 +13400,7 @@ const d = labToolData.waterCycle || {};
                 } else {
                   cameraPrecip3d.lookAt(cameraTargetPrecip3d);
                 }
+                updatePrecip3dParticles(visualTimePrecip3d);
                 canvasEl.dataset.cameraPosition = cameraPrecip3d.position.toArray().map(function(v) { return v.toFixed(3); }).join(',');
                 canvasEl.dataset.cameraHeading = walkYawPrecip3d.toFixed(3);
                 var cutawayUniformPrecip3d = cloudFieldMaterialPrecip3d.uniforms.cutaway;
@@ -12767,15 +13431,35 @@ const d = labToolData.waterCycle || {};
               canvasEl._wcPrecip3dAdvanceLifecycle = function(nextTime3d, keepPlaying3d) {
                 setIQ({ stormTime: nextTime3d, stormAutoPlay: keepPlaying3d });
               };
+              function syncPausedWeatherStatusPrecip3d() {
+                if (modelPrecip3d.config.paused) {
+                  canvasEl.dataset.weatherTransition = 'paused';
+                  canvasEl.dataset.liveWind = String(modelPrecip3d.config.wind);
+                  canvasEl.dataset.liveStormTrack = String(modelPrecip3d.config.stormTrack);
+                  var pausedWeatherReadout = canvasEl.parentElement && canvasEl.parentElement.querySelector('.wc-storm-live-weather');
+                  if (pausedWeatherReadout) pausedWeatherReadout.textContent = 'Wind now ' + modelPrecip3d.config.wind.toFixed(1) + ' m/s · track ' + modelPrecip3d.config.stormTrack.toFixed(1) + ' · weather paused';
+                }
+              }
               canvasEl._wcPrecip3dSync = function(nextModel3d) {
+                var previousWeatherTarget = targetModelPrecip3d.config;
                 targetModelPrecip3d = nextModel3d;
                 weatherClockPrecip3d = 0; weatherTimestampPrecip3d = performance.now();
                 var retainedWeather = { windDirection: modelPrecip3d.config.windDirection };
-                WC_STORM_EASE_KEYS.forEach(function(key) { retainedWeather[key] = modelPrecip3d.config[key]; });
+                // Pause holds the current interpolation; deliberate edits still work in the still view.
+                WC_STORM_EASE_KEYS.forEach(function(key) {
+                  retainedWeather[key] = nextModel3d.config.paused && nextModel3d.config[key] !== previousWeatherTarget[key]
+                    ? nextModel3d.config[key] : modelPrecip3d.config[key];
+                });
+                if (nextModel3d.config.paused && (nextModel3d.config.wind !== previousWeatherTarget.wind ||
+                    nextModel3d.config.windDirection !== previousWeatherTarget.windDirection)) {
+                  retainedWeather.wind = nextModel3d.config.wind;
+                  retainedWeather.windDirection = nextModel3d.config.windDirection;
+                }
                 modelPrecip3d = Object.assign({}, computeWcPrecipitationModel(Object.assign({}, nextModel3d.config, retainedWeather)), { isDark: nextModel3d.isDark });
                 applyPrecip3dModel();
                 schedulePrecip3dLifecycle();
                 updatePrecip3dParticles(visualTimePrecip3d);
+                syncPausedWeatherStatusPrecip3d();
               };
               canvasEl._wcPrecip3dCleanup = function() {
                 if (!alivePrecip3d) return;
@@ -12796,7 +13480,7 @@ const d = labToolData.waterCycle || {};
                   }
                 });
                 [cloudVolumeAtlasPrecip3d, cloudSoftTexturePrecip3d, softDotTexturePrecip3d, airflowTexturePrecip3d,
-                  rainDropTexturePrecip3d, snowFlakeTexturePrecip3d, hailStoneTexturePrecip3d,
+                  rainDropTexturePrecip3d, coalescenceDropTexturePrecip3d, snowFlakeTexturePrecip3d, hailStoneTexturePrecip3d,
                   positiveChargeTexturePrecip3d, negativeChargeTexturePrecip3d,
                   atmosphereTexturePrecip3d, surfaceWetnessTexturePrecip3d].concat(
                     cloudDensityTexturesPrecip3d,
@@ -12824,12 +13508,14 @@ const d = labToolData.waterCycle || {};
               resizePrecip3d();
               applyPrecip3dModel();
               updatePrecip3dParticles(0);
+              syncPausedWeatherStatusPrecip3d();
               framePrecip3d = requestAnimationFrame(animatePrecip3d);
               schedulePrecip3dLifecycle();
             };
 
+            var precipAirProfile = wcPrecipAirProfile(precipModel.thermalLayers.temperaturePoints);
             var precipCanvasLabel = '2.5D precipitation chamber. ' + precipModel.displayLabel + '. ' +
-              precipModel.formationLabel + ', ' + precipModel.cloudPhase + ', ' + precipModel.profileLabel + '. ' +
+              precipModel.formationLabel + ', ' + precipModel.cloudPhase + '. ' + precipAirProfile.summary + ' ' +
               precipModel.phasePathLabel + '. Faint cyan points are teaching tracers for invisible water vapor rising to the modeled saturation boundary, where visible cloud droplets form. ' +
               precipModel.thunder.explanation + ' ' +
               (lightningStudyActive
@@ -12840,7 +13526,7 @@ const d = labToolData.waterCycle || {};
               'Temperature profile: cloud ' + precipConfig.tempC.toFixed(0) + ' degrees Celsius, middle atmosphere ' +
               precipConfig.midLevelTempC.toFixed(0) + ' degrees Celsius, surface ' + precipConfig.surfaceTempC.toFixed(0) + ' degrees Celsius. ' +
               (precipModel.thermalLayers.crossings.length
-                ? 'Falling particles visibly change shape and phase at each modeled zero-degree crossing. ' : '') +
+                ? 'Schematic bands mark the air-temperature transitions; particle shapes show the modeled state along the path. ' : '') +
               (precipModel.visualType === 'virga'
                 ? 'Drops visibly shrink and fragment in the dry lower layer; faint gold teaching tracers represent invisible water vapor returning to the air. ' : '') +
               'Cloud moisture ' + precipConfig.moisture.toFixed(0) + ' percent, updraft ' +
@@ -12861,20 +13547,22 @@ const d = labToolData.waterCycle || {};
 
             var precip2dScienceCopy = 'Cloud-formation overlay: faint cyan points are teaching tracers for invisible water vapor. Rising air cools toward saturation at the dotted cloud base, where visible droplets form on tiny nuclei. ' +
               (precipConfig.tempC > 0
-                ? 'Paired paths show warm-cloud droplets colliding and coalescing into larger collector drops.'
-                : 'Crystal glints show the ice-growth pathway in this subfreezing cloud.') +
+                ? (precipModel.growthIndex > 31.2 ? "In each illustrated collision, two droplets approach, touch, and join into one larger round drop containing their combined water. Further growth may be needed before rain forms. Collision timing is schematic." : "The current setup shows little droplet growth. Increase cloud moisture or updraft to explore more growth in this teaching model.")
+                : (precipConfig.tempC < 0 ? "Deposition: vapor adds directly to ice. Watch the six-armed crystals grow as hollow vapor tracers approach. These tracers represent invisible gas. Nearby droplets may stay liquid below 0°C (supercooled). Crystal shapes and timing are illustrative." : 'At 0°C, temperature alone does not tell us whether every cloud particle is liquid or ice.')) +
               ' Particles are enlarged for teaching and are not to scale.';
 
-            var precip3dScienceCopy = precipConfig.cameraFocus === 'cloud'
+            var precip3dScienceCopy = precipConfig.cameraFocus === 'immersive'
+              ? 'Inside the storm: drag to look around and use the movement controls to explore the scene. Choose Whole storm to see the cloud structure and ground pathway together, or Inside cloud to inspect enlarged droplets and ice.'
+              : precipConfig.cameraFocus === 'cloud'
               ? 'Inside-cloud lens: faint cyan points are teaching tracers for invisible water vapor. Rising air cools toward saturation at the glowing cloud base; vapor condenses on tiny nuclei into visible droplets and releases latent heat. ' +
                 (precipConfig.tempC > 0
-                  ? 'Paired paths converge as warm-cloud droplets collide and coalesce into larger collector drops.'
-                  : 'In this subfreezing cloud, crystal glints show ice growth while droplets may remain supercooled.') +
+                  ? (precipModel.growthIndex > 31.2 ? "In each illustrated collision, two droplets approach, touch, and join into one larger round drop containing their combined water. Further growth may be needed before rain forms. Collision timing is schematic." : "The current setup shows little droplet growth. Increase cloud moisture or updraft to explore more growth in this teaching model.")
+                  : (precipConfig.tempC < 0 ? "Deposition: vapor adds directly to ice. Watch the six-armed crystals grow as hollow vapor tracers approach. These tracers represent invisible gas. Nearby droplets may stay liquid below 0°C (supercooled). Crystal shapes and timing are illustrative." : 'At 0°C, temperature alone does not tell us whether every cloud particle is liquid or ice.')) +
                 ' This transparent cutaway reveals droplets and ice inside the shaded cloud volume. Its level underside marks the modeled saturation base. Updraft strength controls how long particles remain aloft. Particles are enlarged for teaching and are not to scale.'
               : precipConfig.cameraFocus === 'surface'
                 ? (precipModel.visualType === 'virga'
                   ? 'Dry-air lens: falling drops shrink into fine fragments and disappear before reaching the ground. The faint gold dots are teaching tracers for invisible water vapor mixing back into the air; virga produces no surface impacts or accumulation.'
-                  : 'Surface-path lens: follow particles through every 0°C crossing. Snowflakes, liquid drops, supercooled drops, and ice pellets now change shape at the glowing phase boundary. The floor shows modeled snow cover, ice glaze, hail, puddling, and runoff as the storm matures.' +
+                  : 'Surface-path lens: compare air-temperature bands with the falling particle shapes. Snowflakes, liquid drops, supercooled drops, and ice pellets show the modeled state along the path. Crossing 0°C does not guarantee an immediate change of state. The floor shows modeled snow cover, ice glaze, hail, puddling, and runoff as the storm matures.' +
                     (precipModel.reachesGround && ['rain', 'freezing-rain', 'mix'].indexOf(precipModel.visualType) !== -1
                       ? ' A low phase-colored impact haze shows many particles arriving together; tapered rain trails end at the drops, and synchronized splash crowns and expanding rings mark sampled liquid impacts.' : '') +
                     (precipModel.reachesGround && Math.max(
@@ -12890,7 +13578,7 @@ const d = labToolData.waterCycle || {};
                     (precipConfig.terrain === 'coast' ? ' The curved beach separates ocean collection from runoff over land.' : ''))
                 : 'Whole-storm lens: orbit to explore sunlit billows and the shaded cloud base. Greater moisture thickens the cloud; stronger updrafts extend its upper growth. Strong, deep clouds can spread into an upper anvil that lingers as the storm fades. Choose Inside cloud to reveal enlarged droplets and ice in a transparent cutaway. Cloud shape is illustrative; the temperature layers determine the modeled precipitation phase.' +
                   (precipModel.thermalLayers.crossings.length
-                    ? ' Watch particle symbols transform as they pass through each glowing 0°C layer.' : '') +
+                    ? ' Glowing bands show schematic air-temperature transitions. Read particle shapes separately to follow the modeled water state.' : '') +
                   (precipModel.reachesGround && ['rain', 'freezing-rain', 'mix'].indexOf(precipModel.visualType) !== -1
                     ? ' Translucent fall curtains represent many overlapping drops in depth; the brighter particles are enlarged teaching samples.' : '') +
                   (precipModel.visualType === 'virga'
@@ -12948,112 +13636,88 @@ const d = labToolData.waterCycle || {};
                 aria: function(value) { return value.toFixed(0) + ' percent below-cloud relative humidity'; } }
             ];
 
-            function precipProfileX(temperatureC) {
-              return 26 + (wcPrecipClamp(temperatureC, -35, 35) + 35) / 70 * 206;
-            }
-
-            function precipProfileY(progress) {
-              return 22 + wcPrecipClamp(progress, 0, 1) * 128;
-            }
-
             function renderPrecipTemperatureProfile() {
               var profilePoints = precipModel.thermalLayers.temperaturePoints;
-              var profilePath = profilePoints.map(function(point, pointIndex) {
-                return (pointIndex ? 'L' : 'M') + precipProfileX(point.temperatureC).toFixed(1) + ' ' +
-                  precipProfileY(point.progress).toFixed(1);
+              var airProfile = precipAirProfile;
+              if (!airProfile) return null;
+              function chartX(value) { return 58 + (wcPrecipClamp(value, -35, 35) + 35) / 70 * 170; }
+              function chartY(progress) { return 38 + progress * 140; }
+              function temperatureText(value) { return (value > 0 ? '+' : '') + String(Number(value.toPrecision(3))) + '\u00B0C'; }
+              var zeroX = chartX(0);
+              var path = profilePoints.map(function(point, index) {
+                return (index ? 'L' : 'M') + chartX(point.temperatureC) + ' ' + chartY(point.progress);
               }).join(' ');
-              var profileSummary = profilePoints.map(function(point) {
-                return point.label + ' ' + point.temperatureC.toFixed(0) + ' degrees Celsius';
-              }).join(', ') + '. ' + precipModel.thermalLayers.layerLabel + '.';
-              return h('div', { className: 'wc-precip-profile-editor', 'data-temperature-profile-editor': 'three-point' },
-                h('svg', { className: 'wc-precip-profile-chart', viewBox: '0 0 260 176', role: 'img',
-                  'aria-label': profileSummary, preserveAspectRatio: 'xMidYMid meet' },
-                  h('rect', { className: 'wc-profile-cold-zone', x: 26, y: 14,
-                    width: precipProfileX(0) - 26, height: 140 }),
-                  h('rect', { className: 'wc-profile-warm-zone', x: precipProfileX(0), y: 14,
-                    width: 232 - precipProfileX(0), height: 140 }),
-                  h('line', { className: 'wc-profile-freezing-line', x1: precipProfileX(0), y1: 14,
-                    x2: precipProfileX(0), y2: 154 }),
-                  [-20, 0, 20].map(function(tick) {
-                    return h('g', { key: 'profile-tick-' + tick },
-                      h('line', { className: 'wc-profile-grid-line', x1: precipProfileX(tick), y1: 14,
-                        x2: precipProfileX(tick), y2: 154 }),
-                      h('text', { className: 'wc-profile-tick-label', x: precipProfileX(tick), y: 170,
-                        textAnchor: 'middle' }, tick + '\u00B0'));
+              var badgeYs = airProfile.crossings.map(function(crossing) { return wcPrecipClamp(chartY(crossing.progress), 46, 170); });
+              if (badgeYs.length === 2 && badgeYs[1] - badgeYs[0] < 22) {
+                badgeYs[0] = wcPrecipClamp((badgeYs[0] + badgeYs[1]) / 2 - 11, 46, 148);
+                badgeYs[1] = badgeYs[0] + 22;
+              }
+              var coldCrossing = airProfile.crossings.filter(function(crossing) { return crossing.direction === 'cooling'; }).slice(-1)[0];
+              var showColdBand = coldCrossing && (precipModel.visualType === 'sleet' || precipModel.visualType === 'freezing-rain');
+              var summary = profilePoints.map(function(point) { return point.label + ': ' + temperatureText(point.temperatureC); }).join(', ') + '. ' + airProfile.summary;
+              return h('div', { className: 'wc-precip-profile-editor wc-air-profile', 'data-temperature-profile-editor': 'three-point',
+                'data-air-crossings': airProfile.crossings.length, 'data-air-touches': airProfile.touches.length },
+                h('style', null, WC_PRECIP_AIR_PROFILE_STYLE),
+                h('div', { className: 'wc-air-profile-heading' },
+                  h('strong', null, 'Read the air column'), h('span', null, 'Cloud \u2193 surface')),
+                h('dl', { className: 'wc-air-profile-readings', 'data-fine-temperatures': profilePoints.some(function(point) { return point.temperatureC !== 0 && Math.abs(point.temperatureC) < 0.001; }) }, profilePoints.map(function(point, index) {
+                  return h('div', { key: index, 'data-air-level': index },
+                    h('dt', null, ['Cloud', 'Middle', 'Surface'][index]),
+                    h('dd', null, temperatureText(point.temperatureC)));
+                })),
+                h('svg', { className: 'wc-precip-profile-chart', viewBox: '0 0 260 208', role: 'img',
+                  'aria-label': summary + ' Horizontal axis: air temperature. Vertical positions are schematic.', preserveAspectRatio: 'xMidYMid meet' },
+                  h('rect', { className: 'wc-profile-cold-zone', x: 58, y: 30, width: zeroX - 58, height: 154, rx: 4 }),
+                  h('rect', { className: 'wc-profile-warm-zone', x: zeroX, y: 30, width: 228 - zeroX, height: 154, rx: 4 }),
+                  [-30, 0, 30].map(function(tick) { return h('g', { key: tick },
+                    h('line', { className: tick === 0 ? 'wc-profile-freezing-line' : 'wc-profile-grid-line', x1: chartX(tick), x2: chartX(tick), y1: 30, y2: 184 }),
+                    h('text', { className: 'wc-profile-tick-label', x: chartX(tick), y: 201, textAnchor: 'middle' }, (tick > 0 ? '+' : '') + tick + '\u00B0C'));
                   }),
-                  h('text', { className: 'wc-profile-zone-label', x: 31, y: 28 }, 'COLD AIR'),
-                  h('text', { className: 'wc-profile-zone-label', x: 188, y: 28 }, 'WARM AIR'),
-                  h('path', { className: 'wc-profile-temperature-line', d: profilePath }),
-                  profilePoints.map(function(point, pointIndex) {
-                    var pointX = precipProfileX(point.temperatureC);
-                    var pointY = precipProfileY(point.progress);
-                    return h('g', { key: point.label },
-                      h('line', { className: 'wc-profile-level-line', x1: 20, y1: pointY, x2: 240, y2: pointY }),
-                      h('circle', { className: 'wc-profile-temperature-point', cx: pointX, cy: pointY, r: 5 }),
-                      h('text', { className: 'wc-profile-level-label', x: 22, y: pointY - 7 },
-                        pointIndex === 0 ? 'CLOUD' : pointIndex === 1 ? 'MIDDLE' : 'SURFACE'),
-                      h('text', { className: 'wc-profile-point-value',
-                        x: pointX > 205 ? pointX - 8 : pointX + 8, y: pointY + 4,
-                        textAnchor: pointX > 205 ? 'end' : 'start' }, point.temperatureC.toFixed(0) + '\u00B0C'));
+                  h('text', { className: 'wc-profile-zone-label', x: 64, y: 19 }, 'COLDER'),
+                  h('text', { className: 'wc-profile-zone-label', x: 221, y: 19, textAnchor: 'end' }, 'WARMER'),
+                  showColdBand && h('rect', { className: 'wc-profile-cold-layer-band', 'data-air-cold-band': 'true',
+                    x: 58, y: chartY(coldCrossing.progress), width: 170, height: 178 - chartY(coldCrossing.progress) }),
+                  profilePoints.map(function(point, index) { return h('g', { key: index },
+                    h('line', { className: 'wc-profile-level-line', x1: 58, x2: 228, y1: chartY(point.progress), y2: chartY(point.progress) }),
+                    h('text', { className: 'wc-profile-level-label', x: 1, y: chartY(point.progress) + 4 }, ['Cloud', 'Middle', 'Surface'][index]));
                   }),
-                  // The subfreezing layer beneath the last freezing crossing is
-                  // the variable that decides sleet vs freezing rain, so draw it.
-                  // Deep enough and the drop refreezes in the air (pellets);
-                  // shallow and it stays liquid until it hits something (glaze).
-                  (function() {
-                    var freezeCrossing = null;
-                    precipModel.thermalLayers.crossings.forEach(function(crossing) {
-                      if (crossing.kind === 'freezing') freezeCrossing = crossing;
-                    });
-                    if (!freezeCrossing) return null;
-                    if (precipModel.visualType !== 'sleet' && precipModel.visualType !== 'freezing-rain') return null;
-                    var bandTop = precipProfileY(freezeCrossing.progress);
-                    var isPellets = precipModel.visualType === 'sleet';
-                    return h('g', { key: 'cold-layer-band' },
-                      h('rect', {
-                        className: 'wc-profile-cold-layer-band' + (isPellets ? ' is-deep' : ''),
-                        x: 26, y: bandTop, width: 206, height: Math.max(0, 154 - bandTop)
-                      }),
-                      // Right-aligned and short on purpose: the temperature line
-                      // sweeps through the middle-left of this band, so a long
-                      // label here would sit straight on top of it. The mechanism
-                      // is spelled out in the caption under the chart instead.
-                      h('text', {
-                        className: 'wc-profile-cold-layer-label', x: 228,
-                        y: Math.min(150, bandTop + 10), textAnchor: 'end'
-                      }, 'COLD LAYER'));
-                  })(),
-                  precipModel.thermalLayers.crossings.map(function(crossing, crossingIndex) {
-                    var crossingY = precipProfileY(crossing.progress);
-                    // A freezing crossing means "supercools" only when the drop
-                    // survives it as a liquid. In a sleet profile the very same
-                    // crossing is where it turns back into ice.
-                    var crossingLabel = crossing.kind === 'melting'
-                      ? 'MELTS'
-                      : (precipModel.visualType === 'sleet' ? 'REFREEZES' : 'SUPERCOOLS');
-                    // Sit these to the LEFT of the freezing line. The point
-                    // values (e.g. "3°C") are drawn to the RIGHT of their dots,
-                    // and a mid-level reading near zero lands on top of a
-                    // right-hung crossing label.
-                    return h('g', { key: 'crossing-' + crossingIndex },
-                      h('circle', { className: 'wc-profile-crossing-point', cx: precipProfileX(0), cy: crossingY, r: 4 }),
-                      h('text', { className: 'wc-profile-crossing-label', x: precipProfileX(0) - 7,
-                        y: crossingY - 5, textAnchor: 'end' }, crossingLabel));
-                  })
-                ),
-                h('p', { className: 'wc-precip-profile-hint' },
-                  'Adjust the three temperatures. Each 0\u00B0C crossing becomes a visible phase-change layer, '
-                  + 'and the shaded band shows how far the drop falls through freezing air before it lands.'),
-                (precipModel.visualType === 'sleet' || precipModel.visualType === 'freezing-rain')
-                  ? h('p', { className: 'wc-precip-profile-verdict',
-                      'data-cold-layer-outcome': precipModel.visualType },
-                      h('strong', null, precipModel.visualType === 'sleet'
-                        ? 'Deep cold layer: '
-                        : 'Shallow cold layer: '),
-                      precipModel.visualType === 'sleet'
-                        ? 'the drop spends long enough below freezing to turn back into ice in mid-air, so it lands as a bouncing pellet.'
-                        : 'the drop stays liquid all the way down, supercooled, and only freezes at the instant it touches something.')
-                  : null
+                  h('path', { className: 'wc-profile-temperature-line', 'data-air-temperature-path': 'true', d: path }),
+                  airProfile.zeroBands.map(function(band, index) { return h('line', { key: index, className: 'wc-air-zero-band',
+                    x1: zeroX, x2: zeroX, y1: chartY(band.start), y2: chartY(band.end), 'data-air-zero-band': index }); }),
+                  profilePoints.map(function(point, index) { return h('circle', { key: index, className: 'wc-profile-temperature-point',
+                    'data-air-point': index, cx: chartX(point.temperatureC), cy: chartY(point.progress), r: 4 }); }),
+                  airProfile.touches.map(function(touch, index) {
+                    var y = chartY(touch.progress);
+                    return h('path', { key: index, className: 'wc-air-touch', 'data-air-touch': index,
+                      d: 'M' + zeroX + ' ' + (y - 5) + 'l5 5-5 5-5-5Z' });
+                  }),
+                  airProfile.crossings.map(function(crossing, index) {
+                    var y = chartY(crossing.progress), badgeY = badgeYs[index];
+                    return h('g', { key: index, 'data-air-crossing': crossing.direction, 'data-air-crossing-progress': crossing.progress },
+                      h('path', { className: 'wc-air-crossing-leader', d: 'M' + (zeroX + 4) + ' ' + y + 'H230L238 ' + badgeY }),
+                      h('circle', { className: 'wc-profile-crossing-point', cx: zeroX, cy: y, r: 3.5 }),
+                      h('circle', { className: 'wc-air-crossing-badge', 'data-air-badge': index, cx: 246, cy: badgeY, r: 8 }),
+                      h('text', { className: 'wc-air-crossing-number', x: 246, y: badgeY + 3.5, textAnchor: 'middle' }, index + 1));
+                  })),
+                h('p', { className: 'wc-air-profile-summary', 'data-air-profile-summary': 'true' }, airProfile.summary),
+                showColdBand && h('p', { className: 'wc-air-zero-note' }, 'Shaded lower band: below-freezing air before arrival.'),
+                airProfile.crossings.length > 0 && h('ol', { className: 'wc-air-crossing-list', 'aria-label': 'Air-temperature crossings, from cloud toward surface' },
+                  airProfile.crossings.map(function(crossing, index) { return h('li', { key: index },
+                    h('span', { className: 'wc-air-crossing-key', 'aria-hidden': 'true' }, index + 1),
+                    h('span', null, crossing.direction === 'warming' ? 'Into warmer air: below 0\u00B0C to above 0\u00B0C.' : 'Into colder air: above 0\u00B0C to below 0\u00B0C.'));
+                  })),
+                airProfile.touches.length > 0 && h('p', { className: 'wc-air-zero-note' },
+                  'At 0\u00B0C: ' + airProfile.touches.map(function(touch) { return touch.label; }).join(', ') + '. The plotted air does not pass from one side of 0\u00B0C to the other there.'),
+                airProfile.zeroBands.length > 0 && h('p', { className: 'wc-air-zero-note' }, 'The highlighted part of the line stays at 0\u00B0C between the sampled levels.'),
+                h('p', { className: 'wc-precip-profile-hint' }, 'These markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0\u00B0C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.'),
+                (precipModel.visualType === 'sleet' || precipModel.visualType === 'freezing-rain') && h('p', { className: 'wc-precip-profile-verdict', 'data-cold-layer-outcome': precipModel.visualType },
+                  h('strong', null, precipModel.visualType === 'sleet' ? 'Modeled arrival: ice pellets. ' : 'Modeled arrival: supercooled liquid. '),
+                  precipModel.visualType === 'sleet' ? 'The illustrated drop freezes in the air before reaching the surface.' : 'The drop reaches a cold surface as liquid, where it can form an ice coating.'),
+                h('button', { type: 'button', className: 'wc-air-inspect-link', 'aria-controls': 'wcThermalLayerPanel',
+                  onClick: function() {
+                    var panel = document.getElementById('wcThermalLayerPanel');
+                    if (panel) { panel.open = true; focusWcComparisonTarget('wcThermalLayerSummary'); }
+                  } }, 'Compare air with particle state')
               );
             }
             function renderThermalLayerInspector() {
@@ -13061,6 +13725,10 @@ const d = labToolData.waterCycle || {};
               var tlReading = WCThermalLayerInspector.read(d.wcThermalLayerInspector, tlContext);
               if (!tlReading) return null;
               var tlSelected = tlContext.nodes.filter(function(tlRow) { return tlRow.id === tlReading.node; })[0];
+              var tlAir = wcPrecipAirProfile(tlContext.nodes);
+              if (!tlAir) return null;
+              var tlLevelLetters = ['A', 'B', 'C'];
+              var tlSelectedLetter = tlLevelLetters[tlContext.nodes.indexOf(tlSelected)];
               var tlExtent = Math.max(20, Math.ceil(Math.max.apply(null, tlContext.nodes.map(function(tlRow) { return Math.abs(tlRow.temperatureC); })) / 10) * 10);
               function tlChartX(tlTemperature) { return 16 + (tlTemperature + tlExtent) / (2 * tlExtent) * 208; }
               function tlChartY(tlProgress) { return 22 + tlProgress * 182; }
@@ -13103,7 +13771,7 @@ const d = labToolData.waterCycle || {};
               var tlFeedbackCopy = tlReading.answer
                 ? tlSelected.particleLabel + '. ' + tlSelected.detail + ' Air temperature and particle state are separate observations.'
                 : 'Read the modeled particle cue beside the air temperature, then choose its description. This practice is unscored.';
-              return h('details', { className: 'wc-thermal-layer-inspector' + (isDark ? ' is-dark' : '') + (isContrast ? ' is-contrast' : ''), 'data-tl-inspector': 'three-level' },
+              return h('details', { id: 'wcThermalLayerPanel', className: 'wc-thermal-layer-inspector' + (isDark ? ' is-dark' : '') + (isContrast ? ' is-contrast' : ''), 'data-tl-inspector': 'three-level' },
                 h('style', { 'data-wc-thermal-style': '1' }, WC_THERMAL_LAYER_INSPECTOR_STYLE),
                 h('summary', { id: 'wcThermalLayerSummary' }, 'Inspect the falling particle'),
                 h('div', { className: 'wc-tl-body' },
@@ -13111,29 +13779,43 @@ const d = labToolData.waterCycle || {};
                   h('div', { className: 'wc-tl-layout' },
                     h('div', { className: 'wc-tl-chart' },
                       h('strong', { className: 'wc-tl-chart-title' }, 'Air temperature through the column'),
-                      h('div', { className: 'wc-tl-zones' }, h('span', null, 'Cold air'), h('span', null, 'Warm air')),
+                      h('p', { className: 'wc-tl-chart-selection', 'data-tl-chart-selection': tlSelected.id }, 'Selected: ' + tlSelectedLetter + ' · ' + tlSelected.label),
+                      h('div', { className: 'wc-tl-zones' }, h('span', null, 'Below 0°C'), h('span', null, 'Above 0°C')),
+                      h('div', { className: 'wc-tl-plot-frame' },
+                        h('div', { className: 'wc-tl-levels', 'aria-hidden': true }, tlContext.nodes.map(function(tlRow, tlIndex) {
+                          return h('span', { key: tlRow.id, className: 'wc-tl-level', 'data-tl-level-label': tlRow.id,
+                            'data-selected': String(tlRow.id === tlReading.node), style: { top: (tlChartY(tlRow.progress) / 228 * 100) + '%' } },
+                            h('b', null, tlLevelLetters[tlIndex]), h('span', null, ['Cloud', 'Middle', 'Surface'][tlIndex]));
+                        })),
                       h('svg', { className: 'wc-tl-plot', viewBox: '0 0 240 228', preserveAspectRatio: 'none', 'aria-hidden': true, focusable: 'false', 'data-tl-extent': tlExtent },
                         h('rect', { className: 'wc-tl-cold', x: 16, y: 10, width: 104, height: 206, rx: 8 }),
                         h('rect', { className: 'wc-tl-warm', x: 120, y: 10, width: 104, height: 206, rx: 8 }),
                         [28,52,76,100].map(function(tlX) { return h('path', { key: tlX, className: 'wc-tl-hatch', d: 'M' + tlX + ' 14v198' }); }),
                         h('line', { className: 'wc-tl-zero', 'data-tl-boundary': 'zero', x1: 120, y1: 10, x2: 120, y2: 216 }),
-                        tlContext.nodes.map(function(tlRow) { return h('line', { key: tlRow.id, className: 'wc-tl-guide', x1: 16, y1: tlChartY(tlRow.progress), x2: 224, y2: tlChartY(tlRow.progress) }); }),
-                        tlContext.crossings.map(function(tlCrossing, tlIndex) { return h('g', { key: tlIndex, 'data-tl-crossing': tlCrossing.kind, 'data-tl-progress': tlCrossing.progress },
+                        tlContext.nodes.map(function(tlRow) { return h('line', { key: tlRow.id, className: 'wc-tl-guide', 'data-selected': String(tlRow.id === tlReading.node), x1: 16, y1: tlChartY(tlRow.progress), x2: 224, y2: tlChartY(tlRow.progress) }); }),
+                        tlAir.zeroBands.map(function(tlBand, tlIndex) { return h('line', { key: 'band-' + tlIndex, className: 'wc-tl-zero-band',
+                          'data-tl-zero-band': tlBand.start, 'data-tl-zero-end': tlBand.end,
+                          x1: 120, y1: tlChartY(tlBand.start), x2: 120, y2: tlChartY(tlBand.end) }); }),
+                        tlAir.crossings.map(function(tlCrossing, tlIndex) { return h('g', { key: tlIndex, 'data-tl-crossing': tlCrossing.direction, 'data-tl-progress': tlCrossing.progress },
                           h('line', { className: 'wc-tl-cross', x1: 16, y1: tlChartY(tlCrossing.progress), x2: 224, y2: tlChartY(tlCrossing.progress) }),
                           h('rect', { className: 'wc-tl-cross', x: 116, y: tlChartY(tlCrossing.progress) - 4, width: 8, height: 8 })); }),
                         h('path', { className: 'wc-tl-path', d: tlContext.nodes.map(function(tlRow, tlIndex) { return (tlIndex ? 'L' : 'M') + tlChartX(tlRow.temperatureC) + ' ' + tlChartY(tlRow.progress); }).join(' ') }),
+                        tlAir.touches.map(function(tlTouch, tlIndex) { return h('path', { key: 'touch-' + tlIndex, className: 'wc-tl-touch', 'data-tl-touch': tlTouch.progress,
+                          d: 'M120 ' + (tlChartY(tlTouch.progress) - 8) + 'l8 8-8 8-8-8Z' }); }),
                         tlContext.nodes.map(function(tlRow) { return h('circle', { key: tlRow.id, className: 'wc-tl-point', 'data-tl-point': tlRow.id, 'data-tl-marker': tlRow.id, 'data-tl-temperature': tlRow.temperatureC, 'data-tl-progress': tlRow.progress, 'data-selected': String(tlRow.id === tlReading.node), cx: tlChartX(tlRow.temperatureC), cy: tlChartY(tlRow.progress), r: 5 }); }),
-                        h('circle', { className: 'wc-tl-selected-ring', cx: tlChartX(tlSelected.temperatureC), cy: tlChartY(tlSelected.progress), r: 10 })),
+                        h('circle', { className: 'wc-tl-selected-ring', cx: tlChartX(tlSelected.temperatureC), cy: tlChartY(tlSelected.progress), r: 11 }))),
                       h('div', { className: 'wc-tl-axis', role: 'group', 'aria-label': 'Temperature axis in degrees Celsius' }, h('span', null, '\u2212' + tlExtent + '\u00B0C'), h('span', null, '0\u00B0C'), h('span', null, '+' + tlExtent + '\u00B0C')),
-                      h('ul', { className: 'wc-tl-crossing-list' }, tlContext.crossings.length
-                        ? tlContext.crossings.map(function(tlCrossing, tlIndex) { return h('li', { key: tlIndex, 'data-tl-crossing-copy': tlCrossing.kind },
-                          h('strong', null, '0\u00B0C crossing ' + (tlIndex + 1) + ': '),
-                          tlCrossing.kind === 'melting' ? 'air changes from cold to warm.' : 'air changes from warm to cold.'); })
-                        : h('li', null, 'No full 0\u00B0C crossing in this profile.'))),
+                      h('p', { className: 'wc-tl-air-summary', 'data-tl-air-summary': '1' }, tlAir.summary),
+                      h('ul', { className: 'wc-tl-crossing-list' },
+                        tlAir.crossings.length > 0 && h('li', null, h('span', { className: 'wc-tl-key-cross', 'aria-hidden': true }), 'Dashed line: air passes through 0°C.'),
+                        tlAir.touches.map(function(tlTouch, tlIndex) { return h('li', { key: 'touch-' + tlIndex, 'data-tl-touch-copy': tlTouch.progress },
+                          h('span', { className: 'wc-tl-key-touch', 'aria-hidden': true }), 'At 0°C: ' + tlTouch.label + '. The air does not pass from one side of 0°C to the other here.'); }),
+                        tlAir.zeroBands.map(function(tlBand, tlIndex) { return h('li', { key: 'band-' + tlIndex, 'data-tl-band-copy': tlBand.start },
+                          h('span', { className: 'wc-tl-key-band', 'aria-hidden': true }), 'Thick line: air remains at 0°C along this section.'); }))),
                     h('div', { className: 'wc-tl-nodes', role: 'group', 'aria-label': 'Choose a level to inspect' }, tlContext.nodes.map(function(tlRow) { return h('button', {
                       key: tlRow.id, type: 'button', className: 'wc-tl-node', 'data-tl-select': tlRow.id, 'data-tl-temperature': tlRow.temperatureC,
                       'data-tl-phase': tlRow.particleCode, 'aria-pressed': tlRow.id === tlReading.node, 'aria-controls': 'wcThermalLayerDetail', onClick: function() { tlChooseNode(tlRow.id); }
-                    }, h('strong', null, tlRow.label), h('b', { className: 'wc-tl-node-temperature' }, tlRow.temperatureText), h('span', null, tlRow.particleLabel),
+                    }, h('strong', null, h('span', { className: 'wc-tl-letter', 'aria-hidden': true }, tlLevelLetters[tlContext.nodes.indexOf(tlRow)]), tlRow.label), h('b', { className: 'wc-tl-node-temperature' }, tlRow.temperatureText), h('span', null, tlRow.particleLabel),
                       h('em', null, tlRow.id === tlReading.node ? 'Selected level' : 'Inspect level')); }))),
                   h('section', { id: 'wcThermalLayerDetail', className: 'wc-tl-detail', 'aria-labelledby': 'wcThermalLayerDetailTitle', 'data-tl-detail': tlSelected.id, 'data-tl-phase': tlSelected.particleCode, 'data-tl-temperature': tlSelected.temperatureC },
                     h('div', { className: 'wc-tl-detail-head' }, tlParticlePicture(tlSelected.particleCode), h('h4', { id: 'wcThermalLayerDetailTitle', tabIndex: -1 }, tlSelected.label + ': read the two cues')),
@@ -13146,7 +13828,7 @@ const d = labToolData.waterCycle || {};
                     h('div', { className: 'wc-tl-answers', role: 'group', 'aria-labelledby': 'wcThermalLayerQuestion' }, WCThermalLayerInspector.choices().map(function(tlChoice) { return h('button', { key: tlChoice.id, type: 'button', 'data-tl-answer': tlChoice.id, 'aria-pressed': tlReading.answer === tlChoice.id, 'aria-controls': 'wcThermalLayerFeedback', onClick: function() { tlChooseAnswer(tlChoice.id); } }, tlChoice.label); })),
                     h('div', { id: 'wcThermalLayerFeedback', className: 'wc-tl-feedback', 'data-tl-result': tlReading.result, role: 'status', 'aria-live': 'polite', 'aria-atomic': true },
                       h('h5', { id: 'wcThermalLayerFeedbackTitle', tabIndex: -1 }, tlFeedbackTitle), h('p', null, tlFeedbackCopy))),
-                  h('p', null, 'Levels are schematic relative positions, not measured altitudes or fall times. Dashed bands mark the model\u2019s clamped 0\u00B0C crossings; the particle cues use its illustrative transition bands. A crossing does not guarantee an instantaneous change of state.')));
+                  h('p', null, 'A, B, and C identify the three air levels. Their positions are schematic, not measured altitudes or fall times. This graph follows the air temperature; particle shapes show the model\u2019s separate state cues. Crossing 0°C does not guarantee an instantaneous change of state.')));
             }
             var precipMotionReduced = false;
             try {
@@ -13198,13 +13880,29 @@ const d = labToolData.waterCycle || {};
                   h('path', { className: 'wc-sm-ground-line', d: 'M22 96H218', 'data-sm-cue': 'surface' })
                 );
               }
-              function track(label, value, kind) {
-                return h('div', { 'data-sm-readout': kind, 'data-sm-value': value === null ? 'unavailable' : String(value) },
-                  h('dt', null, label),
-                  h('dd', null, numberText(value)),
-                  h('div', { className: 'wc-sm-track', 'data-track': kind, 'aria-hidden': true },
-                    value !== null && h('span', { style: { width: value + '%' } }))
-                );
+              function comparisonLane(kind, label, valueFor) {
+                var values = context.rows.map(valueFor);
+                var allZero = values.every(function(value) { return value === 0; });
+                return h('section', { className: 'wc-sm-lane', 'data-sm-lane': kind, 'aria-labelledby': 'wcStormLane-' + kind },
+                  h('div', { className: 'wc-sm-lane-head' }, h('h5', { id: 'wcStormLane-' + kind }, label), h('span', null, '0–100 index')),
+                  h('div', { className: 'wc-sm-plot' },
+                    h('div', { className: 'wc-sm-scale', 'aria-hidden': true }, h('span', null, '100'), h('span', null, '50'), h('span', null, '0')),
+                    h('dl', { className: 'wc-sm-series' }, context.rows.map(function(row, index) {
+                      var value = values[index];
+                      return h('div', { key: row.id, 'data-sm-readout': kind, 'data-sm-stage': row.id,
+                        'data-sm-value': value === null ? 'unavailable' : String(value), 'data-selected': String(row.id === reading.stage) },
+                        h('dt', null, h('span', { className: 'sr-only' }, row.label + ', model position '), String(row.time)),
+                        h('dd', { className: 'wc-sm-value' }, value === null ? h('span', null, 'Unavailable') : h('strong', null, value),
+                          value !== null && h('span', { className: 'sr-only' }, ' / 100')),
+                        h('div', { className: 'wc-sm-bar-space', 'aria-hidden': true },
+                          value !== null ? h('span', { className: 'wc-sm-bar', 'data-sm-bar': kind, 'data-sm-stage': row.id,
+                            style: { height: value + '%' } }) : h('span', { className: 'wc-sm-missing' }, '—'),
+                          value === 0 && h('span', { className: 'wc-sm-zero-dot', 'data-sm-zero': kind })));
+                    }))),
+                  h('p', { className: 'wc-sm-position-label' }, 'Model position'),
+                  allZero && h('p', { className: 'wc-sm-zero-note', 'data-sm-zero-note': kind }, kind === 'activity'
+                    ? 'Falling activity reads 0 at all three moments.'
+                    : 'All three displayed readings are 0 on this ground track.'));
               }
               var feedback = 'Compare changes within each track from Mature to Weakening. This practice is unscored.';
               if (evidence) {
@@ -13214,7 +13912,7 @@ const d = labToolData.waterCycle || {};
                     ? 'Displayed falling activity is ' + evidence.matureIntensity + ' at both moments.'
                     : 'Displayed falling activity rises from ' + evidence.matureIntensity + ' to ' + evidence.weakeningIntensity + '.';
                 var groundCopy = evidence.matureGround === 0 && evidence.weakeningGround === 0
-                  ? 'Both ' + metric.label.toLowerCase() + ' readings are zero; this setup shows no modeled response on that track.'
+                  ? 'Both ' + metric.label.toLowerCase() + ' readings are 0. These rounded readings show no displayed change on this track.'
                   : evidence.weakeningGround > evidence.matureGround
                     ? 'The ' + metric.label.toLowerCase() + ' index rises from ' + evidence.matureGround + ' to ' + evidence.weakeningGround + '.'
                     : evidence.weakeningGround === evidence.matureGround
@@ -13231,39 +13929,41 @@ const d = labToolData.waterCycle || {};
                     h('label', { htmlFor: 'wcStormMomentMetric' }, 'Ground response to compare'),
                     h('select', { id: 'wcStormMomentMetric', value: reading.metric, 'aria-describedby': 'wcStormMomentScale', onChange: function(event) { chooseMetric(event.target.value); } },
                       WCStormMoments.metrics().map(function(item) { return h('option', { key: item.id, value: item.id }, item.label); })),
-                    h('p', { id: 'wcStormMomentScale', className: 'wc-sm-scale-note' }, 'Each track uses its own qualitative 0–100 index. Compare stages within a track.')),
-                  h('div', { className: 'wc-sm-cards', role: 'group', 'aria-label': 'Choose a fixed snapshot to inspect' },
-                    context.rows.map(function(row) {
-                      return h('article', { key: row.id, className: 'wc-sm-card', 'data-sm-card': row.id, 'data-selected': String(row.id === reading.stage), 'aria-labelledby': 'wcStormMoment-' + row.id },
-                        h('button', { id: 'wcStormMoment-' + row.id, type: 'button', className: 'wc-sm-stage-button', 'data-sm-select': row.id, 'aria-pressed': reading.stage === row.id, 'aria-controls': 'wcStormMomentDetail', onClick: function() { chooseStage(row.id); } },
-                          h('span', null, 'Inspect ' + row.label), h('span', null, row.time + ' / 100')),
-                        picture(row),
-                        h('dl', { className: 'wc-sm-readouts' }, track('Falling activity now', row.intensity, 'activity'), track(metric.label + ' so far', row.accumulation[reading.metric], 'ground')),
-                        h('p', { className: 'wc-sm-phase' }, h('strong', null, row.phaseLabel), h('span', null, reachText(row)))
-                      );
-                    })),
-                  h('section', { className: 'wc-sm-reading', id: 'wcStormMomentDetail', 'aria-labelledby': 'wcStormMomentDetailTitle' },
-                    h('h4', { id: 'wcStormMomentDetailTitle', tabIndex: -1 }, selected.label + ' · model position ' + selected.time + '/100'),
-                    h('p', null, metric.detail),
-                    h('dl', null,
-                      h('div', null, h('dt', null, 'Selected ground response'), h('dd', null, numberText(selected.accumulation[reading.metric]))),
-                      h('div', null, h('dt', null, 'Surface arrival'), h('dd', null, reachText(selected))),
-                      h('div', null, h('dt', null, 'Lightning in this snapshot'), h('dd', null, selected.lightningEligible ? 'Supported by the modeled setup' : 'Unavailable in the modeled setup'))),
-                    h('p', null, selected.id === 'weakening' ? 'The weakening moment illustrates the later, fading part of this model sequence.' : selected.id === 'developing' ? 'This snapshot is early in the model sequence.' : 'This snapshot is in the peak part of the model sequence.')),
+                    h('p', { id: 'wcStormMomentScale', className: 'wc-sm-scale-note' }, 'Each track has its own qualitative 0–100 scale. Compare moments within a track; equal numbers across tracks do not mean equal water amounts.')),
+                  h('div', { className: 'wc-sm-stage-choices', role: 'group', 'aria-label': 'Choose a fixed snapshot to inspect' },
+                    context.rows.map(function(row) { return h('button', { key: row.id, id: 'wcStormMoment-' + row.id, type: 'button', className: 'wc-sm-stage-button',
+                      'data-sm-select': row.id, 'aria-pressed': reading.stage === row.id, 'aria-controls': 'wcStormMomentDetail', onClick: function() { chooseStage(row.id); } },
+                      h('span', null, row.label), h('span', null, 'Model position ' + row.time),
+                      h('span', { className: 'wc-sm-selected-label' }, reading.stage === row.id ? 'Selected' : 'Inspect')); })),
+                  h('div', { className: 'wc-sm-comparison' },
+                    comparisonLane('activity', 'Falling activity now', function(row) { return row.intensity; }),
+                    comparisonLane('ground', metric.label + ' so far', function(row) { return row.accumulation[reading.metric]; })),
                   h('details', { className: 'wc-sm-question' },
                     h('summary', null, 'Read the changing signals'),
                     h('h5', { id: 'wcStormMomentQuestion' }, 'From Mature to Weakening, what do the two tracks show?'),
+                    h('p', { className: 'wc-sm-scale-note' }, 'Compare model positions 52 and 86 in each chart above. This practice is unscored.'),
                     h('div', { className: 'wc-sm-answers', role: 'group', 'aria-labelledby': 'wcStormMomentQuestion' },
                       WCStormMoments.choices().map(function(item) { return h('button', { key: item.id, type: 'button', 'data-sm-answer': item.id, disabled: !evidence, 'aria-pressed': reading.answer === item.id, onClick: function() { chooseAnswer(item.id); } }, item.label); })),
                     h('div', { className: 'wc-sm-feedback', role: 'status', 'data-sm-result': reading.result },
                       h('h5', { id: 'wcStormMomentFeedbackTitle', tabIndex: -1 }, reading.result === 'supported' ? 'Your reading matches both tracks.' : reading.result === 'retry' ? 'Compare the two tracks again.' : reading.result === 'unavailable' ? 'More model evidence is needed.' : 'Choose an interpretation.'),
                       h('p', null, feedback))),
+                  h('section', { className: 'wc-sm-reading', id: 'wcStormMomentDetail', 'aria-labelledby': 'wcStormMomentDetailTitle' },
+                    h('h4', { id: 'wcStormMomentDetailTitle', tabIndex: -1 }, selected.label + ' · model position ' + selected.time + '/100'),
+                    picture(selected),
+                    h('p', { className: 'wc-sm-phase' }, h('strong', null, selected.phaseLabel), h('span', null, reachText(selected))),
+                    h('p', null, metric.detail),
+                    h('dl', null,
+                      h('div', { 'data-sm-detail-reading': 'activity' }, h('dt', null, 'Falling activity now'), h('dd', null, numberText(selected.intensity))),
+                      h('div', { 'data-sm-detail-reading': 'ground' }, h('dt', null, metric.label + ' so far'), h('dd', null, numberText(selected.accumulation[reading.metric]))),
+                      h('div', null, h('dt', null, 'Surface arrival'), h('dd', null, reachText(selected))),
+                      h('div', null, h('dt', null, 'Lightning in this snapshot'), h('dd', null, selected.lightningEligible ? 'Supported by the modeled setup' : 'Unavailable in the modeled setup'))),
+                    h('p', null, '“Now” describes this snapshot. “So far” includes the model’s earlier exposure to this same weather setup.'),
+                    h('p', null, selected.id === 'weakening' ? 'The weakening moment illustrates the later, fading part of this model sequence.' : selected.id === 'developing' ? 'This snapshot is early in the model sequence.' : 'This snapshot is in the peak part of the model sequence.')),
                   h('p', { className: 'wc-sm-limit' }, 'Positions 16, 52 and 86 describe the illustrative sequence. The icons are schematic. Ground-effect indices are computed for the fixed setup through each position; they do not record earlier weather edits. Real drainage, melting, evaporation and soil storage can change surface effects. These indices do not measure water depth, discharge or hazard.'),
                   h('p', { className: 'wc-sm-limit' }, 'For thunderstorm lifecycle context, ', h('a', { href: 'https://www.weather.gov/spotterguide/life', target: '_blank', rel: 'noopener noreferrer' }, 'read the NWS guide to an ordinary cell'), '. Other weather setups in this lab also use the model sequence.')
                 )
               );
             }
-
             var stormStageStops = [
               { key: 'developing', label: 'Developing', time: 16 },
               { key: 'mature', label: 'Mature', time: 52 },
@@ -13282,9 +13982,158 @@ const d = labToolData.waterCycle || {};
                 stormAutoPlay: !!keepPlaying && !precipMotionReduced
               });
             }
+            function renderStormGroundReadings() {
+              var tracks = WCStormMoments.metrics();
+              var readings = precipModel.lifecycle.accumulation || {};
+              function surfaceSymbol(key) {
+                return h('svg', { className: 'wc-sg-symbol', viewBox: '0 0 144 96', 'aria-hidden': 'true', focusable: 'false' },
+                  h('defs', null,
+                    h('linearGradient', { id: 'wcGroundSky-' + key, x1: '0', y1: '0', x2: '0', y2: '1' },
+                      h('stop', { offset: '0%', className: 'wc-sg-sky-top' }), h('stop', { offset: '100%', className: 'wc-sg-sky-bottom' }))),
+                  h('rect', { x: 0, y: 0, width: 144, height: 96, rx: 14, fill: 'url(#wcGroundSky-' + key + ')' }),
+                  h('path', { className: 'wc-sg-earth', d: 'M8 59Q37 52 68 58T136 57V79Q110 94 72 91T8 80Z' }),
+                  h('path', { className: 'wc-sg-soil-line', d: 'M10 70Q37 64 68 70T134 69M13 81Q46 75 76 81T131 79' }),
+                  h('path', { className: 'wc-sg-surface', d: 'M8 59Q37 52 68 58T136 57', fill: 'none' }),
+                  key === 'snow' && h('g', null,
+                    h('path', { className: 'wc-sg-ice', d: 'M10 57Q22 45 38 51Q52 39 66 50Q80 43 94 53Q113 45 134 56Q107 66 72 60T10 61Z' }),
+                    h('path', { className: 'wc-sg-crystal', d: 'M46 12v24m-10-18 20 12m-20 0 20-12M42 15l4 4 4-4m-8 18 4-4 4 4' }),
+                    [83, 97, 111].map(function(x, index) { return h('circle', { key: x, className: 'wc-sg-ice', cx: x, cy: 32 + index % 2 * 5, r: 4 }); })),
+                  key === 'glaze' && h('g', null,
+                    h('path', { className: 'wc-sg-ice', d: 'M8 53Q37 46 68 52T136 51V57Q106 65 68 58T8 59Z' }),
+                    h('path', { className: 'wc-sg-shine', d: 'M29 52l17-2m22 7 20 2M71 19v18m-9-9h18m-15-6 12 12m-12 0 12-12', fill: 'none' })),
+                  key === 'hail' && h('g', null,
+                    [34, 71, 108].map(function(x, index) {
+                      var y = index === 1 ? 37 : 43;
+                      return h('g', { key: x },
+                        h('path', { className: 'wc-sg-ice', d: 'M' + (x - 12) + ' ' + (y - 4) + 'l9-10 14 4 4 13-10 10-14-4Z' }),
+                        h('path', { className: 'wc-sg-shine', d: 'M' + (x - 6) + ' ' + (y - 2) + 'l4-6 8 3', fill: 'none' }));
+                    })),
+                  key === 'puddling' && h('g', null,
+                    h('path', { className: 'wc-sg-water', d: 'M17 53C25 44 43 48 54 44C68 39 85 44 94 43C113 42 132 49 126 56C118 64 99 61 85 64C65 68 47 61 32 62C18 60 11 58 17 53Z' }),
+                    h('path', { className: 'wc-sg-ripple', d: 'M37 53q24-8 53-2m-44 6q27 5 56-2', fill: 'none' })),
+                  key === 'runoff' && h('g', null,
+                    h('path', { className: 'wc-sg-flow', d: 'M17 45C40 31 53 55 77 43S109 42 126 37', fill: 'none' }),
+                    h('path', { className: 'wc-sg-flow-tip', d: 'M118 31l13 4-8 11Z' }),
+                    h('path', { className: 'wc-sg-ripple', d: 'M27 50q14-3 27 3m28-4 21-2', fill: 'none' })),
+                  h('circle', { className: 'wc-sg-pebble', cx: 34, cy: 77, r: 2 }),
+                  h('circle', { className: 'wc-sg-pebble', cx: 97, cy: 82, r: 2.5 }));
+              }
+              function trackCard(metric) {
+                var raw = readings[metric.id];
+                var valid = typeof raw === 'number' && isFinite(raw) && raw >= 0 && raw <= 100;
+                var value = valid ? Math.round(raw) : null;
+                var state = !valid ? 'unavailable' : value === 0 ? 'zero' : 'available';
+                return h('details', { key: metric.id, className: 'wc-sg-card', 'data-sg-track': metric.id,
+                  'data-sg-value': valid ? String(value) : 'unavailable', 'data-sg-state': state },
+                  h('summary', null,
+                    h('span', { className: 'wc-sg-card-title' }, h('span', { className: 'sr-only' }, 'About '), metric.label),
+                    h('svg', { className: 'wc-sg-chevron', viewBox: '0 0 12 12', 'aria-hidden': 'true', focusable: 'false' }, h('path', { d: 'M2 4l4 4 4-4', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' })),
+                    surfaceSymbol(metric.id),
+                    h('span', { className: 'wc-sg-reading' },
+                      h('span', { className: 'wc-sg-value' }, valid ? h('strong', null, String(value)) : h('strong', { className: 'wc-sg-missing' }, 'Unavailable'), valid && h('small', null, ' / 100')),
+                      h('span', { className: 'wc-sg-rail', 'aria-hidden': 'true' },
+                        valid && h('span', { className: 'wc-sg-fill', 'data-sg-bar': metric.id, style: { width: value + '%' } }),
+                        value === 0 && h('span', { className: 'wc-sg-zero', 'data-sg-zero': metric.id })),
+                      h('span', { className: 'wc-sg-state' }, valid ? value === 0 ? 'Zero reading' : 'Model index' : 'No reading'))),
+                  h('div', { className: 'wc-sg-explanation' }, h('p', null, metric.detail),
+                    metric.id === 'snow' && precipModel.visualType === 'sleet' && h('p', null, 'Ice pellets contribute to this track in the current setup.'),
+                    metric.id === 'snow' && precipModel.visualType === 'mix' && h('p', null, 'The frozen part of the mixture contributes to this track in the current setup.'),
+                    h('p', null, !valid ? 'This model reading is unavailable. It is not a zero.' : value === 0
+                      ? 'The rounded index is zero at this model position. A zero is a valid reading; it does not mean that data is missing.'
+                      : 'Follow this same track as you move through the lifecycle to see how its modeled response changes.')));
+              }
+              return h('section', { className: 'wc-storm-ground', 'aria-labelledby': 'wcStormGroundTitle', 'data-sg-position': precipModel.lifecycle.time },
+                h('style', null, WC_STORM_GROUND_STYLE),
+                h('header', { className: 'wc-sg-head' },
+                  h('h4', { id: 'wcStormGroundTitle' }, 'Ground effects so far'),
+                  h('span', { className: 'wc-sg-position' }, 'Model position ' + precipModel.lifecycle.time + ' / 100')),
+                h('p', { className: 'wc-sg-intro' }, 'Each effect has its own 0–100 index. Open a card to understand its reading. The sketches identify effects; their shapes do not measure depth or flow.'),
+                [{ key: 'frozen', label: 'Frozen buildup', ids: ['snow', 'glaze', 'hail'] },
+                  { key: 'water', label: 'Water at the surface', ids: ['puddling', 'runoff'] }].map(function(group) {
+                  return h('section', { key: group.key, className: 'wc-sg-group', 'data-sg-group': group.key, 'aria-labelledby': 'wcGroundGroup-' + group.key },
+                    h('h5', { id: 'wcGroundGroup-' + group.key }, group.label),
+                    h('div', { className: 'wc-sg-grid' }, tracks.filter(function(metric) { return group.ids.indexOf(metric.id) >= 0; }).map(trackCard)));
+                }),
+                h('details', { className: 'wc-sg-method' },
+                  h('summary', null, 'How to compare these indices'),
+                  h('div', null,
+                    h('p', null, 'Compare a track with itself at different model positions. Equal numbers on different tracks do not mean equal amounts of water.'),
+                    h('p', null, '“So far” uses the current weather setup through the displayed model position. Changing the weather recalculates these effects; the indices do not retain earlier weather edits.'),
+                    h('p', null, 'These are qualitative model indices. They do not measure water depth, discharge or hazard. Real drainage, melting, evaporation and soil storage can change surface effects.'))));
+            }
+
+            function renderStormLifecycleNavigator() {
+              var lifecycle = precipModel.lifecycle;
+              var playing = precipConfig.stormAutoPlay && !precipMotionReduced;
+              var cues = {
+                developing: 'Cloud growth and lift build.',
+                mature: 'Activity peaks for this setup.',
+                weakening: 'Lift and falling activity ease.'
+              };
+              function stagePicture(key) {
+                var cloud = key === 'developing'
+                  ? 'M39 57Q24 54 29 42Q32 33 43 35Q40 20 52 15Q65 9 75 22Q88 13 98 25Q111 26 112 39Q129 34 134 46Q138 56 126 58Z'
+                  : key === 'mature'
+                    ? 'M20 57Q9 51 16 38Q23 26 39 30Q34 12 52 8Q68 4 80 17Q92 3 108 12Q123 20 121 33Q140 27 148 40Q156 53 140 58Z'
+                    : 'M19 57Q7 51 19 40Q31 32 53 35Q51 23 67 22Q81 19 92 30Q110 22 127 32Q147 33 152 47Q155 55 139 58Z';
+                var top = key === 'weakening' ? 73 : key === 'developing' ? 65 : 61;
+                return h('svg', { className: 'wc-sn-picture', viewBox: '0 0 168 104', 'aria-hidden': 'true', focusable: 'false' },
+                  h('path', { className: 'wc-sn-cloud', d: cloud }),
+                  h('path', { className: 'wc-sn-lift', strokeWidth: key === 'mature' ? 4 : 2.5,
+                    d: 'M84 96V' + top + 'm-7 8 7-8 7 8' }),
+                  key === 'mature' && h('path', { className: 'wc-sn-lift', strokeWidth: 2,
+                    d: 'M58 90V73m-5 6 5-6 5 6M110 90V73m-5 6 5-6 5 6' }));
+              }
+              return h('div', { className: 'wc-storm-navigator', 'data-storm-position': lifecycle.time },
+                h('style', null, WC_STORM_NAVIGATOR_STYLE),
+                h('div', { className: 'wc-sn-head' }, h('h4', { id: 'wcStormLifecycleTitle' }, 'Storm lifecycle'),
+                  h('span', { className: 'wc-sn-current' }, lifecycle.stageLabel)),
+                h('p', null, 'Move the chamber through the same weather setup. Cloud shapes and upward arrows are schematic cues for growth and lift.'),
+                h('div', { className: 'wc-sn-stages', role: 'group', 'aria-label': 'Jump the chamber to a storm stage' },
+                  stormStageStops.map(function(stageStop, index) {
+                    var active = lifecycle.stageKey === stageStop.key;
+                    return h('button', { key: stageStop.key, type: 'button', className: 'wc-sn-stage',
+                      'data-storm-stage-choice': stageStop.key, 'aria-pressed': active,
+                      'aria-label': 'Show ' + stageStop.label + ' stage at model position ' + stageStop.time,
+                      'aria-describedby': 'wcStormStageCue-' + stageStop.key,
+                      onClick: function() { setStormLifecycleTime(stageStop.time, false); } },
+                      h('span', { className: 'wc-sn-stage-top' }, h('span', { className: 'wc-sn-number', 'aria-hidden': 'true' }, String(index + 1)), stageStop.label),
+                      stagePicture(stageStop.key),
+                      h('span', { className: 'wc-sn-stage-copy' },
+                        h('span', { className: 'wc-sn-cue', id: 'wcStormStageCue-' + stageStop.key }, cues[stageStop.key]),
+                        h('span', { className: 'wc-sn-jump' }, 'Jump to position ' + stageStop.time),
+                        h('span', { className: 'wc-sn-selection', 'aria-hidden': 'true' }, active ? '✓ Current stage' : 'Explore stage')));
+                  })),
+                h('div', { className: 'wc-sn-position' },
+                  h('label', { htmlFor: 'wcPrecipStormTime' },
+                    h('span', { className: 'wc-sn-position-head' }, 'Model position',
+                      h('output', { htmlFor: 'wcPrecipStormTime', 'aria-hidden': 'true' }, String(lifecycle.time), h('small', null, ' / 100'))),
+                    h('input', { id: 'wcPrecipStormTime', type: 'range', min: 0, max: 100, step: 1,
+                      value: precipConfig.stormTime, 'aria-describedby': 'wcStormPositionHelp',
+                      'aria-valuetext': 'Model position ' + lifecycle.time + ' of 100, ' + lifecycle.stageLabel + ' stage',
+                      onChange: function(event) { setStormLifecycleTime(Number(event.target.value), false); } })),
+                  h('div', { className: 'wc-sn-scale', 'aria-hidden': 'true' }, h('span', null, '0 · Beginning'), h('span', null, '100 · End')),
+                  h('p', { id: 'wcStormPositionHelp' }, '0–100 is an illustrative model sequence, not elapsed minutes. Stage choices jump to one point within each stage.'),
+                  h('div', { className: 'wc-sn-playback' },
+                    h('button', { type: 'button', 'data-storm-playback': 'back', disabled: lifecycle.time <= 0,
+                      'aria-label': 'Move back 4 model positions',
+                      onClick: function() { setStormLifecycleTime(precipModel.lifecycle.time - 4, false); } }, '← Back 4'),
+                    h('button', { type: 'button', 'data-storm-playback': 'play', 'aria-pressed': playing,
+                      'aria-disabled': precipMotionReduced, 'aria-describedby': precipMotionReduced ? 'wcStormMotionHelp' : undefined,
+                      onClick: function() {
+                        if (precipMotionReduced) return;
+                        var restartTime = precipModel.lifecycle.time >= 100 ? 0 : precipModel.lifecycle.time;
+                        setStormLifecycleTime(restartTime, !precipConfig.stormAutoPlay);
+                      } }, precipMotionReduced ? 'Manual mode' : playing ? 'Pause time' : lifecycle.time >= 100 ? 'Replay storm' : 'Play storm'),
+                    h('button', { type: 'button', 'data-storm-playback': 'forward', disabled: lifecycle.time >= 100,
+                      'aria-label': 'Move forward 4 model positions',
+                      onClick: function() { setStormLifecycleTime(precipModel.lifecycle.time + 4, false); } }, 'Forward 4 →')),
+                  precipMotionReduced && h('p', { id: 'wcStormMotionHelp' }, 'Reduced motion is on. Explore with the stage choices, slider or four-position steps.')),
+                h('p', { className: 'wc-storm-stage-copy wc-sn-context' }, WCStormMoments.currentCopy(precipModel)));
+            }
+
             function checkThunderEstimate() {
               setIQ({ thunderEstimateChecked: true });
-              if (typeof announceToSR === 'function') announceToSR(precipModel.thunderEstimate.feedback);
             }
 
             var precipSurfaceOutcomeLabel = precipModel.visualType === 'clear'
@@ -13322,22 +14171,199 @@ const d = labToolData.waterCycle || {};
               setIQ({ lightningStudyStep: getWcLightningStudyStep(stepKey).key });
             }
 
-            var thunderMeasure = precipModel.lightningEligible
-              ? h('div', { className: 'wc-thunder-measure', 'data-thunder-measurement': precipConfig.thunderEstimateChecked ? precipModel.thunderEstimate.band : 'unsubmitted' },
-                  h('strong', null, 'Measure the storm'),
-                  h('span', null, (lightningStudyActive ? 'Modeled delay: ' : 'Observed delay: ') + precipModel.thunder.delaySeconds.toFixed(1) + ' seconds. Estimate the distance, then check your work.'),
-                  h('label', { htmlFor: 'wcPrecipThunderEstimate' },
-                    h('span', null, 'Your estimate: ' + precipConfig.thunderEstimateKm.toFixed(1) + ' km'),
+            function focusLightningStudyTarget(destination) {
+              if (typeof document === 'undefined') return false;
+              var target = destination === 'chamber'
+                ? document.querySelector('.wc-precip-chamber canvas')
+                : document.getElementById('wcLightningStudyTitle');
+              if (!target) return false;
+              if (destination === 'chamber' && precipConfig.viewMode === '3d') {
+                setPrecipCameraFocus('storm');
+              }
+              if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+              target.focus({ preventScroll: true });
+              target.scrollIntoView({ block: 'center', behavior: 'auto' });
+              return true;
+            }
+            function renderLightningStudy() {
+              var selected = activeLightningStudy;
+              var index = WC_LIGHTNING_STUDY_STEPS.map(function(step) { return step.key; }).indexOf(selected.key);
+              var charge = precipModel.stormAnatomy.chargeSeparation;
+              var guided = lightningStudyRequested;
+              var available = lightningStudyAvailable;
+              var guides = {
+                'charge-separation': { direction: 'Charges separate inside the cloud', cue: 'Find + in the upper cloud and − lower down.', sketch: 'Positive small ice crystals occupy the upper cloud. Negative graupel and larger ice occupy the lower cloud.' },
+                'stepped-leader': { direction: 'The channel grows downward', cue: 'Find the dashed channel descending from the cloud.', sketch: 'A broken channel descends from the lower cloud and stops above the ground.' },
+                'upward-streamer': { direction: 'The two channels approach', cue: 'Find the short channel rising from the ground toward the descending leader.', sketch: 'The downward leader approaches a short upward streamer. A small gap remains between them.' },
+                'return-stroke': { direction: 'The bright pulse propagates upward', cue: 'Find the bright connected channel. The study frame holds the complete bolt still.', sketch: 'A connected channel joins cloud and ground. An upward arrow shows the propagation direction of the bright return stroke.' },
+                'pressure-wave': { direction: 'The pressure wave spreads outward', cue: 'Find the pressure-wave rings spreading out from the heated channel.', sketch: 'Rings and outward arrows show a pressure wave spreading from air heated by the lightning channel.' }
+              };
+              var guide = guides[selected.key];
+              var autoState = !precipModel.lightningEligible ? 'no-flash' : precipMotionReduced ? 'reduced-motion' : precipConfig.paused ? 'paused' : 'running';
+              var autoCopy = !precipModel.lightningEligible
+                ? 'This setup does not complete a lightning flash. Available steps below let you inspect any charge separation that is modeled.'
+                : precipMotionReduced
+                  ? 'Reduced motion shows a static pathway. Choose a numbered step to inspect each part of the sequence.'
+                  : precipConfig.paused
+                    ? 'The chamber is paused. Choose a numbered step to inspect a still frame, or use Resume in the chamber to resume automatic timing.'
+                    : 'The chamber follows automatic flash-to-thunder timing. Choose a numbered step to hold a static, silent frame.';
+              var unavailableCopy = selected.key === 'charge-separation'
+                ? 'This cloud does not yet have organized charge separation in the model.'
+                : charge.active
+                  ? 'Charges are separating, but this setup does not complete a cloud-to-ground flash. This phase is not shown in the chamber.'
+                  : 'This setup does not produce a cloud-to-ground flash. This phase is not shown in the chamber.';
+              function sketch() {
+                var key = selected.key;
+                var groundPositive = charge.groundPolarity === 'positive induced charge';
+                var leader = key === 'stepped-leader' || key === 'upward-streamer';
+                var connected = key === 'return-stroke' || key === 'pressure-wave';
+                function arrow(path, tip, feature) {
+                  return h('g', { 'data-ls-direction': feature, className: 'wc-ls-arrow' },
+                    h('path', { d: path, fill: 'none', strokeWidth: 3, strokeLinecap: 'round' }),
+                    h('path', { d: tip, stroke: 'none' }));
+                }
+                return h('figure', { className: 'wc-ls-figure', 'data-ls-sketch': key },
+                  h('svg', { viewBox: '0 0 320 210', role: 'img', 'aria-labelledby': 'wcLightningSketchTitle wcLightningSketchDesc', focusable: 'false' },
+                    h('title', { id: 'wcLightningSketchTitle' }, selected.label + ' study diagram'),
+                    h('desc', { id: 'wcLightningSketchDesc' }, guide.sketch + (groundPositive ? ' Positive charge is induced on the ground.' : ' The ground remains neutral in this model frame.')),
+                    h('path', { className: 'wc-ls-ground', d: 'M0 180Q60 169 108 180T208 179T320 178V210H0Z' }),
+                    h('path', { className: 'wc-ls-cloud', d: 'M91 88C67 88 60 61 77 50C70 30 92 18 108 28C118 5 153 5 165 24C184 9 211 20 212 39C238 31 254 55 241 71C246 87 228 96 212 88Z' }),
+                    h('g', { 'data-ls-feature': 'charge', className: 'wc-ls-charge' },
+                      [111, 151, 191].map(function(x) { return h('g', { key: 'plus' + x }, h('circle', { cx: x, cy: 43, r: 11 }), h('text', { x: x, y: 48 }, '+')); }),
+                      [125, 165, 205].map(function(x) { return h('g', { key: 'minus' + x, className: 'wc-ls-negative' }, h('path', { d: 'M' + x + ' 57l11 11-11 11-11-11Z' }), h('text', { x: x, y: 73 }, '−')); })),
+                    groundPositive && h('g', { 'data-ls-feature': 'ground-charge', className: 'wc-ls-ground-charge' }, [102, 141, 181, 220].map(function(x) { return h('text', { key: x, x: x, y: 199 }, '+'); })),
+                    leader && h('path', { 'data-ls-feature': 'leader', className: 'wc-ls-leader', d: key === 'stepped-leader' ? 'M159 91l-9 18 15 15-10 13' : 'M159 91l-9 18 15 15-10 24', fill: 'none', strokeDasharray: '6 5' }),
+                    key === 'upward-streamer' && h('path', { 'data-ls-feature': 'streamer', className: 'wc-ls-streamer', d: 'M171 180l-8-13 0-9', fill: 'none' }),
+                    connected && h('path', { 'data-ls-feature': key === 'return-stroke' ? 'return-stroke' : 'heated-channel', className: 'wc-ls-channel', d: 'M159 90l-9 19 15 15-10 24 16 32', fill: 'none' }),
+                    key === 'stepped-leader' && arrow('M231 102v39', 'M224 135l7 11 7-11Z', 'down'),
+                    key === 'upward-streamer' && arrow('M231 175v-26', 'M224 153l7-11 7 11Z', 'up'),
+                    key === 'return-stroke' && arrow('M231 169v-61', 'M224 114l7-11 7 11Z', 'up'),
+                    key === 'pressure-wave' && h('g', { 'data-ls-feature': 'pressure-wave', className: 'wc-ls-wave' },
+                      h('circle', { cx: 160, cy: 132, r: 24, fill: 'none' }),
+                      h('circle', { cx: 160, cy: 132, r: 44, fill: 'none' }),
+                      arrow('M108 132H78', 'M84 125l-11 7 11 7Z', 'outward-left'),
+                      arrow('M212 132h30', 'M236 125l11 7-11 7Z', 'outward-right')),
+                    h('text', { className: 'wc-ls-scene-label', x: 15, y: 22 }, 'Cloud'),
+                    h('text', { className: 'wc-ls-scene-label', x: 15, y: 198 }, 'Ground')),
+                  h('figcaption', null, 'Simplified study diagram · not to scale'),
+                  h('p', { className: 'wc-ls-legend' }, '+ positive charge · − negative charge'));
+              }
+              return h('div', { className: 'wc-lightning-study wc-ls' + (isDark ? ' is-dark' : '') + (isContrast ? ' is-contrast' : ''), role: 'group',
+                'aria-labelledby': 'wcLightningStudyTitle', 'data-lightning-study-mode': lightningStudyMode,
+                'data-ls-state': guided ? available ? 'guided' : 'unavailable' : autoState },
+                h('style', null, WC_LIGHTNING_STUDY_STYLE),
+                h('div', { className: 'wc-ls-head' },
+                  h('div', null, h('p', { className: 'wc-ls-kicker' }, 'From charge to thunder'), h('h5', { id: 'wcLightningStudyTitle', tabIndex: -1 }, 'Inspect a lightning flash')),
+                  h('button', { type: 'button', className: 'wc-ls-auto', 'data-lightning-study-choice': 'auto',
+                    'aria-label': 'Automatic sequence', 'aria-pressed': selected.key === 'auto',
+                    onClick: function() { selectLightningStudyStep('auto'); } }, 'Automatic timing')),
+                h('p', { className: 'wc-ls-intro' }, 'Choose a step to hold its structure still in the chamber.'),
+                h('ol', { className: 'wc-ls-steps', 'aria-label': 'Five phases of a cloud-to-ground lightning sequence' },
+                  WC_LIGHTNING_STUDY_STEPS.slice(1).map(function(step, stepIndex) {
+                    var stepAvailable = isWcLightningStudyStepAvailable(precipModel, step.key);
+                    return h('li', { key: step.key }, h('button', { type: 'button', className: 'wc-lightning-study-step wc-ls-step',
+                      'data-lightning-study-choice': step.key,
+                      'aria-label': 'Step ' + (stepIndex + 1) + ': ' + step.label,
+                      'aria-pressed': selected.key === step.key,
+                      'data-ls-available': stepAvailable ? 'true' : 'false',
+                      'aria-describedby': !stepAvailable ? 'wcLightningUnavailableHint' : undefined,
+                      onClick: function() { selectLightningStudyStep(step.key); } },
+                      h('span', { className: 'wc-ls-number', 'aria-hidden': 'true' }, String(stepIndex + 1)),
+                      h('span', { className: 'wc-ls-step-name' }, step.label),
+                      !stepAvailable && h('small', null, 'Unavailable here')));
+                  })),
+                !precipModel.lightningEligible && h('p', { id: 'wcLightningUnavailableHint', className: 'wc-ls-availability' }, 'Unavailable steps are not produced by this setup. Select one to read its explanation.'),
+                h('p', { className: 'wc-ls-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-ls-status': guided ? available ? 'still' : 'unavailable' : autoState },
+                  guided ? 'Step ' + index + ' of 5 · ' + selected.label + ' · ' + (available ? 'Static and silent' : 'Unavailable in this setup')
+                    : 'Automatic mode · ' + (autoState === 'paused' ? 'Chamber paused' : autoState === 'reduced-motion' ? 'Reduced motion' : autoState === 'no-flash' ? 'No completed flash' : 'Timing active')),
+                guided ? h('section', { className: 'wc-ls-detail', 'aria-labelledby': 'wcLightningDetailTitle' },
+                  available && sketch(),
+                  h('div', { className: 'wc-ls-reading' },
+                    h('h6', { id: 'wcLightningDetailTitle' }, available ? guide.direction : 'Why this frame is unavailable'),
+                    h('p', { className: 'wc-lightning-study-copy' }, selected.explanation),
+                    available ? h('div', { className: 'wc-ls-cue' },
+                      h('strong', null, 'Find it in the chamber'), h('p', null, guide.cue),
+                      precipConfig.viewMode === '3d' && h('p', { className: 'wc-ls-view-hint' }, 'Whole storm brings the cloud, lightning channel and ground into one view.'),
+                      h('button', { type: 'button', className: 'wc-precip-btn wc-ls-show', 'data-ls-action': 'chamber', onClick: function() { focusLightningStudyTarget('chamber'); } }, precipConfig.viewMode === '3d' ? 'Show phase in Whole storm' : 'Show this phase in chamber'))
+                      : h('div', { className: 'wc-ls-unavailable' }, h('strong', null, 'Current setup'), h('p', null, unavailableCopy), h('p', null, 'Try a thunderstorm preset near its mature stage to explore the complete sequence.')),
+                    available && h('p', { className: 'wc-lightning-study-note' }, 'Study snapshots are static and silent. Choose Automatic timing to return to the chamber’s playback settings.')))
+                  : h('p', { className: 'wc-ls-auto-copy' }, autoCopy));
+            }
+
+            function renderThunderMeasurement() {
+              var available = precipModel.lightningEligible;
+              var checked = available && precipConfig.thunderEstimateChecked;
+              var estimate = precipModel.thunderEstimate;
+              var thunder = precipModel.thunder;
+              var speed = thunder.speedOfSoundKmPerSecond;
+              var impliedSeconds = Math.round(precipConfig.thunderEstimateKm / speed * 10) / 10;
+              var toleranceKm = Math.max(0.5, thunder.distanceKm * 0.1);
+              var direction = precipConfig.thunderEstimateKm < thunder.distanceKm ? 'farther' : 'nearer';
+              var exact = precipConfig.thunderEstimateKm === thunder.distanceKm;
+              var resultTitle = estimate.band === 'close' ? 'A close estimate' : 'Try a ' + direction + ' distance';
+              var resultCopy = exact
+                ? 'Your estimate matches the model distance.'
+                : estimate.errorKm === 0 ? 'Your estimate matches the model distance at the displayed precision.'
+                : 'Your estimate places the storm ' + estimate.errorKm.toFixed(1) + ' km ' + (direction === 'farther' ? 'nearer' : 'farther away') + ' than the model distance.';
+              function timingLane(key, label, seconds) {
+                return h('div', { className: 'wc-tm-lane', 'data-tm-lane': key, 'data-tm-seconds': seconds },
+                  h('dl', { className: 'wc-tm-lane-label' },
+                    h('dt', null, label), h('dd', null, seconds.toFixed(1) + ' s')),
+                  h('div', { className: 'wc-tm-rail', 'aria-hidden': 'true' },
+                    h('i', { className: 'wc-tm-fill', 'data-tm-bar': key, style: { width: (seconds / 60 * 100) + '%' } }, h('b', null))));
+              }
+              return h('section', { className: 'wc-thunder-measure wc-tm' + (isDark ? ' is-dark' : '') + (isContrast ? ' is-contrast' : ''),
+                'aria-labelledby': 'wcThunderMeasureTitle',
+                'data-thunder-measurement': available ? checked ? estimate.band : 'unsubmitted' : 'unavailable' },
+                h('style', null, WC_THUNDER_MEASURE_STYLE),
+                h('header', { className: 'wc-tm-head' },
+                  h('svg', { className: 'wc-tm-icon', viewBox: '0 0 52 52', 'aria-hidden': 'true', focusable: 'false' },
+                    h('path', { d: 'M21 5 10 26h11l-5 19 20-27H24l7-13Z', fill: 'currentColor' }),
+                    h('path', { d: 'M38 15q12 11 0 22M42 7q21 19 0 38', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' })),
+                  h('div', null, h('p', { className: 'wc-tm-kicker' }, 'Sound as a distance clue'),
+                    h('h4', { id: 'wcThunderMeasureTitle' }, 'How far did sound travel?'))),
+                available ? h('div', null,
+                  h('p', { className: 'wc-tm-intro' }, 'Light reaches the observer almost instantly. The gap before thunder gives sound time to travel.'),
+                  h('figure', { className: 'wc-tm-chart', 'aria-labelledby': 'wcThunderTimingTitle' },
+                    h('figcaption', { id: 'wcThunderTimingTitle' }, 'Compare the time after the flash'),
+                    h('div', { className: 'wc-tm-lanes' },
+                      timingLane('modeled', 'Modeled delay', thunder.delaySeconds),
+                      timingLane('estimate', 'Your estimate implies', impliedSeconds)),
+                    h('div', { className: 'wc-tm-axis', 'aria-hidden': 'true' }, [0, 15, 30, 45, 60].map(function(tick) {
+                      return h('span', { key: tick }, String(tick));
+                    })),
+                    h('p', { className: 'wc-tm-axis-caption' }, 'Seconds after the flash · both tracks use the same 0–60 s scale'),
+                    h('p', { className: 'wc-tm-caption' }, 'Static comparison. Move your estimate to see the time it would imply.')),
+                  h('div', { className: 'wc-tm-estimate' },
+                    h('label', { htmlFor: 'wcPrecipThunderEstimate', className: 'wc-tm-input-label' },
+                      h('span', null, 'Your distance estimate'),
+                      h('output', { htmlFor: 'wcPrecipThunderEstimate', 'aria-hidden': 'true' }, precipConfig.thunderEstimateKm.toFixed(1), h('small', null, ' km'))),
                     h('input', { id: 'wcPrecipThunderEstimate', type: 'range', min: 0.5, max: 20, step: 0.5,
                       value: precipConfig.thunderEstimateKm,
-                      'aria-valuetext': precipConfig.thunderEstimateKm.toFixed(1) + ' kilometres estimated storm distance',
-                      onChange: function(event) { setIQ({ thunderEstimateKm: Number(event.target.value), thunderEstimateChecked: false }); } })),
-                  h('button', { type: 'button', className: 'wc-precip-btn', onClick: checkThunderEstimate }, 'Check estimate'),
-                  precipConfig.thunderEstimateChecked && h('p', { className: 'wc-thunder-measure-result', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
-                    precipModel.thunderEstimate.feedback + ' Error: ' + precipModel.thunderEstimate.errorKm.toFixed(1) + ' km.'))
-              : h('div', { className: 'wc-thunder-measure', 'data-thunder-measurement': 'unavailable' },
-                  h('strong', null, t('stem.watercycle.measure_the_storm', 'Measure the storm')),
-                  h('span', null, t('stem.watercycle.no_lightning_flash_is_modeled_yet', 'No lightning flash is modeled yet, so there is no flash-to-thunder interval to measure. Increase cloud depth, moisture, or updraft to build electrical activity.')));
+                      'aria-valuetext': precipConfig.thunderEstimateKm.toFixed(1) + ' kilometres; implies a ' + impliedSeconds.toFixed(1) + ' second delay',
+                      'aria-describedby': 'wcThunderEstimateHelp',
+                      onChange: function(event) { setIQ({ thunderEstimateKm: Number(event.target.value), thunderEstimateChecked: false }); } }),
+                    h('div', { className: 'wc-tm-range-ends', 'aria-hidden': 'true' }, h('span', null, '0.5 km'), h('span', null, '20 km')),
+                    h('p', { id: 'wcThunderEstimateHelp' }, 'A farther storm means a longer wait for thunder. Aim to bring the two tracks together.'),
+                    h('button', { type: 'button', className: 'wc-precip-btn wc-tm-check', onClick: checkThunderEstimate }, 'Check estimate')),
+                  h('div', { className: 'wc-tm-result', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-tm-result': checked ? estimate.band : 'waiting' },
+                    checked && h('div', null,
+                      h('h5', null, resultTitle), h('p', null, resultCopy),
+                      h('dl', { className: 'wc-tm-answer' },
+                        h('div', null, h('dt', null, 'Your estimate'), h('dd', null, precipConfig.thunderEstimateKm.toFixed(1) + ' km')),
+                        h('div', null, h('dt', null, 'Model distance'), h('dd', null, thunder.distanceKm.toFixed(1) + ' km'))),
+                      h('p', { className: 'wc-tm-tolerance' }, 'This activity counts estimates within ' + toleranceKm.toFixed(1) + ' km as close.'))),
+                  h('details', { className: 'wc-tm-working', 'data-tm-calculation': 'distance' },
+                    h('summary', null, 'See the distance calculation'),
+                    h('div', null,
+                      h('p', null, 'Distance ≈ speed of sound × time'),
+                      h('p', { className: 'wc-tm-equation' }, speed.toFixed(3) + ' km/s × ' + thunder.delaySeconds.toFixed(1) + ' s ≈ ' + (speed * thunder.delaySeconds).toFixed(1) + ' km'),
+                      h('p', null, 'The seconds cancel, leaving kilometres. This model uses a fixed sound speed; times and distances are rounded to one decimal place.'))))
+                  : h('div', { className: 'wc-tm-empty' },
+                    h('p', null, 'A flash-to-thunder interval is not available for this cloud and storm stage.'),
+                    h('p', null, 'Explore a thunderstorm setup at its mature stage to create electrical activity. The timing comparison will appear when the model supports lightning.')));
+            }
+            var thunderMeasure = renderThunderMeasurement();
             return h('section', { className: 'wc-precip-lab', role: 'region', 'aria-labelledby': 'wcPrecipLabTitle',
               'data-precipitation-kind': precipModel.visualType,
               'data-precipitation-reach': precipModel.reachesGround ? 'ground' : 'aloft',
@@ -13368,7 +14394,7 @@ const d = labToolData.waterCycle || {};
                 )
               ),
               h('div', { className: 'wc-precip-layout' },
-                h('div', { className: 'wc-precip-visual' },
+                h('div', { className: 'wc-precip-visual', 'data-wc-storm-readout-theme': isContrast ? 'contrast' : isDark ? 'dark' : 'light' },
                   h('div', { className: 'wc-precip-chamber',
                     'data-immersive': precipViewMode === '3d' && precipConfig.cameraFocus === 'immersive',
                     'data-precipitation-kind': precipModel.visualType,
@@ -13384,7 +14410,7 @@ const d = labToolData.waterCycle || {};
                           'data-precipitation-view': '2d' },
                           t('stem.watercycle.animated_cross_section_of_cloud_growth', 'Animated cross-section of cloud growth, airflow, and precipitation.')),
                     precipViewMode === '3d' && h('style', null,
-                      '.wc-precip-3d-canvas{height:clamp(480px,65vh,740px);touch-action:none}.wc-precip-chamber:has(.wc-storm-field-controls){isolation:isolate}.wc-storm-engine-status{position:absolute;z-index:8;top:100px;left:8%;right:8%;padding:18px;border:1px solid #7dd3fc;border-radius:12px;background:#102c3c;color:#fff;display:grid;gap:12px}.wc-storm-engine-status[hidden]{display:none!important}.wc-storm-field-controls{padding:12px;background:#0b2732;color:#edf6f7;display:grid;gap:10px}.wc-storm-field-controls label{display:grid;gap:5px;font-size:12px;font-weight:700;min-width:0}.wc-storm-field-controls select,.wc-storm-field-controls button{min-height:40px;border:1px solid #7eabb9;border-radius:7px;background:#183d4b;color:#fff;padding:6px 9px}.wc-storm-field-controls select{width:100%}.wc-storm-field-controls input[type=range]{width:100%;accent-color:#7dd3fc;min-height:32px}.wc-storm-field-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.wc-storm-walk-buttons{display:flex;flex-wrap:wrap;gap:6px}.wc-storm-field-controls p{font-size:12px;line-height:1.5;margin:0;color:#d3e8ed}.wc-storm-field-controls :focus-visible,.wc-precip-3d-canvas:focus-visible{outline:3px solid #fcd34d;outline-offset:3px}.wc-precip-3d-focus{max-width:calc(100% - 20px);flex-wrap:wrap}.wc-precip-3d-focus-choice{min-height:40px}.wc-precip-chamber[data-immersive=true] .wc-precip-3d-thermal-rail,.wc-precip-chamber[data-immersive=true] .wc-precip-3d-key{display:none}.wc-precip-chamber:fullscreen{width:100vw;height:100vh;overflow-y:auto;background:#0b2732;padding:0}.wc-precip-chamber:fullscreen .wc-precip-3d-canvas{height:65vh}.wc-precip-chamber:fullscreen .wc-storm-field-controls{max-width:1000px;margin:auto}@media(max-width:560px){.wc-precip-3d-canvas{height:480px}.wc-precip-3d-focus{right:7px}.wc-precip-3d-focus-choice{flex:1 1 40%;white-space:normal}.wc-storm-field-row{grid-template-columns:1fr 1fr}.wc-storm-walk-buttons button{flex:1 0 27%}}@media(forced-colors:active){.wc-storm-field-controls,.wc-storm-engine-status,.wc-storm-field-controls select,.wc-storm-field-controls button{background:Canvas;color:CanvasText;border-color:CanvasText}.wc-storm-field-controls p{color:CanvasText}}'),
+                      '.wc-precip-3d-canvas{height:clamp(480px,65vh,740px);touch-action:none}.wc-precip-chamber:has(.wc-storm-field-controls){isolation:isolate}.wc-storm-engine-status{position:absolute;z-index:8;top:100px;left:8%;right:8%;padding:18px;border:1px solid #7dd3fc;border-radius:12px;background:#102c3c;color:#fff;display:grid;gap:12px}.wc-storm-engine-status[hidden]{display:none!important}.wc-storm-field-controls{padding:12px;background:#0b2732;color:#edf6f7;display:grid;gap:10px}.wc-storm-field-controls label{display:grid;gap:5px;font-size:12px;font-weight:700;min-width:0}.wc-storm-field-controls select,.wc-storm-field-controls button{min-height:40px;border:1px solid #7eabb9;border-radius:7px;background:#183d4b;color:#fff;padding:6px 9px}.wc-storm-field-controls select{width:100%}.wc-storm-field-controls input[type=range]{width:100%;accent-color:#7dd3fc;min-height:32px}.wc-storm-field-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.wc-storm-walk-buttons{display:flex;flex-wrap:wrap;gap:6px}.wc-storm-field-controls p{font-size:12px;line-height:1.5;margin:0;color:#d3e8ed}.wc-storm-field-controls :focus-visible,.wc-precip-3d-canvas:focus-visible{outline:3px solid #fcd34d;outline-offset:3px}.wc-precip-3d-focus{max-width:calc(100% - 20px);flex-wrap:wrap}.wc-precip-3d-focus-choice{min-height:40px}.wc-precip-3d-hud{position:absolute;z-index:3;top:10px;left:10px;right:10px;display:grid;gap:8px;pointer-events:none;container:wc-storm-hud / inline-size}.wc-precip-3d-hud>.wc-precip-3d-focus{position:static;max-width:100%;min-width:0;justify-self:start;pointer-events:auto}.wc-precip-3d-hud>.wc-precip-3d-thermal-rail{position:static;justify-self:end}.wc-precip-3d-hud>.wc-precip-3d-thermal-rail>strong{display:block}@container wc-storm-hud (max-width:560px){.wc-precip-3d-hud>.wc-precip-3d-focus{display:flex;width:100%}.wc-precip-3d-hud .wc-precip-3d-focus-choice{flex:1 1 40%;white-space:normal}}.wc-precip-chamber[data-immersive=true] .wc-precip-3d-thermal-rail,.wc-precip-chamber[data-immersive=true] .wc-precip-3d-key{display:none}.wc-precip-chamber:fullscreen{width:100vw;height:100vh;overflow-y:auto;background:#0b2732;padding:0}.wc-precip-chamber:fullscreen .wc-precip-3d-canvas{height:65vh}.wc-precip-chamber:fullscreen .wc-storm-field-controls{max-width:1000px;margin:auto}@media(max-width:560px){.wc-precip-3d-canvas{height:480px}.wc-precip-3d-focus{right:7px}.wc-precip-3d-focus-choice{flex:1 1 40%;white-space:normal}.wc-storm-field-row{grid-template-columns:1fr 1fr}.wc-storm-walk-buttons button{flex:1 0 27%}}@media(forced-colors:active){.wc-storm-field-controls,.wc-storm-engine-status,.wc-storm-field-controls select,.wc-storm-field-controls button{background:Canvas;color:CanvasText;border-color:CanvasText}.wc-storm-field-controls p{color:CanvasText}}'),
                     precipViewMode === '3d' && h('div', { className:'wc-storm-engine-status', role:'status', hidden:true,
                       ref:function(node) {
                         if (!node) return;
@@ -13427,39 +14453,42 @@ const d = labToolData.waterCycle || {};
                         else if(chamber && chamber.requestFullscreen){chamber.requestFullscreen().catch(function(){if(typeof announceToSR==='function')announceToSR(__alloT('stem.watercycle.sr_full_screen_is_unavailable_in_this_browser', 'Full screen is unavailable in this browser.'));});}
                       }},'Full-screen storm')),
 
-                    precipViewMode === '3d' && h('div', { className: 'wc-precip-3d-focus', role: 'group',
-                      'aria-label': t('stem.watercycle.choose_a_3d_science_viewpoint', 'Choose a 3D science viewpoint') },
-                      [
-                        { key: 'immersive', label: 'Inside the storm' },
-                        { key: 'storm', label: 'Whole storm' },
-                        { key: 'cloud', label: 'Inside cloud' },
-                        { key: 'surface', label: 'Surface path' }
-                      ].map(function(focusOption) {
-                        return h('button', { key: focusOption.key, type: 'button', className: 'wc-precip-3d-focus-choice',
-                          'aria-pressed': precipConfig.cameraFocus === focusOption.key,
-                          onClick: function() { setPrecipCameraFocus(focusOption.key); } }, focusOption.label);
-                      })),
-                    precipViewMode === '3d' && h('div', { className: 'wc-precip-3d-thermal-rail', role: 'group',
-                      'aria-label': 'Vertical air temperature column. Cloud ' + precipConfig.tempC.toFixed(0) +
-                        ' degrees Celsius, middle ' + precipConfig.midLevelTempC.toFixed(0) +
-                        ' degrees Celsius, surface ' + precipConfig.surfaceTempC.toFixed(0) + ' degrees Celsius.' },
-                      h('strong', null, 'Air column'),
-                      [
-                        { key: 'cloud', label: 'Cloud', value: precipConfig.tempC },
-                        { key: 'middle', label: 'Middle', value: precipConfig.midLevelTempC },
-                        { key: 'surface', label: 'Surface', value: precipConfig.surfaceTempC }
-                      ].map(function(thermalLevel) {
-                        return h('span', { key: thermalLevel.key, className: 'wc-precip-3d-thermal-level',
-                          'data-temperature-phase': thermalLevel.value <= 0 ? 'frozen' : 'warm' },
-                          h('i', { 'aria-hidden': 'true' }),
-                          h('b', null, thermalLevel.label),
-                          h('em', null, thermalLevel.value.toFixed(0) + '\u00B0C'));
-                      }),
-                      h('small', null, precipModel.thermalLayers.crossings.length
-                        ? precipModel.thermalLayers.crossings.length + ' phase-change ' +
-                          (precipModel.thermalLayers.crossings.length === 1 ? 'layer' : 'layers')
-                        : 'No 0\u00B0C crossing')),
+                    precipViewMode === '3d' && h('div', { className: 'wc-precip-3d-hud' },
+                      h('div', { className: 'wc-precip-3d-focus', role: 'group',
+                        'aria-label': t('stem.watercycle.choose_a_3d_science_viewpoint', 'Choose a 3D science viewpoint') },
+                        [
+                          { key: 'immersive', label: 'Inside the storm' },
+                          { key: 'storm', label: 'Whole storm' },
+                          { key: 'cloud', label: 'Inside cloud' },
+                          { key: 'surface', label: 'Surface path' }
+                        ].map(function(focusOption) {
+                          return h('button', { key: focusOption.key, type: 'button', className: 'wc-precip-3d-focus-choice',
+                            'aria-pressed': precipConfig.cameraFocus === focusOption.key,
+                            onClick: function() { setPrecipCameraFocus(focusOption.key); } }, focusOption.label);
+                        })),
+                      h('div', { className: 'wc-precip-3d-thermal-rail', role: 'group',
+                        'aria-label': 'Vertical air temperature column. Cloud ' + precipConfig.tempC.toFixed(0) +
+                          ' degrees Celsius, middle ' + precipConfig.midLevelTempC.toFixed(0) +
+                          ' degrees Celsius, surface ' + precipConfig.surfaceTempC.toFixed(0) + ' degrees Celsius.' },
+                        h('strong', null, 'Air column'),
+                        [
+                          { key: 'cloud', label: 'Cloud', value: precipConfig.tempC },
+                          { key: 'middle', label: 'Middle', value: precipConfig.midLevelTempC },
+                          { key: 'surface', label: 'Surface', value: precipConfig.surfaceTempC }
+                        ].map(function(thermalLevel) {
+                          return h('span', { key: thermalLevel.key, className: 'wc-precip-3d-thermal-level',
+                            'data-temperature-phase': thermalLevel.value <= 0 ? 'frozen' : 'warm' },
+                            h('i', { 'aria-hidden': 'true' }),
+                            h('b', null, thermalLevel.label),
+                            h('em', null, thermalLevel.value.toFixed(0) + '\u00B0C'));
+                        }),
+                        h('small', null, precipModel.thermalLayers.crossings.length
+                          ? precipModel.thermalLayers.crossings.length + ' schematic ' +
+                            (precipModel.thermalLayers.crossings.length === 1 ? 'air band' : 'air bands')
+                          : 'No air bands shown'))),
                     precipViewMode === '3d' && h('div', { className: 'wc-precip-3d-key', role: 'group', 'aria-label': __alloT('stem.watercycle.a11y_3d_cloud_chamber_visual_key', '3D cloud chamber visual key') },
+                      precipConfig.cameraFocus === 'cloud' && precipConfig.tempC < 0 &&
+                        h('span', null, h('span', { 'aria-hidden': 'true' }, '\u2744'), 'Vapor → growing ice'),
                       h('span', null,
                         h('i', { className: precipConfig.cameraFocus === 'cloud' ? 'is-condensation' : 'is-nuclei', 'aria-hidden': 'true' }),
                         precipConfig.cameraFocus === 'cloud' ? 'Vapor tracer → droplets' : 'Nuclei + droplets'),
@@ -13479,6 +14508,9 @@ const d = labToolData.waterCycle || {};
                       h('button', { type: 'button', className: 'wc-precip-3d-reset', onClick: function() {
                         if (precip3dCanvasNode && precip3dCanvasNode._wcPrecip3dResetCamera) precip3dCanvasNode._wcPrecip3dResetCamera();
                       }, 'aria-label': __alloT('stem.watercycle.a11y_reset_the_3d_cloud_chamber_camera', 'Reset the 3D cloud chamber camera') }, 'Reset view')),
+                    lightningStudyActive && h('div', { className: 'wc-ls-return' },
+                      h('span', null, activeLightningStudy.label + (lightningStudyAvailable ? ' · study frame' : ' · unavailable in this setup')),
+                      h('button', { type: 'button', 'data-ls-action': 'guide', onClick: function() { focusLightningStudyTarget('guide'); } }, 'Back to lightning guide')),
                     h('div', { className: 'wc-precip-canvas-dock', role: 'group',
                       'aria-label': 'Live chamber status: ' + precipModel.displayLabel + ', ' +
                         precipIntensityLabel + ' intensity, ' + precipReachLabel },
@@ -13503,13 +14535,17 @@ const d = labToolData.waterCycle || {};
                         precipMotionReduced ? 'Static' : (precipConfig.paused ? 'Resume' : 'Pause'))
                     )
                   ),
-                  h('p', { className: 'wc-precip-3d-science', role: 'note',
-                    'data-camera-focus': precipViewMode === '3d' ? precipConfig.cameraFocus : 'cross-section' },
-                    precipViewMode === '3d' ? precip3dScienceCopy : precip2dScienceCopy),
+                  h('style', null, WC_CLOUD_GROWTH_READING_STYLE),
+                  (precipViewMode === '2d' || precipConfig.cameraFocus === 'cloud') && wcCloudGrowthSequence(h, precipConfig.tempC),
+                  h('details', { className: 'wc-precip-science-details' },
+                    h('summary', null, 'How to read this chamber'),
+                    h('p', { className: 'wc-precip-3d-science', role: 'note',
+                      'data-camera-focus': precipViewMode === '3d' ? precipConfig.cameraFocus : 'cross-section' },
+                      precipViewMode === '3d' ? precip3dScienceCopy : precip2dScienceCopy)),
                   h('div', { className: 'wc-precip-path-strip', role: 'group',
                     'data-path-outcome': precipModel.visualType,
                     'aria-label': 'Precipitation fall sequence: ' + precipModel.cloudPhase + ', ' +
-                      precipModel.thermalLayers.layerLabel + ', ' + precipSurfaceOutcomeLabel },
+                      precipAirProfile.summary + ', ' + precipSurfaceOutcomeLabel },
                     h('div', { className: 'wc-precip-path-step', 'data-path-step': 'cloud' },
                       h('span', { className: 'wc-precip-path-icon', 'aria-hidden': 'true' }, '\u2601'),
                       h('span', { className: 'wc-precip-path-copy' },
@@ -13520,7 +14556,7 @@ const d = labToolData.waterCycle || {};
                       h('span', { className: 'wc-precip-path-icon', 'aria-hidden': 'true' }, '0\u00B0'),
                       h('span', { className: 'wc-precip-path-copy' },
                         h('span', { className: 'wc-precip-path-label' }, 'Air column'),
-                        h('strong', null, precipModel.thermalLayers.layerLabel))),
+                        h('strong', null, precipAirProfile.summary))),
                     h('span', { className: 'wc-precip-path-arrow', 'aria-hidden': 'true' }, '\u2192'),
                     h('div', { className: 'wc-precip-path-step', 'data-path-step': 'surface' },
                       h('span', { className: 'wc-precip-path-icon', 'aria-hidden': 'true' }, precipVisualSymbol),
@@ -13531,47 +14567,8 @@ const d = labToolData.waterCycle || {};
                   renderCloudFieldGuide(),
                   h('div', { className: 'wc-storm-lifecycle', role: 'group',
                     'aria-labelledby': 'wcStormLifecycleTitle', 'data-storm-lifecycle': precipModel.lifecycle.stageKey },
-                    h('div', { className: 'wc-storm-lifecycle-head' },
-                      h('strong', { id: 'wcStormLifecycleTitle' }, 'Storm lifecycle'),
-                      h('span', null, precipModel.lifecycle.stageLabel + ' · ' + precipModel.lifecycle.time + '/100')),
-                    h('div', { className: 'wc-storm-stage-segments', role: 'group', 'aria-label': __alloT('stem.watercycle.a11y_jump_to_storm_stage', 'Jump to storm stage') },
-                      stormStageStops.map(function(stageStop) {
-                        return h('button', { key: stageStop.key, type: 'button', className: 'wc-precip-btn',
-                          'aria-pressed': precipModel.lifecycle.stageKey === stageStop.key,
-                          onClick: function() { setStormLifecycleTime(stageStop.time, false); } }, stageStop.label);
-                      })),
-                    h('div', { className: 'wc-storm-time-row' },
-                      h('label', { htmlFor: 'wcPrecipStormTime' },
-                        h('span', { className: 'wc-storm-time-head' }, 'Storm time · ' + precipModel.lifecycle.time + '/100'),
-                        h('input', { id: 'wcPrecipStormTime', type: 'range', min: 0, max: 100, step: 1,
-                          value: precipConfig.stormTime,
-                          'aria-valuetext': precipModel.lifecycle.stageLabel + ' storm, ' + precipModel.lifecycle.time + ' percent through lifecycle',
-                          onChange: function(event) { setStormLifecycleTime(Number(event.target.value), false); } })),
-                      h('div', { className: 'wc-storm-playback' },
-                        h('button', { type: 'button', className: 'wc-precip-btn',
-                          'aria-label': t('stem.watercycle.move_storm_lifecycle_backward', 'Move storm lifecycle backward'),
-                          onClick: function() { setStormLifecycleTime(precipModel.lifecycle.time - 4, false); } }, t('stem.watercycle.previous', 'Previous')),
-                        h('button', { type: 'button', className: 'wc-precip-btn is-primary',
-                          'aria-pressed': precipConfig.stormAutoPlay && !precipMotionReduced,
-                          'aria-disabled': precipMotionReduced,
-                          onClick: function() {
-                            if (precipMotionReduced) return;
-                            var restartTime = precipModel.lifecycle.time >= 100 ? 0 : precipModel.lifecycle.time;
-                            setStormLifecycleTime(restartTime, !precipConfig.stormAutoPlay);
-                          } }, precipMotionReduced ? t('stem.watercycle.static', 'Static') : (precipConfig.stormAutoPlay ? t('stem.watercycle.pause_time', 'Pause time') : t('stem.watercycle.play_storm', 'Play storm'))),
-                        h('button', { type: 'button', className: 'wc-precip-btn',
-                          'aria-label': t('stem.watercycle.move_storm_lifecycle_forward', 'Move storm lifecycle forward'),
-                          onClick: function() { setStormLifecycleTime(precipModel.lifecycle.time + 4, false); } }, t('stem.watercycle.next', 'Next')))),
-                    h('p', { className: 'wc-storm-stage-copy' }, WCStormMoments.currentCopy(precipModel)),
-                    h('div', { className: 'wc-storm-accumulation', role: 'group', 'aria-label': t('stem.watercycle.qualitative_ground_accumulation', 'Qualitative ground accumulation indices') },
-                      stormAccumulationKeys.map(function(accumulationItem) {
-                        var accumulationValue = precipModel.lifecycle.accumulation[accumulationItem.key];
-                        return h('div', { key: accumulationItem.key, className: 'wc-storm-accumulation-item' },
-                          h('span', null, accumulationItem.label),
-                          h('strong', null, accumulationValue + '/100'),
-                          h('div', { className: 'wc-storm-accumulation-track', 'aria-hidden': 'true' },
-                            h('i', { style: { width: accumulationValue + '%' } })));
-                      })), renderStormMoments()),
+                    renderStormLifecycleNavigator(),
+                    renderStormGroundReadings(), renderStormMoments()),
                   precipConfig.showStormAnatomy && h('section', { className: 'wc-storm-anatomy', role: 'region',
                     'aria-labelledby': 'wcStormAnatomyTitle', 'data-storm-anatomy': precipModel.stormAnatomy.chargeSeparation.state },
                     h('div', { className: 'wc-storm-anatomy-head' },
@@ -13579,34 +14576,9 @@ const d = labToolData.waterCycle || {};
                       h('span', null, 'Charge ' + precipModel.stormAnatomy.chargeSeparation.index + '/100 \u00B7 ' +
                         precipModel.stormAnatomy.chargeSeparation.state)),
                     h('p', null, precipModel.stormAnatomy.chargeSeparation.active
-                      ? 'Upper cloud: positive small ice crystals (+). Lower cloud: negative graupel and larger ice (\u2212). Collisions and strong updrafts help separate charge.'
-                      : 'This cloud lacks the mixed-phase ice and lift needed for organized storm-charge separation.'),
-                    h('p', null, precipModel.stormAnatomy.lightningPathway.label + '. ' +
-                      precipModel.stormAnatomy.thunderWave.label + '.'),
-                    h('div', { className: 'wc-lightning-study', role: 'group',
-                      'aria-labelledby': 'wcLightningStudyTitle', 'data-lightning-study-mode': lightningStudyMode },
-                      h('div', { className: 'wc-lightning-study-head' },
-                        h('strong', { id: 'wcLightningStudyTitle' }, 'Inspect the lightning sequence'),
-                        h('span', null, lightningStudyRequested
-                          ? (lightningStudyAvailable ? 'Guided still frame' : 'Unavailable in this cloud')
-                          : 'Automatic timing')),
-                      h('div', { className: 'wc-lightning-study-steps', role: 'group',
-                        'aria-label': __alloT('stem.watercycle.a11y_choose_a_lightning_sequence_phase', 'Choose a lightning sequence phase') },
-                        WC_LIGHTNING_STUDY_STEPS.map(function(studyStep, studyIndex) {
-                          return h('button', { key: studyStep.key, type: 'button', className: 'wc-lightning-study-step',
-                            'data-lightning-study-choice': studyStep.key,
-                            'aria-label': studyStep.key === 'auto'
-                              ? studyStep.label : 'Step ' + studyIndex + ': ' + studyStep.label,
-                            'aria-pressed': activeLightningStudy.key === studyStep.key,
-                            onClick: function() { selectLightningStudyStep(studyStep.key); } },
-                            studyStep.shortLabel);
-                        })),
-                      h('p', { className: 'wc-lightning-study-copy', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
-                        activeLightningStudy.label + '. ' + lightningStudyCopy),
-                      lightningStudyActive && lightningStudyAvailable
-                        ? h('p', { className: 'wc-lightning-study-note' },
-                            'Study snapshots are static and silent. Choose Auto to resume flash-to-thunder timing.')
-                        : null),
+                      ? 'Mixed-phase ice and strong lift separate charge in this model. Inspect the steps to connect cloud structure with lightning and thunder.'
+                      : 'This setup has no organized charge separation. Select a step to read its explanation and see what is missing.'),
+                    renderLightningStudy(),
                     h('dl', { className: 'wc-storm-anatomy-readouts', 'aria-label': __alloT('stem.watercycle.a11y_storm_instrument_readouts', 'Storm instrument readouts') },
                       precipModel.stormAnatomy.instruments.map(function(instrument) {
                         var instrumentAvailable = instrument.value != null && isFinite(instrument.value);
@@ -13640,7 +14612,7 @@ const d = labToolData.waterCycle || {};
                   h('div', { className: 'wc-precip-metrics', 'aria-label': __alloT('stem.watercycle.a11y_precipitation_model_readouts', 'Precipitation model readouts') },
                     h('div', { className: 'wc-precip-metric' }, h('span', null, 'Particle growth'), h('strong', null, precipModel.growthIndex + '/100')),
                     h('div', { className: 'wc-precip-metric' }, h('span', null, 'Cloud phase'), h('strong', null, precipModel.cloudPhase)),
-                    h('div', { className: 'wc-precip-metric' }, h('span', null, 'Temperature path'), h('strong', null, precipModel.profileLabel)),
+                    h('div', { className: 'wc-precip-metric' }, h('span', null, 'Air-temperature path'), h('strong', null, precipAirProfile.summary)),
                     h('div', { className: 'wc-precip-metric' }, h('span', null, 'Fall path'), h('strong', null, precipModel.phasePathLabel)),
                     h('div', { className: 'wc-precip-metric' }, h('span', null, 'Electrical activity'), h('strong', null,
                       precipModel.lightningEligible ? 'Lightning favored \u00B7 ' + precipModel.electrificationIndex + '/100' : precipModel.electrificationIndex + '/100')),
@@ -23807,17 +24779,17 @@ const d = labToolData.waterCycle || {};
             function wcPlaceLabelY2d(x, y, w, h) {
               var blockers2d = wcCanvasChromeRects2d().concat(wcLabelRects2d);
               var step2d = 5 * dpr;
-              // Wrapped corner overlays can be taller than the old 65px search at
-              // narrow widths. Search the available canvas height before falling back.
-              var attempts2d = Math.max(1, Math.ceil((cH - y - h - 6 * dpr) / step2d) + 1);
-              for (var att2d = 0; att2d < attempts2d; att2d++) {
-                var cand2d = { x: x, y: y + att2d * step2d, w: w, h: h };
-                if (cand2d.y + h > cH - 6 * dpr) break;
-                var clash2d = false;
-                for (var bi2d = 0; bi2d < blockers2d.length; bi2d++) {
-                  if (wcRectsOverlap2d(cand2d, blockers2d[bi2d])) { clash2d = true; break; }
+              for (var offset2d = 0; offset2d <= cH; offset2d += step2d) {
+                var lanes2d = offset2d === 0 ? [y] : [y + offset2d, y - offset2d];
+                for (var lane2d = 0; lane2d < lanes2d.length; lane2d++) {
+                  var top2d = lanes2d[lane2d];
+                  if (top2d < 6 * dpr || top2d + h > cH - 6 * dpr) continue;
+                  var candidate2d = { x: x, y: top2d, w: w, h: h };
+                  if (!blockers2d.some(function(rect) { return wcRectsOverlap2d(candidate2d, rect); })) {
+                    wcReserveLabelRect2d(x, top2d, w, h);
+                    return top2d;
+                  }
                 }
-                if (!clash2d) { wcReserveLabelRect2d(cand2d.x, cand2d.y, w, h); return cand2d.y; }
               }
               wcReserveLabelRect2d(x, y, w, h);
               return y;
@@ -23992,6 +24964,201 @@ const d = labToolData.waterCycle || {};
               canvasEl.dataset.flowCue = cueStage2d + '-directional-chevrons';
             }
 
+            // Journey plates describe the saved parcel. Their geometry is shared
+            // by the early reservation pass and the final foreground paint.
+            function wcLayoutJourneyCards2d(ctx2, width, height, scale, state, trace, label, paused, progress, choices, blockers) {
+              if (!state || state === 'idle') return [];
+              var margin = 8 * scale, gap = 5 * scale, cards = [];
+              var occupied = (blockers || []).map(function(rect) { return Object.assign({}, rect); });
+              var zones = state === 'ground_choice' ? (choices || []) : [];
+              zones.forEach(function(choice) {
+                occupied.push({ x: choice.x * width, y: choice.y * height, w: choice.w * width, h: choice.h * height });
+              });
+              function overlaps(a, b) {
+                return a.x < b.x + b.w + gap && b.x < a.x + a.w + gap &&
+                  a.y < b.y + b.h + gap && b.y < a.y + a.h + gap;
+              }
+              function wrap(text, maximum) {
+                var lines = [], line = '';
+                String(text).trim().split(/\s+/).forEach(function(word) {
+                  if (line && ctx2.measureText(line + ' ' + word).width <= maximum) { line += ' ' + word; return; }
+                  if (line) { lines.push(line); line = ''; }
+                  Array.from(word).forEach(function(letter) {
+                    if (line && ctx2.measureText(line + letter).width > maximum) { lines.push(line); line = ''; }
+                    line += letter;
+                  });
+                });
+                if (line) lines.push(line);
+                return lines;
+              }
+              function place(request) {
+                var maximum = Math.max(1, Math.min(request.maximum * scale, width - margin * 2));
+                var padding = 8 * scale, lines = [], measured = 0;
+                request.copy.forEach(function(copy) {
+                  ctx2.font = copy.weight + ' ' + (copy.size * scale) + 'px sans-serif';
+                  wrap(copy.text, Math.max(1, maximum - padding * 2)).forEach(function(text) {
+                    measured = Math.max(measured, ctx2.measureText(text).width);
+                    lines.push({ text: text, size: copy.size, weight: copy.weight });
+                  });
+                });
+                var card = { id: request.id, w: Math.min(maximum, measured + padding * 2),
+                  h: lines.length * 15 * scale + padding * 2 + (request.progress != null ? 7 * scale : 0),
+                  lines: lines, progress: request.progress, anchorX: request.anchorX, anchorY: request.anchorY };
+                var preferredX = Math.max(margin, Math.min(width - card.w - margin, request.right ? width - card.w - margin : request.x));
+                var preferredY = Math.max(margin, Math.min(height - card.h - margin, request.bottom ? height - card.h - margin : request.y));
+                var xs = [preferredX, margin, Math.max(margin, width - card.w - margin)];
+                var ys = [preferredY, margin, Math.max(margin, height - card.h - margin)];
+                occupied.forEach(function(rect) { ys.push(rect.y - card.h - gap, rect.y + rect.h + gap); });
+                for (var row = margin; row + card.h <= height - margin; row += 8 * scale) ys.push(row);
+                var best = null, bestScore = Infinity;
+                xs.forEach(function(x) { ys.forEach(function(y) {
+                  if (y < margin || y + card.h > height - margin) return;
+                  var candidate = { x: x, y: y, w: card.w, h: card.h };
+                  if (occupied.some(function(rect) { return overlaps(candidate, rect); })) return;
+                  var score = Math.abs(y - preferredY) + Math.abs(x - preferredX) * 1.25;
+                  if (score < bestScore) { best = candidate; bestScore = score; }
+                }); });
+                card.x = best ? best.x : preferredX;
+                card.y = best ? best.y : preferredY;
+                occupied.push({ x: card.x, y: card.y, w: card.w, h: card.h });
+                cards.push(card);
+              }
+              ctx2.save();
+              try {
+                var bounded = isFinite(progress) ? Math.max(0, Math.min(1, progress)) : 0;
+                var isLeg = state !== 'ground_choice' && state !== 'complete';
+                var phase = trace && trace.phaseFrom ? trace.phaseFrom : '';
+                if (trace && trace.phaseTo && trace.phaseTo !== phase) phase += ' → ' + trace.phaseTo;
+                var status = state === 'ground_choice' ? 'Choose a route · R / U / P' :
+                  state === 'complete' ? 'Ocean storage · loop complete' :
+                    (paused ? 'Paused · ' : '') + 'Animation leg ' + Math.round(bounded * 100) + '%';
+                place({ id: 'parcel', maximum: 290, right: true, bottom: true,
+                  progress: isLeg ? bounded : null,
+                  copy: [{ text: label, size: 12, weight: 'bold' }, { text: phase, size: 11, weight: 'normal' },
+                    { text: status, size: 11, weight: 'normal' }] });
+                zones.forEach(function(choice, index) {
+                  var key = ['R', 'U', 'P'][index];
+                  place({ id: 'route-' + choice.pathKey, maximum: 148,
+                    x: index === 2 ? width : margin, right: index === 2,
+                    y: height * (index === 0 ? 0.57 : index === 1 ? 0.76 : 0.47),
+                    anchorX: (choice.x + choice.w / 2) * width, anchorY: (choice.y + choice.h / 2) * height,
+                    copy: [{ text: key + ' · ' + choice.label, size: 11, weight: 'bold' }] });
+                });
+              } finally { ctx2.restore(); }
+              return cards;
+            }
+
+            function wcDrawJourneyCard2d(ctx2, card, scale) {
+              ctx2.save();
+              try {
+                ctx2.globalAlpha = 1;
+                ctx2.globalCompositeOperation = 'source-over';
+                ctx2.shadowBlur = 0;
+                ctx2.setLineDash([]);
+                ctx2.lineWidth = 1 * scale;
+                if (isFinite(card.anchorX) && isFinite(card.anchorY)) {
+                  var edgeX = Math.max(card.x, Math.min(card.x + card.w, card.anchorX));
+                  var edgeY = Math.max(card.y, Math.min(card.y + card.h, card.anchorY));
+                  var distance = Math.hypot(edgeX - card.anchorX, edgeY - card.anchorY);
+                  if (distance > 14 * scale) {
+                    // A plain leader stops at the route badge. It is not a flow arrow.
+                    var offset = 12 * scale / distance;
+                    ctx2.strokeStyle = '#a5dce7';
+                    ctx2.beginPath();
+                    ctx2.moveTo(card.anchorX + (edgeX - card.anchorX) * offset, card.anchorY + (edgeY - card.anchorY) * offset);
+                    ctx2.lineTo(edgeX, edgeY);
+                    ctx2.stroke();
+                  }
+                }
+                ctx2.fillStyle = '#071c2c';
+                ctx2.strokeStyle = '#6a9baa';
+                ctx2.beginPath();
+                ctx2.roundRect(card.x, card.y, card.w, card.h, 7 * scale);
+                ctx2.fill(); ctx2.stroke();
+                ctx2.textAlign = 'left';
+                ctx2.textBaseline = 'middle';
+                card.lines.forEach(function(line, index) {
+                  ctx2.font = line.weight + ' ' + (line.size * scale) + 'px sans-serif';
+                  ctx2.fillStyle = index === 0 ? '#f8fafc' : '#d7edf5';
+                  ctx2.fillText(line.text, card.x + 8 * scale, card.y + (15.5 + index * 15) * scale);
+                });
+                if (card.progress != null) {
+                  var trackX = card.x + 8 * scale, trackY = card.y + card.h - 9 * scale, trackWidth = card.w - 16 * scale;
+                  ctx2.fillStyle = '#466778';
+                  ctx2.fillRect(trackX, trackY, trackWidth, 3 * scale);
+                  ctx2.fillStyle = '#67e8f9';
+                  ctx2.fillRect(trackX, trackY, trackWidth * card.progress, 3 * scale);
+                }
+              } finally { ctx2.restore(); }
+            }
+
+            function wcJourneyPaintSnapshot2d(state, progress, paused, speed, nextMap) {
+              // This read-only lookahead reserves the plate for a transition frame.
+              // The original Journey block below remains the owner of progression.
+              var rate = state === 'aquifer_flow' || state === 'infiltrating' ? 0.003 : state === 'precipitating' ? 0.012 : 0.006;
+              var multiplier = isFinite(speed) && speed > 0 ? speed : 1;
+              if (!paused && state !== 'idle' && state !== 'ground_choice' && state !== 'complete') {
+                progress += rate * multiplier;
+                if (progress >= 1) {
+                  var next = nextMap[state];
+                  state = next === 'ocean' && state !== 'ocean' ? 'complete' : next || 'idle';
+                  progress = 0;
+                }
+              }
+              return { state: state, progress: progress };
+            }
+
+            var wcJourneyPlates2d = [];
+            function wcPrepareJourneyPlates2d() {
+              var state = canvasEl.dataset.journeyState || 'idle';
+              var paused = canvasEl.dataset.journeyPaused === 'true' || canvasEl.dataset.wc2dPaused === 'true';
+              var snapshot = wcJourneyPaintSnapshot2d(state, journey.progress, paused, parseFloat(canvasEl.dataset.journeySpeed || '1'), JOURNEY_NEXT);
+              var blockers = wcCanvasChromeRects2d().concat([{ x: 4 * dpr, y: cH - 22 * dpr, w: 130 * dpr, h: 18 * dpr }]);
+              if (snapshot.state !== 'idle' && snapshot.state !== 'complete' && snapshot.state !== 'ground_choice') {
+                var parcel = interpPath(snapshot.state, wcMotionReduced ? 0.55 : Math.min(snapshot.progress, 0.999));
+                blockers.push({ x: parcel.x * cW - 14 * dpr, y: parcel.y * cH - 14 * dpr, w: 28 * dpr, h: 28 * dpr });
+              }
+              wcJourneyPlates2d = wcLayoutJourneyCards2d(ctx, cW, cH, dpr, snapshot.state,
+                JOURNEY_MATTER_ENERGY_TRACE[snapshot.state], JOURNEY_STATE_LABELS[snapshot.state] || snapshot.state,
+                paused, snapshot.progress, GROUND_CHOICES, blockers);
+              wcJourneyPlates2d.forEach(function(card) { wcReserveLabelRect2d(card.x, card.y, card.w, card.h); });
+              if (snapshot.state === 'ground_choice') GROUND_CHOICES.forEach(function(choice) {
+                wcReserveLabelRect2d(choice.x * cW, choice.y * cH, choice.w * cW, choice.h * cH);
+              });
+            }
+
+            function wcDrawJourneyZoneBadge2d(choice, index) {
+              ctx.save();
+              var x = (choice.x + choice.w / 2) * cW, y = (choice.y + choice.h / 2) * cH;
+              var radius = Math.min(12 * dpr, choice.w * cW / 2 - 2 * dpr, choice.h * cH / 2 - 2 * dpr);
+              ctx.fillStyle = '#071c2c'; ctx.strokeStyle = '#a5dce7'; ctx.lineWidth = 1.5 * dpr;
+              ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+              ctx.font = 'bold ' + (11 * dpr) + 'px sans-serif';
+              ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#f8fafc';
+              ctx.fillText(['R', 'U', 'P'][index], x, y);
+              ctx.restore();
+            }
+
+            function wcDrawStageLabelLeader2d(ctx2, box, anchorX, anchorY, scale) {
+              var edgeX = Math.max(box.x, Math.min(box.x + box.w, anchorX));
+              var edgeY = Math.max(box.y, Math.min(box.y + box.h, anchorY));
+              if (Math.hypot(edgeX - anchorX, edgeY - anchorY) <= 6 * scale) return;
+              ctx2.save();
+              ctx2.globalAlpha = 0.85;
+              ctx2.strokeStyle = '#cce6ec';
+              ctx2.fillStyle = '#cce6ec';
+              ctx2.lineWidth = scale;
+              ctx2.shadowBlur = 0;
+              ctx2.setLineDash([]);
+              ctx2.beginPath();
+              ctx2.moveTo(anchorX, anchorY);
+              ctx2.lineTo(edgeX, edgeY);
+              ctx2.stroke();
+              ctx2.beginPath();
+              ctx2.arc(anchorX, anchorY, 1.8 * scale, 0, Math.PI * 2);
+              ctx2.fill();
+              ctx2.restore();
+            }
             function drawPhysicalTimeGlyph2d(role, rank, stageId) {
               var anchors2d = { evaporation: [0.13, 0.49], condensation: [0.52, 0.22],
                 precipitation: [0.48, 0.45], collection: [0.25, 0.70],
@@ -25810,6 +26977,7 @@ const d = labToolData.waterCycle || {};
               drawFlowChevrons2d(activeProcess2d, journeyStateForEvidence2d);
 
               wcLabelRects2d.length = 0;
+              wcPrepareJourneyPlates2d();
               drawMatterEnergyEvidence2d(activeProcess2d, journeyStateForEvidence2d, {
                 evaporation: evaporationPotential2d,
                 rain: rainActivity2d,
@@ -25862,6 +27030,7 @@ const d = labToolData.waterCycle || {};
                 var stageChipY2d = stageLabelY2d - 14 * dpr;
                 var stageChipW2d = stageLabelWidth2d + 8 * dpr;
                 var stageChipH2d = 19 * dpr;
+                wcDrawStageLabelLeader2d(ctx, { x: stageChipX2d, y: stageChipY2d, w: stageChipW2d, h: stageChipH2d }, cW * lbl.xNorm, cH * lbl.yNorm, dpr);
                 ctx.fillStyle = isActive ? 'rgba(2,6,23,0.86)' : 'rgba(2,6,23,0.72)';
                 ctx.fillRect(stageChipX2d, stageChipY2d, stageChipW2d, stageChipH2d);
                 if (!isActive) {
@@ -26156,50 +27325,13 @@ const d = labToolData.waterCycle || {};
                     ctx.roundRect(chx, chy, chw, chh, 8 * dpr);
                     ctx.fill(); ctx.stroke();
                     ctx.globalAlpha = 1;
-                    ctx.font = 'bold ' + (6 * dpr) + 'px sans-serif';
-                    ctx.fillStyle = '#ffffff';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(ch.label, chx + chw / 2, chy + chh / 2 + 2 * dpr);
+                    wcDrawJourneyZoneBadge2d(ch, chi);
                   }
                   ctx.textAlign = 'left';
                 }
 
-                // Journey HUD bar at top
-                if (jState !== 'idle') {
-                  ctx.save();
-                  ctx.fillStyle = 'rgba(0,0,0,0.6)';
-                  ctx.beginPath(); ctx.roundRect(cW * 0.1, 6 * dpr, cW * 0.8, 22 * dpr, 6 * dpr); ctx.fill();
-                  ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif';
-                  ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center';
-                  var hudLabel = JOURNEY_STATE_LABELS[jState] || jState;
-                  ctx.fillText(hudLabel, cW * 0.5, 20 * dpr);
-                  // Progress bar
-                  if (jState !== 'ground_choice' && jState !== 'complete') {
-                    ctx.fillStyle = 'rgba(255,255,255,0.15)';
-                    ctx.fillRect(cW * 0.15, 24 * dpr, cW * 0.7, 3 * dpr);
-                    ctx.fillStyle = '#0ea5e9';
-                    ctx.fillRect(cW * 0.15, 24 * dpr, cW * 0.7 * journey.progress, 3 * dpr);
-                  }
-                  ctx.textAlign = 'left';
-                  ctx.restore();
-                }
-
-                // Fact tooltip
-                if (jState !== 'idle' && jState !== 'complete') {
-                  var fact = JOURNEY_FACTS[jState];
-                  if (fact && journey.progress < 0.3) {
-                    ctx.save();
-                    ctx.globalAlpha = Math.max(0, 1 - journey.progress / 0.3);
-                    ctx.fillStyle = 'rgba(0,0,0,0.7)';
-                    ctx.font = (5.5 * dpr) + 'px sans-serif';
-                    var tw = ctx.measureText(fact).width;
-                    var fx = Math.max(4 * dpr, Math.min(cW - tw - 12 * dpr, cW * 0.5 - tw / 2));
-                    ctx.beginPath(); ctx.roundRect(fx - 4 * dpr, cH * 0.94 - 2 * dpr, tw + 8 * dpr, 14 * dpr, 4 * dpr); ctx.fill();
-                    ctx.fillStyle = '#e0f2fe';
-                    ctx.fillText(fact, fx, cH * 0.94 + 8 * dpr);
-                    ctx.restore();
-                  }
-                }
+                // Readable phase information remains visible throughout the leg.
+                wcJourneyPlates2d.forEach(function(card) { wcDrawJourneyCard2d(ctx, card, dpr); });
               }
 
               // ── HUD ──
@@ -31709,7 +32841,19 @@ const d = labToolData.waterCycle || {};
             } else if (kind === 'leaf') {
               lines = [path('M12 34C6 15 23 10 36 11c1 14-7 27-24 23Z', 'leaf'), path('M12 34l18-17M21 25l-2-7M21 25l8 1', 'vein')];
             } else if (kind === 'soil') {
-              lines = [path('M8 22h32M8 31h32M8 39h32M24 7v10m-4-4 4 4 4-4', 'soil'), React.createElement('circle', { key: 'pore1', cx: 17, cy: 27, r: 2, fill: 'currentColor' }), React.createElement('circle', { key: 'pore2', cx: 30, cy: 35, r: 2, fill: 'currentColor' })];
+              // An illustrative partially wet pore configuration with open air gaps.
+              // This schematic does not prescribe saturation or establish recharge.
+              lines = [
+                path('M24 6v10m-4-4 4 4 4-4', 'soil-entry', { 'data-diagram-cue': 'infiltration-entry' }),
+                React.createElement('path', { key: 'pore-water', d: 'M20 25Q24 27 28 25L29 32Q24 36 19 32Z', fill: 'currentColor', 'data-soil-material': 'water', 'data-diagram-cue': 'partial-pore-water', 'data-water-symbol': 'liquid' }),
+                React.createElement('path', { key: 'water-film', d: 'M9 26Q13 29 18 26V29Q13 32 9 29Z', fill: 'currentColor', 'data-soil-material': 'water', 'data-diagram-cue': 'water-film', 'data-water-symbol': 'liquid' }),
+                [[13,23],[35,23],[14,38],[34,38]].map(function(position, index) {
+                  return React.createElement('g', { key: 'grain-' + index, 'data-soil-material': 'grain' },
+                    React.createElement('ellipse', { cx: position[0], cy: position[1], rx: 5, ry: 4, fill: 'currentColor', fillOpacity: 0.1, stroke: 'currentColor', strokeWidth: 1.6 }),
+                    path('M' + (position[0] - 3) + ' ' + (position[1] + 1) + 'l4-3m-1 4 3-3', 'hatch-' + index, { strokeWidth: 1.2 })
+                  );
+                })
+              ];
             } else if (kind === 'cloud') {
               // The same liquid/solid possibilities are shown before and during the fall.
               lines = [
@@ -31787,6 +32931,22 @@ const d = labToolData.waterCycle || {};
               'data-chapter-diagram': state, 'data-chapter-side': after ? 'after' : 'before' }, shapes);
           }
           function renderWcJourneyChapters() {
+            var landSteps = WCJourneyChapters.landDefinitions();
+            function landStepButton(id, overview) {
+              var step = landSteps.filter(function(item) { return item.id === id; })[0];
+              if (!step) return null;
+              return React.createElement('button', { id: 'wcJourneyLandStep-' + step.id, key: step.id, type: 'button',
+                className: overview ? 'wc-chapter-land-overview' : undefined,
+                'aria-pressed': chapter.state === step.id, 'aria-controls': 'wcJourneyChapterCard',
+                onClick: function() { inspectWcJourneyLandStep(step.id); } }, step.label);
+            }
+            function landPathwayIcon(id) {
+              var shape = id === 'surface' ? 'M3 8q3-3 6 0t6 0t6 0M3 14q3-3 6 0t6 0t6 0M3 20q3-3 6 0t6 0t6 0'
+                : id === 'soil' ? 'M3 5h18M4 12l4-2 4 3 4-3 4 2M4 19l4-2 4 3 4-3 4 2'
+                : 'M12 22V9M12 13C5 13 3 7 4 3c6 0 9 4 8 10M12 18c7 0 9-6 8-10-6 0-9 4-8 10';
+              return React.createElement('svg', { viewBox: '0 0 24 24', 'aria-hidden': true, focusable: 'false', 'data-land-pathway-icon': id },
+                React.createElement('path', { d: shape, fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round' }));
+            }
             var chapter = wcJourneyChapter;
             var storage = chapter.state === 'ocean' || chapter.state === 'complete';
             var current = WCJourneyChapters.resolve({ journeyActive: d.journeyActive, journeyState: d.journeyState });
@@ -31835,11 +32995,24 @@ const d = labToolData.waterCycle || {};
                 chapter.showLandSteps && React.createElement('div', { className: 'wc-chapter-land' },
                   React.createElement('p', { id: 'wcJourneyLandStepLabel' }, 'Inspect a land step'),
                   React.createElement('div', { className: 'wc-chapter-land-options', role: 'group', 'aria-labelledby': 'wcJourneyLandStepLabel' },
-                    WCJourneyChapters.landDefinitions().map(function(step) {
-                      return React.createElement('button', { id: 'wcJourneyLandStep-' + step.id, key: step.id, type: 'button',
-                        'aria-pressed': chapter.state === step.id, 'aria-controls': 'wcJourneyChapterCard',
-                        onClick: function() { inspectWcJourneyLandStep(step.id); } }, step.label);
-                    })
+                    landStepButton('ground_choice', true),
+                    React.createElement('div', { className: 'wc-chapter-land-routes' },
+                      [
+                        { id: 'surface', title: 'Surface water', cue: 'Water moving across the land surface.', steps: ['river_runoff'] },
+                        { id: 'soil', title: 'Soil and groundwater', cue: 'Entering soil does not guarantee groundwater recharge.', steps: ['infiltrating', 'aquifer_flow'] },
+                        { id: 'plants', title: 'Plants', cue: 'Compare liquid uptake with vapor leaving leaves.', steps: ['plant_absorb', 'transpiring'] }
+                      ].map(function(pathway) {
+                        var active = pathway.steps.indexOf(chapter.state) >= 0;
+                        var prefix = 'wcJourneyLandPathway-' + pathway.id;
+                        return React.createElement('div', { key: pathway.id, className: 'wc-chapter-land-pathway', role: 'group',
+                          'data-land-pathway': pathway.id, 'data-active': String(active), 'aria-labelledby': prefix + '-Title', 'aria-describedby': prefix + '-Cue' },
+                          React.createElement('header', null, landPathwayIcon(pathway.id), React.createElement('h6', { id: prefix + '-Title' }, pathway.title)),
+                          React.createElement('p', { id: prefix + '-Cue', className: 'wc-land-pathway-cue' }, pathway.cue),
+                          React.createElement('div', { className: 'wc-land-pathway-choices' }, pathway.steps.map(function(id) { return landStepButton(id, false); })),
+                          active && React.createElement('p', { className: 'wc-land-pathway-active' }, 'Inspecting this pathway')
+                        );
+                      })
+                    )
                   )
                 ),
                 React.createElement('div', { className: 'wc-chapter-flow' },
@@ -31866,11 +33039,14 @@ const d = labToolData.waterCycle || {};
                 ),
                 React.createElement('div', { className: 'wc-chapter-question' }, React.createElement('strong', null, 'Trace and explain'),
                   React.createElement('p', null, chapter.question)),
-                React.createElement('p', { className: 'wc-chapter-note', 'data-chapter-note': 'true' }, chapter.note),
+                React.createElement('p', { className: 'wc-chapter-note', 'data-chapter-note': 'true' }, chapter.note + (chapter.state === 'infiltrating' ? ' ' + wcSoilPoreScope() : '')),
                 chapter.id === 'land' && renderWcGroundwaterLens('explorer')
               ),
               React.createElement('p', { className: 'wc-chapters-help wc-chapters-scope' }, 'One illustrated route through a branching cycle. Diagrams are not to scale, and animation time is compressed.')
             );
+          }
+          function wcSoilPoreScope() {
+            return __alloT('stem.watercycle.soil_pore_diagram_scope', 'This pore view is illustrative; soil saturation varies.');
           }
           function wcProcessCaveat(id) {
             var notes = {
@@ -31879,7 +33055,7 @@ const d = labToolData.waterCycle || {};
               precipitation: __alloT('stem.watercycle.process_compare_precipitation_note', 'The fall does not require a state change. Falling water can also melt, freeze, or evaporate along its path.'),
               collection: __alloT('stem.watercycle.process_compare_collection_note', 'Storage can last different lengths of time. Freezing and melting are separate possible processes.'),
               transpiration: __alloT('stem.watercycle.process_compare_transpiration_note', 'Roots and xylem move liquid water. Liquid evaporates from leaf surfaces before vapor leaves the plant.'),
-              infiltration: __alloT('stem.watercycle.process_compare_infiltration_note', 'Water can remain in shallow soil or move onward. Infiltration does not guarantee groundwater recharge.')
+              infiltration: __alloT('stem.watercycle.process_compare_infiltration_note', 'Water can remain in shallow soil or move onward. Infiltration does not guarantee groundwater recharge.') + ' ' + wcSoilPoreScope()
             };
             return notes[id] || '';
           }
@@ -31944,14 +33120,22 @@ const d = labToolData.waterCycle || {};
             var ltEnergy = currentMatterEnergy.energyTransfer;
             var ltAbsorbed = ltEnergy === 'absorbed';
             var ltReleased = ltEnergy === 'released';
+            function heatActor(label, water, gives) {
+              return React.createElement('span', { className: 'wc-lt-heat-actor', 'data-lt-heat-actor': water ? 'water' : 'surroundings', 'data-lt-heat-role': gives ? 'gives' : 'receives' },
+                React.createElement('i', { className: water ? 'wc-lt-water-mark' : 'wc-lt-surroundings-mark', 'aria-hidden': true }),
+                React.createElement('span', { className: 'wc-lt-heat-actor-copy' },
+                  React.createElement('strong', null, label),
+                  React.createElement('small', null, gives ? 'Gives heat' : 'Receives heat')));
+            }
             return React.createElement('div', { className: 'wc-live-heat-path', 'data-lt-energy': ltEnergy, 'data-lt-heat-direction': ltAbsorbed ? 'into-water' : ltReleased ? 'out-of-water' : 'not-required' },
+              (ltAbsorbed || ltReleased) && React.createElement('p', { className: 'wc-lt-heat-direction' }, React.createElement('strong', null, ltAbsorbed ? 'Heat enters water' : 'Heat leaves water')),
               ltAbsorbed || ltReleased ? React.createElement('div', { className: 'wc-lt-heat-flow', role: 'group', 'aria-label': ltAbsorbed ? 'Latent heat flows from surroundings into water' : 'Latent heat flows from water to surrounding air' },
-                React.createElement('span', { className: 'wc-lt-heat-actor' }, React.createElement('i', { className: 'wc-lt-surroundings-mark', 'aria-hidden': true }), ltReleased ? 'Surrounding air' : 'Surroundings'),
+                heatActor(ltReleased ? 'Surrounding air' : 'Surroundings', false, ltAbsorbed),
                 React.createElement('div', { className: 'wc-lt-heat-arrow' },
                   React.createElement('span', null, 'Latent heat'),
                   React.createElement('svg', { viewBox: '0 0 84 28', 'aria-hidden': true, focusable: 'false', 'data-lt-heat-arrow': ltAbsorbed ? 'right' : 'left' },
                     React.createElement('path', { d: ltAbsorbed ? 'M8 14h68M65 4l11 10-11 10' : 'M76 14H8M19 4L8 14l11 10' }))),
-                React.createElement('span', { className: 'wc-lt-heat-actor' }, React.createElement('i', { className: 'wc-lt-water-mark', 'aria-hidden': true }), 'Water'))
+                heatActor('Water', true, ltReleased))
                 : React.createElement('p', { className: 'wc-lt-no-latent' }, 'No latent heat transfer is required by this process. Water can still move, warm or cool.'),
               React.createElement('p', { className: 'wc-lt-heat-reading' }, currentMatterEnergy.energyLabel));
           }
@@ -32020,6 +33204,82 @@ const d = labToolData.waterCycle || {};
               ), React.createElement('p', { className: 'wc-check-detail' }, wcProcessCaveat(id))
             );
           }
+          function renderWcGroundwaterFlow(scope, identity) {
+            var gfState = WCGroundwaterFlow.read(d.wcGroundwaterFlow, scope, identity);
+            if (!gfState) return null;
+            var gfSetup = WCGroundwaterFlow.descriptor(gfState.setup);
+            var gfPrefix = 'wcGroundwaterFlow-' + scope;
+            var gfResult = !gfState.checked ? 'unchecked' : gfState.answer === gfSetup.direction ? 'agree' : 'revisit';
+            function gfUpdate(action, focusId) {
+              var next = WCGroundwaterFlow.transition(d.wcGroundwaterFlow, scope, identity, action);
+              if (next) upd('wcGroundwaterFlow', next);
+              if (focusId) focusWcComparisonTarget(focusId);
+            }
+            function gfY(head) { return 40 + (3 - head) * 20; }
+            var gfLeftY = gfY(gfSetup.leftHead), gfRightY = gfY(gfSetup.rightHead);
+            function gfWell(side, x, head) {
+              var y = gfY(head);
+              var measurePath = 'M' + (side === 'left' ? x - 23 : x + 23) + ' ' + y + 'v' + (194 - y) + 'm-4 0h8M' + (side === 'left' ? x - 27 : x + 19) + ' ' + y + 'h8';
+              return React.createElement('g', { 'data-gwf-well': side, 'data-gwf-head': head },
+                React.createElement('rect', { className: 'wc-gwf-well', x: x - 7, y: 8, width: 14, height: 166, rx: 2 }),
+                React.createElement('rect', { className: 'wc-gwf-water', x: x - 4, y: y, width: 8, height: 172 - y }),
+                React.createElement('line', { className: 'wc-gwf-head-halo', x1: x - 11, x2: x + 11, y1: y, y2: y }),
+                React.createElement('line', { className: 'wc-gwf-level', 'data-gwf-level': side, x1: x - 11, x2: x + 11, y1: y, y2: y }),
+                React.createElement('path', { className: 'wc-gwf-screen', 'data-gwf-screen': side, d: [142,148,154,160,166].map(function(screenY) { return 'M' + (x - 7) + ' ' + screenY + 'h3m8 0h3'; }).join(' '), 'data-gwf-screen-top': 142, 'data-gwf-screen-bottom': 166 }),
+                React.createElement('path', { className: 'wc-gwf-head-halo', d: measurePath }),
+                React.createElement('path', { className: 'wc-gwf-head-measure', d: measurePath }));
+            }
+            function gfGrain(x, y, index) {
+              return React.createElement('g', { key: index }, React.createElement('ellipse', { className: 'wc-gwf-grain', cx: x, cy: y, rx: 13, ry: 10 }), React.createElement('path', { className: 'wc-gwf-hatch', d: 'M' + (x - 6) + ' ' + (y + 3) + 'l11-7m-9 2 8-5' }));
+            }
+            var gfDirectionLabel = gfSetup.direction === 'right' ? 'Toward the right' : gfSetup.direction === 'left' ? 'Toward the left' : 'No net horizontal flow';
+            var gfExplanation = gfSetup.direction === 'right'
+              ? 'The left well shows higher head. In this connected layer, the head difference drives horizontal flow toward the lower head on the right.'
+              : gfSetup.direction === 'left'
+                ? 'The right well shows higher head. In this connected layer, the head difference drives horizontal flow toward the lower head on the left.'
+                : 'Both wells show the same head. No net horizontal flow is driven by a head difference in this simplified layer. This does not rule out vertical flow in a real aquifer.';
+            return React.createElement('details', { className: 'wc-groundwater-flow', 'data-wc-gw-flow': scope },
+              React.createElement('summary', null,
+                React.createElement('svg', { viewBox: '0 0 32 32', 'aria-hidden': true, focusable: 'false' }, React.createElement('path', { d: 'M6 4v23h6V4M20 4v23h6V4M7 12h4M21 18h4M13 22h6l-3-3m3 3-3 3' })),
+                React.createElement('span', null, React.createElement('strong', null, __alloT('stem.watercycle.groundwater_flow_title', 'Compare groundwater flow')), React.createElement('small', null, __alloT('stem.watercycle.groundwater_flow_hint', 'Read the wells, predict the direction')))),
+              React.createElement('style', { 'data-wc-gwf-style': 'true' }, WC_GROUNDWATER_FLOW_STYLE),
+              React.createElement('div', { className: 'wc-gwf-body' },
+                React.createElement('p', { className: 'wc-gwf-intro' }, 'Hydraulic head is the height water stands above a shared reference in a nonpumping well. Compare these two wells at the same moment.'),
+                React.createElement('div', { className: 'wc-gwf-setups', role: 'group', 'aria-label': 'Choose a pair of groundwater head levels' }, WCGroundwaterFlow.setups().map(function(setup) {
+                  return React.createElement('button', { key: setup.id, type: 'button', 'data-gwf-setup': setup.id, 'aria-pressed': setup.id === gfState.setup, 'aria-controls': gfPrefix + '-Figure ' + gfPrefix + '-Feedback', onClick: function() { gfUpdate({ type: 'setup', id: setup.id }, gfPrefix + '-SetupTitle'); } },
+                    React.createElement('strong', null, setup.label), React.createElement('small', null, setup.id === 'left-high' ? 'Left well level is higher' : setup.id === 'right-high' ? 'Right well level is higher' : 'Both well levels match'), React.createElement('span', { className: 'wc-gwf-selection' }, setup.id === gfState.setup ? 'Selected setup' : 'Compare setup'));
+                })),
+                React.createElement('div', { className: 'wc-gwf-workspace' },
+                  React.createElement('figure', { id: gfPrefix + '-Figure', className: 'wc-gwf-figure', 'data-gwf-setup': gfSetup.id, 'data-gwf-direction': gfState.checked ? gfSetup.direction : 'unrevealed', 'aria-labelledby': gfPrefix + '-SetupTitle' },
+                    React.createElement('figcaption', null, React.createElement('h5', { id: gfPrefix + '-SetupTitle', tabIndex: -1 }, gfSetup.label)),
+                    React.createElement('div', { className: 'wc-gwf-well-readings' }, [['left', gfSetup.leftLabel], ['right', gfSetup.rightLabel]].map(function(well) {
+                      return React.createElement('div', { key: well[0], 'data-gwf-reading': well[0] }, React.createElement('strong', null, well[0] === 'left' ? 'Left well' : 'Right well'), React.createElement('small', null, well[1]));
+                    })),
+                    React.createElement('svg', { className: 'wc-gwf-diagram', viewBox: '0 0 320 210', preserveAspectRatio: 'xMidYMid meet', 'aria-hidden': true, focusable: 'false', 'data-gwf-diagram': scope },
+                      React.createElement('rect', { className: 'wc-gwf-soil', x: 12, y: 24, width: 296, height: 160, rx: 10 }),
+                      React.createElement('path', { className: 'wc-gwf-water', d: 'M14 ' + gfLeftY + 'H64L256 ' + gfRightY + 'H306V174Q306 182 298 182H22Q14 182 14 174Z' }),
+                      [[40,104],[96,102],[164,102],[223,104],[286,106],[58,162],[127,163],[198,163],[271,163]].map(function(position, index) { return gfGrain(position[0], position[1], index); }),
+                      React.createElement('path', { className: 'wc-gwf-table', d: 'M14 ' + gfLeftY + 'H64L256 ' + gfRightY + 'H306', 'data-gwf-water-table': 'true' }),
+                      gfWell('left', 64, gfSetup.leftHead), gfWell('right', 256, gfSetup.rightHead),
+                      React.createElement('line', { className: 'wc-gwf-reference', 'data-gwf-reference': 'true', x1: 14, x2: 306, y1: 194, y2: 194 }),
+                      gfState.checked && gfSetup.direction !== 'still' && React.createElement('path', { className: 'wc-gwf-arrow', 'data-gwf-arrow': gfSetup.direction, d: gfSetup.direction === 'right' ? 'M104 132Q133 125 159 132T212 132m-10-9 10 9-10 9' : 'M212 132Q184 139 159 132T104 132m10-9-10 9 10 9' })),
+                    gfState.checked && gfSetup.direction === 'still' && React.createElement('p', { className: 'wc-gwf-no-flow', 'data-gwf-no-flow': 'true' }, 'Equal head: no net horizontal flow driven by a head difference.'),
+                    React.createElement('ul', { className: 'wc-gwf-key', 'aria-label': 'Observation well diagram key' },
+                      React.createElement('li', null, React.createElement('i', { 'aria-hidden': true }), 'Bottom dashed line: the common reference.'),
+                      React.createElement('li', null, React.createElement('i', { 'data-key': 'screen', 'aria-hidden': true }), 'Short marks on each well: openings into the same aquifer.')),
+                    React.createElement('p', { className: 'wc-gwf-reading-note' }, 'The well levels and water table are schematic. The grains show solid material with water in the connected spaces.')),
+                  React.createElement('section', { className: 'wc-gwf-inquiry', 'aria-label': 'Predict and check groundwater flow' },
+                    React.createElement('fieldset', { className: 'wc-gwf-question' }, React.createElement('legend', null, 'Using these heads, which way would water flow horizontally?'),
+                      React.createElement('div', { className: 'wc-gwf-answers' }, [['right','Toward the right'],['left','Toward the left'],['still','No net horizontal flow']].map(function(answer) {
+                        return React.createElement('button', { key: answer[0], type: 'button', 'data-gwf-answer': answer[0], 'aria-pressed': gfState.answer === answer[0], 'aria-controls': gfPrefix + '-Feedback', onClick: function() { gfUpdate({ type: 'answer', value: answer[0] }); } }, answer[1]);
+                      }))),
+                    React.createElement('button', { type: 'button', className: 'wc-gwf-check', 'data-gwf-check': 'true', disabled: !gfState.answer, onClick: function() { gfUpdate({ type: 'check' }, gfPrefix + '-FeedbackTitle'); } }, 'Check flow direction'),
+                    React.createElement('div', { id: gfPrefix + '-Feedback', className: 'wc-gwf-feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': true, 'data-gwf-result': gfResult },
+                      React.createElement('h6', { id: gfPrefix + '-FeedbackTitle', tabIndex: -1 }, gfState.checked ? gfDirectionLabel : 'Make a prediction'),
+                      gfState.checked ? React.createElement(React.Fragment, null, React.createElement('p', null, gfResult === 'agree' ? 'Your prediction fits these well readings.' : 'Compare the two head levels and follow the revealed direction.'), React.createElement('p', null, gfExplanation), React.createElement('p', null, 'This practice is unscored. Choose another setup to compare.')) : React.createElement('p', null, gfState.answer ? 'Your prediction is selected. Check it to reveal the explanation.' : 'Choose a direction, then check the well evidence.')))),
+                React.createElement('p', { className: 'wc-gwf-footer' }, 'This is a simplified horizontal comparison in a uniform, connected aquifer. Water has the same density throughout, and neither well is pumping. Real groundwater can also move vertically. The drawing does not calculate flow rate, recharge, or changes caused by weather.')));
+          }
+
           function renderWcGroundwaterLens(scope) {
             var checkSession = scope === 'check' ? WCCheckInvestigation.normalizeSession(d.wcCheckInvestigation) : null;
             var identity = checkSession ? checkSession.key : '';
@@ -32029,7 +33289,6 @@ const d = labToolData.waterCycle || {};
             var prefix = 'wcGroundwater-' + scope;
             function choose(id) {
               upd('wcGroundwaterLens', WCGroundwaterLens.select(d.wcGroundwaterLens, scope, id, identity));
-              focusWcComparisonTarget(prefix + '-DetailTitle');
             }
             function answer(id) {
               upd('wcGroundwaterLens', WCGroundwaterLens.answer(d.wcGroundwaterLens, scope, id, identity));
@@ -32052,10 +33311,16 @@ const d = labToolData.waterCycle || {};
               React.createElement('style', null, WC_GROUNDWATER_LENS_STYLE),
               React.createElement('summary', { id: prefix + '-Summary' }, 'Look inside the ground'),
               React.createElement('div', { className: 'wc-gw-content' },
-                React.createElement('p', { className: 'wc-gw-intro' }, 'Choose a part of this porous-ground schematic. Compare the cutaway with a magnified view of spaces between solid grains.'),
+                React.createElement('p', { className: 'wc-gw-intro' }, 'Choose a zone to highlight it. Read the observation, then compare the cutaway and pore view.'),
                 React.createElement('div', { className: 'wc-gw-options', role: 'group', 'aria-label': 'Choose a groundwater feature to inspect' },
                   WCGroundwaterLens.parts().map(function(item) { return React.createElement('button', { key: item.id, type: 'button', 'data-gw-select': item.id, 'aria-pressed': reading.part === item.id, 'aria-controls': prefix + '-Detail', onClick: function() { choose(item.id); } }, React.createElement('span', { className: 'wc-gw-choice-mark', 'aria-hidden': true }, reading.part === item.id ? '✓' : '○'), item.label); })
                 ),
+                React.createElement('section', { id: prefix + '-Detail', className: 'wc-gw-reading', 'aria-labelledby': prefix + '-DetailTitle' },
+                  React.createElement('small', null, 'Inspecting · ' + part.label),
+                  React.createElement('h5', { id: prefix + '-DetailTitle', tabIndex: -1 }, part.title),
+                  React.createElement('p', null, React.createElement('strong', null, 'Look for: '), part.look)
+                ),
+                React.createElement('div', { className: 'wc-gw-announcement', role: 'status', 'aria-live': 'polite', 'aria-atomic': true }, part.label + ' selected. ' + part.title),
                 React.createElement('div', { className: 'wc-gw-diagrams' },
                   React.createElement('figure', { 'data-gw-figure': 'cutaway' },
                     React.createElement('figcaption', null, 'Find it in the cutaway'),
@@ -32086,14 +33351,15 @@ const d = labToolData.waterCycle || {};
                       part.id === 'boundary' && React.createElement('path', { className: 'wc-gw-boundary', 'data-gw-cue': 'water-table', d: 'M4 116H256' }),
                       part.id === 'groundwater' && React.createElement('path', { className: 'wc-gw-flow', style: { stroke: 'var(--gw-air)' }, 'data-gw-cue': 'possible-flow', d: 'M24 118Q60 128 84 119T141 119T218 121L232 121m-8-6 8 6-8 6' })
                     ),
-                    React.createElement('p', { className: 'wc-gw-scope' }, part.reading)
+                    React.createElement('p', { className: 'wc-gw-scope' }, part.reading),
+                    part.id === 'groundwater' && React.createElement('p', { className: 'wc-gw-scope' }, 'Direction in the pore view is illustrative. The well comparison below uses a specific pair of head levels.')
                   )
                 ),
                 React.createElement('ul', { className: 'wc-gw-key', 'aria-label': 'Diagram key' }, [['grain','Solid grains · hatched'],['water','Liquid water'],['air','Air space · open']].map(function(item) { return React.createElement('li', { key: item[0] }, React.createElement('span', { className: 'wc-gw-swatch', 'data-material': item[0], 'aria-hidden': true }), item[1]); })),
-                React.createElement('section', { id: prefix + '-Detail', className: 'wc-gw-reading', 'aria-labelledby': prefix + '-DetailTitle' },
-                  React.createElement('small', null, 'Inspecting · ' + part.label),
-                  React.createElement('h5', { id: prefix + '-DetailTitle', tabIndex: -1 }, part.title),
-                  React.createElement('p', null, part.detail), React.createElement('p', null, React.createElement('strong', null, 'Look for: '), part.look)
+                part.id === 'groundwater' && typeof renderWcGroundwaterFlow === 'function' && renderWcGroundwaterFlow(scope, identity),
+                React.createElement('details', { className: 'wc-gw-context' },
+                  React.createElement('summary', null, 'Understand this zone'),
+                  React.createElement('p', null, part.detail)
                 ),
                 React.createElement('details', { className: 'wc-gw-check' },
                   React.createElement('summary', null, 'Check the distinction'),
@@ -32170,6 +33436,83 @@ const d = labToolData.waterCycle || {};
                 React.createElement('p', { className: 'wc-check-detail' }, 'Model explored: ' + WCCheckInvestigation.get(record.destinationKey).label)
               ); }))
             );
+          }
+
+          function renderWcPhaseChangeMap() {
+            var pmState = WCPhaseChangeMap.normalize(d.wcPhaseChangeMap);
+            var pmChange = WCPhaseChangeMap.descriptor(pmState.selected);
+            var pmPairs = [['melting', 'freezing'], ['evaporation', 'condensation'], ['sublimation', 'deposition']];
+            var pmLabels = { solid: 'Ice (solid)', liquid: 'Liquid water', gas: 'Invisible water vapor' };
+            function pmUpdate(action, focusId) {
+              upd('wcPhaseChangeMap', WCPhaseChangeMap.transition(d.wcPhaseChangeMap, action));
+              if (focusId) focusWcComparisonTarget(focusId);
+            }
+            function pmGlyph(phase) {
+              return React.createElement('svg', { className: 'wc-pm-glyph', viewBox: '0 0 64 64', 'aria-hidden': true, focusable: 'false', 'data-phase-glyph': phase },
+                phase === 'solid' ? React.createElement('path', { d: 'M32 8v48M11 20l42 24M11 44l42-24M25 13l7 7 7-7M25 51l7-7 7 7M14 27l9-2-2-9M43 48l-2-9 9-2M14 37l9 2-2 9M43 16l-2 9 9 2' })
+                  : phase === 'liquid' ? React.createElement('g', null,
+                    React.createElement('path', { d: 'M32 7C28 17 16 27 16 38a16 16 0 0 0 32 0C48 27 36 17 32 7Z', fill: 'none' }),
+                    React.createElement('path', { d: 'M23 38q0 9 9 10', 'data-outline': '1' }))
+                    : React.createElement('g', null, [[13,15],[43,10],[30,32],[52,39],[11,48],[37,55]].map(function(position, index) {
+                      return React.createElement('circle', { key: index, cx: position[0], cy: position[1], r: 3.2 });
+                    })));
+            }
+            function pmRoute(id) {
+              var change = WCPhaseChangeMap.descriptor(id);
+              var selected = id === pmState.selected;
+              return React.createElement('button', { key: id, type: 'button', className: 'wc-pm-route', 'data-phase-select': id, 'aria-pressed': selected, 'aria-controls': 'wcPhaseMapDetail', onClick: function() { pmUpdate({ type: 'select', id: id }, 'wcPhaseMapDetailTitle'); } },
+                React.createElement('strong', null, change.label),
+                React.createElement('small', null, change.fromLabel + ' \u2192 ' + change.toLabel),
+                React.createElement('span', { className: 'wc-pm-route-mark' }, selected ? 'Selected route' : 'Explore route'));
+            }
+            function pmWaterNode(phase, side) {
+              var attributes = { className: 'wc-pm-flow-node' };
+              attributes[side === 'from' ? 'data-phase-from' : 'data-phase-to'] = phase;
+              return React.createElement('div', attributes, React.createElement('small', null, side === 'from' ? 'Before' : 'After'), pmGlyph(phase), React.createElement('strong', null, pmLabels[phase]));
+            }
+            var pmResult = !pmState.checked ? 'unchecked' : pmState.answer === pmChange.energy ? 'agree' : 'revisit';
+            var pmAbsorbed = pmChange.energy === 'absorbed';
+            return React.createElement('details', { className: 'wc-phase-map wc-focus-secondary', 'data-wc-phase-map': 'true' },
+              React.createElement('summary', null,
+                React.createElement('svg', { viewBox: '0 0 32 32', 'aria-hidden': true, focusable: 'false', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }, React.createElement('path', { d: 'M9 4v12M4 7l10 6M4 13l10-6M19 12h8l-3-3m3 3-3 3M22 19c-2 4-5 7-5 9a5 5 0 0 0 10 0c0-2-3-5-5-9Z' })),
+                React.createElement('span', null, React.createElement('strong', null, __alloT('stem.watercycle.phase_map_title', 'Explore water state changes')), React.createElement('small', null, __alloT('stem.watercycle.phase_map_hint', 'Ice, liquid, invisible vapor, and heat')))),
+              React.createElement('style', { 'data-wc-phase-map-style': '1' }, WC_PHASE_CHANGE_MAP_STYLE),
+              React.createElement('div', { className: 'wc-pm-body' },
+                React.createElement('p', { className: 'wc-pm-scope' }, 'Choose a route between water states, then predict its heat direction. This concept diagram is independent of the current scene.'),
+                React.createElement('div', { className: 'wc-pm-states', role: 'group', 'aria-label': 'Three physical states of water' },
+                  [['solid','Ice and snow'],['liquid','Droplets and flowing water'],['gas','An invisible gas']].map(function(item) {
+                    return React.createElement('div', { key: item[0], className: 'wc-pm-state' }, pmGlyph(item[0]), React.createElement('strong', null, pmLabels[item[0]]), React.createElement('small', null, item[1]));
+                  })),
+                React.createElement('div', { className: 'wc-pm-workspace' },
+                  React.createElement('div', { className: 'wc-pm-chooser' }, pmPairs.map(function(pair, index) {
+                    return React.createElement('fieldset', { key: index, className: 'wc-pm-pair' }, React.createElement('legend', null, ['Ice \u2194 liquid','Liquid \u2194 vapor','Ice \u2194 vapor'][index]), React.createElement('div', { className: 'wc-pm-pair-buttons' }, pair.map(pmRoute)));
+                  })),
+                  React.createElement('section', { id: 'wcPhaseMapDetail', className: 'wc-pm-detail', 'aria-labelledby': 'wcPhaseMapDetailTitle', 'data-phase-detail': pmChange.id },
+                    React.createElement('div', { className: 'wc-pm-detail-header' },
+                      React.createElement('div', null, React.createElement('span', { className: 'wc-pm-kicker' }, 'Selected state change'), React.createElement('h4', { id: 'wcPhaseMapDetailTitle', tabIndex: -1 }, pmChange.label)),
+                      React.createElement('button', { type: 'button', className: 'wc-pm-reverse', 'data-phase-reverse': 'true', onClick: function() { pmUpdate({ type: 'reverse' }, 'wcPhaseMapDetailTitle'); } }, 'Reverse to ' + WCPhaseChangeMap.descriptor(pmChange.reverse).label.toLowerCase())),
+                    React.createElement('div', { className: 'wc-pm-flow', role: 'group', 'aria-label': pmChange.fromLabel + ' changes to ' + pmChange.toLabel },
+                      pmWaterNode(pmChange.from, 'from'), React.createElement('svg', { className: 'wc-pm-flow-arrow', viewBox: '0 0 32 32', 'aria-hidden': true, focusable: 'false' }, React.createElement('path', { d: 'M4 16h24M19 7l9 9-9 9' })), pmWaterNode(pmChange.to, 'to')),
+                    (pmChange.id === 'sublimation' || pmChange.id === 'deposition') && React.createElement('p', { className: 'wc-pm-direct' }, 'Direct route: the liquid state is skipped.'),
+                    React.createElement('p', { className: 'wc-pm-example' }, React.createElement('strong', null, 'In nature: '), pmChange.example),
+                    React.createElement('fieldset', { className: 'wc-pm-question' },
+                      React.createElement('legend', null, 'Which way does latent heat flow during ' + pmChange.label.toLowerCase() + '?'),
+                      React.createElement('div', { className: 'wc-pm-answers' }, [['absorbed','Heat enters water','Water absorbs energy'],['released','Heat leaves water','Water releases energy']].map(function(answer) {
+                        return React.createElement('button', { key: answer[0], type: 'button', 'data-phase-answer': answer[0], 'aria-pressed': pmState.answer === answer[0], 'aria-controls': 'wcPhaseMapFeedback', onClick: function() { pmUpdate({ type: 'answer', value: answer[0] }); } }, React.createElement('strong', null, answer[1]), React.createElement('small', null, answer[2]));
+                      }))),
+                    React.createElement('button', { type: 'button', className: 'wc-pm-check', 'data-phase-check': 'true', disabled: !pmState.answer, onClick: function() { pmUpdate({ type: 'check' }, 'wcPhaseMapFeedbackTitle'); } }, 'Check heat direction'),
+                    React.createElement('div', { id: 'wcPhaseMapFeedback', className: 'wc-pm-feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': true, 'data-phase-result': pmResult },
+                      React.createElement('h5', { id: 'wcPhaseMapFeedbackTitle', tabIndex: -1 }, pmState.checked ? pmAbsorbed ? 'Heat enters water' : 'Heat leaves water' : 'Make a prediction'),
+                      pmState.checked ? React.createElement(React.Fragment, null,
+                        React.createElement('p', null, pmResult === 'agree' ? 'Your prediction fits this state change.' : 'Revisit your prediction using the heat arrow.'),
+                        React.createElement('div', { className: 'wc-pm-heat', 'data-phase-heat': pmChange.energy, role: 'group', 'aria-label': pmAbsorbed ? 'Heat flows from surroundings into water' : 'Heat flows from water into surroundings' },
+                          React.createElement('span', null, React.createElement('strong', null, 'Surroundings'), React.createElement('small', null, pmAbsorbed ? 'Give heat' : 'Receive heat')),
+                          React.createElement('svg', { viewBox: '0 0 56 32', 'aria-hidden': true, focusable: 'false', 'data-phase-heat-arrow': pmAbsorbed ? 'right' : 'left' }, React.createElement('path', { d: pmAbsorbed ? 'M4 16h48M43 7l9 9-9 9' : 'M52 16H4M13 7l-9 9 9 9' })),
+                          React.createElement('span', null, React.createElement('strong', null, 'Water'), React.createElement('small', null, pmAbsorbed ? 'Absorbs heat' : 'Releases heat'))),
+                        React.createElement('p', null, pmChange.description),
+                        React.createElement('p', null, 'This practice is unscored. Try the reverse route and compare the heat direction.'))
+                        : React.createElement('p', null, pmState.answer ? 'Your prediction is selected. Check it to reveal the heat path.' : 'Choose a heat direction, then check the explanation.')))),
+                React.createElement('p', { className: 'wc-pm-note' }, 'Water vapor is invisible; spaced marks are a schematic gas symbol. The substance remains H\u2082O in every state. Latent heat is energy transferred during a change of state; water can also warm or cool without changing state. This diagram shows possibilities, not amounts, rates, or temperature thresholds.')));
           }
 
           function renderWcProcessComparison() {
@@ -33058,6 +34401,112 @@ const d = labToolData.waterCycle || {};
               React.createElement("p", { className: "wc-land-path-copy" }, isRunoff ? "Over the surface" : "Into soil pores")
             );
           }
+          function renderWcLandCutaway() {
+            var rain = Math.max(0, Math.min(100, landRainIntensity));
+            var wetness = Math.max(0, Math.min(100, landSaturation));
+            var cover = ['forest', 'grass', 'urban'].indexOf(landCover) >= 0 ? landCover : 'grass';
+            var slope = ['gentle', 'moderate', 'steep'].indexOf(landSlope) >= 0 ? landSlope : 'moderate';
+            var permeability = ['low', 'medium', 'high'].indexOf(landPermeability) >= 0 ? landPermeability : 'medium';
+            var tilt = { gentle: 8, moderate: 30, steep: 66 }[slope];
+            function surface(x) { return 112 + tilt * (x - 28) / 424 + Math.sin(x / 95) * 1.2; }
+            function topPath(offset) {
+              return 'M24 ' + (surface(24) + offset) + ' Q128 ' + (surface(128) + offset) + ' 236 ' + (surface(236) + offset) + ' T456 ' + (surface(456) + offset);
+            }
+            var soilPath = topPath(0) + 'V264H24Z';
+            var features = [
+              { input: 'landRainIntensity', title: 'Rainfall intensity', value: rain + '/100', detail: rain === 0 ? 'No new rain' : rain < 35 ? 'Lighter rain setting' : rain > 70 ? 'Heavier rain setting' : 'Moderate rain setting' },
+              { input: 'landSaturation', title: 'Soil saturation', value: wetness + '/100', detail: 'Wetness before this rain' },
+              { input: 'landCover', title: 'Land cover', value: { forest: 'Forest', grass: 'Grass', urban: 'Urban' }[cover], detail: cover === 'urban' ? 'Built surfaces and gaps' : cover === 'forest' ? 'Canopy and rooted ground' : 'Grass and rooted ground' },
+              { input: 'landPermeability', title: 'Soil permeability', value: { low: 'Low', medium: 'Medium', high: 'High' }[permeability], detail: permeability === 'high' ? 'Water passes more easily' : permeability === 'low' ? 'Water passes less easily' : 'Intermediate ease of passage' },
+              { input: 'landSlope', title: 'Slope', value: { gentle: 'Gentle', moderate: 'Moderate', steep: 'Steep' }[slope], detail: 'Downhill surface direction' }
+            ];
+            var grains = [[55,187,14],[113,224,16],[169,187,15],[236,240,15],[298,193,17],[359,247,12],[421,216,14]];
+            var pores = [[84,202],[143,208],[205,211],[267,215],[330,220],[390,223]];
+            var rainCount = rain > 0 ? 4 + Math.round(rain * 0.14) : 0;
+            var runoffStartX = 156, runoffStartY = surface(runoffStartX) - 31;
+            var runoffSlope = (surface(runoffStartX + 86) - surface(runoffStartX)) / 86;
+            var runoffUnitX = 1 / Math.sqrt(1 + runoffSlope * runoffSlope), runoffUnitY = runoffSlope * runoffUnitX;
+            var runoffEndX = runoffStartX + 86 * runoffUnitX, runoffEndY = runoffStartY + 86 * runoffUnitY;
+            var runoffPath = 'M' + runoffStartX + ' ' + runoffStartY + 'L' + runoffEndX + ' ' + runoffEndY
+              + 'M' + (runoffEndX - 9 * runoffUnitX + 7 * runoffUnitY) + ' ' + (runoffEndY - 9 * runoffUnitY - 7 * runoffUnitX)
+              + 'L' + runoffEndX + ' ' + runoffEndY + 'L' + (runoffEndX - 9 * runoffUnitX - 7 * runoffUnitY) + ' ' + (runoffEndY - 9 * runoffUnitY + 7 * runoffUnitX);
+            var entryY = surface(195) - 11;
+            return React.createElement('figure', {
+              className: 'wc-land-cutaway' + (isDark ? ' is-dark' : '') + (isContrast ? ' is-contrast' : ''),
+              'data-land-cutaway': 'true', 'data-cutaway-rain': rain, 'data-cutaway-saturation': wetness,
+              'data-cutaway-cover': cover, 'data-cutaway-permeability': permeability, 'data-cutaway-slope': slope,
+              'aria-labelledby': 'wcLandCutawayTitle', 'aria-describedby': 'wcLandCutawayScope'
+            },
+              React.createElement('style', null, WC_LAND_CUTAWAY_STYLE),
+              React.createElement('figcaption', { className: 'wc-land-cutaway-head' },
+                React.createElement('span', { className: 'wc-land-cutaway-kicker' }, 'Your landscape'),
+                React.createElement('h5', { id: 'wcLandCutawayTitle', tabIndex: -1 }, 'See what shapes the pathways'),
+                React.createElement('p', null, 'Select a feature to adjust that condition. Compare both teaching indices below, then compare with your saved baseline.')
+              ),
+              React.createElement('div', { className: 'wc-land-cutaway-scene' },
+                React.createElement('svg', { viewBox: '0 0 480 280', preserveAspectRatio: 'xMidYMid meet', 'aria-hidden': 'true', focusable: 'false' },
+                  React.createElement('defs', null,
+                    React.createElement('linearGradient', { id: 'wcLandSceneSky', x1: '0', y1: '0', x2: '0', y2: '1' },
+                      React.createElement('stop', { offset: '0', stopColor: 'var(--lc-sky)' }), React.createElement('stop', { offset: '1', stopColor: 'var(--lc-horizon)' })),
+                    React.createElement('linearGradient', { id: 'wcLandSceneSoil', x1: '0', y1: '0', x2: '0', y2: '1' },
+                      React.createElement('stop', { offset: '0', stopColor: 'var(--lc-soil)' }), React.createElement('stop', { offset: '1', stopColor: 'var(--lc-depth)' })),
+                    React.createElement('clipPath', { id: 'wcLandSceneClip' }, React.createElement('path', { d: soilPath }))
+                  ),
+                  React.createElement('rect', { className: 'wc-lc-sky', x: 0, y: 0, width: 480, height: 280, rx: 16 }),
+                  React.createElement('path', { className: 'wc-lc-horizon', d: 'M0 90Q80 58 151 84T310 72T480 91V160H0Z' }),
+                  React.createElement('path', { className: 'wc-lc-cloud', d: 'M277 37Q278 22 293 23Q302 8 319 19Q337 14 343 31Q360 30 362 41Q327 51 277 45Z' }),
+                  React.createElement('g', { 'data-cutaway-cue': 'rain', 'data-rain-marks': rainCount },
+                    Array.from({ length: rainCount }, function(_, i) { var x = 37 + i * 397 / Math.max(1, rainCount - 1), y = 16 + i % 3 * 21; return React.createElement('path', { key: i, className: 'wc-lc-rain', d: 'M' + x + ' ' + y + 'l-5 13' }); })
+                  ),
+                  React.createElement('path', { className: 'wc-lc-soil', 'data-cutaway-cue': 'surface', d: soilPath }),
+                  React.createElement('g', { clipPath: 'url(#wcLandSceneClip)' },
+                    React.createElement('path', { className: 'wc-lc-topsoil', d: topPath(0) + 'L456 ' + (surface(456) + 20) + ' Q350 ' + (surface(350) + 20) + ' 236 ' + (surface(236) + 20) + ' T24 ' + (surface(24) + 20) + 'Z' }),
+                    React.createElement('path', { className: 'wc-lc-stratum', d: topPath(67) }),
+                    React.createElement('rect', { className: 'wc-lc-moisture', 'data-cutaway-cue': 'moisture', 'data-soil-wetness': wetness, x: 24, y: 110, width: 432, height: 154, opacity: wetness / 100 * 0.2 }),
+                    cover !== 'urban' && [67,146,277,367].map(function(x, i) { var y = surface(x) + 4; return React.createElement('path', { key: i, className: 'wc-lc-roots', d: 'M' + x + ' ' + y + 'l-5 26m5-26 9 35m-5-16 12 7m-20-6-9 9' }); }),
+                    React.createElement('path', { className: 'wc-lc-connections', 'data-cutaway-cue': 'permeability', 'data-ease-of-passage': permeability, d: 'M84 202Q117 197 143 208T205 211T267 215T330 220T390 223', strokeDasharray: permeability === 'low' ? '3 9' : permeability === 'medium' ? '7 5' : undefined }),
+                    grains.map(function(g, i) { return React.createElement('g', { key: i, 'data-cutaway-grain': i },
+                      React.createElement('ellipse', { className: 'wc-lc-grain', cx: g[0], cy: g[1], rx: g[2], ry: g[2] * 0.7 }),
+                      React.createElement('path', { className: 'wc-lc-hatch', d: 'M' + (g[0] - 7) + ' ' + (g[1] + 4) + 'l13-8m-11 1 8-5' })); }),
+                    pores.map(function(p, i) { return React.createElement('g', { key: i, 'data-cutaway-pore': i },
+                      React.createElement('circle', { className: 'wc-lc-pore', cx: p[0], cy: p[1], r: 7 }),
+                      React.createElement('circle', { className: 'wc-lc-pore-water', cx: p[0], cy: p[1], r: 6, opacity: wetness / 100 })); })
+                  ),
+                  cover === 'forest' ? [62,126,268,343,416].map(function(x, i) { var y = surface(x); return React.createElement('g', { key: i, 'data-cutaway-cover-cue': 'forest' },
+                    React.createElement('path', { className: 'wc-lc-trunk', d: 'M' + x + ' ' + y + 'v-40m0 18-11-11m11 5 9-12' }),
+                    React.createElement('ellipse', { className: 'wc-lc-canopy', cx: x - 9, cy: y - 46, rx: 17, ry: 22 }),
+                    React.createElement('ellipse', { className: 'wc-lc-canopy is-light', cx: x + 8, cy: y - 53, rx: 19, ry: 24 })); })
+                    : cover === 'urban' ? [64,262,386].map(function(x, i) { var y = surface(x), height = [43,58,36][i]; return React.createElement('g', { key: i, 'data-cutaway-cover-cue': 'urban' },
+                      React.createElement('path', { className: 'wc-lc-building', d: 'M' + x + ' ' + (y - 3) + 'H' + (x + 38) + 'V' + surface(x + 38) + 'L' + x + ' ' + y + 'Z' }),
+                      React.createElement('rect', { className: 'wc-lc-building', x: x, y: y - height, width: 38, height: height, rx: 3 }),
+                      React.createElement('path', { className: 'wc-lc-roof', d: 'M' + (x - 3) + ' ' + (y - height) + 'l22-12 22 12Z' }),
+                      [12,25].map(function(dx) { return React.createElement('rect', { key: dx, className: 'wc-lc-window', x: x + dx, y: y - height + 12, width: 6, height: 8, rx: 1 }); })); })
+                    : [47,78,112,145,261,298,337,373,423].map(function(x, i) { var y = surface(x); return React.createElement('path', { key: i, className: 'wc-lc-grass', 'data-cutaway-cover-cue': 'grass', d: 'M' + x + ' ' + y + 'l-4-12m4 12 3-16m-3 16 8-8' }); }),
+                  React.createElement('path', { className: cover === 'urban' ? 'wc-lc-paving' : 'wc-lc-turf', d: topPath(0) }),
+                  cover === 'urban' && React.createElement('path', { className: 'wc-lc-gap', d: 'M181 ' + surface(181) + 'L210 ' + surface(210) }),
+                  rain > 0 && React.createElement('g', { className: 'wc-lc-paths' },
+                    React.createElement('path', { className: 'wc-lc-runoff', 'data-cutaway-cue': 'runoff', d: runoffPath }),
+                    React.createElement('path', { className: 'wc-lc-infiltration', 'data-cutaway-cue': 'infiltration', d: 'M195 ' + entryY + 'V' + (entryY + 86) + 'm-7-9 7 9 7-9' })
+                  )
+                ),
+                React.createElement('p', { className: 'wc-land-cutaway-weather', 'data-cutaway-weather': rain === 0 ? 'no-rain' : 'rain' }, rain === 0 ? 'No new rain · existing soil wetness remains.' : 'Rain reaches the surface · compare the two possible pathways.')
+              ),
+              React.createElement('div', { className: 'wc-land-cutaway-key', 'aria-label': 'Land pathway diagram key' },
+                React.createElement('span', null, React.createElement('i', { className: 'is-runoff', 'aria-hidden': true }), 'Runoff · over the surface'),
+                React.createElement('span', null, React.createElement('i', { className: 'is-infiltration', 'aria-hidden': true }), 'Infiltration · into soil pores')
+              ),
+              React.createElement('div', { className: 'wc-land-cutaway-features', role: 'group', 'aria-label': 'Adjust a landscape feature' }, features.map(function(feature) {
+                return React.createElement('button', { key: feature.input, type: 'button', 'data-cutaway-input': feature.input,
+                  'aria-label': 'Adjust ' + feature.title.toLowerCase() + ', currently ' + feature.value,
+                  onClick: function() { openWcClimateControls(feature.input); } },
+                  React.createElement('span', { className: 'wc-land-cutaway-feature-title' }, feature.title),
+                  React.createElement('strong', null, feature.value, React.createElement('span', { className: 'wc-land-cutaway-link', 'aria-hidden': true }, '↗')),
+                  React.createElement('small', null, feature.detail));
+              })),
+              React.createElement('p', { id: 'wcLandCutawayScope', className: 'wc-land-cutaway-scope' }, 'Illustrative land pathways. Arrows identify directions; the independent indices do not measure water amounts or groundwater recharge. Pore geometry is fixed; water tint illustrates the soil wetness setting.')
+            );
+          }
+
           function startWcQuickGuide() {
             var startIndex = wcWalkthroughActive
               ? wcWalkthroughIndex
@@ -34091,13 +35540,14 @@ const d = labToolData.waterCycle || {};
             journeyView === '3d' && React.createElement("section", {
               className: "wc-hydro-quest",
               "data-watercycle-hydro-quest": "true",
+              "data-wc-hydro-theme": isDark ? "dark" : "light",
               "aria-labelledby": "wcHydroQuestTitle",
               "aria-describedby": "wcHydroQuestStatus"
             },
               React.createElement("div", { className: "wc-hydro-head" },
                 React.createElement("div", null,
                   React.createElement("span", { id: "wcHydroQuestTitle", className: "wc-hydro-kicker" }, "Hydro Quest"),
-                  React.createElement("h4", null, hydroRank)
+                  React.createElement("p", { className: "wc-hydro-rank" }, hydroRank)
                 ),
                 React.createElement("strong", { className: "wc-hydro-score", "aria-label": hydroPoints + " of 120 Hydro Points" }, hydroPoints + " HP")
               ),
@@ -34296,6 +35746,7 @@ React.createElement("div", {
             ),
 
             renderWcProcessComparison(),
+            renderWcPhaseChangeMap(),
 
             // ═══ CLIMATE LAB  -  Interactive Controls ═══
             React.createElement("details", {
@@ -34615,6 +36066,30 @@ React.createElement("div", {
                   className: "wc-reset-control wc-land-reset"
                 }, "\u21BA Reset land")
               ),
+              React.createElement("div", { className: "wc-land-workbench" },
+                React.createElement("div", { className: "wc-land-evidence" },
+                  renderWcLandCutaway(),
+              React.createElement("div", { className: "wc-land-response-head" },
+                React.createElement("h5", null, "Read both pathways"),
+                React.createElement("p", { className: "wc-land-result-scope" }, "Separate 0–100 teaching indices; arrows show direction, not water amounts.")
+              ),
+              React.createElement("div", {
+                className: "wc-land-results",
+                role: "status",
+                "aria-live": "polite",
+                "aria-atomic": "true"
+              },
+                renderWcLandResult("Runoff tendency", runoffTendency, "runoff"),
+                renderWcLandResult("Infiltration opportunity", infiltrationOpportunity, "infiltration"),
+                React.createElement("p", { className: "wc-land-driver", role: "note" }, wcLandDriverReadout)
+              ),
+              React.createElement("p", { className: "wc-land-interpretation", role: "note" }, wcLandInterpretation),
+              React.createElement("p", { className: "wc-land-prompt", role: "note" }, wcLandExperimentPrompt),
+              React.createElement("p", { role: "note", className: "text-[0.6875rem] mt-2 leading-relaxed " + (isDark ? "text-emerald-200" : "text-emerald-800") },
+                "Qualitative teaching indices, not measured percentages or a forecast. They are independent: water can also be stored, evaporated, taken up by organisms, or move laterally. Infiltration does not automatically become groundwater recharge."
+              )
+                ),
+                React.createElement("div", { className: "wc-land-controls-stack" },
               React.createElement("div", { className: "wc-land-grid" },
                 React.createElement("div", { className: "wc-land-control" },
                   React.createElement("label", { htmlFor: "wc-land-rain" },
@@ -34676,24 +36151,9 @@ React.createElement("div", {
                   { id: "urban", label: "Urban" }
                 ], landCover, "What covers the ground; vegetation and built surfaces affect both pathways.")
               ),
-              React.createElement("div", { className: "wc-land-response-head" },
-                React.createElement("h5", null, "Read both pathways"),
-                React.createElement("p", { className: "wc-land-result-scope" }, "Separate 0–100 teaching indices; arrows show direction, not water amounts.")
-              ),
-              React.createElement("div", {
-                className: "wc-land-results",
-                role: "status",
-                "aria-live": "polite",
-                "aria-atomic": "true"
-              },
-                renderWcLandResult("Runoff tendency", runoffTendency, "runoff"),
-                renderWcLandResult("Infiltration opportunity", infiltrationOpportunity, "infiltration"),
-                React.createElement("p", { className: "wc-land-driver", role: "note" }, wcLandDriverReadout)
-              ),
-              React.createElement("p", { className: "wc-land-interpretation", role: "note" }, wcLandInterpretation),
-              React.createElement("p", { className: "wc-land-prompt", role: "note" }, wcLandExperimentPrompt),
-              React.createElement("p", { role: "note", className: "text-[0.6875rem] mt-2 leading-relaxed " + (isDark ? "text-emerald-200" : "text-emerald-800") },
-                "Qualitative teaching indices, not measured percentages or a forecast. They are independent: water can also be stored, evaporated, taken up by organisms, or move laterally. Infiltration does not automatically become groundwater recharge."
+                  React.createElement("button", { type: "button", className: "wc-land-return", "data-cutaway-return": "true",
+                    onClick: function() { focusWcComparisonTarget("wcLandCutawayTitle"); } }, "See updated cutaway")
+                )
               )
             ),
             wcScenarioBaseline && React.createElement("div", {

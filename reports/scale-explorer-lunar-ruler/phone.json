@@ -1,0 +1,102 @@
+{
+  "short": {
+    "overlay": true,
+    "visible": true,
+    "sceneChild": true,
+    "key": "[{\"longitude\":175,\"latitude\":10},{\"longitude\":-175,\"latitude\":10}]",
+    "arc": {
+      "distance": 298.6324305799998,
+      "angle": 0.1718747801899279,
+      "ambiguous": false,
+      "start": {
+        "longitude": 175,
+        "latitude": 10
+      },
+      "end": {
+        "longitude": -175,
+        "latitude": 10
+      }
+    },
+    "geometry": "BE6D0304-0B7E-4602-BB43-D61C4BBC282C",
+    "materials": [
+      "AC1FE4B0-5063-412E-B334-06DE8573AC68",
+      "CA62910D-BAE0-4488-A4BD-7297ADAF5066",
+      "13AE82C6-7EE2-43BE-B77A-E97336014712"
+    ],
+    "scale": 3,
+    "body": [
+      3,
+      3,
+      3
+    ],
+    "geometries": 20,
+    "labels": [
+      {
+        "id": "a",
+        "hidden": false,
+        "x": 100.5,
+        "y": 436.421875
+      },
+      {
+        "id": "b",
+        "hidden": false,
+        "x": 167,
+        "y": 437.421875
+      }
+    ]
+  },
+  "swapped": {
+    "overlay": true,
+    "visible": true,
+    "sceneChild": true,
+    "key": "[{\"longitude\":-175,\"latitude\":10},{\"longitude\":175,\"latitude\":10}]",
+    "arc": {
+      "distance": 298.6324305799998,
+      "angle": 0.1718747801899279,
+      "ambiguous": false,
+      "start": {
+        "longitude": -175,
+        "latitude": 10
+      },
+      "end": {
+        "longitude": 175,
+        "latitude": 10
+      }
+    },
+    "geometry": "BE6D0304-0B7E-4602-BB43-D61C4BBC282C",
+    "materials": [
+      "AC1FE4B0-5063-412E-B334-06DE8573AC68",
+      "CA62910D-BAE0-4488-A4BD-7297ADAF5066",
+      "13AE82C6-7EE2-43BE-B77A-E97336014712"
+    ],
+    "scale": 3,
+    "body": [
+      3,
+      3,
+      3
+    ],
+    "geometries": 20,
+    "labels": [
+      {
+        "id": "a",
+        "hidden": false,
+        "x": 233.5,
+        "y": 436.421875
+      },
+      {
+        "id": "b",
+        "hidden": false,
+        "x": 167,
+        "y": 437.421875
+      }
+    ]
+  },
+  "layout": {
+    "overflow": false,
+    "buttons": [
+      44,
+      44,
+      44
+    ]
+  }
+}

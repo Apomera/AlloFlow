@@ -1,0 +1,41 @@
+{
+  "sourceSha256": "fc6622186e5cca408b827fb69237976d647a396b92d19ada2de023173d9105ee",
+  "baselineSha256": "41625d22c8059f90b749a9c115725b46cdea49a74cd54ce6124d6edbdfb8c3e6",
+  "verifiedAt": "2026-10-09T15:33:47.538Z",
+  "desktopMirrorMatches": true,
+  "units": {
+    "passed": 25,
+    "total": 25,
+    "suites": [
+      "tests\\solar_system_synthesis_preview.test.js",
+      "tests\\solar_system_journal_drafts.test.js"
+    ]
+  },
+  "browser": {
+    "passed": 4,
+    "cases": [
+      "synthesis-1060-dark",
+      "synthesis-1060-light",
+      "synthesis-320-dark",
+      "synthesis-320-light"
+    ],
+    "checked": [
+      "Live source previews before capture",
+      "Different-lab capture requirement",
+      "Full observation disclosure and paragraph preservation",
+      "Captured copies remain unchanged after original edits",
+      "Latest-version comparison and recorded date",
+      "Changing either source refreshes both previews",
+      "Recapture preserves authored explanation",
+      "Unlinked original keeps a selectable and saveable captured copy",
+      "Journal drafts and earlier entries preserved",
+      "Committed opening and capture keyboard focus",
+      "Balanced desktop and single-column phone cards",
+      "13px minimum text, 16px writing text, 44px controls",
+      "No page overflow or browser errors"
+    ]
+  },
+  "syntax": "passed",
+  "whitespace": "passed",
+  "committed": false
+}

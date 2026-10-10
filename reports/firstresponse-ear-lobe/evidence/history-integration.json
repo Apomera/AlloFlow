@@ -1,0 +1,40 @@
+{
+  "sourceSHA256": "0af58d9afd30ed0de275caf53197320ddabed9308f08b191cce7bf4927d83f84",
+  "beforeSHA256": "bb4526d583db90d928008a1fa9b7540dfef8c8acdfd4055c0fd71225454011bf",
+  "exactReversal": true,
+  "sourceOutsideEditIdentical": true,
+  "unknownSourceRejected": true,
+  "historicalAssertionsChanged": false,
+  "sourceHashes": {
+    "stem_lab/stem_tool_firstresponse.js": "bb4526d583db90d928008a1fa9b7540dfef8c8acdfd4055c0fd71225454011bf",
+    "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js": "bb4526d583db90d928008a1fa9b7540dfef8c8acdfd4055c0fd71225454011bf",
+    "desktop/app-build/stem_lab/stem_tool_firstresponse.js": "bb4526d583db90d928008a1fa9b7540dfef8c8acdfd4055c0fd71225454011bf",
+    "desktop/web-app/build/stem_lab/stem_tool_firstresponse.js": "bb4526d583db90d928008a1fa9b7540dfef8c8acdfd4055c0fd71225454011bf"
+  },
+  "indexSHA256": "108c1be399abb624076a9ef781ec68f7b16a173c899d05f8e5e0c26e0898e735",
+  "additions": [
+    {
+      "file": "tests/helpers/firstresponse_ear_lobe_delta.cjs",
+      "content": "const { createHash } = require('node:crypto');\nconst delta = require('./firstresponse_ear_lobe_delta.json');\nconst hash = source => createHash('sha256').update(source).digest('hex');\nfunction revertEarLobe(source) {\n  if (hash(source) === delta.beforeSHA256) return source;\n  if (hash(source) !== delta.afterSHA256) throw new Error('Ear lobe source does not match its exact refinement delta');\n  for (const edit of [...delta.edits].reverse()) {\n    if (source.split(edit.new).length !== 2) throw new Error('Ear lobe reversal is not unique: ' + (edit.name || 'source edit'));\n    source = source.replace(edit.new, edit.old);\n  }\n  if (hash(source) !== delta.beforeSHA256) throw new Error('Ear lobe reversal did not recover fixed baseline');\n  return source;\n}\nmodule.exports = { revertEarLobe, delta };\n",
+      "SHA256": "e1d1f961ac558d2b3c39e6ce90f377681dca931597bc48b06d5f152e9798c6a0",
+      "beforeSHA256": null,
+      "afterSHA256": "e1d1f961ac558d2b3c39e6ce90f377681dca931597bc48b06d5f152e9798c6a0"
+    },
+    {
+      "file": "tests/helpers/firstresponse_ear_lobe_delta.json",
+      "content": "{\n  \"beforeSHA256\": \"bb4526d583db90d928008a1fa9b7540dfef8c8acdfd4055c0fd71225454011bf\",\n  \"afterSHA256\": \"0af58d9afd30ed0de275caf53197320ddabed9308f08b191cce7bf4927d83f84\",\n  \"edits\": [\n    {\n      \"old\": \"        var tangent = rimPath.getTangent(ri/rimGeometry.parameters.tubularSegments);\\n        rimFrames.push({point: point,\",\n      \"new\": \"        var tangent = rimPath.getTangent(ri/rimGeometry.parameters.tubularSegments);\\n        var lower = Math.max(0,Math.min(1,(point.z-.010)/.040));\\n        // The helix fades into the soft lower lobe instead of closing as a raised ring.\\n        rimFrames.push({point: point, relief: .0065-.0057*lower*lower*(3-2*lower),\"\n    },\n    {\n      \"old\": \"        var x = earSurfaceX(y,z)-.0018+front*(front >= 0 ? .0065 : .0012);\",\n      \"new\": \"        var x = earSurfaceX(y,z)-.0018+front*(front >= 0 ? frame.relief : .0012);\"\n    }\n  ]\n}\n",
+      "SHA256": "cf9050d4874dfa01f234a7bdffbf79381e91c55129d91edbd46b9f51bb313115",
+      "beforeSHA256": null,
+      "afterSHA256": "cf9050d4874dfa01f234a7bdffbf79381e91c55129d91edbd46b9f51bb313115"
+    }
+  ],
+  "edits": [
+    {
+      "file": "tests/helpers/firstresponse_mouth_surface_delta.cjs",
+      "before": "const { createHash } = require('node:crypto');\nconst delta = require('./firstresponse_mouth_surface_delta.json');\nconst hash = source => createHash('sha256').update(source).digest('hex');\nfunction revertMouthSurface(source) {\n  if (hash(source) === delta.beforeSHA256) return source;\n  if (hash(source) !== delta.afterSHA256) throw new Error('Mouth surface source does not match its exact refinement delta');\n  for (const edit of [...delta.edits].reverse()) {\n    if (source.split(edit.new).length !== 2) throw new Error('Mouth surface reversal is not unique: ' + (edit.name || 'source edit'));\n    source = source.replace(edit.new, edit.old);\n  }\n  if (hash(source) !== delta.beforeSHA256) throw new Error('Mouth surface reversal did not recover fixed baseline');\n  return source;\n}\nmodule.exports = { revertMouthSurface, delta };\n",
+      "after": "const { createHash } = require('node:crypto');\nconst delta = require('./firstresponse_mouth_surface_delta.json');\nconst hash = source => createHash('sha256').update(source).digest('hex');\nfunction revertMouthSurface(source) {\n  if (hash(source) !== delta.beforeSHA256 && hash(source) !== delta.afterSHA256) {\n    source = require('./firstresponse_ear_lobe_delta.cjs').revertEarLobe(source);\n  }\n  if (hash(source) === delta.beforeSHA256) return source;\n  if (hash(source) !== delta.afterSHA256) throw new Error('Mouth surface source does not match its exact refinement delta');\n  for (const edit of [...delta.edits].reverse()) {\n    if (source.split(edit.new).length !== 2) throw new Error('Mouth surface reversal is not unique: ' + (edit.name || 'source edit'));\n    source = source.replace(edit.new, edit.old);\n  }\n  if (hash(source) !== delta.beforeSHA256) throw new Error('Mouth surface reversal did not recover fixed baseline');\n  return source;\n}\nmodule.exports = { revertMouthSurface, delta };\n",
+      "beforeSHA256": "27a3180e24c358d8ec1e1b822588c92faa1f50f9aeb7bc67e30f8738728d8e55",
+      "afterSHA256": "72a69701525c661d693b8a2ee9bf30b769df5c1aade1e472ac519a5d4c6ac35e"
+    }
+  ]
+}

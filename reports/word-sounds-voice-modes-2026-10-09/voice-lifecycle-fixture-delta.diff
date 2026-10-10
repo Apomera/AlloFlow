@@ -1,0 +1,69 @@
+diff --git "a/C:\\Users\\cabba\\Documents\\Codex\\2026-10-07\\please-keep-enhancing-thanks-x20\\work\\voice-baseline\\word_sounds_mic_lifecycle_regression.cjs" "b/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\word_sounds_mic_lifecycle_regression.cjs"
+index 7d29bc8..c3e0d7e 100644
+--- "a/C:\\Users\\cabba\\Documents\\Codex\\2026-10-07\\please-keep-enhancing-thanks-x20\\work\\voice-baseline\\word_sounds_mic_lifecycle_regression.cjs"
++++ "b/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\word_sounds_mic_lifecycle_regression.cjs"
+@@ -13,8 +13,11 @@ function between(text, first, last) {
+   assert.ok(start >= 0 && end > start, 'Production extraction markers: ' + first);
+   return text.slice(start, end);
+ }
++const selectors = between(source, '      const packForCurrentWord =', '      // BEGIN WORD SOUNDS MICROPHONE ANSWERS');
++const targets = between(source, '// BEGIN WORD SOUNDS MICROPHONE ANSWERS', '// END WORD SOUNDS MICROPHONE ANSWERS');
+ const lifecycle = between(source, '// BEGIN WORD SOUNDS MICROPHONE LIFECYCLE', '// END WORD SOUNDS MICROPHONE LIFECYCLE');
+-const handler = between(source, '      const handleMicInput = React.useCallback(', '      const handleChipClick = React.useCallback(');
++const productionCore = new Function(fs.readFileSync(path.join(repo, 'word_sounds_core.js'), 'utf8') + '\nreturn createWordSoundsCore();')();
++const handler = between(source, '      const handleMicInput = React.useCallback(', '      // BEGIN WORD SOUNDS MICROPHONE CONTROLS');
+ const shutdown = between(source, '      const stopAllWordSoundsAudio = React.useCallback(', '      // Ref-mirror of wordSoundsAudioLibrary');
+ const answerBody = between(source, '        (answer, expectedAnswer, opts) => {', '          try {').replace('        (answer, expectedAnswer, opts) => {', '');
+ const replayBody = between(source, '        async (input, playImmediately = true) => {', '          const voiceForTts =').replace('        async (input, playImmediately = true) => {', '');
+@@ -51,22 +54,23 @@ const initWebSpeechCapture = new Function('window', 'getCapabilities', 'setTimeo
+   dom.window, () => ({ webSpeech: typeof dom.window.SpeechRecognition === 'function' || typeof dom.window.webkitSpeechRecognition === 'function' }), setTimeout);
+ const hooks = { expose(value) { api = value; }, score(...values) { scores.push(values); }, answer(value) { answers.push(value); },
+   toast(...values) { toasts.push(values); }, pause() { events.push('pause audio'); }, editorStop() { events.push('stop editor preview'); }, playing(value) { events.push('playing:' + value); } };
+-const Harness = new Function('React', 'window', 'hooks', `${homophones}
++const Harness = new Function('React', 'window', 'hooks', 'WS_CORE', `${homophones}
+   return function Harness(props) {
+     const { currentWordSoundsWord, wordSoundsActivity, wordSoundsLanguage, wordSoundsPhonemes,
+       useMicInput, isMinimized, isEditing, showReviewPanel, isProbeMode, isTeacherMode,
+-      historyLearnerId, configuredSessionId, historyResourceId } = props;
++      historyLearnerId, configuredSessionId, historyResourceId, isolationState, manipulationState } = props;
+     const [isListening, setIsListening] = React.useState(false);
+     const recognitionRef = React.useRef(null), isMountedRef = React.useRef(true);
+     const audioRunIdRef = React.useRef(0), advanceEpochRef = React.useRef(0), submissionLockRef = React.useRef(false);
+     const audioCancelledRef = React.useRef(false), currentActiveAudio = React.useRef(null), audioInstances = React.useRef(new Map());
+     const feedbackAudioRef = React.useRef(null), anchorReplayTimeoutRef = React.useRef(null);
+     const manipulationStateRef = React.useRef(null), syllableDataRef = React.useRef(null), syllableDeliveredRef = React.useRef(null);
+-    const WS_CORE = { manipulationReady: () => true, syllableReady: () => true };
+     const pauseResponseAudio = hooks.pause, setIsPlayingAudio = hooks.playing, setUserAnswer = hooks.answer;
+     const wordSoundsSyllableEditorPlayback = { stop: hooks.editorStop };
+     const addToast = hooks.toast, ts = () => 'Microphone error', warnLog = () => {}, debugLog = () => {};
+     React.useEffect(() => { isMountedRef.current = true; return () => { isMountedRef.current = false; }; }, []);
++    ${selectors}
++    ${targets}
+     ${lifecycle}
+     ${shutdown}
+     const checkAnswer = (answer, expectedAnswer, opts) => { ${answerBody} hooks.score(answer, expectedAnswer); };
+@@ -75,8 +79,8 @@ const Harness = new Function('React', 'window', 'hooks', `${homophones}
+     hooks.expose({ handleMicInput, cancelMicInput, stopAllWordSoundsAudio, checkAnswer, replay, isListening,
+       recognitionRef, micAttemptRef, audioRunIdRef, advanceEpochRef, submissionLockRef, isMountedRef });
+     return React.createElement('button', { onClick: handleMicInput, 'aria-pressed': isListening }, isListening ? 'Cancel microphone' : 'Use Microphone');
+-  };`)(React, dom.window, hooks);
+-const defaults = { currentWordSoundsWord: 'blue', wordSoundsActivity: 'blending', wordSoundsLanguage: 'en-US', wordSoundsPhonemes: { rhymeWord: 'cat' },
++  };`)(React, dom.window, hooks, productionCore);
++const defaults = { currentWordSoundsWord: 'blue', wordSoundsActivity: 'blending', wordSoundsLanguage: 'en-US', wordSoundsPhonemes: { word: 'blue', rhymeWord: 'cat' }, isolationState: null, manipulationState: null,
+   useMicInput: true, isMinimized: false, isEditing: false, showReviewPanel: false, isProbeMode: false, isTeacherMode: false,
+   historyLearnerId: 'learner-a', configuredSessionId: 'session-a', historyResourceId: 'resource-a' };
+ async function settle(fn = () => {}) { await act(async () => { await fn(); }); }
+@@ -211,10 +215,11 @@ async function run() {
+         { word: 'hat', activity: 'rhyming', text: 'cat', expected: ['correct', 'correct'] },
+         { word: 'hat', activity: 'rhyming', text: 'hat', expected: ['hat', 'cat'] },
+       ]) {
+-        await mount(route, { currentWordSoundsWord: example.word, wordSoundsActivity: example.activity || 'blending' });
++        await mount(route, { currentWordSoundsWord: example.word, wordSoundsActivity: example.activity || 'blending', wordSoundsPhonemes: { word: example.word, rhymeWord: 'cat' } });
+         await click(); await settle(() => last().result(example.text)); assert.deepEqual(scores, [example.expected]);
+       }
+-      await mount(route, { wordSoundsActivity: 'rhyming', wordSoundsPhonemes: {} }); await click(); await settle(() => last().result('hat'));
++      await mount(route, { wordSoundsActivity: 'rhyming', wordSoundsPhonemes: {} }); await click(); inactive();
++      assert.equal(instances.length, 0, 'An unresolved rhyme answer cannot start recognition');
+       assert.deepEqual(scores, []); assert.deepEqual(answers, []); await click(); inactive();
+     }
+   });

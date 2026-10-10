@@ -1,0 +1,39 @@
+{
+  "mode": "unit",
+  "label": "unit-2",
+  "start": "2026-10-10T04:59:05.329Z",
+  "startHashes": {
+    "stem_lab/stem_tool_dissection.js": "767f4a8684627f77295887c603759af4df36da9cdf62e16d075b96c8ba60681a",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "767f4a8684627f77295887c603759af4df36da9cdf62e16d075b96c8ba60681a",
+    "tests/dissection_lab_improvements.test.js": "7c26ad56c4e9bb87a0ca214e30ea4d09e2943f003d5295b95957726736976238",
+    "tests/dissection_replay_contact.test.js": "b59f27fddb9681baf7089a66d86526de46ab8654c337de3eccc8d3a63bb0e6c0",
+    "tests/dissection_replay_review.test.js": "67b253aabc1c974da69b1b11bb26b142e8565ae62b202c085e2b743172eeb7ff"
+  },
+  "args": [
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/dissection_lab_improvements.test.js",
+    "tests/dissection_replay_contact.test.js",
+    "tests/dissection_replay_review.test.js",
+    "--pool=threads",
+    "--maxWorkers=1",
+    "--no-file-parallelism",
+    "--reporter=verbose",
+    "--reporter=json",
+    "--outputFile=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-replay-contact-2026-10-10\\unit-2\\results.json",
+    "--testNamePattern=replay review|replay contact|persistent, accessible procedural instrument|renders guided instruments|shows comparison replay statically"
+  ],
+  "freeMiB": 2183.87109375,
+  "pid": 42744,
+  "exitCode": 1,
+  "signal": null,
+  "end": "2026-10-10T04:59:17.438Z",
+  "endHashes": {
+    "stem_lab/stem_tool_dissection.js": "767f4a8684627f77295887c603759af4df36da9cdf62e16d075b96c8ba60681a",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "767f4a8684627f77295887c603759af4df36da9cdf62e16d075b96c8ba60681a",
+    "tests/dissection_lab_improvements.test.js": "7c26ad56c4e9bb87a0ca214e30ea4d09e2943f003d5295b95957726736976238",
+    "tests/dissection_replay_contact.test.js": "b59f27fddb9681baf7089a66d86526de46ab8654c337de3eccc8d3a63bb0e6c0",
+    "tests/dissection_replay_review.test.js": "67b253aabc1c974da69b1b11bb26b142e8565ae62b202c085e2b743172eeb7ff"
+  },
+  "inputHashesStable": true
+}

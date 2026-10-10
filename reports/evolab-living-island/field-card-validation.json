@@ -1,0 +1,101 @@
+{
+  "date": "2026-10-09",
+  "feature": "A nearby island field card for exploring actual inherited copies",
+  "sourceSha256": "4b24415e101fcb6ee9ea97c1c28bd6ae0de5a5ea66a0115c0892a40d0f9d2de9",
+  "sourceBytes": 2303003,
+  "sourceMirrorsIdentical": true,
+  "sourceLineEndings": "LF",
+  "committed": false,
+  "deployed": false,
+  "changes": [
+    "Compact native resident browsing immediately beside the island scene: species choice, exact resident list and previous/next controls, with no wrap or disabled empty-cohort errors.",
+    "Selected organism illustration, actual ID, birth generation and island, exact inherited copies and their average, plus the independently inherited neutral A/a marker.",
+    "Displayed cohort mean is calculated from actual inherited copies and appears only if the exact organism ID is present on that island in the displayed generation. Trait differences are not fitness rankings.",
+    "Historical, future-cohort and same-generation other-island selections have an explicit recorded-cohort notice and a direct visit to the organism’s actual birth cohort.",
+    "Full-record action scrolls and focuses the existing inspector; the scene, native selectors and inspector share one selected organism.",
+    "All browsing works without WebGL. A blank choice clears selection; reselecting the active species preserves the current organism."
+  ],
+  "validation": {
+    "focused": {
+      "passed": 26,
+      "files": 3,
+      "log": "field-card-units.log"
+    },
+    "render": {
+      "passed": 2,
+      "log": "field-card-goldens.log",
+      "snapshotScope": "Only two EvoLab snapshot entries updated; unrelated snapshots preserved."
+    },
+    "browser": {
+      "passed": 9,
+      "logs": [
+        "field-card-browser.log",
+        "field-card-browser-new.log"
+      ],
+      "execution": "Seven existing journeys passed on the final source; both new journeys passed separately after correcting the initial test selector to query the actual accessible combobox role. No product source changed between the browser runs. Retries were disabled.",
+      "covers": [
+        "Actual source rendered in desktop 3D with synchronized field card, selected body halo and full inspector",
+        "Exact copies, average, neutral marker and true displayed cohort comparison",
+        "Bounded native resident browsing, species changes and deterministic next generation",
+        "Historical parent birth-cohort visit, correct identity and suppressed inapplicable cohort comparison",
+        "Phone keyboard controls without WebGL, zero axe violations and no horizontal overflow",
+        "Exact expedition, stored world, RNG, primer, queued settings, predictions and explanations preserved by browsing",
+        "All seven existing archipelago and habitat journeys, including terrain/scenery picking and projected mesh framing"
+      ]
+    },
+    "outstandingHabitatJourney": {
+      "passed": 1,
+      "log": "habitat-recovered-browser.log",
+      "sourceBeforeNewChanges": "035200f5130efcffd48ccc64d38e4bb856eaabdd1231cd9d177175e12ea01e3e"
+    },
+    "modelSourceUnchanged": true,
+    "preview": {
+      "url": "http://127.0.0.1:56559/?preview=archipelago",
+      "sourceSha256": "4b24415e101fcb6ee9ea97c1c28bd6ae0de5a5ea66a0115c0892a40d0f9d2de9",
+      "sourceBytes": 2303003,
+      "sourceMirrorsIdentical": true,
+      "sourceLineEndings": "LF",
+      "servedSourceMatches": true,
+      "assets": [
+        {
+          "path": "/",
+          "status": 200,
+          "bytes": 1129
+        },
+        {
+          "path": "/evolab.js",
+          "status": 200,
+          "bytes": 2303003
+        },
+        {
+          "path": "/app.css",
+          "status": 200,
+          "bytes": 624950
+        },
+        {
+          "path": "/react.js",
+          "status": 200,
+          "bytes": 10751
+        },
+        {
+          "path": "/react-dom.js",
+          "status": 200,
+          "bytes": 131835
+        },
+        {
+          "path": "/three.js",
+          "status": 200,
+          "bytes": 603445
+        }
+      ]
+    },
+    "screenshots": [
+      "field-card-desktop.png",
+      "field-card-phone.png"
+    ],
+    "translationDelta": {
+      "keys": 1974,
+      "sharedCatalogsModified": false
+    }
+  }
+}

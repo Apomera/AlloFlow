@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "scriptSHA256": "fa379bdf4e9f66e319f5bd717459c4332b039ffe3a458af310d9e70db170aa9a",
+  "sourceSHA256": "147670787861ae0251c9b4c65c90847a613c6b879d41737533749c19a5f6f891",
+  "mutationRejected": true,
+  "reviewRejected": true,
+  "restoredAndReread": true,
+  "mutationScope": "private finish-selftest-sandbox only",
+  "reason": "Changed guarded file C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\finish-selftest-sandbox\\candidate.js"
+}

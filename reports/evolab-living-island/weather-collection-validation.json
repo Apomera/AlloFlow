@@ -1,0 +1,171 @@
+{
+  "date": "2026-10-05",
+  "feature": "Repeated matched weather futures with locked questions and actual private-lineage inspection",
+  "sourceSha256": "0d627d617a0f6b18315dd453e5e897bf6709cb0cd6264686642bc4ffff2c1fcb",
+  "sourceBytes": 2225928,
+  "sourceMirrorsIdentical": true,
+  "sourceLineEndings": "LF",
+  "noCommitByUserRequest": true,
+  "deployed": false,
+  "preview": {
+    "url": "http://127.0.0.1:56559/?preview=archipelago",
+    "sourceSha256": "0d627d617a0f6b18315dd453e5e897bf6709cb0cd6264686642bc4ffff2c1fcb",
+    "sourceBytes": 2225928,
+    "sourceMirrorsIdentical": true,
+    "sourceLineEndings": "LF",
+    "servedSourceMatches": true,
+    "assets": [
+      {
+        "path": "/",
+        "status": 200,
+        "bytes": 1129
+      },
+      {
+        "path": "/evolab.js",
+        "status": 200,
+        "bytes": 2225928
+      },
+      {
+        "path": "/app.css",
+        "status": 200,
+        "bytes": 624950
+      },
+      {
+        "path": "/react.js",
+        "status": 200,
+        "bytes": 10751
+      },
+      {
+        "path": "/react-dom.js",
+        "status": 200,
+        "bytes": 131835
+      },
+      {
+        "path": "/three.js",
+        "status": 200,
+        "bytes": 603445
+      }
+    ]
+  },
+  "changes": [
+    "A lazy Is the weather pattern repeatable? investigation extends a completed captured weather expedition without changing its main population or next random future.",
+    "Learners choose species, island, generation, trait or marker response and expected direction, then write a rationale before collecting eight new matched pairs. The original viewed pair is excluded.",
+    "Collections extend by eight to a bounded32, preserving every earlier trial and its exact paired comparison. The display shows full precision direction counts, paired means, observed min/max and missing-data denominators.",
+    "A diverging chart with native trial-selector alternative, full paired-value table, explicit units and selected seed provenance connects population-level patterns to specific stochastic futures.",
+    "Inspect this weather pair reconstructs that private batch in the existing weather explorer, pauses recorded playback and exposes its real organisms, inherited copies and founder passport.",
+    "The captured question stays locked while learners explore another response, with a Return to the captured question action. A captured-plan fold distinguishes recorded rainfall and original prediction from later viewed experiments.",
+    "Starting another question retains the previous recipe for explicit replay, requires a new rationale and continues beyond previously seen batches for the same captured source.",
+    "Recipe-only local persistence, full precision JSON export and a separate Learning Journal key retain source, schedule, private batches, locked response, explanation and view. Collection-only journal capacity20000 preserves long explanations plus32 paired values.",
+    "Phone chart labels and explicit table colors support readable responsive layouts; native controls and action buttons retain44px heights. Tiny nonzero signed differences use scientific notation rather than rounding to zero.",
+    "Each private pair runs between event-loop yields, with a native progress indicator and Cancel weather collection run. Cancelling publishes no partial outcomes, preserves earlier completed findings and recipes, and does not advance the main expedition randomness.",
+    "Chart rows are spaced32 SVG units apart so the enlarged26-unit phone labels remain separate through all32 pairs. The exact-value table scrolls inside its own container."
+  ],
+  "validation": {
+    "distinctModelAndRenderChecks": 349,
+    "modelAndComponent": {
+      "passed": 347,
+      "files": 29,
+      "log": "weather-collection-units-final.log",
+      "newTests": 13,
+      "pool": "one thread worker",
+      "coverage": [
+        "Canonical replay and source isolation",
+        "Stable8→32 prefixes and unsigned batch wrap",
+        "Actual trait/marker/diversity summaries across both species and all islands",
+        "Paired denominators with missing cohorts and exact sign counts",
+        "Selection-off and unchanged-rainfall null controls",
+        "Rejected forged/edited outcomes and invalid recipes/views",
+        "All existing focused EvoLab regressions",
+        "Incremental one-pair advancement matches synchronous results exactly, exposes no partial outcomes, and preserves source/RNG on abandonment"
+      ]
+    },
+    "renderGoldens": {
+      "passed": 2,
+      "log": "weather-collection-goldens-final.log",
+      "scope": "Only two EvoLab digest entries updated for scoped CSS",
+      "digest": {
+        "buttons": 49,
+        "inputs": 6,
+        "lengthBucket": 698,
+        "sha": "360e45f09a3fea3a",
+        "svgs": 1
+      }
+    },
+    "browser": {
+      "distinctPassedScenarios": 17,
+      "initialLog": "weather-collection-browser-initial.log",
+      "recheckLog": "weather-collection-browser-recheck.log",
+      "isolatedLog": "weather-collection-browser-isolated.log",
+      "initialPassed": 15,
+      "recheckPassed": 3,
+      "isolatedPassed": 2,
+      "newJourneys": 2,
+      "explanation": "Seventeen distinct browser scenarios passed across the recorded runs, not one clean final17-scenario run. The initial run passed15, exposing new-table contrast and an existing screenshot overwrite error. A targeted rerun passed the three existing archipelago journeys, including the screenshot retry. Subsequent isolated collection checks exposed page overflow with the table open and a slow synchronous Add8 action. Scoped table containment and incremental one-pair computation fixed these issues. The final isolated desktop and phone journeys passed all assertions, including actual partial-progress cancellation,32-pair replay, accessibility, page containment and spaced chart coordinates. Twelve other distinct scenarios passed in the initial run. Host-contention and worker-startup timeouts were resolved by serial execution with bounded completion waits; no assertions were removed.",
+      "coverage": [
+        "Independent full model/cohort/statistics reconstruction of collection values",
+        "Every SVG point position/value/selection and native alternative",
+        "Locked response and exploratory reset,8→32 immutable prefix, fresh8after32 and recovered old recipe",
+        "Selected private batch bridge, mid-generation playback pause and main source/RNG purity",
+        "Recipe-only persistence, authoritative recipe replay, full precision exports and separate journals",
+        "Phone selection-off32exact ties, native keyboard and44px controls, reduced motion/noWebGL",
+        "Zero axe WCAG2A/AA and2.1AA violations after contrast fix; no horizontal page overflow",
+        "Existing weather, research, route, chance, partner, marker-map and archipelago scenarios",
+        "Cancel after actual partial progress; native progress bounds; unchanged completed values, recipe, locked question, saved explanation, view, persistence and main world"
+      ],
+      "historicalLogs": [
+        "weather-collection-browser-pre-containment.log",
+        "weather-collection-browser-before-yield.log"
+      ]
+    },
+    "visualReview": [
+      "Final desktop and phone8-pair and32-pair screenshots inspected for readable labels, captured question/plan, summary units, paired plots, private-lineage controls, actions and scoped table layout"
+    ],
+    "scienceReview": "Independent read-only reviews found no scientific scope or final incremental-run/cancellation blocker; exact tiny-value precision, absolute-value units, accessible names and explicit model limitations were retained."
+  },
+  "scientificLimits": [
+    "Illustrative model indices and fictional organisms, not real climate or Galapagos forecasts",
+    "Private seeds explore future variation conditional on the same captured organisms and settings, not independent founder samples",
+    "Shared initial seeds match conditions, but divergent breeding choices may change later randomness",
+    "Direction counts classify exact sign, not effect size; observed ranges are not confidence intervals or significance tests",
+    "One neutral marker is not genome-wide diversity, and changing means alone do not establish adaptation, reciprocal coevolution or speciation",
+    "Rainfall changes breeding weights only when selection is on; organisms never mutate to meet a need",
+    "No full ecosystem/resource-depletion/predator-age/seed-bank model was added"
+  ],
+  "translationCatalog": {
+    "preparedKeys": 1855,
+    "delta": "reports/evolab-living-island/ui-strings.delta.json",
+    "applied": false
+  },
+  "artifacts": [
+    {
+      "path": "tests/evolab_climate_collection.test.js",
+      "bytes": 18635,
+      "sha256": "b7ab94d19227a82d43a018a3a84e123d39d8e567932fc09959af98d97d80e0ce"
+    },
+    {
+      "path": "tests/e2e/evolab-weather-collection.spec.ts",
+      "bytes": 35772,
+      "sha256": "2cc676eafd5f73f019fd54d8b83a76a3cf19643cf5b3ab161ee2a1e1fb953c16"
+    },
+    {
+      "path": "reports/evolab-living-island/weather-collection-desktop.png",
+      "bytes": 138941,
+      "sha256": "09559bc13dfdbea1b62adc95da6a11c3b1c3a2175be5ada8bb8e3b6b8e97a318"
+    },
+    {
+      "path": "reports/evolab-living-island/weather-collection-phone.png",
+      "bytes": 144606,
+      "sha256": "24b9e531904c77ce361c9f847c9e7fd9319561b453f54b5c381e94eb3d8dfb61"
+    },
+    {
+      "path": "reports/evolab-living-island/weather-collection-desktop-32.png",
+      "bytes": 171558,
+      "sha256": "0446cb8b14c61f92ebc2b7158b907ad657aae0782ecba3885fceceaca1df446e"
+    },
+    {
+      "path": "reports/evolab-living-island/weather-collection-phone-32.png",
+      "bytes": 154656,
+      "sha256": "1ef472576a00e7dd7684d3b8e1a588ad92082c231ae51b03161b95f74081307c"
+    }
+  ]
+}

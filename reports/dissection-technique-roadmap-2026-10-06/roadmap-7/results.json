@@ -1,0 +1,562 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-technique-roadmap-2026-10-06/roadmap-7/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "dissection-technique-roadmap.spec.ts",
+      "file": "dissection-technique-roadmap.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "technique roadmap phone remains readable collapsed and expanded",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 152059,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T02:03:24.506Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9d794550772b3ac969fa-c0f43dc7b02327e3a756",
+          "file": "dissection-technique-roadmap.spec.ts",
+          "line": 115,
+          "column": 30
+        },
+        {
+          "title": "technique roadmap tablet remains readable collapsed and expanded",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 150199,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T02:06:42.671Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9d794550772b3ac969fa-924ac8f4fb9d45920467",
+          "file": "dissection-technique-roadmap.spec.ts",
+          "line": 115,
+          "column": 30
+        },
+        {
+          "title": "technique roadmap desktop remains readable collapsed and expanded",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 60592,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T02:09:13.120Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9d794550772b3ac969fa-fe09472e0d173638248f",
+          "file": "dissection-technique-roadmap.spec.ts",
+          "line": 115,
+          "column": 30
+        },
+        {
+          "title": "technique roadmap embedded-medium remains readable collapsed and expanded",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 50673,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T02:10:13.755Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9d794550772b3ac969fa-dee3c8fe4755d6e913f5",
+          "file": "dissection-technique-roadmap.spec.ts",
+          "line": 115,
+          "column": 30
+        },
+        {
+          "title": "technique roadmap embedded-large-contrast remains readable collapsed and expanded",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 10987,
+                  "error": {
+                    "message": "Error: 1Inspect ventral landmarks and confirm symmetryVerified\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m18\u001b[39m\nReceived:    \u001b[31m16\u001b[39m",
+                    "stack": "Error: 1Inspect ventral landmarks and confirm symmetryVerified\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m18\u001b[39m\nReceived:    \u001b[31m16\u001b[39m\n    at readable (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-technique-roadmap.spec.ts:95:67)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-technique-roadmap.spec.ts:125:21",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-technique-roadmap.spec.ts",
+                      "column": 67,
+                      "line": 95
+                    },
+                    "snippet": "  93 | async function readable(page: Page, available: number, large = false) {\n  94 |   const m = await metrics(page); expect(m.width).toBeLessThanOrEqual(available + 1); expect(m.scroll).toBeLessThanOrEqual(m.client + 1);\n> 95 |   for (const text of m.text) { expect(text.font, text.text || '').toBeGreaterThanOrEqual(large ? 18 : 16); expect(text.clipped, text.text || '').toBe(false); expect(text.textOverflow, text.text || '').not.toBe('ellipsis'); expect(text.left, text.text || '').toBeGreaterThanOrEqual(-1); expect(text.right, text.text || '').toBeLessThanOrEqual(m.width + 1); }\n     |                                                                   ^\n  96 |   for (const control of m.summary) { expect(control.height).toBeGreaterThanOrEqual(47.9); expect(control.width).toBeGreaterThanOrEqual(47.9); expect(control.font).toBeGreaterThanOrEqual(large ? 18 : 16); expect(control.clipped).toBe(false); }\n  97 |   return m;\n  98 | }"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-technique-roadmap.spec.ts",
+                        "column": 67,
+                        "line": 95
+                      },
+                      "message": "Error: 1Inspect ventral landmarks and confirm symmetryVerified\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m18\u001b[39m\nReceived:    \u001b[31m16\u001b[39m\n\n  93 | async function readable(page: Page, available: number, large = false) {\n  94 |   const m = await metrics(page); expect(m.width).toBeLessThanOrEqual(available + 1); expect(m.scroll).toBeLessThanOrEqual(m.client + 1);\n> 95 |   for (const text of m.text) { expect(text.font, text.text || '').toBeGreaterThanOrEqual(large ? 18 : 16); expect(text.clipped, text.text || '').toBe(false); expect(text.textOverflow, text.text || '').not.toBe('ellipsis'); expect(text.left, text.text || '').toBeGreaterThanOrEqual(-1); expect(text.right, text.text || '').toBeLessThanOrEqual(m.width + 1); }\n     |                                                                   ^\n  96 |   for (const control of m.summary) { expect(control.height).toBeGreaterThanOrEqual(47.9); expect(control.width).toBeGreaterThanOrEqual(47.9); expect(control.font).toBeGreaterThanOrEqual(large ? 18 : 16); expect(control.clipped).toBe(false); }\n  97 |   return m;\n  98 | }\n    at readable (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-technique-roadmap.spec.ts:95:67)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-technique-roadmap.spec.ts:125:21"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T02:11:04.593Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-technique-roadmap-2026-10-06\\roadmap-7\\test-results\\dissection-technique-roadm-67974-able-collapsed-and-expanded-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-technique-roadmap-2026-10-06\\roadmap-7\\test-results\\dissection-technique-roadm-67974-able-collapsed-and-expanded-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-technique-roadmap-2026-10-06\\roadmap-7\\test-results\\dissection-technique-roadm-67974-able-collapsed-and-expanded-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-technique-roadmap-2026-10-06\\roadmap-7\\test-results\\dissection-technique-roadm-67974-able-collapsed-and-expanded-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-technique-roadmap.spec.ts",
+                    "column": 67,
+                    "line": 95
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "9d794550772b3ac969fa-385fd7d4c77f3bcfdac6",
+          "file": "dissection-technique-roadmap.spec.ts",
+          "line": 115,
+          "column": 30
+        },
+        {
+          "title": "technique roadmap forced-colors remains readable collapsed and expanded",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 60010,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T02:11:49.643Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9d794550772b3ac969fa-d88bbf98600416572744",
+          "file": "dissection-technique-roadmap.spec.ts",
+          "line": 115,
+          "column": 30
+        },
+        {
+          "title": "roadmap plan uses native learning state and retains its ordered sequence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 72598,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T02:12:53.299Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9d794550772b3ac969fa-bb59eebb04df31403f65",
+          "file": "dissection-technique-roadmap.spec.ts",
+          "line": 141,
+          "column": 8
+        },
+        {
+          "title": "roadmap perform uses native learning state and retains its ordered sequence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 107872,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T02:14:05.964Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9d794550772b3ac969fa-08aab2932e0a88dbab4e",
+          "file": "dissection-technique-roadmap.spec.ts",
+          "line": 141,
+          "column": 8
+        },
+        {
+          "title": "roadmap reflect uses native learning state and retains its ordered sequence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 52963,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T02:15:56.682Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9d794550772b3ac969fa-40633efb4d85e635c676",
+          "file": "dissection-technique-roadmap.spec.ts",
+          "line": 141,
+          "column": 8
+        },
+        {
+          "title": "roadmap verified uses native learning state and retains its ordered sequence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11531,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T02:16:49.663Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9d794550772b3ac969fa-2af6152cbb2dee26b4f0",
+          "file": "dissection-technique-roadmap.spec.ts",
+          "line": 141,
+          "column": 8
+        },
+        {
+          "title": "performed work without a confirmed plan and explanation is not counted as verified",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 22547,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T02:17:01.217Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9d794550772b3ac969fa-d31cbaa6602273ee83ad",
+          "file": "dissection-technique-roadmap.spec.ts",
+          "line": 148,
+          "column": 5
+        },
+        {
+          "title": "native plans actions and explanations advance verification; Undo restores the last required action",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 116329,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T02:17:23.787Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9d794550772b3ac969fa-cfbb77c56b1f3f544cb8",
+          "file": "dissection-technique-roadmap.spec.ts",
+          "line": 155,
+          "column": 5
+        },
+        {
+          "title": "quiz and timed practical routes retain their native state with the procedure roadmap hidden",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13352,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T02:19:20.157Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9d794550772b3ac969fa-1969c95c0d3dd1726805",
+          "file": "dissection-technique-roadmap.spec.ts",
+          "line": 190,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-07T02:00:12.363Z",
+    "duration": 1177640.1889999998,
+    "expected": 12,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

@@ -1,0 +1,1337 @@
+{
+  "baselineSHA": "f551cf0c50073315effbf3fa5bcd9ce2dd3e1b806dbfcbd3f1434ba7e831af2c",
+  "finalSHA": "bb4526d583db90d928008a1fa9b7540dfef8c8acdfd4055c0fd71225454011bf",
+  "selectedViews": [
+    "infant-head-contrast"
+  ],
+  "evidence": [
+    {
+      "id": "infant-head-contrast",
+      "age": "infant",
+      "width": 320,
+      "height": 840,
+      "pose": {
+        "structure": {
+          "hash": "b0354fa8",
+          "bytes": 6534
+        },
+        "preservedTransforms": {
+          "hash": "4629286d",
+          "bytes": 16517
+        },
+        "counts": {
+          "objects": 121,
+          "meshes": 87
+        }
+      },
+      "contrast": true,
+      "head": {
+        "total": 26185,
+        "inFrame": 26185,
+        "min": [
+          -0.508814777579624,
+          -0.4241382728225535,
+          0.7781957811668868
+        ],
+        "max": [
+          0.4820527065446268,
+          0.42756880528105834,
+          0.8391706121455386
+        ]
+      },
+      "variant": "baseline",
+      "sourceSHA": "f551cf0c50073315effbf3fa5bcd9ce2dd3e1b806dbfcbd3f1434ba7e831af2c",
+      "capture": "infant-head-contrast-baseline-stage.png",
+      "detail": {
+        "file": "infant-head-contrast-baseline-face.png",
+        "clip": {
+          "x": 122,
+          "y": 364,
+          "width": 110,
+          "height": 115
+        },
+        "proof": {
+          "sameCapturedFrame": true,
+          "sourceSHA256": "6993dbf34fc69f3e3dfc021edd839c7e1fb736319525b3b39569474a2bc09ba6",
+          "cropSHA256": "b3287e288493222991f548936f5ff6240c9283f4c57c431d71e618a8b33c11a8",
+          "sourceSize": {
+            "width": 296,
+            "height": 331
+          },
+          "clip": {
+            "x": 110,
+            "y": 109,
+            "width": 110,
+            "height": 115
+          },
+          "pixelsVerified": 12650
+        },
+        "visibleVertices": 14020,
+        "totalVertices": 14020,
+        "partiallyClipped": false
+      },
+      "captureInfo": {
+        "stageClip": {
+          "x": 12,
+          "y": 255,
+          "width": 296,
+          "height": 331
+        },
+        "observedCanvas": {
+          "x": 13,
+          "y": 256.296875,
+          "width": 294,
+          "height": 328
+        },
+        "screenshotMs": 1829
+      },
+      "preservedScene": {
+        "hash": "6d7b865",
+        "bytes": 266319
+      },
+      "noseMaterial": {
+        "name": "fr-manikin-nose",
+        "material": {
+          "metadata": {
+            "version": 4.5,
+            "type": "Material",
+            "generator": "Material.toJSON"
+          },
+          "type": "MeshBasicMaterial",
+          "name": "fr-patient-nose-skin",
+          "color": 16777215,
+          "reflectivity": 1,
+          "refractionRatio": 0.98,
+          "depthFunc": 3,
+          "depthTest": true,
+          "depthWrite": true,
+          "colorWrite": true,
+          "stencilWrite": false,
+          "stencilWriteMask": 255,
+          "stencilFunc": 519,
+          "stencilRef": 0,
+          "stencilFuncMask": 255,
+          "stencilFail": 7680,
+          "stencilZFail": 7680,
+          "stencilZPass": 7680,
+          "userData": {
+            "frNoseContourStrength": {
+              "value": 1
+            },
+            "_baseOpacity": 1
+          }
+        },
+        "visible": true,
+        "hooks": {
+          "compile": "function (shader) {\n        shader.uniforms.frNoseContourStrength = noseContourStrength;\n        shader.vertexShader = shader.vertexShader\n          .replace('#include <common>', '#include <common>\\nvarying vec3 frNoseSurfaceNormal;\\nvarying vec3 frNoseViewPosition;')\n          .replace('#include <project_vertex>', '#include <project_vertex>\\nfrNoseSurfaceNormal = normalize(normalMatrix * normal);\\nfrNoseViewPosition = -mvPosition.xyz;');\n        shader.fragmentShader = shader.fragmentShader\n          .replace('#include <common>', '#include <common>\\nvarying vec3 frNoseSurfaceNormal;\\nvarying vec3 frNoseViewPosition;\\nuniform float frNoseContourStrength;')\n          .replace('#include <color_fragment>', '#include <color_fragment>\\nfloat frNoseFacing = abs(dot(normalize(frNoseSurfaceNormal), normalize(frNoseViewPosition)));\\nfloat frNoseContour = mix(0.08, 1.0, smoothstep(0.20, 0.45, frNoseFacing));\\ndiffuseColor.rgb *= mix(1.0, frNoseContour, frNoseContourStrength);');\n      }",
+          "cacheKey": "fr-patient-nose-contrast-contours-v1"
+        },
+        "separateFromHead": true,
+        "strength": 1
+      },
+      "headMaterial": {
+        "metadata": {
+          "version": 4.5,
+          "type": "Material",
+          "generator": "Material.toJSON"
+        },
+        "type": "MeshBasicMaterial",
+        "color": 16777215,
+        "reflectivity": 1,
+        "refractionRatio": 0.98,
+        "depthFunc": 3,
+        "depthTest": true,
+        "depthWrite": true,
+        "colorWrite": true,
+        "stencilWrite": false,
+        "stencilWriteMask": 255,
+        "stencilFunc": 519,
+        "stencilRef": 0,
+        "stencilFuncMask": 255,
+        "stencilFail": 7680,
+        "stencilZFail": 7680,
+        "stencilZPass": 7680,
+        "userData": {
+          "_baseOpacity": 1
+        }
+      },
+      "camera": {
+        "position": [
+          -1.0607742904165534,
+          0.2532257522948773,
+          -0.8180768474391812
+        ],
+        "quaternion": [
+          0.0006938209935184579,
+          -0.8078052395384862,
+          0.0009508420414524792,
+          0.589448309426713
+        ],
+        "projection": [
+          2.906357868093765,
+          0,
+          0,
+          0,
+          0,
+          2.6050890646938014,
+          0,
+          0,
+          0,
+          0,
+          -1.002002002002002,
+          -1,
+          0,
+          0,
+          -0.20020020020020018,
+          0
+        ],
+        "aspect": 0.8963414634146342
+      },
+      "neckMesh": {
+        "name": "fr-manikin-neck",
+        "vertices": 523,
+        "triangles": 816,
+        "materialType": "MeshBasicMaterial",
+        "colorHex": 16777215,
+        "visible": true
+      },
+      "torsoMesh": {
+        "name": "fr-manikin-torso",
+        "vertices": 2913,
+        "triangles": 5680,
+        "materialType": "MeshBasicMaterial",
+        "colorHex": 3355443,
+        "visible": true
+      },
+      "faceProjection": {
+        "total": 14020,
+        "inFrame": 14020,
+        "min": [
+          -0.133797690044441,
+          -0.24269648537501287,
+          0.7781957811668868
+        ],
+        "max": [
+          0.36310265722757024,
+          0.23201784354117705,
+          0.7945851327978607
+        ]
+      },
+      "mouthMeshes": [
+        {
+          "name": "fr-manikin-lower-lip",
+          "type": "SphereGeometry",
+          "parameters": {
+            "radius": 1,
+            "widthSegments": 48,
+            "heightSegments": 24,
+            "phiStart": 0,
+            "phiLength": 6.283185307179586,
+            "thetaStart": 0,
+            "thetaLength": 3.141592653589793
+          },
+          "vertices": 1225,
+          "triangles": 2208,
+          "attributes": {
+            "normal": {
+              "count": 1225,
+              "itemSize": 3,
+              "array": {
+                "hash": "95820ce7",
+                "bytes": 71579
+              }
+            },
+            "position": {
+              "count": 1225,
+              "itemSize": 3,
+              "array": {
+                "hash": "f6c86159",
+                "bytes": 72971
+              }
+            },
+            "uv": {
+              "count": 1225,
+              "itemSize": 2,
+              "array": {
+                "hash": "10dcb48f",
+                "bytes": 34733
+              }
+            }
+          },
+          "index": {
+            "hash": "d52978db",
+            "bytes": 27225
+          },
+          "indexCount": 6624,
+          "bounds": [
+            [
+              -0.06785999983549118,
+              0.29446205496788025,
+              0.14624999463558197
+            ],
+            [
+              0.06785999983549118,
+              0.30867841839790344,
+              0.17550000548362732
+            ]
+          ],
+          "material": {
+            "type": "MeshBasicMaterial",
+            "colorHex": 8947848,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        },
+        {
+          "name": "fr-manikin-mouth",
+          "type": "TubeGeometry",
+          "parameters": {
+            "path": {
+              "metadata": {
+                "version": 4.5,
+                "type": "Curve",
+                "generator": "Curve.toJSON"
+              },
+              "arcLengthDivisions": 200,
+              "type": "CatmullRomCurve3",
+              "points": [
+                [
+                  -0.06786,
+                  0.29855479250332106,
+                  0.14625
+                ],
+                [
+                  -0.0593775,
+                  0.29984999728029266,
+                  0.14844374999999999
+                ],
+                [
+                  -0.050895,
+                  0.30097832100985417,
+                  0.150345
+                ],
+                [
+                  -0.042412500000000006,
+                  0.3019362411892034,
+                  0.15195374999999997
+                ],
+                [
+                  -0.03393,
+                  0.3027215160494269,
+                  0.15327
+                ],
+                [
+                  -0.0254475,
+                  0.3033328634732826,
+                  0.15429374999999998
+                ],
+                [
+                  -0.016965,
+                  0.30376962910157396,
+                  0.155025
+                ],
+                [
+                  -0.0084825,
+                  0.304031494977997,
+                  0.15546374999999998
+                ],
+                [
+                  0,
+                  0.3041182481950469,
+                  0.15561
+                ],
+                [
+                  0.0084825,
+                  0.304031494977997,
+                  0.15546374999999998
+                ],
+                [
+                  0.016965,
+                  0.30376962910157396,
+                  0.155025
+                ],
+                [
+                  0.0254475,
+                  0.3033328634732826,
+                  0.15429374999999998
+                ],
+                [
+                  0.03393,
+                  0.3027215160494269,
+                  0.15327
+                ],
+                [
+                  0.042412500000000006,
+                  0.3019362411892034,
+                  0.15195374999999997
+                ],
+                [
+                  0.050895,
+                  0.30097832100985417,
+                  0.150345
+                ],
+                [
+                  0.0593775,
+                  0.29984999728029266,
+                  0.14844374999999999
+                ],
+                [
+                  0.06786,
+                  0.29855479250332106,
+                  0.14625
+                ]
+              ],
+              "closed": false,
+              "curveType": "centripetal",
+              "tension": 0.5
+            },
+            "tubularSegments": 20,
+            "radius": 0.002106,
+            "radialSegments": 8,
+            "closed": false
+          },
+          "vertices": 189,
+          "triangles": 320,
+          "attributes": {
+            "normal": {
+              "count": 189,
+              "itemSize": 3,
+              "array": {
+                "hash": "a1543abc",
+                "bytes": 11442
+              }
+            },
+            "position": {
+              "count": 189,
+              "itemSize": 3,
+              "array": {
+                "hash": "aee232fb",
+                "bytes": 11354
+              }
+            },
+            "uv": {
+              "count": 189,
+              "itemSize": 2,
+              "array": {
+                "hash": "2999e9ae",
+                "bytes": 3799
+              }
+            }
+          },
+          "index": {
+            "hash": "28b4acac",
+            "bytes": 3307
+          },
+          "indexCount": 960,
+          "bounds": [
+            [
+              -0.06844375282526016,
+              0.2964714467525482,
+              0.14421109855175018
+            ],
+            [
+              0.06844375282526016,
+              0.30622386932373047,
+              0.15771561861038208
+            ]
+          ],
+          "material": {
+            "type": "MeshBasicMaterial",
+            "colorHex": 7829367,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        },
+        {
+          "name": "fr-manikin-upper-lip",
+          "type": "SphereGeometry",
+          "parameters": {
+            "radius": 1,
+            "widthSegments": 48,
+            "heightSegments": 24,
+            "phiStart": 0,
+            "phiLength": 6.283185307179586,
+            "thetaStart": 0,
+            "thetaLength": 3.141592653589793
+          },
+          "vertices": 1225,
+          "triangles": 2208,
+          "attributes": {
+            "normal": {
+              "count": 1225,
+              "itemSize": 3,
+              "array": {
+                "hash": "4658b463",
+                "bytes": 71651
+              }
+            },
+            "position": {
+              "count": 1225,
+              "itemSize": 3,
+              "array": {
+                "hash": "de942090",
+                "bytes": 72829
+              }
+            },
+            "uv": {
+              "count": 1225,
+              "itemSize": 2,
+              "array": {
+                "hash": "10dcb48f",
+                "bytes": 34733
+              }
+            }
+          },
+          "index": {
+            "hash": "d52978db",
+            "bytes": 27225
+          },
+          "indexCount": 6624,
+          "bounds": [
+            [
+              -0.06785999983549118,
+              0.29668280482292175,
+              0.13726334273815155
+            ],
+            [
+              0.06785999983549118,
+              0.3145768344402313,
+              0.15560999512672424
+            ]
+          ],
+          "material": {
+            "type": "MeshBasicMaterial",
+            "colorHex": 8947848,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        }
+      ],
+      "skull": {
+        "total": 1617,
+        "inFrame": 1617,
+        "min": [
+          -0.508814777579624,
+          -0.3706268455564782,
+          0.7819817243091425
+        ],
+        "max": [
+          0.4820527065446268,
+          0.37316858899590355,
+          0.8391706121455386
+        ]
+      },
+      "skullGeometry": {
+        "name": "fr-manikin-head",
+        "type": "SphereGeometry",
+        "parameters": {
+          "radius": 1,
+          "widthSegments": 48,
+          "heightSegments": 32,
+          "phiStart": 0,
+          "phiLength": 6.283185307179586,
+          "thetaStart": 0,
+          "thetaLength": 3.141592653589793
+        },
+        "vertices": 1617,
+        "triangles": 2976,
+        "attributes": {
+          "normal": {
+            "count": 1617,
+            "itemSize": 3,
+            "array": {
+              "hash": "82e20aa9",
+              "bytes": 93153
+            }
+          },
+          "position": {
+            "count": 1617,
+            "itemSize": 3,
+            "array": {
+              "hash": "5d62be23",
+              "bytes": 93164
+            }
+          },
+          "uv": {
+            "count": 1617,
+            "itemSize": 2,
+            "array": {
+              "hash": "525b5ca2",
+              "bytes": 34509
+            }
+          }
+        },
+        "index": {
+          "hash": "e528e187",
+          "bytes": 38745
+        },
+        "indexCount": 8928,
+        "bounds": [
+          [
+            -1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            0.9400359988212585,
+            1
+          ]
+        ],
+        "material": {
+          "type": "MeshBasicMaterial",
+          "colorHex": 16777215,
+          "side": 0,
+          "transparent": false,
+          "opacity": 1,
+          "depthWrite": true
+        },
+        "visible": true
+      },
+      "preservedFace": {
+        "total": 25611,
+        "inFrame": 25611,
+        "min": [
+          -0.508814777579624,
+          -0.4241382728225535,
+          0.7781957811668868
+        ],
+        "max": [
+          0.4820527065446268,
+          0.42756880528105834,
+          0.8391706121455386
+        ]
+      },
+      "neckProjection": {
+        "total": 523,
+        "inFrame": 523,
+        "min": [
+          0.06002888569808943,
+          -0.17322308853940477,
+          0.8097993519782813
+        ],
+        "max": [
+          0.5526627432121047,
+          0.11717836141205808,
+          0.8370941367876829
+        ]
+      },
+      "neckBounds": [
+        [
+          -0.1266189180779504,
+          0.16149938419349752,
+          -0.45892869302930084
+        ],
+        [
+          0.07020370717145503,
+          0.33844049629064515,
+          -0.28084330697069926
+        ]
+      ],
+      "selectedHand": {
+        "total": 7628,
+        "inFrame": 7628,
+        "min": [
+          0.009415204168987947,
+          0.21698053343627427,
+          0.7791605150569202
+        ],
+        "max": [
+          0.38253728731333186,
+          0.4249312312540139,
+          0.8035866211730339
+        ]
+      },
+      "canvasRect": {
+        "x": 13,
+        "y": 256.296875,
+        "width": 294,
+        "height": 328
+      },
+      "cheekContext": [
+        [
+          0.16517311023853626,
+          0.27000657797297684,
+          0.7948925361707955
+        ],
+        [
+          -0.0342947552356352,
+          0.31435979730885033,
+          0.787268249954557
+        ],
+        [
+          0.35096213496386247,
+          0.2286949544477955,
+          0.801993974274494
+        ],
+        [
+          0.23331941664410602,
+          0.14311375906287138,
+          0.782812559727845
+        ],
+        [
+          0.10414582355135213,
+          0.383643322891832,
+          0.8057105573438128
+        ]
+      ],
+      "state": {
+        "consentAccepted": true,
+        "view": "body3d",
+        "b3dTab": "recovery",
+        "b3dAge": "infant",
+        "b3dRec": [
+          "check",
+          "arm",
+          "hand",
+          "knee",
+          "roll",
+          "airway",
+          "stable",
+          "watch"
+        ],
+        "b3dRecView": 8,
+        "b3dRecoveryGuides": false,
+        "b3dChildHands": "two",
+        "b3dPlaced": "correct",
+        "b3dHandStudy": {},
+        "faMastery": {},
+        "modulesVisited": {},
+        "badges": {},
+        "b3dStatus": "ready"
+      },
+      "errors": [],
+      "draw": {
+        "materials": 29,
+        "id": 1,
+        "createdBy": "page",
+        "draws": 3503,
+        "sequence": 45,
+        "calls": 66,
+        "triangles": 91120,
+        "geometries": 77,
+        "programs": 4,
+        "disposeCount": 0
+      }
+    },
+    {
+      "id": "infant-head-contrast",
+      "age": "infant",
+      "width": 320,
+      "height": 840,
+      "pose": {
+        "structure": {
+          "hash": "b0354fa8",
+          "bytes": 6534
+        },
+        "preservedTransforms": {
+          "hash": "4629286d",
+          "bytes": 16517
+        },
+        "counts": {
+          "objects": 121,
+          "meshes": 87
+        }
+      },
+      "contrast": true,
+      "head": {
+        "total": 27233,
+        "inFrame": 27233,
+        "min": [
+          -0.508814777579624,
+          -0.4241382728225535,
+          0.7781957811668868
+        ],
+        "max": [
+          0.4820527065446268,
+          0.42756880528105834,
+          0.8391706121455386
+        ]
+      },
+      "variant": "candidate",
+      "sourceSHA": "bb4526d583db90d928008a1fa9b7540dfef8c8acdfd4055c0fd71225454011bf",
+      "capture": "infant-head-contrast-candidate-stage.png",
+      "detail": {
+        "file": "infant-head-contrast-candidate-face.png",
+        "clip": {
+          "x": 122,
+          "y": 364,
+          "width": 110,
+          "height": 115
+        },
+        "proof": {
+          "sameCapturedFrame": true,
+          "sourceSHA256": "e549da4934fc5f0882b099caab115ce446296619a53cb4ec7259a924cfbe13c7",
+          "cropSHA256": "58c7fe291127c11d19ab59e076edf16db327d295a6b214fe7c0dba478532995e",
+          "sourceSize": {
+            "width": 296,
+            "height": 331
+          },
+          "clip": {
+            "x": 110,
+            "y": 109,
+            "width": 110,
+            "height": 115
+          },
+          "pixelsVerified": 12650
+        },
+        "visibleVertices": 15068,
+        "totalVertices": 15068,
+        "partiallyClipped": false
+      },
+      "captureInfo": {
+        "stageClip": {
+          "x": 12,
+          "y": 255,
+          "width": 296,
+          "height": 331
+        },
+        "observedCanvas": {
+          "x": 13,
+          "y": 256.296875,
+          "width": 294,
+          "height": 328
+        },
+        "screenshotMs": 1582
+      },
+      "preservedScene": {
+        "hash": "6d7b865",
+        "bytes": 266319
+      },
+      "noseMaterial": {
+        "name": "fr-manikin-nose",
+        "material": {
+          "metadata": {
+            "version": 4.5,
+            "type": "Material",
+            "generator": "Material.toJSON"
+          },
+          "type": "MeshBasicMaterial",
+          "name": "fr-patient-nose-skin",
+          "color": 16777215,
+          "reflectivity": 1,
+          "refractionRatio": 0.98,
+          "depthFunc": 3,
+          "depthTest": true,
+          "depthWrite": true,
+          "colorWrite": true,
+          "stencilWrite": false,
+          "stencilWriteMask": 255,
+          "stencilFunc": 519,
+          "stencilRef": 0,
+          "stencilFuncMask": 255,
+          "stencilFail": 7680,
+          "stencilZFail": 7680,
+          "stencilZPass": 7680,
+          "userData": {
+            "frNoseContourStrength": {
+              "value": 1
+            },
+            "_baseOpacity": 1
+          }
+        },
+        "visible": true,
+        "hooks": {
+          "compile": "function (shader) {\n        shader.uniforms.frNoseContourStrength = noseContourStrength;\n        shader.vertexShader = shader.vertexShader\n          .replace('#include <common>', '#include <common>\\nvarying vec3 frNoseSurfaceNormal;\\nvarying vec3 frNoseViewPosition;')\n          .replace('#include <project_vertex>', '#include <project_vertex>\\nfrNoseSurfaceNormal = normalize(normalMatrix * normal);\\nfrNoseViewPosition = -mvPosition.xyz;');\n        shader.fragmentShader = shader.fragmentShader\n          .replace('#include <common>', '#include <common>\\nvarying vec3 frNoseSurfaceNormal;\\nvarying vec3 frNoseViewPosition;\\nuniform float frNoseContourStrength;')\n          .replace('#include <color_fragment>', '#include <color_fragment>\\nfloat frNoseFacing = abs(dot(normalize(frNoseSurfaceNormal), normalize(frNoseViewPosition)));\\nfloat frNoseContour = mix(0.08, 1.0, smoothstep(0.20, 0.45, frNoseFacing));\\ndiffuseColor.rgb *= mix(1.0, frNoseContour, frNoseContourStrength);');\n      }",
+          "cacheKey": "fr-patient-nose-contrast-contours-v1"
+        },
+        "separateFromHead": true,
+        "strength": 1
+      },
+      "headMaterial": {
+        "metadata": {
+          "version": 4.5,
+          "type": "Material",
+          "generator": "Material.toJSON"
+        },
+        "type": "MeshBasicMaterial",
+        "color": 16777215,
+        "reflectivity": 1,
+        "refractionRatio": 0.98,
+        "depthFunc": 3,
+        "depthTest": true,
+        "depthWrite": true,
+        "colorWrite": true,
+        "stencilWrite": false,
+        "stencilWriteMask": 255,
+        "stencilFunc": 519,
+        "stencilRef": 0,
+        "stencilFuncMask": 255,
+        "stencilFail": 7680,
+        "stencilZFail": 7680,
+        "stencilZPass": 7680,
+        "userData": {
+          "_baseOpacity": 1
+        }
+      },
+      "camera": {
+        "position": [
+          -1.0607742904165534,
+          0.2532257522948773,
+          -0.8180768474391812
+        ],
+        "quaternion": [
+          0.0006938209935184579,
+          -0.8078052395384862,
+          0.0009508420414524792,
+          0.589448309426713
+        ],
+        "projection": [
+          2.906357868093765,
+          0,
+          0,
+          0,
+          0,
+          2.6050890646938014,
+          0,
+          0,
+          0,
+          0,
+          -1.002002002002002,
+          -1,
+          0,
+          0,
+          -0.20020020020020018,
+          0
+        ],
+        "aspect": 0.8963414634146342
+      },
+      "neckMesh": {
+        "name": "fr-manikin-neck",
+        "vertices": 523,
+        "triangles": 816,
+        "materialType": "MeshBasicMaterial",
+        "colorHex": 16777215,
+        "visible": true
+      },
+      "torsoMesh": {
+        "name": "fr-manikin-torso",
+        "vertices": 2913,
+        "triangles": 5680,
+        "materialType": "MeshBasicMaterial",
+        "colorHex": 3355443,
+        "visible": true
+      },
+      "faceProjection": {
+        "total": 15068,
+        "inFrame": 15068,
+        "min": [
+          -0.133797690044441,
+          -0.24269648537501287,
+          0.7781957811668868
+        ],
+        "max": [
+          0.3628404570608155,
+          0.23201784354117705,
+          0.7946360811945904
+        ]
+      },
+      "mouthMeshes": [
+        {
+          "name": "fr-manikin-lower-lip",
+          "type": "SphereGeometry",
+          "parameters": {
+            "radius": 1,
+            "widthSegments": 48,
+            "heightSegments": 24,
+            "phiStart": 0,
+            "phiLength": 6.283185307179586,
+            "thetaStart": 0,
+            "thetaLength": 3.141592653589793
+          },
+          "vertices": 1225,
+          "triangles": 2208,
+          "attributes": {
+            "normal": {
+              "count": 1225,
+              "itemSize": 3,
+              "array": {
+                "hash": "5d20276c",
+                "bytes": 73361
+              }
+            },
+            "position": {
+              "count": 1225,
+              "itemSize": 3,
+              "array": {
+                "hash": "b7522df9",
+                "bytes": 73078
+              }
+            },
+            "uv": {
+              "count": 1225,
+              "itemSize": 2,
+              "array": {
+                "hash": "10dcb48f",
+                "bytes": 34733
+              }
+            }
+          },
+          "index": {
+            "hash": "d52978db",
+            "bytes": 27225
+          },
+          "indexCount": 6624,
+          "bounds": [
+            [
+              -0.06785999983549118,
+              0.2939509153366089,
+              0.14624999463558197
+            ],
+            [
+              0.06785999983549118,
+              0.3083358407020569,
+              0.17550000548362732
+            ]
+          ],
+          "material": {
+            "type": "MeshBasicMaterial",
+            "colorHex": 8947848,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        },
+        {
+          "name": "fr-manikin-mouth",
+          "type": "BufferGeometry",
+          "parameters": {
+            "halfWidth": 0.0018,
+            "longitudinalSegments": 96,
+            "transverseSamples": 13
+          },
+          "vertices": 1237,
+          "triangles": 2280,
+          "attributes": {
+            "normal": {
+              "count": 1237,
+              "itemSize": 3,
+              "array": {
+                "hash": "c4123429",
+                "bytes": 73112
+              }
+            },
+            "position": {
+              "count": 1237,
+              "itemSize": 3,
+              "array": {
+                "hash": "cc16ecc9",
+                "bytes": 73899
+              }
+            }
+          },
+          "index": {
+            "hash": "17005613",
+            "bytes": 28063
+          },
+          "indexCount": 6840,
+          "bounds": [
+            [
+              -0.06785999983549118,
+              0.29845553636550903,
+              0.14624999463558197
+            ],
+            [
+              0.06785999983549118,
+              0.31021565198898315,
+              0.15771600604057312
+            ]
+          ],
+          "material": {
+            "type": "MeshBasicMaterial",
+            "colorHex": 7829367,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        },
+        {
+          "name": "fr-manikin-upper-lip",
+          "type": "SphereGeometry",
+          "parameters": {
+            "radius": 1,
+            "widthSegments": 48,
+            "heightSegments": 24,
+            "phiStart": 0,
+            "phiLength": 6.283185307179586,
+            "thetaStart": 0,
+            "thetaLength": 3.141592653589793
+          },
+          "vertices": 1225,
+          "triangles": 2208,
+          "attributes": {
+            "normal": {
+              "count": 1225,
+              "itemSize": 3,
+              "array": {
+                "hash": "654a486e",
+                "bytes": 73197
+              }
+            },
+            "position": {
+              "count": 1225,
+              "itemSize": 3,
+              "array": {
+                "hash": "edf281d9",
+                "bytes": 73154
+              }
+            },
+            "uv": {
+              "count": 1225,
+              "itemSize": 2,
+              "array": {
+                "hash": "10dcb48f",
+                "bytes": 34733
+              }
+            }
+          },
+          "index": {
+            "hash": "d52978db",
+            "bytes": 27225
+          },
+          "indexCount": 6624,
+          "bounds": [
+            [
+              -0.06785999983549118,
+              0.296159565448761,
+              0.13726334273815155
+            ],
+            [
+              0.06785999983549118,
+              0.3143342435359955,
+              0.15560999512672424
+            ]
+          ],
+          "material": {
+            "type": "MeshBasicMaterial",
+            "colorHex": 8947848,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        }
+      ],
+      "skull": {
+        "total": 1617,
+        "inFrame": 1617,
+        "min": [
+          -0.508814777579624,
+          -0.3706268455564782,
+          0.7819817243091425
+        ],
+        "max": [
+          0.4820527065446268,
+          0.37316858899590355,
+          0.8391706121455386
+        ]
+      },
+      "skullGeometry": {
+        "name": "fr-manikin-head",
+        "type": "SphereGeometry",
+        "parameters": {
+          "radius": 1,
+          "widthSegments": 48,
+          "heightSegments": 32,
+          "phiStart": 0,
+          "phiLength": 6.283185307179586,
+          "thetaStart": 0,
+          "thetaLength": 3.141592653589793
+        },
+        "vertices": 1617,
+        "triangles": 2976,
+        "attributes": {
+          "normal": {
+            "count": 1617,
+            "itemSize": 3,
+            "array": {
+              "hash": "82e20aa9",
+              "bytes": 93153
+            }
+          },
+          "position": {
+            "count": 1617,
+            "itemSize": 3,
+            "array": {
+              "hash": "5d62be23",
+              "bytes": 93164
+            }
+          },
+          "uv": {
+            "count": 1617,
+            "itemSize": 2,
+            "array": {
+              "hash": "525b5ca2",
+              "bytes": 34509
+            }
+          }
+        },
+        "index": {
+          "hash": "e528e187",
+          "bytes": 38745
+        },
+        "indexCount": 8928,
+        "bounds": [
+          [
+            -1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            0.9400359988212585,
+            1
+          ]
+        ],
+        "material": {
+          "type": "MeshBasicMaterial",
+          "colorHex": 16777215,
+          "side": 0,
+          "transparent": false,
+          "opacity": 1,
+          "depthWrite": true
+        },
+        "visible": true
+      },
+      "preservedFace": {
+        "total": 26659,
+        "inFrame": 26659,
+        "min": [
+          -0.508814777579624,
+          -0.4241382728225535,
+          0.7781957811668868
+        ],
+        "max": [
+          0.4820527065446268,
+          0.42756880528105834,
+          0.8391706121455386
+        ]
+      },
+      "neckProjection": {
+        "total": 523,
+        "inFrame": 523,
+        "min": [
+          0.06002888569808943,
+          -0.17322308853940477,
+          0.8097993519782813
+        ],
+        "max": [
+          0.5526627432121047,
+          0.11717836141205808,
+          0.8370941367876829
+        ]
+      },
+      "neckBounds": [
+        [
+          -0.1266189180779504,
+          0.16149938419349752,
+          -0.45892869302930084
+        ],
+        [
+          0.07020370717145503,
+          0.33844049629064515,
+          -0.28084330697069926
+        ]
+      ],
+      "selectedHand": {
+        "total": 7628,
+        "inFrame": 7628,
+        "min": [
+          0.009415204168987947,
+          0.21698053343627427,
+          0.7791605150569202
+        ],
+        "max": [
+          0.38253728731333186,
+          0.4249312312540139,
+          0.8035866211730339
+        ]
+      },
+      "canvasRect": {
+        "x": 13,
+        "y": 256.296875,
+        "width": 294,
+        "height": 328
+      },
+      "cheekContext": [
+        [
+          0.16517311023853626,
+          0.27000657797297684,
+          0.7948925361707955
+        ],
+        [
+          -0.0342947552356352,
+          0.31435979730885033,
+          0.787268249954557
+        ],
+        [
+          0.35096213496386247,
+          0.2286949544477955,
+          0.801993974274494
+        ],
+        [
+          0.23331941664410602,
+          0.14311375906287138,
+          0.782812559727845
+        ],
+        [
+          0.10414582355135213,
+          0.383643322891832,
+          0.8057105573438128
+        ]
+      ],
+      "state": {
+        "consentAccepted": true,
+        "view": "body3d",
+        "b3dTab": "recovery",
+        "b3dAge": "infant",
+        "b3dRec": [
+          "check",
+          "arm",
+          "hand",
+          "knee",
+          "roll",
+          "airway",
+          "stable",
+          "watch"
+        ],
+        "b3dRecView": 8,
+        "b3dRecoveryGuides": false,
+        "b3dChildHands": "two",
+        "b3dPlaced": "correct",
+        "b3dHandStudy": {},
+        "faMastery": {},
+        "modulesVisited": {},
+        "badges": {},
+        "b3dStatus": "ready"
+      },
+      "errors": [],
+      "draw": {
+        "materials": 29,
+        "id": 1,
+        "createdBy": "page",
+        "draws": 3819,
+        "sequence": 49,
+        "calls": 66,
+        "triangles": 93080,
+        "geometries": 77,
+        "programs": 4,
+        "disposeCount": 0
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+failed to load config from C:\Users\cabba\Documents\Codex\2026-09-29\new-chat-3\universe-disk-depth57\node-renderer.config.mjs
+
+⎯⎯⎯⎯⎯⎯⎯ Startup Error ⎯⎯⎯⎯⎯⎯⎯⎯
+Error: EPERM: operation not permitted, open 'C:\Users\cabba\node_modules\.vite-temp\node-renderer.config.mjs.timestamp-1791344732931-706e2127fb873.mjs'
+    at async open (node:internal/fs/promises:642:25)
+    at async Object.writeFile (node:internal/fs/promises:1249:14)
+    at async loadConfigFromBundledFile (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/vite/dist/node/chunks/node.js:36121:3)
+    at async bundleAndLoadConfigFile (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/vite/dist/node/chunks/node.js:35985:17)
+    at async loadConfigFromFile (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/vite/dist/node/chunks/node.js:35944:42)
+    at async resolveConfig (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/vite/dist/node/chunks/node.js:35560:22)
+    at async _createServer (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/vite/dist/node/chunks/node.js:25732:65)
+    at async createViteServer (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:8818:17)
+    at async createVitest (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:14205:18)
+    at async prepareVitest (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:14572:14) {
+  errno: -4048,
+  code: 'EPERM',
+  syscall: 'open',
+  path: 'C:\\Users\\cabba\\node_modules\\.vite-temp\\node-renderer.config.mjs.timestamp-1791344732931-706e2127fb873.mjs'
+}
+
+
+

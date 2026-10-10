@@ -1,0 +1,7 @@
+{
+  "before": "f6f76fcb6fcfb8b16f5eaa956e792b6a6b880b20f43002cabe70007f11538ce1",
+  "after": "f58cc976836cb447d893c494a67aad80d2e808131cf930f9aa3d7fdae51ec25c",
+  "oldAssertion": "expect(firstPin.procedureFeedback.message).toMatch(/Next: .*second/i);",
+  "newAssertion": "expect(firstPin.procedureFeedback.message).toContain('Next: Place the opposing body-wall anchor.');",
+  "reason": "The native protocol calls the second placement the opposing body-wall anchor. Assert that exact authored instruction; keep all first/second pin state assertions."
+}

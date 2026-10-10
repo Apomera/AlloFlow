@@ -1,0 +1,90 @@
+{
+  "completed": true,
+  "run": "dust-unit-final-attempt2",
+  "command": "node universe-stellar-dust61/run-dust-unit.cjs dust-unit-final-attempt2",
+  "workingDirectory": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-3",
+  "outputDirectory": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/universe-flight-2026-09-29/stellar-dust/unit",
+  "nodeVersionAtArchive": "v24.11.1",
+  "result": {
+    "exitCode": 0,
+    "tests": 45,
+    "passed": 45,
+    "failed": 0
+  },
+  "tests": {
+    "dust": 10,
+    "detours": 13,
+    "physics": 22
+  },
+  "pinsDuringRun": {
+    "renderer": "11c9f95d62c511ea9b4575598c6847a53c1fc1f37e04e4cd976916d53ef7ee4b",
+    "ui": "0bcb80a32407030204eb5422b298e6fa00285d501726d871df8a6ec60330898f",
+    "test": "97358fb4ff5371b6ceff076cbdba031d199b5d6882d0665ef5c0a695ae759a2b"
+  },
+  "stableThroughRun": true,
+  "scope": "Node shim: analytic math, settings, state, motion and graphics-resource call diagnostics. Full DOM and real WebGL were not exercised by this CPU run.",
+  "execution": {
+    "vitest": "4.1.5",
+    "environment": "node",
+    "configLoader": "native",
+    "pool": "forks",
+    "maxWorkers": 1,
+    "isolate": false,
+    "fileParallelism": false,
+    "writableTemp": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-3/universe-stellar-dust61/unit-temp"
+  },
+  "dependencies": [
+    "Archived runner and config are exact copies used for the successful run and retain their original absolute stage/repository paths.",
+    "Runner copies candidate-dust.test.js to tests/universe_flight_dust.test.js and uses repository node_modules/vitest/vitest.mjs.",
+    "Config loads the archived detours-node-setup.mjs from its original pass60 stage path, and includes the three repository test files.",
+    "The detour and physics test files are archived as supporting dependencies; their hashes were recorded at archive time, not separately pinned by the runner before execution.",
+    "No tests were rerun while archiving. Browser/GPU validation is recorded separately."
+  ],
+  "artifacts": [
+    {
+      "filename": "results.json",
+      "sha256": "d7a48602d1b22165c57205c8d7968f106910adb7254cba29189205bec99dd354",
+      "originalPath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-3/universe-stellar-dust61/dust-unit-final-attempt2-results.json"
+    },
+    {
+      "filename": "summary.json",
+      "sha256": "9b787e2fc43f8a962f162cd8ecfa8eb7b5ee9ca7d4295fd45ed246d1932d8288",
+      "originalPath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-3/universe-stellar-dust61/dust-unit-final-attempt2-summary.json"
+    },
+    {
+      "filename": "run.log",
+      "sha256": "5eacc8528c7586b77572b8ab0e350da5544c77135483da928462e983315c0383",
+      "originalPath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-3/universe-stellar-dust61/dust-unit-final-attempt2.log"
+    },
+    {
+      "filename": "candidate-dust.test.js",
+      "sha256": "97358fb4ff5371b6ceff076cbdba031d199b5d6882d0665ef5c0a695ae759a2b",
+      "originalPath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-3/universe-stellar-dust61/candidate-dust.test.js"
+    },
+    {
+      "filename": "dust-node.config.mjs",
+      "sha256": "9ba25f9a05a3e38553c7b846509cc756185858f82e2cea0302729cf2890c4b48",
+      "originalPath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-3/universe-stellar-dust61/dust-node.config.mjs"
+    },
+    {
+      "filename": "run-dust-unit.cjs",
+      "sha256": "748c38311e0040007166a69864e4ac97a77f28a31839655cae29265576d7cf20",
+      "originalPath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-3/universe-stellar-dust61/run-dust-unit.cjs"
+    },
+    {
+      "filename": "detours-node-setup.mjs",
+      "sha256": "2bbc6f26e724128d5cb544977fbda3953843bd50ad611b7ba00479a80b120971",
+      "originalPath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-3/universe-flyby-detours60/detours-node-setup.mjs"
+    },
+    {
+      "filename": "universe_flight_detours.test.js",
+      "sha256": "176e4d54502fac54e927001e4f7c4831ecfa3b107f9bf9e186aed484db653f8b",
+      "originalPath": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_detours.test.js"
+    },
+    {
+      "filename": "universe_flight_physics.test.js",
+      "sha256": "c181ce38faaa0a0f66b1f202222149fcc7aef2e08019ce4c05d8281107dbccaf",
+      "originalPath": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_physics.test.js"
+    }
+  ]
+}

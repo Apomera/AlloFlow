@@ -1,0 +1,38 @@
+{
+  "sourceSha256": "ed2ee3a8c5a64045afb4323df77eb5b01c6056d0de1e55f399696c1ae3c1e8bf",
+  "mirrorSha256": "ed2ee3a8c5a64045afb4323df77eb5b01c6056d0de1e55f399696c1ae3c1e8bf",
+  "baselineSha256": "e91d73525e07eb90f66ade539610f31847a0dcdba21d69c9434aab27dc694e7f",
+  "numericalPrefixSha256": "d24ac435451d1ce118a7919ae493efab5dfc722c4b92f2f5cadfae3fe542ad1d",
+  "numericalPrefixUnchanged": true,
+  "specs": [
+    {
+      "file": "tests/e2e/physics-energy-accounting.spec.ts",
+      "expectedTests": 3,
+      "sha256": "1637f1cd1fd21c082caffb18c665f47033b2582db3f1da2a14665480bc8fcfba"
+    },
+    {
+      "file": "tests/e2e/physics-energy-visuals.spec.ts",
+      "expectedTests": 9,
+      "sha256": "aa0365c9090fe111c37acaf9e337477fc59de9075adea68d6fc1206abef7afd0"
+    },
+    {
+      "file": "tests/e2e/physics-analysis-workspace.spec.ts",
+      "expectedTests": 4,
+      "sha256": "48e44707b7bffe75676d08cecb375840a36baf00dac318073039059877c71963"
+    },
+    {
+      "file": "tests/e2e/physics-velocity-diagram.spec.ts",
+      "expectedTests": 3,
+      "sha256": "8f3a5419bdea74050ea868866a32564b21a2d597397ef5735d9c5bde7681a267"
+    },
+    {
+      "file": "tests/e2e/physics-graph-keyboard.spec.ts",
+      "expectedTests": 3,
+      "sha256": "f3525737884f5763167f2219f4a229c87609cd9ce4b2a461593caed4c2b7dd0f"
+    }
+  ],
+  "expectedBrowserTests": 22,
+  "expectedUnitTests": 356,
+  "expectedUnitFiles": 21,
+  "expectedPngs": 36
+}

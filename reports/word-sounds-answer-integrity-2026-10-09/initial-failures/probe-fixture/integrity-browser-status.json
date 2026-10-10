@@ -1,0 +1,13 @@
+{
+  "phase": "finished",
+  "pid": 33180,
+  "started": "2026-10-10T03:35:39.738Z",
+  "steps": [
+    {
+      "name": "new",
+      "code": 1
+    }
+  ],
+  "code": 1,
+  "finished": "2026-10-10T03:36:45.554Z"
+}

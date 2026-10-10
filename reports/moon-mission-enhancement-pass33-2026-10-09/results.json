@@ -1,0 +1,164 @@
+{
+  "schema": "moon-mission-pass33-summary-v1",
+  "status": "passed",
+  "date": "2026-10-09",
+  "change": "Responsive and directly inspectable landing recorder charts",
+  "verification": {
+    "sourceSha256": "c4d9746f4495fcdaf83f9443e4911daa30868d4b1126dfb2728fc7f7ffcf505f",
+    "sourceBytes": 1426232,
+    "mirrorsIdentical": true,
+    "reversesToAcceptedPass32": true,
+    "priorTestsUnchanged": 126,
+    "ownedTests": {
+      "tests/e2e/moon-mission-descent-recorder.spec.ts": "fbadeaf1ba5bb97340bb136ec92feaa3c9fbf081d922f1734b749109ef80b879"
+    },
+    "indexUnchanged": true,
+    "stagedOwnedPaths": [],
+    "syntaxChecksPassed": true,
+    "diffCheckPassed": true
+  },
+  "browserRunner": "direct-playwright-api",
+  "playwrightCliResult": false,
+  "browserRuns": [
+    {
+      "mode": "recorder",
+      "status": "passed",
+      "workflow": "responsive landing recorder keeps charts readable and selects actual recorded times without changing the flight",
+      "result": "direct-recorder-5/direct-recorder-result.json",
+      "browserVersion": "148.0.7778.96",
+      "workflowCompleted": true,
+      "cleanupCompleted": true,
+      "attachments": [
+        {
+          "name": "phone-touchdown",
+          "path": "direct-recorder-5/phone-touchdown.png",
+          "contentType": "image/png",
+          "sha256": "31d7f4204395e58823a37ca9972e74907de7ccbf775c4f5ae27f564a7867be1b"
+        },
+        {
+          "name": "phone-touchdown-state",
+          "path": "direct-recorder-5/phone-touchdown.json",
+          "contentType": "application/json",
+          "sha256": "7e38e608f2f5a0b12dbfea50eebb2d07a34a7c6f593fc4e2fbf33960433e18e4"
+        },
+        {
+          "name": "phone-neutral-frame",
+          "path": "direct-recorder-5/phone-neutral-frame.png",
+          "contentType": "image/png",
+          "sha256": "1bf9507edc04828510c16f03803a938583a483c13a6a89fd47c177791d55abd9"
+        },
+        {
+          "name": "phone-neutral-frame-state",
+          "path": "direct-recorder-5/phone-neutral-frame.json",
+          "contentType": "application/json",
+          "sha256": "3be896c299b14284a3ffe85203ab3f7b267e0c4e6632cfa6e9d051bbbc168623"
+        },
+        {
+          "name": "phone-up-left-frame",
+          "path": "direct-recorder-5/phone-up-left-frame.png",
+          "contentType": "image/png",
+          "sha256": "c8f78f2d724904d792e67b1048c4686c6b08875c82a284679a46c9d29fdaa14b"
+        },
+        {
+          "name": "phone-up-left-frame-state",
+          "path": "direct-recorder-5/phone-up-left-frame.json",
+          "contentType": "application/json",
+          "sha256": "0299a8f64baeeabce23e85dcbf1cc687d7fb4b9dff2075cb6187d931575229e2"
+        },
+        {
+          "name": "desktop-near-touchdown",
+          "path": "direct-recorder-5/desktop-near-touchdown.png",
+          "contentType": "image/png",
+          "sha256": "4e98ae03bfba79bc6fb109afdf082487fce46eaff429cb1e4c649b21b958c660"
+        },
+        {
+          "name": "desktop-near-touchdown-state",
+          "path": "direct-recorder-5/desktop-near-touchdown.json",
+          "contentType": "application/json",
+          "sha256": "b6b054ccefaa72490dbae4467907d67161a2c34efe22e8a06630c4bd340eaa60"
+        },
+        {
+          "name": "desktop-touchdown",
+          "path": "direct-recorder-5/desktop-touchdown.png",
+          "contentType": "image/png",
+          "sha256": "f2ef59df4e2065df3afda09c382dff7069da577711419dffd7fe939c78a82990"
+        },
+        {
+          "name": "desktop-touchdown-state",
+          "path": "direct-recorder-5/desktop-touchdown.json",
+          "contentType": "application/json",
+          "sha256": "7aaffe13d8379bc968f9a24849b5d6a74478b940431fff75a23467386234daef"
+        },
+        {
+          "name": "flight-recording-csv",
+          "path": "direct-recorder-5/saved-landing.csv",
+          "contentType": "text/csv",
+          "sha256": "6d7a66a7fa75e0df45e3e9b5e445c15eecf8f416ac6d0ea4e2b243471cf4259e"
+        }
+      ]
+    },
+    {
+      "mode": "review",
+      "status": "passed",
+      "workflow": "a saved touchdown can be inspected and exported, then retried without losing earlier attempts",
+      "result": "direct-review-2/direct-review-result.json",
+      "browserVersion": "148.0.7778.96",
+      "workflowCompleted": true,
+      "cleanupCompleted": true,
+      "attachments": [
+        {
+          "name": "recorded-approach",
+          "path": "direct-review-2/review/recorded-approach-chromium.png",
+          "contentType": "image/png",
+          "sha256": "5bb1c570ca2cdcf38be795f636f21e93185a2a9114cb7400fb35feb32c93be13"
+        },
+        {
+          "name": "flight-recording-csv",
+          "path": "direct-review-2/review/saved-landing.csv",
+          "contentType": "text/csv",
+          "sha256": "8276e157038fae1dfa872fc13b06e6950fa123e03409a0cdb2fa92866a5d6735"
+        }
+      ]
+    },
+    {
+      "mode": "phone",
+      "status": "passed",
+      "workflow": "phone recorder fits the viewport and supports keyboard inspection",
+      "result": "direct-phone-1/direct-phone-result.json",
+      "browserVersion": "148.0.7778.96",
+      "workflowCompleted": true,
+      "cleanupCompleted": true,
+      "attachments": [
+        {
+          "name": "recorder-phone",
+          "path": "direct-phone-1/review/recorder-phone-chromium.png",
+          "contentType": "image/png",
+          "sha256": "77c31fdbac4224051e0377ddbbc00f9cecfcc07593f3b66971d9310024388a96"
+        }
+      ]
+    }
+  ],
+  "unit": {
+    "file": "tests/moonmission_landing_restore.test.js",
+    "passed": 7,
+    "log": "unit.log"
+  },
+  "acceptedScreenshotCount": 7,
+  "acceptedScreenshots": [
+    "direct-recorder-5/phone-touchdown.png",
+    "direct-recorder-5/phone-neutral-frame.png",
+    "direct-recorder-5/phone-up-left-frame.png",
+    "direct-recorder-5/desktop-near-touchdown.png",
+    "direct-recorder-5/desktop-touchdown.png",
+    "direct-review-2/review/recorded-approach-chromium.png",
+    "direct-phone-1/review/recorder-phone-chromium.png"
+  ],
+  "limitations": [
+    "Saved synthetic recordings; no newly integrated flight in this pass.",
+    "No full build, broad suite, physical-device performance or audio claim."
+  ],
+  "committed": false,
+  "staged": false,
+  "pushed": false,
+  "deployed": false
+}

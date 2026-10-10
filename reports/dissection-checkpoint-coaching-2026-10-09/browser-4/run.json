@@ -1,0 +1,34 @@
+{
+  "mode": "browser",
+  "label": "browser-4",
+  "start": "2026-10-10T00:12:10.236Z",
+  "startHashes": {
+    "stem_lab/stem_tool_dissection.js": "1665a57757125b1cfaceff6dbcca13aeb930987984fce2bd3f06019b30b9285a",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "1665a57757125b1cfaceff6dbcca13aeb930987984fce2bd3f06019b30b9285a",
+    "tests/e2e/dissection-checkpoint-coaching.spec.ts": "558f93c2290d19e6aeb49ed54d7726d56555c67d8b1bbf997785a204c261efa4",
+    "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6"
+  },
+  "args": [
+    "node_modules/@playwright/test/cli.js",
+    "test",
+    "tests/e2e/dissection-checkpoint-coaching.spec.ts",
+    "--workers=1",
+    "--retries=0",
+    "--max-failures=1",
+    "--project=chromium",
+    "--reporter=list,json",
+    "--output=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-checkpoint-coaching-2026-10-09\\browser-4\\test-results"
+  ],
+  "freeMiB": 3845.7734375,
+  "pid": 29564,
+  "exitCode": 0,
+  "signal": null,
+  "end": "2026-10-10T00:12:47.375Z",
+  "endHashes": {
+    "stem_lab/stem_tool_dissection.js": "1665a57757125b1cfaceff6dbcca13aeb930987984fce2bd3f06019b30b9285a",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "1665a57757125b1cfaceff6dbcca13aeb930987984fce2bd3f06019b30b9285a",
+    "tests/e2e/dissection-checkpoint-coaching.spec.ts": "558f93c2290d19e6aeb49ed54d7726d56555c67d8b1bbf997785a204c261efa4",
+    "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6"
+  },
+  "inputHashesStable": true
+}

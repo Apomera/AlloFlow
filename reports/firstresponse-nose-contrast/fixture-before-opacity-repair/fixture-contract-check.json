@@ -1,0 +1,60 @@
+{
+  "passed": true,
+  "browserLaunched": false,
+  "baselineSHA": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76",
+  "candidateSHA": "af6ecb094af6d67ebb0955170a55e0a9726308c59f4ddd9b196d56cfe434e4c7",
+  "fixtureSHA256": "49c4aada13b9e2ffdc008a0f799f1f14d05e6035decff8ca1d489e083221c72a",
+  "checkerSHA256": "70d2706b7ad32bea7997c5ed165e7b65cad6271d701699bcddb3735105dda5bd",
+  "syntaxFiles": 4,
+  "listedWorkflows": 3,
+  "scope": "contrast nose material and shader only",
+  "negative": [
+    {
+      "name": "disabled contrast uniform",
+      "rejected": true
+    },
+    {
+      "name": "wrong shader cache key",
+      "rejected": true
+    },
+    {
+      "name": "missing normal-space shader hook",
+      "rejected": true
+    },
+    {
+      "name": "changed nose diffuse",
+      "rejected": true
+    },
+    {
+      "name": "outside scene changed",
+      "rejected": true
+    },
+    {
+      "name": "camera changed",
+      "rejected": true
+    },
+    {
+      "name": "rendered triangles changed",
+      "rejected": true
+    },
+    {
+      "name": "extra material missing",
+      "rejected": true
+    },
+    {
+      "name": "extra program missing",
+      "rejected": true
+    },
+    {
+      "name": "normal mode shader added",
+      "rejected": true
+    }
+  ],
+  "mutationRejected": true,
+  "restoreVerified": true,
+  "list": {
+    "status": 0,
+    "stdout": "Listing tests:\n  firstresponse-face-preview.spec.ts:159:29 › nose contrast adult-pose5 preview at matching native supporting-hand view\n  firstresponse-face-preview.spec.ts:159:29 › nose contrast adult-pose5-contrast preview at matching native supporting-hand view\n  firstresponse-face-preview.spec.ts:159:29 › nose contrast infant-pose8-contrast preview at matching native supporting-hand view\nTotal: 3 tests in 1 file\n",
+    "stderr": ""
+  }
+}

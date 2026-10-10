@@ -1,0 +1,11 @@
+
+Running 2 tests using 1 worker
+
+(node:53016) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:53016) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\e2e\scale-explorer-nucleus.spec.ts:45:5 › gold-197 retains every nucleon and exposes solid movable sections with native landmarks (47.0s)
+  ok 2 tests\e2e\scale-explorer-nucleus.spec.ts:58:5 › phone nuclear sections restore saved observations and compare physical sizes in WebGL 1 (28.6s)
+
+  2 passed (1.8m)

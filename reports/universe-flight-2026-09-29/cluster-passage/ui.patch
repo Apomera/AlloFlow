@@ -1,0 +1,86 @@
+diff --git "a/C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-cluster-passage62\\baseline-ui.js" "b/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_universe.js"
+index 9ea3d87..7006e23 100644
+--- "a/C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-cluster-passage62\\baseline-ui.js"
++++ "b/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_universe.js"
+@@ -282,7 +282,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
+       nebula:{depart:'Leaving the stellar field',filaments:'Approaching the blue filaments',passage:'Passing the blue veil',turn:'Turning toward the violet cloud',reveal:'Revealing the violet cloud',complete:'Nebula view ready'},
+       group:{depart:'Approaching the foreground spiral',spiral:'Sweeping around the spiral',crossing:'Crossing toward the golden elliptical',elliptical:'Passing the golden elliptical',reveal:'Revealing the galaxy group',complete:'Galaxy group view ready'},
+       disk:{approach:'Above the spiral arms',descent:'Descending into the stellar disk',crossing:'Crossing the star field',emerge:'Leaving the stellar disk',turn:'Turning toward the galaxy',reveal:'Revealing the whole spiral',complete:'Spiral panorama ready'},
+-      stellar:{depart:'Approaching the amber star',amber:'Passing the amber photosphere','to-blue':'Crossing toward the blue star',blue:'Passing the blue star','to-pale':'Crossing toward the pale star',pale:'Passing the pale star',reveal:'Looking back across the stars',complete:'Stellar view ready'}
++      stellar:{depart:'Approaching the amber star',amber:'Passing the amber photosphere','to-blue':'Crossing toward the blue star',blue:'Passing the blue star','to-pale':'Crossing toward the pale star',pale:'Passing the pale star',reveal:'Looking back across the stars',complete:'Stellar view ready'},
++      cluster:{depart:'Leaving the stellar field',approach:'Approaching the stellar group',heart:'Passing through the stellar group',emerge:'Emerging beyond the stars',reveal:'Looking back across the group',complete:'Star cluster view ready'}
+     },phases=byRoute[flyby.id]||byRoute.halo;
+     return label((flyby.id==='halo'?'flyby_phase_':'flyby_'+flyby.id+'_phase_')+flyby.phase,phases[flyby.phase]||flyby.name||'Scenic flyby');
+   }
+@@ -300,7 +301,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
+   }
+ 
+   function flybyCheckpointHelp(event,label) {
+-    return event.routeId==='disk'?label('journey_disk_help','Travel is paused beyond the disk with the spiral in view. Look around, orbit the galaxy, or save this viewpoint.'):event.routeId==='stellar'?label('journey_stellar_help','Travel is paused beyond the three stars. Look back, orbit a star, or save this view.'):event.routeId==='nebula'?label('journey_nebula_help','Travel is paused beside the violet cloud. Look around, orbit the nebula, or save this view.'):event.routeId==='group'?label('journey_group_help','Travel is paused with the galaxies in view. Look around, orbit the golden elliptical, or save this viewpoint.'):label('journey_flyby_help','Travel is paused after the curved cluster pass. Look around, orbit the galaxy, or save this view.');
++    return event.routeId==='disk'?label('journey_disk_help','Travel is paused beyond the disk with the spiral in view. Look around, orbit the galaxy, or save this viewpoint.'):event.routeId==='stellar'?label('journey_stellar_help','Travel is paused beyond the three stars. Look back, orbit a star, or save this view.'):event.routeId==='cluster'?label('journey_cluster_help','Travel is paused beyond the generated stellar group. Look back, orbit the group, or save this viewpoint.'):event.routeId==='nebula'?label('journey_nebula_help','Travel is paused beside the violet cloud. Look around, orbit the nebula, or save this view.'):event.routeId==='group'?label('journey_group_help','Travel is paused with the galaxies in view. Look around, orbit the golden elliptical, or save this viewpoint.'):label('journey_flyby_help','Travel is paused after the curved cluster pass. Look around, orbit the galaxy, or save this view.');
+   }
+ 
+   function UniverseFlightFlybyControls(props) {
+@@ -327,7 +328,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
+         h('p',{id:prefix+'-flyby-seek-help',className:'uf-note'},label('flyby_seek_help','Scrub to pause at any moment. Route time is shown at Standard pace; highlight pauses add gentle easing.')),
+         !completed&&h('button',{type:'button',className:'uf-flyby-play',disabled:!props.ready,onClick:props.onPlayback},props.running?label('flyby_pause','Pause flyby'):label('flyby_continue','Continue flyby')),
+         !completed&&!props.running&&h('button',{type:'button',className:'uf-flyby-explore',disabled:!props.ready,onClick:props.onDetour},label('detour_begin','Explore this stop'))),
+-      h('p',{className:'uf-note'},completed?(flyby.id==='stellar'?label('flyby_stellar_complete_help','The stellar panorama is ready. Travel is paused; revisit a close pass or save this viewpoint.'):flyby.id==='nebula'?label('flyby_nebula_complete_help','The violet cloud view is ready. Travel is paused; look around or save this viewpoint.'):flyby.id==='group'?label('flyby_group_complete_help','The galaxy group view is ready. Travel is paused; look around or save this viewpoint.'):label('flyby_complete_help','The galaxy view is ready. Travel is paused; look around or save this viewpoint.')):label('flyby_control_help','Pause any time. Looking around keeps the route moving and releases the guided view.')),
++      h('p',{className:'uf-note'},completed?(flyby.id==='stellar'?label('flyby_stellar_complete_help','The stellar panorama is ready. Travel is paused; revisit a close pass or save this viewpoint.'):flyby.id==='cluster'?label('flyby_cluster_complete_help','The star cluster panorama is ready. Travel is paused; revisit the passage or save this viewpoint.'):flyby.id==='nebula'?label('flyby_nebula_complete_help','The violet cloud view is ready. Travel is paused; look around or save this viewpoint.'):flyby.id==='group'?label('flyby_group_complete_help','The galaxy group view is ready. Travel is paused; look around or save this viewpoint.'):label('flyby_complete_help','The galaxy view is ready. Travel is paused; look around or save this viewpoint.')):label('flyby_control_help','Pause any time. Looking around keeps the route moving and releases the guided view.')),
+       h('label',{htmlFor:prefix+'-flyby-rate'},label('flyby_rate','Flyby pace')),
+       h('select',{id:prefix+'-flyby-rate',value:props.rate,disabled:!props.ready||completed,onChange:function(e){props.onRate(Number(e.target.value));}},
+         h('option',{value:0.5},label('flyby_slow','Slow · ½×')),h('option',{value:1},label('flyby_standard','Standard · 1×')),h('option',{value:2},label('flyby_fast','Fast · 2×'))),
+@@ -345,7 +346,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
+       !completed&&h('p',{className:'uf-flyby-view'},flyby.autoLook?label('flyby_view_following','Following the route view'):label('flyby_view_free','Free look · your direction is retained')),
+       props.highlights&&props.highlights.length>0&&h('div',{className:'uf-flyby-highlights',role:'group','aria-labelledby':prefix+'-flyby-highlights-title'},
+         h('h5',{id:prefix+'-flyby-highlights-title'},label('flyby_highlights_title','Jump to a paused highlight')),
+-        h('p',{className:'uf-note'},label('flyby_preview_help','Choose a preview to pause there, then continue the flyby. Previews use the route’s starting lens.')+((flyby.id==='nebula'||flyby.id==='stellar')?' '+label('dust_preview_help','Previews show dust on.'):'')),
++        h('p',{className:'uf-note'},label('flyby_preview_help','Choose a preview to pause there, then continue the flyby. Previews use the route’s starting lens.')+((flyby.id==='nebula'||flyby.id==='stellar'||flyby.id==='cluster')?' '+label('dust_preview_help','Previews show dust on.'):'')),
+         props.highlights.map(function(item){var current=!props.running&&flyby.active&&Math.abs(flyby.elapsedSeconds-item.seconds)<0.000001,title=label('flyby_'+flyby.id+'_highlight_'+item.id,item.name),description=label('flyby_'+flyby.id+'_highlight_'+item.id+'_detail',item.description);return h('button',{key:item.id,type:'button','data-flyby-highlight':item.id,'aria-current':current?'true':undefined,'aria-label':title+'. '+item.seconds+' '+label('flyby_route_seconds','seconds at Standard pace')+'. '+description,disabled:!props.ready,onClick:function(){props.onHighlight(item.id);}},
+           h('span',{className:'uf-highlight-preview','aria-hidden':'true'},
+             h('img',{src:universeFlightResource('assets/universe-flight/highlights/'+encodeURIComponent(flyby.id)+'-'+encodeURIComponent(item.id)+'.webp'),alt:'',width:480,height:300,loading:'lazy',decoding:'async',onError:function(e){e.currentTarget.style.visibility='hidden';},onLoad:function(e){e.currentTarget.style.visibility='';}}),
+@@ -533,6 +534,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
+         h('p',null,label('scenic_flights_help','Scenic camera journeys with an automatic pause at the end. Starts a fresh journey; pause and look around any time.')+(props.mode==='relativity'?' '+label('scenic_switch_mode','Switches to Free exploration.'):''))),
+       h('div',{className:'uf-scenic-options'},[
+         ['stellar','Stellar close pass','Sweep beside three stars, inspect their surfaces, and look back across the glowing clouds'],
++        ['cluster','Star cluster passage','Approach a generated stellar group, pass among its stars, and look back from beyond it'],
+         ['galaxy','Dive toward the spiral','Arms, stars, and the central bulge'],
+         ['neighborhood','Drift between stars','Nearby clusters and glowing clouds'],
+         ['cosmic','Approach an island galaxy','A galaxy grows against the distant group'],
+@@ -541,7 +543,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
+         ['group','Galaxy group flyby','Pass the spiral and golden elliptical, then reveal the group'],
+         ['disk','Spiral disk passage','Descend through the star field, then emerge beyond the disk for a wide panorama']
+       ].map(function(item,index){return h('button',{key:item[0],type:'button','data-scenic-flight':item[0],className:item[0]==='galaxy'?'uf-primary':'',disabled:!props.ready,onClick:function(){props.onLaunch(item[0]);}},
+-        h('strong',null,label('scenic_flight_'+item[0],item[1])),h('small',null,label('scenic_flight_'+item[0]+'_detail',item[2])),h('span',{className:'uf-scenic-duration'},item[0]==='stellar'?label('flyby_stellar_duration','46 seconds at standard pace'):item[0]==='halo'?label('flyby_duration','36 seconds at standard pace'):item[0]==='nebula'?label('flyby_nebula_duration','40 seconds at standard pace'):item[0]==='group'?label('flyby_group_duration','48 seconds at standard pace'):item[0]==='disk'?label('flyby_disk_duration','44 seconds at standard pace'):label('scenic_duration','About 20 seconds')));
++        h('strong',null,label('scenic_flight_'+item[0],item[1])),h('small',null,label('scenic_flight_'+item[0]+'_detail',item[2])),h('span',{className:'uf-scenic-duration'},item[0]==='stellar'?label('flyby_stellar_duration','46 seconds at standard pace'):item[0]==='cluster'?label('flyby_cluster_duration','36 seconds at standard pace'):item[0]==='halo'?label('flyby_duration','36 seconds at standard pace'):item[0]==='nebula'?label('flyby_nebula_duration','40 seconds at standard pace'):item[0]==='group'?label('flyby_group_duration','48 seconds at standard pace'):item[0]==='disk'?label('flyby_disk_duration','44 seconds at standard pace'):label('scenic_duration','About 20 seconds')));
+       })));
+   }
+ 
+@@ -698,7 +700,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
+         props.views.length>0&&h('span',{'aria-hidden':'true',className:'uf-inspector-divider'}),
+         props.views.length>0&&h('div',{className:'uf-inspector-views'},
+           h('h4',null,label('inspector_scenic','Scenic viewpoints')),
+-          h('p',{className:'uf-inspector-note'},label('inspector_scenic_help','Open a paused scenic view. Back restores your previous position, lens and journey counters.')+(props.views.some(function(view){return view.routeId==='nebula'||view.routeId==='stellar';})?' '+label('dust_preview_help','Previews show dust on.'):'')),
++          h('p',{className:'uf-inspector-note'},label('inspector_scenic_help','Open a paused scenic view. Back restores your previous position, lens and journey counters.')+(props.views.some(function(view){return view.routeId==='nebula'||view.routeId==='stellar'||view.routeId==='cluster';})?' '+label('dust_preview_help','Previews show dust on.'):'')),
+           props.views.map(function(view){return button(h(React.Fragment,null,
+             h('span',{className:'uf-highlight-preview','aria-hidden':'true'},h('img',{src:universeFlightResource('assets/universe-flight/highlights/'+encodeURIComponent(view.routeId)+'-'+encodeURIComponent(view.highlightId)+'.webp'),alt:'',width:480,height:300,loading:'lazy',decoding:'async',onError:function(e){e.currentTarget.style.visibility='hidden';},onLoad:function(e){e.currentTarget.style.visibility='';}})),
+             h('span',{className:'uf-inspector-view-copy'},h('strong',null,label('flyby_'+view.routeId+'_highlight_'+view.highlightId,view.name)),h('small',null,label('inspector_view_action','Open paused view')))),
+@@ -857,6 +859,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
+       'amber-star':'Slide sideways and watch the nearby star shift against the distant sky. Undo your steps to compare the two views.',
+       'blue-star':'Compare this model star with the amber star. Try a slow camera orbit; the displayed colors are illustrative.',
+       'pale-star':'Look back toward your earlier stops and compare their directions. Save a view with a short observation.',
++      'local-cluster-1':'Compare the dense center with the outer stars. Move sideways or orbit to see the generated group’s depth; the scenic passage follows an authored camera path.',
++      'local-cluster-2':'Look around the blue-side stellar group and compare it with the near group. Change your position to see the stars shift against the glowing cloud.',
++      'local-cluster-3':'Compare the distant stellar group with the nearer groups. Try a camera orbit and save a view of the generated stars with a short observation.',
+       'blue-nebula':'Move sideways or orbit to change which stars sit behind the cloud. Toggle Starlight through dust to compare their brightness and color at the same view. Gaps in the glowing filaments still show reduced model emission.',
+       'violet-nebula':'Try an orbit and watch background starlight change along different paths through the cloud. Toggle Starlight through dust to compare at a paused view. The glowing filaments keep their separate, illustrative emission.',
+       'galactic-center':'Look for the warm central bulge and the blue spiral arms. Orbit to see how the disk changes shape.',
+@@ -1090,6 +1095,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
+     function chooseTarget(id) { stop();setInspection(null);if(id!==targetId)setJourney(null);if(activeTour&&(!tourStop||tourStop.id!==id))setTour(null); setNotice(''); setTargetId(id); if(scene.current) { scene.current.cancelNavigation(); scene.current.selectTarget(id); } }
+     function inspectDiscovery(id) {
+       if(!scene.current||!ready||mode!=='explore')return;
++      // Opening details during a flyby keeps a return point and releases its inspector lock.
++      if(info.flyby&&info.flyby.active){stop();settingsRef.current.running=false;if(!beginFlybyDetour())return;}
+       chooseTarget(id);scene.current.endOrbit();scene.current.focusTarget(id);setJourney(null);
+       setInspection({id:id,region:flightRegion});inspectScene();
+     }

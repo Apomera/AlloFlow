@@ -1,0 +1,17 @@
+{
+  "baseDriverSha256": "055ffb29f1f05c2a0f0a3c2d029438f811415acc48bbe03f6c9a588d38a65454",
+  "driverSha256": "481feef787191648c4dd0431bdc61b2122ed5013e68950c21b5f635f4b848808",
+  "changes": [
+    {
+      "before": "report=path.join(stage,'native-final-report')",
+      "after": "report=path.join(stage,'native-v2-report')",
+      "count": 1
+    },
+    {
+      "before": "path.join(stage,phase+'-renderer.js')",
+      "after": "path.join(stage,phase==='candidate'?'candidate-v2-renderer.js':phase+'-renderer.js')",
+      "count": 2
+    }
+  ],
+  "scope": "File path changes only. Initial 256-sample source and captured failed design attempt stay preserved."
+}

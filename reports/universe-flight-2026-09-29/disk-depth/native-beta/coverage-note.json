@@ -1,0 +1,9 @@
+{
+  "originalReportPreserved": true,
+  "originalImagesPreserved": 4,
+  "originalHarnessSha256": "623aa8e14b35f6f8c2620fef75f82b715b7ba37409d412130730cc7bef84bc6b",
+  "beta09": "Blank: compile and finite upload only; it does not prove visible target emission.",
+  "beta099": "Meaningful dim rear-facing emission with differing baseline/candidate pixels.",
+  "correctedBeta09Report": "../native-beta-visible-report/check.json",
+  "correctedHarnessSha256": "6eb290ebfdb8a8a9878bdf38fe676d4ea90cad2da1c10524dbee1fc00230c792"
+}

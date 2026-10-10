@@ -1,0 +1,126 @@
+{
+  "candidateSHA256": "dc9deade4909e37e9aa4918309541168696e808b7eb066575fea3fa91d574c7e",
+  "baselineSHA256": "69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242",
+  "auditorSHA256": "a70115ee9038d214d8e064652ea2c1b8671946539cbfcadf8a385fd84e1a071f",
+  "inputs": {
+    "firstresponse-face-preview.spec.ts": "cfa7d4d8093a0e9d96f3fcaf352b70b7b842471e717dafe4fdd75c582db5d1da",
+    "run-face-browser.cjs": "d7e162f49f95d390487c859ba25b26bb5544ffe4e3410aad346cd67dad54d8ea",
+    "playwright-face.config.cjs": "dda618a55a673d8c544dfc13f4273c04d406d7bdd06c8734acddb93ebcdfe7be",
+    "face-capture-png.cjs": "6009565cd97b35c874ff22325427e40823b4ff197118ea3870d0b2996bd30829",
+    "face-mount-window.cjs": "9e3d95fe4ce8ae16ca7d4a994d26250e064873d675b930fb23d63b33ba43b246",
+    "patient-wrist-contract.cjs": "dfcb06b31b735eb58acd705a06ddc3acc4c5f196e8fa426b8f0c378af628b1d1",
+    "candidate.js": "dc9deade4909e37e9aa4918309541168696e808b7eb066575fea3fa91d574c7e",
+    "before.js": "69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242",
+    "delta.json": "c0b318571149cb0e88fc08e0fc91c7c48568e6bc91d8af3b475bdbe1f8c375d6"
+  },
+  "accepted": true,
+  "scope": "Only normal arrays of exact left/right patient wrist meshes may differ. All positions, indices, UVs, materials, shaders, scene transforms, metadata, contacts, camera projections, state and resource counts stay exact. Stage/wrist crops share one captured frame. Contrast contour pixels may change because the unchanged shader consumes normals.",
+  "negativeTests": [
+    {
+      "kind": "broaden-normal-exemption",
+      "rejected": true,
+      "error": "firstresponse-face-preview.spec.ts required: if(o.name!=='fr-patient-left-wrist'&&o.name!=='fr-patient-right-wrist')return descriptor;",
+      "restoredAndReread": true,
+      "restoredSHA256": "cfa7d4d8093a0e9d96f3fcaf352b70b7b842471e717dafe4fdd75c582db5d1da"
+    },
+    {
+      "kind": "normalize-metadata",
+      "rejected": true,
+      "error": "firstresponse-face-preview.spec.ts required: function exactUserData(o){return JSON.parse(JSON.stringify(o.userData));}",
+      "restoredAndReread": true,
+      "restoredSHA256": "cfa7d4d8093a0e9d96f3fcaf352b70b7b842471e717dafe4fdd75c582db5d1da"
+    },
+    {
+      "kind": "omit-unit-normal-check",
+      "rejected": true,
+      "error": "firstresponse-face-preview.spec.ts required: if(!isFinite(length)||Math.abs(length-1)>1e-5)throw Error('Invalid wrist unit normal '+o.name);",
+      "restoredAndReread": true,
+      "restoredSHA256": "cfa7d4d8093a0e9d96f3fcaf352b70b7b842471e717dafe4fdd75c582db5d1da"
+    },
+    {
+      "kind": "omit-resize",
+      "rejected": true,
+      "error": "firstresponse-face-preview.spec.ts required: resize={wide,restored};validateResize(value,resize,variant);",
+      "restoredAndReread": true,
+      "restoredSHA256": "cfa7d4d8093a0e9d96f3fcaf352b70b7b842471e717dafe4fdd75c582db5d1da"
+    },
+    {
+      "kind": "omit-wrist-pixel-effect",
+      "rejected": true,
+      "error": "run-face-browser.cjs required: if(!pair[0].contrast&&wristChangedPixels===0)throw Error('Wrist detail had no visible effect '+id);",
+      "restoredAndReread": true,
+      "restoredSHA256": "d7e162f49f95d390487c859ba25b26bb5544ffe4e3410aad346cd67dad54d8ea"
+    },
+    {
+      "kind": "reject-other-geometry-change",
+      "rejected": true,
+      "error": "complete scene preserved except exact two wrist normal arrays\n+ actual - expected\n\n  {\n    bytes: 4000,\n+   hash: 'changed'\n-   hash: 'whole-scene'\n  }\n",
+      "restoredAndReread": true,
+      "restoredSHA256": "0e3bb4fe70de03045cdaa04f8b480d4c3eb379e183ba56288c35f7e9cb11f511"
+    },
+    {
+      "kind": "reject-camera-change",
+      "rejected": true,
+      "error": "camera exact\n+ actual - expected\n\n  {\n    aspect: 1.5,\n    position: [\n+     1.01,\n-     1,\n      2,\n      3\n    ]\n  }\n",
+      "restoredAndReread": true,
+      "restoredSHA256": "0e3bb4fe70de03045cdaa04f8b480d4c3eb379e183ba56288c35f7e9cb11f511"
+    },
+    {
+      "kind": "reject-inspection-change",
+      "rejected": true,
+      "error": "supportInspection exact\n+ actual - expected\n... Skipped lines\n\n  {\n    expectedFaceFrame: {\n      center: [\n        0,\n        0,\n...\n        [\n+         0.01,\n          0,\n          0,\n-         0\n        ],\n        [\n          0,\n          0,\n          0\n",
+      "restoredAndReread": true,
+      "restoredSHA256": "0e3bb4fe70de03045cdaa04f8b480d4c3eb379e183ba56288c35f7e9cb11f511"
+    },
+    {
+      "kind": "reject-normal-count-change",
+      "rejected": true,
+      "error": "normal buffer byte count\n\n14400 !== 14388\n",
+      "restoredAndReread": true,
+      "restoredSHA256": "0e3bb4fe70de03045cdaa04f8b480d4c3eb379e183ba56288c35f7e9cb11f511"
+    },
+    {
+      "kind": "reject-invalid-unit-normals",
+      "rejected": true,
+      "error": "unit normal length bounds",
+      "restoredAndReread": true,
+      "restoredSHA256": "0e3bb4fe70de03045cdaa04f8b480d4c3eb379e183ba56288c35f7e9cb11f511"
+    },
+    {
+      "kind": "reject-extra-normal-target",
+      "rejected": true,
+      "error": "exact two wrist normal buffers\n+ actual - expected\n\n  [\n+   'fr-patient-left-forearm',\n-   'fr-patient-left-wrist',\n    'fr-patient-right-wrist'\n  ]\n",
+      "restoredAndReread": true,
+      "restoredSHA256": "0e3bb4fe70de03045cdaa04f8b480d4c3eb379e183ba56288c35f7e9cb11f511"
+    },
+    {
+      "kind": "reject-unchanged-wrist-normals",
+      "rejected": true,
+      "error": "each wrist has a deliberate normal change",
+      "restoredAndReread": true,
+      "restoredSHA256": "0e3bb4fe70de03045cdaa04f8b480d4c3eb379e183ba56288c35f7e9cb11f511"
+    },
+    {
+      "kind": "reject-material-allocation",
+      "rejected": true,
+      "error": "materials exact\n\n13 !== 12\n",
+      "restoredAndReread": true,
+      "restoredSHA256": "0e3bb4fe70de03045cdaa04f8b480d4c3eb379e183ba56288c35f7e9cb11f511"
+    }
+  ],
+  "list": {
+    "exitCode": 0,
+    "args": [
+      "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "firstresponse-face-preview.spec.ts",
+      "--config=C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\playwright-face.config.cjs",
+      "--list"
+    ],
+    "stdout": "Listing tests:\n  firstresponse-face-preview.spec.ts:160:29 › patient wrist finish adult-wide preview at native view\n  firstresponse-face-preview.spec.ts:160:29 › patient wrist finish child-narrow preview at native view\n  firstresponse-face-preview.spec.ts:160:29 › patient wrist finish infant-narrow-contrast preview at native view\nTotal: 3 tests in 1 file\n",
+    "stderr": "",
+    "browserLaunched": false
+  },
+  "inputsUnchanged": true,
+  "sharedFilesWritten": 0
+}

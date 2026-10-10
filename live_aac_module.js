@@ -5,6 +5,19 @@ var React = window.React;
 var useState = React.useState;
 var useEffect = React.useEffect;
 var useRef = React.useRef;
+// Keep only portable speech provenance; imported lesson data cannot add fields
+// to the delivery envelope through clip metadata.
+function sanitizeWordSoundsAudioProvenance(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const out = {
+    version: 1
+  };
+  ['provider', 'engine', 'resolvedVoice', 'voice', 'language', 'model'].forEach(key => {
+    if (Object.prototype.hasOwnProperty.call(value, key) && typeof value[key] === 'string' && value[key].length && value[key].length <= 120) out[key] = value[key];
+  });
+  if (['synthesized', 'recorded_bank', 'unknown', 'teacher_recording'].includes(value.source)) out.source = value.source;
+  return Object.keys(out).length > 1 ? out : null;
+}
 const ALLO_AAC_BOARD_FORMAT = 'alloflow.aac-board';
 const ALLO_AAC_BOARD_VERSION = 1;
 const ALLO_LIVE_AAC_SCHEMA = 'alloflow.live-aac';
@@ -631,9 +644,13 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
           recordOmittedTtsKey(key, omittedKeys);
           continue;
         }
+        const provenance = sanitizeWordSoundsAudioProvenance(asset.provenance);
         safeAssets[key] = {
           mime,
-          base64
+          base64,
+          ...(provenance ? {
+            provenance
+          } : {})
         };
         remainingAudioChars -= base64.length;
         remainingAudioItems -= 1;
@@ -666,6 +683,10 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
         if (unresolvedOmittedKeys.length) packedWord._ttsOmittedKeys = unresolvedOmittedKeys;else delete packedWord._ttsOmittedKeys;
       });
     });
+  }
+  const syllableTransport = typeof window !== 'undefined' && window.AlloModules?.WordSoundsReadiness;
+  if (item.type === 'word-sounds' && typeof syllableTransport?.restoreReviewedSyllables === 'function') {
+    syllableTransport.restoreReviewedSyllables(referenceAudioSource, cleaned);
   }
   const readAloud = typeof window !== 'undefined' && window.AlloModules?.ResourceReadAloud;
   const audioChannel = ['qr', 'live', 'student-pack'].includes(deps.audioChannel) ? deps.audioChannel : 'student-pack';
@@ -819,7 +840,10 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
           Object.defineProperty(target._ttsAssets, key, {
             value: {
               mime: assets[key].mime,
-              base64: assets[key].base64
+              base64: assets[key].base64,
+              ...(sanitizeWordSoundsAudioProvenance(assets[key].provenance) ? {
+                provenance: sanitizeWordSoundsAudioProvenance(assets[key].provenance)
+              } : {})
             },
             enumerable: true,
             configurable: true,
@@ -829,7 +853,73 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
       });
     });
   }
-  return packedResource;
+  // Independent fail-closed research gate for offline packs. The shared
+  // sanitizer may not be loaded, and earlier image/audio restoration must
+  // never reintroduce a teacher's full evidence report or private appendix.
+  const sanitizeResearch = (value, seen = new WeakMap()) => {
+    const appendix = /^#{1,6}[ \t]+(?:Your Document References|Research Review)[ \t]*:?[ \t]*\r?$/mi;
+    const api = typeof window !== 'undefined' && (window.AlloModules?.StudentSources || window.AlloModules?.TextPipelineHelpers?.studentSources);
+    const publicText = (text, record) => {
+      try {
+        if (typeof api?.publicText === 'function') return api.publicText(text, record);
+      } catch (_) {}
+      const marker = appendix.exec(text);
+      return marker ? text.slice(0, marker.index).trimEnd() : text;
+    };
+    if (typeof value === 'string') return publicText(value, null);
+    if (!value || typeof value !== 'object' || value instanceof Date) return value;
+    const prototype = Object.getPrototypeOf(value);
+    if (!Array.isArray(value) && prototype !== Object.prototype && prototype !== null) return value;
+    const report = value.version === 1 && (Array.isArray(value.supplied) && Array.isArray(value.citedIds) || Array.isArray(value.items) && value.sourceDecisions && Array.isArray(value.activity));
+    if (report) return undefined;
+    if (seen.has(value)) return seen.get(value);
+    const out = Array.isArray(value) ? [] : {};
+    seen.set(value, out);
+    let reading = typeof value.data === 'string' ? value.data : typeof value.text === 'string' ? value.text : null;
+    let decoded = false,
+      withholdEncodedReading = false;
+    if (value.type === 'simplified' && value.dataEncoding === 'json-text/v1' && reading !== null) {
+      try {
+        const parsed = JSON.parse(reading);
+        if (typeof parsed === 'string') {
+          reading = parsed;
+          decoded = true;
+        }
+      } catch (_) {}
+      withholdEncodedReading = !decoded && /\\n#{1,6}[ \t]+(?:Your Document References|Research Review)/i.test(reading);
+      if (withholdEncodedReading) reading = null;
+    }
+    let record = null;
+    if (reading !== null && (value.type === 'simplified' || value.studentSources) && typeof api?.sanitize === 'function' && typeof api?.forText === 'function') {
+      try {
+        record = api.sanitize(api.forText(value.studentSources, reading));
+      } catch (_) {}
+    }
+    Object.entries(value).forEach(([key, nested]) => {
+      if (key === 'data' && withholdEncodedReading) return;
+      if (['researchEvidence', 'researchPacket', 'reviewedResearch', 'researchConfig', 'studentSources'].includes(key)) return;
+      if (key === 'sourceProvenance' && nested && typeof nested === 'object' && ['signature', 'researchEvidence', 'researchPacket', 'reviewedResearch'].some(field => Object.prototype.hasOwnProperty.call(nested, field))) return;
+      if (key === 'sourceSnapshot' && nested && typeof nested.text === 'string' && appendix.test(nested.text)) return;
+      if (key === 'sourceSnapshot' && nested && typeof nested === 'object' && !Array.isArray(nested)) {
+        const {
+          signature,
+          preview,
+          ...snapshot
+        } = nested;
+        out[key] = sanitizeResearch(snapshot, seen);
+        return;
+      }
+      if (['generationInputText', 'fromText'].includes(key) && typeof nested === 'string' && appendix.test(nested)) return;
+      if (typeof nested === 'string') out[key] = publicText(key === 'data' && decoded ? reading : nested, record);else {
+        const safe = sanitizeResearch(nested, seen);
+        if (safe !== undefined) out[key] = safe;
+      }
+    });
+    if (decoded) out.dataEncoding = 'text/v1';
+    if (record) out.studentSources = record;
+    return typeof window?.normalizeReadingPreservation === 'function' ? window.normalizeReadingPreservation(out, 'student-research-privacy') : out;
+  };
+  return stripUndefined(sanitizeResearch(packedResource));
 };
 
 // Mailbox media preparation is separate from the synchronous privacy serializer.

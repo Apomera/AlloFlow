@@ -1,0 +1,57 @@
+{
+  "date": "2026-10-06",
+  "reviewer": "view_browser",
+  "scope": "Independent inspection of the saved desktop and narrow large-text/high-contrast View chooser captures, plus read-only native fixture assumptions.",
+  "screenshots": [
+    {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-view-chooser-2026-10-06/view-1/captures/after-desktop-view.png",
+      "observations": [
+        "Four outer groups remain easy to scan, with clear separation between Accessibility, Specimen display, Lighting and motion, and Workspace actions.",
+        "The four specimen subgroups separate anatomy/presentation, local inspection, scene cues, and saved-frame reference controls. Native controls retain their original sequence.",
+        "Selected toggles use a thick border, underline, filled status dot, and pale fill. Unselected toggles keep a hollow dot.",
+        "The selected saved frame and its source layer are visible above Split compare. Pin prerequisites and technique-display effects sit next to their relevant controls.",
+        "No text or control clipping is visible. The illumination control makes its label, percentage, and slider readable."
+      ],
+      "metrics": {
+        "panelWidth": 1180,
+        "clientWidth": 1178,
+        "scrollWidth": 1178,
+        "subgroupColumns": 2,
+        "subgroupControlColumns": [2, 2, 2, 2],
+        "minimumButtonFont": 16,
+        "minimumButtonHeight": 48,
+        "clippedButtons": 0,
+        "clippedText": 0
+      }
+    },
+    {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-view-chooser-2026-10-06/view-1/captures/after-embedded-large-contrast-view.png",
+      "observations": [
+        "All four specimen subgroups and their controls stack in one column at 320 pixels. Headings and purpose text remain associated with their controls.",
+        "High-contrast selected states retain thick borders, underlines, and filled status dots; differences remain apparent without color.",
+        "Long descriptions wrap fully, including the saved-frame layer and technique-display explanation. No horizontal clipping is visible.",
+        "Larger text makes the panel taller, while all controls remain fully available and readable."
+      ],
+      "metrics": {
+        "panelWidth": 320,
+        "clientWidth": 318,
+        "scrollWidth": 318,
+        "subgroupColumns": 1,
+        "subgroupControlColumns": [1, 1, 1, 1],
+        "minimumButtonFont": 18,
+        "minimumButtonHeight": 48.875,
+        "clippedButtons": 0,
+        "clippedText": 0
+      }
+    }
+  ],
+  "visualFindings": [],
+  "nativeFixtureFinding": {
+    "case": "native practical hides inspection and reference actions and guards labels until End restores the View chooser",
+    "finding": "The native timed-practical start closes View by setting toolbarViewOpen false. The original fixture queried its controls without reopening it.",
+    "runtimeChangeRequired": false,
+    "correction": "Assert View closes after Start. Open the native Accessibility options toggle to inspect assessment controls. Open #diss-route-study to return to the End control, end the practical, and open View and accessibility options to inspect restored controls.",
+    "status": "Reported promptly to root; no fixture or runtime files edited during the active run."
+  },
+  "validationLimit": "Visual findings apply to the two saved captures inspected here. The root runner records the complete automated results separately."
+}

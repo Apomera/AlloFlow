@@ -1,0 +1,177 @@
+{
+  "at": "2026-10-09T23:33:42.394Z",
+  "scope": ".diss-equivalent-action",
+  "audits": {
+    "phone": {
+      "auditPath": "browser-3/captures/phone-axe.json",
+      "auditSha256": "152e1427121439bce231ded2017f703ce96b2c496a57dc239e41d80782bce0fe",
+      "metricsPath": "browser-3/captures/phone-metrics.json",
+      "metricsSha256": "8c33db7b17e88ec35f1f38a9584f48c2338b38886da8d6b41c796211718607f9",
+      "violations": 0,
+      "incomplete": 1,
+      "manuallyResolved": 1,
+      "metrics": {
+        "width": 274.40625,
+        "client": 274,
+        "scroll": 274,
+        "text": [
+          {
+            "text": "Motor-neutral: Inspect ventral landmarks and confirm symmetry",
+            "font": 16,
+            "client": 272,
+            "scroll": 272,
+            "height": 87.5625
+          },
+          {
+            "text": "Choose a safe plan in the learning checkpoint before performing this technique.",
+            "font": 16,
+            "client": 274,
+            "scroll": 274,
+            "height": 74.390625
+          },
+          {
+            "text": "Review plan",
+            "font": 16,
+            "client": 272,
+            "scroll": 272,
+            "height": 48
+          }
+        ]
+      }
+    },
+    "desktop-final": {
+      "auditPath": "browser-3/captures/desktop-final-axe.json",
+      "auditSha256": "4c221e19f1a88a1cd9a95ce69ee1e5296420cefeaf4b44de53fa17223669914c",
+      "metricsPath": "browser-3/captures/desktop-final-metrics.json",
+      "metricsSha256": "4acd7a822e00c9735ed9a4fb33bcd01596dd247f1cf6824e8bc6f1908a994d0e",
+      "violations": 0,
+      "incomplete": 1,
+      "manuallyResolved": 1,
+      "metrics": {
+        "width": 771.21875,
+        "client": 771,
+        "scroll": 771,
+        "text": [
+          {
+            "text": "Final explanation needed",
+            "font": 16,
+            "client": 769,
+            "scroll": 769,
+            "height": 48
+          },
+          {
+            "text": "Explain the observed result in the learning checkpoint before continuing.",
+            "font": 16,
+            "client": 630,
+            "scroll": 630,
+            "height": 24.796875
+          },
+          {
+            "text": "Explain result",
+            "font": 16,
+            "client": 130,
+            "scroll": 130,
+            "height": 48
+          }
+        ]
+      }
+    },
+    "embedded-large": {
+      "auditPath": "browser-3/captures/embedded-large-axe.json",
+      "auditSha256": "dbbc4d3b243fc46c425c5abf0a24fea8cd76df770a80914cfda9178618e17276",
+      "metricsPath": "browser-3/captures/embedded-large-metrics.json",
+      "metricsSha256": "db89020c3bad28c6507f5f88803b6216d5462e900878e0f45f68de95f1d758e2",
+      "violations": 0,
+      "incomplete": 0,
+      "manuallyResolved": 0,
+      "metrics": {
+        "width": 274.40625,
+        "client": 274,
+        "scroll": 274,
+        "text": [
+          {
+            "text": "Motor-neutral: Inspect ventral landmarks and confirm symmetry",
+            "font": 18,
+            "client": 272,
+            "scroll": 272,
+            "height": 99
+          },
+          {
+            "text": "Choose a safe plan in the learning checkpoint before performing this technique.",
+            "font": 18,
+            "client": 274,
+            "scroll": 274,
+            "height": 81
+          },
+          {
+            "text": "Review plan",
+            "font": 18,
+            "client": 272,
+            "scroll": 272,
+            "height": 48
+          }
+        ]
+      }
+    },
+    "forced-colors": {
+      "auditPath": "browser-3/captures/forced-colors-axe.json",
+      "auditSha256": "512fe1492b810bc541a77eda77a32d8c322ace0bea94d7122c99e1eb4f8a604d",
+      "metricsPath": "browser-3/captures/forced-colors-metrics.json",
+      "metricsSha256": "2937852bf995e78cd3a054bd04580dd924e9718f2c34b2df91c07403916b1bb6",
+      "violations": 0,
+      "incomplete": 0,
+      "manuallyResolved": 0,
+      "metrics": {
+        "width": 344.40625,
+        "client": 344,
+        "scroll": 344,
+        "text": [
+          {
+            "text": "Motor-neutral: Begin the shallow ventral midline opening",
+            "font": 16,
+            "client": 342,
+            "scroll": 342,
+            "height": 64.375
+          },
+          {
+            "text": "Explain the observed result in the learning checkpoint before continuing.",
+            "font": 16,
+            "client": 344,
+            "scroll": 344,
+            "height": 49.59375
+          },
+          {
+            "text": "Explain result",
+            "font": 16,
+            "client": 342,
+            "scroll": 342,
+            "height": 48
+          }
+        ]
+      }
+    }
+  },
+  "manualContrastReview": {
+    "foreground": "#244744",
+    "gradientStops": [
+      "#f0fdfa",
+      "#f8fbff"
+    ],
+    "conservativeBackground": "#f0fbfa",
+    "method": "Use the minimum of each sRGB channel across both light gradient stops to bound background luminance from below.",
+    "ratio": 9.653628705315889,
+    "requiredRatio": 4.5,
+    "sourceGradientLine": 1079,
+    "sourceHintLine": 1144
+  },
+  "visualReview": {
+    "screenshots": [
+      "after-phone.png",
+      "after-desktop-final.png",
+      "after-embedded-large.png",
+      "after-forced-colors.png",
+      "after-explanation-complete.png"
+    ],
+    "result": "Inspected all five screenshots. Text wraps within the group, the checkpoint route stays visible, focus is clear, and completion wording updates after the explanation."
+  }
+}

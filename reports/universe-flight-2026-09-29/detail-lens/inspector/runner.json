@@ -1,0 +1,6 @@
+{
+  "baseHarness": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\universe_flight_inspector_check.cjs",
+  "baseHash": "3ed567528ccd9b97a48ce4cfc75fc04aa17d220f7629cd550962ca28ba6e34b6",
+  "executedHash": "bab5d7c64c462b0efe8644a24b1eb09e5fe2240b277a2a4280effc9e91cb81fd",
+  "change": "Arrival wait timeout 120000 → 300000 ms; all assertions unchanged"
+}

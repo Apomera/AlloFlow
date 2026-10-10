@@ -1,0 +1,559 @@
+{
+  "name": "impact-phone",
+  "outcome": {
+    "generation": 7,
+    "width": 310,
+    "height": 420,
+    "rows": [
+      {
+        "text": "Altitude",
+        "x": 20,
+        "y": 26,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 19,
+          "right": 64.23046875,
+          "top": 17,
+          "bottom": 26
+        }
+      },
+      {
+        "text": "0.0 m",
+        "x": 20,
+        "y": 52,
+        "font": "bold 24px system-ui, sans-serif",
+        "size": 24,
+        "cssSize": 24,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 20,
+          "right": 81.734375,
+          "top": 35,
+          "bottom": 52
+        }
+      },
+      {
+        "text": "Hover reserve",
+        "x": 163,
+        "y": 26,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 163,
+          "right": 239.275390625,
+          "top": 17,
+          "bottom": 26
+        }
+      },
+      {
+        "text": "30 s",
+        "x": 163,
+        "y": 52,
+        "font": "bold 22px system-ui, sans-serif",
+        "size": 22,
+        "cssSize": 22,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 163,
+          "right": 204.3779296875,
+          "top": 36,
+          "bottom": 52
+        }
+      },
+      {
+        "text": "Vertical",
+        "x": 20,
+        "y": 79,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 19,
+          "right": 60.470703125,
+          "top": 70,
+          "bottom": 79
+        }
+      },
+      {
+        "text": "Drift",
+        "x": 163,
+        "y": 79,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 163,
+          "right": 188.54296875,
+          "top": 70,
+          "bottom": 79
+        }
+      },
+      {
+        "text": "12.5 m/s",
+        "x": 20,
+        "y": 102,
+        "font": "bold 20px system-ui, sans-serif",
+        "size": 20,
+        "cssSize": 20,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 21,
+          "right": 101.63671875,
+          "top": 88,
+          "bottom": 104
+        }
+      },
+      {
+        "text": "6.2 m/s",
+        "x": 163,
+        "y": 102,
+        "font": "bold 20px system-ui, sans-serif",
+        "size": 20,
+        "cssSize": 20,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 163,
+          "right": 233.1328125,
+          "top": 88,
+          "bottom": 104
+        }
+      },
+      {
+        "text": "Down · land <3",
+        "x": 20,
+        "y": 121,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 20,
+          "right": 103.60546875,
+          "top": 112,
+          "bottom": 121
+        }
+      },
+      {
+        "text": "Limit <5 m/s",
+        "x": 163,
+        "y": 121,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 163,
+          "right": 233.283203125,
+          "top": 112,
+          "bottom": 122
+        }
+      },
+      {
+        "text": "Engine 0%",
+        "x": 20,
+        "y": 146,
+        "font": "600 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 20,
+          "right": 76.916015625,
+          "top": 137,
+          "bottom": 149
+        }
+      },
+      {
+        "text": "⚠ HARD LANDING",
+        "x": 155,
+        "y": 186,
+        "font": "bold 16px system-ui",
+        "size": 16,
+        "cssSize": 16,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 82.16796875,
+          "right": 225.45703125,
+          "top": 173,
+          "bottom": 187
+        }
+      },
+      {
+        "text": "Impact at 12.5 m/s down, 6.2 m/s across",
+        "x": 155,
+        "y": 206,
+        "font": "12px system-ui",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 48.7841796875,
+          "right": 261.1240234375,
+          "top": 197,
+          "bottom": 209
+        }
+      },
+      {
+        "text": "Landing limits: below 3 m/s down and 5 m/s",
+        "x": 155,
+        "y": 222,
+        "font": "12px system-ui",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 37.953125,
+          "right": 271.955078125,
+          "top": 213,
+          "bottom": 225
+        }
+      },
+      {
+        "text": "across.",
+        "x": 155,
+        "y": 238,
+        "font": "12px system-ui",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 137.181640625,
+          "right": 173.216796875,
+          "top": 232,
+          "bottom": 238
+        }
+      },
+      {
+        "text": "Use Retry Landing below to fly it again.",
+        "x": 155,
+        "y": 254,
+        "font": "12px system-ui",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 51.9013671875,
+          "right": 258.4970703125,
+          "top": 245,
+          "bottom": 257
+        }
+      }
+    ],
+    "layout": "compact",
+    "reviewTime": "",
+    "renderer": "on",
+    "horizontalOverflow": false,
+    "outcomeRows": [
+      {
+        "text": "⚠ HARD LANDING",
+        "x": 155,
+        "y": 186,
+        "font": "bold 16px system-ui",
+        "size": 16,
+        "cssSize": 16,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 82.16796875,
+          "right": 225.45703125,
+          "top": 173,
+          "bottom": 187
+        }
+      },
+      {
+        "text": "Impact at 12.5 m/s down, 6.2 m/s across",
+        "x": 155,
+        "y": 206,
+        "font": "12px system-ui",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 48.7841796875,
+          "right": 261.1240234375,
+          "top": 197,
+          "bottom": 209
+        }
+      },
+      {
+        "text": "Landing limits: below 3 m/s down and 5 m/s",
+        "x": 155,
+        "y": 222,
+        "font": "12px system-ui",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 37.953125,
+          "right": 271.955078125,
+          "top": 213,
+          "bottom": 225
+        }
+      },
+      {
+        "text": "across.",
+        "x": 155,
+        "y": 238,
+        "font": "12px system-ui",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 137.181640625,
+          "right": 173.216796875,
+          "top": 232,
+          "bottom": 238
+        }
+      },
+      {
+        "text": "Use Retry Landing below to fly it again.",
+        "x": 155,
+        "y": 254,
+        "font": "12px system-ui",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 51.9013671875,
+          "right": 258.4970703125,
+          "top": 245,
+          "bottom": 257
+        }
+      }
+    ],
+    "mainRows": [
+      {
+        "text": "⚠ HARD LANDING",
+        "x": 155,
+        "y": 186,
+        "font": "bold 16px system-ui",
+        "size": 16,
+        "cssSize": 16,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 82.16796875,
+          "right": 225.45703125,
+          "top": 173,
+          "bottom": 187
+        }
+      },
+      {
+        "text": "Impact at 12.5 m/s down, 6.2 m/s across",
+        "x": 155,
+        "y": 206,
+        "font": "12px system-ui",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 48.7841796875,
+          "right": 261.1240234375,
+          "top": 197,
+          "bottom": 209
+        }
+      },
+      {
+        "text": "Landing limits: below 3 m/s down and 5 m/s",
+        "x": 155,
+        "y": 222,
+        "font": "12px system-ui",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 37.953125,
+          "right": 271.955078125,
+          "top": 213,
+          "bottom": 225
+        }
+      },
+      {
+        "text": "across.",
+        "x": 155,
+        "y": 238,
+        "font": "12px system-ui",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 137.181640625,
+          "right": 173.216796875,
+          "top": 232,
+          "bottom": 238
+        }
+      },
+      {
+        "text": "Use Retry Landing below to fly it again.",
+        "x": 155,
+        "y": 254,
+        "font": "12px system-ui",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "center",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 51.9013671875,
+          "right": 258.4970703125,
+          "top": 245,
+          "bottom": 257
+        }
+      }
+    ],
+    "detailRows": [],
+    "joined": "⚠ HARD LANDING Impact at 12.5 m/s down, 6.2 m/s across Landing limits: below 3 m/s down and 5 m/s across. Use Retry Landing below to fly it again.",
+    "bottom": 257,
+    "collisions": []
+  },
+  "native": {
+    "draws": 191,
+    "renders": 36,
+    "width": 310,
+    "height": 420,
+    "lost": false
+  },
+  "framing": {
+    "width": 310,
+    "height": 420,
+    "mode": "chase",
+    "zoom": 0.7931703223755715,
+    "viewEnabled": true,
+    "lander": {
+      "left": 107.39283158439203,
+      "right": 206.76390228026145,
+      "top": 287.0402179838558,
+      "bottom": 376.96549251915167,
+      "near": 0.9906414906242206,
+      "far": 0.9929740210756978,
+      "vertices": 2925,
+      "objects": 67
+    },
+    "nadir": {
+      "left": 94.3841502179039,
+      "right": 213.44070644415774,
+      "top": 341.3233571606206,
+      "bottom": 384.4362537669916,
+      "near": 0.9903186869235214,
+      "far": 0.993255456465147,
+      "vertices": 64,
+      "objects": 1
+    }
+  },
+  "held": {
+    "alt": 0,
+    "vVel": -12.5,
+    "hVel": 6.2,
+    "fuel": 30,
+    "thrust": 0,
+    "tilt": 0,
+    "x": 0,
+    "elapsed": 0,
+    "contact": true
+  },
+  "saved": {
+    "missionXP": 42,
+    "landingResult": {
+      "crashed": true,
+      "score": 0,
+      "grade": "—",
+      "vVel": 12.5,
+      "hVel": 6.2,
+      "fuel": 30,
+      "fuelUnit": "s"
+    },
+    "landingAttempts": [
+      {
+        "crashed": true,
+        "score": 0,
+        "grade": "—",
+        "vVel": 12.5,
+        "hVel": 6.2,
+        "fuel": 30,
+        "fuelUnit": "s"
+      }
+    ],
+    "landingRewarded": false
+  },
+  "errors": [],
+  "shaderErrors": [],
+  "contexts": [
+    {
+      "id": 1,
+      "type": "webgl2",
+      "mount": 1,
+      "createdBy": "page",
+      "lost": false,
+      "lostBy": null,
+      "draws": 191,
+      "renders": 36,
+      "lastDrawAgoMs": 353,
+      "connected": true,
+      "inWrap": true,
+      "width": 310,
+      "height": 420,
+      "creator": [
+        "mmBuildDescent3D (stem_lab/stem_tool_moonmission.js:7988:18)",
+        "bootDescent3D (stem_lab/stem_tool_moonmission.js:12077:31)",
+        "drawDescent (stem_lab/stem_tool_moonmission.js:11613:91)"
+      ]
+    }
+  ],
+  "completed": true,
+  "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass32-2026-10-09\\direct-outcome3d-2\\native\\impact-phone.png"
+}

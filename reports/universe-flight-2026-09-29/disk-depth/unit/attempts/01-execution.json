@@ -1,0 +1,80 @@
+{
+  "startedAt": "2026-10-07T03:45:12.042Z",
+  "completed": true,
+  "scope": "Original focused Vitest assertions in diagnostic Node environment with canvas/event shim; native WebGL and real DOM covered separately.",
+  "inputs": [
+    {
+      "path": "stem_lab/universe_flight_scene.js",
+      "sha256": "8121868ef2aa764c5e3e88284089ebf76fe0c9e1ec264ee4ae95fe434d7e9bc9"
+    },
+    {
+      "path": "tests/universe_flight_physics.test.js",
+      "sha256": "c181ce38faaa0a0f66b1f202222149fcc7aef2e08019ce4c05d8281107dbccaf"
+    },
+    {
+      "path": "tests/universe_flight_bulges.test.js",
+      "sha256": "eaa8777628850c2748a67e085a20e46a1b848f87843fa805a852909c82851ff0"
+    },
+    {
+      "path": "tests/universe_flight_barred_detail.test.js",
+      "sha256": "00f04916ef6a550ffead04adbdcaafa06a00d8ba68cb9d49135c2a7840b3c291"
+    },
+    {
+      "path": "tests/universe_flight_cloud_surfaces.test.js",
+      "sha256": "68ecc0c20f0fe6096e6dca3f63a4be9923dddf6c0b0629dc8414ba9b1bcd7b59"
+    },
+    {
+      "path": "tests/universe_flight_spiral_detail.test.js",
+      "sha256": "7c4a18dcd248e45342c7795e1f1fad632166dec2ff42c88dd2f2c1cd6d5d8913"
+    },
+    {
+      "path": "tests/universe_flight_stellar_surfaces.test.js",
+      "sha256": "93a10e16b57e6dee9a48e9ad5b6e395bf981b996f9a1eab2c65b1cc09423b654"
+    },
+    {
+      "path": "tests/universe_flight_two_arm_detail.test.js",
+      "sha256": "585920a902a6f540f6f71f45690e9847639d6e06253609125d144911a49174ac"
+    },
+    {
+      "path": "tests/helpers/universe_galaxy_surfaces.js",
+      "sha256": "2daf75f6bfc77487917d0fb9428fd4f90ddf45188e3b94a4ec48e86e09744371"
+    },
+    {
+      "path": "tests/fixtures/universe_flight_bulge_baseline.json",
+      "sha256": "56e61ae6e44d09166a8fcc3b7aafd840fe8c9eb62250a416f590d5c52ce545a5"
+    }
+  ],
+  "diagnostics": [
+    {
+      "path": "node-renderer.config.mjs",
+      "sha256": "cb0b8f7a9e5b19472f042974e6afde77076b55a48606f3e1107349d9ec2c03ff"
+    },
+    {
+      "path": "node-renderer-setup.js",
+      "sha256": "d87114287a44238b5326402c090e88ed9aedd348eb20c1ac20192ef038db9df5"
+    },
+    {
+      "path": "run-unit.cjs",
+      "sha256": "7f570395da442851853fb42afaa1676584820fed7acd807d62a16e6fc70a44db"
+    }
+  ],
+  "args": [
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\vitest\\vitest.mjs",
+    "run",
+    "--config",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-disk-depth57\\node-renderer.config.mjs",
+    "--pool=forks",
+    "--maxWorkers=1",
+    "--no-file-parallelism",
+    "--isolate",
+    "--testTimeout=60000",
+    "--hookTimeout=60000",
+    "--reporter=default",
+    "--reporter=json",
+    "--outputFile=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\universe-flight-2026-09-29\\disk-depth\\unit\\results.json"
+  ],
+  "exitCode": 1,
+  "finishedAt": "2026-10-07T03:45:34.485Z",
+  "inputsUnchanged": true,
+  "diagnosticsUnchanged": true
+}

@@ -57,14 +57,14 @@ function construct(helperSource=helpers){
   const grass=region('        var grass = [];','        // Terrain-conforming caustics:'),kelp=region('        var kelpStrands = [];','        // ─── Hydrothermal vent');
   const math=Object.create(Math),draws=[];let seed=2741;
   math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;const value=seed/4294967296;draws.push(value);return value;};
-  const result=new Function('THREE','Math',helperSource+';var scene=new THREE.Scene();'+grass+kelp+';return{scene,grass,kelp:kelpStrands};')(THREE,math);
+  const result=new Function('THREE','Math',helperSource+';var renderer={capabilities:{isWebGL2:true}};var scene=new THREE.Scene();'+grass+kelp+';return{scene,grass,kelp:kelpStrands};')(THREE,math);
   return {...result,draws};
 }
 function dispose(fixture){fixture.scene.traverse(object=>{object.geometry?.dispose();object.material?.dispose();});}
-const loopAt=source.indexOf('function loop() {'),pauseAt=source.indexOf('if (!gameState.gameOver && !gameState.paused) {',loopAt);
+const loopAt=source.indexOf('function loop() {'),pauseAt=source.indexOf('if (!gameState.gameOver && !gameState.paused && dt>0) {',loopAt);
 assert.ok(loopAt>=0&&pauseAt>loopAt,'Expected the production pause guard');
 const pauseGuard=source.slice(pauseAt,source.indexOf('\n',pauseAt));
-const liveSway=new Function('kelpStrands','grass','gameState','now',helpers+';'+pauseGuard+'\n'+region('            kelpStrands.forEach(function(k) {','            // Vent plume rises')+region('            grass.forEach(function(g) {','            // ─── Floor + caustics follow')+'\n}');
+const liveSway=new Function('kelpStrands','grass','gameState','now','dt=0.05',helpers+';'+pauseGuard+'\n'+region('            kelpStrands.forEach(function(k) {','            // Vent plume rises')+region('            grass.forEach(function(g) {','            // ─── Floor + caustics follow')+'\n}');
 
 describe('Cephalopod Hunter attached kelp gas bladders',()=>{
   it('keeps every accepted141 kelp attribute and504indices byte-exact, with original grass checked through the approved insertion reversal',()=>{
@@ -171,14 +171,14 @@ describe('Cephalopod Hunter attached kelp gas bladders',()=>{
     }
   },30000);
 
-  it('preserves actual525 spawn draws,25 independent kelp actors, their unchanged material, root frame and camouflage metadata',()=>{
+  it('preserves actual525 spawn draws,25 independent kelp actors, their solid-depth material, root frame and camouflage metadata',()=>{
     const current=construct(),previous=construct(oldHelpers);
     try{
       assert.equal(current.draws.length,525);assert.deepEqual(current.draws,previous.draws);assert.equal(current.grass.length,80);assert.equal(current.kelp.length,25);
       const all=[...current.grass,...current.kelp];assert.equal(current.scene.children.length,105);assert.equal(new Set(all.map(plant=>plant.mesh.geometry)).size,105);assert.equal(new Set(all.map(plant=>plant.mesh.material)).size,105);
       for(const [i,plant] of current.kelp.entries()){
         const old=previous.kelp[i],mesh=plant.mesh;assert.equal(mesh.name,'cl-kelp');assert.deepEqual(mesh.position.toArray(),old.mesh.position.toArray());assert.deepEqual(mesh.rotation.toArray(),old.mesh.rotation.toArray());assert.equal(plant.phase,old.phase);assert.equal(plant.baseHeight,old.baseHeight);assert.deepEqual(mesh.userData,old.mesh.userData);
-        assert.equal(mesh.material.isMeshStandardMaterial,true);assert.equal(mesh.material.transparent,true);assert.equal(mesh.material.opacity,.85);assert.equal(mesh.material.depthWrite,false);assert.equal(mesh.material.side,THREE.DoubleSide);assert.equal(mesh.material.vertexColors,true);assert.equal(mesh.material.roughness,.95);assert.equal(mesh.material.customProgramCacheKey(),'cl-plant-flex-v28-water-pulse');
+        assert.equal(mesh.material.isMeshStandardMaterial,true);assert.equal(mesh.material.transparent,false);assert.equal(mesh.material.opacity,1);assert.equal(mesh.material.depthWrite,true);assert.equal(mesh.material.side,THREE.DoubleSide);assert.equal(mesh.material.vertexColors,true);assert.equal(mesh.material.roughness,.95);assert.equal(mesh.material.customProgramCacheKey(),'cl-plant-flex-v57-tissue');
         assert.equal(mesh.children.length,0);assert.notEqual(mesh.geometry.attributes.position.array.buffer,old.mesh.geometry.attributes.position.array.buffer);assert.notEqual(plant.flex.value,old.flex.value);
       }
     }finally{dispose(current);dispose(previous);}
@@ -188,7 +188,7 @@ describe('Cephalopod Hunter attached kelp gas bladders',()=>{
     const fixture=construct(),all=[...fixture.grass,...fixture.kelp],state={paused:false,gameOver:false,a11y:{reducedMotion:false}},resources=all.map(plant=>({mesh:plant.mesh,geometry:plant.mesh.geometry,material:plant.mesh.material,uniform:plant.flex,value:plant.flex.value,arrays:Object.fromEntries(Object.entries(plant.mesh.geometry.attributes).map(([name,attr])=>[name,{array:attr.array,bytes:Buffer.from(bytes(attr.array)),version:attr.version}])),index:plant.mesh.geometry.index.array,indexBytes:Buffer.from(bytes(plant.mesh.geometry.index.array)),geometryDisposals:0,materialDisposals:0}));
     for(const resource of resources){resource.geometry.addEventListener('dispose',()=>resource.geometryDisposals++);resource.material.addEventListener('dispose',()=>resource.materialDisposals++);}
     try{
-      liveSway(fixture.kelp,fixture.grass,state,1200);const moving=all.map(plant=>plant.flex.value.toArray());state.paused=true;liveSway(fixture.kelp,fixture.grass,state,5500);assert.deepEqual(all.map(plant=>plant.flex.value.toArray()),moving);
+      liveSway(fixture.kelp,fixture.grass,state,1200);const moving=all.map(plant=>plant.flex.value.toArray());liveSway(fixture.kelp,fixture.grass,state,4200,0);assert.deepEqual(all.map(plant=>plant.flex.value.toArray()),moving);state.paused=true;liveSway(fixture.kelp,fixture.grass,state,5500);assert.deepEqual(all.map(plant=>plant.flex.value.toArray()),moving);
       state.paused=false;state.a11y.reducedMotion=true;for(const now of [5600,8000,15000]){liveSway(fixture.kelp,fixture.grass,state,now);assert.deepEqual(all.map(plant=>plant.flex.value.toArray()),moving.map(pose=>[...pose.slice(0,3),0]));}
       state.a11y.reducedMotion=false;liveSway(fixture.kelp,fixture.grass,state,16000);
       for(const [i,plant] of all.entries()){

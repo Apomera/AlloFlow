@@ -1,0 +1,29 @@
+{
+  "sourceSHA256": "024c9eb9a6e120589bedd015e21a80ab21b13808c494000201a6fd1fd3a56d09",
+  "files": {
+    "baseline/before.js": "0c8c3558dd0f78c8937fa6ecb9e4194d90bea7ae9ee6c411590c95bc836edb32",
+    "browser/contrast.png": "d08616995aaf5abc29a3cf091645474efafaea2c3b248c334b59e7a0fad87473",
+    "browser/current-0.png": "b6179fd6512b683405c53bd7a10e6dcf3238ed034af63d79974f6a73f1db4044",
+    "browser/current-0.svg": "154899639887643a9aa66a67e943346fd059730d07664e5113e4576c2693038e",
+    "browser/current-100.png": "b6179fd6512b683405c53bd7a10e6dcf3238ed034af63d79974f6a73f1db4044",
+    "browser/current-100.svg": "154899639887643a9aa66a67e943346fd059730d07664e5113e4576c2693038e",
+    "browser/current-50.png": "b6179fd6512b683405c53bd7a10e6dcf3238ed034af63d79974f6a73f1db4044",
+    "browser/current-50.svg": "154899639887643a9aa66a67e943346fd059730d07664e5113e4576c2693038e",
+    "browser/dark.png": "54da02bbce5b89e43acbbdb2eb6ebaa9f5f2d51fef8ee8efa5ae5ab8e223156b",
+    "browser/enlarged-labels-320.png": "68e55621e4433957426d33bb37013048662cdd6ce075d6a987c572ff42e3a477",
+    "browser/enlarged-labels-390.png": "bb538e3da8d2b6161338eda09d072fa33af559d6c0b552d81e83b95e00375bc3",
+    "browser/focused-drawing-320-16.png": "28864b3775847697e5b221bb9372086d4150c1a4879399d911672169a58ea2ef",
+    "browser/focused-drawing-760-32.png": "8b9c91fd523a17eb7b116bb635b7c7674171ef0a0b7754facbcbd21c8be220ef",
+    "browser/forced-dark.png": "55d34f5b8e967e740b0168e85e96a71356f20ff7eb345322003037265ad4418c",
+    "browser/forced-light.png": "d4eb7e38e6a49a8da5e11ec63f1f1828fdbf97916487236c20cb7a88ed44853d",
+    "browser/rtl-slide.png": "22206d2d80b4f0911c0ac3fa45718c10349129f33d68f2c160a8ca60e096b876",
+    "browser/slide-browser-results.json": "13f9a952109bad5bf8201af3fc0cfd35a09b1d6ab3f064f8d9563cf2f5736295",
+    "browser/slide-dark.png": "52fb0d099f7d5e05ddf8c32c38686131186d7d18c59f69519f157fa798da75c0",
+    "browser/slide-desktop.png": "0986001a94a1fa14d39bf2749410d9a844786dde914ab4cffa57c0d48dd5d271",
+    "browser/slide-phone-200.png": "b9407e4921f69a7149fbd1463504eae457ce27489e08ecdc1e2c3e97a95f431f",
+    "enhancements.md": "f1318c3521e7a1fc6a12c940ec522302f651824261cad05c9f015ce23d1e8068",
+    "regression-validation.json": "86616a422e0dcc14eb10ef0184d9c11bd2263c5bbc635be9b6a00ba894ba2935",
+    "validate-perception-slide.cjs": "8ee01c0722417a1b1a3e5ca58c0d13c853c58a2ca8a1675c57fb92bb100700dd",
+    "verification.json": "60668ea3030fea2fe7753b0f24edb6b7dd0005c51345466ca3090d966dca40ae"
+  }
+}

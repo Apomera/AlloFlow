@@ -1,0 +1,2392 @@
+{
+  "at": "2026-10-09T22:21:11.992Z",
+  "units": 300,
+  "browsers": 24,
+  "selected": [
+    {
+      "label": "unit-main-4",
+      "stats": {
+        "passed": 295,
+        "failed": 4,
+        "pending": 1,
+        "total": 300
+      }
+    },
+    {
+      "label": "unit-pointer-8",
+      "stats": {
+        "passed": 1,
+        "failed": 0,
+        "pending": 2,
+        "total": 3
+      }
+    },
+    {
+      "label": "unit-lifecycle-8",
+      "stats": {
+        "passed": 1,
+        "failed": 0,
+        "pending": 2,
+        "total": 3
+      }
+    },
+    {
+      "label": "unit-living-8",
+      "stats": {
+        "passed": 1,
+        "failed": 0,
+        "pending": 190,
+        "total": 191
+      }
+    },
+    {
+      "label": "unit-practical-9",
+      "stats": {
+        "passed": 1,
+        "failed": 0,
+        "pending": 190,
+        "total": 191
+      }
+    },
+    {
+      "label": "unit-axe-9",
+      "stats": {
+        "passed": 1,
+        "failed": 0,
+        "pending": 190,
+        "total": 191
+      }
+    },
+    {
+      "label": "roadmap-11",
+      "stats": {
+        "startTime": "2026-10-09T22:13:11.329Z",
+        "duration": 235579.27399999998,
+        "expected": 13,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "errors": []
+    },
+    {
+      "label": "scenario-11",
+      "stats": {
+        "startTime": "2026-10-09T22:17:11.262Z",
+        "duration": 76292.233,
+        "expected": 11,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "errors": []
+    }
+  ],
+  "unitCoverage": [
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_canvas_loop.test.js::dissection canvas animation loop preserves canvas state updates while cleaning up the heavyweight redraw loop",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_canvas_loop.test.js::dissection canvas animation loop keeps one paused canvas lifecycle across rerenders and clears owned globals on detach",
+      "status": "passed",
+      "validatedIn": "unit-lifecycle-8"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_canvas_loop.test.js::dissection canvas animation loop cancels only the owning pointer context on lost capture or pointer cancellation",
+      "status": "passed",
+      "validatedIn": "unit-pointer-8"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improvement contracts keeps the desktop runtime mirror byte-identical to the source tool",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improvement contracts provides one stable object identity per mounted plugin bridge",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improvement contracts keeps progress specimen-specific and persists learner evidence",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improvement contracts provides honest controls, accessible touch input, and reliable practical scoring",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improvement contracts labels comparative science and captures evidence in reports",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improvement contracts keeps comparative anatomy species-specific in source and every runtime catalog",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improvement contracts models a persistent, accessible procedural instrument workflow",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improvement contracts keeps every guided interaction answerable, guarded, and honest about its result",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improvement contracts supports specimen-aware direct forceps lifting with equivalent accessible feedback",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improvement contracts supports direct pin press-drag-release placement with live stability evidence",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improvement contracts supports direct probe press-drag-release palpation with live contact evidence",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improvement contracts supports direct dropper press-drag-release hydration with flow and pooling evidence",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improvement contracts supports direct wick press-drag-release recovery with pool-edge evidence",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improvement contracts uses an anatomy-aware fetal pig silhouette instead of mascot-like features",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improvement contracts keeps earthworm surface and internal anatomy registered to one curved body axis",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improvement contracts adds immersive tray depth and anatomy-aware perch and crayfish materials",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improvement contracts uses species-appropriate sheep-eye layers and an anatomical sheep-heart silhouette",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improvement contracts uses an integrated frog posture with registered external and internal anatomy",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improvement contracts renders anatomically layered heart and fetal-pig internal cutaways",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render renders the catalog-backed species-specific specimen descriptions",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render renders a normalized, screen-reader-friendly inquiry simulator",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render migrates legacy procedure layers to stable tissue state when progress loads",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render preserves a newer protected save until the learner confirms reset",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps malformed saved bytes quarantined instead of overwriting them with defaults",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render quarantines empty and unsafe nested save records byte-for-byte",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render preserves a valid save changed in another tab and safely reloads it on retry",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps an inactive specimen storage conflict out of the active specimen save UI",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render detects a valid external save change even when no storage event arrives",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps temporary work while protected-save retry remains unreadable",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps temporary work when transient storage failure recovers with no saved record",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render flushes rapid specimen switches and cancels stale pre-reset writes",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render cancels a delayed layer reveal before switching specimens",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render preserves text when evidence storage is limited, surfaces failures, and reports recovery",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render blocks silent evidence rollover and safely frees notebook storage without losing other progress",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render flushes pending progress on pagehide before the debounce can expire",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps a direct scalpel gesture active across a harmless React re-render",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render renders the evidence workflow and comparative-model notice",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render offers an ungraded evidence review without inferring explanation quality from words",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render updates labeled confidence choices and appends the optional countercheck once",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps focus continuous while structure-specific references reset only when the structure changes",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render projects assessment location clues into the displayed anatomical view",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render defaults to an Essentials workspace while preserving an explicit Advanced workspace",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render deactivates hidden challenge state when switching from Advanced to Essentials",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render derives learning objectives from structure evidence instead of manual check-off",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render renders a finite assessment summary with first-attempt and supported-practice evidence",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render offers persisted missed-item review after returning to the lab",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render renders one explicit next action as investigation state advances",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render requires learner evidence before offering to peel a completed layer",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render offers an explicit chooser when Study tools has no active activity",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render freezes the practical target pool and locks directory and view changes",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render does not reveal timed-practical correctness through answer explanations",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render resumes a timed practical from its wall-clock deadline after canvas remount",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps field diagnostics and technique controls progressively disclosed",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render previews a hidden directory structure without awarding exploration progress",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render reports clipboard rejection instead of claiming structure information was copied",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render separates first-attempt mastery from a correct supported retry",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render clears the durable missed-item queue after supported review is completed",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render falls back to multiple choice without changing an unanswerable hotspot question",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps a restricted tray keyboard-safe even when a hydration tool was persisted as active",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render renders canvas-answer assessment with a keyboard alternative",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render renders guided instruments, progress, depth controls, and an equivalent action button",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render renders distinct organism-specific access routes and next actions",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render renders a compressed evidence notebook with live-reference comparison controls",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render renders specimen-aware realism controls and the sheep-eye dropper tray",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps anatomical orientation and reference scale accurate at every zoom",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render provides constrained precision navigation and discoverable keyboard parity",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render models persistent tissue dynamics and connected procedural consequences",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render calibrates every procedural instrument with live readiness and tissue consequences",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render derives one responsive observation field for visuals, coaching, evidence, and accessibility",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render models depth-aware optical inspection with visible focus and magnification tradeoffs",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render provides persistent WCAG preferences, robust focus, composite keyboard navigation, and drag alternatives",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render shows comparison replay statically when OS reduced motion is active without flooding live status",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render updates physiology playback immediately on motion preference changes and releases the listener",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render protects destructive reset and announces filtered structure results with focus recovery",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render implements the ARIA radio keyboard pattern for procedural instruments",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render adds an explicit specimen-specific living-function model with responsive playback",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps living-function pause, speed, replay, and control state synchronized",
+      "status": "passed",
+      "validatedIn": "unit-living-8"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render drives flap physics from tissue state and smoothly frames selected anatomy",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps instrument readiness labels readable at WCAG AA contrast",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render adds an absorbent-wick recovery loop for excess saline",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render models adjustable specimen-aware illumination and glare",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps the fullscreen dock visible and escapable in CSS fallback mode",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render integrates dynamic procedure, exposure, scenario, performance, and fullscreen controls",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render undoes a repeated learning-checked action without losing the earlier state or stale completion evidence",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps one persistence owner when the host recreates deferred setter wrappers",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps keyboard, canvas lifecycle, and fullscreen focus scoped to the originating lab root",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps layer and teaching timers isolated when a sibling lab unmounts",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render retains a transiently failed snapshot and blocks specimen switching until the save succeeds",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps review items beyond the five-question batch and rejects phantom verification credit",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render ignores retired review IDs and announces reset confirmation only once",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render adds annotation points immutably through the camera while preserving inspection and recorded work",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render starts, finishes, and restarts pointer measurements without recording technique or changing the inspection target",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render uses keyboard structure anchors for annotation without selecting, inspecting, or running a procedure",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render uses keyboard structure anchors for a ruler and exits with Escape while retaining the completed measurement",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render stops annotation and ruler modes when Essentials hides their controls while retaining the drawing and measurement",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render clears ruler interaction state on a successful saved-progress load while restoring specimen annotations and notes",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render clears ruler interaction state on specimen change and confirmed reset without erasing the departed specimen drawing",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render undoes annotation points and clears a retained measurement through native controls without changing recorded work",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps notebook disclosure independent and returns comparison focus to the distinct same-layer frame control",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render shows full UTC capture times and distinguishes valid zero metadata from missing or invalid legacy scores",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render captures a fresh distinct frame, focuses its reference, and downloads it without changing learner work",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render names specimen display tasks while retaining native control order and focus stops",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render explains Essentials display limits and retains assessment presentation controls without exposing inspection tasks",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render describes native presentation changes and retains Accessible preferences when returning to Guided",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render describes and opens the explicitly selected valid frame through the native split resolver while preserving saved evidence",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render describes and opens the final valid frame when the saved reference is missing through the native split resolver while preserving saved evidence",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render describes and opens missing valid evidence through the native split resolver while preserving saved evidence",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps native pin prerequisites and cycles local inspection without changing zoom or learner records",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render changes displayed variation and tissue overlay while preserving recorded technique and evidence",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render uses actual timed-practical entry and teardown to hide orientation and disable labels while preserving work",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps comparison next-action guidance honest for no selection and uses the native focus route without awarding work",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps comparison next-action guidance honest for an unmapped selection and uses the native focus route without awarding work",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps comparison next-action guidance honest for a mapped selection and uses the native focus route without awarding work",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render distinguishes an unstarted four-minute technique challenge and starts the native clock on the current attempt without resetting work",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render uses the real expired deadline despite a stale positive counter and opens challenge recovery without resetting the attempt",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps native completed-challenge time frozen with one quiet timer after the deadline passes",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render reviews scenario restart consequences and cancels through its native button or Escape without changing learner work",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render confirms exactly the native restart scope while retaining updated notes, other layers, other specimens, frames and archived attempts",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render rejects a queued restart confirmation after the selected specimen changes",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render rejects a queued restart confirmation after the selected layer changes",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render rejects a queued restart confirmation after the scenario changes",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render rejects a queued restart confirmation after the current technique changes",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render rejects a queued restart confirmation after inspection records change",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render rejects a queued restart confirmation after another layer technique changes",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render rejects a queued restart confirmation after another specimen inspection changes",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render ignores canceled review callbacks after reopening the same scope and keeps the current review usable",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps Compare guidance ahead of expired technique recovery",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps Flashcard guidance ahead of expired technique recovery",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps practice assessment guidance ahead of expired technique recovery",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps timed identification guidance ahead of expired technique recovery",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps Guided investigation guidance ahead of expired technique recovery",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render names study activity groups and describes the native controls without adding tab stops",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render explains comparison for no selected structure and preserves native focus and learner work",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render explains comparison for an unmapped structure and preserves native focus and learner work",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render explains comparison for a mapped structure and preserves native focus and learner work",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render opens native flashcard recall with prompt focus and returns to the specimen while preserving recorded work",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render matches practical readiness to the native visible-pool and active-transition guards",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render shows the native practical countdown with quiet timer semantics and ends through native teardown",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render describes the sheep-eye companion in native order and removes that entry during assessment",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render groups advanced lab controls by observation, evidence capture, and records with named headings",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render retains native observation toggles and reset cancellation inside their lab control groups",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render downloads a fresh full PNG with specimen frame preference even when the notebook is full",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render downloads a fresh full PNG with canvas frame preference even when the notebook is full",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps full PNG failure 'missing' with 'specimen' preference from downloading or changing work and focus",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps full PNG failure 'false' with 'specimen' preference from downloading or changing work and focus",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps full PNG failure 'throw' with 'specimen' preference from downloading or changing work and focus",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps full PNG failure 'context' with 'specimen' preference from downloading or changing work and focus",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps full PNG failure 'encoding' with 'specimen' preference from downloading or changing work and focus",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps full PNG failure 'invalid-png' with 'specimen' preference from downloading or changing work and focus",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps full PNG failure 'missing' with 'canvas' preference from downloading or changing work and focus",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps full PNG failure 'false' with 'canvas' preference from downloading or changing work and focus",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps full PNG failure 'throw' with 'canvas' preference from downloading or changing work and focus",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps full PNG failure 'context' with 'canvas' preference from downloading or changing work and focus",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps full PNG failure 'encoding' with 'canvas' preference from downloading or changing work and focus",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps full PNG failure 'invalid-png' with 'canvas' preference from downloading or changing work and focus",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render captures the full canvas only after an explicit contents choice and preserves learner work",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps 'specimen' capture failure 'missing' from saving a mislabeled canvas or changing focus and work",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps 'specimen' capture failure 'false' from saving a mislabeled canvas or changing focus and work",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps 'specimen' capture failure 'throw' from saving a mislabeled canvas or changing focus and work",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps 'specimen' capture failure 'encoding' from saving a mislabeled canvas or changing focus and work",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps 'canvas' capture failure 'missing' from saving a mislabeled canvas or changing focus and work",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps 'canvas' capture failure 'false' from saving a mislabeled canvas or changing focus and work",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps 'canvas' capture failure 'throw' from saving a mislabeled canvas or changing focus and work",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps 'canvas' capture failure 'encoding' from saving a mislabeled canvas or changing focus and work",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render shows capture context from frozen frames and leaves missing legacy context unknown after live view changes",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render saves the explicit frame contents preference and restores it with the specimen notebook",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render confirms notebook deletion with focus recovery and preserves learner work through reference fallback and clearing",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render opens an Essentials notebook comparison in Advanced and returns focus without changing learner work",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render preserves a deliberate zero-caution scenario threshold",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render shows the initial technique plan and opens its native sequence without changing learner work",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render shows a confirmed technique plan as ready to perform without giving verification credit",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps a completed action current until its reflection is verified",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render advances the current technique action only after action, plan, and explanation are verified",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render does not verify a cached plan and reflection when the technique action was never performed",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render labels a legacy completed action with missing plan evidence without changing the native current action",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render follows the native reflection gate when a completed legacy action has no saved prediction",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render returns roadmap verification and current phase to the restored action after native undo",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render uses the native frog protocol order in the technique roadmap",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render uses the native earthworm protocol order in the technique roadmap",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render uses the native pig protocol order in the technique roadmap",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render uses the native perch protocol order in the technique roadmap",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render uses the native crayfish protocol order in the technique roadmap",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render uses the native sheepEye protocol order in the technique roadmap",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render uses the native sheepHeart protocol order in the technique roadmap",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps the technique roadmap out of guided investigation",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps the technique roadmap out of practice assessment",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps the technique roadmap out of timed practical",
+      "status": "passed",
+      "validatedIn": "unit-practical-9"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps the technique roadmap out of revealed layer",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render keeps the technique roadmap out of study tools",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render hides the completed technique checkpoint and uses an honest review title before understanding is verified",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands states the workflow position once in the hero in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands states the workflow position once in the hero in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps one visibility rule for the checkpoint and its signpost in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps one visibility rule for the checkpoint and its signpost in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands labels the telemetry phase with the phase, not the question, in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands labels the telemetry phase with the phase, not the question, in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands puts the reasoning checkpoints beside the specimen in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands puts the reasoning checkpoints beside the specimen in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps the flashcard hint and counter above 4.5:1 in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps the flashcard hint and counter above 4.5:1 in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands does not let option length give the checkpoint answer away in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands does not let option length give the checkpoint answer away in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps the explain-phase options the same length in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps the explain-phase options the same length in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands never prints the same words twice in the stage handoff in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands never prints the same words twice in the stage handoff in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands carries the detail toggle inside the route rail in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands carries the detail toggle inside the route rail in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands does not restate the checkpoint question in the canvas status in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands does not restate the checkpoint question in the canvas status in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps the full next-action title in the status when no checkpoint is shown in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps the full next-action title in the status when no checkpoint is shown in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands lets phone layer chips size to their own name in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands lets phone layer chips size to their own name in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands takes the hidden skip links out of the hit test in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands takes the hidden skip links out of the hit test in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands gives the system colour legend its own readable ground in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands gives the system colour legend its own readable ground in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps the orientation compass clear of the specimen chip in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps the orientation compass clear of the specimen chip in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands says what the secondary control band holds in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands says what the secondary control band holds in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands prints the state of every toggle in the view panel in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands prints the state of every toggle in the view panel in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands points at the assessment panel, not below the specimen, in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands points at the assessment panel, not below the specimen, in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands gives assessment answers a visible boundary in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands gives assessment answers a visible boundary in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands draws each frog limb as one smooth chain in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands draws each frog limb as one smooth chain in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps screen-fixed canvas overlays unmirrored in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps screen-fixed canvas overlays unmirrored in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands grows the pig near-side limbs out of the torso silhouette in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands grows the pig near-side limbs out of the torso silhouette in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands scales the crayfish cheliped arm with the canvas in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands scales the crayfish cheliped arm with the canvas in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands draws specimen anatomy labels through the un-mirroring helper in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands draws specimen anatomy labels through the un-mirroring helper in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands anchors instrument HUD panel text from the mirrored edge in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands anchors instrument HUD panel text from the mirrored edge in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps the instrument bay clear of the scale compass in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps the instrument bay clear of the scale compass in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands stacks the three top-left canvas panels without covering one in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands stacks the three top-left canvas panels without covering one in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands fits canvas card text by measuring it in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands fits canvas card text by measuring it in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps the compass endpoint labels inside the panel in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps the compass endpoint labels inside the panel in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands rasterises the canvas at its displayed density in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands rasterises the canvas at its displayed density in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands holds the instrument bay corner and caption under the ventral mirror in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands holds the instrument bay corner and caption under the ventral mirror in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands eases the earthworm clitellum into the body wall in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands eases the earthworm clitellum into the body wall in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands resolves CSS custom properties before they reach the canvas in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands resolves CSS custom properties before they reach the canvas in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps the adaptive-label chip clear of the scale HUD in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps the adaptive-label chip clear of the scale HUD in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands clamps the eye ray label inside the tray frame in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands clamps the eye ray label inside the tray frame in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps the ECG strip and its readout clear of the bottom HUD in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps the ECG strip and its readout clear of the bottom HUD in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands moves the corridor safety label off the hotspot pills in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands moves the corridor safety label off the hotspot pills in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keys body systems from one colour table in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keys body systems from one colour table in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands scales the remaining canvas HUD panels with the display in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands scales the remaining canvas HUD panels with the display in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps the scaled top-row canvas panels apart in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps the scaled top-row canvas panels apart in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands explains why keyboard browsing has nothing to walk in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands explains why keyboard browsing has nothing to walk in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands resumes keyboard browsing from the current selection in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands resumes keyboard browsing from the current selection in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands names the specimen canvas once, briefly, in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands names the specimen canvas once, briefly, in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands announces only what changed in the canvas status in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands announces only what changed in the canvas status in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps the canvas status readable as one line in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps the canvas status readable as one line in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps the on-focus canvas description short in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps the on-focus canvas description short in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands rides the secondary controls along the layer heading in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands rides the secondary controls along the layer heading in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands clamps the lens lift above the instrument bay in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands clamps the lens lift above the instrument bay in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps a refused gesture reason instead of tap coaching in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keeps a refused gesture reason instead of tap coaching in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands puts the canvas status before the evidence notebook in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands puts the canvas status before the evidence notebook in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands shows gesture feedback under the canvas in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands shows gesture feedback under the canvas in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keys hover live-region writes on the rendered text in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands keys hover live-region writes on the rendered text in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands tells a dragging probe user the gesture that works in stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_workspace_bands.test.js::dissection workspace bands tells a dragging probe user the gesture that works in desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "status": "passed",
+      "validatedIn": "unit-main-4"
+    },
+    {
+      "key": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js::dissection improved UI render has no axe-detectable WCAG A or AA violations in the rendered lab",
+      "status": "passed",
+      "validatedIn": "unit-axe-9"
+    }
+  ],
+  "unitContributions": [
+    {
+      "label": "unit-main-4",
+      "sourceSha256": "5646ce64f266c0a82f74e7f3827d25c8fcab3e3b7c5c04a8a34eff801ce59ce4",
+      "passed": 295,
+      "failed": 4
+    },
+    {
+      "label": "unit-pointer-8",
+      "sourceSha256": "1d10e56b0d969ccbda290bfbdb884a9c22d8586fe92f51e2c6ea4d2290c28a9b",
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "label": "unit-lifecycle-8",
+      "sourceSha256": "1d10e56b0d969ccbda290bfbdb884a9c22d8586fe92f51e2c6ea4d2290c28a9b",
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "label": "unit-living-8",
+      "sourceSha256": "1d10e56b0d969ccbda290bfbdb884a9c22d8586fe92f51e2c6ea4d2290c28a9b",
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "label": "unit-practical-9",
+      "sourceSha256": "1d10e56b0d969ccbda290bfbdb884a9c22d8586fe92f51e2c6ea4d2290c28a9b",
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "label": "unit-axe-9",
+      "sourceSha256": "1d10e56b0d969ccbda290bfbdb884a9c22d8586fe92f51e2c6ea4d2290c28a9b",
+      "passed": 1,
+      "failed": 0
+    }
+  ],
+  "unitAggregation": "300 distinct unit checks are covered across runs: 295 passes from unit-main-4, successful fresh-process retries of its four failures, and one isolated axe check. The main run used the source before the exact CSS-only font correction and the unit file before the timed-practical fixture input correction. The five isolated checks used the source before the final CSS-only contrast polish. Pointer, lifecycle and living checks preceded the added practical timer fixture assertions; practical and axe used the final unit file. Both browser suites used the final source and tests. This is aggregated coverage, not a single clean full-suite run.",
+  "fontCorrectionProof": {
+    "receipt": "edits/font-fix.json",
+    "contrastReceipt": "edits/contrast-fix.json",
+    "beforeSha256": "5646ce64f266c0a82f74e7f3827d25c8fcab3e3b7c5c04a8a34eff801ce59ce4",
+    "intermediateSha256": "1d10e56b0d969ccbda290bfbdb884a9c22d8586fe92f51e2c6ea4d2290c28a9b",
+    "afterSha256": "9b77f87c70bd2789cdd450bff5d371bfd81d2973abf12c491706da7fbbf78a3a",
+    "exactCssSubstitution": true,
+    "functionalJavaScriptUnchanged": true
+  },
+  "runs": [
+    {
+      "label": "baseline-1",
+      "stats": {
+        "startTime": "2026-10-06T23:55:35.147Z",
+        "duration": 514730.6269999999,
+        "expected": 6,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "errors": []
+    },
+    {
+      "label": "roadmap-10",
+      "stats": {
+        "startTime": "2026-10-09T22:07:37.411Z",
+        "duration": 179684.354,
+        "expected": 13,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "errors": []
+    },
+    {
+      "label": "roadmap-11",
+      "stats": {
+        "startTime": "2026-10-09T22:13:11.329Z",
+        "duration": 235579.27399999998,
+        "expected": 13,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "errors": []
+    },
+    {
+      "label": "roadmap-7",
+      "stats": {
+        "startTime": "2026-10-07T02:00:12.363Z",
+        "duration": 1177640.1889999998,
+        "expected": 12,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "errors": []
+    },
+    {
+      "label": "scenario-10",
+      "stats": {
+        "startTime": "2026-10-09T22:10:39.375Z",
+        "duration": 115454.23700000001,
+        "expected": 11,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "errors": []
+    },
+    {
+      "label": "scenario-11",
+      "stats": {
+        "startTime": "2026-10-09T22:17:11.262Z",
+        "duration": 76292.233,
+        "expected": 11,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "errors": []
+    },
+    {
+      "label": "unit-axe-9",
+      "stats": {
+        "passed": 1,
+        "failed": 0,
+        "pending": 190,
+        "total": 191
+      }
+    },
+    {
+      "label": "unit-lifecycle-8",
+      "stats": {
+        "passed": 1,
+        "failed": 0,
+        "pending": 2,
+        "total": 3
+      }
+    },
+    {
+      "label": "unit-living-8",
+      "stats": {
+        "passed": 1,
+        "failed": 0,
+        "pending": 190,
+        "total": 191
+      }
+    },
+    {
+      "label": "unit-main-2",
+      "stats": {
+        "passed": 0,
+        "failed": 0,
+        "pending": 0,
+        "total": 0
+      }
+    },
+    {
+      "label": "unit-main-4",
+      "stats": {
+        "passed": 295,
+        "failed": 4,
+        "pending": 1,
+        "total": 300
+      }
+    },
+    {
+      "label": "unit-pointer-5",
+      "stats": {
+        "passed": 0,
+        "failed": 0,
+        "pending": 0,
+        "total": 0
+      }
+    },
+    {
+      "label": "unit-pointer-6",
+      "stats": {
+        "passed": 0,
+        "failed": 0,
+        "pending": 0,
+        "total": 0
+      }
+    },
+    {
+      "label": "unit-pointer-8",
+      "stats": {
+        "passed": 1,
+        "failed": 0,
+        "pending": 2,
+        "total": 3
+      }
+    },
+    {
+      "label": "unit-practical-8",
+      "stats": {
+        "passed": 0,
+        "failed": 1,
+        "pending": 190,
+        "total": 191
+      }
+    },
+    {
+      "label": "unit-practical-9",
+      "stats": {
+        "passed": 1,
+        "failed": 0,
+        "pending": 190,
+        "total": 191
+      }
+    }
+  ],
+  "currentCheckpointAudits": [
+    {
+      "file": "roadmap-11/captures/desktop-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-11/captures/desktop-expanded-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-11/captures/embedded-large-contrast-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "roadmap-11/captures/embedded-large-contrast-expanded-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "roadmap-11/captures/embedded-medium-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-11/captures/embedded-medium-expanded-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-11/captures/forced-colors-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "roadmap-11/captures/forced-colors-expanded-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "roadmap-11/captures/native-undo-probe-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-11/captures/phone-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-11/captures/phone-expanded-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-11/captures/state-perform-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-11/captures/state-plan-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-11/captures/state-reflect-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-11/captures/state-verified-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-11/captures/tablet-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-11/captures/tablet-expanded-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    }
+  ],
+  "gradientManualReview": "reviews/roadmap-final-visual-review.json",
+  "allAuditHistory": [
+    {
+      "file": "roadmap-10/captures/desktop-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-10/captures/desktop-expanded-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-10/captures/embedded-large-contrast-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "roadmap-10/captures/embedded-large-contrast-expanded-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "roadmap-10/captures/embedded-medium-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-10/captures/embedded-medium-expanded-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-10/captures/forced-colors-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "roadmap-10/captures/forced-colors-expanded-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "roadmap-10/captures/native-undo-probe-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-10/captures/phone-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-10/captures/phone-expanded-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-10/captures/state-perform-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-10/captures/state-plan-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-10/captures/state-reflect-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-10/captures/state-verified-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-10/captures/tablet-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-10/captures/tablet-expanded-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-11/captures/desktop-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-11/captures/desktop-expanded-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-11/captures/embedded-large-contrast-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "roadmap-11/captures/embedded-large-contrast-expanded-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "roadmap-11/captures/embedded-medium-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-11/captures/embedded-medium-expanded-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-11/captures/forced-colors-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "roadmap-11/captures/forced-colors-expanded-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "roadmap-11/captures/native-undo-probe-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-11/captures/phone-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-11/captures/phone-expanded-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-11/captures/state-perform-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-11/captures/state-plan-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-11/captures/state-reflect-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-11/captures/state-verified-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-11/captures/tablet-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-11/captures/tablet-expanded-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-3/captures/desktop-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "aria-prohibited-attr",
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-3/captures/desktop-expanded-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "aria-prohibited-attr",
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-3/captures/embedded-medium-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "aria-prohibited-attr",
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-3/captures/embedded-medium-expanded-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "aria-prohibited-attr",
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-3/captures/phone-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "aria-prohibited-attr",
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-3/captures/phone-expanded-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "aria-prohibited-attr",
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-3/captures/tablet-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "aria-prohibited-attr",
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-3/captures/tablet-expanded-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "aria-prohibited-attr",
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-7/captures/desktop-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-7/captures/desktop-expanded-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-7/captures/embedded-medium-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-7/captures/embedded-medium-expanded-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-7/captures/forced-colors-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "roadmap-7/captures/forced-colors-expanded-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "roadmap-7/captures/native-undo-probe-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-7/captures/phone-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-7/captures/phone-expanded-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-7/captures/state-perform-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-7/captures/state-plan-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-7/captures/state-reflect-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-7/captures/state-verified-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-7/captures/tablet-collapsed-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "roadmap-7/captures/tablet-expanded-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "scenario-10/captures/desktop-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "scenario-10/captures/embedded-large-contrast-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "scenario-10/captures/embedded-medium-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "scenario-10/captures/forced-colors-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "scenario-10/captures/phone-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "scenario-10/captures/restart-review-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "scenario-10/captures/tablet-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "scenario-11/captures/desktop-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "scenario-11/captures/embedded-large-contrast-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "scenario-11/captures/embedded-medium-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "scenario-11/captures/forced-colors-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "scenario-11/captures/phone-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "scenario-11/captures/restart-review-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "file": "scenario-11/captures/tablet-axe.json",
+      "violations": 0,
+      "incomplete": [
+        "color-contrast"
+      ]
+    }
+  ]
+}

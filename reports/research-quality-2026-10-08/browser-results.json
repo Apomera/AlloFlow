@@ -1,0 +1,23 @@
+{
+  "base": "http://127.0.0.1:57653",
+  "moduleHashes": {
+    "content_engine_module.js": "3b4a8e371427aac16b2ea381fb8de984cab3e6ec84735bdc882682bac3ee8185",
+    "view_misc_panels_module.js": "224419cd4ffa9de6b006f3edcad360bccfebb601f57989ad51e559d5b268f2cc"
+  },
+  "passed": 9,
+  "results": [
+    "Ordinary one-click web research still works with arbitrary explicit topics",
+    "Topic-aware page excerpts replace snippet previews, with exact supporting-passage links and visible evidence types",
+    "Ranking and repeated searches preserve exclusions; multiple passages from one webpage produce one reference",
+    "Source-linked AI notes are visibly distinguished from verbatim page excerpts",
+    "A partly uncited draft is rejected without replacing original or adapted text or retrying automatically",
+    "Combined document, supplied-page, and discovered-web writing retains document citations and private-query separation",
+    "Review at 1280px fits, links focus exact passages, and keyboard focus is contained/restored",
+    "Review at 390px fits, links focus exact passages, and keyboard focus is contained/restored",
+    "Review at 320px fits, links focus exact passages, and keyboard focus is contained/restored"
+  ],
+  "errors": [],
+  "blockedRequests": [],
+  "success": true,
+  "failure": null
+}

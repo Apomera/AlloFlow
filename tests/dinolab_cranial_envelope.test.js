@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { createRequire } from 'node:module';
 const THREE = createRequire(import.meta.url)(resolve('vendor/three-r128/three.min.js'));
-const source = readFileSync(resolve('stem_lab/stem_tool_dinolab.js'), 'utf8');
+const source = readFileSync(process.env.DINO_COMPACT_FOOT_SOURCE || resolve('stem_lab/stem_tool_dinolab.js'), 'utf8');
 window.StemLab = { registerTool() {} };
 new Function(source.replace("window.StemLab.registerTool('dinoLab'", "globalThis.__cranialEnvelope={ DINOS, cranialSurfaceProfileFor, dinoTheropodCranialRadii, dinoCranialGeometry };window.StemLab.registerTool('dinoLab'"))();
 const art=globalThis.__cranialEnvelope;
@@ -25,13 +25,27 @@ describe('Dino Lab clade muzzle silhouettes', () => {
     expect(b[3][1]).toBeLessThan(a[3][1]);expect(b[4][0]).toBeLessThan(a[4][0]);
   });
   it('renders finite head normals across catalog profiles and scales', () => {
-    for(const dino of art.DINOS.filter(dino=>dino.group==='theropod')) for(const scale of [0.02,1,20]) {
-      const points=[[-1,0,0],[-0.45,0.1,0],[0,0.15,0],[0.6,0.1,0],[1,0.05,0],[1.3,0.05,0]].map(point=>new THREE.Vector3(...point).multiplyScalar(scale));
+    // Every species retains its finite profile/radius and geometry checks. Species
+    // with identical radius arrays use the same points and shape at each scale,
+    // so construct each exact input once instead of rebuilding it for every name.
+    const scales=[0.02,1,20], profiles=new Map(scales.map(scale=>[scale,new Set()])), finiteByInput=new Map();
+    for(const dino of art.DINOS.filter(dino=>dino.group==='theropod')) for(const scale of scales) {
       const radii=art.dinoTheropodCranialRadii(scale*0.5,scale*0.3,scale*0.1,art.cranialSurfaceProfileFor(dino));
-      const shape={center:points[2],length:scale,height:scale*0.5,depth:scale*0.3,cheek:1};
-      const geometry=art.dinoCranialGeometry(THREE,points,radii,shape);
-      for(const attr of ['position','normal']) expect(Array.from(geometry.attributes[attr].array).every(Number.isFinite),dino.id+' '+attr).toBe(true);
-      geometry.dispose();
+      expect(radii.every(pair=>pair.length===2&&pair.every(value=>Number.isFinite(value)&&value>0)),dino.id+' radii').toBe(true);
+      const radiusKey=JSON.stringify(radii), inputKey=JSON.stringify([scale,radii]);
+      profiles.get(scale).add(radiusKey);
+      let finite=finiteByInput.get(inputKey);
+      if(!finite) {
+        const points=[[-1,0,0],[-0.45,0.1,0],[0,0.15,0],[0.6,0.1,0],[1,0.05,0],[1.3,0.05,0]].map(point=>new THREE.Vector3(...point).multiplyScalar(scale));
+        const shape={center:points[2],length:scale,height:scale*0.5,depth:scale*0.3,cheek:1};
+        const geometry=art.dinoCranialGeometry(THREE,points,radii,shape);
+        finite={};
+        for(const attr of ['position','normal']) finite[attr]=Array.from(geometry.attributes[attr].array).every(Number.isFinite);
+        geometry.dispose();
+        finiteByInput.set(inputKey,finite);
+      }
+      for(const attr of ['position','normal']) expect(finite[attr],dino.id+' '+attr).toBe(true);
     }
-  });
-});
+    for(const scale of scales) expect(profiles.get(scale).size,'unique radius profiles at scale '+scale).toBe(10);
+    expect(finiteByInput.size,'ten exact radius profiles at three scales').toBe(30);
+  });});

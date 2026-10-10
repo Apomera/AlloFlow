@@ -1,0 +1,164 @@
+{
+  "completed": true,
+  "analysisSha256": "de9e2857a244a9f1fc62d908138a474ae71593213565d69f99d64d773f58e207",
+  "driverSha256": "1c742ef08446a13e190344a62596b1d917c251361c5e347c1749999d35a3d388",
+  "originalCheckSha256": "1a592027da10c270414878f93d7ceab41ff667fdcfe2871bec8cf32a1fcc2c35",
+  "renderPins": {
+    "baseline": "8121868ef2aa764c5e3e88284089ebf76fe0c9e1ec264ee4ae95fe434d7e9bc9",
+    "candidate": "6f1267255407b7de52bb685922281301fef58de9c91cc8a036577a7c317e56e8"
+  },
+  "originalFailurePreserved": "AssertionError [ERR_ASSERTION]: Triangle RGB removed",
+  "reusedCaptures": 4,
+  "newBrowserLaunches": 0,
+  "pose": {
+    "sourceReport": "../universe-disk-depth57/native-report/check.json",
+    "sourceReportSha256": "478e8080d6bbb3a8e9627e476b3e506dbd450b212d837d7e6ec5cb463faa86cb",
+    "sourceRendererSha256": "8121868ef2aa764c5e3e88284089ebf76fe0c9e1ec264ee4ae95fe434d7e9bc9",
+    "sourceImage": "candidate-galaxy-near.png",
+    "sourceImageSha256": "8c27b3c751bdd15412e873a483dcc3ff4435b63472652f7f45b4db0041b3e226",
+    "snapshot": {
+      "version": 1,
+      "settings": {
+        "mode": "explore",
+        "region": "galaxy",
+        "beta": 0,
+        "compareRest": false,
+        "fov": 80,
+        "exposure": 1,
+        "quality": "high"
+      },
+      "state": {
+        "position": [
+          4059.7333892153188,
+          -907.8352320164163,
+          1.963276434125848e-13
+        ],
+        "yaw": 4.71238898038469,
+        "pitch": 0.22,
+        "distanceLy": 0,
+        "universeYears": 0,
+        "travelerYears": 0
+      },
+      "targetId": null
+    }
+  },
+  "pixelSummary": [
+    {
+      "phase": "baseline",
+      "name": "legacy-near-isolated",
+      "maxChannel": 179,
+      "brightPixels": 172806,
+      "brightFraction": 0.5000173611111111,
+      "distinctColors": 55
+    },
+    {
+      "phase": "baseline",
+      "name": "legacy-near-full",
+      "maxChannel": 255,
+      "brightPixels": 207168,
+      "brightFraction": 0.5994444444444444,
+      "distinctColors": 30446
+    },
+    {
+      "phase": "candidate",
+      "name": "legacy-near-isolated",
+      "maxChannel": 9,
+      "brightPixels": 0,
+      "brightFraction": 0,
+      "distinctColors": 11
+    },
+    {
+      "phase": "candidate",
+      "name": "legacy-near-full",
+      "maxChannel": 255,
+      "brightPixels": 69955,
+      "brightFraction": 0.20241608796296295,
+      "distinctColors": 21268
+    }
+  ],
+  "comparisons": [
+    {
+      "name": "legacy-near-isolated",
+      "baseline": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 10603351.026783178,
+        "meanLuminance": 30.680992554349473,
+        "outerLuminance": 10011100.45738812,
+        "nonblackPixels": 345516,
+        "clippedFraction": 0,
+        "centroid": [
+          211.14943395385802,
+          269.1727076175647
+        ],
+        "majorSigma": 161.59002150144312,
+        "minorSigma": 114.32837303872117
+      },
+      "candidate": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 1141245.3855986341,
+        "meanLuminance": 3.3022146574034554,
+        "outerLuminance": 1095975.6095995216,
+        "nonblackPixels": 345432,
+        "clippedFraction": 0,
+        "centroid": [
+          359.4999962233795,
+          239.4998845498585
+        ],
+        "majorSigma": 188.73018330777109,
+        "minorSigma": 132.43872054795202
+      },
+      "delta": {
+        "meanAbsoluteRgb": 26.70706114969136,
+        "changedFraction": 0.5000260416666666,
+        "maxMeanRgb": 159.66666666666666
+      }
+    },
+    {
+      "name": "legacy-near-full",
+      "baseline": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 13644930.837003203,
+        "meanLuminance": 39.48186006077316,
+        "outerLuminance": 12948427.825203061,
+        "nonblackPixels": 345516,
+        "clippedFraction": 0.00001736111111111111,
+        "centroid": [
+          243.83947840046451,
+          261.9684649541757
+        ],
+        "majorSigma": 165.0062834333789,
+        "minorSigma": 120.21817431301919
+      },
+      "candidate": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 4182966.7612009817,
+        "meanLuminance": 12.10349178588247,
+        "outerLuminance": 3664969.187400601,
+        "nonblackPixels": 345515,
+        "clippedFraction": 0.000011574074074074073,
+        "centroid": [
+          358.2607983980789,
+          237.57362616676525
+        ],
+        "majorSigma": 159.03663861679723,
+        "minorSigma": 114.48786506577495
+      },
+      "delta": {
+        "meanAbsoluteRgb": 26.70664737654321,
+        "changedFraction": 0.5000231481481482,
+        "maxMeanRgb": 146.33333333333334
+      }
+    }
+  ],
+  "reproducesOriginal57PixelsExactly": true,
+  "isolatedWedgesRemoved": true,
+  "fullSceneMatchesIndependentCleanFieldExactly": true,
+  "resourcesReleased": true,
+  "glErrors": [],
+  "scope": "The isolated candidate retains a very dark ambient gradient (11 encoded RGB colors), rather than a zero clear buffer. The inherited [1,3,6] subtraction counted that floor as signal and made the original <1% assertion fail. Direct pixel analysis confirms every isolated candidate channel is <=12 and no pixel exceeds threshold20. The restored full scene preserves the independent clean inside-galaxy field byte for byte.",
+  "photometry": "Display RGB artifact removal only; no physical luminance, mass, dust-transfer or energy-conservation claim."
+}

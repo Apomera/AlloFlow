@@ -1,0 +1,14 @@
+const fs=require('node:fs'),assert=require('node:assert/strict'),crypto=require('node:crypto');
+const stage=__dirname;
+const source=fs.readFileSync(stage+'/candidate-renderer.js','utf8');
+assert.equal(crypto.createHash('sha256').update(source).digest('hex'),'6f1267255407b7de52bb685922281301fef58de9c91cc8a036577a7c317e56e8');
+global.window={};
+new Function(source.replace('  global.UniverseFlight =','  global.__helpers={makeRegion:makeRegion,spiralPlaneMarker:spiralPlaneMarker};\n  global.UniverseFlight ='))();
+const helper=window.__helpers;
+const data=helper.makeRegion('cosmic');
+const poses=[[0,0,-2200000],[1600000,650000,1250000]];
+const result=poses.map(position=>({position,nonzero:data.galaxies.filter(model=>!model.elliptical).map((model,index)=>({index,marker:helper.spiralPlaneMarker(model,position)})).filter(item=>item.marker!==0)}));
+assert.ok(result.every(pose=>pose.nonzero.length===0));
+const output={completed:true,scope:'Read-only review of existing bulge test camera poses; both remain outside all spiral plane handoff envelopes.',candidateSha256:crypto.createHash('sha256').update(source).digest('hex'),poses:result};
+fs.writeFileSync(stage+'/review-focused-poses.json',JSON.stringify(output,null,2)+'\n');
+console.log(JSON.stringify(output));

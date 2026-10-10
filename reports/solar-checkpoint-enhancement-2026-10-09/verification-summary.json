@@ -1,0 +1,40 @@
+{
+  "sourceSha256": "c70794088a27f47c11084036af68061b4b3abd8eac8ee2e6703546a82d8938ad",
+  "baselineSha256": "cf42f8583961a7d464b6f6007510d1d352cf02a0bf47c2132aa095db9e3bd6ad",
+  "verifiedAt": "2026-10-09T20:03:13.360Z",
+  "desktopMirrorMatches": true,
+  "units": {
+    "passed": 26,
+    "total": 26,
+    "suites": [
+      "tests\\solar_system_misconception_checkpoint.test.js",
+      "tests\\solar_system_vocabulary_browser.test.js"
+    ]
+  },
+  "browser": {
+    "passed": 4,
+    "cases": [
+      "checkpoint-1060-dark",
+      "checkpoint-1060-light",
+      "checkpoint-320-dark",
+      "checkpoint-320-light"
+    ],
+    "checked": [
+      "Correct False answers retain the explanation before completion",
+      "Incorrect True answers retain the first choice and explanatory feedback",
+      "Explicit acknowledgement records each known explanation once",
+      "All eight checkpoints reachable with native topic selection",
+      "Reviewed explanations reopen without additional credit or answer changes",
+      "Speech occurs only on explicit request",
+      "Committed question, feedback and completion focus",
+      "Contextual topic defaults with world-scoped saved selection",
+      "Journal entries, drafts, synthesis and vocabulary state preserved",
+      "Readable desktop and 320px layouts in light and dark themes",
+      "13px minimum text, 16px fields, 44px controls",
+      "No text or page overflow and no browser errors"
+    ]
+  },
+  "syntax": "passed",
+  "whitespace": "passed",
+  "committed": false
+}

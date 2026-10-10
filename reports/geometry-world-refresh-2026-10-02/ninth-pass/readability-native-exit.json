@@ -1,0 +1,14 @@
+{
+  "startedAt": "2026-10-06T11:42:35.025Z",
+  "completedAt": "2026-10-06T11:48:25.776Z",
+  "wrapperPid": 24276,
+  "childPid": 37712,
+  "state": "finished",
+  "exitCode": 0,
+  "signal": null,
+  "reportStartedAt": "2026-10-06T11:42:35.675Z",
+  "reportCompletedAt": "2026-10-06T11:48:25.757Z",
+  "resourcesClosed": true,
+  "checks": 168,
+  "failures": 0
+}

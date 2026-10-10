@@ -1,0 +1,24 @@
+{
+  "at": "2026-10-09T23:43:27.890Z",
+  "status": "blocked by full system drive",
+  "freeMiB": 9.9453125,
+  "applicationAndTestsUnchanged": true,
+  "protectedFilesUnchanged": 391,
+  "headAndIndexUnchanged": true,
+  "testsRun": 0,
+  "changes": [
+    "Monitor: Review plan / Explain result should focus checkpoint without changing saved work; keep normal preparation, disable for animation/revealed/complete, hide outside Explore.",
+    "Move Simple steps cue after learning-gate initialization; reflect pending explanation and final completion honestly.",
+    "Align technique summary/header with learning phase; label physical strip as actions performed."
+  ],
+  "testMatrix": [
+    "initial plan",
+    "intermediate reflection",
+    "final reflection then native correct answer",
+    "normal preparation with wrong selected tool",
+    "revealed layer",
+    "animation",
+    "Guided, quiz, practical and study modes"
+  ],
+  "existingTestAdjustment": "tests/dissection_lab_improvements.test.js:4021 planning fixture expects Prepare next; target the monitor Review plan control instead."
+}

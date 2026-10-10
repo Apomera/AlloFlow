@@ -1,0 +1,65 @@
+{
+  "config": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-hand-study-work\\vitest-deferred-jsdom.config.mjs",
+  "setup": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-hand-study-work\\setup-deferred-jsdom.mjs",
+  "pool": "forks",
+  "startup": "plain",
+  "configLoader": "native",
+  "out": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-hand-study-work\\deferred-jsdom-unit-evidence\\final-236-native",
+  "selectedJobs": [
+    {
+      "id": "hand-study",
+      "file": "tests/firstresponse_hand_study.test.js",
+      "count": 46
+    },
+    {
+      "id": "patient-finish",
+      "file": "tests/firstresponse_patient_finish.test.js",
+      "count": 22
+    },
+    {
+      "id": "supporting-hand",
+      "file": "tests/firstresponse_supporting_hand.test.js",
+      "count": 109
+    },
+    {
+      "id": "palm-detail",
+      "file": "tests/firstresponse_palm_detail.test.js",
+      "count": 59
+    }
+  ],
+  "expected": 236,
+  "testTimeout": 240000,
+  "hookTimeout": 120000,
+  "retry": 0,
+  "maxWorkers": 1,
+  "unchanged": [
+    "assertions",
+    "fixtures",
+    "repository config",
+    "installed jsdom",
+    "installed Vitest",
+    "dependency files"
+  ],
+  "baseline": {
+    "stem_lab/stem_tool_firstresponse.js": "cc354bd12dd0712e1e628ebfc16689ba584c3b988d1b085df5a41e1f67cecc26",
+    "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js": "cc354bd12dd0712e1e628ebfc16689ba584c3b988d1b085df5a41e1f67cecc26",
+    "node_modules/vitest/dist/chunks/index.DC7d2Pf8.js": "ca8e968b3dcbef742036f0d857700ef0a019127911f8770097066b8e5371036b",
+    "node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js": "d991d80584acd5fc622aefce5f907feff6c531059165a05d75c66e3ed8697d79",
+    "package.json": "e880a66350e09285d4a43457de9765b7a0ad107fa7aa8d2ef566583a4bfd1c77",
+    "package-lock.json": "8fde867720a10e402bf57ea0bcac4ba68121859a9b50191bfe88cb3663805e94",
+    "vitest.config.js": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04",
+    "tests/setup.js": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+    "tests/helpers/firstresponse_hand_study_delta.cjs": "f44b06da2c0facd77ecf5570f9e1b41fbd37e02039ab4a2f1ed898fff70dce81",
+    "tests/helpers/firstresponse_hand_study_delta.json": "f946d1a844a2fcaf691476a0cba0358ebc053442b9a36b812a2c4ccdae4c46bb",
+    "tests/firstresponse_hand_study.test.js": "27c33bcb6ab40b82ec50769b2f5659e8d229d1b5a6c712e4959a09eb7446b05d",
+    "tests/firstresponse_patient_finish.test.js": "84b81da9e679f82e5888db409ddeb005c01a3acc0e0b218873b7c9f21a9fe1b6",
+    "tests/firstresponse_supporting_hand.test.js": "99bd6d238351f39eac6389f52770d0201bbdc10c2c7a5838a653f03d80a7ce11",
+    "tests/firstresponse_palm_detail.test.js": "165813e9504d8a7aef56fcef1e745a6ad762888064cb0b799ab7897a9e046493"
+  },
+  "privateBaseline": {
+    "vitest-deferred-jsdom.config.mjs": "b385d7cf39008011ecaa1ed86572a4cbef643584d65c7def9d7e58ea9d0186ff",
+    "setup-deferred-jsdom.mjs": "9a93652922bd975b5edd69777ff2f846e3b4436132ebbd15c81997efa3869f06",
+    "run-deferred-jsdom-units.cjs": "44c7973171d9b97480b30382331429e278d0f949ec7d321e4bc650dfdc581f39"
+  },
+  "startedAt": "2026-10-06T23:04:35.958Z"
+}

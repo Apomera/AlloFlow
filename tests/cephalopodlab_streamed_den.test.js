@@ -11,7 +11,7 @@ const helpers = region('function shadeCLHuntRockSurface(', 'function shadeCLHunt
 // its real helper against this den-only fixture's empty original plant/reef pools.
 const habitat = source.includes('        // Five rock-rooted groves') ? region('        // Five rock-rooted groves', '        function updateGround(){') + region('        function terrainHeight(', '        function distance3(') : '';
 const initial = region('var DEN_RADIUS = 2.0;', '// ─── Clams'), recycle = region('var RECYCLE_DIST = 120;', '// Rocks'), stream = region('var nearestDenD = Infinity;', '// Recycling changes X/Z');
-const construct = new Function('THREE', 'Math', 'renderer', 'var scene=new THREE.Scene(),octopus={position:new THREE.Vector3()},rocks=[],corals=[],grass=[],kelpStrands=[],shelters=[];' + helpers + habitat + initial + recycle + ';return{scene,dens,octopus,step:function(){' + stream + '},rock:createCLHuntDenRockGeometry,shadow:createCLHuntDenShadowGeometry,shader:shadeCLHuntRockSurface,fallback:reefSurface};');
+const construct = new Function('THREE', 'Math', 'renderer', 'var scene=new THREE.Scene(),octopus={position:new THREE.Vector3()},rocks=[],corals=[],grass=[],kelpStrands=[],shelters=[];' + helpers + habitat + initial + recycle + ';return{scene,dens,octopus,step:function(){' + stream + '},rock:createCLHuntDenWeatheredGeometry,shadow:createCLHuntDenShadowGeometry,shader:shadeCLHuntRockSurface,fallback:reefSurface};');
 const fixtures = [];
 function fixture(derivatives = true) {
   const draws = [], math = Object.assign(Object.create(Math), { random() { const value = ((draws.length * 37 + 17) % 97) / 97; draws.push(value); return value; } });
@@ -47,7 +47,7 @@ describe('Cephalopod Hunter streamed exploration dens', () => {
     assert.equal(meshes[3].material.vertexColors, true); assert.equal(meshes[3].material.transparent, false); assert.equal(meshes[3].material.side, THREE.DoubleSide);
     assert.equal(meshes[4], den.glow); assert.equal(meshes[4].geometry.parameters.innerRadius, 1.7); assert.equal(meshes[4].geometry.parameters.outerRadius, 2); assert.equal(meshes[4].material.opacity, 0);
     assert.deepEqual(meshes[4].position.toArray(), [0, .06, 0]); assert.equal(meshes[4].rotation.x, -Math.PI / 2);
-    assert.equal(meshes.reduce((sum, mesh) => sum + mesh.geometry.attributes.position.count, 0), 565); assert.equal(meshes.reduce((sum, mesh) => sum + mesh.geometry.index.count / 3, 0), 302);
+    assert.equal(meshes.reduce((sum, mesh) => sum + mesh.geometry.attributes.position.count, 0), 1061); assert.equal(meshes.reduce((sum, mesh) => sum + mesh.geometry.index.count / 3, 0), 526);
     assert.ok(meshes.every(mesh => !Object.values(mesh.material).some(value => value?.isTexture)));
   });
 

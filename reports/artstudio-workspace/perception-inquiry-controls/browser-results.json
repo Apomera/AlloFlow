@@ -1,0 +1,1432 @@
+{
+  "sourceSHA256": "9e338c48eec53d00ba8233921b0c51f65138641b0ce4c0a9a5f0e360395fa338",
+  "loadedSourceSHA256": "9e338c48eec53d00ba8233921b0c51f65138641b0ce4c0a9a5f0e360395fa338",
+  "finalSourceSHA256": "9e338c48eec53d00ba8233921b0c51f65138641b0ce4c0a9a5f0e360395fa338",
+  "checks": [
+    {
+      "experiment": "cafeWall",
+      "chosen": "offset",
+      "startingAndCurrentValuesAccurate": true,
+      "selectKeepsNativeFocus": true,
+      "navigatorFocusesRealControl": true,
+      "unchangedRestoreActionsDisabled": true,
+      "startingSceneImmutable": true
+    },
+    {
+      "experiment": "cafeWall",
+      "chosen": "offset",
+      "selectedRestoreOnlyChosenSetting": true,
+      "otherChangesPreserved": true,
+      "noteImpressionRevealPinNotebookPreserved": true,
+      "focusesChosenControl": true
+    },
+    {
+      "experiment": "cafeWall",
+      "chosen": "offset",
+      "otherRestorePreservesChosenSetting": true,
+      "noteImpressionRevealPinNotebookPreserved": true,
+      "startingSceneImmutable": true,
+      "focusesChosenControl": true
+    },
+    {
+      "experiment": "cafeWall",
+      "chosen": "mortar",
+      "startingAndCurrentValuesAccurate": true,
+      "selectKeepsNativeFocus": true,
+      "navigatorFocusesRealControl": true,
+      "unchangedRestoreActionsDisabled": true,
+      "startingSceneImmutable": true
+    },
+    {
+      "experiment": "cafeWall",
+      "chosen": "mortar",
+      "selectedRestoreOnlyChosenSetting": true,
+      "otherChangesPreserved": true,
+      "noteImpressionRevealPinNotebookPreserved": true,
+      "focusesChosenControl": true
+    },
+    {
+      "experiment": "cafeWall",
+      "chosen": "mortar",
+      "otherRestorePreservesChosenSetting": true,
+      "noteImpressionRevealPinNotebookPreserved": true,
+      "startingSceneImmutable": true,
+      "focusesChosenControl": true
+    },
+    {
+      "experiment": "cafeWall",
+      "chosen": "context",
+      "startingAndCurrentValuesAccurate": true,
+      "selectKeepsNativeFocus": true,
+      "navigatorFocusesRealControl": true,
+      "unchangedRestoreActionsDisabled": true,
+      "startingSceneImmutable": true
+    },
+    {
+      "experiment": "cafeWall",
+      "chosen": "context",
+      "selectedRestoreOnlyChosenSetting": true,
+      "otherChangesPreserved": true,
+      "noteImpressionRevealPinNotebookPreserved": true,
+      "focusesChosenControl": true
+    },
+    {
+      "experiment": "cafeWall",
+      "chosen": "context",
+      "otherRestorePreservesChosenSetting": true,
+      "noteImpressionRevealPinNotebookPreserved": true,
+      "startingSceneImmutable": true,
+      "focusesChosenControl": true
+    },
+    {
+      "experiment": "necker",
+      "chosen": "depth",
+      "startingAndCurrentValuesAccurate": true,
+      "selectKeepsNativeFocus": true,
+      "navigatorFocusesRealControl": true,
+      "unchangedRestoreActionsDisabled": true,
+      "startingSceneImmutable": true
+    },
+    {
+      "experiment": "necker",
+      "chosen": "depth",
+      "selectedRestoreOnlyChosenSetting": true,
+      "otherChangesPreserved": true,
+      "noteImpressionRevealPinNotebookPreserved": true,
+      "focusesChosenControl": true
+    },
+    {
+      "experiment": "necker",
+      "chosen": "depth",
+      "otherRestorePreservesChosenSetting": true,
+      "noteImpressionRevealPinNotebookPreserved": true,
+      "startingSceneImmutable": true,
+      "focusesChosenControl": true
+    },
+    {
+      "experiment": "necker",
+      "chosen": "cue",
+      "startingAndCurrentValuesAccurate": true,
+      "selectKeepsNativeFocus": true,
+      "navigatorFocusesRealControl": true,
+      "unchangedRestoreActionsDisabled": true,
+      "startingSceneImmutable": true
+    },
+    {
+      "experiment": "necker",
+      "chosen": "cue",
+      "selectedRestoreOnlyChosenSetting": true,
+      "otherChangesPreserved": true,
+      "noteImpressionRevealPinNotebookPreserved": true,
+      "focusesChosenControl": true
+    },
+    {
+      "experiment": "necker",
+      "chosen": "cue",
+      "otherRestorePreservesChosenSetting": true,
+      "noteImpressionRevealPinNotebookPreserved": true,
+      "startingSceneImmutable": true,
+      "focusesChosenControl": true
+    },
+    {
+      "experiment": "necker",
+      "chosen": "context",
+      "startingAndCurrentValuesAccurate": true,
+      "selectKeepsNativeFocus": true,
+      "navigatorFocusesRealControl": true,
+      "unchangedRestoreActionsDisabled": true,
+      "startingSceneImmutable": true
+    },
+    {
+      "experiment": "necker",
+      "chosen": "context",
+      "selectedRestoreOnlyChosenSetting": true,
+      "otherChangesPreserved": true,
+      "noteImpressionRevealPinNotebookPreserved": true,
+      "focusesChosenControl": true
+    },
+    {
+      "experiment": "necker",
+      "chosen": "context",
+      "otherRestorePreservesChosenSetting": true,
+      "noteImpressionRevealPinNotebookPreserved": true,
+      "startingSceneImmutable": true,
+      "focusesChosenControl": true
+    },
+    {
+      "experiment": "moire",
+      "chosen": "angle",
+      "startingAndCurrentValuesAccurate": true,
+      "selectKeepsNativeFocus": true,
+      "navigatorFocusesRealControl": true,
+      "unchangedRestoreActionsDisabled": true,
+      "startingSceneImmutable": true
+    },
+    {
+      "experiment": "moire",
+      "chosen": "angle",
+      "selectedRestoreOnlyChosenSetting": true,
+      "otherChangesPreserved": true,
+      "noteImpressionRevealPinNotebookPreserved": true,
+      "focusesChosenControl": true
+    },
+    {
+      "experiment": "moire",
+      "chosen": "angle",
+      "otherRestorePreservesChosenSetting": true,
+      "noteImpressionRevealPinNotebookPreserved": true,
+      "startingSceneImmutable": true,
+      "focusesChosenControl": true
+    },
+    {
+      "experiment": "moire",
+      "chosen": "spacing",
+      "startingAndCurrentValuesAccurate": true,
+      "selectKeepsNativeFocus": true,
+      "navigatorFocusesRealControl": true,
+      "unchangedRestoreActionsDisabled": true,
+      "startingSceneImmutable": true
+    },
+    {
+      "experiment": "moire",
+      "chosen": "spacing",
+      "selectedRestoreOnlyChosenSetting": true,
+      "otherChangesPreserved": true,
+      "noteImpressionRevealPinNotebookPreserved": true,
+      "focusesChosenControl": true
+    },
+    {
+      "experiment": "moire",
+      "chosen": "spacing",
+      "otherRestorePreservesChosenSetting": true,
+      "noteImpressionRevealPinNotebookPreserved": true,
+      "startingSceneImmutable": true,
+      "focusesChosenControl": true
+    },
+    {
+      "experiment": "moire",
+      "chosen": "context",
+      "startingAndCurrentValuesAccurate": true,
+      "selectKeepsNativeFocus": true,
+      "navigatorFocusesRealControl": true,
+      "unchangedRestoreActionsDisabled": true,
+      "startingSceneImmutable": true
+    },
+    {
+      "experiment": "moire",
+      "chosen": "context",
+      "selectedRestoreOnlyChosenSetting": true,
+      "otherChangesPreserved": true,
+      "noteImpressionRevealPinNotebookPreserved": true,
+      "focusesChosenControl": true
+    },
+    {
+      "experiment": "moire",
+      "chosen": "context",
+      "otherRestorePreservesChosenSetting": true,
+      "noteImpressionRevealPinNotebookPreserved": true,
+      "startingSceneImmutable": true,
+      "focusesChosenControl": true
+    },
+    {
+      "nativeKeyboardNavigationAndRestore": true,
+      "realCueSelectReceivesFocus": true,
+      "sameDialogKept": true
+    },
+    {
+      "nativeDraftBlurBeforeSelectedRestore": true,
+      "committedOtherDraftPreserved": true
+    },
+    {
+      "nativeDraftBlurBeforeOtherRestore": true,
+      "committedChosenDraftPreserved": true
+    },
+    {
+      "pendingRestore": "selected",
+      "conflictingActionsDisabled": true,
+      "oneQueuedWrite": true,
+      "appliesAfterParentCommit": true,
+      "noteAndSavedDataPreserved": true
+    },
+    {
+      "pendingRestore": "others",
+      "conflictingActionsDisabled": true,
+      "oneQueuedWrite": true,
+      "appliesAfterParentCommit": true,
+      "noteAndSavedDataPreserved": true
+    },
+    {
+      "deferredRestoreAfter": "profile",
+      "externalEditsPreserved": true,
+      "sameExperimentRestoreKept": false,
+      "noStaleFocusSteal": true
+    },
+    {
+      "deferredRestoreAfter": "experiment",
+      "externalEditsPreserved": true,
+      "sameExperimentRestoreKept": false,
+      "noStaleFocusSteal": true
+    },
+    {
+      "deferredRestoreAfter": "model",
+      "externalEditsPreserved": true,
+      "sameExperimentRestoreKept": false,
+      "noStaleFocusSteal": true
+    },
+    {
+      "deferredRestoreAfter": "applied-edit",
+      "externalEditsPreserved": true,
+      "sameExperimentRestoreKept": false,
+      "noStaleFocusSteal": true
+    },
+    {
+      "deferredRestoreAfter": "close",
+      "externalEditsPreserved": false,
+      "sameExperimentRestoreKept": true,
+      "noStaleFocusSteal": true
+    },
+    {
+      "deferredRestoreAfter": "escape",
+      "externalEditsPreserved": false,
+      "sameExperimentRestoreKept": true,
+      "noStaleFocusSteal": true
+    },
+    {
+      "deferredRestoreAfter": "close-focus-moved",
+      "externalEditsPreserved": false,
+      "sameExperimentRestoreKept": true,
+      "noStaleFocusSteal": true
+    },
+    {
+      "deferredRestoreAfter": "focus-moved",
+      "externalEditsPreserved": false,
+      "sameExperimentRestoreKept": true,
+      "noStaleFocusSteal": true
+    },
+    {
+      "parentUpdaterReplayProducesSameRestoration": true,
+      "currentChosenValuePreserved": true,
+      "savedStatePreserved": true
+    },
+    {
+      "moireRestore": "selected",
+      "pausesAtVisibleAngle": true,
+      "chosenOrOtherRestorationExact": true,
+      "visibleAngle": 6.8,
+      "savedAngle": 6.3
+    },
+    {
+      "moireRestore": "others",
+      "pausesAtVisibleAngle": true,
+      "chosenOrOtherRestorationExact": true,
+      "visibleAngle": 6.7,
+      "savedAngle": 6.7
+    },
+    {
+      "exportAfterRestorationUsesExactCurrentGeometry": true,
+      "currentAndPinUnchanged": true,
+      "pngWidth": 2400,
+      "pngHeight": 1440,
+      "downloadTransport": "native"
+    },
+    {
+      "width": 320,
+      "height": 844,
+      "font": 16,
+      "allNineControlsVisibleAfterSceneNavigation": [
+        {
+          "experiment": "cafeWall",
+          "key": "offset",
+          "width": 248,
+          "height": 44,
+          "visibleWidth": 248,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "cafeWall",
+          "key": "mortar",
+          "width": 248,
+          "height": 44,
+          "visibleWidth": 248,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "cafeWall",
+          "key": "context",
+          "width": 164.703125,
+          "height": 44,
+          "visibleWidth": 164.703125,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "angle",
+          "width": 248,
+          "height": 44,
+          "visibleWidth": 248,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "spacing",
+          "width": 248,
+          "height": 44,
+          "visibleWidth": 248,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "context",
+          "width": 164.703125,
+          "height": 44,
+          "visibleWidth": 164.703125,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "depth",
+          "width": 248,
+          "height": 44,
+          "visibleWidth": 248,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "cue",
+          "width": 248,
+          "height": 44,
+          "visibleWidth": 248,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "context",
+          "width": 164.703125,
+          "height": 44,
+          "visibleWidth": 164.703125,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "depth-expanded",
+          "width": 248,
+          "height": 44,
+          "visibleWidth": 248,
+          "visibleHeight": 44,
+          "focused": true
+        }
+      ],
+      "expandedNavigatorReopensControls": true,
+      "allActions44px": true,
+      "noHorizontalOverflow": true,
+      "currentVisibility": {
+        "width": 248,
+        "height": 148.796875,
+        "visibleWidth": 248,
+        "visibleHeight": 148.796875
+      },
+      "axe": []
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "font": 16,
+      "allNineControlsVisibleAfterSceneNavigation": [
+        {
+          "experiment": "cafeWall",
+          "key": "offset",
+          "width": 318,
+          "height": 44,
+          "visibleWidth": 318,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "cafeWall",
+          "key": "mortar",
+          "width": 318,
+          "height": 44,
+          "visibleWidth": 318,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "cafeWall",
+          "key": "context",
+          "width": 164.703125,
+          "height": 44,
+          "visibleWidth": 164.703125,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "angle",
+          "width": 318,
+          "height": 44,
+          "visibleWidth": 318,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "spacing",
+          "width": 318,
+          "height": 44,
+          "visibleWidth": 318,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "context",
+          "width": 164.703125,
+          "height": 44,
+          "visibleWidth": 164.703125,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "depth",
+          "width": 318,
+          "height": 44,
+          "visibleWidth": 318,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "cue",
+          "width": 318,
+          "height": 44,
+          "visibleWidth": 318,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "context",
+          "width": 164.703125,
+          "height": 44,
+          "visibleWidth": 164.703125,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "depth-expanded",
+          "width": 318,
+          "height": 44,
+          "visibleWidth": 318,
+          "visibleHeight": 44,
+          "focused": true
+        }
+      ],
+      "expandedNavigatorReopensControls": true,
+      "allActions44px": true,
+      "noHorizontalOverflow": true,
+      "currentVisibility": {
+        "width": 318,
+        "height": 190.796875,
+        "visibleWidth": 318,
+        "visibleHeight": 190.796875
+      },
+      "axe": []
+    },
+    {
+      "width": 760,
+      "height": 390,
+      "font": 16,
+      "allNineControlsVisibleAfterSceneNavigation": [
+        {
+          "experiment": "cafeWall",
+          "key": "offset",
+          "width": 668,
+          "height": 44,
+          "visibleWidth": 668,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "cafeWall",
+          "key": "mortar",
+          "width": 668,
+          "height": 44,
+          "visibleWidth": 668,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "cafeWall",
+          "key": "context",
+          "width": 164.703125,
+          "height": 44,
+          "visibleWidth": 164.703125,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "angle",
+          "width": 668,
+          "height": 44,
+          "visibleWidth": 668,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "spacing",
+          "width": 668,
+          "height": 44,
+          "visibleWidth": 668,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "context",
+          "width": 164.703125,
+          "height": 44,
+          "visibleWidth": 164.703125,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "depth",
+          "width": 668,
+          "height": 44,
+          "visibleWidth": 668,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "cue",
+          "width": 668,
+          "height": 44,
+          "visibleWidth": 668,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "context",
+          "width": 164.703125,
+          "height": 44,
+          "visibleWidth": 164.703125,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "depth-expanded",
+          "width": 322,
+          "height": 44,
+          "visibleWidth": 322,
+          "visibleHeight": 44,
+          "focused": true
+        }
+      ],
+      "expandedNavigatorReopensControls": true,
+      "allActions44px": true,
+      "noHorizontalOverflow": true,
+      "currentVisibility": {
+        "width": 676,
+        "height": 278,
+        "visibleWidth": 676,
+        "visibleHeight": 278
+      },
+      "axe": []
+    },
+    {
+      "width": 1060,
+      "height": 760,
+      "font": 16,
+      "allNineControlsVisibleAfterSceneNavigation": [
+        {
+          "experiment": "cafeWall",
+          "key": "offset",
+          "width": 287,
+          "height": 44,
+          "visibleWidth": 287,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "cafeWall",
+          "key": "mortar",
+          "width": 287,
+          "height": 44,
+          "visibleWidth": 287,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "cafeWall",
+          "key": "context",
+          "width": 164.703125,
+          "height": 44,
+          "visibleWidth": 164.703125,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "angle",
+          "width": 287,
+          "height": 44,
+          "visibleWidth": 287,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "spacing",
+          "width": 287,
+          "height": 44,
+          "visibleWidth": 287,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "context",
+          "width": 164.703125,
+          "height": 44,
+          "visibleWidth": 164.703125,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "depth",
+          "width": 960.21875,
+          "height": 44,
+          "visibleWidth": 960.21875,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "cue",
+          "width": 960.21875,
+          "height": 44,
+          "visibleWidth": 960.21875,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "context",
+          "width": 164.703125,
+          "height": 44,
+          "visibleWidth": 164.703125,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "depth-expanded",
+          "width": 468.109375,
+          "height": 44,
+          "visibleWidth": 468.109375,
+          "visibleHeight": 44,
+          "focused": true
+        }
+      ],
+      "expandedNavigatorReopensControls": true,
+      "allActions44px": true,
+      "noHorizontalOverflow": true,
+      "currentVisibility": {
+        "width": 962.5625,
+        "height": 303.71875,
+        "visibleWidth": 962.5625,
+        "visibleHeight": 303.71875
+      },
+      "axe": []
+    },
+    {
+      "width": 1440,
+      "height": 1000,
+      "font": 16,
+      "allNineControlsVisibleAfterSceneNavigation": [
+        {
+          "experiment": "cafeWall",
+          "key": "offset",
+          "width": 287,
+          "height": 44,
+          "visibleWidth": 287,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "cafeWall",
+          "key": "mortar",
+          "width": 287,
+          "height": 44,
+          "visibleWidth": 287,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "cafeWall",
+          "key": "context",
+          "width": 164.703125,
+          "height": 44,
+          "visibleWidth": 164.703125,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "angle",
+          "width": 287,
+          "height": 44,
+          "visibleWidth": 287,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "spacing",
+          "width": 287,
+          "height": 44,
+          "visibleWidth": 287,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "context",
+          "width": 164.703125,
+          "height": 44,
+          "visibleWidth": 164.703125,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "depth",
+          "width": 287,
+          "height": 44,
+          "visibleWidth": 287,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "cue",
+          "width": 287,
+          "height": 44,
+          "visibleWidth": 287,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "context",
+          "width": 164.703125,
+          "height": 44,
+          "visibleWidth": 164.703125,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "depth-expanded",
+          "width": 652.40625,
+          "height": 44,
+          "visibleWidth": 652.40625,
+          "visibleHeight": 44,
+          "focused": true
+        }
+      ],
+      "expandedNavigatorReopensControls": true,
+      "allActions44px": true,
+      "noHorizontalOverflow": true,
+      "currentVisibility": {
+        "width": 1320.8125,
+        "height": 532.3125,
+        "visibleWidth": 1320.8125,
+        "visibleHeight": 532.3125
+      },
+      "axe": []
+    },
+    {
+      "width": 320,
+      "height": 844,
+      "font": 32,
+      "allNineControlsVisibleAfterSceneNavigation": [
+        {
+          "experiment": "cafeWall",
+          "key": "offset",
+          "width": 248,
+          "height": 44,
+          "visibleWidth": 248,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "cafeWall",
+          "key": "mortar",
+          "width": 248,
+          "height": 44,
+          "visibleWidth": 248,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "cafeWall",
+          "key": "context",
+          "width": 248,
+          "height": 102,
+          "visibleWidth": 248,
+          "visibleHeight": 102,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "angle",
+          "width": 248,
+          "height": 44,
+          "visibleWidth": 248,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "spacing",
+          "width": 248,
+          "height": 44,
+          "visibleWidth": 248,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "context",
+          "width": 248,
+          "height": 102,
+          "visibleWidth": 248,
+          "visibleHeight": 102,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "depth",
+          "width": 248,
+          "height": 44,
+          "visibleWidth": 248,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "cue",
+          "width": 248,
+          "height": 57,
+          "visibleWidth": 248,
+          "visibleHeight": 57,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "context",
+          "width": 248,
+          "height": 102,
+          "visibleWidth": 248,
+          "visibleHeight": 102,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "depth-expanded",
+          "width": 248,
+          "height": 44,
+          "visibleWidth": 248,
+          "visibleHeight": 44,
+          "focused": true
+        }
+      ],
+      "expandedNavigatorReopensControls": true,
+      "allActions44px": true,
+      "noHorizontalOverflow": true,
+      "currentVisibility": {
+        "width": 248,
+        "height": 148.796875,
+        "visibleWidth": 248,
+        "visibleHeight": 148.796875
+      },
+      "axe": []
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "font": 32,
+      "allNineControlsVisibleAfterSceneNavigation": [
+        {
+          "experiment": "cafeWall",
+          "key": "offset",
+          "width": 318,
+          "height": 44,
+          "visibleWidth": 318,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "cafeWall",
+          "key": "mortar",
+          "width": 318,
+          "height": 44,
+          "visibleWidth": 318,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "cafeWall",
+          "key": "context",
+          "width": 303.40625,
+          "height": 60,
+          "visibleWidth": 303.40625,
+          "visibleHeight": 60,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "angle",
+          "width": 318,
+          "height": 44,
+          "visibleWidth": 318,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "spacing",
+          "width": 318,
+          "height": 44,
+          "visibleWidth": 318,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "context",
+          "width": 303.40625,
+          "height": 60,
+          "visibleWidth": 303.40625,
+          "visibleHeight": 60,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "depth",
+          "width": 318,
+          "height": 44,
+          "visibleWidth": 318,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "cue",
+          "width": 318,
+          "height": 57,
+          "visibleWidth": 318,
+          "visibleHeight": 57,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "context",
+          "width": 303.40625,
+          "height": 60,
+          "visibleWidth": 303.40625,
+          "visibleHeight": 60,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "depth-expanded",
+          "width": 318,
+          "height": 44,
+          "visibleWidth": 318,
+          "visibleHeight": 44,
+          "focused": true
+        }
+      ],
+      "expandedNavigatorReopensControls": true,
+      "allActions44px": true,
+      "noHorizontalOverflow": true,
+      "currentVisibility": {
+        "width": 318,
+        "height": 190.796875,
+        "visibleWidth": 318,
+        "visibleHeight": 190.796875
+      },
+      "axe": []
+    },
+    {
+      "width": 760,
+      "height": 390,
+      "font": 32,
+      "allNineControlsVisibleAfterSceneNavigation": [
+        {
+          "experiment": "cafeWall",
+          "key": "offset",
+          "width": 668,
+          "height": 44,
+          "visibleWidth": 668,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "cafeWall",
+          "key": "mortar",
+          "width": 668,
+          "height": 44,
+          "visibleWidth": 668,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "cafeWall",
+          "key": "context",
+          "width": 303.40625,
+          "height": 60,
+          "visibleWidth": 303.40625,
+          "visibleHeight": 60,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "angle",
+          "width": 668,
+          "height": 44,
+          "visibleWidth": 668,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "spacing",
+          "width": 668,
+          "height": 44,
+          "visibleWidth": 668,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "context",
+          "width": 303.40625,
+          "height": 60,
+          "visibleWidth": 303.40625,
+          "visibleHeight": 60,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "depth",
+          "width": 668,
+          "height": 44,
+          "visibleWidth": 668,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "cue",
+          "width": 668,
+          "height": 57,
+          "visibleWidth": 668,
+          "visibleHeight": 57,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "context",
+          "width": 303.40625,
+          "height": 60,
+          "visibleWidth": 303.40625,
+          "visibleHeight": 60,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "depth-expanded",
+          "width": 322,
+          "height": 44,
+          "visibleWidth": 322,
+          "visibleHeight": 44,
+          "focused": true
+        }
+      ],
+      "expandedNavigatorReopensControls": true,
+      "allActions44px": true,
+      "noHorizontalOverflow": true,
+      "currentVisibility": {
+        "width": 676,
+        "height": 192,
+        "visibleWidth": 676,
+        "visibleHeight": 192
+      },
+      "axe": []
+    },
+    {
+      "width": 1060,
+      "height": 760,
+      "font": 32,
+      "allNineControlsVisibleAfterSceneNavigation": [
+        {
+          "experiment": "cafeWall",
+          "key": "offset",
+          "width": 960.21875,
+          "height": 44,
+          "visibleWidth": 960.21875,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "cafeWall",
+          "key": "mortar",
+          "width": 960.21875,
+          "height": 44,
+          "visibleWidth": 960.21875,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "cafeWall",
+          "key": "context",
+          "width": 303.40625,
+          "height": 60,
+          "visibleWidth": 303.40625,
+          "visibleHeight": 60,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "angle",
+          "width": 960.21875,
+          "height": 44,
+          "visibleWidth": 960.21875,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "spacing",
+          "width": 960.21875,
+          "height": 44,
+          "visibleWidth": 960.21875,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "context",
+          "width": 303.40625,
+          "height": 60,
+          "visibleWidth": 303.40625,
+          "visibleHeight": 60,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "depth",
+          "width": 960.21875,
+          "height": 44,
+          "visibleWidth": 960.21875,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "cue",
+          "width": 960.21875,
+          "height": 57,
+          "visibleWidth": 960.21875,
+          "visibleHeight": 57,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "context",
+          "width": 303.40625,
+          "height": 60,
+          "visibleWidth": 303.40625,
+          "visibleHeight": 60,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "depth-expanded",
+          "width": 468.109375,
+          "height": 44,
+          "visibleWidth": 468.109375,
+          "visibleHeight": 44,
+          "focused": true
+        }
+      ],
+      "expandedNavigatorReopensControls": true,
+      "allActions44px": true,
+      "noHorizontalOverflow": true,
+      "currentVisibility": {
+        "width": 962.5625,
+        "height": 192,
+        "visibleWidth": 962.5625,
+        "visibleHeight": 192
+      },
+      "axe": []
+    },
+    {
+      "width": 1440,
+      "height": 1000,
+      "font": 32,
+      "allNineControlsVisibleAfterSceneNavigation": [
+        {
+          "experiment": "cafeWall",
+          "key": "offset",
+          "width": 1328.8125,
+          "height": 44,
+          "visibleWidth": 1328.8125,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "cafeWall",
+          "key": "mortar",
+          "width": 1328.8125,
+          "height": 44,
+          "visibleWidth": 1328.8125,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "cafeWall",
+          "key": "context",
+          "width": 303.40625,
+          "height": 60,
+          "visibleWidth": 303.40625,
+          "visibleHeight": 60,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "angle",
+          "width": 1328.8125,
+          "height": 44,
+          "visibleWidth": 1328.8125,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "spacing",
+          "width": 1328.8125,
+          "height": 44,
+          "visibleWidth": 1328.8125,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "moire",
+          "key": "context",
+          "width": 303.40625,
+          "height": 60,
+          "visibleWidth": 303.40625,
+          "visibleHeight": 60,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "depth",
+          "width": 1328.8125,
+          "height": 44,
+          "visibleWidth": 1328.8125,
+          "visibleHeight": 44,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "cue",
+          "width": 1328.8125,
+          "height": 57,
+          "visibleWidth": 1328.8125,
+          "visibleHeight": 57,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "context",
+          "width": 303.40625,
+          "height": 60,
+          "visibleWidth": 303.40625,
+          "visibleHeight": 60,
+          "focused": true
+        },
+        {
+          "experiment": "necker",
+          "key": "depth-expanded",
+          "width": 652.40625,
+          "height": 44,
+          "visibleWidth": 652.40625,
+          "visibleHeight": 44,
+          "focused": true
+        }
+      ],
+      "expandedNavigatorReopensControls": true,
+      "allActions44px": true,
+      "noHorizontalOverflow": true,
+      "currentVisibility": {
+        "width": 1320.8125,
+        "height": 192,
+        "visibleWidth": 1320.8125,
+        "visibleHeight": 192
+      },
+      "axe": []
+    },
+    {
+      "theme": "dark",
+      "valueReadoutsAndRestoreActionsReadable": true,
+      "realControlFocused": true,
+      "actions44px": true,
+      "axe": []
+    },
+    {
+      "theme": "contrast",
+      "valueReadoutsAndRestoreActionsReadable": true,
+      "realControlFocused": true,
+      "actions44px": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-light",
+      "valueReadoutsAndRestoreActionsReadable": true,
+      "realControlFocused": true,
+      "actions44px": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-dark",
+      "valueReadoutsAndRestoreActionsReadable": true,
+      "realControlFocused": true,
+      "actions44px": true,
+      "axe": []
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,73 @@
+{
+  "sourceSHA256": "dfe3e01f38a419187e468c749cc37827f486a47401b9916afaa9ec6f98a3f86a",
+  "accepted": true,
+  "reviewer": "Root assistant visually inspected all 12 actual PNGs with view_image.",
+  "images": [
+    {
+      "file": "native-adult/adult-wide-baseline-palm.png",
+      "SHA256": "2dd9b6b709112770a4a50dca0680feb703f8b693c2451868cd4a9c068a74583f",
+      "accepted": true
+    },
+    {
+      "file": "native-adult/adult-wide-baseline-stage.png",
+      "SHA256": "0bb16ad958616588cb48dfba3765315a7f057ed0de94e0af85cdb4b4ff0f00fc",
+      "accepted": true
+    },
+    {
+      "file": "native-adult/adult-wide-candidate-palm.png",
+      "SHA256": "8d3b7eb568aea10300458c83971e888c1eedace0e0cb5aa27efb10e77f97a31e",
+      "accepted": true
+    },
+    {
+      "file": "native-adult/adult-wide-candidate-stage.png",
+      "SHA256": "acbf5853f19600ab857b720276b79982dd7d80d9fdb83517fd75ec81d512b565",
+      "accepted": true
+    },
+    {
+      "file": "native-child/child-narrow-baseline-palm.png",
+      "SHA256": "429f09198edf0b1d781533b0f4dd0f91dd71f874c740be105fb4368cc5923a82",
+      "accepted": true
+    },
+    {
+      "file": "native-child/child-narrow-baseline-stage.png",
+      "SHA256": "9285cc7ef68a63ec3aff306481a8b471585d42982c42a229d44aca403d288fea",
+      "accepted": true
+    },
+    {
+      "file": "native-child/child-narrow-candidate-palm.png",
+      "SHA256": "f9e0ad3a0a7b8430c518f2b0b3959bd51dfe9b90ebd285691b67b19b001cff3f",
+      "accepted": true
+    },
+    {
+      "file": "native-child/child-narrow-candidate-stage.png",
+      "SHA256": "7265bf6c244d8721ff1f538cd862dba514beeade0bef0d235f2f49086218a884",
+      "accepted": true
+    },
+    {
+      "file": "native-infant/infant-narrow-contrast-baseline-palm.png",
+      "SHA256": "a74be41f0844aaa5c2e365c0cb2ae15d849e6b01f70d681e41eaf1096592400b",
+      "accepted": true
+    },
+    {
+      "file": "native-infant/infant-narrow-contrast-baseline-stage.png",
+      "SHA256": "363a2d702f2f329c0bcbc07071c9857ff667ceac431e7510f5ede048eb195a8c",
+      "accepted": true
+    },
+    {
+      "file": "native-infant/infant-narrow-contrast-candidate-palm.png",
+      "SHA256": "72fb31c216fcec4f1667f0110fcc10bf2f2d0741d78493ec8948927b82c68b64",
+      "accepted": true
+    },
+    {
+      "file": "native-infant/infant-narrow-contrast-candidate-stage.png",
+      "SHA256": "1124ea8c546fffc67f0d88d0ba51adf704a8ee3aa7c230036b99fdb242233fbf",
+      "accepted": true
+    }
+  ],
+  "observations": [
+    "Adult recovery pose8: palm lighting and fold line remain smooth, with clear fingers and unchanged support contact. The improvement is subtle at the native viewing scale.",
+    "Child narrow pose4: palm/thumb crease lines remain legible, with no new gaps, raised ribbons or jagged outline. Full hand and head framing remain clear.",
+    "Infant narrow high contrast pose8: hand outline and both creases remain visible; no new disconnected dark marks."
+  ],
+  "limitations": "Three raw-module camera views. Geometry measurements quantify the small symmetry improvement; the screenshots do not establish clinical anatomy accuracy. Full application loader and build were not run."
+}

@@ -1,0 +1,37 @@
+{
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\vitest\\vitest.mjs",
+    "run",
+    "--config",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-contrast-work\\raw-nose-surfaces\\vitest.config.cjs"
+  ],
+  "cwd": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-contrast-work\\raw-nose-surfaces",
+  "tempDirectory": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-contrast-work\\raw-nose-surfaces\\temp",
+  "inputs": {
+    "stem_lab/stem_tool_firstresponse.js": "af6ecb094af6d67ebb0955170a55e0a9726308c59f4ddd9b196d56cfe434e4c7",
+    "tests/firstresponse_nose_surfaces.test.js": "28ca8cdc32e6392dc0c5ded81074113ec0a8d810eb6999423644163740e45c3e",
+    "vendor/three-r128/three.min.js": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
+  },
+  "sharedSourceHashes": {
+    "stem_lab/stem_tool_firstresponse.js": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76",
+    "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76",
+    "desktop/app-build/stem_lab/stem_tool_firstresponse.js": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76",
+    "desktop/web-app/build/stem_lab/stem_tool_firstresponse.js": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76"
+  },
+  "configSHA256": "8abd3ada7d2e80e332919fc91c86be511910025282d5b5f26f4fe05324b0b448",
+  "startedAt": "2026-10-09T05:27:13.990Z",
+  "testFile": "tests/firstresponse_nose_surfaces.test.js",
+  "rawTestSHA256": "28ca8cdc32e6392dc0c5ded81074113ec0a8d810eb6999423644163740e45c3e",
+  "sourceSHA256": "af6ecb094af6d67ebb0955170a55e0a9726308c59f4ddd9b196d56cfe434e4c7",
+  "finishedAt": "2026-10-09T05:33:38.604Z",
+  "exitCode": 0,
+  "passed": true,
+  "numPassedTests": 21,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTotalTests": 21,
+  "sourceIsExactCandidate": true,
+  "rawTestExact": true,
+  "sharedFilesWritten": 0
+}

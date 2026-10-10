@@ -1,0 +1,38 @@
+{
+  "start": "2026-10-09T21:49:30.035Z",
+  "runnerPid": 30844,
+  "jobs": [
+    {
+      "mode": "unit-pointer",
+      "label": "unit-pointer-8",
+      "code": 0,
+      "start": "2026-10-09T21:49:31.612Z",
+      "end": "2026-10-09T21:50:32.195Z"
+    },
+    {
+      "mode": "unit-lifecycle",
+      "label": "unit-lifecycle-8",
+      "code": 0,
+      "start": "2026-10-09T21:50:32.268Z",
+      "end": "2026-10-09T21:50:54.004Z"
+    },
+    {
+      "mode": "unit-living",
+      "label": "unit-living-8",
+      "code": 0,
+      "start": "2026-10-09T21:50:54.113Z",
+      "end": "2026-10-09T21:51:20.326Z"
+    },
+    {
+      "mode": "unit-practical",
+      "label": "unit-practical-8",
+      "code": 1,
+      "start": "2026-10-09T21:51:20.367Z",
+      "end": "2026-10-09T21:51:28.765Z"
+    }
+  ],
+  "running": null,
+  "success": false,
+  "error": "unit-practical-8 failed",
+  "end": "2026-10-09T21:51:28.795Z"
+}

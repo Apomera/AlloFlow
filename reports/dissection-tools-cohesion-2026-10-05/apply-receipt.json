@@ -1,0 +1,12 @@
+{
+  "appliedAt": "2026-10-06T00:57:40.285Z",
+  "files": {
+    "stem_lab/stem_tool_dissection.js": "e7fb104c826f70b0af9478fab307cc8015bf7e42813749d3ec74f6b1254110b1",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "e7fb104c826f70b0af9478fab307cc8015bf7e42813749d3ec74f6b1254110b1",
+    "tests/dissection_lab_improvements.test.js": "015d2af425fa478f403131cb61ce85d38e8b4951c23675d8f5e812567dbd3047",
+    "tests/e2e/dissection-tools-cohesion.spec.ts": "1b34409ba5e1c7d2f81f98f206eb01b1b6e1c5417a2b5aec5dab053e4f44ad5b"
+  },
+  "sourceReversal": true,
+  "unitReversal": true,
+  "stagedPathsUnchanged": true
+}

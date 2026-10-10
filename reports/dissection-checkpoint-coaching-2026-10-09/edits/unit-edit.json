@@ -1,0 +1,11 @@
+{
+  "baseline": "5548f01c1ec302281c286ca7811e339895a0a733b90e7e070edabed9a3dc87de",
+  "current": "46fc37513940c40c277cd6a862ae6f1264160dac379668e765e668f9f8d5f550",
+  "addition": "6637eaebee6736936d27896d5e18c26445fbadeb91aadb2fe6f0d7085f470724",
+  "newline": "\r\n",
+  "insertionByteOffset": 509606,
+  "insertedBytes": 16778,
+  "originalBytesPreserved": true,
+  "namedCases": 10,
+  "testsRun": false
+}

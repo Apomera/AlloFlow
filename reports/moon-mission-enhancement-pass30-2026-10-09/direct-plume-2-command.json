@@ -1,0 +1,11 @@
+{
+  "args": [
+    "node",
+    "--max-old-space-size=512",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass30-2026-10-09\\run-workflow.cjs",
+    "plume"
+  ],
+  "cwd": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "pid": 54352,
+  "output": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass30-2026-10-09\\direct-plume-2"
+}

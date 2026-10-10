@@ -1,0 +1,9 @@
+{
+  "phase": "dock-brightness",
+  "message": "Expected values to be strictly equal:\n\n4 !== 0\n",
+  "stack": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n4 !== 0\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\perception_lab_focus_bench_qa.cjs:37:130",
+  "focus": "<summary>Adjust experiment</summary>",
+  "checks": [],
+  "errors": [],
+  "sourceSHA256": "9be3da5388b23124d359adfc3fd60a98aa8b6237bd4583a4684a80825cfdd781"
+}

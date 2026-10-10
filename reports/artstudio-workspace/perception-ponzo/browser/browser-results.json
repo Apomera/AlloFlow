@@ -1,0 +1,1127 @@
+{
+  "sourceSHA256": "67f0099c534e98ea6f1a916d8966b61ac19980bcdcaa21d7f30b37f30ec4c5f8",
+  "loadedSourceSHA256": "67f0099c534e98ea6f1a916d8966b61ac19980bcdcaa21d7f30b37f30ec4c5f8",
+  "finalSourceSHA256": "67f0099c534e98ea6f1a916d8966b61ac19980bcdcaa21d7f30b37f30ec4c5f8",
+  "checks": [
+    {
+      "defaultPonzoSelected": true,
+      "sevenExperimentCardsAndThumbnails": true,
+      "fourImpressionChoices": true,
+      "observeOnly": true,
+      "exactEqualTargets": [
+        {
+          "target": "upper",
+          "tag": "rect",
+          "x": 280,
+          "y": 169,
+          "width": 240,
+          "height": 12,
+          "fill": "#ed761c"
+        },
+        {
+          "target": "lower",
+          "tag": "rect",
+          "x": 280,
+          "y": 344,
+          "width": 240,
+          "height": 12,
+          "fill": "#ed761c"
+        }
+      ]
+    },
+    {
+      "convergence": 90,
+      "exactPerspectiveRails": [
+        [
+          307,
+          40,
+          100,
+          440
+        ],
+        [
+          493,
+          40,
+          700,
+          440
+        ]
+      ],
+      "targetLengthsUnchanged": true
+    },
+    {
+      "convergence": 100,
+      "exactPerspectiveRails": [
+        [
+          330,
+          40,
+          100,
+          440
+        ],
+        [
+          470,
+          40,
+          700,
+          440
+        ]
+      ],
+      "targetLengthsUnchanged": true
+    },
+    {
+      "convergence": 0,
+      "exactPerspectiveRails": [
+        [
+          100,
+          40,
+          100,
+          440
+        ],
+        [
+          700,
+          40,
+          700,
+          440
+        ]
+      ],
+      "targetLengthsUnchanged": true
+    },
+    {
+      "upperY": 150,
+      "upperLengthUnchanged": true,
+      "lowerTargetUnchanged": true
+    },
+    {
+      "upperY": 260,
+      "upperLengthUnchanged": true,
+      "lowerTargetUnchanged": true
+    },
+    {
+      "contextRemovalPreservesExactTargets": true,
+      "convergenceInactiveWhenContextRemoved": true,
+      "measurementGuidePresent": true,
+      "resultExplainsEqual240UnitLengths": true,
+      "scientificLink": "https://michaelbach.de/ot/sze-sizeConstancy/"
+    },
+    {
+      "contextComparisonSameScaleTargets": true,
+      "onlySurroundingsDiffer": true
+    },
+    {
+      "chosenSetting": "convergence",
+      "selectedAndOtherRestoreExact": true,
+      "fixedStartingViewPreserved": true,
+      "noteImpressionGuidesPinNotebookPreserved": true,
+      "sceneNavigationOpensControls": true,
+      "targetVisibility": {
+        "width": 287,
+        "height": 44,
+        "visibleWidth": 287,
+        "visibleHeight": 44
+      }
+    },
+    {
+      "chosenSetting": "upperY",
+      "selectedAndOtherRestoreExact": true,
+      "fixedStartingViewPreserved": true,
+      "noteImpressionGuidesPinNotebookPreserved": true,
+      "sceneNavigationOpensControls": true,
+      "targetVisibility": {
+        "width": 287,
+        "height": 44,
+        "visibleWidth": 287,
+        "visibleHeight": 44
+      }
+    },
+    {
+      "chosenSetting": "context",
+      "selectedAndOtherRestoreExact": true,
+      "fixedStartingViewPreserved": true,
+      "noteImpressionGuidesPinNotebookPreserved": true,
+      "sceneNavigationOpensControls": true,
+      "targetVisibility": {
+        "width": 164.703125,
+        "height": 44,
+        "visibleWidth": 164.703125,
+        "visibleHeight": 44
+      }
+    },
+    {
+      "saveObservationIncludesPonzoModel": true,
+      "notebookPonzoFilter": true,
+      "savedPinAndRestore": true,
+      "livePinImmutable": true
+    },
+    {
+      "svgAndPngNativeDownloads": true,
+      "svgMatchesExactCurrentGeometry": true,
+      "pngWidth": 2400,
+      "pngHeight": 1440,
+      "exportsPreserveState": true,
+      "downloadTransport": "native"
+    },
+    {
+      "inquiryReportNativeDownload": true,
+      "exactStartingAndCurrentScenes": true,
+      "allFourScopedSettings": true,
+      "literalNotesSafe": true,
+      "notesImpressionsGuideDifferencesPreserved": true,
+      "filename": "perception-ponzo-inquiry.html"
+    },
+    {
+      "seventhExperimentInFocusedPicker": true,
+      "lastToFirstAndFirstToLastWrap": true,
+      "moireToPonzoNavigation": true,
+      "sameFocusedDialog": true
+    },
+    {
+      "width": 320,
+      "height": 844,
+      "font": 16,
+      "sevenExperimentLayout": true,
+      "cards": [
+        {
+          "id": "brightness",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "ebbinghaus",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "mullerLyer",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "cafeWall",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "necker",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "moire",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "ponzo",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "mobilePickerWhenNarrow": true,
+      "allThreeChosenControlsReachable": [
+        {
+          "key": "convergence",
+          "width": 248,
+          "height": 44,
+          "visibleWidth": 248,
+          "visibleHeight": 44
+        },
+        {
+          "key": "upperY",
+          "width": 248,
+          "height": 44,
+          "visibleWidth": 248,
+          "visibleHeight": 44
+        },
+        {
+          "key": "context",
+          "width": 164.703125,
+          "height": 44,
+          "visibleWidth": 164.703125,
+          "visibleHeight": 44
+        }
+      ],
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "font": 16,
+      "sevenExperimentLayout": true,
+      "cards": [
+        {
+          "id": "brightness",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "ebbinghaus",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "mullerLyer",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "cafeWall",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "necker",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "moire",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "ponzo",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "mobilePickerWhenNarrow": true,
+      "allThreeChosenControlsReachable": [
+        {
+          "key": "convergence",
+          "width": 318,
+          "height": 44,
+          "visibleWidth": 318,
+          "visibleHeight": 44
+        },
+        {
+          "key": "upperY",
+          "width": 318,
+          "height": 44,
+          "visibleWidth": 318,
+          "visibleHeight": 44
+        },
+        {
+          "key": "context",
+          "width": 164.703125,
+          "height": 44,
+          "visibleWidth": 164.703125,
+          "visibleHeight": 44
+        }
+      ],
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 760,
+      "height": 390,
+      "font": 16,
+      "sevenExperimentLayout": true,
+      "cards": [
+        {
+          "id": "brightness",
+          "width": 231.203125,
+          "height": 100,
+          "x": 23.1875,
+          "y": 240.875
+        },
+        {
+          "id": "ebbinghaus",
+          "width": 231.203125,
+          "height": 100,
+          "x": 264.390625,
+          "y": 240.875
+        },
+        {
+          "id": "mullerLyer",
+          "width": 231.203125,
+          "height": 100,
+          "x": 505.59375,
+          "y": 240.875
+        },
+        {
+          "id": "cafeWall",
+          "width": 231.203125,
+          "height": 100,
+          "x": 23.1875,
+          "y": 350.875
+        },
+        {
+          "id": "necker",
+          "width": 231.203125,
+          "height": 100,
+          "x": 264.390625,
+          "y": 350.875
+        },
+        {
+          "id": "moire",
+          "width": 231.203125,
+          "height": 100,
+          "x": 505.59375,
+          "y": 350.875
+        },
+        {
+          "id": "ponzo",
+          "width": 231.203125,
+          "height": 100,
+          "x": 23.1875,
+          "y": 460.875
+        }
+      ],
+      "mobilePickerWhenNarrow": true,
+      "allThreeChosenControlsReachable": [
+        {
+          "key": "convergence",
+          "width": 668,
+          "height": 44,
+          "visibleWidth": 668,
+          "visibleHeight": 44
+        },
+        {
+          "key": "upperY",
+          "width": 668,
+          "height": 44,
+          "visibleWidth": 668,
+          "visibleHeight": 44
+        },
+        {
+          "key": "context",
+          "width": 164.703125,
+          "height": 44,
+          "visibleWidth": 164.703125,
+          "visibleHeight": 44
+        }
+      ],
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 1060,
+      "height": 760,
+      "font": 16,
+      "sevenExperimentLayout": true,
+      "cards": [
+        {
+          "id": "brightness",
+          "width": 242.90625,
+          "height": 100,
+          "x": 29.1875,
+          "y": -292.46875
+        },
+        {
+          "id": "ebbinghaus",
+          "width": 242.90625,
+          "height": 100,
+          "x": 282.09375,
+          "y": -292.46875
+        },
+        {
+          "id": "mullerLyer",
+          "width": 242.90625,
+          "height": 100,
+          "x": 535,
+          "y": -292.46875
+        },
+        {
+          "id": "cafeWall",
+          "width": 242.90625,
+          "height": 100,
+          "x": 787.90625,
+          "y": -292.46875
+        },
+        {
+          "id": "necker",
+          "width": 242.90625,
+          "height": 100,
+          "x": 29.1875,
+          "y": -182.46875
+        },
+        {
+          "id": "moire",
+          "width": 242.90625,
+          "height": 100,
+          "x": 282.09375,
+          "y": -182.46875
+        },
+        {
+          "id": "ponzo",
+          "width": 242.90625,
+          "height": 100,
+          "x": 535,
+          "y": -182.46875
+        }
+      ],
+      "mobilePickerWhenNarrow": true,
+      "allThreeChosenControlsReachable": [
+        {
+          "key": "convergence",
+          "width": 960.21875,
+          "height": 44,
+          "visibleWidth": 960.21875,
+          "visibleHeight": 44
+        },
+        {
+          "key": "upperY",
+          "width": 960.21875,
+          "height": 44,
+          "visibleWidth": 960.21875,
+          "visibleHeight": 44
+        },
+        {
+          "key": "context",
+          "width": 164.703125,
+          "height": 44,
+          "visibleWidth": 164.703125,
+          "visibleHeight": 44
+        }
+      ],
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 1440,
+      "height": 1000,
+      "font": 16,
+      "sevenExperimentLayout": true,
+      "cards": [
+        {
+          "id": "brightness",
+          "width": 267.1875,
+          "height": 100,
+          "x": 32,
+          "y": -23.8125
+        },
+        {
+          "id": "ebbinghaus",
+          "width": 267.203125,
+          "height": 100,
+          "x": 309.1875,
+          "y": -23.8125
+        },
+        {
+          "id": "mullerLyer",
+          "width": 267.203125,
+          "height": 100,
+          "x": 586.390625,
+          "y": -23.8125
+        },
+        {
+          "id": "cafeWall",
+          "width": 267.203125,
+          "height": 100,
+          "x": 863.59375,
+          "y": -23.8125
+        },
+        {
+          "id": "necker",
+          "width": 267.203125,
+          "height": 100,
+          "x": 1140.796875,
+          "y": -23.8125
+        },
+        {
+          "id": "moire",
+          "width": 267.1875,
+          "height": 100,
+          "x": 32,
+          "y": 86.1875
+        },
+        {
+          "id": "ponzo",
+          "width": 267.203125,
+          "height": 100,
+          "x": 309.1875,
+          "y": 86.1875
+        }
+      ],
+      "mobilePickerWhenNarrow": true,
+      "allThreeChosenControlsReachable": [
+        {
+          "key": "convergence",
+          "width": 287,
+          "height": 44,
+          "visibleWidth": 287,
+          "visibleHeight": 44
+        },
+        {
+          "key": "upperY",
+          "width": 287,
+          "height": 44,
+          "visibleWidth": 287,
+          "visibleHeight": 44
+        },
+        {
+          "key": "context",
+          "width": 164.703125,
+          "height": 44,
+          "visibleWidth": 164.703125,
+          "visibleHeight": 44
+        }
+      ],
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 320,
+      "height": 844,
+      "font": 32,
+      "sevenExperimentLayout": true,
+      "cards": [
+        {
+          "id": "brightness",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "ebbinghaus",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "mullerLyer",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "cafeWall",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "necker",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "moire",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "ponzo",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "mobilePickerWhenNarrow": true,
+      "allThreeChosenControlsReachable": [
+        {
+          "key": "convergence",
+          "width": 248,
+          "height": 44,
+          "visibleWidth": 248,
+          "visibleHeight": 44
+        },
+        {
+          "key": "upperY",
+          "width": 248,
+          "height": 44,
+          "visibleWidth": 248,
+          "visibleHeight": 44
+        },
+        {
+          "key": "context",
+          "width": 248,
+          "height": 102,
+          "visibleWidth": 248,
+          "visibleHeight": 102
+        }
+      ],
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "font": 32,
+      "sevenExperimentLayout": true,
+      "cards": [
+        {
+          "id": "brightness",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "ebbinghaus",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "mullerLyer",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "cafeWall",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "necker",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "moire",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        },
+        {
+          "id": "ponzo",
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "mobilePickerWhenNarrow": true,
+      "allThreeChosenControlsReachable": [
+        {
+          "key": "convergence",
+          "width": 318,
+          "height": 44,
+          "visibleWidth": 318,
+          "visibleHeight": 44
+        },
+        {
+          "key": "upperY",
+          "width": 318,
+          "height": 44,
+          "visibleWidth": 318,
+          "visibleHeight": 44
+        },
+        {
+          "key": "context",
+          "width": 303.40625,
+          "height": 60,
+          "visibleWidth": 303.40625,
+          "visibleHeight": 60
+        }
+      ],
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 760,
+      "height": 390,
+      "font": 32,
+      "sevenExperimentLayout": true,
+      "cards": [
+        {
+          "id": "brightness",
+          "width": 231.203125,
+          "height": 205.984375,
+          "x": 23.1875,
+          "y": -372.46875
+        },
+        {
+          "id": "ebbinghaus",
+          "width": 231.203125,
+          "height": 205.984375,
+          "x": 264.390625,
+          "y": -372.46875
+        },
+        {
+          "id": "mullerLyer",
+          "width": 231.203125,
+          "height": 205.984375,
+          "x": 505.59375,
+          "y": -372.46875
+        },
+        {
+          "id": "cafeWall",
+          "width": 231.203125,
+          "height": 205.984375,
+          "x": 23.1875,
+          "y": -156.484375
+        },
+        {
+          "id": "necker",
+          "width": 231.203125,
+          "height": 205.984375,
+          "x": 264.390625,
+          "y": -156.484375
+        },
+        {
+          "id": "moire",
+          "width": 231.203125,
+          "height": 205.984375,
+          "x": 505.59375,
+          "y": -156.484375
+        },
+        {
+          "id": "ponzo",
+          "width": 231.203125,
+          "height": 205.984375,
+          "x": 23.1875,
+          "y": 59.5
+        }
+      ],
+      "mobilePickerWhenNarrow": true,
+      "allThreeChosenControlsReachable": [
+        {
+          "key": "convergence",
+          "width": 668,
+          "height": 44,
+          "visibleWidth": 668,
+          "visibleHeight": 44
+        },
+        {
+          "key": "upperY",
+          "width": 668,
+          "height": 44,
+          "visibleWidth": 668,
+          "visibleHeight": 44
+        },
+        {
+          "key": "context",
+          "width": 303.40625,
+          "height": 60,
+          "visibleWidth": 303.40625,
+          "visibleHeight": 60
+        }
+      ],
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 1060,
+      "height": 760,
+      "font": 32,
+      "sevenExperimentLayout": true,
+      "cards": [
+        {
+          "id": "brightness",
+          "width": 495.8125,
+          "height": 100,
+          "x": 29.1875,
+          "y": -811.46875
+        },
+        {
+          "id": "ebbinghaus",
+          "width": 495.8125,
+          "height": 100,
+          "x": 535,
+          "y": -811.46875
+        },
+        {
+          "id": "mullerLyer",
+          "width": 495.8125,
+          "height": 100,
+          "x": 29.1875,
+          "y": -701.46875
+        },
+        {
+          "id": "cafeWall",
+          "width": 495.8125,
+          "height": 100,
+          "x": 535,
+          "y": -701.46875
+        },
+        {
+          "id": "necker",
+          "width": 495.8125,
+          "height": 100,
+          "x": 29.1875,
+          "y": -591.46875
+        },
+        {
+          "id": "moire",
+          "width": 495.8125,
+          "height": 100,
+          "x": 535,
+          "y": -591.46875
+        },
+        {
+          "id": "ponzo",
+          "width": 495.8125,
+          "height": 100,
+          "x": 29.1875,
+          "y": -481.46875
+        }
+      ],
+      "mobilePickerWhenNarrow": true,
+      "allThreeChosenControlsReachable": [
+        {
+          "key": "convergence",
+          "width": 960.21875,
+          "height": 44,
+          "visibleWidth": 960.21875,
+          "visibleHeight": 44
+        },
+        {
+          "key": "upperY",
+          "width": 960.21875,
+          "height": 44,
+          "visibleWidth": 960.21875,
+          "visibleHeight": 44
+        },
+        {
+          "key": "context",
+          "width": 303.40625,
+          "height": 60,
+          "visibleWidth": 303.40625,
+          "visibleHeight": 60
+        }
+      ],
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 1440,
+      "height": 1000,
+      "font": 32,
+      "sevenExperimentLayout": true,
+      "cards": [
+        {
+          "id": "brightness",
+          "width": 452,
+          "height": 100,
+          "x": 32,
+          "y": -309.65625
+        },
+        {
+          "id": "ebbinghaus",
+          "width": 452,
+          "height": 100,
+          "x": 494,
+          "y": -309.65625
+        },
+        {
+          "id": "mullerLyer",
+          "width": 452,
+          "height": 100,
+          "x": 956,
+          "y": -309.65625
+        },
+        {
+          "id": "cafeWall",
+          "width": 452,
+          "height": 100,
+          "x": 32,
+          "y": -199.65625
+        },
+        {
+          "id": "necker",
+          "width": 452,
+          "height": 100,
+          "x": 494,
+          "y": -199.65625
+        },
+        {
+          "id": "moire",
+          "width": 452,
+          "height": 100,
+          "x": 956,
+          "y": -199.65625
+        },
+        {
+          "id": "ponzo",
+          "width": 452,
+          "height": 100,
+          "x": 32,
+          "y": -89.65625
+        }
+      ],
+      "mobilePickerWhenNarrow": true,
+      "allThreeChosenControlsReachable": [
+        {
+          "key": "convergence",
+          "width": 1328.8125,
+          "height": 44,
+          "visibleWidth": 1328.8125,
+          "visibleHeight": 44
+        },
+        {
+          "key": "upperY",
+          "width": 1328.8125,
+          "height": 44,
+          "visibleWidth": 1328.8125,
+          "visibleHeight": 44
+        },
+        {
+          "key": "context",
+          "width": 303.40625,
+          "height": 60,
+          "visibleWidth": 303.40625,
+          "visibleHeight": 60
+        }
+      ],
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 320,
+      "height": 844,
+      "font": 16,
+      "standaloneReportSameScale": true,
+      "noOverflow": true,
+      "geometry": {
+        "overflow": false,
+        "drawings": [
+          {
+            "width": 262,
+            "height": 157.1875
+          },
+          {
+            "width": 262,
+            "height": 157.1875
+          }
+        ],
+        "panes": []
+      },
+      "axe": []
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "font": 32,
+      "standaloneReportSameScale": true,
+      "noOverflow": true,
+      "geometry": {
+        "overflow": false,
+        "drawings": [
+          {
+            "width": 332,
+            "height": 199.1875
+          },
+          {
+            "width": 332,
+            "height": 199.1875
+          }
+        ],
+        "panes": []
+      },
+      "axe": []
+    },
+    {
+      "width": 1440,
+      "height": 1000,
+      "font": 16,
+      "standaloneReportSameScale": true,
+      "noOverflow": true,
+      "geometry": {
+        "overflow": false,
+        "drawings": [
+          {
+            "width": 534,
+            "height": 320.390625
+          },
+          {
+            "width": 534,
+            "height": 320.390625
+          }
+        ],
+        "panes": []
+      },
+      "axe": []
+    },
+    {
+      "width": 1440,
+      "height": 1000,
+      "font": 32,
+      "standaloneReportSameScale": true,
+      "noOverflow": true,
+      "geometry": {
+        "overflow": false,
+        "drawings": [
+          {
+            "width": 534,
+            "height": 320.390625
+          },
+          {
+            "width": 534,
+            "height": 320.390625
+          }
+        ],
+        "panes": []
+      },
+      "axe": []
+    },
+    {
+      "theme": "dark",
+      "exactPonzoGeometry": true,
+      "valuesGuideAndControlsReadable": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "theme": "contrast",
+      "exactPonzoGeometry": true,
+      "valuesGuideAndControlsReadable": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-light",
+      "exactPonzoGeometry": true,
+      "valuesGuideAndControlsReadable": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-dark",
+      "exactPonzoGeometry": true,
+      "valuesGuideAndControlsReadable": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "printMediaDrawingCardsAvoidBreaks": true,
+      "printPreviewSaved": true
+    }
+  ],
+  "errors": [],
+  "externalResourceRequests": []
+}

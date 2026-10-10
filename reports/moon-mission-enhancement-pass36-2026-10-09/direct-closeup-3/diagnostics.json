@@ -1,0 +1,10 @@
+{
+  "checkpoints": [
+    "paused view switching, ignored arrows, resize and reload preserve every saved field",
+    "near-port geometry retains a 0.60 m corridor and equal axes on phone and desktop",
+    "real guided contact records the same receipt and remains unchanged across views and reload",
+    "unsafe contact remains blocked; retry preserves insertion and the selected close-up",
+    "synchronous DOM view change preserves the queued one-second pulse and its full fuel use; keyboard pause freezes state"
+  ],
+  "errors": []
+}

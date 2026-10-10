@@ -1,0 +1,35 @@
+{
+  "ok": true,
+  "results": [
+    {
+      "tab": "map",
+      "viewport": 390,
+      "width": 390,
+      "scrollWidth": 390,
+      "selected": "iss-tab-map",
+      "canvases": 1,
+      "heading": "🛰️ Space Station — a permanent home off Earth",
+      "screenshot": "map-390.png"
+    },
+    {
+      "tab": "interior",
+      "viewport": 390,
+      "width": 390,
+      "scrollWidth": 390,
+      "selected": "iss-tab-interior",
+      "canvases": 1,
+      "heading": "🛰️ Space Station — a permanent home off Earth",
+      "screenshot": "interior-390.png"
+    },
+    {
+      "tab": "orbit",
+      "viewport": 390,
+      "width": 390,
+      "scrollWidth": 390,
+      "selected": "iss-tab-orbit",
+      "canvases": 0,
+      "heading": "🛰️ Space Station — a permanent home off Earth",
+      "screenshot": "orbit-390.png"
+    }
+  ]
+}

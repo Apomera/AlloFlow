@@ -1,0 +1,430 @@
+{
+  "status": "passed",
+  "sourceSha256": "fd5362d52c5b2515606f211c273adf0d4afb58be699898a5d1fbe10697517d2d",
+  "nodeVersion": "v24.11.1",
+  "matrix": {
+    "modes": [
+      "flexible",
+      "balanced",
+      "stiff"
+    ],
+    "frequencies": [
+      0.2,
+      0.65,
+      1.1,
+      3
+    ],
+    "intensities": [
+      0,
+      0.000001,
+      0.12
+    ],
+    "dampingRatios": [
+      0,
+      0.05,
+      0.2,
+      0.4
+    ]
+  },
+  "configurations": 144,
+  "endpointTrialChecks": 528,
+  "exactFieldChecks": 2640,
+  "zeroConfigurationChecks": 48,
+  "undampedConfigurationChecks": 36,
+  "controlledPairChecks": 36,
+  "groundValueChecks": 155628,
+  "nonzeroControlledPairChecks": 24,
+  "meaningfullyDifferentWorkPairs": 24,
+  "reversedPairChecks": 36,
+  "amplitudeScalingChecks": 48,
+  "scaledFieldChecks": 240,
+  "tinyEventScalingChecks": 48,
+  "immutabilityChecks": 144,
+  "maximumAbsoluteResidualJPerKg": 9.42462737296701e-8,
+  "maximumRelativeResidual": 1.0000000283188621,
+  "scalingToleranceRelativeToFullEvent": 1e-9,
+  "scalingScope": "Five endpoint budget fields and full-event maximum energy magnitude; net input work remains signed, including cancellation residuals.",
+  "residualConvention": "input work - (stored at 16 s - stored at 0 s) - damping loss",
+  "nonpositiveNetWorkCases": [
+    {
+      "archetype": "flexible",
+      "groundFrequencyHz": 3,
+      "intensityG": 0.000001,
+      "dampingRatio": 0,
+      "inputJPerKg": -1.0859893736087043e-20,
+      "storedJPerKg": 3.075398335284824e-28,
+      "balanceErrorJPerKg": -1.0859894043626876e-20
+    },
+    {
+      "archetype": "flexible",
+      "groundFrequencyHz": 3,
+      "intensityG": 0.12,
+      "dampingRatio": 0,
+      "inputJPerKg": -1.5638247829337677e-10,
+      "storedJPerKg": 4.4285736923861545e-18,
+      "balanceErrorJPerKg": -1.5638248272195047e-10
+    }
+  ],
+  "controlledPairs": [
+    {
+      "archetype": "flexible",
+      "groundFrequencyHz": 0.2,
+      "intensityG": 0,
+      "inputA_JPerKg": 0,
+      "inputB_JPerKg": 0,
+      "differenceBminusA_JPerKg": 0,
+      "relativeDifference": null,
+      "meaningfullyDifferent": false
+    },
+    {
+      "archetype": "flexible",
+      "groundFrequencyHz": 0.2,
+      "intensityG": 0.000001,
+      "inputA_JPerKg": 1.1818966839453441e-12,
+      "inputB_JPerKg": 4.564330771676723e-12,
+      "differenceBminusA_JPerKg": 3.3824340877313792e-12,
+      "relativeDifference": 0.7410580558097524,
+      "meaningfullyDifferent": true
+    },
+    {
+      "archetype": "flexible",
+      "groundFrequencyHz": 0.2,
+      "intensityG": 0.12,
+      "inputA_JPerKg": 0.01701931224881306,
+      "inputB_JPerKg": 0.06572636311214472,
+      "differenceBminusA_JPerKg": 0.04870705086333166,
+      "relativeDifference": 0.7410580558097504,
+      "meaningfullyDifferent": true
+    },
+    {
+      "archetype": "flexible",
+      "groundFrequencyHz": 0.65,
+      "intensityG": 0,
+      "inputA_JPerKg": 0,
+      "inputB_JPerKg": 0,
+      "differenceBminusA_JPerKg": 0,
+      "relativeDifference": null,
+      "meaningfullyDifferent": false
+    },
+    {
+      "archetype": "flexible",
+      "groundFrequencyHz": 0.65,
+      "intensityG": 0.000001,
+      "inputA_JPerKg": 2.737406380379685e-10,
+      "inputB_JPerKg": 1.1727913778397068e-10,
+      "differenceBminusA_JPerKg": -1.5646150025399784e-10,
+      "relativeDifference": -0.5715684064135783,
+      "meaningfullyDifferent": true
+    },
+    {
+      "archetype": "flexible",
+      "groundFrequencyHz": 0.65,
+      "intensityG": 0.12,
+      "inputA_JPerKg": 3.9418651877467337,
+      "inputB_JPerKg": 1.6888195840891775,
+      "differenceBminusA_JPerKg": -2.253045603657556,
+      "relativeDifference": -0.571568406413577,
+      "meaningfullyDifferent": true
+    },
+    {
+      "archetype": "flexible",
+      "groundFrequencyHz": 1.1,
+      "intensityG": 0,
+      "inputA_JPerKg": 0,
+      "inputB_JPerKg": 0,
+      "differenceBminusA_JPerKg": 0,
+      "relativeDifference": null,
+      "meaningfullyDifferent": false
+    },
+    {
+      "archetype": "flexible",
+      "groundFrequencyHz": 1.1,
+      "intensityG": 0.000001,
+      "inputA_JPerKg": 4.212033055745313e-12,
+      "inputB_JPerKg": 1.4968067668938712e-11,
+      "differenceBminusA_JPerKg": 1.07560346131934e-11,
+      "relativeDifference": 0.7185987430771711,
+      "meaningfullyDifferent": true
+    },
+    {
+      "archetype": "flexible",
+      "groundFrequencyHz": 1.1,
+      "intensityG": 0.12,
+      "inputA_JPerKg": 0.060653276002732376,
+      "inputB_JPerKg": 0.2155401744327168,
+      "differenceBminusA_JPerKg": 0.15488689842998443,
+      "relativeDifference": 0.7185987430771708,
+      "meaningfullyDifferent": true
+    },
+    {
+      "archetype": "flexible",
+      "groundFrequencyHz": 3,
+      "intensityG": 0,
+      "inputA_JPerKg": 0,
+      "inputB_JPerKg": 0,
+      "differenceBminusA_JPerKg": 0,
+      "relativeDifference": null,
+      "meaningfullyDifferent": false
+    },
+    {
+      "archetype": "flexible",
+      "groundFrequencyHz": 3,
+      "intensityG": 0.000001,
+      "inputA_JPerKg": 2.6620006726027595e-13,
+      "inputB_JPerKg": 1.0566137647105261e-12,
+      "differenceBminusA_JPerKg": 7.904136974502502e-13,
+      "relativeDifference": 0.7480630329160958,
+      "meaningfullyDifferent": true
+    },
+    {
+      "archetype": "flexible",
+      "groundFrequencyHz": 3,
+      "intensityG": 0.12,
+      "inputA_JPerKg": 0.003833280968547972,
+      "inputB_JPerKg": 0.01521523821183152,
+      "differenceBminusA_JPerKg": 0.011381957243283548,
+      "relativeDifference": 0.7480630329160949,
+      "meaningfullyDifferent": true
+    },
+    {
+      "archetype": "balanced",
+      "groundFrequencyHz": 0.2,
+      "intensityG": 0,
+      "inputA_JPerKg": 0,
+      "inputB_JPerKg": 0,
+      "differenceBminusA_JPerKg": 0,
+      "relativeDifference": null,
+      "meaningfullyDifferent": false
+    },
+    {
+      "archetype": "balanced",
+      "groundFrequencyHz": 0.2,
+      "intensityG": 0.000001,
+      "inputA_JPerKg": 1.9303365371000314e-13,
+      "inputB_JPerKg": 7.650107933039882e-13,
+      "differenceBminusA_JPerKg": 5.719771395939851e-13,
+      "relativeDifference": 0.747671986592092,
+      "meaningfullyDifferent": true
+    },
+    {
+      "archetype": "balanced",
+      "groundFrequencyHz": 0.2,
+      "intensityG": 0.12,
+      "inputA_JPerKg": 0.002779684613424085,
+      "inputB_JPerKg": 0.011016155423577515,
+      "differenceBminusA_JPerKg": 0.00823647081015343,
+      "relativeDifference": 0.7476719865920902,
+      "meaningfullyDifferent": true
+    },
+    {
+      "archetype": "balanced",
+      "groundFrequencyHz": 0.65,
+      "intensityG": 0,
+      "inputA_JPerKg": 0,
+      "inputB_JPerKg": 0,
+      "differenceBminusA_JPerKg": 0,
+      "relativeDifference": null,
+      "meaningfullyDifferent": false
+    },
+    {
+      "archetype": "balanced",
+      "groundFrequencyHz": 0.65,
+      "intensityG": 0.000001,
+      "inputA_JPerKg": 2.897513811695522e-12,
+      "inputB_JPerKg": 1.0056582463296316e-11,
+      "differenceBminusA_JPerKg": 7.1590686516007946e-12,
+      "relativeDifference": 0.71187887910524,
+      "meaningfullyDifferent": true
+    },
+    {
+      "archetype": "balanced",
+      "groundFrequencyHz": 0.65,
+      "intensityG": 0.12,
+      "inputA_JPerKg": 0.04172419888841546,
+      "inputB_JPerKg": 0.14481478747146653,
+      "differenceBminusA_JPerKg": 0.10309058858305106,
+      "relativeDifference": 0.7118788791052394,
+      "meaningfullyDifferent": true
+    },
+    {
+      "archetype": "balanced",
+      "groundFrequencyHz": 1.1,
+      "intensityG": 0,
+      "inputA_JPerKg": 0,
+      "inputB_JPerKg": 0,
+      "differenceBminusA_JPerKg": 0,
+      "relativeDifference": null,
+      "meaningfullyDifferent": false
+    },
+    {
+      "archetype": "balanced",
+      "groundFrequencyHz": 1.1,
+      "intensityG": 0.000001,
+      "inputA_JPerKg": 2.1285153914933387e-10,
+      "inputB_JPerKg": 7.330628681847377e-11,
+      "differenceBminusA_JPerKg": -1.3954525233086012e-10,
+      "relativeDifference": -0.6555989817529907,
+      "meaningfullyDifferent": true
+    },
+    {
+      "archetype": "balanced",
+      "groundFrequencyHz": 1.1,
+      "intensityG": 0.12,
+      "inputA_JPerKg": 3.065062163750402,
+      "inputB_JPerKg": 1.0556105301860261,
+      "differenceBminusA_JPerKg": -2.0094516335643755,
+      "relativeDifference": -0.6555989817529886,
+      "meaningfullyDifferent": true
+    },
+    {
+      "archetype": "balanced",
+      "groundFrequencyHz": 3,
+      "intensityG": 0,
+      "inputA_JPerKg": 0,
+      "inputB_JPerKg": 0,
+      "differenceBminusA_JPerKg": 0,
+      "relativeDifference": null,
+      "meaningfullyDifferent": false
+    },
+    {
+      "archetype": "balanced",
+      "groundFrequencyHz": 3,
+      "intensityG": 0.000001,
+      "inputA_JPerKg": 5.45487284373967e-13,
+      "inputB_JPerKg": 2.1248317518054026e-12,
+      "differenceBminusA_JPerKg": 1.5793444674314357e-12,
+      "relativeDifference": 0.7432797754878787,
+      "meaningfullyDifferent": true
+    },
+    {
+      "archetype": "balanced",
+      "groundFrequencyHz": 3,
+      "intensityG": 0.12,
+      "inputA_JPerKg": 0.007855016894985111,
+      "inputB_JPerKg": 0.030597577225997732,
+      "differenceBminusA_JPerKg": 0.022742560331012622,
+      "relativeDifference": 0.7432797754878786,
+      "meaningfullyDifferent": true
+    },
+    {
+      "archetype": "stiff",
+      "groundFrequencyHz": 0.2,
+      "intensityG": 0,
+      "inputA_JPerKg": 0,
+      "inputB_JPerKg": 0,
+      "differenceBminusA_JPerKg": 0,
+      "relativeDifference": null,
+      "meaningfullyDifferent": false
+    },
+    {
+      "archetype": "stiff",
+      "groundFrequencyHz": 0.2,
+      "intensityG": 0.000001,
+      "inputA_JPerKg": 4.103287193490431e-14,
+      "inputB_JPerKg": 1.6360936264768045e-13,
+      "differenceBminusA_JPerKg": 1.2257649071277612e-13,
+      "relativeDifference": 0.7492021772417432,
+      "meaningfullyDifferent": true
+    },
+    {
+      "archetype": "stiff",
+      "groundFrequencyHz": 0.2,
+      "intensityG": 0.12,
+      "inputA_JPerKg": 0.0005908733558626368,
+      "inputB_JPerKg": 0.0023559748221266092,
+      "differenceBminusA_JPerKg": 0.0017651014662639726,
+      "relativeDifference": 0.7492021772417382,
+      "meaningfullyDifferent": true
+    },
+    {
+      "archetype": "stiff",
+      "groundFrequencyHz": 0.65,
+      "intensityG": 0,
+      "inputA_JPerKg": 0,
+      "inputB_JPerKg": 0,
+      "differenceBminusA_JPerKg": 0,
+      "relativeDifference": null,
+      "meaningfullyDifferent": false
+    },
+    {
+      "archetype": "stiff",
+      "groundFrequencyHz": 0.65,
+      "intensityG": 0.000001,
+      "inputA_JPerKg": 3.4738799289854065e-13,
+      "inputB_JPerKg": 1.3509903018166933e-12,
+      "differenceBminusA_JPerKg": 1.0036023089181527e-12,
+      "relativeDifference": 0.7428641845678657,
+      "meaningfullyDifferent": true
+    },
+    {
+      "archetype": "stiff",
+      "groundFrequencyHz": 0.65,
+      "intensityG": 0.12,
+      "inputA_JPerKg": 0.005002387097739003,
+      "inputB_JPerKg": 0.019454260346160317,
+      "differenceBminusA_JPerKg": 0.014451873248421314,
+      "relativeDifference": 0.742864184567864,
+      "meaningfullyDifferent": true
+    },
+    {
+      "archetype": "stiff",
+      "groundFrequencyHz": 1.1,
+      "intensityG": 0,
+      "inputA_JPerKg": 0,
+      "inputB_JPerKg": 0,
+      "differenceBminusA_JPerKg": 0,
+      "relativeDifference": null,
+      "meaningfullyDifferent": false
+    },
+    {
+      "archetype": "stiff",
+      "groundFrequencyHz": 1.1,
+      "intensityG": 0.000001,
+      "inputA_JPerKg": 1.8563398078456567e-12,
+      "inputB_JPerKg": 6.436807539317137e-12,
+      "differenceBminusA_JPerKg": 4.580467731471481e-12,
+      "relativeDifference": 0.7116055130580167,
+      "meaningfullyDifferent": true
+    },
+    {
+      "archetype": "stiff",
+      "groundFrequencyHz": 1.1,
+      "intensityG": 0.12,
+      "inputA_JPerKg": 0.026731293232977238,
+      "inputB_JPerKg": 0.09269002856616682,
+      "differenceBminusA_JPerKg": 0.06595873533318958,
+      "relativeDifference": 0.711605513058019,
+      "meaningfullyDifferent": true
+    },
+    {
+      "archetype": "stiff",
+      "groundFrequencyHz": 3,
+      "intensityG": 0,
+      "inputA_JPerKg": 0,
+      "inputB_JPerKg": 0,
+      "differenceBminusA_JPerKg": 0,
+      "relativeDifference": null,
+      "meaningfullyDifferent": false
+    },
+    {
+      "archetype": "stiff",
+      "groundFrequencyHz": 3,
+      "intensityG": 0.000001,
+      "inputA_JPerKg": 1.622370358738839e-12,
+      "inputB_JPerKg": 5.737218450826062e-12,
+      "differenceBminusA_JPerKg": 4.114848092087223e-12,
+      "relativeDifference": 0.7172200478952923,
+      "meaningfullyDifferent": true
+    },
+    {
+      "archetype": "stiff",
+      "groundFrequencyHz": 3,
+      "intensityG": 0.12,
+      "inputA_JPerKg": 0.02336213316583925,
+      "inputB_JPerKg": 0.08261594569189522,
+      "differenceBminusA_JPerKg": 0.059253812526055966,
+      "relativeDifference": 0.7172200478952924,
+      "meaningfullyDifferent": true
+    }
+  ]
+}

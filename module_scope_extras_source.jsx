@@ -1,3 +1,15 @@
+// Keep only portable speech provenance; imported lesson data cannot add fields
+// to the delivery envelope through clip metadata.
+function sanitizeWordSoundsAudioProvenance(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const out = { version: 1 };
+  ['provider', 'engine', 'resolvedVoice', 'voice', 'language', 'model'].forEach(key => {
+    if (Object.prototype.hasOwnProperty.call(value, key) && typeof value[key] === 'string' && value[key].length && value[key].length <= 120) out[key] = value[key];
+  });
+  if (['synthesized', 'recorded_bank', 'unknown', 'teacher_recording'].includes(value.source)) out.source = value.source;
+  return Object.keys(out).length > 1 ? out : null;
+}
+
 // module_scope_extras_source.jsx — module-scope cleanup bundle (Round 4 Tier B)
 //
 // Three small, low-coupling items that have been sitting at module scope of
@@ -605,6 +617,12 @@ const uploadSessionAssets = async (appId, resources, sessionCode) => {
   });
   const safeResources = structuredClone(stripUnsafeLiveSessionFields(portableResources));
   portableResources.forEach((item, index) => {
+    const readiness = window.AlloModules && window.AlloModules.WordSoundsReadiness;
+    if (item?.type === 'word-sounds' && typeof readiness?.restoreReviewedSyllables === 'function') {
+      readiness.restoreReviewedSyllables(item, safeResources[index]);
+    }
+  });
+  portableResources.forEach((item, index) => {
     if (!item || item.type !== "word-sounds") return;
     ["wsPreloadedWords", "data"].forEach((layout) => {
       if (!Array.isArray(item[layout]) || !Array.isArray(safeResources[index]?.[layout])) return;
@@ -615,7 +633,7 @@ const uploadSessionAssets = async (appId, resources, sessionCode) => {
         ["__proto__", "constructor", "prototype"].forEach((key) => {
           if (!Object.prototype.hasOwnProperty.call(assets, key)) return;
           if (!target._ttsAssets || typeof target._ttsAssets !== "object" || Array.isArray(target._ttsAssets)) target._ttsAssets = Object.create(null);
-          Object.defineProperty(target._ttsAssets, key, { value: { mime: assets[key].mime, base64: assets[key].base64 }, enumerable: true, configurable: true, writable: true });
+          Object.defineProperty(target._ttsAssets, key, { value: { mime: assets[key].mime, base64: assets[key].base64, ...(sanitizeWordSoundsAudioProvenance(assets[key].provenance) ? { provenance: sanitizeWordSoundsAudioProvenance(assets[key].provenance) } : {}) }, enumerable: true, configurable: true, writable: true });
         });
       });
     });

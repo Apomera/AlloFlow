@@ -1,0 +1,22 @@
+/* Recorded cooking faces remain legible beside the native spatula. */
+.turn-reading-panel{border:1px solid #bfccb2;border-radius:14px;background:#faf9ef;padding:1rem;color:#294837}
+.turn-reading-panel .turn-eyebrow{margin:0 0 .35rem;font-size:.65rem;font-weight:800;letter-spacing:.12em;color:#5b704f}
+.turn-reading-panel h3{font-family:Georgia,serif;font-size:1.35rem;font-weight:500;margin:.2rem 0 .65rem}
+.turn-reading-panel #sceneTurnReading{display:block;font-size:.82rem;line-height:1.5}
+.turn-reading-panel .turn-faces{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem;margin:.9rem 0}
+.turn-reading-panel .turn-face-card{min-width:0;border:1px solid #c3ceb8;border-radius:10px;background:#f1f0df;padding:.65rem;text-align:center}
+.turn-face-card dt{font-size:.72rem;font-weight:700;line-height:1.4;color:#4e6248}
+.turn-face-card dd{margin:.35rem 0 0;display:flex;flex-direction:column;align-items:center;gap:.3rem;font-size:.85rem;font-weight:700}
+.turn-face-art{width:100%;max-width:145px;height:auto}
+.turn-face-food{fill:var(--turn-face-color,#dccaab);stroke:#705a3c;stroke-width:2.5}
+.turn-face-detail{fill:none;stroke:#f1d9a3;stroke-width:2;opacity:.85}
+.turn-reading-panel .turn-tomato{display:none}
+.turn-reading-panel[data-food-kind=tomato] .turn-mushroom{display:none}
+.turn-reading-panel[data-food-kind=tomato] .turn-tomato{display:inline}
+.turn-reading-panel .turn-phase{padding:.55rem .7rem;border-radius:8px;background:#e5edd6;font-weight:700;font-size:.82rem;line-height:1.5}
+.turn-reading-panel .turn-forecast{padding:.7rem .8rem;border:1px solid #d4bd7e;border-left:3px solid #b1893a;border-radius:8px;background:#fff6dc;color:#5d481e;font-size:.8rem;line-height:1.6}
+.turn-reading-panel #sceneTurnPrompt{font-size:.8rem;line-height:1.6}
+.turn-reading-panel button{min-height:44px;white-space:normal;line-height:1.4;font-size:.8rem}
+.turn-reading-panel button:focus-visible{outline:3px solid #31563b;outline-offset:3px}
+@media(max-width:420px){.turn-reading-panel{padding:.8rem}.turn-reading-panel .turn-faces{gap:.4rem}.turn-face-card dt{font-size:.7rem}.turn-reading-panel button{width:100%;margin:.25rem 0}}
+@media(forced-colors:active){.turn-reading-panel,.turn-reading-panel .turn-face-card,.turn-reading-panel .turn-phase,.turn-reading-panel .turn-forecast{background:Canvas;color:CanvasText;border-color:CanvasText}.turn-face-card dt{color:CanvasText}.turn-face-art{forced-color-adjust:none}.turn-reading-panel button:focus-visible{outline-color:Highlight}}

@@ -1,0 +1,7 @@
+{
+  "firstListingPassed": false,
+  "observed": "6 tests in 2 files: the archived .spec.ts was also discovered",
+  "repair": "Renamed only the archived fixture to .spec.ts.saved, preserving its bytes. Current assertions unchanged.",
+  "browserLaunched": false,
+  "savedFixtureSHA256": "c48c728a3d52d7c0788ea14d82e20cab93d9827b39069782a539d3cd5f13e4bf"
+}

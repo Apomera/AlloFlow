@@ -1,0 +1,19 @@
+{
+  "sourceSHA256": "2ddc9f79002dd973094a13282c13c8a447eb0c5be09f69981697461c3b533bac",
+  "baselineSHA256": "15ed562020a011994c79ae707d448fa47b830cf8ff03352c7b82515110b77964",
+  "newDrawingReturnBrowserGroups": 19,
+  "totalBrowserGroups": 19,
+  "baselineSceneCases": 84,
+  "englishCatalogEntries": 586,
+  "newEnglishEntries": 0,
+  "updatedEnglishEntries": 0,
+  "sourceDesktopParity": true,
+  "catalogParity": true,
+  "engineImplementationUnchanged": true,
+  "browserErrors": [],
+  "screenshots": 9,
+  "emptyAccessibilityAudits": 9,
+  "formalDOMSuite": "Not run: existing Vitest/jsdom worker stalls before collection.",
+  "legacyRegressionScope": "No older browser suite was rerun in this pass. Focused native checks cover returning from impression choices to the drawing, keyboard focus, comparison views, saved-state preservation, matching boundaries, responsive choice columns, layouts, and presentation.",
+  "gitAction": "No staging or commit performed."
+}

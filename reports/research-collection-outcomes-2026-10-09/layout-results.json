@@ -1,0 +1,27 @@
+{
+  "base": "http://127.0.0.1:64478",
+  "moduleHashes": {
+    "content_engine_module.js": "280f9bebfbf7951fd43455d0c7bb6d6e055349a0eac067037d3599de1ee4e7da",
+    "text_pipeline_helpers_module.js": "df864b07b30137576100fe79c6a9209702a9d368f4f62bc12a365a538fb4c7f6",
+    "view_misc_panels_module.js": "c022b4612f6861c59ca053aa5abaceb85a088b72a0bdd0291b079a4594c4f8ec"
+  },
+  "passed": 12,
+  "results": [
+    "Ordinary one-click web research still accepts an arbitrary one-character public topic",
+    "Scan-first rows have one writing checkbox, accurate passage counts, and keyboard-operable mixed selection",
+    "Removal focuses the persistent Undo action; keyboard undo restores focus to the restored writing checkbox",
+    "Writing and student-detail controls are independent; Undo retains later additions, passage exclusions, and sharing approval",
+    "Quiet excluded sources retain passage/source exclusions through later searches and generation",
+    "Unshared pasted details remain private in student sources and stale fallbacks while teacher evidence is retained",
+    "Review 1280x900: footer stays visible without overlap after long scrolling, complete form remains reachable, and keyboard focus is trapped/restored",
+    "Review 390x844: footer stays visible without overlap after long scrolling, complete form remains reachable, and keyboard focus is trapped/restored",
+    "Review 320x640: footer stays visible without overlap after long scrolling, complete form remains reachable, and keyboard focus is trapped/restored",
+    "Review 844x400: footer stays visible without overlap after long scrolling, complete form remains reachable, and keyboard focus is trapped/restored",
+    "Review 320x320: long error plus Undo keeps Generate and focused controls visible",
+    "Review 375x375: long error plus Undo keeps Generate and focused controls visible"
+  ],
+  "errors": [],
+  "blockedRequests": [],
+  "success": true,
+  "failure": null
+}

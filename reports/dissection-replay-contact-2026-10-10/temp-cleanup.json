@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-10T04:38:28.308Z",
+  "target": "C:\\Users\\cabba\\Documents\\Codex\\.diss-replay-review-20261009",
+  "removedFiles": 75,
+  "removedMiB": 1.8522777557373047,
+  "freeMiB": 0,
+  "sourceHashes": {
+    "stem_lab/stem_tool_dissection.js": "ca1ebfd63cce6cd95c722e3354ad4e813eef3ae48d61e6e5ace6c917cb0d3654",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "ca1ebfd63cce6cd95c722e3354ad4e813eef3ae48d61e6e5ace6c917cb0d3654"
+  },
+  "scope": "Inactive test temporary directory created by this chat. Repository reports and shared files retained."
+}

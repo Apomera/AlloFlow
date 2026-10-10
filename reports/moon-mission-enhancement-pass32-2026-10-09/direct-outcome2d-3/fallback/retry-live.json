@@ -1,0 +1,229 @@
+{
+  "name": "retry-live",
+  "paint": {
+    "generation": 27,
+    "width": 310,
+    "height": 420,
+    "rows": [
+      {
+        "text": "Altitude",
+        "x": 20,
+        "y": 26,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 19,
+          "right": 64.23046875,
+          "top": 17,
+          "bottom": 26
+        }
+      },
+      {
+        "text": "300.0 m",
+        "x": 20,
+        "y": 52,
+        "font": "bold 24px system-ui, sans-serif",
+        "size": 24,
+        "cssSize": 24,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 21,
+          "right": 109.34375,
+          "top": 35,
+          "bottom": 52
+        }
+      },
+      {
+        "text": "Hover reserve",
+        "x": 163,
+        "y": 26,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 163,
+          "right": 239.275390625,
+          "top": 17,
+          "bottom": 26
+        }
+      },
+      {
+        "text": "110 s",
+        "x": 163,
+        "y": 52,
+        "font": "bold 22px system-ui, sans-serif",
+        "size": 22,
+        "cssSize": 22,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 165,
+          "right": 217.0322265625,
+          "top": 36,
+          "bottom": 52
+        }
+      },
+      {
+        "text": "Vertical",
+        "x": 20,
+        "y": 79,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 19,
+          "right": 60.470703125,
+          "top": 70,
+          "bottom": 79
+        }
+      },
+      {
+        "text": "Drift",
+        "x": 163,
+        "y": 79,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 163,
+          "right": 188.54296875,
+          "top": 70,
+          "bottom": 79
+        }
+      },
+      {
+        "text": "9.0 m/s",
+        "x": 20,
+        "y": 102,
+        "font": "bold 20px system-ui, sans-serif",
+        "size": 20,
+        "cssSize": 20,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 20,
+          "right": 90.1328125,
+          "top": 88,
+          "bottom": 104
+        }
+      },
+      {
+        "text": "4.0 m/s",
+        "x": 163,
+        "y": 102,
+        "font": "bold 20px system-ui, sans-serif",
+        "size": 20,
+        "cssSize": 20,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 163,
+          "right": 233.1328125,
+          "top": 88,
+          "bottom": 104
+        }
+      },
+      {
+        "text": "Down · land <3",
+        "x": 20,
+        "y": 121,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 20,
+          "right": 103.60546875,
+          "top": 112,
+          "bottom": 121
+        }
+      },
+      {
+        "text": "Right · land <5",
+        "x": 163,
+        "y": 121,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 163,
+          "right": 243.91015625,
+          "top": 112,
+          "bottom": 124
+        }
+      },
+      {
+        "text": "Engine 0%",
+        "x": 20,
+        "y": 146,
+        "font": "600 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "alpha": 1,
+        "align": "left",
+        "baseline": "alphabetic",
+        "box": {
+          "left": 20,
+          "right": 76.916015625,
+          "top": 137,
+          "bottom": 149
+        }
+      }
+    ],
+    "layout": "compact",
+    "reviewTime": "",
+    "horizontalOverflow": false
+  },
+  "held": {
+    "alt": 300,
+    "vVel": -9,
+    "hVel": 4,
+    "fuel": 110,
+    "thrust": 0,
+    "tilt": 0,
+    "x": 0,
+    "elapsed": 0
+  },
+  "saved": {
+    "missionXP": 42,
+    "landingResult": null,
+    "landingAttempts": [
+      {
+        "crashed": true,
+        "score": 0,
+        "grade": "—",
+        "vVel": 12.5,
+        "hVel": 6.2,
+        "fuel": 30,
+        "fuelUnit": "s"
+      }
+    ],
+    "landingRewarded": false
+  },
+  "errors": [],
+  "completed": true,
+  "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass32-2026-10-09\\direct-outcome2d-3\\fallback\\retry-live.png"
+}

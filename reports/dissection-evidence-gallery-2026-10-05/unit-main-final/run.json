@@ -1,0 +1,35 @@
+{
+  "mode": "unit-main",
+  "start": "2026-10-05T16:23:26.166Z",
+  "startHashes": {
+    "stem_lab/stem_tool_dissection.js": "a077a647a5073de5ea02a320305822fa52281f1499c636723b6645ed3dac35f9",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "a077a647a5073de5ea02a320305822fa52281f1499c636723b6645ed3dac35f9",
+    "tests/dissection_lab_improvements.test.js": "bbb8ba935a012f0bc200a2567387016564953945fd72890c9e2a82fbb31e9f52",
+    "tests/dissection_workspace_bands.test.js": "9c59fde98d1fd7e103edf4dffb72b1b9dbea39524d5acfd5bc67760dcf56f98c",
+    "tests/e2e/dissection-evidence-gallery.spec.ts": "fd03716a63f5cdbe3e7010ec309eba3128d2a0284b67eef9bb94cb0d235f2c89",
+    "tests/e2e/dissection-control-shelves.spec.ts": "bc91d34655a0764c8b0282b6be1fb672e14eca70916e27415e8f1ed08c40d72c"
+  },
+  "args": [
+    "run",
+    "tests/dissection_lab_improvements.test.js",
+    "tests/dissection_workspace_bands.test.js",
+    "--pool=forks",
+    "--maxWorkers=1",
+    "--reporter=verbose",
+    "--reporter=json",
+    "--outputFile=C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-evidence-gallery-2026-10-05\\unit-main-final\\results.json",
+    "--testNamePattern=^(?!.*has no axe-detectable WCAG A or AA violations).*"
+  ],
+  "pid": 19616,
+  "end": "2026-10-05T16:24:07.046Z",
+  "exitCode": 0,
+  "signal": null,
+  "endHashes": {
+    "stem_lab/stem_tool_dissection.js": "a077a647a5073de5ea02a320305822fa52281f1499c636723b6645ed3dac35f9",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "a077a647a5073de5ea02a320305822fa52281f1499c636723b6645ed3dac35f9",
+    "tests/dissection_lab_improvements.test.js": "bbb8ba935a012f0bc200a2567387016564953945fd72890c9e2a82fbb31e9f52",
+    "tests/dissection_workspace_bands.test.js": "9c59fde98d1fd7e103edf4dffb72b1b9dbea39524d5acfd5bc67760dcf56f98c",
+    "tests/e2e/dissection-evidence-gallery.spec.ts": "fd03716a63f5cdbe3e7010ec309eba3128d2a0284b67eef9bb94cb0d235f2c89",
+    "tests/e2e/dissection-control-shelves.spec.ts": "bc91d34655a0764c8b0282b6be1fb672e14eca70916e27415e8f1ed08c40d72c"
+  }
+}

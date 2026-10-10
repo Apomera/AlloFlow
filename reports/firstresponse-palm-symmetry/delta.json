@@ -1,0 +1,11 @@
+{
+  "beforeSHA256": "147670787861ae0251c9b4c65c90847a613c6b879d41737533749c19a5f6f891",
+  "afterSHA256": "dfe3e01f38a419187e468c749cc37827f486a47401b9916afaa9ec6f98a3f86a",
+  "edits": [
+    {
+      "name": "mirror-palm-triangle-diagonals",
+      "old": "    function sculptPalm(mesh, thumbSide, forwardSign) {\n      var positions = mesh.geometry.attributes.position;",
+      "new": "    function sculptPalm(mesh, thumbSide, forwardSign) {\n      // Mirror each interior diagonal as well as the contour so fitted folds\n      // follow equivalent triangles on the two hands.\n      if (thumbSide > 0) {\n        var indices = mesh.geometry.index.array, shape = mesh.geometry.parameters;\n        var first = shape.widthSegments * 3, last = indices.length - shape.widthSegments * 3;\n        for (var face = first; face < last; face += 6) {\n          var a = indices[face], c = indices[face + 4];\n          indices[face + 2] = c; indices[face + 3] = a;\n        }\n      }\n      var positions = mesh.geometry.attributes.position;"
+    }
+  ]
+}

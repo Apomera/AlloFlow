@@ -1,0 +1,573 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-scenario-clarity-2026-10-06/baseline-1/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "dissection-scenario-clarity.spec.ts",
+      "file": "dissection-scenario-clarity.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "scenario clarity layout phone",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 32420,
+                  "error": {
+                    "message": "TimeoutError: locator.screenshot: Timeout 29982.087ms exceeded.\nCall log:\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    57 × waiting for element to be stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying scroll into view action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n",
+                    "stack": "TimeoutError: locator.screenshot: Timeout 29982.087ms exceeded.\nCall log:\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    57 × waiting for element to be stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying scroll into view action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts:100:28",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts",
+                      "column": 28,
+                      "line": 100
+                    },
+                    "snippet": "   98 |   if (c.forced) await page.emulateMedia({ forcedColors: 'active' }); await mount(page, { largeText: !!c.large, highContrast: !!c.contrast }, c.width, c.available);\n   99 |   await consolePanel(page).scrollIntoViewIfNeeded(); const raw = await metrics(page); await writeFile(`${out}/${baseline ? 'before' : 'after'}-${c.name}-metrics.json`, JSON.stringify(raw, null, 2));\n> 100 |   await consolePanel(page).screenshot({ path: `${out}/${baseline ? 'before' : 'after'}-${c.name}-scenario.png`, style: screenshotStyle }); if (baseline) return;\n      |                            ^\n  101 |   const before = await proof(page); await expect(consolePanel(page)).toHaveAttribute('id', 'diss-scenario-console'); await expect(consolePanel(page)).toHaveAccessibleName('Scenario lab · 4-minute technique challenge');\n  102 |   await expect(select(page)).toHaveAccessibleName('Choose procedure scenario'); await expect(select(page).locator('option[value=\"timed-practical\"]')).toHaveText('4-minute technique challenge · Challenge');\n  103 |   await expect(page.locator('#diss-scenario-effects')).toHaveText(choosing); await expect(status(page)).toHaveAttribute('data-state', 'not-started'); await expect(time(page)).toHaveCount(0);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts",
+                        "column": 28,
+                        "line": 100
+                      },
+                      "message": "TimeoutError: locator.screenshot: Timeout 29982.087ms exceeded.\nCall log:\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    57 × waiting for element to be stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying scroll into view action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n\n   98 |   if (c.forced) await page.emulateMedia({ forcedColors: 'active' }); await mount(page, { largeText: !!c.large, highContrast: !!c.contrast }, c.width, c.available);\n   99 |   await consolePanel(page).scrollIntoViewIfNeeded(); const raw = await metrics(page); await writeFile(`${out}/${baseline ? 'before' : 'after'}-${c.name}-metrics.json`, JSON.stringify(raw, null, 2));\n> 100 |   await consolePanel(page).screenshot({ path: `${out}/${baseline ? 'before' : 'after'}-${c.name}-scenario.png`, style: screenshotStyle }); if (baseline) return;\n      |                            ^\n  101 |   const before = await proof(page); await expect(consolePanel(page)).toHaveAttribute('id', 'diss-scenario-console'); await expect(consolePanel(page)).toHaveAccessibleName('Scenario lab · 4-minute technique challenge');\n  102 |   await expect(select(page)).toHaveAccessibleName('Choose procedure scenario'); await expect(select(page).locator('option[value=\"timed-practical\"]')).toHaveText('4-minute technique challenge · Challenge');\n  103 |   await expect(page.locator('#diss-scenario-effects')).toHaveText(choosing); await expect(status(page)).toHaveAttribute('data-state', 'not-started'); await expect(time(page)).toHaveCount(0);\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts:100:28"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-scenario-clarity-2026-10-06\\renderer-baseline.js in place of stem_lab/stem_tool_dissection.js\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-06T13:42:29.456Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\baseline-1\\test-results\\dissection-scenario-clarity-scenario-clarity-layout-phone-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\baseline-1\\test-results\\dissection-scenario-clarity-scenario-clarity-layout-phone-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\baseline-1\\test-results\\dissection-scenario-clarity-scenario-clarity-layout-phone-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\baseline-1\\test-results\\dissection-scenario-clarity-scenario-clarity-layout-phone-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts",
+                    "column": 28,
+                    "line": 100
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f44b5100afee14512545-95a44e97d6c20dcef47b",
+          "file": "dissection-scenario-clarity.spec.ts",
+          "line": 97,
+          "column": 30
+        },
+        {
+          "title": "scenario clarity layout tablet",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 32258,
+                  "error": {
+                    "message": "TimeoutError: locator.screenshot: Timeout 29976.151000000005ms exceeded.\nCall log:\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    58 × waiting for element to be stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying scroll into view action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n",
+                    "stack": "TimeoutError: locator.screenshot: Timeout 29976.151000000005ms exceeded.\nCall log:\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    58 × waiting for element to be stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying scroll into view action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts:100:28",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts",
+                      "column": 28,
+                      "line": 100
+                    },
+                    "snippet": "   98 |   if (c.forced) await page.emulateMedia({ forcedColors: 'active' }); await mount(page, { largeText: !!c.large, highContrast: !!c.contrast }, c.width, c.available);\n   99 |   await consolePanel(page).scrollIntoViewIfNeeded(); const raw = await metrics(page); await writeFile(`${out}/${baseline ? 'before' : 'after'}-${c.name}-metrics.json`, JSON.stringify(raw, null, 2));\n> 100 |   await consolePanel(page).screenshot({ path: `${out}/${baseline ? 'before' : 'after'}-${c.name}-scenario.png`, style: screenshotStyle }); if (baseline) return;\n      |                            ^\n  101 |   const before = await proof(page); await expect(consolePanel(page)).toHaveAttribute('id', 'diss-scenario-console'); await expect(consolePanel(page)).toHaveAccessibleName('Scenario lab · 4-minute technique challenge');\n  102 |   await expect(select(page)).toHaveAccessibleName('Choose procedure scenario'); await expect(select(page).locator('option[value=\"timed-practical\"]')).toHaveText('4-minute technique challenge · Challenge');\n  103 |   await expect(page.locator('#diss-scenario-effects')).toHaveText(choosing); await expect(status(page)).toHaveAttribute('data-state', 'not-started'); await expect(time(page)).toHaveCount(0);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts",
+                        "column": 28,
+                        "line": 100
+                      },
+                      "message": "TimeoutError: locator.screenshot: Timeout 29976.151000000005ms exceeded.\nCall log:\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    58 × waiting for element to be stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying scroll into view action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n\n   98 |   if (c.forced) await page.emulateMedia({ forcedColors: 'active' }); await mount(page, { largeText: !!c.large, highContrast: !!c.contrast }, c.width, c.available);\n   99 |   await consolePanel(page).scrollIntoViewIfNeeded(); const raw = await metrics(page); await writeFile(`${out}/${baseline ? 'before' : 'after'}-${c.name}-metrics.json`, JSON.stringify(raw, null, 2));\n> 100 |   await consolePanel(page).screenshot({ path: `${out}/${baseline ? 'before' : 'after'}-${c.name}-scenario.png`, style: screenshotStyle }); if (baseline) return;\n      |                            ^\n  101 |   const before = await proof(page); await expect(consolePanel(page)).toHaveAttribute('id', 'diss-scenario-console'); await expect(consolePanel(page)).toHaveAccessibleName('Scenario lab · 4-minute technique challenge');\n  102 |   await expect(select(page)).toHaveAccessibleName('Choose procedure scenario'); await expect(select(page).locator('option[value=\"timed-practical\"]')).toHaveText('4-minute technique challenge · Challenge');\n  103 |   await expect(page.locator('#diss-scenario-effects')).toHaveText(choosing); await expect(status(page)).toHaveAttribute('data-state', 'not-started'); await expect(time(page)).toHaveCount(0);\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts:100:28"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-scenario-clarity-2026-10-06\\renderer-baseline.js in place of stem_lab/stem_tool_dissection.js\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-06T13:43:02.948Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\baseline-1\\test-results\\dissection-scenario-clarity-scenario-clarity-layout-tablet-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\baseline-1\\test-results\\dissection-scenario-clarity-scenario-clarity-layout-tablet-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\baseline-1\\test-results\\dissection-scenario-clarity-scenario-clarity-layout-tablet-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\baseline-1\\test-results\\dissection-scenario-clarity-scenario-clarity-layout-tablet-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts",
+                    "column": 28,
+                    "line": 100
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f44b5100afee14512545-c9a885dc27d5ad89e164",
+          "file": "dissection-scenario-clarity.spec.ts",
+          "line": 97,
+          "column": 30
+        },
+        {
+          "title": "scenario clarity layout desktop",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 32227,
+                  "error": {
+                    "message": "TimeoutError: locator.screenshot: Timeout 29965.050999999992ms exceeded.\nCall log:\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    57 × waiting for element to be stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying scroll into view action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n",
+                    "stack": "TimeoutError: locator.screenshot: Timeout 29965.050999999992ms exceeded.\nCall log:\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    57 × waiting for element to be stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying scroll into view action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts:100:28",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts",
+                      "column": 28,
+                      "line": 100
+                    },
+                    "snippet": "   98 |   if (c.forced) await page.emulateMedia({ forcedColors: 'active' }); await mount(page, { largeText: !!c.large, highContrast: !!c.contrast }, c.width, c.available);\n   99 |   await consolePanel(page).scrollIntoViewIfNeeded(); const raw = await metrics(page); await writeFile(`${out}/${baseline ? 'before' : 'after'}-${c.name}-metrics.json`, JSON.stringify(raw, null, 2));\n> 100 |   await consolePanel(page).screenshot({ path: `${out}/${baseline ? 'before' : 'after'}-${c.name}-scenario.png`, style: screenshotStyle }); if (baseline) return;\n      |                            ^\n  101 |   const before = await proof(page); await expect(consolePanel(page)).toHaveAttribute('id', 'diss-scenario-console'); await expect(consolePanel(page)).toHaveAccessibleName('Scenario lab · 4-minute technique challenge');\n  102 |   await expect(select(page)).toHaveAccessibleName('Choose procedure scenario'); await expect(select(page).locator('option[value=\"timed-practical\"]')).toHaveText('4-minute technique challenge · Challenge');\n  103 |   await expect(page.locator('#diss-scenario-effects')).toHaveText(choosing); await expect(status(page)).toHaveAttribute('data-state', 'not-started'); await expect(time(page)).toHaveCount(0);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts",
+                        "column": 28,
+                        "line": 100
+                      },
+                      "message": "TimeoutError: locator.screenshot: Timeout 29965.050999999992ms exceeded.\nCall log:\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    57 × waiting for element to be stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying scroll into view action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n\n   98 |   if (c.forced) await page.emulateMedia({ forcedColors: 'active' }); await mount(page, { largeText: !!c.large, highContrast: !!c.contrast }, c.width, c.available);\n   99 |   await consolePanel(page).scrollIntoViewIfNeeded(); const raw = await metrics(page); await writeFile(`${out}/${baseline ? 'before' : 'after'}-${c.name}-metrics.json`, JSON.stringify(raw, null, 2));\n> 100 |   await consolePanel(page).screenshot({ path: `${out}/${baseline ? 'before' : 'after'}-${c.name}-scenario.png`, style: screenshotStyle }); if (baseline) return;\n      |                            ^\n  101 |   const before = await proof(page); await expect(consolePanel(page)).toHaveAttribute('id', 'diss-scenario-console'); await expect(consolePanel(page)).toHaveAccessibleName('Scenario lab · 4-minute technique challenge');\n  102 |   await expect(select(page)).toHaveAccessibleName('Choose procedure scenario'); await expect(select(page).locator('option[value=\"timed-practical\"]')).toHaveText('4-minute technique challenge · Challenge');\n  103 |   await expect(page.locator('#diss-scenario-effects')).toHaveText(choosing); await expect(status(page)).toHaveAttribute('data-state', 'not-started'); await expect(time(page)).toHaveCount(0);\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts:100:28"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-scenario-clarity-2026-10-06\\renderer-baseline.js in place of stem_lab/stem_tool_dissection.js\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-06T13:43:36.130Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\baseline-1\\test-results\\dissection-scenario-clarity-scenario-clarity-layout-desktop-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\baseline-1\\test-results\\dissection-scenario-clarity-scenario-clarity-layout-desktop-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\baseline-1\\test-results\\dissection-scenario-clarity-scenario-clarity-layout-desktop-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\baseline-1\\test-results\\dissection-scenario-clarity-scenario-clarity-layout-desktop-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts",
+                    "column": 28,
+                    "line": 100
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f44b5100afee14512545-2f0cb743f8116a4320ed",
+          "file": "dissection-scenario-clarity.spec.ts",
+          "line": 97,
+          "column": 30
+        },
+        {
+          "title": "scenario clarity layout embedded-medium",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 32269,
+                  "error": {
+                    "message": "TimeoutError: locator.screenshot: Timeout 29977.05600000001ms exceeded.\nCall log:\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    57 × waiting for element to be stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying scroll into view action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n",
+                    "stack": "TimeoutError: locator.screenshot: Timeout 29977.05600000001ms exceeded.\nCall log:\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    57 × waiting for element to be stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying scroll into view action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts:100:28",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts",
+                      "column": 28,
+                      "line": 100
+                    },
+                    "snippet": "   98 |   if (c.forced) await page.emulateMedia({ forcedColors: 'active' }); await mount(page, { largeText: !!c.large, highContrast: !!c.contrast }, c.width, c.available);\n   99 |   await consolePanel(page).scrollIntoViewIfNeeded(); const raw = await metrics(page); await writeFile(`${out}/${baseline ? 'before' : 'after'}-${c.name}-metrics.json`, JSON.stringify(raw, null, 2));\n> 100 |   await consolePanel(page).screenshot({ path: `${out}/${baseline ? 'before' : 'after'}-${c.name}-scenario.png`, style: screenshotStyle }); if (baseline) return;\n      |                            ^\n  101 |   const before = await proof(page); await expect(consolePanel(page)).toHaveAttribute('id', 'diss-scenario-console'); await expect(consolePanel(page)).toHaveAccessibleName('Scenario lab · 4-minute technique challenge');\n  102 |   await expect(select(page)).toHaveAccessibleName('Choose procedure scenario'); await expect(select(page).locator('option[value=\"timed-practical\"]')).toHaveText('4-minute technique challenge · Challenge');\n  103 |   await expect(page.locator('#diss-scenario-effects')).toHaveText(choosing); await expect(status(page)).toHaveAttribute('data-state', 'not-started'); await expect(time(page)).toHaveCount(0);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts",
+                        "column": 28,
+                        "line": 100
+                      },
+                      "message": "TimeoutError: locator.screenshot: Timeout 29977.05600000001ms exceeded.\nCall log:\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    57 × waiting for element to be stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying scroll into view action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n\n   98 |   if (c.forced) await page.emulateMedia({ forcedColors: 'active' }); await mount(page, { largeText: !!c.large, highContrast: !!c.contrast }, c.width, c.available);\n   99 |   await consolePanel(page).scrollIntoViewIfNeeded(); const raw = await metrics(page); await writeFile(`${out}/${baseline ? 'before' : 'after'}-${c.name}-metrics.json`, JSON.stringify(raw, null, 2));\n> 100 |   await consolePanel(page).screenshot({ path: `${out}/${baseline ? 'before' : 'after'}-${c.name}-scenario.png`, style: screenshotStyle }); if (baseline) return;\n      |                            ^\n  101 |   const before = await proof(page); await expect(consolePanel(page)).toHaveAttribute('id', 'diss-scenario-console'); await expect(consolePanel(page)).toHaveAccessibleName('Scenario lab · 4-minute technique challenge');\n  102 |   await expect(select(page)).toHaveAccessibleName('Choose procedure scenario'); await expect(select(page).locator('option[value=\"timed-practical\"]')).toHaveText('4-minute technique challenge · Challenge');\n  103 |   await expect(page.locator('#diss-scenario-effects')).toHaveText(choosing); await expect(status(page)).toHaveAttribute('data-state', 'not-started'); await expect(time(page)).toHaveCount(0);\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts:100:28"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-scenario-clarity-2026-10-06\\renderer-baseline.js in place of stem_lab/stem_tool_dissection.js\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-06T13:44:09.223Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\baseline-1\\test-results\\dissection-scenario-clarit-b2d29-rity-layout-embedded-medium-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\baseline-1\\test-results\\dissection-scenario-clarit-b2d29-rity-layout-embedded-medium-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\baseline-1\\test-results\\dissection-scenario-clarit-b2d29-rity-layout-embedded-medium-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\baseline-1\\test-results\\dissection-scenario-clarit-b2d29-rity-layout-embedded-medium-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts",
+                    "column": 28,
+                    "line": 100
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f44b5100afee14512545-a9dbbaf9e7feb8e2dd92",
+          "file": "dissection-scenario-clarity.spec.ts",
+          "line": 97,
+          "column": 30
+        },
+        {
+          "title": "scenario clarity layout embedded-large-contrast",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 32461,
+                  "error": {
+                    "message": "TimeoutError: locator.screenshot: Timeout 29978.84700000001ms exceeded.\nCall log:\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    57 × waiting for element to be stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying scroll into view action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n",
+                    "stack": "TimeoutError: locator.screenshot: Timeout 29978.84700000001ms exceeded.\nCall log:\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    57 × waiting for element to be stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying scroll into view action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts:100:28",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts",
+                      "column": 28,
+                      "line": 100
+                    },
+                    "snippet": "   98 |   if (c.forced) await page.emulateMedia({ forcedColors: 'active' }); await mount(page, { largeText: !!c.large, highContrast: !!c.contrast }, c.width, c.available);\n   99 |   await consolePanel(page).scrollIntoViewIfNeeded(); const raw = await metrics(page); await writeFile(`${out}/${baseline ? 'before' : 'after'}-${c.name}-metrics.json`, JSON.stringify(raw, null, 2));\n> 100 |   await consolePanel(page).screenshot({ path: `${out}/${baseline ? 'before' : 'after'}-${c.name}-scenario.png`, style: screenshotStyle }); if (baseline) return;\n      |                            ^\n  101 |   const before = await proof(page); await expect(consolePanel(page)).toHaveAttribute('id', 'diss-scenario-console'); await expect(consolePanel(page)).toHaveAccessibleName('Scenario lab · 4-minute technique challenge');\n  102 |   await expect(select(page)).toHaveAccessibleName('Choose procedure scenario'); await expect(select(page).locator('option[value=\"timed-practical\"]')).toHaveText('4-minute technique challenge · Challenge');\n  103 |   await expect(page.locator('#diss-scenario-effects')).toHaveText(choosing); await expect(status(page)).toHaveAttribute('data-state', 'not-started'); await expect(time(page)).toHaveCount(0);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts",
+                        "column": 28,
+                        "line": 100
+                      },
+                      "message": "TimeoutError: locator.screenshot: Timeout 29978.84700000001ms exceeded.\nCall log:\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    57 × waiting for element to be stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying scroll into view action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n\n   98 |   if (c.forced) await page.emulateMedia({ forcedColors: 'active' }); await mount(page, { largeText: !!c.large, highContrast: !!c.contrast }, c.width, c.available);\n   99 |   await consolePanel(page).scrollIntoViewIfNeeded(); const raw = await metrics(page); await writeFile(`${out}/${baseline ? 'before' : 'after'}-${c.name}-metrics.json`, JSON.stringify(raw, null, 2));\n> 100 |   await consolePanel(page).screenshot({ path: `${out}/${baseline ? 'before' : 'after'}-${c.name}-scenario.png`, style: screenshotStyle }); if (baseline) return;\n      |                            ^\n  101 |   const before = await proof(page); await expect(consolePanel(page)).toHaveAttribute('id', 'diss-scenario-console'); await expect(consolePanel(page)).toHaveAccessibleName('Scenario lab · 4-minute technique challenge');\n  102 |   await expect(select(page)).toHaveAccessibleName('Choose procedure scenario'); await expect(select(page).locator('option[value=\"timed-practical\"]')).toHaveText('4-minute technique challenge · Challenge');\n  103 |   await expect(page.locator('#diss-scenario-effects')).toHaveText(choosing); await expect(status(page)).toHaveAttribute('data-state', 'not-started'); await expect(time(page)).toHaveCount(0);\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts:100:28"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-scenario-clarity-2026-10-06\\renderer-baseline.js in place of stem_lab/stem_tool_dissection.js\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-06T13:44:42.362Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\baseline-1\\test-results\\dissection-scenario-clarit-ebd42-out-embedded-large-contrast-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\baseline-1\\test-results\\dissection-scenario-clarit-ebd42-out-embedded-large-contrast-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\baseline-1\\test-results\\dissection-scenario-clarit-ebd42-out-embedded-large-contrast-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\baseline-1\\test-results\\dissection-scenario-clarit-ebd42-out-embedded-large-contrast-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts",
+                    "column": 28,
+                    "line": 100
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f44b5100afee14512545-68503195ad24b49fb040",
+          "file": "dissection-scenario-clarity.spec.ts",
+          "line": 97,
+          "column": 30
+        },
+        {
+          "title": "scenario clarity layout forced-colors",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 32412,
+                  "error": {
+                    "message": "TimeoutError: locator.screenshot: Timeout 29978.062999999995ms exceeded.\nCall log:\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    58 × waiting for element to be stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying scroll into view action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n",
+                    "stack": "TimeoutError: locator.screenshot: Timeout 29978.062999999995ms exceeded.\nCall log:\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    58 × waiting for element to be stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying scroll into view action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts:100:28",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts",
+                      "column": 28,
+                      "line": 100
+                    },
+                    "snippet": "   98 |   if (c.forced) await page.emulateMedia({ forcedColors: 'active' }); await mount(page, { largeText: !!c.large, highContrast: !!c.contrast }, c.width, c.available);\n   99 |   await consolePanel(page).scrollIntoViewIfNeeded(); const raw = await metrics(page); await writeFile(`${out}/${baseline ? 'before' : 'after'}-${c.name}-metrics.json`, JSON.stringify(raw, null, 2));\n> 100 |   await consolePanel(page).screenshot({ path: `${out}/${baseline ? 'before' : 'after'}-${c.name}-scenario.png`, style: screenshotStyle }); if (baseline) return;\n      |                            ^\n  101 |   const before = await proof(page); await expect(consolePanel(page)).toHaveAttribute('id', 'diss-scenario-console'); await expect(consolePanel(page)).toHaveAccessibleName('Scenario lab · 4-minute technique challenge');\n  102 |   await expect(select(page)).toHaveAccessibleName('Choose procedure scenario'); await expect(select(page).locator('option[value=\"timed-practical\"]')).toHaveText('4-minute technique challenge · Challenge');\n  103 |   await expect(page.locator('#diss-scenario-effects')).toHaveText(choosing); await expect(status(page)).toHaveAttribute('data-state', 'not-started'); await expect(time(page)).toHaveCount(0);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts",
+                        "column": 28,
+                        "line": 100
+                      },
+                      "message": "TimeoutError: locator.screenshot: Timeout 29978.062999999995ms exceeded.\nCall log:\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying scroll into view action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    58 × waiting for element to be stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying scroll into view action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n\n   98 |   if (c.forced) await page.emulateMedia({ forcedColors: 'active' }); await mount(page, { largeText: !!c.large, highContrast: !!c.contrast }, c.width, c.available);\n   99 |   await consolePanel(page).scrollIntoViewIfNeeded(); const raw = await metrics(page); await writeFile(`${out}/${baseline ? 'before' : 'after'}-${c.name}-metrics.json`, JSON.stringify(raw, null, 2));\n> 100 |   await consolePanel(page).screenshot({ path: `${out}/${baseline ? 'before' : 'after'}-${c.name}-scenario.png`, style: screenshotStyle }); if (baseline) return;\n      |                            ^\n  101 |   const before = await proof(page); await expect(consolePanel(page)).toHaveAttribute('id', 'diss-scenario-console'); await expect(consolePanel(page)).toHaveAccessibleName('Scenario lab · 4-minute technique challenge');\n  102 |   await expect(select(page)).toHaveAccessibleName('Choose procedure scenario'); await expect(select(page).locator('option[value=\"timed-practical\"]')).toHaveText('4-minute technique challenge · Challenge');\n  103 |   await expect(page.locator('#diss-scenario-effects')).toHaveText(choosing); await expect(status(page)).toHaveAttribute('data-state', 'not-started'); await expect(time(page)).toHaveCount(0);\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts:100:28"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-scenario-clarity-2026-10-06\\renderer-baseline.js in place of stem_lab/stem_tool_dissection.js\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-06T13:45:15.678Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\baseline-1\\test-results\\dissection-scenario-clarit-6bee9-larity-layout-forced-colors-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\baseline-1\\test-results\\dissection-scenario-clarit-6bee9-larity-layout-forced-colors-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\baseline-1\\test-results\\dissection-scenario-clarit-6bee9-larity-layout-forced-colors-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\baseline-1\\test-results\\dissection-scenario-clarit-6bee9-larity-layout-forced-colors-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts",
+                    "column": 28,
+                    "line": 100
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f44b5100afee14512545-5c080bbbf23c831c1def",
+          "file": "dissection-scenario-clarity.spec.ts",
+          "line": 97,
+          "column": 30
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-06T13:42:28.774Z",
+    "duration": 199617.94,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 6,
+    "flaky": 0
+  }
+}

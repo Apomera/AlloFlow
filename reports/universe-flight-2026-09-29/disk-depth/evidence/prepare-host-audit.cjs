@@ -1,0 +1,24 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const hash=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
+const stage=__dirname, baselineHash='c0cc2486b3d5edd620e5975daec3d23b8f2e995a24db151be27ac30820d058c7',candidateHash='8121868ef2aa764c5e3e88284089ebf76fe0c9e1ec264ee4ae95fe434d7e9bc9';
+assert.equal(hash(fs.readFileSync(path.join(stage,'baseline-renderer.js'))),baselineHash);
+assert.equal(hash(fs.readFileSync(path.join(stage,'candidate-renderer.js'))),candidateHash);
+const driver=fs.readFileSync(path.join(stage,'build-candidate.cjs'),'utf8'),marker='function load(source, label) {';
+assert.equal(driver.split(marker).length,2);
+const header=`'use strict';
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const stage=__dirname,repo='C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated',sourcePath=path.join(repo,'stem_lab/universe_flight_scene.js');
+const baselineHash='${baselineHash}',expectedCandidateHash='${candidateHash}';
+const hash=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
+const baseline=fs.readFileSync(path.join(stage,'baseline-renderer.js')),candidate=fs.readFileSync(path.join(stage,'candidate-renderer.js'),'utf8');
+assert.equal(hash(baseline),baselineHash);assert.equal(hash(candidate),expectedCandidateHash);assert.equal(hash(fs.readFileSync(sourcePath)),baselineHash);
+const actualAuditDriverHash=hash(fs.readFileSync(__filename));
+fs.writeFileSync(path.join(stage,'host-audit-provenance.json'),JSON.stringify({completed:false,startedAtUtc:new Date().toISOString(),actualAuditDriver:__filename,actualAuditDriverHash,baselineHash,candidateHash:expectedCandidateHash,originalRunStatus:'interrupted; see original-audit-interrupted.json',candidateAndBaselineWrites:false},null,2));
+`;
+const suffix=`
+const completedProvenance=JSON.parse(fs.readFileSync(path.join(stage,'host-audit-provenance.json'),'utf8'));completedProvenance.completed=true;completedProvenance.completedAtUtc=new Date().toISOString();assert.equal(hash(fs.readFileSync(__filename)),actualAuditDriverHash);assert.equal(hash(fs.readFileSync(path.join(stage,'baseline-renderer.js'))),baselineHash);assert.equal(hash(fs.readFileSync(path.join(stage,'candidate-renderer.js'))),expectedCandidateHash);fs.writeFileSync(path.join(stage,'host-audit-provenance.json'),JSON.stringify(completedProvenance,null,2));
+`;
+const script=header+marker+driver.split(marker)[1]+suffix;
+fs.writeFileSync(path.join(stage,'candidate-host-audit.cjs'),script);
+console.log(JSON.stringify({auditOnly:true,auditDriver:path.join(stage,'candidate-host-audit.cjs'),auditDriverHash:hash(script),baselineHash,candidateHash,candidateAndBaselineWrites:false}));

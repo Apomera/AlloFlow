@@ -1,0 +1,13 @@
+{
+  "sourceSha256": "c610a9ebc7d52ef1bd4633a7b59232c8672faae86d7b6a7e38746aaf821429de",
+  "sourceMirrorsEqual": true,
+  "englishKeys": 1648,
+  "englishCopiesEqual": true,
+  "unitTests": 72,
+  "browserTests": 15,
+  "failed": 0,
+  "previewSourceVerified": true,
+  "gitDiffCheck": true,
+  "committed": false,
+  "checkedAt": "2026-10-06T12:13:04.414Z"
+}

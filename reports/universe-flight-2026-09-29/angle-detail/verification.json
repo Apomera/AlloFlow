@@ -1,0 +1,1748 @@
+{
+  "completed": true,
+  "enhancement": 54,
+  "verifiedAt": "2026-10-06T13:00:14.536Z",
+  "commitCreated": false,
+  "stagedFiles": [],
+  "tests": {
+    "passed": 364,
+    "files": 31,
+    "existingPassed": 348,
+    "newPassed": 16,
+    "rawBroadRun": {
+      "passed": 363,
+      "failed": 1
+    },
+    "correction": "New cleanup assertion now checks each resource exactly once, independent of deletion order; the focused rerun passes all new cases."
+  },
+  "native": {
+    "checks": 5,
+    "captures": 52,
+    "resourcePhases": 6,
+    "maximumPortraitBrightnessChangePercent": 0.05259617831756547,
+    "pointHashes": {
+      "19203": "f0933322797366fbee8bbdc9ce8d2263700b1c07a71caa1bcfa1224d68edc2a3",
+      "36400": "f5dbc73e3ae0b2751dcf15f6fffce2753ae4994b089c62d020975e414889b2ab",
+      "41470": "156c66d7c6805406f2d231fb18affab8e613952ec32b5fdf9e9e805104966b85"
+    },
+    "unchangedFlybyPoses": 12,
+    "errors": []
+  },
+  "controls": {
+    "completed": true,
+    "diagnosticOnly": false,
+    "pins": {
+      "stem_lab/universe_flight_scene.js": "a8de9ef0c0dc7362dc1284917b106ff82072f3a6b4943d947a3c8de6354dadcf",
+      "stem_lab/stem_tool_universe.js": "4fe5202b51d37e3b0bbed28cb7d12885ca53a17182fcd0ce5f4060eec0e3f7bb"
+    },
+    "harnessHash": "961d9e19b973ddf66c6baf4057a9238eb37e4f1f46f80a91ec8ed86399609c7d",
+    "checks": [
+      "Main Low, High and Balanced settings change only the galaxy sampler, preserve camera and clocks, and reuse one extension/capability query",
+      "Fullscreen Compose shares the main quality setting and keeps the cloud sampler and paused pixels unchanged",
+      "Changing sampling during an active viewpoint glide preserves its pose, progress, clocks, target framing and exact arrival; Pause freezes pixels",
+      "Phone and short landscape keep normal and fullscreen quality controls reachable without horizontal overflow",
+      "Reduced motion ends the glide at its current view while quality remains operable in system colors",
+      "Compose, Explore and Travel remain readable in system colors with a visible selected tab outline and unchanged paused camera"
+    ],
+    "sampling": [
+      {
+        "name": "initial-auto",
+        "quality": "auto",
+        "queries": [
+          {
+            "name": "EXT_texture_filter_anisotropic",
+            "available": true
+          }
+        ],
+        "maximumQueries": 1,
+        "maximum": 16,
+        "allocations": {
+          "Buffer": 2,
+          "Texture": 2,
+          "Program": 2
+        },
+        "deleted": {
+          "Buffer": 0,
+          "Texture": 0,
+          "Program": 0
+        },
+        "writes": [
+          {
+            "texture": 0,
+            "value": 4
+          }
+        ],
+        "galaxy": 4,
+        "cloud": 1,
+        "error": 0
+      },
+      {
+        "name": "main-low",
+        "quality": "low",
+        "queries": [
+          {
+            "name": "EXT_texture_filter_anisotropic",
+            "available": true
+          }
+        ],
+        "maximumQueries": 1,
+        "maximum": 16,
+        "allocations": {
+          "Buffer": 2,
+          "Texture": 2,
+          "Program": 2
+        },
+        "deleted": {
+          "Buffer": 0,
+          "Texture": 0,
+          "Program": 0
+        },
+        "writes": [
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          }
+        ],
+        "galaxy": 1,
+        "cloud": 1,
+        "error": 0
+      },
+      {
+        "name": "main-high",
+        "quality": "high",
+        "queries": [
+          {
+            "name": "EXT_texture_filter_anisotropic",
+            "available": true
+          }
+        ],
+        "maximumQueries": 1,
+        "maximum": 16,
+        "allocations": {
+          "Buffer": 2,
+          "Texture": 2,
+          "Program": 2
+        },
+        "deleted": {
+          "Buffer": 0,
+          "Texture": 0,
+          "Program": 0
+        },
+        "writes": [
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          }
+        ],
+        "galaxy": 4,
+        "cloud": 1,
+        "error": 0
+      },
+      {
+        "name": "main-auto",
+        "quality": "auto",
+        "queries": [
+          {
+            "name": "EXT_texture_filter_anisotropic",
+            "available": true
+          }
+        ],
+        "maximumQueries": 1,
+        "maximum": 16,
+        "allocations": {
+          "Buffer": 2,
+          "Texture": 2,
+          "Program": 2
+        },
+        "deleted": {
+          "Buffer": 0,
+          "Texture": 0,
+          "Program": 0
+        },
+        "writes": [
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          }
+        ],
+        "galaxy": 4,
+        "cloud": 1,
+        "error": 0
+      },
+      {
+        "name": "before-noop-settings",
+        "quality": "auto",
+        "queries": [
+          {
+            "name": "EXT_texture_filter_anisotropic",
+            "available": true
+          }
+        ],
+        "maximumQueries": 1,
+        "maximum": 16,
+        "allocations": {
+          "Buffer": 2,
+          "Texture": 2,
+          "Program": 2
+        },
+        "deleted": {
+          "Buffer": 0,
+          "Texture": 0,
+          "Program": 0
+        },
+        "writes": [
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          }
+        ],
+        "galaxy": 4,
+        "cloud": 1,
+        "error": 0
+      },
+      {
+        "name": "after-noop-settings",
+        "quality": "auto",
+        "queries": [
+          {
+            "name": "EXT_texture_filter_anisotropic",
+            "available": true
+          }
+        ],
+        "maximumQueries": 1,
+        "maximum": 16,
+        "allocations": {
+          "Buffer": 2,
+          "Texture": 2,
+          "Program": 2
+        },
+        "deleted": {
+          "Buffer": 0,
+          "Texture": 0,
+          "Program": 0
+        },
+        "writes": [
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          }
+        ],
+        "galaxy": 4,
+        "cloud": 1,
+        "error": 0
+      },
+      {
+        "name": "compose-low",
+        "quality": "low",
+        "queries": [
+          {
+            "name": "EXT_texture_filter_anisotropic",
+            "available": true
+          }
+        ],
+        "maximumQueries": 1,
+        "maximum": 16,
+        "allocations": {
+          "Buffer": 2,
+          "Texture": 2,
+          "Program": 2
+        },
+        "deleted": {
+          "Buffer": 0,
+          "Texture": 0,
+          "Program": 0
+        },
+        "writes": [
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          }
+        ],
+        "galaxy": 1,
+        "cloud": 1,
+        "error": 0
+      },
+      {
+        "name": "compose-high",
+        "quality": "high",
+        "queries": [
+          {
+            "name": "EXT_texture_filter_anisotropic",
+            "available": true
+          }
+        ],
+        "maximumQueries": 1,
+        "maximum": 16,
+        "allocations": {
+          "Buffer": 2,
+          "Texture": 2,
+          "Program": 2
+        },
+        "deleted": {
+          "Buffer": 0,
+          "Texture": 0,
+          "Program": 0
+        },
+        "writes": [
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          }
+        ],
+        "galaxy": 4,
+        "cloud": 1,
+        "error": 0
+      },
+      {
+        "name": "compose-auto",
+        "quality": "auto",
+        "queries": [
+          {
+            "name": "EXT_texture_filter_anisotropic",
+            "available": true
+          }
+        ],
+        "maximumQueries": 1,
+        "maximum": 16,
+        "allocations": {
+          "Buffer": 2,
+          "Texture": 2,
+          "Program": 2
+        },
+        "deleted": {
+          "Buffer": 0,
+          "Texture": 0,
+          "Program": 0
+        },
+        "writes": [
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          }
+        ],
+        "galaxy": 4,
+        "cloud": 1,
+        "error": 0
+      },
+      {
+        "name": "active-glide-low",
+        "quality": "low",
+        "queries": [
+          {
+            "name": "EXT_texture_filter_anisotropic",
+            "available": true
+          }
+        ],
+        "maximumQueries": 1,
+        "maximum": 16,
+        "allocations": {
+          "Buffer": 2,
+          "Texture": 2,
+          "Program": 2
+        },
+        "deleted": {
+          "Buffer": 0,
+          "Texture": 0,
+          "Program": 0
+        },
+        "writes": [
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          }
+        ],
+        "galaxy": 1,
+        "cloud": 1,
+        "error": 0
+      },
+      {
+        "name": "active-glide-high",
+        "quality": "high",
+        "queries": [
+          {
+            "name": "EXT_texture_filter_anisotropic",
+            "available": true
+          }
+        ],
+        "maximumQueries": 1,
+        "maximum": 16,
+        "allocations": {
+          "Buffer": 2,
+          "Texture": 2,
+          "Program": 2
+        },
+        "deleted": {
+          "Buffer": 0,
+          "Texture": 0,
+          "Program": 0
+        },
+        "writes": [
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          }
+        ],
+        "galaxy": 4,
+        "cloud": 1,
+        "error": 0
+      },
+      {
+        "name": "active-glide-auto",
+        "quality": "auto",
+        "queries": [
+          {
+            "name": "EXT_texture_filter_anisotropic",
+            "available": true
+          }
+        ],
+        "maximumQueries": 1,
+        "maximum": 16,
+        "allocations": {
+          "Buffer": 2,
+          "Texture": 2,
+          "Program": 2
+        },
+        "deleted": {
+          "Buffer": 0,
+          "Texture": 0,
+          "Program": 0
+        },
+        "writes": [
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          }
+        ],
+        "galaxy": 4,
+        "cloud": 1,
+        "error": 0
+      },
+      {
+        "name": "completed-glide",
+        "quality": "auto",
+        "queries": [
+          {
+            "name": "EXT_texture_filter_anisotropic",
+            "available": true
+          }
+        ],
+        "maximumQueries": 1,
+        "maximum": 16,
+        "allocations": {
+          "Buffer": 2,
+          "Texture": 2,
+          "Program": 2
+        },
+        "deleted": {
+          "Buffer": 0,
+          "Texture": 0,
+          "Program": 0
+        },
+        "writes": [
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          }
+        ],
+        "galaxy": 4,
+        "cloud": 1,
+        "error": 0
+      },
+      {
+        "name": "main-320",
+        "quality": "low",
+        "queries": [
+          {
+            "name": "EXT_texture_filter_anisotropic",
+            "available": true
+          }
+        ],
+        "maximumQueries": 1,
+        "maximum": 16,
+        "allocations": {
+          "Buffer": 2,
+          "Texture": 2,
+          "Program": 2
+        },
+        "deleted": {
+          "Buffer": 0,
+          "Texture": 0,
+          "Program": 0
+        },
+        "writes": [
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          }
+        ],
+        "galaxy": 1,
+        "cloud": 1,
+        "error": 0
+      },
+      {
+        "name": "compose-320",
+        "quality": "auto",
+        "queries": [
+          {
+            "name": "EXT_texture_filter_anisotropic",
+            "available": true
+          }
+        ],
+        "maximumQueries": 1,
+        "maximum": 16,
+        "allocations": {
+          "Buffer": 2,
+          "Texture": 2,
+          "Program": 2
+        },
+        "deleted": {
+          "Buffer": 0,
+          "Texture": 0,
+          "Program": 0
+        },
+        "writes": [
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          }
+        ],
+        "galaxy": 4,
+        "cloud": 1,
+        "error": 0
+      },
+      {
+        "name": "main-568",
+        "quality": "low",
+        "queries": [
+          {
+            "name": "EXT_texture_filter_anisotropic",
+            "available": true
+          }
+        ],
+        "maximumQueries": 1,
+        "maximum": 16,
+        "allocations": {
+          "Buffer": 2,
+          "Texture": 2,
+          "Program": 2
+        },
+        "deleted": {
+          "Buffer": 0,
+          "Texture": 0,
+          "Program": 0
+        },
+        "writes": [
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          }
+        ],
+        "galaxy": 1,
+        "cloud": 1,
+        "error": 0
+      },
+      {
+        "name": "compose-568",
+        "quality": "auto",
+        "queries": [
+          {
+            "name": "EXT_texture_filter_anisotropic",
+            "available": true
+          }
+        ],
+        "maximumQueries": 1,
+        "maximum": 16,
+        "allocations": {
+          "Buffer": 2,
+          "Texture": 2,
+          "Program": 2
+        },
+        "deleted": {
+          "Buffer": 0,
+          "Texture": 0,
+          "Program": 0
+        },
+        "writes": [
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          }
+        ],
+        "galaxy": 4,
+        "cloud": 1,
+        "error": 0
+      },
+      {
+        "name": "reduced-colors-low",
+        "quality": "low",
+        "queries": [
+          {
+            "name": "EXT_texture_filter_anisotropic",
+            "available": true
+          }
+        ],
+        "maximumQueries": 1,
+        "maximum": 16,
+        "allocations": {
+          "Buffer": 2,
+          "Texture": 2,
+          "Program": 2
+        },
+        "deleted": {
+          "Buffer": 0,
+          "Texture": 0,
+          "Program": 0
+        },
+        "writes": [
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          }
+        ],
+        "galaxy": 1,
+        "cloud": 1,
+        "error": 0
+      },
+      {
+        "name": "reduced-colors-auto",
+        "quality": "auto",
+        "queries": [
+          {
+            "name": "EXT_texture_filter_anisotropic",
+            "available": true
+          }
+        ],
+        "maximumQueries": 1,
+        "maximum": 16,
+        "allocations": {
+          "Buffer": 2,
+          "Texture": 2,
+          "Program": 2
+        },
+        "deleted": {
+          "Buffer": 0,
+          "Texture": 0,
+          "Program": 0
+        },
+        "writes": [
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          },
+          {
+            "texture": 0,
+            "value": 1
+          },
+          {
+            "texture": 0,
+            "value": 4
+          }
+        ],
+        "galaxy": 4,
+        "cloud": 1,
+        "error": 0
+      }
+    ],
+    "accessibility": [
+      {
+        "name": "main-rendering-settings",
+        "violations": []
+      },
+      {
+        "name": "compose-desktop",
+        "violations": []
+      },
+      {
+        "name": "main-320",
+        "violations": []
+      },
+      {
+        "name": "compose-320",
+        "violations": []
+      },
+      {
+        "name": "main-568",
+        "violations": []
+      },
+      {
+        "name": "compose-568",
+        "violations": []
+      },
+      {
+        "name": "compose-reduced-motion-colors",
+        "violations": []
+      },
+      {
+        "name": "explore-reduced-motion-colors",
+        "violations": []
+      },
+      {
+        "name": "travel-reduced-motion-colors",
+        "violations": []
+      }
+    ],
+    "captures": [
+      {
+        "name": "angle-compose-desktop",
+        "hash": "3e37c47b4ee5fa83fc43754dae12872bcee355457d64ba42c7ed5bffeee7e6d2"
+      },
+      {
+        "name": "angle-compose-320",
+        "hash": "b3891382e98324c58ba159d9d22b77df30cbc41acd18279ddd6ba97246db8a67"
+      },
+      {
+        "name": "angle-compose-568",
+        "hash": "ba110075c1edd058177f23d5bc116f321bf3cd4d2672b5b2dac30f25a1150bf1"
+      },
+      {
+        "name": "angle-compose-reduced-motion-colors",
+        "hash": "7b1d6adc9ea57e106c251893986061d54c22996ceaf585d3a55b942dd16374b9"
+      }
+    ],
+    "systemTabs": [
+      {
+        "section": "compose",
+        "width": 2,
+        "style": "solid",
+        "color": "rgb(55, 0, 110)",
+        "offset": "-4px"
+      },
+      {
+        "section": "explore",
+        "width": 2,
+        "style": "solid",
+        "color": "rgb(55, 0, 110)",
+        "offset": "-4px"
+      },
+      {
+        "section": "travel",
+        "width": 3,
+        "style": "solid",
+        "color": "rgb(0, 0, 0)",
+        "offset": "0px"
+      }
+    ],
+    "served": [
+      {
+        "path": "/stem_lab/stem_tool_universe.js",
+        "hash": "4fe5202b51d37e3b0bbed28cb7d12885ca53a17182fcd0ce5f4060eec0e3f7bb"
+      },
+      {
+        "path": "/stem_lab/universe_flight_scene.js",
+        "hash": "a8de9ef0c0dc7362dc1284917b106ff82072f3a6b4943d947a3c8de6354dadcf"
+      }
+    ],
+    "errors": [],
+    "forcedColors": {
+      "active": true,
+      "nodes": [
+        {
+          "selector": "#uf-inview-title",
+          "computed": {
+            "tag": "H3",
+            "id": "uf-inview-title",
+            "className": "",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgba(255, 255, 255, 0)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          "ancestors": [
+            {
+              "tag": "DIV",
+              "id": "",
+              "className": "uf-inview-heading",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgba(255, 255, 255, 0)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "SECTION",
+              "id": "uf-inview-controls",
+              "className": "uf-inview-controls",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "className": "uf-stage uf-flight-controls-open",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            }
+          ]
+        },
+        {
+          "selector": ".uf-inview-display > h4",
+          "computed": {
+            "tag": "H4",
+            "id": "",
+            "className": "",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgba(255, 255, 255, 0)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          "ancestors": [
+            {
+              "tag": "DIV",
+              "id": "",
+              "className": "uf-inview-display",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "DIV",
+              "id": "uf-inview-panel-compose",
+              "className": "uf-inview-panel",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgba(255, 255, 255, 0)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "DIV",
+              "id": "uf-inview-body",
+              "className": "uf-inview-body",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgba(255, 255, 255, 0)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "SECTION",
+              "id": "uf-inview-controls",
+              "className": "uf-inview-controls",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "className": "uf-stage uf-flight-controls-open",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            }
+          ]
+        },
+        {
+          "selector": "label[for=\"uf-inview-fov\"]",
+          "computed": {
+            "tag": "LABEL",
+            "id": "",
+            "className": "",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgba(255, 255, 255, 0)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          "ancestors": [
+            {
+              "tag": "DIV",
+              "id": "",
+              "className": "uf-inview-display",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "DIV",
+              "id": "uf-inview-panel-compose",
+              "className": "uf-inview-panel",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgba(255, 255, 255, 0)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "DIV",
+              "id": "uf-inview-body",
+              "className": "uf-inview-body",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgba(255, 255, 255, 0)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "SECTION",
+              "id": "uf-inview-controls",
+              "className": "uf-inview-controls",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "className": "uf-stage uf-flight-controls-open",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            }
+          ]
+        },
+        {
+          "selector": "label[for=\"uf-inview-exposure\"]",
+          "computed": {
+            "tag": "LABEL",
+            "id": "",
+            "className": "",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgba(255, 255, 255, 0)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          "ancestors": [
+            {
+              "tag": "DIV",
+              "id": "",
+              "className": "uf-inview-display",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "DIV",
+              "id": "uf-inview-panel-compose",
+              "className": "uf-inview-panel",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgba(255, 255, 255, 0)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "DIV",
+              "id": "uf-inview-body",
+              "className": "uf-inview-body",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgba(255, 255, 255, 0)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "SECTION",
+              "id": "uf-inview-controls",
+              "className": "uf-inview-controls",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "className": "uf-stage uf-flight-controls-open",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            }
+          ]
+        },
+        {
+          "selector": "label[for=\"uf-inview-quality\"]",
+          "computed": {
+            "tag": "LABEL",
+            "id": "",
+            "className": "",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgba(255, 255, 255, 0)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          "ancestors": [
+            {
+              "tag": "DIV",
+              "id": "",
+              "className": "uf-inview-display",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "DIV",
+              "id": "uf-inview-panel-compose",
+              "className": "uf-inview-panel",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgba(255, 255, 255, 0)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "DIV",
+              "id": "uf-inview-body",
+              "className": "uf-inview-body",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgba(255, 255, 255, 0)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "SECTION",
+              "id": "uf-inview-controls",
+              "className": "uf-inview-controls",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "className": "uf-stage uf-flight-controls-open",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            }
+          ]
+        },
+        {
+          "selector": "#uf-inview-quality",
+          "computed": {
+            "tag": "SELECT",
+            "id": "uf-inview-quality",
+            "className": "",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgb(255, 255, 255)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          "ancestors": [
+            {
+              "tag": "DIV",
+              "id": "",
+              "className": "uf-inview-display",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "DIV",
+              "id": "uf-inview-panel-compose",
+              "className": "uf-inview-panel",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgba(255, 255, 255, 0)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "DIV",
+              "id": "uf-inview-body",
+              "className": "uf-inview-body",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgba(255, 255, 255, 0)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "SECTION",
+              "id": "uf-inview-controls",
+              "className": "uf-inview-controls",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "className": "uf-stage uf-flight-controls-open",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            }
+          ]
+        },
+        {
+          "selector": ".uf-inview-display > .uf-note",
+          "computed": {
+            "tag": "P",
+            "id": "",
+            "className": "uf-note",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgba(255, 255, 255, 0)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          "ancestors": [
+            {
+              "tag": "DIV",
+              "id": "",
+              "className": "uf-inview-display",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "DIV",
+              "id": "uf-inview-panel-compose",
+              "className": "uf-inview-panel",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgba(255, 255, 255, 0)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "DIV",
+              "id": "uf-inview-body",
+              "className": "uf-inview-body",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgba(255, 255, 255, 0)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "SECTION",
+              "id": "uf-inview-controls",
+              "className": "uf-inview-controls",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "className": "uf-stage uf-flight-controls-open",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            }
+          ]
+        },
+        {
+          "selector": ".uf-composition-controls > h4",
+          "computed": {
+            "tag": "H4",
+            "id": "",
+            "className": "",
+            "color": "rgb(0, 0, 0)",
+            "backgroundColor": "rgba(255, 255, 255, 0)",
+            "backgroundImage": "none",
+            "forcedColorAdjust": "auto",
+            "opacity": "1"
+          },
+          "ancestors": [
+            {
+              "tag": "DIV",
+              "id": "",
+              "className": "uf-composition-controls",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "DIV",
+              "id": "uf-inview-panel-compose",
+              "className": "uf-inview-panel",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgba(255, 255, 255, 0)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "DIV",
+              "id": "uf-inview-body",
+              "className": "uf-inview-body",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgba(255, 255, 255, 0)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "SECTION",
+              "id": "uf-inview-controls",
+              "className": "uf-inview-controls",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "className": "uf-stage uf-flight-controls-open",
+              "color": "rgb(0, 0, 0)",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "backgroundImage": "none",
+              "forcedColorAdjust": "auto",
+              "opacity": "1"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "previews": {
+    "completed": true,
+    "views": [
+      {
+        "file": "halo-arm.webp",
+        "imageIdentical": false,
+        "snapshotIdentical": true,
+        "hash": "073c13cc404d3784838b7b0aaf318875f1f86adfa66a9f5dfe67888167ff6010"
+      },
+      {
+        "file": "halo-cluster.webp",
+        "imageIdentical": false,
+        "snapshotIdentical": true,
+        "hash": "a6d606cb37f37aea7cd0aff5292ad0808ba6b4eba4e7bfd24bf9403306e63271"
+      },
+      {
+        "file": "halo-panorama.webp",
+        "imageIdentical": false,
+        "snapshotIdentical": true,
+        "hash": "d80e61b302b54dd8262ccf370ac831feed436972626ee07f4c4f5b986056b8b2"
+      },
+      {
+        "file": "nebula-approach.webp",
+        "imageIdentical": true,
+        "snapshotIdentical": true,
+        "hash": "13e82041d9392bb5ace94ac4762bbc23207222ebe220684c782a87a223ff79d7"
+      },
+      {
+        "file": "nebula-filaments.webp",
+        "imageIdentical": true,
+        "snapshotIdentical": true,
+        "hash": "60e3239fa07f5590094e54716dfdb9056f19be1eacf899f6913dd71d835fda77"
+      },
+      {
+        "file": "nebula-violet.webp",
+        "imageIdentical": true,
+        "snapshotIdentical": true,
+        "hash": "aebe969efa05300fadff4b93bdab049065e92ed9adc46723d0922644dfd26225"
+      },
+      {
+        "file": "group-spiral.webp",
+        "imageIdentical": false,
+        "snapshotIdentical": true,
+        "hash": "d03338f3e8aca7a01636f8a44025636acd3fb0392637deb5d96de0e3dde87721"
+      },
+      {
+        "file": "group-elliptical.webp",
+        "imageIdentical": false,
+        "snapshotIdentical": true,
+        "hash": "d16e0f66549b876f3916af31fe4294c39e96f85f63316802123b5a62927eb13b"
+      },
+      {
+        "file": "group-panorama.webp",
+        "imageIdentical": false,
+        "snapshotIdentical": true,
+        "hash": "e765fd7d6483df7ddccca83ff009738b9cb3af649acf7507c7e0fae6a5499ad8"
+      },
+      {
+        "file": "stellar-amber.webp",
+        "imageIdentical": true,
+        "snapshotIdentical": true,
+        "hash": "b9dd5c00603e4287f3f05c406f9f098334526c929fb1e9e34e92638887f937f9"
+      },
+      {
+        "file": "stellar-blue.webp",
+        "imageIdentical": true,
+        "snapshotIdentical": true,
+        "hash": "ea9400fc71a91bd5a909a2462b1379c2557994251ce77cc77c8b7180020e921e"
+      },
+      {
+        "file": "stellar-pale.webp",
+        "imageIdentical": true,
+        "snapshotIdentical": true,
+        "hash": "7a72973e20e9b8eb1fcc1e84522d16d403ce4d7e5007b5ad06e5cff7ac73e16d"
+      }
+    ],
+    "unchangedImages": 6,
+    "unchangedPoses": 12,
+    "rendererHash": "a8de9ef0c0dc7362dc1284917b106ff82072f3a6b4943d947a3c8de6354dadcf"
+  },
+  "invariants": {
+    "sceneGenerationMathAndShaderPrefixUnchanged": true,
+    "uiChangeOnlyExplicitForcedColorsPalette": true,
+    "runtimeMirrorsIdentical": true,
+    "atlasBytesAndPointPopulationsUnchanged": true,
+    "allocationsPerScene": {
+      "textures": 2,
+      "buffers": 2,
+      "programs": 2
+    },
+    "syntaxPassed": true,
+    "scopedDiffCheckPassed": true
+  },
+  "files": {
+    "stem_lab/universe_flight_scene.js": "a8de9ef0c0dc7362dc1284917b106ff82072f3a6b4943d947a3c8de6354dadcf",
+    "desktop/web-app/public/stem_lab/universe_flight_scene.js": "a8de9ef0c0dc7362dc1284917b106ff82072f3a6b4943d947a3c8de6354dadcf",
+    "stem_lab/stem_tool_universe.js": "4fe5202b51d37e3b0bbed28cb7d12885ca53a17182fcd0ce5f4060eec0e3f7bb",
+    "desktop/web-app/public/stem_lab/stem_tool_universe.js": "4fe5202b51d37e3b0bbed28cb7d12885ca53a17182fcd0ce5f4060eec0e3f7bb",
+    "tests/universe_flight_texture_filtering.test.js": "b30d866b3ed12150dac69e9669de3ac4d588f9a30eb235e42978f52182594293",
+    "dev-tools/universe_flight_angle_detail_check.cjs": "e50a8e6b6acd32860530aada5800f453533722208b8525df9ab03a131d134bdf",
+    "dev-tools/universe_flight_angle_controls_check.cjs": "961d9e19b973ddf66c6baf4057a9238eb37e4f1f46f80a91ec8ed86399609c7d",
+    "dev-tools/build_universe_flight_previews.cjs": "43ded0bbe453ded9a65effb50c5cdd781ca0a137c87d9786881383a10af06b57",
+    "reports/universe-flight-2026-09-29/README.md": "fe1e0810be6478b5c942001d3ff475f94768ca1185a553e2e1480669220b96a6",
+    "reports/universe-flight-2026-09-29/angle-detail/README.md": "fff48bf8213a9e305f4ea569790f01a5889f719c404b2976e5dfebad1ac90044",
+    "reports/universe-flight-2026-09-29/angle-detail/baseline-renderer.js": "1bc026596a0244f335a5ef69bdcc1d2fc4aa1d5b1f17033cad72eadb307e1f21",
+    "reports/universe-flight-2026-09-29/angle-detail/baseline-manifest.json": "017f08e71efddb0f19bed7708afc9658c2815f1a1dc180fc1a56edb65a38a4bc",
+    "reports/universe-flight-2026-09-29/angle-detail/baseline-ui.js": "98cce7fbc3bdebe424f8cdac77e871e001267d568e3ebe8c9904cb3a6f5e2959",
+    "reports/universe-flight-2026-09-29/angle-detail/unit-tests.json": "4472018f30ff5bb4c4cb993bf29af1bc083bc04c5abe5bdb6609a419885c0ae2",
+    "reports/universe-flight-2026-09-29/angle-detail/texture-tests.json": "63d119025ed074b6f4c5e732919316919acd5a457d7fd91bedd6ff5fef5956b7",
+    "reports/universe-flight-2026-09-29/angle-detail/native-check.json": "2e9936f82bbf5f825c7e2335b95d144198e644791c6185c8be8feba779f63dec",
+    "reports/universe-flight-2026-09-29/angle-detail/controls/browser-check.json": "db2b845603fb696d5610a479947cd62d3c2d0bc396d318df6853e4e1fa93769c",
+    "stem_lab/assets/universe-flight/highlights/manifest.json": "938c2d86268240a14d7ee156bd8b5d95d3581974702ecbbf12e8da12465ee069",
+    "desktop/web-app/public/stem_lab/assets/universe-flight/highlights/manifest.json": "938c2d86268240a14d7ee156bd8b5d95d3581974702ecbbf12e8da12465ee069"
+  }
+}

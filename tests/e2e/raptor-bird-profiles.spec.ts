@@ -1,0 +1,132 @@
+import {test,expect} from '@playwright/test';
+import {mkdirSync,readFileSync} from 'node:fs';
+import {resolve} from 'node:path';
+import {GlHarness} from './helpers/stem_gl_harness';
+import {previousBirdProfilesFactory} from '../fixtures/raptor-bird-profiles-before.cjs';
+
+test.use({video:'off'});
+const output=process.env.RAPTOR_BIRD_SCREENSHOTS||resolve('scratch/raptor-bird-profile-review');
+const source=readFileSync('stem_lab/stem_tool_raptorhunt.js','utf8');
+function body(text:string,name:string){const start=text.indexOf('function '+name+'(');if(start<0)throw Error(name);let end=text.indexOf('{',start),depth=1;while(depth){end++;if(text[end]==='{')depth++;if(text[end]==='}')depth--;}return text.slice(start,end+1);}
+const builderNames=['preyBirdPalette','createPreyBirdBodyGeometry','createPreyWingGeometry','createPreyTailGeometry','preyKindFor','buildPreyVisual','advancePreyVisualPose'];
+const factory=(text:string)=>`(()=>{${builderNames.map(name=>body(text,name)).join('\n')}return {build:buildPreyVisual,advance:advancePreyVisualPose};})()`;
+const probes=`window.AlloPostFXEnabled=false;window.birdReview=${factory(source)};window.birdBaseline=${previousBirdProfilesFactory};(()=>{const Original=THREE.WebGLRenderer;THREE.WebGLRenderer=function(options){const r=new Original({...options,preserveDrawingBuffer:true}),render=r.render.bind(r);window.birdRenderer=r;r.render=function(scene,camera){window.birdScene=scene;window.birdCamera=camera;if(!window.skipBirdRender)return render(scene,camera);};return r;};})();`;
+
+test.describe('Raptor bird prey construction profiles',()=>{
+  test.describe.configure({timeout:300000,retries:0});
+  const harness=new GlHarness({toolFile:'stem_lab/stem_tool_raptorhunt.js',toolId:'raptorHunt',width:880,height:620,appStyles:true,probes});
+  test.beforeAll(async()=>{mkdirSync(output,{recursive:true});await harness.start();});
+  test.afterAll(async()=>{await harness.stop();});
+  test.afterEach(async({page})=>{await harness.destroy(page);});
+  test.beforeEach(async({page})=>{
+    await page.setViewportSize({width:1060,height:2250});
+    await page.addInitScript(()=>{
+      let time=1000,id=1,seed=731;const frames=new Map<number,FrameRequestCallback>();
+      Math.random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};performance.now=()=>time;
+      window.requestAnimationFrame=cb=>{const next=id++;frames.set(next,cb);return next;};window.cancelAnimationFrame=key=>{frames.delete(key);};
+      (window as any).stepBirds=(ms:number)=>{time+=ms;const pending=[...frames.values()];frames.clear();pending.forEach(cb=>cb(time));};
+    });
+  });
+  const mount=async(page:any,species='peregrine',quality='balanced')=>harness.mount(page,{raptorHunt:{activeSection:'hunt',selectedSpecies:species,activeMission:'open',flightSession:{speciesId:species,missionId:'open'},huntTutorialDismissed:true,graphicsQuality:quality,focusSlowmo:false}},"document.querySelector('[data-raptor-canvas]')?._rhSnapshot");
+  function recordErrors(page:any){const errors:string[]=[];page.on('pageerror',(e:any)=>errors.push(e.message));page.on('console',(m:any)=>{if(m.type()==='error'&&/shader|WebGL|GL_INVALID/i.test(m.text()))errors.push(m.text());});return errors;}
+
+  test('compares all nine previous and refined birds in consistently fitted rest or flight poses',async({page},testInfo)=>{
+    const errors=recordErrors(page);await mount(page);await page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhCommand('pause'));
+    const study=await page.evaluate(()=>{
+      const w=window as any,T=w.THREE,width=1000,rowHeight=240,height=9*rowHeight;
+      const panel=document.createElement('section');panel.id='bird-profile-study';panel.style.cssText=`position:fixed;left:16px;top:16px;width:${width}px;height:${height}px;z-index:99999;border:1px solid #537080;border-radius:12px;overflow:hidden;background:#172b35`;document.body.appendChild(panel);
+      const renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(1);renderer.setSize(width,height);renderer.outputEncoding=T.sRGBEncoding;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1;renderer.setScissorTest(true);panel.appendChild(renderer.domElement);
+      const rows=[{id:'pigeon',label:'Pigeon',flight:true},{id:'mourningDove',label:'Mourning dove',flight:false},{id:'songbird',label:'Songbird',flight:false},{id:'shorebird',label:'Shorebird',flight:true},{id:'duck',label:'Mallard',flight:true},{id:'waterfowl',label:'Waterfowl',flight:true},{id:'grouse',label:'Ruffed grouse',flight:true},{id:'ptarmigan',label:'Ptarmigan',flight:false},{id:'smallOwl',label:'Screech owl',flight:false}];
+      const evidence:any[]=[],projectedCorners:any[]=[],scenes:any[]=[];
+      rows.forEach((row,r)=>{
+        const models=[w.birdBaseline.build({id:row.id,color:0x9ca3af},1.8),w.birdReview.build({id:row.id,color:0x9ca3af},1.8)],bounds=new T.Box3();
+        models.forEach((model:any,col:number)=>{
+          if(row.flight){const api=col?w.birdReview:w.birdBaseline;for(let i=0;i<120;i++)api.advance(model.pose,0,1,2.5,i*1000/60,.7,false,1/60,false);model.wings.forEach((wing:any,i:number)=>{const side=i===0?-1:1;wing.rotation.y=side*1.15*(1-model.pose.spread);wing.rotation.z=side*.10;wing.scale.x=.3+.7*model.pose.spread;});}
+          model.tail.rotation.set(0,0,0);model.root.updateMatrixWorld(true);bounds.union(new T.Box3().setFromObject(model.root));
+        });
+        const center=bounds.getCenter(new T.Vector3()),radius=bounds.getSize(new T.Vector3()).length()*.5,camera=new T.PerspectiveCamera(30,500/rowHeight,.05,100),verticalHalf=30*Math.PI/360,horizontalHalf=Math.atan(Math.tan(verticalHalf)*camera.aspect),direction=new T.Vector3(5,1.5,1.2).normalize(),corners:any[]=[];
+        for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z])corners.push(new T.Vector3(x,y,z));
+        const place=(distance:number)=>{camera.position.copy(center).addScaledVector(direction,distance);camera.lookAt(center);camera.updateMatrixWorld(true);};
+        // Fit both historical and current complete models, leaving space for the row label.
+        let near=radius+.05,far=radius/Math.sin(Math.min(verticalHalf,horizontalHalf))*1.6;
+        for(let fit=0;fit<24;fit++){const distance=(near+far)*.5;place(distance);const fits=corners.every((corner:any)=>{const ndc=corner.clone().project(camera);return Math.abs(ndc.x)<.84&&Math.abs(ndc.y)<.74&&ndc.z>-1&&ndc.z<1;});if(fits)far=distance;else near=distance;}place(far*1.01);
+        for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z])projectedCorners.push({id:row.id,ndc:new T.Vector3(x,y,z).project(camera).toArray()});
+        models.forEach((model:any,col:number)=>{
+          const scene=new T.Scene();scene.background=new T.Color(0x172b35);scene.add(new T.HemisphereLight(0xe3f2ff,0x776a54,.85));const key=new T.DirectionalLight(0xffe4c2,1.35);key.position.set(4,5,5);scene.add(key);const rim=new T.DirectionalLight(0x9dcfff,.55);rim.position.set(-3,3,-3);scene.add(rim);scene.add(model.root);scenes.push(scene);
+          renderer.setViewport(col*500,(8-r)*rowHeight,500,rowHeight);renderer.setScissor(col*500,(8-r)*rowHeight,500,rowHeight);renderer.render(scene,camera);
+          const ids:any[]=[];model.root.traverse((o:any)=>{if(o.isMesh)ids.push([o.geometry.uuid,o.material.uuid]);});const head=model.root.getObjectByName('prey-plumage-head');
+          model.body.geometry.computeBoundingBox();
+          evidence.push({id:row.id,version:col?'refined':'previous',pose:row.flight?'flight':'rest',meshes:ids.length,materials:new Set(ids.map(v=>v[1])).size,calls:renderer.info.render.calls,textures:renderer.info.memory.textures,bodyScale:model.body.scale.toArray(),bodyDimensions:model.body.geometry.boundingBox.getSize(new T.Vector3()).toArray(),headScale:head.scale.toArray(),wingVertices:model.wings.map((wing:any)=>wing.geometry.attributes.position.count),tailVertices:model.tail.geometry.attributes.position.count,bounds:bounds.getSize(new T.Vector3()).toArray()});
+          const label=document.createElement('div');label.textContent=(col?'REFINED':'PREVIOUS')+' · '+row.label+' · '+(row.flight?'FLIGHT':'REST');label.style.cssText=`position:absolute;left:${col*500+12}px;top:${r*rowHeight+rowHeight-28}px;width:476px;padding:5px 0;border-radius:6px;background:rgba(9,24,34,.9);text-align:center;color:#e5ece8;font:600 11px system-ui;letter-spacing:.025em`;panel.appendChild(label);
+        });
+      });
+      w.closeBirdStudy=()=>{const resources=new Set<any>();scenes.forEach(scene=>scene.traverse((o:any)=>{if(o.geometry)resources.add(o.geometry);if(o.material)resources.add(o.material);}));resources.forEach(o=>o.dispose());renderer.dispose();panel.remove();};return {evidence,projectedCorners};
+    });
+    for(const corner of study.projectedCorners){expect(Math.abs(corner.ndc[0]),corner.id+' horizontal fit').toBeLessThan(.9);expect(Math.abs(corner.ndc[1]),corner.id+' vertical fit').toBeLessThan(.9);}
+    expect(study.evidence).toHaveLength(18);for(const bird of study.evidence){expect(bird.meshes).toBe(5);expect(bird.materials).toBe(4);expect(bird.calls).toBe(5);expect(bird.textures).toBe(0);expect(bird.wingVertices).toEqual([45,45]);expect(bird.tailVertices).toBe(bird.version==='refined'?19:10);}
+    const refined=study.evidence.filter((bird:any)=>bird.version==='refined');expect(new Set(refined.map((bird:any)=>JSON.stringify(bird.bodyDimensions))).size).toBe(9);expect(new Set(refined.map((bird:any)=>JSON.stringify(bird.headScale))).size).toBe(9);
+    await page.locator('#bird-profile-study').screenshot({path:resolve(output,'bird-profiles-before-after.png'),timeout:90000});await testInfo.attach('bird-profile-study',{body:JSON.stringify(study),contentType:'application/json'});await page.evaluate(()=>(window as any).closeBirdStudy());expect(errors).toEqual([]);
+  });
+
+  for(const model of [{label:'shorebird-day-desktop',id:'shorebird',species:'peregrine',width:880,quality:'high',phase:.44},{label:'dove-night-mobile',id:'mourningDove',species:'coopersHawk',width:320,quality:'low',phase:.93}])
+  test(`keeps ${model.label} resources and poses stable through pause, reduced motion and native catch`,async({page},testInfo)=>{
+    const errors=recordErrors(page);if(model.width===320)await page.setViewportSize({width:360,height:1100});
+    try{await mount(page,model.species,model.quality);}catch(error){await testInfo.attach('mount-diagnostics',{body:JSON.stringify({errors,events:await page.evaluate(()=>(window as any).__events?.errors||[]).catch(()=>['Page unavailable'])}),contentType:'application/json'});throw error;}
+    if(model.width===320)await page.addStyleTag({content:'#wrap{width:320px}'});
+    const canvas=page.locator('[data-raptor-canvas]'),stage=page.locator('[data-raptor-flight-stage]');
+    await expect.poll(()=>canvas.evaluate((c:any)=>{const w=window as any,v=w.birdRenderer.getSize(new w.THREE.Vector2());return Math.abs(v.x-c.clientWidth)<2&&Math.abs(v.y-c.clientHeight)<2;})).toBe(true);
+    const review=await canvas.evaluate((c:any,setup)=>{
+      const w=window as any,T=w.THREE;c._rhCommand('environment',{windSpeed:0,dayPhase:setup.phase,cloudCover:.18});w.skipBirdRender=true;w.stepBirds(25);
+      const scene=w.birdScene,roots=scene.children.filter((o:any)=>o.children.some((child:any)=>child.name.startsWith('prey-'))),birds=roots.filter((o:any)=>o.children.some((child:any)=>child.name.startsWith('prey-bird-'))),chosen=birds.find((o:any)=>o.getObjectByName('prey-bird-'+setup.id))||birds[0];
+      if(!chosen)throw Error('Seeded '+setup.species+' session has no native bird prey');
+      const visual=chosen.children.find((o:any)=>o.name.startsWith('prey-bird-')),body=visual.getObjectByName('prey-plumage-body'),head=visual.getObjectByName('prey-plumage-head'),wings=visual.children.filter((o:any)=>o.name==='prey-tapered-wing'),tail=visual.children.find((o:any)=>o.isMesh&&o!==body&&o!==head&&!wings.includes(o));
+      if(!body||!head||wings.length!==2||!tail)throw Error('Bird detail meshes missing');const actualId=visual.name.slice('prey-bird-'.length),labels:any={pigeon:'Pigeon',mourningDove:'Mourning Dove',songbird:'Songbird',shorebird:'Shorebird',duck:'Mallard',waterfowl:'Waterfowl',grouse:'Ruffed Grouse',ptarmigan:'Ptarmigan',smallOwl:'Screech Owl'};
+      w.birdChosen=chosen;w.birdRoots=roots;w.birdVisual=visual;w.birdWings=wings;w.birdTail=tail;w.birdDisposed=[];w.birdIndex=roots.indexOf(chosen);w.birdActualId=actualId;
+      w.birdIdentity=()=>{const ids:any[]=[];visual.traverse((o:any)=>{if(o.isMesh)ids.push([o.geometry.uuid,o.material.uuid]);});return ids;};
+      w.birdActual=()=>({wings:wings.map((wing:any)=>({rotation:[wing.rotation.x,wing.rotation.y,wing.rotation.z],scale:wing.scale.toArray()})),tailRotation:[tail.rotation.x,tail.rotation.y,tail.rotation.z],visualY:visual.position.y});
+      w.birdAttributes=()=>{const attrs:any[]=[];visual.traverse((o:any)=>{if(o.geometry){const g=o.geometry;Object.keys(g.attributes).filter(name=>!/^morph(Target|Normal)\d+$/.test(name)).sort().forEach(name=>attrs.push({name:g.uuid+'/'+name,attribute:g.attributes[name]}));Object.keys(g.morphAttributes).sort().forEach(name=>g.morphAttributes[name].forEach((attribute:any,i:number)=>attrs.push({name:g.uuid+'/morph/'+name+'/'+i,attribute})));if(g.index)attrs.push({name:g.uuid+'/index',attribute:g.index});}});return attrs;};
+      w.birdBuffers=w.birdAttributes().map((entry:any)=>({...entry,array:entry.attribute.array,version:entry.attribute.version}));visual.traverse((o:any)=>{if(o.geometry)o.geometry.addEventListener('dispose',()=>w.birdDisposed.push(o.geometry.uuid));});
+      w.birdBufferIdentity=()=>{const now=w.birdAttributes();return now.length===w.birdBuffers.length&&now.every((entry:any,i:number)=>entry.name===w.birdBuffers[i].name&&entry.attribute===w.birdBuffers[i].attribute&&entry.attribute.array===w.birdBuffers[i].array&&entry.attribute.version===w.birdBuffers[i].version);};
+      // Relocate the real native prey, retaining its model, species, velocity and escape behavior.
+      const first=c._rhSnapshot(),p=first.raptorPosition,h=first.headingRadians;chosen.position.set(p.x+Math.sin(h)*20,p.y,p.z-Math.cos(h)*20);const firstPose=first.preyVisualPoses[w.birdIndex];for(let i=0;i<40;i++)w.stepBirds(25);const after=c._rhSnapshot();
+      const movement={first:firstPose,after:after.preyVisualPoses[w.birdIndex],motionDelta:after.motionTimeMs-first.motionTimeMs};
+      w.flightBirdCamera=w.birdCamera.clone();c._rhCommand('scenic',true);
+      // Skipped renders leave parent matrices stale in r128; frame the current native world pose.
+      chosen.updateWorldMatrix(true,true);scene.updateMatrixWorld(true);
+      const box=new T.Box3().setFromObject(visual),radius=box.getSize(new T.Vector3()).length()*.5,camera=w.birdCamera,verticalHalf=camera.fov*Math.PI/360,horizontalHalf=Math.atan(Math.tan(verticalHalf)*camera.aspect),distance=Math.max(2,radius/Math.sin(Math.min(verticalHalf,horizontalHalf))*1.2),center=box.getCenter(new T.Vector3()),heading=visual.rotation.y;
+      const offset=new T.Vector3(Math.cos(heading)*1.2+Math.sin(heading)*.35,.75,-Math.sin(heading)*1.2+Math.cos(heading)*.35).normalize().multiplyScalar(distance);camera.position.copy(center).add(offset);camera.lookAt(center);camera.updateMatrixWorld(true);w.skipBirdRender=false;w.birdRenderer.render(scene,camera);
+      const projectedCenter=center.clone().project(camera).toArray(),rootVisible=chosen.visible,visualVisible=visual.visible,gl=w.birdRenderer.getContext(),pixelCount=gl.drawingBufferWidth*gl.drawingBufferHeight,withPrey=new Uint8Array(pixelCount*4),repeat=new Uint8Array(pixelCount*4),withoutPrey=new Uint8Array(pixelCount*4);
+      gl.readPixels(0,0,gl.drawingBufferWidth,gl.drawingBufferHeight,gl.RGBA,gl.UNSIGNED_BYTE,withPrey);w.birdRenderer.render(scene,camera);gl.readPixels(0,0,gl.drawingBufferWidth,gl.drawingBufferHeight,gl.RGBA,gl.UNSIGNED_BYTE,repeat);
+      visual.visible=false;w.birdRenderer.render(scene,camera);gl.readPixels(0,0,gl.drawingBufferWidth,gl.drawingBufferHeight,gl.RGBA,gl.UNSIGNED_BYTE,withoutPrey);visual.visible=visualVisible;w.birdRenderer.render(scene,camera);
+      let visibleModelPixels=0,repeatNoisePixels=0;for(let i=0;i<withPrey.length;i+=4){if(Math.abs(withPrey[i]-withoutPrey[i])+Math.abs(withPrey[i+1]-withoutPrey[i+1])+Math.abs(withPrey[i+2]-withoutPrey[i+2])>20)visibleModelPixels++;if(Math.abs(withPrey[i]-repeat[i])+Math.abs(withPrey[i+1]-repeat[i+1])+Math.abs(withPrey[i+2]-repeat[i+2])>20)repeatNoisePixels++;}
+      return {actualId,expectedLabel:labels[actualId],preferredId:setup.id,preferredAvailable:birds.some((o:any)=>o.getObjectByName('prey-bird-'+setup.id)),movement,identity:w.birdIdentity(),sameBuffers:w.birdBufferIdentity(),actual:w.birdActual(),bufferCount:w.birdBuffers.length,wingVertices:wings.map((wing:any)=>wing.geometry.attributes.position.count),tailVertices:tail.geometry.attributes.position.count,framing:{rootVisible,visualVisible,projectedCenter,visibleModelPixels,repeatNoisePixels}};
+    },model);
+    expect(review.identity).toHaveLength(5);expect(new Set(review.identity.map((v:any)=>v[0])).size).toBe(5);expect(new Set(review.identity.map((v:any)=>v[1])).size).toBe(4);expect(review.sameBuffers).toBe(true);expect(review.bufferCount).toBeGreaterThan(12);expect(review.wingVertices).toEqual([45,45]);expect(review.tailVertices).toBe(19);if(review.preferredAvailable)expect(review.actualId).toBe(review.preferredId);expect(review.movement.motionDelta).toBeGreaterThan(0);expect(review.movement.after.kind).toBe('bird');expect(review.movement.after.phase).toBeGreaterThan(review.movement.first.phase);expect(review.movement.after.spread).toBeGreaterThan(.1);
+    expect(review.framing.rootVisible).toBe(true);expect(review.framing.visualVisible).toBe(true);expect(Math.abs(review.framing.projectedCenter[0])).toBeLessThan(.01);expect(Math.abs(review.framing.projectedCenter[1])).toBeLessThan(.01);expect(review.framing.projectedCenter[2]).toBeGreaterThan(-1);expect(review.framing.projectedCenter[2]).toBeLessThan(1);expect(review.framing.visibleModelPixels).toBeGreaterThan(Math.max(100,review.framing.repeatNoisePixels*5+100));
+    await stage.screenshot({path:resolve(output,model.label+'-native-'+review.actualId+'-flight.png'),timeout:90000});
+
+    const paused=await canvas.evaluate((c:any)=>{const w=window as any;c._rhCommand('pause');const before=c._rhSnapshot(),actual=w.birdActual();w.skipBirdRender=true;w.stepBirds(60000);const after=c._rhSnapshot();return {before:before.preyVisualPoses,after:after.preyVisualPoses,beforeTime:before.motionTimeMs,afterTime:after.motionTimeMs,actual,afterActual:w.birdActual(),sameBuffers:w.birdBufferIdentity()};});
+    expect(typeof paused.beforeTime).toBe('number');expect(Number.isFinite(paused.beforeTime)).toBe(true);expect(paused.afterTime).toBe(paused.beforeTime);expect(paused.after).toEqual(paused.before);expect(paused.afterActual).toEqual(paused.actual);expect(paused.sameBuffers).toBe(true);
+    await page.emulateMedia({reducedMotion:'reduce'});await expect.poll(()=>canvas.evaluate((c:any)=>c._rhSnapshot().reducedMotion)).toBe(true);
+    const quiet=await canvas.evaluate((c:any)=>{const w=window as any,rest=c._rhSnapshot(),actual=w.birdActual();w.stepBirds(25);const whilePaused=c._rhSnapshot();c._rhCommand('pause');for(let i=0;i<20;i++)w.stepBirds(25);return {rest:rest.preyVisualPoses,restTime:rest.motionTimeMs,pausedTime:whilePaused.motionTimeMs,whilePaused:whilePaused.preyVisualPoses,after:c._rhSnapshot().preyVisualPoses,actual,afterActual:w.birdActual(),chosenIndex:w.birdIndex,sameBuffers:w.birdBufferIdentity(),identity:w.birdIdentity()};});
+    expect(quiet.rest.map((p:any)=>p.phase)).toEqual(paused.before.map((p:any)=>p.phase));expect(quiet.whilePaused).toEqual(quiet.rest);expect(quiet.pausedTime).toBe(quiet.restTime);expect(quiet.after.map((p:any)=>p.phase)).toEqual(quiet.rest.map((p:any)=>p.phase));
+    for(const pose of quiet.rest.concat(quiet.after).filter((p:any)=>p.kind==='bird')){expect(Math.abs(pose.bank)).toBe(0);expect(pose.wingAngle).toBe(.08);expect(pose.motionBlend).toBe(0);}
+    for(const [actual,pose] of [[quiet.actual,quiet.rest[quiet.chosenIndex]],[quiet.afterActual,quiet.after[quiet.chosenIndex]]]){expect(actual.tailRotation.map(Math.abs)).toEqual([0,0,0]);if(review.actualId!=='duck'&&review.actualId!=='waterfowl')expect(Math.abs(actual.visualY)).toBe(0);actual.wings.forEach((wing:any,i:number)=>{const side=i===0?-1:1;expect(wing.rotation[0]).toBe(0);expect(wing.rotation[1]).toBeCloseTo(side*1.15*(1-pose.spread),8);expect(wing.rotation[2]).toBe(side*.08);expect(wing.scale).toEqual([.3+.7*pose.spread,1,1]);});}
+    expect(quiet.sameBuffers).toBe(true);expect(quiet.identity).toEqual(review.identity);
+    await page.emulateMedia({reducedMotion:'no-preference'});await expect.poll(()=>canvas.evaluate((c:any)=>c._rhSnapshot().reducedMotion)).toBe(false);
+    const resumed=await canvas.evaluate((c:any)=>{const w=window as any,before=c._rhSnapshot().preyVisualPoses[w.birdIndex];w.stepBirds(25);return {before,after:c._rhSnapshot().preyVisualPoses[w.birdIndex],actual:w.birdActual(),sameBuffers:w.birdBufferIdentity()};});
+    expect(resumed.after.phase).toBeGreaterThan(resumed.before.phase);expect(resumed.after.phase-resumed.before.phase).toBeLessThan(.5);expect(resumed.before.motionBlend).toBe(0);expect(resumed.after.motionBlend).toBeGreaterThan(0);expect(resumed.after.motionBlend).toBeLessThan(.25);resumed.actual.wings.forEach((wing:any,i:number)=>expect(Math.abs(wing.rotation[2]-quiet.afterActual.wings[i].rotation[2])).toBeLessThan(.14));expect(resumed.sameBuffers).toBe(true);expect(resumed.actual.tailRotation.every((v:number)=>Number.isFinite(v)&&Math.abs(v)<=.06)).toBe(true);
+
+    const caught=await canvas.evaluate((c:any)=>{
+      const w=window as any;for(let i=0;i<20;i++)w.stepBirds(25);const before=c._rhSnapshot(),identity=w.birdIdentity(),preCatch=w.birdActual();w.birdCamera.copy(w.flightBirdCamera);c._rhCommand('scenic',false);const p=before.raptorPosition,h=before.headingRadians,pitch=before.pitchRadians;
+      w.birdRoots.forEach((o:any,i:number)=>o.position.set(o===w.birdChosen?p.x+Math.sin(h)*Math.cos(pitch)*3:2000+i*20,o===w.birdChosen?p.y+Math.sin(pitch)*3:2000,o===w.birdChosen?p.z-Math.cos(h)*Math.cos(pitch)*3:2000));c._rhCommand('strike');const firstFrame=c._rhSnapshot(),actual=w.birdActual();w.stepBirds(25);const after=c._rhSnapshot();
+      return {catchDelta:firstFrame.missionCatches-before.missionCatches,carried:firstFrame.carriedPreyMs,label:firstFrame.carriedPreyLabel,preCatch,actual,afterActual:w.birdActual(),sameIdentity:JSON.stringify(identity)===JSON.stringify(w.birdIdentity()),sameBuffers:w.birdBufferIdentity(),carriedAfterFrame:after.carriedPreyMs};
+    });
+    expect(caught.catchDelta).toBe(1);expect(caught.carried).toBeGreaterThan(0);expect(caught.carriedAfterFrame).toBeGreaterThan(0);expect(caught.label).toBe(review.expectedLabel);
+    for(const actual of [caught.actual,caught.afterActual]){expect(actual.tailRotation.map(Math.abs)).toEqual([0,0,0]);actual.wings.forEach((wing:any,i:number)=>{const side=i===0?-1:1;expect(wing.rotation).toEqual([0,side*1.15,side*.08]);expect(wing.scale).toEqual([.3,1,1]);});}
+    expect(caught.sameIdentity).toBe(true);expect(caught.sameBuffers).toBe(true);await canvas.evaluate(()=>{const w=window as any;w.skipBirdRender=false;w.birdRenderer.render(w.birdScene,w.birdCamera);});await stage.screenshot({path:resolve(output,model.label+'-native-'+review.actualId+'-catch.png'),timeout:90000});
+    const expired=await canvas.evaluate((c:any)=>{const w=window as any;w.skipBirdRender=true;for(let i=0;i<28;i++)w.stepBirds(50);return {remaining:c._rhSnapshot().carriedPreyMs,disposed:w.birdDisposed};});expect(expired.remaining).toBe(0);expect(expired.disposed).toHaveLength(5);expect(new Set(expired.disposed).size).toBe(5);
+    await testInfo.attach('bird-profile-lifecycle',{body:JSON.stringify({id:review.actualId,preferredId:review.preferredId,preferredAvailable:review.preferredAvailable,meshCount:5,materialCount:4,bufferCount:review.bufferCount,movement:review.movement,nativeFraming:review.framing,pausedMotionTimeMs:paused.beforeTime,pauseFreezesPose:true,reducedMotionImmediateWhilePaused:true,reducedMotionFreezesPhase:true,resumed:resumed.after,preCatch:caught.preCatch,foldedFirstFrameCarry:caught.actual,resourceIdentity:caught.sameIdentity,reusedBuffers:caught.sameBuffers,catchDelta:caught.catchDelta,disposed:expired.disposed.length}),contentType:'application/json'});
+    expect(errors).toEqual([]);expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+  });
+});

@@ -1,0 +1,1148 @@
+{
+  "completed": true,
+  "pins": {
+    "stem_lab/universe_flight_scene.js": "255f57893385f5e0ae1a932d00f3ba8e7e98cacc8851bc6ce8985003bd025a75",
+    "stem_lab/stem_tool_universe.js": "52bea55b412a2ce73ce4bd55724e1fce5befef32e17da6ad730f995bfe7a0874"
+  },
+  "harnessSha256": "c5c7062586c087b05484228120905411e07feb32c95195650ba76a88a04ee7d3",
+  "workflows": [
+    {
+      "name": "desktop",
+      "fullscreen": false,
+      "launched": true,
+      "threeHighlights": true,
+      "pausedPixels": true,
+      "keyboardFreeLook": true,
+      "resumeAdvances": true,
+      "completionPaused": true
+    },
+    {
+      "name": "desktop-fullscreen",
+      "fullscreen": true,
+      "launched": true,
+      "threeHighlights": true,
+      "pausedPixels": true,
+      "keyboardFreeLook": true,
+      "resumeAdvances": true,
+      "completionPaused": true
+    },
+    {
+      "name": "phone-reduced-motion",
+      "fullscreen": false,
+      "launched": true,
+      "threeHighlights": true,
+      "pausedPixels": true,
+      "keyboardFreeLook": true,
+      "resumeAdvances": true,
+      "completionPaused": true
+    },
+    {
+      "name": "phone-fullscreen-reduced-motion",
+      "fullscreen": true,
+      "launched": true,
+      "threeHighlights": true,
+      "pausedPixels": true,
+      "keyboardFreeLook": true,
+      "resumeAdvances": true,
+      "completionPaused": true
+    }
+  ],
+  "accessibility": [
+    {
+      "name": "desktop-launch",
+      "violations": []
+    },
+    {
+      "name": "desktop-route",
+      "violations": []
+    },
+    {
+      "name": "desktop-fullscreen-route",
+      "violations": []
+    },
+    {
+      "name": "phone-reduced-motion-launch",
+      "violations": []
+    },
+    {
+      "name": "phone-reduced-motion-route",
+      "violations": []
+    },
+    {
+      "name": "phone-fullscreen-reduced-motion-route",
+      "violations": []
+    }
+  ],
+  "captures": [
+    {
+      "name": "desktop-highlights",
+      "file": "desktop-highlights.png",
+      "hash": "aa5753c2fcd6b7f0394fb7f15e7112cd844a5d4814df981d9a64ee496630e9ac"
+    },
+    {
+      "name": "desktop-completion",
+      "file": "desktop-completion.png",
+      "hash": "c841e14dc724cebe192a2951ae47a9ebcbd0621deb11cad53fcf52761b017577"
+    },
+    {
+      "name": "desktop-fullscreen-highlights",
+      "file": "desktop-fullscreen-highlights.png",
+      "hash": "dd4fcc1f3c177d5cac99f82d159485b6f3c207c0b1b9c187edaacc4b92ca9a55"
+    },
+    {
+      "name": "desktop-fullscreen-completion",
+      "file": "desktop-fullscreen-completion.png",
+      "hash": "4a4246ec8d9afc4b679d25c2d305500cfac59a13a361b176e410229a42e46bd3"
+    },
+    {
+      "name": "phone-reduced-motion-highlights",
+      "file": "phone-reduced-motion-highlights.png",
+      "hash": "1ca889107b1a3365a340da5b9ca3fb5fb3881675967d779e67816c8e6e244d36"
+    },
+    {
+      "name": "phone-reduced-motion-completion",
+      "file": "phone-reduced-motion-completion.png",
+      "hash": "52e60012d677eeb87d0f63c3b98d0a5428c44a74b6b589967c19e2c380338552"
+    },
+    {
+      "name": "phone-fullscreen-reduced-motion-highlights",
+      "file": "phone-fullscreen-reduced-motion-highlights.png",
+      "hash": "6135ccc1d0e52550095e27899ce8f8da2ec37229843ec5a4530d1d7ed34f9fc3"
+    },
+    {
+      "name": "phone-fullscreen-reduced-motion-completion",
+      "file": "phone-fullscreen-reduced-motion-completion.png",
+      "hash": "6759df0e79321d0b6e73cec43ae0454a9431c9bde06d4b4ace6785b84a2c4415"
+    }
+  ],
+  "poses": [
+    {
+      "name": "desktop-arms",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            40253.415894648264,
+            5223.76900351209,
+            -8419.07075414125
+          ],
+          "yaw": -1.5045438122956178,
+          "pitch": 0.07903788497987514,
+          "distanceLy": 31186.58399154746,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "inner-arm"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "disk",
+        "name": "Spiral disk passage",
+        "progress": 0.22727272727272727,
+        "elapsedSeconds": 10,
+        "durationSeconds": 44,
+        "autoLook": true,
+        "phase": "descent",
+        "rate": 1,
+        "pauseAtHighlights": false,
+        "remainingPlaybackSeconds": null
+      }
+    },
+    {
+      "name": "desktop-crossing",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            30103.502526899956,
+            -4645.5535717546045,
+            -1711.7377240752164
+          ],
+          "yaw": -1.6244165381521147,
+          "pitch": 0.2834525744942099,
+          "distanceLy": 46967.913703513186,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "inner-arm"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "disk",
+        "name": "Spiral disk passage",
+        "progress": 0.38636363636363635,
+        "elapsedSeconds": 17,
+        "durationSeconds": 44,
+        "autoLook": true,
+        "phase": "crossing",
+        "rate": 1,
+        "pauseAtHighlights": false,
+        "remainingPlaybackSeconds": null
+      }
+    },
+    {
+      "name": "desktop-panorama",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -34377.429302334145,
+            -84252.63392686252,
+            8810.05891744644
+          ],
+          "yaw": 1.8216716389613268,
+          "pitch": 1.1721369580694567,
+          "distanceLy": 152902.51079790207,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "disk",
+        "name": "Spiral disk passage",
+        "progress": 0.9090909090909091,
+        "elapsedSeconds": 40,
+        "durationSeconds": 44,
+        "autoLook": true,
+        "phase": "reveal",
+        "rate": 1,
+        "pauseAtHighlights": false,
+        "remainingPlaybackSeconds": null
+      }
+    },
+    {
+      "name": "desktop-resume-origin",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            40253.415894648264,
+            5223.76900351209,
+            -8419.07075414125
+          ],
+          "yaw": -1.5045438122956178,
+          "pitch": 0.07903788497987514,
+          "distanceLy": 31186.58399154746,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "inner-arm"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "disk",
+        "name": "Spiral disk passage",
+        "progress": 0.22727272727272727,
+        "elapsedSeconds": 10,
+        "durationSeconds": 44,
+        "autoLook": true,
+        "phase": "descent",
+        "rate": 1,
+        "pauseAtHighlights": false,
+        "remainingPlaybackSeconds": null
+      }
+    },
+    {
+      "name": "desktop-complete",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -54372.86246437808,
+            -96514.5679786347,
+            9824.9679555369
+          ],
+          "yaw": 1.7495635042757376,
+          "pitch": 1.0508521836178928,
+          "distanceLy": 176390.12002843956,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      },
+      "flyby": {
+        "active": false,
+        "completed": true,
+        "id": "disk",
+        "name": "Spiral disk passage",
+        "progress": 1,
+        "elapsedSeconds": 44,
+        "durationSeconds": 44,
+        "autoLook": true,
+        "phase": "complete",
+        "rate": 1,
+        "pauseAtHighlights": false,
+        "remainingPlaybackSeconds": null
+      }
+    },
+    {
+      "name": "desktop-fullscreen-arms",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            40253.415894648264,
+            5223.76900351209,
+            -8419.07075414125
+          ],
+          "yaw": -1.5045438122956178,
+          "pitch": 0.07903788497987514,
+          "distanceLy": 31186.58399154746,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "inner-arm"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "disk",
+        "name": "Spiral disk passage",
+        "progress": 0.22727272727272727,
+        "elapsedSeconds": 10,
+        "durationSeconds": 44,
+        "autoLook": true,
+        "phase": "descent",
+        "rate": 1,
+        "pauseAtHighlights": false,
+        "remainingPlaybackSeconds": null
+      }
+    },
+    {
+      "name": "desktop-fullscreen-crossing",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            30103.502526899956,
+            -4645.5535717546045,
+            -1711.7377240752164
+          ],
+          "yaw": -1.6244165381521147,
+          "pitch": 0.2834525744942099,
+          "distanceLy": 46967.913703513186,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "inner-arm"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "disk",
+        "name": "Spiral disk passage",
+        "progress": 0.38636363636363635,
+        "elapsedSeconds": 17,
+        "durationSeconds": 44,
+        "autoLook": true,
+        "phase": "crossing",
+        "rate": 1,
+        "pauseAtHighlights": false,
+        "remainingPlaybackSeconds": null
+      }
+    },
+    {
+      "name": "desktop-fullscreen-panorama",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -34377.429302334145,
+            -84252.63392686252,
+            8810.05891744644
+          ],
+          "yaw": 1.8216716389613268,
+          "pitch": 1.1721369580694567,
+          "distanceLy": 152902.51079790207,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "disk",
+        "name": "Spiral disk passage",
+        "progress": 0.9090909090909091,
+        "elapsedSeconds": 40,
+        "durationSeconds": 44,
+        "autoLook": true,
+        "phase": "reveal",
+        "rate": 1,
+        "pauseAtHighlights": false,
+        "remainingPlaybackSeconds": null
+      }
+    },
+    {
+      "name": "desktop-fullscreen-resume-origin",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            40253.415894648264,
+            5223.76900351209,
+            -8419.07075414125
+          ],
+          "yaw": -1.5045438122956178,
+          "pitch": 0.07903788497987514,
+          "distanceLy": 31186.58399154746,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "inner-arm"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "disk",
+        "name": "Spiral disk passage",
+        "progress": 0.22727272727272727,
+        "elapsedSeconds": 10,
+        "durationSeconds": 44,
+        "autoLook": true,
+        "phase": "descent",
+        "rate": 1,
+        "pauseAtHighlights": false,
+        "remainingPlaybackSeconds": null
+      }
+    },
+    {
+      "name": "desktop-fullscreen-complete",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -54372.86246437808,
+            -96514.5679786347,
+            9824.9679555369
+          ],
+          "yaw": 1.7495635042757376,
+          "pitch": 1.0508521836178928,
+          "distanceLy": 176390.12002843956,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      },
+      "flyby": {
+        "active": false,
+        "completed": true,
+        "id": "disk",
+        "name": "Spiral disk passage",
+        "progress": 1,
+        "elapsedSeconds": 44,
+        "durationSeconds": 44,
+        "autoLook": true,
+        "phase": "complete",
+        "rate": 1,
+        "pauseAtHighlights": false,
+        "remainingPlaybackSeconds": null
+      }
+    },
+    {
+      "name": "phone-reduced-motion-arms",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            40253.415894648264,
+            5223.76900351209,
+            -8419.07075414125
+          ],
+          "yaw": -1.5045438122956178,
+          "pitch": 0.07903788497987514,
+          "distanceLy": 31186.58399154746,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "inner-arm"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "disk",
+        "name": "Spiral disk passage",
+        "progress": 0.22727272727272727,
+        "elapsedSeconds": 10,
+        "durationSeconds": 44,
+        "autoLook": true,
+        "phase": "descent",
+        "rate": 1,
+        "pauseAtHighlights": false,
+        "remainingPlaybackSeconds": null
+      }
+    },
+    {
+      "name": "phone-reduced-motion-crossing",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            30103.502526899956,
+            -4645.5535717546045,
+            -1711.7377240752164
+          ],
+          "yaw": -1.6244165381521147,
+          "pitch": 0.2834525744942099,
+          "distanceLy": 46967.913703513186,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "inner-arm"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "disk",
+        "name": "Spiral disk passage",
+        "progress": 0.38636363636363635,
+        "elapsedSeconds": 17,
+        "durationSeconds": 44,
+        "autoLook": true,
+        "phase": "crossing",
+        "rate": 1,
+        "pauseAtHighlights": false,
+        "remainingPlaybackSeconds": null
+      }
+    },
+    {
+      "name": "phone-reduced-motion-panorama",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -34377.429302334145,
+            -84252.63392686252,
+            8810.05891744644
+          ],
+          "yaw": 1.8216716389613268,
+          "pitch": 1.1721369580694567,
+          "distanceLy": 152902.51079790207,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "disk",
+        "name": "Spiral disk passage",
+        "progress": 0.9090909090909091,
+        "elapsedSeconds": 40,
+        "durationSeconds": 44,
+        "autoLook": true,
+        "phase": "reveal",
+        "rate": 1,
+        "pauseAtHighlights": false,
+        "remainingPlaybackSeconds": null
+      }
+    },
+    {
+      "name": "phone-reduced-motion-resume-origin",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            40253.415894648264,
+            5223.76900351209,
+            -8419.07075414125
+          ],
+          "yaw": -1.5045438122956178,
+          "pitch": 0.07903788497987514,
+          "distanceLy": 31186.58399154746,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "inner-arm"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "disk",
+        "name": "Spiral disk passage",
+        "progress": 0.22727272727272727,
+        "elapsedSeconds": 10,
+        "durationSeconds": 44,
+        "autoLook": true,
+        "phase": "descent",
+        "rate": 1,
+        "pauseAtHighlights": false,
+        "remainingPlaybackSeconds": null
+      }
+    },
+    {
+      "name": "phone-reduced-motion-complete",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -54372.86246437808,
+            -96514.5679786347,
+            9824.9679555369
+          ],
+          "yaw": 1.7495635042757376,
+          "pitch": 1.0508521836178928,
+          "distanceLy": 176390.12002843956,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      },
+      "flyby": {
+        "active": false,
+        "completed": true,
+        "id": "disk",
+        "name": "Spiral disk passage",
+        "progress": 1,
+        "elapsedSeconds": 44,
+        "durationSeconds": 44,
+        "autoLook": true,
+        "phase": "complete",
+        "rate": 1,
+        "pauseAtHighlights": false,
+        "remainingPlaybackSeconds": null
+      }
+    },
+    {
+      "name": "phone-fullscreen-reduced-motion-arms",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            40253.415894648264,
+            5223.76900351209,
+            -8419.07075414125
+          ],
+          "yaw": -1.5045438122956178,
+          "pitch": 0.07903788497987514,
+          "distanceLy": 31186.58399154746,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "inner-arm"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "disk",
+        "name": "Spiral disk passage",
+        "progress": 0.22727272727272727,
+        "elapsedSeconds": 10,
+        "durationSeconds": 44,
+        "autoLook": true,
+        "phase": "descent",
+        "rate": 1,
+        "pauseAtHighlights": false,
+        "remainingPlaybackSeconds": null
+      }
+    },
+    {
+      "name": "phone-fullscreen-reduced-motion-crossing",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            30103.502526899956,
+            -4645.5535717546045,
+            -1711.7377240752164
+          ],
+          "yaw": -1.6244165381521147,
+          "pitch": 0.2834525744942099,
+          "distanceLy": 46967.913703513186,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "inner-arm"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "disk",
+        "name": "Spiral disk passage",
+        "progress": 0.38636363636363635,
+        "elapsedSeconds": 17,
+        "durationSeconds": 44,
+        "autoLook": true,
+        "phase": "crossing",
+        "rate": 1,
+        "pauseAtHighlights": false,
+        "remainingPlaybackSeconds": null
+      }
+    },
+    {
+      "name": "phone-fullscreen-reduced-motion-panorama",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -34377.429302334145,
+            -84252.63392686252,
+            8810.05891744644
+          ],
+          "yaw": 1.8216716389613268,
+          "pitch": 1.1721369580694567,
+          "distanceLy": 152902.51079790207,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "disk",
+        "name": "Spiral disk passage",
+        "progress": 0.9090909090909091,
+        "elapsedSeconds": 40,
+        "durationSeconds": 44,
+        "autoLook": true,
+        "phase": "reveal",
+        "rate": 1,
+        "pauseAtHighlights": false,
+        "remainingPlaybackSeconds": null
+      }
+    },
+    {
+      "name": "phone-fullscreen-reduced-motion-resume-origin",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            40253.415894648264,
+            5223.76900351209,
+            -8419.07075414125
+          ],
+          "yaw": -1.5045438122956178,
+          "pitch": 0.07903788497987514,
+          "distanceLy": 31186.58399154746,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "inner-arm"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "disk",
+        "name": "Spiral disk passage",
+        "progress": 0.22727272727272727,
+        "elapsedSeconds": 10,
+        "durationSeconds": 44,
+        "autoLook": true,
+        "phase": "descent",
+        "rate": 1,
+        "pauseAtHighlights": false,
+        "remainingPlaybackSeconds": null
+      }
+    },
+    {
+      "name": "phone-fullscreen-reduced-motion-complete",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -54372.86246437808,
+            -96514.5679786347,
+            9824.9679555369
+          ],
+          "yaw": 1.7495635042757376,
+          "pitch": 1.0508521836178928,
+          "distanceLy": 176390.12002843956,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      },
+      "flyby": {
+        "active": false,
+        "completed": true,
+        "id": "disk",
+        "name": "Spiral disk passage",
+        "progress": 1,
+        "elapsedSeconds": 44,
+        "durationSeconds": 44,
+        "autoLook": true,
+        "phase": "complete",
+        "rate": 1,
+        "pauseAtHighlights": false,
+        "remainingPlaybackSeconds": null
+      }
+    }
+  ],
+  "imageLoads": [
+    {
+      "workflow": "desktop",
+      "highlight": "arms",
+      "asset": {
+        "src": "http://127.0.0.1:3187/stem_lab/assets/universe-flight/highlights/disk-arms.webp",
+        "width": 480,
+        "height": 300,
+        "visibility": "visible"
+      },
+      "hash": "4748f7c694b9c6683c12e7542493cd5ef1958292c38eccc7d49ca1c18bae8e30"
+    },
+    {
+      "workflow": "desktop",
+      "highlight": "crossing",
+      "asset": {
+        "src": "http://127.0.0.1:3187/stem_lab/assets/universe-flight/highlights/disk-crossing.webp",
+        "width": 480,
+        "height": 300,
+        "visibility": "visible"
+      },
+      "hash": "8f8c0106161c48c14c61de9e95ed5e23c1db9eee6dc55dbe666a0e2fc9f8f4a4"
+    },
+    {
+      "workflow": "desktop",
+      "highlight": "panorama",
+      "asset": {
+        "src": "http://127.0.0.1:3187/stem_lab/assets/universe-flight/highlights/disk-panorama.webp",
+        "width": 480,
+        "height": 300,
+        "visibility": "visible"
+      },
+      "hash": "600feacdd48b9a38b6068620bfca26d8973228fbb78335271cbb3b9e16f7ddef"
+    },
+    {
+      "workflow": "desktop-fullscreen",
+      "highlight": "arms",
+      "asset": {
+        "src": "http://127.0.0.1:3187/stem_lab/assets/universe-flight/highlights/disk-arms.webp",
+        "width": 480,
+        "height": 300,
+        "visibility": "visible"
+      },
+      "hash": "4748f7c694b9c6683c12e7542493cd5ef1958292c38eccc7d49ca1c18bae8e30"
+    },
+    {
+      "workflow": "desktop-fullscreen",
+      "highlight": "crossing",
+      "asset": {
+        "src": "http://127.0.0.1:3187/stem_lab/assets/universe-flight/highlights/disk-crossing.webp",
+        "width": 480,
+        "height": 300,
+        "visibility": "visible"
+      },
+      "hash": "8f8c0106161c48c14c61de9e95ed5e23c1db9eee6dc55dbe666a0e2fc9f8f4a4"
+    },
+    {
+      "workflow": "desktop-fullscreen",
+      "highlight": "panorama",
+      "asset": {
+        "src": "http://127.0.0.1:3187/stem_lab/assets/universe-flight/highlights/disk-panorama.webp",
+        "width": 480,
+        "height": 300,
+        "visibility": "visible"
+      },
+      "hash": "600feacdd48b9a38b6068620bfca26d8973228fbb78335271cbb3b9e16f7ddef"
+    },
+    {
+      "workflow": "phone-reduced-motion",
+      "highlight": "arms",
+      "asset": {
+        "src": "http://127.0.0.1:3187/stem_lab/assets/universe-flight/highlights/disk-arms.webp",
+        "width": 480,
+        "height": 300,
+        "visibility": "visible"
+      },
+      "hash": "4748f7c694b9c6683c12e7542493cd5ef1958292c38eccc7d49ca1c18bae8e30"
+    },
+    {
+      "workflow": "phone-reduced-motion",
+      "highlight": "crossing",
+      "asset": {
+        "src": "http://127.0.0.1:3187/stem_lab/assets/universe-flight/highlights/disk-crossing.webp",
+        "width": 480,
+        "height": 300,
+        "visibility": "visible"
+      },
+      "hash": "8f8c0106161c48c14c61de9e95ed5e23c1db9eee6dc55dbe666a0e2fc9f8f4a4"
+    },
+    {
+      "workflow": "phone-reduced-motion",
+      "highlight": "panorama",
+      "asset": {
+        "src": "http://127.0.0.1:3187/stem_lab/assets/universe-flight/highlights/disk-panorama.webp",
+        "width": 480,
+        "height": 300,
+        "visibility": "visible"
+      },
+      "hash": "600feacdd48b9a38b6068620bfca26d8973228fbb78335271cbb3b9e16f7ddef"
+    },
+    {
+      "workflow": "phone-fullscreen-reduced-motion",
+      "highlight": "arms",
+      "asset": {
+        "src": "http://127.0.0.1:3187/stem_lab/assets/universe-flight/highlights/disk-arms.webp",
+        "width": 480,
+        "height": 300,
+        "visibility": "visible"
+      },
+      "hash": "4748f7c694b9c6683c12e7542493cd5ef1958292c38eccc7d49ca1c18bae8e30"
+    },
+    {
+      "workflow": "phone-fullscreen-reduced-motion",
+      "highlight": "crossing",
+      "asset": {
+        "src": "http://127.0.0.1:3187/stem_lab/assets/universe-flight/highlights/disk-crossing.webp",
+        "width": 480,
+        "height": 300,
+        "visibility": "visible"
+      },
+      "hash": "8f8c0106161c48c14c61de9e95ed5e23c1db9eee6dc55dbe666a0e2fc9f8f4a4"
+    },
+    {
+      "workflow": "phone-fullscreen-reduced-motion",
+      "highlight": "panorama",
+      "asset": {
+        "src": "http://127.0.0.1:3187/stem_lab/assets/universe-flight/highlights/disk-panorama.webp",
+        "width": 480,
+        "height": 300,
+        "visibility": "visible"
+      },
+      "hash": "600feacdd48b9a38b6068620bfca26d8973228fbb78335271cbb3b9e16f7ddef"
+    }
+  ],
+  "served": [
+    {
+      "file": "stem_lab/stem_tool_universe.js",
+      "hash": "52bea55b412a2ce73ce4bd55724e1fce5befef32e17da6ad730f995bfe7a0874"
+    },
+    {
+      "file": "stem_lab/universe_flight_scene.js",
+      "hash": "255f57893385f5e0ae1a932d00f3ba8e7e98cacc8851bc6ce8985003bd025a75"
+    }
+  ],
+  "loaderRetries": [],
+  "sourceReadErrors": [],
+  "errors": [],
+  "route": {
+    "id": "disk",
+    "name": "Spiral disk passage",
+    "region": "galaxy",
+    "durationSeconds": 44,
+    "position": [
+      63127.46206453789,
+      25688.2137830559,
+      -12650.660296061507
+    ],
+    "aim": [
+      -20170,
+      10020,
+      -4410
+    ],
+    "fov": 64,
+    "targetId": "inner-arm",
+    "highlights": [
+      {
+        "id": "arms",
+        "name": "Above the spiral arms",
+        "seconds": 10,
+        "description": "Look toward the inner arm from above the generated disk.",
+        "targetId": "inner-arm"
+      },
+      {
+        "id": "crossing",
+        "name": "Inside the stellar disk",
+        "seconds": 17,
+        "description": "Pause among the existing three-dimensional stars and emission records as the camera crosses the disk.",
+        "targetId": "inner-arm"
+      },
+      {
+        "id": "panorama",
+        "name": "Beyond the disk",
+        "seconds": 40,
+        "description": "Look back at the spiral after emerging on the other side of the tilted disk.",
+        "targetId": "galactic-center"
+      }
+    ]
+  }
+}

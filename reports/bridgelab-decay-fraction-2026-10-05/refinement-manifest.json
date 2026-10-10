@@ -1,0 +1,20 @@
+{
+  "refinedAt": "2026-10-05T14:35:58.150Z",
+  "files": [
+    {
+      "relative": "stem_lab/stem_tool_bridgelab.js",
+      "expected": "504db2c778a649260113d0d220897042cca56ec7b5c229633893d4bf890f1ac3",
+      "afterSha256": "1f3facf8d5b80122416299d48555812ccdd84107c46af4b1f312bec52266713c"
+    },
+    {
+      "relative": "desktop/web-app/public/stem_lab/stem_tool_bridgelab.js",
+      "expected": "504db2c778a649260113d0d220897042cca56ec7b5c229633893d4bf890f1ac3",
+      "afterSha256": "1f3facf8d5b80122416299d48555812ccdd84107c46af4b1f312bec52266713c"
+    },
+    {
+      "relative": "tests/e2e/26-bridgelab-gl.spec.ts",
+      "expected": "3c5881ba069dfa4cdcb7ffdb0a5f4d833d41b87caf5d01a4f3ec903178288c79",
+      "afterSha256": "01c593af4991379f8de9095bbf3567ed1c5fdac9f58160bc74143c794113966c"
+    }
+  ]
+}

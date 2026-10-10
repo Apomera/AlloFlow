@@ -1251,6 +1251,60 @@ function GlossaryView(props) {
     var value = t(key);
     return value && value !== key ? value : fallback;
   }
+  var [wordPracticeStatus, setWordPracticeStatus] = React.useState({
+    busy: false,
+    notice: ''
+  });
+  var wordPracticeControllerRef = React.useRef(null);
+  React.useEffect(function () {
+    setWordPracticeStatus({
+      busy: false,
+      notice: ''
+    });
+    return function () {
+      if (wordPracticeControllerRef.current) wordPracticeControllerRef.current.abort();
+      wordPracticeControllerRef.current = null;
+    };
+  }, [activityResourceKey, isTeacherMode]);
+  async function openGlossaryWordPractice() {
+    if (!isTeacherMode || !activityWords.length || wordPracticeControllerRef.current) return;
+    var controller = new AbortController();
+    wordPracticeControllerRef.current = controller;
+    setWordPracticeStatus({
+      busy: true,
+      notice: ''
+    });
+    try {
+      if (typeof window.__alloOpenWordPractice !== 'function') throw new Error('Presentation tools unavailable');
+      var ttsAssets = {};
+      (Array.isArray(generatedContent?.data) ? generatedContent.data : []).forEach(function (item) {
+        if (item?._ttsAssets && typeof item._ttsAssets === 'object') Object.assign(ttsAssets, item._ttsAssets);
+      });
+      await window.__alloOpenWordPractice({
+        words: activityWords,
+        ttsAssets: ttsAssets,
+        title: generatedContent?.title || activityText('glossary.practice_title', 'Vocabulary Practice'),
+        language: activityWords[0]?.termLanguage || 'English',
+        source: 'glossary',
+        callTTS: callTTS,
+        selectedVoice: selectedVoice,
+        ttsSpeed: voiceSpeed,
+        t: t,
+        signal: controller.signal
+      });
+      if (!controller.signal.aborted) setWordPracticeStatus({
+        busy: false,
+        notice: ''
+      });
+    } catch (_) {
+      if (!controller.signal.aborted) setWordPracticeStatus({
+        busy: false,
+        notice: activityText('glossary.practice_open_failed', 'Presentation tools could not open. Please try again.')
+      });
+    } finally {
+      if (wordPracticeControllerRef.current === controller) wordPracticeControllerRef.current = null;
+    }
+  }
   function activityData(name) {
     var session = activitySessions[name];
     return session && session.resourceKey === activityResourceKey ? session.data : generatedContent?.data;
@@ -2770,7 +2824,36 @@ function GlossaryView(props) {
     }, /*#__PURE__*/React.createElement(Languages, {
       size: 16,
       "aria-hidden": "true"
-    }), " ", t('flashcards.launch_language')))), /*#__PURE__*/React.createElement("div", {
+    }), " ", t('flashcards.launch_language')), isTeacherMode && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: openGlossaryWordPractice,
+      disabled: wordPracticeStatus.busy || !activityWords.length,
+      "aria-busy": wordPracticeStatus.busy,
+      "aria-describedby": "glossary-presentation-help",
+      className: secondaryButton + ' disabled:opacity-60 disabled:cursor-not-allowed'
+    }, /*#__PURE__*/React.createElement(MonitorPlay, {
+      size: 16,
+      "aria-hidden": "true"
+    }), " ", wordPracticeStatus.busy ? activityText('glossary.practice_opening', 'Opening presentation tools…') : activityText('glossary.practice_present_export', 'Present & Export'))), isTeacherMode && /*#__PURE__*/React.createElement("div", {
+      className: "mt-3"
+    }, /*#__PURE__*/React.createElement("label", {
+      className: "inline-flex max-w-full flex-wrap items-center gap-2 text-sm font-semibold text-slate-700"
+    }, activityText('glossary.practice_words', 'Words to present'), /*#__PURE__*/React.createElement("select", {
+      value: activityScope,
+      onChange: e => setActivityScope(e.target.value),
+      className: "min-h-11 max-w-full rounded-lg border border-slate-400 bg-white px-3 font-normal focus-visible:ring-2 focus-visible:ring-indigo-600"
+    }, /*#__PURE__*/React.createElement("option", {
+      value: "all"
+    }, activityText('glossary.activities.all', 'All glossary words')), /*#__PURE__*/React.createElement("option", {
+      value: "filtered"
+    }, activityText('glossary.activities.filtered', 'Current filtered words')))), /*#__PURE__*/React.createElement("p", {
+      id: "glossary-presentation-help",
+      className: "mt-2 text-xs text-slate-600"
+    }, activityWords.length, " ", activityText('glossary.practice_export_help', 'words: project practice or download HTML and PowerPoint with meanings and optional audio.')), /*#__PURE__*/React.createElement("p", {
+      role: "status",
+      "aria-live": "polite",
+      className: "mt-1 text-sm text-amber-900"
+    }, wordPracticeStatus.notice))), /*#__PURE__*/React.createElement("div", {
       className: "flex flex-wrap items-start gap-2"
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",

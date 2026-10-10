@@ -1,0 +1,168 @@
+{
+  "candidateSHA256": "dfe3e01f38a419187e468c749cc37827f486a47401b9916afaa9ec6f98a3f86a",
+  "baselineSHA256": "147670787861ae0251c9b4c65c90847a613c6b879d41737533749c19a5f6f891",
+  "auditorSHA256": "4dbceb6ac8e4c52041ba0df60b8e292bead382d56568719f830962f6de50d794",
+  "inputs": {
+    "firstresponse-face-preview.spec.ts": "0252384e1db3d1010316a1f8a2c4857f42102ddcf6f5c75d9a05018f9471bb05",
+    "run-face-browser.cjs": "35950e9cadd95703e40c03509df7368a9ec2d18985ed12444ddfc5644c4edc14",
+    "playwright-face.config.cjs": "56b7e2efdc5abf1164be3a87bf1a5b70b57192e1b2b29e001e6fd19e24b721a7",
+    "face-capture-png.cjs": "6009565cd97b35c874ff22325427e40823b4ff197118ea3870d0b2996bd30829",
+    "face-mount-window.cjs": "9e3d95fe4ce8ae16ca7d4a994d26250e064873d675b930fb23d63b33ba43b246",
+    "patient-wrist-contract.cjs": "89b0d06b340903458ff61433c497d89ec076cb216db3b1b3375e89f1ba5963ce",
+    "candidate.js": "dfe3e01f38a419187e468c749cc37827f486a47401b9916afaa9ec6f98a3f86a",
+    "before.js": "147670787861ae0251c9b4c65c90847a613c6b879d41737533749c19a5f6f891",
+    "delta.json": "1c1bb1c9a653cbd221213a9c993da0e8e83ff4910f9a01131bb3872217010eae"
+  },
+  "accepted": true,
+  "scope": "Right patient palm and present rescuer upper palm index/normal arrays, right patient wrist normal array, right palm/thumb crease position/normal arrays and path point heights. Exact scene outside these fields, unchanged counts, camera/contact/state/resources. Stage and palm detail share one captured frame.",
+  "negativeTests": [
+    {
+      "kind": "broaden-palm-scope",
+      "rejected": true,
+      "error": "firstresponse-face-preview.spec.ts required: var isPalm=name==='fr-patient-right-palm'||name==='fr-rescuer-upper-palm';",
+      "restoredAndReread": true,
+      "restoredSHA256": "0252384e1db3d1010316a1f8a2c4857f42102ddcf6f5c75d9a05018f9471bb05"
+    },
+    {
+      "kind": "broaden-wrist-scope",
+      "rejected": true,
+      "error": "firstresponse-face-preview.spec.ts required: var isWrist=name==='fr-patient-right-wrist';",
+      "restoredAndReread": true,
+      "restoredSHA256": "0252384e1db3d1010316a1f8a2c4857f42102ddcf6f5c75d9a05018f9471bb05"
+    },
+    {
+      "kind": "normalize-metadata",
+      "rejected": true,
+      "error": "firstresponse-face-preview.spec.ts required: function exactUserData(o){return JSON.parse(JSON.stringify(o.userData));}",
+      "restoredAndReread": true,
+      "restoredSHA256": "0252384e1db3d1010316a1f8a2c4857f42102ddcf6f5c75d9a05018f9471bb05"
+    },
+    {
+      "kind": "omit-unit-normal-check",
+      "rejected": true,
+      "error": "firstresponse-face-preview.spec.ts required: if(!isFinite(length)||Math.abs(length-1)>1e-5)throw Error('Invalid scoped unit normal '+name);",
+      "restoredAndReread": true,
+      "restoredSHA256": "0252384e1db3d1010316a1f8a2c4857f42102ddcf6f5c75d9a05018f9471bb05"
+    },
+    {
+      "kind": "omit-index-bounds-check",
+      "rejected": true,
+      "error": "firstresponse-face-preview.spec.ts required: if(!Number.isInteger(index.getX(i))||index.getX(i)<0||index.getX(i)>=a.count)throw Error('Invalid palm index '+name);",
+      "restoredAndReread": true,
+      "restoredSHA256": "0252384e1db3d1010316a1f8a2c4857f42102ddcf6f5c75d9a05018f9471bb05"
+    },
+    {
+      "kind": "omit-resize",
+      "rejected": true,
+      "error": "firstresponse-face-preview.spec.ts required: resize={wide,restored};validateResize(value,resize,variant);",
+      "restoredAndReread": true,
+      "restoredSHA256": "0252384e1db3d1010316a1f8a2c4857f42102ddcf6f5c75d9a05018f9471bb05"
+    },
+    {
+      "kind": "omit-palm-pixel-effect",
+      "rejected": true,
+      "error": "run-face-browser.cjs required: if(!pair[0].contrast&&palmChangedPixels===0)throw Error('Palm detail had no visible effect '+id);",
+      "restoredAndReread": true,
+      "restoredSHA256": "35950e9cadd95703e40c03509df7368a9ec2d18985ed12444ddfc5644c4edc14"
+    },
+    {
+      "kind": "reject-other-geometry-change",
+      "rejected": true,
+      "error": "complete scene preserved outside exact palm symmetry fields\n+ actual - expected\n\n  {\n    bytes: 4000,\n+   hash: 'changed'\n-   hash: 'whole-scene'\n  }\n",
+      "restoredAndReread": true,
+      "restoredSHA256": "783968646d7f7ed8349839e33ca461ca25512290ecbd373b32e5bc1a7ae0e3e3"
+    },
+    {
+      "kind": "reject-camera-change",
+      "rejected": true,
+      "error": "camera exact\n+ actual - expected\n\n  {\n    aspect: 1.5,\n    position: [\n+     1.01,\n-     1,\n      2,\n      3\n    ]\n  }\n",
+      "restoredAndReread": true,
+      "restoredSHA256": "783968646d7f7ed8349839e33ca461ca25512290ecbd373b32e5bc1a7ae0e3e3"
+    },
+    {
+      "kind": "reject-inspection-change",
+      "rejected": true,
+      "error": "supportInspection exact\n+ actual - expected\n... Skipped lines\n\n  {\n    expectedFaceFrame: {\n      center: [\n        0,\n        0,\n...\n        [\n+         0.01,\n          0,\n          0,\n-         0\n        ],\n        [\n          0,\n          0,\n          0\n",
+      "restoredAndReread": true,
+      "restoredSHA256": "783968646d7f7ed8349839e33ca461ca25512290ecbd373b32e5bc1a7ae0e3e3"
+    },
+    {
+      "kind": "reject-normal-count-change",
+      "rejected": true,
+      "error": "fr-patient-right-palm normal Float32 byte count\n\n14400 !== 14388\n",
+      "restoredAndReread": true,
+      "restoredSHA256": "783968646d7f7ed8349839e33ca461ca25512290ecbd373b32e5bc1a7ae0e3e3"
+    },
+    {
+      "kind": "reject-invalid-unit-normals",
+      "rejected": true,
+      "error": "unit normal length bounds",
+      "restoredAndReread": true,
+      "restoredSHA256": "783968646d7f7ed8349839e33ca461ca25512290ecbd373b32e5bc1a7ae0e3e3"
+    },
+    {
+      "kind": "reject-extra-target",
+      "rejected": true,
+      "error": "only exact named palm symmetry targets\n+ actual - expected\n\n  [\n+   'fr-patient-left-palm',\n-   'fr-patient-right-palm',\n    'fr-patient-right-palm-crease',\n    'fr-patient-right-thumb-crease',\n    'fr-patient-right-wrist'\n  ]\n",
+      "restoredAndReread": true,
+      "restoredSHA256": "783968646d7f7ed8349839e33ca461ca25512290ecbd373b32e5bc1a7ae0e3e3"
+    },
+    {
+      "kind": "reject-unchanged-palm-indices",
+      "rejected": true,
+      "error": "each present right-handed palm changes its diagonal indices",
+      "restoredAndReread": true,
+      "restoredSHA256": "783968646d7f7ed8349839e33ca461ca25512290ecbd373b32e5bc1a7ae0e3e3"
+    },
+    {
+      "kind": "reject-invalid-palm-indices",
+      "rejected": true,
+      "error": "all palm indices within vertex bounds\n\nfalse !== true\n",
+      "restoredAndReread": true,
+      "restoredSHA256": "783968646d7f7ed8349839e33ca461ca25512290ecbd373b32e5bc1a7ae0e3e3"
+    },
+    {
+      "kind": "reject-crease-position-count-change",
+      "rejected": true,
+      "error": "fr-patient-right-palm-crease position Float32 byte count\n\n14400 !== 14388\n",
+      "restoredAndReread": true,
+      "restoredSHA256": "783968646d7f7ed8349839e33ca461ca25512290ecbd373b32e5bc1a7ae0e3e3"
+    },
+    {
+      "kind": "reject-crease-path-x-change",
+      "rejected": true,
+      "error": "crease path x exact\n\n0.01 !== 0\n",
+      "restoredAndReread": true,
+      "restoredSHA256": "783968646d7f7ed8349839e33ca461ca25512290ecbd373b32e5bc1a7ae0e3e3"
+    },
+    {
+      "kind": "reject-crease-path-z-change",
+      "rejected": true,
+      "error": "crease path z exact\n\n0.01 !== 0\n",
+      "restoredAndReread": true,
+      "restoredSHA256": "783968646d7f7ed8349839e33ca461ca25512290ecbd373b32e5bc1a7ae0e3e3"
+    },
+    {
+      "kind": "reject-material-allocation",
+      "rejected": true,
+      "error": "materials exact\n\n13 !== 12\n",
+      "restoredAndReread": true,
+      "restoredSHA256": "783968646d7f7ed8349839e33ca461ca25512290ecbd373b32e5bc1a7ae0e3e3"
+    }
+  ],
+  "list": {
+    "exitCode": 0,
+    "args": [
+      "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "firstresponse-face-preview.spec.ts",
+      "--config=C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\playwright-face.config.cjs",
+      "--list"
+    ],
+    "stdout": "Listing tests:\n  firstresponse-face-preview.spec.ts:178:29 › patient palm symmetry adult-wide preview at native view\n  firstresponse-face-preview.spec.ts:178:29 › patient palm symmetry child-narrow preview at native view\n  firstresponse-face-preview.spec.ts:178:29 › patient palm symmetry infant-narrow-contrast preview at native view\nTotal: 3 tests in 1 file\n",
+    "stderr": "",
+    "browserLaunched": false
+  },
+  "inputsUnchanged": true,
+  "sharedFilesWritten": 0
+}

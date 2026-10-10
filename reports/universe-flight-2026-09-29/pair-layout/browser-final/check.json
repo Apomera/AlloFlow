@@ -1,0 +1,205 @@
+{
+  "completed": false,
+  "pins": {
+    "stem_lab/universe_flight_scene.js": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7",
+    "stem_lab/stem_tool_universe.js": "e487e503c86194b227e6d0c087f6f0c8cb139e229c0db37a6a4790593a1a7d33"
+  },
+  "harnessSha256": "7ac4e35d829cd39e69857638de3b973817aeb721d79c8240ebb4b543b57c8364",
+  "workflows": [
+    {
+      "name": "galaxy-comparison-clears-both-labels",
+      "fixture": "group-elliptical",
+      "readings": {
+        "text": [
+          "327,452.29 ly",
+          "1,424,298.07 ly",
+          "1,403,744.99 ly"
+        ],
+        "rails": [
+          0.22990432471175004,
+          1
+        ]
+      }
+    },
+    {
+      "name": "keyboard-minimize-keeps-labels-and-view",
+      "detailsOpen": true,
+      "exactPixels": true
+    },
+    {
+      "name": "keyboard-restore-preserves-disclosure-and-focus"
+    },
+    {
+      "name": "layout-preserves-exact-flyby-return"
+    },
+    {
+      "name": "panel-stays-still-during-pan",
+      "turns": 4
+    },
+    {
+      "name": "move-panel-clears-center-without-moving-camera",
+      "before": "bottom-right",
+      "after": "bottom-center",
+      "exactPixels": true
+    },
+    {
+      "name": "phone-distances-preserved",
+      "fixture": "cluster-heart",
+      "readings": {
+        "text": [
+          "4.32 ly",
+          "14.07 ly",
+          "9.76 ly"
+        ],
+        "rails": [
+          0.3068804430886639,
+          1
+        ]
+      }
+    },
+    {
+      "name": "phone-fullscreen-high-contrast",
+      "width": 320
+    }
+  ],
+  "accessibility": [
+    {
+      "name": "desktop-layout",
+      "violations": []
+    },
+    {
+      "name": "phone-layout",
+      "violations": []
+    },
+    {
+      "name": "fullscreen-layout",
+      "violations": []
+    },
+    {
+      "name": "forced-colors-layout",
+      "violations": []
+    }
+  ],
+  "captures": [
+    {
+      "name": "galaxy-clear-comparison",
+      "file": "galaxy-clear-comparison.png",
+      "sha256": "73c2f6b30455e7747354b653bbb547e7fa19ec113b3e4e2495fb0066ef1179a8"
+    },
+    {
+      "name": "galaxy-minimized",
+      "file": "galaxy-minimized.png",
+      "sha256": "88068ca2e187c4f9331e175c62eb7af4c2c485af8b9ed1e214378263dccf24e8"
+    },
+    {
+      "name": "manually-cleared-landmarks",
+      "file": "manually-cleared-landmarks.png",
+      "sha256": "cdd668ad7fdfb3876126a6d3220544311f31f4bdebb22f3400548ba51976a2f4"
+    },
+    {
+      "name": "phone-comparison",
+      "file": "phone-comparison.png",
+      "sha256": "6d0764d2fcee33dec0830b9f3b805437aaf1a27ef09c5925be72dca27f8a753a"
+    },
+    {
+      "name": "phone-minimized",
+      "file": "phone-minimized.png",
+      "sha256": "4a4c5358b78d7eef364f6b52cc8ae9346a1e2ecbefaf2f783738be46cc260ca8"
+    },
+    {
+      "name": "fullscreen-comparison",
+      "file": "fullscreen-comparison.png",
+      "sha256": "6072e6d35ed478455724cee6242422ed8294e94a3492f0c2676ecbdd9c9e97e0"
+    },
+    {
+      "name": "forced-colors-comparison",
+      "file": "forced-colors-comparison.png",
+      "sha256": "dc77b1a4cce5fb3ee784278fef592c9b39942e3d71d6e2f40f15610abbbc3027"
+    }
+  ],
+  "bounds": [
+    {
+      "name": "phone Move panel",
+      "left": 69,
+      "right": 165,
+      "top": 299.21875,
+      "bottom": 343.21875,
+      "width": 96,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "phone Minimize",
+      "left": 171,
+      "right": 267,
+      "top": 299.21875,
+      "bottom": 343.21875,
+      "width": 96,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "phone End paired view",
+      "left": 69,
+      "right": 267,
+      "top": 615.21875,
+      "bottom": 659.21875,
+      "width": 198,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "phone Show comparison",
+      "left": 111,
+      "right": 273,
+      "top": 597.21875,
+      "bottom": 641.21875,
+      "width": 162,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "fullscreen End paired view",
+      "left": 99,
+      "right": 297,
+      "top": 539,
+      "bottom": 583,
+      "width": 198,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    }
+  ],
+  "served": [
+    {
+      "file": "stem_lab/stem_tool_universe.js",
+      "sha256": "e487e503c86194b227e6d0c087f6f0c8cb139e229c0db37a6a4790593a1a7d33"
+    },
+    {
+      "file": "stem_lab/universe_flight_scene.js",
+      "sha256": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7"
+    }
+  ],
+  "errors": [],
+  "fixtureSha256": "cce0344e366f20c14897ab6d2ab432aba17f81d6f97c3ca803f453955c9549e7",
+  "failure": "locator.click: Timeout 45000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.uf-stage').getByRole('button', { name: 'Exit full screen', exact: true })\u001b[22m\n\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-pair-layout66\\browser-check.cjs:60:71"
+}

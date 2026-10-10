@@ -1,0 +1,2112 @@
+{
+  "continuousEntry": {
+    "type": "webgl",
+    "kind": "water",
+    "stats": {
+      "bodyExtent": 1,
+      "bodyReferenceMeters": 2.75e-10,
+      "reference": "catalog-characteristic-size",
+      "coordinateUnits": "Angstrom",
+      "nuclearScaleAngstrom": 2.75,
+      "nuclearCoordinatesAngstrom": {
+        "oxygen": [
+          0,
+          0,
+          0
+        ],
+        "hydrogens": [
+          [
+            0.7572078351983744,
+            0.5865297386443347,
+            0
+          ],
+          [
+            -0.7572078351983744,
+            0.5865297386443347,
+            0
+          ]
+        ]
+      },
+      "centerYOffset": -0.055,
+      "ohLengthAngstrom": 0.9578,
+      "hohAngleDegrees": 104.4776,
+      "oxygenDisplayRadius": 0.18,
+      "hydrogenDisplayRadius": 0.1,
+      "atomRadiiIllustrative": true,
+      "bondWidthsIllustrative": true,
+      "dipoleConvention": "chemistry-arrow-toward-negative-oxygen",
+      "dipoleMagnitudeNotToScale": true,
+      "electronCloud": false,
+      "drawables": 13,
+      "triangles": 11784,
+      "vertices": 6995,
+      "ownedGeometries": 11,
+      "nativeSites": 5
+    },
+    "scale": 3.2843841570663646,
+    "declaredExtent": 1,
+    "dimension": "x",
+    "measureCenter": 0,
+    "bodyReference": 1,
+    "rulerReference": 0.9999999999999998,
+    "rulerEnds": [
+      -0.4999999999999999,
+      0.5
+    ],
+    "aligned": 0.999999999983974,
+    "targetError": 0,
+    "aim": [
+      0.7542,
+      0.0236,
+      -0.191
+    ],
+    "yaw": 0.16,
+    "pitch": 0.10000000000000002,
+    "detail": "",
+    "near": 0.002,
+    "meshes": [
+      {
+        "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+        "material": "4794D64D-23C5-48C6-B66E-9E2327E50D91",
+        "detail": "oxygen",
+        "vertices": 1617,
+        "indices": 8928
+      },
+      {
+        "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+        "material": "E9DA27E2-29F7-4403-9010-CBB8ACD269EC",
+        "detail": "hydrogens",
+        "vertices": 1617,
+        "indices": 8928
+      },
+      {
+        "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+        "material": "54132790-B5AD-4867-AEAC-3170DE3ECA77",
+        "detail": "hydrogens",
+        "vertices": 1617,
+        "indices": 8928
+      },
+      {
+        "geometry": "4DBBCE18-3722-40B6-85F2-5A928688A897",
+        "material": "B772A29B-6A78-4636-B6B2-966ECB80EAD1",
+        "detail": "bond",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "11DA7B7B-41FF-4A93-9F34-DB87D9C98907",
+        "material": "7BC538A1-4917-4C67-B3AB-B2CC5E514634",
+        "detail": "bond",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "85D151B2-A551-4822-A99A-F8A0C684E460",
+        "material": "766FE3B3-0E3F-4218-8B16-9A4AC141CC56",
+        "detail": "bond",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "71ED8D04-D753-4C9C-92A3-C10E2DCEA99D",
+        "material": "78B89E4D-E941-4DEC-9FE6-CC2E6A5F12F0",
+        "detail": "bond",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "F261CBD3-2224-4409-A439-5DA819DA7282",
+        "material": "A699B1CD-9AF6-4EAD-9859-A5D07B808B65",
+        "detail": "angle",
+        "vertices": 1261,
+        "indices": 6912
+      },
+      {
+        "geometry": "F5DC1D0D-AE3B-431D-A4E1-B13EC99B4540",
+        "material": "4DA1851B-D183-430E-9AA6-DA25492F4BB2",
+        "detail": "angle",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "232B82EC-FCC2-4882-916B-2BEBADB0D63E",
+        "material": "2EA1031F-2C36-4895-A2F5-C7874656099F",
+        "detail": "angle",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "FD8C36DC-6AEB-42FE-8330-47244FD95136",
+        "material": "52EBA27E-575C-48CC-9882-597AEF034DAA",
+        "detail": "polarity",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "79FEFB28-D072-4B46-A264-E92E65C42E1B",
+        "material": "483968A8-9B23-42AC-8F3F-C7CBED378F36",
+        "detail": "polarity",
+        "vertices": 83,
+        "indices": 120
+      },
+      {
+        "geometry": "9C83F27F-B1C0-4887-BED0-DD87846499C3",
+        "material": "7BBD0EA9-72FB-4ABD-991F-AFE2A6EC2209",
+        "detail": "polarity",
+        "vertices": 100,
+        "indices": 192
+      }
+    ],
+    "bounds": {
+      "minX": -0.3473740899164075,
+      "maxX": 0.27624627421650905,
+      "minY": -0.3188420642696803,
+      "maxY": 0.4291366050272921,
+      "visibleVertices": 6995,
+      "clippedVertices": 0
+    },
+    "rulerBounds": {
+      "minX": -0.33626845032542607,
+      "maxX": 0.36259549581423595,
+      "minY": -0.6051405276093866,
+      "maxY": -0.4517524519026227
+    },
+    "comparisonRatio": null,
+    "habitat": {
+      "name": "molecular-observatory",
+      "leaf": {
+        "visible": false,
+        "y": 0,
+        "scale": 1,
+        "meshes": 0
+      },
+      "ground": {
+        "visible": false,
+        "y": -1.508
+      },
+      "floorTarget": -0.9040522850721219,
+      "key": {
+        "directional": true,
+        "shadow": false,
+        "intensity": 1.65
+      }
+    },
+    "waterView": "guides",
+    "pose": {
+      "guides": true,
+      "angle": true,
+      "polarity": true,
+      "atoms": true,
+      "bonds": true
+    },
+    "draws": 220,
+    "renders": 10
+  },
+  "initial": {
+    "type": "webgl",
+    "kind": "water",
+    "stats": {
+      "bodyExtent": 1,
+      "bodyReferenceMeters": 2.75e-10,
+      "reference": "catalog-characteristic-size",
+      "coordinateUnits": "Angstrom",
+      "nuclearScaleAngstrom": 2.75,
+      "nuclearCoordinatesAngstrom": {
+        "oxygen": [
+          0,
+          0,
+          0
+        ],
+        "hydrogens": [
+          [
+            0.7572078351983744,
+            0.5865297386443347,
+            0
+          ],
+          [
+            -0.7572078351983744,
+            0.5865297386443347,
+            0
+          ]
+        ]
+      },
+      "centerYOffset": -0.055,
+      "ohLengthAngstrom": 0.9578,
+      "hohAngleDegrees": 104.4776,
+      "oxygenDisplayRadius": 0.18,
+      "hydrogenDisplayRadius": 0.1,
+      "atomRadiiIllustrative": true,
+      "bondWidthsIllustrative": true,
+      "dipoleConvention": "chemistry-arrow-toward-negative-oxygen",
+      "dipoleMagnitudeNotToScale": true,
+      "electronCloud": false,
+      "drawables": 13,
+      "triangles": 11784,
+      "vertices": 6995,
+      "ownedGeometries": 11,
+      "nativeSites": 5
+    },
+    "scale": 3,
+    "declaredExtent": 1,
+    "dimension": "x",
+    "measureCenter": 0,
+    "bodyReference": 1,
+    "rulerReference": 0.9999999999999997,
+    "rulerEnds": [
+      -0.49999999999999983,
+      0.49999999999999983
+    ],
+    "aligned": 1,
+    "targetError": 0,
+    "aim": [
+      0,
+      0,
+      0
+    ],
+    "yaw": 0.16,
+    "pitch": 0.10000000000000002,
+    "detail": "",
+    "near": 0.002,
+    "meshes": [
+      {
+        "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+        "material": "4794D64D-23C5-48C6-B66E-9E2327E50D91",
+        "detail": "oxygen",
+        "vertices": 1617,
+        "indices": 8928
+      },
+      {
+        "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+        "material": "E9DA27E2-29F7-4403-9010-CBB8ACD269EC",
+        "detail": "hydrogens",
+        "vertices": 1617,
+        "indices": 8928
+      },
+      {
+        "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+        "material": "54132790-B5AD-4867-AEAC-3170DE3ECA77",
+        "detail": "hydrogens",
+        "vertices": 1617,
+        "indices": 8928
+      },
+      {
+        "geometry": "4DBBCE18-3722-40B6-85F2-5A928688A897",
+        "material": "B772A29B-6A78-4636-B6B2-966ECB80EAD1",
+        "detail": "bond",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "11DA7B7B-41FF-4A93-9F34-DB87D9C98907",
+        "material": "7BC538A1-4917-4C67-B3AB-B2CC5E514634",
+        "detail": "bond",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "85D151B2-A551-4822-A99A-F8A0C684E460",
+        "material": "766FE3B3-0E3F-4218-8B16-9A4AC141CC56",
+        "detail": "bond",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "71ED8D04-D753-4C9C-92A3-C10E2DCEA99D",
+        "material": "78B89E4D-E941-4DEC-9FE6-CC2E6A5F12F0",
+        "detail": "bond",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "F261CBD3-2224-4409-A439-5DA819DA7282",
+        "material": "A699B1CD-9AF6-4EAD-9859-A5D07B808B65",
+        "detail": "angle",
+        "vertices": 1261,
+        "indices": 6912
+      },
+      {
+        "geometry": "F5DC1D0D-AE3B-431D-A4E1-B13EC99B4540",
+        "material": "4DA1851B-D183-430E-9AA6-DA25492F4BB2",
+        "detail": "angle",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "232B82EC-FCC2-4882-916B-2BEBADB0D63E",
+        "material": "2EA1031F-2C36-4895-A2F5-C7874656099F",
+        "detail": "angle",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "FD8C36DC-6AEB-42FE-8330-47244FD95136",
+        "material": "52EBA27E-575C-48CC-9882-597AEF034DAA",
+        "detail": "polarity",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "79FEFB28-D072-4B46-A264-E92E65C42E1B",
+        "material": "483968A8-9B23-42AC-8F3F-C7CBED378F36",
+        "detail": "polarity",
+        "vertices": 83,
+        "indices": 120
+      },
+      {
+        "geometry": "9C83F27F-B1C0-4887-BED0-DD87846499C3",
+        "material": "7BBD0EA9-72FB-4ABD-991F-AFE2A6EC2209",
+        "detail": "polarity",
+        "vertices": 100,
+        "indices": 192
+      }
+    ],
+    "bounds": {
+      "minX": -0.31774962661193373,
+      "maxX": 0.2515050553362937,
+      "minY": -0.2923406166265212,
+      "maxY": 0.39239742713514364,
+      "visibleVertices": 6995,
+      "clippedVertices": 0
+    },
+    "rulerBounds": {
+      "minX": -0.3086094308932337,
+      "maxX": 0.3306417645593434,
+      "minY": -0.5519736780169483,
+      "maxY": -0.4146137832687007
+    },
+    "comparisonRatio": null,
+    "habitat": {
+      "name": "molecular-observatory",
+      "leaf": {
+        "visible": false,
+        "y": 0,
+        "scale": 1,
+        "meshes": 0
+      },
+      "ground": {
+        "visible": false,
+        "y": -1.508
+      },
+      "floorTarget": -0.8480000044703485,
+      "key": {
+        "directional": true,
+        "shadow": false,
+        "intensity": 1.65
+      }
+    },
+    "waterView": "guides",
+    "pose": {
+      "guides": true,
+      "angle": true,
+      "polarity": true,
+      "atoms": true,
+      "bonds": true
+    },
+    "draws": 238,
+    "renders": 11
+  },
+  "structure": {
+    "type": "webgl",
+    "kind": "water",
+    "stats": {
+      "bodyExtent": 1,
+      "bodyReferenceMeters": 2.75e-10,
+      "reference": "catalog-characteristic-size",
+      "coordinateUnits": "Angstrom",
+      "nuclearScaleAngstrom": 2.75,
+      "nuclearCoordinatesAngstrom": {
+        "oxygen": [
+          0,
+          0,
+          0
+        ],
+        "hydrogens": [
+          [
+            0.7572078351983744,
+            0.5865297386443347,
+            0
+          ],
+          [
+            -0.7572078351983744,
+            0.5865297386443347,
+            0
+          ]
+        ]
+      },
+      "centerYOffset": -0.055,
+      "ohLengthAngstrom": 0.9578,
+      "hohAngleDegrees": 104.4776,
+      "oxygenDisplayRadius": 0.18,
+      "hydrogenDisplayRadius": 0.1,
+      "atomRadiiIllustrative": true,
+      "bondWidthsIllustrative": true,
+      "dipoleConvention": "chemistry-arrow-toward-negative-oxygen",
+      "dipoleMagnitudeNotToScale": true,
+      "electronCloud": false,
+      "drawables": 13,
+      "triangles": 11784,
+      "vertices": 6995,
+      "ownedGeometries": 11,
+      "nativeSites": 5
+    },
+    "scale": 3,
+    "declaredExtent": 1,
+    "dimension": "x",
+    "measureCenter": 0,
+    "bodyReference": 1,
+    "rulerReference": 0.9999999999999997,
+    "rulerEnds": [
+      -0.49999999999999983,
+      0.49999999999999983
+    ],
+    "aligned": 1,
+    "targetError": 0,
+    "aim": [
+      0,
+      0,
+      0
+    ],
+    "yaw": 0.16,
+    "pitch": 0.10000000000000002,
+    "detail": "",
+    "near": 0.002,
+    "meshes": [
+      {
+        "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+        "material": "4794D64D-23C5-48C6-B66E-9E2327E50D91",
+        "detail": "oxygen",
+        "vertices": 1617,
+        "indices": 8928
+      },
+      {
+        "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+        "material": "E9DA27E2-29F7-4403-9010-CBB8ACD269EC",
+        "detail": "hydrogens",
+        "vertices": 1617,
+        "indices": 8928
+      },
+      {
+        "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+        "material": "54132790-B5AD-4867-AEAC-3170DE3ECA77",
+        "detail": "hydrogens",
+        "vertices": 1617,
+        "indices": 8928
+      },
+      {
+        "geometry": "4DBBCE18-3722-40B6-85F2-5A928688A897",
+        "material": "B772A29B-6A78-4636-B6B2-966ECB80EAD1",
+        "detail": "bond",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "11DA7B7B-41FF-4A93-9F34-DB87D9C98907",
+        "material": "7BC538A1-4917-4C67-B3AB-B2CC5E514634",
+        "detail": "bond",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "85D151B2-A551-4822-A99A-F8A0C684E460",
+        "material": "766FE3B3-0E3F-4218-8B16-9A4AC141CC56",
+        "detail": "bond",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "71ED8D04-D753-4C9C-92A3-C10E2DCEA99D",
+        "material": "78B89E4D-E941-4DEC-9FE6-CC2E6A5F12F0",
+        "detail": "bond",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "F261CBD3-2224-4409-A439-5DA819DA7282",
+        "material": "A699B1CD-9AF6-4EAD-9859-A5D07B808B65",
+        "detail": "angle",
+        "vertices": 1261,
+        "indices": 6912
+      },
+      {
+        "geometry": "F5DC1D0D-AE3B-431D-A4E1-B13EC99B4540",
+        "material": "4DA1851B-D183-430E-9AA6-DA25492F4BB2",
+        "detail": "angle",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "232B82EC-FCC2-4882-916B-2BEBADB0D63E",
+        "material": "2EA1031F-2C36-4895-A2F5-C7874656099F",
+        "detail": "angle",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "FD8C36DC-6AEB-42FE-8330-47244FD95136",
+        "material": "52EBA27E-575C-48CC-9882-597AEF034DAA",
+        "detail": "polarity",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "79FEFB28-D072-4B46-A264-E92E65C42E1B",
+        "material": "483968A8-9B23-42AC-8F3F-C7CBED378F36",
+        "detail": "polarity",
+        "vertices": 83,
+        "indices": 120
+      },
+      {
+        "geometry": "9C83F27F-B1C0-4887-BED0-DD87846499C3",
+        "material": "7BBD0EA9-72FB-4ABD-991F-AFE2A6EC2209",
+        "detail": "polarity",
+        "vertices": 100,
+        "indices": 192
+      }
+    ],
+    "bounds": {
+      "minX": -0.24175638500581093,
+      "maxX": 0.2515050553362937,
+      "minY": -0.26332568366312203,
+      "maxY": 0.29186590732592554,
+      "visibleVertices": 5251,
+      "clippedVertices": 0
+    },
+    "rulerBounds": {
+      "minX": -0.3086094308932337,
+      "maxX": 0.3306417645593434,
+      "minY": -0.5519736780169483,
+      "maxY": -0.4146137832687007
+    },
+    "comparisonRatio": null,
+    "habitat": {
+      "name": "molecular-observatory",
+      "leaf": {
+        "visible": false,
+        "y": 0,
+        "scale": 1,
+        "meshes": 0
+      },
+      "ground": {
+        "visible": false,
+        "y": -1.508
+      },
+      "floorTarget": -0.8480000044703485,
+      "key": {
+        "directional": true,
+        "shadow": false,
+        "intensity": 1.65
+      }
+    },
+    "waterView": "structure",
+    "pose": {
+      "guides": false,
+      "angle": false,
+      "polarity": false,
+      "atoms": true,
+      "bonds": true
+    },
+    "draws": 250,
+    "renders": 12
+  },
+  "wholeSaved": {
+    "itemId": "water",
+    "detailId": "",
+    "size": 2.75e-10,
+    "you": false,
+    "note": "The molecule is bent and its geometry guides remain readable.",
+    "zoom": 1,
+    "yaw": 0.16,
+    "pitch": 0.1,
+    "sunAngle": 45,
+    "nebulaReveal": false,
+    "nebulaInside": false,
+    "nebulaPose": null,
+    "nebulaSpeed": 0.8,
+    "terrainRelief": 8,
+    "riverKm": 0,
+    "terrainPoint": {
+      "east": 0,
+      "north": 900
+    },
+    "terrainFlight": null,
+    "terrainFlightSpeed": 180,
+    "terrainFlightWaypoint": null,
+    "pollenGrowth": 0,
+    "cutaway": false,
+    "view": "atlas",
+    "waterView": "guides"
+  },
+  "wholeRestored": {
+    "type": "webgl",
+    "kind": "water",
+    "stats": {
+      "bodyExtent": 1,
+      "bodyReferenceMeters": 2.75e-10,
+      "reference": "catalog-characteristic-size",
+      "coordinateUnits": "Angstrom",
+      "nuclearScaleAngstrom": 2.75,
+      "nuclearCoordinatesAngstrom": {
+        "oxygen": [
+          0,
+          0,
+          0
+        ],
+        "hydrogens": [
+          [
+            0.7572078351983744,
+            0.5865297386443347,
+            0
+          ],
+          [
+            -0.7572078351983744,
+            0.5865297386443347,
+            0
+          ]
+        ]
+      },
+      "centerYOffset": -0.055,
+      "ohLengthAngstrom": 0.9578,
+      "hohAngleDegrees": 104.4776,
+      "oxygenDisplayRadius": 0.18,
+      "hydrogenDisplayRadius": 0.1,
+      "atomRadiiIllustrative": true,
+      "bondWidthsIllustrative": true,
+      "dipoleConvention": "chemistry-arrow-toward-negative-oxygen",
+      "dipoleMagnitudeNotToScale": true,
+      "electronCloud": false,
+      "drawables": 13,
+      "triangles": 11784,
+      "vertices": 6995,
+      "ownedGeometries": 11,
+      "nativeSites": 5
+    },
+    "scale": 3,
+    "declaredExtent": 1,
+    "dimension": "x",
+    "measureCenter": 0,
+    "bodyReference": 1,
+    "rulerReference": 0.9999999999999997,
+    "rulerEnds": [
+      -0.49999999999999983,
+      0.49999999999999983
+    ],
+    "aligned": 1,
+    "targetError": 0,
+    "aim": [
+      0,
+      0,
+      0
+    ],
+    "yaw": 0.16000000000000003,
+    "pitch": 0.10000000000000002,
+    "detail": "",
+    "near": 0.002,
+    "meshes": [
+      {
+        "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+        "material": "4794D64D-23C5-48C6-B66E-9E2327E50D91",
+        "detail": "oxygen",
+        "vertices": 1617,
+        "indices": 8928
+      },
+      {
+        "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+        "material": "E9DA27E2-29F7-4403-9010-CBB8ACD269EC",
+        "detail": "hydrogens",
+        "vertices": 1617,
+        "indices": 8928
+      },
+      {
+        "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+        "material": "54132790-B5AD-4867-AEAC-3170DE3ECA77",
+        "detail": "hydrogens",
+        "vertices": 1617,
+        "indices": 8928
+      },
+      {
+        "geometry": "4DBBCE18-3722-40B6-85F2-5A928688A897",
+        "material": "B772A29B-6A78-4636-B6B2-966ECB80EAD1",
+        "detail": "bond",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "11DA7B7B-41FF-4A93-9F34-DB87D9C98907",
+        "material": "7BC538A1-4917-4C67-B3AB-B2CC5E514634",
+        "detail": "bond",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "85D151B2-A551-4822-A99A-F8A0C684E460",
+        "material": "766FE3B3-0E3F-4218-8B16-9A4AC141CC56",
+        "detail": "bond",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "71ED8D04-D753-4C9C-92A3-C10E2DCEA99D",
+        "material": "78B89E4D-E941-4DEC-9FE6-CC2E6A5F12F0",
+        "detail": "bond",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "F261CBD3-2224-4409-A439-5DA819DA7282",
+        "material": "A699B1CD-9AF6-4EAD-9859-A5D07B808B65",
+        "detail": "angle",
+        "vertices": 1261,
+        "indices": 6912
+      },
+      {
+        "geometry": "F5DC1D0D-AE3B-431D-A4E1-B13EC99B4540",
+        "material": "4DA1851B-D183-430E-9AA6-DA25492F4BB2",
+        "detail": "angle",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "232B82EC-FCC2-4882-916B-2BEBADB0D63E",
+        "material": "2EA1031F-2C36-4895-A2F5-C7874656099F",
+        "detail": "angle",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "FD8C36DC-6AEB-42FE-8330-47244FD95136",
+        "material": "52EBA27E-575C-48CC-9882-597AEF034DAA",
+        "detail": "polarity",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "79FEFB28-D072-4B46-A264-E92E65C42E1B",
+        "material": "483968A8-9B23-42AC-8F3F-C7CBED378F36",
+        "detail": "polarity",
+        "vertices": 83,
+        "indices": 120
+      },
+      {
+        "geometry": "9C83F27F-B1C0-4887-BED0-DD87846499C3",
+        "material": "7BBD0EA9-72FB-4ABD-991F-AFE2A6EC2209",
+        "detail": "polarity",
+        "vertices": 100,
+        "indices": 192
+      }
+    ],
+    "bounds": {
+      "minX": -0.31774962661193373,
+      "maxX": 0.2515050553362937,
+      "minY": -0.2923406166265212,
+      "maxY": 0.39239742713514364,
+      "visibleVertices": 6995,
+      "clippedVertices": 0
+    },
+    "rulerBounds": {
+      "minX": -0.3086094308932337,
+      "maxX": 0.3306417645593434,
+      "minY": -0.5519736780169483,
+      "maxY": -0.4146137832687007
+    },
+    "comparisonRatio": null,
+    "habitat": {
+      "name": "molecular-observatory",
+      "leaf": {
+        "visible": false,
+        "y": 0,
+        "scale": 1,
+        "meshes": 0
+      },
+      "ground": {
+        "visible": false,
+        "y": -1.508
+      },
+      "floorTarget": -0.8480000044703485,
+      "key": {
+        "directional": true,
+        "shadow": false,
+        "intensity": 1.65
+      }
+    },
+    "waterView": "guides",
+    "pose": {
+      "guides": true,
+      "angle": true,
+      "polarity": true,
+      "atoms": true,
+      "bonds": true
+    },
+    "draws": 349,
+    "renders": 19
+  },
+  "oxygenPick": {
+    "x": 538,
+    "y": 509,
+    "id": "water",
+    "wanted": "oxygen",
+    "marginPx": 1,
+    "triangle": 73
+  },
+  "views": [
+    {
+      "type": "webgl",
+      "kind": "water",
+      "stats": {
+        "bodyExtent": 1,
+        "bodyReferenceMeters": 2.75e-10,
+        "reference": "catalog-characteristic-size",
+        "coordinateUnits": "Angstrom",
+        "nuclearScaleAngstrom": 2.75,
+        "nuclearCoordinatesAngstrom": {
+          "oxygen": [
+            0,
+            0,
+            0
+          ],
+          "hydrogens": [
+            [
+              0.7572078351983744,
+              0.5865297386443347,
+              0
+            ],
+            [
+              -0.7572078351983744,
+              0.5865297386443347,
+              0
+            ]
+          ]
+        },
+        "centerYOffset": -0.055,
+        "ohLengthAngstrom": 0.9578,
+        "hohAngleDegrees": 104.4776,
+        "oxygenDisplayRadius": 0.18,
+        "hydrogenDisplayRadius": 0.1,
+        "atomRadiiIllustrative": true,
+        "bondWidthsIllustrative": true,
+        "dipoleConvention": "chemistry-arrow-toward-negative-oxygen",
+        "dipoleMagnitudeNotToScale": true,
+        "electronCloud": false,
+        "drawables": 13,
+        "triangles": 11784,
+        "vertices": 6995,
+        "ownedGeometries": 11,
+        "nativeSites": 5
+      },
+      "scale": 3,
+      "declaredExtent": 1,
+      "dimension": "x",
+      "measureCenter": 0,
+      "bodyReference": 1,
+      "rulerReference": 0.9999999999999997,
+      "rulerEnds": [
+        -0.49999999999999983,
+        0.49999999999999983
+      ],
+      "aligned": 0.9999999999999999,
+      "targetError": 0,
+      "aim": [
+        0,
+        -0.165,
+        0.54
+      ],
+      "yaw": 0,
+      "pitch": 0,
+      "detail": "oxygen",
+      "near": 0.002,
+      "meshes": [
+        {
+          "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+          "material": "4794D64D-23C5-48C6-B66E-9E2327E50D91",
+          "detail": "oxygen",
+          "vertices": 1617,
+          "indices": 8928
+        },
+        {
+          "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+          "material": "E9DA27E2-29F7-4403-9010-CBB8ACD269EC",
+          "detail": "hydrogens",
+          "vertices": 1617,
+          "indices": 8928
+        },
+        {
+          "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+          "material": "54132790-B5AD-4867-AEAC-3170DE3ECA77",
+          "detail": "hydrogens",
+          "vertices": 1617,
+          "indices": 8928
+        },
+        {
+          "geometry": "4DBBCE18-3722-40B6-85F2-5A928688A897",
+          "material": "B772A29B-6A78-4636-B6B2-966ECB80EAD1",
+          "detail": "bond",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "11DA7B7B-41FF-4A93-9F34-DB87D9C98907",
+          "material": "7BC538A1-4917-4C67-B3AB-B2CC5E514634",
+          "detail": "bond",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "85D151B2-A551-4822-A99A-F8A0C684E460",
+          "material": "766FE3B3-0E3F-4218-8B16-9A4AC141CC56",
+          "detail": "bond",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "71ED8D04-D753-4C9C-92A3-C10E2DCEA99D",
+          "material": "78B89E4D-E941-4DEC-9FE6-CC2E6A5F12F0",
+          "detail": "bond",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "F261CBD3-2224-4409-A439-5DA819DA7282",
+          "material": "A699B1CD-9AF6-4EAD-9859-A5D07B808B65",
+          "detail": "angle",
+          "vertices": 1261,
+          "indices": 6912
+        },
+        {
+          "geometry": "F5DC1D0D-AE3B-431D-A4E1-B13EC99B4540",
+          "material": "4DA1851B-D183-430E-9AA6-DA25492F4BB2",
+          "detail": "angle",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "232B82EC-FCC2-4882-916B-2BEBADB0D63E",
+          "material": "2EA1031F-2C36-4895-A2F5-C7874656099F",
+          "detail": "angle",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "FD8C36DC-6AEB-42FE-8330-47244FD95136",
+          "material": "52EBA27E-575C-48CC-9882-597AEF034DAA",
+          "detail": "polarity",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "79FEFB28-D072-4B46-A264-E92E65C42E1B",
+          "material": "483968A8-9B23-42AC-8F3F-C7CBED378F36",
+          "detail": "polarity",
+          "vertices": 83,
+          "indices": 120
+        },
+        {
+          "geometry": "9C83F27F-B1C0-4887-BED0-DD87846499C3",
+          "material": "7BBD0EA9-72FB-4ABD-991F-AFE2A6EC2209",
+          "detail": "polarity",
+          "vertices": 100,
+          "indices": 192
+        }
+      ],
+      "bounds": {
+        "minX": -0.609557286520511,
+        "maxX": 0.609557286520511,
+        "minY": -0.4977307361342133,
+        "maxY": 0.8652640213631335,
+        "visibleVertices": 5251,
+        "clippedVertices": 0
+      },
+      "rulerBounds": {
+        "minX": -0.7974857485075272,
+        "maxX": 0.7974857485075272,
+        "minY": -1.155097628581442,
+        "maxY": -0.9346655327445864
+      },
+      "comparisonRatio": null,
+      "habitat": {
+        "name": "molecular-observatory",
+        "leaf": {
+          "visible": false,
+          "y": 0,
+          "scale": 1,
+          "meshes": 0
+        },
+        "ground": {
+          "visible": false,
+          "y": -1.508
+        },
+        "floorTarget": -0.8480000044703485,
+        "key": {
+          "directional": true,
+          "shadow": false,
+          "intensity": 1.65
+        }
+      },
+      "waterView": "guides",
+      "pose": {
+        "guides": false,
+        "angle": false,
+        "polarity": false,
+        "atoms": true,
+        "bonds": true
+      },
+      "draws": 403,
+      "renders": 23,
+      "nativePick": {
+        "x": 529,
+        "y": 401,
+        "id": "water",
+        "wanted": "oxygen",
+        "marginPx": 1,
+        "triangle": 0
+      }
+    },
+    {
+      "type": "webgl",
+      "kind": "water",
+      "stats": {
+        "bodyExtent": 1,
+        "bodyReferenceMeters": 2.75e-10,
+        "reference": "catalog-characteristic-size",
+        "coordinateUnits": "Angstrom",
+        "nuclearScaleAngstrom": 2.75,
+        "nuclearCoordinatesAngstrom": {
+          "oxygen": [
+            0,
+            0,
+            0
+          ],
+          "hydrogens": [
+            [
+              0.7572078351983744,
+              0.5865297386443347,
+              0
+            ],
+            [
+              -0.7572078351983744,
+              0.5865297386443347,
+              0
+            ]
+          ]
+        },
+        "centerYOffset": -0.055,
+        "ohLengthAngstrom": 0.9578,
+        "hohAngleDegrees": 104.4776,
+        "oxygenDisplayRadius": 0.18,
+        "hydrogenDisplayRadius": 0.1,
+        "atomRadiiIllustrative": true,
+        "bondWidthsIllustrative": true,
+        "dipoleConvention": "chemistry-arrow-toward-negative-oxygen",
+        "dipoleMagnitudeNotToScale": true,
+        "electronCloud": false,
+        "drawables": 13,
+        "triangles": 11784,
+        "vertices": 6995,
+        "ownedGeometries": 11,
+        "nativeSites": 5
+      },
+      "scale": 3,
+      "declaredExtent": 1,
+      "dimension": "x",
+      "measureCenter": 0,
+      "bodyReference": 1,
+      "rulerReference": 0.9999999999999997,
+      "rulerEnds": [
+        -0.49999999999999983,
+        0.49999999999999983
+      ],
+      "aligned": 0.9999999992292388,
+      "targetError": 0.00006674579369090324,
+      "aim": [
+        0.826,
+        0.4749,
+        0.3
+      ],
+      "yaw": 0,
+      "pitch": 0,
+      "detail": "hydrogens",
+      "near": 0.002,
+      "meshes": [
+        {
+          "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+          "material": "4794D64D-23C5-48C6-B66E-9E2327E50D91",
+          "detail": "oxygen",
+          "vertices": 1617,
+          "indices": 8928
+        },
+        {
+          "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+          "material": "E9DA27E2-29F7-4403-9010-CBB8ACD269EC",
+          "detail": "hydrogens",
+          "vertices": 1617,
+          "indices": 8928
+        },
+        {
+          "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+          "material": "54132790-B5AD-4867-AEAC-3170DE3ECA77",
+          "detail": "hydrogens",
+          "vertices": 1617,
+          "indices": 8928
+        },
+        {
+          "geometry": "4DBBCE18-3722-40B6-85F2-5A928688A897",
+          "material": "B772A29B-6A78-4636-B6B2-966ECB80EAD1",
+          "detail": "bond",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "11DA7B7B-41FF-4A93-9F34-DB87D9C98907",
+          "material": "7BC538A1-4917-4C67-B3AB-B2CC5E514634",
+          "detail": "bond",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "85D151B2-A551-4822-A99A-F8A0C684E460",
+          "material": "766FE3B3-0E3F-4218-8B16-9A4AC141CC56",
+          "detail": "bond",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "71ED8D04-D753-4C9C-92A3-C10E2DCEA99D",
+          "material": "78B89E4D-E941-4DEC-9FE6-CC2E6A5F12F0",
+          "detail": "bond",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "F261CBD3-2224-4409-A439-5DA819DA7282",
+          "material": "A699B1CD-9AF6-4EAD-9859-A5D07B808B65",
+          "detail": "angle",
+          "vertices": 1261,
+          "indices": 6912
+        },
+        {
+          "geometry": "F5DC1D0D-AE3B-431D-A4E1-B13EC99B4540",
+          "material": "4DA1851B-D183-430E-9AA6-DA25492F4BB2",
+          "detail": "angle",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "232B82EC-FCC2-4882-916B-2BEBADB0D63E",
+          "material": "2EA1031F-2C36-4895-A2F5-C7874656099F",
+          "detail": "angle",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "FD8C36DC-6AEB-42FE-8330-47244FD95136",
+          "material": "52EBA27E-575C-48CC-9882-597AEF034DAA",
+          "detail": "polarity",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "79FEFB28-D072-4B46-A264-E92E65C42E1B",
+          "material": "483968A8-9B23-42AC-8F3F-C7CBED378F36",
+          "detail": "polarity",
+          "vertices": 83,
+          "indices": 120
+        },
+        {
+          "geometry": "9C83F27F-B1C0-4887-BED0-DD87846499C3",
+          "material": "7BBD0EA9-72FB-4ABD-991F-AFE2A6EC2209",
+          "detail": "polarity",
+          "vertices": 100,
+          "indices": 192
+        }
+      ],
+      "bounds": {
+        "minX": -1.5508568361345432,
+        "maxX": 0.2256091747091133,
+        "minY": -1.6260029110468281,
+        "maxY": 0.38473909303364406,
+        "visibleVertices": 5251,
+        "clippedVertices": 0
+      },
+      "rulerBounds": {
+        "minX": -1.734933633148058,
+        "maxX": 0.5045458828419854,
+        "minY": -2.436046861288891,
+        "maxY": -2.121155415406665
+      },
+      "comparisonRatio": null,
+      "habitat": {
+        "name": "molecular-observatory",
+        "leaf": {
+          "visible": false,
+          "y": 0,
+          "scale": 1,
+          "meshes": 0
+        },
+        "ground": {
+          "visible": false,
+          "y": -1.508
+        },
+        "floorTarget": -0.8480000044703485,
+        "key": {
+          "directional": true,
+          "shadow": false,
+          "intensity": 1.65
+        }
+      },
+      "waterView": "guides",
+      "pose": {
+        "guides": false,
+        "angle": false,
+        "polarity": false,
+        "atoms": true,
+        "bonds": true
+      },
+      "draws": 435,
+      "renders": 26,
+      "nativePick": {
+        "x": 531,
+        "y": 434,
+        "id": "water",
+        "wanted": "hydrogens",
+        "marginPx": 1,
+        "triangle": 0
+      }
+    },
+    {
+      "type": "webgl",
+      "kind": "water",
+      "stats": {
+        "bodyExtent": 1,
+        "bodyReferenceMeters": 2.75e-10,
+        "reference": "catalog-characteristic-size",
+        "coordinateUnits": "Angstrom",
+        "nuclearScaleAngstrom": 2.75,
+        "nuclearCoordinatesAngstrom": {
+          "oxygen": [
+            0,
+            0,
+            0
+          ],
+          "hydrogens": [
+            [
+              0.7572078351983744,
+              0.5865297386443347,
+              0
+            ],
+            [
+              -0.7572078351983744,
+              0.5865297386443347,
+              0
+            ]
+          ]
+        },
+        "centerYOffset": -0.055,
+        "ohLengthAngstrom": 0.9578,
+        "hohAngleDegrees": 104.4776,
+        "oxygenDisplayRadius": 0.18,
+        "hydrogenDisplayRadius": 0.1,
+        "atomRadiiIllustrative": true,
+        "bondWidthsIllustrative": true,
+        "dipoleConvention": "chemistry-arrow-toward-negative-oxygen",
+        "dipoleMagnitudeNotToScale": true,
+        "electronCloud": false,
+        "drawables": 13,
+        "triangles": 11784,
+        "vertices": 6995,
+        "ownedGeometries": 11,
+        "nativeSites": 5
+      },
+      "scale": 3,
+      "declaredExtent": 1,
+      "dimension": "x",
+      "measureCenter": 0,
+      "bodyReference": 1,
+      "rulerReference": 0.9999999999999997,
+      "rulerEnds": [
+        -0.49999999999999983,
+        0.49999999999999983
+      ],
+      "aligned": 0.999999999940301,
+      "targetError": 0.000013509660458650968,
+      "aim": [
+        0.5079,
+        0.2284,
+        0.051
+      ],
+      "yaw": 0,
+      "pitch": 0,
+      "detail": "bond",
+      "near": 0.002,
+      "meshes": [
+        {
+          "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+          "material": "4794D64D-23C5-48C6-B66E-9E2327E50D91",
+          "detail": "oxygen",
+          "vertices": 1617,
+          "indices": 8928
+        },
+        {
+          "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+          "material": "E9DA27E2-29F7-4403-9010-CBB8ACD269EC",
+          "detail": "hydrogens",
+          "vertices": 1617,
+          "indices": 8928
+        },
+        {
+          "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+          "material": "54132790-B5AD-4867-AEAC-3170DE3ECA77",
+          "detail": "hydrogens",
+          "vertices": 1617,
+          "indices": 8928
+        },
+        {
+          "geometry": "4DBBCE18-3722-40B6-85F2-5A928688A897",
+          "material": "B772A29B-6A78-4636-B6B2-966ECB80EAD1",
+          "detail": "bond",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "11DA7B7B-41FF-4A93-9F34-DB87D9C98907",
+          "material": "7BC538A1-4917-4C67-B3AB-B2CC5E514634",
+          "detail": "bond",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "85D151B2-A551-4822-A99A-F8A0C684E460",
+          "material": "766FE3B3-0E3F-4218-8B16-9A4AC141CC56",
+          "detail": "bond",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "71ED8D04-D753-4C9C-92A3-C10E2DCEA99D",
+          "material": "78B89E4D-E941-4DEC-9FE6-CC2E6A5F12F0",
+          "detail": "bond",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "F261CBD3-2224-4409-A439-5DA819DA7282",
+          "material": "A699B1CD-9AF6-4EAD-9859-A5D07B808B65",
+          "detail": "angle",
+          "vertices": 1261,
+          "indices": 6912
+        },
+        {
+          "geometry": "F5DC1D0D-AE3B-431D-A4E1-B13EC99B4540",
+          "material": "4DA1851B-D183-430E-9AA6-DA25492F4BB2",
+          "detail": "angle",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "232B82EC-FCC2-4882-916B-2BEBADB0D63E",
+          "material": "2EA1031F-2C36-4895-A2F5-C7874656099F",
+          "detail": "angle",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "FD8C36DC-6AEB-42FE-8330-47244FD95136",
+          "material": "52EBA27E-575C-48CC-9882-597AEF034DAA",
+          "detail": "polarity",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "79FEFB28-D072-4B46-A264-E92E65C42E1B",
+          "material": "483968A8-9B23-42AC-8F3F-C7CBED378F36",
+          "detail": "polarity",
+          "vertices": 83,
+          "indices": 120
+        },
+        {
+          "geometry": "9C83F27F-B1C0-4887-BED0-DD87846499C3",
+          "material": "7BBD0EA9-72FB-4ABD-991F-AFE2A6EC2209",
+          "detail": "polarity",
+          "vertices": 100,
+          "indices": 192
+        }
+      ],
+      "bounds": {
+        "minX": -2.149546396346993,
+        "maxX": 0.7558041430818474,
+        "minY": -2.178709807329191,
+        "maxY": 1.1336299638040668,
+        "visibleVertices": 5251,
+        "clippedVertices": 0
+      },
+      "rulerBounds": {
+        "minX": -2.3292220508862376,
+        "maxX": 1.1527449636996818,
+        "minY": -3.3016021707217718,
+        "maxY": -2.806975738697457
+      },
+      "comparisonRatio": null,
+      "habitat": {
+        "name": "molecular-observatory",
+        "leaf": {
+          "visible": false,
+          "y": 0,
+          "scale": 1,
+          "meshes": 0
+        },
+        "ground": {
+          "visible": false,
+          "y": -1.508
+        },
+        "floorTarget": -0.8480000044703485,
+        "key": {
+          "directional": true,
+          "shadow": false,
+          "intensity": 1.65
+        }
+      },
+      "waterView": "guides",
+      "pose": {
+        "guides": false,
+        "angle": false,
+        "polarity": false,
+        "atoms": true,
+        "bonds": true
+      },
+      "draws": 459,
+      "renders": 29,
+      "nativePick": {
+        "x": 524,
+        "y": 567,
+        "id": "water",
+        "wanted": "bond",
+        "marginPx": 1,
+        "triangle": 0
+      }
+    },
+    {
+      "type": "webgl",
+      "kind": "water",
+      "stats": {
+        "bodyExtent": 1,
+        "bodyReferenceMeters": 2.75e-10,
+        "reference": "catalog-characteristic-size",
+        "coordinateUnits": "Angstrom",
+        "nuclearScaleAngstrom": 2.75,
+        "nuclearCoordinatesAngstrom": {
+          "oxygen": [
+            0,
+            0,
+            0
+          ],
+          "hydrogens": [
+            [
+              0.7572078351983744,
+              0.5865297386443347,
+              0
+            ],
+            [
+              -0.7572078351983744,
+              0.5865297386443347,
+              0
+            ]
+          ]
+        },
+        "centerYOffset": -0.055,
+        "ohLengthAngstrom": 0.9578,
+        "hohAngleDegrees": 104.4776,
+        "oxygenDisplayRadius": 0.18,
+        "hydrogenDisplayRadius": 0.1,
+        "atomRadiiIllustrative": true,
+        "bondWidthsIllustrative": true,
+        "dipoleConvention": "chemistry-arrow-toward-negative-oxygen",
+        "dipoleMagnitudeNotToScale": true,
+        "electronCloud": false,
+        "drawables": 13,
+        "triangles": 11784,
+        "vertices": 6995,
+        "ownedGeometries": 11,
+        "nativeSites": 5
+      },
+      "scale": 3,
+      "declaredExtent": 1,
+      "dimension": "x",
+      "measureCenter": 0,
+      "bodyReference": 1,
+      "rulerReference": 0.9999999999999997,
+      "rulerEnds": [
+        -0.49999999999999983,
+        0.49999999999999983
+      ],
+      "aligned": 1,
+      "targetError": 1.1107649934270853e-16,
+      "aim": [
+        0,
+        0.525,
+        0.018
+      ],
+      "yaw": 0,
+      "pitch": 0,
+      "detail": "angle",
+      "near": 0.002,
+      "meshes": [
+        {
+          "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+          "material": "4794D64D-23C5-48C6-B66E-9E2327E50D91",
+          "detail": "oxygen",
+          "vertices": 1617,
+          "indices": 8928
+        },
+        {
+          "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+          "material": "E9DA27E2-29F7-4403-9010-CBB8ACD269EC",
+          "detail": "hydrogens",
+          "vertices": 1617,
+          "indices": 8928
+        },
+        {
+          "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+          "material": "54132790-B5AD-4867-AEAC-3170DE3ECA77",
+          "detail": "hydrogens",
+          "vertices": 1617,
+          "indices": 8928
+        },
+        {
+          "geometry": "4DBBCE18-3722-40B6-85F2-5A928688A897",
+          "material": "B772A29B-6A78-4636-B6B2-966ECB80EAD1",
+          "detail": "bond",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "11DA7B7B-41FF-4A93-9F34-DB87D9C98907",
+          "material": "7BC538A1-4917-4C67-B3AB-B2CC5E514634",
+          "detail": "bond",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "85D151B2-A551-4822-A99A-F8A0C684E460",
+          "material": "766FE3B3-0E3F-4218-8B16-9A4AC141CC56",
+          "detail": "bond",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "71ED8D04-D753-4C9C-92A3-C10E2DCEA99D",
+          "material": "78B89E4D-E941-4DEC-9FE6-CC2E6A5F12F0",
+          "detail": "bond",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "F261CBD3-2224-4409-A439-5DA819DA7282",
+          "material": "A699B1CD-9AF6-4EAD-9859-A5D07B808B65",
+          "detail": "angle",
+          "vertices": 1261,
+          "indices": 6912
+        },
+        {
+          "geometry": "F5DC1D0D-AE3B-431D-A4E1-B13EC99B4540",
+          "material": "4DA1851B-D183-430E-9AA6-DA25492F4BB2",
+          "detail": "angle",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "232B82EC-FCC2-4882-916B-2BEBADB0D63E",
+          "material": "2EA1031F-2C36-4895-A2F5-C7874656099F",
+          "detail": "angle",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "FD8C36DC-6AEB-42FE-8330-47244FD95136",
+          "material": "52EBA27E-575C-48CC-9882-597AEF034DAA",
+          "detail": "polarity",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "79FEFB28-D072-4B46-A264-E92E65C42E1B",
+          "material": "483968A8-9B23-42AC-8F3F-C7CBED378F36",
+          "detail": "polarity",
+          "vertices": 83,
+          "indices": 120
+        },
+        {
+          "geometry": "9C83F27F-B1C0-4887-BED0-DD87846499C3",
+          "material": "7BBD0EA9-72FB-4ABD-991F-AFE2A6EC2209",
+          "detail": "polarity",
+          "vertices": 100,
+          "indices": 192
+        }
+      ],
+      "bounds": {
+        "minX": -0.9743921191555086,
+        "maxX": 0.9743921191555086,
+        "minY": -1.9191489038501544,
+        "maxY": 0.35466319519235834,
+        "visibleVertices": 6712,
+        "clippedVertices": 0
+      },
+      "rulerBounds": {
+        "minX": -1.2391228528673504,
+        "maxX": 1.2391228528673504,
+        "minY": -2.7667864280627863,
+        "maxY": -2.416794281420382
+      },
+      "comparisonRatio": null,
+      "habitat": {
+        "name": "molecular-observatory",
+        "leaf": {
+          "visible": false,
+          "y": 0,
+          "scale": 1,
+          "meshes": 0
+        },
+        "ground": {
+          "visible": false,
+          "y": -1.508
+        },
+        "floorTarget": -0.8480000044703485,
+        "key": {
+          "directional": true,
+          "shadow": false,
+          "intensity": 1.65
+        }
+      },
+      "waterView": "guides",
+      "pose": {
+        "guides": false,
+        "angle": true,
+        "polarity": false,
+        "atoms": true,
+        "bonds": true
+      },
+      "draws": 492,
+      "renders": 32,
+      "nativePick": {
+        "x": 756,
+        "y": 652,
+        "id": "water",
+        "wanted": "angle",
+        "marginPx": 1,
+        "triangle": 81
+      }
+    },
+    {
+      "type": "webgl",
+      "kind": "water",
+      "stats": {
+        "bodyExtent": 1,
+        "bodyReferenceMeters": 2.75e-10,
+        "reference": "catalog-characteristic-size",
+        "coordinateUnits": "Angstrom",
+        "nuclearScaleAngstrom": 2.75,
+        "nuclearCoordinatesAngstrom": {
+          "oxygen": [
+            0,
+            0,
+            0
+          ],
+          "hydrogens": [
+            [
+              0.7572078351983744,
+              0.5865297386443347,
+              0
+            ],
+            [
+              -0.7572078351983744,
+              0.5865297386443347,
+              0
+            ]
+          ]
+        },
+        "centerYOffset": -0.055,
+        "ohLengthAngstrom": 0.9578,
+        "hohAngleDegrees": 104.4776,
+        "oxygenDisplayRadius": 0.18,
+        "hydrogenDisplayRadius": 0.1,
+        "atomRadiiIllustrative": true,
+        "bondWidthsIllustrative": true,
+        "dipoleConvention": "chemistry-arrow-toward-negative-oxygen",
+        "dipoleMagnitudeNotToScale": true,
+        "electronCloud": false,
+        "drawables": 13,
+        "triangles": 11784,
+        "vertices": 6995,
+        "ownedGeometries": 11,
+        "nativeSites": 5
+      },
+      "scale": 3,
+      "declaredExtent": 1,
+      "dimension": "x",
+      "measureCenter": 0,
+      "bodyReference": 1,
+      "rulerReference": 0.9999999999999997,
+      "rulerEnds": [
+        -0.49999999999999983,
+        0.49999999999999983
+      ],
+      "aligned": 1,
+      "targetError": 0,
+      "aim": [
+        -1.41,
+        0.24,
+        0.042
+      ],
+      "yaw": 0,
+      "pitch": 0,
+      "detail": "polarity",
+      "near": 0.002,
+      "meshes": [
+        {
+          "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+          "material": "4794D64D-23C5-48C6-B66E-9E2327E50D91",
+          "detail": "oxygen",
+          "vertices": 1617,
+          "indices": 8928
+        },
+        {
+          "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+          "material": "E9DA27E2-29F7-4403-9010-CBB8ACD269EC",
+          "detail": "hydrogens",
+          "vertices": 1617,
+          "indices": 8928
+        },
+        {
+          "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+          "material": "54132790-B5AD-4867-AEAC-3170DE3ECA77",
+          "detail": "hydrogens",
+          "vertices": 1617,
+          "indices": 8928
+        },
+        {
+          "geometry": "4DBBCE18-3722-40B6-85F2-5A928688A897",
+          "material": "B772A29B-6A78-4636-B6B2-966ECB80EAD1",
+          "detail": "bond",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "11DA7B7B-41FF-4A93-9F34-DB87D9C98907",
+          "material": "7BC538A1-4917-4C67-B3AB-B2CC5E514634",
+          "detail": "bond",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "85D151B2-A551-4822-A99A-F8A0C684E460",
+          "material": "766FE3B3-0E3F-4218-8B16-9A4AC141CC56",
+          "detail": "bond",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "71ED8D04-D753-4C9C-92A3-C10E2DCEA99D",
+          "material": "78B89E4D-E941-4DEC-9FE6-CC2E6A5F12F0",
+          "detail": "bond",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "F261CBD3-2224-4409-A439-5DA819DA7282",
+          "material": "A699B1CD-9AF6-4EAD-9859-A5D07B808B65",
+          "detail": "angle",
+          "vertices": 1261,
+          "indices": 6912
+        },
+        {
+          "geometry": "F5DC1D0D-AE3B-431D-A4E1-B13EC99B4540",
+          "material": "4DA1851B-D183-430E-9AA6-DA25492F4BB2",
+          "detail": "angle",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "232B82EC-FCC2-4882-916B-2BEBADB0D63E",
+          "material": "2EA1031F-2C36-4895-A2F5-C7874656099F",
+          "detail": "angle",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "FD8C36DC-6AEB-42FE-8330-47244FD95136",
+          "material": "52EBA27E-575C-48CC-9882-597AEF034DAA",
+          "detail": "polarity",
+          "vertices": 100,
+          "indices": 192
+        },
+        {
+          "geometry": "79FEFB28-D072-4B46-A264-E92E65C42E1B",
+          "material": "483968A8-9B23-42AC-8F3F-C7CBED378F36",
+          "detail": "polarity",
+          "vertices": 83,
+          "indices": 120
+        },
+        {
+          "geometry": "9C83F27F-B1C0-4887-BED0-DD87846499C3",
+          "material": "7BBD0EA9-72FB-4ABD-991F-AFE2A6EC2209",
+          "detail": "polarity",
+          "vertices": 100,
+          "indices": 192
+        }
+      ],
+      "bounds": {
+        "minX": -0.04768143427156248,
+        "maxX": 1.6122928194890591,
+        "minY": -1.120645694888628,
+        "maxY": 0.8467137505883019,
+        "visibleVertices": 5534,
+        "clippedVertices": 0
+      },
+      "rulerBounds": {
+        "minX": -0.05689105035202307,
+        "maxX": 1.756060481993555,
+        "minY": -1.7294423916154664,
+        "maxY": -1.4769888843032861
+      },
+      "comparisonRatio": null,
+      "habitat": {
+        "name": "molecular-observatory",
+        "leaf": {
+          "visible": false,
+          "y": 0,
+          "scale": 1,
+          "meshes": 0
+        },
+        "ground": {
+          "visible": false,
+          "y": -1.508
+        },
+        "floorTarget": -0.8480000044703485,
+        "key": {
+          "directional": true,
+          "shadow": false,
+          "intensity": 1.65
+        }
+      },
+      "waterView": "guides",
+      "pose": {
+        "guides": false,
+        "angle": false,
+        "polarity": true,
+        "atoms": true,
+        "bonds": true
+      },
+      "draws": 525,
+      "renders": 35,
+      "nativePick": {
+        "x": 538,
+        "y": 646,
+        "id": "water",
+        "wanted": "polarity",
+        "marginPx": 1,
+        "triangle": 0
+      }
+    }
+  ],
+  "restored": {
+    "type": "webgl",
+    "kind": "water",
+    "stats": {
+      "bodyExtent": 1,
+      "bodyReferenceMeters": 2.75e-10,
+      "reference": "catalog-characteristic-size",
+      "coordinateUnits": "Angstrom",
+      "nuclearScaleAngstrom": 2.75,
+      "nuclearCoordinatesAngstrom": {
+        "oxygen": [
+          0,
+          0,
+          0
+        ],
+        "hydrogens": [
+          [
+            0.7572078351983744,
+            0.5865297386443347,
+            0
+          ],
+          [
+            -0.7572078351983744,
+            0.5865297386443347,
+            0
+          ]
+        ]
+      },
+      "centerYOffset": -0.055,
+      "ohLengthAngstrom": 0.9578,
+      "hohAngleDegrees": 104.4776,
+      "oxygenDisplayRadius": 0.18,
+      "hydrogenDisplayRadius": 0.1,
+      "atomRadiiIllustrative": true,
+      "bondWidthsIllustrative": true,
+      "dipoleConvention": "chemistry-arrow-toward-negative-oxygen",
+      "dipoleMagnitudeNotToScale": true,
+      "electronCloud": false,
+      "drawables": 13,
+      "triangles": 11784,
+      "vertices": 6995,
+      "ownedGeometries": 11,
+      "nativeSites": 5
+    },
+    "scale": 3,
+    "declaredExtent": 1,
+    "dimension": "x",
+    "measureCenter": 0,
+    "bodyReference": 1,
+    "rulerReference": 0.9999999999999997,
+    "rulerEnds": [
+      -0.49999999999999983,
+      0.49999999999999983
+    ],
+    "aligned": 1,
+    "targetError": 0,
+    "aim": [
+      0,
+      0,
+      0
+    ],
+    "yaw": 0.16,
+    "pitch": 0.10000000000000002,
+    "detail": "",
+    "near": 0.002,
+    "meshes": [
+      {
+        "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+        "material": "4794D64D-23C5-48C6-B66E-9E2327E50D91",
+        "detail": "oxygen",
+        "vertices": 1617,
+        "indices": 8928
+      },
+      {
+        "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+        "material": "E9DA27E2-29F7-4403-9010-CBB8ACD269EC",
+        "detail": "hydrogens",
+        "vertices": 1617,
+        "indices": 8928
+      },
+      {
+        "geometry": "01D47C65-A916-4939-839F-03D6BDDFCC7D",
+        "material": "54132790-B5AD-4867-AEAC-3170DE3ECA77",
+        "detail": "hydrogens",
+        "vertices": 1617,
+        "indices": 8928
+      },
+      {
+        "geometry": "4DBBCE18-3722-40B6-85F2-5A928688A897",
+        "material": "B772A29B-6A78-4636-B6B2-966ECB80EAD1",
+        "detail": "bond",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "11DA7B7B-41FF-4A93-9F34-DB87D9C98907",
+        "material": "7BC538A1-4917-4C67-B3AB-B2CC5E514634",
+        "detail": "bond",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "85D151B2-A551-4822-A99A-F8A0C684E460",
+        "material": "766FE3B3-0E3F-4218-8B16-9A4AC141CC56",
+        "detail": "bond",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "71ED8D04-D753-4C9C-92A3-C10E2DCEA99D",
+        "material": "78B89E4D-E941-4DEC-9FE6-CC2E6A5F12F0",
+        "detail": "bond",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "F261CBD3-2224-4409-A439-5DA819DA7282",
+        "material": "A699B1CD-9AF6-4EAD-9859-A5D07B808B65",
+        "detail": "angle",
+        "vertices": 1261,
+        "indices": 6912
+      },
+      {
+        "geometry": "F5DC1D0D-AE3B-431D-A4E1-B13EC99B4540",
+        "material": "4DA1851B-D183-430E-9AA6-DA25492F4BB2",
+        "detail": "angle",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "232B82EC-FCC2-4882-916B-2BEBADB0D63E",
+        "material": "2EA1031F-2C36-4895-A2F5-C7874656099F",
+        "detail": "angle",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "FD8C36DC-6AEB-42FE-8330-47244FD95136",
+        "material": "52EBA27E-575C-48CC-9882-597AEF034DAA",
+        "detail": "polarity",
+        "vertices": 100,
+        "indices": 192
+      },
+      {
+        "geometry": "79FEFB28-D072-4B46-A264-E92E65C42E1B",
+        "material": "483968A8-9B23-42AC-8F3F-C7CBED378F36",
+        "detail": "polarity",
+        "vertices": 83,
+        "indices": 120
+      },
+      {
+        "geometry": "9C83F27F-B1C0-4887-BED0-DD87846499C3",
+        "material": "7BBD0EA9-72FB-4ABD-991F-AFE2A6EC2209",
+        "detail": "polarity",
+        "vertices": 100,
+        "indices": 192
+      }
+    ],
+    "bounds": {
+      "minX": -0.31774962661193373,
+      "maxX": 0.2515050553362937,
+      "minY": -0.2923406166265212,
+      "maxY": 0.39239742713514364,
+      "visibleVertices": 6995,
+      "clippedVertices": 0
+    },
+    "rulerBounds": {
+      "minX": -0.3086094308932337,
+      "maxX": 0.3306417645593434,
+      "minY": -0.5519736780169483,
+      "maxY": -0.4146137832687007
+    },
+    "comparisonRatio": null,
+    "habitat": {
+      "name": "molecular-observatory",
+      "leaf": {
+        "visible": false,
+        "y": 0,
+        "scale": 1,
+        "meshes": 0
+      },
+      "ground": {
+        "visible": false,
+        "y": -1.508
+      },
+      "floorTarget": -0.8480000044703485,
+      "key": {
+        "directional": true,
+        "shadow": false,
+        "intensity": 1.65
+      }
+    },
+    "waterView": "guides",
+    "pose": {
+      "guides": true,
+      "angle": true,
+      "polarity": true,
+      "atoms": true,
+      "bonds": true
+    },
+    "draws": 553,
+    "renders": 37
+  },
+  "errors": [],
+  "external": []
+}

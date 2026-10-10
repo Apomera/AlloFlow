@@ -1,0 +1,17 @@
+{
+  "artifact": {
+    "name": "view_misc_panels_module.js",
+    "sha256": "8a96620ac45717c7504699e6ee8cf84310633a84baa640414611a12056a26fff",
+    "pin": "8a96620a",
+    "mirrors": [
+      "desktop/web-app/public/view_misc_panels_module.js",
+      "desktop/app-build/view_misc_panels_module.js",
+      "desktop/web-app/build/view_misc_panels_module.js"
+    ]
+  },
+  "hosts": {
+    "AlloFlowANTI.txt": "6d262e4f7f632e134ecd541412d6d2070f163ec5702f871edb1c5dbbf597153d",
+    "desktop/web-app/src/AlloFlowANTI.txt": "6d262e4f7f632e134ecd541412d6d2070f163ec5702f871edb1c5dbbf597153d",
+    "desktop/web-app/src/App.jsx": "6d262e4f7f632e134ecd541412d6d2070f163ec5702f871edb1c5dbbf597153d"
+  }
+}

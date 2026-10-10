@@ -1,0 +1,45 @@
+{
+  "completed": true,
+  "startedAt": "2026-10-07T15:52:39.715Z",
+  "harnessSha256": "6eb290ebfdb8a8a9878bdf38fe676d4ea90cad2da1c10524dbee1fc00230c792",
+  "driverSha256": "e3d46165b3c59c670320261cc9ca3176805b846b12d501e94c2ec0fe196a1953",
+  "browserPath": "C:/Users/cabba/AppData/Local/ms-playwright",
+  "preserved": [
+    {
+      "name": "native-beta-check.cjs",
+      "sha256": "623aa8e14b35f6f8c2620fef75f82b715b7ba37409d412130730cc7bef84bc6b"
+    },
+    {
+      "name": "native-beta-report/check.json",
+      "sha256": "8f584b4e75bc8646656dd16456ff8cdab0a618866802696582e1ef4697477638"
+    },
+    {
+      "name": "native-beta-report/baseline-beta09-edge-diffuse.png",
+      "sha256": "30bf404272ba4a736fc392b87ea2b511aabda6313ec81201e66a01eb40a9a1e8"
+    },
+    {
+      "name": "native-beta-report/candidate-beta09-edge-diffuse.png",
+      "sha256": "30bf404272ba4a736fc392b87ea2b511aabda6313ec81201e66a01eb40a9a1e8"
+    },
+    {
+      "name": "native-beta-report/baseline-beta099-rear-full.png",
+      "sha256": "172171ad5693d8cc26c8bdfa431b8f340d091b8a6d2682464f09f13bba5f7899"
+    },
+    {
+      "name": "native-beta-report/candidate-beta099-rear-full.png",
+      "sha256": "4ce23738d43b49c79467fe6e74d8a2a5ef8eec8292bbda01353671209612847e"
+    },
+    {
+      "name": "baseline-renderer.js",
+      "sha256": "c0cc2486b3d5edd620e5975daec3d23b8f2e995a24db151be27ac30820d058c7"
+    },
+    {
+      "name": "candidate-renderer.js",
+      "sha256": "8121868ef2aa764c5e3e88284089ebf76fe0c9e1ec264ee4ae95fe434d7e9bc9"
+    }
+  ],
+  "exitCode": 0,
+  "finishedAt": "2026-10-07T15:53:25.412Z",
+  "harnessUnchanged": true,
+  "preservedUnchanged": true
+}

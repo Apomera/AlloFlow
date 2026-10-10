@@ -1,0 +1,105 @@
+{
+  "beforeSHA256": "bb4526d583db90d928008a1fa9b7540dfef8c8acdfd4055c0fd71225454011bf",
+  "candidateSHA256": "0af58d9afd30ed0de275caf53197320ddabed9308f08b191cce7bf4927d83f84",
+  "checkerSHA256": "8e08fc1843d624553ddb71d2eb71c90978a85eb4831171da2fd9b99890a1f6f1",
+  "evidenceSHA256": "120a4809bd8ee96f695997d5ae6c9aaae3e70b20a9015c49048ed5304c4f3f83",
+  "passed": 12,
+  "failed": 0,
+  "checks": 84083,
+  "negativeTests": [
+    {
+      "kind": "raised-lobe",
+      "error": "fr-manikin-ear-left-helix lower rim front seats below actual lobe skin"
+    },
+    {
+      "kind": "invalid-normal",
+      "error": "fr-manikin-ear-left-helix unit normals"
+    }
+  ],
+  "firstCase": {
+    "shells": [
+      {
+        "name": "fr-manikin-ear-left-helix",
+        "vertices": 1105,
+        "faces": 2048,
+        "volume": 0.000018749716464663428,
+        "minAgreement": 0.6216493373284323,
+        "minNormal": 0.9999999592371448,
+        "maxNormal": 1.000000042251636,
+        "seamNormal": 0.9999999200431455
+      },
+      {
+        "name": "fr-manikin-ear-right-helix",
+        "vertices": 1105,
+        "faces": 2048,
+        "volume": 0.000018749716464663428,
+        "minAgreement": 0.6216493373284323,
+        "minNormal": 0.9999999592371448,
+        "maxNormal": 1.000000042251636,
+        "seamNormal": 0.9999999200431455
+      }
+    ],
+    "relief": [
+      {
+        "name": "fr-manikin-ear-left-helix",
+        "upperCount": 36,
+        "lowerCount": 11,
+        "upperRange": [
+          0.004862797059513695,
+          0.00524556097258266
+        ],
+        "lowerRange": [
+          -0.0006586880827583741,
+          -0.00045507529948242073
+        ],
+        "upperMean": 0.0050073037980276425,
+        "lowerMean": -0.0005722798821752074,
+        "boundaryRange": [
+          -0.001705595235860946,
+          -0.0009227864631312435
+        ],
+        "maxRear": -0.0009227864631312435,
+        "maxLowerCrossSection": -0.00045507529948242073,
+        "maxStep": 0.0010834995749154572
+      },
+      {
+        "name": "fr-manikin-ear-right-helix",
+        "upperCount": 36,
+        "lowerCount": 11,
+        "upperRange": [
+          0.004862797059513695,
+          0.00524556097258266
+        ],
+        "lowerRange": [
+          -0.0006586880827583724,
+          -0.00045507529948242073
+        ],
+        "upperMean": 0.0050073037980276425,
+        "lowerMean": -0.0005722798821752074,
+        "boundaryRange": [
+          -0.0017055952358609495,
+          -0.0009227864631312435
+        ],
+        "maxRear": -0.0009227864631312435,
+        "maxLowerCrossSection": -0.00045507529948242073,
+        "maxStep": 0.0010834995749154572
+      }
+    ],
+    "triangleCounts": [
+      {
+        "name": "fr-manikin-ear-left-helix",
+        "triangles": 2048
+      },
+      {
+        "name": "fr-manikin-ear-right-helix",
+        "triangles": 2048
+      }
+    ],
+    "resources": {
+      "geometries": 142,
+      "materials": 25,
+      "allocatedGeometries": 138,
+      "allocatedMaterials": 23
+    }
+  }
+}

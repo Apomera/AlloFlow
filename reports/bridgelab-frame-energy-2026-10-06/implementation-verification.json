@@ -1,0 +1,121 @@
+{
+  "status": "source-model-browser-passed-unit-validation-blocked",
+  "checkedAt": "2026-10-07T00:42:31.260Z",
+  "sourceSha256": "a8ad1578d7555df6f460d004da49b4bfc392dd817adb66d0d7ef6464189926a5",
+  "sourceMirrorsIdentical": true,
+  "syntaxValid": true,
+  "independentlyCheckedEnglishFiles": [
+    {
+      "file": "ui_strings.js",
+      "sha256": "be85509311461c168d85955430a31b6c342169b494848b3998393284980df4ab",
+      "literalFallbacksMatched": 1355
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "sha256": "be85509311461c168d85955430a31b6c342169b494848b3998393284980df4ab",
+      "literalFallbacksMatched": 1355
+    }
+  ],
+  "numericConfigurations": 144,
+  "numericProof": {
+    "file": "model-invariants-before-rounding.json",
+    "sweepSourceSha256": "fd5362d52c5b2515606f211c273adf0d4afb58be699898a5d1fbe10697517d2d",
+    "sweepMatchesCurrentSource": false,
+    "modelCodeUnchanged": true,
+    "finalDifference": "One sentence in the display text: Displayed values are rounded."
+  },
+  "browser": {
+    "passed": 3,
+    "kind": "preview",
+    "retries": 0,
+    "workers": 1,
+    "video": "off",
+    "startedAt": "2026-10-07T00:38:02.666Z",
+    "finishedAt": "2026-10-07T00:42:05.036Z"
+  },
+  "captures": [
+    {
+      "name": "frame-energy-1000-native.png",
+      "sha256": "fff3e64b7203ef821066dcac5929ed3e1cf50e280069927357d197254e44dc65",
+      "bytes": 28260,
+      "width": 270,
+      "height": 354
+    },
+    {
+      "name": "frame-energy-1000-tiny.png",
+      "sha256": "520e7e732c57ac480cc936b678e7140d0f2ea1fc7b5dc05735956e87bb563c0b",
+      "bytes": 29034,
+      "width": 270,
+      "height": 390
+    },
+    {
+      "name": "frame-energy-1000-decay.png",
+      "sha256": "1cf9806819379f8066450064b72f9780d540d5a912e6149ddfc3281307f3965a",
+      "bytes": 29823,
+      "width": 270,
+      "height": 390
+    },
+    {
+      "name": "frame-energy-320-native.png",
+      "sha256": "a88e66da45abce6cd2996b6ccee149f153478e752d1ddf80d5a133bdd6ad63ea",
+      "bytes": 28658,
+      "width": 226,
+      "height": 369
+    },
+    {
+      "name": "frame-energy-320-tiny.png",
+      "sha256": "69c57c00e4f4d5e39503f623196c1cce913955dc4f6321c16aa54ddebfce9ff3",
+      "bytes": 23920,
+      "width": 226,
+      "height": 405
+    },
+    {
+      "name": "frame-energy-320-decay.png",
+      "sha256": "c31c8c09b4eeaab73d4e4650e3ce31528e091f9b48403ec95f157a5160dfeac7",
+      "bytes": 26748,
+      "width": 226,
+      "height": 405
+    }
+  ],
+  "unit": {
+    "status": "not completed",
+    "declaredCases": 287,
+    "completedPassReport": false,
+    "attempts": [
+      {
+        "name": "unit-memory-interrupted-run.json",
+        "sha256": "bde740cdbe9740f2a9e16e3bac0c7a3364254b6ba6f5f367f381dc30c7949a78",
+        "startedAt": "2026-10-06T14:33:18.562Z",
+        "finishedAt": "2026-10-06T14:37:59.016Z",
+        "exitCode": 2147483651,
+        "status": "not completed successfully"
+      },
+      {
+        "name": "unit-stopped-retry-run.json",
+        "sha256": "f3d0ef0859f616a6a24022d6f1437bb368fbe6f4b14e17143dd026135acc9183",
+        "startedAt": "2026-10-06T19:49:27.083Z",
+        "finishedAt": null,
+        "exitCode": null,
+        "status": "interrupted"
+      },
+      {
+        "name": "unit-fork-startup-run.json",
+        "sha256": "d9dfba86b1d8535ee8ae007d5cd81a84ede5898bf267c0e7a49652ca76045186",
+        "startedAt": "2026-10-06T20:38:14.484Z",
+        "finishedAt": "2026-10-06T20:39:51.824Z",
+        "exitCode": 1,
+        "status": "failed"
+      },
+      {
+        "name": "unit-thread-startup-run.json",
+        "sha256": "1a109f4b890c303e869da5f0ce798bbd315431ff206c863ca36c91872e18ca47",
+        "startedAt": "2026-10-06T21:08:18.009Z",
+        "finishedAt": "2026-10-06T21:10:53.484Z",
+        "exitCode": 1,
+        "status": "failed"
+      }
+    ],
+    "limitation": "A full run exhausted native memory, a slow retry was interrupted, and both fresh fork and thread workers timed out before collecting tests."
+  },
+  "note": "Browser assertions are bound to the current source. The numerical sweep matches either that source or the exact source before the one final display sentence; normalization proves the model code is unchanged. No unit pass count is inferred from failed or interrupted runs."
+}

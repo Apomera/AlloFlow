@@ -1,0 +1,48 @@
+{
+  "sourceSha256": "71701ac5ab04329ce9fd69a7d1860b32806ab810c0cde448c2633b3ee33f4a3b",
+  "baselineSha256": "dcd071ce48b3bdee1fd2563bbaa7d08a202fef20e366db7f7e465278fa915e61",
+  "verifiedAt": "2026-10-09T23:06:11.565Z",
+  "desktopMirrorMatches": true,
+  "units": {
+    "passed": 65,
+    "total": 65,
+    "suites": [
+      "tests\\solar_system_challenge_rewards.test.js",
+      "tests\\solar_system_activity_navigation.test.js",
+      "tests\\solar_system_challenge_board.test.js",
+      "tests\\solar_system_quiz_workbench.test.js"
+    ]
+  },
+  "browser": {
+    "passed": 4,
+    "cases": [
+      "activity-finder-1060-dark",
+      "activity-finder-1060-light",
+      "activity-finder-320-dark",
+      "activity-finder-320-light"
+    ]
+  },
+  "validatedBehavior": [
+    "Challenge rewards merge latest points, achievements, visits and engagement without overwriting concurrent work",
+    "Pure replayable reward updates with committed once-only feedback and bounded receipt bookkeeping",
+    "Timers start after commit, use the latest checker, and stop on unmount",
+    "Only unique recognized worlds count toward visit achievements; translated names and stable keys are supported",
+    "120 existing activities and references searchable across seven topics",
+    "All 104 indexed mini-tools have unique mounted destinations",
+    "All 18 challenge routes open supported activities, including from no selected world",
+    "Deployment navigation focuses the real Deploy control without deploying a vehicle",
+    "Round-trip keyboard focus preserves activity searches and challenge filters",
+    "Restored state stays quiet; stale and disconnected refs cannot consume active navigation",
+    "Quiz, journal, assignment, prediction and simulator settings preserved when opening activities",
+    "Malformed saved finder preferences recover without render-time state writes",
+    "Desktop and 320px layouts in both themes have no horizontal overflow or browser errors"
+  ],
+  "visualReview": [
+    "activity-finder-1060-dark-browse.png",
+    "activity-finder-1060-dark-stars.png",
+    "activity-finder-320-light-stars.png"
+  ],
+  "syntax": "passed",
+  "whitespace": "passed",
+  "committed": false
+}

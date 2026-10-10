@@ -1,0 +1,6 @@
+{
+  "row": "- 2026-10-06 | Codex Dissection view chooser IN PROGRESS: root owns canonical/public stem_lab/stem_tool_dissection.js, focused lab unit/new view chooser browser fixture, and reports/dissection-view-chooser-2026-10-06. Group specimen display controls without changing their native order, handlers or visibility; clarify presentation effects and saved-frame comparison prerequisites; align text, focus and selected states with Lab/Study; correct mapped/unmapped comparison route guidance. No staging, commit, push or deployment.",
+  "beforeSha256": "fd50aae7ea41ac6a71d47806e037e0dfe3c3304fdbd2842911f8a626add6b4c1",
+  "afterSha256": "58053e0c55eb212f447844703f475611dea5148fab7e3b96ccaeefe8e26e5491",
+  "otherContentPreserved": true
+}

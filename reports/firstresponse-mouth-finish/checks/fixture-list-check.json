@@ -1,0 +1,6 @@
+{
+  "exitCode": 0,
+  "stdout": "Listing tests:\n  firstresponse-face-preview.spec.ts:144:29 › mouth material adult-pose5 preview at matching native supporting-hand view\n  firstresponse-face-preview.spec.ts:144:29 › mouth material infant-pose8-contrast preview at matching native supporting-hand view\nTotal: 2 tests in 1 file\n",
+  "stderr": "",
+  "browserLaunched": false
+}

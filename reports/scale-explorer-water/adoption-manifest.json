@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "status": "prepared",
+  "sourceSha256": "e7e0acd6ee8a59fdffb59a63849660e0f154fda0820c4bdf129cee2fcadf87ca",
+  "baseSha256": "de20974db8f350264fd6ec10e982b12f45a18d9fdcacd841eec8b56d0157fc5f",
+  "englishKeys": 1738,
+  "unitCases": 8,
+  "browserCases": 2,
+  "unitSha256": "0772ed5a2d89dfca9aeb99c02edbc0a314bfcb324af55ad3ffb6796d6f573fd5",
+  "browserSha256": "25f05c9800ca2a259a3dd252de851358d51c400655a3aef1db56a900fcd5160e",
+  "entries": [
+    {
+      "relative": "stem_lab/stem_tool_scaleexplorer.js",
+      "targetPath": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/stem_lab/stem_tool_scaleexplorer.js",
+      "preparedPath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/prepared-adoption/stem_lab/stem_tool_scaleexplorer.js",
+      "beforeSha256": "de20974db8f350264fd6ec10e982b12f45a18d9fdcacd841eec8b56d0157fc5f",
+      "afterSha256": "e7e0acd6ee8a59fdffb59a63849660e0f154fda0820c4bdf129cee2fcadf87ca",
+      "bytes": 2206583
+    },
+    {
+      "relative": "desktop/web-app/public/stem_lab/stem_tool_scaleexplorer.js",
+      "targetPath": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/desktop/web-app/public/stem_lab/stem_tool_scaleexplorer.js",
+      "preparedPath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/prepared-adoption/desktop/web-app/public/stem_lab/stem_tool_scaleexplorer.js",
+      "beforeSha256": "de20974db8f350264fd6ec10e982b12f45a18d9fdcacd841eec8b56d0157fc5f",
+      "afterSha256": "e7e0acd6ee8a59fdffb59a63849660e0f154fda0820c4bdf129cee2fcadf87ca",
+      "bytes": 2206583
+    },
+    {
+      "relative": "ui_strings.js",
+      "targetPath": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/ui_strings.js",
+      "preparedPath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/prepared-adoption/ui_strings.js",
+      "beforeSha256": "d1747ee5baae325c2cd97548335e66b226c452116a9c4d592afd14f818f47d5a",
+      "afterSha256": "44b3f528416aee346662a554b7dba9913a11a63dabb636df2ba1206a3d5b3ec1",
+      "bytes": 11315282
+    },
+    {
+      "relative": "desktop/web-app/public/ui_strings.js",
+      "targetPath": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/desktop/web-app/public/ui_strings.js",
+      "preparedPath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/prepared-adoption/desktop/web-app/public/ui_strings.js",
+      "beforeSha256": "d1747ee5baae325c2cd97548335e66b226c452116a9c4d592afd14f818f47d5a",
+      "afterSha256": "44b3f528416aee346662a554b7dba9913a11a63dabb636df2ba1206a3d5b3ec1",
+      "bytes": 11315282
+    },
+    {
+      "relative": "desktop/web-app/build/ui_strings.js",
+      "targetPath": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/desktop/web-app/build/ui_strings.js",
+      "preparedPath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/prepared-adoption/desktop/web-app/build/ui_strings.js",
+      "beforeSha256": "204c07877eefcdeeea9df81ea1617ddc530d0e90ba5336c94733a1ce5d21361a",
+      "afterSha256": "88801c1f51a17394add47a2dc7faf3c4e52800ebab1e990518e3b67d9660399e",
+      "bytes": 11280228
+    },
+    {
+      "relative": "desktop/app-build/ui_strings.js",
+      "targetPath": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/desktop/app-build/ui_strings.js",
+      "preparedPath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/prepared-adoption/desktop/app-build/ui_strings.js",
+      "beforeSha256": "204c07877eefcdeeea9df81ea1617ddc530d0e90ba5336c94733a1ce5d21361a",
+      "afterSha256": "88801c1f51a17394add47a2dc7faf3c4e52800ebab1e990518e3b67d9660399e",
+      "bytes": 11280228
+    },
+    {
+      "relative": "tests/scale_explorer_water.test.js",
+      "targetPath": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/scale_explorer_water.test.js",
+      "preparedPath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/prepared-adoption/tests/scale_explorer_water.test.js",
+      "beforeSha256": null,
+      "afterSha256": "0772ed5a2d89dfca9aeb99c02edbc0a314bfcb324af55ad3ffb6796d6f573fd5",
+      "bytes": 12507
+    },
+    {
+      "relative": "tests/e2e/scale-explorer-water.spec.ts",
+      "targetPath": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e/scale-explorer-water.spec.ts",
+      "preparedPath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/prepared-adoption/tests/e2e/scale-explorer-water.spec.ts",
+      "beforeSha256": null,
+      "afterSha256": "25f05c9800ca2a259a3dd252de851358d51c400655a3aef1db56a900fcd5160e",
+      "bytes": 23742
+    }
+  ],
+  "repositoryMutated": false,
+  "committed": false
+}

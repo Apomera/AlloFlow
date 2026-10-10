@@ -1,0 +1,42 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/solar_system_signal_inspection.test.js
+[deferred-jsdom] Initializing the official DOM environment.
+
+stdout | tests/solar_system_signal_inspection.test.js
+[deferred-jsdom] DOM environment ready.
+
+stdout | tests/solar_system_signal_inspection.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/solar_system_signal_inspection.test.js
+[deferred-jsdom] Existing repository setup loaded.
+
+ ✓ tests/solar_system_signal_inspection.test.js > Solar System signal inspection bench > keeps the named investigation, eight native destinations and established readout hooks 1875ms
+ ✓ tests/solar_system_signal_inspection.test.js > Solar System signal inspection bench > uses equal outbound and immediate-return time segments with independent raw light times 526ms
+ ✓ tests/solar_system_signal_inspection.test.js > Solar System signal inspection bench > contains every modeled destination and Earth dot at near, right-angle and far alignments 1301ms
+ ✓ tests/solar_system_signal_inspection.test.js > Solar System signal inspection bench > falls back from malformed, inherited and unknown targets without rewriting saved data 256ms
+ ✓ tests/solar_system_signal_inspection.test.js > Solar System signal inspection bench > derives a finite integer angle from numbers and nonblank numeric strings without render writes 685ms
+ ✓ tests/solar_system_signal_inspection.test.js > Solar System signal inspection bench > derives an empty notebook from malformed maps and inherited destination records 392ms
+ ✓ tests/solar_system_signal_inspection.test.js > Solar System signal inspection bench > ignores nonobject destination records and nonstring explanations without corrupting siblings 590ms
+ ✓ tests/solar_system_signal_inspection.test.js > Solar System signal inspection bench > recalculates contradictory restored observations from recorded angles while preserving their raw fields 115ms
+ ✓ tests/solar_system_signal_inspection.test.js > Solar System signal inspection bench > filters malformed and other-destination readings and limits retained evidence to two valid observations 46ms
+ ✓ tests/solar_system_signal_inspection.test.js > Solar System signal inspection bench > keeps observation readings fixed on one shared linear time scale as the current setup changes 96ms
+ ✓ tests/solar_system_signal_inspection.test.js > Solar System signal inspection bench > describes equal restored observations honestly without claiming that either delay grew 50ms
+ ✓ tests/solar_system_signal_inspection.test.js > Solar System signal inspection bench > freezes A, replaces only B, prevents repeated angle capture and retains writing when cleared 336ms
+ ✓ tests/solar_system_signal_inspection.test.js > Solar System signal inspection bench > retains independent destination observations and drafts through native target changes 326ms
+ ✓ tests/solar_system_signal_inspection.test.js > Solar System signal inspection bench > accepts only known hypotheses and a literal true evidence marker 447ms
+ ✓ tests/solar_system_signal_inspection.test.js > Solar System signal inspection bench > keeps sent receipts tied to their original position and clears them when changing destination 233ms
+ ✓ tests/solar_system_signal_inspection.test.js > Solar System signal inspection bench > ignores malformed, inherited, inconsistent and wrong-target receipts without render writes 402ms
+ ✓ tests/solar_system_signal_inspection.test.js > Solar System signal inspection bench > starts valid ping animation counters from a safe integer instead of propagating invalid saves 1462ms
+ ✓ tests/solar_system_signal_inspection.test.js > Solar System signal inspection bench > honors a legacy true saved marker until evidence is edited and permits the revised explanation 105ms
+ ✓ tests/solar_system_signal_inspection.test.js > Solar System signal inspection bench > guards repeated captured save callbacks while allowing new angle and writing evidence without XP 256ms
+ ✓ tests/solar_system_signal_inspection.test.js > Solar System signal inspection bench > preserves unrelated learning state and journal entries while retaining the disclosed model limits 334ms
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  20:35:35
+   Duration  13.14s (transform 443ms, setup 2.20s, import 95ms, tests 9.84s, environment 0ms)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/solar-activity-context-enhancement-2026-10-09/unit-inspection-results.json

@@ -4,7 +4,14 @@ import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
 import {createHash} from 'node:crypto';
 const require=createRequire(import.meta.url),T=require('../vendor/three-r128/three.min.js'),{restorePass43Source}=require('./helpers/cephalopod_pass43_reference.cjs');
-const source=readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE||'stem_lab/stem_tool_cephalopodlab.js','utf8'),prior=restorePass43Source(source),owned=new Set();
+const {restorePass44Source}=require('./helpers/cephalopod_pass44_reference.cjs');
+const {restorePass45Source}=require('./helpers/cephalopod_pass45_reference.cjs');
+const {restorePass46Source}=require('./helpers/cephalopod_pass46_reference.cjs');
+const {restorePass47Source:restorePass47Only}=require('./helpers/cephalopod_pass47_reference.cjs');
+const {restorePass48Source:restorePass48Only}=require('./helpers/cephalopod_pass48_reference.cjs');
+// These historical hashes predate the current oral tissue surface and motion.
+const restorePass47Source=source=>restorePass47Only(restorePass48Source(source));
+const source=readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE||'stem_lab/stem_tool_cephalopodlab.js','utf8'),prior=restorePass43Source(restorePass44Source(restorePass45Source(restorePass46Source(restorePass47Source(source))))),owned=new Set();
 function region(s,a,b){const start=s.indexOf(a),end=s.indexOf(b,start);assert.ok(start>=0&&end>start,a);return s.slice(start,end);}
 function braced(s,tag){const start=s.indexOf(tag),open=s.indexOf('{',start);assert.ok(start>=0&&open>start,tag);let n=0;for(let i=open;i<s.length;i++){if(s[i]==='{')n++;if(s[i]==='}'&&--n===0)return s.slice(start,i+1);}throw Error(tag);}
 const noRandom=Object.assign(Object.create(Math),{random(){throw Error('Decorative rubble consumed gameplay RNG');}});
@@ -68,9 +75,12 @@ describe('Rock-rooted decorative seabed rubble',()=>{
  });
  it('preserves the entire prior simulation outside three reviewed visual insertions and owns disposal independently',()=>{
   assert.equal(hash(prior),'4f9b97974777ae1fbcab0d25cacca3b057646f8c077c7c9f8b84574ccf47c4c9');
-  assert.equal(region(source,'function createCLHuntAnimal(','// Compact, individually owned prey rig.'),region(prior,'function createCLHuntAnimal(','// Compact, individually owned prey rig.'));
-  assert.deepEqual(source.split('\n').filter(s=>s.includes('Math.random')),prior.split('\n').filter(s=>s.includes('Math.random')));
+  assert.equal(braced(require('./helpers/cephalopod_pass50_reference.cjs').restorePass50Source(require('./helpers/cephalopod_pass51_reference.cjs').restorePass51Source(require('./helpers/cephalopod_pass52_reference.cjs').restorePass52Source(require('./helpers/cephalopod_pass53_reference.cjs').restorePass53Source(require('./helpers/cephalopod_pass54_reference.cjs').restorePass54Source(source))))),'function createCLHuntAnimal('),braced(prior,'function createCLHuntAnimal('));
+  assert.deepEqual(restorePass46Source(restorePass47Source(source)).split('\n').filter(s=>s.includes('Math.random')),prior.split('\n').filter(s=>s.includes('Math.random')));
   const a=setup(),b=setup(),disposed={own:0,neighbor:0};for(const r of [a.mesh.geometry,a.mesh.material])r.addEventListener('dispose',()=>disposed.own++);for(const r of [b.mesh.geometry,b.mesh.material])r.addEventListener('dispose',()=>disposed.neighbor++);
   for(const r of [a.mesh.geometry,a.mesh.material]){r.dispose();owned.delete(r);}assert.deepEqual(disposed,{own:2,neighbor:0});
  });
 });
+
+// Historical references predate the ink surface. Keep live fixtures on current visuals.
+function restorePass48Source(source){return restorePass48Only(require('./helpers/cephalopod_pass49_reference.cjs').restorePass49Source(require('./helpers/cephalopod_pass50_reference.cjs').restorePass50Source(require('./helpers/cephalopod_pass51_reference.cjs').restorePass51Source(require('./helpers/cephalopod_pass52_reference.cjs').restorePass52Source(require('./helpers/cephalopod_pass53_reference.cjs').restorePass53Source(require('./helpers/cephalopod_pass54_reference.cjs').restorePass54Source(source)))))));}

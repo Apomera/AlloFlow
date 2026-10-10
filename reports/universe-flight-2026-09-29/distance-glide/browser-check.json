@@ -1,0 +1,256 @@
+{
+  "completed": true,
+  "pins": {
+    "stem_lab/stem_tool_universe.js": "aeaca339e910673211ce1c1838db63b0d4edf419e2fc12b11a532077fcb528a6",
+    "stem_lab/universe_flight_scene.js": "92123647e34440b812e8e43898efe70b0b07244940bc1dbb0cc7638740f8e0b0"
+  },
+  "harnessHash": "072015c811f416b89150a17d824aa07a3b804a3550d80547be777b8f235afc22",
+  "checks": [
+    "Five scenic landmarks glide through distinct intermediate pixels to the exact radial endpoint with centered targets, unchanged lenses and clocks, no GPU allocation, retained focus, and exact paused Back",
+    "Completed arrival progress survives a rejected inactive cancel and disappears after a manual view or a different inspected target takes over",
+    "Movement style changes preserve the camera and Step executes the existing exact instantaneous move",
+    "Pause freezes progress, position, distance, and pixels; guarded distance controls stay inert; Resume reaches the original endpoint without GPU allocation",
+    "End keeps the current intermediate view paused, retains expanded inspection, places focus on Details, and leaves the origin available through Back",
+    "Back during a running glide immediately cancels motion and restores the launch origin paused",
+    "A system reduced-motion change ends active movement at its current view, selects Step, and keeps distance actions usable in forced colors",
+    "Phone and short landscape expose paused progress, playback, movement style, distance actions, and exact Back without overflow",
+    "Text spacing preserves accessible glide controls and Escape returns focus to the scene while Back restores the origin",
+    "Invalid target and direction launches and a duplicate active launch return false without position, lens, clock, or GPU mutation",
+    "Minimum viewing range and the scene boundary reject blocked native glides and disable only the unavailable direction",
+    "Manual look, named view, camera nudge, orbit, scene change, and mode change clear the glide and transfer control without residual glide motion",
+    "Physical light-chase mode rejects native distance glides without mutation",
+    "A fresh page with system reduced motion starts with Instant distance steps selected"
+  ],
+  "accessibility": [
+    {
+      "name": "glide-arrival-amber-star",
+      "violations": []
+    },
+    {
+      "name": "glide-arrival-blue-nebula",
+      "violations": []
+    },
+    {
+      "name": "glide-arrival-galactic-center",
+      "violations": []
+    },
+    {
+      "name": "glide-arrival-near-galaxy",
+      "violations": []
+    },
+    {
+      "name": "glide-arrival-golden-elliptical",
+      "violations": []
+    },
+    {
+      "name": "glide-paused",
+      "violations": []
+    },
+    {
+      "name": "system-colors-reduced-motion",
+      "violations": []
+    },
+    {
+      "name": "glide-320",
+      "violations": []
+    },
+    {
+      "name": "glide-568",
+      "violations": []
+    },
+    {
+      "name": "glide-text-spacing",
+      "violations": []
+    }
+  ],
+  "captures": [
+    {
+      "name": "glide-arrival-amber-star",
+      "hash": "034990c9ef3a2b87ece695c8625760443337e5aeb3f84c1c4eb0faf74d949477"
+    },
+    {
+      "name": "glide-arrival-blue-nebula",
+      "hash": "54e0d1a9060cf932345c8da68322fc004d7acc7d072dd5f585740faa3c44bf96"
+    },
+    {
+      "name": "glide-arrival-galactic-center",
+      "hash": "38efbc8d64e301d5b78cbc5554663645355b078986048051a88eaa780f96a757"
+    },
+    {
+      "name": "glide-arrival-near-galaxy",
+      "hash": "27cd3e5a0ec157a016c318e0a92652b374133368a75a331ccb9399abdefb6c1f"
+    },
+    {
+      "name": "glide-arrival-golden-elliptical",
+      "hash": "063fc2247d739004b5b26c27880074a28a56fd2babaeb9b38001b49540f266e8"
+    },
+    {
+      "name": "glide-paused",
+      "hash": "9a510284f640b02d13601919d282e1793ad86cc606a927c1742967689c346f84"
+    },
+    {
+      "name": "glide-system-colors-reduced-motion",
+      "hash": "add85f93528e74146098326896105c6606ed92f19bb35b48bc833932f0fc54f3"
+    },
+    {
+      "name": "glide-320",
+      "hash": "4f3bf814e8c3318c080185e4d21a2170a704c2cd2977dc7265a81f638a07b76b"
+    },
+    {
+      "name": "glide-568",
+      "hash": "ddb07a7b492c3cc63994bf262871c55266670db927f70d06244cee6b548f1318"
+    },
+    {
+      "name": "glide-text-spacing",
+      "hash": "a3c1bd6932fa077db0116ae342f5942bbb6d5eb9baabc970777df840b7919e0f"
+    }
+  ],
+  "views": [
+    {
+      "region": "neighborhood",
+      "id": "amber-star",
+      "view": "stellar-amber",
+      "from": [
+        -3.78,
+        1.2,
+        8.65
+      ],
+      "middle": {
+        "active": true,
+        "completed": false,
+        "targetId": "amber-star",
+        "direction": "closer",
+        "progress": 0.1666226666666668,
+        "elapsedSeconds": 0.4998680000000004,
+        "durationSeconds": 3,
+        "startRangeLy": 0.724499827467198,
+        "endRangeLy": 0.5795998619737585
+      },
+      "to": [
+        -3.644,
+        1.16,
+        8.620000000000001
+      ],
+      "rangeLy": 0.5795998619737585
+    },
+    {
+      "region": "neighborhood",
+      "id": "blue-nebula",
+      "view": "nebula-filaments",
+      "from": [
+        6.73258751546719,
+        2.7454985975874995,
+        25.541291740103556
+      ],
+      "middle": {
+        "active": true,
+        "completed": false,
+        "targetId": "blue-nebula",
+        "direction": "closer",
+        "progress": 0.17221133333333272,
+        "elapsedSeconds": 0.5166339999999982,
+        "durationSeconds": 3,
+        "startRangeLy": 9.9604548962766,
+        "endRangeLy": 7.96836391702128
+      },
+      "to": [
+        7.186070012373753,
+        1.7963988780699993,
+        27.233033392082845
+      ],
+      "rangeLy": 7.96836391702128
+    },
+    {
+      "region": "galaxy",
+      "id": "galactic-center",
+      "view": "halo-panorama",
+      "from": [
+        57537.37470667912,
+        28979.93440151232,
+        22193.098330829456
+      ],
+      "middle": {
+        "active": true,
+        "completed": false,
+        "targetId": "galactic-center",
+        "direction": "closer",
+        "progress": 0.17220000000000202,
+        "elapsedSeconds": 0.516600000000006,
+        "durationSeconds": 3,
+        "startRangeLy": 68138.973426187,
+        "endRangeLy": 54511.1787409496
+      },
+      "to": [
+        46029.899765343296,
+        23183.94752120986,
+        17754.478664663566
+      ],
+      "rangeLy": 54511.1787409496
+    },
+    {
+      "region": "cosmic",
+      "id": "near-galaxy",
+      "view": "group-spiral",
+      "from": [
+        3800.993548201688,
+        204667.20352500066,
+        -21799.8971191808
+      ],
+      "middle": {
+        "active": true,
+        "completed": false,
+        "targetId": "near-galaxy",
+        "direction": "closer",
+        "progress": 0.16661133333333422,
+        "elapsedSeconds": 0.49983400000000267,
+        "durationSeconds": 3,
+        "startRangeLy": 205860.01861727398,
+        "endRangeLy": 164688.0148938192
+      },
+      "to": [
+        3040.794838561351,
+        163733.76282000056,
+        -17439.917695344644
+      ],
+      "rangeLy": 164688.0148938192
+    },
+    {
+      "region": "cosmic",
+      "id": "golden-elliptical",
+      "view": "group-elliptical",
+      "from": [
+        720000,
+        410000,
+        565000
+      ],
+      "middle": {
+        "active": true,
+        "completed": false,
+        "targetId": "golden-elliptical",
+        "direction": "closer",
+        "progress": 0.1777666666666677,
+        "elapsedSeconds": 0.5333000000000031,
+        "durationSeconds": 3,
+        "startRangeLy": 327452.2866006588,
+        "endRangeLy": 261961.82928052705
+      },
+      "to": [
+        736000,
+        438000,
+        622000
+      ],
+      "rangeLy": 261961.82928052705
+    }
+  ],
+  "served": [
+    {
+      "path": "/stem_lab/stem_tool_universe.js",
+      "hash": "aeaca339e910673211ce1c1838db63b0d4edf419e2fc12b11a532077fcb528a6"
+    },
+    {
+      "path": "/stem_lab/universe_flight_scene.js",
+      "hash": "92123647e34440b812e8e43898efe70b0b07244940bc1dbb0cc7638740f8e0b0"
+    }
+  ],
+  "errors": []
+}

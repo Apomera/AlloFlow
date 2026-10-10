@@ -1,0 +1,31 @@
+{
+  "firstresponse_supporting_hand.test.js": {
+    "beforeSHA256": "c669deff390697b04f3cd264b0201a4ea6a29d2ffc2e22ac80f23a6316b2b0e0",
+    "privateSHA256": "99bd6d238351f39eac6389f52770d0201bbdc10c2c7a5838a653f03d80a7ce11",
+    "preservedHashLines": 109,
+    "fixedHashLinesExact": true,
+    "beforeCRLF": 0,
+    "privateCRLF": 0
+  },
+  "firstresponse_patient_contrast.test.js": {
+    "beforeSHA256": "2de1231713f1914b1f7275623fd69b01d45ea3b85f05c31486588283bdadf493",
+    "privateSHA256": "85d9c0d038dbd0b7d49c86cfcbf952cbe195ed702d4f664dcef3d50201a21705",
+    "preservedHashLines": 81,
+    "fixedHashLinesExact": true,
+    "beforeCRLF": 0,
+    "privateCRLF": 0
+  },
+  "firstresponse_surface_clarity.test.js": {
+    "beforeSHA256": "e02fbff058f5de5d5e7ee73b2f67ffe873a47181cb2ad523a318f1b96086a42b",
+    "privateSHA256": "24fab7cd1642e0d3ef0e277270ec304c46017862ce658c8dba433d86cf40496b",
+    "preservedHashLines": 3,
+    "fixedHashLinesExact": true,
+    "beforeCRLF": 0,
+    "privateCRLF": 0
+  },
+  "sourceReversion": {
+    "blockOccurrences": 1,
+    "blockBytes": 354,
+    "beforeSHA256": "6e24299465bceafcce0f079ef8171d6ab2871f852a64483acad90ac57cd79a9f"
+  }
+}

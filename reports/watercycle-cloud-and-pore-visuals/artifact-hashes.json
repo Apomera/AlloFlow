@@ -1,0 +1,498 @@
+{
+  "sourceSha256": "f00632bfe4eb8f57091aca4550b05d0eb0272a745dccbdf7a1f8a8d740d50086",
+  "baselineSha256": "f2360e271a96e40308aeb0b45a4ded56aaecec4366eafa92781278713a6f2a36",
+  "packagedAt": "2026-10-05T16:44:31.037Z",
+  "browserReceipts": [
+    "baseline3-results.json",
+    "final-storm-results.json",
+    "storm-live-final-results.json",
+    "soil-live-final2-results.json"
+  ],
+  "files": [
+    {
+      "path": "baseline-runtime.js",
+      "bytes": 3163319,
+      "sha256": "f2360e271a96e40308aeb0b45a4ded56aaecec4366eafa92781278713a6f2a36"
+    },
+    {
+      "path": "baseline-receipt.json",
+      "bytes": 272,
+      "sha256": "6a2ba013161ac279dfde5e820dd9178999f5435d7f4743d482a636ed5e4e75ac"
+    },
+    {
+      "path": "candidate-runtime.js",
+      "bytes": 3167249,
+      "sha256": "f00632bfe4eb8f57091aca4550b05d0eb0272a745dccbdf7a1f8a8d740d50086"
+    },
+    {
+      "path": "presentation-changes.json",
+      "bytes": 29100,
+      "sha256": "8ca8894167832b522d47ff941e1be386e399679350cebe2f13d7c3f1e2ec83fa"
+    },
+    {
+      "path": "focused-final.json",
+      "bytes": 9021,
+      "sha256": "68d607ea5c4dbfc984ca0e042f769f4c124aa35376479f50b33a18ea9d78bf9c"
+    },
+    {
+      "path": "finalinstalled-focused.json",
+      "bytes": 9021,
+      "sha256": "8eb6c13ac70b17b42d949ef75d42ab4099f370c3e09f2178a42d99b14847fd1d"
+    },
+    {
+      "path": "storm-final-visual-review.json",
+      "bytes": 2617,
+      "sha256": "70e4a16199bbb8ebb2279eeeb38c7ed86e5daca82faf71cdb5d262cbd6913c1d"
+    },
+    {
+      "path": "original-test-hashes.json",
+      "bytes": 1305,
+      "sha256": "bfa8bc2bb66691a1d725ca7d9e3cbb49ce2884a899a05177d37254556607ddec"
+    },
+    {
+      "path": "regression-summary.json",
+      "bytes": 928,
+      "sha256": "d43790144c553df90d543f989c0081d5ddc998e2c1e6618cf92e0418e7c3ae2c"
+    },
+    {
+      "path": "model-behavior-results.json",
+      "bytes": 69698,
+      "sha256": "c6452dffe50212940d261bcbe53b3871a22aa446a9338de1b558b7340aecee4f"
+    },
+    {
+      "path": "chapter-behavior-results.json",
+      "bytes": 22804,
+      "sha256": "2815d96eda3cb8f872f6e313ae383b4f4b5f6a0cb864967cc11d1eec75326b5f"
+    },
+    {
+      "path": "model-behavior-run.log",
+      "bytes": 1570,
+      "sha256": "edf9425612f193c13f4f1a81ee1f5dce18af78f7099a8ffb7c4c37803c558671"
+    },
+    {
+      "path": "chapter-behavior-run.log",
+      "bytes": 1434,
+      "sha256": "60097cd3985939068f092af1f4bf037d5cb2890a0dc6fa3a4dd7a90a18515fc8"
+    },
+    {
+      "path": "baseline3-clear-desktop.png",
+      "bytes": 110430,
+      "sha256": "a13ea6b21df17260fb48abc25f57e4e9e9fb861e28f59f6914b6aec141c3f9ff"
+    },
+    {
+      "path": "baseline3-clear-phone320.png",
+      "bytes": 46993,
+      "sha256": "60ba6e698a56a03d8ad716424f1553a6b4ff8371d1936202248531e376e19c57"
+    },
+    {
+      "path": "baseline3-hail-anatomy-desktop.png",
+      "bytes": 155979,
+      "sha256": "7044be6b59a5fa82d15ee7e3e802a49d3b5cb4ac3ed176c83947466998b14c9a"
+    },
+    {
+      "path": "baseline3-hail-anatomy-phone320.png",
+      "bytes": 65580,
+      "sha256": "392db2a41d6de89fd95ac7d77bfcf9a46ad2ebc37cdef82b7ab5e0c7cf755069"
+    },
+    {
+      "path": "baseline3-hail-contrast-phone320.png",
+      "bytes": 63379,
+      "sha256": "38c38b80ddebdbac3faaf88530b69a6cd047c248a033d4540e74b602ecd40c6b"
+    },
+    {
+      "path": "baseline3-hail-developing.png",
+      "bytes": 139329,
+      "sha256": "05b207a0bee0c2c0ff30afbebadd59ae72a32c7235a63aada19ba283ae24f144"
+    },
+    {
+      "path": "baseline3-hail-dissipating.png",
+      "bytes": 143495,
+      "sha256": "a9de9c74d76804f14a4ca0899a938a940380b5b3ac78febe33f4efff6f576f06"
+    },
+    {
+      "path": "baseline3-hail-return-stroke-phone390.png",
+      "bytes": 85430,
+      "sha256": "919eaf900c15cc1cc750bda162281ba88ddec7886f738fa0e81e931d16b3a3a8"
+    },
+    {
+      "path": "baseline3-hail-stepped-leader-desktop.png",
+      "bytes": 155262,
+      "sha256": "53cbcd5cb1f3d98758e1de2c73780396fa771342cfc29084bd5263d15e83adb1"
+    },
+    {
+      "path": "baseline3-hail-upward-streamer-phone320.png",
+      "bytes": 65601,
+      "sha256": "da33c1eecbbe7e18c14f5a85a71f880053cff8345df550d44fda033a46c5da23"
+    },
+    {
+      "path": "baseline3-mountain-calm-phone320.png",
+      "bytes": 63695,
+      "sha256": "0cdfef3a13e425afd82c0c002e194a3c7ca53527ac288e1f5efec0ea6f29888b"
+    },
+    {
+      "path": "baseline3-native-wind-select.png",
+      "bytes": 65573,
+      "sha256": "4abd67b31ca70121645a8cf90bb4650d427801cc58139e739b50dad578f413cc"
+    },
+    {
+      "path": "baseline3-orographic-west-phone390.png",
+      "bytes": 65568,
+      "sha256": "b2ab066ff1fa2e9a175d5700fab74a26802d917c4415cad94ab64dde6e2884f8"
+    },
+    {
+      "path": "baseline3-rain-desktop.png",
+      "bytes": 134453,
+      "sha256": "9370ec7b9d3a7928ded40700c7ef3d08b867295186b1d1c5b84a299531ba6062"
+    },
+    {
+      "path": "baseline3-rain-forced-phone390.png",
+      "bytes": 72796,
+      "sha256": "feacb7894c558fced9e96932ef9010449c7e47596d19dc62ed5f2b8f8b4dce5f"
+    },
+    {
+      "path": "baseline3-rain-paused-no-preference.png",
+      "bytes": 73954,
+      "sha256": "5c39045255a2589cace2ad664ce3db9b8fd48ceeb489c84e44f43452129c59e4"
+    },
+    {
+      "path": "baseline3-rain-phone320.png",
+      "bytes": 60948,
+      "sha256": "9ee08748b0bd328f9e6be1322d9e7d2180fe1982cd527a2b19ca0d25a5193165"
+    },
+    {
+      "path": "baseline3-rain-phone390.png",
+      "bytes": 73954,
+      "sha256": "5c39045255a2589cace2ad664ce3db9b8fd48ceeb489c84e44f43452129c59e4"
+    },
+    {
+      "path": "baseline3-results.json",
+      "bytes": 21495237,
+      "sha256": "4203b33dd61b0d95893e50fefd57dc4e8366819493f67d02a3c35a4d903fb876"
+    },
+    {
+      "path": "baseline3-sleet-desktop.png",
+      "bytes": 151472,
+      "sha256": "7aca9f83c6db560a3cf04c7a45b818b6d75d400e66aacb7763d306ace355e7b6"
+    },
+    {
+      "path": "baseline3-sleet-phone390.png",
+      "bytes": 78396,
+      "sha256": "e3206b964278ccd5042040e2ffc8eeaf1d4d917f5a070168288daebe5c2d2deb"
+    },
+    {
+      "path": "baseline3-snow-dark-phone390.png",
+      "bytes": 83858,
+      "sha256": "f205eb7a9b5bd5f8226842ddc594d7dcc01499473aad8541769004b8524572ea"
+    },
+    {
+      "path": "baseline3-snow-desktop.png",
+      "bytes": 154715,
+      "sha256": "f15189cd59756bfb9909d5cf19cea26ccbd88ac20c6a8509621626d815f3989e"
+    },
+    {
+      "path": "baseline3-snow-phone320.png",
+      "bytes": 65349,
+      "sha256": "a1ab0cf59dd91d2a7a1be16e71dedac8a2fa48ce58945b4b735aabbef08e4345"
+    },
+    {
+      "path": "baseline3-summer-dark.png",
+      "bytes": 149242,
+      "sha256": "78d4c24f81388cc2ed9bdd0d74f418e66f4b3f880a3567c094bd892263139567"
+    },
+    {
+      "path": "baseline3-tested-harness.cjs",
+      "bytes": 35305,
+      "sha256": "872db5e5b62316f367b0774a3131f4b40387fe6f9f6dd8ddc69eb092530e6000"
+    },
+    {
+      "path": "baseline3-tested-runtime.js",
+      "bytes": 3163319,
+      "sha256": "f2360e271a96e40308aeb0b45a4ded56aaecec4366eafa92781278713a6f2a36"
+    },
+    {
+      "path": "baseline3-virga-desktop.png",
+      "bytes": 131798,
+      "sha256": "c67c5b2ceb87e300b6eb65321de339efe34adffef658528bc65d2377cca0b072"
+    },
+    {
+      "path": "baseline3-virga-phone320.png",
+      "bytes": 53885,
+      "sha256": "f00bb6990b1132acfd03818d51192605e91b012ab0772e189e64d54592e500ef"
+    },
+    {
+      "path": "final-storm-clear-desktop.png",
+      "bytes": 110774,
+      "sha256": "d3179ff020c889f95b06fb25cd10a2fa50d56180ec0f6e59b3a9871cc5e31683"
+    },
+    {
+      "path": "final-storm-clear-phone320.png",
+      "bytes": 47518,
+      "sha256": "0aa316248c331c7bcfd249e1917069a1b3d59211d8a901400fbe23cce60453de"
+    },
+    {
+      "path": "final-storm-hail-anatomy-desktop.png",
+      "bytes": 164232,
+      "sha256": "a89853d97f64a633a54f21f7286a73c093d1009b7b0fce22028c1ca6b97f9a97"
+    },
+    {
+      "path": "final-storm-hail-anatomy-phone320.png",
+      "bytes": 65675,
+      "sha256": "187cacc0a9e4cfed2f3a4084ec95d872a6b2b8c690c9de4937e6e2b6433afd2f"
+    },
+    {
+      "path": "final-storm-hail-contrast-phone320.png",
+      "bytes": 67686,
+      "sha256": "fb593477a00c84d77319dd8947e80e111407c04784752da0e2f1706bd9048d59"
+    },
+    {
+      "path": "final-storm-hail-developing.png",
+      "bytes": 142242,
+      "sha256": "c0e9b4b5da9482acb8377df9a2d11f2dbe5e5609109f5eb3e7cdba1ea92789dd"
+    },
+    {
+      "path": "final-storm-hail-dissipating.png",
+      "bytes": 148809,
+      "sha256": "8ad845669a46236e65a19f7facdd4f4edd1cedf9bc3c424023d510890fb1d919"
+    },
+    {
+      "path": "final-storm-hail-return-stroke-phone390.png",
+      "bytes": 86994,
+      "sha256": "0a62ab1bf5c49d09db021e9f0053e2f18b80451c79825c3e87055e8abd42889c"
+    },
+    {
+      "path": "final-storm-hail-stepped-leader-desktop.png",
+      "bytes": 164347,
+      "sha256": "31201314e0ab53173802f2216e4c47c52f7070bc42616bdc384db6bb17fbd9bf"
+    },
+    {
+      "path": "final-storm-hail-upward-streamer-phone320.png",
+      "bytes": 66142,
+      "sha256": "b39324f13a1194aeca7ab901a8ed94de14d4291de892182c3788583b604b840f"
+    },
+    {
+      "path": "final-storm-mountain-calm-phone320.png",
+      "bytes": 67404,
+      "sha256": "1e14d5a48d3c53211c02872862b62a9cc753118045fa4739fdfd0e006ba16de8"
+    },
+    {
+      "path": "final-storm-native-wind-select.png",
+      "bytes": 69413,
+      "sha256": "26d4c37e0cda1f23b62f5af2b1c989165179cdbb858761c13a252618e6164528"
+    },
+    {
+      "path": "final-storm-orographic-west-phone390.png",
+      "bytes": 69419,
+      "sha256": "642f79d40ec5fa5fc1fcabf098d63b74f7e24f9be3cbab59911bb4b595c50554"
+    },
+    {
+      "path": "final-storm-rain-desktop.png",
+      "bytes": 134999,
+      "sha256": "cc948dc24123cb0aef168805ed622660190ebce98edc4c5f4d1fd7d8ccf31bdb"
+    },
+    {
+      "path": "final-storm-rain-forced-phone390.png",
+      "bytes": 74242,
+      "sha256": "91b1c9857b3acc83d3cf6f361b7b3ae58158e6861e490b8e8b6d9fb37a002477"
+    },
+    {
+      "path": "final-storm-rain-paused-no-preference.png",
+      "bytes": 75608,
+      "sha256": "72601e552f759ad02d2722dd2f9b94f864c003c81e5d65bf871dcf27b0239368"
+    },
+    {
+      "path": "final-storm-rain-phone320.png",
+      "bytes": 62600,
+      "sha256": "0e9a22ed9dd8f0d9f17aa1a5cb0830ebcb888c29c06fe815e2131b0e46039e1e"
+    },
+    {
+      "path": "final-storm-rain-phone390.png",
+      "bytes": 75608,
+      "sha256": "72601e552f759ad02d2722dd2f9b94f864c003c81e5d65bf871dcf27b0239368"
+    },
+    {
+      "path": "final-storm-results.json",
+      "bytes": 21302470,
+      "sha256": "5467137e1a230b8b957ce9ce48bc77b67708abfb2cfa8b4d1de3667518a0fde1"
+    },
+    {
+      "path": "final-storm-sleet-desktop.png",
+      "bytes": 157763,
+      "sha256": "57398167825314815599f1d4b39bead2aa878709db514139abb76d1088c16d65"
+    },
+    {
+      "path": "final-storm-sleet-phone390.png",
+      "bytes": 82145,
+      "sha256": "528c50c5a1844716631bc914e0bc23151b9504584a5689d6cc7e805340a0d4d9"
+    },
+    {
+      "path": "final-storm-snow-dark-phone390.png",
+      "bytes": 87587,
+      "sha256": "ca2e5f6196d77f49346cd038bd3242c30a7e191844c1d95986e58eca4ce10d30"
+    },
+    {
+      "path": "final-storm-snow-desktop.png",
+      "bytes": 159578,
+      "sha256": "3443921f233ec93538bd6d492a58b69cb0659ad8611945d7fe2e23da670e3408"
+    },
+    {
+      "path": "final-storm-snow-phone320.png",
+      "bytes": 69326,
+      "sha256": "b31a1650883d1f345a163bd8677688887be29aceb194b595a393ea67f49fffc8"
+    },
+    {
+      "path": "final-storm-summer-dark.png",
+      "bytes": 159516,
+      "sha256": "8fed4a44acf178d3b927a07b181c84a8242d964bf65792bf81d4fc2ea782301f"
+    },
+    {
+      "path": "final-storm-tested-harness.cjs",
+      "bytes": 35305,
+      "sha256": "872db5e5b62316f367b0774a3131f4b40387fe6f9f6dd8ddc69eb092530e6000"
+    },
+    {
+      "path": "final-storm-tested-runtime.js",
+      "bytes": 3167249,
+      "sha256": "f00632bfe4eb8f57091aca4550b05d0eb0272a745dccbdf7a1f8a8d740d50086"
+    },
+    {
+      "path": "final-storm-virga-desktop.png",
+      "bytes": 132740,
+      "sha256": "08ac23c0b8c9197165cb1db5f8f1254ceada7cf9c1dd9593f61fbda1b5261d8d"
+    },
+    {
+      "path": "final-storm-virga-phone320.png",
+      "bytes": 55585,
+      "sha256": "3ec2a5c53649bfc2da0e94ab726c3440e97b9891a66998df3164e658a2911d06"
+    },
+    {
+      "path": "soil-live-final2-chapter-dark-desktop.png",
+      "bytes": 52016,
+      "sha256": "d2fedbb1e73b2bfdc9c5c41279c274acac552d901ae84d89d56608f585748b7c"
+    },
+    {
+      "path": "soil-live-final2-chapter-light-phone320.png",
+      "bytes": 47995,
+      "sha256": "d852759fdac2e0a1c3adbcb80118a62dcfb850acce598e161038416f0b79dc67"
+    },
+    {
+      "path": "soil-live-final2-check-light-phone390.png",
+      "bytes": 21117,
+      "sha256": "99130fb169d3b402350255c510c0ea93c8043b9d9c3737ca6718c075b924851b"
+    },
+    {
+      "path": "soil-live-final2-compare-contrast-phone320.png",
+      "bytes": 18818,
+      "sha256": "5ec1a722cbedd4c45eaad07c12fd47994aeb7e1981a9f86563a8c154f9808739"
+    },
+    {
+      "path": "soil-live-final2-compare-dark-phone390.png",
+      "bytes": 24300,
+      "sha256": "a040d2de949b4a7bf1fe9a2a234b76f8555586f25b9a14d01c2333b6cdaa1d10"
+    },
+    {
+      "path": "soil-live-final2-compare-forced-phone390.png",
+      "bytes": 19000,
+      "sha256": "e9b78bf6fb43f6e559807818232800ced5ec85938975dd59d48675c76208aff5"
+    },
+    {
+      "path": "soil-live-final2-compare-light-desktop.png",
+      "bytes": 25174,
+      "sha256": "a41b97d8a96a8e4c55919c25e79e59c2ecf8faa88b2abbc181a52ead6cc59450"
+    },
+    {
+      "path": "soil-live-final2-compare-light-phone320.png",
+      "bytes": 24780,
+      "sha256": "df517aa3382f10843c7b8ec78323d7dd98cb7452984c5350829a36b248291b18"
+    },
+    {
+      "path": "soil-live-final2-results.json",
+      "bytes": 203738,
+      "sha256": "980c5cda20424a1f614bf385e78f3432440fc02fa73647ed77cb973fc430dbbe"
+    },
+    {
+      "path": "soil-live-final2-tested-harness.cjs",
+      "bytes": 19876,
+      "sha256": "1752ada27743c0fc10d24ad7873e13e24bdb54a03b4cdee09d7406e654886545"
+    },
+    {
+      "path": "soil-live-final2-tested-runtime.js",
+      "bytes": 3167249,
+      "sha256": "f00632bfe4eb8f57091aca4550b05d0eb0272a745dccbdf7a1f8a8d740d50086"
+    },
+    {
+      "path": "storm-live-final-hail-anatomy-desktop.png",
+      "bytes": 164232,
+      "sha256": "a89853d97f64a633a54f21f7286a73c093d1009b7b0fce22028c1ca6b97f9a97"
+    },
+    {
+      "path": "storm-live-final-native-wind-select.png",
+      "bytes": 69413,
+      "sha256": "26d4c37e0cda1f23b62f5af2b1c989165179cdbb858761c13a252618e6164528"
+    },
+    {
+      "path": "storm-live-final-rain-phone320.png",
+      "bytes": 62600,
+      "sha256": "0e9a22ed9dd8f0d9f17aa1a5cb0830ebcb888c29c06fe815e2131b0e46039e1e"
+    },
+    {
+      "path": "storm-live-final-results.json",
+      "bytes": 3863161,
+      "sha256": "6b098db79428abb4c0837fe9c466986ec24aed046a81c3d444704946f85ae91e"
+    },
+    {
+      "path": "storm-live-final-snow-dark-phone390.png",
+      "bytes": 87587,
+      "sha256": "ca2e5f6196d77f49346cd038bd3242c30a7e191844c1d95986e58eca4ce10d30"
+    },
+    {
+      "path": "storm-live-final-tested-harness.cjs",
+      "bytes": 35305,
+      "sha256": "872db5e5b62316f367b0774a3131f4b40387fe6f9f6dd8ddc69eb092530e6000"
+    },
+    {
+      "path": "storm-live-final-tested-runtime.js",
+      "bytes": 3167249,
+      "sha256": "f00632bfe4eb8f57091aca4550b05d0eb0272a745dccbdf7a1f8a8d740d50086"
+    },
+    {
+      "path": "storm-cloud-silhouette-qa.cjs",
+      "bytes": 35305,
+      "sha256": "872db5e5b62316f367b0774a3131f4b40387fe6f9f6dd8ddc69eb092530e6000"
+    },
+    {
+      "path": "soil-pore-native-qa.cjs",
+      "bytes": 19876,
+      "sha256": "1752ada27743c0fc10d24ad7873e13e24bdb54a03b4cdee09d7406e654886545"
+    },
+    {
+      "path": "verify_cloud_pore_candidate.cjs",
+      "bytes": 24712,
+      "sha256": "439b92353338d9ad7fc6e8bb42f0e2f19ae019235e12c70a56c3d1f43537ec50"
+    },
+    {
+      "path": "storm-cloud-volume-fragment.js",
+      "bytes": 6050,
+      "sha256": "5b2295e2a6e039d48608a8c0b017283cac5928bbfb7da370f6cf7262511c5a48"
+    },
+    {
+      "path": "soil-pore-glyph-fragment.js",
+      "bytes": 1332,
+      "sha256": "7239593a3a208fcf11ee6ebe053d38c22858889c8b52972e041c9571f2199dbd"
+    },
+    {
+      "path": "build-cloud-pore.cjs",
+      "bytes": 8192,
+      "sha256": "b46b300a40a04af2a1d31e4269d59ab82a990e3a736226ffca2daaef1b410edd"
+    },
+    {
+      "path": "verify.cjs",
+      "bytes": 4113,
+      "sha256": "b79ae9022ff99104de92654af2b3ee8a397b3cb6769da5320ff86a425decfbdb"
+    },
+    {
+      "path": "README.md",
+      "bytes": 5791,
+      "sha256": "070150af95c176f2b0cbbbe4de5e16fd41872212d50f8960d8ea87b5095248d7"
+    }
+  ]
+}

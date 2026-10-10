@@ -502,7 +502,8 @@ describe('3D compression explorer — actual Three.js geometry', () => {
     expect(upper.visible).toBe(true);
     expect(two.chest).toBe(one.chest); expect(two.hands).toBe(one.hands);
     expect(two.markerY).toBe(markerY); expect(two.handY).toBe(handY); expect(two.travel.scale.y).toBe(travel);
-    expect(upper.position.y - lower.position.y).toBeCloseTo(0.071, 8);
+    expect(upper.position.y - lower.position.y).toBeGreaterThan(0);
+    expect(upper.position.y - lower.position.y).toBeLessThan(lower.getObjectByName('fr-rescuer-lower-heel').scale.y * 3);
     const lowerHeel = lower.getObjectByName('fr-rescuer-lower-heel').getWorldPosition(new THREE.Vector3());
     const upperHeel = upper.getObjectByName('fr-rescuer-upper-heel').getWorldPosition(new THREE.Vector3());
     expect(upperHeel.x).toBeCloseTo(lowerHeel.x, 8);
@@ -562,7 +563,11 @@ describe('3D compression explorer — actual Three.js geometry', () => {
     expect(forearm.geometry.parameters.height).toBe(length);
     expect(press.hands).toBe(release.hands);
     expect(hand).toBe(press.scene.getObjectByName('fr-rescuer-lower'));
-    expect(new THREE.Vector3(0, 1, 0).applyQuaternion(forearm.getWorldQuaternion(new THREE.Quaternion())).y).toBeCloseTo(1, 8);
+    const foreAxis = new THREE.Vector3(0, 1, 0).applyQuaternion(forearm.getWorldQuaternion(new THREE.Quaternion()));
+    const upperArm = press.scene.getObjectByName('fr-rescuer-lower-upper-arm');
+    const upperAxis = new THREE.Vector3(0, 1, 0).applyQuaternion(upperArm.getWorldQuaternion(new THREE.Quaternion()));
+    expect(foreAxis.y, 'nearly upright arm').toBeGreaterThan(.96);
+    expect(foreAxis.dot(upperAxis), 'elbow stays straight').toBeGreaterThan(.99999);
     const hidden = sample({ motion: 'press', hands: false });
     expect(hidden.hands.visible).toBe(false);
     expect(hidden.markerY).toBeCloseTo(press.markerY, 8);

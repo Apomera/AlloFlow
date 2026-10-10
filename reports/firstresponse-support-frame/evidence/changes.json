@@ -1,0 +1,14 @@
+[
+  {
+    "before": "      var supportSphere = supportBox.getBoundingSphere(new THREE.Sphere());",
+    "after": "      var supportSphere = supportBox.getBoundingSphere(new THREE.Sphere());\n      var supportFaceSphere = supportBox.clone().union(new THREE.Box3().setFromObject(headPivot)).getBoundingSphere(new THREE.Sphere());\n      var supportFacePoint = new THREE.Vector3(), supportFaceRadiusSq = 0;\n      [supportingHand, headPivot].forEach(function (group) {\n        group.traverse(function (part) {\n          var positions = part.geometry && part.geometry.attributes && part.geometry.attributes.position;\n          if (!positions) return;\n          for (var i = 0; i < positions.count; i++) {\n            supportFacePoint.fromBufferAttribute(positions, i).applyMatrix4(part.matrixWorld);\n            supportFaceRadiusSq = Math.max(supportFaceRadiusSq, supportFacePoint.distanceToSquared(supportFaceSphere.center));\n          }\n        });\n      });\n      supportContext.forEach(function (point) { supportFaceRadiusSq = Math.max(supportFaceRadiusSq, point.distanceToSquared(supportFaceSphere.center)); });\n      supportFaceSphere.radius = Math.sqrt(supportFaceRadiusSq);"
+  },
+  {
+    "before": "        center: supportSphere.center.toArray(), radius: supportSphere.radius,",
+    "after": "        center: supportSphere.center.toArray(), radius: supportSphere.radius,\n        faceFrame: { center: supportFaceSphere.center.toArray(), radius: supportFaceSphere.radius },"
+  },
+  {
+    "before": "    var fit = palmDetailCamera(frSupportingHandInfo, width > 0 && height > 0 ? width / height : 1, FR_BODY_CAMERA_HOME);",
+    "after": "    var aspect = width > 0 && height > 0 ? width / height : 1;\n    var info = frSupportingHandInfo;\n    if (aspect < 1.15 && info.faceFrame) info = { center: info.faceFrame.center, radius: info.faceFrame.radius,\n      normal: info.normal, forward: info.forward };\n    var fit = palmDetailCamera(info, aspect, FR_BODY_CAMERA_HOME);"
+  }
+]

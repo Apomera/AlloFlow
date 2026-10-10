@@ -1,0 +1,142 @@
+{
+  "complete": true,
+  "baselineRenderer": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7",
+  "renderer": "16d181fbe835baf707ea9b89611958f51a5f492bd2cf831f872cff652bfdde1c",
+  "mirrorExact": true,
+  "atlas": {
+    "baseline": "b57c6fd38bbb173b026084c3f7977e0a27c8a91bb5446e045cef067a043b2c88",
+    "current": "04221a7f74fd18ad4be28fdf04966498031ccc88b5929db2d30822b59eb78218",
+    "bytes": 262144,
+    "cached": true,
+    "channels": [
+      {
+        "channel": 0,
+        "baseline": "6215a1c82b91dc171db3681d006d696a2716d7ab7621bb69d442ad4e6ea1b2a4",
+        "current": "6215a1c82b91dc171db3681d006d696a2716d7ab7621bb69d442ad4e6ea1b2a4",
+        "unchanged": true
+      },
+      {
+        "channel": 1,
+        "baseline": "f58a6f19f340d3ec338c3f9ec74549df0aed5bd90a15d8fd6bf065f143f9e186",
+        "current": "863df822d1923764b45d4b1197ac8b1ba1625ce1f2ccaa322caa575ba2b41f1e",
+        "unchanged": false
+      },
+      {
+        "channel": 2,
+        "baseline": "f58a6f19f340d3ec338c3f9ec74549df0aed5bd90a15d8fd6bf065f143f9e186",
+        "current": "f58a6f19f340d3ec338c3f9ec74549df0aed5bd90a15d8fd6bf065f143f9e186",
+        "unchanged": true
+      },
+      {
+        "channel": 3,
+        "baseline": "c73955c515605166e4740d9b7140356a73ef0a5f76575124d083169294137204",
+        "current": "c73955c515605166e4740d9b7140356a73ef0a5f76575124d083169294137204",
+        "unchanged": true
+      }
+    ],
+    "tiles": [
+      {
+        "tile": 0,
+        "redLight": 427300.1853562019,
+        "greenLight": 427358.0160881153,
+        "relativeLight": 1.000135339824075,
+        "peak": 223,
+        "redGradient": 43162,
+        "greenGradient": 63868,
+        "gradientRatio": 1.4797275381122283,
+        "maximumGradient": 60,
+        "redSupport": 8199,
+        "greenSupport": 8199,
+        "unsupported": 0,
+        "changes": 7576,
+        "gutter": 0
+      },
+      {
+        "tile": 1,
+        "redLight": 440929.2941976385,
+        "greenLight": 441046.97171754425,
+        "relativeLight": 1.000266885238641,
+        "peak": 236,
+        "redGradient": 42528,
+        "greenGradient": 66732,
+        "gradientRatio": 1.5691309255079007,
+        "maximumGradient": 69,
+        "redSupport": 8236,
+        "greenSupport": 8236,
+        "unsupported": 0,
+        "changes": 7422,
+        "gutter": 0
+      },
+      {
+        "tile": 2,
+        "redLight": 434472.33495830296,
+        "greenLight": 434451.36321653397,
+        "relativeLight": 0.9999517305474214,
+        "peak": 213,
+        "redGradient": 41382,
+        "greenGradient": 62984,
+        "gradientRatio": 1.5220144023971776,
+        "maximumGradient": 54,
+        "redSupport": 8200,
+        "greenSupport": 8200,
+        "unsupported": 0,
+        "changes": 7648,
+        "gutter": 0
+      },
+      {
+        "tile": 3,
+        "redLight": 418551.11842944875,
+        "greenLight": 418632.78720742185,
+        "relativeLight": 1.0001951225892778,
+        "peak": 195,
+        "redGradient": 39826,
+        "greenGradient": 71016,
+        "gradientRatio": 1.783156731783257,
+        "maximumGradient": 65,
+        "redSupport": 8211,
+        "greenSupport": 8211,
+        "unsupported": 0,
+        "changes": 7535,
+        "gutter": 0
+      }
+    ]
+  },
+  "worlds": {
+    "neighborhood": {
+      "count": 19203,
+      "baseline": "f0933322797366fbee8bbdc9ce8d2263700b1c07a71caa1bcfa1224d68edc2a3",
+      "current": "f0933322797366fbee8bbdc9ce8d2263700b1c07a71caa1bcfa1224d68edc2a3",
+      "unchanged": true
+    },
+    "galaxy": {
+      "count": 36400,
+      "baseline": "f5dbc73e3ae0b2751dcf15f6fffce2753ae4994b089c62d020975e414889b2ab",
+      "current": "f5dbc73e3ae0b2751dcf15f6fffce2753ae4994b089c62d020975e414889b2ab",
+      "unchanged": true
+    },
+    "cosmic": {
+      "count": 41470,
+      "baseline": "156c66d7c6805406f2d231fb18affab8e613952ec32b5fdf9e9e805104966b85",
+      "current": "156c66d7c6805406f2d231fb18affab8e613952ec32b5fdf9e9e805104966b85",
+      "unchanged": true
+    }
+  },
+  "mathFunctions": {
+    "gamma": true,
+    "aberrate": true,
+    "doppler": true,
+    "stepFlight": true,
+    "viewSpectrum": true,
+    "lightClock": true,
+    "chartView": true,
+    "approachPlan": true,
+    "targetView": true,
+    "targetFrame": true,
+    "orbitView": true,
+    "rangeView": true,
+    "orbitPlane": true,
+    "easePace": true,
+    "dustOpticalDepth": true,
+    "dustTransmission": true
+  }
+}

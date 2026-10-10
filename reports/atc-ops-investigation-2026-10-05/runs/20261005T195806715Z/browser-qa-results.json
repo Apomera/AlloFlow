@@ -1,0 +1,135 @@
+{
+  "started": "2026-10-05T19:58:06.715Z",
+  "fixture": "Canonical ATC component in a local React fixture with installed Chrome. Product controls and native slider keyboard input drive investigations. Restored-state cases initialize a fresh fixture with captured tool data or explicitly marked malformed records.",
+  "checks": [
+    {
+      "name": "Visual investigation and recorded comparison fit accessibly at 1440px",
+      "pass": true,
+      "detail": {
+        "layout": {
+          "viewport": 1440,
+          "document": 1440,
+          "height": 2187
+        },
+        "controls": 17
+      }
+    },
+    {
+      "name": "Visual investigation and recorded comparison fit accessibly at 390px",
+      "pass": true,
+      "detail": {
+        "layout": {
+          "viewport": 390,
+          "document": 390,
+          "height": 4313
+        },
+        "controls": 17
+      }
+    },
+    {
+      "name": "Visual investigation and recorded comparison fit accessibly at 320px",
+      "pass": true,
+      "detail": {
+        "layout": {
+          "viewport": 320,
+          "document": 320,
+          "height": 4621
+        },
+        "controls": 17
+      }
+    },
+    {
+      "name": "Every control changes its own weighted contribution and endpoints reach zero and one hundred",
+      "pass": true,
+      "detail": {
+        "maximumBarPercent": [
+          83.3333,
+          100,
+          83.3333,
+          33.3333,
+          33.3333
+        ]
+      }
+    },
+    {
+      "name": "Duplicate logging is blocked while same-band numeric differences remain visible",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Different setups can share a score without being mislabeled as a fair one-variable test",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Older evidence can be selected and loaded without rewriting the recorded comparison",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Clear can be undone with evidence, explanation, focus, and current controls preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Starting a new evidence log dismisses undo instead of restoring over the new investigation",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Recorded evidence and explanation survive reopening and prompts only provide scaffolding",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Malformed restored values recover without manufacturing evidence or trusting saved scores",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Ops investigations preserve a real saved tower shift and resume it through the product control",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Keyboard controls retain visible focus and the comparison chooses distinct records",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Live score stays beside mobile and tablet controls while learners adjust every factor",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "High contrast and forced colors at two hundred percent zoom preserve comparison and controls",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "errors": [],
+  "screenshots": [
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-ops-investigation-2026-10-05\\runs\\20261005T195806715Z\\after-initial-1440.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-ops-investigation-2026-10-05\\runs\\20261005T195806715Z\\after-comparison-1440.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-ops-investigation-2026-10-05\\runs\\20261005T195806715Z\\after-initial-390.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-ops-investigation-2026-10-05\\runs\\20261005T195806715Z\\after-comparison-390.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-ops-investigation-2026-10-05\\runs\\20261005T195806715Z\\after-comparison-detail-390.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-ops-investigation-2026-10-05\\runs\\20261005T195806715Z\\after-initial-320.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-ops-investigation-2026-10-05\\runs\\20261005T195806715Z\\after-comparison-320.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-ops-investigation-2026-10-05\\runs\\20261005T195806715Z\\after-maximum-index.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-ops-investigation-2026-10-05\\runs\\20261005T195806715Z\\after-same-band-evidence.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-ops-investigation-2026-10-05\\runs\\20261005T195806715Z\\after-history-selection-1440.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-ops-investigation-2026-10-05\\runs\\20261005T195806715Z\\after-restored-320.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-ops-investigation-2026-10-05\\runs\\20261005T195806715Z\\after-keyboard-320.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-ops-investigation-2026-10-05\\runs\\20261005T195806715Z\\after-live-controls-320.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-ops-investigation-2026-10-05\\runs\\20261005T195806715Z\\after-live-controls-390.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-ops-investigation-2026-10-05\\runs\\20261005T195806715Z\\after-live-controls-900.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-ops-investigation-2026-10-05\\runs\\20261005T195806715Z\\after-high-contrast-390.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-ops-investigation-2026-10-05\\runs\\20261005T195806715Z\\after-forced-colors-200percent.png"
+  ],
+  "sourceHash": "dcfec232079bf26f28689883e9a570a57c59eef811da83c9d11d72da9ba7df71",
+  "passed": 15,
+  "failed": 0,
+  "sourceStable": true,
+  "completed": "2026-10-05T19:59:39.719Z"
+}

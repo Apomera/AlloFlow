@@ -1,0 +1,39 @@
+{
+  "passed": true,
+  "sourceSha256": "20154ada389a77bef90f924929f4ae49f991165ba2d2eb95866eaa893da70636",
+  "sourceMirrorEqual": true,
+  "priorSourcePreserved": true,
+  "tests": 61,
+  "testFiles": 4,
+  "browserViews": 15,
+  "browserWorkflows": 4,
+  "scopedAxeViews": 12,
+  "nodeAlignment": {
+    "dx": 0.007248711340253067,
+    "dy": 0.00032216494844306
+  },
+  "independentSvgDefinitions": true,
+  "scopedDiffCheck": true,
+  "scopedIndexEmpty": true,
+  "visualReview": {
+    "reviewedBy": "Root agent",
+    "finalDirectlyReviewed": [
+      "hero-desktop.png",
+      "projects-desktop.png",
+      "input-desktop.png",
+      "projects-phone.png",
+      "projects-small-phone.png",
+      "hero-small-phone.png",
+      "input-phone.png",
+      "board-desktop.png",
+      "schematic-desktop.png",
+      "board-phone.png",
+      "hero-forced.png",
+      "projects-forced.png",
+      "input-forced.png",
+      "hero-rtl.png",
+      "projects-rtl.png"
+    ],
+    "notes": "Reviewed the final hero, illustrated cards, selected and focused states, 320/390 px layouts, high contrast, right-to-left text, live input panel, board surface and schematic. Selected-card text is readable in the final system-color screenshot."
+  }
+}

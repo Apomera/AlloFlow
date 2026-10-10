@@ -1,0 +1,269 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\playwright-video-off.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/Documents/Codex/2026-09-29/great-work-how-can-we-holistically/frame-energy-2026-10-06/validation/browser-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "26-bridgelab-gl.spec.ts",
+      "file": "26-bridgelab-gl.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Bridge Lab — real WebGL",
+          "file": "26-bridgelab-gl.spec.ts",
+          "line": 1043,
+          "column": 6,
+          "specs": [
+            {
+              "title": "frame energy: stored components, cumulative dissipation and paired scale at 1000px",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 205848,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts",
+                            "column": 110,
+                            "line": 764
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('[data-bridge-scene-energy-frame]').locator('[data-scene-energy-group=\"stored\"]').locator('[data-scene-energy-part=\"kinetic\"],[data-scene-energy-part=\"elastic\"]')\nExpected: \u001b[32m2\u001b[39m\nReceived: \u001b[31m0\u001b[39m\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-bridge-scene-energy-frame]').locator('[data-scene-energy-group=\"stored\"]').locator('[data-scene-energy-part=\"kinetic\"],[data-scene-energy-part=\"elastic\"]')\u001b[22m\n\u001b[2m    13 × locator resolved to 0 elements\u001b[22m\n\u001b[2m       - unexpected value \"0\"\u001b[22m\n\n\n  762 |   const dissipatedGroup = frame.locator('[data-scene-energy-group=\"dissipated\"]');\n  763 |   await expect(storedGroup.locator('[data-scene-energy-part]')).toHaveCount(2);\n> 764 |   await expect(storedGroup.locator('[data-scene-energy-part=\"kinetic\"],[data-scene-energy-part=\"elastic\"]')).toHaveCount(2);\n      |                                                                                                              ^\n  765 |   await expect(dissipatedGroup.locator('[data-scene-energy-part=\"dissipated\"]')).toHaveCount(1);\n  766 |   const values: Record<string, number> = {}, widths: Record<string, number> = {};\n  767 |   for (const id of ['kinetic', 'elastic', 'dissipated'] as FrameEnergyPart[]) {\n    at checkSceneEnergyAmounts (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts:764:110)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts:3497:17"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "[StemLab] stem_tool_bridgelab.js loaded — Bridge Engineering Lab\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-06T20:51:06.083Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\browser-artifacts\\26-bridgelab-gl-Bridge-Lab-0e961--and-paired-scale-at-1000px-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\browser-artifacts\\26-bridgelab-gl-Bridge-Lab-0e961--and-paired-scale-at-1000px-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\browser-artifacts\\26-bridgelab-gl-Bridge-Lab-0e961--and-paired-scale-at-1000px-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\browser-artifacts\\26-bridgelab-gl-Bridge-Lab-0e961--and-paired-scale-at-1000px-chromium\\trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-d3708ad6a291077309c4",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 3476,
+              "column": 9
+            },
+            {
+              "title": "frame energy: stored components, cumulative dissipation and paired scale at 320px",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 194935,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts",
+                            "column": 110,
+                            "line": 764
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('[data-bridge-scene-energy-frame]').locator('[data-scene-energy-group=\"stored\"]').locator('[data-scene-energy-part=\"kinetic\"],[data-scene-energy-part=\"elastic\"]')\nExpected: \u001b[32m2\u001b[39m\nReceived: \u001b[31m0\u001b[39m\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-bridge-scene-energy-frame]').locator('[data-scene-energy-group=\"stored\"]').locator('[data-scene-energy-part=\"kinetic\"],[data-scene-energy-part=\"elastic\"]')\u001b[22m\n\u001b[2m    10 × locator resolved to 0 elements\u001b[22m\n\u001b[2m       - unexpected value \"0\"\u001b[22m\n\n\n  762 |   const dissipatedGroup = frame.locator('[data-scene-energy-group=\"dissipated\"]');\n  763 |   await expect(storedGroup.locator('[data-scene-energy-part]')).toHaveCount(2);\n> 764 |   await expect(storedGroup.locator('[data-scene-energy-part=\"kinetic\"],[data-scene-energy-part=\"elastic\"]')).toHaveCount(2);\n      |                                                                                                              ^\n  765 |   await expect(dissipatedGroup.locator('[data-scene-energy-part=\"dissipated\"]')).toHaveCount(1);\n  766 |   const values: Record<string, number> = {}, widths: Record<string, number> = {};\n  767 |   for (const id of ['kinetic', 'elastic', 'dissipated'] as FrameEnergyPart[]) {\n    at checkSceneEnergyAmounts (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts:764:110)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts:3506:14"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "[StemLab] stem_tool_bridgelab.js loaded — Bridge Engineering Lab\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-06T20:56:51.598Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\browser-artifacts\\26-bridgelab-gl-Bridge-Lab-49124-n-and-paired-scale-at-320px-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\browser-artifacts\\26-bridgelab-gl-Bridge-Lab-49124-n-and-paired-scale-at-320px-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\browser-artifacts\\26-bridgelab-gl-Bridge-Lab-49124-n-and-paired-scale-at-320px-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\browser-artifacts\\26-bridgelab-gl-Bridge-Lab-49124-n-and-paired-scale-at-320px-chromium\\trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-297e9926f91881fd5713",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 3476,
+              "column": 9
+            },
+            {
+              "title": "frame energy: graphics loss exposes current amounts and deliberate recovery resumes saved A",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 70414,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[StemLab] stem_tool_bridgelab.js loaded — Bridge Engineering Lab\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-06T21:01:32.273Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-20911acda3ec6044f1a4",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 3576,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-06T20:47:30.586Z",
+    "duration": 976046.3550000001,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

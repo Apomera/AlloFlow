@@ -1,0 +1,30 @@
+{
+  "baselineSHA": "8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940",
+  "finalSHA": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76",
+  "inputs": {
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\app-build\\stem_lab\\stem_tool_firstresponse.js": "8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\build\\stem_lab\\stem_tool_firstresponse.js": "8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\delta.json": "30618f6fa7ef014688989bb4cd4ae76f23e5958f25b88851303a8ff0983dab57",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\face-capture-png.cjs": "6009565cd97b35c874ff22325427e40823b4ff197118ea3870d0b2996bd30829",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\face-mount-window.cjs": "9e3d95fe4ce8ae16ca7d4a994d26250e064873d675b930fb23d63b33ba43b246",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright-core\\lib\\utilsBundle.js": "5c42363c10d2f2f5bc91e07feaa9fa5f417a1a55e6559448d0c20d66f73db9e0",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\run-face-browser.cjs": "942175f178eb845be3e0b33eb6d48c0cab8a2027b00490745328f7935935d024",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\before.js": "8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\candidate.js": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\firstresponse-face-preview.spec.ts": "b90a771f2d355db09b58de74b4eb5c1ca5cde110355a73368a8bed32c554ccde",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\playwright-face.config.cjs": "dda618a55a673d8c544dfc13f4273c04d406d7bdd06c8734acddb93ebcdfe7be",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_firstresponse.js": "8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_firstresponse.js": "8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\vendor\\three-r128\\three.min.js": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_lab_module.js": "cf56996d420aa6112626c4979d4a8e3963c9b199bf31deebb3e29d3910227de1"
+  },
+  "selectedViews": [
+    "adult-pose5"
+  ],
+  "expectedWorkflows": 1,
+  "expectedEvidence": 2,
+  "workers": 1,
+  "retries": 0,
+  "startedAt": "2026-10-09T00:28:36.818Z"
+}

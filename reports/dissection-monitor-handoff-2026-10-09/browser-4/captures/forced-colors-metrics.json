@@ -1,0 +1,48 @@
+{
+  "width": 326.75,
+  "client": 327,
+  "scroll": 327,
+  "controls": [
+    {
+      "text": "Explain result",
+      "font": 16,
+      "client": 120,
+      "scroll": 120,
+      "height": 48
+    }
+  ],
+  "focus": {
+    "width": 3,
+    "style": "solid"
+  },
+  "cues": [
+    {
+      "id": "diss-procedure-summary",
+      "width": 344.40625,
+      "client": 344,
+      "scroll": 344,
+      "fonts": [
+        16,
+        16
+      ]
+    },
+    {
+      "id": "diss-procedure-title",
+      "width": 344.40625,
+      "client": 344,
+      "scroll": 344,
+      "fonts": [
+        16
+      ]
+    },
+    {
+      "id": "diss-active-tool-help",
+      "width": 254.828125,
+      "client": 255,
+      "scroll": 255,
+      "fonts": [
+        16
+      ]
+    }
+  ]
+}

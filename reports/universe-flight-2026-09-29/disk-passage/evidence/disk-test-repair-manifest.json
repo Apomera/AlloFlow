@@ -1,0 +1,40 @@
+{
+  "completed": true,
+  "repairedAt": "2026-10-07T22:03:33.040Z",
+  "driver": {
+    "file": "repair-disk-unit59.cjs",
+    "sha256": "92327115742f6c44c5b62a2dd816dc607e99f9a5947733399eef07ca7f1521bb"
+  },
+  "target": "tests/universe_flight_disk_passage.test.js",
+  "originalSha256": "b2bc0c1e3f0e26d7062330ae6699d15d42eef4379e481df32dec5de1234b9d1a",
+  "candidateSha256": "b7659ac07be1dd76a8679b9560402e3810d43fbf002ce7eef64f1a0ad7cc0b1e",
+  "installedSha256": "b7659ac07be1dd76a8679b9560402e3810d43fbf002ce7eef64f1a0ad7cc0b1e",
+  "inverseExact": true,
+  "reason": "The renderer intentionally damps live playback gaze with a 0.35-second response. Playback tests now check the independent shortest-arc exponential prediction at every frame. Authored position, distance and physical clocks retain their exact checks; seeks, highlight stops and paused Follow retain exact authored gaze checks.",
+  "replacements": [
+    {
+      "before": "function expectPose(actual, expected) {",
+      "after": "function expectPose(actual, expected, expectedGaze = expected) {"
+    },
+    {
+      "before": "  expect(Math.sin(actual.yaw)).toBeCloseTo(Math.sin(expected.yaw), 11);\n  expect(Math.cos(actual.yaw)).toBeCloseTo(Math.cos(expected.yaw), 11);\n  expect(actual.pitch).toBeCloseTo(expected.pitch, 11);",
+      "after": "  expect(Math.sin(actual.yaw)).toBeCloseTo(Math.sin(expectedGaze.yaw), 11);\n  expect(Math.cos(actual.yaw)).toBeCloseTo(Math.cos(expectedGaze.yaw), 11);\n  expect(actual.pitch).toBeCloseTo(expectedGaze.pitch, 11);"
+    },
+    {
+      "before": "}\n\nbeforeAll(() => {",
+      "after": "}\n// Live playback follows the authored gaze with a 0.35-second response. Seeks,\n// highlight stops, and paused Follow view still resolve the authored gaze exactly.\n// Use a shortest-arc angle and exponential decay to predict live orientation.\nfunction followedGaze(previous, target, seconds) {\n  const decay = Math.exp(-seconds / 0.35);\n  const arc = Math.atan2(Math.sin(target.yaw - previous.yaw), Math.cos(target.yaw - previous.yaw));\n  return { yaw: previous.yaw + arc * (1 - decay), pitch: target.pitch + (previous.pitch - target.pitch) * decay };\n}\n\nbeforeAll(() => {"
+    },
+    {
+      "before": "      launch(rate); for (let step = 0; step < 10; step++) advance(100); publish();",
+      "after": "      launch(rate); let gaze = route.atTime(0);\n      for (let step = 0; step < 10; step++) {\n        gaze = followedGaze(gaze, route.atTime((step + 1) * 0.1 * rate), 0.1); advance(100);\n        expectPose(scene.snapshot().state, route.atTime((step + 1) * 0.1 * rate), gaze);\n      }\n      publish();"
+    },
+    {
+      "before": "      expectPose(scene.snapshot().state, route.atTime(rate)); expect(telemetry.flyby.rate).toBe(rate);",
+      "after": "      expectPose(scene.snapshot().state, route.atTime(rate), gaze); expect(telemetry.flyby.rate).toBe(rate);"
+    },
+    {
+      "before": "    expectPose(scene.snapshot().state, route.atTime(44)); expect(scene.snapshot().targetId).toBe('galactic-center');",
+      "after": "    expectPose(scene.snapshot().state, route.atTime(44), followedGaze(route.atTime(43.8), route.atTime(44), 0.1)); expect(scene.snapshot().targetId).toBe('galactic-center');"
+    }
+  ]
+}

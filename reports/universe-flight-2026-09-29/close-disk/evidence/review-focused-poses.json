@@ -1,0 +1,23 @@
+{
+  "completed": true,
+  "scope": "Read-only review of existing bulge test camera poses; both remain outside all spiral plane handoff envelopes.",
+  "candidateSha256": "6f1267255407b7de52bb685922281301fef58de9c91cc8a036577a7c317e56e8",
+  "poses": [
+    {
+      "position": [
+        0,
+        0,
+        -2200000
+      ],
+      "nonzero": []
+    },
+    {
+      "position": [
+        1600000,
+        650000,
+        1250000
+      ],
+      "nonzero": []
+    }
+  ]
+}

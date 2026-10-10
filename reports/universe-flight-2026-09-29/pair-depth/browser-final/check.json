@@ -1,0 +1,205 @@
+{
+  "completed": true,
+  "pins": {
+    "stem_lab/universe_flight_scene.js": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7",
+    "stem_lab/stem_tool_universe.js": "71ae3be563ac26756fadfe303ddf4df350ed01d965614f8726fb29d6305b51ff"
+  },
+  "harnessSha256": "b0e0044426d17d01fdbd11a02de6da9d00469352d4d78e7e20bf4b7618adc430",
+  "workflows": [
+    {
+      "name": "nearby-depth-readout",
+      "fixture": "cluster-heart",
+      "readings": {
+        "text": [
+          "4.32 ly",
+          "14.07 ly",
+          "9.76 ly"
+        ],
+        "rails": [
+          0.3068804430886639,
+          1
+        ]
+      }
+    },
+    {
+      "name": "pan-and-zoom-preserve-measurements",
+      "exact": true
+    },
+    {
+      "name": "disclosure-and-flyby-return",
+      "keyboardToggle": true,
+      "exactRouteRestored": true
+    },
+    {
+      "name": "cluster-approach-distances",
+      "fixture": "cluster-approach",
+      "readings": {
+        "text": [
+          "7.34 ly",
+          "19.74 ly",
+          "17.98 ly"
+        ],
+        "rails": [
+          0.3720124782624756,
+          1
+        ]
+      }
+    },
+    {
+      "name": "group-elliptical-distances",
+      "fixture": "group-elliptical",
+      "readings": {
+        "text": [
+          "327,452.29 ly",
+          "1,424,298.07 ly",
+          "1,403,744.99 ly"
+        ],
+        "rails": [
+          0.22990432471175004,
+          1
+        ]
+      }
+    },
+    {
+      "name": "phone-depth-readout",
+      "fixture": "cluster-heart",
+      "readings": {
+        "text": [
+          "4.32 ly",
+          "14.07 ly",
+          "9.76 ly"
+        ],
+        "rails": [
+          0.3068804430886639,
+          1
+        ]
+      }
+    },
+    {
+      "name": "phone-fullscreen-and-high-contrast",
+      "width": 320,
+      "endReachable": true,
+      "noHorizontalOverflow": true
+    }
+  ],
+  "accessibility": [
+    {
+      "name": "desktop-depth",
+      "violations": []
+    },
+    {
+      "name": "phone-depth",
+      "violations": []
+    },
+    {
+      "name": "fullscreen-depth",
+      "violations": []
+    },
+    {
+      "name": "forced-colors-depth",
+      "violations": []
+    }
+  ],
+  "captures": [
+    {
+      "name": "desktop-depth-comparison",
+      "file": "desktop-depth-comparison.png",
+      "sha256": "ea5214c10743cfb44e1c78a3678694fe96d890e4901395fcf4497290f9c5d5ac"
+    },
+    {
+      "name": "cluster-approach-depth",
+      "file": "cluster-approach-depth.png",
+      "sha256": "f907ddec45d4655f888aeda0d86e90168296efc494f3043108d331b2a2d0d7c1"
+    },
+    {
+      "name": "group-elliptical-depth",
+      "file": "group-elliptical-depth.png",
+      "sha256": "8e4ff0e638a1d2390f6b6387fa01f1c1d26808f6d14d94c9a5ff77ee0decbf0c"
+    },
+    {
+      "name": "phone-depth-comparison",
+      "file": "phone-depth-comparison.png",
+      "sha256": "88dddb86a2fa0a011c9d1207c3886d0a671d657c9466333a4bc3fae5688d0372"
+    },
+    {
+      "name": "fullscreen-depth-comparison",
+      "file": "fullscreen-depth-comparison.png",
+      "sha256": "5878f8ad986ac295f6c1425896ba2462c97ce1fa1b285f85cdba97873a2e1a7f"
+    },
+    {
+      "name": "forced-colors-depth",
+      "file": "forced-colors-depth.png",
+      "sha256": "78e4cf12df3d8dc505c1e9d30dfcd8a215dc3ce3fcb112f081909d017ea846df"
+    }
+  ],
+  "bounds": [
+    {
+      "name": "phone Compare distances",
+      "left": 69,
+      "right": 267,
+      "top": 564.21875,
+      "bottom": 608.21875,
+      "width": 198,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "phone End paired view",
+      "left": 69,
+      "right": 267,
+      "top": 615.328125,
+      "bottom": 659.328125,
+      "width": 198,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "fullscreen Compare distances",
+      "left": 99,
+      "right": 297,
+      "top": 159.390625,
+      "bottom": 203.390625,
+      "width": 198,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "fullscreen End paired view",
+      "left": 99,
+      "right": 297,
+      "top": 539.109375,
+      "bottom": 583.109375,
+      "width": 198,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    }
+  ],
+  "served": [
+    {
+      "file": "stem_lab/stem_tool_universe.js",
+      "sha256": "71ae3be563ac26756fadfe303ddf4df350ed01d965614f8726fb29d6305b51ff"
+    },
+    {
+      "file": "stem_lab/universe_flight_scene.js",
+      "sha256": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7"
+    }
+  ],
+  "errors": [],
+  "fixtureSha256": "cce0344e366f20c14897ab6d2ab432aba17f81d6f97c3ca803f453955c9549e7"
+}

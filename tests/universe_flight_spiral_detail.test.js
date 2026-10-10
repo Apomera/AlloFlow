@@ -1,13 +1,15 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { originalGalaxySurface, galaxySurfaceFloats } from './helpers/universe_galaxy_surfaces.js';
 
 let flight, scene, canvas, now, frames, frameId, telemetry;
 let buffers, uploads, updates, textureUploads, draws, uniforms, constants, attributes, created, deleted;
 let pointBuffer, surfaceBuffer, pointProgram;
 
 // Independently captured from the accepted renderer before the spiral atlas
-// detail pass. The elliptical map, central bulge and cloud atlas stay exact.
+// detail pass. The elliptical and cloud maps stay exact. The split central
+// bulge pin is refreshed here; its total light is owned by the bulge suite.
 // Two-arm and barred refinements have their own accepted-baseline tests.
 const ATLAS = {
   tiles: [
@@ -16,9 +18,29 @@ const ATLAS = {
     'b4d05f4c47a17ecb92f55fd0aeac4133c239e127689ce7a84a9334b372cdaa26',
     '08f244e4ef3ad6f71eb240e7e9e67410fe82f16a69f1992f27c2f857dcd15d38',
   ],
-  core: '3958dbb5ca03df4a60b94664ed7723171dd93d584d28f26623c1b264226ea112',
+  core: '9627b1ac30b7bc524cce0fbcd2815b906fe2b58b5cdb2c30367a2b56bf9b4416',
   gutter: 'ca8a4b28e8b434e231027bf5d9952a7d32014111151ed7e3e2efc0b6fe934a0a',
   cloud: 'b57c6fd38bbb173b026084c3f7977e0a27c8a91bb5446e045cef067a043b2c88',
+};
+// Enhancement57 moves a small smooth RGB component to its projected disk.
+// ATLAS retains every historical pin. Independently captured current RGB
+// pins cover the same tile/core bytes; their exact c0 alpha planes, ellipse,
+// gutters and clouds remain pinned. The bulge suite checks reconstructed
+// historical RGB samples and integrals; the host audit checks every RGB pixel.
+const CURRENT_DIFFUSE = {
+  "tiles": [
+    "416d22da716ed5761ec77576c75af7188f3d675a490481a08cab203b01c784d2",
+    "15fcc8600ba4fe8976905b06b954499a89c80d385cf5909547e7de02fbb0d8cb",
+    "a971ae2b6f6c1bbdf34920e691ba16bf7b9f63cacc7724284d2cdb60b0bff23e",
+    "08f244e4ef3ad6f71eb240e7e9e67410fe82f16a69f1992f27c2f857dcd15d38"
+  ],
+  "core": "8158e806a302586198dd2ec60742cd03b0cfde97a9ac2e5a35342f0f4c0361be",
+  "alpha": [
+    "a51ffddde8ae618f9731e74595148f912c0dc7604f956e2e93595a30f075506a",
+    "40a0d06735f623a51882ba96c828b3752af9b70c39fe8c82ae2df2808c35aa0a",
+    "0a9eb44bc927971a9ce80d6e59ac8789b6313b7329043111ec017e03cc6a8dce"
+  ],
+  "coreAlpha": "c7f9efea0e8bef8eece018d45b26d03a785062f48a6709bac5a7151f225e99ff"
 };
 const WORLD = {
   neighborhood: { count: 19203, points: 'f0933322797366fbee8bbdc9ce8d2263700b1c07a71caa1bcfa1224d68edc2a3', surfaceFloats: 0, surface: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' },
@@ -141,6 +163,7 @@ describe('Universe static spiral atlas detail', () => {
     const map = atlas(), data = map.data;
     expect(map).toMatchObject({ width: 2048, height: 512, level: 0, border: 0 });
     expect(data).toHaveLength(4194304);
+    for (let index = 0; index < 3; index++) expect(hash(tile(data, index).filter((_value, offset) => offset % 4 === 3))).toBe(CURRENT_DIFFUSE.alpha[index]);
     expect(hash(tile(data, 0))).not.toBe(ATLAS.tiles[0]);
     for (let index = 3; index < 4; index++) expect(hash(tile(data, index))).toBe(ATLAS.tiles[index]);
     const core = [], gutter = [];
@@ -150,7 +173,8 @@ describe('Universe static spiral atlas detail', () => {
       if (x >= 8 && x < 504 && y >= 8 && y < 504 && Math.hypot(px, pz) < 0.18) core.push(...data.subarray(offset, offset + 4));
       if (x < 8 || x >= 504 || y < 8 || y >= 504) gutter.push(...data.subarray(offset, offset + 4));
     }
-    expect(core).toHaveLength(16768); expect(hash(new Uint8Array(core))).toBe(ATLAS.core);
+    expect(core).toHaveLength(16768); expect(hash(new Uint8Array(core))).toBe(CURRENT_DIFFUSE.core);
+    expect(hash(new Uint8Array(core).filter((_value, offset) => offset % 4 === 3))).toBe(CURRENT_DIFFUSE.coreAlpha);
     expect(gutter).toHaveLength(64512); expect(hash(new Uint8Array(gutter))).toBe(ATLAS.gutter);
     expect(gutter.every(value => value === 0)).toBe(true);
     const cloud = textureUploads.find(item => item.width === 512);
@@ -160,7 +184,7 @@ describe('Universe static spiral atlas detail', () => {
     expect(created.Shader).toHaveLength(4);
   });
 
-  it('keeps every generated point and original galaxy surface exact across regions without rebuilding either atlas', () => {
+  it('keeps every generated point and original galaxy xyz/UV exact across regions without rebuilding either atlas', () => {
     const maps = textureUploads.map(item => ({ source: item.source, hash: hash(item.data) })), objects = resources();
     for (const [region, expected] of Object.entries(WORLD)) {
       scene.set({ region, running: false }); advance();
@@ -168,8 +192,8 @@ describe('Universe static spiral atlas detail', () => {
       const surfaces = uploads.findLast(item => item.buffer === surfaceBuffer).data;
       expect(points).toHaveLength(expected.count * 9); expect(hash(points)).toBe(expected.points);
       // The cloud-surface test owns the appended neighborhood record batch.
-      expect(surfaces).toHaveLength(expected.surfaceFloats + 30 + (region === 'neighborhood' ? 66000 : 0));
-      expect(hash(surfaces.subarray(0, expected.surfaceFloats))).toBe(expected.surface);
+      expect(surfaces).toHaveLength(galaxySurfaceFloats(region, expected.surfaceFloats) + 36 + (region === 'neighborhood' ? 66000 : 0));
+      expect(hash(originalGalaxySurface(surfaces, expected.surfaceFloats))).toBe(expected.surface);
       expect(capture().find(item => item.program === pointProgram && item.mode === constants.get('POINTS')).count).toBe(expected.count);
     }
     expect(textureUploads).toHaveLength(2); expect(resources()).toEqual(objects);
@@ -178,7 +202,8 @@ describe('Universe static spiral atlas detail', () => {
 
   it('retains fixed geometry and atlas uploads through native spiral approach, orbit, pause and manual viewing', () => {
     scene.set({ region: 'galaxy', mode: 'explore', speed: 50000 }); advance();
-    const pointHash = hash(buffers.get(pointBuffer)), objects = resources(), uploadCount = uploads.length, updateCount = updates.length;
+    const pointHash = hash(buffers.get(pointBuffer)), originalSurface = buffers.get(surfaceBuffer).slice();
+    const objects = resources(), uploadCount = uploads.length, updateCount = updates.length;
     expect(scene.navigateTo('galactic-center')).toBe(true); advance();
     for (let index = 0; index < 80 && telemetry.running; index++) advance(100);
     const arrived = scene.snapshot();
@@ -188,13 +213,31 @@ describe('Universe static spiral atlas detail', () => {
     for (let index = 0; index < 10; index++) advance(100);
     expect(scene.snapshot().state.position).not.toEqual(start.state.position);
     scene.set({ running: false }); advance(); const paused = scene.snapshot(), pausedDraw = capture();
+    const pausedSurface = buffers.get(surfaceBuffer).slice(), pausedUpdateCount = updates.length;
     advance(1000); expect(scene.snapshot()).toEqual(paused); expect(capture()).toEqual(pausedDraw);
     scene.look(0.16, -0.1); scene.set({ fov: 38, exposure: 1.3, quality: 'low' }); advance();
     expect(capture()[0].uniforms.u_forward).not.toEqual(pausedDraw[0].uniforms.u_forward);
     expect(scene.snapshot().state.position).toEqual(paused.state.position);
     expect(scene.snapshot().state.universeYears).toBe(0); expect(scene.snapshot().state.travelerYears).toBe(0);
     expect(hash(buffers.get(pointBuffer))).toBe(pointHash);
-    expect(uploads).toHaveLength(uploadCount); expect(updates).toHaveLength(updateCount);
+    expect(uploads).toHaveLength(uploadCount); expect(updates).toHaveLength(pausedUpdateCount);
+    expect(buffers.get(surfaceBuffer)).toEqual(pausedSurface);
+    expect(buffers.get(surfaceBuffer).subarray(0, 2304)).toEqual(originalSurface.subarray(0, 2304));
+    const cornerStart = galaxySurfaceFloats('galaxy', WORLD.galaxy.surfaceFloats);
+    expect(buffers.get(surfaceBuffer).subarray(cornerStart)).toEqual(originalSurface.subarray(cornerStart));
+    const projectedUpdates = updates.slice(updateCount);
+    expect(projectedUpdates.length).toBeGreaterThan(0);
+    const projectedKinds = new Set();
+    for (const update of projectedUpdates) {
+      expect(update.buffer).toBe(surfaceBuffer); expect([2304 * 4, 4608 * 4]).toContain(update.offset);
+      projectedKinds.add(update.offset);
+      expect(update.data).toHaveLength(2304); expect(update.data.every(Number.isFinite)).toBe(true);
+      for (let offset = 5; offset < update.data.length; offset += 6) {
+        if (update.offset === 4608 * 4) expect(update.data[offset]).toBeLessThan(0);
+        else expect(update.data[offset]).toBeGreaterThanOrEqual(1);
+      }
+    }
+    expect([...projectedKinds].sort((a, b) => a - b)).toEqual([2304 * 4, 4608 * 4]);
     expect(textureUploads).toHaveLength(2); expect(resources()).toEqual(objects);
   });
 

@@ -1,0 +1,79 @@
+{
+  "date": "2026-10-05",
+  "beforeSha256": "ca13866bd0534e69c7f7762ea416f878b71c48a74af559e677e51a3d360acdd8",
+  "sourceSha256": "b60b5738b5822ca6d07c20a0897c2f168118eac11429ea46c12dda1d101992a1",
+  "publicSha256": "b60b5738b5822ca6d07c20a0897c2f168118eac11429ea46c12dda1d101992a1",
+  "mirrorsMatch": true,
+  "preserved": {
+    "rescuerHandRig": true,
+    "contactBoundsMath": true,
+    "compressionMotion": true,
+    "interactiveDepthGraph": true
+  },
+  "unitTests": {
+    "passed": 199,
+    "suites": [
+      {
+        "name": "firstresponse_contact_exploration",
+        "passed": 25
+      },
+      {
+        "name": "firstresponse_contact_reference",
+        "passed": 12
+      },
+      {
+        "name": "firstresponse_hand_inspection",
+        "passed": 35
+      },
+      {
+        "name": "firstresponse_hand_alignment",
+        "passed": 12
+      },
+      {
+        "name": "firstresponse_depth_explorer",
+        "passed": 115
+      }
+    ]
+  },
+  "browser": {
+    "passed": 2,
+    "engine": "Native Chromium with software WebGL",
+    "renderedPoses": 11,
+    "screenshots": [
+      "adult-heel-side-release",
+      "adult-oblique-contact-compression",
+      "child-heel-side-compression",
+      "infant-heel-side-compression",
+      "phone-heel-side-320",
+      "phone-heel-side-app-contrast"
+    ]
+  },
+  "visualReview": {
+    "accepted": true,
+    "reviewedCaptures": 6,
+    "findings": [
+      "Adult oblique compression shows both hands without the old resting-height bar crossing the fingers.",
+      "Adult, child and infant side captures reveal the heel/chest relationship and preserve the raised fingers.",
+      "The 320px capture includes both hands with space around their tips and wrists.",
+      "The contrast capture retains the fitted hand silhouette and fixed reference marks; the existing flat white materials simplify overlapping hand detail."
+    ],
+    "limits": [
+      "Visual checks use local Chromium with software WebGL.",
+      "The close-ups intentionally crop the forearms above the wrists; this pass preserves the existing hand and mannequin geometry."
+    ]
+  },
+  "diagnostics": [
+    "The first camera test run passed 20 cases; the hidden-hands fixture lacked the age field required by stored depth settings. Correcting the fixture produced a clean 21-case run.",
+    "The initial native run exposed phone clipping and direction drift in the generic side-view fit. The corrected view compensates for the shared viewer home-target offset and fits the complete hand envelope. Native framing and orientation assertions were retained.",
+    "The expanded camera test initially expected distance to change between two landscape aspect ratios. Both were limited by vertical field of view. The resize fixture now crosses into portrait, while retaining the refit and framing checks.",
+    "One browser attempt could not launch because the sandbox default browser directory was empty. The final run explicitly used the existing Chromium installation via PLAYWRIGHT_BROWSERS_PATH.",
+    "The first depth-suite runner timed out before a worker started; no test ran. The suite was rerun in a separate process.",
+    "A transient OneDrive source-file open error was retried after byte-preservation guards confirmed the saved source. The source pair matches."
+  ],
+  "delivery": {
+    "staged": false,
+    "committed": false,
+    "pushed": false,
+    "deployed": false
+  }
+}

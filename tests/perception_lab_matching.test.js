@@ -167,28 +167,36 @@ describe('Perception Lab matching scene geometry', () => {
 });
 
 describe('Perception Lab matching learner controls', () => {
-  it.each(MATCHES)('$id enters matching from its fixed reference and hides a previously revealed answer', async ({ id, reference, min, max }) => {
+  it.each(MATCHES)('$id enters matching at a bounded unequal starting point and hides a previously revealed answer', async ({ id, reference, min, max }) => {
     await mount({ experiment: id, models: { [id]: { reveal: true, matchValue: max } } });
     expect(host.querySelector('[data-perception-result]')).toBeTruthy();
     await click('Match by eye');
-    expect(latest.models[id]).toMatchObject({ matching: true, matchValue: reference, reveal: false });
+    expect(latest.models[id]).toMatchObject({ matching: true, reveal: false });
+    const entered = latest.models[id].matchValue;
+    expect(Number.isInteger(entered)).toBe(true);
+    expect(entered).toBeGreaterThanOrEqual(min); expect(entered).toBeLessThanOrEqual(max);
+    expect(entered).not.toBe(reference); expect(entered).not.toBe(max);
     expect(host.querySelector('[data-perception-result]')).toBeNull();
     const slider = host.querySelector('#perception-match-value');
     expect(slider).toBeTruthy();
-    const percentage = Math.round((reference - min) / (max - min) * 100);
+    const percentage = Math.round((entered - min) / (max - min) * 100);
     expect(slider.getAttribute('aria-valuetext')).toContain(percentage + ' percent of adjustment range');
     expect(slider.getAttribute('aria-valuetext')).toContain('drawing values hidden until reveal');
     expect(host.querySelector('label[for="perception-match-value"]')).toBeTruthy();
     if (id === 'brightness') expect(host.querySelector('#perception-target')).toBeNull();
   });
 
-  it('supports small keyboard-operable matching changes, clamp boundaries, and an equal-target reset', async () => {
+  it('supports small keyboard-operable matching changes, clamp boundaries, and explicit drawing-value equality', async () => {
     await mount();
     await click('Match by eye');
+    const entered = latest.models.brightness.matchValue;
+    // Leave room for the increment independently of the sampled starting point.
+    if (entered === 240) await input('perception-match-value', 239);
+    const incrementBase = latest.models.brightness.matchValue;
     await click('Increase comparison');
-    expect(latest.models.brightness.matchValue).toBe(129);
+    expect(latest.models.brightness.matchValue).toBe(incrementBase + 1);
     await click('Decrease comparison');
-    expect(latest.models.brightness.matchValue).toBe(128);
+    expect(latest.models.brightness.matchValue).toBe(incrementBase);
     await input('perception-match-value', 16);
     await click('Decrease comparison');
     expect(latest.models.brightness.matchValue).toBe(16);
@@ -196,7 +204,7 @@ describe('Perception Lab matching learner controls', () => {
     await click('Increase comparison');
     expect(latest.models.brightness.matchValue).toBe(240);
     await click('Reveal measurements');
-    await click('Reset comparison');
+    await click('Equalize drawing values');
     expect(latest.models.brightness).toMatchObject({ matching: true, matchValue: 128, reveal: false });
     expect(host.querySelector('[data-perception-result]')).toBeNull();
   });
@@ -223,11 +231,13 @@ describe('Perception Lab matching learner controls', () => {
     await click('Match by eye');
     const row = () => host.querySelector('[data-perception-change="target"]');
     expect(row()).toBeTruthy();
-    expect(row().querySelectorAll('td')[0].textContent).toContain('128');
-    expect(row().querySelectorAll('td')[1].textContent).toBe('Hidden until reveal');
-    expect(latest.models.brightness).toMatchObject({ target: 160, matching: true, matchValue: 160, reveal: false });
+    expect(row().querySelector('[data-perception-delta-value=before]').textContent).toContain('128');
+    expect(row().querySelector('[data-perception-delta-value=current]').textContent).toBe('Hidden until reveal');
+    expect(latest.models.brightness).toMatchObject({ target: 160, matching: true, reveal: false });
+    expect(latest.models.brightness.matchValue).not.toBe(160);
+    expect(latest.models.brightness.matchValue).not.toBe(128);
     await click('Reveal measurements');
-    expect(row().querySelectorAll('td')[1].textContent).toBe('160 RGB');
+    expect(row().querySelector('[data-perception-delta-value=current]').textContent).toBe('160 RGB');
     expect(latest.comparison.model.target).toBe(128);
   });
 
@@ -258,7 +268,11 @@ describe('Perception Lab matching learner controls', () => {
     const actual = scene('mullerLyer', latest.models.mullerLyer);
     expect(targets(actual).map(length)).toEqual([400, 400]);
     await click('Match by eye');
-    expect(latest.models.mullerLyer).toMatchObject({ matching: true, matchValue: 400, reveal: false });
+    expect(latest.models.mullerLyer).toMatchObject({ matching: true, reveal: false });
+    expect(latest.models.mullerLyer.matchValue).not.toBe(400);
+    expect(latest.models.mullerLyer.matchValue).not.toBe(500);
+    expect(latest.models.mullerLyer.matchValue).toBeGreaterThanOrEqual(250);
+    expect(latest.models.mullerLyer.matchValue).toBeLessThanOrEqual(550);
     expect(latestAll.otherTool).toEqual({ marker: 77 });
   });
 

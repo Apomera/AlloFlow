@@ -1,0 +1,48 @@
+{
+  "inputs": [
+    {
+      "file": "reports/watercycle-steward-history/browser-tested-runtime.js",
+      "sha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a"
+    },
+    {
+      "file": "reports/watercycle-land-cutaway/candidate-runtime.js",
+      "sha256": "3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875"
+    },
+    {
+      "file": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "f5f50bac94b15e51a47c2cd9af88feed37469820e452cd48ba933ba5f140ac83"
+    }
+  ],
+  "protectedAnchors": 63,
+  "mismatches": [
+    {
+      "name": "canvasRef",
+      "original": "10d55fcf43be560fd11fe153e1c68980a584f3ffece8397a3ed7c32432891e1b",
+      "preceding": "202ca8fd4e910821303ec00f959912dd7b1578369687c4e8a0bc4ac785e013a7",
+      "current": "202ca8fd4e910821303ec00f959912dd7b1578369687c4e8a0bc4ac785e013a7",
+      "precedingEqualsCurrent": true
+    },
+    {
+      "name": "drawMatterEnergyEvidence2d",
+      "original": "1cd77810208e4a5db3a647340201a9d9e914da5854b41fb47c703c57c97a9015",
+      "preceding": "74581f5dcbda43493bb4416c255cd1283f273d2f30b19ab23e8e4bb9e9d7a3d7",
+      "current": "74581f5dcbda43493bb4416c255cd1283f273d2f30b19ab23e8e4bb9e9d7a3d7",
+      "precedingEqualsCurrent": true
+    },
+    {
+      "name": "drawPhysicalTimeGlyph2d",
+      "original": "86bb3c449c62f687b51de865812fa12f649685e032b59f9253433483a21b28a0",
+      "preceding": "f5168b461aaa16a3361f5348cd9c3b2c21a8bebd11f245254fed307e96b1d4fd",
+      "current": "f5168b461aaa16a3361f5348cd9c3b2c21a8bebd11f245254fed307e96b1d4fd",
+      "precedingEqualsCurrent": true
+    },
+    {
+      "name": "drawFlowChevrons2d",
+      "original": "ca7fd42928041a00f5fc4f02e8380e805307dbc870ecd8f343e77dd4ed53fef9",
+      "preceding": "fc8fd2317b0118774cd2997b3f64e38e666d6e3a164e674f24021d56b17cb617",
+      "current": "fc8fd2317b0118774cd2997b3f64e38e666d6e3a164e674f24021d56b17cb617",
+      "precedingEqualsCurrent": true
+    }
+  ],
+  "precedingAllEqualCurrent": true
+}

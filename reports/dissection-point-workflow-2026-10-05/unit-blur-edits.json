@@ -1,0 +1,15 @@
+{
+  "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\dissection_lab_improvements.test.js",
+  "baselineSha256": "6ced973ef13f4ad0e875ee60db06e1432bf26fc3bb282a5d54ed2994562b3b20",
+  "finalSha256": "14a98a7cef6e1b4ec013c700c18e5232047b813255313fc4bf0eef749110b709",
+  "edits": [
+    {
+      "old": "expect(source).toContain('onBlur: function (e) { e.currentTarget._keyboardFocus = false; e.currentTarget._keyboardPreviewOrganId = null; }');",
+      "new": "expect(source).toMatch(/onBlur: function \\(e\\) \\{[\\s\\S]{0,400}blurredCanvas\\._keyboardFocus = false; blurredCanvas\\._keyboardPreviewOrganId = null;/);\n      expect(source).toContain(\"if (hadPointAnchor && blurredCanvas._dissMotionReduced && typeof blurredCanvas._drawDissectionNow === 'function') blurredCanvas._drawDissectionNow();\");"
+    },
+    {
+      "old": "      expect(fixture.state.annotations[2]).toMatchObject({ x: 0.6, y: 0.18, prevX: 0.65, prevY: 0.24 });\n      const recordedPoints = JSON.parse(JSON.stringify(fixture.state.annotations));\n      await fixture.key('Escape');",
+      "new": "      expect(fixture.state.annotations[2]).toMatchObject({ x: 0.6, y: 0.18, prevX: 0.65, prevY: 0.24 });\n      const recordedPoints = JSON.parse(JSON.stringify(fixture.state.annotations));\n      // A frozen canvas must clear its keyboard anchor as focus moves to the\n      // observation controls. This redraw must not place a point or inspect it.\n      const canvas = fixture.host.querySelector('[data-diss-canvas]');\n      const undo = fixture.host.querySelector('[data-diss-point-undo]');\n      const redraw = vi.fn();\n      canvas._drawDissectionNow = redraw;\n      canvas._dissMotionReduced = true;\n      expect(canvas._keyboardFocus).toBe(true);\n      expect(canvas._keyboardPreviewOrganId).toBe('nictitating');\n      await act(async () => { undo.focus(); await Promise.resolve(); });\n      expect(document.activeElement).toBe(undo);\n      expect(canvas._keyboardFocus).toBe(false);\n      expect(canvas._keyboardPreviewOrganId).toBeNull();\n      expect(redraw).toHaveBeenCalledTimes(1);\n      expect(fixture.state.annotations).toEqual(recordedPoints);\n      expect(markingWorkProof(fixture.state)).toEqual(before);\n      // Returning to the canvas cannot commit the cleared candidate.\n      await fixture.key('Enter');\n      expect(fixture.state.annotations).toEqual(recordedPoints);\n      expect(markingWorkProof(fixture.state)).toEqual(before);\n      await fixture.key('Escape');"
+    }
+  ]
+}

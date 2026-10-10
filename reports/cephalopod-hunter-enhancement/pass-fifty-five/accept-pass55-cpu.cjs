@@ -1,0 +1,7 @@
+const fs=require('node:fs'),assert=require('node:assert/strict'),crypto=require('node:crypto');
+const repo='C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated',dir=repo+'/reports/cephalopod-hunter-enhancement/pass-fifty-five';
+const result=JSON.parse(fs.readFileSync(dir+'/targeted-cpu.json','utf8')),receipt=JSON.parse(fs.readFileSync(dir+'/targeted-cpu-receipt.json','utf8'));
+assert.equal(receipt.exit,0);assert.equal(result.testResults.length,2);assert.equal(result.numPassedTests,25);assert.equal(result.numFailedTests,0);assert.ok(result.testResults.every(s=>s.assertionResults.length>0&&s.assertionResults.every(t=>t.status==='passed')));assert.deepEqual(receipt.before,receipt.after);
+for(const [file,expected] of Object.entries(receipt.after))assert.equal(crypto.createHash('sha256').update(fs.readFileSync(repo+'/'+file)).digest('hex'),expected);
+fs.copyFileSync(dir+'/targeted-cpu-receipt.json',dir+'/targeted-cpu-receipt-initial.json');receipt.complete=true;receipt.acceptanceCorrection='Runner initially compared numTotalTestSuites to two; Vitest counts describe suites in that field. Actual child exit0, both testResult files and all25 assertions passed. Corrected acceptance uses testResults.length; no tests rerun or changed.';
+fs.writeFileSync(dir+'/targeted-cpu-receipt.json',JSON.stringify(receipt,null,2)+'\n');console.log(JSON.stringify({completedFiles:2,passed:25,sourceUnchanged:true,testReruns:0}));

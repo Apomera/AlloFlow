@@ -1,0 +1,15 @@
+{
+  "sourceSHA256": "bb4526d583db90d928008a1fa9b7540dfef8c8acdfd4055c0fd71225454011bf",
+  "beforeTestSHA256": "4ab8f4721608f846df69c1ae1b18b612fcf84c2ae995b8fbdf16f10fdc9fa883",
+  "afterTestSHA256": "a633f999ac4ccd35c11747f00d38f408b9f0802b23c726a5f2abf277fa4f32c8",
+  "accepted": true,
+  "unchangedOutsideListedEdits": true,
+  "observations": [
+    "The original three mouth-seam sample fractions and every shell, relief, pose, and contrast assertion remain. Four additional mouth samples check the interior and tapered ends.",
+    "The original width threshold is preserved at fractions 0.25, 0.5, and 0.75: old TubeGeometry radius was 0.0018 * profile.head and head.scale.x / 0.28 recovers profile.head.",
+    "The new seam path samples are independent of geometry topology. The origin is raised along the head pivot world-up direction before frontRay; all seam/skin/lip distance comparisons remain relative and correctly scale with the age model.",
+    "The relaxed threshold applies only to four newly added probes. No previous sample threshold is relaxed.",
+    "The recorded focused suite passes all 21 tests; a real source mutation lowering the seam causes 9 failures and saved source bytes are restored and reread."
+  ],
+  "limitations": "Reviewed source, exact edit replay, and recorded test results. Did not independently rerun the suite while the root browser task is active. Native visual review is recorded separately."
+}

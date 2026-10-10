@@ -1,0 +1,11 @@
+{
+  "baseline": "51c3c34fc267efe2760ac4d30c56c2098637cfe6425edeaab1822a97a4c2d2fa",
+  "current": "7c26ad56c4e9bb87a0ca214e30ea4d09e2943f003d5295b95957726736976238",
+  "edits": [
+    {
+      "before": "Recorded attempt replay progressively traces pressure with line width and states path alignment in text and shape",
+      "after": "Attempt replay follows saved action order and distinguishes saved paths from teaching illustrations; pressure and settings appear only when recorded",
+      "count": 2
+    }
+  ]
+}

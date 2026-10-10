@@ -13,7 +13,7 @@ import { loadTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js'
 let FS;
 
 const PHYS_KEYS = ['G', 'RHO_SL', 'WING_AREA', 'WEIGHT', 'MAX_THRUST', 'CL_PER_AOA',
-  'CL0', 'CD0', 'CD_INDUCED_K', 'IS_HELICOPTER', 'IS_DRONE', 'SPRINT_MODE',
+  'CL0', 'CD0', 'CD_INDUCED_K', 'CRITICAL_AOA', 'IS_HELICOPTER', 'IS_DRONE', 'SPRINT_MODE',
   'MAX_SPEED_KTS', 'AGL_CEILING'];
 let physSnapshot = {};
 
@@ -80,8 +80,47 @@ describe('Physics lift/drag/stall', () => {
     const l100 = FS.Physics.liftForce(100, 0, 0);
     expect(l100 / l50).toBeCloseTo(4, 6);
   });
-  it('CL clamps at 1.6 — absurd AoA produces no more lift than the clamp point', () => {
-    expect(FS.Physics.liftForce(100, 0, 30)).toBeCloseTo(FS.Physics.liftForce(100, 0, 13), 6);
+  it('lift peaks at critical AoA, then progressively falls while drag increases', () => {
+    const critical = FS.Physics.CRITICAL_AOA;
+    const peak = FS.Physics.aerodynamicState(critical);
+    const before = FS.Physics.aerodynamicState(critical - 0.00001);
+    const after = FS.Physics.aerodynamicState(critical + 0.00001);
+    expect(peak.state).toBe('stall');
+    expect(before.state).toBe('boundary');
+    expect(before.cl).toBeCloseTo(peak.cl, 4);
+    expect(after.cl).toBeCloseTo(peak.cl, 4);
+    const separated = FS.Physics.aerodynamicState(critical + 8);
+    expect(separated.cl).toBeLessThan(peak.cl);
+    expect(separated.cl).toBeGreaterThan(0);
+    expect(separated.cd).toBeGreaterThan(peak.cd);
+  });
+  it('stall state is independent of speed, altitude, and lift-to-weight ratio', () => {
+    for (const speed of [50, 130, 200]) {
+      for (const alt of [0, 5000, 15000]) {
+        expect(FS.Physics.sampleAerodynamics(speed / KTS_PER_FTS, alt, 8).state).toBe('normal');
+        expect(FS.Physics.sampleAerodynamics(speed / KTS_PER_FTS, alt, 21.5).state).toBe('stall');
+      }
+    }
+    const acceleratedStall = FS.Physics.sampleAerodynamics(130 / KTS_PER_FTS, 5000, 21.5);
+    expect(acceleratedStall.ratio).toBeGreaterThan(1);
+    expect(acceleratedStall.lift).toBe(FS.Physics.liftForce(130 / KTS_PER_FTS, 5000, 21.5));
+    expect(acceleratedStall.drag).toBe(FS.Physics.dragForce(130 / KTS_PER_FTS, 5000, 21.5));
+  });
+  it('every fixed-wing aircraft can have an isolated, finite aerodynamic model', () => {
+    for (const aircraft of FS.AIRCRAFT.filter((a) => !a.isHelicopter && !a.isDrone)) {
+      const model = Object.assign(Object.create(FS.Physics), {
+        CL0: aircraft.cl0, CL_PER_AOA: aircraft.clPerAoa, CD0: aircraft.cd0,
+        CD_INDUCED_K: aircraft.cdK, WEIGHT: aircraft.weight, WING_AREA: aircraft.wingArea,
+      });
+      for (const angle of [-30, 0, 8, 15, 22, 30]) {
+        const sample = model.sampleAerodynamics(100, 5000, angle);
+        expect(Number.isFinite(sample.lift), aircraft.name).toBe(true);
+        expect(sample.drag, aircraft.name).toBeGreaterThanOrEqual(0);
+      }
+      const referenceSpeed = model.stallSpeed(5000);
+      expect(model.sampleAerodynamics(referenceSpeed, 5000, model.CRITICAL_AOA).ratio).toBeCloseTo(1, 8);
+    }
+    expect(FS.Physics.WEIGHT).toBe(2550);
   });
   it('C172 sea-level stall speed is the real-world ~48-55 kts', () => {
     const vsKts = FS.Physics.stallSpeed(0) * KTS_PER_FTS;
@@ -111,6 +150,15 @@ describe('Physics.step — fixed wing', () => {
     expect(s.speed * KTS_PER_FTS).toBeGreaterThan(55);
   });
 
+  it('a normal 8-degree rotation lifts off and establishes a controlled climb', () => {
+    const roll = stepN(groundState(), { throttle: 1, pitch: 0, bank: 0 }, 25);
+    const climb = stepN(roll, { throttle: 1, pitch: 8, bank: 0 }, 25);
+    expect(climb.onGround).toBe(false);
+    expect(climb.altitude).toBeGreaterThan(50);
+    expect(climb.vsi).toBeGreaterThan(0);
+    expect(climb.stalling).toBe(false);
+  });
+
   it('throttle-off in the air bleeds speed (drag is real)', () => {
     const start = groundState({ speed: 200, altitude: 3000, onGround: false });
     const s = stepN(start, { throttle: 0, pitch: 0, bank: 0 }, 5);
@@ -124,10 +172,32 @@ describe('Physics.step — fixed wing', () => {
     expect(s.altitude).toBeGreaterThan(3000);
   });
 
-  it('slow flight stalls in the air and loses altitude', () => {
+  it('low speed alone is an advisory: a low-AoA wing loses height without stalling', () => {
     const start = groundState({ speed: 60, altitude: 3000, onGround: false });
     const s = FS.Physics.step(start, 1 / 60, { throttle: 0, pitch: 0, bank: 0 });
-    expect(s.stalling).toBe(true);
+    expect(s.stalling).toBe(false);
+    expect(s.lowAirspeed).toBe(true);
+    expect(s.vsi).toBeLessThan(0);
+  });
+
+  it('high AoA stalls at 130 knots and reducing AoA restores attached flow', () => {
+    const start = groundState({ speed: 130 / KTS_PER_FTS, altitude: 5000, onGround: false });
+    const stalled = FS.Physics.step(start, 1 / 60, { throttle: 0.7, pitch: 21.5, bank: 0 });
+    expect(stalled.stalling).toBe(true);
+    expect(stalled.lowAirspeed).toBe(false);
+    const recovered = FS.Physics.step(stalled, 1 / 60, { throttle: 0.7, pitch: 5, bank: 0 });
+    expect(recovered.stalling).toBe(false);
+    expect(recovered.aerodynamicState).toBe('normal');
+  });
+
+  it('AoA uses the velocity vector, so a 15-degree climb at 15-degree pitch is not a stall', () => {
+    const start = groundState({ speed: 200, vsi: 200 * Math.sin(15 * Math.PI / 180), altitude: 5000, onGround: false });
+    const climbing = FS.Physics.step(start, 0, { throttle: 1, pitch: 15, bank: 0 });
+    expect(climbing.aoa).toBeCloseTo(0, 10);
+    expect(climbing.stalling).toBe(false);
+    const descending = FS.Physics.step({ ...start, vsi: -start.vsi }, 0, { throttle: 1, pitch: 5, bank: 0 });
+    expect(descending.aoa).toBeCloseTo(20, 10);
+    expect(descending.stalling).toBe(true);
   });
 
   it('bank turns the aircraft (right bank = heading increases)', () => {
@@ -175,12 +245,16 @@ describe('Physics.step — fixed wing', () => {
     expect(full.speed).toBeLessThan(clean.speed);
   });
 
-  it('extended flaps lower the physical stall threshold, not only the PFD marker', () => {
-    const slow = groundState({ speed: 85, altitude: 0, onGround: false });
+  it('extended flaps lower the 1g reference speed without making low speed a stall trigger', () => {
+    const slow = groundState({ speed: FS.Physics.stallSpeed(0), altitude: 3000, onGround: false });
     const clean = FS.Physics.step(slow, 1 / 60, { throttle: 0, pitch: 0, bank: 0, flaps: 0 });
     const configured = FS.Physics.step(slow, 1 / 60, { throttle: 0, pitch: 0, bank: 0, flaps: 30 });
-    expect(clean.stalling).toBe(true);
+    expect(clean.lowAirspeed).toBe(true);
+    expect(configured.lowAirspeed).toBe(false);
+    expect(clean.stalling).toBe(false);
     expect(configured.stalling).toBe(false);
+    const highAoa = FS.Physics.step(slow, 1 / 60, { throttle: 0, pitch: 20, bank: 0, flaps: 30 });
+    expect(highAoa.stalling).toBe(true);
   });
 
   it('wheel brakes shorten ground rollout without producing reverse motion', () => {
@@ -339,6 +413,16 @@ describe('getFlapAerodynamics (configuration realism)', () => {
 });
 
 describe('computeFlightTelemetry (coherent PFD air data + approach gate)', () => {
+  it('agrees with the flight model velocity-vector angle during steep climbs and descents', () => {
+    for (const angle of [-30, 0, 30]) {
+      const state = groundState({ onGround: false, altitude: 5000, speed: 200, vsi: 200 * Math.sin(angle * Math.PI / 180) });
+      const telemetry = FS.computeFlightTelemetry(state, { pitch: angle }, {}, 0, 50, Infinity);
+      expect(telemetry.flightPathAngleDeg).toBeCloseTo(angle, 8);
+      const physics = FS.Physics.step(state, 0, { throttle: 0.5, pitch: angle, bank: 0 });
+      expect(physics.aoa + telemetry.flightPathAngleDeg).toBeCloseTo(angle, 8);
+    }
+  });
+
   it('separates IAS from TAS at altitude while keeping sea-level values aligned', () => {
     const tas = 120;
     const sea = FS.computeFlightTelemetry(

@@ -1,0 +1,28 @@
+{
+  "exitCode": 0,
+  "tests": 21,
+  "passed": 21,
+  "failed": 0,
+  "expected": {
+    "ui": "4286c808062ef097225c05dfd7b212633551c9fa91fab050f5ff10876a05c871",
+    "renderer": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7"
+  },
+  "before": {
+    "guidanceTest": "fb3ef2d98c544a7ce12ea9878a4539ca0aaffb2123596098434cd043c77d7bc3",
+    "renderer": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7",
+    "ui": "4286c808062ef097225c05dfd7b212633551c9fa91fab050f5ff10876a05c871",
+    "pairTest": "fe0f2c13842c2f8549224139844e48f9bb01d12162ec1fda52bfd2f89af788bb",
+    "inspectorTest": "724cc1d44e96c3476e1ee4c7e8b102a62b928ec2541f9f970a16ab807717b9dd",
+    "layoutTest": "03c3111e6cdb62a7104aa1f8d174cb352e858498669d0083255f15a9ddc89abc"
+  },
+  "after": {
+    "guidanceTest": "fb3ef2d98c544a7ce12ea9878a4539ca0aaffb2123596098434cd043c77d7bc3",
+    "renderer": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7",
+    "ui": "4286c808062ef097225c05dfd7b212633551c9fa91fab050f5ff10876a05c871",
+    "pairTest": "fe0f2c13842c2f8549224139844e48f9bb01d12162ec1fda52bfd2f89af788bb",
+    "inspectorTest": "724cc1d44e96c3476e1ee4c7e8b102a62b928ec2541f9f970a16ab807717b9dd",
+    "layoutTest": "03c3111e6cdb62a7104aa1f8d174cb352e858498669d0083255f15a9ddc89abc"
+  },
+  "unchanged": true,
+  "expectedPins": true
+}

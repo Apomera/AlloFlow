@@ -1,0 +1,12 @@
+{
+  "inputs": {
+    "stem_lab/stem_tool_moonmission.js": "f333e9fa1499e11765610e063bd329c0d251b5fcab0cd2b89f6fb0bef6cd6cd5",
+    "desktop/web-app/public/stem_lab/stem_tool_moonmission.js": "f333e9fa1499e11765610e063bd329c0d251b5fcab0cd2b89f6fb0bef6cd6cd5",
+    "tests/moonmission_docking_closeup.test.js": "1c1e01db939c95810d9f31c1a8539778622c4619ab489849733269742518ecb3",
+    "tests/moonmission_docking_instruments.test.js": "9e04e01a5064c7a9e36049f5ed1f96f889d0f63c2f24a2ef5027edce57808ae5",
+    "tests/moonmission_docking_physics.test.js": "db7667ce95a0428dde5a081a03f02c1efed61cf51b59dd91f107426d4dd7a788",
+    "tests/moonmission_ascent_visuals.test.js": "e1b0030e06a22ac08e3579d4e788c5e311d84bc5923dcaacde1591a1512b35b6"
+  },
+  "exitCode": 0,
+  "unchangedDuringRun": true
+}

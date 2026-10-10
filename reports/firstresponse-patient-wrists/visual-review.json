@@ -1,0 +1,52 @@
+{
+  "review": "Manual review of corrected patient wrist captures",
+  "sourceSHA256SuppliedByRoot": "877389b664177956a4801ab12952a247bc3a2c462961f92b648613dc83f08a5d",
+  "captureDirectory": "reports/firstresponse-patient-wrists",
+  "captureTimesObservedLocal": "2026-10-05 20:55 to 20:59",
+  "reviewedCaptures": [
+    "adult-pose-2-palm.png",
+    "adult-pose-5-arms.png",
+    "adult-pose-5-cheek.png",
+    "child-pose-2-palm.png",
+    "child-pose-5-cheek.png",
+    "phone-infant-pose-2-palm.png",
+    "phone-infant-pose-5-cheek.png",
+    "phone-infant-contrast-palm.png",
+    "phone-infant-contrast-cheek.png"
+  ],
+  "baselineComparisons": [
+    "before/adult-pose-2-palm.png",
+    "before/adult-pose-5-arms.png",
+    "before/adult-pose-5-cheek.png",
+    "before/phone-infant-pose-2-palm.png",
+    "before/phone-infant-pose-5-cheek.png"
+  ],
+  "intermediateComparisons": [
+    "pre-normal-captures/adult-pose-5-cheek.png",
+    "pre-normal-captures/phone-infant-pose-5-cheek.png"
+  ],
+  "findings": [
+    {
+      "views": "Adult, child and infant palm detail",
+      "observation": "The baseline flat circular collar is absent. The forearm-to-wrist taper is continuous, with no visible hole or new bulb. Palm creases and separated fingers remain readable."
+    },
+    {
+      "views": "Adult, child and infant cheek support",
+      "observation": "The bent wrist has a continuous silhouette and no visible hole, cap edge or new bulge. The hidden-end correction does not visibly enlarge the wrist compared with the intermediate candidate."
+    },
+    {
+      "views": "Adult arms overview",
+      "observation": "Both arms and hands retain the baseline framing and readable poses."
+    },
+    {
+      "views": "Infant phone contrast palm",
+      "observation": "The white wrist and palm form a continuous silhouette; separated fingers and gray palm creases remain distinguishable."
+    },
+    {
+      "views": "Infant phone contrast cheek",
+      "observation": "No new wrist gap is visible. The white support hand still merges with the white face at contact, limiting contact clarity; this existing contrast limitation remains outside the wrist change."
+    }
+  ],
+  "wristVisualRegressionObserved": false,
+  "scope": "Visual inspection of the listed native captures only; geometric coverage is established by separate probes and tests."
+}

@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "scriptSHA256": "3d445f96e0e33a13b05f4b08712119a4329b68d690f186a8f618b2025a0d9488",
+  "sourceSHA256": "69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242",
+  "mutationRejected": true,
+  "reviewRejected": true,
+  "restoredAndReread": true,
+  "mutationScope": "private finish-selftest-sandbox only",
+  "reason": "Changed guarded file C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-support-fit-work\\finish-selftest-sandbox\\candidate.js"
+}

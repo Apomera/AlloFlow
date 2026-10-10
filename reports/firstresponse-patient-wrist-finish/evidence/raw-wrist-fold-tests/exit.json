@@ -1,0 +1,9 @@
+{
+  "pid": 14964,
+  "endedAt": "2026-10-10T01:22:11.237Z",
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "spawnError": null,
+  "logSHA256": "45327e45ae51cf0e951d266a26a63abfd447ee143c7cc57a36a93391be03d516"
+}

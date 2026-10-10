@@ -1,0 +1,93 @@
+{
+  "accepted": true,
+  "sourceSha256": "e7e0acd6ee8a59fdffb59a63849660e0f154fda0820c4bdf129cee2fcadf87ca",
+  "unitCases": 8,
+  "browserCases": 2,
+  "captures": [
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-whole-stage.png",
+      "sha256": "a2310c7a1cbe8ff6afe624d60ffdb7010837193b8194c324c4ed366bb4936041"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-structure-stage.png",
+      "sha256": "78e00f1b498ea2c21b7e68aee2e5da61c5bd7ce6dd8adf9ba9ba433f0316e083"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-restored-guides-stage.png",
+      "sha256": "a2310c7a1cbe8ff6afe624d60ffdb7010837193b8194c324c4ed366bb4936041"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-oxygen-stage.png",
+      "sha256": "8938f905552dfcf202d0c5b583a298b96a67f114bb5aaa5dca3bccb02562fcbf"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-hydrogens-stage.png",
+      "sha256": "185f28cdf43e588b53746d08f1c472a473755b2b39c627d588cc3653b74bd179"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-bond-stage.png",
+      "sha256": "915ac79f2aec96701f420d6b31d63c3e4c5d2188e0dcd3c9c77fdeb30b8962ec"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-angle-stage.png",
+      "sha256": "e09918d7120934e2be2be2238b5cacb9085bd5a4f90e4786ab60b33dd6f11ef3"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-polarity-stage.png",
+      "sha256": "cf421bd0d7dc21aba75ff5213df2a0d2d64904d0448eb7538f5082c63fc4de30"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-phone-whole-stage.png",
+      "sha256": "bc01a373ba0c88ab7268ad5d7b43898f0725a78e8c95c8bd0a5c414b57210c78"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-phone-structure-stage.png",
+      "sha256": "9a6792e296bb2269b9898d7d63b05d0b2418bf95f6c291f11967ec05d4da4779"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-phone-restored-stage.png",
+      "sha256": "50dfe0e8a4adf5eb7497f97651a6ac18343a0eaa71a68174be5d05eea870c329"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-phone-polarity-stage.png",
+      "sha256": "53efc5fa93fa838d67d7de3615d05a657a8d198e9d30b1353666d010f44bc163"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-hydrogen-comparison-stage.png",
+      "sha256": "f7e1c0c4833db85478a344a10382f01c3a810d47a040703f6c2660dd6745279b"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-controls.png",
+      "sha256": "5cdf20bb80eecd38012ff03547407c2e35a3441a0c449fca50f1acba879ecc3d"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-phone-controls.png",
+      "sha256": "0f26ecc01b5ace0299196ebcb3588e4931ba5e30a4fea82ec3a3f83f017d3d71"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-units.json",
+      "sha256": "98d50077cd1831e0f9d724d159e23f5e93c5b09349389ce63a61c741eb2b7881"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-units-proof.json",
+      "sha256": "ae3faac54ffaaca5feb484c1fd8aaa28185ad05aa2eba7ea12d8104ecdc2226d"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/report.json",
+      "sha256": "07e5f632636825e92fbdf24d283247941466cb0b317d1b7332653f9ddf46a88f"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser-proof.json",
+      "sha256": "7285277a841d95fcbbf01112ab8c60c0ae1427242c4447aaf51e56dbc59afc37"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/collection-proof.json",
+      "sha256": "65f84527252de82f01664e5fc1adcdc9f77602a6cfdc897f6d7bf546131ed121"
+    }
+  ],
+  "reviewedAt": "2026-10-07T22:09:35.924Z",
+  "reviewer": "root",
+  "note": "All 13 stage views and both controls captures visually inspected. The earlier browser failure was an incorrect test interaction with two explicit mode selectors; its original raw evidence is preserved. The unchanged candidate unit test and source hashes retain their 8/8 evidence."
+}

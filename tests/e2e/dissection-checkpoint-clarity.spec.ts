@@ -3,7 +3,8 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { GlHarness } from './helpers/stem_gl_harness';
 
 const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_dissection.js', toolId: 'dissection', width: 1180, height: 900, layout: 'document', appStyles: true, preScripts: ['stem_lab/stem_lab_module.js'] });
-const out = 'reports/dissection-checkpoint-clarity-2026-09-30';
+const referenceOut = 'reports/dissection-checkpoint-clarity-2026-09-30';
+const out = process.env.DISSECTION_CHECKPOINT_OUTPUT || referenceOut;
 const baseline = process.env.DISSECTION_CHECKPOINT_BASELINE === '1';
 const captureStyle = '.diss-next-action { position: static !important; }';
 const initial = { specimen: 'frog', _dissLoadedSpec: 'frog', activeLayer: 'skin', anatomicalView: 'ventral', activeInstrument: 'forceps', selectedOrgan: null, revealedLayers: {}, organNotes: { 'frog|ventral_skin': 'Keep this observation.' }, organConfidence: { 'frog|ventral_skin': 2 }, verifiedIdentifications: { 'frog|tympanum': true }, quizScore: 1, quizTotal: 2, workspaceMode: 'advanced', techniquePanelOpen: false, reducedMotion: true, soundEnabled: false, sceneDetail: false };
@@ -43,7 +44,7 @@ async function checkReadable(page: Page, selector: string, name: string, availab
   await panel.screenshot({ path: `${out}/after-${name}.png`, style: captureStyle });
   const metrics = await panel.evaluate(el => ({ width: el.getBoundingClientRect().width, scrollWidth: el.scrollWidth, clientWidth: el.clientWidth,
     choices: Array.from(el.querySelectorAll('.diss-learning-check__option')).map(node => ({ height: node.getBoundingClientRect().height, scrollWidth: node.scrollWidth, clientWidth: node.clientWidth })),
-    text: Array.from(el.querySelectorAll('h3, .diss-learning-check__eyebrow, .diss-learning-check__prompt, .diss-learning-check__phase, .diss-learning-check__phase-status, .diss-learning-check__answer, .diss-learning-check__marker, .diss-learning-check__keyboard-help, .diss-learning-check__feedback, .diss-learning-check__perform, .diss-learning-check__action')).map(node => ({ text: node.textContent, size: parseFloat(getComputedStyle(node).fontSize), clipped: node.scrollWidth > node.clientWidth + 1 })) }));
+    text: Array.from(el.querySelectorAll('h3, .diss-learning-check__eyebrow, .diss-learning-check__prompt, .diss-learning-check__phase, .diss-learning-check__phase-status, .diss-learning-check__answer, .diss-learning-check__marker, .diss-learning-check__keyboard-help, .diss-learning-check__feedback, .diss-learning-check__perform, .diss-learning-check__action, .diss-learning-check__plan p')).map(node => ({ text: node.textContent, size: parseFloat(getComputedStyle(node).fontSize), clipped: node.scrollWidth > node.clientWidth + 1 })) }));
   await writeFile(`${out}/${name}.json`, JSON.stringify(metrics, null, 2));
   expect(metrics.width).toBeLessThanOrEqual(available);
   expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
@@ -77,10 +78,14 @@ for (const { name, width, available, large, contrast, forced } of [
     const names = await choices.evaluateAll(nodes => nodes.map(node => node.getAttribute('aria-label') || node.textContent));
     if (baseline) {
       await writeFile(`${out}/before-${name}-names.json`, JSON.stringify(names, null, 2));
-      await panel.screenshot({ path: `${out}/before-${name}.png`, style: captureStyle }); return;
+      await panel.screenshot({ path: out + '/before-' + name + '.png', style: captureStyle });
+      await choices.first().click();
+      await expect(panel).toHaveAttribute('data-phase', 'perform');
+      await panel.screenshot({ path: out + '/before-' + name + '-perform.png', style: captureStyle });
+      await writeFile(out + '/before-' + name + '-handoff.json', JSON.stringify({ focused: await page.evaluate(() => document.activeElement?.id), evidence: await evidence(page) }, null, 2)); return;
     }
     const before = await evidence(page);
-    const original = JSON.parse(await readFile(`${out}/before-${name}-names.json`, 'utf8'));
+    const original = JSON.parse(await readFile(`${referenceOut}/before-${name}-names.json`, 'utf8'));
     await expect(choices).toHaveCount(3);
     for (let i = 0; i < original.length; i++) await expect(choices.nth(i)).toHaveAccessibleName(original[i]);
     await expect(panel.locator('[aria-current="step"] .diss-learning-check__phase-status')).toHaveText('Current');
@@ -88,6 +93,22 @@ for (const { name, width, available, large, contrast, forced } of [
     await choices.nth(1).focus(); await expect(choices.nth(1)).toBeFocused();
     await choices.nth(1).screenshot({ path: `${out}/focus-${name}.png` });
     expect(await evidence(page)).toEqual(before); expect(errors).toEqual([]);
+    const chosen = await choices.first().locator('.diss-learning-check__answer').innerText();
+    await choices.first().focus(); await page.keyboard.press('Enter');
+    await expect(panel).toHaveAttribute('data-phase', 'perform');
+    const heading = page.locator('#diss-learning-check-title');
+    await expect(heading).toBeFocused();
+    await expect(page.locator('#diss-learning-confirmed-plan')).toHaveText(chosen);
+    await expect(heading).toHaveAccessibleDescription((await page.locator('#diss-learning-check-prompt').innerText()) + ' ' + chosen);
+    const confirmed = await evidence(page);
+    expect({ ...confirmed, checks: before.checks }).toEqual(before);
+    expect(confirmed.checks.inspect).toMatchObject({ predictionChoice: 'confirm-route', predictionCorrect: true, predictionAttempts: 1 });
+    await checkReadable(page, '#diss-learning-checkpoint', name + '-confirmed-plan', available, !!large);
+    const recapFonts = await panel.locator('.diss-learning-check__plan p').evaluateAll(nodes => nodes.map(node => parseFloat(getComputedStyle(node).fontSize)));
+    expect(recapFonts).toHaveLength(3); for (const size of recapFonts) expect(size).toBeGreaterThanOrEqual(large ? 18 : 16);
+    await heading.focus(); await page.keyboard.press('Tab');
+    await expect(panel.getByRole('button', { name: 'Prepare Probe', exact: true })).toBeFocused();
+    expect(await evidence(page)).toEqual(confirmed); expect(errors).toEqual([]);
   });
 }
 
@@ -132,6 +153,7 @@ test('keyboard browsing, coaching and explicit confirmation preserve specimen pr
   await expect(choices.nth(1)).toHaveAttribute('aria-pressed', 'true');
   await expect(choices.nth(1).locator('.diss-learning-check__marker')).toHaveText('Review choice');
   await expect(choices.nth(1)).toHaveAttribute('aria-describedby', 'diss-learning-check-feedback');
+  await expect(choices.nth(1)).toBeFocused();
   await checkReadable(page, '#diss-learning-checkpoint', 'coaching', 390);
   const coached = await evidence(page);
   expect(coached.checks.inspect.predictionCorrect).toBe(false);
@@ -139,7 +161,9 @@ test('keyboard browsing, coaching and explicit confirmation preserve specimen pr
   expect({ ...coached, checks: before.checks }).toEqual(before);
   await choices.first().focus(); await page.keyboard.press('Enter');
   await expect(panel).toHaveAttribute('data-phase', 'perform');
-  await expect(page.locator('#diss-canvas')).toBeFocused();
+  await expect(page.locator('#diss-learning-check-title')).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(panel.getByRole('button', { name: 'Prepare Probe', exact: true })).toBeFocused();
   const confirmed = await evidence(page);
   expect(confirmed.checks.inspect.predictionCorrect).toBe(true);
   expect(confirmed.checks.inspect.predictionAttempts).toBe(2);
@@ -193,3 +217,45 @@ for (const mode of ['quiz', 'practical']) {
     await expect(page.locator('.diss-learning-check')).toHaveCount(0);
   });
 }
+
+for (const c of [
+  { name: 'legacy record without a choice', entry: { predictionCorrect: true } },
+  { name: 'unrecognized saved choice', entry: { predictionCorrect: true, predictionChoice: 'retired-choice' } },
+  { name: 'inconsistent saved choice', entry: { predictionCorrect: true, predictionChoice: 'deep-view' } },
+]) test('preparation does not invent a confirmed response for ' + c.name, async ({ page }) => {
+  test.skip(baseline);
+  await mount(page, { procedureByLayer: { skin: { learningChecks: { inspect: c.entry } } } });
+  const before = await evidence(page), panel = page.locator('#diss-learning-checkpoint');
+  await expect(panel).toHaveAttribute('data-phase', 'perform');
+  await expect(page.locator('#diss-learning-confirmed-plan')).toHaveCount(0);
+  await expect(page.locator('#diss-learning-check-title')).toHaveAttribute('aria-describedby', 'diss-learning-check-prompt');
+  await expect(panel.getByRole('button', { name: 'Prepare Probe', exact: true })).toBeVisible();
+  expect(await evidence(page)).toEqual(before);
+});
+
+test('confirmed plan follows the current technique without performing the next action', async ({ page }) => {
+  test.skip(baseline);
+  await mount(page);
+  const panel = page.locator('#diss-learning-checkpoint');
+  await panel.locator('.diss-learning-check__option').first().click();
+  const firstPlan = await page.locator('#diss-learning-confirmed-plan').innerText();
+  await panel.getByRole('button', { name: 'Prepare Probe', exact: true }).click();
+  await page.locator('#diss-instrument-probe').click();
+  await page.locator('#diss-procedure-panel .diss-procedure__next').click();
+  await expect(panel).toHaveAttribute('data-phase', 'reflect');
+  await expect(page.locator('#diss-learning-confirmed-plan')).toHaveCount(0);
+  await panel.locator('.diss-learning-check__option').nth(1).click();
+  await expect(panel).toHaveAttribute('data-learning-action', 'scalpel');
+  await expect(page.locator('#diss-learning-confirmed-plan')).toHaveCount(0);
+  const before = await evidence(page);
+  const secondPlan = await panel.locator('.diss-learning-check__answer').nth(1).innerText();
+  await panel.locator('.diss-learning-check__option').nth(1).click();
+  await expect(page.locator('#diss-learning-check-title')).toBeFocused();
+  await expect(page.locator('#diss-learning-confirmed-plan')).toHaveText(secondPlan);
+  expect(secondPlan).not.toBe(firstPlan);
+  const after = await evidence(page);
+  expect({ ...after, checks: before.checks }).toEqual(before);
+  expect(after.physical.incisionStarted).toBe(false);
+  await page.keyboard.press('Tab');
+  await expect(panel.getByRole('button', { name: 'Prepare Scalpel', exact: true })).toBeFocused();
+});

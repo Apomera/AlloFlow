@@ -1,0 +1,15 @@
+{
+  "file": "tests/e2e/dissection-capture-clarity.spec.ts",
+  "baselineAbsent": true,
+  "finalSha256": "007db45b401ce6470082eb456b845ee48dfb5ab5ecaec0b55a5ea713177ae2f7",
+  "reversal": "Remove only this new fixture; earlier evidence/point fixtures remain unchanged.",
+  "baselineLayoutSha256": "63c943aed0f8ae5efb558741e371d610ccd185b39b722a326558d209096031d9",
+  "finalLayoutSha256": "63c943aed0f8ae5efb558741e371d610ccd185b39b722a326558d209096031d9",
+  "layoutCasesByteIdentical": true,
+  "initialAbsenceRuns": [
+    "gallery-1",
+    "gallery-2",
+    "gallery-3",
+    "unit-main-1"
+  ]
+}

@@ -131,7 +131,9 @@ describe('ground strokes across crater faces',()=>{
   });
   it('bounds output by mesh dimensions on a long diagonal',()=>{
     const xs=Array.from({length:25},(_,i)=>i*i*.1),zs=Array.from({length:18},(_,i)=>i*i*.2),s=P.createDescentTerrainSampler(grid(xs,zs));
-    expect(s.trace(s.bounds.minX,s.bounds.minZ,s.bounds.maxX,s.bounds.maxZ).length).toBeLessThanOrEqual(2*(s.columns+s.rows)+2);
+    // The visible Float32 boundary can be slightly inside the authoring doubles.
+    const line=s.trace(s.bounds.minX,s.bounds.minZ,s.bounds.maxX,s.bounds.maxZ);
+    expect(line).not.toBeNull();expect(line.length).toBeLessThanOrEqual(2*(s.columns+s.rows)+2);
   });
   it('rejects strokes outside the surface or with invalid lift',()=>{
     const s=P.createDescentTerrainSampler(grid());

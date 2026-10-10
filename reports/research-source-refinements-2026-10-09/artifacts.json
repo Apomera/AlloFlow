@@ -1,0 +1,36 @@
+{
+  "artifacts": {
+    "content_engine_module.js": {
+      "sha256": "9f33e01e17cd7b0397cda4315144ac832e610aaba41cfa9a3141c9c880ea5c96",
+      "pin": "9f33e01e",
+      "mirrors": [
+        "desktop/web-app/public/content_engine_module.js",
+        "desktop/app-build/content_engine_module.js",
+        "desktop/web-app/build/content_engine_module.js"
+      ]
+    },
+    "text_pipeline_helpers_module.js": {
+      "sha256": "df864b07b30137576100fe79c6a9209702a9d368f4f62bc12a365a538fb4c7f6",
+      "pin": "df864b07",
+      "mirrors": [
+        "desktop/web-app/public/text_pipeline_helpers_module.js",
+        "desktop/app-build/text_pipeline_helpers_module.js",
+        "desktop/web-app/build/text_pipeline_helpers_module.js"
+      ]
+    },
+    "view_misc_panels_module.js": {
+      "sha256": "cc65a4e0cf7087b2faa7b14e10167d34ea751d91be190a7415f41c4e7a02f789",
+      "pin": "cc65a4e0",
+      "mirrors": [
+        "desktop/web-app/public/view_misc_panels_module.js",
+        "desktop/app-build/view_misc_panels_module.js",
+        "desktop/web-app/build/view_misc_panels_module.js"
+      ]
+    }
+  },
+  "hosts": {
+    "AlloFlowANTI.txt": "30ba49649c15a228de0474be1de75dd6e7a03e79f3b91dcf3bdbd5bb78f8abb8",
+    "desktop/web-app/src/AlloFlowANTI.txt": "30ba49649c15a228de0474be1de75dd6e7a03e79f3b91dcf3bdbd5bb78f8abb8",
+    "desktop/web-app/src/App.jsx": "30ba49649c15a228de0474be1de75dd6e7a03e79f3b91dcf3bdbd5bb78f8abb8"
+  }
+}

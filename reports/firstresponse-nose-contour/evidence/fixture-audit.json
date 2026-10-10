@@ -1,0 +1,64 @@
+{
+  "candidateSHA256": "164407bb58546fc91584761e51e9a907d2eacd33442a0a5fae31da0c22ef37c0",
+  "baselineSHA256": "0af58d9afd30ed0de275caf53197320ddabed9308f08b191cce7bf4927d83f84",
+  "auditorSHA256": "bf5ee6605df35fa000201486037749d635662e0880b856f35a12aca5097989ed",
+  "inputs": {
+    "firstresponse-face-preview.spec.ts": "851aac51e96f809f7b1507bd19322d32d5e99c4727c647e47292dd6678bf1b46",
+    "run-face-browser.cjs": "bc1c395da475cbae829a53c046566261bc30491be700bb0be87bf9f0a431264c",
+    "playwright-face.config.cjs": "dda618a55a673d8c544dfc13f4273c04d406d7bdd06c8734acddb93ebcdfe7be",
+    "face-capture-png.cjs": "6009565cd97b35c874ff22325427e40823b4ff197118ea3870d0b2996bd30829",
+    "face-mount-window.cjs": "9e3d95fe4ce8ae16ca7d4a994d26250e064873d675b930fb23d63b33ba43b246",
+    "candidate.js": "164407bb58546fc91584761e51e9a907d2eacd33442a0a5fae31da0c22ef37c0",
+    "before.js": "0af58d9afd30ed0de275caf53197320ddabed9308f08b191cce7bf4927d83f84",
+    "delta.json": "a2a30ac8335c0ccb64ae48b6a3ed64f7b58e550a1dbfc786ae8876161d75e1f1"
+  },
+  "accepted": true,
+  "scope": "Only the nose and paired nostril position and normal buffers may differ. All other geometry, topology, UV data, materials including the contrast nose shader, transforms, state, cameras, contact metadata and render/resource counts remain exact. Face detail crops use unchanged facial landmarks and match pixel framing across variants. CPU validation separately checks surface fit.",
+  "negativeTests": [
+    {
+      "kind": "broaden-geometry-scope",
+      "rejected": true,
+      "error": "only three nose geometries excluded from exact scene"
+    },
+    {
+      "kind": "omit-preserved-scene",
+      "rejected": true,
+      "error": "full preserved scene equality required"
+    },
+    {
+      "kind": "permit-triangle-drift",
+      "rejected": true,
+      "error": "exact rendered triangle count"
+    },
+    {
+      "kind": "skip-nose-index",
+      "rejected": true,
+      "error": "nose topology UV and sphere parameters preserved"
+    },
+    {
+      "kind": "allow-unchanged-normal",
+      "rejected": true,
+      "error": "both intended buffers must change"
+    },
+    {
+      "kind": "crop-changing-nose",
+      "rejected": true,
+      "error": "crop bounds use only unchanged facial landmarks"
+    }
+  ],
+  "list": {
+    "exitCode": 0,
+    "args": [
+      "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "firstresponse-face-preview.spec.ts",
+      "--config=C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-nose-contour-work\\playwright-face.config.cjs",
+      "--list"
+    ],
+    "stdout": "Listing tests:\n  firstresponse-face-preview.spec.ts:152:29 › nose contour adult-support preview at matching native view\n  firstresponse-face-preview.spec.ts:152:29 › nose contour adult-support-before preview at matching native view\n  firstresponse-face-preview.spec.ts:152:29 › nose contour infant-support-contrast preview at matching native view\nTotal: 3 tests in 1 file\n",
+    "stderr": "",
+    "browserLaunched": false
+  },
+  "inputsUnchanged": true,
+  "sharedFilesWritten": 0
+}

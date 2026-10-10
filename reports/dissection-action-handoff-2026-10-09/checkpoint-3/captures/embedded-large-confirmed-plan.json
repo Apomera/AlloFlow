@@ -1,0 +1,88 @@
+{
+  "width": 320,
+  "scrollWidth": 318,
+  "clientWidth": 318,
+  "choices": [],
+  "text": [
+    {
+      "text": "Plan confirmed",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Demonstrate your plan",
+      "size": 18.4,
+      "clipped": false
+    },
+    {
+      "text": "Use Probe to inspect ventral landmarks and confirm symmetry. Perform the action on the specimen, then explain the result.",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "✓ 1 PredictDone",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Done",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "2 PerformCurrent",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Current",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "3 ExplainUpcoming",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Upcoming",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Your confirmed planConfirm the ventral view, center the shallow ventral midline corridor, and account for Heart (3-chamber), Liver (3 lobes), Lungs.Technique controls also offer a motor-neutral action once readiness checks pass.",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Your confirmed plan",
+      "size": 18,
+      "clipped": false
+    },
+    {
+      "text": "Confirm the ventral view, center the shallow ventral midline corridor, and account for Heart (3-chamber), Liver (3 lobes), Lungs.",
+      "size": 18,
+      "clipped": false
+    },
+    {
+      "text": "Technique controls also offer a motor-neutral action once readiness checks pass.",
+      "size": 18,
+      "clipped": false
+    },
+    {
+      "text": "Prepare Probe",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Go to specimen",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Plan confirmed. Demonstrate the action on the specimen; the action will not run automatically.",
+      "size": 16,
+      "clipped": false
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+--- accepted-pass34
++++ pass35
+@@ -4944,6 +4944,85 @@
+   var MM_DOCKING = Object.freeze({ altitude: 110000, propellant: 40, isp: 284,
+     thrust: 2 * 100 * 4.4482216152605, duty: 0.2, step: 1 / 60,
+     portTolerance: 0.6, maxClosing: 0.2, maxLateral: 0.1 });
++  // Presentation of the measured approach. Classification uses the same full
++  // precision limits as contact; the display never predicts a docking outcome.
++  function mmDockingInstruments(state) {
++    var s = state || {}, C = MM_DOCKING;
++    var definitions = [
++      { key: 'offset', label: 'Radial alignment', value: s.x, extent: 2, limit: C.portTolerance, decimals: 2, unit: 'm', positive: 'outward', negative: 'inward', zero: 'aligned' },
++      { key: 'closing', label: 'Axial closing speed', value: s.vy, extent: 0.4, limit: C.maxClosing, decimals: 3, unit: 'm/s', positive: 'closing', negative: 'separating', zero: 'no axial motion' },
++      { key: 'drift', label: 'Radial drift', value: s.vx, extent: 0.3, limit: C.maxLateral, decimals: 3, unit: 'm/s', positive: 'outward', negative: 'inward', zero: 'no radial motion' }
++    ];
++    var contact = s.status === 'docked' || s.status === 'collision';
++    return {
++      title: contact ? 'Recorded contact measurements' : s.status === 'missed' ? 'Final approach measurements' : 'Current approach measurements',
++      note: (contact ? 'These values were recorded when the model assessed contact. ' : 'The model checks all three limits when Eagle crosses the docking plane. Current readings do not predict the result. ') +
++        'Positive radial values are outward (up in the scene).',
++      metrics: definitions.map(function(d) {
++        var valid = mmNum(d.value), magnitude = valid ? Math.abs(d.value) : 0;
++        var within = valid && (d.key === 'closing' ? d.value > 0 && d.value <= d.limit : magnitude <= d.limit);
++        var number = magnitude.toFixed(d.decimals);
++        // Keep very small motion and just-outside values distinct from zero or
++        // an inclusive limit even when the normal decimal reading rounds there.
++        if (valid && magnitude > 0 && Number(number) === 0) number = '< ' + Math.pow(10, -d.decimals).toFixed(d.decimals);
++        else if (valid && magnitude > d.limit && Number(number) <= d.limit) number = '> ' + d.limit.toFixed(d.decimals);
++        var direction = d.value === 0 ? d.zero : d.value > 0 ? d.positive : d.negative;
++        return Object.assign({}, d, {
++          min: -d.extent, max: d.extent, within: within,
++          position: valid ? 50 + Math.max(-d.extent, Math.min(d.extent, d.value)) / d.extent * 50 : 50,
++          bandStart: d.key === 'closing' ? 50 : 50 - d.limit / d.extent * 50,
++          bandEnd: 50 + d.limit / d.extent * 50,
++          reading: valid ? number + ' ' + d.unit + ' ' + direction : 'Measurement unavailable',
++          status: valid ? within ? 'Within contact limit' : 'Outside contact limit' : 'Measurement unavailable',
++          offScale: valid && magnitude > d.extent
++        });
++      })
++    };
++  }
++  function mmDockingInstrumentsView(h, state) {
++    var instrument = mmDockingInstruments(state);
++    return h('section', { 'data-docking-instruments': true, 'aria-label': 'Docking contact instruments',
++      style: { margin: '12px 0', padding: '12px', background: '#081322', border: '1px solid #475569', borderRadius: '10px', minWidth: 0 } },
++      h('h4', { 'data-docking-instrument-title': true, style: { margin: '0 0 6px', fontSize: '15px', color: '#f8fafc', fontWeight: 700 } }, instrument.title),
++      h('p', { 'data-docking-instrument-note': true, style: { margin: '0 0 12px', fontSize: '12px', lineHeight: 1.6, color: '#cbd5e1' } }, instrument.note),
++      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 230px), 1fr))', gap: '10px', minWidth: 0 } },
++        instrument.metrics.map(function(m) {
++          var color = m.within ? '#6ee7b7' : '#fde68a';
++          return h('div', { key: m.key, 'data-docking-instrument': m.key, 'data-docking-within': String(m.within),
++            style: { padding: '12px', background: '#102035', border: '1px solid #334155', borderRadius: '8px', minWidth: 0 } },
++            h('h5', { style: { margin: '0 0 6px', fontSize: '13px', fontWeight: 700, color: '#cbd5e1' } }, m.label),
++            h('p', { 'data-docking-instrument-reading': m.key, style: { margin: '0 0 6px', minHeight: '48px', fontSize: '17px', lineHeight: 1.4, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: '#f8fafc' } }, m.reading),
++            h('p', { 'data-docking-instrument-status': m.key, style: { margin: 0, fontSize: '12px', lineHeight: 1.5, fontWeight: 700, color: color } }, m.status),
++            h('div', { 'aria-hidden': 'true', style: { margin: '20px 6px 0' } },
++              h('div', { 'data-docking-instrument-track': m.key, style: { position: 'relative', height: '12px', borderRadius: '3px', background: '#30445c' } },
++                h('span', { 'data-docking-instrument-band': m.key, style: { position: 'absolute', left: m.bandStart + '%', width: (m.bandEnd - m.bandStart) + '%', top: '-2px', height: '16px', boxSizing: 'border-box', border: '1px solid #6ee7b7', background: '#155e52' } }),
++                h('span', { style: { position: 'absolute', left: '50%', top: '-7px', height: '26px', borderLeft: '1px dashed #cbd5e1' } }),
++                h('span', { 'data-docking-instrument-marker': m.key, style: { position: 'absolute', left: m.position + '%', top: '50%', width: '12px', height: '12px', boxSizing: 'border-box', border: '2px solid #081322', borderRadius: '2px', transform: 'translate(-50%, -50%) rotate(45deg)', background: color } })),
++              h('div', { 'data-docking-instrument-scale': m.key, style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', marginTop: '12px', color: '#cbd5e1', fontSize: '12px', fontVariantNumeric: 'tabular-nums' } },
++                h('span', { style: { textAlign: 'left' } }, '\u2212' + m.extent.toFixed(m.key === 'offset' ? 0 : 1)), h('span', { style: { textAlign: 'center' } }, '0'), h('span', { style: { textAlign: 'right' } }, '+' + m.extent.toFixed(m.key === 'offset' ? 0 : 1) + ' ' + m.unit))),
++            h('p', { 'data-docking-instrument-clipped': m.key, style: { margin: '8px 0', fontSize: '12px', lineHeight: 1.5, color: '#cbd5e1' } }, m.offScale ? 'Outside displayed scale' : 'Fixed display scale'),
++            h('p', { style: { margin: 0, fontSize: '12px', lineHeight: 1.5, color: '#a7f3d0' } },
++              m.key === 'closing' ? 'Contact: greater than 0, up to ' + m.limit.toFixed(2) + ' m/s.' : 'Contact: within \u00b1' + m.limit.toFixed(2) + ' ' + m.unit + '.')
++          );
++        })));
++  }
++  function mmUpdateDockingInstruments(host, state) {
++    var root = host && host.querySelector('[data-docking-instruments]');
++    if (!root) return;
++    var instrument = mmDockingInstruments(state);
++    root.querySelector('[data-docking-instrument-title]').textContent = instrument.title;
++    root.querySelector('[data-docking-instrument-note]').textContent = instrument.note;
++    instrument.metrics.forEach(function(m) {
++      var card = root.querySelector('[data-docking-instrument="' + m.key + '"]');
++      if (!card) return;
++      var color = m.within ? '#6ee7b7' : '#fde68a';
++      card.dataset.dockingWithin = String(m.within);
++      card.querySelector('[data-docking-instrument-reading]').textContent = m.reading;
++      var status = card.querySelector('[data-docking-instrument-status]'); status.textContent = m.status; status.style.color = color;
++      var marker = card.querySelector('[data-docking-instrument-marker]'); marker.style.left = m.position + '%'; marker.style.background = color;
++      card.querySelector('[data-docking-instrument-clipped]').textContent = m.offScale ? 'Outside displayed scale' : 'Fixed display scale';
++    });
++  }
+   function mmDockingState() {
+     return { version: 1, time: 0, x: 8, y: -120, vx: 0, vy: 0.55,
+       propellant: MM_DOCKING.propellant, status: 'flying', ax: 0, ay: 0 };
+@@ -5018,6 +5097,7 @@
+   }
+   try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, { docking: MM_DOCKING, dockingState: mmDockingState,
+     dockingMass: mmDockingMass, dockingStep: mmDockingStep, dockingGuidance: mmDockingGuidance,
++    dockingInstruments: mmDockingInstruments,
+     cleanAscentPlayback: mmCleanAscentPlayback, cleanDockingPlayback: mmCleanDockingPlayback }); } catch (e) {}
+ 
+   // Legacy scripted ascent/rendezvous helper, retained for old report fixtures.
+@@ -15624,6 +15704,7 @@
+                     cv.dataset.dockingRange = String(Math.hypot(state.x, state.y)); cv.dataset.dockingOffset = String(state.x); cv.dataset.dockingClosingSpeed = String(state.vy); cv.dataset.dockingPropellant = String(state.propellant); cv.dataset.dockingStatus = state.status;
+                     var values = { time: state.time.toFixed(1) + ' s', range: Math.hypot(state.x, state.y).toFixed(2) + ' m', offset: state.x.toFixed(2) + ' m', closing: state.vy.toFixed(3) + ' m/s', lateral: state.vx.toFixed(3) + ' m/s', propellant: state.propellant.toFixed(2) + ' kg' };
+                     var host = cv.closest('[data-ascent-workspace]'); if (host) host.querySelectorAll('[data-docking-value]').forEach(function(node) { node.textContent = values[node.getAttribute('data-docking-value')] || ''; });
++                    mmUpdateDockingInstruments(host, state);
+                     if (Number.isFinite(ts) && ts - lastPublish >= 250) { lastPublish = ts; persist(); }
+                     requestAnimationFrame(paint);
+                   }
+@@ -15637,6 +15718,7 @@
+                   h('button', { type: 'button', 'data-docking-demonstrate': true, disabled: d.dockingRun.status !== 'flying', style: buttonStyle, onClick: function(ev) { dockControl(ev, 'demonstrate'); } }, 'Run guided docking'),
+                   h('button', { type: 'button', 'data-docking-retry': true, style: buttonStyle, onClick: function(ev) { dockControl(ev, 'retry'); } }, 'Retry approach')),
+                 h('div', { role: 'group', 'aria-label': 'Precision thruster pulses', style: { display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' } }, [['up', '\u2191 Radial out'], ['down', '\u2193 Radial in'], ['approach', '\u2192 Approach'], ['brake', '\u2190 Brake']].map(function(item) { return h('button', { key: item[0], type: 'button', 'data-docking-pulse': item[0], disabled: dockPaused || d.dockingRun.status !== 'flying' || d.dockingRun.propellant <= 0, style: Object.assign({}, buttonStyle, { opacity: dockPaused || d.dockingRun.status !== 'flying' ? 0.5 : 1 }), onClick: function(ev) { dockControl(ev, 'pulse', item[0]); } }, item[1]); })),
++                mmDockingInstrumentsView(h, d.dockingRun),
+                 h('p', { 'data-docking-outcome': d.dockingRun.status, role: 'status', style: { fontSize: '13px', color: d.dockingRun.status === 'docked' ? '#86efac' : '#fde68a', lineHeight: 1.6 } }, d.dockingRun.status === 'docked' ? 'Safe contact recorded. The docking port is aligned and relative speed is within the exercise limits.' : d.dockingRun.status === 'collision' ? 'Unsafe contact: closing speed, radial drift or alignment exceeded the limits. Retry with earlier braking and smaller corrections.' : d.dockingRun.status === 'missed' ? 'Approach missed the port or exceeded the practice area. Retry and align the radial offset before contact.' : d.dockingRun.propellant <= 0 ? 'RCS propellant depleted. The spacecraft continues coasting; retry to restore the practice allocation.' : 'Final approach in progress. A lower speed near the port leaves more time to correct alignment.'),
+                 h('p', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 } }, 'Guided approach uses the same finite thrusters and orbital relative-motion equations. Run guided docking computes the remaining approach immediately, including fuel use and contact checks. No points are awarded until you proceed home.')),
+               h('details', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.65, marginTop: '12px' } }, h('summary', { style: { cursor: 'pointer' } }, 'Docking model and limits'),

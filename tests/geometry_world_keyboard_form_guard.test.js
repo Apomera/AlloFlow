@@ -8,12 +8,12 @@ beforeAll(()=>{
   const end=source.indexOf("        document.addEventListener('keyup'",start);
   expect(start).toBeGreaterThan(marker.length);expect(end).toBeGreaterThan(start);
   const handler=source.slice(start,end).trim().replace(/\);$/,'');
-  createHandler=new Function('engine','setBuildShape','upd','BLOCK_TYPES','focusGameSettingsTrigger','return ('+handler+');');
+  createHandler=new Function('engine','setBuildShape','upd','BLOCK_TYPES','closeGameSettings','return ('+handler+');');
 });
 function fixture(){
-  const engine={_modalState:{},_toggleHud:vi.fn()},setBuildShape=vi.fn(),upd=vi.fn(),focusGameSettingsTrigger=vi.fn();
-  const handle=createHandler(engine,setBuildShape,upd,[{id:'stone'},{id:'wood'}],focusGameSettingsTrigger);
-  return {engine,setBuildShape,upd,focusGameSettingsTrigger,handle};
+  const engine={_modalState:{},_toggleHud:vi.fn()},setBuildShape=vi.fn(),upd=vi.fn(),closeGameSettings=vi.fn();
+  const handle=createHandler(engine,setBuildShape,upd,[{id:'stone'},{id:'wood'}],closeGameSettings);
+  return {engine,setBuildShape,upd,closeGameSettings,handle};
 }
 function target(kind){
   const node=document.createElement(kind==='editable'?'div':kind);
@@ -36,9 +36,9 @@ describe('native form fields keep their keyboard behavior',()=>{
     expect(app.engine._toggleHud).not.toHaveBeenCalled();expect(app.setBuildShape).not.toHaveBeenCalled();expect(app.upd).not.toHaveBeenCalled();
     expect(event.defaultPrevented).toBe(false);
   });
-  it.each(fields)('Escape from %s still closes Settings and restores its trigger',field=>{
+  it.each(fields)('Escape from %s delegates to the Settings close handler',field=>{
     const app=fixture();app.engine._modalState.showGameSettings=true;press(app,target(field),'Escape','Escape');
-    expect(app.upd).toHaveBeenCalledExactlyOnceWith('showGameSettings',false);expect(app.focusGameSettingsTrigger).toHaveBeenCalledOnce();
+    expect(app.closeGameSettings).toHaveBeenCalledOnce();expect(app.upd).not.toHaveBeenCalled();
     expect(app.engine._toggleHud).not.toHaveBeenCalled();expect(app.setBuildShape).not.toHaveBeenCalled();
   });
 });

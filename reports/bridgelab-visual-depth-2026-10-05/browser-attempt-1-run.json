@@ -1,0 +1,64 @@
+{
+  "kind": "browser",
+  "startedAt": "2026-10-06T00:00:14.069Z",
+  "workingDirectory": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "--max-old-space-size=4096",
+    "node_modules/@playwright/test/cli.js",
+    "test",
+    "tests/e2e/26-bridgelab-gl.spec.ts",
+    "--config=C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\visual-depth-2026-10-05\\validation\\playwright-video-off.config.ts",
+    "--project=chromium",
+    "--workers=1",
+    "--retries=0",
+    "--reporter=json",
+    "--grep=bridge.landscape:|starting.energy:|decay.time:|decay.fraction:|guide.energy:|guided.damping:|claim.interval:|energy.questions:"
+  ],
+  "inputsBefore": {
+    "stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "bb0208fc639968d22a0680e56a369c3be65edc20a4084ee4a6f9b796a32c64df",
+      "bytes": 1063583
+    },
+    "desktop/web-app/public/stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "bb0208fc639968d22a0680e56a369c3be65edc20a4084ee4a6f9b796a32c64df",
+      "bytes": 1063583
+    },
+    "tests/e2e/26-bridgelab-gl.spec.ts": {
+      "sha256": "9e3146dd1004850fd0d9b667d1be7fa9b61c0e5f0ef9a82eda09341ca192ac3f",
+      "bytes": 345283
+    }
+  },
+  "config": {
+    "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\visual-depth-2026-10-05\\validation\\playwright-video-off.config.ts",
+    "sha256": "c0ad8c97a8cf18d1139d3629b44b4a43d89010310be9bbdbeedecfd61ea2b943",
+    "bytes": 813
+  },
+  "video": "off",
+  "retries": 0,
+  "workers": 1,
+  "note": "English registries are checked separately; the harness uses literal fallbacks.",
+  "finishedAt": "2026-10-06T00:07:53.002Z",
+  "exitCode": 1,
+  "signal": null,
+  "inputsAfter": {
+    "stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "bb0208fc639968d22a0680e56a369c3be65edc20a4084ee4a6f9b796a32c64df",
+      "bytes": 1063583
+    },
+    "desktop/web-app/public/stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "bb0208fc639968d22a0680e56a369c3be65edc20a4084ee4a6f9b796a32c64df",
+      "bytes": 1063583
+    },
+    "tests/e2e/26-bridgelab-gl.spec.ts": {
+      "sha256": "9e3146dd1004850fd0d9b667d1be7fa9b61c0e5f0ef9a82eda09341ca192ac3f",
+      "bytes": 345283
+    }
+  },
+  "inputsUnchanged": true,
+  "result": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-visual-depth-2026-10-05\\browser-results.json",
+    "sha256": "86866413c11932697ce847c8eb7e1307a0617fde003e5165f345b68eed6363f2",
+    "bytes": 36860
+  }
+}

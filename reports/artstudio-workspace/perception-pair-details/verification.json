@@ -1,0 +1,19 @@
+{
+  "sourceSHA256": "9f074c7fff26b8ec9ac78732af7ae762dffa90a3b3e00e1d191ca50413402b2e",
+  "baselineSHA256": "e1cd854e04d31aa3e04cc1d46631b3d9a2f48f774e8ce70e3c8605947af70c1c",
+  "newPairDetailsBrowserGroups": 18,
+  "existingPlotSmokeBrowserGroups": 3,
+  "totalBrowserGroups": 21,
+  "baselineSceneCases": 84,
+  "englishCatalogEntries": 577,
+  "newEnglishEntries": 0,
+  "updatedEnglishEntries": 0,
+  "sourceDesktopParity": true,
+  "catalogParity": true,
+  "browserErrors": [],
+  "screenshots": 10,
+  "emptyAccessibilityAudits": 10,
+  "formalDOMSuite": "Not run: existing Vitest/jsdom worker stalls before collection.",
+  "plotRegressionScope": "Only the three existing matching-experiment study-plot smoke workflows were replayed; the full study-plot suite was not run.",
+  "gitAction": "No staging or commit performed."
+}

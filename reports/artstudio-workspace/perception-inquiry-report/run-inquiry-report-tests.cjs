@@ -1,0 +1,13 @@
+const fs = require('node:fs'), path = require('node:path'), cp = require('node:child_process'), crypto = require('node:crypto');
+const repo = 'C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated';
+const output = path.join(repo, 'reports/artstudio-workspace/perception-inquiry-report');
+const temp = path.join(output, '.unit-temp'); fs.mkdirSync(temp, { recursive: true });
+const hash = () => crypto.createHash('sha256').update(fs.readFileSync(path.join(repo, 'stem_lab/stem_tool_perception.js'))).digest('hex');
+const sourceBefore = hash();
+const execution = cp.spawnSync(process.execPath, ['--max-old-space-size=768', 'node_modules/vitest/vitest.mjs', 'run', 'tests/perception_lab_inquiry_report.test.js', '--pool=forks', '--maxWorkers=1', '--testTimeout=30000', '--hookTimeout=30000', '--reporter=json', '--outputFile=' + path.join(output, 'inquiry-report-tests.json')], { cwd: repo, env: { ...process.env, TEMP: temp, TMP: temp }, windowsHide: true, encoding: 'utf8', timeout: 180000, maxBuffer: 5 * 1024 * 1024 });
+const sourceAfter = hash(), result = JSON.parse(fs.readFileSync(path.join(output, 'inquiry-report-tests.json'), 'utf8'));
+const metadata = { sourceBefore, sourceAfter, sourceStable: sourceBefore === sourceAfter, expected: result.numTotalTests, passed: result.numPassedTests, failed: result.numFailedTests, success: result.success, exitCode: execution.status, error: execution.error?.message, stdout: execution.stdout, stderr: execution.stderr };
+fs.writeFileSync(path.join(output, 'inquiry-report-unit-run.json'), JSON.stringify(metadata, null, 2) + '\n');
+console.log(JSON.stringify(metadata, null, 2));
+for (const suite of result.testResults) for (const test of suite.assertionResults) if (test.status === 'failed') console.log(JSON.stringify({ name: test.fullName, errors: test.failureMessages }, null, 2));
+process.exitCode = execution.status || (result.success && metadata.sourceStable ? 0 : 1);

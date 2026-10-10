@@ -1,0 +1,136 @@
+{
+  "sourceSha256": "e4fc1f8963506efd5d03dbab7cf4ce6204403f513899ff5fbedd225bbf57720c",
+  "files": [
+    "tests/watercycle_precipitation_lab.test.js",
+    "tests/watercycle_storm_experiment.test.js"
+  ],
+  "startedAt": "2026-10-07T02:25:16.318Z",
+  "completedAt": "2026-10-07T02:26:14.993Z",
+  "exitCode": 0,
+  "signal": null,
+  "errors": [],
+  "environment": "node",
+  "pool": "forks",
+  "configLoader": "native",
+  "nodeVersion": "v24.11.1",
+  "configFile": "storm-vitest.config.mjs",
+  "configSha256": "7077701fa8e817ddd9aeffa4d08c0a87f1c06807fc3de5b259139877cc10ab72",
+  "finalConfigSha256": "7077701fa8e817ddd9aeffa4d08c0a87f1c06807fc3de5b259139877cc10ab72",
+  "runnerFile": "run-tests-node.cjs",
+  "runnerSha256": "ca06a7de4961d73539deb375e8e62c4ea85c9aee247e9a04d0fbf29435329bad",
+  "finalRunnerSha256": "ca06a7de4961d73539deb375e8e62c4ea85c9aee247e9a04d0fbf29435329bad",
+  "setupFile": "ssr-node-setup.mjs",
+  "setupSha256": "bd64d23abf78b7d3b1c5817e4162136f6edc2a4b86a8f17e04fc95f2f3239022",
+  "finalSetupSha256": "bd64d23abf78b7d3b1c5817e4162136f6edc2a4b86a8f17e04fc95f2f3239022",
+  "runtimeBefore": [
+    {
+      "file": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "e4fc1f8963506efd5d03dbab7cf4ce6204403f513899ff5fbedd225bbf57720c"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "e4fc1f8963506efd5d03dbab7cf4ce6204403f513899ff5fbedd225bbf57720c"
+    }
+  ],
+  "runtimeAfter": [
+    {
+      "file": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "e4fc1f8963506efd5d03dbab7cf4ce6204403f513899ff5fbedd225bbf57720c"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "e4fc1f8963506efd5d03dbab7cf4ce6204403f513899ff5fbedd225bbf57720c"
+    }
+  ],
+  "testsBefore": [
+    {
+      "file": "tests/watercycle_precipitation_lab.test.js",
+      "sha256": "6ebfd62ac589a6842e3ce5da462cae6cb65720f7d15798bc11dba447c99e4609"
+    },
+    {
+      "file": "tests/watercycle_storm_experiment.test.js",
+      "sha256": "ef21b9e3ba40c1d76be1f5cde31b975d64db41865657cdd77a1f9205900330b9"
+    }
+  ],
+  "testsAfter": [
+    {
+      "file": "tests/watercycle_precipitation_lab.test.js",
+      "sha256": "6ebfd62ac589a6842e3ce5da462cae6cb65720f7d15798bc11dba447c99e4609"
+    },
+    {
+      "file": "tests/watercycle_storm_experiment.test.js",
+      "sha256": "ef21b9e3ba40c1d76be1f5cde31b975d64db41865657cdd77a1f9205900330b9"
+    }
+  ],
+  "helpersBefore": [
+    {
+      "file": "tests/helpers/stem_widgets_smoke_harness.js",
+      "sha256": "54b6b790e8d6ac568724c0c1b59444afc883053c930f3a63fa3a8424c358809c"
+    }
+  ],
+  "helpersAfter": [
+    {
+      "file": "tests/helpers/stem_widgets_smoke_harness.js",
+      "sha256": "54b6b790e8d6ac568724c0c1b59444afc883053c930f3a63fa3a8424c358809c"
+    }
+  ],
+  "supportBefore": [
+    {
+      "file": "ui_strings.js",
+      "sha256": "be85509311461c168d85955430a31b6c342169b494848b3998393284980df4ab"
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "sha256": "be85509311461c168d85955430a31b6c342169b494848b3998393284980df4ab"
+    }
+  ],
+  "supportAfter": [
+    {
+      "file": "ui_strings.js",
+      "sha256": "be85509311461c168d85955430a31b6c342169b494848b3998393284980df4ab"
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "sha256": "be85509311461c168d85955430a31b6c342169b494848b3998393284980df4ab"
+    }
+  ],
+  "executionInputsBefore": [
+    {
+      "file": "run-tests-node.cjs",
+      "sha256": "ca06a7de4961d73539deb375e8e62c4ea85c9aee247e9a04d0fbf29435329bad"
+    },
+    {
+      "file": "storm-vitest.config.mjs",
+      "sha256": "7077701fa8e817ddd9aeffa4d08c0a87f1c06807fc3de5b259139877cc10ab72"
+    },
+    {
+      "file": "ssr-node-setup.mjs",
+      "sha256": "bd64d23abf78b7d3b1c5817e4162136f6edc2a4b86a8f17e04fc95f2f3239022"
+    }
+  ],
+  "executionInputsAfter": [
+    {
+      "file": "run-tests-node.cjs",
+      "sha256": "ca06a7de4961d73539deb375e8e62c4ea85c9aee247e9a04d0fbf29435329bad"
+    },
+    {
+      "file": "storm-vitest.config.mjs",
+      "sha256": "7077701fa8e817ddd9aeffa4d08c0a87f1c06807fc3de5b259139877cc10ab72"
+    },
+    {
+      "file": "ssr-node-setup.mjs",
+      "sha256": "bd64d23abf78b7d3b1c5817e4162136f6edc2a4b86a8f17e04fc95f2f3239022"
+    }
+  ],
+  "resultFile": "unit-final2-results.json",
+  "resultSha256": "262b525f32601e2d08bbee818670d423b066e3bf30ea4d070a9ea174451d858e",
+  "successful": true,
+  "total": 33,
+  "passed": 33,
+  "failed": 0,
+  "skipped": 0,
+  "assertionCount": 33,
+  "suiteCount": 2,
+  "logFile": "unit-final2-run.log",
+  "logSha256": "22d381d6081366a5db383f48005bee9c29e1a5cee1dc483671b2099d68e836aa"
+}

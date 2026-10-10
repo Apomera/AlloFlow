@@ -1,0 +1,61 @@
+{
+  "width": 474.40625,
+  "height": 198.71875,
+  "client": 470,
+  "scroll": 470,
+  "containerWidth": 520,
+  "text": [
+    {
+      "text": "Scenario lab · Timed practical",
+      "font": 12.48,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Time expired",
+      "font": 10.24,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Complete the specimen protocol within four minutes while maintaining safe decisions.",
+      "font": 11.2,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "0:00 remaining; 2/6 protocol steps complete. Time expired. Restart this scenario for a new four-minute attempt. Time: 0:00",
+      "font": 10.88,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": " Time: 0:00",
+      "font": 10.88,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Choose scenario",
+      "font": 10.24,
+      "clipped": false,
+      "textOverflow": "clip"
+    }
+  ],
+  "controls": [
+    {
+      "name": "Choose procedure scenario",
+      "width": 319.953125,
+      "height": 44,
+      "font": 10.24,
+      "clipped": false
+    },
+    {
+      "name": "Restart Timed practical with a fresh procedure attempt",
+      "width": 120.890625,
+      "height": 44,
+      "font": 10.88,
+      "clipped": false
+    }
+  ]
+}

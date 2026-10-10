@@ -1,0 +1,39 @@
+{
+  "ok": true,
+  "results": [
+    {
+      "tab": "missions",
+      "viewport": 1440,
+      "width": 1440,
+      "scrollWidth": 1440,
+      "selected": "iss-tab-missions",
+      "canvases": 1,
+      "heading": "🛰️ Space Station — a permanent home off Earth",
+      "screenshot": "missions-1440.png",
+      "accessibility": [
+        {
+          "state": "missions",
+          "passes": 28,
+          "violations": []
+        }
+      ]
+    },
+    {
+      "tab": "missions",
+      "viewport": 390,
+      "width": 390,
+      "scrollWidth": 390,
+      "selected": "iss-tab-missions",
+      "canvases": 1,
+      "heading": "🛰️ Space Station — a permanent home off Earth",
+      "screenshot": "missions-390.png",
+      "accessibility": [
+        {
+          "state": "missions",
+          "passes": 29,
+          "violations": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,539 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-scenario-clarity-2026-10-06/scenario-3/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "dissection-scenario-clarity.spec.ts",
+      "file": "dissection-scenario-clarity.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "scenario clarity layout phone",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3520,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T13:50:32.568Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f44b5100afee14512545-95a44e97d6c20dcef47b",
+          "file": "dissection-scenario-clarity.spec.ts",
+          "line": 97,
+          "column": 30
+        },
+        {
+          "title": "scenario clarity layout tablet",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3358,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T13:50:36.298Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f44b5100afee14512545-c9a885dc27d5ad89e164",
+          "file": "dissection-scenario-clarity.spec.ts",
+          "line": 97,
+          "column": 30
+        },
+        {
+          "title": "scenario clarity layout desktop",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3331,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T13:50:39.669Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f44b5100afee14512545-2f0cb743f8116a4320ed",
+          "file": "dissection-scenario-clarity.spec.ts",
+          "line": 97,
+          "column": 30
+        },
+        {
+          "title": "scenario clarity layout embedded-medium",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3473,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T13:50:43.011Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f44b5100afee14512545-a9dbbaf9e7feb8e2dd92",
+          "file": "dissection-scenario-clarity.spec.ts",
+          "line": 97,
+          "column": 30
+        },
+        {
+          "title": "scenario clarity layout embedded-large-contrast",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3556,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T13:50:46.497Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f44b5100afee14512545-68503195ad24b49fb040",
+          "file": "dissection-scenario-clarity.spec.ts",
+          "line": 97,
+          "column": 30
+        },
+        {
+          "title": "scenario clarity layout forced-colors",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3615,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T13:50:50.066Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f44b5100afee14512545-5c080bbbf23c831c1def",
+          "file": "dissection-scenario-clarity.spec.ts",
+          "line": 97,
+          "column": 30
+        },
+        {
+          "title": "choosing the four-minute technique challenge starts its quiet native clock without clearing learner work",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2842,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T13:50:53.694Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f44b5100afee14512545-d23b721dbb08c402bf75",
+          "file": "dissection-scenario-clarity.spec.ts",
+          "line": 109,
+          "column": 5
+        },
+        {
+          "title": "restart review keeps records until confirmation and resets only its stated native boundaries",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 17408,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#diss-scenario-restart-cancel')\nExpected: focused\nReceived: inactive\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#diss-scenario-restart-cancel')\u001b[22m\n\u001b[2m    33 × locator resolved to <button type=\"button\" id=\"diss-scenario-restart-cancel\">Keep current attempt</button>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#diss-scenario-restart-cancel')\nExpected: focused\nReceived: inactive\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#diss-scenario-restart-cancel')\u001b[22m\n\u001b[2m    33 × locator resolved to <button type=\"button\" id=\"diss-scenario-restart-cancel\">Keep current attempt</button>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts:120:135",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts",
+                      "column": 135,
+                      "line": 120
+                    },
+                    "snippet": "  118 | test('restart review keeps records until confirmation and resets only its stated native boundaries', async ({ page }) => {\n  119 |   test.skip(baseline); await mount(page, { scenarioStartedAt: Date.now(), scenarioTimeRemaining: 200 }, 390, 390); await pauseClock(page); const before = await proof(page), clockBefore = (await state(page)).scenarioStartedAt;\n> 120 |   await restart(page).focus(); await page.keyboard.press('Enter'); await expect(review(page)).toBeVisible(); await expect(keep(page)).toBeFocused(); await expect(review(page)).toHaveAttribute('role', 'group'); await expect(review(page)).toHaveAttribute('aria-labelledby', 'diss-scenario-restart-title');\n      |                                                                                                                                       ^\n  121 |   await expect(page.locator('#diss-scenario-restart-effects')).toContainText('resets the technique attempt for External Anatomy'); await expect(page.locator('#diss-scenario-restart-effects')).toContainText('clears inspected-structure progress across'); await expect(page.locator('#diss-scenario-restart-effects')).toContainText('Notes, confidence ratings, captured frames, and archived attempts remain.'); expect(await proof(page)).toEqual(before); expect((await state(page)).scenarioStartedAt).toBe(clockBefore);\n  122 |   await page.keyboard.press('Escape'); await expect(review(page)).toHaveCount(0); await expect(restart(page)).toBeFocused(); expect(await proof(page)).toEqual(before);\n  123 |   await page.keyboard.press('Space'); await expect(keep(page)).toBeFocused(); await page.keyboard.press('Enter'); await expect(review(page)).toHaveCount(0); await expect(restart(page)).toBeFocused(); expect(await proof(page)).toEqual(before);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts",
+                        "column": 135,
+                        "line": 120
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#diss-scenario-restart-cancel')\nExpected: focused\nReceived: inactive\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#diss-scenario-restart-cancel')\u001b[22m\n\u001b[2m    33 × locator resolved to <button type=\"button\" id=\"diss-scenario-restart-cancel\">Keep current attempt</button>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n\n\n  118 | test('restart review keeps records until confirmation and resets only its stated native boundaries', async ({ page }) => {\n  119 |   test.skip(baseline); await mount(page, { scenarioStartedAt: Date.now(), scenarioTimeRemaining: 200 }, 390, 390); await pauseClock(page); const before = await proof(page), clockBefore = (await state(page)).scenarioStartedAt;\n> 120 |   await restart(page).focus(); await page.keyboard.press('Enter'); await expect(review(page)).toBeVisible(); await expect(keep(page)).toBeFocused(); await expect(review(page)).toHaveAttribute('role', 'group'); await expect(review(page)).toHaveAttribute('aria-labelledby', 'diss-scenario-restart-title');\n      |                                                                                                                                       ^\n  121 |   await expect(page.locator('#diss-scenario-restart-effects')).toContainText('resets the technique attempt for External Anatomy'); await expect(page.locator('#diss-scenario-restart-effects')).toContainText('clears inspected-structure progress across'); await expect(page.locator('#diss-scenario-restart-effects')).toContainText('Notes, confidence ratings, captured frames, and archived attempts remain.'); expect(await proof(page)).toEqual(before); expect((await state(page)).scenarioStartedAt).toBe(clockBefore);\n  122 |   await page.keyboard.press('Escape'); await expect(review(page)).toHaveCount(0); await expect(restart(page)).toBeFocused(); expect(await proof(page)).toEqual(before);\n  123 |   await page.keyboard.press('Space'); await expect(keep(page)).toBeFocused(); await page.keyboard.press('Enter'); await expect(review(page)).toHaveCount(0); await expect(restart(page)).toBeFocused(); expect(await proof(page)).toEqual(before);\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts:120:135"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T13:50:56.547Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\scenario-3\\test-results\\dissection-scenario-clarit-13997-ts-stated-native-boundaries-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\scenario-3\\test-results\\dissection-scenario-clarit-13997-ts-stated-native-boundaries-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\scenario-3\\test-results\\dissection-scenario-clarit-13997-ts-stated-native-boundaries-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\scenario-3\\test-results\\dissection-scenario-clarit-13997-ts-stated-native-boundaries-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts",
+                    "column": 135,
+                    "line": 120
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f44b5100afee14512545-002224c641d64f6236ae",
+          "file": "dissection-scenario-clarity.spec.ts",
+          "line": 118,
+          "column": 5
+        },
+        {
+          "title": "actual deadline expiry and stale positive countdowns expose recovery without resetting saved work",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4895,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T13:51:14.632Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f44b5100afee14512545-0f16c1d6bfa94858736c",
+          "file": "dissection-scenario-clarity.spec.ts",
+          "line": 132,
+          "column": 5
+        },
+        {
+          "title": "unstarted challenge uses Start without destructive reset and completed attempts retain their frozen timer",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4013,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T13:51:19.698Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f44b5100afee14512545-625d0c18593e3662b7bc",
+          "file": "dissection-scenario-clarity.spec.ts",
+          "line": 145,
+          "column": 5
+        },
+        {
+          "title": "Study identification timer remains separate and native assessment and Essentials gates hide the scenario console",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 3075,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m240\u001b[39m\nReceived:   \u001b[31m240\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m240\u001b[39m\nReceived:   \u001b[31m240\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts:160:157",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts",
+                      "column": 157,
+                      "line": 160
+                    },
+                    "snippet": "  158 |   const active = await state(page); expect(active.practicalMode).toBe(true); expect(active.quizMode).toBe(true); expect(active.practicalTimer).toBe(120); expect(active.practicalEndsAt).toBeGreaterThan(challenge.scenarioStartedAt); expect(active.scenarioStartedAt).toBe(challenge.scenarioStartedAt); expect(active.scenarioTimeRemaining).toBe(240);\n  159 |   await expect(consolePanel(page)).toBeHidden(); await expect(page.locator('#diss-practical-time-status')).toContainText('Timed practical: 2 minutes remaining'); await expect(page.locator('.diss-next-action')).toHaveAttribute('data-next-action', 'quiz');\n> 160 |   await page.clock.runFor(2200); const running = await state(page); expect(running.practicalTimer).toBeLessThan(120); expect(running.scenarioTimeRemaining).toBeLessThan(240); expect(running.practicalEndsAt).toBe(active.practicalEndsAt); expect(running.scenarioStartedAt).toBe(challenge.scenarioStartedAt);\n      |                                                                                                                                                             ^\n  161 |   // Starting identification natively resets its current scores and selection.\n  162 |   // Neither timer changes the stored technique or observation records.\n  163 |   expect(await proof(page)).toEqual({ ...before, selected: null, scores: [0, 0], comparingAttempts: false }); await study.getByRole('button', { name: 'End timed practical', exact: true }).click(); expect((await state(page)).scenarioStartedAt).toBe(challenge.scenarioStartedAt);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts",
+                        "column": 157,
+                        "line": 160
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m240\u001b[39m\nReceived:   \u001b[31m240\u001b[39m\n\n  158 |   const active = await state(page); expect(active.practicalMode).toBe(true); expect(active.quizMode).toBe(true); expect(active.practicalTimer).toBe(120); expect(active.practicalEndsAt).toBeGreaterThan(challenge.scenarioStartedAt); expect(active.scenarioStartedAt).toBe(challenge.scenarioStartedAt); expect(active.scenarioTimeRemaining).toBe(240);\n  159 |   await expect(consolePanel(page)).toBeHidden(); await expect(page.locator('#diss-practical-time-status')).toContainText('Timed practical: 2 minutes remaining'); await expect(page.locator('.diss-next-action')).toHaveAttribute('data-next-action', 'quiz');\n> 160 |   await page.clock.runFor(2200); const running = await state(page); expect(running.practicalTimer).toBeLessThan(120); expect(running.scenarioTimeRemaining).toBeLessThan(240); expect(running.practicalEndsAt).toBe(active.practicalEndsAt); expect(running.scenarioStartedAt).toBe(challenge.scenarioStartedAt);\n      |                                                                                                                                                             ^\n  161 |   // Starting identification natively resets its current scores and selection.\n  162 |   // Neither timer changes the stored technique or observation records.\n  163 |   expect(await proof(page)).toEqual({ ...before, selected: null, scores: [0, 0], comparingAttempts: false }); await study.getByRole('button', { name: 'End timed practical', exact: true }).click(); expect((await state(page)).scenarioStartedAt).toBe(challenge.scenarioStartedAt);\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts:160:157"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T13:51:23.722Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\scenario-3\\test-results\\dissection-scenario-clarit-1c336-s-hide-the-scenario-console-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\scenario-3\\test-results\\dissection-scenario-clarit-1c336-s-hide-the-scenario-console-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\scenario-3\\test-results\\dissection-scenario-clarit-1c336-s-hide-the-scenario-console-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-scenario-clarity-2026-10-06\\scenario-3\\test-results\\dissection-scenario-clarit-1c336-s-hide-the-scenario-console-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-scenario-clarity.spec.ts",
+                    "column": 157,
+                    "line": 160
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f44b5100afee14512545-5591fa563a7f5ca3e0f0",
+          "file": "dissection-scenario-clarity.spec.ts",
+          "line": 155,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-06T13:50:31.848Z",
+    "duration": 55155.443,
+    "expected": 9,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

@@ -1,0 +1,5986 @@
+{
+  "checks": [
+    {
+      "all13Controls": [
+        {
+          "id": "brightness",
+          "key": "contrast",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "value": 80
+        },
+        {
+          "id": "brightness",
+          "key": "target",
+          "min": 48,
+          "max": 208,
+          "step": 1,
+          "value": 128
+        },
+        {
+          "id": "ebbinghaus",
+          "key": "surround",
+          "min": 20,
+          "max": 50,
+          "step": 1,
+          "value": 36
+        },
+        {
+          "id": "ebbinghaus",
+          "key": "gap",
+          "min": 4,
+          "max": 28,
+          "step": 1,
+          "value": 12
+        },
+        {
+          "id": "mullerLyer",
+          "key": "angle",
+          "min": 15,
+          "max": 75,
+          "step": 1,
+          "value": 30
+        },
+        {
+          "id": "mullerLyer",
+          "key": "fin",
+          "min": 12,
+          "max": 75,
+          "step": 1,
+          "value": 42
+        },
+        {
+          "id": "cafeWall",
+          "key": "offset",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "value": 50
+        },
+        {
+          "id": "cafeWall",
+          "key": "mortar",
+          "min": 1,
+          "max": 14,
+          "step": 1,
+          "value": 5
+        },
+        {
+          "id": "necker",
+          "key": "depth",
+          "min": 45,
+          "max": 125,
+          "step": 1,
+          "value": 95
+        },
+        {
+          "id": "moire",
+          "key": "angle",
+          "min": 0,
+          "max": 30,
+          "step": 0.1,
+          "value": 5
+        },
+        {
+          "id": "moire",
+          "key": "spacing",
+          "min": 8,
+          "max": 24,
+          "step": 1,
+          "value": 12
+        },
+        {
+          "id": "ponzo",
+          "key": "convergence",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "value": 90
+        },
+        {
+          "id": "ponzo",
+          "key": "upperY",
+          "min": 150,
+          "max": 260,
+          "step": 1,
+          "value": 175
+        }
+      ],
+      "allSevenExperiments": true,
+      "markupNamesAttributesAndScenesUnchanged": true
+    },
+    {
+      "nativeEditActions": [
+        {
+          "id": "brightness",
+          "key": "contrast",
+          "enter": 82,
+          "blur": 0,
+          "cancelled": 100,
+          "invalid": 101,
+          "reset": 80
+        },
+        {
+          "id": "brightness",
+          "key": "target",
+          "enter": 130,
+          "blur": 48,
+          "cancelled": 208,
+          "invalid": 209,
+          "reset": 128
+        },
+        {
+          "id": "ebbinghaus",
+          "key": "surround",
+          "enter": 38,
+          "blur": 20,
+          "cancelled": 50,
+          "invalid": 51,
+          "reset": 36
+        },
+        {
+          "id": "ebbinghaus",
+          "key": "gap",
+          "enter": 14,
+          "blur": 4,
+          "cancelled": 28,
+          "invalid": 29,
+          "reset": 12
+        },
+        {
+          "id": "mullerLyer",
+          "key": "angle",
+          "enter": 32,
+          "blur": 15,
+          "cancelled": 75,
+          "invalid": 76,
+          "reset": 30
+        },
+        {
+          "id": "mullerLyer",
+          "key": "fin",
+          "enter": 44,
+          "blur": 12,
+          "cancelled": 75,
+          "invalid": 76,
+          "reset": 42
+        },
+        {
+          "id": "cafeWall",
+          "key": "offset",
+          "enter": 52,
+          "blur": 0,
+          "cancelled": 100,
+          "invalid": 101,
+          "reset": 50
+        },
+        {
+          "id": "cafeWall",
+          "key": "mortar",
+          "enter": 7,
+          "blur": 1,
+          "cancelled": 14,
+          "invalid": 15,
+          "reset": 5
+        },
+        {
+          "id": "necker",
+          "key": "depth",
+          "enter": 97,
+          "blur": 45,
+          "cancelled": 125,
+          "invalid": 126,
+          "reset": 95
+        },
+        {
+          "id": "moire",
+          "key": "angle",
+          "enter": 5.2,
+          "blur": 0,
+          "cancelled": 30,
+          "invalid": 30.1,
+          "reset": 5
+        },
+        {
+          "id": "moire",
+          "key": "spacing",
+          "enter": 14,
+          "blur": 8,
+          "cancelled": 24,
+          "invalid": 25,
+          "reset": 12
+        },
+        {
+          "id": "ponzo",
+          "key": "convergence",
+          "enter": 92,
+          "blur": 0,
+          "cancelled": 100,
+          "invalid": 101,
+          "reset": 90
+        },
+        {
+          "id": "ponzo",
+          "key": "upperY",
+          "enter": 177,
+          "blur": 150,
+          "cancelled": 260,
+          "invalid": 261,
+          "reset": 175
+        }
+      ],
+      "invalidDoesNotWrite": true,
+      "resetRestoresExactInputFocus": true
+    },
+    {
+      "emptyAndOffStepRejected": true,
+      "zeroWrites": true
+    },
+    {
+      "nativeRanges": [
+        "brightness:contrast",
+        "brightness:target",
+        "ebbinghaus:surround",
+        "ebbinghaus:gap",
+        "mullerLyer:angle",
+        "mullerLyer:fin",
+        "cafeWall:offset",
+        "cafeWall:mortar",
+        "necker:depth",
+        "moire:angle",
+        "moire:spacing",
+        "ponzo:convergence",
+        "ponzo:upperY"
+      ],
+      "touchChangesDrawing": true
+    },
+    {
+      "defaultInvalidDraftResetHasZeroWrites": true,
+      "resetFocusRetained": true,
+      "exactInputFocusPausesMoire": true
+    },
+    {
+      "matchingLocks": [
+        {
+          "id": "brightness",
+          "inputs": [
+            {
+              "tag": "INPUT",
+              "disabled": true
+            },
+            {
+              "tag": "INPUT",
+              "disabled": true
+            },
+            {
+              "tag": "BUTTON",
+              "disabled": true
+            }
+          ]
+        },
+        {
+          "id": "ebbinghaus",
+          "inputs": [
+            {
+              "tag": "INPUT",
+              "disabled": true
+            },
+            {
+              "tag": "INPUT",
+              "disabled": true
+            },
+            {
+              "tag": "BUTTON",
+              "disabled": true
+            },
+            {
+              "tag": "INPUT",
+              "disabled": true
+            },
+            {
+              "tag": "INPUT",
+              "disabled": true
+            },
+            {
+              "tag": "BUTTON",
+              "disabled": true
+            }
+          ]
+        },
+        {
+          "id": "mullerLyer",
+          "inputs": [
+            {
+              "tag": "INPUT",
+              "disabled": true
+            },
+            {
+              "tag": "INPUT",
+              "disabled": true
+            },
+            {
+              "tag": "BUTTON",
+              "disabled": true
+            },
+            {
+              "tag": "INPUT",
+              "disabled": true
+            },
+            {
+              "tag": "INPUT",
+              "disabled": true
+            },
+            {
+              "tag": "BUTTON",
+              "disabled": true
+            }
+          ]
+        }
+      ],
+      "hiddenBrightnessTargetAbsent": true,
+      "exactMatchValueNeverRendered": true
+    },
+    {
+      "focusWorkspaceNativeEdit": true,
+      "escapeDraftKeepsDialogOpen": true,
+      "closeReturnsFocus": true
+    },
+    {
+      "allSevenSmallScreenGeometry": [
+        {
+          "id": "brightness",
+          "viewport": 320,
+          "scroll": 320,
+          "cards": [
+            {
+              "key": "contrast",
+              "box": {
+                "left": 33,
+                "right": 287,
+                "top": 1583.84375,
+                "bottom": 1765.84375,
+                "width": 254,
+                "height": 182,
+                "scroll": 252,
+                "client": 252
+              },
+              "texts": [
+                {
+                  "text": "Background difference",
+                  "left": 46,
+                  "right": 195.890625,
+                  "top": 1597.84375,
+                  "bottom": 1616.84375
+                },
+                {
+                  "text": "80%",
+                  "left": 236.75,
+                  "right": 265,
+                  "top": 1601.84375,
+                  "bottom": 1620.84375
+                },
+                {
+                  "text": "%",
+                  "left": 183.359375,
+                  "right": 194,
+                  "top": 1694.09375,
+                  "bottom": 1711.09375
+                },
+                {
+                  "text": "Reset",
+                  "left": 220.828125,
+                  "right": 255.15625,
+                  "top": 1693.34375,
+                  "bottom": 1712.34375
+                },
+                {
+                  "text": "Range: 0 to 100%. Step: 1.",
+                  "left": 46,
+                  "right": 182.90625,
+                  "top": 1735.84375,
+                  "bottom": 1751.84375
+                }
+              ],
+              "controls": [
+                {
+                  "tag": "INPUT",
+                  "type": "range",
+                  "text": "Background difference",
+                  "left": 46,
+                  "right": 274,
+                  "top": 1625.84375,
+                  "bottom": 1669.84375,
+                  "width": 228,
+                  "height": 44,
+                  "scroll": 228,
+                  "client": 228
+                },
+                {
+                  "tag": "INPUT",
+                  "type": "number",
+                  "text": "Background difference: exact value",
+                  "left": 46,
+                  "right": 175.359375,
+                  "top": 1680.84375,
+                  "bottom": 1724.84375,
+                  "width": 129.359375,
+                  "height": 44,
+                  "scroll": 127,
+                  "client": 127
+                },
+                {
+                  "tag": "BUTTON",
+                  "type": "button",
+                  "text": "Reset Background difference",
+                  "left": 202,
+                  "right": 274,
+                  "top": 1680.84375,
+                  "bottom": 1724.84375,
+                  "width": 72,
+                  "height": 44,
+                  "scroll": 70,
+                  "client": 70
+                }
+              ],
+              "precision": {
+                "left": 46,
+                "right": 194,
+                "top": 1680.84375,
+                "bottom": 1724.84375,
+                "width": 148,
+                "height": 44,
+                "scroll": 148,
+                "client": 148
+              },
+              "unit": {
+                "left": 183.359375,
+                "right": 194,
+                "top": 1693.09375,
+                "bottom": 1712.59375,
+                "width": 10.640625,
+                "height": 19.5,
+                "scroll": 11,
+                "client": 11
+              },
+              "number": {
+                "left": 46,
+                "right": 175.359375,
+                "top": 1680.84375,
+                "bottom": 1724.84375,
+                "width": 129.359375,
+                "height": 44,
+                "scroll": 127,
+                "client": 127
+              }
+            },
+            {
+              "key": "target",
+              "box": {
+                "left": 33,
+                "right": 287,
+                "top": 1781.84375,
+                "bottom": 1963.84375,
+                "width": 254,
+                "height": 182,
+                "scroll": 252,
+                "client": 252
+              },
+              "texts": [
+                {
+                  "text": "Center gray value",
+                  "left": 46,
+                  "right": 161.28125,
+                  "top": 1795.84375,
+                  "bottom": 1814.84375
+                },
+                {
+                  "text": "128 RGB",
+                  "left": 209.046875,
+                  "right": 265,
+                  "top": 1799.84375,
+                  "bottom": 1818.84375
+                },
+                {
+                  "text": "RGB",
+                  "left": 170.03125,
+                  "right": 194,
+                  "top": 1892.09375,
+                  "bottom": 1909.09375
+                },
+                {
+                  "text": "Reset",
+                  "left": 220.828125,
+                  "right": 255.15625,
+                  "top": 1891.34375,
+                  "bottom": 1910.34375
+                },
+                {
+                  "text": "Range: 48 to 208 RGB. Step: 1.",
+                  "left": 46,
+                  "right": 204.96875,
+                  "top": 1933.84375,
+                  "bottom": 1949.84375
+                }
+              ],
+              "controls": [
+                {
+                  "tag": "INPUT",
+                  "type": "range",
+                  "text": "Center gray value",
+                  "left": 46,
+                  "right": 274,
+                  "top": 1823.84375,
+                  "bottom": 1867.84375,
+                  "width": 228,
+                  "height": 44,
+                  "scroll": 228,
+                  "client": 228
+                },
+                {
+                  "tag": "INPUT",
+                  "type": "number",
+                  "text": "Center gray value: exact value",
+                  "left": 46,
+                  "right": 162.03125,
+                  "top": 1878.84375,
+                  "bottom": 1922.84375,
+                  "width": 116.03125,
+                  "height": 44,
+                  "scroll": 114,
+                  "client": 114
+                },
+                {
+                  "tag": "BUTTON",
+                  "type": "button",
+                  "text": "Reset Center gray value",
+                  "left": 202,
+                  "right": 274,
+                  "top": 1878.84375,
+                  "bottom": 1922.84375,
+                  "width": 72,
+                  "height": 44,
+                  "scroll": 70,
+                  "client": 70
+                }
+              ],
+              "precision": {
+                "left": 46,
+                "right": 194,
+                "top": 1878.84375,
+                "bottom": 1922.84375,
+                "width": 148,
+                "height": 44,
+                "scroll": 148,
+                "client": 148
+              },
+              "unit": {
+                "left": 170.03125,
+                "right": 194,
+                "top": 1891.09375,
+                "bottom": 1910.59375,
+                "width": 23.96875,
+                "height": 19.5,
+                "scroll": 24,
+                "client": 24
+              },
+              "number": {
+                "left": 46,
+                "right": 162.03125,
+                "top": 1878.84375,
+                "bottom": 1922.84375,
+                "width": 116.03125,
+                "height": 44,
+                "scroll": 114,
+                "client": 114
+              }
+            }
+          ]
+        },
+        {
+          "id": "ebbinghaus",
+          "viewport": 320,
+          "scroll": 320,
+          "cards": [
+            {
+              "key": "surround",
+              "box": {
+                "left": 33,
+                "right": 287,
+                "top": 1604.84375,
+                "bottom": 1815.84375,
+                "width": 254,
+                "height": 211,
+                "scroll": 252,
+                "client": 252
+              },
+              "texts": [
+                {
+                  "text": "Large surrounding radius",
+                  "left": 46,
+                  "right": 211.5625,
+                  "top": 1618.84375,
+                  "bottom": 1637.84375
+                },
+                {
+                  "text": "36 units",
+                  "left": 55,
+                  "right": 107.5,
+                  "top": 1651.84375,
+                  "bottom": 1670.84375
+                },
+                {
+                  "text": "units",
+                  "left": 166.203125,
+                  "right": 194,
+                  "top": 1744.09375,
+                  "bottom": 1761.09375
+                },
+                {
+                  "text": "Reset",
+                  "left": 220.828125,
+                  "right": 255.15625,
+                  "top": 1743.34375,
+                  "bottom": 1762.34375
+                },
+                {
+                  "text": "Range: 20 to 50 units. Step: 1.",
+                  "left": 46,
+                  "right": 202.03125,
+                  "top": 1785.84375,
+                  "bottom": 1801.84375
+                }
+              ],
+              "controls": [
+                {
+                  "tag": "INPUT",
+                  "type": "range",
+                  "text": "Large surrounding radius",
+                  "left": 46,
+                  "right": 274,
+                  "top": 1675.84375,
+                  "bottom": 1719.84375,
+                  "width": 228,
+                  "height": 44,
+                  "scroll": 228,
+                  "client": 228
+                },
+                {
+                  "tag": "INPUT",
+                  "type": "number",
+                  "text": "Large surrounding radius: exact value",
+                  "left": 46,
+                  "right": 158.203125,
+                  "top": 1730.84375,
+                  "bottom": 1774.84375,
+                  "width": 112.203125,
+                  "height": 44,
+                  "scroll": 110,
+                  "client": 110
+                },
+                {
+                  "tag": "BUTTON",
+                  "type": "button",
+                  "text": "Reset Large surrounding radius",
+                  "left": 202,
+                  "right": 274,
+                  "top": 1730.84375,
+                  "bottom": 1774.84375,
+                  "width": 72,
+                  "height": 44,
+                  "scroll": 70,
+                  "client": 70
+                }
+              ],
+              "precision": {
+                "left": 46,
+                "right": 194,
+                "top": 1730.84375,
+                "bottom": 1774.84375,
+                "width": 148,
+                "height": 44,
+                "scroll": 148,
+                "client": 148
+              },
+              "unit": {
+                "left": 166.203125,
+                "right": 194,
+                "top": 1743.09375,
+                "bottom": 1762.59375,
+                "width": 27.796875,
+                "height": 19.5,
+                "scroll": 28,
+                "client": 28
+              },
+              "number": {
+                "left": 46,
+                "right": 158.203125,
+                "top": 1730.84375,
+                "bottom": 1774.84375,
+                "width": 112.203125,
+                "height": 44,
+                "scroll": 110,
+                "client": 110
+              }
+            },
+            {
+              "key": "gap",
+              "box": {
+                "left": 33,
+                "right": 287,
+                "top": 1831.84375,
+                "bottom": 2013.84375,
+                "width": 254,
+                "height": 182,
+                "scroll": 252,
+                "client": 252
+              },
+              "texts": [
+                {
+                  "text": "Gap around center",
+                  "left": 46,
+                  "right": 168.421875,
+                  "top": 1845.84375,
+                  "bottom": 1864.84375
+                },
+                {
+                  "text": "12 units",
+                  "left": 212.5,
+                  "right": 265,
+                  "top": 1849.84375,
+                  "bottom": 1868.84375
+                },
+                {
+                  "text": "units",
+                  "left": 166.203125,
+                  "right": 194,
+                  "top": 1942.09375,
+                  "bottom": 1959.09375
+                },
+                {
+                  "text": "Reset",
+                  "left": 220.828125,
+                  "right": 255.15625,
+                  "top": 1941.34375,
+                  "bottom": 1960.34375
+                },
+                {
+                  "text": "Range: 4 to 28 units. Step: 1.",
+                  "left": 46,
+                  "right": 195.5625,
+                  "top": 1983.84375,
+                  "bottom": 1999.84375
+                }
+              ],
+              "controls": [
+                {
+                  "tag": "INPUT",
+                  "type": "range",
+                  "text": "Gap around center",
+                  "left": 46,
+                  "right": 274,
+                  "top": 1873.84375,
+                  "bottom": 1917.84375,
+                  "width": 228,
+                  "height": 44,
+                  "scroll": 228,
+                  "client": 228
+                },
+                {
+                  "tag": "INPUT",
+                  "type": "number",
+                  "text": "Gap around center: exact value",
+                  "left": 46,
+                  "right": 158.203125,
+                  "top": 1928.84375,
+                  "bottom": 1972.84375,
+                  "width": 112.203125,
+                  "height": 44,
+                  "scroll": 110,
+                  "client": 110
+                },
+                {
+                  "tag": "BUTTON",
+                  "type": "button",
+                  "text": "Reset Gap around center",
+                  "left": 202,
+                  "right": 274,
+                  "top": 1928.84375,
+                  "bottom": 1972.84375,
+                  "width": 72,
+                  "height": 44,
+                  "scroll": 70,
+                  "client": 70
+                }
+              ],
+              "precision": {
+                "left": 46,
+                "right": 194,
+                "top": 1928.84375,
+                "bottom": 1972.84375,
+                "width": 148,
+                "height": 44,
+                "scroll": 148,
+                "client": 148
+              },
+              "unit": {
+                "left": 166.203125,
+                "right": 194,
+                "top": 1941.09375,
+                "bottom": 1960.59375,
+                "width": 27.796875,
+                "height": 19.5,
+                "scroll": 28,
+                "client": 28
+              },
+              "number": {
+                "left": 46,
+                "right": 158.203125,
+                "top": 1928.84375,
+                "bottom": 1972.84375,
+                "width": 112.203125,
+                "height": 44,
+                "scroll": 110,
+                "client": 110
+              }
+            }
+          ]
+        },
+        {
+          "id": "mullerLyer",
+          "viewport": 320,
+          "scroll": 320,
+          "cards": [
+            {
+              "key": "angle",
+              "box": {
+                "left": 33,
+                "right": 287,
+                "top": 1583.84375,
+                "bottom": 1765.84375,
+                "width": 254,
+                "height": 182,
+                "scroll": 252,
+                "client": 252
+              },
+              "texts": [
+                {
+                  "text": "Fin angle",
+                  "left": 46,
+                  "right": 105.828125,
+                  "top": 1597.84375,
+                  "bottom": 1616.84375
+                },
+                {
+                  "text": "30°",
+                  "left": 243.5625,
+                  "right": 265,
+                  "top": 1601.84375,
+                  "bottom": 1620.84375
+                },
+                {
+                  "text": "°",
+                  "left": 189.09375,
+                  "right": 194,
+                  "top": 1694.09375,
+                  "bottom": 1711.09375
+                },
+                {
+                  "text": "Reset",
+                  "left": 220.828125,
+                  "right": 255.15625,
+                  "top": 1693.34375,
+                  "bottom": 1712.34375
+                },
+                {
+                  "text": "Range: 15 to 75°. Step: 1.",
+                  "left": 46,
+                  "right": 177.609375,
+                  "top": 1735.84375,
+                  "bottom": 1751.84375
+                }
+              ],
+              "controls": [
+                {
+                  "tag": "INPUT",
+                  "type": "range",
+                  "text": "Fin angle",
+                  "left": 46,
+                  "right": 274,
+                  "top": 1625.84375,
+                  "bottom": 1669.84375,
+                  "width": 228,
+                  "height": 44,
+                  "scroll": 228,
+                  "client": 228
+                },
+                {
+                  "tag": "INPUT",
+                  "type": "number",
+                  "text": "Fin angle: exact value",
+                  "left": 46,
+                  "right": 181.09375,
+                  "top": 1680.84375,
+                  "bottom": 1724.84375,
+                  "width": 135.09375,
+                  "height": 44,
+                  "scroll": 133,
+                  "client": 133
+                },
+                {
+                  "tag": "BUTTON",
+                  "type": "button",
+                  "text": "Reset Fin angle",
+                  "left": 202,
+                  "right": 274,
+                  "top": 1680.84375,
+                  "bottom": 1724.84375,
+                  "width": 72,
+                  "height": 44,
+                  "scroll": 70,
+                  "client": 70
+                }
+              ],
+              "precision": {
+                "left": 46,
+                "right": 194,
+                "top": 1680.84375,
+                "bottom": 1724.84375,
+                "width": 148,
+                "height": 44,
+                "scroll": 148,
+                "client": 148
+              },
+              "unit": {
+                "left": 189.09375,
+                "right": 194,
+                "top": 1693.09375,
+                "bottom": 1712.59375,
+                "width": 4.90625,
+                "height": 19.5,
+                "scroll": 5,
+                "client": 5
+              },
+              "number": {
+                "left": 46,
+                "right": 181.09375,
+                "top": 1680.84375,
+                "bottom": 1724.84375,
+                "width": 135.09375,
+                "height": 44,
+                "scroll": 133,
+                "client": 133
+              }
+            },
+            {
+              "key": "fin",
+              "box": {
+                "left": 33,
+                "right": 287,
+                "top": 1781.84375,
+                "bottom": 1963.84375,
+                "width": 254,
+                "height": 182,
+                "scroll": 252,
+                "client": 252
+              },
+              "texts": [
+                {
+                  "text": "Fin length",
+                  "left": 46,
+                  "right": 112.171875,
+                  "top": 1795.84375,
+                  "bottom": 1814.84375
+                },
+                {
+                  "text": "42 units",
+                  "left": 212.5,
+                  "right": 265,
+                  "top": 1799.84375,
+                  "bottom": 1818.84375
+                },
+                {
+                  "text": "units",
+                  "left": 166.203125,
+                  "right": 194,
+                  "top": 1892.09375,
+                  "bottom": 1909.09375
+                },
+                {
+                  "text": "Reset",
+                  "left": 220.828125,
+                  "right": 255.15625,
+                  "top": 1891.34375,
+                  "bottom": 1910.34375
+                },
+                {
+                  "text": "Range: 12 to 75 units. Step: 1.",
+                  "left": 46,
+                  "right": 202.03125,
+                  "top": 1933.84375,
+                  "bottom": 1949.84375
+                }
+              ],
+              "controls": [
+                {
+                  "tag": "INPUT",
+                  "type": "range",
+                  "text": "Fin length",
+                  "left": 46,
+                  "right": 274,
+                  "top": 1823.84375,
+                  "bottom": 1867.84375,
+                  "width": 228,
+                  "height": 44,
+                  "scroll": 228,
+                  "client": 228
+                },
+                {
+                  "tag": "INPUT",
+                  "type": "number",
+                  "text": "Fin length: exact value",
+                  "left": 46,
+                  "right": 158.203125,
+                  "top": 1878.84375,
+                  "bottom": 1922.84375,
+                  "width": 112.203125,
+                  "height": 44,
+                  "scroll": 110,
+                  "client": 110
+                },
+                {
+                  "tag": "BUTTON",
+                  "type": "button",
+                  "text": "Reset Fin length",
+                  "left": 202,
+                  "right": 274,
+                  "top": 1878.84375,
+                  "bottom": 1922.84375,
+                  "width": 72,
+                  "height": 44,
+                  "scroll": 70,
+                  "client": 70
+                }
+              ],
+              "precision": {
+                "left": 46,
+                "right": 194,
+                "top": 1878.84375,
+                "bottom": 1922.84375,
+                "width": 148,
+                "height": 44,
+                "scroll": 148,
+                "client": 148
+              },
+              "unit": {
+                "left": 166.203125,
+                "right": 194,
+                "top": 1891.09375,
+                "bottom": 1910.59375,
+                "width": 27.796875,
+                "height": 19.5,
+                "scroll": 28,
+                "client": 28
+              },
+              "number": {
+                "left": 46,
+                "right": 158.203125,
+                "top": 1878.84375,
+                "bottom": 1922.84375,
+                "width": 112.203125,
+                "height": 44,
+                "scroll": 110,
+                "client": 110
+              }
+            }
+          ]
+        },
+        {
+          "id": "cafeWall",
+          "viewport": 320,
+          "scroll": 320,
+          "cards": [
+            {
+              "key": "offset",
+              "box": {
+                "left": 33,
+                "right": 287,
+                "top": 1618.84375,
+                "bottom": 1829.84375,
+                "width": 254,
+                "height": 211,
+                "scroll": 252,
+                "client": 252
+              },
+              "texts": [
+                {
+                  "text": "Alternate row offset",
+                  "left": 46,
+                  "right": 178.609375,
+                  "top": 1632.84375,
+                  "bottom": 1651.84375
+                },
+                {
+                  "text": "50% of tile",
+                  "left": 55,
+                  "right": 125.671875,
+                  "top": 1665.84375,
+                  "bottom": 1684.84375
+                },
+                {
+                  "text": "% of tile",
+                  "left": 147.046875,
+                  "right": 194,
+                  "top": 1758.09375,
+                  "bottom": 1775.09375
+                },
+                {
+                  "text": "Reset",
+                  "left": 220.828125,
+                  "right": 255.15625,
+                  "top": 1757.34375,
+                  "bottom": 1776.34375
+                },
+                {
+                  "text": "Range: 0 to 100% of tile. Step: 1.",
+                  "left": 46,
+                  "right": 216.421875,
+                  "top": 1799.84375,
+                  "bottom": 1815.84375
+                }
+              ],
+              "controls": [
+                {
+                  "tag": "INPUT",
+                  "type": "range",
+                  "text": "Alternate row offset",
+                  "left": 46,
+                  "right": 274,
+                  "top": 1689.84375,
+                  "bottom": 1733.84375,
+                  "width": 228,
+                  "height": 44,
+                  "scroll": 228,
+                  "client": 228
+                },
+                {
+                  "tag": "INPUT",
+                  "type": "number",
+                  "text": "Alternate row offset: exact value",
+                  "left": 46,
+                  "right": 139.046875,
+                  "top": 1744.84375,
+                  "bottom": 1788.84375,
+                  "width": 93.046875,
+                  "height": 44,
+                  "scroll": 91,
+                  "client": 91
+                },
+                {
+                  "tag": "BUTTON",
+                  "type": "button",
+                  "text": "Reset Alternate row offset",
+                  "left": 202,
+                  "right": 274,
+                  "top": 1744.84375,
+                  "bottom": 1788.84375,
+                  "width": 72,
+                  "height": 44,
+                  "scroll": 70,
+                  "client": 70
+                }
+              ],
+              "precision": {
+                "left": 46,
+                "right": 194,
+                "top": 1744.84375,
+                "bottom": 1788.84375,
+                "width": 148,
+                "height": 44,
+                "scroll": 148,
+                "client": 148
+              },
+              "unit": {
+                "left": 147.046875,
+                "right": 194,
+                "top": 1757.09375,
+                "bottom": 1776.59375,
+                "width": 46.953125,
+                "height": 19.5,
+                "scroll": 47,
+                "client": 47
+              },
+              "number": {
+                "left": 46,
+                "right": 139.046875,
+                "top": 1744.84375,
+                "bottom": 1788.84375,
+                "width": 93.046875,
+                "height": 44,
+                "scroll": 91,
+                "client": 91
+              }
+            },
+            {
+              "key": "mortar",
+              "box": {
+                "left": 33,
+                "right": 287,
+                "top": 1845.84375,
+                "bottom": 2027.84375,
+                "width": 254,
+                "height": 182,
+                "scroll": 252,
+                "client": 252
+              },
+              "texts": [
+                {
+                  "text": "Mortar width",
+                  "left": 46,
+                  "right": 134.046875,
+                  "top": 1859.84375,
+                  "bottom": 1878.84375
+                },
+                {
+                  "text": "5 units",
+                  "left": 220.546875,
+                  "right": 265,
+                  "top": 1863.84375,
+                  "bottom": 1882.84375
+                },
+                {
+                  "text": "units",
+                  "left": 166.203125,
+                  "right": 194,
+                  "top": 1956.09375,
+                  "bottom": 1973.09375
+                },
+                {
+                  "text": "Reset",
+                  "left": 220.828125,
+                  "right": 255.15625,
+                  "top": 1955.34375,
+                  "bottom": 1974.34375
+                },
+                {
+                  "text": "Range: 1 to 14 units. Step: 1.",
+                  "left": 46,
+                  "right": 195.5625,
+                  "top": 1997.84375,
+                  "bottom": 2013.84375
+                }
+              ],
+              "controls": [
+                {
+                  "tag": "INPUT",
+                  "type": "range",
+                  "text": "Mortar width",
+                  "left": 46,
+                  "right": 274,
+                  "top": 1887.84375,
+                  "bottom": 1931.84375,
+                  "width": 228,
+                  "height": 44,
+                  "scroll": 228,
+                  "client": 228
+                },
+                {
+                  "tag": "INPUT",
+                  "type": "number",
+                  "text": "Mortar width: exact value",
+                  "left": 46,
+                  "right": 158.203125,
+                  "top": 1942.84375,
+                  "bottom": 1986.84375,
+                  "width": 112.203125,
+                  "height": 44,
+                  "scroll": 110,
+                  "client": 110
+                },
+                {
+                  "tag": "BUTTON",
+                  "type": "button",
+                  "text": "Reset Mortar width",
+                  "left": 202,
+                  "right": 274,
+                  "top": 1942.84375,
+                  "bottom": 1986.84375,
+                  "width": 72,
+                  "height": 44,
+                  "scroll": 70,
+                  "client": 70
+                }
+              ],
+              "precision": {
+                "left": 46,
+                "right": 194,
+                "top": 1942.84375,
+                "bottom": 1986.84375,
+                "width": 148,
+                "height": 44,
+                "scroll": 148,
+                "client": 148
+              },
+              "unit": {
+                "left": 166.203125,
+                "right": 194,
+                "top": 1955.09375,
+                "bottom": 1974.59375,
+                "width": 27.796875,
+                "height": 19.5,
+                "scroll": 28,
+                "client": 28
+              },
+              "number": {
+                "left": 46,
+                "right": 158.203125,
+                "top": 1942.84375,
+                "bottom": 1986.84375,
+                "width": 112.203125,
+                "height": 44,
+                "scroll": 110,
+                "client": 110
+              }
+            }
+          ]
+        },
+        {
+          "id": "necker",
+          "viewport": 320,
+          "scroll": 320,
+          "cards": [
+            {
+              "key": "depth",
+              "box": {
+                "left": 33,
+                "right": 287,
+                "top": 1677.34375,
+                "bottom": 1859.34375,
+                "width": 254,
+                "height": 182,
+                "scroll": 252,
+                "client": 252
+              },
+              "texts": [
+                {
+                  "text": "Projected depth offset",
+                  "left": 46,
+                  "right": 193.34375,
+                  "top": 1691.34375,
+                  "bottom": 1710.34375
+                },
+                {
+                  "text": "95 units",
+                  "left": 212.5,
+                  "right": 265,
+                  "top": 1695.34375,
+                  "bottom": 1714.34375
+                },
+                {
+                  "text": "units",
+                  "left": 166.203125,
+                  "right": 194,
+                  "top": 1787.59375,
+                  "bottom": 1804.59375
+                },
+                {
+                  "text": "Reset",
+                  "left": 220.828125,
+                  "right": 255.15625,
+                  "top": 1786.84375,
+                  "bottom": 1805.84375
+                },
+                {
+                  "text": "Range: 45 to 125 units. Step: 1.",
+                  "left": 46,
+                  "right": 208.5,
+                  "top": 1829.34375,
+                  "bottom": 1845.34375
+                }
+              ],
+              "controls": [
+                {
+                  "tag": "INPUT",
+                  "type": "range",
+                  "text": "Projected depth offset",
+                  "left": 46,
+                  "right": 274,
+                  "top": 1719.34375,
+                  "bottom": 1763.34375,
+                  "width": 228,
+                  "height": 44,
+                  "scroll": 228,
+                  "client": 228
+                },
+                {
+                  "tag": "INPUT",
+                  "type": "number",
+                  "text": "Projected depth offset: exact value",
+                  "left": 46,
+                  "right": 158.203125,
+                  "top": 1774.34375,
+                  "bottom": 1818.34375,
+                  "width": 112.203125,
+                  "height": 44,
+                  "scroll": 110,
+                  "client": 110
+                },
+                {
+                  "tag": "BUTTON",
+                  "type": "button",
+                  "text": "Reset Projected depth offset",
+                  "left": 202,
+                  "right": 274,
+                  "top": 1774.34375,
+                  "bottom": 1818.34375,
+                  "width": 72,
+                  "height": 44,
+                  "scroll": 70,
+                  "client": 70
+                }
+              ],
+              "precision": {
+                "left": 46,
+                "right": 194,
+                "top": 1774.34375,
+                "bottom": 1818.34375,
+                "width": 148,
+                "height": 44,
+                "scroll": 148,
+                "client": 148
+              },
+              "unit": {
+                "left": 166.203125,
+                "right": 194,
+                "top": 1786.59375,
+                "bottom": 1806.09375,
+                "width": 27.796875,
+                "height": 19.5,
+                "scroll": 28,
+                "client": 28
+              },
+              "number": {
+                "left": 46,
+                "right": 158.203125,
+                "top": 1774.34375,
+                "bottom": 1818.34375,
+                "width": 112.203125,
+                "height": 44,
+                "scroll": 110,
+                "client": 110
+              }
+            }
+          ]
+        },
+        {
+          "id": "moire",
+          "viewport": 320,
+          "scroll": 320,
+          "cards": [
+            {
+              "key": "angle",
+              "box": {
+                "left": 33,
+                "right": 287,
+                "top": 1618.84375,
+                "bottom": 1800.84375,
+                "width": 254,
+                "height": 182,
+                "scroll": 252,
+                "client": 252
+              },
+              "texts": [
+                {
+                  "text": "Grid crossing angle",
+                  "left": 46,
+                  "right": 172.40625,
+                  "top": 1632.84375,
+                  "bottom": 1651.84375
+                },
+                {
+                  "text": "5°",
+                  "left": 251.625,
+                  "right": 265,
+                  "top": 1636.84375,
+                  "bottom": 1655.84375
+                },
+                {
+                  "text": "°",
+                  "left": 189.09375,
+                  "right": 194,
+                  "top": 1729.09375,
+                  "bottom": 1746.09375
+                },
+                {
+                  "text": "Reset",
+                  "left": 220.828125,
+                  "right": 255.15625,
+                  "top": 1728.34375,
+                  "bottom": 1747.34375
+                },
+                {
+                  "text": "Range: 0 to 30°. Step: 0.1.",
+                  "left": 46,
+                  "right": 180.21875,
+                  "top": 1770.84375,
+                  "bottom": 1786.84375
+                }
+              ],
+              "controls": [
+                {
+                  "tag": "INPUT",
+                  "type": "range",
+                  "text": "Grid crossing angle",
+                  "left": 46,
+                  "right": 274,
+                  "top": 1660.84375,
+                  "bottom": 1704.84375,
+                  "width": 228,
+                  "height": 44,
+                  "scroll": 228,
+                  "client": 228
+                },
+                {
+                  "tag": "INPUT",
+                  "type": "number",
+                  "text": "Grid crossing angle: exact value",
+                  "left": 46,
+                  "right": 181.09375,
+                  "top": 1715.84375,
+                  "bottom": 1759.84375,
+                  "width": 135.09375,
+                  "height": 44,
+                  "scroll": 133,
+                  "client": 133
+                },
+                {
+                  "tag": "BUTTON",
+                  "type": "button",
+                  "text": "Reset Grid crossing angle",
+                  "left": 202,
+                  "right": 274,
+                  "top": 1715.84375,
+                  "bottom": 1759.84375,
+                  "width": 72,
+                  "height": 44,
+                  "scroll": 70,
+                  "client": 70
+                }
+              ],
+              "precision": {
+                "left": 46,
+                "right": 194,
+                "top": 1715.84375,
+                "bottom": 1759.84375,
+                "width": 148,
+                "height": 44,
+                "scroll": 148,
+                "client": 148
+              },
+              "unit": {
+                "left": 189.09375,
+                "right": 194,
+                "top": 1728.09375,
+                "bottom": 1747.59375,
+                "width": 4.90625,
+                "height": 19.5,
+                "scroll": 5,
+                "client": 5
+              },
+              "number": {
+                "left": 46,
+                "right": 181.09375,
+                "top": 1715.84375,
+                "bottom": 1759.84375,
+                "width": 135.09375,
+                "height": 44,
+                "scroll": 133,
+                "client": 133
+              }
+            },
+            {
+              "key": "spacing",
+              "box": {
+                "left": 33,
+                "right": 287,
+                "top": 1816.84375,
+                "bottom": 1998.84375,
+                "width": 254,
+                "height": 182,
+                "scroll": 252,
+                "client": 252
+              },
+              "texts": [
+                {
+                  "text": "Line spacing",
+                  "left": 46,
+                  "right": 127.125,
+                  "top": 1830.84375,
+                  "bottom": 1849.84375
+                },
+                {
+                  "text": "12 units",
+                  "left": 212.5,
+                  "right": 265,
+                  "top": 1834.84375,
+                  "bottom": 1853.84375
+                },
+                {
+                  "text": "units",
+                  "left": 166.203125,
+                  "right": 194,
+                  "top": 1927.09375,
+                  "bottom": 1944.09375
+                },
+                {
+                  "text": "Reset",
+                  "left": 220.828125,
+                  "right": 255.15625,
+                  "top": 1926.34375,
+                  "bottom": 1945.34375
+                },
+                {
+                  "text": "Range: 8 to 24 units. Step: 1.",
+                  "left": 46,
+                  "right": 195.5625,
+                  "top": 1968.84375,
+                  "bottom": 1984.84375
+                }
+              ],
+              "controls": [
+                {
+                  "tag": "INPUT",
+                  "type": "range",
+                  "text": "Line spacing",
+                  "left": 46,
+                  "right": 274,
+                  "top": 1858.84375,
+                  "bottom": 1902.84375,
+                  "width": 228,
+                  "height": 44,
+                  "scroll": 228,
+                  "client": 228
+                },
+                {
+                  "tag": "INPUT",
+                  "type": "number",
+                  "text": "Line spacing: exact value",
+                  "left": 46,
+                  "right": 158.203125,
+                  "top": 1913.84375,
+                  "bottom": 1957.84375,
+                  "width": 112.203125,
+                  "height": 44,
+                  "scroll": 110,
+                  "client": 110
+                },
+                {
+                  "tag": "BUTTON",
+                  "type": "button",
+                  "text": "Reset Line spacing",
+                  "left": 202,
+                  "right": 274,
+                  "top": 1913.84375,
+                  "bottom": 1957.84375,
+                  "width": 72,
+                  "height": 44,
+                  "scroll": 70,
+                  "client": 70
+                }
+              ],
+              "precision": {
+                "left": 46,
+                "right": 194,
+                "top": 1913.84375,
+                "bottom": 1957.84375,
+                "width": 148,
+                "height": 44,
+                "scroll": 148,
+                "client": 148
+              },
+              "unit": {
+                "left": 166.203125,
+                "right": 194,
+                "top": 1926.09375,
+                "bottom": 1945.59375,
+                "width": 27.796875,
+                "height": 19.5,
+                "scroll": 28,
+                "client": 28
+              },
+              "number": {
+                "left": 46,
+                "right": 158.203125,
+                "top": 1913.84375,
+                "bottom": 1957.84375,
+                "width": 112.203125,
+                "height": 44,
+                "scroll": 110,
+                "client": 110
+              }
+            }
+          ]
+        },
+        {
+          "id": "ponzo",
+          "viewport": 320,
+          "scroll": 320,
+          "cards": [
+            {
+              "key": "convergence",
+              "box": {
+                "left": 33,
+                "right": 287,
+                "top": 1597.84375,
+                "bottom": 1779.84375,
+                "width": 254,
+                "height": 182,
+                "scroll": 252,
+                "client": 252
+              },
+              "texts": [
+                {
+                  "text": "Rail convergence",
+                  "left": 46,
+                  "right": 157.796875,
+                  "top": 1611.84375,
+                  "bottom": 1630.84375
+                },
+                {
+                  "text": "90%",
+                  "left": 236.75,
+                  "right": 265,
+                  "top": 1615.84375,
+                  "bottom": 1634.84375
+                },
+                {
+                  "text": "%",
+                  "left": 183.359375,
+                  "right": 194,
+                  "top": 1708.09375,
+                  "bottom": 1725.09375
+                },
+                {
+                  "text": "Reset",
+                  "left": 220.828125,
+                  "right": 255.15625,
+                  "top": 1707.34375,
+                  "bottom": 1726.34375
+                },
+                {
+                  "text": "Range: 0 to 100%. Step: 1.",
+                  "left": 46,
+                  "right": 182.90625,
+                  "top": 1749.84375,
+                  "bottom": 1765.84375
+                }
+              ],
+              "controls": [
+                {
+                  "tag": "INPUT",
+                  "type": "range",
+                  "text": "Rail convergence",
+                  "left": 46,
+                  "right": 274,
+                  "top": 1639.84375,
+                  "bottom": 1683.84375,
+                  "width": 228,
+                  "height": 44,
+                  "scroll": 228,
+                  "client": 228
+                },
+                {
+                  "tag": "INPUT",
+                  "type": "number",
+                  "text": "Rail convergence: exact value",
+                  "left": 46,
+                  "right": 175.359375,
+                  "top": 1694.84375,
+                  "bottom": 1738.84375,
+                  "width": 129.359375,
+                  "height": 44,
+                  "scroll": 127,
+                  "client": 127
+                },
+                {
+                  "tag": "BUTTON",
+                  "type": "button",
+                  "text": "Reset Rail convergence",
+                  "left": 202,
+                  "right": 274,
+                  "top": 1694.84375,
+                  "bottom": 1738.84375,
+                  "width": 72,
+                  "height": 44,
+                  "scroll": 70,
+                  "client": 70
+                }
+              ],
+              "precision": {
+                "left": 46,
+                "right": 194,
+                "top": 1694.84375,
+                "bottom": 1738.84375,
+                "width": 148,
+                "height": 44,
+                "scroll": 148,
+                "client": 148
+              },
+              "unit": {
+                "left": 183.359375,
+                "right": 194,
+                "top": 1707.09375,
+                "bottom": 1726.59375,
+                "width": 10.640625,
+                "height": 19.5,
+                "scroll": 11,
+                "client": 11
+              },
+              "number": {
+                "left": 46,
+                "right": 175.359375,
+                "top": 1694.84375,
+                "bottom": 1738.84375,
+                "width": 129.359375,
+                "height": 44,
+                "scroll": 127,
+                "client": 127
+              }
+            },
+            {
+              "key": "upperY",
+              "box": {
+                "left": 33,
+                "right": 287,
+                "top": 1795.84375,
+                "bottom": 1977.84375,
+                "width": 254,
+                "height": 182,
+                "scroll": 252,
+                "client": 252
+              },
+              "texts": [
+                {
+                  "text": "Upper bar position",
+                  "left": 46,
+                  "right": 169.84375,
+                  "top": 1809.84375,
+                  "bottom": 1828.84375
+                },
+                {
+                  "text": "175 units",
+                  "left": 204.453125,
+                  "right": 265,
+                  "top": 1813.84375,
+                  "bottom": 1832.84375
+                },
+                {
+                  "text": "units",
+                  "left": 166.203125,
+                  "right": 194,
+                  "top": 1906.09375,
+                  "bottom": 1923.09375
+                },
+                {
+                  "text": "Reset",
+                  "left": 220.828125,
+                  "right": 255.15625,
+                  "top": 1905.34375,
+                  "bottom": 1924.34375
+                },
+                {
+                  "text": "Range: 150 to 260 units. Step: 1.",
+                  "left": 46,
+                  "right": 214.96875,
+                  "top": 1947.84375,
+                  "bottom": 1963.84375
+                }
+              ],
+              "controls": [
+                {
+                  "tag": "INPUT",
+                  "type": "range",
+                  "text": "Upper bar position",
+                  "left": 46,
+                  "right": 274,
+                  "top": 1837.84375,
+                  "bottom": 1881.84375,
+                  "width": 228,
+                  "height": 44,
+                  "scroll": 228,
+                  "client": 228
+                },
+                {
+                  "tag": "INPUT",
+                  "type": "number",
+                  "text": "Upper bar position: exact value",
+                  "left": 46,
+                  "right": 158.203125,
+                  "top": 1892.84375,
+                  "bottom": 1936.84375,
+                  "width": 112.203125,
+                  "height": 44,
+                  "scroll": 110,
+                  "client": 110
+                },
+                {
+                  "tag": "BUTTON",
+                  "type": "button",
+                  "text": "Reset Upper bar position",
+                  "left": 202,
+                  "right": 274,
+                  "top": 1892.84375,
+                  "bottom": 1936.84375,
+                  "width": 72,
+                  "height": 44,
+                  "scroll": 70,
+                  "client": 70
+                }
+              ],
+              "precision": {
+                "left": 46,
+                "right": 194,
+                "top": 1892.84375,
+                "bottom": 1936.84375,
+                "width": 148,
+                "height": 44,
+                "scroll": 148,
+                "client": 148
+              },
+              "unit": {
+                "left": 166.203125,
+                "right": 194,
+                "top": 1905.09375,
+                "bottom": 1924.59375,
+                "width": 27.796875,
+                "height": 19.5,
+                "scroll": 28,
+                "client": 28
+              },
+              "number": {
+                "left": 46,
+                "right": 158.203125,
+                "top": 1892.84375,
+                "bottom": 1936.84375,
+                "width": 112.203125,
+                "height": 44,
+                "scroll": 110,
+                "client": 110
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "precisionBreakpoint": [
+        {
+          "width": 223,
+          "row": {
+            "valueTop": 1081.1875,
+            "resetTop": 1133.1875,
+            "resetLeft": 62,
+            "valueRight": 285
+          },
+          "geometry": {
+            "key": "offset",
+            "box": {
+              "left": 49,
+              "right": 298,
+              "top": 955.1875,
+              "bottom": 1218.1875,
+              "width": 249,
+              "height": 263,
+              "scroll": 247,
+              "client": 247
+            },
+            "texts": [
+              {
+                "text": "Alternate row offset",
+                "left": 62,
+                "right": 194.609375,
+                "top": 969.1875,
+                "bottom": 988.1875
+              },
+              {
+                "text": "50% of tile",
+                "left": 71,
+                "right": 141.671875,
+                "top": 1002.1875,
+                "bottom": 1021.1875
+              },
+              {
+                "text": "% of tile",
+                "left": 238.046875,
+                "right": 285,
+                "top": 1094.4375,
+                "bottom": 1111.4375
+              },
+              {
+                "text": "Reset",
+                "left": 156.328125,
+                "right": 190.65625,
+                "top": 1145.6875,
+                "bottom": 1164.6875
+              },
+              {
+                "text": "Range: 0 to 100% of tile. Step: 1.",
+                "left": 62,
+                "right": 232.421875,
+                "top": 1188.1875,
+                "bottom": 1204.1875
+              }
+            ],
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "range",
+                "text": "Alternate row offset",
+                "left": 62,
+                "right": 285,
+                "top": 1026.1875,
+                "bottom": 1070.1875,
+                "width": 223,
+                "height": 44,
+                "scroll": 223,
+                "client": 223
+              },
+              {
+                "tag": "INPUT",
+                "type": "number",
+                "text": "Alternate row offset: exact value",
+                "left": 62,
+                "right": 230.046875,
+                "top": 1081.1875,
+                "bottom": 1125.1875,
+                "width": 168.046875,
+                "height": 44,
+                "scroll": 166,
+                "client": 166
+              },
+              {
+                "tag": "BUTTON",
+                "type": "button",
+                "text": "Reset Alternate row offset",
+                "left": 62,
+                "right": 285,
+                "top": 1133.1875,
+                "bottom": 1177.1875,
+                "width": 223,
+                "height": 44,
+                "scroll": 221,
+                "client": 221
+              }
+            ],
+            "precision": {
+              "left": 62,
+              "right": 285,
+              "top": 1081.1875,
+              "bottom": 1125.1875,
+              "width": 223,
+              "height": 44,
+              "scroll": 223,
+              "client": 223
+            },
+            "unit": {
+              "left": 238.046875,
+              "right": 285,
+              "top": 1093.4375,
+              "bottom": 1112.9375,
+              "width": 46.953125,
+              "height": 19.5,
+              "scroll": 47,
+              "client": 47
+            },
+            "number": {
+              "left": 62,
+              "right": 230.046875,
+              "top": 1081.1875,
+              "bottom": 1125.1875,
+              "width": 168.046875,
+              "height": 44,
+              "scroll": 166,
+              "client": 166
+            }
+          }
+        },
+        {
+          "width": 225,
+          "row": {
+            "valueTop": 1081.1875,
+            "resetTop": 1081.1875,
+            "resetLeft": 215,
+            "valueRight": 207
+          },
+          "geometry": {
+            "key": "offset",
+            "box": {
+              "left": 49,
+              "right": 300,
+              "top": 955.1875,
+              "bottom": 1166.1875,
+              "width": 251,
+              "height": 211,
+              "scroll": 249,
+              "client": 249
+            },
+            "texts": [
+              {
+                "text": "Alternate row offset",
+                "left": 62,
+                "right": 194.609375,
+                "top": 969.1875,
+                "bottom": 988.1875
+              },
+              {
+                "text": "50% of tile",
+                "left": 71,
+                "right": 141.671875,
+                "top": 1002.1875,
+                "bottom": 1021.1875
+              },
+              {
+                "text": "% of tile",
+                "left": 160.046875,
+                "right": 207,
+                "top": 1094.4375,
+                "bottom": 1111.4375
+              },
+              {
+                "text": "Reset",
+                "left": 233.828125,
+                "right": 268.15625,
+                "top": 1093.6875,
+                "bottom": 1112.6875
+              },
+              {
+                "text": "Range: 0 to 100% of tile. Step: 1.",
+                "left": 62,
+                "right": 232.421875,
+                "top": 1136.1875,
+                "bottom": 1152.1875
+              }
+            ],
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "range",
+                "text": "Alternate row offset",
+                "left": 62,
+                "right": 287,
+                "top": 1026.1875,
+                "bottom": 1070.1875,
+                "width": 225,
+                "height": 44,
+                "scroll": 225,
+                "client": 225
+              },
+              {
+                "tag": "INPUT",
+                "type": "number",
+                "text": "Alternate row offset: exact value",
+                "left": 62,
+                "right": 152.046875,
+                "top": 1081.1875,
+                "bottom": 1125.1875,
+                "width": 90.046875,
+                "height": 44,
+                "scroll": 88,
+                "client": 88
+              },
+              {
+                "tag": "BUTTON",
+                "type": "button",
+                "text": "Reset Alternate row offset",
+                "left": 215,
+                "right": 287,
+                "top": 1081.1875,
+                "bottom": 1125.1875,
+                "width": 72,
+                "height": 44,
+                "scroll": 70,
+                "client": 70
+              }
+            ],
+            "precision": {
+              "left": 62,
+              "right": 207,
+              "top": 1081.1875,
+              "bottom": 1125.1875,
+              "width": 145,
+              "height": 44,
+              "scroll": 145,
+              "client": 145
+            },
+            "unit": {
+              "left": 160.046875,
+              "right": 207,
+              "top": 1093.4375,
+              "bottom": 1112.9375,
+              "width": 46.953125,
+              "height": 19.5,
+              "scroll": 47,
+              "client": 47
+            },
+            "number": {
+              "left": 62,
+              "right": 152.046875,
+              "top": 1081.1875,
+              "bottom": 1125.1875,
+              "width": 90.046875,
+              "height": 44,
+              "scroll": 88,
+              "client": 88
+            }
+          }
+        }
+      ]
+    },
+    {
+      "layout": {
+        "width": 1600,
+        "font": 16,
+        "suffix": "1600"
+      },
+      "geometry": {
+        "viewport": 1600,
+        "scroll": 1600,
+        "cards": [
+          {
+            "key": "offset",
+            "box": {
+              "left": 49,
+              "right": 315,
+              "top": 823.1875,
+              "bottom": 1100.1875,
+              "width": 266,
+              "height": 277,
+              "scroll": 264,
+              "client": 264
+            },
+            "texts": [
+              {
+                "text": "Alternate row offset",
+                "left": 62,
+                "right": 194.609375,
+                "top": 837.1875,
+                "bottom": 856.1875
+              },
+              {
+                "text": "50% of tile",
+                "left": 222.328125,
+                "right": 293,
+                "top": 841.1875,
+                "bottom": 860.1875
+              },
+              {
+                "text": "% of tile",
+                "left": 175.046875,
+                "right": 222,
+                "top": 933.4375,
+                "bottom": 950.4375
+              },
+              {
+                "text": "Reset",
+                "left": 248.828125,
+                "right": 283.15625,
+                "top": 932.6875,
+                "bottom": 951.6875
+              },
+              {
+                "text": "Range: 0 to 100% of tile. Step: 1.",
+                "left": 62,
+                "right": 232.421875,
+                "top": 975.1875,
+                "bottom": 991.1875
+              },
+              {
+                "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed.",
+                "left": 77,
+                "right": 269.171875,
+                "top": 1014.1875,
+                "bottom": 1033.1875
+              },
+              {
+                "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed.",
+                "left": 77,
+                "right": 269.703125,
+                "top": 1035.1875,
+                "bottom": 1054.1875
+              },
+              {
+                "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed.",
+                "left": 77,
+                "right": 133.28125,
+                "top": 1056.1875,
+                "bottom": 1075.1875
+              }
+            ],
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "range",
+                "text": "Alternate row offset",
+                "left": 62,
+                "right": 302,
+                "top": 865.1875,
+                "bottom": 909.1875,
+                "width": 240,
+                "height": 44,
+                "scroll": 240,
+                "client": 240
+              },
+              {
+                "tag": "INPUT",
+                "type": "number",
+                "text": "Alternate row offset: exact value",
+                "left": 62,
+                "right": 167.046875,
+                "top": 920.1875,
+                "bottom": 964.1875,
+                "width": 105.046875,
+                "height": 44,
+                "scroll": 101,
+                "client": 101
+              },
+              {
+                "tag": "BUTTON",
+                "type": "button",
+                "text": "Reset Alternate row offset",
+                "left": 230,
+                "right": 302,
+                "top": 920.1875,
+                "bottom": 964.1875,
+                "width": 72,
+                "height": 44,
+                "scroll": 70,
+                "client": 70
+              }
+            ],
+            "precision": {
+              "left": 62,
+              "right": 222,
+              "top": 920.1875,
+              "bottom": 964.1875,
+              "width": 160,
+              "height": 44,
+              "scroll": 160,
+              "client": 160
+            },
+            "unit": {
+              "left": 175.046875,
+              "right": 222,
+              "top": 932.4375,
+              "bottom": 951.9375,
+              "width": 46.953125,
+              "height": 19.5,
+              "scroll": 47,
+              "client": 47
+            },
+            "number": {
+              "left": 62,
+              "right": 167.046875,
+              "top": 920.1875,
+              "bottom": 964.1875,
+              "width": 105.046875,
+              "height": 44,
+              "scroll": 101,
+              "client": 101
+            }
+          },
+          {
+            "key": "mortar",
+            "box": {
+              "left": 49,
+              "right": 315,
+              "top": 1116.1875,
+              "bottom": 1298.1875,
+              "width": 266,
+              "height": 182,
+              "scroll": 264,
+              "client": 264
+            },
+            "texts": [
+              {
+                "text": "Mortar width",
+                "left": 62,
+                "right": 150.046875,
+                "top": 1130.1875,
+                "bottom": 1149.1875
+              },
+              {
+                "text": "5 units",
+                "left": 248.546875,
+                "right": 293,
+                "top": 1134.1875,
+                "bottom": 1153.1875
+              },
+              {
+                "text": "units",
+                "left": 194.203125,
+                "right": 222,
+                "top": 1226.4375,
+                "bottom": 1243.4375
+              },
+              {
+                "text": "Reset",
+                "left": 248.828125,
+                "right": 283.15625,
+                "top": 1225.6875,
+                "bottom": 1244.6875
+              },
+              {
+                "text": "Range: 1 to 14 units. Step: 1.",
+                "left": 62,
+                "right": 211.5625,
+                "top": 1268.1875,
+                "bottom": 1284.1875
+              }
+            ],
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "range",
+                "text": "Mortar width",
+                "left": 62,
+                "right": 302,
+                "top": 1158.1875,
+                "bottom": 1202.1875,
+                "width": 240,
+                "height": 44,
+                "scroll": 240,
+                "client": 240
+              },
+              {
+                "tag": "INPUT",
+                "type": "number",
+                "text": "Mortar width: exact value",
+                "left": 62,
+                "right": 186.203125,
+                "top": 1213.1875,
+                "bottom": 1257.1875,
+                "width": 124.203125,
+                "height": 44,
+                "scroll": 122,
+                "client": 122
+              },
+              {
+                "tag": "BUTTON",
+                "type": "button",
+                "text": "Reset Mortar width",
+                "left": 230,
+                "right": 302,
+                "top": 1213.1875,
+                "bottom": 1257.1875,
+                "width": 72,
+                "height": 44,
+                "scroll": 70,
+                "client": 70
+              }
+            ],
+            "precision": {
+              "left": 62,
+              "right": 222,
+              "top": 1213.1875,
+              "bottom": 1257.1875,
+              "width": 160,
+              "height": 44,
+              "scroll": 160,
+              "client": 160
+            },
+            "unit": {
+              "left": 194.203125,
+              "right": 222,
+              "top": 1225.4375,
+              "bottom": 1244.9375,
+              "width": 27.796875,
+              "height": 19.5,
+              "scroll": 28,
+              "client": 28
+            },
+            "number": {
+              "left": 62,
+              "right": 186.203125,
+              "top": 1213.1875,
+              "bottom": 1257.1875,
+              "width": 124.203125,
+              "height": 44,
+              "scroll": 122,
+              "client": 122
+            }
+          }
+        ]
+      },
+      "visualMetrics": [
+        {
+          "key": "offset",
+          "numeric": {
+            "width": 105.046875,
+            "usable": 65,
+            "maxDigitValue": "100",
+            "textWidth": 22.640625,
+            "scroll": 101,
+            "client": 101
+          },
+          "badge": {
+            "background": "rgb(255, 255, 255)",
+            "fontWeight": "700",
+            "padding": "3px 8px",
+            "border": "1px"
+          },
+          "error": {
+            "left": "3px",
+            "right": "1px"
+          },
+          "direction": "ltr",
+          "focus": {
+            "outline": "3px",
+            "offset": "3px",
+            "overflow": "visible"
+          }
+        },
+        {
+          "key": "mortar",
+          "numeric": {
+            "width": 124.203125,
+            "usable": 86,
+            "maxDigitValue": "14",
+            "textWidth": 15.09375,
+            "scroll": 122,
+            "client": 122
+          },
+          "badge": {
+            "background": "rgb(255, 255, 255)",
+            "fontWeight": "700",
+            "padding": "3px 8px",
+            "border": "1px"
+          },
+          "error": null,
+          "direction": "ltr",
+          "focus": {
+            "outline": "3px",
+            "offset": "0px",
+            "overflow": "visible"
+          }
+        }
+      ],
+      "descriptions": [
+        {
+          "name": "Alternate row offset: exact value",
+          "invalid": "true",
+          "refs": [
+            {
+              "id": ":r1h:-precision-hint",
+              "count": 1,
+              "text": "Exact values apply on Enter or when you leave the field. Escape cancels an edit."
+            },
+            {
+              "id": "perception-offset-bounds",
+              "count": 1,
+              "text": "Range: 0 to 100% of tile. Step: 1."
+            },
+            {
+              "id": "perception-offset-error",
+              "count": 1,
+              "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed."
+            }
+          ]
+        },
+        {
+          "name": "Mortar width: exact value",
+          "invalid": null,
+          "refs": [
+            {
+              "id": ":r1h:-precision-hint",
+              "count": 1,
+              "text": "Exact values apply on Enter or when you leave the field. Escape cancels an edit."
+            },
+            {
+              "id": "perception-mortar-bounds",
+              "count": 1,
+              "text": "Range: 1 to 14 units. Step: 1."
+            }
+          ]
+        }
+      ],
+      "forcedTextContrast": [],
+      "axe": []
+    },
+    {
+      "layout": {
+        "width": 320,
+        "font": 16,
+        "suffix": "320"
+      },
+      "geometry": {
+        "viewport": 320,
+        "scroll": 320,
+        "cards": [
+          {
+            "key": "offset",
+            "box": {
+              "left": 33,
+              "right": 287,
+              "top": 793.84375,
+              "bottom": 1099.84375,
+              "width": 254,
+              "height": 306,
+              "scroll": 252,
+              "client": 252
+            },
+            "texts": [
+              {
+                "text": "Alternate row offset",
+                "left": 46,
+                "right": 178.609375,
+                "top": 807.84375,
+                "bottom": 826.84375
+              },
+              {
+                "text": "50% of tile",
+                "left": 55,
+                "right": 125.671875,
+                "top": 840.84375,
+                "bottom": 859.84375
+              },
+              {
+                "text": "% of tile",
+                "left": 147.046875,
+                "right": 194,
+                "top": 933.09375,
+                "bottom": 950.09375
+              },
+              {
+                "text": "Reset",
+                "left": 220.828125,
+                "right": 255.15625,
+                "top": 932.34375,
+                "bottom": 951.34375
+              },
+              {
+                "text": "Range: 0 to 100% of tile. Step: 1.",
+                "left": 46,
+                "right": 216.421875,
+                "top": 974.84375,
+                "bottom": 990.84375
+              },
+              {
+                "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed.",
+                "left": 61,
+                "right": 253.171875,
+                "top": 1013.84375,
+                "bottom": 1032.84375
+              },
+              {
+                "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed.",
+                "left": 61,
+                "right": 253.703125,
+                "top": 1034.84375,
+                "bottom": 1053.84375
+              },
+              {
+                "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed.",
+                "left": 61,
+                "right": 117.28125,
+                "top": 1055.84375,
+                "bottom": 1074.84375
+              }
+            ],
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "range",
+                "text": "Alternate row offset",
+                "left": 46,
+                "right": 274,
+                "top": 864.84375,
+                "bottom": 908.84375,
+                "width": 228,
+                "height": 44,
+                "scroll": 228,
+                "client": 228
+              },
+              {
+                "tag": "INPUT",
+                "type": "number",
+                "text": "Alternate row offset: exact value",
+                "left": 46,
+                "right": 139.046875,
+                "top": 919.84375,
+                "bottom": 963.84375,
+                "width": 93.046875,
+                "height": 44,
+                "scroll": 89,
+                "client": 89
+              },
+              {
+                "tag": "BUTTON",
+                "type": "button",
+                "text": "Reset Alternate row offset",
+                "left": 202,
+                "right": 274,
+                "top": 919.84375,
+                "bottom": 963.84375,
+                "width": 72,
+                "height": 44,
+                "scroll": 70,
+                "client": 70
+              }
+            ],
+            "precision": {
+              "left": 46,
+              "right": 194,
+              "top": 919.84375,
+              "bottom": 963.84375,
+              "width": 148,
+              "height": 44,
+              "scroll": 148,
+              "client": 148
+            },
+            "unit": {
+              "left": 147.046875,
+              "right": 194,
+              "top": 932.09375,
+              "bottom": 951.59375,
+              "width": 46.953125,
+              "height": 19.5,
+              "scroll": 47,
+              "client": 47
+            },
+            "number": {
+              "left": 46,
+              "right": 139.046875,
+              "top": 919.84375,
+              "bottom": 963.84375,
+              "width": 93.046875,
+              "height": 44,
+              "scroll": 89,
+              "client": 89
+            }
+          },
+          {
+            "key": "mortar",
+            "box": {
+              "left": 33,
+              "right": 287,
+              "top": 1115.84375,
+              "bottom": 1297.84375,
+              "width": 254,
+              "height": 182,
+              "scroll": 252,
+              "client": 252
+            },
+            "texts": [
+              {
+                "text": "Mortar width",
+                "left": 46,
+                "right": 134.046875,
+                "top": 1129.84375,
+                "bottom": 1148.84375
+              },
+              {
+                "text": "5 units",
+                "left": 220.546875,
+                "right": 265,
+                "top": 1133.84375,
+                "bottom": 1152.84375
+              },
+              {
+                "text": "units",
+                "left": 166.203125,
+                "right": 194,
+                "top": 1226.09375,
+                "bottom": 1243.09375
+              },
+              {
+                "text": "Reset",
+                "left": 220.828125,
+                "right": 255.15625,
+                "top": 1225.34375,
+                "bottom": 1244.34375
+              },
+              {
+                "text": "Range: 1 to 14 units. Step: 1.",
+                "left": 46,
+                "right": 195.5625,
+                "top": 1267.84375,
+                "bottom": 1283.84375
+              }
+            ],
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "range",
+                "text": "Mortar width",
+                "left": 46,
+                "right": 274,
+                "top": 1157.84375,
+                "bottom": 1201.84375,
+                "width": 228,
+                "height": 44,
+                "scroll": 228,
+                "client": 228
+              },
+              {
+                "tag": "INPUT",
+                "type": "number",
+                "text": "Mortar width: exact value",
+                "left": 46,
+                "right": 158.203125,
+                "top": 1212.84375,
+                "bottom": 1256.84375,
+                "width": 112.203125,
+                "height": 44,
+                "scroll": 110,
+                "client": 110
+              },
+              {
+                "tag": "BUTTON",
+                "type": "button",
+                "text": "Reset Mortar width",
+                "left": 202,
+                "right": 274,
+                "top": 1212.84375,
+                "bottom": 1256.84375,
+                "width": 72,
+                "height": 44,
+                "scroll": 70,
+                "client": 70
+              }
+            ],
+            "precision": {
+              "left": 46,
+              "right": 194,
+              "top": 1212.84375,
+              "bottom": 1256.84375,
+              "width": 148,
+              "height": 44,
+              "scroll": 148,
+              "client": 148
+            },
+            "unit": {
+              "left": 166.203125,
+              "right": 194,
+              "top": 1225.09375,
+              "bottom": 1244.59375,
+              "width": 27.796875,
+              "height": 19.5,
+              "scroll": 28,
+              "client": 28
+            },
+            "number": {
+              "left": 46,
+              "right": 158.203125,
+              "top": 1212.84375,
+              "bottom": 1256.84375,
+              "width": 112.203125,
+              "height": 44,
+              "scroll": 110,
+              "client": 110
+            }
+          }
+        ]
+      },
+      "visualMetrics": [
+        {
+          "key": "offset",
+          "numeric": {
+            "width": 93.046875,
+            "usable": 53,
+            "maxDigitValue": "100",
+            "textWidth": 22.640625,
+            "scroll": 89,
+            "client": 89
+          },
+          "badge": {
+            "background": "rgb(255, 255, 255)",
+            "fontWeight": "700",
+            "padding": "3px 8px",
+            "border": "1px"
+          },
+          "error": {
+            "left": "3px",
+            "right": "1px"
+          },
+          "direction": "ltr",
+          "focus": {
+            "outline": "3px",
+            "offset": "3px",
+            "overflow": "visible"
+          }
+        },
+        {
+          "key": "mortar",
+          "numeric": {
+            "width": 112.203125,
+            "usable": 74,
+            "maxDigitValue": "14",
+            "textWidth": 15.09375,
+            "scroll": 110,
+            "client": 110
+          },
+          "badge": {
+            "background": "rgb(255, 255, 255)",
+            "fontWeight": "700",
+            "padding": "3px 8px",
+            "border": "1px"
+          },
+          "error": null,
+          "direction": "ltr",
+          "focus": {
+            "outline": "3px",
+            "offset": "0px",
+            "overflow": "visible"
+          }
+        }
+      ],
+      "descriptions": [
+        {
+          "name": "Alternate row offset: exact value",
+          "invalid": "true",
+          "refs": [
+            {
+              "id": ":r1i:-precision-hint",
+              "count": 1,
+              "text": "Exact values apply on Enter or when you leave the field. Escape cancels an edit."
+            },
+            {
+              "id": "perception-offset-bounds",
+              "count": 1,
+              "text": "Range: 0 to 100% of tile. Step: 1."
+            },
+            {
+              "id": "perception-offset-error",
+              "count": 1,
+              "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed."
+            }
+          ]
+        },
+        {
+          "name": "Mortar width: exact value",
+          "invalid": null,
+          "refs": [
+            {
+              "id": ":r1i:-precision-hint",
+              "count": 1,
+              "text": "Exact values apply on Enter or when you leave the field. Escape cancels an edit."
+            },
+            {
+              "id": "perception-mortar-bounds",
+              "count": 1,
+              "text": "Range: 1 to 14 units. Step: 1."
+            }
+          ]
+        }
+      ],
+      "forcedTextContrast": [],
+      "axe": []
+    },
+    {
+      "layout": {
+        "width": 390,
+        "font": 16,
+        "suffix": "390"
+      },
+      "geometry": {
+        "viewport": 390,
+        "scroll": 390,
+        "cards": [
+          {
+            "key": "offset",
+            "box": {
+              "left": 33,
+              "right": 357,
+              "top": 752.34375,
+              "bottom": 1008.34375,
+              "width": 324,
+              "height": 256,
+              "scroll": 322,
+              "client": 322
+            },
+            "texts": [
+              {
+                "text": "Alternate row offset",
+                "left": 46,
+                "right": 178.609375,
+                "top": 766.34375,
+                "bottom": 785.34375
+              },
+              {
+                "text": "50% of tile",
+                "left": 264.328125,
+                "right": 335,
+                "top": 770.34375,
+                "bottom": 789.34375
+              },
+              {
+                "text": "% of tile",
+                "left": 199.046875,
+                "right": 246,
+                "top": 862.59375,
+                "bottom": 879.59375
+              },
+              {
+                "text": "Reset",
+                "left": 281.828125,
+                "right": 316.15625,
+                "top": 861.84375,
+                "bottom": 880.84375
+              },
+              {
+                "text": "Range: 0 to 100% of tile. Step: 1.",
+                "left": 46,
+                "right": 216.421875,
+                "top": 904.34375,
+                "bottom": 920.34375
+              },
+              {
+                "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed.",
+                "left": 61,
+                "right": 320.015625,
+                "top": 943.34375,
+                "bottom": 962.34375
+              },
+              {
+                "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed.",
+                "left": 61,
+                "right": 246.96875,
+                "top": 964.34375,
+                "bottom": 983.34375
+              }
+            ],
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "range",
+                "text": "Alternate row offset",
+                "left": 46,
+                "right": 344,
+                "top": 794.34375,
+                "bottom": 838.34375,
+                "width": 298,
+                "height": 44,
+                "scroll": 298,
+                "client": 298
+              },
+              {
+                "tag": "INPUT",
+                "type": "number",
+                "text": "Alternate row offset: exact value",
+                "left": 46,
+                "right": 191.046875,
+                "top": 849.34375,
+                "bottom": 893.34375,
+                "width": 145.046875,
+                "height": 44,
+                "scroll": 141,
+                "client": 141
+              },
+              {
+                "tag": "BUTTON",
+                "type": "button",
+                "text": "Reset Alternate row offset",
+                "left": 254,
+                "right": 344,
+                "top": 849.34375,
+                "bottom": 893.34375,
+                "width": 90,
+                "height": 44,
+                "scroll": 88,
+                "client": 88
+              }
+            ],
+            "precision": {
+              "left": 46,
+              "right": 246,
+              "top": 849.34375,
+              "bottom": 893.34375,
+              "width": 200,
+              "height": 44,
+              "scroll": 200,
+              "client": 200
+            },
+            "unit": {
+              "left": 199.046875,
+              "right": 246,
+              "top": 861.59375,
+              "bottom": 881.09375,
+              "width": 46.953125,
+              "height": 19.5,
+              "scroll": 47,
+              "client": 47
+            },
+            "number": {
+              "left": 46,
+              "right": 191.046875,
+              "top": 849.34375,
+              "bottom": 893.34375,
+              "width": 145.046875,
+              "height": 44,
+              "scroll": 141,
+              "client": 141
+            }
+          },
+          {
+            "key": "mortar",
+            "box": {
+              "left": 33,
+              "right": 357,
+              "top": 1024.34375,
+              "bottom": 1206.34375,
+              "width": 324,
+              "height": 182,
+              "scroll": 322,
+              "client": 322
+            },
+            "texts": [
+              {
+                "text": "Mortar width",
+                "left": 46,
+                "right": 134.046875,
+                "top": 1038.34375,
+                "bottom": 1057.34375
+              },
+              {
+                "text": "5 units",
+                "left": 290.546875,
+                "right": 335,
+                "top": 1042.34375,
+                "bottom": 1061.34375
+              },
+              {
+                "text": "units",
+                "left": 218.203125,
+                "right": 246,
+                "top": 1134.59375,
+                "bottom": 1151.59375
+              },
+              {
+                "text": "Reset",
+                "left": 281.828125,
+                "right": 316.15625,
+                "top": 1133.84375,
+                "bottom": 1152.84375
+              },
+              {
+                "text": "Range: 1 to 14 units. Step: 1.",
+                "left": 46,
+                "right": 195.5625,
+                "top": 1176.34375,
+                "bottom": 1192.34375
+              }
+            ],
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "range",
+                "text": "Mortar width",
+                "left": 46,
+                "right": 344,
+                "top": 1066.34375,
+                "bottom": 1110.34375,
+                "width": 298,
+                "height": 44,
+                "scroll": 298,
+                "client": 298
+              },
+              {
+                "tag": "INPUT",
+                "type": "number",
+                "text": "Mortar width: exact value",
+                "left": 46,
+                "right": 210.203125,
+                "top": 1121.34375,
+                "bottom": 1165.34375,
+                "width": 164.203125,
+                "height": 44,
+                "scroll": 162,
+                "client": 162
+              },
+              {
+                "tag": "BUTTON",
+                "type": "button",
+                "text": "Reset Mortar width",
+                "left": 254,
+                "right": 344,
+                "top": 1121.34375,
+                "bottom": 1165.34375,
+                "width": 90,
+                "height": 44,
+                "scroll": 88,
+                "client": 88
+              }
+            ],
+            "precision": {
+              "left": 46,
+              "right": 246,
+              "top": 1121.34375,
+              "bottom": 1165.34375,
+              "width": 200,
+              "height": 44,
+              "scroll": 200,
+              "client": 200
+            },
+            "unit": {
+              "left": 218.203125,
+              "right": 246,
+              "top": 1133.59375,
+              "bottom": 1153.09375,
+              "width": 27.796875,
+              "height": 19.5,
+              "scroll": 28,
+              "client": 28
+            },
+            "number": {
+              "left": 46,
+              "right": 210.203125,
+              "top": 1121.34375,
+              "bottom": 1165.34375,
+              "width": 164.203125,
+              "height": 44,
+              "scroll": 162,
+              "client": 162
+            }
+          }
+        ]
+      },
+      "visualMetrics": [
+        {
+          "key": "offset",
+          "numeric": {
+            "width": 145.046875,
+            "usable": 105,
+            "maxDigitValue": "100",
+            "textWidth": 22.640625,
+            "scroll": 141,
+            "client": 141
+          },
+          "badge": {
+            "background": "rgb(255, 255, 255)",
+            "fontWeight": "700",
+            "padding": "3px 8px",
+            "border": "1px"
+          },
+          "error": {
+            "left": "3px",
+            "right": "1px"
+          },
+          "direction": "ltr",
+          "focus": {
+            "outline": "3px",
+            "offset": "3px",
+            "overflow": "visible"
+          }
+        },
+        {
+          "key": "mortar",
+          "numeric": {
+            "width": 164.203125,
+            "usable": 126,
+            "maxDigitValue": "14",
+            "textWidth": 15.09375,
+            "scroll": 162,
+            "client": 162
+          },
+          "badge": {
+            "background": "rgb(255, 255, 255)",
+            "fontWeight": "700",
+            "padding": "3px 8px",
+            "border": "1px"
+          },
+          "error": null,
+          "direction": "ltr",
+          "focus": {
+            "outline": "3px",
+            "offset": "0px",
+            "overflow": "visible"
+          }
+        }
+      ],
+      "descriptions": [
+        {
+          "name": "Alternate row offset: exact value",
+          "invalid": "true",
+          "refs": [
+            {
+              "id": ":r1j:-precision-hint",
+              "count": 1,
+              "text": "Exact values apply on Enter or when you leave the field. Escape cancels an edit."
+            },
+            {
+              "id": "perception-offset-bounds",
+              "count": 1,
+              "text": "Range: 0 to 100% of tile. Step: 1."
+            },
+            {
+              "id": "perception-offset-error",
+              "count": 1,
+              "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed."
+            }
+          ]
+        },
+        {
+          "name": "Mortar width: exact value",
+          "invalid": null,
+          "refs": [
+            {
+              "id": ":r1j:-precision-hint",
+              "count": 1,
+              "text": "Exact values apply on Enter or when you leave the field. Escape cancels an edit."
+            },
+            {
+              "id": "perception-mortar-bounds",
+              "count": 1,
+              "text": "Range: 1 to 14 units. Step: 1."
+            }
+          ]
+        }
+      ],
+      "forcedTextContrast": [],
+      "axe": []
+    },
+    {
+      "layout": {
+        "width": 700,
+        "font": 16,
+        "suffix": "700"
+      },
+      "geometry": {
+        "viewport": 700,
+        "scroll": 700,
+        "cards": [
+          {
+            "key": "offset",
+            "box": {
+              "left": 35,
+              "right": 665,
+              "top": 0.265625,
+              "bottom": 235.265625,
+              "width": 630,
+              "height": 235,
+              "scroll": 628,
+              "client": 628
+            },
+            "texts": [
+              {
+                "text": "Alternate row offset",
+                "left": 48,
+                "right": 180.609375,
+                "top": 14.265625,
+                "bottom": 33.265625
+              },
+              {
+                "text": "50% of tile",
+                "left": 572.328125,
+                "right": 643,
+                "top": 18.265625,
+                "bottom": 37.265625
+              },
+              {
+                "text": "% of tile",
+                "left": 412.078125,
+                "right": 459.03125,
+                "top": 110.515625,
+                "bottom": 127.515625
+              },
+              {
+                "text": "Reset",
+                "left": 542.34375,
+                "right": 576.671875,
+                "top": 109.765625,
+                "bottom": 128.765625
+              },
+              {
+                "text": "Range: 0 to 100% of tile. Step: 1.",
+                "left": 48,
+                "right": 218.421875,
+                "top": 152.265625,
+                "bottom": 168.265625
+              },
+              {
+                "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed.",
+                "left": 63,
+                "right": 511.828125,
+                "top": 191.265625,
+                "bottom": 210.265625
+              }
+            ],
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "range",
+                "text": "Alternate row offset",
+                "left": 48,
+                "right": 652,
+                "top": 42.265625,
+                "bottom": 86.265625,
+                "width": 604,
+                "height": 44,
+                "scroll": 604,
+                "client": 604
+              },
+              {
+                "tag": "INPUT",
+                "type": "number",
+                "text": "Alternate row offset: exact value",
+                "left": 48,
+                "right": 404.078125,
+                "top": 97.265625,
+                "bottom": 141.265625,
+                "width": 356.078125,
+                "height": 44,
+                "scroll": 352,
+                "client": 352
+              },
+              {
+                "tag": "BUTTON",
+                "type": "button",
+                "text": "Reset Alternate row offset",
+                "left": 467.03125,
+                "right": 651.984375,
+                "top": 97.265625,
+                "bottom": 141.265625,
+                "width": 184.953125,
+                "height": 44,
+                "scroll": 183,
+                "client": 183
+              }
+            ],
+            "precision": {
+              "left": 48,
+              "right": 459.03125,
+              "top": 97.265625,
+              "bottom": 141.265625,
+              "width": 411.03125,
+              "height": 44,
+              "scroll": 411,
+              "client": 411
+            },
+            "unit": {
+              "left": 412.078125,
+              "right": 459.03125,
+              "top": 109.515625,
+              "bottom": 129.015625,
+              "width": 46.953125,
+              "height": 19.5,
+              "scroll": 47,
+              "client": 47
+            },
+            "number": {
+              "left": 48,
+              "right": 404.078125,
+              "top": 97.265625,
+              "bottom": 141.265625,
+              "width": 356.078125,
+              "height": 44,
+              "scroll": 352,
+              "client": 352
+            }
+          },
+          {
+            "key": "mortar",
+            "box": {
+              "left": 35,
+              "right": 665,
+              "top": 251.265625,
+              "bottom": 433.265625,
+              "width": 630,
+              "height": 182,
+              "scroll": 628,
+              "client": 628
+            },
+            "texts": [
+              {
+                "text": "Mortar width",
+                "left": 48,
+                "right": 136.046875,
+                "top": 265.265625,
+                "bottom": 284.265625
+              },
+              {
+                "text": "5 units",
+                "left": 598.546875,
+                "right": 643,
+                "top": 269.265625,
+                "bottom": 288.265625
+              },
+              {
+                "text": "units",
+                "left": 431.234375,
+                "right": 459.03125,
+                "top": 361.515625,
+                "bottom": 378.515625
+              },
+              {
+                "text": "Reset",
+                "left": 542.34375,
+                "right": 576.671875,
+                "top": 360.765625,
+                "bottom": 379.765625
+              },
+              {
+                "text": "Range: 1 to 14 units. Step: 1.",
+                "left": 48,
+                "right": 197.5625,
+                "top": 403.265625,
+                "bottom": 419.265625
+              }
+            ],
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "range",
+                "text": "Mortar width",
+                "left": 48,
+                "right": 652,
+                "top": 293.265625,
+                "bottom": 337.265625,
+                "width": 604,
+                "height": 44,
+                "scroll": 604,
+                "client": 604
+              },
+              {
+                "tag": "INPUT",
+                "type": "number",
+                "text": "Mortar width: exact value",
+                "left": 48,
+                "right": 423.234375,
+                "top": 348.265625,
+                "bottom": 392.265625,
+                "width": 375.234375,
+                "height": 44,
+                "scroll": 373,
+                "client": 373
+              },
+              {
+                "tag": "BUTTON",
+                "type": "button",
+                "text": "Reset Mortar width",
+                "left": 467.03125,
+                "right": 651.984375,
+                "top": 348.265625,
+                "bottom": 392.265625,
+                "width": 184.953125,
+                "height": 44,
+                "scroll": 183,
+                "client": 183
+              }
+            ],
+            "precision": {
+              "left": 48,
+              "right": 459.03125,
+              "top": 348.265625,
+              "bottom": 392.265625,
+              "width": 411.03125,
+              "height": 44,
+              "scroll": 411,
+              "client": 411
+            },
+            "unit": {
+              "left": 431.234375,
+              "right": 459.03125,
+              "top": 360.515625,
+              "bottom": 380.015625,
+              "width": 27.796875,
+              "height": 19.5,
+              "scroll": 28,
+              "client": 28
+            },
+            "number": {
+              "left": 48,
+              "right": 423.234375,
+              "top": 348.265625,
+              "bottom": 392.265625,
+              "width": 375.234375,
+              "height": 44,
+              "scroll": 373,
+              "client": 373
+            }
+          }
+        ]
+      },
+      "visualMetrics": [
+        {
+          "key": "offset",
+          "numeric": {
+            "width": 356.078125,
+            "usable": 316,
+            "maxDigitValue": "100",
+            "textWidth": 22.640625,
+            "scroll": 352,
+            "client": 352
+          },
+          "badge": {
+            "background": "rgb(255, 255, 255)",
+            "fontWeight": "700",
+            "padding": "3px 8px",
+            "border": "1px"
+          },
+          "error": {
+            "left": "3px",
+            "right": "1px"
+          },
+          "direction": "ltr",
+          "focus": {
+            "outline": "3px",
+            "offset": "3px",
+            "overflow": "visible"
+          }
+        },
+        {
+          "key": "mortar",
+          "numeric": {
+            "width": 375.234375,
+            "usable": 337,
+            "maxDigitValue": "14",
+            "textWidth": 15.09375,
+            "scroll": 373,
+            "client": 373
+          },
+          "badge": {
+            "background": "rgb(255, 255, 255)",
+            "fontWeight": "700",
+            "padding": "3px 8px",
+            "border": "1px"
+          },
+          "error": null,
+          "direction": "ltr",
+          "focus": {
+            "outline": "3px",
+            "offset": "0px",
+            "overflow": "visible"
+          }
+        }
+      ],
+      "descriptions": [
+        {
+          "name": "Alternate row offset: exact value",
+          "invalid": "true",
+          "refs": [
+            {
+              "id": ":r1k:-precision-hint",
+              "count": 1,
+              "text": "Exact values apply on Enter or when you leave the field. Escape cancels an edit."
+            },
+            {
+              "id": "perception-offset-bounds",
+              "count": 1,
+              "text": "Range: 0 to 100% of tile. Step: 1."
+            },
+            {
+              "id": "perception-offset-error",
+              "count": 1,
+              "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed."
+            }
+          ]
+        },
+        {
+          "name": "Mortar width: exact value",
+          "invalid": null,
+          "refs": [
+            {
+              "id": ":r1k:-precision-hint",
+              "count": 1,
+              "text": "Exact values apply on Enter or when you leave the field. Escape cancels an edit."
+            },
+            {
+              "id": "perception-mortar-bounds",
+              "count": 1,
+              "text": "Range: 1 to 14 units. Step: 1."
+            }
+          ]
+        }
+      ],
+      "forcedTextContrast": [],
+      "axe": []
+    },
+    {
+      "layout": {
+        "width": 320,
+        "font": 32,
+        "suffix": "320-200"
+      },
+      "geometry": {
+        "viewport": 320,
+        "scroll": 320,
+        "cards": [
+          {
+            "key": "offset",
+            "box": {
+              "left": 33,
+              "right": 287,
+              "top": 364.59375,
+              "bottom": 1099.59375,
+              "width": 254,
+              "height": 735,
+              "scroll": 252,
+              "client": 252
+            },
+            "texts": [
+              {
+                "text": "Alternate row offset",
+                "left": 46,
+                "right": 226.953125,
+                "top": 379.59375,
+                "bottom": 416.59375
+              },
+              {
+                "text": "Alternate row offset",
+                "left": 46,
+                "right": 122.53125,
+                "top": 421.59375,
+                "bottom": 458.59375
+              },
+              {
+                "text": "50% of tile",
+                "left": 55,
+                "right": 196.328125,
+                "top": 475.59375,
+                "bottom": 512.59375
+              },
+              {
+                "text": "% of tile",
+                "left": 182.8125,
+                "right": 234.59375,
+                "top": 576.59375,
+                "bottom": 611.59375
+              },
+              {
+                "text": "% of tile",
+                "left": 182.8125,
+                "right": 217.828125,
+                "top": 615.59375,
+                "bottom": 650.59375
+              },
+              {
+                "text": "Reset",
+                "left": 125.671875,
+                "right": 194.3125,
+                "top": 671.59375,
+                "bottom": 708.59375
+              },
+              {
+                "text": "Range: 0 to 100% of tile. Step: 1.",
+                "left": 46,
+                "right": 259.5,
+                "top": 732.59375,
+                "bottom": 764.59375
+              },
+              {
+                "text": "Range: 0 to 100% of tile. Step: 1.",
+                "left": 46,
+                "right": 166.78125,
+                "top": 768.59375,
+                "bottom": 800.59375
+              },
+              {
+                "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed.",
+                "left": 61,
+                "right": 233,
+                "top": 825.59375,
+                "bottom": 862.59375
+              },
+              {
+                "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed.",
+                "left": 61,
+                "right": 235.375,
+                "top": 867.59375,
+                "bottom": 904.59375
+              },
+              {
+                "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed.",
+                "left": 61,
+                "right": 217.328125,
+                "top": 909.59375,
+                "bottom": 946.59375
+              },
+              {
+                "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed.",
+                "left": 61,
+                "right": 213.65625,
+                "top": 951.59375,
+                "bottom": 988.59375
+              },
+              {
+                "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed.",
+                "left": 61,
+                "right": 152.390625,
+                "top": 993.59375,
+                "bottom": 1030.59375
+              },
+              {
+                "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed.",
+                "left": 61,
+                "right": 173.5625,
+                "top": 1035.59375,
+                "bottom": 1072.59375
+              }
+            ],
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "range",
+                "text": "Alternate row offset",
+                "left": 46,
+                "right": 274,
+                "top": 519.59375,
+                "bottom": 563.59375,
+                "width": 228,
+                "height": 44,
+                "scroll": 228,
+                "client": 228
+              },
+              {
+                "tag": "INPUT",
+                "type": "number",
+                "text": "Alternate row offset: exact value",
+                "left": 46,
+                "right": 174.8125,
+                "top": 582.59375,
+                "bottom": 644.59375,
+                "width": 128.8125,
+                "height": 62,
+                "scroll": 125,
+                "client": 125
+              },
+              {
+                "tag": "BUTTON",
+                "type": "button",
+                "text": "Reset Alternate row offset",
+                "left": 46,
+                "right": 274,
+                "top": 660.59375,
+                "bottom": 720.59375,
+                "width": 228,
+                "height": 60,
+                "scroll": 226,
+                "client": 226
+              }
+            ],
+            "precision": {
+              "left": 46,
+              "right": 274,
+              "top": 574.59375,
+              "bottom": 652.59375,
+              "width": 228,
+              "height": 78,
+              "scroll": 228,
+              "client": 228
+            },
+            "unit": {
+              "left": 182.8125,
+              "right": 274,
+              "top": 574.59375,
+              "bottom": 652.59375,
+              "width": 91.1875,
+              "height": 78,
+              "scroll": 91,
+              "client": 91
+            },
+            "number": {
+              "left": 46,
+              "right": 174.8125,
+              "top": 582.59375,
+              "bottom": 644.59375,
+              "width": 128.8125,
+              "height": 62,
+              "scroll": 125,
+              "client": 125
+            }
+          },
+          {
+            "key": "mortar",
+            "box": {
+              "left": 33,
+              "right": 287,
+              "top": 1115.59375,
+              "bottom": 1506.59375,
+              "width": 254,
+              "height": 391,
+              "scroll": 252,
+              "client": 252
+            },
+            "texts": [
+              {
+                "text": "Mortar width",
+                "left": 46,
+                "right": 222.078125,
+                "top": 1130.59375,
+                "bottom": 1167.59375
+              },
+              {
+                "text": "5 units",
+                "left": 55,
+                "right": 143.890625,
+                "top": 1184.59375,
+                "bottom": 1221.59375
+              },
+              {
+                "text": "units",
+                "left": 218.421875,
+                "right": 274,
+                "top": 1296.09375,
+                "bottom": 1331.09375
+              },
+              {
+                "text": "Reset",
+                "left": 125.671875,
+                "right": 194.3125,
+                "top": 1362.59375,
+                "bottom": 1399.59375
+              },
+              {
+                "text": "Range: 1 to 14 units. Step: 1.",
+                "left": 46,
+                "right": 261.84375,
+                "top": 1423.59375,
+                "bottom": 1455.59375
+              },
+              {
+                "text": "Range: 1 to 14 units. Step: 1.",
+                "left": 46,
+                "right": 122.6875,
+                "top": 1459.59375,
+                "bottom": 1491.59375
+              }
+            ],
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "range",
+                "text": "Mortar width",
+                "left": 46,
+                "right": 274,
+                "top": 1228.59375,
+                "bottom": 1272.59375,
+                "width": 228,
+                "height": 44,
+                "scroll": 228,
+                "client": 228
+              },
+              {
+                "tag": "INPUT",
+                "type": "number",
+                "text": "Mortar width: exact value",
+                "left": 46,
+                "right": 210.421875,
+                "top": 1283.59375,
+                "bottom": 1343.59375,
+                "width": 164.421875,
+                "height": 60,
+                "scroll": 162,
+                "client": 162
+              },
+              {
+                "tag": "BUTTON",
+                "type": "button",
+                "text": "Reset Mortar width",
+                "left": 46,
+                "right": 274,
+                "top": 1351.59375,
+                "bottom": 1411.59375,
+                "width": 228,
+                "height": 60,
+                "scroll": 226,
+                "client": 226
+              }
+            ],
+            "precision": {
+              "left": 46,
+              "right": 274,
+              "top": 1283.59375,
+              "bottom": 1343.59375,
+              "width": 228,
+              "height": 60,
+              "scroll": 228,
+              "client": 228
+            },
+            "unit": {
+              "left": 218.421875,
+              "right": 274,
+              "top": 1294.09375,
+              "bottom": 1333.09375,
+              "width": 55.578125,
+              "height": 39,
+              "scroll": 56,
+              "client": 56
+            },
+            "number": {
+              "left": 46,
+              "right": 210.421875,
+              "top": 1283.59375,
+              "bottom": 1343.59375,
+              "width": 164.421875,
+              "height": 60,
+              "scroll": 162,
+              "client": 162
+            }
+          }
+        ]
+      },
+      "visualMetrics": [
+        {
+          "key": "offset",
+          "numeric": {
+            "width": 128.8125,
+            "usable": 89,
+            "maxDigitValue": "100",
+            "textWidth": 45.28125,
+            "scroll": 125,
+            "client": 125
+          },
+          "badge": {
+            "background": "rgb(255, 255, 255)",
+            "fontWeight": "700",
+            "padding": "3px 8px",
+            "border": "1px"
+          },
+          "error": {
+            "left": "3px",
+            "right": "1px"
+          },
+          "direction": "ltr",
+          "focus": {
+            "outline": "3px",
+            "offset": "3px",
+            "overflow": "visible"
+          }
+        },
+        {
+          "key": "mortar",
+          "numeric": {
+            "width": 164.421875,
+            "usable": 126,
+            "maxDigitValue": "14",
+            "textWidth": 30.1875,
+            "scroll": 162,
+            "client": 162
+          },
+          "badge": {
+            "background": "rgb(255, 255, 255)",
+            "fontWeight": "700",
+            "padding": "3px 8px",
+            "border": "1px"
+          },
+          "error": null,
+          "direction": "ltr",
+          "focus": {
+            "outline": "3px",
+            "offset": "0px",
+            "overflow": "visible"
+          }
+        }
+      ],
+      "descriptions": [
+        {
+          "name": "Alternate row offset: exact value",
+          "invalid": "true",
+          "refs": [
+            {
+              "id": ":r1l:-precision-hint",
+              "count": 1,
+              "text": "Exact values apply on Enter or when you leave the field. Escape cancels an edit."
+            },
+            {
+              "id": "perception-offset-bounds",
+              "count": 1,
+              "text": "Range: 0 to 100% of tile. Step: 1."
+            },
+            {
+              "id": "perception-offset-error",
+              "count": 1,
+              "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed."
+            }
+          ]
+        },
+        {
+          "name": "Mortar width: exact value",
+          "invalid": null,
+          "refs": [
+            {
+              "id": ":r1l:-precision-hint",
+              "count": 1,
+              "text": "Exact values apply on Enter or when you leave the field. Escape cancels an edit."
+            },
+            {
+              "id": "perception-mortar-bounds",
+              "count": 1,
+              "text": "Range: 1 to 14 units. Step: 1."
+            }
+          ]
+        }
+      ],
+      "forcedTextContrast": [],
+      "axe": []
+    },
+    {
+      "layout": {
+        "width": 320,
+        "font": 32,
+        "suffix": "long-rtl-320-200",
+        "long": true
+      },
+      "geometry": {
+        "viewport": 320,
+        "scroll": 320,
+        "cards": [
+          {
+            "key": "offset",
+            "box": {
+              "left": 33,
+              "right": 287,
+              "top": -0.40625,
+              "bottom": 1016.59375,
+              "width": 254,
+              "height": 1017,
+              "scroll": 252,
+              "client": 252
+            },
+            "texts": [
+              {
+                "text": "إزاحة الصف البديل AlternateRowOffsetWithLongTranslatedWords",
+                "left": 64.5,
+                "right": 274,
+                "top": 14.59375,
+                "bottom": 51.59375
+              },
+              {
+                "text": "إزاحة الصف البديل AlternateRowOffsetWithLongTranslatedWords",
+                "left": 51.53125,
+                "right": 274,
+                "top": 56.59375,
+                "bottom": 93.59375
+              },
+              {
+                "text": "إزاحة الصف البديل AlternateRowOffsetWithLongTranslatedWords",
+                "left": 48.625,
+                "right": 274,
+                "top": 98.59375,
+                "bottom": 135.59375
+              },
+              {
+                "text": "إزاحة الصف البديل AlternateRowOffsetWithLongTranslatedWords",
+                "left": 110.1875,
+                "right": 274,
+                "top": 140.59375,
+                "bottom": 177.59375
+              },
+              {
+                "text": "50% of tile",
+                "left": 123.65625,
+                "right": 200.765625,
+                "top": 194.59375,
+                "bottom": 231.59375
+              },
+              {
+                "text": "50% of tile",
+                "left": 200.765625,
+                "right": 208.5,
+                "top": 194.59375,
+                "bottom": 231.59375
+              },
+              {
+                "text": "50% of tile",
+                "left": 208.5,
+                "right": 265,
+                "top": 194.59375,
+                "bottom": 231.59375
+              },
+              {
+                "text": "% of tile",
+                "left": 85.40625,
+                "right": 108.78125,
+                "top": 295.59375,
+                "bottom": 330.59375
+              },
+              {
+                "text": "% of tile",
+                "left": 108.78125,
+                "right": 137.1875,
+                "top": 295.59375,
+                "bottom": 330.59375
+              },
+              {
+                "text": "% of tile",
+                "left": 102.171875,
+                "right": 137.1875,
+                "top": 334.59375,
+                "bottom": 369.59375
+              },
+              {
+                "text": "إعادة الضبط ResetThisSettingCompletely",
+                "left": 88.34375,
+                "right": 231.640625,
+                "top": 390.59375,
+                "bottom": 427.59375
+              },
+              {
+                "text": "إعادة الضبط ResetThisSettingCompletely",
+                "left": 63.109375,
+                "right": 256.890625,
+                "top": 432.59375,
+                "bottom": 469.59375
+              },
+              {
+                "text": "إعادة الضبط ResetThisSettingCompletely",
+                "left": 79.390625,
+                "right": 240.609375,
+                "top": 474.59375,
+                "bottom": 511.59375
+              },
+              {
+                "text": "نطاق الإعداد RangeOfAllowedValues 0 to 100% of tile. Step: 1.",
+                "left": 151.1875,
+                "right": 274,
+                "top": 535.59375,
+                "bottom": 567.59375
+              },
+              {
+                "text": "نطاق الإعداد RangeOfAllowedValues 0 to 100% of tile. Step: 1.",
+                "left": 51.609375,
+                "right": 274,
+                "top": 571.59375,
+                "bottom": 603.59375
+              },
+              {
+                "text": "نطاق الإعداد RangeOfAllowedValues 0 to 100% of tile. Step: 1.",
+                "left": 65.71875,
+                "right": 274,
+                "top": 607.59375,
+                "bottom": 639.59375
+              },
+              {
+                "text": "نطاق الإعداد RangeOfAllowedValues 0 to 100% of tile. Step: 1.",
+                "left": 197.3125,
+                "right": 202.515625,
+                "top": 643.59375,
+                "bottom": 675.59375
+              },
+              {
+                "text": "نطاق الإعداد RangeOfAllowedValues 0 to 100% of tile. Step: 1.",
+                "left": 202.515625,
+                "right": 274,
+                "top": 643.59375,
+                "bottom": 675.59375
+              },
+              {
+                "text": "استخدم قيمة ضمن النطاق UseAValueBetween 0 and 100 withStep 1. TheDrawingHasNotChanged.",
+                "left": 111.046875,
+                "right": 259,
+                "top": 700.59375,
+                "bottom": 737.59375
+              },
+              {
+                "text": "استخدم قيمة ضمن النطاق UseAValueBetween 0 and 100 withStep 1. TheDrawingHasNotChanged.",
+                "left": 111.046875,
+                "right": 259,
+                "top": 742.59375,
+                "bottom": 779.59375
+              },
+              {
+                "text": "استخدم قيمة ضمن النطاق UseAValueBetween 0 and 100 withStep 1. TheDrawingHasNotChanged.",
+                "left": 69.8125,
+                "right": 259,
+                "top": 784.59375,
+                "bottom": 821.59375
+              },
+              {
+                "text": "استخدم قيمة ضمن النطاق UseAValueBetween 0 and 100 withStep 1. TheDrawingHasNotChanged.",
+                "left": 83.890625,
+                "right": 259,
+                "top": 826.59375,
+                "bottom": 863.59375
+              },
+              {
+                "text": "استخدم قيمة ضمن النطاق UseAValueBetween 0 and 100 withStep 1. TheDrawingHasNotChanged.",
+                "left": 123.25,
+                "right": 259,
+                "top": 868.59375,
+                "bottom": 905.59375
+              },
+              {
+                "text": "استخدم قيمة ضمن النطاق UseAValueBetween 0 and 100 withStep 1. TheDrawingHasNotChanged.",
+                "left": 64.859375,
+                "right": 259,
+                "top": 910.59375,
+                "bottom": 947.59375
+              },
+              {
+                "text": "استخدم قيمة ضمن النطاق UseAValueBetween 0 and 100 withStep 1. TheDrawingHasNotChanged.",
+                "left": 95.1875,
+                "right": 101.265625,
+                "top": 952.59375,
+                "bottom": 989.59375
+              },
+              {
+                "text": "استخدم قيمة ضمن النطاق UseAValueBetween 0 and 100 withStep 1. TheDrawingHasNotChanged.",
+                "left": 101.265625,
+                "right": 259,
+                "top": 952.59375,
+                "bottom": 989.59375
+              }
+            ],
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "range",
+                "text": "إزاحة الصف البديل AlternateRowOffsetWithLongTranslatedWords",
+                "left": 46,
+                "right": 274,
+                "top": 238.59375,
+                "bottom": 282.59375,
+                "width": 228,
+                "height": 44,
+                "scroll": 228,
+                "client": 228
+              },
+              {
+                "tag": "INPUT",
+                "type": "number",
+                "text": "إزاحة الصف البديل AlternateRowOffsetWithLongTranslatedWords: exact value",
+                "left": 145.1875,
+                "right": 274,
+                "top": 301.59375,
+                "bottom": 363.59375,
+                "width": 128.8125,
+                "height": 62,
+                "scroll": 125,
+                "client": 125
+              },
+              {
+                "tag": "BUTTON",
+                "type": "button",
+                "text": "Reset إزاحة الصف البديل AlternateRowOffsetWithLongTranslatedWords",
+                "left": 46,
+                "right": 274,
+                "top": 379.59375,
+                "bottom": 523.59375,
+                "width": 228,
+                "height": 144,
+                "scroll": 226,
+                "client": 226
+              }
+            ],
+            "precision": {
+              "left": 46,
+              "right": 274,
+              "top": 293.59375,
+              "bottom": 371.59375,
+              "width": 228,
+              "height": 78,
+              "scroll": 228,
+              "client": 228
+            },
+            "unit": {
+              "left": 46,
+              "right": 137.1875,
+              "top": 293.59375,
+              "bottom": 371.59375,
+              "width": 91.1875,
+              "height": 78,
+              "scroll": 91,
+              "client": 91
+            },
+            "number": {
+              "left": 145.1875,
+              "right": 274,
+              "top": 301.59375,
+              "bottom": 363.59375,
+              "width": 128.8125,
+              "height": 62,
+              "scroll": 125,
+              "client": 125
+            }
+          },
+          {
+            "key": "mortar",
+            "box": {
+              "left": 33,
+              "right": 287,
+              "top": 1032.59375,
+              "bottom": 1705.59375,
+              "width": 254,
+              "height": 673,
+              "scroll": 252,
+              "client": 252
+            },
+            "texts": [
+              {
+                "text": "عرض الفاصل MortarWidthWithLongTranslatedWords",
+                "left": 118.953125,
+                "right": 274,
+                "top": 1047.59375,
+                "bottom": 1084.59375
+              },
+              {
+                "text": "عرض الفاصل MortarWidthWithLongTranslatedWords",
+                "left": 52.84375,
+                "right": 274,
+                "top": 1089.59375,
+                "bottom": 1126.59375
+              },
+              {
+                "text": "عرض الفاصل MortarWidthWithLongTranslatedWords",
+                "left": 55.359375,
+                "right": 274,
+                "top": 1131.59375,
+                "bottom": 1168.59375
+              },
+              {
+                "text": "عرض الفاصل MortarWidthWithLongTranslatedWords",
+                "left": 188.796875,
+                "right": 274,
+                "top": 1173.59375,
+                "bottom": 1210.59375
+              },
+              {
+                "text": "5 units",
+                "left": 176.09375,
+                "right": 241.15625,
+                "top": 1227.59375,
+                "bottom": 1264.59375
+              },
+              {
+                "text": "5 units",
+                "left": 241.15625,
+                "right": 248.890625,
+                "top": 1227.59375,
+                "bottom": 1264.59375
+              },
+              {
+                "text": "5 units",
+                "left": 248.890625,
+                "right": 265,
+                "top": 1227.59375,
+                "bottom": 1264.59375
+              },
+              {
+                "text": "units",
+                "left": 46,
+                "right": 101.578125,
+                "top": 1339.09375,
+                "bottom": 1374.09375
+              },
+              {
+                "text": "إعادة الضبط ResetThisSettingCompletely",
+                "left": 88.34375,
+                "right": 231.640625,
+                "top": 1405.59375,
+                "bottom": 1442.59375
+              },
+              {
+                "text": "إعادة الضبط ResetThisSettingCompletely",
+                "left": 63.109375,
+                "right": 256.890625,
+                "top": 1447.59375,
+                "bottom": 1484.59375
+              },
+              {
+                "text": "إعادة الضبط ResetThisSettingCompletely",
+                "left": 79.390625,
+                "right": 240.609375,
+                "top": 1489.59375,
+                "bottom": 1526.59375
+              },
+              {
+                "text": "نطاق الإعداد RangeOfAllowedValues 1 to 14 units. Step: 1.",
+                "left": 151.1875,
+                "right": 274,
+                "top": 1550.59375,
+                "bottom": 1582.59375
+              },
+              {
+                "text": "نطاق الإعداد RangeOfAllowedValues 1 to 14 units. Step: 1.",
+                "left": 51.609375,
+                "right": 274,
+                "top": 1586.59375,
+                "bottom": 1618.59375
+              },
+              {
+                "text": "نطاق الإعداد RangeOfAllowedValues 1 to 14 units. Step: 1.",
+                "left": 48.90625,
+                "right": 274,
+                "top": 1622.59375,
+                "bottom": 1654.59375
+              },
+              {
+                "text": "نطاق الإعداد RangeOfAllowedValues 1 to 14 units. Step: 1.",
+                "left": 255.859375,
+                "right": 261.0625,
+                "top": 1658.59375,
+                "bottom": 1690.59375
+              },
+              {
+                "text": "نطاق الإعداد RangeOfAllowedValues 1 to 14 units. Step: 1.",
+                "left": 261.0625,
+                "right": 274,
+                "top": 1658.59375,
+                "bottom": 1690.59375
+              }
+            ],
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "range",
+                "text": "عرض الفاصل MortarWidthWithLongTranslatedWords",
+                "left": 46,
+                "right": 274,
+                "top": 1271.59375,
+                "bottom": 1315.59375,
+                "width": 228,
+                "height": 44,
+                "scroll": 228,
+                "client": 228
+              },
+              {
+                "tag": "INPUT",
+                "type": "number",
+                "text": "عرض الفاصل MortarWidthWithLongTranslatedWords: exact value",
+                "left": 109.578125,
+                "right": 274,
+                "top": 1326.59375,
+                "bottom": 1386.59375,
+                "width": 164.421875,
+                "height": 60,
+                "scroll": 162,
+                "client": 162
+              },
+              {
+                "tag": "BUTTON",
+                "type": "button",
+                "text": "Reset عرض الفاصل MortarWidthWithLongTranslatedWords",
+                "left": 46,
+                "right": 274,
+                "top": 1394.59375,
+                "bottom": 1538.59375,
+                "width": 228,
+                "height": 144,
+                "scroll": 226,
+                "client": 226
+              }
+            ],
+            "precision": {
+              "left": 46,
+              "right": 274,
+              "top": 1326.59375,
+              "bottom": 1386.59375,
+              "width": 228,
+              "height": 60,
+              "scroll": 228,
+              "client": 228
+            },
+            "unit": {
+              "left": 46,
+              "right": 101.578125,
+              "top": 1337.09375,
+              "bottom": 1376.09375,
+              "width": 55.578125,
+              "height": 39,
+              "scroll": 56,
+              "client": 56
+            },
+            "number": {
+              "left": 109.578125,
+              "right": 274,
+              "top": 1326.59375,
+              "bottom": 1386.59375,
+              "width": 164.421875,
+              "height": 60,
+              "scroll": 162,
+              "client": 162
+            }
+          }
+        ]
+      },
+      "visualMetrics": [
+        {
+          "key": "offset",
+          "numeric": {
+            "width": 128.8125,
+            "usable": 89,
+            "maxDigitValue": "100",
+            "textWidth": 45.28125,
+            "scroll": 125,
+            "client": 125
+          },
+          "badge": {
+            "background": "rgb(255, 255, 255)",
+            "fontWeight": "700",
+            "padding": "3px 8px",
+            "border": "1px"
+          },
+          "error": {
+            "left": "1px",
+            "right": "3px"
+          },
+          "direction": "rtl",
+          "focus": {
+            "outline": "3px",
+            "offset": "3px",
+            "overflow": "visible"
+          }
+        },
+        {
+          "key": "mortar",
+          "numeric": {
+            "width": 164.421875,
+            "usable": 126,
+            "maxDigitValue": "14",
+            "textWidth": 30.1875,
+            "scroll": 162,
+            "client": 162
+          },
+          "badge": {
+            "background": "rgb(255, 255, 255)",
+            "fontWeight": "700",
+            "padding": "3px 8px",
+            "border": "1px"
+          },
+          "error": null,
+          "direction": "rtl",
+          "focus": {
+            "outline": "3px",
+            "offset": "0px",
+            "overflow": "visible"
+          }
+        }
+      ],
+      "descriptions": [
+        {
+          "name": "إزاحة الصف البديل AlternateRowOffsetWithLongTranslatedWords: exact value",
+          "invalid": "true",
+          "refs": [
+            {
+              "id": ":r1m:-precision-hint",
+              "count": 1,
+              "text": "Exact values apply on Enter or when you leave the field. Escape cancels an edit."
+            },
+            {
+              "id": "perception-offset-bounds",
+              "count": 1,
+              "text": "نطاق الإعداد RangeOfAllowedValues 0 to 100% of tile. Step: 1."
+            },
+            {
+              "id": "perception-offset-error",
+              "count": 1,
+              "text": "استخدم قيمة ضمن النطاق UseAValueBetween 0 and 100 withStep 1. TheDrawingHasNotChanged."
+            }
+          ]
+        },
+        {
+          "name": "عرض الفاصل MortarWidthWithLongTranslatedWords: exact value",
+          "invalid": null,
+          "refs": [
+            {
+              "id": ":r1m:-precision-hint",
+              "count": 1,
+              "text": "Exact values apply on Enter or when you leave the field. Escape cancels an edit."
+            },
+            {
+              "id": "perception-mortar-bounds",
+              "count": 1,
+              "text": "نطاق الإعداد RangeOfAllowedValues 1 to 14 units. Step: 1."
+            }
+          ]
+        }
+      ],
+      "forcedTextContrast": [],
+      "axe": []
+    },
+    {
+      "layout": {
+        "width": 390,
+        "font": 16,
+        "suffix": "dark",
+        "theme": "dark"
+      },
+      "geometry": {
+        "viewport": 390,
+        "scroll": 390,
+        "cards": [
+          {
+            "key": "offset",
+            "box": {
+              "left": 45,
+              "right": 345,
+              "top": -0.046875,
+              "bottom": 255.953125,
+              "width": 300,
+              "height": 256,
+              "scroll": 298,
+              "client": 298
+            },
+            "texts": [
+              {
+                "text": "Alternate row offset",
+                "left": 58,
+                "right": 190.609375,
+                "top": 13.953125,
+                "bottom": 32.953125
+              },
+              {
+                "text": "50% of tile",
+                "left": 252.328125,
+                "right": 323,
+                "top": 17.953125,
+                "bottom": 36.953125
+              },
+              {
+                "text": "% of tile",
+                "left": 194.484375,
+                "right": 241.4375,
+                "top": 110.203125,
+                "bottom": 127.203125
+              },
+              {
+                "text": "Reset",
+                "left": 273.546875,
+                "right": 307.875,
+                "top": 109.453125,
+                "bottom": 128.453125
+              },
+              {
+                "text": "Range: 0 to 100% of tile. Step: 1.",
+                "left": 58,
+                "right": 228.421875,
+                "top": 151.953125,
+                "bottom": 167.953125
+              },
+              {
+                "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed.",
+                "left": 73,
+                "right": 317.609375,
+                "top": 190.953125,
+                "bottom": 209.953125
+              },
+              {
+                "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed.",
+                "left": 73,
+                "right": 273.390625,
+                "top": 211.953125,
+                "bottom": 230.953125
+              }
+            ],
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "range",
+                "text": "Alternate row offset",
+                "left": 58,
+                "right": 332,
+                "top": 41.953125,
+                "bottom": 85.953125,
+                "width": 274,
+                "height": 44,
+                "scroll": 274,
+                "client": 274
+              },
+              {
+                "tag": "INPUT",
+                "type": "number",
+                "text": "Alternate row offset: exact value",
+                "left": 58,
+                "right": 186.484375,
+                "top": 96.953125,
+                "bottom": 140.953125,
+                "width": 128.484375,
+                "height": 44,
+                "scroll": 124,
+                "client": 124
+              },
+              {
+                "tag": "BUTTON",
+                "type": "button",
+                "text": "Reset Alternate row offset",
+                "left": 249.4375,
+                "right": 331.984375,
+                "top": 96.953125,
+                "bottom": 140.953125,
+                "width": 82.546875,
+                "height": 44,
+                "scroll": 81,
+                "client": 81
+              }
+            ],
+            "precision": {
+              "left": 58,
+              "right": 241.4375,
+              "top": 96.953125,
+              "bottom": 140.953125,
+              "width": 183.4375,
+              "height": 44,
+              "scroll": 183,
+              "client": 183
+            },
+            "unit": {
+              "left": 194.484375,
+              "right": 241.4375,
+              "top": 109.203125,
+              "bottom": 128.703125,
+              "width": 46.953125,
+              "height": 19.5,
+              "scroll": 47,
+              "client": 47
+            },
+            "number": {
+              "left": 58,
+              "right": 186.484375,
+              "top": 96.953125,
+              "bottom": 140.953125,
+              "width": 128.484375,
+              "height": 44,
+              "scroll": 124,
+              "client": 124
+            }
+          },
+          {
+            "key": "mortar",
+            "box": {
+              "left": 45,
+              "right": 345,
+              "top": 271.953125,
+              "bottom": 453.953125,
+              "width": 300,
+              "height": 182,
+              "scroll": 298,
+              "client": 298
+            },
+            "texts": [
+              {
+                "text": "Mortar width",
+                "left": 58,
+                "right": 146.046875,
+                "top": 285.953125,
+                "bottom": 304.953125
+              },
+              {
+                "text": "5 units",
+                "left": 278.546875,
+                "right": 323,
+                "top": 289.953125,
+                "bottom": 308.953125
+              },
+              {
+                "text": "units",
+                "left": 213.640625,
+                "right": 241.4375,
+                "top": 382.203125,
+                "bottom": 399.203125
+              },
+              {
+                "text": "Reset",
+                "left": 273.546875,
+                "right": 307.875,
+                "top": 381.453125,
+                "bottom": 400.453125
+              },
+              {
+                "text": "Range: 1 to 14 units. Step: 1.",
+                "left": 58,
+                "right": 207.5625,
+                "top": 423.953125,
+                "bottom": 439.953125
+              }
+            ],
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "range",
+                "text": "Mortar width",
+                "left": 58,
+                "right": 332,
+                "top": 313.953125,
+                "bottom": 357.953125,
+                "width": 274,
+                "height": 44,
+                "scroll": 274,
+                "client": 274
+              },
+              {
+                "tag": "INPUT",
+                "type": "number",
+                "text": "Mortar width: exact value",
+                "left": 58,
+                "right": 205.640625,
+                "top": 368.953125,
+                "bottom": 412.953125,
+                "width": 147.640625,
+                "height": 44,
+                "scroll": 146,
+                "client": 146
+              },
+              {
+                "tag": "BUTTON",
+                "type": "button",
+                "text": "Reset Mortar width",
+                "left": 249.4375,
+                "right": 331.984375,
+                "top": 368.953125,
+                "bottom": 412.953125,
+                "width": 82.546875,
+                "height": 44,
+                "scroll": 81,
+                "client": 81
+              }
+            ],
+            "precision": {
+              "left": 58,
+              "right": 241.4375,
+              "top": 368.953125,
+              "bottom": 412.953125,
+              "width": 183.4375,
+              "height": 44,
+              "scroll": 183,
+              "client": 183
+            },
+            "unit": {
+              "left": 213.640625,
+              "right": 241.4375,
+              "top": 381.203125,
+              "bottom": 400.703125,
+              "width": 27.796875,
+              "height": 19.5,
+              "scroll": 28,
+              "client": 28
+            },
+            "number": {
+              "left": 58,
+              "right": 205.640625,
+              "top": 368.953125,
+              "bottom": 412.953125,
+              "width": 147.640625,
+              "height": 44,
+              "scroll": 146,
+              "client": 146
+            }
+          }
+        ]
+      },
+      "visualMetrics": [
+        {
+          "key": "offset",
+          "numeric": {
+            "width": 128.484375,
+            "usable": 88,
+            "maxDigitValue": "100",
+            "textWidth": 22.640625,
+            "scroll": 124,
+            "client": 124
+          },
+          "badge": {
+            "background": "rgb(24, 52, 71)",
+            "fontWeight": "700",
+            "padding": "3px 8px",
+            "border": "1px"
+          },
+          "error": {
+            "left": "3px",
+            "right": "1px"
+          },
+          "direction": "ltr",
+          "focus": {
+            "outline": "3px",
+            "offset": "3px",
+            "overflow": "visible"
+          }
+        },
+        {
+          "key": "mortar",
+          "numeric": {
+            "width": 147.640625,
+            "usable": 110,
+            "maxDigitValue": "14",
+            "textWidth": 15.09375,
+            "scroll": 146,
+            "client": 146
+          },
+          "badge": {
+            "background": "rgb(24, 52, 71)",
+            "fontWeight": "700",
+            "padding": "3px 8px",
+            "border": "1px"
+          },
+          "error": null,
+          "direction": "ltr",
+          "focus": {
+            "outline": "3px",
+            "offset": "0px",
+            "overflow": "visible"
+          }
+        }
+      ],
+      "descriptions": [
+        {
+          "name": "Alternate row offset: exact value",
+          "invalid": "true",
+          "refs": [
+            {
+              "id": ":r1n:-precision-hint",
+              "count": 1,
+              "text": "Exact values apply on Enter or when you leave the field. Escape cancels an edit."
+            },
+            {
+              "id": "perception-offset-bounds",
+              "count": 1,
+              "text": "Range: 0 to 100% of tile. Step: 1."
+            },
+            {
+              "id": "perception-offset-error",
+              "count": 1,
+              "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed."
+            }
+          ]
+        },
+        {
+          "name": "Mortar width: exact value",
+          "invalid": null,
+          "refs": [
+            {
+              "id": ":r1n:-precision-hint",
+              "count": 1,
+              "text": "Exact values apply on Enter or when you leave the field. Escape cancels an edit."
+            },
+            {
+              "id": "perception-mortar-bounds",
+              "count": 1,
+              "text": "Range: 1 to 14 units. Step: 1."
+            }
+          ]
+        }
+      ],
+      "forcedTextContrast": [],
+      "axe": []
+    },
+    {
+      "layout": {
+        "width": 390,
+        "font": 16,
+        "suffix": "contrast",
+        "theme": "contrast"
+      },
+      "geometry": {
+        "viewport": 390,
+        "scroll": 390,
+        "cards": [
+          {
+            "key": "offset",
+            "box": {
+              "left": 33,
+              "right": 357,
+              "top": 0.34375,
+              "bottom": 256.34375,
+              "width": 324,
+              "height": 256,
+              "scroll": 322,
+              "client": 322
+            },
+            "texts": [
+              {
+                "text": "Alternate row offset",
+                "left": 46,
+                "right": 178.609375,
+                "top": 14.34375,
+                "bottom": 33.34375
+              },
+              {
+                "text": "50% of tile",
+                "left": 264.328125,
+                "right": 335,
+                "top": 18.34375,
+                "bottom": 37.34375
+              },
+              {
+                "text": "% of tile",
+                "left": 199.046875,
+                "right": 246,
+                "top": 110.59375,
+                "bottom": 127.59375
+              },
+              {
+                "text": "Reset",
+                "left": 281.828125,
+                "right": 316.15625,
+                "top": 109.84375,
+                "bottom": 128.84375
+              },
+              {
+                "text": "Range: 0 to 100% of tile. Step: 1.",
+                "left": 46,
+                "right": 216.421875,
+                "top": 152.34375,
+                "bottom": 168.34375
+              },
+              {
+                "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed.",
+                "left": 61,
+                "right": 320.015625,
+                "top": 191.34375,
+                "bottom": 210.34375
+              },
+              {
+                "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed.",
+                "left": 61,
+                "right": 246.96875,
+                "top": 212.34375,
+                "bottom": 231.34375
+              }
+            ],
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "range",
+                "text": "Alternate row offset",
+                "left": 46,
+                "right": 344,
+                "top": 42.34375,
+                "bottom": 86.34375,
+                "width": 298,
+                "height": 44,
+                "scroll": 298,
+                "client": 298
+              },
+              {
+                "tag": "INPUT",
+                "type": "number",
+                "text": "Alternate row offset: exact value",
+                "left": 46,
+                "right": 191.046875,
+                "top": 97.34375,
+                "bottom": 141.34375,
+                "width": 145.046875,
+                "height": 44,
+                "scroll": 141,
+                "client": 141
+              },
+              {
+                "tag": "BUTTON",
+                "type": "button",
+                "text": "Reset Alternate row offset",
+                "left": 254,
+                "right": 344,
+                "top": 97.34375,
+                "bottom": 141.34375,
+                "width": 90,
+                "height": 44,
+                "scroll": 88,
+                "client": 88
+              }
+            ],
+            "precision": {
+              "left": 46,
+              "right": 246,
+              "top": 97.34375,
+              "bottom": 141.34375,
+              "width": 200,
+              "height": 44,
+              "scroll": 200,
+              "client": 200
+            },
+            "unit": {
+              "left": 199.046875,
+              "right": 246,
+              "top": 109.59375,
+              "bottom": 129.09375,
+              "width": 46.953125,
+              "height": 19.5,
+              "scroll": 47,
+              "client": 47
+            },
+            "number": {
+              "left": 46,
+              "right": 191.046875,
+              "top": 97.34375,
+              "bottom": 141.34375,
+              "width": 145.046875,
+              "height": 44,
+              "scroll": 141,
+              "client": 141
+            }
+          },
+          {
+            "key": "mortar",
+            "box": {
+              "left": 33,
+              "right": 357,
+              "top": 272.34375,
+              "bottom": 454.34375,
+              "width": 324,
+              "height": 182,
+              "scroll": 322,
+              "client": 322
+            },
+            "texts": [
+              {
+                "text": "Mortar width",
+                "left": 46,
+                "right": 134.046875,
+                "top": 286.34375,
+                "bottom": 305.34375
+              },
+              {
+                "text": "5 units",
+                "left": 290.546875,
+                "right": 335,
+                "top": 290.34375,
+                "bottom": 309.34375
+              },
+              {
+                "text": "units",
+                "left": 218.203125,
+                "right": 246,
+                "top": 382.59375,
+                "bottom": 399.59375
+              },
+              {
+                "text": "Reset",
+                "left": 281.828125,
+                "right": 316.15625,
+                "top": 381.84375,
+                "bottom": 400.84375
+              },
+              {
+                "text": "Range: 1 to 14 units. Step: 1.",
+                "left": 46,
+                "right": 195.5625,
+                "top": 424.34375,
+                "bottom": 440.34375
+              }
+            ],
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "range",
+                "text": "Mortar width",
+                "left": 46,
+                "right": 344,
+                "top": 314.34375,
+                "bottom": 358.34375,
+                "width": 298,
+                "height": 44,
+                "scroll": 298,
+                "client": 298
+              },
+              {
+                "tag": "INPUT",
+                "type": "number",
+                "text": "Mortar width: exact value",
+                "left": 46,
+                "right": 210.203125,
+                "top": 369.34375,
+                "bottom": 413.34375,
+                "width": 164.203125,
+                "height": 44,
+                "scroll": 162,
+                "client": 162
+              },
+              {
+                "tag": "BUTTON",
+                "type": "button",
+                "text": "Reset Mortar width",
+                "left": 254,
+                "right": 344,
+                "top": 369.34375,
+                "bottom": 413.34375,
+                "width": 90,
+                "height": 44,
+                "scroll": 88,
+                "client": 88
+              }
+            ],
+            "precision": {
+              "left": 46,
+              "right": 246,
+              "top": 369.34375,
+              "bottom": 413.34375,
+              "width": 200,
+              "height": 44,
+              "scroll": 200,
+              "client": 200
+            },
+            "unit": {
+              "left": 218.203125,
+              "right": 246,
+              "top": 381.59375,
+              "bottom": 401.09375,
+              "width": 27.796875,
+              "height": 19.5,
+              "scroll": 28,
+              "client": 28
+            },
+            "number": {
+              "left": 46,
+              "right": 210.203125,
+              "top": 369.34375,
+              "bottom": 413.34375,
+              "width": 164.203125,
+              "height": 44,
+              "scroll": 162,
+              "client": 162
+            }
+          }
+        ]
+      },
+      "visualMetrics": [
+        {
+          "key": "offset",
+          "numeric": {
+            "width": 145.046875,
+            "usable": 105,
+            "maxDigitValue": "100",
+            "textWidth": 22.640625,
+            "scroll": 141,
+            "client": 141
+          },
+          "badge": {
+            "background": "rgb(0, 0, 0)",
+            "fontWeight": "700",
+            "padding": "3px 8px",
+            "border": "1px"
+          },
+          "error": {
+            "left": "3px",
+            "right": "1px"
+          },
+          "direction": "ltr",
+          "focus": {
+            "outline": "3px",
+            "offset": "3px",
+            "overflow": "visible"
+          }
+        },
+        {
+          "key": "mortar",
+          "numeric": {
+            "width": 164.203125,
+            "usable": 126,
+            "maxDigitValue": "14",
+            "textWidth": 15.09375,
+            "scroll": 162,
+            "client": 162
+          },
+          "badge": {
+            "background": "rgb(0, 0, 0)",
+            "fontWeight": "700",
+            "padding": "3px 8px",
+            "border": "1px"
+          },
+          "error": null,
+          "direction": "ltr",
+          "focus": {
+            "outline": "3px",
+            "offset": "0px",
+            "overflow": "visible"
+          }
+        }
+      ],
+      "descriptions": [
+        {
+          "name": "Alternate row offset: exact value",
+          "invalid": "true",
+          "refs": [
+            {
+              "id": ":r1o:-precision-hint",
+              "count": 1,
+              "text": "Exact values apply on Enter or when you leave the field. Escape cancels an edit."
+            },
+            {
+              "id": "perception-offset-bounds",
+              "count": 1,
+              "text": "Range: 0 to 100% of tile. Step: 1."
+            },
+            {
+              "id": "perception-offset-error",
+              "count": 1,
+              "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed."
+            }
+          ]
+        },
+        {
+          "name": "Mortar width: exact value",
+          "invalid": null,
+          "refs": [
+            {
+              "id": ":r1o:-precision-hint",
+              "count": 1,
+              "text": "Exact values apply on Enter or when you leave the field. Escape cancels an edit."
+            },
+            {
+              "id": "perception-mortar-bounds",
+              "count": 1,
+              "text": "Range: 1 to 14 units. Step: 1."
+            }
+          ]
+        }
+      ],
+      "forcedTextContrast": [],
+      "axe": []
+    },
+    {
+      "layout": {
+        "width": 390,
+        "font": 16,
+        "suffix": "forced",
+        "theme": "forced"
+      },
+      "geometry": {
+        "viewport": 390,
+        "scroll": 390,
+        "cards": [
+          {
+            "key": "offset",
+            "box": {
+              "left": 33,
+              "right": 357,
+              "top": 0.34375,
+              "bottom": 256.34375,
+              "width": 324,
+              "height": 256,
+              "scroll": 322,
+              "client": 322
+            },
+            "texts": [
+              {
+                "text": "Alternate row offset",
+                "left": 46,
+                "right": 178.609375,
+                "top": 14.34375,
+                "bottom": 33.34375
+              },
+              {
+                "text": "50% of tile",
+                "left": 264.328125,
+                "right": 335,
+                "top": 18.34375,
+                "bottom": 37.34375
+              },
+              {
+                "text": "% of tile",
+                "left": 199.046875,
+                "right": 246,
+                "top": 110.59375,
+                "bottom": 127.59375
+              },
+              {
+                "text": "Reset",
+                "left": 281.828125,
+                "right": 316.15625,
+                "top": 109.84375,
+                "bottom": 128.84375
+              },
+              {
+                "text": "Range: 0 to 100% of tile. Step: 1.",
+                "left": 46,
+                "right": 216.421875,
+                "top": 152.34375,
+                "bottom": 168.34375
+              },
+              {
+                "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed.",
+                "left": 61,
+                "right": 320.015625,
+                "top": 191.34375,
+                "bottom": 210.34375
+              },
+              {
+                "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed.",
+                "left": 61,
+                "right": 246.96875,
+                "top": 212.34375,
+                "bottom": 231.34375
+              }
+            ],
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "range",
+                "text": "Alternate row offset",
+                "left": 46,
+                "right": 344,
+                "top": 42.34375,
+                "bottom": 86.34375,
+                "width": 298,
+                "height": 44,
+                "scroll": 298,
+                "client": 298
+              },
+              {
+                "tag": "INPUT",
+                "type": "number",
+                "text": "Alternate row offset: exact value",
+                "left": 46,
+                "right": 191.046875,
+                "top": 97.34375,
+                "bottom": 141.34375,
+                "width": 145.046875,
+                "height": 44,
+                "scroll": 141,
+                "client": 141
+              },
+              {
+                "tag": "BUTTON",
+                "type": "button",
+                "text": "Reset Alternate row offset",
+                "left": 254,
+                "right": 344,
+                "top": 97.34375,
+                "bottom": 141.34375,
+                "width": 90,
+                "height": 44,
+                "scroll": 88,
+                "client": 88
+              }
+            ],
+            "precision": {
+              "left": 46,
+              "right": 246,
+              "top": 97.34375,
+              "bottom": 141.34375,
+              "width": 200,
+              "height": 44,
+              "scroll": 200,
+              "client": 200
+            },
+            "unit": {
+              "left": 199.046875,
+              "right": 246,
+              "top": 109.59375,
+              "bottom": 129.09375,
+              "width": 46.953125,
+              "height": 19.5,
+              "scroll": 47,
+              "client": 47
+            },
+            "number": {
+              "left": 46,
+              "right": 191.046875,
+              "top": 97.34375,
+              "bottom": 141.34375,
+              "width": 145.046875,
+              "height": 44,
+              "scroll": 141,
+              "client": 141
+            }
+          },
+          {
+            "key": "mortar",
+            "box": {
+              "left": 33,
+              "right": 357,
+              "top": 272.34375,
+              "bottom": 454.34375,
+              "width": 324,
+              "height": 182,
+              "scroll": 322,
+              "client": 322
+            },
+            "texts": [
+              {
+                "text": "Mortar width",
+                "left": 46,
+                "right": 134.046875,
+                "top": 286.34375,
+                "bottom": 305.34375
+              },
+              {
+                "text": "5 units",
+                "left": 290.546875,
+                "right": 335,
+                "top": 290.34375,
+                "bottom": 309.34375
+              },
+              {
+                "text": "units",
+                "left": 218.203125,
+                "right": 246,
+                "top": 382.59375,
+                "bottom": 399.59375
+              },
+              {
+                "text": "Reset",
+                "left": 281.828125,
+                "right": 316.15625,
+                "top": 381.84375,
+                "bottom": 400.84375
+              },
+              {
+                "text": "Range: 1 to 14 units. Step: 1.",
+                "left": 46,
+                "right": 195.5625,
+                "top": 424.34375,
+                "bottom": 440.34375
+              }
+            ],
+            "controls": [
+              {
+                "tag": "INPUT",
+                "type": "range",
+                "text": "Mortar width",
+                "left": 46,
+                "right": 344,
+                "top": 314.34375,
+                "bottom": 358.34375,
+                "width": 298,
+                "height": 44,
+                "scroll": 298,
+                "client": 298
+              },
+              {
+                "tag": "INPUT",
+                "type": "number",
+                "text": "Mortar width: exact value",
+                "left": 46,
+                "right": 210.203125,
+                "top": 369.34375,
+                "bottom": 413.34375,
+                "width": 164.203125,
+                "height": 44,
+                "scroll": 162,
+                "client": 162
+              },
+              {
+                "tag": "BUTTON",
+                "type": "button",
+                "text": "Reset Mortar width",
+                "left": 254,
+                "right": 344,
+                "top": 369.34375,
+                "bottom": 413.34375,
+                "width": 90,
+                "height": 44,
+                "scroll": 88,
+                "client": 88
+              }
+            ],
+            "precision": {
+              "left": 46,
+              "right": 246,
+              "top": 369.34375,
+              "bottom": 413.34375,
+              "width": 200,
+              "height": 44,
+              "scroll": 200,
+              "client": 200
+            },
+            "unit": {
+              "left": 218.203125,
+              "right": 246,
+              "top": 381.59375,
+              "bottom": 401.09375,
+              "width": 27.796875,
+              "height": 19.5,
+              "scroll": 28,
+              "client": 28
+            },
+            "number": {
+              "left": 46,
+              "right": 210.203125,
+              "top": 369.34375,
+              "bottom": 413.34375,
+              "width": 164.203125,
+              "height": 44,
+              "scroll": 162,
+              "client": 162
+            }
+          }
+        ]
+      },
+      "visualMetrics": [
+        {
+          "key": "offset",
+          "numeric": {
+            "width": 145.046875,
+            "usable": 105,
+            "maxDigitValue": "100",
+            "textWidth": 22.640625,
+            "scroll": 141,
+            "client": 141
+          },
+          "badge": {
+            "background": "rgb(255, 255, 255)",
+            "fontWeight": "700",
+            "padding": "3px 8px",
+            "border": "1px"
+          },
+          "error": {
+            "left": "3px",
+            "right": "1px"
+          },
+          "direction": "ltr",
+          "focus": {
+            "outline": "3px",
+            "offset": "3px",
+            "overflow": "visible"
+          }
+        },
+        {
+          "key": "mortar",
+          "numeric": {
+            "width": 164.203125,
+            "usable": 126,
+            "maxDigitValue": "14",
+            "textWidth": 15.09375,
+            "scroll": 162,
+            "client": 162
+          },
+          "badge": {
+            "background": "rgb(255, 255, 255)",
+            "fontWeight": "700",
+            "padding": "3px 8px",
+            "border": "1px"
+          },
+          "error": null,
+          "direction": "ltr",
+          "focus": {
+            "outline": "3px",
+            "offset": "0px",
+            "overflow": "visible"
+          }
+        }
+      ],
+      "descriptions": [
+        {
+          "name": "Alternate row offset: exact value",
+          "invalid": "true",
+          "refs": [
+            {
+              "id": ":r1p:-precision-hint",
+              "count": 1,
+              "text": "Exact values apply on Enter or when you leave the field. Escape cancels an edit."
+            },
+            {
+              "id": "perception-offset-bounds",
+              "count": 1,
+              "text": "Range: 0 to 100% of tile. Step: 1."
+            },
+            {
+              "id": "perception-offset-error",
+              "count": 1,
+              "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed."
+            }
+          ]
+        },
+        {
+          "name": "Mortar width: exact value",
+          "invalid": null,
+          "refs": [
+            {
+              "id": ":r1p:-precision-hint",
+              "count": 1,
+              "text": "Exact values apply on Enter or when you leave the field. Escape cancels an edit."
+            },
+            {
+              "id": "perception-mortar-bounds",
+              "count": 1,
+              "text": "Range: 1 to 14 units. Step: 1."
+            }
+          ]
+        }
+      ],
+      "forcedTextContrast": [
+        {
+          "scheme": "light",
+          "text": "Alternate row offset50% of tile",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)",
+          "ratio": 21
+        },
+        {
+          "scheme": "light",
+          "text": "50% of tile",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 21
+        },
+        {
+          "scheme": "light",
+          "text": "50",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 21
+        },
+        {
+          "scheme": "light",
+          "text": "101",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 21
+        },
+        {
+          "scheme": "light",
+          "text": "% of tile",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)",
+          "ratio": 21
+        },
+        {
+          "scheme": "light",
+          "text": "Reset",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 21
+        },
+        {
+          "scheme": "light",
+          "text": "Range: 0 to 100% of tile. Step: 1.",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)",
+          "ratio": 21
+        },
+        {
+          "scheme": "light",
+          "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed.",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 21
+        },
+        {
+          "scheme": "light",
+          "text": "Mortar width5 units",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)",
+          "ratio": 21
+        },
+        {
+          "scheme": "light",
+          "text": "5 units",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 21
+        },
+        {
+          "scheme": "light",
+          "text": "5",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 21
+        },
+        {
+          "scheme": "light",
+          "text": "5",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 21
+        },
+        {
+          "scheme": "light",
+          "text": "units",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)",
+          "ratio": 21
+        },
+        {
+          "scheme": "light",
+          "text": "Range: 1 to 14 units. Step: 1.",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)",
+          "ratio": 21
+        },
+        {
+          "scheme": "dark",
+          "text": "Alternate row offset50% of tile",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(0, 0, 0)",
+          "ratio": 21
+        },
+        {
+          "scheme": "dark",
+          "text": "50% of tile",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(0, 0, 0)",
+          "ratio": 21
+        },
+        {
+          "scheme": "dark",
+          "text": "50",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(0, 0, 0)",
+          "ratio": 21
+        },
+        {
+          "scheme": "dark",
+          "text": "101",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(0, 0, 0)",
+          "ratio": 21
+        },
+        {
+          "scheme": "dark",
+          "text": "% of tile",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(0, 0, 0)",
+          "ratio": 21
+        },
+        {
+          "scheme": "dark",
+          "text": "Reset",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(0, 0, 0)",
+          "ratio": 21
+        },
+        {
+          "scheme": "dark",
+          "text": "Range: 0 to 100% of tile. Step: 1.",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(0, 0, 0)",
+          "ratio": 21
+        },
+        {
+          "scheme": "dark",
+          "text": "Use a number from 0 to 100, in steps of 1. The drawing has not changed.",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(0, 0, 0)",
+          "ratio": 21
+        },
+        {
+          "scheme": "dark",
+          "text": "Mortar width5 units",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(0, 0, 0)",
+          "ratio": 21
+        },
+        {
+          "scheme": "dark",
+          "text": "5 units",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(0, 0, 0)",
+          "ratio": 21
+        },
+        {
+          "scheme": "dark",
+          "text": "5",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(0, 0, 0)",
+          "ratio": 21
+        },
+        {
+          "scheme": "dark",
+          "text": "5",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(0, 0, 0)",
+          "ratio": 21
+        },
+        {
+          "scheme": "dark",
+          "text": "units",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(0, 0, 0)",
+          "ratio": 21
+        },
+        {
+          "scheme": "dark",
+          "text": "Range: 1 to 14 units. Step: 1.",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(0, 0, 0)",
+          "ratio": 21
+        }
+      ],
+      "axe": []
+    }
+  ],
+  "errors": [],
+  "sourceSHA256": "c6843a06b8d247d0d3b3b52494202c3a7c9b7090fa42d13d3f13cd6ac27acd2c",
+  "loadedSourceSHA256": "c6843a06b8d247d0d3b3b52494202c3a7c9b7090fa42d13d3f13cd6ac27acd2c",
+  "finalSourceSHA256": "c6843a06b8d247d0d3b3b52494202c3a7c9b7090fa42d13d3f13cd6ac27acd2c",
+  "baselineSHA256": "7025a784e72e551be738a0b278a999fe27ca7167c61712d817200ce20aebe99a"
+}

@@ -1,0 +1,9 @@
+{
+  "completed": false,
+  "rendererHash": "255f57893385f5e0ae1a932d00f3ba8e7e98cacc8851bc6ce8985003bd025a75",
+  "manifest": null,
+  "views": [],
+  "errors": [
+    "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n404 !== 200\n"
+  ]
+}

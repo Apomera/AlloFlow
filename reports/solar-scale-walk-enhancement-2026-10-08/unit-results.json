@@ -1,0 +1,254 @@
+{
+  "success": true,
+  "aggregatedFromSeparateRuns": true,
+  "numPassedTests": 19,
+  "numTotalTests": 19,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Solar System scale walk stop guide and map views"
+          ],
+          "fullName": "Solar System scale walk stop guide and map views starts at the Sun with a common physical scale and full linear map",
+          "status": "passed",
+          "title": "starts at the Sun with a common physical scale and full linear map",
+          "duration": 24593.617299999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System scale walk stop guide and map views"
+          ],
+          "fullName": "Solar System scale walk stop guide and map views magnifies exactly Sun through Mars while preserving all nine physical measurements",
+          "status": "passed",
+          "title": "magnifies exactly Sun through Mars while preserving all nine physical measurements",
+          "duration": 26442.252000000008,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System scale walk stop guide and map views"
+          ],
+          "fullName": "Solar System scale walk stop guide and map views changes only the map setting when zooming and keeps saved evidence and other activities intact",
+          "status": "passed",
+          "title": "changes only the map setting when zooming and keeps saved evidence and other activities intact",
+          "duration": 6680.699900000007,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System scale walk stop guide and map views"
+          ],
+          "fullName": "Solar System scale walk stop guide and map views reports exact adjacent gaps, total distances and diameters for every selected stop",
+          "status": "passed",
+          "title": "reports exact adjacent gaps, total distances and diameters for every selected stop",
+          "duration": 13337.69100000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System scale walk stop guide and map views"
+          ],
+          "fullName": "Solar System scale walk stop guide and map views visits all nine stops in both directions and guards the two endpoints",
+          "status": "passed",
+          "title": "visits all nine stops in both directions and guards the two endpoints",
+          "duration": 24033.926199999987,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System scale walk stop guide and map views"
+          ],
+          "fullName": "Solar System scale walk stop guide and map views keeps inner stop selections magnified and returns to the whole map for an outer stop",
+          "status": "passed",
+          "title": "keeps inner stop selections magnified and returns to the whole map for an outer stop",
+          "duration": 1485.9765999999945,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System scale walk stop guide and map views"
+          ],
+          "fullName": "Solar System scale walk stop guide and map views explains a selected outer stop outside the inner view and offers a map-only return",
+          "status": "passed",
+          "title": "explains a selected outer stop outside the inner view and offers a map-only return",
+          "duration": 937.0045999999857,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System scale walk stop guide and map views"
+          ],
+          "fullName": "Solar System scale walk stop guide and map views falls back from malformed restored stop and map values without rewriting saved state",
+          "status": "passed",
+          "title": "falls back from malformed restored stop and map values without rewriting saved state",
+          "duration": 4828.531499999983,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System scale walk stop guide and map views"
+          ],
+          "fullName": "Solar System scale walk stop guide and map views doubles distances, diameters and the selected gap together without moving the stop or zoom",
+          "status": "passed",
+          "title": "doubles distances, diameters and the selected gap together without moving the stop or zoom",
+          "duration": 1063.5976000000082,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System scale walk stop guide and map views"
+          ],
+          "fullName": "Solar System scale walk stop guide and map views keeps a saved placement plan immutable during inspection and enables a new save after scaling",
+          "status": "passed",
+          "title": "keeps a saved placement plan immutable during inspection and enables a new save after scaling",
+          "duration": 2300.7495000000054,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1791490764595,
+      "endTime": 1791490870300.7495,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/solar_system_scale_walk_navigation.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Solar System gravity inspection chart and repeatable experiments"
+          ],
+          "fullName": "Solar System gravity inspection chart and repeatable experiments keeps results hidden and explicitly positions both objects at release before running",
+          "status": "passed",
+          "title": "keeps results hidden and explicitly positions both objects at release before running",
+          "duration": 39105.085600000006,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System gravity inspection chart and repeatable experiments"
+          ],
+          "fullName": "Solar System gravity inspection chart and repeatable experiments links the Mars inspector to quadratic common-scale curves and the elapsed-time cursor",
+          "status": "passed",
+          "title": "links the Mars inspector to quadratic common-scale curves and the elapsed-time cursor",
+          "duration": 12641.975399999996,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System gravity inspection chart and repeatable experiments"
+          ],
+          "fullName": "Solar System gravity inspection chart and repeatable experiments includes the exact Jupiter arrival and keeps the faster curve capped at the endpoint",
+          "status": "passed",
+          "title": "includes the exact Jupiter arrival and keeps the faster curve capped at the endpoint",
+          "duration": 12399.191099999996,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System gravity inspection chart and repeatable experiments"
+          ],
+          "fullName": "Solar System gravity inspection chart and repeatable experiments rejects malformed restored predictions without revealing or repairing persisted evidence",
+          "status": "passed",
+          "title": "rejects malformed restored predictions without revealing or repairing persisted evidence",
+          "duration": 11341.47960000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System gravity inspection chart and repeatable experiments"
+          ],
+          "fullName": "Solar System gravity inspection chart and repeatable experiments reopens saving after replay without changing the previously saved inspected observation",
+          "status": "passed",
+          "title": "reopens saving after replay without changing the previously saved inspected observation",
+          "duration": 3930.8402999999817,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System gravity inspection chart and repeatable experiments"
+          ],
+          "fullName": "Solar System gravity inspection chart and repeatable experiments resets only the prediction and current run while retaining settings, journal and other learning",
+          "status": "passed",
+          "title": "resets only the prediction and current run while retaining settings, journal and other learning",
+          "duration": 1657.7692000000097,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System gravity inspection chart and repeatable experiments"
+          ],
+          "fullName": "Solar System gravity inspection chart and repeatable experiments changes weight force without changing either fall curve or inspected position when mass changes",
+          "status": "passed",
+          "title": "changes weight force without changing either fall curve or inspected position when mass changes",
+          "duration": 5875.735700000019,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System gravity inspection chart and repeatable experiments"
+          ],
+          "fullName": "Solar System gravity inspection chart and repeatable experiments hides stale charts on a height change and computes fresh evidence after running again",
+          "status": "passed",
+          "title": "hides stale charts on a height change and computes fresh evidence after running again",
+          "duration": 4731.930699999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System gravity inspection chart and repeatable experiments"
+          ],
+          "fullName": "Solar System gravity inspection chart and repeatable experiments does not attach a cursor or frozen position to an inspection from another run",
+          "status": "passed",
+          "title": "does not attach a cursor or frozen position to an inspection from another run",
+          "duration": 6475.445399999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1791490986768,
+      "endTime": 1791491085257.4453,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/solar_system_gravity_inspection_chart.test.js"
+    }
+  ]
+}

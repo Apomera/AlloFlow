@@ -81,9 +81,8 @@ function provider(research) {
   return { callGemini, researchCalls, articleCalls };
 }
 
-// Keep the real public-query policy and result/grounding construction. Only the
-// outbound search transport is replaced; a missing explicit query therefore
-// hits the same policy rejection as the Canvas search bridge in production.
+// Keep both real query policies and grounding construction. Explicit research
+// uses the topic route; automatic context searches retain the public allowlist.
 function publicSearchChain() {
   const web = Object.create(window.WebSearchProvider);
   const transport = vi.fn(async () => [{
@@ -99,17 +98,18 @@ function publicSearchChain() {
     _fetchSerper: { value: transport },
   });
   const search = vi.spyOn(web, 'search');
+  const searchTopic = vi.spyOn(web, 'searchTopic');
   const calls = [];
-  const callGemini = vi.fn(async (prompt, jsonMode, useSearch, temperature, searchQuery) => {
+  const callGemini = vi.fn(async (prompt, jsonMode, useSearch, temperature, searchQuery, signal, localImage, system, searchOptions) => {
     const phase = /Research the following topic/.test(prompt) ? 'research'
       : /Write a self-contained educational article|Write the section/.test(prompt) ? 'article' : 'unexpected';
-    calls.push({ phase, prompt, useSearch, searchQuery });
+    calls.push({ phase, prompt, useSearch, searchQuery, searchOptions });
     if (phase === 'unexpected') throw new Error('Unexpected provider call in public-search fixture');
-    const result = useSearch ? await web.search(prompt, 10, searchQuery) : null;
+    const result = useSearch ? searchOptions?.intent === 'user-topic' ? await web.searchTopic(searchQuery, 10) : await web.search(prompt, 10, searchQuery) : null;
     if (useSearch && !result?.groundingMetadata?.groundingChunks?.length) throw new Error('Canvas search returned no attributable sources');
     return { text: phase === 'research' ? BRIEF : ARTICLE, groundingMetadata: result?.groundingMetadata || null };
   });
-  return { web, search, transport, calls, callGemini };
+  return { web, search, searchTopic, transport, calls, callGemini };
 }
 
 function harness(aiProvider, overrides = {}) {
@@ -154,7 +154,7 @@ async function mountPanel(h) {
       setAiStandardQuery: noop, setAiStandardRegion: noop, setIncludeSourceCitations: noop,
       setSourceCustomInstructions: noop, setSourceLength: noop, setSourceLevel: noop, setSourceTone: noop,
       setSourceTopic: h.state.setSourceTopic || noop, setSourceVocabulary: noop, setStandardInputValue: noop, setTargetStandards: noop, setUseOwnSources: noop,
-      handleGenerateSource: () => { operation = h.engine.handleGenerateSource({}, false); },
+      handleGenerateSource: () => { operation = h.engine.handleGenerateSource({}, false); return operation; },
     });
   }
   await act(async () => { mountedRoot.render(React.createElement(App)); });
@@ -162,23 +162,21 @@ async function mountPanel(h) {
 }
 
 describe('Generate Source preserves the research phase', () => {
-  it.each(['gemini', 'localai', 'ollama', 'openai', 'claude', 'custom'])('explains rejected public topics before %s search or generation starts', async backend => {
+  it.each(['gemini', 'localai', 'ollama', 'openai', 'claude', 'custom'])('researches an arbitrary explicit topic through the %s bridge', async backend => {
     const ai = publicSearchChain();
-    const generateText = vi.fn();
+    const generateText = vi.fn(async () => BRIEF);
     const h = harness(ai, {
       sourceTopic: 'How clouds form', inputText: 'Existing source',
       generatedContent: { text: 'Existing adaptation' }, activeView: 'output',
       ai: { backend, generateText }, webSearchProvider: ai.web,
     });
     await finish(h.engine.handleGenerateSource());
-    expect(h.state.error).toMatch(/supported public topic/i);
-    expect(h.state.error).toContain('Supported web-search topics');
-    expect(ai.callGemini).not.toHaveBeenCalled();
-    expect(ai.transport).not.toHaveBeenCalled();
-    expect(generateText).not.toHaveBeenCalled();
-    expect(h.state.inputText).toBe('Existing source');
-    expect(h.state.generatedContent).toEqual({ text: 'Existing adaptation' });
-    expect(h.state.activeView).toBe('output');
+    expect(h.state.error).toBeNull();
+    expect(ai.transport).toHaveBeenCalled();
+    expect(ai.transport.mock.calls.every(([query]) => query === 'How clouds form')).toBe(true);
+    expect(ai.search).not.toHaveBeenCalled();
+    expect(ai.searchTopic).toHaveBeenCalled();
+    expect(h.state.inputText).toContain('Small droplets form clouds');
     expect(h.state.isGeneratingSource).toBe(false);
   });
 
@@ -191,19 +189,15 @@ describe('Generate Source preserves the research phase', () => {
     expect(ai.articleCalls.length).toBeGreaterThan(0);
   });
 
-  it('offers the real supported topics and changes only the selected topic', async () => {
+  it('keeps arbitrary topic entry and exposes source settings without a supported-topic selector', async () => {
     const ai = provider(() => groundedBrief());
     const h = harness(ai);
     h.state.setSourceTopic = vi.fn();
     await mountPanel(h);
     const select = host.querySelector('#sourceWebTopic');
-    expect(select).not.toBeNull();
-    expect([...select.options].slice(1).map(option => option.value)).toEqual(window.WebSearchProvider.publicSearchQuery.topics);
-    await act(async () => {
-      select.value = 'water cycle';
-      select.dispatchEvent(new Event('change', { bubbles: true }));
-    });
-    expect(h.state.setSourceTopic).toHaveBeenCalledWith('water cycle');
+    expect(select).toBeNull();
+    expect(host.querySelector('button[aria-label="Research settings"]')).not.toBeNull();
+    expect(h.state.setSourceTopic).not.toHaveBeenCalled();
     expect(ai.callGemini).not.toHaveBeenCalled();
   });
 
@@ -274,7 +268,7 @@ describe('Generate Source preserves the research phase', () => {
     const ai = provider(() => { throw new Error('Cloud research should not run for local backend'); });
     const generateText = vi.fn(async () => BRIEF);
     const search = vi.fn(async () => ({ results: [] }));
-    const h = harness(ai, { ai: { backend: 'localai', generateText }, webSearchProvider: { search } });
+    const h = harness(ai, { ai: { backend: 'localai', generateText }, webSearchProvider: { searchTopic: search } });
     await finish(h.engine.handleGenerateSource({}, false));
     expect(search).toHaveBeenCalled();
     expect(generateText).not.toHaveBeenCalled();
@@ -299,12 +293,26 @@ describe('Generate Source preserves the research phase', () => {
     expect(h.state.error).toBeNull();
     expect(h.state.inputText).toContain('Small droplets form clouds');
   });
+  it('research disabled overrides stale web, document, URL and reviewed-source settings', async () => {
+    ownDocuments(1, 'PRIVATE_STALE_DOCUMENT');
+    const loadProject = vi.spyOn(window.AlloOwnSources, 'loadProject');
+    const ai = provider(() => { throw new Error('Research must not run'); });
+    const h = harness(ai, { includeSourceCitations: true, useOwnSources: true, documentsOnly: true });
+    const stale = window.AlloModules.SourceResearchReview.packet('How clouds form');
+    window.AlloModules.SourceResearchReview.merge(stale, [{ kind: 'paste', title: 'Stale', passage: 'PRIVATE_STALE_PASTED_EVIDENCE_ONLY' }]);
+    await finish(h.engine.handleGenerateSource({ reviewedResearch: stale, researchPacket: stale,
+      researchConfig: { version: 1, enabled: false, mode: 'combined', urls: ['https://unfetched.example.edu'], exactQuotes: true } }, false));
+    expect(ai.researchCalls).toHaveLength(0); expect(loadProject).not.toHaveBeenCalled();
+    expect(ai.articleCalls.length).toBeGreaterThan(0);
+    expect(ai.articleCalls.every(call => !call.useSearch && !call.prompt.includes('PRIVATE_STALE'))).toBe(true);
+    expect(h.state.error).toBeNull();
+  });
 
-  it.each(['photosynthesis', 'water cycle'])('passes only the approved topic %s through the real public-search policy for Canvas research and writing', async topic => {
+  it.each(['photosynthesis', 'water cycle', 'History of jazz', 'How clouds form'])('passes only the explicit topic %s through Canvas research and writing', async topic => {
     const documentText = 'PRIVATE_DOCUMENT_SENTINEL: A teacher-provided passage used only as model context.';
     ownDocuments(1, documentText);
     const ai = publicSearchChain();
-    // This remains rejected. The regression must fix routing, never relax the policy.
+    // Automatic lookups still cannot derive a query from private instructions.
     const blocked = await ai.web.search('PRIVATE_INSTRUCTION_SENTINEL: photosynthesis with a private classroom note');
     expect(blocked.privacyBlocked).toBe(true);
     expect(ai.transport).not.toHaveBeenCalled();
@@ -321,12 +329,14 @@ describe('Generate Source preserves the research phase', () => {
     expect(articles[0].prompt).toContain('PRIVATE_DOCUMENT_SENTINEL');
     expect(articles[0].prompt).toContain('PRIVATE_INSTRUCTION_SENTINEL');
     expect(ai.calls.filter(call => call.useSearch).every(call => call.searchQuery === topic)).toBe(true);
-    expect(ai.search.mock.calls.every(([, , override]) => override === topic)).toBe(true);
+    expect(ai.search).not.toHaveBeenCalled();
+    expect(ai.searchTopic.mock.calls.every(([query]) => query === topic)).toBe(true);
+    expect(ai.calls.filter(call => call.useSearch).every(call => call.searchOptions.intent === 'user-topic')).toBe(true);
     expect(ai.transport.mock.calls.length).toBeGreaterThanOrEqual(2);
     expect(ai.transport.mock.calls.map(([query]) => query)).toEqual(ai.transport.mock.calls.map(() => topic));
   });
 
-  it('uses the approved topic without grade or prompt suffixes in local research and subsequent grounded writing', async () => {
+  it('uses the explicit topic without grade or prompt suffixes in local research and subsequent grounded writing', async () => {
     ownDocuments(1, 'PRIVATE_DOCUMENT_SENTINEL: Local teacher notes remain model context, not search text.');
     const ai = publicSearchChain();
     const generateText = vi.fn(async () => BRIEF);
@@ -337,7 +347,7 @@ describe('Generate Source preserves the research phase', () => {
     });
     await finish(h.engine.handleGenerateSource({}, false));
     expect(h.state.error).toBeNull();
-    expect(ai.search.mock.calls[0][0]).toBe('photosynthesis');
+    expect(ai.searchTopic.mock.calls[0][0]).toBe('photosynthesis');
     expect(generateText).toHaveBeenCalledTimes(1);
     expect(generateText.mock.calls[0][0]).toContain('Photosynthesis reference');
     expect(ai.calls.some(call => call.phase === 'research')).toBe(false);

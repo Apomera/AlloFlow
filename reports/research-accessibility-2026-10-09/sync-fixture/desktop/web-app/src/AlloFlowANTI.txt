@@ -1,0 +1,1 @@
+'./view_misc_panels_module.js'

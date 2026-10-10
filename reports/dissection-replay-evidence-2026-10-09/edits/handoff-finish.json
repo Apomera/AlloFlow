@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-10T02:50:18.893Z",
+  "beforeHash": "f5fb9864e2e9689aadc323c86975fbdf588c4b6bb0216dc4ffcfaed2aeaae920",
+  "afterHash": "cb1b2457a651bcd47c89af07f74dd7246d5eba0cf8f41f9c616d7f8896008d60",
+  "beforeRow": "- 2026-10-09 | Codex Dissection replay evidence IN PROGRESS: owns canonical/public stem_lab/stem_tool_dissection.js, focused unit additions, new tests/e2e/dissection-replay-evidence.spec.ts and reports/dissection-replay-evidence-2026-10-09. Distinguish recorded cutting data from illustrative replay paths; preserve recorded attempts and specimen work. No staging, commit, push or deployment.",
+  "afterRow": "- 2026-10-09 | Codex Dissection replay evidence | COMPLETE LOCALLY; ownership RELEASED. Saved/supported/teaching paths are explicit; missing pressure and settings stay unrecorded. Responsive replay captions wrap and avoid anatomy/HUD text in four checked layouts. Native keyboard replay preserves work. 14 final unit cases and four Chromium scenarios pass; four scoped axe scans have zero violations, three gradient contrast incompletes retain supplemental source-color evidence. Source/runtime SHA256 e3a88070afa77800d1be26612e69ad68d5949ee6322c588c49f2a3b192f5990d. 712 protected files and exact baseline reversals verified. Report reports/dissection-replay-evidence-2026-10-09/README.md records visual fixes and environment failures. No staging, commit, push or deployment.",
+  "unrelatedRowsPreserved": true
+}

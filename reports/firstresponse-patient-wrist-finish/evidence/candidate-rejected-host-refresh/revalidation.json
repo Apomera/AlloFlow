@@ -1,0 +1,71 @@
+{
+  "passed": true,
+  "images": [
+    {
+      "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\native-adult-fold-final\\adult-wide-baseline-stage.png",
+      "sha256": "2a54c9d70c8193f8071eb98b3a786a4a8cc48df96f20a4d1c1a30b96d9c8d9e8"
+    },
+    {
+      "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\native-adult-fold-final\\adult-wide-baseline-wrist.png",
+      "sha256": "b8a51df8983d6adb5d666dc4911961018b8de9d17baf0feff0f0363a41209a5e"
+    },
+    {
+      "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\native-adult-fold-final\\adult-wide-candidate-stage.png",
+      "sha256": "579aa2cd340abcb34bb1f3c4c115dcbfcfe4df582bea433b009a68df70b38b01"
+    },
+    {
+      "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\native-adult-fold-final\\adult-wide-candidate-wrist.png",
+      "sha256": "f775c0016310350a49fea003b5575ff29febe404c94f978e79cd8625395e86eb"
+    },
+    {
+      "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\native-child-fold-final\\child-narrow-baseline-stage.png",
+      "sha256": "9b4d28dd9d6452cc466ce1d1836c28bf71f1ad7d2eaaa8161caeeb20e677d81b"
+    },
+    {
+      "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\native-child-fold-final\\child-narrow-baseline-wrist.png",
+      "sha256": "643c3d991ffbceefad32a3241127b2e54c455a9112c04e7619bfc65cf7eddb8a"
+    },
+    {
+      "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\native-child-fold-final\\child-narrow-candidate-stage.png",
+      "sha256": "9285cc7ef68a63ec3aff306481a8b471585d42982c42a229d44aca403d288fea"
+    },
+    {
+      "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\native-child-fold-final\\child-narrow-candidate-wrist.png",
+      "sha256": "90856a307dee0a6e7903740be8ea776ae4edc95945e1232db37ef6164397568a"
+    },
+    {
+      "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\native-infant-fold-final\\infant-narrow-contrast-baseline-stage.png",
+      "sha256": "7bd6901ebc5ec55fe5a5eb5cec4c3e1550ffc6abbac5b3ae339a9934691ee730"
+    },
+    {
+      "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\native-infant-fold-final\\infant-narrow-contrast-baseline-wrist.png",
+      "sha256": "db878c0a0f7be5f33d2f7ceb7c65d4ae0f03d69f1ee8f999ceb29fc1c14f63ee"
+    },
+    {
+      "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\native-infant-fold-final\\infant-narrow-contrast-candidate-stage.png",
+      "sha256": "363a2d702f2f329c0bcbc07071c9857ff667ceac431e7510f5ede048eb195a8c"
+    },
+    {
+      "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\native-infant-fold-final\\infant-narrow-contrast-candidate-wrist.png",
+      "sha256": "f643d3e17afceebac30f8fa3c2eee2239a4a1fff01bf4f275e60d5c597067c53"
+    },
+    {
+      "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-fold-diagnostic-work\\native-adult-recovery-fold\\adult-wide-baseline-stage.png",
+      "sha256": "0807e2357e8ea8f4483538fd135aea4851595920486b41c06a6eeea0ec395a7c"
+    },
+    {
+      "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-fold-diagnostic-work\\native-adult-recovery-fold\\adult-wide-baseline-wrist.png",
+      "sha256": "5b63b89f7a49098a6016c45a7f9453ff471ec45fc75bd35034580933afa8a31d"
+    },
+    {
+      "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-fold-diagnostic-work\\native-adult-recovery-fold\\adult-wide-candidate-stage.png",
+      "sha256": "0bb16ad958616588cb48dfba3765315a7f057ed0de94e0af85cdb4b4ff0f00fc"
+    },
+    {
+      "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-fold-diagnostic-work\\native-adult-recovery-fold\\adult-wide-candidate-wrist.png",
+      "sha256": "6affae4fc9aa9036c96300a2334dfa12cc2bfedd6c23523ce85219af1bfe7464"
+    }
+  ],
+  "allSixteenImagesExact": true,
+  "sharedWrites": 0
+}

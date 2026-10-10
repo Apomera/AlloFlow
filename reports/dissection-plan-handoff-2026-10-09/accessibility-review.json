@@ -1,0 +1,542 @@
+{
+  "at": "2026-10-09T22:48:22.907Z",
+  "acceptedReports": 15,
+  "violations": 0,
+  "reviewedNodes": 40,
+  "unresolvedNodes": 0,
+  "method": "Read each raw incomplete check and its related section phase. For the native light gradients, use the minimum red, green and blue channel across all stops as a conservative luminance bound. White translucent backing only raises luminance for these dark foregrounds. Use WCAG sRGB relative luminance; require 4.5:1 for every node. Raw audits are not modified.",
+  "phases": {
+    "predict": {
+      "foreground": "#163a63",
+      "backgroundBound": "#ecf9f5",
+      "gradientStops": [
+        "#f0f9ff",
+        "#f8fbff",
+        "#ecfdf5"
+      ]
+    },
+    "reflect": {
+      "foreground": "#4c1d95",
+      "backgroundBound": "#f0f3fa",
+      "gradientStops": [
+        "#f5f3ff",
+        "#faf5ff",
+        "#f0fdfa"
+      ]
+    },
+    "perform": {
+      "foreground": "#115e59",
+      "backgroundBound": "#ecfdf5",
+      "gradientStops": [
+        "#ecfdf5",
+        "#f0fdfa"
+      ]
+    }
+  },
+  "minimumReviewedRatio": 7.198981824594242,
+  "confirmedPlan": {
+    "foreground": "#065f46",
+    "background": "#ffffff",
+    "ratio": 7.683677009324036,
+    "automaticIncompletes": 0
+  },
+  "independentReview": "The handoff_accessibility agent independently read all 16 raw audits, including the excluded interrupted roadmap-2 audit: zero violations; 43 gradient-related incomplete nodes overall. Its accepted subset counts and contrast calculations agree with this review. Source review confirms high-contrast and forced-color rules override the new white backing; recap text inherits those colors.",
+  "exclusions": [
+    "roadmap-2 is retained as interrupted evidence and excluded from accepted totals."
+  ],
+  "reports": [
+    {
+      "file": "checkpoint-2/captures/axe-coaching.json",
+      "sha256": "c5e56a4120c03c6c9797048e89bd0e3ad7c5b359abe8b956ee57733570beafbd",
+      "violations": 0,
+      "incompleteNodes": 4
+    },
+    {
+      "file": "checkpoint-2/captures/axe-desktop-confirmed-plan.json",
+      "sha256": "6b27e17106556d31cf8310c1db5501f52811eeebf88203221e5f3f4023a0e542",
+      "violations": 0,
+      "incompleteNodes": 3
+    },
+    {
+      "file": "checkpoint-2/captures/axe-desktop.json",
+      "sha256": "5e5d6d286fa63ab4c8ff13e1438298b58962daa44ea7d6b4cdbd0434d428e678",
+      "violations": 0,
+      "incompleteNodes": 4
+    },
+    {
+      "file": "checkpoint-2/captures/axe-embedded-large-confirmed-plan.json",
+      "sha256": "67c46956f8ccb892d1144d5073f5f9b22eb1d8535e4eabd82024743bb69e1690",
+      "violations": 0,
+      "incompleteNodes": 0
+    },
+    {
+      "file": "checkpoint-2/captures/axe-embedded-large.json",
+      "sha256": "9dd2d46fc00c04368aaf3fb695b4f0efef0ba85b194e5564cf05edeb9abc5bf1",
+      "violations": 0,
+      "incompleteNodes": 0
+    },
+    {
+      "file": "checkpoint-2/captures/axe-forced-colors-confirmed-plan.json",
+      "sha256": "465b1f9e8e315194cb82e12cb3c7487d6074935bd3e90060843328c32106fd47",
+      "violations": 0,
+      "incompleteNodes": 0
+    },
+    {
+      "file": "checkpoint-2/captures/axe-forced-colors.json",
+      "sha256": "ebd19ebe9beb55a65f81eb463ad98f37e44473dab9ee017645a8bb748542eb68",
+      "violations": 0,
+      "incompleteNodes": 0
+    },
+    {
+      "file": "checkpoint-2/captures/axe-guided.json",
+      "sha256": "d61047f1629037f11f1828674aaddbcffaceb4036f0100f1f6f3a81e51d22e2d",
+      "violations": 0,
+      "incompleteNodes": 4
+    },
+    {
+      "file": "checkpoint-2/captures/axe-perform.json",
+      "sha256": "be4aeff178bf1e59e33ba62eb19e89c217d86ffb5444f076b6c24e4326eb8b49",
+      "violations": 0,
+      "incompleteNodes": 4
+    },
+    {
+      "file": "checkpoint-2/captures/axe-phone-confirmed-plan.json",
+      "sha256": "f8c621d4cd0643076f450fe8e1e875ae7f296c98c6b4c60a130046d21c670cf3",
+      "violations": 0,
+      "incompleteNodes": 3
+    },
+    {
+      "file": "checkpoint-2/captures/axe-phone.json",
+      "sha256": "d8aa51093288411c9ae79e019dd725194042c650e25f24361d988cb5d394bf15",
+      "violations": 0,
+      "incompleteNodes": 4
+    },
+    {
+      "file": "checkpoint-2/captures/axe-reflection.json",
+      "sha256": "432de9cf94b6382480296261b9c7642aadbecf251180a918ab7e32abb15f8306",
+      "violations": 0,
+      "incompleteNodes": 4
+    },
+    {
+      "file": "checkpoint-2/captures/axe-tablet-confirmed-plan.json",
+      "sha256": "a1109b1d1bdd865fe987053ac01329e8b2d42048c4c4dae8c43aae674f568339",
+      "violations": 0,
+      "incompleteNodes": 3
+    },
+    {
+      "file": "checkpoint-2/captures/axe-tablet.json",
+      "sha256": "82f1ef567c3229c54167ac78fccf7be47a24864c85c9b65ab43676276eebaf29",
+      "violations": 0,
+      "incompleteNodes": 4
+    },
+    {
+      "file": "roadmap-3/captures/native-undo-probe-axe.json",
+      "sha256": "c3dbb822611f538c0138eb34277a74e1e32c890aabac6d57b9a33df730101ac6",
+      "violations": 0,
+      "incompleteNodes": 3
+    }
+  ],
+  "nodes": [
+    {
+      "file": "checkpoint-2/captures/axe-coaching.json",
+      "target": ".diss-learning-check__eyebrow",
+      "phase": "predict",
+      "foreground": "#163a63",
+      "backgroundBound": "#ecf9f5",
+      "ratio": 10.681659811611787,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-coaching.json",
+      "target": "#diss-learning-check-title",
+      "phase": "predict",
+      "foreground": "#163a63",
+      "backgroundBound": "#ecf9f5",
+      "ratio": 10.681659811611787,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-coaching.json",
+      "target": "#diss-learning-check-prompt",
+      "phase": "predict",
+      "foreground": "#163a63",
+      "backgroundBound": "#ecf9f5",
+      "ratio": 10.681659811611787,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-coaching.json",
+      "target": "#diss-learning-check-keyboard-help",
+      "phase": "predict",
+      "foreground": "#334155",
+      "backgroundBound": "#ecf9f5",
+      "ratio": 9.583248415638064,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-desktop-confirmed-plan.json",
+      "target": ".diss-learning-check__eyebrow",
+      "phase": "perform",
+      "foreground": "#115e59",
+      "backgroundBound": "#ecfdf5",
+      "ratio": 7.198981824594242,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-desktop-confirmed-plan.json",
+      "target": "#diss-learning-check-title",
+      "phase": "perform",
+      "foreground": "#115e59",
+      "backgroundBound": "#ecfdf5",
+      "ratio": 7.198981824594242,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-desktop-confirmed-plan.json",
+      "target": "#diss-learning-check-prompt",
+      "phase": "perform",
+      "foreground": "#115e59",
+      "backgroundBound": "#ecfdf5",
+      "ratio": 7.198981824594242,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-desktop.json",
+      "target": ".diss-learning-check__eyebrow",
+      "phase": "predict",
+      "foreground": "#163a63",
+      "backgroundBound": "#ecf9f5",
+      "ratio": 10.681659811611787,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-desktop.json",
+      "target": "#diss-learning-check-title",
+      "phase": "predict",
+      "foreground": "#163a63",
+      "backgroundBound": "#ecf9f5",
+      "ratio": 10.681659811611787,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-desktop.json",
+      "target": "#diss-learning-check-prompt",
+      "phase": "predict",
+      "foreground": "#163a63",
+      "backgroundBound": "#ecf9f5",
+      "ratio": 10.681659811611787,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-desktop.json",
+      "target": "#diss-learning-check-keyboard-help",
+      "phase": "predict",
+      "foreground": "#334155",
+      "backgroundBound": "#ecf9f5",
+      "ratio": 9.583248415638064,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-guided.json",
+      "target": ".diss-learning-check__eyebrow",
+      "phase": "reflect",
+      "foreground": "#4c1d95",
+      "backgroundBound": "#f0f3fa",
+      "ratio": 9.861976450753948,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-guided.json",
+      "target": "#diss-guided-observation-title",
+      "phase": "reflect",
+      "foreground": "#4c1d95",
+      "backgroundBound": "#f0f3fa",
+      "ratio": 9.861976450753948,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-guided.json",
+      "target": ".diss-learning-check__prompt",
+      "phase": "reflect",
+      "foreground": "#4c1d95",
+      "backgroundBound": "#f0f3fa",
+      "ratio": 9.861976450753948,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-guided.json",
+      "target": "#diss-guided-observation-keyboard-help",
+      "phase": "reflect",
+      "foreground": "#334155",
+      "backgroundBound": "#f0f3fa",
+      "ratio": 9.322089298171738,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-perform.json",
+      "target": ".diss-learning-check__eyebrow",
+      "phase": "perform",
+      "foreground": "#115e59",
+      "backgroundBound": "#ecfdf5",
+      "ratio": 7.198981824594242,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-perform.json",
+      "target": "#diss-learning-check-title",
+      "phase": "perform",
+      "foreground": "#115e59",
+      "backgroundBound": "#ecfdf5",
+      "ratio": 7.198981824594242,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-perform.json",
+      "target": "#diss-learning-check-prompt",
+      "phase": "perform",
+      "foreground": "#115e59",
+      "backgroundBound": "#ecfdf5",
+      "ratio": 7.198981824594242,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-perform.json",
+      "target": ".diss-learning-check__perform",
+      "phase": "perform",
+      "foreground": "#065f46",
+      "backgroundBound": "#ecfdf5",
+      "ratio": 7.294077894689702,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-phone-confirmed-plan.json",
+      "target": ".diss-learning-check__eyebrow",
+      "phase": "perform",
+      "foreground": "#115e59",
+      "backgroundBound": "#ecfdf5",
+      "ratio": 7.198981824594242,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-phone-confirmed-plan.json",
+      "target": "#diss-learning-check-title",
+      "phase": "perform",
+      "foreground": "#115e59",
+      "backgroundBound": "#ecfdf5",
+      "ratio": 7.198981824594242,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-phone-confirmed-plan.json",
+      "target": "#diss-learning-check-prompt",
+      "phase": "perform",
+      "foreground": "#115e59",
+      "backgroundBound": "#ecfdf5",
+      "ratio": 7.198981824594242,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-phone.json",
+      "target": ".diss-learning-check__eyebrow",
+      "phase": "predict",
+      "foreground": "#163a63",
+      "backgroundBound": "#ecf9f5",
+      "ratio": 10.681659811611787,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-phone.json",
+      "target": "#diss-learning-check-title",
+      "phase": "predict",
+      "foreground": "#163a63",
+      "backgroundBound": "#ecf9f5",
+      "ratio": 10.681659811611787,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-phone.json",
+      "target": "#diss-learning-check-prompt",
+      "phase": "predict",
+      "foreground": "#163a63",
+      "backgroundBound": "#ecf9f5",
+      "ratio": 10.681659811611787,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-phone.json",
+      "target": "#diss-learning-check-keyboard-help",
+      "phase": "predict",
+      "foreground": "#334155",
+      "backgroundBound": "#ecf9f5",
+      "ratio": 9.583248415638064,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-reflection.json",
+      "target": ".diss-learning-check__eyebrow",
+      "phase": "reflect",
+      "foreground": "#4c1d95",
+      "backgroundBound": "#f0f3fa",
+      "ratio": 9.861976450753948,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-reflection.json",
+      "target": "#diss-learning-check-title",
+      "phase": "reflect",
+      "foreground": "#4c1d95",
+      "backgroundBound": "#f0f3fa",
+      "ratio": 9.861976450753948,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-reflection.json",
+      "target": "#diss-learning-check-prompt",
+      "phase": "reflect",
+      "foreground": "#4c1d95",
+      "backgroundBound": "#f0f3fa",
+      "ratio": 9.861976450753948,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-reflection.json",
+      "target": "#diss-learning-check-keyboard-help",
+      "phase": "reflect",
+      "foreground": "#334155",
+      "backgroundBound": "#f0f3fa",
+      "ratio": 9.322089298171738,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-tablet-confirmed-plan.json",
+      "target": ".diss-learning-check__eyebrow",
+      "phase": "perform",
+      "foreground": "#115e59",
+      "backgroundBound": "#ecfdf5",
+      "ratio": 7.198981824594242,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-tablet-confirmed-plan.json",
+      "target": "#diss-learning-check-title",
+      "phase": "perform",
+      "foreground": "#115e59",
+      "backgroundBound": "#ecfdf5",
+      "ratio": 7.198981824594242,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-tablet-confirmed-plan.json",
+      "target": "#diss-learning-check-prompt",
+      "phase": "perform",
+      "foreground": "#115e59",
+      "backgroundBound": "#ecfdf5",
+      "ratio": 7.198981824594242,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-tablet.json",
+      "target": ".diss-learning-check__eyebrow",
+      "phase": "predict",
+      "foreground": "#163a63",
+      "backgroundBound": "#ecf9f5",
+      "ratio": 10.681659811611787,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-tablet.json",
+      "target": "#diss-learning-check-title",
+      "phase": "predict",
+      "foreground": "#163a63",
+      "backgroundBound": "#ecf9f5",
+      "ratio": 10.681659811611787,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-tablet.json",
+      "target": "#diss-learning-check-prompt",
+      "phase": "predict",
+      "foreground": "#163a63",
+      "backgroundBound": "#ecf9f5",
+      "ratio": 10.681659811611787,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "checkpoint-2/captures/axe-tablet.json",
+      "target": "#diss-learning-check-keyboard-help",
+      "phase": "predict",
+      "foreground": "#334155",
+      "backgroundBound": "#ecf9f5",
+      "ratio": 9.583248415638064,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "roadmap-3/captures/native-undo-probe-axe.json",
+      "target": ".diss-learning-check__eyebrow",
+      "phase": "perform",
+      "foreground": "#115e59",
+      "backgroundBound": "#ecfdf5",
+      "ratio": 7.198981824594242,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "roadmap-3/captures/native-undo-probe-axe.json",
+      "target": "#diss-learning-check-title",
+      "phase": "perform",
+      "foreground": "#115e59",
+      "backgroundBound": "#ecfdf5",
+      "ratio": 7.198981824594242,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    },
+    {
+      "file": "roadmap-3/captures/native-undo-probe-axe.json",
+      "target": "#diss-learning-check-prompt",
+      "phase": "perform",
+      "foreground": "#115e59",
+      "backgroundBound": "#ecfdf5",
+      "ratio": 7.198981824594242,
+      "minimumRequired": 4.5,
+      "result": "resolved by conservative contrast calculation"
+    }
+  ],
+  "limits": "Scoped Chromium/axe checks with source, visual and contrast review; no whole-application accessibility certification or assistive-technology user session."
+}

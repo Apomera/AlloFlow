@@ -1,0 +1,17 @@
+{
+  "beforeSHA256": "877389b664177956a4801ab12952a247bc3a2c462961f92b648613dc83f08a5d",
+  "afterSHA256": "642b337db93a4c13cdbb1f95040662f3db45cf50529e5fd333938cd3de86be99",
+  "sourceBytes": 747937,
+  "mirrored": true,
+  "outsideScopeExact": true,
+  "addedBytes": 1729,
+  "initialNarrowSHA256": "0f80e44b132f48f3e26bc489ce4232b02576da4278265a35c143f46f5d548eae",
+  "facingBand": [
+    0.34,
+    0.6
+  ],
+  "targets": [
+    "stem_lab/stem_tool_firstresponse.js",
+    "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js"
+  ]
+}

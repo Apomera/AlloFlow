@@ -1,0 +1,72 @@
+{
+  "sourceSha256": "f5f50bac94b15e51a47c2cd9af88feed37469820e452cd48ba933ba5f140ac83",
+  "files": [
+    "tests/watercycle_groundwater_workspace.test.js",
+    "tests/watercycle_groundwater_lens.test.js",
+    "tests/watercycle_land_cutaway.test.js",
+    "tests/watercycle_conditions_clarity.test.js"
+  ],
+  "startedAt": "2026-10-05T23:52:07.822Z",
+  "completedAt": "2026-10-05T23:53:53.691Z",
+  "exitCode": 0,
+  "runtimeBefore": [
+    {
+      "file": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "f5f50bac94b15e51a47c2cd9af88feed37469820e452cd48ba933ba5f140ac83"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "f5f50bac94b15e51a47c2cd9af88feed37469820e452cd48ba933ba5f140ac83"
+    }
+  ],
+  "runtimeAfter": [
+    {
+      "file": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "f5f50bac94b15e51a47c2cd9af88feed37469820e452cd48ba933ba5f140ac83"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "f5f50bac94b15e51a47c2cd9af88feed37469820e452cd48ba933ba5f140ac83"
+    }
+  ],
+  "testsBefore": [
+    {
+      "file": "tests/watercycle_groundwater_workspace.test.js",
+      "sha256": "85437b48627802faed5595042e712c355166a06d02ad2c8917d8f8a0a99c0fc7"
+    },
+    {
+      "file": "tests/watercycle_groundwater_lens.test.js",
+      "sha256": "9d36da1a741fe3ed616af9c80fd7126ca407d2864fb7866e4e37db89ffb2c9d7"
+    },
+    {
+      "file": "tests/watercycle_land_cutaway.test.js",
+      "sha256": "ff34aa2c84e973fd428c2b04163a403aae6042be4004941aedde5201e698c90d"
+    },
+    {
+      "file": "tests/watercycle_conditions_clarity.test.js",
+      "sha256": "95dd0f2f398b70b45c44eda4bbbac1522dd2cd306701ddca8b4cd0212f9618e6"
+    }
+  ],
+  "testsAfter": [
+    {
+      "file": "tests/watercycle_groundwater_workspace.test.js",
+      "sha256": "85437b48627802faed5595042e712c355166a06d02ad2c8917d8f8a0a99c0fc7"
+    },
+    {
+      "file": "tests/watercycle_groundwater_lens.test.js",
+      "sha256": "9d36da1a741fe3ed616af9c80fd7126ca407d2864fb7866e4e37db89ffb2c9d7"
+    },
+    {
+      "file": "tests/watercycle_land_cutaway.test.js",
+      "sha256": "ff34aa2c84e973fd428c2b04163a403aae6042be4004941aedde5201e698c90d"
+    },
+    {
+      "file": "tests/watercycle_conditions_clarity.test.js",
+      "sha256": "95dd0f2f398b70b45c44eda4bbbac1522dd2cd306701ddca8b4cd0212f9618e6"
+    }
+  ],
+  "successful": true,
+  "passed": 82,
+  "failed": 0,
+  "skipped": 0
+}

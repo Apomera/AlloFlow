@@ -1,0 +1,201 @@
+{
+  "sourceSHA256": "0cc79f45f9a57ce3c4f1d5fa674b56f462a2418c4b253dbc648557b37a6b2639",
+  "description": "Read-only local skull and eyelid geometry probe. Values are before age/head scaling.",
+  "ages": [
+    {
+      "age": "adult",
+      "lids": [
+        {
+          "side": -1,
+          "upper": true,
+          "vertices": 561,
+          "boundaryCount": 33,
+          "boundaryOutside": 0,
+          "backCount": 264,
+          "backOutside": 0,
+          "maxBoundaryGap": -0.000711034069373756,
+          "maxBackGap": -0.0008290005069551687,
+          "maxAnalyticGap": 0.0005354075938094061,
+          "minAnalyticGap": -0.0009797197261556811,
+          "candidateBoundaryOutside": 0,
+          "candidateBackOutside": 0
+        },
+        {
+          "side": -1,
+          "upper": false,
+          "vertices": 561,
+          "boundaryCount": 33,
+          "boundaryOutside": 0,
+          "backCount": 264,
+          "backOutside": 0,
+          "maxBoundaryGap": -0.0006387188701670043,
+          "maxBackGap": -0.0007466801579436855,
+          "maxAnalyticGap": 0.0006427269793519708,
+          "minAnalyticGap": -0.0007111118591552335,
+          "candidateBoundaryOutside": 0,
+          "candidateBackOutside": 0
+        },
+        {
+          "side": 1,
+          "upper": true,
+          "vertices": 561,
+          "boundaryCount": 33,
+          "boundaryOutside": 0,
+          "backCount": 264,
+          "backOutside": 0,
+          "maxBoundaryGap": -0.0007741464209058413,
+          "maxBackGap": -0.0008839999443706059,
+          "maxAnalyticGap": 0.0005268231142264157,
+          "minAnalyticGap": -0.0025606422964672415,
+          "candidateBoundaryOutside": 0,
+          "candidateBackOutside": 0
+        },
+        {
+          "side": 1,
+          "upper": false,
+          "vertices": 561,
+          "boundaryCount": 33,
+          "boundaryOutside": 0,
+          "backCount": 264,
+          "backOutside": 0,
+          "maxBoundaryGap": -0.0011599147713677593,
+          "maxBackGap": -0.0013861628975250506,
+          "maxAnalyticGap": 0.00008952162306027911,
+          "minAnalyticGap": -0.0017192717709795247,
+          "candidateBoundaryOutside": 0,
+          "candidateBackOutside": 0
+        }
+      ]
+    },
+    {
+      "age": "child",
+      "lids": [
+        {
+          "side": -1,
+          "upper": true,
+          "vertices": 561,
+          "boundaryCount": 33,
+          "boundaryOutside": 0,
+          "backCount": 264,
+          "backOutside": 0,
+          "maxBoundaryGap": -0.0007873292065665449,
+          "maxBackGap": -0.0009064224002204302,
+          "maxAnalyticGap": 0.00044370605940580177,
+          "minAnalyticGap": -0.0009312174118736305,
+          "candidateBoundaryOutside": 0,
+          "candidateBackOutside": 0
+        },
+        {
+          "side": -1,
+          "upper": false,
+          "vertices": 561,
+          "boundaryCount": 33,
+          "boundaryOutside": 0,
+          "backCount": 264,
+          "backOutside": 0,
+          "maxBoundaryGap": -0.0006196990096860311,
+          "maxBackGap": -0.0007936209080594558,
+          "maxAnalyticGap": 0.0005803009903139755,
+          "minAnalyticGap": -0.0005616495711753544,
+          "candidateBoundaryOutside": 0,
+          "candidateBackOutside": 0
+        },
+        {
+          "side": 1,
+          "upper": true,
+          "vertices": 561,
+          "boundaryCount": 33,
+          "boundaryOutside": 0,
+          "backCount": 264,
+          "backOutside": 0,
+          "maxBoundaryGap": -0.0009440852644000131,
+          "maxBackGap": -0.0010886170174001508,
+          "maxAnalyticGap": 0.0004297653217765762,
+          "minAnalyticGap": -0.0023276346637045864,
+          "candidateBoundaryOutside": 0,
+          "candidateBackOutside": 0
+        },
+        {
+          "side": 1,
+          "upper": false,
+          "vertices": 561,
+          "boundaryCount": 33,
+          "boundaryOutside": 0,
+          "backCount": 264,
+          "backOutside": 0,
+          "maxBoundaryGap": -0.000944085283848789,
+          "maxBackGap": -0.0011277133912743487,
+          "maxAnalyticGap": 0.00025591471615121764,
+          "minAnalyticGap": -0.001838234637030589,
+          "candidateBoundaryOutside": 0,
+          "candidateBackOutside": 0
+        }
+      ]
+    },
+    {
+      "age": "infant",
+      "lids": [
+        {
+          "side": -1,
+          "upper": true,
+          "vertices": 561,
+          "boundaryCount": 33,
+          "boundaryOutside": 0,
+          "backCount": 264,
+          "backOutside": 0,
+          "maxBoundaryGap": -0.0007840224120813921,
+          "maxBackGap": -0.0009405580764368371,
+          "maxAnalyticGap": 0.00047465992920903144,
+          "minAnalyticGap": -0.0008738188589491325,
+          "candidateBoundaryOutside": 0,
+          "candidateBackOutside": 0
+        },
+        {
+          "side": -1,
+          "upper": false,
+          "vertices": 561,
+          "boundaryCount": 33,
+          "boundaryOutside": 0,
+          "backCount": 264,
+          "backOutside": 0,
+          "maxBoundaryGap": -0.0008040577945035432,
+          "maxBackGap": -0.0009676971479376795,
+          "maxAnalyticGap": 0.0003959422054964634,
+          "minAnalyticGap": -0.00043569002470283946,
+          "candidateBoundaryOutside": 0,
+          "candidateBackOutside": 0
+        },
+        {
+          "side": 1,
+          "upper": true,
+          "vertices": 561,
+          "boundaryCount": 33,
+          "boundaryOutside": 0,
+          "backCount": 264,
+          "backOutside": 0,
+          "maxBoundaryGap": -0.0009146020729037807,
+          "maxBackGap": -0.0010329815115223961,
+          "maxAnalyticGap": 0.0002853979270962259,
+          "minAnalyticGap": -0.0018920891909245396,
+          "candidateBoundaryOutside": 0,
+          "candidateBackOutside": 0
+        },
+        {
+          "side": 1,
+          "upper": false,
+          "vertices": 561,
+          "boundaryCount": 33,
+          "boundaryOutside": 0,
+          "backCount": 264,
+          "backOutside": 0,
+          "maxBoundaryGap": -0.0009146020729037807,
+          "maxBackGap": -0.0010604510264673184,
+          "maxAnalyticGap": 0.00033233672322027785,
+          "minAnalyticGap": -0.0015725011854219595,
+          "candidateBoundaryOutside": 0,
+          "candidateBackOutside": 0
+        }
+      ]
+    }
+  ]
+}

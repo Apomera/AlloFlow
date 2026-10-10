@@ -1,0 +1,66 @@
+[
+  {
+    "passed": 18,
+    "exit": 0,
+    "pattern": "preserves every.*adult.*scene",
+    "expected": 18,
+    "failed": 0,
+    "name": "adult-preserve"
+  },
+  {
+    "passed": 12,
+    "exit": 0,
+    "pattern": "frames the complete.*adult.*supporting hand",
+    "expected": 12,
+    "failed": 0,
+    "name": "adult-fit"
+  },
+  {
+    "passed": 18,
+    "exit": 0,
+    "pattern": "preserves every.*child.*scene",
+    "expected": 18,
+    "failed": 0,
+    "name": "child-preserve"
+  },
+  {
+    "passed": 12,
+    "exit": 0,
+    "pattern": "frames the complete.*child.*supporting hand",
+    "expected": 12,
+    "failed": 0,
+    "name": "child-fit"
+  },
+  {
+    "passed": 18,
+    "exit": 0,
+    "pattern": "preserves every.*infant.*scene",
+    "expected": 18,
+    "failed": 0,
+    "name": "infant-preserve"
+  },
+  {
+    "passed": 12,
+    "exit": 0,
+    "pattern": "frames the complete.*infant.*supporting hand",
+    "expected": 12,
+    "failed": 0,
+    "name": "infant-fit"
+  },
+  {
+    "passed": 8,
+    "exit": 0,
+    "pattern": "supporting hand lifecycle and camera compatibility",
+    "expected": 8,
+    "failed": 0,
+    "name": "lifecycle"
+  },
+  {
+    "passed": 11,
+    "exit": 0,
+    "pattern": "supporting hand visual observation and pose comparison",
+    "expected": 11,
+    "failed": 0,
+    "name": "ui"
+  }
+]

@@ -1,0 +1,31 @@
+{
+  "at": "2026-10-07T00:35:26.814Z",
+  "entries": [
+    {
+      "from": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\preview-results.json",
+      "to": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\preview-sandbox-cache-failed\\preview-results.json",
+      "sha256": "eb25dbd1cd04736ece063cc29c6e569656bb77b44c4e7cd7cd19e984e08ea10d"
+    },
+    {
+      "from": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\preview-run.json",
+      "to": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\preview-sandbox-cache-failed\\preview-run.json",
+      "sha256": "e5173cdfd9609f30ed75e394db4b812737fe35a8028e88462b9ef2c54ba0dee0"
+    },
+    {
+      "from": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\preview-out.log",
+      "to": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\preview-sandbox-cache-failed\\preview-out.log",
+      "sha256": "b5bec12719ba510275aa77b0a5346530b9920215e3ae83c4dc3451a4ed39f16c"
+    },
+    {
+      "from": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\preview-err.log",
+      "to": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\preview-sandbox-cache-failed\\preview-err.log",
+      "sha256": "99d91a9d5f2aa55047ad09f1d5ef0515593bdd62c958b5bedd6189708a7422e8"
+    },
+    {
+      "from": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\browser-artifacts",
+      "to": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\preview-sandbox-cache-failed\\browser-artifacts",
+      "sha256": null
+    }
+  ],
+  "note": "All three cases failed browser fixture launch before UI checks because the default-permission sandbox redirected APPDATA to an empty Playwright browser cache. No source or assertion failure is inferred."
+}

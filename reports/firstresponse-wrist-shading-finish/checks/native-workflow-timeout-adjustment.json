@@ -1,0 +1,32 @@
+{
+  "passed": true,
+  "beforeMs": 300000,
+  "afterMs": 450000,
+  "candidateSHA256": "179ddeefd0c930ca4a084d98fc683c321fb4f36f720e62cddf8b30d56b576466",
+  "onlyTimeoutChanged": true,
+  "workers": 1,
+  "retries": 0,
+  "files": [
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-wrist-shading-work\\firstresponse-wrists-preview.spec.ts",
+      "savedPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-wrist-shading-work\\native-fixture-before-timeout-adjustment\\firstresponse-wrists-preview.spec.ts.saved",
+      "beforeSHA256": "333cc6fbc7b986bdd27fadd09e6bf92502ef89706dd1a534c5dc6a933b05eaf0",
+      "afterSHA256": "ed3f20acb04e31933e1af808227db3af08591ae9c95ff3034a468ac9d17b65e8",
+      "savedBytesReread": true
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-wrist-shading-work\\playwright-wrists.config.cjs",
+      "savedPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-wrist-shading-work\\native-fixture-before-timeout-adjustment\\playwright-wrists.config.cjs.saved",
+      "beforeSHA256": "03e6e8f1690f192ca6db595d7b09c8f93118d4f592b2a8aa25800a532faece78",
+      "afterSHA256": "1d449ba0ac108be30ab6f69919c9c0285ea490a34bfc19ee48ec7ca2c8637dc6",
+      "savedBytesReread": true
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-wrist-shading-work\\run-wrists-browser.cjs",
+      "savedPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-wrist-shading-work\\native-fixture-before-timeout-adjustment\\run-wrists-browser.cjs.saved",
+      "beforeSHA256": "fc270d67f61934bd7308790bd7e37e3f261aa54fb947d6faac44818bec70aded",
+      "afterSHA256": "ebd77aad9f6378ed1e878ff3a270778bbdc65cc7a3153b7de2fa6a377d90daab",
+      "savedBytesReread": true
+    }
+  ]
+}

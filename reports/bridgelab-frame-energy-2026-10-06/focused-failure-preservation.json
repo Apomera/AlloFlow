@@ -1,0 +1,114 @@
+{
+  "preservedAt": "2026-10-06T21:20:24.996Z",
+  "byteIdentical": true,
+  "unitOutcome": "Threads worker timed out before collecting tests; no unit assertions passed.",
+  "browserOutcome": "One graphics fallback check passed; desktop and phone checks failed at the same combined selector assertion.",
+  "artifactPathMapping": [
+    {
+      "from": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\unit-run.json",
+      "to": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\unit-thread-startup-run.json",
+      "identity": "1a109f4b890c303e869da5f0ce798bbd315431ff206c863ca36c91872e18ca47"
+    },
+    {
+      "from": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\unit-batches",
+      "to": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\unit-thread-startup-batches",
+      "identity": [
+        {
+          "name": "catalogue.json",
+          "sha256": "16630ce1310dd40e4463d4bb33c660d3dfc8771aa308a81c6633aba9844b41d7"
+        },
+        {
+          "name": "ui-01.results.json",
+          "sha256": "e945d71bc16a4515ffa3d163b5eea4fd13621396ee0e723f36c20afcf0887421"
+        },
+        {
+          "name": "ui-01.run.json",
+          "sha256": "4a3bcdc7f7d8ba2db471136493a27a37332a87a44c0777731b80116f641b65ec"
+        },
+        {
+          "name": "ui-01.stderr.log",
+          "sha256": "5954c4a70a6e9a08b797131e0088d9b2673fb170a3c883d64420e99b60ba33bb"
+        },
+        {
+          "name": "ui-01.stdout.log",
+          "sha256": "20af968b35f54531e52eba091e8afe19a8a48ec9c3794943b55854032c4f7b89"
+        },
+        {
+          "name": "ui-01.unhandled.json",
+          "sha256": "f8be20e67e194513504dff169d2b50e4742a499da4a226e6c23c3c5a30e49a74"
+        }
+      ]
+    },
+    {
+      "from": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\preview-run.json",
+      "to": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\preview-selector-failed-run.json",
+      "identity": "b16b7d041dc8b41cdeb7939e7abde35da677a962f57ef9b020e4d6ffde7ff5a7"
+    },
+    {
+      "from": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\preview-results.json",
+      "to": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\preview-selector-failed-results.json",
+      "identity": "7bda6a41607dbaea8c80bed5df9ce2dd363e3e378e58d59c0dd1a6cdf74f9109"
+    },
+    {
+      "from": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\preview-out.log",
+      "to": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\preview-selector-failed-out.log",
+      "identity": "9fe3826911b1daaf3db423ccd1aed40d240c13502bb74b5ed60084866675e4ed"
+    },
+    {
+      "from": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\preview-err.log",
+      "to": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\preview-selector-failed-err.log",
+      "identity": "bac0db53164ea98d04c93753e1f0e6ef4c98c9d66477b84e737d1c8e1207706f"
+    },
+    {
+      "from": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\browser-artifacts",
+      "to": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\preview-selector-failed-artifacts",
+      "identity": [
+        {
+          "name": ".last-run.json",
+          "sha256": "7193e574b6788b62cc0b28d9976fe6c579eceaed3d24d8eb87330f828ba5ca1f"
+        },
+        {
+          "name": "26-bridgelab-gl-Bridge-Lab-0e961--and-paired-scale-at-1000px-chromium/error-context.md",
+          "sha256": "96f7796798833cafda416db8c5bc7549563b96dc26519c04875fca98829cff4a"
+        },
+        {
+          "name": "26-bridgelab-gl-Bridge-Lab-0e961--and-paired-scale-at-1000px-chromium/test-failed-1.png",
+          "sha256": "0d46b3d728c4d4faa2d996b25c6adc94470741b71203464f307387a2a947eed6"
+        },
+        {
+          "name": "26-bridgelab-gl-Bridge-Lab-0e961--and-paired-scale-at-1000px-chromium/trace.zip",
+          "sha256": "6b0a05eb4299ce8fd1ef3b6daf89224d771ec352138e9f5b37af30f6ea0f4a5f"
+        },
+        {
+          "name": "26-bridgelab-gl-Bridge-Lab-49124-n-and-paired-scale-at-320px-chromium/error-context.md",
+          "sha256": "473de99340b06b10f986b5799bc55986a434848ab3ba1baf948048a88b85eeef"
+        },
+        {
+          "name": "26-bridgelab-gl-Bridge-Lab-49124-n-and-paired-scale-at-320px-chromium/test-failed-1.png",
+          "sha256": "30d6049b5a2522c061877ca59d4242b405afb70fcf54639231e0da1902f9ef71"
+        },
+        {
+          "name": "26-bridgelab-gl-Bridge-Lab-49124-n-and-paired-scale-at-320px-chromium/trace.zip",
+          "sha256": "26139e1fbd7c1738585d37710902e706d5061ab7d3bc2a60c7cf8a903b64188d"
+        }
+      ]
+    }
+  ],
+  "captured": [
+    {
+      "name": "frame-energy-1000-graphics-fallback.png",
+      "sha256": "3311d881b964d429dc734310eaf0ebfcacbeb481e045fe7693dd63bc7aaa1d4d",
+      "preservedPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\preview-selector-failed-feature-captures\\frame-energy-1000-graphics-fallback.png"
+    },
+    {
+      "name": "frame-energy-1000-graphics-state.json",
+      "sha256": "8d003c24c226a43d20259ec96b5a004d94e9375f7b9f05681805266ac29d448e",
+      "preservedPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\preview-selector-failed-feature-captures\\frame-energy-1000-graphics-state.json"
+    },
+    {
+      "name": "frame-energy-320-native.png",
+      "sha256": "bd77ddfb9022d48c3afe8f0961bf8b03cd39b94b032d59a36a239123a9c058b9",
+      "preservedPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\preview-selector-failed-feature-captures\\frame-energy-320-native.png"
+    }
+  ]
+}

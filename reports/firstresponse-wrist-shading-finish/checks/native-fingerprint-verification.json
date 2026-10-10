@@ -1,0 +1,51 @@
+{
+  "passed": true,
+  "fixtureSHA256": "ed3f20acb04e31933e1af808227db3af08591ae9c95ff3034a468ac9d17b65e8",
+  "candidateSHA256": "179ddeefd0c930ca4a084d98fc683c321fb4f36f720e62cddf8b30d56b576466",
+  "inputs": {
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-wrist-shading-work\\check-native-fingerprint.cjs": "8c997641c173abf055a89f3a377c1e9a5021c5ddc88735422cd74eebb3ef8566",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-wrist-shading-work\\firstresponse-wrists-preview.spec.ts": "ed3f20acb04e31933e1af808227db3af08591ae9c95ff3034a468ac9d17b65e8",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-wrist-shading-work\\native-fixture-before-uuid-fix\\firstresponse-wrists-preview.spec.ts.saved": "b339931994031ad34e6f34a7d519ae2c6656db7a9355cddf5a2ff319fd6e479c",
+    "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/vendor/three-r128/three.min.js": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-wrist-shading-work\\before.js": "f6cfbcccc65323918d7ca7b209737dcd13cf57a31246da4110f2ab980907147f",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-wrist-shading-work\\candidate.js": "179ddeefd0c930ca4a084d98fc683c321fb4f36f720e62cddf8b30d56b576466"
+  },
+  "oldBaselineFingerprints": [
+    {
+      "hash": "c4e2c6a2",
+      "bytes": 98033
+    },
+    {
+      "hash": "a45b1478",
+      "bytes": 98033
+    }
+  ],
+  "normalizedBaselineFingerprints": [
+    {
+      "hash": "171d250d",
+      "bytes": 98019
+    },
+    {
+      "hash": "171d250d",
+      "bytes": 98019
+    }
+  ],
+  "generatedIdentityDifferences": [
+    {
+      "path": "/1/1/parameters/shapes/uuid",
+      "a": "9EBBA1CA-B98F-4048-BCFF-BC1C3AAAD049",
+      "b": "1F759D00-8190-4766-A0CC-BA16142E207A"
+    }
+  ],
+  "shapeOwner": "fr-training-mat",
+  "preservedGeometryCount": 143,
+  "baselineVersusBaselinePassed": true,
+  "negative": {
+    "meaningfulShapeParameterRejected": true,
+    "positionBufferRejected": true,
+    "unrelatedUUIDPreserved": true,
+    "restoredAndReread": true
+  },
+  "scope": "Only generated Shape UUID strings inside geometry parameters normalized; every other parameter and buffer compared exactly.",
+  "sharedWrites": 0
+}

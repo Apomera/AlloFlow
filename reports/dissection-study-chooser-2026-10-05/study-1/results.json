@@ -1,0 +1,843 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-study-chooser-2026-10-05/study-1/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "dissection-study-chooser.spec.ts",
+      "file": "dissection-study-chooser.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "study chooser layout phone",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 20171,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts:139:58",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts",
+                      "column": 58,
+                      "line": 139
+                    },
+                    "snippet": "  137 |   await expect(page.locator('#diss-practical-study-help')).toHaveText('Two-minute identification check with structure labels hidden.');\n  138 |   await expect(readiness(page)).toHaveAttribute('role', 'status'); await expect(readiness(page)).toHaveAttribute('aria-live', 'polite'); await expect(readiness(page)).toHaveAttribute('data-practical-ready', 'true');\n> 139 |   const ids = await visibleIds(page); expect(ids.length).toBeGreaterThanOrEqual(2); await expect(readiness(page)).toHaveText(`${ids.length} visible structures available. Starts a new timed identification attempt.`);\n      |                                                          ^\n  140 |   const m = await readable(page, c.available, !!c.large); const columns = m.containerWidth <= 520 ? 1 : m.containerWidth <= 980 ? 2 : 3;\n  141 |   expect(m.columns).toBe(columns); expect(m.activityColumns).toBe(m.containerWidth <= 520 ? 1 : 2);\n  142 |   const [practice, timed] = m.groups;"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts",
+                        "column": 58,
+                        "line": 139
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n\n  137 |   await expect(page.locator('#diss-practical-study-help')).toHaveText('Two-minute identification check with structure labels hidden.');\n  138 |   await expect(readiness(page)).toHaveAttribute('role', 'status'); await expect(readiness(page)).toHaveAttribute('aria-live', 'polite'); await expect(readiness(page)).toHaveAttribute('data-practical-ready', 'true');\n> 139 |   const ids = await visibleIds(page); expect(ids.length).toBeGreaterThanOrEqual(2); await expect(readiness(page)).toHaveText(`${ids.length} visible structures available. Starts a new timed identification attempt.`);\n      |                                                          ^\n  140 |   const m = await readable(page, c.available, !!c.large); const columns = m.containerWidth <= 520 ? 1 : m.containerWidth <= 980 ? 2 : 3;\n  141 |   expect(m.columns).toBe(columns); expect(m.activityColumns).toBe(m.containerWidth <= 520 ? 1 : 2);\n  142 |   const [practice, timed] = m.groups;\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts:139:58"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:25:02.784Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-study-chooser-layout-phone-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-study-chooser-layout-phone-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-study-chooser-layout-phone-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-study-chooser-layout-phone-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts",
+                    "column": 58,
+                    "line": 139
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f4d7c2328972cc528d21-ce0419f02ead31ba74f3",
+          "file": "dissection-study-chooser.spec.ts",
+          "line": 122,
+          "column": 30
+        },
+        {
+          "title": "study chooser layout tablet",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 17477,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts:139:58",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts",
+                      "column": 58,
+                      "line": 139
+                    },
+                    "snippet": "  137 |   await expect(page.locator('#diss-practical-study-help')).toHaveText('Two-minute identification check with structure labels hidden.');\n  138 |   await expect(readiness(page)).toHaveAttribute('role', 'status'); await expect(readiness(page)).toHaveAttribute('aria-live', 'polite'); await expect(readiness(page)).toHaveAttribute('data-practical-ready', 'true');\n> 139 |   const ids = await visibleIds(page); expect(ids.length).toBeGreaterThanOrEqual(2); await expect(readiness(page)).toHaveText(`${ids.length} visible structures available. Starts a new timed identification attempt.`);\n      |                                                          ^\n  140 |   const m = await readable(page, c.available, !!c.large); const columns = m.containerWidth <= 520 ? 1 : m.containerWidth <= 980 ? 2 : 3;\n  141 |   expect(m.columns).toBe(columns); expect(m.activityColumns).toBe(m.containerWidth <= 520 ? 1 : 2);\n  142 |   const [practice, timed] = m.groups;"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts",
+                        "column": 58,
+                        "line": 139
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n\n  137 |   await expect(page.locator('#diss-practical-study-help')).toHaveText('Two-minute identification check with structure labels hidden.');\n  138 |   await expect(readiness(page)).toHaveAttribute('role', 'status'); await expect(readiness(page)).toHaveAttribute('aria-live', 'polite'); await expect(readiness(page)).toHaveAttribute('data-practical-ready', 'true');\n> 139 |   const ids = await visibleIds(page); expect(ids.length).toBeGreaterThanOrEqual(2); await expect(readiness(page)).toHaveText(`${ids.length} visible structures available. Starts a new timed identification attempt.`);\n      |                                                          ^\n  140 |   const m = await readable(page, c.available, !!c.large); const columns = m.containerWidth <= 520 ? 1 : m.containerWidth <= 980 ? 2 : 3;\n  141 |   expect(m.columns).toBe(columns); expect(m.activityColumns).toBe(m.containerWidth <= 520 ? 1 : 2);\n  142 |   const [practice, timed] = m.groups;\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts:139:58"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:26:27.031Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-study-chooser-layout-tablet-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-study-chooser-layout-tablet-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-study-chooser-layout-tablet-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-study-chooser-layout-tablet-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts",
+                    "column": 58,
+                    "line": 139
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f4d7c2328972cc528d21-60150318831839d7cc5a",
+          "file": "dissection-study-chooser.spec.ts",
+          "line": 122,
+          "column": 30
+        },
+        {
+          "title": "study chooser layout desktop",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 8639,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts:139:58",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts",
+                      "column": 58,
+                      "line": 139
+                    },
+                    "snippet": "  137 |   await expect(page.locator('#diss-practical-study-help')).toHaveText('Two-minute identification check with structure labels hidden.');\n  138 |   await expect(readiness(page)).toHaveAttribute('role', 'status'); await expect(readiness(page)).toHaveAttribute('aria-live', 'polite'); await expect(readiness(page)).toHaveAttribute('data-practical-ready', 'true');\n> 139 |   const ids = await visibleIds(page); expect(ids.length).toBeGreaterThanOrEqual(2); await expect(readiness(page)).toHaveText(`${ids.length} visible structures available. Starts a new timed identification attempt.`);\n      |                                                          ^\n  140 |   const m = await readable(page, c.available, !!c.large); const columns = m.containerWidth <= 520 ? 1 : m.containerWidth <= 980 ? 2 : 3;\n  141 |   expect(m.columns).toBe(columns); expect(m.activityColumns).toBe(m.containerWidth <= 520 ? 1 : 2);\n  142 |   const [practice, timed] = m.groups;"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts",
+                        "column": 58,
+                        "line": 139
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n\n  137 |   await expect(page.locator('#diss-practical-study-help')).toHaveText('Two-minute identification check with structure labels hidden.');\n  138 |   await expect(readiness(page)).toHaveAttribute('role', 'status'); await expect(readiness(page)).toHaveAttribute('aria-live', 'polite'); await expect(readiness(page)).toHaveAttribute('data-practical-ready', 'true');\n> 139 |   const ids = await visibleIds(page); expect(ids.length).toBeGreaterThanOrEqual(2); await expect(readiness(page)).toHaveText(`${ids.length} visible structures available. Starts a new timed identification attempt.`);\n      |                                                          ^\n  140 |   const m = await readable(page, c.available, !!c.large); const columns = m.containerWidth <= 520 ? 1 : m.containerWidth <= 980 ? 2 : 3;\n  141 |   expect(m.columns).toBe(columns); expect(m.activityColumns).toBe(m.containerWidth <= 520 ? 1 : 2);\n  142 |   const [practice, timed] = m.groups;\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts:139:58"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:27:06.317Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-study-chooser-layout-desktop-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-study-chooser-layout-desktop-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-study-chooser-layout-desktop-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-study-chooser-layout-desktop-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts",
+                    "column": 58,
+                    "line": 139
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f4d7c2328972cc528d21-d64ac940a6233dcfe374",
+          "file": "dissection-study-chooser.spec.ts",
+          "line": 122,
+          "column": 30
+        },
+        {
+          "title": "study chooser layout embedded-medium",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 23800,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts:139:58",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts",
+                      "column": 58,
+                      "line": 139
+                    },
+                    "snippet": "  137 |   await expect(page.locator('#diss-practical-study-help')).toHaveText('Two-minute identification check with structure labels hidden.');\n  138 |   await expect(readiness(page)).toHaveAttribute('role', 'status'); await expect(readiness(page)).toHaveAttribute('aria-live', 'polite'); await expect(readiness(page)).toHaveAttribute('data-practical-ready', 'true');\n> 139 |   const ids = await visibleIds(page); expect(ids.length).toBeGreaterThanOrEqual(2); await expect(readiness(page)).toHaveText(`${ids.length} visible structures available. Starts a new timed identification attempt.`);\n      |                                                          ^\n  140 |   const m = await readable(page, c.available, !!c.large); const columns = m.containerWidth <= 520 ? 1 : m.containerWidth <= 980 ? 2 : 3;\n  141 |   expect(m.columns).toBe(columns); expect(m.activityColumns).toBe(m.containerWidth <= 520 ? 1 : 2);\n  142 |   const [practice, timed] = m.groups;"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts",
+                        "column": 58,
+                        "line": 139
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n\n  137 |   await expect(page.locator('#diss-practical-study-help')).toHaveText('Two-minute identification check with structure labels hidden.');\n  138 |   await expect(readiness(page)).toHaveAttribute('role', 'status'); await expect(readiness(page)).toHaveAttribute('aria-live', 'polite'); await expect(readiness(page)).toHaveAttribute('data-practical-ready', 'true');\n> 139 |   const ids = await visibleIds(page); expect(ids.length).toBeGreaterThanOrEqual(2); await expect(readiness(page)).toHaveText(`${ids.length} visible structures available. Starts a new timed identification attempt.`);\n      |                                                          ^\n  140 |   const m = await readable(page, c.available, !!c.large); const columns = m.containerWidth <= 520 ? 1 : m.containerWidth <= 980 ? 2 : 3;\n  141 |   expect(m.columns).toBe(columns); expect(m.activityColumns).toBe(m.containerWidth <= 520 ? 1 : 2);\n  142 |   const [practice, timed] = m.groups;\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts:139:58"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:27:28.086Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-s-752db-oser-layout-embedded-medium-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-s-752db-oser-layout-embedded-medium-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-s-752db-oser-layout-embedded-medium-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-s-752db-oser-layout-embedded-medium-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts",
+                    "column": 58,
+                    "line": 139
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f4d7c2328972cc528d21-11ead7722027618867c0",
+          "file": "dissection-study-chooser.spec.ts",
+          "line": 122,
+          "column": 30
+        },
+        {
+          "title": "study chooser layout embedded-large-contrast",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 19623,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts:139:58",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts",
+                      "column": 58,
+                      "line": 139
+                    },
+                    "snippet": "  137 |   await expect(page.locator('#diss-practical-study-help')).toHaveText('Two-minute identification check with structure labels hidden.');\n  138 |   await expect(readiness(page)).toHaveAttribute('role', 'status'); await expect(readiness(page)).toHaveAttribute('aria-live', 'polite'); await expect(readiness(page)).toHaveAttribute('data-practical-ready', 'true');\n> 139 |   const ids = await visibleIds(page); expect(ids.length).toBeGreaterThanOrEqual(2); await expect(readiness(page)).toHaveText(`${ids.length} visible structures available. Starts a new timed identification attempt.`);\n      |                                                          ^\n  140 |   const m = await readable(page, c.available, !!c.large); const columns = m.containerWidth <= 520 ? 1 : m.containerWidth <= 980 ? 2 : 3;\n  141 |   expect(m.columns).toBe(columns); expect(m.activityColumns).toBe(m.containerWidth <= 520 ? 1 : 2);\n  142 |   const [practice, timed] = m.groups;"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts",
+                        "column": 58,
+                        "line": 139
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n\n  137 |   await expect(page.locator('#diss-practical-study-help')).toHaveText('Two-minute identification check with structure labels hidden.');\n  138 |   await expect(readiness(page)).toHaveAttribute('role', 'status'); await expect(readiness(page)).toHaveAttribute('aria-live', 'polite'); await expect(readiness(page)).toHaveAttribute('data-practical-ready', 'true');\n> 139 |   const ids = await visibleIds(page); expect(ids.length).toBeGreaterThanOrEqual(2); await expect(readiness(page)).toHaveText(`${ids.length} visible structures available. Starts a new timed identification attempt.`);\n      |                                                          ^\n  140 |   const m = await readable(page, c.available, !!c.large); const columns = m.containerWidth <= 520 ? 1 : m.containerWidth <= 980 ? 2 : 3;\n  141 |   expect(m.columns).toBe(columns); expect(m.activityColumns).toBe(m.containerWidth <= 520 ? 1 : 2);\n  142 |   const [practice, timed] = m.groups;\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts:139:58"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:29:01.032Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-s-5b65c-out-embedded-large-contrast-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-s-5b65c-out-embedded-large-contrast-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-s-5b65c-out-embedded-large-contrast-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-s-5b65c-out-embedded-large-contrast-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts",
+                    "column": 58,
+                    "line": 139
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f4d7c2328972cc528d21-145cdb5500b070580c6f",
+          "file": "dissection-study-chooser.spec.ts",
+          "line": 122,
+          "column": 30
+        },
+        {
+          "title": "study chooser layout forced-colors",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 4504,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts:139:58",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts",
+                      "column": 58,
+                      "line": 139
+                    },
+                    "snippet": "  137 |   await expect(page.locator('#diss-practical-study-help')).toHaveText('Two-minute identification check with structure labels hidden.');\n  138 |   await expect(readiness(page)).toHaveAttribute('role', 'status'); await expect(readiness(page)).toHaveAttribute('aria-live', 'polite'); await expect(readiness(page)).toHaveAttribute('data-practical-ready', 'true');\n> 139 |   const ids = await visibleIds(page); expect(ids.length).toBeGreaterThanOrEqual(2); await expect(readiness(page)).toHaveText(`${ids.length} visible structures available. Starts a new timed identification attempt.`);\n      |                                                          ^\n  140 |   const m = await readable(page, c.available, !!c.large); const columns = m.containerWidth <= 520 ? 1 : m.containerWidth <= 980 ? 2 : 3;\n  141 |   expect(m.columns).toBe(columns); expect(m.activityColumns).toBe(m.containerWidth <= 520 ? 1 : 2);\n  142 |   const [practice, timed] = m.groups;"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts",
+                        "column": 58,
+                        "line": 139
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n\n  137 |   await expect(page.locator('#diss-practical-study-help')).toHaveText('Two-minute identification check with structure labels hidden.');\n  138 |   await expect(readiness(page)).toHaveAttribute('role', 'status'); await expect(readiness(page)).toHaveAttribute('aria-live', 'polite'); await expect(readiness(page)).toHaveAttribute('data-practical-ready', 'true');\n> 139 |   const ids = await visibleIds(page); expect(ids.length).toBeGreaterThanOrEqual(2); await expect(readiness(page)).toHaveText(`${ids.length} visible structures available. Starts a new timed identification attempt.`);\n      |                                                          ^\n  140 |   const m = await readable(page, c.available, !!c.large); const columns = m.containerWidth <= 520 ? 1 : m.containerWidth <= 980 ? 2 : 3;\n  141 |   expect(m.columns).toBe(columns); expect(m.activityColumns).toBe(m.containerWidth <= 520 ? 1 : 2);\n  142 |   const [practice, timed] = m.groups;\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts:139:58"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:29:54.056Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-study-chooser-layout-forced-colors-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-study-chooser-layout-forced-colors-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-study-chooser-layout-forced-colors-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-study-chooser-layout-forced-colors-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts",
+                    "column": 58,
+                    "line": 139
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f4d7c2328972cc528d21-66506d78b1327753dc38",
+          "file": "dissection-study-chooser.spec.ts",
+          "line": 122,
+          "column": 30
+        },
+        {
+          "title": "keyboard Flashcard focuses recall prompt and Compare preserves both drafts and saved learner work",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11379,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:30:42.830Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f4d7c2328972cc528d21-0c5f082be85167107373",
+          "file": "dissection-study-chooser.spec.ts",
+          "line": 151,
+          "column": 5
+        },
+        {
+          "title": "Compare explains missing selection and opens existing references without adding observations",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10045,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:30:56.893Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f4d7c2328972cc528d21-b27f20c7dde85fb92c90",
+          "file": "dissection-study-chooser.spec.ts",
+          "line": 165,
+          "column": 5
+        },
+        {
+          "title": "practical readiness exposes native insufficient-field and active-transition guards",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 12391,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts:200:43",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts",
+                      "column": 43,
+                      "line": 200
+                    },
+                    "snippet": "  198 |   // Mount first: the harness waits long enough for a seeded native incision to\n  199 |   // finish. Pause time before activating the exact native state so the product's\n> 200 |   // own 500 ms animation cannot settle before the keyboard guard is exercised.\n      |                                           ^\n  201 |   await mount(page, {}, 390, 390);\n  202 |   const transitionEpoch = new Date('2026-10-05T15:00:00.000Z'); await page.clock.install({ time: transitionEpoch }); await page.clock.pauseAt(new Date(transitionEpoch.getTime() + 1000));\n  203 |   await page.evaluate(() => (window as any).__ctx.update('dissection', '_incisionAnim', { active: true, startTick: Date.now(), layerName: 'skin' }));"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts",
+                        "column": 43,
+                        "line": 200
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n\n  198 |   // Mount first: the harness waits long enough for a seeded native incision to\n  199 |   // finish. Pause time before activating the exact native state so the product's\n> 200 |   // own 500 ms animation cannot settle before the keyboard guard is exercised.\n      |                                           ^\n  201 |   await mount(page, {}, 390, 390);\n  202 |   const transitionEpoch = new Date('2026-10-05T15:00:00.000Z'); await page.clock.install({ time: transitionEpoch }); await page.clock.pauseAt(new Date(transitionEpoch.getTime() + 1000));\n  203 |   await page.evaluate(() => (window as any).__ctx.update('dissection', '_incisionAnim', { active: true, startTick: Date.now(), layerName: 'skin' }));\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts:200:43"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:31:06.962Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-p-9c099-nd-active-transition-guards-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-p-9c099-nd-active-transition-guards-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-p-9c099-nd-active-transition-guards-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-p-9c099-nd-active-transition-guards-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts",
+                    "column": 43,
+                    "line": 200
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f4d7c2328972cc528d21-d86aecb9fc16b45d9a21",
+          "file": "dissection-study-chooser.spec.ts",
+          "line": 186,
+          "column": 5
+        },
+        {
+          "title": "native timed start freezes its deadline and targets while visible timer updates, and End restores labels and stops clocks",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 5079,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts:209:86",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts",
+                      "column": 86,
+                      "line": 209
+                    },
+                    "snippet": "  207 |   await expect(page.locator('[data-diss-tool-status]')).toHaveAttribute('data-tone', 'caution'); await expect(page.locator('[data-diss-tool-status]')).toHaveText('Finish the current layer transition before starting the timed practical.');\n  208 |   expect((await state(page)).practicalMode).not.toBe(true); expect(await proof(page)).toEqual(transitionBefore); await focused(practical(page));\n> 209 |   await writeFile(`${out}/readiness-guards-proof.json`, JSON.stringify({ unavailable: coveredBefore, transition: transitionBefore, nativeCaution: (await state(page)).procedureFeedback }, null, 2));\n      |                                                                                      ^\n  210 | });\n  211 |\n  212 | test('native timed start freezes its deadline and targets while visible timer updates, and End restores labels and stops clocks', async ({ page }) => {"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts",
+                        "column": 86,
+                        "line": 209
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n\n  207 |   await expect(page.locator('[data-diss-tool-status]')).toHaveAttribute('data-tone', 'caution'); await expect(page.locator('[data-diss-tool-status]')).toHaveText('Finish the current layer transition before starting the timed practical.');\n  208 |   expect((await state(page)).practicalMode).not.toBe(true); expect(await proof(page)).toEqual(transitionBefore); await focused(practical(page));\n> 209 |   await writeFile(`${out}/readiness-guards-proof.json`, JSON.stringify({ unavailable: coveredBefore, transition: transitionBefore, nativeCaution: (await state(page)).procedureFeedback }, null, 2));\n      |                                                                                      ^\n  210 | });\n  211 |\n  212 | test('native timed start freezes its deadline and targets while visible timer updates, and End restores labels and stops clocks', async ({ page }) => {\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts:209:86"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:31:49.616Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-n-aa218-res-labels-and-stops-clocks-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-n-aa218-res-labels-and-stops-clocks-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-n-aa218-res-labels-and-stops-clocks-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-study-chooser-2026-10-05\\study-1\\test-results\\dissection-study-chooser-n-aa218-res-labels-and-stops-clocks-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-study-chooser.spec.ts",
+                    "column": 86,
+                    "line": 209
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f4d7c2328972cc528d21-7f07d322dae7dde966e6",
+          "file": "dissection-study-chooser.spec.ts",
+          "line": 207,
+          "column": 5
+        },
+        {
+          "title": "Essentials keeps one group column and sheep-eye native reference comes first with its existing focus and assessment gate",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 42445,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:32:24.938Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f4d7c2328972cc528d21-37d45e4d5c0d7ab35c0e",
+          "file": "dissection-study-chooser.spec.ts",
+          "line": 231,
+          "column": 5
+        },
+        {
+          "title": "nested pressed and focus cues survive embedded resizing and forced colors, and print hides the chooser",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 25929,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:33:17.686Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f4d7c2328972cc528d21-7b3f1b7527a46b66d8ed",
+          "file": "dissection-study-chooser.spec.ts",
+          "line": 247,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-06T03:24:46.777Z",
+    "duration": 552820.4,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 8,
+    "flaky": 0
+  }
+}

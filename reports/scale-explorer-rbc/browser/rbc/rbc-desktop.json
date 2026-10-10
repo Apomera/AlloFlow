@@ -1,0 +1,1972 @@
+{
+  "continuousEntry": {
+    "type": "webgl",
+    "kind": "rbc",
+    "stats": {
+      "bodyExtent": 1,
+      "bodyReferenceMeters": 0.0000075,
+      "reference": "cell-diameter",
+      "profile": "Evans–Fung",
+      "centerThickness": 0.1035805,
+      "windowCenter": [
+        -0.18,
+        0.14
+      ],
+      "windowRadius": 0.16,
+      "closedDimples": true,
+      "filledCytoplasm": true,
+      "molecularDetailsEnlarged": true,
+      "featuredHemoglobin": {
+        "pdb": "2HHB",
+        "chains": 4,
+        "alphaCarbons": 574,
+        "hemes": 4,
+        "deoxygenated": true,
+        "displayExtent": 0.055
+      }
+    },
+    "scale": 2.83258217653688,
+    "declaredExtent": 1,
+    "dimension": "x",
+    "measureCenter": 0,
+    "bodyReference": 1,
+    "rulerReference": 0.9999999999999999,
+    "rulerEnds": [
+      -0.49999999999999994,
+      0.4999999999999999
+    ],
+    "aligned": 0.9999999999660437,
+    "targetError": 0,
+    "aim": [
+      -0.4416,
+      -0.015,
+      -0.107
+    ],
+    "yaw": 0.27999999999999997,
+    "pitch": 0.15,
+    "detail": "",
+    "near": 0.002,
+    "meshes": [
+      {
+        "geometry": "859E918F-7634-430A-8B70-1A610CC4C251",
+        "material": "20CB8877-3EC7-4C01-BE64-E62AB3A7CD46",
+        "detail": "center",
+        "vertices": 10449,
+        "indices": 9984
+      },
+      {
+        "geometry": "CFD4D71B-0C0B-4416-9E83-AEDE693D49D6",
+        "material": "D957410F-C8F9-4524-912F-37426B7FE0E2",
+        "detail": "rim",
+        "vertices": 10449,
+        "indices": 16896
+      },
+      {
+        "geometry": "AC43EEDC-2996-4F8B-AF0B-E4F62A2AFC37",
+        "material": "E099AB5B-EE0B-4CCF-AB62-84DDFAD67C8B",
+        "detail": "membrane",
+        "vertices": 10449,
+        "indices": 33792
+      },
+      {
+        "geometry": "A7D72E02-666B-4EA7-B3D8-C20A5D6E5252",
+        "material": "AEFAA055-5C01-452F-A0DF-A7C9F97FF09C",
+        "detail": "center",
+        "vertices": 10115,
+        "indices": 9591
+      },
+      {
+        "geometry": "405A15C2-03CA-45E1-AA65-67C7298AF532",
+        "material": "97C3E9BE-AD40-46C8-86C9-84CCEEEC358A",
+        "detail": "rim",
+        "vertices": 10115,
+        "indices": 16686
+      },
+      {
+        "geometry": "E5F09615-8F23-4DF3-A33B-CD6BA4D2D445",
+        "material": "B2D33AD3-8C7E-4289-8810-35982C35A3A5",
+        "detail": "membrane",
+        "vertices": 10115,
+        "indices": 32391
+      },
+      {
+        "geometry": "6935B4A6-12F8-4C44-B159-E864DE9F5670",
+        "material": "415A762C-B4D3-45CC-A060-CC0F53026739",
+        "detail": "membrane",
+        "vertices": 162,
+        "indices": 480
+      },
+      {
+        "geometry": "0873C038-49C8-4CA9-9913-40658D4BC776",
+        "material": "1C3347BA-3D19-4A1F-A52A-9E92D9BBC2E1",
+        "detail": "membrane",
+        "vertices": 162,
+        "indices": 480
+      },
+      {
+        "geometry": "501F1E22-4698-4B58-B10F-302D7DEF3594",
+        "material": "86970D0A-B160-4DBB-960C-BBED73CF7C7A",
+        "detail": "hemoglobin",
+        "vertices": 4419,
+        "indices": 24672
+      },
+      {
+        "geometry": "6C57FB14-E980-47F8-A41A-1915C038B5BB",
+        "material": "1924C459-EC1E-4254-BFFB-DEDA40B8A1A7",
+        "detail": "spectrin",
+        "vertices": 11907,
+        "indices": 51408
+      },
+      {
+        "geometry": "10DEDD98-F084-470C-8BF0-2CBA8F04D9F4",
+        "material": "86814B08-9172-4627-A493-060E9D65C91B",
+        "detail": "hemoglobin",
+        "vertices": 9877,
+        "indices": 43704
+      },
+      {
+        "geometry": "617C9A81-BE86-42C2-8CD6-313734516CD9",
+        "material": "56790C29-327C-461F-B670-371B38819D67",
+        "detail": "hemoglobin",
+        "vertices": 9926,
+        "indices": 44064
+      },
+      {
+        "geometry": "F38FC635-D88A-4CDB-803F-0F266AA93C01",
+        "material": "2A31E3D6-B207-4C45-BD8F-326D9CBCC4F6",
+        "detail": "hemoglobin",
+        "vertices": 3864,
+        "indices": 13248
+      },
+      {
+        "geometry": "3D1BE2A6-930F-4E3A-B437-4C8E166C2770",
+        "material": "92F529D0-F9A6-4B5C-9D1E-A9DCE6113185",
+        "detail": "hemoglobin",
+        "vertices": 364,
+        "indices": 1440
+      }
+    ],
+    "bounds": {
+      "minX": -0.2920307344451279,
+      "maxX": 0.3160540870175894,
+      "minY": -0.5185416876871276,
+      "maxY": 0.5398540356582479,
+      "visibleVertices": 31347,
+      "clippedVertices": 0
+    },
+    "rulerBounds": {
+      "minX": -0.2725772326436193,
+      "maxX": 0.3042336201560229,
+      "minY": -0.7646473270139623,
+      "maxY": -0.5713136423480062
+    },
+    "comparisonRatio": null,
+    "habitat": {
+      "name": "specimen-studio",
+      "leaf": {
+        "visible": false,
+        "y": 0,
+        "scale": 1,
+        "meshes": 0
+      },
+      "ground": {
+        "visible": false,
+        "y": -1.508
+      },
+      "floorTarget": -1.439248126840138,
+      "key": {
+        "directional": true,
+        "shadow": false,
+        "intensity": 1.5
+      }
+    },
+    "pose": {
+      "cutaway": false,
+      "full": true,
+      "section": false
+    },
+    "draws": 216,
+    "renders": 10
+  },
+  "initial": {
+    "type": "webgl",
+    "kind": "rbc",
+    "stats": {
+      "bodyExtent": 1,
+      "bodyReferenceMeters": 0.0000075,
+      "reference": "cell-diameter",
+      "profile": "Evans–Fung",
+      "centerThickness": 0.1035805,
+      "windowCenter": [
+        -0.18,
+        0.14
+      ],
+      "windowRadius": 0.16,
+      "closedDimples": true,
+      "filledCytoplasm": true,
+      "molecularDetailsEnlarged": true,
+      "featuredHemoglobin": {
+        "pdb": "2HHB",
+        "chains": 4,
+        "alphaCarbons": 574,
+        "hemes": 4,
+        "deoxygenated": true,
+        "displayExtent": 0.055
+      }
+    },
+    "scale": 3,
+    "declaredExtent": 1,
+    "dimension": "x",
+    "measureCenter": 0,
+    "bodyReference": 1,
+    "rulerReference": 0.9999999999999997,
+    "rulerEnds": [
+      -0.49999999999999983,
+      0.49999999999999983
+    ],
+    "aligned": 1,
+    "targetError": 0,
+    "aim": [
+      0,
+      0,
+      0
+    ],
+    "yaw": 0.27999999999999997,
+    "pitch": 0.15,
+    "detail": "",
+    "near": 0.002,
+    "meshes": [
+      {
+        "geometry": "859E918F-7634-430A-8B70-1A610CC4C251",
+        "material": "20CB8877-3EC7-4C01-BE64-E62AB3A7CD46",
+        "detail": "center",
+        "vertices": 10449,
+        "indices": 9984
+      },
+      {
+        "geometry": "CFD4D71B-0C0B-4416-9E83-AEDE693D49D6",
+        "material": "D957410F-C8F9-4524-912F-37426B7FE0E2",
+        "detail": "rim",
+        "vertices": 10449,
+        "indices": 16896
+      },
+      {
+        "geometry": "AC43EEDC-2996-4F8B-AF0B-E4F62A2AFC37",
+        "material": "E099AB5B-EE0B-4CCF-AB62-84DDFAD67C8B",
+        "detail": "membrane",
+        "vertices": 10449,
+        "indices": 33792
+      },
+      {
+        "geometry": "A7D72E02-666B-4EA7-B3D8-C20A5D6E5252",
+        "material": "AEFAA055-5C01-452F-A0DF-A7C9F97FF09C",
+        "detail": "center",
+        "vertices": 10115,
+        "indices": 9591
+      },
+      {
+        "geometry": "405A15C2-03CA-45E1-AA65-67C7298AF532",
+        "material": "97C3E9BE-AD40-46C8-86C9-84CCEEEC358A",
+        "detail": "rim",
+        "vertices": 10115,
+        "indices": 16686
+      },
+      {
+        "geometry": "E5F09615-8F23-4DF3-A33B-CD6BA4D2D445",
+        "material": "B2D33AD3-8C7E-4289-8810-35982C35A3A5",
+        "detail": "membrane",
+        "vertices": 10115,
+        "indices": 32391
+      },
+      {
+        "geometry": "6935B4A6-12F8-4C44-B159-E864DE9F5670",
+        "material": "415A762C-B4D3-45CC-A060-CC0F53026739",
+        "detail": "membrane",
+        "vertices": 162,
+        "indices": 480
+      },
+      {
+        "geometry": "0873C038-49C8-4CA9-9913-40658D4BC776",
+        "material": "1C3347BA-3D19-4A1F-A52A-9E92D9BBC2E1",
+        "detail": "membrane",
+        "vertices": 162,
+        "indices": 480
+      },
+      {
+        "geometry": "501F1E22-4698-4B58-B10F-302D7DEF3594",
+        "material": "86970D0A-B160-4DBB-960C-BBED73CF7C7A",
+        "detail": "hemoglobin",
+        "vertices": 4419,
+        "indices": 24672
+      },
+      {
+        "geometry": "6C57FB14-E980-47F8-A41A-1915C038B5BB",
+        "material": "1924C459-EC1E-4254-BFFB-DEDA40B8A1A7",
+        "detail": "spectrin",
+        "vertices": 11907,
+        "indices": 51408
+      },
+      {
+        "geometry": "10DEDD98-F084-470C-8BF0-2CBA8F04D9F4",
+        "material": "86814B08-9172-4627-A493-060E9D65C91B",
+        "detail": "hemoglobin",
+        "vertices": 9877,
+        "indices": 43704
+      },
+      {
+        "geometry": "617C9A81-BE86-42C2-8CD6-313734516CD9",
+        "material": "56790C29-327C-461F-B670-371B38819D67",
+        "detail": "hemoglobin",
+        "vertices": 9926,
+        "indices": 44064
+      },
+      {
+        "geometry": "F38FC635-D88A-4CDB-803F-0F266AA93C01",
+        "material": "2A31E3D6-B207-4C45-BD8F-326D9CBCC4F6",
+        "detail": "hemoglobin",
+        "vertices": 3864,
+        "indices": 13248
+      },
+      {
+        "geometry": "3D1BE2A6-930F-4E3A-B437-4C8E166C2770",
+        "material": "92F529D0-F9A6-4B5C-9D1E-A9DCE6113185",
+        "detail": "hemoglobin",
+        "vertices": 364,
+        "indices": 1440
+      }
+    ],
+    "bounds": {
+      "minX": -0.3088679324956513,
+      "maxX": 0.33586966744768326,
+      "minY": -0.5490676446503386,
+      "maxY": 0.5730018978094247,
+      "visibleVertices": 31347,
+      "clippedVertices": 0
+    },
+    "rulerBounds": {
+      "minX": -0.2872120208317359,
+      "maxX": 0.32257427467401256,
+      "minY": -0.8105181108735569,
+      "maxY": -0.6019613887904222
+    },
+    "comparisonRatio": null,
+    "habitat": {
+      "name": "specimen-studio",
+      "leaf": {
+        "visible": false,
+        "y": 0,
+        "scale": 1,
+        "meshes": 0
+      },
+      "ground": {
+        "visible": false,
+        "y": -1.508
+      },
+      "floorTarget": -1.508,
+      "key": {
+        "directional": true,
+        "shadow": false,
+        "intensity": 1.5
+      }
+    },
+    "pose": {
+      "cutaway": false,
+      "full": true,
+      "section": false
+    },
+    "draws": 230,
+    "renders": 11
+  },
+  "wholeInterior": {
+    "type": "webgl",
+    "kind": "rbc",
+    "stats": {
+      "bodyExtent": 1,
+      "bodyReferenceMeters": 0.0000075,
+      "reference": "cell-diameter",
+      "profile": "Evans–Fung",
+      "centerThickness": 0.1035805,
+      "windowCenter": [
+        -0.18,
+        0.14
+      ],
+      "windowRadius": 0.16,
+      "closedDimples": true,
+      "filledCytoplasm": true,
+      "molecularDetailsEnlarged": true,
+      "featuredHemoglobin": {
+        "pdb": "2HHB",
+        "chains": 4,
+        "alphaCarbons": 574,
+        "hemes": 4,
+        "deoxygenated": true,
+        "displayExtent": 0.055
+      }
+    },
+    "scale": 3,
+    "declaredExtent": 1,
+    "dimension": "x",
+    "measureCenter": 0,
+    "bodyReference": 1,
+    "rulerReference": 0.9999999999999997,
+    "rulerEnds": [
+      -0.49999999999999983,
+      0.49999999999999983
+    ],
+    "aligned": 1,
+    "targetError": 0,
+    "aim": [
+      0,
+      0,
+      0
+    ],
+    "yaw": 0,
+    "pitch": 0.12000000000000001,
+    "detail": "",
+    "near": 0.002,
+    "meshes": [
+      {
+        "geometry": "859E918F-7634-430A-8B70-1A610CC4C251",
+        "material": "20CB8877-3EC7-4C01-BE64-E62AB3A7CD46",
+        "detail": "center",
+        "vertices": 10449,
+        "indices": 9984
+      },
+      {
+        "geometry": "CFD4D71B-0C0B-4416-9E83-AEDE693D49D6",
+        "material": "D957410F-C8F9-4524-912F-37426B7FE0E2",
+        "detail": "rim",
+        "vertices": 10449,
+        "indices": 16896
+      },
+      {
+        "geometry": "AC43EEDC-2996-4F8B-AF0B-E4F62A2AFC37",
+        "material": "E099AB5B-EE0B-4CCF-AB62-84DDFAD67C8B",
+        "detail": "membrane",
+        "vertices": 10449,
+        "indices": 33792
+      },
+      {
+        "geometry": "A7D72E02-666B-4EA7-B3D8-C20A5D6E5252",
+        "material": "AEFAA055-5C01-452F-A0DF-A7C9F97FF09C",
+        "detail": "center",
+        "vertices": 10115,
+        "indices": 9591
+      },
+      {
+        "geometry": "405A15C2-03CA-45E1-AA65-67C7298AF532",
+        "material": "97C3E9BE-AD40-46C8-86C9-84CCEEEC358A",
+        "detail": "rim",
+        "vertices": 10115,
+        "indices": 16686
+      },
+      {
+        "geometry": "E5F09615-8F23-4DF3-A33B-CD6BA4D2D445",
+        "material": "B2D33AD3-8C7E-4289-8810-35982C35A3A5",
+        "detail": "membrane",
+        "vertices": 10115,
+        "indices": 32391
+      },
+      {
+        "geometry": "6935B4A6-12F8-4C44-B159-E864DE9F5670",
+        "material": "415A762C-B4D3-45CC-A060-CC0F53026739",
+        "detail": "membrane",
+        "vertices": 162,
+        "indices": 480
+      },
+      {
+        "geometry": "0873C038-49C8-4CA9-9913-40658D4BC776",
+        "material": "1C3347BA-3D19-4A1F-A52A-9E92D9BBC2E1",
+        "detail": "membrane",
+        "vertices": 162,
+        "indices": 480
+      },
+      {
+        "geometry": "501F1E22-4698-4B58-B10F-302D7DEF3594",
+        "material": "86970D0A-B160-4DBB-960C-BBED73CF7C7A",
+        "detail": "hemoglobin",
+        "vertices": 4419,
+        "indices": 24672
+      },
+      {
+        "geometry": "6C57FB14-E980-47F8-A41A-1915C038B5BB",
+        "material": "1924C459-EC1E-4254-BFFB-DEDA40B8A1A7",
+        "detail": "spectrin",
+        "vertices": 11907,
+        "indices": 51408
+      },
+      {
+        "geometry": "10DEDD98-F084-470C-8BF0-2CBA8F04D9F4",
+        "material": "86814B08-9172-4627-A493-060E9D65C91B",
+        "detail": "hemoglobin",
+        "vertices": 9877,
+        "indices": 43704
+      },
+      {
+        "geometry": "617C9A81-BE86-42C2-8CD6-313734516CD9",
+        "material": "56790C29-327C-461F-B670-371B38819D67",
+        "detail": "hemoglobin",
+        "vertices": 9926,
+        "indices": 44064
+      },
+      {
+        "geometry": "F38FC635-D88A-4CDB-803F-0F266AA93C01",
+        "material": "2A31E3D6-B207-4C45-BD8F-326D9CBCC4F6",
+        "detail": "hemoglobin",
+        "vertices": 3864,
+        "indices": 13248
+      },
+      {
+        "geometry": "3D1BE2A6-930F-4E3A-B437-4C8E166C2770",
+        "material": "92F529D0-F9A6-4B5C-9D1E-A9DCE6113185",
+        "detail": "hemoglobin",
+        "vertices": 364,
+        "indices": 1440
+      }
+    ],
+    "bounds": {
+      "minX": -0.3304845261640531,
+      "maxX": 0.3304845261640531,
+      "minY": -0.5510568204449945,
+      "maxY": 0.5718722167971333,
+      "visibleVertices": 71026,
+      "clippedVertices": 0
+    },
+    "rulerBounds": {
+      "minX": -0.31863964997357497,
+      "maxX": 0.31863964997357497,
+      "minY": -0.751276278425567,
+      "maxY": -0.6669236447372417
+    },
+    "comparisonRatio": null,
+    "habitat": {
+      "name": "specimen-studio",
+      "leaf": {
+        "visible": false,
+        "y": 0,
+        "scale": 1,
+        "meshes": 0
+      },
+      "ground": {
+        "visible": false,
+        "y": -1.508
+      },
+      "floorTarget": -1.508,
+      "key": {
+        "directional": true,
+        "shadow": false,
+        "intensity": 1.5
+      }
+    },
+    "pose": {
+      "cutaway": true,
+      "full": false,
+      "section": true
+    },
+    "draws": 252,
+    "renders": 12
+  },
+  "wholeSaved": {
+    "itemId": "rbc",
+    "detailId": "",
+    "size": 0.0000075,
+    "you": false,
+    "note": "The local window reveals a filled cytoplasm.",
+    "zoom": 1,
+    "yaw": 0,
+    "pitch": 0.12,
+    "sunAngle": 45,
+    "nebulaReveal": false,
+    "nebulaInside": false,
+    "nebulaPose": null,
+    "nebulaSpeed": 0.8,
+    "terrainRelief": 8,
+    "riverKm": 0,
+    "terrainPoint": {
+      "east": 0,
+      "north": 900
+    },
+    "terrainFlight": null,
+    "terrainFlightSpeed": 180,
+    "terrainFlightWaypoint": null,
+    "pollenGrowth": 0,
+    "cutaway": true,
+    "view": "atlas",
+    "rbcWindow": true
+  },
+  "wholeRestored": {
+    "type": "webgl",
+    "kind": "rbc",
+    "stats": {
+      "bodyExtent": 1,
+      "bodyReferenceMeters": 0.0000075,
+      "reference": "cell-diameter",
+      "profile": "Evans–Fung",
+      "centerThickness": 0.1035805,
+      "windowCenter": [
+        -0.18,
+        0.14
+      ],
+      "windowRadius": 0.16,
+      "closedDimples": true,
+      "filledCytoplasm": true,
+      "molecularDetailsEnlarged": true,
+      "featuredHemoglobin": {
+        "pdb": "2HHB",
+        "chains": 4,
+        "alphaCarbons": 574,
+        "hemes": 4,
+        "deoxygenated": true,
+        "displayExtent": 0.055
+      }
+    },
+    "scale": 3,
+    "declaredExtent": 1,
+    "dimension": "x",
+    "measureCenter": 0,
+    "bodyReference": 1,
+    "rulerReference": 0.9999999999999997,
+    "rulerEnds": [
+      -0.49999999999999983,
+      0.49999999999999983
+    ],
+    "aligned": 1,
+    "targetError": 0,
+    "aim": [
+      0,
+      0,
+      0
+    ],
+    "yaw": 0,
+    "pitch": 0.12000000000000001,
+    "detail": "",
+    "near": 0.002,
+    "meshes": [
+      {
+        "geometry": "859E918F-7634-430A-8B70-1A610CC4C251",
+        "material": "20CB8877-3EC7-4C01-BE64-E62AB3A7CD46",
+        "detail": "center",
+        "vertices": 10449,
+        "indices": 9984
+      },
+      {
+        "geometry": "CFD4D71B-0C0B-4416-9E83-AEDE693D49D6",
+        "material": "D957410F-C8F9-4524-912F-37426B7FE0E2",
+        "detail": "rim",
+        "vertices": 10449,
+        "indices": 16896
+      },
+      {
+        "geometry": "AC43EEDC-2996-4F8B-AF0B-E4F62A2AFC37",
+        "material": "E099AB5B-EE0B-4CCF-AB62-84DDFAD67C8B",
+        "detail": "membrane",
+        "vertices": 10449,
+        "indices": 33792
+      },
+      {
+        "geometry": "A7D72E02-666B-4EA7-B3D8-C20A5D6E5252",
+        "material": "AEFAA055-5C01-452F-A0DF-A7C9F97FF09C",
+        "detail": "center",
+        "vertices": 10115,
+        "indices": 9591
+      },
+      {
+        "geometry": "405A15C2-03CA-45E1-AA65-67C7298AF532",
+        "material": "97C3E9BE-AD40-46C8-86C9-84CCEEEC358A",
+        "detail": "rim",
+        "vertices": 10115,
+        "indices": 16686
+      },
+      {
+        "geometry": "E5F09615-8F23-4DF3-A33B-CD6BA4D2D445",
+        "material": "B2D33AD3-8C7E-4289-8810-35982C35A3A5",
+        "detail": "membrane",
+        "vertices": 10115,
+        "indices": 32391
+      },
+      {
+        "geometry": "6935B4A6-12F8-4C44-B159-E864DE9F5670",
+        "material": "415A762C-B4D3-45CC-A060-CC0F53026739",
+        "detail": "membrane",
+        "vertices": 162,
+        "indices": 480
+      },
+      {
+        "geometry": "0873C038-49C8-4CA9-9913-40658D4BC776",
+        "material": "1C3347BA-3D19-4A1F-A52A-9E92D9BBC2E1",
+        "detail": "membrane",
+        "vertices": 162,
+        "indices": 480
+      },
+      {
+        "geometry": "501F1E22-4698-4B58-B10F-302D7DEF3594",
+        "material": "86970D0A-B160-4DBB-960C-BBED73CF7C7A",
+        "detail": "hemoglobin",
+        "vertices": 4419,
+        "indices": 24672
+      },
+      {
+        "geometry": "6C57FB14-E980-47F8-A41A-1915C038B5BB",
+        "material": "1924C459-EC1E-4254-BFFB-DEDA40B8A1A7",
+        "detail": "spectrin",
+        "vertices": 11907,
+        "indices": 51408
+      },
+      {
+        "geometry": "10DEDD98-F084-470C-8BF0-2CBA8F04D9F4",
+        "material": "86814B08-9172-4627-A493-060E9D65C91B",
+        "detail": "hemoglobin",
+        "vertices": 9877,
+        "indices": 43704
+      },
+      {
+        "geometry": "617C9A81-BE86-42C2-8CD6-313734516CD9",
+        "material": "56790C29-327C-461F-B670-371B38819D67",
+        "detail": "hemoglobin",
+        "vertices": 9926,
+        "indices": 44064
+      },
+      {
+        "geometry": "F38FC635-D88A-4CDB-803F-0F266AA93C01",
+        "material": "2A31E3D6-B207-4C45-BD8F-326D9CBCC4F6",
+        "detail": "hemoglobin",
+        "vertices": 3864,
+        "indices": 13248
+      },
+      {
+        "geometry": "3D1BE2A6-930F-4E3A-B437-4C8E166C2770",
+        "material": "92F529D0-F9A6-4B5C-9D1E-A9DCE6113185",
+        "detail": "hemoglobin",
+        "vertices": 364,
+        "indices": 1440
+      }
+    ],
+    "bounds": {
+      "minX": -0.3304845261640531,
+      "maxX": 0.3304845261640531,
+      "minY": -0.5510568204449945,
+      "maxY": 0.5718722167971333,
+      "visibleVertices": 71026,
+      "clippedVertices": 0
+    },
+    "rulerBounds": {
+      "minX": -0.31863964997357497,
+      "maxX": 0.31863964997357497,
+      "minY": -0.751276278425567,
+      "maxY": -0.6669236447372417
+    },
+    "comparisonRatio": null,
+    "habitat": {
+      "name": "specimen-studio",
+      "leaf": {
+        "visible": false,
+        "y": 0,
+        "scale": 1,
+        "meshes": 0
+      },
+      "ground": {
+        "visible": false,
+        "y": -1.508
+      },
+      "floorTarget": -1.508,
+      "key": {
+        "directional": true,
+        "shadow": false,
+        "intensity": 1.5
+      }
+    },
+    "pose": {
+      "cutaway": true,
+      "full": false,
+      "section": true
+    },
+    "draws": 422,
+    "renders": 19
+  },
+  "centerPick": {
+    "x": 544,
+    "y": 552,
+    "id": "rbc",
+    "wanted": "center",
+    "marginPx": 1,
+    "triangle": 0
+  },
+  "views": [
+    {
+      "type": "webgl",
+      "kind": "rbc",
+      "stats": {
+        "bodyExtent": 1,
+        "bodyReferenceMeters": 0.0000075,
+        "reference": "cell-diameter",
+        "profile": "Evans–Fung",
+        "centerThickness": 0.1035805,
+        "windowCenter": [
+          -0.18,
+          0.14
+        ],
+        "windowRadius": 0.16,
+        "closedDimples": true,
+        "filledCytoplasm": true,
+        "molecularDetailsEnlarged": true,
+        "featuredHemoglobin": {
+          "pdb": "2HHB",
+          "chains": 4,
+          "alphaCarbons": 574,
+          "hemes": 4,
+          "deoxygenated": true,
+          "displayExtent": 0.055
+        }
+      },
+      "scale": 3,
+      "declaredExtent": 1,
+      "dimension": "x",
+      "measureCenter": 0,
+      "bodyReference": 1,
+      "rulerReference": 0.9999999999999997,
+      "rulerEnds": [
+        -0.49999999999999983,
+        0.49999999999999983
+      ],
+      "aligned": 0.9999999999977509,
+      "targetError": 0.000029250000000008436,
+      "aim": [
+        0,
+        0,
+        0.1554
+      ],
+      "yaw": 0.07982998571223732,
+      "pitch": 0.15815838630690182,
+      "detail": "center",
+      "near": 0.002,
+      "meshes": [
+        {
+          "geometry": "859E918F-7634-430A-8B70-1A610CC4C251",
+          "material": "20CB8877-3EC7-4C01-BE64-E62AB3A7CD46",
+          "detail": "center",
+          "vertices": 10449,
+          "indices": 9984
+        },
+        {
+          "geometry": "CFD4D71B-0C0B-4416-9E83-AEDE693D49D6",
+          "material": "D957410F-C8F9-4524-912F-37426B7FE0E2",
+          "detail": "rim",
+          "vertices": 10449,
+          "indices": 16896
+        },
+        {
+          "geometry": "AC43EEDC-2996-4F8B-AF0B-E4F62A2AFC37",
+          "material": "E099AB5B-EE0B-4CCF-AB62-84DDFAD67C8B",
+          "detail": "membrane",
+          "vertices": 10449,
+          "indices": 33792
+        },
+        {
+          "geometry": "A7D72E02-666B-4EA7-B3D8-C20A5D6E5252",
+          "material": "AEFAA055-5C01-452F-A0DF-A7C9F97FF09C",
+          "detail": "center",
+          "vertices": 10115,
+          "indices": 9591
+        },
+        {
+          "geometry": "405A15C2-03CA-45E1-AA65-67C7298AF532",
+          "material": "97C3E9BE-AD40-46C8-86C9-84CCEEEC358A",
+          "detail": "rim",
+          "vertices": 10115,
+          "indices": 16686
+        },
+        {
+          "geometry": "E5F09615-8F23-4DF3-A33B-CD6BA4D2D445",
+          "material": "B2D33AD3-8C7E-4289-8810-35982C35A3A5",
+          "detail": "membrane",
+          "vertices": 10115,
+          "indices": 32391
+        },
+        {
+          "geometry": "6935B4A6-12F8-4C44-B159-E864DE9F5670",
+          "material": "415A762C-B4D3-45CC-A060-CC0F53026739",
+          "detail": "membrane",
+          "vertices": 162,
+          "indices": 480
+        },
+        {
+          "geometry": "0873C038-49C8-4CA9-9913-40658D4BC776",
+          "material": "1C3347BA-3D19-4A1F-A52A-9E92D9BBC2E1",
+          "detail": "membrane",
+          "vertices": 162,
+          "indices": 480
+        },
+        {
+          "geometry": "501F1E22-4698-4B58-B10F-302D7DEF3594",
+          "material": "86970D0A-B160-4DBB-960C-BBED73CF7C7A",
+          "detail": "hemoglobin",
+          "vertices": 4419,
+          "indices": 24672
+        },
+        {
+          "geometry": "6C57FB14-E980-47F8-A41A-1915C038B5BB",
+          "material": "1924C459-EC1E-4254-BFFB-DEDA40B8A1A7",
+          "detail": "spectrin",
+          "vertices": 11907,
+          "indices": 51408
+        },
+        {
+          "geometry": "10DEDD98-F084-470C-8BF0-2CBA8F04D9F4",
+          "material": "86814B08-9172-4627-A493-060E9D65C91B",
+          "detail": "hemoglobin",
+          "vertices": 9877,
+          "indices": 43704
+        },
+        {
+          "geometry": "617C9A81-BE86-42C2-8CD6-313734516CD9",
+          "material": "56790C29-327C-461F-B670-371B38819D67",
+          "detail": "hemoglobin",
+          "vertices": 9926,
+          "indices": 44064
+        },
+        {
+          "geometry": "F38FC635-D88A-4CDB-803F-0F266AA93C01",
+          "material": "2A31E3D6-B207-4C45-BD8F-326D9CBCC4F6",
+          "detail": "hemoglobin",
+          "vertices": 3864,
+          "indices": 13248
+        },
+        {
+          "geometry": "3D1BE2A6-930F-4E3A-B437-4C8E166C2770",
+          "material": "92F529D0-F9A6-4B5C-9D1E-A9DCE6113185",
+          "detail": "hemoglobin",
+          "vertices": 364,
+          "indices": 1440
+        }
+      ],
+      "bounds": {
+        "minX": -0.8756090947585676,
+        "maxX": 0.9533232691511752,
+        "minY": -1.4235794119523089,
+        "maxY": 1.6850173851669503,
+        "visibleVertices": 31347,
+        "clippedVertices": 0
+      },
+      "rulerBounds": {
+        "minX": -0.7393928076476928,
+        "maxX": 0.816093466946601,
+        "minY": -1.8827474797355055,
+        "maxY": -1.518644238209619
+      },
+      "comparisonRatio": null,
+      "habitat": {
+        "name": "specimen-studio",
+        "leaf": {
+          "visible": false,
+          "y": 0,
+          "scale": 1,
+          "meshes": 0
+        },
+        "ground": {
+          "visible": false,
+          "y": -1.508
+        },
+        "floorTarget": -1.508,
+        "key": {
+          "directional": true,
+          "shadow": false,
+          "intensity": 1.5
+        }
+      },
+      "pose": {
+        "cutaway": false,
+        "full": true,
+        "section": false
+      },
+      "draws": 486,
+      "renders": 24,
+      "nativePick": {
+        "x": 552,
+        "y": 550,
+        "id": "rbc",
+        "wanted": "center",
+        "marginPx": 1,
+        "triangle": 0
+      }
+    },
+    {
+      "type": "webgl",
+      "kind": "rbc",
+      "stats": {
+        "bodyExtent": 1,
+        "bodyReferenceMeters": 0.0000075,
+        "reference": "cell-diameter",
+        "profile": "Evans–Fung",
+        "centerThickness": 0.1035805,
+        "windowCenter": [
+          -0.18,
+          0.14
+        ],
+        "windowRadius": 0.16,
+        "closedDimples": true,
+        "filledCytoplasm": true,
+        "molecularDetailsEnlarged": true,
+        "featuredHemoglobin": {
+          "pdb": "2HHB",
+          "chains": 4,
+          "alphaCarbons": 574,
+          "hemes": 4,
+          "deoxygenated": true,
+          "displayExtent": 0.055
+        }
+      },
+      "scale": 3,
+      "declaredExtent": 1,
+      "dimension": "x",
+      "measureCenter": 0,
+      "bodyReference": 1,
+      "rulerReference": 0.9999999999999997,
+      "rulerEnds": [
+        -0.49999999999999983,
+        0.49999999999999983
+      ],
+      "aligned": 0.9999999999994804,
+      "targetError": 0.000010328713851814886,
+      "aim": [
+        1.02,
+        0.27,
+        0.4921
+      ],
+      "yaw": 0.17809293823119748,
+      "pitch": 0.05898250533640665,
+      "detail": "rim",
+      "near": 0.002,
+      "meshes": [
+        {
+          "geometry": "859E918F-7634-430A-8B70-1A610CC4C251",
+          "material": "20CB8877-3EC7-4C01-BE64-E62AB3A7CD46",
+          "detail": "center",
+          "vertices": 10449,
+          "indices": 9984
+        },
+        {
+          "geometry": "CFD4D71B-0C0B-4416-9E83-AEDE693D49D6",
+          "material": "D957410F-C8F9-4524-912F-37426B7FE0E2",
+          "detail": "rim",
+          "vertices": 10449,
+          "indices": 16896
+        },
+        {
+          "geometry": "AC43EEDC-2996-4F8B-AF0B-E4F62A2AFC37",
+          "material": "E099AB5B-EE0B-4CCF-AB62-84DDFAD67C8B",
+          "detail": "membrane",
+          "vertices": 10449,
+          "indices": 33792
+        },
+        {
+          "geometry": "A7D72E02-666B-4EA7-B3D8-C20A5D6E5252",
+          "material": "AEFAA055-5C01-452F-A0DF-A7C9F97FF09C",
+          "detail": "center",
+          "vertices": 10115,
+          "indices": 9591
+        },
+        {
+          "geometry": "405A15C2-03CA-45E1-AA65-67C7298AF532",
+          "material": "97C3E9BE-AD40-46C8-86C9-84CCEEEC358A",
+          "detail": "rim",
+          "vertices": 10115,
+          "indices": 16686
+        },
+        {
+          "geometry": "E5F09615-8F23-4DF3-A33B-CD6BA4D2D445",
+          "material": "B2D33AD3-8C7E-4289-8810-35982C35A3A5",
+          "detail": "membrane",
+          "vertices": 10115,
+          "indices": 32391
+        },
+        {
+          "geometry": "6935B4A6-12F8-4C44-B159-E864DE9F5670",
+          "material": "415A762C-B4D3-45CC-A060-CC0F53026739",
+          "detail": "membrane",
+          "vertices": 162,
+          "indices": 480
+        },
+        {
+          "geometry": "0873C038-49C8-4CA9-9913-40658D4BC776",
+          "material": "1C3347BA-3D19-4A1F-A52A-9E92D9BBC2E1",
+          "detail": "membrane",
+          "vertices": 162,
+          "indices": 480
+        },
+        {
+          "geometry": "501F1E22-4698-4B58-B10F-302D7DEF3594",
+          "material": "86970D0A-B160-4DBB-960C-BBED73CF7C7A",
+          "detail": "hemoglobin",
+          "vertices": 4419,
+          "indices": 24672
+        },
+        {
+          "geometry": "6C57FB14-E980-47F8-A41A-1915C038B5BB",
+          "material": "1924C459-EC1E-4254-BFFB-DEDA40B8A1A7",
+          "detail": "spectrin",
+          "vertices": 11907,
+          "indices": 51408
+        },
+        {
+          "geometry": "10DEDD98-F084-470C-8BF0-2CBA8F04D9F4",
+          "material": "86814B08-9172-4627-A493-060E9D65C91B",
+          "detail": "hemoglobin",
+          "vertices": 9877,
+          "indices": 43704
+        },
+        {
+          "geometry": "617C9A81-BE86-42C2-8CD6-313734516CD9",
+          "material": "56790C29-327C-461F-B670-371B38819D67",
+          "detail": "hemoglobin",
+          "vertices": 9926,
+          "indices": 44064
+        },
+        {
+          "geometry": "F38FC635-D88A-4CDB-803F-0F266AA93C01",
+          "material": "2A31E3D6-B207-4C45-BD8F-326D9CBCC4F6",
+          "detail": "hemoglobin",
+          "vertices": 3864,
+          "indices": 13248
+        },
+        {
+          "geometry": "3D1BE2A6-930F-4E3A-B437-4C8E166C2770",
+          "material": "92F529D0-F9A6-4B5C-9D1E-A9DCE6113185",
+          "detail": "hemoglobin",
+          "vertices": 364,
+          "indices": 1440
+        }
+      ],
+      "bounds": {
+        "minX": -1.4054921477601205,
+        "maxX": 0.36184432412239104,
+        "minY": -1.7842575164833483,
+        "maxY": 1.3492834449495237,
+        "visibleVertices": 31347,
+        "clippedVertices": 0
+      },
+      "rulerBounds": {
+        "minX": -1.2120425614887138,
+        "maxX": 0.3477587250611096,
+        "minY": -2.4546413216876464,
+        "maxY": -1.7835689777832804
+      },
+      "comparisonRatio": null,
+      "habitat": {
+        "name": "specimen-studio",
+        "leaf": {
+          "visible": false,
+          "y": 0,
+          "scale": 1,
+          "meshes": 0
+        },
+        "ground": {
+          "visible": false,
+          "y": -1.508
+        },
+        "floorTarget": -1.508,
+        "key": {
+          "directional": true,
+          "shadow": false,
+          "intensity": 1.5
+        }
+      },
+      "pose": {
+        "cutaway": false,
+        "full": true,
+        "section": false
+      },
+      "draws": 522,
+      "renders": 27,
+      "nativePick": {
+        "x": 498,
+        "y": 646,
+        "id": "rbc",
+        "wanted": "rim",
+        "marginPx": 1,
+        "triangle": 0
+      }
+    },
+    {
+      "type": "webgl",
+      "kind": "rbc",
+      "stats": {
+        "bodyExtent": 1,
+        "bodyReferenceMeters": 0.0000075,
+        "reference": "cell-diameter",
+        "profile": "Evans–Fung",
+        "centerThickness": 0.1035805,
+        "windowCenter": [
+          -0.18,
+          0.14
+        ],
+        "windowRadius": 0.16,
+        "closedDimples": true,
+        "filledCytoplasm": true,
+        "molecularDetailsEnlarged": true,
+        "featuredHemoglobin": {
+          "pdb": "2HHB",
+          "chains": 4,
+          "alphaCarbons": 574,
+          "hemes": 4,
+          "deoxygenated": true,
+          "displayExtent": 0.055
+        }
+      },
+      "scale": 3,
+      "declaredExtent": 1,
+      "dimension": "x",
+      "measureCenter": 0,
+      "bodyReference": 1,
+      "rulerReference": 0.9999999999999997,
+      "rulerEnds": [
+        -0.49999999999999983,
+        0.49999999999999983
+      ],
+      "aligned": 0.999999999996052,
+      "targetError": 0.000028503506230292963,
+      "aim": [
+        1.305,
+        -0.45,
+        0.3222
+      ],
+      "yaw": 0.1194289260183384,
+      "pitch": -0.049603119525041636,
+      "detail": "membrane",
+      "near": 0.002,
+      "meshes": [
+        {
+          "geometry": "859E918F-7634-430A-8B70-1A610CC4C251",
+          "material": "20CB8877-3EC7-4C01-BE64-E62AB3A7CD46",
+          "detail": "center",
+          "vertices": 10449,
+          "indices": 9984
+        },
+        {
+          "geometry": "CFD4D71B-0C0B-4416-9E83-AEDE693D49D6",
+          "material": "D957410F-C8F9-4524-912F-37426B7FE0E2",
+          "detail": "rim",
+          "vertices": 10449,
+          "indices": 16896
+        },
+        {
+          "geometry": "AC43EEDC-2996-4F8B-AF0B-E4F62A2AFC37",
+          "material": "E099AB5B-EE0B-4CCF-AB62-84DDFAD67C8B",
+          "detail": "membrane",
+          "vertices": 10449,
+          "indices": 33792
+        },
+        {
+          "geometry": "A7D72E02-666B-4EA7-B3D8-C20A5D6E5252",
+          "material": "AEFAA055-5C01-452F-A0DF-A7C9F97FF09C",
+          "detail": "center",
+          "vertices": 10115,
+          "indices": 9591
+        },
+        {
+          "geometry": "405A15C2-03CA-45E1-AA65-67C7298AF532",
+          "material": "97C3E9BE-AD40-46C8-86C9-84CCEEEC358A",
+          "detail": "rim",
+          "vertices": 10115,
+          "indices": 16686
+        },
+        {
+          "geometry": "E5F09615-8F23-4DF3-A33B-CD6BA4D2D445",
+          "material": "B2D33AD3-8C7E-4289-8810-35982C35A3A5",
+          "detail": "membrane",
+          "vertices": 10115,
+          "indices": 32391
+        },
+        {
+          "geometry": "6935B4A6-12F8-4C44-B159-E864DE9F5670",
+          "material": "415A762C-B4D3-45CC-A060-CC0F53026739",
+          "detail": "membrane",
+          "vertices": 162,
+          "indices": 480
+        },
+        {
+          "geometry": "0873C038-49C8-4CA9-9913-40658D4BC776",
+          "material": "1C3347BA-3D19-4A1F-A52A-9E92D9BBC2E1",
+          "detail": "membrane",
+          "vertices": 162,
+          "indices": 480
+        },
+        {
+          "geometry": "501F1E22-4698-4B58-B10F-302D7DEF3594",
+          "material": "86970D0A-B160-4DBB-960C-BBED73CF7C7A",
+          "detail": "hemoglobin",
+          "vertices": 4419,
+          "indices": 24672
+        },
+        {
+          "geometry": "6C57FB14-E980-47F8-A41A-1915C038B5BB",
+          "material": "1924C459-EC1E-4254-BFFB-DEDA40B8A1A7",
+          "detail": "spectrin",
+          "vertices": 11907,
+          "indices": 51408
+        },
+        {
+          "geometry": "10DEDD98-F084-470C-8BF0-2CBA8F04D9F4",
+          "material": "86814B08-9172-4627-A493-060E9D65C91B",
+          "detail": "hemoglobin",
+          "vertices": 9877,
+          "indices": 43704
+        },
+        {
+          "geometry": "617C9A81-BE86-42C2-8CD6-313734516CD9",
+          "material": "56790C29-327C-461F-B670-371B38819D67",
+          "detail": "hemoglobin",
+          "vertices": 9926,
+          "indices": 44064
+        },
+        {
+          "geometry": "F38FC635-D88A-4CDB-803F-0F266AA93C01",
+          "material": "2A31E3D6-B207-4C45-BD8F-326D9CBCC4F6",
+          "detail": "hemoglobin",
+          "vertices": 3864,
+          "indices": 13248
+        },
+        {
+          "geometry": "3D1BE2A6-930F-4E3A-B437-4C8E166C2770",
+          "material": "92F529D0-F9A6-4B5C-9D1E-A9DCE6113185",
+          "detail": "hemoglobin",
+          "vertices": 364,
+          "indices": 1440
+        }
+      ],
+      "bounds": {
+        "minX": -2.507530674168624,
+        "maxX": 0.21217502754198853,
+        "minY": -1.6963405575725226,
+        "maxY": 3.0388345068527154,
+        "visibleVertices": 31347,
+        "clippedVertices": 0
+      },
+      "rulerBounds": {
+        "minX": -2.1799629445961815,
+        "maxX": 0.23113598459307552,
+        "minY": -2.780788781025325,
+        "maxY": -1.9298076974019926
+      },
+      "comparisonRatio": null,
+      "habitat": {
+        "name": "specimen-studio",
+        "leaf": {
+          "visible": false,
+          "y": 0,
+          "scale": 1,
+          "meshes": 0
+        },
+        "ground": {
+          "visible": false,
+          "y": -1.508
+        },
+        "floorTarget": -1.508,
+        "key": {
+          "directional": true,
+          "shadow": false,
+          "intensity": 1.5
+        }
+      },
+      "pose": {
+        "cutaway": false,
+        "full": true,
+        "section": false
+      },
+      "draws": 558,
+      "renders": 30,
+      "nativePick": {
+        "x": 88,
+        "y": 317,
+        "id": "rbc",
+        "wanted": "membrane",
+        "marginPx": 1,
+        "triangle": 0
+      }
+    },
+    {
+      "type": "webgl",
+      "kind": "rbc",
+      "stats": {
+        "bodyExtent": 1,
+        "bodyReferenceMeters": 0.0000075,
+        "reference": "cell-diameter",
+        "profile": "Evans–Fung",
+        "centerThickness": 0.1035805,
+        "windowCenter": [
+          -0.18,
+          0.14
+        ],
+        "windowRadius": 0.16,
+        "closedDimples": true,
+        "filledCytoplasm": true,
+        "molecularDetailsEnlarged": true,
+        "featuredHemoglobin": {
+          "pdb": "2HHB",
+          "chains": 4,
+          "alphaCarbons": 574,
+          "hemes": 4,
+          "deoxygenated": true,
+          "displayExtent": 0.055
+        }
+      },
+      "scale": 3,
+      "declaredExtent": 1,
+      "dimension": "x",
+      "measureCenter": 0,
+      "bodyReference": 1,
+      "rulerReference": 0.9999999999999997,
+      "rulerEnds": [
+        -0.49999999999999983,
+        0.49999999999999983
+      ],
+      "aligned": 1,
+      "targetError": 0.00003304246482233042,
+      "aim": [
+        -0.54,
+        0.42,
+        0.356
+      ],
+      "yaw": 0,
+      "pitch": 0,
+      "detail": "spectrin",
+      "near": 0.002,
+      "meshes": [
+        {
+          "geometry": "859E918F-7634-430A-8B70-1A610CC4C251",
+          "material": "20CB8877-3EC7-4C01-BE64-E62AB3A7CD46",
+          "detail": "center",
+          "vertices": 10449,
+          "indices": 9984
+        },
+        {
+          "geometry": "CFD4D71B-0C0B-4416-9E83-AEDE693D49D6",
+          "material": "D957410F-C8F9-4524-912F-37426B7FE0E2",
+          "detail": "rim",
+          "vertices": 10449,
+          "indices": 16896
+        },
+        {
+          "geometry": "AC43EEDC-2996-4F8B-AF0B-E4F62A2AFC37",
+          "material": "E099AB5B-EE0B-4CCF-AB62-84DDFAD67C8B",
+          "detail": "membrane",
+          "vertices": 10449,
+          "indices": 33792
+        },
+        {
+          "geometry": "A7D72E02-666B-4EA7-B3D8-C20A5D6E5252",
+          "material": "AEFAA055-5C01-452F-A0DF-A7C9F97FF09C",
+          "detail": "center",
+          "vertices": 10115,
+          "indices": 9591
+        },
+        {
+          "geometry": "405A15C2-03CA-45E1-AA65-67C7298AF532",
+          "material": "97C3E9BE-AD40-46C8-86C9-84CCEEEC358A",
+          "detail": "rim",
+          "vertices": 10115,
+          "indices": 16686
+        },
+        {
+          "geometry": "E5F09615-8F23-4DF3-A33B-CD6BA4D2D445",
+          "material": "B2D33AD3-8C7E-4289-8810-35982C35A3A5",
+          "detail": "membrane",
+          "vertices": 10115,
+          "indices": 32391
+        },
+        {
+          "geometry": "6935B4A6-12F8-4C44-B159-E864DE9F5670",
+          "material": "415A762C-B4D3-45CC-A060-CC0F53026739",
+          "detail": "membrane",
+          "vertices": 162,
+          "indices": 480
+        },
+        {
+          "geometry": "0873C038-49C8-4CA9-9913-40658D4BC776",
+          "material": "1C3347BA-3D19-4A1F-A52A-9E92D9BBC2E1",
+          "detail": "membrane",
+          "vertices": 162,
+          "indices": 480
+        },
+        {
+          "geometry": "501F1E22-4698-4B58-B10F-302D7DEF3594",
+          "material": "86970D0A-B160-4DBB-960C-BBED73CF7C7A",
+          "detail": "hemoglobin",
+          "vertices": 4419,
+          "indices": 24672
+        },
+        {
+          "geometry": "6C57FB14-E980-47F8-A41A-1915C038B5BB",
+          "material": "1924C459-EC1E-4254-BFFB-DEDA40B8A1A7",
+          "detail": "spectrin",
+          "vertices": 11907,
+          "indices": 51408
+        },
+        {
+          "geometry": "10DEDD98-F084-470C-8BF0-2CBA8F04D9F4",
+          "material": "86814B08-9172-4627-A493-060E9D65C91B",
+          "detail": "hemoglobin",
+          "vertices": 9877,
+          "indices": 43704
+        },
+        {
+          "geometry": "617C9A81-BE86-42C2-8CD6-313734516CD9",
+          "material": "56790C29-327C-461F-B670-371B38819D67",
+          "detail": "hemoglobin",
+          "vertices": 9926,
+          "indices": 44064
+        },
+        {
+          "geometry": "F38FC635-D88A-4CDB-803F-0F266AA93C01",
+          "material": "2A31E3D6-B207-4C45-BD8F-326D9CBCC4F6",
+          "detail": "hemoglobin",
+          "vertices": 3864,
+          "indices": 13248
+        },
+        {
+          "geometry": "3D1BE2A6-930F-4E3A-B437-4C8E166C2770",
+          "material": "92F529D0-F9A6-4B5C-9D1E-A9DCE6113185",
+          "detail": "hemoglobin",
+          "vertices": 364,
+          "indices": 1440
+        }
+      ],
+      "bounds": {
+        "minX": -1.0040706598583093,
+        "maxX": 2.350987021334067,
+        "minY": -3.7468989232269414,
+        "maxY": 1.9537147218118243,
+        "visibleVertices": 71026,
+        "clippedVertices": 0
+      },
+      "rulerBounds": {
+        "minX": -0.9141749543755775,
+        "maxX": 1.9392241879340657,
+        "minY": -4.085825817550637,
+        "maxY": -3.6755722421395935
+      },
+      "comparisonRatio": null,
+      "habitat": {
+        "name": "specimen-studio",
+        "leaf": {
+          "visible": false,
+          "y": 0,
+          "scale": 1,
+          "meshes": 0
+        },
+        "ground": {
+          "visible": false,
+          "y": -1.508
+        },
+        "floorTarget": -1.508,
+        "key": {
+          "directional": true,
+          "shadow": false,
+          "intensity": 1.5
+        }
+      },
+      "pose": {
+        "cutaway": true,
+        "full": false,
+        "section": true
+      },
+      "draws": 608,
+      "renders": 33,
+      "nativePick": {
+        "x": 542,
+        "y": 551,
+        "id": "rbc",
+        "wanted": "spectrin",
+        "marginPx": 1,
+        "triangle": 0
+      }
+    },
+    {
+      "type": "webgl",
+      "kind": "rbc",
+      "stats": {
+        "bodyExtent": 1,
+        "bodyReferenceMeters": 0.0000075,
+        "reference": "cell-diameter",
+        "profile": "Evans–Fung",
+        "centerThickness": 0.1035805,
+        "windowCenter": [
+          -0.18,
+          0.14
+        ],
+        "windowRadius": 0.16,
+        "closedDimples": true,
+        "filledCytoplasm": true,
+        "molecularDetailsEnlarged": true,
+        "featuredHemoglobin": {
+          "pdb": "2HHB",
+          "chains": 4,
+          "alphaCarbons": 574,
+          "hemes": 4,
+          "deoxygenated": true,
+          "displayExtent": 0.055
+        }
+      },
+      "scale": 3,
+      "declaredExtent": 1,
+      "dimension": "x",
+      "measureCenter": 0,
+      "bodyReference": 1,
+      "rulerReference": 0.9999999999999997,
+      "rulerEnds": [
+        -0.49999999999999983,
+        0.49999999999999983
+      ],
+      "aligned": 0.9999999983946853,
+      "targetError": 0.00003916991318025028,
+      "aim": [
+        -0.3273,
+        0.2753,
+        0.2236
+      ],
+      "yaw": 0,
+      "pitch": 0,
+      "detail": "hemoglobin",
+      "near": 0.002,
+      "meshes": [
+        {
+          "geometry": "859E918F-7634-430A-8B70-1A610CC4C251",
+          "material": "20CB8877-3EC7-4C01-BE64-E62AB3A7CD46",
+          "detail": "center",
+          "vertices": 10449,
+          "indices": 9984
+        },
+        {
+          "geometry": "CFD4D71B-0C0B-4416-9E83-AEDE693D49D6",
+          "material": "D957410F-C8F9-4524-912F-37426B7FE0E2",
+          "detail": "rim",
+          "vertices": 10449,
+          "indices": 16896
+        },
+        {
+          "geometry": "AC43EEDC-2996-4F8B-AF0B-E4F62A2AFC37",
+          "material": "E099AB5B-EE0B-4CCF-AB62-84DDFAD67C8B",
+          "detail": "membrane",
+          "vertices": 10449,
+          "indices": 33792
+        },
+        {
+          "geometry": "A7D72E02-666B-4EA7-B3D8-C20A5D6E5252",
+          "material": "AEFAA055-5C01-452F-A0DF-A7C9F97FF09C",
+          "detail": "center",
+          "vertices": 10115,
+          "indices": 9591
+        },
+        {
+          "geometry": "405A15C2-03CA-45E1-AA65-67C7298AF532",
+          "material": "97C3E9BE-AD40-46C8-86C9-84CCEEEC358A",
+          "detail": "rim",
+          "vertices": 10115,
+          "indices": 16686
+        },
+        {
+          "geometry": "E5F09615-8F23-4DF3-A33B-CD6BA4D2D445",
+          "material": "B2D33AD3-8C7E-4289-8810-35982C35A3A5",
+          "detail": "membrane",
+          "vertices": 10115,
+          "indices": 32391
+        },
+        {
+          "geometry": "6935B4A6-12F8-4C44-B159-E864DE9F5670",
+          "material": "415A762C-B4D3-45CC-A060-CC0F53026739",
+          "detail": "membrane",
+          "vertices": 162,
+          "indices": 480
+        },
+        {
+          "geometry": "0873C038-49C8-4CA9-9913-40658D4BC776",
+          "material": "1C3347BA-3D19-4A1F-A52A-9E92D9BBC2E1",
+          "detail": "membrane",
+          "vertices": 162,
+          "indices": 480
+        },
+        {
+          "geometry": "501F1E22-4698-4B58-B10F-302D7DEF3594",
+          "material": "86970D0A-B160-4DBB-960C-BBED73CF7C7A",
+          "detail": "hemoglobin",
+          "vertices": 4419,
+          "indices": 24672
+        },
+        {
+          "geometry": "6C57FB14-E980-47F8-A41A-1915C038B5BB",
+          "material": "1924C459-EC1E-4254-BFFB-DEDA40B8A1A7",
+          "detail": "spectrin",
+          "vertices": 11907,
+          "indices": 51408
+        },
+        {
+          "geometry": "10DEDD98-F084-470C-8BF0-2CBA8F04D9F4",
+          "material": "86814B08-9172-4627-A493-060E9D65C91B",
+          "detail": "hemoglobin",
+          "vertices": 9877,
+          "indices": 43704
+        },
+        {
+          "geometry": "617C9A81-BE86-42C2-8CD6-313734516CD9",
+          "material": "56790C29-327C-461F-B670-371B38819D67",
+          "detail": "hemoglobin",
+          "vertices": 9926,
+          "indices": 44064
+        },
+        {
+          "geometry": "F38FC635-D88A-4CDB-803F-0F266AA93C01",
+          "material": "2A31E3D6-B207-4C45-BD8F-326D9CBCC4F6",
+          "detail": "hemoglobin",
+          "vertices": 3864,
+          "indices": 13248
+        },
+        {
+          "geometry": "3D1BE2A6-930F-4E3A-B437-4C8E166C2770",
+          "material": "92F529D0-F9A6-4B5C-9D1E-A9DCE6113185",
+          "detail": "hemoglobin",
+          "vertices": 364,
+          "indices": 1440
+        }
+      ],
+      "bounds": {
+        "minX": -3.1830704249273287,
+        "maxX": 5.6104968629958485,
+        "minY": -9.236831746512745,
+        "maxY": 5.751920113756809,
+        "visibleVertices": 71026,
+        "clippedVertices": 0
+      },
+      "rulerBounds": {
+        "minX": -2.0148652583172124,
+        "maxX": 3.1364686229628225,
+        "minY": -6.95733752319248,
+        "maxY": -6.1900799935168065
+      },
+      "comparisonRatio": null,
+      "habitat": {
+        "name": "specimen-studio",
+        "leaf": {
+          "visible": false,
+          "y": 0,
+          "scale": 1,
+          "meshes": 0
+        },
+        "ground": {
+          "visible": false,
+          "y": -1.508
+        },
+        "floorTarget": -1.508,
+        "key": {
+          "directional": true,
+          "shadow": false,
+          "intensity": 1.5
+        }
+      },
+      "pose": {
+        "cutaway": true,
+        "full": false,
+        "section": true
+      },
+      "draws": 665,
+      "renders": 36,
+      "nativePick": {
+        "x": 845,
+        "y": 370,
+        "id": "rbc",
+        "wanted": "hemoglobin",
+        "marginPx": 1,
+        "triangle": 0
+      }
+    }
+  ],
+  "restored": {
+    "type": "webgl",
+    "kind": "rbc",
+    "stats": {
+      "bodyExtent": 1,
+      "bodyReferenceMeters": 0.0000075,
+      "reference": "cell-diameter",
+      "profile": "Evans–Fung",
+      "centerThickness": 0.1035805,
+      "windowCenter": [
+        -0.18,
+        0.14
+      ],
+      "windowRadius": 0.16,
+      "closedDimples": true,
+      "filledCytoplasm": true,
+      "molecularDetailsEnlarged": true,
+      "featuredHemoglobin": {
+        "pdb": "2HHB",
+        "chains": 4,
+        "alphaCarbons": 574,
+        "hemes": 4,
+        "deoxygenated": true,
+        "displayExtent": 0.055
+      }
+    },
+    "scale": 3,
+    "declaredExtent": 1,
+    "dimension": "x",
+    "measureCenter": 0,
+    "bodyReference": 1,
+    "rulerReference": 0.9999999999999997,
+    "rulerEnds": [
+      -0.49999999999999983,
+      0.49999999999999983
+    ],
+    "aligned": 1,
+    "targetError": 0,
+    "aim": [
+      0,
+      0,
+      0
+    ],
+    "yaw": 0.27999999999999997,
+    "pitch": 0.15,
+    "detail": "",
+    "near": 0.002,
+    "meshes": [
+      {
+        "geometry": "859E918F-7634-430A-8B70-1A610CC4C251",
+        "material": "20CB8877-3EC7-4C01-BE64-E62AB3A7CD46",
+        "detail": "center",
+        "vertices": 10449,
+        "indices": 9984
+      },
+      {
+        "geometry": "CFD4D71B-0C0B-4416-9E83-AEDE693D49D6",
+        "material": "D957410F-C8F9-4524-912F-37426B7FE0E2",
+        "detail": "rim",
+        "vertices": 10449,
+        "indices": 16896
+      },
+      {
+        "geometry": "AC43EEDC-2996-4F8B-AF0B-E4F62A2AFC37",
+        "material": "E099AB5B-EE0B-4CCF-AB62-84DDFAD67C8B",
+        "detail": "membrane",
+        "vertices": 10449,
+        "indices": 33792
+      },
+      {
+        "geometry": "A7D72E02-666B-4EA7-B3D8-C20A5D6E5252",
+        "material": "AEFAA055-5C01-452F-A0DF-A7C9F97FF09C",
+        "detail": "center",
+        "vertices": 10115,
+        "indices": 9591
+      },
+      {
+        "geometry": "405A15C2-03CA-45E1-AA65-67C7298AF532",
+        "material": "97C3E9BE-AD40-46C8-86C9-84CCEEEC358A",
+        "detail": "rim",
+        "vertices": 10115,
+        "indices": 16686
+      },
+      {
+        "geometry": "E5F09615-8F23-4DF3-A33B-CD6BA4D2D445",
+        "material": "B2D33AD3-8C7E-4289-8810-35982C35A3A5",
+        "detail": "membrane",
+        "vertices": 10115,
+        "indices": 32391
+      },
+      {
+        "geometry": "6935B4A6-12F8-4C44-B159-E864DE9F5670",
+        "material": "415A762C-B4D3-45CC-A060-CC0F53026739",
+        "detail": "membrane",
+        "vertices": 162,
+        "indices": 480
+      },
+      {
+        "geometry": "0873C038-49C8-4CA9-9913-40658D4BC776",
+        "material": "1C3347BA-3D19-4A1F-A52A-9E92D9BBC2E1",
+        "detail": "membrane",
+        "vertices": 162,
+        "indices": 480
+      },
+      {
+        "geometry": "501F1E22-4698-4B58-B10F-302D7DEF3594",
+        "material": "86970D0A-B160-4DBB-960C-BBED73CF7C7A",
+        "detail": "hemoglobin",
+        "vertices": 4419,
+        "indices": 24672
+      },
+      {
+        "geometry": "6C57FB14-E980-47F8-A41A-1915C038B5BB",
+        "material": "1924C459-EC1E-4254-BFFB-DEDA40B8A1A7",
+        "detail": "spectrin",
+        "vertices": 11907,
+        "indices": 51408
+      },
+      {
+        "geometry": "10DEDD98-F084-470C-8BF0-2CBA8F04D9F4",
+        "material": "86814B08-9172-4627-A493-060E9D65C91B",
+        "detail": "hemoglobin",
+        "vertices": 9877,
+        "indices": 43704
+      },
+      {
+        "geometry": "617C9A81-BE86-42C2-8CD6-313734516CD9",
+        "material": "56790C29-327C-461F-B670-371B38819D67",
+        "detail": "hemoglobin",
+        "vertices": 9926,
+        "indices": 44064
+      },
+      {
+        "geometry": "F38FC635-D88A-4CDB-803F-0F266AA93C01",
+        "material": "2A31E3D6-B207-4C45-BD8F-326D9CBCC4F6",
+        "detail": "hemoglobin",
+        "vertices": 3864,
+        "indices": 13248
+      },
+      {
+        "geometry": "3D1BE2A6-930F-4E3A-B437-4C8E166C2770",
+        "material": "92F529D0-F9A6-4B5C-9D1E-A9DCE6113185",
+        "detail": "hemoglobin",
+        "vertices": 364,
+        "indices": 1440
+      }
+    ],
+    "bounds": {
+      "minX": -0.3088679324956513,
+      "maxX": 0.33586966744768326,
+      "minY": -0.5490676446503386,
+      "maxY": 0.5730018978094247,
+      "visibleVertices": 31347,
+      "clippedVertices": 0
+    },
+    "rulerBounds": {
+      "minX": -0.2872120208317359,
+      "maxX": 0.32257427467401256,
+      "minY": -0.8105181108735569,
+      "maxY": -0.6019613887904222
+    },
+    "comparisonRatio": null,
+    "habitat": {
+      "name": "specimen-studio",
+      "leaf": {
+        "visible": false,
+        "y": 0,
+        "scale": 1,
+        "meshes": 0
+      },
+      "ground": {
+        "visible": false,
+        "y": -1.508
+      },
+      "floorTarget": -1.508,
+      "key": {
+        "directional": true,
+        "shadow": false,
+        "intensity": 1.5
+      }
+    },
+    "pose": {
+      "cutaway": false,
+      "full": true,
+      "section": false
+    },
+    "draws": 698,
+    "renders": 38
+  },
+  "errors": [],
+  "external": []
+}

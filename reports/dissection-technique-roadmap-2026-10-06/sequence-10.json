@@ -1,0 +1,23 @@
+{
+  "start": "2026-10-09T22:07:33.637Z",
+  "runnerPid": 33680,
+  "jobs": [
+    {
+      "mode": "roadmap",
+      "label": "roadmap-10",
+      "code": 0,
+      "start": "2026-10-09T22:07:33.669Z",
+      "end": "2026-10-09T22:10:37.160Z"
+    },
+    {
+      "mode": "scenario",
+      "label": "scenario-10",
+      "code": 0,
+      "start": "2026-10-09T22:10:37.195Z",
+      "end": "2026-10-09T22:12:39.732Z"
+    }
+  ],
+  "running": null,
+  "success": true,
+  "end": "2026-10-09T22:12:39.930Z"
+}

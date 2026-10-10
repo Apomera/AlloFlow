@@ -1,0 +1,27 @@
+{
+  "before": "a12cb529dc2da94672746b85c2cebdd5702d37d4ac6d0cc42e71bf53257ad1da",
+  "after": "f3e3f9f692887b2e1bb76db09aac3c75e93121003035a32510b3f6eee9895f0f",
+  "syntax": "passed (vm.Script)",
+  "changes": [
+    {
+      "offset": 1594462,
+      "before": "                if (modelPrecip3d.config.paused) {\n                  canvasEl.dataset.weatherTransition = 'paused';\n                  canvasEl.dataset.liveWind = String(modelPrecip3d.config.wind);\n                  canvasEl.dataset.liveStormTrack = String(modelPrecip3d.config.stormTrack);\n                  var pausedWeatherReadout = canvasEl.parentElement && canvasEl.parentElement.querySelector('.wc-storm-live-weather');\n                  if (pausedWeatherReadout) pausedWeatherReadout.textContent = 'Wind now ' + modelPrecip3d.config.wind.toFixed(1) + ' m/s · track ' + modelPrecip3d.config.stormTrack.toFixed(1) + ' · weather paused';\n                }",
+      "after": "                syncPausedWeatherStatusPrecip3d();"
+    },
+    {
+      "offset": 1593024,
+      "before": "              canvasEl._wcPrecip3dSync = function(nextModel3d) {",
+      "after": "              function syncPausedWeatherStatusPrecip3d() {\n                if (modelPrecip3d.config.paused) {\n                  canvasEl.dataset.weatherTransition = 'paused';\n                  canvasEl.dataset.liveWind = String(modelPrecip3d.config.wind);\n                  canvasEl.dataset.liveStormTrack = String(modelPrecip3d.config.stormTrack);\n                  var pausedWeatherReadout = canvasEl.parentElement && canvasEl.parentElement.querySelector('.wc-storm-live-weather');\n                  if (pausedWeatherReadout) pausedWeatherReadout.textContent = 'Wind now ' + modelPrecip3d.config.wind.toFixed(1) + ' m/s · track ' + modelPrecip3d.config.stormTrack.toFixed(1) + ' · weather paused';\n                }\n              }\n              canvasEl._wcPrecip3dSync = function(nextModel3d) {"
+    },
+    {
+      "offset": 1598564,
+      "before": "              updatePrecip3dParticles(0);\n              framePrecip3d = requestAnimationFrame(animatePrecip3d);",
+      "after": "              updatePrecip3dParticles(0);\n              syncPausedWeatherStatusPrecip3d();\n              framePrecip3d = requestAnimationFrame(animatePrecip3d);"
+    },
+    {
+      "offset": 19080,
+      "before": "h('svg', { viewBox: '0 0 180 94', 'aria-hidden': 'true', focusable: 'false' }, shapes)",
+      "after": "h('svg', { viewBox: cold ? '35 0 110 94' : '0 0 180 94', 'aria-hidden': 'true', focusable: 'false' }, shapes)"
+    }
+  ]
+}

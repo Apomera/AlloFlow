@@ -188,8 +188,9 @@ describe('every view renders real content', () => {
     const html = renderTool('flightSim', { flightSim: { view: 'debrief', lastDebrief: { flightTime: 60 } } });
     expect(html.length).toBeGreaterThan(300);
     expect(html).toContain('data-flightsim-debrief="true"');
-    expect(html).toContain('Flight performance score');
-    expect(html).toContain('FLIGHT SCORE');
+    expect(html).toContain('Observed practice milestones: 0 percent');
+    expect(html).toContain('PRACTICE EVIDENCE');
+    expect(html).toContain('This older log has no milestone measurements');
     expect(html).toContain('No landing recorded');
   });
 

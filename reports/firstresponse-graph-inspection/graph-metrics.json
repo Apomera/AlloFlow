@@ -1,0 +1,347 @@
+[
+  {
+    "condition": "adult-25-down",
+    "pose": {
+      "marker": [
+        -0.82,
+        0.45972222222222225,
+        -0.18
+      ],
+      "hands": [
+        0,
+        0.4957222222222223,
+        -0.18
+      ],
+      "chest": [
+        0,
+        0.2548611111111111,
+        0
+      ],
+      "chestScale": [
+        1,
+        0.8194444444444444,
+        1
+      ],
+      "heelMinimum": [
+        -0.06500000000000002,
+        0.4597222222222223,
+        -0.265
+      ],
+      "contactGap": 5.551115123125783e-17,
+      "arrowVisible": true,
+      "arrowDirection": [
+        -1.2246467991473532e-16,
+        -1,
+        0
+      ],
+      "camera": {
+        "position": [
+          0.44291841884751965,
+          5.153329427687884,
+          4.414410389165431
+        ],
+        "quaternion": [
+          -0.43208569056869517,
+          0.05140993617533818,
+          0.02468090507883124,
+          0.9000276814591378
+        ],
+        "projection": [
+          1.9479914651914292,
+          0,
+          0,
+          0,
+          0,
+          2.6050890646938014,
+          0,
+          0,
+          0,
+          0,
+          -1.002002002002002,
+          -1,
+          0,
+          0,
+          -0.20020020020020018,
+          0
+        ]
+      },
+      "draw": {
+        "id": 1,
+        "draws": 14131,
+        "renders": 59,
+        "sequence": 59,
+        "createdBy": "page"
+      },
+      "state": {
+        "consentAccepted": true,
+        "view": "body3d",
+        "b3dTab": "depth",
+        "b3dPlaced": "correct",
+        "b3dRec": [
+          "check",
+          "arm",
+          "hand"
+        ],
+        "b3dAge": "adult",
+        "b3dDepthLab": {
+          "age": "adult",
+          "reference": 5.5,
+          "maximum": 7,
+          "chestCm": 18,
+          "depth": 5.5,
+          "lean": 1,
+          "rate": 110,
+          "motion": "inspect",
+          "phase": 25,
+          "anatomy": false,
+          "hands": true,
+          "measure": true
+        },
+        "b3dDepthReference": {
+          "age": "adult",
+          "depth": 5.5,
+          "lean": 0
+        },
+        "b3dDepthInquiry": {
+          "signature": "[\"adult\",5.5,0,5.5,1]",
+          "peak": "same",
+          "release": "b",
+          "reviewed": true,
+          "peakSeen": true,
+          "releaseSeen": true,
+          "explanation": "Equal peak depths can have different release heights."
+        },
+        "b3dStatus": "ready",
+        "b3dMech": null
+      },
+      "errors": []
+    }
+  },
+  {
+    "condition": "adult-75-up",
+    "pose": {
+      "marker": [
+        -0.82,
+        0.45972222222222225,
+        -0.18
+      ],
+      "hands": [
+        0,
+        0.4957222222222223,
+        -0.18
+      ],
+      "chest": [
+        0,
+        0.2548611111111111,
+        0
+      ],
+      "chestScale": [
+        1,
+        0.8194444444444444,
+        1
+      ],
+      "heelMinimum": [
+        -0.06500000000000002,
+        0.4597222222222223,
+        -0.265
+      ],
+      "contactGap": 5.551115123125783e-17,
+      "arrowVisible": true,
+      "arrowDirection": [
+        0,
+        1,
+        0
+      ],
+      "camera": {
+        "position": [
+          0.44291841884751965,
+          5.153329427687884,
+          4.414410389165431
+        ],
+        "quaternion": [
+          -0.43208569056869517,
+          0.05140993617533818,
+          0.02468090507883124,
+          0.9000276814591378
+        ],
+        "projection": [
+          1.9479914651914292,
+          0,
+          0,
+          0,
+          0,
+          2.6050890646938014,
+          0,
+          0,
+          0,
+          0,
+          -1.002002002002002,
+          -1,
+          0,
+          0,
+          -0.20020020020020018,
+          0
+        ]
+      },
+      "draw": {
+        "id": 1,
+        "draws": 17505,
+        "renders": 73,
+        "sequence": 73,
+        "createdBy": "page"
+      },
+      "state": {
+        "consentAccepted": true,
+        "view": "body3d",
+        "b3dTab": "depth",
+        "b3dPlaced": "correct",
+        "b3dRec": [
+          "check",
+          "arm",
+          "hand"
+        ],
+        "b3dAge": "adult",
+        "b3dDepthLab": {
+          "age": "adult",
+          "reference": 5.5,
+          "maximum": 7,
+          "chestCm": 18,
+          "depth": 5.5,
+          "lean": 1,
+          "rate": 110,
+          "motion": "inspect",
+          "phase": 75,
+          "anatomy": false,
+          "hands": true,
+          "measure": true
+        },
+        "b3dDepthReference": {
+          "age": "adult",
+          "depth": 5.5,
+          "lean": 0
+        },
+        "b3dDepthInquiry": {
+          "signature": "[\"adult\",5.5,0,5.5,1]",
+          "peak": "same",
+          "release": "b",
+          "reviewed": true,
+          "peakSeen": true,
+          "releaseSeen": true,
+          "explanation": "Equal peak depths can have different release heights."
+        },
+        "b3dStatus": "ready",
+        "b3dMech": null
+      },
+      "errors": []
+    }
+  },
+  {
+    "condition": "phone-zero-travel",
+    "pose": {
+      "marker": [
+        -0.5903999999999999,
+        0.372,
+        -0.1296
+      ],
+      "hands": [
+        0,
+        0.408,
+        -0.1296
+      ],
+      "chest": [
+        0,
+        0.204,
+        0
+      ],
+      "chestScale": [
+        1,
+        0.9333333333333333,
+        1
+      ],
+      "heelMinimum": [
+        -0.057200000000000015,
+        0.372,
+        -0.20439999999999997
+      ],
+      "contactGap": 0,
+      "arrowVisible": false,
+      "arrowDirection": [
+        0,
+        1,
+        0
+      ],
+      "camera": {
+        "position": [
+          0.44291841884751965,
+          5.153329427687884,
+          4.414410389165431
+        ],
+        "quaternion": [
+          -0.43208569056869517,
+          0.05140993617533818,
+          0.02468090507883124,
+          0.9000276814591378
+        ],
+        "projection": [
+          2.463315510152642,
+          0,
+          0,
+          0,
+          0,
+          2.6050890646938014,
+          0,
+          0,
+          0,
+          0,
+          -1.002002002002002,
+          -1,
+          0,
+          0,
+          -0.20020020020020018,
+          0
+        ]
+      },
+      "draw": {
+        "id": 1,
+        "draws": 17936,
+        "renders": 76,
+        "sequence": 76,
+        "createdBy": "page"
+      },
+      "state": {
+        "consentAccepted": true,
+        "view": "body3d",
+        "b3dTab": "depth",
+        "b3dPlaced": "correct",
+        "b3dRec": [
+          "check",
+          "arm",
+          "hand"
+        ],
+        "b3dAge": "child",
+        "b3dChildHands": "two",
+        "b3dDepthLab": {
+          "age": "child",
+          "reference": 5,
+          "maximum": 6.5,
+          "chestCm": 15,
+          "depth": 1,
+          "lean": 1,
+          "rate": 115,
+          "motion": "inspect",
+          "phase": 30,
+          "anatomy": false,
+          "hands": true,
+          "measure": true
+        },
+        "b3dDepthInquiry": {
+          "signature": "preserved-zero-travel-inquiry",
+          "explanation": "No change in height."
+        },
+        "b3dStatus": "ready",
+        "b3dMech": null
+      },
+      "errors": []
+    }
+  }
+]

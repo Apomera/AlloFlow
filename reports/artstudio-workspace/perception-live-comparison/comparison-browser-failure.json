@@ -1,0 +1,107 @@
+{
+  "phase": "dark",
+  "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   {\n+     id: 'color-contrast',\n+     nodes: 9\n+   }\n+ ]\n- []\n",
+  "stack": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   {\n+     id: 'color-contrast',\n+     nodes: 9\n+   }\n+ ]\n- []\n\n    at axe (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-going-you-re-doing\\perception-comparison-candidate\\dev-tools\\perception_lab_live_comparison_qa.cjs:31:295)\n    at async C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-going-you-re-doing\\perception-comparison-candidate\\dev-tools\\perception_lab_live_comparison_qa.cjs:59:219",
+  "checks": [
+    {
+      "experiment": "brightness",
+      "allLayouts": true,
+      "equalScale": true,
+      "stationarySwitch": true,
+      "colorsUnmodified": true,
+      "savedStateUnchanged": true
+    },
+    {
+      "experiment": "ebbinghaus",
+      "allLayouts": true,
+      "equalScale": true,
+      "stationarySwitch": true,
+      "colorsUnmodified": true,
+      "savedStateUnchanged": true
+    },
+    {
+      "experiment": "mullerLyer",
+      "allLayouts": true,
+      "equalScale": true,
+      "stationarySwitch": true,
+      "colorsUnmodified": true,
+      "savedStateUnchanged": true
+    },
+    {
+      "experiment": "cafeWall",
+      "allLayouts": true,
+      "equalScale": true,
+      "stationarySwitch": true,
+      "colorsUnmodified": true,
+      "savedStateUnchanged": true
+    },
+    {
+      "experiment": "necker",
+      "allLayouts": true,
+      "equalScale": true,
+      "stationarySwitch": true,
+      "colorsUnmodified": true,
+      "savedStateUnchanged": true
+    },
+    {
+      "experiment": "moire",
+      "allLayouts": true,
+      "equalScale": true,
+      "stationarySwitch": true,
+      "colorsUnmodified": true,
+      "savedStateUnchanged": true
+    },
+    {
+      "width": 320,
+      "threeLayoutsResponsive": true,
+      "focusedSwitch": true,
+      "axe": [],
+      "controls44px": true,
+      "noOverflow": true
+    },
+    {
+      "width": 390,
+      "threeLayoutsResponsive": true,
+      "focusedSwitch": true,
+      "axe": [],
+      "controls44px": true,
+      "noOverflow": true
+    },
+    {
+      "width": 768,
+      "threeLayoutsResponsive": true,
+      "focusedSwitch": true,
+      "axe": [],
+      "controls44px": true,
+      "noOverflow": true
+    },
+    {
+      "width": 1280,
+      "threeLayoutsResponsive": true,
+      "focusedSwitch": true,
+      "axe": [],
+      "controls44px": true,
+      "noOverflow": true
+    },
+    {
+      "width": 1600,
+      "threeLayoutsResponsive": true,
+      "focusedSwitch": true,
+      "axe": [],
+      "controls44px": true,
+      "noOverflow": true
+    },
+    {
+      "nativeKeyboardControls": true,
+      "inactiveDrawingInert": true,
+      "clearRestoresFocus": true
+    },
+    {
+      "notesKeepSelection": true,
+      "drawingEditShowsCurrent": true
+    }
+  ],
+  "errors": [],
+  "sourceSHA256": "01e3702e1b8b8ad65c0c444b1e0bbed3a332d2e12a8a39a06ef6f49718cd64c7",
+  "finalSourceSHA256": "01e3702e1b8b8ad65c0c444b1e0bbed3a332d2e12a8a39a06ef6f49718cd64c7"
+}

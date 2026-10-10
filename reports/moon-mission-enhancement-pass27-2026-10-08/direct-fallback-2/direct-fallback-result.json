@@ -1,0 +1,175 @@
+{
+  "schema": "moon-pass27-direct-browser-v1",
+  "runner": "direct-playwright-api",
+  "playwrightCliResult": false,
+  "mode": "fallback",
+  "status": "failed",
+  "startedAt": "2026-10-09T05:21:53.628Z",
+  "repo": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "specPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-hud.spec.ts",
+  "output": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass27-2026-10-08\\direct-fallback-2",
+  "browserCache": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+  "timeouts": {
+    "action": 20000,
+    "navigation": 60000,
+    "expect": 15000,
+    "launch": 60000,
+    "workflow": 180000
+  },
+  "launchOptions": {
+    "headless": true,
+    "timeout": 60000
+  },
+  "workflowCompleted": false,
+  "cleanupCompleted": false,
+  "milestones": [
+    {
+      "name": "load:before",
+      "elapsedMs": 8
+    },
+    {
+      "name": "load:after",
+      "elapsedMs": 78798,
+      "workflow": "2D fallback recorded HUD follows the official scrubber and preserves honest legacy fuel displays",
+      "registered": [
+        "lighter native HUD keeps paused telemetry readable across desktop, phone, camera and context loss",
+        "2D fallback recorded HUD follows the official scrubber and preserves honest legacy fuel displays"
+      ]
+    },
+    {
+      "name": "harness-start:before",
+      "elapsedMs": 78799
+    },
+    {
+      "name": "harness-start:after",
+      "elapsedMs": 78903
+    },
+    {
+      "name": "browser-launch:before",
+      "elapsedMs": 78905
+    },
+    {
+      "name": "browser-launch:after",
+      "elapsedMs": 81820
+    },
+    {
+      "name": "context-create:before",
+      "elapsedMs": 81822
+    },
+    {
+      "name": "context-create:after",
+      "elapsedMs": 81852
+    },
+    {
+      "name": "page-create:before",
+      "elapsedMs": 81854
+    },
+    {
+      "name": "page-create:after",
+      "elapsedMs": 85083
+    },
+    {
+      "name": "workflow:before",
+      "elapsedMs": 85085
+    },
+    {
+      "name": "workflow:failed",
+      "elapsedMs": 126112,
+      "error": {
+        "name": "TimeoutError",
+        "message": "page.waitForFunction: Timeout 20000ms exceeded.",
+        "stack": "page.waitForFunction: Timeout 20000ms exceeded.\n    at inspectHud (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-hud.spec.ts:171:14)\n    at async Object.callback (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-hud.spec.ts:423:17)\n    at async bounded (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass27-direct.cjs:51:12)\n    at async phase (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass27-direct.cjs:59:29)\n    at async run (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass27-direct.cjs:142:5)"
+      }
+    },
+    {
+      "name": "execution-failed",
+      "elapsedMs": 126115,
+      "error": {
+        "name": "TimeoutError",
+        "message": "page.waitForFunction: Timeout 20000ms exceeded.",
+        "stack": "page.waitForFunction: Timeout 20000ms exceeded.\n    at inspectHud (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-hud.spec.ts:171:14)\n    at async Object.callback (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-hud.spec.ts:423:17)\n    at async bounded (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass27-direct.cjs:51:12)\n    at async phase (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass27-direct.cjs:59:29)\n    at async run (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass27-direct.cjs:142:5)"
+      }
+    },
+    {
+      "name": "cleanup:before",
+      "elapsedMs": 126117
+    },
+    {
+      "name": "after-each:before",
+      "elapsedMs": 126119
+    },
+    {
+      "name": "after-each:after",
+      "elapsedMs": 126455
+    },
+    {
+      "name": "context-close:before",
+      "elapsedMs": 126461
+    },
+    {
+      "name": "context-close:after",
+      "elapsedMs": 128378
+    },
+    {
+      "name": "browser-close:before",
+      "elapsedMs": 128380
+    },
+    {
+      "name": "browser-close:failed",
+      "elapsedMs": 148509,
+      "error": {
+        "name": "Error",
+        "message": "browser-close exceeded 20000 ms",
+        "stack": "Error: browser-close exceeded 20000 ms\n    at Timeout.<anonymous> (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass27-direct.cjs:52:39)\n    at listOnTimeout (node:internal/timers:605:17)\n    at process.processTimers (node:internal/timers:541:7)"
+      }
+    },
+    {
+      "name": "harness-stop:before",
+      "elapsedMs": 148519
+    },
+    {
+      "name": "harness-stop:after",
+      "elapsedMs": 148536
+    },
+    {
+      "name": "cleanup:after",
+      "elapsedMs": 150872,
+      "status": "failed"
+    }
+  ],
+  "errors": [
+    {
+      "phase": "execution",
+      "name": "TimeoutError",
+      "message": "page.waitForFunction: Timeout 20000ms exceeded.",
+      "stack": "page.waitForFunction: Timeout 20000ms exceeded.\n    at inspectHud (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-hud.spec.ts:171:14)\n    at async Object.callback (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-hud.spec.ts:423:17)\n    at async bounded (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass27-direct.cjs:51:12)\n    at async phase (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass27-direct.cjs:59:29)\n    at async run (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass27-direct.cjs:142:5)"
+    },
+    {
+      "phase": "browser-close",
+      "name": "Error",
+      "message": "browser-close exceeded 20000 ms",
+      "stack": "Error: browser-close exceeded 20000 ms\n    at Timeout.<anonymous> (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass27-direct.cjs:52:39)\n    at listOnTimeout (node:internal/timers:605:17)\n    at process.processTimers (node:internal/timers:541:7)"
+    }
+  ],
+  "attachments": [],
+  "inputHashes": {
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-hud.spec.ts": "6235e4e4cea7b10dee698e64ab2f142664358809d828002825ea7512f1e6f4d1",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_moonmission.js": "cb9bc2190a58ed06c8bb2019e18dab89b0a0e102aa1c0787960b5946f4cf6900",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_moonmission.js": "cb9bc2190a58ed06c8bb2019e18dab89b0a0e102aa1c0787960b5946f4cf6900"
+  },
+  "transform": {
+    "name": "Playwright bundled babelTransform",
+    "bundlePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\transform\\babelBundle.js",
+    "sha256": "9201df11ae9c9ee1febd587c5013c4f862aa7e9981b92b86ccbbbd37e71f9124"
+  },
+  "workflow": "2D fallback recorded HUD follows the official scrubber and preserves honest legacy fuel displays",
+  "suiteOptions": {
+    "timeout": 180000,
+    "retries": 0
+  },
+  "browserVersion": "148.0.7778.96",
+  "finishedAt": "2026-10-09T05:24:24.500Z",
+  "elapsedMs": 150872
+}

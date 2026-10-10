@@ -849,7 +849,7 @@ describe('Geometry World visual refinement contract', () => {
     expect(SOURCE).toContain("'data-hud-preset': hudPreset");
     expect(SOURCE).toContain("hudPanel === 'inventory' && engine");
     expect(SOURCE).toContain("'data-hud-preset': hudPreset");
-    expect(SOURCE.includes("el('span', null, 'Optional panel')")).toBe(true);
+    expect(SOURCE.includes("el('span', null, 'Optional panel (this session)')")).toBe(true);
     expect(SOURCE).toContain("hudPanel === 'progress' && el('section', { id: 'gw-progress-hud'");
     expect(SOURCE).toContain("hudPanel === 'map' && el('section', { id: 'gw-minimap'");
     expect(SOURCE).toContain("hudPanel === 'history' && measureHistory.length > 0");

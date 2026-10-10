@@ -1,0 +1,338 @@
+{
+  "date": "2026-10-09",
+  "sourceSHA256": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76",
+  "beforeSHA256": "8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940",
+  "material": {
+    "cases": 6,
+    "assertions": 344,
+    "negativeTests": [
+      {
+        "type": "restore-glossy-lips",
+        "rejected": true,
+        "error": "normal lips use the quiet skin specular\n+ actual - expected\n\n+ 2437435\n- 394758\n",
+        "restored": true
+      },
+      {
+        "type": "perturb-protected-skull-vertex",
+        "rejected": true,
+        "error": "all geometry and scene values except normal lip specular are exact\n+ actual - expected\n\n  {\n+   SHA256: 'f7db57ce04e4db1ca9c68316357e675c03709814c6d551d62fe734e8da709d14',\n-   SHA256: '8736f4f41530a7de5aee9a5c6bcef9cdecf3b2df0ecaec097a61a8ed14c50ced',\n    allocatedGeometries: 144,\n    allocatedMaterials: 26,\n    geometries: 146,\n    materials: 28,\n    meshes: 148,\n",
+        "restored": true
+      }
+    ],
+    "checkerSHA256": "cabab454b93e79401dfdd6626d2cbfb6b94a6dbdcfec51d747d9df5fac7ba25f"
+  },
+  "browser": {
+    "workflows": 2,
+    "evidenceCount": 4,
+    "images": 8,
+    "workers": 1,
+    "retries": 0,
+    "stats": {
+      "expected": 2,
+      "unexpected": 0,
+      "skipped": 0,
+      "flaky": 0,
+      "duration": 281469.65
+    },
+    "runs": [
+      "native-adult-pose5",
+      "native-infant-contrast-recovered"
+    ]
+  },
+  "nativeRecovery": {
+    "date": "2026-10-09",
+    "sourceSHA256": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76",
+    "beforeSHA256": "8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940",
+    "failedRun": "native-infant-contrast",
+    "recoveredRun": "native-infant-contrast-recovered",
+    "failedStage": "Chromium launch before scene capture",
+    "browserExitCode": 3221225495,
+    "originalCaptureCount": 0,
+    "failedStats": {
+      "startTime": "2026-10-09T00:34:18.915Z",
+      "duration": 22082.037,
+      "expected": 0,
+      "skipped": 0,
+      "unexpected": 1,
+      "flaky": 0
+    },
+    "manualReruns": 1,
+    "automaticRetries": 0,
+    "reason": "Manual rerun after environment refresh; candidate and test inputs unchanged.",
+    "inputsByteIdentical": true,
+    "inputHashes": {
+      "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\app-build\\stem_lab\\stem_tool_firstresponse.js": "8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940",
+      "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\build\\stem_lab\\stem_tool_firstresponse.js": "8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940",
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\delta.json": "30618f6fa7ef014688989bb4cd4ae76f23e5958f25b88851303a8ff0983dab57",
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\face-capture-png.cjs": "6009565cd97b35c874ff22325427e40823b4ff197118ea3870d0b2996bd30829",
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\face-mount-window.cjs": "9e3d95fe4ce8ae16ca7d4a994d26250e064873d675b930fb23d63b33ba43b246",
+      "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright-core\\lib\\utilsBundle.js": "5c42363c10d2f2f5bc91e07feaa9fa5f417a1a55e6559448d0c20d66f73db9e0",
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\run-face-browser.cjs": "942175f178eb845be3e0b33eb6d48c0cab8a2027b00490745328f7935935d024",
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\before.js": "8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940",
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\candidate.js": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76",
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\firstresponse-face-preview.spec.ts": "b90a771f2d355db09b58de74b4eb5c1ca5cde110355a73368a8bed32c554ccde",
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\playwright-face.config.cjs": "dda618a55a673d8c544dfc13f4273c04d406d7bdd06c8734acddb93ebcdfe7be",
+      "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_firstresponse.js": "8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940",
+      "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_firstresponse.js": "8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940",
+      "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+      "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\vendor\\three-r128\\three.min.js": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+      "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_lab_module.js": "cf56996d420aa6112626c4979d4a8e3963c9b199bf31deebb3e29d3910227de1"
+    },
+    "recoveredPassed": true,
+    "recoveredStats": {
+      "startTime": "2026-10-09T05:02:48.576Z",
+      "duration": 92947.512,
+      "expected": 1,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "failedEvidenceHashes": {
+      "artifacts/.last-run.json": "653faf856ca76847b6dd190959749c54630cb60ec63c082a4cd93d197b415279",
+      "artifacts/firstresponse-face-preview-0cfdb-native-supporting-hand-view/error-context.md": "152ccb6632e251178aac5ffb237620eb157d2031dd1058b0387586fcf7050e7f",
+      "browser-run.json": "3dc1068e54a0390b3fea7294c85234d363c7ae2ca93e5606bfd433f33189a3d1",
+      "browser-run.log": "b5fb67334e04487f7aaa1fb95278d33c3725a05d7759a2b55fb4d30235f518f4",
+      "face-preview-metrics.json": "b1ef81358cd443e8725f8368d3ff9b9d2cac0463def680c3e096431336dcf64b",
+      "failure.json": "2c19218263c989876f5c11e89aa0b44f862605b671ce5d428b0ca7fdb1e8ae94",
+      "inputs.json": "9f9b63ab798a3b8a2042b34917bf52eebcea0a85407f3bcb83d88daa21d31446",
+      "runner.json": "d5e1f812598b8bbbb26282cc65f7d0d55cd54ad84d0ea635fda58040b8bf8943"
+    }
+  },
+  "olderGatesRerun": false,
+  "rawTestsRerun": false,
+  "rawFixturesUnchanged": 39,
+  "oldCheckersUnchanged": 8,
+  "historyReversals": 11,
+  "visualReview": {
+    "sourceSHA256": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76",
+    "accepted": true,
+    "reviewedBy": "root",
+    "imageHashes": {
+      "adult-pose5-baseline-face.png": "f2088e5fdb8214aa408a56a5bdde26be8dd5cf056bc08cd564b938326394b415",
+      "adult-pose5-baseline-stage.png": "acafb933e4afac4991a327e7e45187cfd73164a1d0b7dd50e37d191940f4dbd0",
+      "adult-pose5-candidate-face.png": "3f767d22809ef40549a2a83e31d6723d7a2766e556434c2f1478f845346cb197",
+      "adult-pose5-candidate-stage.png": "3d7b015fd0b4d3044967001a5b4956366b4b4d970963aca036f5a2874ec4ebad",
+      "infant-pose8-contrast-baseline-face.png": "03eee3ef65985b17fc1bd0a14727dd4fd297f38910ecbf0acbf21a063fd3a12c",
+      "infant-pose8-contrast-baseline-stage.png": "82983ed84035bb9ff558c3c236d63344dea8eba562a0c5ca297bcf5bdfab08ea",
+      "infant-pose8-contrast-candidate-face.png": "03eee3ef65985b17fc1bd0a14727dd4fd297f38910ecbf0acbf21a063fd3a12c",
+      "infant-pose8-contrast-candidate-stage.png": "82983ed84035bb9ff558c3c236d63344dea8eba562a0c5ca297bcf5bdfab08ea"
+    },
+    "observations": [
+      "Viewed all eight original PNGs: adult baseline and candidate face/stage, and infant contrast baseline and candidate face/stage.",
+      "The adult lip reflection is softer. The improvement is modest; the mouth seam, tapered corners and lip shape remain clear.",
+      "The infant contrast face and stage remain visually unchanged and their corresponding PNG hashes are identical.",
+      "Supporting hand, face silhouette and camera framing remain unchanged in the reviewed views."
+    ],
+    "limitations": "Visual review of two matched raw-module browser views. This does not validate the full application loader or a deployment."
+  },
+  "independentVisualReview": {
+    "candidateSHA256": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76",
+    "reviewer": "/root/mouth_visual_final",
+    "date": "2026-10-09",
+    "status": "adult-and-infant-contrast-reviewed",
+    "accepted": true,
+    "viewedImages": [
+      {
+        "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\native-adult-pose5\\adult-pose5-baseline-face.png",
+        "sha256": "f2088e5fdb8214aa408a56a5bdde26be8dd5cf056bc08cd564b938326394b415",
+        "reviewed": true
+      },
+      {
+        "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\native-adult-pose5\\adult-pose5-candidate-face.png",
+        "sha256": "3f767d22809ef40549a2a83e31d6723d7a2766e556434c2f1478f845346cb197",
+        "reviewed": true
+      },
+      {
+        "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\native-adult-pose5\\adult-pose5-baseline-stage.png",
+        "sha256": "acafb933e4afac4991a327e7e45187cfd73164a1d0b7dd50e37d191940f4dbd0",
+        "reviewed": true
+      },
+      {
+        "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\native-adult-pose5\\adult-pose5-candidate-stage.png",
+        "sha256": "3d7b015fd0b4d3044967001a5b4956366b4b4d970963aca036f5a2874ec4ebad",
+        "reviewed": true
+      },
+      {
+        "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\native-infant-contrast-recovered\\infant-pose8-contrast-baseline-face.png",
+        "sha256": "03eee3ef65985b17fc1bd0a14727dd4fd297f38910ecbf0acbf21a063fd3a12c",
+        "reviewed": true
+      },
+      {
+        "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\native-infant-contrast-recovered\\infant-pose8-contrast-candidate-face.png",
+        "sha256": "03eee3ef65985b17fc1bd0a14727dd4fd297f38910ecbf0acbf21a063fd3a12c",
+        "reviewed": true
+      },
+      {
+        "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\native-infant-contrast-recovered\\infant-pose8-contrast-baseline-stage.png",
+        "sha256": "82983ed84035bb9ff558c3c236d63344dea8eba562a0c5ca297bcf5bdfab08ea",
+        "reviewed": true
+      },
+      {
+        "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\native-infant-contrast-recovered\\infant-pose8-contrast-candidate-stage.png",
+        "sha256": "82983ed84035bb9ff558c3c236d63344dea8eba562a0c5ca297bcf5bdfab08ea",
+        "reviewed": true
+      }
+    ],
+    "adult": {
+      "outcome": "modest visual improvement",
+      "observations": [
+        "The candidate reduces the pale reflective stripe along the outer lip edge in the face crop.",
+        "At stage scale the lip edge is quieter while the mouth remains distinct against the cheek.",
+        "The dark mouth seam, lip corners, and raised lip contour remain visibly defined.",
+        "The head, nose, supporting hand, and scene framing show no visible change in the reviewed pairs.",
+        "This material-only change leaves the raised lip silhouette intact; it should be described as reduced glare, not corrected mouth geometry."
+      ]
+    },
+    "contrast": {
+      "status": "reviewed",
+      "outcome": "no visible change in the control pair",
+      "observations": [
+        "The infant contrast face crops have the same gray lip silhouette, central mouth seam, and pointed corners.",
+        "The stage pair preserves the supporting-hand outline, head outline, mouth visibility, and framing.",
+        "No visible contrast-mode regression appears at face-crop or stage scale."
+      ]
+    },
+    "limitations": [
+      "Review covers the eight saved PNGs for adult pose 5 normal shading and infant pose 8 contrast mode; it does not validate the full application loader or deployment."
+    ],
+    "sourceSHA256": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76",
+    "imageHashes": {
+      "adult-pose5-baseline-face.png": "f2088e5fdb8214aa408a56a5bdde26be8dd5cf056bc08cd564b938326394b415",
+      "adult-pose5-candidate-face.png": "3f767d22809ef40549a2a83e31d6723d7a2766e556434c2f1478f845346cb197",
+      "adult-pose5-baseline-stage.png": "acafb933e4afac4991a327e7e45187cfd73164a1d0b7dd50e37d191940f4dbd0",
+      "adult-pose5-candidate-stage.png": "3d7b015fd0b4d3044967001a5b4956366b4b4d970963aca036f5a2874ec4ebad",
+      "infant-pose8-contrast-baseline-face.png": "03eee3ef65985b17fc1bd0a14727dd4fd297f38910ecbf0acbf21a063fd3a12c",
+      "infant-pose8-contrast-candidate-face.png": "03eee3ef65985b17fc1bd0a14727dd4fd297f38910ecbf0acbf21a063fd3a12c",
+      "infant-pose8-contrast-baseline-stage.png": "82983ed84035bb9ff558c3c236d63344dea8eba562a0c5ca297bcf5bdfab08ea",
+      "infant-pose8-contrast-candidate-stage.png": "82983ed84035bb9ff558c3c236d63344dea8eba562a0c5ca297bcf5bdfab08ea"
+    }
+  },
+  "privateEvidenceHashes": {
+    "native-recovery.json": "8ef1e5306d896e199ffe7321c6f635e4480e53a467598db3538cd8c38f8ba296",
+    "repair-packaging.cjs": "856f9c15f5f42c86d8c78a44acf155d2d6e46face47bb4cae833d551881dc8a1",
+    "packaging-repair.json": "8c51a1ff540eb3be37e2082111c8337fbb7cd90c4c1d25e794c2f530821c3259",
+    "baseline.json": "fc5ea2ee68bb89891d622140b2e0eb9ca271198dc838f664a522af0a82015ffc",
+    "before.js": "8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940",
+    "candidate.js": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76",
+    "delta.json": "30618f6fa7ef014688989bb4cd4ae76f23e5958f25b88851303a8ff0983dab57",
+    "verify-mouth.cjs": "cabab454b93e79401dfdd6626d2cbfb6b94a6dbdcfec51d747d9df5fac7ba25f",
+    "geometry-final/mouth-verification.json": "6f2e4b310ae1b1ff012c42dc6e200ddf637a35bc272ff865deb611f858323023",
+    "mouth-diagnostic.json": "7df8adf0373f5afdfc7bf36d82a4db736f4351bad25a54de308cb045525f40cb",
+    "mouth-diagnostic.cjs": "511d11719d9877fcfd9c4e7de729028883e832703e0d8404bf2bf904d23a3f16",
+    "visual-review.json": "f73b2ad1a3a49f2620db9c58588eabe2249b1b89357a4a2a90a15bb89ac49098",
+    "history-integration.json": "3a56b6a57af527fbc85657b0dabd059f7bca301168ef55fcb064148691411416",
+    "history-preservation.json": "f546839ff080cedfe56536584a9eef2f852e43d187a038135bb1d4c047053f1b",
+    "history-input-snapshot.json": "82fba39621f50c0d5edfcd28b530456ea70f829a08a4f27048f176b5ceb7b741",
+    "firstresponse-face-preview.spec.ts": "b90a771f2d355db09b58de74b4eb5c1ca5cde110355a73368a8bed32c554ccde",
+    "playwright-face.config.cjs": "dda618a55a673d8c544dfc13f4273c04d406d7bdd06c8734acddb93ebcdfe7be",
+    "run-face-browser.cjs": "942175f178eb845be3e0b33eb6d48c0cab8a2027b00490745328f7935935d024",
+    "face-capture-png.cjs": "6009565cd97b35c874ff22325427e40823b4ff197118ea3870d0b2996bd30829",
+    "face-mount-window.cjs": "9e3d95fe4ce8ae16ca7d4a994d26250e064873d675b930fb23d63b33ba43b246",
+    "merge-browser.cjs": "7fe7d3f12aa1560a482dfcbf1fb5d82d51d70fba8ebec2a4002855785ab86236",
+    "finish-report.cjs": "b1f3206990fb7ddb53e7e013157c02168528f19dac68297e3d23507d56b1765b",
+    "integrate-final.cjs": "c6c251783349be83b720614d7dfa50dc490e190c2faa9afc31324cff57103684",
+    "README-draft.md": "b9adc0dca0cbafa6591b4f362b79ce40ca8b79edefd105cab0db5af4f524bd50",
+    "prepare-history.cjs": "a9edc5596b31d5c19636537709ceeddf2dab5818af3ae43f77fd40336a34e537",
+    "post-check.cjs": "4a1bbf28879b0706d58ecef51ba0159214b77f82c2fc90195389aa9d9824fccb",
+    "independent-visual-review.json": "fdc1f464ad092179a791690fd7a4b1f75d5c3ae6eef46035479199e9db2e2e26",
+    "fixture-list-check.json": "75d2ba80c6c6f3e14aa410bdab912090a945b2d26a5aefaa7869cfc263da6dee",
+    "browser-fixture-preparation.json": "a87b194556d71c20e3923c83cd02e9dbf560c0a672282853d917359c7bdfdad6",
+    "fixture-contract-check.json": "aa4d9d40affa23176df04545ea4ceb987355b810560c498b9df55dae93cd59a9",
+    "check-face-fixture.cjs": "df0bb2d3358f6f433884874fbcc7cca3bcffc3c07dee37812de5720a1fad0690",
+    "native-final\\adult-pose5-baseline-face.png": "f2088e5fdb8214aa408a56a5bdde26be8dd5cf056bc08cd564b938326394b415",
+    "native-final\\adult-pose5-baseline-stage.png": "acafb933e4afac4991a327e7e45187cfd73164a1d0b7dd50e37d191940f4dbd0",
+    "native-final\\adult-pose5-candidate-face.png": "3f767d22809ef40549a2a83e31d6723d7a2766e556434c2f1478f845346cb197",
+    "native-final\\adult-pose5-candidate-stage.png": "3d7b015fd0b4d3044967001a5b4956366b4b4d970963aca036f5a2874ec4ebad",
+    "native-final\\adult-pose5-evidence.json": "c64ec6c2c9d818eb41481ed4516202f4ff37eb8643ffc41fabbd107226dce600",
+    "native-final\\face-preview-metrics.json": "6061d5ecdd51adffbd552fbb956b6caa08078f4acdec6628f1189cd93740db27",
+    "native-final\\infant-pose8-contrast-baseline-face.png": "03eee3ef65985b17fc1bd0a14727dd4fd297f38910ecbf0acbf21a063fd3a12c",
+    "native-final\\infant-pose8-contrast-baseline-stage.png": "82983ed84035bb9ff558c3c236d63344dea8eba562a0c5ca297bcf5bdfab08ea",
+    "native-final\\infant-pose8-contrast-candidate-face.png": "03eee3ef65985b17fc1bd0a14727dd4fd297f38910ecbf0acbf21a063fd3a12c",
+    "native-final\\infant-pose8-contrast-candidate-stage.png": "82983ed84035bb9ff558c3c236d63344dea8eba562a0c5ca297bcf5bdfab08ea",
+    "native-final\\infant-pose8-contrast-evidence.json": "60c103b33b7a3b8a79131341e5ad41cfdec8bd00a68b7f280d2a87031725f627",
+    "native-final\\runs\\native-adult-pose5\\adult-pose5-baseline-face.png": "f2088e5fdb8214aa408a56a5bdde26be8dd5cf056bc08cd564b938326394b415",
+    "native-final\\runs\\native-adult-pose5\\adult-pose5-baseline-stage.png": "acafb933e4afac4991a327e7e45187cfd73164a1d0b7dd50e37d191940f4dbd0",
+    "native-final\\runs\\native-adult-pose5\\adult-pose5-candidate-face.png": "3f767d22809ef40549a2a83e31d6723d7a2766e556434c2f1478f845346cb197",
+    "native-final\\runs\\native-adult-pose5\\adult-pose5-candidate-stage.png": "3d7b015fd0b4d3044967001a5b4956366b4b4d970963aca036f5a2874ec4ebad",
+    "native-final\\runs\\native-adult-pose5\\adult-pose5-evidence.json": "c64ec6c2c9d818eb41481ed4516202f4ff37eb8643ffc41fabbd107226dce600",
+    "native-final\\runs\\native-adult-pose5\\artifacts\\.last-run.json": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "native-final\\runs\\native-adult-pose5\\browser-run.json": "4c86dd89edce56c83408112999def14f00545aa0144ab201b5797b02c0a11d9a",
+    "native-final\\runs\\native-adult-pose5\\browser-run.log": "59657d54be3e40402e8d0effbcd1ddd8aeafd9741d4aa554c6325dd917ff9ec9",
+    "native-final\\runs\\native-adult-pose5\\face-preview-metrics.json": "b1db03cff4d8daeea75b1e647e677ba7716a783d78e9f04bfe96146d0f72c2f6",
+    "native-final\\runs\\native-adult-pose5\\inputs.json": "7cf4c93764378627d39128ae201e4d23dce26a1556d96a4e417b96cc451478c3",
+    "native-final\\runs\\native-adult-pose5\\runner.json": "8899b7e9ad5d64de3dd067880c00c8752d44e5f431ae3f8f0c6eabc90602db0b",
+    "native-final\\runs\\native-adult-pose5\\summary.json": "3a8c412593100f94b1795df3ca27af63194b9c2199f99225b07646cef3c247af",
+    "native-final\\runs\\native-infant-contrast-recovered\\artifacts\\.last-run.json": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "native-final\\runs\\native-infant-contrast-recovered\\browser-run.json": "4454067dc1ea8ff512cb7d7d1faff0f88a0c1f98cc47a1dfcf7352df74f56f5d",
+    "native-final\\runs\\native-infant-contrast-recovered\\browser-run.log": "5094645e07d24b68b2284567a1aa55b98cc16779157be5942522fc92d636ac2a",
+    "native-final\\runs\\native-infant-contrast-recovered\\face-preview-metrics.json": "fd4047e9b74aad7eb23ee2e5047a17712c753b80c04155779c0b652966a51201",
+    "native-final\\runs\\native-infant-contrast-recovered\\infant-pose8-contrast-baseline-face.png": "03eee3ef65985b17fc1bd0a14727dd4fd297f38910ecbf0acbf21a063fd3a12c",
+    "native-final\\runs\\native-infant-contrast-recovered\\infant-pose8-contrast-baseline-stage.png": "82983ed84035bb9ff558c3c236d63344dea8eba562a0c5ca297bcf5bdfab08ea",
+    "native-final\\runs\\native-infant-contrast-recovered\\infant-pose8-contrast-candidate-face.png": "03eee3ef65985b17fc1bd0a14727dd4fd297f38910ecbf0acbf21a063fd3a12c",
+    "native-final\\runs\\native-infant-contrast-recovered\\infant-pose8-contrast-candidate-stage.png": "82983ed84035bb9ff558c3c236d63344dea8eba562a0c5ca297bcf5bdfab08ea",
+    "native-final\\runs\\native-infant-contrast-recovered\\infant-pose8-contrast-evidence.json": "60c103b33b7a3b8a79131341e5ad41cfdec8bd00a68b7f280d2a87031725f627",
+    "native-final\\runs\\native-infant-contrast-recovered\\inputs.json": "b7cdf6c385dd0f548478df7ef59319dae7a54032b42d3809ed5b779a63383120",
+    "native-final\\runs\\native-infant-contrast-recovered\\runner.json": "581ddfd3b189aab6e055c9ef1e38fb5d944481c766f384d05ca049e3d457f6d2",
+    "native-final\\runs\\native-infant-contrast-recovered\\summary.json": "fa6bb40c0b479100052833c7d8ff0b2754cb9577524d136e4442424b4705a833",
+    "native-final\\summary.json": "75651979acab20745bdaae17378963793baa772ade90c97d81bdfb76cd21efad",
+    "native-infant-contrast\\artifacts\\.last-run.json": "653faf856ca76847b6dd190959749c54630cb60ec63c082a4cd93d197b415279",
+    "native-infant-contrast\\artifacts\\firstresponse-face-preview-0cfdb-native-supporting-hand-view\\error-context.md": "152ccb6632e251178aac5ffb237620eb157d2031dd1058b0387586fcf7050e7f",
+    "native-infant-contrast\\browser-run.json": "3dc1068e54a0390b3fea7294c85234d363c7ae2ca93e5606bfd433f33189a3d1",
+    "native-infant-contrast\\browser-run.log": "b5fb67334e04487f7aaa1fb95278d33c3725a05d7759a2b55fb4d30235f518f4",
+    "native-infant-contrast\\face-preview-metrics.json": "b1ef81358cd443e8725f8368d3ff9b9d2cac0463def680c3e096431336dcf64b",
+    "native-infant-contrast\\failure.json": "2c19218263c989876f5c11e89aa0b44f862605b671ce5d428b0ca7fdb1e8ae94",
+    "native-infant-contrast\\inputs.json": "9f9b63ab798a3b8a2042b34917bf52eebcea0a85407f3bcb83d88daa21d31446",
+    "native-infant-contrast\\runner.json": "d5e1f812598b8bbbb26282cc65f7d0d55cd54ad84d0ea635fda58040b8bf8943",
+    "packaging-before-recovery\\finish-report.cjs": "9950ef76aa0dc30bbf3b0d52113ca7757b96ff2a5271f525585eea33f833e44d",
+    "packaging-before-recovery\\integrate-final.cjs": "aa21fd6ffd38d5716c1577b4d75c44ac0fe10ca70f4ac074df27591e4e911c61",
+    "packaging-before-recovery\\merge-browser.cjs": "538e229651df9ec975d07f949b96b7ca0ad595f09885cde7a62b43a415e55be9",
+    "packaging-before-recovery\\post-check.cjs": "430369e4f30814a275d7a14ac2a1c28378f1c2a7fcf8ef381b4615fe4988c3b6"
+  },
+  "uncommitted": true,
+  "postCheck": {
+    "passed": true,
+    "sourceSHA256": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76",
+    "beforeSHA256": "8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940",
+    "sourceCopies": [
+      "stem_lab/stem_tool_firstresponse.js",
+      "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js",
+      "desktop/app-build/stem_lab/stem_tool_firstresponse.js",
+      "desktop/web-app/build/stem_lab/stem_tool_firstresponse.js"
+    ],
+    "sourceCopiesIdentical": 4,
+    "rawTestsUnchanged": 39,
+    "historicalHelperChains": 11,
+    "preparedAdditionsVerified": 2,
+    "preparedEditsVerified": 1,
+    "executedCheckerPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\verify-mouth.cjs",
+    "executedCheckerSHA256": "cabab454b93e79401dfdd6626d2cbfb6b94a6dbdcfec51d747d9df5fac7ba25f",
+    "geometryResultPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\geometry-final\\mouth-verification.json",
+    "geometryResultSHA256": "6f2e4b310ae1b1ff012c42dc6e200ddf637a35bc272ff865deb611f858323023",
+    "archivedCheckerFile": "reports/firstresponse-mouth-finish/checks/verify-mouth.cjs",
+    "archivedCheckerMatchesExecutedBytes": true,
+    "syntaxFiles": [
+      "stem_lab/stem_tool_firstresponse.js",
+      "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js",
+      "desktop/app-build/stem_lab/stem_tool_firstresponse.js",
+      "desktop/web-app/build/stem_lab/stem_tool_firstresponse.js",
+      "tests/helpers/firstresponse_mouth_refinement_delta.cjs",
+      "tests/helpers/firstresponse_arm_finish_delta.cjs",
+      "reports/firstresponse-mouth-finish/checks/verify-mouth.cjs"
+    ],
+    "reportLinksVerified": 17,
+    "reportExternalLinks": 0,
+    "stagedNames": [],
+    "indexBytesPreserved": true,
+    "indexEmpty": true,
+    "negative": {
+      "requested": true,
+      "ran": true,
+      "changedPrivateCheckerRejected": true,
+      "changedArchivedCheckerRejected": true,
+      "mutationScope": "in-memory bytes only",
+      "originalsReread": true
+    },
+    "sharedFilesWritten": 0,
+    "limitations": "Source, compatibility, syntax and report-link checks; geometry execution is pinned above and browser acceptance is verified separately."
+  }
+}

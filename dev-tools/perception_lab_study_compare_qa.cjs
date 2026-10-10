@@ -158,15 +158,42 @@ function seedPair(fixture, { hiddenA = false, hiddenB = false, settingsA = {}, s
       else assert(text.includes(fixture.percent + '%'), text);
       assert.deepEqual(after.models, before.models); assert.deepEqual(after.comparison, before.comparison); assert.equal(after.experiment, before.experiment);
       assert(after.studies.every(record => record.model.reveal));
-      const graphic = await plot().evaluate(node => ({ tag: node.tagName.toLowerCase(), role: node.getAttribute('role'), label: node.getAttribute('aria-labelledby'), title: node.querySelector('title')?.textContent,
-        values: Array.from(node.querySelectorAll('[data-perception-pair-value]')).map(dot => ({ value: Number(dot.dataset.perceptionPairValue), x: Number(dot.getAttribute('cx')) })),
-        medians: Array.from(node.querySelectorAll('[data-perception-pair-median]')).map(mark => Number(mark.dataset.perceptionPairMedian)),
-        reference: Number(node.querySelector('[data-perception-pair-reference]').dataset.perceptionPairReference) }));
-      assert.equal(graphic.tag, 'svg'); assert.equal(graphic.role, 'img'); assert(graphic.label && graphic.title, 'Plot needs an accessible title.');
+      const graphic = await plot().evaluate(node => {
+        const textFor = attribute => (node.getAttribute(attribute) || '').trim().split(/\s+/).filter(Boolean).map(id => {
+          const target = document.getElementById(id); return target ? target.textContent.trim() : null;
+        });
+        const geometry = (mark, key) => {
+          const track = mark.closest('[data-perception-pair-track]');
+          const box = mark.getBoundingClientRect(), bounds = track?.getBoundingClientRect();
+          return { value: Number(mark.dataset[key]), x: box.left + box.width / 2, track: track?.dataset.perceptionPairTrack,
+            trackLeft: bounds?.left, trackWidth: bounds?.width };
+        };
+        return { role: node.getAttribute('role'), label: textFor('aria-labelledby'), description: textFor('aria-describedby'),
+          hasBounds: node.hasAttribute('data-perception-pair-min') && node.hasAttribute('data-perception-pair-max'), min: Number(node.dataset.perceptionPairMin), max: Number(node.dataset.perceptionPairMax),
+          tracks: Array.from(node.querySelectorAll('[data-perception-pair-track]')).map(track => {
+            const bounds = track.getBoundingClientRect(); return { left: bounds.left, width: bounds.width };
+          }),
+          values: Array.from(node.querySelectorAll('[data-perception-pair-value]')).map(mark => geometry(mark, 'perceptionPairValue')),
+          medians: Array.from(node.querySelectorAll('[data-perception-pair-median]')).map(mark => geometry(mark, 'perceptionPairMedian')),
+          references: Array.from(node.querySelectorAll('[data-perception-pair-reference]')).map(mark => geometry(mark, 'perceptionPairReference')) };
+      });
+      assert.equal(graphic.role, 'img');
+      assert(graphic.label.length && graphic.label.every(Boolean), 'Plot needs a resolved accessible title.');
+      assert(graphic.description.length && graphic.description.every(Boolean), 'Plot needs a resolved accessible description.');
+      assert(graphic.hasBounds && Number.isFinite(graphic.min) && Number.isFinite(graphic.max) && graphic.max > graphic.min, 'Plot needs an explicit positive shared domain.');
+      assert.equal(graphic.values.length, 6); assert.equal(graphic.medians.length, 2); assert.equal(graphic.references.length, 2);
       assert.deepEqual(graphic.values.map(dot => dot.value), fixture.a.concat(fixture.b));
-      assert.deepEqual(graphic.medians, [paired.summaryA.median, paired.summaryB.median]); assert.equal(graphic.reference, fixture.reference);
-      const [first, second, fourth] = [graphic.values[0], graphic.values[1], graphic.values[3]];
-      assert(Math.abs((second.x - first.x) / (second.value - first.value) - (fourth.x - first.x) / (fourth.value - first.value)) < 1e-8, 'Both plotted rows must use the same linear scale.');
+      assert.deepEqual(graphic.medians.map(mark => mark.value), [paired.summaryA.median, paired.summaryB.median]);
+      assert.deepEqual(graphic.references.map(mark => mark.value), [fixture.reference, fixture.reference]);
+      assert.equal(graphic.tracks.length, 2);
+      assert(graphic.tracks.every(track => Number.isFinite(track.width) && track.width > 0), 'Both tracks must occupy real space.');
+      assert(Math.abs(graphic.tracks[0].left - graphic.tracks[1].left) <= 0.75 && Math.abs(graphic.tracks[0].width - graphic.tracks[1].width) <= 0.75, 'Both rows must share the same rendered horizontal scale.');
+      for (const mark of graphic.values.concat(graphic.medians, graphic.references)) {
+        const expected = (mark.value - graphic.min) / (graphic.max - graphic.min);
+        assert(mark.track && Number.isFinite(mark.x) && Number.isFinite(mark.trackLeft) && mark.trackWidth > 0, 'Every plotted mark must belong to a measurable track.');
+        assert(expected >= 0 && expected <= 1, 'The shared domain must contain every plotted value.');
+        assert(Math.abs(mark.x - mark.trackLeft - expected * mark.trackWidth) <= 0.75, 'Every rendered mark must use the shared linear scale.');
+      }
       assert((await results().locator('table').count()) >= 1, 'A readable data table must accompany the plot.');
       await noOverflow(); await targets(); assert.deepEqual(await axe(), []);
       await page.screenshot({ path: path.join(out, 'comparison-' + fixture.id + '.png'), fullPage: true });

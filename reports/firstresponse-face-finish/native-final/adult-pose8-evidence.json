@@ -1,0 +1,2526 @@
+{
+  "baselineSHA": "0cc79f45f9a57ce3c4f1d5fa674b56f462a2418c4b253dbc648557b37a6b2639",
+  "finalSHA": "f21eeaf8d3bd87810142d77f2cfe5e7ab9ee56e80a6548d927a4dcabec7af511",
+  "view": {
+    "id": "adult-pose8",
+    "age": "adult",
+    "width": 1280,
+    "height": 1080,
+    "pose": 8,
+    "contrast": false
+  },
+  "attempts": [
+    {
+      "variant": "baseline",
+      "startedAt": "2026-10-08T01:29:07.079Z",
+      "phase": "complete",
+      "probe": {
+        "camera": {
+          "position": [
+            -0.7254750396063211,
+            1.0483421472268166,
+            -0.8802728842976961
+          ],
+          "quaternion": [
+            -0.18672934162146515,
+            -0.5364763163722166,
+            -0.12310573154440846,
+            0.813738467697225
+          ],
+          "projection": [
+            1.6683754654031857,
+            0,
+            0,
+            0,
+            0,
+            2.6050890646938014,
+            0,
+            0,
+            0,
+            0,
+            -1.002002002002002,
+            -1,
+            0,
+            0,
+            -0.20020020020020018,
+            0
+          ],
+          "aspect": 1.5614525139664805
+        },
+        "pose": {
+          "structure": {
+            "hash": "b0354fa8",
+            "bytes": 6534
+          },
+          "preservedTransforms": {
+            "hash": "29ae08b7",
+            "bytes": 16506
+          },
+          "counts": {
+            "objects": 121,
+            "meshes": 87
+          }
+        },
+        "neckMesh": {
+          "name": "fr-manikin-neck",
+          "vertices": 523,
+          "triangles": 816,
+          "materialType": "MeshPhongMaterial",
+          "colorHex": 10846055,
+          "visible": true
+        },
+        "torsoMesh": {
+          "name": "fr-manikin-torso",
+          "vertices": 2913,
+          "triangles": 5680,
+          "materialType": "MeshPhongMaterial",
+          "colorHex": 2647450,
+          "visible": true
+        },
+        "faceProjection": {
+          "total": 8718,
+          "inFrame": 8718,
+          "min": [
+            -0.34828297183654494,
+            -0.6567850669043557,
+            0.739650501907826
+          ],
+          "max": [
+            0.08435457721611166,
+            -0.05570024598747785,
+            0.7827228356333262
+          ]
+        },
+        "eyeMeshes": [
+          {
+            "name": "fr-manikin-eye-left",
+            "vertices": 189,
+            "triangles": 320,
+            "attributes": {
+              "normal": {
+                "count": 189,
+                "itemSize": 3,
+                "array": {
+                  "hash": "3f5a4031",
+                  "bytes": 11293
+                }
+              },
+              "position": {
+                "count": 189,
+                "itemSize": 3,
+                "array": {
+                  "hash": "4e34ba9e",
+                  "bytes": 11630
+                }
+              },
+              "uv": {
+                "count": 189,
+                "itemSize": 2,
+                "array": {
+                  "hash": "2999e9ae",
+                  "bytes": 3799
+                }
+              }
+            },
+            "index": {
+              "hash": "28b4acac",
+              "bytes": 3307
+            },
+            "bounds": [
+              [
+                -0.11626996845006943,
+                0.16187387704849243,
+                -0.0826287791132927
+              ],
+              [
+                -0.037977252155542374,
+                0.19813738763332367,
+                -0.06823667883872986
+              ]
+            ],
+            "material": {
+              "type": "MeshPhongMaterial",
+              "colorHex": 9266768,
+              "side": 0,
+              "transparent": false,
+              "opacity": 1,
+              "depthWrite": true
+            },
+            "visible": true
+          },
+          {
+            "name": "fr-manikin-eye-right",
+            "vertices": 189,
+            "triangles": 320,
+            "attributes": {
+              "normal": {
+                "count": 189,
+                "itemSize": 3,
+                "array": {
+                  "hash": "7fbb4de6",
+                  "bytes": 11292
+                }
+              },
+              "position": {
+                "count": 189,
+                "itemSize": 3,
+                "array": {
+                  "hash": "f0afb41b",
+                  "bytes": 11441
+                }
+              },
+              "uv": {
+                "count": 189,
+                "itemSize": 2,
+                "array": {
+                  "hash": "2999e9ae",
+                  "bytes": 3799
+                }
+              }
+            },
+            "index": {
+              "hash": "28b4acac",
+              "bytes": 3307
+            },
+            "bounds": [
+              [
+                0.037977252155542374,
+                0.16187387704849243,
+                -0.0826287791132927
+              ],
+              [
+                0.11626996845006943,
+                0.19813738763332367,
+                -0.06823667883872986
+              ]
+            ],
+            "material": {
+              "type": "MeshPhongMaterial",
+              "colorHex": 9266768,
+              "side": 0,
+              "transparent": false,
+              "opacity": 1,
+              "depthWrite": true
+            },
+            "visible": true
+          },
+          {
+            "name": "fr-manikin-lower-lid-left",
+            "vertices": 561,
+            "triangles": 960,
+            "attributes": {
+              "normal": {
+                "count": 561,
+                "itemSize": 3,
+                "array": {
+                  "hash": "22530544",
+                  "bytes": 33242
+                }
+              },
+              "position": {
+                "count": 561,
+                "itemSize": 3,
+                "array": {
+                  "hash": "79698cd4",
+                  "bytes": 34533
+                }
+              },
+              "uv": {
+                "count": 561,
+                "itemSize": 2,
+                "array": {
+                  "hash": "3806b581",
+                  "bytes": 7220
+                }
+              }
+            },
+            "index": {
+              "hash": "33cd9408",
+              "bytes": 11124
+            },
+            "bounds": [
+              [
+                -0.1154400035738945,
+                0.16025495529174805,
+                -0.08139999955892563
+              ],
+              [
+                -0.0384799987077713,
+                0.19412276148796082,
+                -0.06216000020503998
+              ]
+            ],
+            "material": {
+              "type": "MeshPhongMaterial",
+              "colorHex": 10846055,
+              "side": 0,
+              "transparent": false,
+              "opacity": 1,
+              "depthWrite": true
+            },
+            "visible": true
+          },
+          {
+            "name": "fr-manikin-lower-lid-right",
+            "vertices": 561,
+            "triangles": 960,
+            "attributes": {
+              "normal": {
+                "count": 561,
+                "itemSize": 3,
+                "array": {
+                  "hash": "9576271f",
+                  "bytes": 33273
+                }
+              },
+              "position": {
+                "count": 561,
+                "itemSize": 3,
+                "array": {
+                  "hash": "ca39537f",
+                  "bytes": 33972
+                }
+              },
+              "uv": {
+                "count": 561,
+                "itemSize": 2,
+                "array": {
+                  "hash": "3806b581",
+                  "bytes": 7220
+                }
+              }
+            },
+            "index": {
+              "hash": "7c85d298",
+              "bytes": 11124
+            },
+            "bounds": [
+              [
+                0.0384799987077713,
+                0.16025495529174805,
+                -0.08139999955892563
+              ],
+              [
+                0.1154400035738945,
+                0.19412276148796082,
+                -0.06216000020503998
+              ]
+            ],
+            "material": {
+              "type": "MeshPhongMaterial",
+              "colorHex": 10846055,
+              "side": 0,
+              "transparent": false,
+              "opacity": 1,
+              "depthWrite": true
+            },
+            "visible": true
+          },
+          {
+            "name": "fr-manikin-upper-lid-left",
+            "vertices": 561,
+            "triangles": 960,
+            "attributes": {
+              "normal": {
+                "count": 561,
+                "itemSize": 3,
+                "array": {
+                  "hash": "1bdba2e3",
+                  "bytes": 33381
+                }
+              },
+              "position": {
+                "count": 561,
+                "itemSize": 3,
+                "array": {
+                  "hash": "c1f10347",
+                  "bytes": 34407
+                }
+              },
+              "uv": {
+                "count": 561,
+                "itemSize": 2,
+                "array": {
+                  "hash": "3806b581",
+                  "bytes": 7220
+                }
+              }
+            },
+            "index": {
+              "hash": "33cd9408",
+              "bytes": 11124
+            },
+            "bounds": [
+              [
+                -0.1154400035738945,
+                0.16025495529174805,
+                -0.08436000347137451
+              ],
+              [
+                -0.0384799987077713,
+                0.19412276148796082,
+                -0.06955999881029129
+              ]
+            ],
+            "material": {
+              "type": "MeshPhongMaterial",
+              "colorHex": 10846055,
+              "side": 0,
+              "transparent": false,
+              "opacity": 1,
+              "depthWrite": true
+            },
+            "visible": true
+          },
+          {
+            "name": "fr-manikin-upper-lid-right",
+            "vertices": 561,
+            "triangles": 960,
+            "attributes": {
+              "normal": {
+                "count": 561,
+                "itemSize": 3,
+                "array": {
+                  "hash": "be98107a",
+                  "bytes": 33398
+                }
+              },
+              "position": {
+                "count": 561,
+                "itemSize": 3,
+                "array": {
+                  "hash": "9a602242",
+                  "bytes": 33846
+                }
+              },
+              "uv": {
+                "count": 561,
+                "itemSize": 2,
+                "array": {
+                  "hash": "3806b581",
+                  "bytes": 7220
+                }
+              }
+            },
+            "index": {
+              "hash": "7c85d298",
+              "bytes": 11124
+            },
+            "bounds": [
+              [
+                0.0384799987077713,
+                0.16025495529174805,
+                -0.08436000347137451
+              ],
+              [
+                0.1154400035738945,
+                0.19412276148796082,
+                -0.06955999881029129
+              ]
+            ],
+            "material": {
+              "type": "MeshPhongMaterial",
+              "colorHex": 10846055,
+              "side": 0,
+              "transparent": false,
+              "opacity": 1,
+              "depthWrite": true
+            },
+            "visible": true
+          }
+        ],
+        "skull": {
+          "total": 1617,
+          "inFrame": 1617,
+          "min": [
+            -0.5295987118512085,
+            -0.7336217175969443,
+            0.7418375618393901
+          ],
+          "max": [
+            0.412283704507266,
+            0.40356262321338326,
+            0.8353943247711386
+          ]
+        },
+        "skullGeometry": {
+          "name": "fr-manikin-head",
+          "vertices": 1617,
+          "triangles": 2976,
+          "attributes": {
+            "normal": {
+              "count": 1617,
+              "itemSize": 3,
+              "array": {
+                "hash": "5d50019b",
+                "bytes": 93113
+              }
+            },
+            "position": {
+              "count": 1617,
+              "itemSize": 3,
+              "array": {
+                "hash": "aaba19ff",
+                "bytes": 93126
+              }
+            },
+            "uv": {
+              "count": 1617,
+              "itemSize": 2,
+              "array": {
+                "hash": "525b5ca2",
+                "bytes": 34509
+              }
+            }
+          },
+          "index": {
+            "hash": "e528e187",
+            "bytes": 38745
+          },
+          "bounds": [
+            [
+              -1,
+              -1,
+              -1
+            ],
+            [
+              1,
+              0.9400359988212585,
+              1
+            ]
+          ],
+          "material": {
+            "type": "MeshPhongMaterial",
+            "colorHex": 10846055,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        },
+        "preservedFace": {
+          "total": 22955,
+          "inFrame": 22955,
+          "min": [
+            -0.5295987118512085,
+            -0.7336217175969443,
+            0.739650501907826
+          ],
+          "max": [
+            0.412283704507266,
+            0.44321899318270463,
+            0.8353943247711386
+          ]
+        },
+        "neckProjection": {
+          "total": 523,
+          "inFrame": 509,
+          "min": [
+            0.039112463277932184,
+            -1.1057826542627427,
+            0.6678942843970256
+          ],
+          "max": [
+            0.9814763101547698,
+            0.08620041848022825,
+            0.8082223751746065
+          ]
+        },
+        "neckBounds": [
+          [
+            -0.225023416433556,
+            0.36212876914405534,
+            -1.1530043258795395
+          ],
+          [
+            0.2513680779642743,
+            0.7956970911593884,
+            -0.7169956741204607
+          ]
+        ],
+        "selectedHand": {
+          "total": 7628,
+          "inFrame": 7628,
+          "min": [
+            -0.4052766648311822,
+            -0.40612924981685855,
+            0.7038342089011974
+          ],
+          "max": [
+            0.3265711308093873,
+            0.3386708788259279,
+            0.7494361996230009
+          ]
+        },
+        "head": {
+          "total": 23333,
+          "inFrame": 23333,
+          "min": [
+            -0.5295987118512085,
+            -0.7336217175969443,
+            0.739650501907826
+          ],
+          "max": [
+            0.412283704507266,
+            0.44321899318270463,
+            0.8353943247711386
+          ]
+        },
+        "canvasRect": {
+          "x": 83,
+          "y": 270.46875,
+          "width": 559,
+          "height": 358
+        },
+        "cheekContext": [
+          [
+            -0.031199972316293834,
+            -0.03782315367243485,
+            0.745726739258319
+          ],
+          [
+            -0.2505382415804895,
+            0.02991231186231996,
+            0.7417862185169987
+          ],
+          [
+            0.1815943910439163,
+            -0.10353774745366952,
+            0.7495496954860207
+          ],
+          [
+            -0.06820745202280613,
+            -0.3788795526240713,
+            0.7356428609287411
+          ],
+          [
+            0.003107645961625267,
+            0.27835165313061816,
+            0.755074953490569
+          ]
+        ],
+        "contrast": false,
+        "state": {
+          "consentAccepted": true,
+          "view": "body3d",
+          "b3dTab": "recovery",
+          "b3dAge": "adult",
+          "b3dRec": [
+            "check",
+            "arm",
+            "hand",
+            "knee",
+            "roll",
+            "airway",
+            "stable",
+            "watch"
+          ],
+          "b3dRecView": 8,
+          "b3dRecoveryGuides": false,
+          "b3dChildHands": "two",
+          "b3dPlaced": "correct",
+          "b3dHandStudy": {},
+          "faMastery": {},
+          "modulesVisited": {},
+          "badges": {},
+          "b3dStatus": "ready"
+        },
+        "errors": [],
+        "draw": {
+          "id": 1,
+          "createdBy": "page",
+          "draws": 6227,
+          "sequence": 41,
+          "calls": 47,
+          "triangles": 66832,
+          "geometries": 77,
+          "programs": 3,
+          "disposeCount": 0
+        }
+      }
+    },
+    {
+      "variant": "candidate",
+      "startedAt": "2026-10-08T01:30:05.000Z",
+      "phase": "complete",
+      "probe": {
+        "camera": {
+          "position": [
+            -0.7254750396063211,
+            1.0483421472268166,
+            -0.8802728842976961
+          ],
+          "quaternion": [
+            -0.18672934162146515,
+            -0.5364763163722166,
+            -0.12310573154440846,
+            0.813738467697225
+          ],
+          "projection": [
+            1.6683754654031857,
+            0,
+            0,
+            0,
+            0,
+            2.6050890646938014,
+            0,
+            0,
+            0,
+            0,
+            -1.002002002002002,
+            -1,
+            0,
+            0,
+            -0.20020020020020018,
+            0
+          ],
+          "aspect": 1.5614525139664805
+        },
+        "pose": {
+          "structure": {
+            "hash": "b0354fa8",
+            "bytes": 6534
+          },
+          "preservedTransforms": {
+            "hash": "29ae08b7",
+            "bytes": 16506
+          },
+          "counts": {
+            "objects": 121,
+            "meshes": 87
+          }
+        },
+        "neckMesh": {
+          "name": "fr-manikin-neck",
+          "vertices": 523,
+          "triangles": 816,
+          "materialType": "MeshPhongMaterial",
+          "colorHex": 10846055,
+          "visible": true
+        },
+        "torsoMesh": {
+          "name": "fr-manikin-torso",
+          "vertices": 2913,
+          "triangles": 5680,
+          "materialType": "MeshPhongMaterial",
+          "colorHex": 2647450,
+          "visible": true
+        },
+        "faceProjection": {
+          "total": 8914,
+          "inFrame": 8914,
+          "min": [
+            -0.34828297183654494,
+            -0.6505984814199464,
+            0.739650501907826
+          ],
+          "max": [
+            0.08435457721611166,
+            -0.05570024598747785,
+            0.7827228356333262
+          ]
+        },
+        "eyeMeshes": [
+          {
+            "name": "fr-manikin-eye-left",
+            "vertices": 287,
+            "triangles": 380,
+            "attributes": {
+              "normal": {
+                "count": 287,
+                "itemSize": 3,
+                "array": {
+                  "hash": "3c6caba3",
+                  "bytes": 17070
+                }
+              },
+              "position": {
+                "count": 287,
+                "itemSize": 3,
+                "array": {
+                  "hash": "e6b71c1d",
+                  "bytes": 17628
+                }
+              }
+            },
+            "index": {
+              "hash": "7703506a",
+              "bytes": 4129
+            },
+            "bounds": [
+              [
+                -0.1154400035738945,
+                0.16178764402866364,
+                -0.08139999955892563
+              ],
+              [
+                -0.0384799987077713,
+                0.1955627202987671,
+                -0.068217433989048
+              ]
+            ],
+            "material": {
+              "type": "MeshPhongMaterial",
+              "colorHex": 9266768,
+              "side": 0,
+              "transparent": false,
+              "opacity": 1,
+              "depthWrite": true
+            },
+            "visible": true
+          },
+          {
+            "name": "fr-manikin-eye-right",
+            "vertices": 287,
+            "triangles": 380,
+            "attributes": {
+              "normal": {
+                "count": 287,
+                "itemSize": 3,
+                "array": {
+                  "hash": "4e572dc3",
+                  "bytes": 16836
+                }
+              },
+              "position": {
+                "count": 287,
+                "itemSize": 3,
+                "array": {
+                  "hash": "ca6d373e",
+                  "bytes": 17345
+                }
+              }
+            },
+            "index": {
+              "hash": "7703506a",
+              "bytes": 4129
+            },
+            "bounds": [
+              [
+                0.0384799987077713,
+                0.16183577477931976,
+                -0.08139999955892563
+              ],
+              [
+                0.1154400035738945,
+                0.19604460895061493,
+                -0.068217433989048
+              ]
+            ],
+            "material": {
+              "type": "MeshPhongMaterial",
+              "colorHex": 9266768,
+              "side": 0,
+              "transparent": false,
+              "opacity": 1,
+              "depthWrite": true
+            },
+            "visible": true
+          },
+          {
+            "name": "fr-manikin-lower-lid-left",
+            "vertices": 561,
+            "triangles": 960,
+            "attributes": {
+              "normal": {
+                "count": 561,
+                "itemSize": 3,
+                "array": {
+                  "hash": "22530544",
+                  "bytes": 33242
+                }
+              },
+              "position": {
+                "count": 561,
+                "itemSize": 3,
+                "array": {
+                  "hash": "79698cd4",
+                  "bytes": 34533
+                }
+              },
+              "uv": {
+                "count": 561,
+                "itemSize": 2,
+                "array": {
+                  "hash": "3806b581",
+                  "bytes": 7220
+                }
+              }
+            },
+            "index": {
+              "hash": "33cd9408",
+              "bytes": 11124
+            },
+            "bounds": [
+              [
+                -0.1154400035738945,
+                0.16025495529174805,
+                -0.08139999955892563
+              ],
+              [
+                -0.0384799987077713,
+                0.19412276148796082,
+                -0.06216000020503998
+              ]
+            ],
+            "material": {
+              "type": "MeshPhongMaterial",
+              "colorHex": 10846055,
+              "side": 0,
+              "transparent": false,
+              "opacity": 1,
+              "depthWrite": true
+            },
+            "visible": true
+          },
+          {
+            "name": "fr-manikin-lower-lid-right",
+            "vertices": 561,
+            "triangles": 960,
+            "attributes": {
+              "normal": {
+                "count": 561,
+                "itemSize": 3,
+                "array": {
+                  "hash": "9576271f",
+                  "bytes": 33273
+                }
+              },
+              "position": {
+                "count": 561,
+                "itemSize": 3,
+                "array": {
+                  "hash": "ca39537f",
+                  "bytes": 33972
+                }
+              },
+              "uv": {
+                "count": 561,
+                "itemSize": 2,
+                "array": {
+                  "hash": "3806b581",
+                  "bytes": 7220
+                }
+              }
+            },
+            "index": {
+              "hash": "7c85d298",
+              "bytes": 11124
+            },
+            "bounds": [
+              [
+                0.0384799987077713,
+                0.16025495529174805,
+                -0.08139999955892563
+              ],
+              [
+                0.1154400035738945,
+                0.19412276148796082,
+                -0.06216000020503998
+              ]
+            ],
+            "material": {
+              "type": "MeshPhongMaterial",
+              "colorHex": 10846055,
+              "side": 0,
+              "transparent": false,
+              "opacity": 1,
+              "depthWrite": true
+            },
+            "visible": true
+          },
+          {
+            "name": "fr-manikin-upper-lid-left",
+            "vertices": 561,
+            "triangles": 960,
+            "attributes": {
+              "normal": {
+                "count": 561,
+                "itemSize": 3,
+                "array": {
+                  "hash": "1bdba2e3",
+                  "bytes": 33381
+                }
+              },
+              "position": {
+                "count": 561,
+                "itemSize": 3,
+                "array": {
+                  "hash": "c1f10347",
+                  "bytes": 34407
+                }
+              },
+              "uv": {
+                "count": 561,
+                "itemSize": 2,
+                "array": {
+                  "hash": "3806b581",
+                  "bytes": 7220
+                }
+              }
+            },
+            "index": {
+              "hash": "33cd9408",
+              "bytes": 11124
+            },
+            "bounds": [
+              [
+                -0.1154400035738945,
+                0.16025495529174805,
+                -0.08436000347137451
+              ],
+              [
+                -0.0384799987077713,
+                0.19412276148796082,
+                -0.06955999881029129
+              ]
+            ],
+            "material": {
+              "type": "MeshPhongMaterial",
+              "colorHex": 10846055,
+              "side": 0,
+              "transparent": false,
+              "opacity": 1,
+              "depthWrite": true
+            },
+            "visible": true
+          },
+          {
+            "name": "fr-manikin-upper-lid-right",
+            "vertices": 561,
+            "triangles": 960,
+            "attributes": {
+              "normal": {
+                "count": 561,
+                "itemSize": 3,
+                "array": {
+                  "hash": "be98107a",
+                  "bytes": 33398
+                }
+              },
+              "position": {
+                "count": 561,
+                "itemSize": 3,
+                "array": {
+                  "hash": "9a602242",
+                  "bytes": 33846
+                }
+              },
+              "uv": {
+                "count": 561,
+                "itemSize": 2,
+                "array": {
+                  "hash": "3806b581",
+                  "bytes": 7220
+                }
+              }
+            },
+            "index": {
+              "hash": "7c85d298",
+              "bytes": 11124
+            },
+            "bounds": [
+              [
+                0.0384799987077713,
+                0.16025495529174805,
+                -0.08436000347137451
+              ],
+              [
+                0.1154400035738945,
+                0.19412276148796082,
+                -0.06955999881029129
+              ]
+            ],
+            "material": {
+              "type": "MeshPhongMaterial",
+              "colorHex": 10846055,
+              "side": 0,
+              "transparent": false,
+              "opacity": 1,
+              "depthWrite": true
+            },
+            "visible": true
+          }
+        ],
+        "skull": {
+          "total": 1617,
+          "inFrame": 1617,
+          "min": [
+            -0.5295987118512085,
+            -0.7336217175969443,
+            0.7418375618393901
+          ],
+          "max": [
+            0.412283704507266,
+            0.40356262321338326,
+            0.8353943247711386
+          ]
+        },
+        "skullGeometry": {
+          "name": "fr-manikin-head",
+          "vertices": 1617,
+          "triangles": 2976,
+          "attributes": {
+            "normal": {
+              "count": 1617,
+              "itemSize": 3,
+              "array": {
+                "hash": "5d50019b",
+                "bytes": 93113
+              }
+            },
+            "position": {
+              "count": 1617,
+              "itemSize": 3,
+              "array": {
+                "hash": "aaba19ff",
+                "bytes": 93126
+              }
+            },
+            "uv": {
+              "count": 1617,
+              "itemSize": 2,
+              "array": {
+                "hash": "525b5ca2",
+                "bytes": 34509
+              }
+            }
+          },
+          "index": {
+            "hash": "e528e187",
+            "bytes": 38745
+          },
+          "bounds": [
+            [
+              -1,
+              -1,
+              -1
+            ],
+            [
+              1,
+              0.9400359988212585,
+              1
+            ]
+          ],
+          "material": {
+            "type": "MeshPhongMaterial",
+            "colorHex": 10846055,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        },
+        "preservedFace": {
+          "total": 22955,
+          "inFrame": 22955,
+          "min": [
+            -0.5295987118512085,
+            -0.7336217175969443,
+            0.739650501907826
+          ],
+          "max": [
+            0.412283704507266,
+            0.44321899318270463,
+            0.8353943247711386
+          ]
+        },
+        "neckProjection": {
+          "total": 523,
+          "inFrame": 509,
+          "min": [
+            0.039112463277932184,
+            -1.1057826542627427,
+            0.6678942843970256
+          ],
+          "max": [
+            0.9814763101547698,
+            0.08620041848022825,
+            0.8082223751746065
+          ]
+        },
+        "neckBounds": [
+          [
+            -0.225023416433556,
+            0.36212876914405534,
+            -1.1530043258795395
+          ],
+          [
+            0.2513680779642743,
+            0.7956970911593884,
+            -0.7169956741204607
+          ]
+        ],
+        "selectedHand": {
+          "total": 7628,
+          "inFrame": 7628,
+          "min": [
+            -0.4052766648311822,
+            -0.40612924981685855,
+            0.7038342089011974
+          ],
+          "max": [
+            0.3265711308093873,
+            0.3386708788259279,
+            0.7494361996230009
+          ]
+        },
+        "head": {
+          "total": 23529,
+          "inFrame": 23529,
+          "min": [
+            -0.5295987118512085,
+            -0.7336217175969443,
+            0.739650501907826
+          ],
+          "max": [
+            0.412283704507266,
+            0.44321899318270463,
+            0.8353943247711386
+          ]
+        },
+        "canvasRect": {
+          "x": 83,
+          "y": 270.46875,
+          "width": 559,
+          "height": 358
+        },
+        "cheekContext": [
+          [
+            -0.031199972316293834,
+            -0.03782315367243485,
+            0.745726739258319
+          ],
+          [
+            -0.2505382415804895,
+            0.02991231186231996,
+            0.7417862185169987
+          ],
+          [
+            0.1815943910439163,
+            -0.10353774745366952,
+            0.7495496954860207
+          ],
+          [
+            -0.06820745202280613,
+            -0.3788795526240713,
+            0.7356428609287411
+          ],
+          [
+            0.003107645961625267,
+            0.27835165313061816,
+            0.755074953490569
+          ]
+        ],
+        "contrast": false,
+        "state": {
+          "consentAccepted": true,
+          "view": "body3d",
+          "b3dTab": "recovery",
+          "b3dAge": "adult",
+          "b3dRec": [
+            "check",
+            "arm",
+            "hand",
+            "knee",
+            "roll",
+            "airway",
+            "stable",
+            "watch"
+          ],
+          "b3dRecView": 8,
+          "b3dRecoveryGuides": false,
+          "b3dChildHands": "two",
+          "b3dPlaced": "correct",
+          "b3dHandStudy": {},
+          "faMastery": {},
+          "modulesVisited": {},
+          "badges": {},
+          "b3dStatus": "ready"
+        },
+        "errors": [],
+        "draw": {
+          "id": 1,
+          "createdBy": "page",
+          "draws": 5826,
+          "sequence": 38,
+          "calls": 47,
+          "triangles": 66952,
+          "geometries": 77,
+          "programs": 3,
+          "disposeCount": 0
+        }
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "id": "adult-pose8",
+      "age": "adult",
+      "width": 1280,
+      "height": 1080,
+      "pose": {
+        "structure": {
+          "hash": "b0354fa8",
+          "bytes": 6534
+        },
+        "preservedTransforms": {
+          "hash": "29ae08b7",
+          "bytes": 16506
+        },
+        "counts": {
+          "objects": 121,
+          "meshes": 87
+        }
+      },
+      "contrast": false,
+      "variant": "baseline",
+      "sourceSHA": "0cc79f45f9a57ce3c4f1d5fa674b56f462a2418c4b253dbc648557b37a6b2639",
+      "capture": "adult-pose8-baseline-stage.png",
+      "detail": {
+        "file": "adult-pose8-baseline-face.png",
+        "clip": {
+          "x": 247,
+          "y": 441,
+          "width": 158,
+          "height": 145
+        }
+      },
+      "camera": {
+        "position": [
+          -0.7254750396063211,
+          1.0483421472268166,
+          -0.8802728842976961
+        ],
+        "quaternion": [
+          -0.18672934162146515,
+          -0.5364763163722166,
+          -0.12310573154440846,
+          0.813738467697225
+        ],
+        "projection": [
+          1.6683754654031857,
+          0,
+          0,
+          0,
+          0,
+          2.6050890646938014,
+          0,
+          0,
+          0,
+          0,
+          -1.002002002002002,
+          -1,
+          0,
+          0,
+          -0.20020020020020018,
+          0
+        ],
+        "aspect": 1.5614525139664805
+      },
+      "neckMesh": {
+        "name": "fr-manikin-neck",
+        "vertices": 523,
+        "triangles": 816,
+        "materialType": "MeshPhongMaterial",
+        "colorHex": 10846055,
+        "visible": true
+      },
+      "torsoMesh": {
+        "name": "fr-manikin-torso",
+        "vertices": 2913,
+        "triangles": 5680,
+        "materialType": "MeshPhongMaterial",
+        "colorHex": 2647450,
+        "visible": true
+      },
+      "faceProjection": {
+        "total": 8718,
+        "inFrame": 8718,
+        "min": [
+          -0.34828297183654494,
+          -0.6567850669043557,
+          0.739650501907826
+        ],
+        "max": [
+          0.08435457721611166,
+          -0.05570024598747785,
+          0.7827228356333262
+        ]
+      },
+      "eyeMeshes": [
+        {
+          "name": "fr-manikin-eye-left",
+          "vertices": 189,
+          "triangles": 320,
+          "attributes": {
+            "normal": {
+              "count": 189,
+              "itemSize": 3,
+              "array": {
+                "hash": "3f5a4031",
+                "bytes": 11293
+              }
+            },
+            "position": {
+              "count": 189,
+              "itemSize": 3,
+              "array": {
+                "hash": "4e34ba9e",
+                "bytes": 11630
+              }
+            },
+            "uv": {
+              "count": 189,
+              "itemSize": 2,
+              "array": {
+                "hash": "2999e9ae",
+                "bytes": 3799
+              }
+            }
+          },
+          "index": {
+            "hash": "28b4acac",
+            "bytes": 3307
+          },
+          "bounds": [
+            [
+              -0.11626996845006943,
+              0.16187387704849243,
+              -0.0826287791132927
+            ],
+            [
+              -0.037977252155542374,
+              0.19813738763332367,
+              -0.06823667883872986
+            ]
+          ],
+          "material": {
+            "type": "MeshPhongMaterial",
+            "colorHex": 9266768,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "vertices": 189,
+          "triangles": 320,
+          "attributes": {
+            "normal": {
+              "count": 189,
+              "itemSize": 3,
+              "array": {
+                "hash": "7fbb4de6",
+                "bytes": 11292
+              }
+            },
+            "position": {
+              "count": 189,
+              "itemSize": 3,
+              "array": {
+                "hash": "f0afb41b",
+                "bytes": 11441
+              }
+            },
+            "uv": {
+              "count": 189,
+              "itemSize": 2,
+              "array": {
+                "hash": "2999e9ae",
+                "bytes": 3799
+              }
+            }
+          },
+          "index": {
+            "hash": "28b4acac",
+            "bytes": 3307
+          },
+          "bounds": [
+            [
+              0.037977252155542374,
+              0.16187387704849243,
+              -0.0826287791132927
+            ],
+            [
+              0.11626996845006943,
+              0.19813738763332367,
+              -0.06823667883872986
+            ]
+          ],
+          "material": {
+            "type": "MeshPhongMaterial",
+            "colorHex": 9266768,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "vertices": 561,
+          "triangles": 960,
+          "attributes": {
+            "normal": {
+              "count": 561,
+              "itemSize": 3,
+              "array": {
+                "hash": "22530544",
+                "bytes": 33242
+              }
+            },
+            "position": {
+              "count": 561,
+              "itemSize": 3,
+              "array": {
+                "hash": "79698cd4",
+                "bytes": 34533
+              }
+            },
+            "uv": {
+              "count": 561,
+              "itemSize": 2,
+              "array": {
+                "hash": "3806b581",
+                "bytes": 7220
+              }
+            }
+          },
+          "index": {
+            "hash": "33cd9408",
+            "bytes": 11124
+          },
+          "bounds": [
+            [
+              -0.1154400035738945,
+              0.16025495529174805,
+              -0.08139999955892563
+            ],
+            [
+              -0.0384799987077713,
+              0.19412276148796082,
+              -0.06216000020503998
+            ]
+          ],
+          "material": {
+            "type": "MeshPhongMaterial",
+            "colorHex": 10846055,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "vertices": 561,
+          "triangles": 960,
+          "attributes": {
+            "normal": {
+              "count": 561,
+              "itemSize": 3,
+              "array": {
+                "hash": "9576271f",
+                "bytes": 33273
+              }
+            },
+            "position": {
+              "count": 561,
+              "itemSize": 3,
+              "array": {
+                "hash": "ca39537f",
+                "bytes": 33972
+              }
+            },
+            "uv": {
+              "count": 561,
+              "itemSize": 2,
+              "array": {
+                "hash": "3806b581",
+                "bytes": 7220
+              }
+            }
+          },
+          "index": {
+            "hash": "7c85d298",
+            "bytes": 11124
+          },
+          "bounds": [
+            [
+              0.0384799987077713,
+              0.16025495529174805,
+              -0.08139999955892563
+            ],
+            [
+              0.1154400035738945,
+              0.19412276148796082,
+              -0.06216000020503998
+            ]
+          ],
+          "material": {
+            "type": "MeshPhongMaterial",
+            "colorHex": 10846055,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        },
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "vertices": 561,
+          "triangles": 960,
+          "attributes": {
+            "normal": {
+              "count": 561,
+              "itemSize": 3,
+              "array": {
+                "hash": "1bdba2e3",
+                "bytes": 33381
+              }
+            },
+            "position": {
+              "count": 561,
+              "itemSize": 3,
+              "array": {
+                "hash": "c1f10347",
+                "bytes": 34407
+              }
+            },
+            "uv": {
+              "count": 561,
+              "itemSize": 2,
+              "array": {
+                "hash": "3806b581",
+                "bytes": 7220
+              }
+            }
+          },
+          "index": {
+            "hash": "33cd9408",
+            "bytes": 11124
+          },
+          "bounds": [
+            [
+              -0.1154400035738945,
+              0.16025495529174805,
+              -0.08436000347137451
+            ],
+            [
+              -0.0384799987077713,
+              0.19412276148796082,
+              -0.06955999881029129
+            ]
+          ],
+          "material": {
+            "type": "MeshPhongMaterial",
+            "colorHex": 10846055,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "vertices": 561,
+          "triangles": 960,
+          "attributes": {
+            "normal": {
+              "count": 561,
+              "itemSize": 3,
+              "array": {
+                "hash": "be98107a",
+                "bytes": 33398
+              }
+            },
+            "position": {
+              "count": 561,
+              "itemSize": 3,
+              "array": {
+                "hash": "9a602242",
+                "bytes": 33846
+              }
+            },
+            "uv": {
+              "count": 561,
+              "itemSize": 2,
+              "array": {
+                "hash": "3806b581",
+                "bytes": 7220
+              }
+            }
+          },
+          "index": {
+            "hash": "7c85d298",
+            "bytes": 11124
+          },
+          "bounds": [
+            [
+              0.0384799987077713,
+              0.16025495529174805,
+              -0.08436000347137451
+            ],
+            [
+              0.1154400035738945,
+              0.19412276148796082,
+              -0.06955999881029129
+            ]
+          ],
+          "material": {
+            "type": "MeshPhongMaterial",
+            "colorHex": 10846055,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        }
+      ],
+      "skull": {
+        "total": 1617,
+        "inFrame": 1617,
+        "min": [
+          -0.5295987118512085,
+          -0.7336217175969443,
+          0.7418375618393901
+        ],
+        "max": [
+          0.412283704507266,
+          0.40356262321338326,
+          0.8353943247711386
+        ]
+      },
+      "skullGeometry": {
+        "name": "fr-manikin-head",
+        "vertices": 1617,
+        "triangles": 2976,
+        "attributes": {
+          "normal": {
+            "count": 1617,
+            "itemSize": 3,
+            "array": {
+              "hash": "5d50019b",
+              "bytes": 93113
+            }
+          },
+          "position": {
+            "count": 1617,
+            "itemSize": 3,
+            "array": {
+              "hash": "aaba19ff",
+              "bytes": 93126
+            }
+          },
+          "uv": {
+            "count": 1617,
+            "itemSize": 2,
+            "array": {
+              "hash": "525b5ca2",
+              "bytes": 34509
+            }
+          }
+        },
+        "index": {
+          "hash": "e528e187",
+          "bytes": 38745
+        },
+        "bounds": [
+          [
+            -1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            0.9400359988212585,
+            1
+          ]
+        ],
+        "material": {
+          "type": "MeshPhongMaterial",
+          "colorHex": 10846055,
+          "side": 0,
+          "transparent": false,
+          "opacity": 1,
+          "depthWrite": true
+        },
+        "visible": true
+      },
+      "preservedFace": {
+        "total": 22955,
+        "inFrame": 22955,
+        "min": [
+          -0.5295987118512085,
+          -0.7336217175969443,
+          0.739650501907826
+        ],
+        "max": [
+          0.412283704507266,
+          0.44321899318270463,
+          0.8353943247711386
+        ]
+      },
+      "neckProjection": {
+        "total": 523,
+        "inFrame": 509,
+        "min": [
+          0.039112463277932184,
+          -1.1057826542627427,
+          0.6678942843970256
+        ],
+        "max": [
+          0.9814763101547698,
+          0.08620041848022825,
+          0.8082223751746065
+        ]
+      },
+      "neckBounds": [
+        [
+          -0.225023416433556,
+          0.36212876914405534,
+          -1.1530043258795395
+        ],
+        [
+          0.2513680779642743,
+          0.7956970911593884,
+          -0.7169956741204607
+        ]
+      ],
+      "selectedHand": {
+        "total": 7628,
+        "inFrame": 7628,
+        "min": [
+          -0.4052766648311822,
+          -0.40612924981685855,
+          0.7038342089011974
+        ],
+        "max": [
+          0.3265711308093873,
+          0.3386708788259279,
+          0.7494361996230009
+        ]
+      },
+      "head": {
+        "total": 23333,
+        "inFrame": 23333,
+        "min": [
+          -0.5295987118512085,
+          -0.7336217175969443,
+          0.739650501907826
+        ],
+        "max": [
+          0.412283704507266,
+          0.44321899318270463,
+          0.8353943247711386
+        ]
+      },
+      "canvasRect": {
+        "x": 83,
+        "y": 270.46875,
+        "width": 559,
+        "height": 358
+      },
+      "cheekContext": [
+        [
+          -0.031199972316293834,
+          -0.03782315367243485,
+          0.745726739258319
+        ],
+        [
+          -0.2505382415804895,
+          0.02991231186231996,
+          0.7417862185169987
+        ],
+        [
+          0.1815943910439163,
+          -0.10353774745366952,
+          0.7495496954860207
+        ],
+        [
+          -0.06820745202280613,
+          -0.3788795526240713,
+          0.7356428609287411
+        ],
+        [
+          0.003107645961625267,
+          0.27835165313061816,
+          0.755074953490569
+        ]
+      ],
+      "state": {
+        "consentAccepted": true,
+        "view": "body3d",
+        "b3dTab": "recovery",
+        "b3dAge": "adult",
+        "b3dRec": [
+          "check",
+          "arm",
+          "hand",
+          "knee",
+          "roll",
+          "airway",
+          "stable",
+          "watch"
+        ],
+        "b3dRecView": 8,
+        "b3dRecoveryGuides": false,
+        "b3dChildHands": "two",
+        "b3dPlaced": "correct",
+        "b3dHandStudy": {},
+        "faMastery": {},
+        "modulesVisited": {},
+        "badges": {},
+        "b3dStatus": "ready"
+      },
+      "errors": [],
+      "draw": {
+        "id": 1,
+        "createdBy": "page",
+        "draws": 6227,
+        "sequence": 41,
+        "calls": 47,
+        "triangles": 66832,
+        "geometries": 77,
+        "programs": 3,
+        "disposeCount": 0
+      }
+    },
+    {
+      "id": "adult-pose8",
+      "age": "adult",
+      "width": 1280,
+      "height": 1080,
+      "pose": {
+        "structure": {
+          "hash": "b0354fa8",
+          "bytes": 6534
+        },
+        "preservedTransforms": {
+          "hash": "29ae08b7",
+          "bytes": 16506
+        },
+        "counts": {
+          "objects": 121,
+          "meshes": 87
+        }
+      },
+      "contrast": false,
+      "variant": "candidate",
+      "sourceSHA": "f21eeaf8d3bd87810142d77f2cfe5e7ab9ee56e80a6548d927a4dcabec7af511",
+      "capture": "adult-pose8-candidate-stage.png",
+      "detail": {
+        "file": "adult-pose8-candidate-face.png",
+        "clip": {
+          "x": 247,
+          "y": 441,
+          "width": 158,
+          "height": 143
+        }
+      },
+      "camera": {
+        "position": [
+          -0.7254750396063211,
+          1.0483421472268166,
+          -0.8802728842976961
+        ],
+        "quaternion": [
+          -0.18672934162146515,
+          -0.5364763163722166,
+          -0.12310573154440846,
+          0.813738467697225
+        ],
+        "projection": [
+          1.6683754654031857,
+          0,
+          0,
+          0,
+          0,
+          2.6050890646938014,
+          0,
+          0,
+          0,
+          0,
+          -1.002002002002002,
+          -1,
+          0,
+          0,
+          -0.20020020020020018,
+          0
+        ],
+        "aspect": 1.5614525139664805
+      },
+      "neckMesh": {
+        "name": "fr-manikin-neck",
+        "vertices": 523,
+        "triangles": 816,
+        "materialType": "MeshPhongMaterial",
+        "colorHex": 10846055,
+        "visible": true
+      },
+      "torsoMesh": {
+        "name": "fr-manikin-torso",
+        "vertices": 2913,
+        "triangles": 5680,
+        "materialType": "MeshPhongMaterial",
+        "colorHex": 2647450,
+        "visible": true
+      },
+      "faceProjection": {
+        "total": 8914,
+        "inFrame": 8914,
+        "min": [
+          -0.34828297183654494,
+          -0.6505984814199464,
+          0.739650501907826
+        ],
+        "max": [
+          0.08435457721611166,
+          -0.05570024598747785,
+          0.7827228356333262
+        ]
+      },
+      "eyeMeshes": [
+        {
+          "name": "fr-manikin-eye-left",
+          "vertices": 287,
+          "triangles": 380,
+          "attributes": {
+            "normal": {
+              "count": 287,
+              "itemSize": 3,
+              "array": {
+                "hash": "3c6caba3",
+                "bytes": 17070
+              }
+            },
+            "position": {
+              "count": 287,
+              "itemSize": 3,
+              "array": {
+                "hash": "e6b71c1d",
+                "bytes": 17628
+              }
+            }
+          },
+          "index": {
+            "hash": "7703506a",
+            "bytes": 4129
+          },
+          "bounds": [
+            [
+              -0.1154400035738945,
+              0.16178764402866364,
+              -0.08139999955892563
+            ],
+            [
+              -0.0384799987077713,
+              0.1955627202987671,
+              -0.068217433989048
+            ]
+          ],
+          "material": {
+            "type": "MeshPhongMaterial",
+            "colorHex": 9266768,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "vertices": 287,
+          "triangles": 380,
+          "attributes": {
+            "normal": {
+              "count": 287,
+              "itemSize": 3,
+              "array": {
+                "hash": "4e572dc3",
+                "bytes": 16836
+              }
+            },
+            "position": {
+              "count": 287,
+              "itemSize": 3,
+              "array": {
+                "hash": "ca6d373e",
+                "bytes": 17345
+              }
+            }
+          },
+          "index": {
+            "hash": "7703506a",
+            "bytes": 4129
+          },
+          "bounds": [
+            [
+              0.0384799987077713,
+              0.16183577477931976,
+              -0.08139999955892563
+            ],
+            [
+              0.1154400035738945,
+              0.19604460895061493,
+              -0.068217433989048
+            ]
+          ],
+          "material": {
+            "type": "MeshPhongMaterial",
+            "colorHex": 9266768,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "vertices": 561,
+          "triangles": 960,
+          "attributes": {
+            "normal": {
+              "count": 561,
+              "itemSize": 3,
+              "array": {
+                "hash": "22530544",
+                "bytes": 33242
+              }
+            },
+            "position": {
+              "count": 561,
+              "itemSize": 3,
+              "array": {
+                "hash": "79698cd4",
+                "bytes": 34533
+              }
+            },
+            "uv": {
+              "count": 561,
+              "itemSize": 2,
+              "array": {
+                "hash": "3806b581",
+                "bytes": 7220
+              }
+            }
+          },
+          "index": {
+            "hash": "33cd9408",
+            "bytes": 11124
+          },
+          "bounds": [
+            [
+              -0.1154400035738945,
+              0.16025495529174805,
+              -0.08139999955892563
+            ],
+            [
+              -0.0384799987077713,
+              0.19412276148796082,
+              -0.06216000020503998
+            ]
+          ],
+          "material": {
+            "type": "MeshPhongMaterial",
+            "colorHex": 10846055,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "vertices": 561,
+          "triangles": 960,
+          "attributes": {
+            "normal": {
+              "count": 561,
+              "itemSize": 3,
+              "array": {
+                "hash": "9576271f",
+                "bytes": 33273
+              }
+            },
+            "position": {
+              "count": 561,
+              "itemSize": 3,
+              "array": {
+                "hash": "ca39537f",
+                "bytes": 33972
+              }
+            },
+            "uv": {
+              "count": 561,
+              "itemSize": 2,
+              "array": {
+                "hash": "3806b581",
+                "bytes": 7220
+              }
+            }
+          },
+          "index": {
+            "hash": "7c85d298",
+            "bytes": 11124
+          },
+          "bounds": [
+            [
+              0.0384799987077713,
+              0.16025495529174805,
+              -0.08139999955892563
+            ],
+            [
+              0.1154400035738945,
+              0.19412276148796082,
+              -0.06216000020503998
+            ]
+          ],
+          "material": {
+            "type": "MeshPhongMaterial",
+            "colorHex": 10846055,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        },
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "vertices": 561,
+          "triangles": 960,
+          "attributes": {
+            "normal": {
+              "count": 561,
+              "itemSize": 3,
+              "array": {
+                "hash": "1bdba2e3",
+                "bytes": 33381
+              }
+            },
+            "position": {
+              "count": 561,
+              "itemSize": 3,
+              "array": {
+                "hash": "c1f10347",
+                "bytes": 34407
+              }
+            },
+            "uv": {
+              "count": 561,
+              "itemSize": 2,
+              "array": {
+                "hash": "3806b581",
+                "bytes": 7220
+              }
+            }
+          },
+          "index": {
+            "hash": "33cd9408",
+            "bytes": 11124
+          },
+          "bounds": [
+            [
+              -0.1154400035738945,
+              0.16025495529174805,
+              -0.08436000347137451
+            ],
+            [
+              -0.0384799987077713,
+              0.19412276148796082,
+              -0.06955999881029129
+            ]
+          ],
+          "material": {
+            "type": "MeshPhongMaterial",
+            "colorHex": 10846055,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "vertices": 561,
+          "triangles": 960,
+          "attributes": {
+            "normal": {
+              "count": 561,
+              "itemSize": 3,
+              "array": {
+                "hash": "be98107a",
+                "bytes": 33398
+              }
+            },
+            "position": {
+              "count": 561,
+              "itemSize": 3,
+              "array": {
+                "hash": "9a602242",
+                "bytes": 33846
+              }
+            },
+            "uv": {
+              "count": 561,
+              "itemSize": 2,
+              "array": {
+                "hash": "3806b581",
+                "bytes": 7220
+              }
+            }
+          },
+          "index": {
+            "hash": "7c85d298",
+            "bytes": 11124
+          },
+          "bounds": [
+            [
+              0.0384799987077713,
+              0.16025495529174805,
+              -0.08436000347137451
+            ],
+            [
+              0.1154400035738945,
+              0.19412276148796082,
+              -0.06955999881029129
+            ]
+          ],
+          "material": {
+            "type": "MeshPhongMaterial",
+            "colorHex": 10846055,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        }
+      ],
+      "skull": {
+        "total": 1617,
+        "inFrame": 1617,
+        "min": [
+          -0.5295987118512085,
+          -0.7336217175969443,
+          0.7418375618393901
+        ],
+        "max": [
+          0.412283704507266,
+          0.40356262321338326,
+          0.8353943247711386
+        ]
+      },
+      "skullGeometry": {
+        "name": "fr-manikin-head",
+        "vertices": 1617,
+        "triangles": 2976,
+        "attributes": {
+          "normal": {
+            "count": 1617,
+            "itemSize": 3,
+            "array": {
+              "hash": "5d50019b",
+              "bytes": 93113
+            }
+          },
+          "position": {
+            "count": 1617,
+            "itemSize": 3,
+            "array": {
+              "hash": "aaba19ff",
+              "bytes": 93126
+            }
+          },
+          "uv": {
+            "count": 1617,
+            "itemSize": 2,
+            "array": {
+              "hash": "525b5ca2",
+              "bytes": 34509
+            }
+          }
+        },
+        "index": {
+          "hash": "e528e187",
+          "bytes": 38745
+        },
+        "bounds": [
+          [
+            -1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            0.9400359988212585,
+            1
+          ]
+        ],
+        "material": {
+          "type": "MeshPhongMaterial",
+          "colorHex": 10846055,
+          "side": 0,
+          "transparent": false,
+          "opacity": 1,
+          "depthWrite": true
+        },
+        "visible": true
+      },
+      "preservedFace": {
+        "total": 22955,
+        "inFrame": 22955,
+        "min": [
+          -0.5295987118512085,
+          -0.7336217175969443,
+          0.739650501907826
+        ],
+        "max": [
+          0.412283704507266,
+          0.44321899318270463,
+          0.8353943247711386
+        ]
+      },
+      "neckProjection": {
+        "total": 523,
+        "inFrame": 509,
+        "min": [
+          0.039112463277932184,
+          -1.1057826542627427,
+          0.6678942843970256
+        ],
+        "max": [
+          0.9814763101547698,
+          0.08620041848022825,
+          0.8082223751746065
+        ]
+      },
+      "neckBounds": [
+        [
+          -0.225023416433556,
+          0.36212876914405534,
+          -1.1530043258795395
+        ],
+        [
+          0.2513680779642743,
+          0.7956970911593884,
+          -0.7169956741204607
+        ]
+      ],
+      "selectedHand": {
+        "total": 7628,
+        "inFrame": 7628,
+        "min": [
+          -0.4052766648311822,
+          -0.40612924981685855,
+          0.7038342089011974
+        ],
+        "max": [
+          0.3265711308093873,
+          0.3386708788259279,
+          0.7494361996230009
+        ]
+      },
+      "head": {
+        "total": 23529,
+        "inFrame": 23529,
+        "min": [
+          -0.5295987118512085,
+          -0.7336217175969443,
+          0.739650501907826
+        ],
+        "max": [
+          0.412283704507266,
+          0.44321899318270463,
+          0.8353943247711386
+        ]
+      },
+      "canvasRect": {
+        "x": 83,
+        "y": 270.46875,
+        "width": 559,
+        "height": 358
+      },
+      "cheekContext": [
+        [
+          -0.031199972316293834,
+          -0.03782315367243485,
+          0.745726739258319
+        ],
+        [
+          -0.2505382415804895,
+          0.02991231186231996,
+          0.7417862185169987
+        ],
+        [
+          0.1815943910439163,
+          -0.10353774745366952,
+          0.7495496954860207
+        ],
+        [
+          -0.06820745202280613,
+          -0.3788795526240713,
+          0.7356428609287411
+        ],
+        [
+          0.003107645961625267,
+          0.27835165313061816,
+          0.755074953490569
+        ]
+      ],
+      "state": {
+        "consentAccepted": true,
+        "view": "body3d",
+        "b3dTab": "recovery",
+        "b3dAge": "adult",
+        "b3dRec": [
+          "check",
+          "arm",
+          "hand",
+          "knee",
+          "roll",
+          "airway",
+          "stable",
+          "watch"
+        ],
+        "b3dRecView": 8,
+        "b3dRecoveryGuides": false,
+        "b3dChildHands": "two",
+        "b3dPlaced": "correct",
+        "b3dHandStudy": {},
+        "faMastery": {},
+        "modulesVisited": {},
+        "badges": {},
+        "b3dStatus": "ready"
+      },
+      "errors": [],
+      "draw": {
+        "id": 1,
+        "createdBy": "page",
+        "draws": 5826,
+        "sequence": 38,
+        "calls": 47,
+        "triangles": 66952,
+        "geometries": 77,
+        "programs": 3,
+        "disposeCount": 0
+      }
+    }
+  ]
+}

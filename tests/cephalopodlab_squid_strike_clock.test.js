@@ -16,6 +16,7 @@ if (!phaseSource.includes('animal.update(')) throw new Error('Strike clock fixtu
 const buildStep = new Function('THREE', 'speciesId', 'state', `
   var bodyScale=1,octopus=new THREE.Group(),gameState=state.gameState;
   var squidStrikeAimLocal=new THREE.Vector3(),squidStrikeAimOffset=new THREE.Vector3();
+  var octopusStrikeVisual=null,octopusStrikeAimLocal=new THREE.Vector3(),octopusStrikeAimOffset=new THREE.Vector3();
   var dt=1/60,isMoving=false,isJetting=false,pose;
   var animal={update:function(time,delta,nextPose){pose=nextPose;}};
   return function(now){

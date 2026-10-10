@@ -1,0 +1,25 @@
+{
+  "sourceSHA256": "0c8c3558dd0f78c8937fa6ecb9e4194d90bea7ae9ee6c411590c95bc836edb32",
+  "browserGroups": 46,
+  "resumed": false,
+  "runtimeErrors": 0,
+  "axeViolations": 0,
+  "externalReportRequests": 0,
+  "engineChecks": 58,
+  "legacySceneCases": 84,
+  "englishKeys": 524,
+  "regressionCasesAuthored": 93,
+  "regressionSyntaxValid": true,
+  "regressionExecuted": false,
+  "regressionLimitation": "Installed Vitest/jsdom worker initialization stalls before test collection; see unit-runner/findings.md. No unit assertions ran.",
+  "visualReview": [
+    "desktop",
+    "full width",
+    "phone at 200% text",
+    "dark theme",
+    "standalone HTML report",
+    "print preview"
+  ],
+  "unstaged": true,
+  "committed": false
+}

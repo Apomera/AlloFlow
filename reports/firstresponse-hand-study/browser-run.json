@@ -1,0 +1,356 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\firstresponse-hand-study\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/firstresponse-hand-study/software-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "firstresponse-hand-study.spec.ts",
+      "file": "firstresponse-hand-study.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "adult hand study keeps observations through real hand camera comparisons",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 480000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 107986,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 2\u001b[39m\n\u001b[31m+ Received  + 2\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[32m-   \"calls\": 79,\u001b[39m\n\u001b[31m+   \"calls\": 21,\u001b[39m\n\u001b[2m    \"geometries\": 77,\u001b[22m\n\u001b[2m    \"programs\": 3,\u001b[22m\n\u001b[32m-   \"triangles\": 100712,\u001b[39m\n\u001b[31m+   \"triangles\": 21336,\u001b[39m\n\u001b[2m  }\u001b[22m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 2\u001b[39m\n\u001b[31m+ Received  + 2\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[32m-   \"calls\": 79,\u001b[39m\n\u001b[31m+   \"calls\": 21,\u001b[39m\n\u001b[2m    \"geometries\": 77,\u001b[22m\n\u001b[2m    \"programs\": 3,\u001b[22m\n\u001b[32m-   \"triangles\": 100712,\u001b[39m\n\u001b[31m+   \"triangles\": 21336,\u001b[39m\n\u001b[2m  }\u001b[22m\n    at unchangedScene (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:47:124)\n    at direct (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:74:88)\n    at workflow (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:115:27)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:160:97",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts",
+                      "column": 124,
+                      "line": 47
+                    },
+                    "snippet": "  45 | }\n  46 | function unchangedScene(after:any,before:any){expect(geometry(after)).toEqual(geometry(before));expect(materials(after)).toEqual(materials(before));\n> 47 |   expect(resources(after)).toEqual(resources(before));expect(after.lights).toEqual(before.lights);expect(drawShape(after)).toEqual(drawShape(before));}\n     |                                                                                                                            ^\n  48 | async function activate(page:Page,button:Locator,keyboard:boolean){await expect(button).toBeEnabled();\n  49 |   if(keyboard){await button.focus();await expect(button).toBeFocused();await page.keyboard.press('Enter');}else await button.click();}\n  50 | async function openStudy(page:Page,keyboard:boolean){const details=page.locator('details.fr-hand-study');await expect(details).toHaveCount(1);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts",
+                        "column": 124,
+                        "line": 47
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 2\u001b[39m\n\u001b[31m+ Received  + 2\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[32m-   \"calls\": 79,\u001b[39m\n\u001b[31m+   \"calls\": 21,\u001b[39m\n\u001b[2m    \"geometries\": 77,\u001b[22m\n\u001b[2m    \"programs\": 3,\u001b[22m\n\u001b[32m-   \"triangles\": 100712,\u001b[39m\n\u001b[31m+   \"triangles\": 21336,\u001b[39m\n\u001b[2m  }\u001b[22m\n\n  45 | }\n  46 | function unchangedScene(after:any,before:any){expect(geometry(after)).toEqual(geometry(before));expect(materials(after)).toEqual(materials(before));\n> 47 |   expect(resources(after)).toEqual(resources(before));expect(after.lights).toEqual(before.lights);expect(drawShape(after)).toEqual(drawShape(before));}\n     |                                                                                                                            ^\n  48 | async function activate(page:Page,button:Locator,keyboard:boolean){await expect(button).toBeEnabled();\n  49 |   if(keyboard){await button.focus();await expect(button).toBeFocused();await page.keyboard.press('Enter');}else await button.click();}\n  50 | async function openStudy(page:Page,keyboard:boolean){const details=page.locator('details.fr-hand-study');await expect(details).toHaveCount(1);\n    at unchangedScene (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:47:124)\n    at direct (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:74:88)\n    at workflow (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:115:27)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:160:97"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T20:58:17.904Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\firstresponse-hand-study\\software-artifacts\\firstresponse-hand-study-a-ca719-eal-hand-camera-comparisons-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\firstresponse-hand-study\\software-artifacts\\firstresponse-hand-study-a-ca719-eal-hand-camera-comparisons-chromium\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts",
+                    "column": 124,
+                    "line": 47
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "fcdf66b2a648e94c934a-20305e9efe5205b2c122",
+          "file": "firstresponse-hand-study.spec.ts",
+          "line": 160,
+          "column": 5
+        },
+        {
+          "title": "child hand study keeps observations through real hand camera comparisons",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 480000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 83203,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 2\u001b[39m\n\u001b[31m+ Received  + 2\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[32m-   \"calls\": 79,\u001b[39m\n\u001b[31m+   \"calls\": 20,\u001b[39m\n\u001b[2m    \"geometries\": 77,\u001b[22m\n\u001b[2m    \"programs\": 3,\u001b[22m\n\u001b[32m-   \"triangles\": 100712,\u001b[39m\n\u001b[31m+   \"triangles\": 18056,\u001b[39m\n\u001b[2m  }\u001b[22m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 2\u001b[39m\n\u001b[31m+ Received  + 2\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[32m-   \"calls\": 79,\u001b[39m\n\u001b[31m+   \"calls\": 20,\u001b[39m\n\u001b[2m    \"geometries\": 77,\u001b[22m\n\u001b[2m    \"programs\": 3,\u001b[22m\n\u001b[32m-   \"triangles\": 100712,\u001b[39m\n\u001b[31m+   \"triangles\": 18056,\u001b[39m\n\u001b[2m  }\u001b[22m\n    at unchangedScene (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:47:124)\n    at direct (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:74:88)\n    at workflow (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:115:27)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:161:97",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts",
+                      "column": 124,
+                      "line": 47
+                    },
+                    "snippet": "  45 | }\n  46 | function unchangedScene(after:any,before:any){expect(geometry(after)).toEqual(geometry(before));expect(materials(after)).toEqual(materials(before));\n> 47 |   expect(resources(after)).toEqual(resources(before));expect(after.lights).toEqual(before.lights);expect(drawShape(after)).toEqual(drawShape(before));}\n     |                                                                                                                            ^\n  48 | async function activate(page:Page,button:Locator,keyboard:boolean){await expect(button).toBeEnabled();\n  49 |   if(keyboard){await button.focus();await expect(button).toBeFocused();await page.keyboard.press('Enter');}else await button.click();}\n  50 | async function openStudy(page:Page,keyboard:boolean){const details=page.locator('details.fr-hand-study');await expect(details).toHaveCount(1);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts",
+                        "column": 124,
+                        "line": 47
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 2\u001b[39m\n\u001b[31m+ Received  + 2\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[32m-   \"calls\": 79,\u001b[39m\n\u001b[31m+   \"calls\": 20,\u001b[39m\n\u001b[2m    \"geometries\": 77,\u001b[22m\n\u001b[2m    \"programs\": 3,\u001b[22m\n\u001b[32m-   \"triangles\": 100712,\u001b[39m\n\u001b[31m+   \"triangles\": 18056,\u001b[39m\n\u001b[2m  }\u001b[22m\n\n  45 | }\n  46 | function unchangedScene(after:any,before:any){expect(geometry(after)).toEqual(geometry(before));expect(materials(after)).toEqual(materials(before));\n> 47 |   expect(resources(after)).toEqual(resources(before));expect(after.lights).toEqual(before.lights);expect(drawShape(after)).toEqual(drawShape(before));}\n     |                                                                                                                            ^\n  48 | async function activate(page:Page,button:Locator,keyboard:boolean){await expect(button).toBeEnabled();\n  49 |   if(keyboard){await button.focus();await expect(button).toBeFocused();await page.keyboard.press('Enter');}else await button.click();}\n  50 | async function openStudy(page:Page,keyboard:boolean){const details=page.locator('details.fr-hand-study');await expect(details).toHaveCount(1);\n    at unchangedScene (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:47:124)\n    at direct (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:74:88)\n    at workflow (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:115:27)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:161:97"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T21:00:28.547Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\firstresponse-hand-study\\software-artifacts\\firstresponse-hand-study-c-3e857-eal-hand-camera-comparisons-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\firstresponse-hand-study\\software-artifacts\\firstresponse-hand-study-c-3e857-eal-hand-camera-comparisons-chromium\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts",
+                    "column": 124,
+                    "line": 47
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "fcdf66b2a648e94c934a-14b80fc15b67f9f05625",
+          "file": "firstresponse-hand-study.spec.ts",
+          "line": 161,
+          "column": 5
+        },
+        {
+          "title": "320px infant hand study preserves keyboard choices resize forced colors and cleanup",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 480000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 130957,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 2\u001b[39m\n\u001b[31m+ Received  + 2\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[32m-   \"calls\": 79,\u001b[39m\n\u001b[31m+   \"calls\": 21,\u001b[39m\n\u001b[2m    \"geometries\": 77,\u001b[22m\n\u001b[2m    \"programs\": 3,\u001b[22m\n\u001b[32m-   \"triangles\": 100712,\u001b[39m\n\u001b[31m+   \"triangles\": 23360,\u001b[39m\n\u001b[2m  }\u001b[22m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 2\u001b[39m\n\u001b[31m+ Received  + 2\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[32m-   \"calls\": 79,\u001b[39m\n\u001b[31m+   \"calls\": 21,\u001b[39m\n\u001b[2m    \"geometries\": 77,\u001b[22m\n\u001b[2m    \"programs\": 3,\u001b[22m\n\u001b[32m-   \"triangles\": 100712,\u001b[39m\n\u001b[31m+   \"triangles\": 23360,\u001b[39m\n\u001b[2m  }\u001b[22m\n    at unchangedScene (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:47:124)\n    at direct (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:74:88)\n    at workflow (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:115:27)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:162:108",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts",
+                      "column": 124,
+                      "line": 47
+                    },
+                    "snippet": "  45 | }\n  46 | function unchangedScene(after:any,before:any){expect(geometry(after)).toEqual(geometry(before));expect(materials(after)).toEqual(materials(before));\n> 47 |   expect(resources(after)).toEqual(resources(before));expect(after.lights).toEqual(before.lights);expect(drawShape(after)).toEqual(drawShape(before));}\n     |                                                                                                                            ^\n  48 | async function activate(page:Page,button:Locator,keyboard:boolean){await expect(button).toBeEnabled();\n  49 |   if(keyboard){await button.focus();await expect(button).toBeFocused();await page.keyboard.press('Enter');}else await button.click();}\n  50 | async function openStudy(page:Page,keyboard:boolean){const details=page.locator('details.fr-hand-study');await expect(details).toHaveCount(1);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts",
+                        "column": 124,
+                        "line": 47
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 2\u001b[39m\n\u001b[31m+ Received  + 2\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[32m-   \"calls\": 79,\u001b[39m\n\u001b[31m+   \"calls\": 21,\u001b[39m\n\u001b[2m    \"geometries\": 77,\u001b[22m\n\u001b[2m    \"programs\": 3,\u001b[22m\n\u001b[32m-   \"triangles\": 100712,\u001b[39m\n\u001b[31m+   \"triangles\": 23360,\u001b[39m\n\u001b[2m  }\u001b[22m\n\n  45 | }\n  46 | function unchangedScene(after:any,before:any){expect(geometry(after)).toEqual(geometry(before));expect(materials(after)).toEqual(materials(before));\n> 47 |   expect(resources(after)).toEqual(resources(before));expect(after.lights).toEqual(before.lights);expect(drawShape(after)).toEqual(drawShape(before));}\n     |                                                                                                                            ^\n  48 | async function activate(page:Page,button:Locator,keyboard:boolean){await expect(button).toBeEnabled();\n  49 |   if(keyboard){await button.focus();await expect(button).toBeFocused();await page.keyboard.press('Enter');}else await button.click();}\n  50 | async function openStudy(page:Page,keyboard:boolean){const details=page.locator('details.fr-hand-study');await expect(details).toHaveCount(1);\n    at unchangedScene (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:47:124)\n    at direct (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:74:88)\n    at workflow (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:115:27)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:162:108"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T21:02:18.974Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\firstresponse-hand-study\\software-artifacts\\firstresponse-hand-study-3-67d4f-e-forced-colors-and-cleanup-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\firstresponse-hand-study\\software-artifacts\\firstresponse-hand-study-3-67d4f-e-forced-colors-and-cleanup-chromium\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts",
+                    "column": 124,
+                    "line": 47
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "fcdf66b2a648e94c934a-0bc9faf57866a88f8819",
+          "file": "firstresponse-hand-study.spec.ts",
+          "line": 162,
+          "column": 5
+        },
+        {
+          "title": "hand study remains usable when the body viewer reports a failed renderer",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 480000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 48304,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32m[]\u001b[39m\nReceived: \u001b[31mundefined\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32m[]\u001b[39m\nReceived: \u001b[31mundefined\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:175:449",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts",
+                      "column": 449,
+                      "line": 175
+                    },
+                    "snippet": "  173 |   const details=await openStudy(page,true);for(const label of ['Near palm before turn','Near palm after turn','Supporting hand before turn','Supporting hand after turn'])await expect(details.getByRole('button',{name:label,exact:true})).toBeEnabled();\n  174 |   const record=await fillStudy(page,details,'I can compare the descriptions while the model loads.',true);expect(record.checked).toBe(true);\n> 175 |   const beforeEvidence=await state(page);await activate(page,details.getByRole('button',{name:'Near palm before turn',exact:true}),true);expect(await state(page)).toEqual({...beforeEvidence,b3dRecView:4});await activate(page,details.getByRole('button',{name:'Supporting hand after turn',exact:true}),true);expect(await state(page)).toEqual({...beforeEvidence,b3dRecView:5});expect(await page.evaluate(()=>(window as any).__handStudyFallbackCalls)).toEqual([]);expect((await harness.glContexts(page)).filter(r=>r.createdBy==='page' && !r.lost)).toEqual([]);\n      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                 ^\n  176 |   await audit(page,'fallback');const clip=await details.boundingBox();expect(clip).toBeTruthy();await details.screenshot({path:report+'/fallback-study.png',timeout:60000});\n  177 |   metrics.push({condition:'fallback',record});await harness.unmount(page);expect(await harness.leakedAfterUnmount(page)).toEqual([]);\n  178 | });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts",
+                        "column": 449,
+                        "line": 175
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32m[]\u001b[39m\nReceived: \u001b[31mundefined\u001b[39m\n\n  173 |   const details=await openStudy(page,true);for(const label of ['Near palm before turn','Near palm after turn','Supporting hand before turn','Supporting hand after turn'])await expect(details.getByRole('button',{name:label,exact:true})).toBeEnabled();\n  174 |   const record=await fillStudy(page,details,'I can compare the descriptions while the model loads.',true);expect(record.checked).toBe(true);\n> 175 |   const beforeEvidence=await state(page);await activate(page,details.getByRole('button',{name:'Near palm before turn',exact:true}),true);expect(await state(page)).toEqual({...beforeEvidence,b3dRecView:4});await activate(page,details.getByRole('button',{name:'Supporting hand after turn',exact:true}),true);expect(await state(page)).toEqual({...beforeEvidence,b3dRecView:5});expect(await page.evaluate(()=>(window as any).__handStudyFallbackCalls)).toEqual([]);expect((await harness.glContexts(page)).filter(r=>r.createdBy==='page' && !r.lost)).toEqual([]);\n      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                 ^\n  176 |   await audit(page,'fallback');const clip=await details.boundingBox();expect(clip).toBeTruthy();await details.screenshot({path:report+'/fallback-study.png',timeout:60000});\n  177 |   metrics.push({condition:'fallback',record});await harness.unmount(page);expect(await harness.leakedAfterUnmount(page)).toEqual([]);\n  178 | });\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts:175:449"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T21:07:42.645Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\firstresponse-hand-study\\software-artifacts\\firstresponse-hand-study-h-44963-r-reports-a-failed-renderer-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\firstresponse-hand-study\\software-artifacts\\firstresponse-hand-study-h-44963-r-reports-a-failed-renderer-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\firstresponse-hand-study\\software-artifacts\\firstresponse-hand-study-h-44963-r-reports-a-failed-renderer-chromium\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\firstresponse-hand-study.spec.ts",
+                    "column": 449,
+                    "line": 175
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "fcdf66b2a648e94c934a-9869acb7721a5488e414",
+          "file": "firstresponse-hand-study.spec.ts",
+          "line": 164,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-06T20:57:33.941Z",
+    "duration": 714923.043,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 4,
+    "flaky": 0
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "reason": "The first refresh attempt discovered an archived diagnostic fixture as a second workflow. Both browser workflows passed, but the runner correctly rejected the count. Archive moved under the existing testIgnore pattern. This rejects the stale evidence and invalid repeat attempt, not the final source.",
+  "archivePathBefore": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\native-before-host-refresh",
+  "archivePathAfter": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\candidate-rejected-host-refresh",
+  "sharedWrites": 0
+}

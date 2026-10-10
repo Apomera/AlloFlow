@@ -1,0 +1,1035 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/solar-moon-observer-enhancement-2026-10-05/browser-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 240000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "line"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "113-solar-system-moon-observer.spec.ts",
+      "file": "113-solar-system-moon-observer.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "the Earth-view portrait, terminator and fixed illumination meter agree across all eight phases",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 18514,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n\n    at mountMoon (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:63:21)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:163:15",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                      "column": 21,
+                      "line": 63
+                    },
+                    "snippet": "  61 |   await expect(page.locator('#wrap')).toHaveJSProperty('clientWidth', width);\n  62 |   const lab = page.locator('#solar-moon-lab');\n> 63 |   await expect(lab).toBeVisible();\n     |                     ^\n  64 |   await expect(lab.getByRole('heading', { name: 'Why do phases repeat—but eclipses do not happen every month?', exact: true })).toBeVisible();\n  65 |   return lab;\n  66 | }"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                        "column": 21,
+                        "line": 63
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n\n\n  61 |   await expect(page.locator('#wrap')).toHaveJSProperty('clientWidth', width);\n  62 |   const lab = page.locator('#solar-moon-lab');\n> 63 |   await expect(lab).toBeVisible();\n     |                     ^\n  64 |   await expect(lab.getByRole('heading', { name: 'Why do phases repeat—but eclipses do not happen every month?', exact: true })).toBeVisible();\n  65 |   return lab;\n  66 | }\n    at mountMoon (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:63:21)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:163:15"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:09:58.789Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-473cc-ree-across-all-eight-phases-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-473cc-ree-across-all-eight-phases-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-473cc-ree-across-all-eight-phases-chromium\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                    "column": 21,
+                    "line": 63
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f2b06c49168098af725e-406110b507d703b9f86f",
+          "file": "113-solar-system-moon-observer.spec.ts",
+          "line": 162,
+          "column": 5
+        },
+        {
+          "title": "saved evidence survives schematic north–south rotations without changing the phase, measurements or XP",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 16785,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n\n    at mountMoon (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:63:21)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:197:15",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                      "column": 21,
+                      "line": 63
+                    },
+                    "snippet": "  61 |   await expect(page.locator('#wrap')).toHaveJSProperty('clientWidth', width);\n  62 |   const lab = page.locator('#solar-moon-lab');\n> 63 |   await expect(lab).toBeVisible();\n     |                     ^\n  64 |   await expect(lab.getByRole('heading', { name: 'Why do phases repeat—but eclipses do not happen every month?', exact: true })).toBeVisible();\n  65 |   return lab;\n  66 | }"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                        "column": 21,
+                        "line": 63
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n\n\n  61 |   await expect(page.locator('#wrap')).toHaveJSProperty('clientWidth', width);\n  62 |   const lab = page.locator('#solar-moon-lab');\n> 63 |   await expect(lab).toBeVisible();\n     |                     ^\n  64 |   await expect(lab.getByRole('heading', { name: 'Why do phases repeat—but eclipses do not happen every month?', exact: true })).toBeVisible();\n  65 |   return lab;\n  66 | }\n    at mountMoon (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:63:21)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:197:15"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:10:51.898Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-87281-he-phase-measurements-or-XP-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-87281-he-phase-measurements-or-XP-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-87281-he-phase-measurements-or-XP-chromium\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                    "column": 21,
+                    "line": 63
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f2b06c49168098af725e-51c6371987e95d535a04",
+          "file": "113-solar-system-moon-observer.spec.ts",
+          "line": 196,
+          "column": 5
+        },
+        {
+          "title": "exact and fractional prediction restores stay locked to their unrounded geometry and boolean saved state",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 15958,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n\n    at mountMoon (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:63:21)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:230:17",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                      "column": 21,
+                      "line": 63
+                    },
+                    "snippet": "  61 |   await expect(page.locator('#wrap')).toHaveJSProperty('clientWidth', width);\n  62 |   const lab = page.locator('#solar-moon-lab');\n> 63 |   await expect(lab).toBeVisible();\n     |                     ^\n  64 |   await expect(lab.getByRole('heading', { name: 'Why do phases repeat—but eclipses do not happen every month?', exact: true })).toBeVisible();\n  65 |   return lab;\n  66 | }"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                        "column": 21,
+                        "line": 63
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n\n\n  61 |   await expect(page.locator('#wrap')).toHaveJSProperty('clientWidth', width);\n  62 |   const lab = page.locator('#solar-moon-lab');\n> 63 |   await expect(lab).toBeVisible();\n     |                     ^\n  64 |   await expect(lab.getByRole('heading', { name: 'Why do phases repeat—but eclipses do not happen every month?', exact: true })).toBeVisible();\n  65 |   return lab;\n  66 | }\n    at mountMoon (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:63:21)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:230:17"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:11:14.562Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-16152-try-and-boolean-saved-state-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-16152-try-and-boolean-saved-state-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-16152-try-and-boolean-saved-state-chromium\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                    "column": 21,
+                    "line": 63
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f2b06c49168098af725e-44bd890bc0f3e461ae57",
+          "file": "113-solar-system-moon-observer.spec.ts",
+          "line": 226,
+          "column": 5
+        },
+        {
+          "title": "malformed restores render finite fallback readings and hide stale predictions without rewriting the raw save",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 15728,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n\n    at mountMoon (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:63:21)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:267:17",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                      "column": 21,
+                      "line": 63
+                    },
+                    "snippet": "  61 |   await expect(page.locator('#wrap')).toHaveJSProperty('clientWidth', width);\n  62 |   const lab = page.locator('#solar-moon-lab');\n> 63 |   await expect(lab).toBeVisible();\n     |                     ^\n  64 |   await expect(lab.getByRole('heading', { name: 'Why do phases repeat—but eclipses do not happen every month?', exact: true })).toBeVisible();\n  65 |   return lab;\n  66 | }"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                        "column": 21,
+                        "line": 63
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n\n\n  61 |   await expect(page.locator('#wrap')).toHaveJSProperty('clientWidth', width);\n  62 |   const lab = page.locator('#solar-moon-lab');\n> 63 |   await expect(lab).toBeVisible();\n     |                     ^\n  64 |   await expect(lab.getByRole('heading', { name: 'Why do phases repeat—but eclipses do not happen every month?', exact: true })).toBeVisible();\n  65 |   return lab;\n  66 | }\n    at mountMoon (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:63:21)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:267:17"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:11:31.564Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-bedd0-hout-rewriting-the-raw-save-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-bedd0-hout-rewriting-the-raw-save-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-bedd0-hout-rewriting-the-raw-save-chromium\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                    "column": 21,
+                    "line": 63
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f2b06c49168098af725e-d290052cd7de6cc36a39",
+          "file": "113-solar-system-moon-observer.spec.ts",
+          "line": 255,
+          "column": 5
+        },
+        {
+          "title": "same-frame native prediction handlers preserve the first commitment and reveal one ungraded comparison",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 15753,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n\n    at mountMoon (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:63:21)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:279:15",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                      "column": 21,
+                      "line": 63
+                    },
+                    "snippet": "  61 |   await expect(page.locator('#wrap')).toHaveJSProperty('clientWidth', width);\n  62 |   const lab = page.locator('#solar-moon-lab');\n> 63 |   await expect(lab).toBeVisible();\n     |                     ^\n  64 |   await expect(lab.getByRole('heading', { name: 'Why do phases repeat—but eclipses do not happen every month?', exact: true })).toBeVisible();\n  65 |   return lab;\n  66 | }"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                        "column": 21,
+                        "line": 63
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n\n\n  61 |   await expect(page.locator('#wrap')).toHaveJSProperty('clientWidth', width);\n  62 |   const lab = page.locator('#solar-moon-lab');\n> 63 |   await expect(lab).toBeVisible();\n     |                     ^\n  64 |   await expect(lab.getByRole('heading', { name: 'Why do phases repeat—but eclipses do not happen every month?', exact: true })).toBeVisible();\n  65 |   return lab;\n  66 | }\n    at mountMoon (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:63:21)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:279:15"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:11:48.420Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-d84b8-eal-one-ungraded-comparison-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-d84b8-eal-one-ungraded-comparison-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-d84b8-eal-one-ungraded-comparison-chromium\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                    "column": 21,
+                    "line": 63
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f2b06c49168098af725e-11a1ff69e2322888eac9",
+          "file": "113-solar-system-moon-observer.spec.ts",
+          "line": 278,
+          "column": 5
+        },
+        {
+          "title": "captured native saves append once per trial and returning to an earlier geometry permits new evidence",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 16834,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n\n    at mountMoon (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:63:21)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:303:15",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                      "column": 21,
+                      "line": 63
+                    },
+                    "snippet": "  61 |   await expect(page.locator('#wrap')).toHaveJSProperty('clientWidth', width);\n  62 |   const lab = page.locator('#solar-moon-lab');\n> 63 |   await expect(lab).toBeVisible();\n     |                     ^\n  64 |   await expect(lab.getByRole('heading', { name: 'Why do phases repeat—but eclipses do not happen every month?', exact: true })).toBeVisible();\n  65 |   return lab;\n  66 | }"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                        "column": 21,
+                        "line": 63
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n\n\n  61 |   await expect(page.locator('#wrap')).toHaveJSProperty('clientWidth', width);\n  62 |   const lab = page.locator('#solar-moon-lab');\n> 63 |   await expect(lab).toBeVisible();\n     |                     ^\n  64 |   await expect(lab.getByRole('heading', { name: 'Why do phases repeat—but eclipses do not happen every month?', exact: true })).toBeVisible();\n  65 |   return lab;\n  66 | }\n    at mountMoon (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:63:21)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:303:15"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:12:28.798Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-cb6c4-ometry-permits-new-evidence-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-cb6c4-ometry-permits-new-evidence-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-cb6c4-ometry-permits-new-evidence-chromium\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                    "column": 21,
+                    "line": 63
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f2b06c49168098af725e-baf0d17a47949320ea65",
+          "file": "113-solar-system-moon-observer.spec.ts",
+          "line": 302,
+          "column": 5
+        },
+        {
+          "title": "same-frame native phase and node callbacks merge both axes and invalidate the committed evidence",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 16226,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n\n    at mountMoon (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:63:21)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:337:15",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                      "column": 21,
+                      "line": 63
+                    },
+                    "snippet": "  61 |   await expect(page.locator('#wrap')).toHaveJSProperty('clientWidth', width);\n  62 |   const lab = page.locator('#solar-moon-lab');\n> 63 |   await expect(lab).toBeVisible();\n     |                     ^\n  64 |   await expect(lab.getByRole('heading', { name: 'Why do phases repeat—but eclipses do not happen every month?', exact: true })).toBeVisible();\n  65 |   return lab;\n  66 | }"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                        "column": 21,
+                        "line": 63
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n\n\n  61 |   await expect(page.locator('#wrap')).toHaveJSProperty('clientWidth', width);\n  62 |   const lab = page.locator('#solar-moon-lab');\n> 63 |   await expect(lab).toBeVisible();\n     |                     ^\n  64 |   await expect(lab.getByRole('heading', { name: 'Why do phases repeat—but eclipses do not happen every month?', exact: true })).toBeVisible();\n  65 |   return lab;\n  66 | }\n    at mountMoon (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:63:21)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:337:15"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:12:48.082Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-280fd-date-the-committed-evidence-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-280fd-date-the-committed-evidence-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-280fd-date-the-committed-evidence-chromium\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                    "column": 21,
+                    "line": 63
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f2b06c49168098af725e-e33c59f73609876ef799",
+          "file": "113-solar-system-moon-observer.spec.ts",
+          "line": 336,
+          "column": 5
+        },
+        {
+          "title": "Moon trials, journal saving and reopening preserve orbital, signal, comparison and practice state",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 18954,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n\n    at mountMoon (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:63:21)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:362:15",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                      "column": 21,
+                      "line": 63
+                    },
+                    "snippet": "  61 |   await expect(page.locator('#wrap')).toHaveJSProperty('clientWidth', width);\n  62 |   const lab = page.locator('#solar-moon-lab');\n> 63 |   await expect(lab).toBeVisible();\n     |                     ^\n  64 |   await expect(lab.getByRole('heading', { name: 'Why do phases repeat—but eclipses do not happen every month?', exact: true })).toBeVisible();\n  65 |   return lab;\n  66 | }"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                        "column": 21,
+                        "line": 63
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n\n\n  61 |   await expect(page.locator('#wrap')).toHaveJSProperty('clientWidth', width);\n  62 |   const lab = page.locator('#solar-moon-lab');\n> 63 |   await expect(lab).toBeVisible();\n     |                     ^\n  64 |   await expect(lab.getByRole('heading', { name: 'Why do phases repeat—but eclipses do not happen every month?', exact: true })).toBeVisible();\n  65 |   return lab;\n  66 | }\n    at mountMoon (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:63:21)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:362:15"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:13:11.555Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-04d0b-mparison-and-practice-state-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-04d0b-mparison-and-practice-state-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-04d0b-mparison-and-practice-state-chromium\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                    "column": 21,
+                    "line": 63
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f2b06c49168098af725e-ccd1b254588082751f61",
+          "file": "113-solar-system-moon-observer.spec.ts",
+          "line": 361,
+          "column": 5
+        },
+        {
+          "title": "320px light observer retains readable controls, visible portrait and keyboard-scrolled scientific geometry",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 17112,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n\n    at mountMoon (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:63:21)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:389:17",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                      "column": 21,
+                      "line": 63
+                    },
+                    "snippet": "  61 |   });\n  62 |   await expect(page.locator('#wrap')).toHaveJSProperty('clientWidth', width);\n> 63 |   const lab = page.locator('#solar-moon-lab');\n     |                     ^\n  64 |   await expect(lab).toBeVisible();\n  65 |   await expect(lab.getByRole('heading', { name: 'Why do phases repeat—but eclipses do not happen every month?', exact: true })).toBeVisible();\n  66 |   return lab;"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                        "column": 21,
+                        "line": 63
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n\n\n  61 |   });\n  62 |   await expect(page.locator('#wrap')).toHaveJSProperty('clientWidth', width);\n> 63 |   const lab = page.locator('#solar-moon-lab');\n     |                     ^\n  64 |   await expect(lab).toBeVisible();\n  65 |   await expect(lab.getByRole('heading', { name: 'Why do phases repeat—but eclipses do not happen every month?', exact: true })).toBeVisible();\n  66 |   return lab;\n    at mountMoon (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:63:21)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:389:17"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:13:37.119Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-20f4c-crolled-scientific-geometry-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-20f4c-crolled-scientific-geometry-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-20f4c-crolled-scientific-geometry-chromium\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                    "column": 21,
+                    "line": 63
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f2b06c49168098af725e-cea668a947e1db03e5e4",
+          "file": "113-solar-system-moon-observer.spec.ts",
+          "line": 388,
+          "column": 7
+        },
+        {
+          "title": "320px dark observer retains readable controls, visible portrait and keyboard-scrolled scientific geometry",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 9,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 21734,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n\n    at mountMoon (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:63:21)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:389:17",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                      "column": 21,
+                      "line": 63
+                    },
+                    "snippet": "  61 |   });\n  62 |   await expect(page.locator('#wrap')).toHaveJSProperty('clientWidth', width);\n> 63 |   const lab = page.locator('#solar-moon-lab');\n     |                     ^\n  64 |   await expect(lab).toBeVisible();\n  65 |   await expect(lab.getByRole('heading', { name: 'Why do phases repeat—but eclipses do not happen every month?', exact: true })).toBeVisible();\n  66 |   return lab;"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                        "column": 21,
+                        "line": 63
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#solar-moon-lab')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#solar-moon-lab')\u001b[22m\n\n\n  61 |   });\n  62 |   await expect(page.locator('#wrap')).toHaveJSProperty('clientWidth', width);\n> 63 |   const lab = page.locator('#solar-moon-lab');\n     |                     ^\n  64 |   await expect(lab).toBeVisible();\n  65 |   await expect(lab.getByRole('heading', { name: 'Why do phases repeat—but eclipses do not happen every month?', exact: true })).toBeVisible();\n  66 |   return lab;\n    at mountMoon (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:63:21)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts:389:17"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:14:35.937Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-ac76d-crolled-scientific-geometry-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-ac76d-crolled-scientific-geometry-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-moon-observer-enhancement-2026-10-05\\browser-artifacts\\113-solar-system-moon-obse-ac76d-crolled-scientific-geometry-chromium\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\113-solar-system-moon-observer.spec.ts",
+                    "column": 21,
+                    "line": 63
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f2b06c49168098af725e-06a5abfe41ec81542037",
+          "file": "113-solar-system-moon-observer.spec.ts",
+          "line": 388,
+          "column": 7
+        }
+      ]
+    },
+    {
+      "title": "50-solar-system-moon-eclipse-lab.spec.ts",
+      "file": "50-solar-system-moon-eclipse-lab.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "connects phase, node geometry, eclipse alignment, prediction, and evidence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 22583,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:15:43.407Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "515c798112a621f8cdbc-faeaf975db22ce187033",
+          "file": "50-solar-system-moon-eclipse-lab.spec.ts",
+          "line": 35,
+          "column": 5
+        },
+        {
+          "title": "keeps the featured Moon investigation clear and usable at 340px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5623,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:16:07.156Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "515c798112a621f8cdbc-fffc74b3d87fddcffb03",
+          "file": "50-solar-system-moon-eclipse-lab.spec.ts",
+          "line": 81,
+          "column": 5
+        },
+        {
+          "title": "completes the ungraded planet claim cycle through explanation-based revision",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 27220,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:16:12.794Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "515c798112a621f8cdbc-33077ae725b14f9b45da",
+          "file": "50-solar-system-moon-eclipse-lab.spec.ts",
+          "line": 114,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "53-solar-system-moon-phase-navigator.spec.ts",
+      "file": "53-solar-system-moon-phase-navigator.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "navigates all eight phases and wraps the cycle using keyboard controls",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 23251,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:16:40.052Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "65f94f553f0262b5031e-c60b998cd692ec48be36",
+          "file": "53-solar-system-moon-phase-navigator.spec.ts",
+          "line": 12,
+          "column": 5
+        },
+        {
+          "title": "withholds the diagram answer until prediction and preserves evidence when changing view",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 16426,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:17:03.347Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "65f94f553f0262b5031e-51d9c6488a8f1b5d0b2d",
+          "file": "53-solar-system-moon-phase-navigator.spec.ts",
+          "line": 37,
+          "column": 5
+        },
+        {
+          "title": "keeps the eight-phase navigator legible at 340px in both themes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 16031,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T03:17:19.789Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "65f94f553f0262b5031e-8f48fd72aef458eb538a",
+          "file": "53-solar-system-moon-phase-navigator.spec.ts",
+          "line": 60,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-06T03:09:57.301Z",
+    "duration": 474156.881,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 10,
+    "flaky": 0
+  }
+}

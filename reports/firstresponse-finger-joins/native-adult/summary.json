@@ -1,0 +1,64 @@
+{
+  "pixelComparisons": [
+    {
+      "id": "adult-wide",
+      "contrast": false,
+      "changedPixels": 320,
+      "totalPixels": 202882,
+      "fingerChangedPixels": 320,
+      "fingerTotalPixels": 30804,
+      "outsideCropChangedPixels": 0,
+      "crop": {
+        "x": 149,
+        "y": 101,
+        "width": 204,
+        "height": 151
+      },
+      "outsideTargetChangedPixels": 0,
+      "targetClips": [
+        {
+          "side": "left",
+          "x": 7,
+          "y": 361,
+          "width": 166,
+          "height": 0
+        },
+        {
+          "side": "right",
+          "x": 149,
+          "y": 101,
+          "width": 119,
+          "height": 135
+        }
+      ]
+    }
+  ],
+  "baselineSHA": "dfe3e01f38a419187e468c749cc37827f486a47401b9916afaa9ec6f98a3f86a",
+  "finalSHA": "77394bfee2544c33c3274293a13e9666912c26f657117ac98d15416f220f060e",
+  "workflows": 1,
+  "matchingViewPairs": 1,
+  "selectedViews": [
+    "adult-wide"
+  ],
+  "evidenceCount": 2,
+  "workers": 1,
+  "retries": 0,
+  "perWorkflowTimeoutMs": 450000,
+  "runnerTimeoutMs": 900000,
+  "images": [
+    "adult-wide-baseline-fingers.png",
+    "adult-wide-baseline-stage.png",
+    "adult-wide-candidate-fingers.png",
+    "adult-wide-candidate-stage.png"
+  ],
+  "stats": {
+    "startTime": "2026-10-10T04:17:15.358Z",
+    "duration": 115096.318,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "inputsUnchanged": true,
+  "privateCandidate": true
+}

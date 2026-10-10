@@ -1,0 +1,40 @@
+{
+  "files": [
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass38-baseline.js",
+      "sha256": "cc5649b2caec2ecbec8c9bb18efa2a623a74b4ec4751ca199c07ac48f1024dea",
+      "bytes": 1449675
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass38-camera.js",
+      "sha256": "8fc5ae60dadbfe31de53df0991d22324d5a390f1808a928d633ff21c66c39d94",
+      "bytes": 6856
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass38-camera.spec.ts",
+      "sha256": "f00977e03f649f9945d26c5f4651bef1b0eed233704b6263c420e8224864d964",
+      "bytes": 10863
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass38-camera.test.js",
+      "sha256": "ba50ea912289a7a926e395b98019a16bc611feb66db3a5f3b95119223be7817d",
+      "bytes": 9900
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass38-test-read.py",
+      "sha256": "944e829506d1fc29162cf7956070cb354dfcf17c106534408b5819f065f8f55c",
+      "bytes": 373
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass38-work.py",
+      "sha256": "91b74e502b7fad72f1293bee86806ec271c7c83e390e84d3851a060ef57ba98c",
+      "bytes": 22229
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass38-finish.py",
+      "sha256": "6cee2842ba5c4809d9bfa5f93bed8781ffe05e5b4fb4541f6a591448b53a62dc",
+      "bytes": 14253
+    }
+  ],
+  "exactPathsOnly": true
+}

@@ -1,0 +1,143 @@
+{
+  "date": "2026-10-05",
+  "currentHashes": {
+    "stem_lab/stem_tool_dissection.js": "e7fb104c826f70b0af9478fab307cc8015bf7e42813749d3ec74f6b1254110b1",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "e7fb104c826f70b0af9478fab307cc8015bf7e42813749d3ec74f6b1254110b1",
+    "tests/dissection_lab_improvements.test.js": "c76e7143e72284ad3d71ad731eaa9498007441f2d4c31d3baa8f95163f3d006f",
+    "tests/e2e/dissection-tools-cohesion.spec.ts": "1b34409ba5e1c7d2f81f98f206eb01b1b6e1c5417a2b5aec5dab053e4f44ad5b"
+  },
+  "results": {
+    "baseline": {
+      "label": "baseline-1",
+      "passed": 6,
+      "failed": 0,
+      "flaky": 0,
+      "skipped": 0
+    },
+    "unit-main": {
+      "label": "unit-main-2",
+      "passed": 240,
+      "failed": 0,
+      "total": 241,
+      "pending": 1
+    },
+    "unit-axe": {
+      "label": "unit-axe-2",
+      "passed": 1,
+      "failed": 0,
+      "total": 132,
+      "pending": 131
+    },
+    "tools": {
+      "label": "tools-2",
+      "passed": 11,
+      "failed": 0,
+      "flaky": 0,
+      "skipped": 0
+    },
+    "capture": {
+      "label": "capture-2",
+      "passed": 11,
+      "failed": 0,
+      "flaky": 0,
+      "skipped": 0
+    },
+    "gallery": {
+      "label": "gallery-2",
+      "passed": 11,
+      "failed": 0,
+      "flaky": 0,
+      "skipped": 0
+    }
+  },
+  "totalUnits": 241,
+  "totalBrowser": 33,
+  "baselineLayouts": 6,
+  "axe": [
+    {
+      "file": "tools-2/captures/desktop-axe.json",
+      "violations": 0,
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "file": "tools-2/captures/embedded-large-contrast-axe.json",
+      "violations": 0,
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "file": "tools-2/captures/embedded-medium-axe.json",
+      "violations": 0,
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "file": "tools-2/captures/forced-colors-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "tools-2/captures/phone-axe.json",
+      "violations": 0,
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "file": "tools-2/captures/report-reset-axe.json",
+      "violations": 0,
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "file": "tools-2/captures/tablet-axe.json",
+      "violations": 0,
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 1
+        }
+      ]
+    }
+  ],
+  "manualContrastReview": "contrast-review.json",
+  "priorReportEntriesPreserved": 411,
+  "sourceReversal": true,
+  "unitReversal": true,
+  "unchangedInputs": {
+    "tests/dissection_workspace_bands.test.js": "9c59fde98d1fd7e103edf4dffb72b1b9dbea39524d5acfd5bc67760dcf56f98c",
+    "tests/dissection_canvas_loop.test.js": "b31bbe5cc07efe789e0b2262d12441366c3425966f2e804ad818513a6d22e5ca",
+    "tests/e2e/dissection-capture-clarity.spec.ts": "007db45b401ce6470082eb456b845ee48dfb5ab5ecaec0b55a5ea713177ae2f7",
+    "tests/e2e/dissection-evidence-gallery.spec.ts": "fd03716a63f5cdbe3e7010ec309eba3128d2a0284b67eef9bb94cb0d235f2c89",
+    "tests/e2e/dissection-point-workflow.spec.ts": "16a2da740146027522f4d11c7824394ae62f8ef9672160a293999075fdcc17d9"
+  },
+  "stagedPathsUnchanged": true,
+  "stagedPaths": "",
+  "failedJobs": [
+    {
+      "label": "unit-main-1",
+      "code": 1
+    }
+  ],
+  "deployment": false
+}

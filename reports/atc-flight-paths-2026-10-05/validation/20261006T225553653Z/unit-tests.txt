@@ -1,0 +1,220 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/atctower_flight_paths.test.js
+[PureHelpers] 7 helpers registered
+
+ ❯ tests/atctower_flight_paths.test.js (32 tests | 2 failed) 2232ms
+     × ends at zero elapsed flight seconds when fuel is already exhausted and does not move live traffic 184ms
+     × stops live movement and its projection at the same low-fuel position 3ms
+stderr | tests/atctower_recovery.test.js > ATC mounted shift lifecycle > reloads a playing draft paused, checkpoints, and saves again when leaving
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+stdout | tests/atctower_recovery.test.js
+[CDN] PureHelpersModule already loaded, skipping
+
+ ❯ tests/atctower_recovery.test.js (16 tests | 1 failed) 99071ms
+     × reloads a playing draft paused, checkpoints, and saves again when leaving 63616ms
+stdout | tests/atctower_a11y.test.js
+[CDN] PureHelpersModule already loaded, skipping
+
+ ❯ tests/atctower_a11y.test.js (2 tests | 1 failed) 126ms
+     × keeps source and public mirrors identical 72ms
+stdout | tests/atctower_form_controls_a11y.test.js
+[CDN] PureHelpersModule already loaded, skipping
+
+ ❯ tests/atctower_form_controls_a11y.test.js (2 tests | 1 failed) 190ms
+     × keeps source and public mirrors identical 180ms
+stdout | tests/atctower_tabs_a11y.test.js
+[CDN] PureHelpersModule already loaded, skipping
+
+ ❯ tests/atctower_tabs_a11y.test.js (1 test | 1 failed) 107ms
+     × keeps mirrored source aligned and exposes keyboard-operable route tabs 106ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/atctower_a11y.test.js > ATC Tower control and status semantics > keeps source and public mirrors identical
+AssertionError: expected '426871197fbb590805d24f9d9fef467977144…' to be '9e334908f04e08fe36d86d373d5a47dd0cac0…' // Object.is equality
+
+Expected: "9e334908f04e08fe36d86d373d5a47dd0cac0eb5363bdb1133e578302a51c8c5"
+Received: "426871197fbb590805d24f9d9fef4679771443ad1b84b6c9450cecf70bbd6acd"
+
+ ❯ tests/atctower_a11y.test.js:13:8
+     11|     const mirror = fs.readFileSync(publicPath, 'utf8');
+     12|     expect(crypto.createHash('sha256').update(source).digest('hex'))
+     13|       .toBe(crypto.createHash('sha256').update(mirror).digest('hex'));
+       |        ^
+     14|   });
+     15|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  tests/atctower_flight_paths.test.js > ATC flight paths follow actual guidance without changing live traffic > ends at zero elapsed flight seconds when fuel is already exhausted and does not move live traffic
+AssertionError: expected { Object (id, callsign, ...) } to deeply equal { Object (id, callsign, ...) }
+
+- Expected
++ Received
+
+@@ -22,8 +22,8 @@
+      "id": "B738",
+      "name": "Boeing 737",
+      "size": 6,
+      "speed": 140,
+    },
+-   "x": 300,
++   "x": 298.9999999999998,
+    "y": 200,
+  }
+
+ ❯ tests/atctower_flight_paths.test.js:89:16
+     87|     expect(path.end).toMatchObject({seconds:0,x:ac.x,y:ac.y,fuel:0});
+     88|     model.advanceAircraft(ac,10/120,false);
+     89|     expect(ac).toEqual(before);
+       |                ^
+     90|   });
+     91|   it('stops live movement and its projection at the same low-fuel posi…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  tests/atctower_flight_paths.test.js > ATC flight paths follow actual guidance without changing live traffic > stops live movement and its projection at the same low-fuel position
+AssertionError: expected 4 to be 3 // Object.is equality
+
+- Expected
++ Received
+
+- 3
++ 4
+
+ ❯ tests/atctower_flight_paths.test.js:95:33
+     93|     model.advanceAircraft(live,10/120);
+     94|     expect(path.reason).toBe('fuel');
+     95|     expect(path.elapsedSeconds).toBe(3);
+       |                                 ^
+     96|     expect(live.trackClock).toBeCloseTo(path.elapsedSeconds,8);
+     97|     for(const key of ['x','y','heading','speed','altitude','fuel']) ex…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  tests/atctower_form_controls_a11y.test.js > ATC Tower inquiry form accessibility > keeps source and public mirrors identical
+AssertionError: expected '// ── Reduced motion CSS (WCAG 2.3.3)…' to be '// ── Reduced motion CSS (WCAG 2.3.3)…' // Object.is equality
+
+- Expected
++ Received
+
+@@ -295,20 +295,21 @@
+      }).slice(-25).map(function(point) { return { x: point.x, y: point.y, time: point.time }; });
+      return history.length && clock - history[history.length - 1].time > 5 + 1e-7 ? [] : history;
+    };
+    var advanceAircraft = function(ac, elapsedSeconds, recordTrack) {
+      if (!atcFinite(elapsedSeconds) || elapsedSeconds <= 0 || !atcActiveAircraft(ac)) return;
++     if (ac.fuel <= 1e-7) { ac.fuel = 0; return; }
+      var tracing = recordTrack !== false;
+      if (tracing) {
+        ac.trackClock = atcFinite(ac.trackClock) && ac.trackClock >= 0 ? ac.trackClock : 0;
+        ac.trackHistory = atcTrackHistory(ac.trackHistory, ac.trackClock);
+        // A recovered gap has no recorded route; restart at the known live position.
+        if (!ac.trackHistory.length) ac.trackHistory.push({ x: ac.x, y: ac.y, time: ac.trackClock });
+      }
+      var remaining = Math.max(0, elapsedSeconds) * ATC_TIME_ACCELERATION;
+      // Small flight-time steps preserve the same turns and captures at any FPS.
+-     while (remaining > 0.000001 && ac.state !== 'landed' && ac.state !== 'departed') {
++     while (remaining > 0.000001 && ac.state !== 'landed' && ac.state !== 'departed' && ac.fuel > 0) {
+        var dt = Math.min(1, remaining);
+        remaining -= dt;
+        var previousX = ac.x, previousY = ac.y, previousClock = ac.trackClock;
+        var turnRate = 3;
+        if (ac.state === 'approach' && ac.assignedRunway) {
+@@ -351,10 +352,11 @@
+        }
+        var distance = ac.speed / 3600 * ATC_UNITS_PER_NM * dt;
+        ac.x += Math.sin(toRad(ac.heading)) * distance;
+        ac.y -= Math.cos(toRad(ac.heading)) * distance;
+        ac.fuel = Math.max(0, ac.fuel - dt / 60);
++       if (ac.fuel <= 1e-7) ac.fuel = 0;
+        if (tracing) {
+          ac.trackClock += dt;
+          var sampleTime = ac.trackHistory[ac.trackHistory.length - 1].time + 5;
+          if (sampleTime <= ac.trackClock + 1e-7) {
+            var fraction = Math.max(0, Math.min(1, (sampleTime - previousClock) / dt));
+
+ ❯ tests/atctower_form_controls_a11y.test.js:10:49
+      8| describe('ATC Tower inquiry form accessibility', () => {
+      9|   it('keeps source and public mirrors identical', () => {
+     10|     expect(fs.readFileSync(sourcePath, 'utf8')).toBe(fs.readFileSync(p…
+       |                                                 ^
+     11|   });
+     12|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  tests/atctower_recovery.test.js > ATC mounted shift lifecycle > reloads a playing draft paused, checkpoints, and saves again when leaving
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/atctower_recovery.test.js:265:3
+    263|   });
+    264|
+    265|   it('reloads a playing draft paused, checkpoints, and saves again whe…
+       |   ^
+    266|     const initial = { view: 'playing', activeShift: model.serializeAtc…
+    267|     const api = mount(initial);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  tests/atctower_tabs_a11y.test.js > ATC Tower route tabs accessibility > keeps mirrored source aligned and exposes keyboard-operable route tabs
+AssertionError: expected '// ── Reduced motion CSS (WCAG 2.3.3)…' to be '// ── Reduced motion CSS (WCAG 2.3.3)…' // Object.is equality
+
+- Expected
++ Received
+
+@@ -295,21 +295,20 @@
+      }).slice(-25).map(function(point) { return { x: point.x, y: point.y, time: point.time }; });
+      return history.length && clock - history[history.length - 1].time > 5 + 1e-7 ? [] : history;
+    };
+    var advanceAircraft = function(ac, elapsedSeconds, recordTrack) {
+      if (!atcFinite(elapsedSeconds) || elapsedSeconds <= 0 || !atcActiveAircraft(ac)) return;
+-     if (ac.fuel <= 1e-7) { ac.fuel = 0; return; }
+      var tracing = recordTrack !== false;
+      if (tracing) {
+        ac.trackClock = atcFinite(ac.trackClock) && ac.trackClock >= 0 ? ac.trackClock : 0;
+        ac.trackHistory = atcTrackHistory(ac.trackHistory, ac.trackClock);
+        // A recovered gap has no recorded route; restart at the known live position.
+        if (!ac.trackHistory.length) ac.trackHistory.push({ x: ac.x, y: ac.y, time: ac.trackClock });
+      }
+      var remaining = Math.max(0, elapsedSeconds) * ATC_TIME_ACCELERATION;
+      // Small flight-time steps preserve the same turns and captures at any FPS.
+-     while (remaining > 0.000001 && ac.state !== 'landed' && ac.state !== 'departed' && ac.fuel > 0) {
++     while (remaining > 0.000001 && ac.state !== 'landed' && ac.state !== 'departed') {
+        var dt = Math.min(1, remaining);
+        remaining -= dt;
+        var previousX = ac.x, previousY = ac.y, previousClock = ac.trackClock;
+        var turnRate = 3;
+        if (ac.state === 'approach' && ac.assignedRunway) {
+@@ -352,11 +351,10 @@
+        }
+        var distance = ac.speed / 3600 * ATC_UNITS_PER_NM * dt;
+        ac.x += Math.sin(toRad(ac.heading)) * distance;
+        ac.y -= Math.cos(toRad(ac.heading)) * distance;
+        ac.fuel = Math.max(0, ac.fuel - dt / 60);
+-       if (ac.fuel <= 1e-7) ac.fuel = 0;
+        if (tracing) {
+          ac.trackClock += dt;
+          var sampleTime = ac.trackHistory[ac.trackHistory.length - 1].time + 5;
+          if (sampleTime <= ac.trackClock + 1e-7) {
+            var fraction = Math.max(0, Math.min(1, (sampleTime - previousClock) / dt));
+
+ ❯ tests/atctower_tabs_a11y.test.js:7:91
+      5|   it('keeps mirrored source aligned and exposes keyboard-operable rout…
+      6|     const source = readFileSync('stem_lab/stem_tool_atctower.js', 'utf…
+      7|     expect(readFileSync('desktop/web-app/public/stem_lab/stem_tool_atc…
+       |                                                                                           ^
+      8|     expect(source).toContain("var ATC_TAB_ORDER = menuTabs.map(functio…
+      9|     expect(source).toContain("role: 'tablist'");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  5 failed | 19 passed (24)
+      Tests  6 failed | 311 passed (317)
+   Start at  18:56:09
+   Duration  247.57s (transform 15.58s, setup 13.33s, import 23.75s, tests 175.76s, environment 23.42s)
+

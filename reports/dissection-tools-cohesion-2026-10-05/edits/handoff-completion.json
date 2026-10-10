@@ -1,0 +1,11 @@
+{
+  "beforeSha256": "3dbe4572b1647fb9b708ba447ead81b3be04594a87e761b4f896ea6dcead236a",
+  "afterSha256": "9aff289600939f35da28217ca8dafb3881699250dad28b5a654d6b842283b8f9",
+  "edits": [
+    {
+      "before": "- 2026-10-05 | Codex Dissection tools cohesion IN PROGRESS: root owns canonical/public stem_lab/stem_tool_dissection.js, focused lab unit/new tools browser fixture, and reports/dissection-tools-cohesion-2026-10-05. Group observation, evidence/export and report/reset actions; preserve native modes/focus and prior work; refresh full-canvas PNG downloads through the native capture helper. No staging, commit, push or deployment.",
+      "after": "- 2026-10-05 | Codex Dissection tools cohesion COMPLETE: grouped observation, capture/download and report/reset actions with readable native states and select focus; full-resolution PNG downloads refresh offscreen canvas through the native capture helper and preserve learner/evidence/capture-camera state. Canonical/public mirror synced; 241 scoped unit checks and 33 current browser cases passed; 6 baseline layouts archived. Report: reports/dissection-tools-cohesion-2026-10-05/README.md. No staging, commit, push or deployment."
+    }
+  ],
+  "otherContentPreserved": true
+}

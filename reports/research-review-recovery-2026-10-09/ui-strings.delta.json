@@ -1,0 +1,8 @@
+{
+  "input": {
+    "research_added_one": "Added {count} passage.",
+    "research_added_many": "Added {count} passages.",
+    "research_no_additions": "No new passages added.",
+    "research_paste_kept": "No new passages added. Your pasted text has been kept."
+  }
+}

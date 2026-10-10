@@ -1,0 +1,14 @@
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),crypto=require('node:crypto');
+const w=__dirname,archive=path.join(w,'candidate-rejected-preview-path'),run=path.join(w,'native-adult'),sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+assert.ok(!fs.existsSync(archive));assert.ok(path.resolve(run).startsWith(path.resolve(w)+path.sep));fs.mkdirSync(archive);
+for(const name of ['firstresponse-face-preview.spec.ts','audit-preview-fixture.cjs','fixture-audit.json','author-native.cjs'])fs.copyFileSync(path.join(w,name),path.join(archive,name));
+fs.renameSync(run,path.join(archive,'native-adult'));
+const replace=(s,a,b)=>{assert.equal(s.split(a).length,2,a);return s.replace(a,b);};
+let fixture=fs.readFileSync(path.join(w,'firstresponse-face-preview.spec.ts'),'utf8');
+fixture=replace(fixture,"points.some(function(p){return !isFinite(p.x+p.y+p.z);})","points.some(function(p){return !Array.isArray(p)||p.length!==3||p.some(function(n){return !Number.isFinite(n);});})");
+fixture=replace(fixture,'record.path=JSON.parse(JSON.stringify(points));','record.path=points.map(function(p){return {x:p[0],y:p[1],z:p[2]};});');
+const old="descriptor.parameters.path.points=points.map(function(p){return {x:p.x,y:'[allowed fitted crease height]',z:p.z};});",next="descriptor.parameters.path.points=points.map(function(p){return [p[0],'[allowed fitted crease height]',p[2]];});";
+fixture=replace(fixture,old,next);fs.writeFileSync(path.join(w,'firstresponse-face-preview.spec.ts'),fixture);
+let audit=fs.readFileSync(path.join(w,'audit-preview-fixture.cjs'),'utf8');audit=replace(audit,old,next);fs.writeFileSync(path.join(w,'audit-preview-fixture.cjs'),audit);
+fs.writeFileSync(path.join(archive,'diagnosis.json'),JSON.stringify({runtimeChanged:false,reason:'THREE Curve.toJSON serializes Vector3 control points as three-element arrays; the initial fixture assumed objects. Validation now reads the actual serialization and preserves x/z array entries exactly. Native baseline probe failed before candidate capture.',candidateSHA256:sha(fs.readFileSync(path.join(w,'candidate.js')))},null,2));
+console.log('Corrected private path serialization; preserved failed attempt; runtime unchanged.');

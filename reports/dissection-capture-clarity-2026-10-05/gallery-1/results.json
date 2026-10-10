@@ -1,0 +1,539 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-improving-interactivity-engagement-and/dissection-capture-clarity-2026-10-05/gallery-1/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "dissection-evidence-gallery.spec.ts",
+      "file": "dissection-evidence-gallery.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "evidence gallery layout phone",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11551,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T19:54:04.395Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "646e7d85efb6e7ec6ff6-5888b278544f11d7f1ba",
+          "file": "dissection-evidence-gallery.spec.ts",
+          "line": 128,
+          "column": 30
+        },
+        {
+          "title": "evidence gallery layout tablet",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7917,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T19:54:16.596Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "646e7d85efb6e7ec6ff6-ea620805d2a593a0d85e",
+          "file": "dissection-evidence-gallery.spec.ts",
+          "line": 128,
+          "column": 30
+        },
+        {
+          "title": "evidence gallery layout desktop",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7838,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T19:54:24.528Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "646e7d85efb6e7ec6ff6-0b145d79cddda520dbf6",
+          "file": "dissection-evidence-gallery.spec.ts",
+          "line": 128,
+          "column": 30
+        },
+        {
+          "title": "evidence gallery layout embedded-medium",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6958,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T19:54:32.379Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "646e7d85efb6e7ec6ff6-adc4cb5b0ca9dbd99209",
+          "file": "dissection-evidence-gallery.spec.ts",
+          "line": 128,
+          "column": 30
+        },
+        {
+          "title": "evidence gallery layout embedded-large",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6175,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T19:54:39.350Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "646e7d85efb6e7ec6ff6-8f478fce99fc6a77a673",
+          "file": "dissection-evidence-gallery.spec.ts",
+          "line": 128,
+          "column": 30
+        },
+        {
+          "title": "evidence gallery layout forced-colors",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6246,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T19:54:45.542Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "646e7d85efb6e7ec6ff6-528d11a3c6fd2b1e15b6",
+          "file": "dissection-evidence-gallery.spec.ts",
+          "line": 128,
+          "column": 30
+        },
+        {
+          "title": "frame identities dates and unknown scores remain truthful with native downloads",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 3997,
+                  "error": {
+                    "message": "Error: download.saveAs: canceled",
+                    "stack": "Error: download.saveAs: canceled\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-evidence-gallery.spec.ts:147:141",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-evidence-gallery.spec.ts",
+                      "column": 141,
+                      "line": 147
+                    },
+                    "snippet": "  145 |   expect(names).toHaveLength(8); expect(new Set(names).size).toBe(8);\n  146 |   const downloadButton = card(page, 102).getByRole('button', { name: 'Download frame 2: External Anatomy', exact: true }); await downloadButton.focus();\n> 147 |   const downloading = page.waitForEvent('download'); await page.keyboard.press('Enter'); const download = await downloading; await download.saveAs(`${out}/downloaded-frame-2.png`);\n      |                                                                                                                                             ^\n  148 |   expect(download.suggestedFilename()).toBe('frog_skin_102.png'); const png = await readFile(`${out}/downloaded-frame-2.png`); expect(png.subarray(0, 8)).toEqual(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])); expect(png).toEqual(Buffer.from(image.split(',')[1], 'base64'));\n  149 |   await expect(downloadButton).toBeFocused(); expect(await proof(page)).toEqual(before); expect((await state(page)).visualEvidence).toEqual(saved); expect((await state(page)).referenceEvidenceId).toBe(102);\n  150 | });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-evidence-gallery.spec.ts",
+                        "column": 141,
+                        "line": 147
+                      },
+                      "message": "Error: download.saveAs: canceled\n\n  145 |   expect(names).toHaveLength(8); expect(new Set(names).size).toBe(8);\n  146 |   const downloadButton = card(page, 102).getByRole('button', { name: 'Download frame 2: External Anatomy', exact: true }); await downloadButton.focus();\n> 147 |   const downloading = page.waitForEvent('download'); await page.keyboard.press('Enter'); const download = await downloading; await download.saveAs(`${out}/downloaded-frame-2.png`);\n      |                                                                                                                                             ^\n  148 |   expect(download.suggestedFilename()).toBe('frog_skin_102.png'); const png = await readFile(`${out}/downloaded-frame-2.png`); expect(png.subarray(0, 8)).toEqual(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])); expect(png).toEqual(Buffer.from(image.split(',')[1], 'base64'));\n  149 |   await expect(downloadButton).toBeFocused(); expect(await proof(page)).toEqual(before); expect((await state(page)).visualEvidence).toEqual(saved); expect((await state(page)).referenceEvidenceId).toBe(102);\n  150 | });\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-evidence-gallery.spec.ts:147:141"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T19:54:51.803Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-capture-clarity-2026-10-05\\gallery-1\\test-results\\dissection-evidence-galler-1bf0f-thful-with-native-downloads-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-capture-clarity-2026-10-05\\gallery-1\\test-results\\dissection-evidence-galler-1bf0f-thful-with-native-downloads-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-capture-clarity-2026-10-05\\gallery-1\\test-results\\dissection-evidence-galler-1bf0f-thful-with-native-downloads-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-capture-clarity-2026-10-05\\gallery-1\\test-results\\dissection-evidence-galler-1bf0f-thful-with-native-downloads-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-evidence-gallery.spec.ts",
+                    "column": 141,
+                    "line": 147
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "646e7d85efb6e7ec6ff6-11a5bea9fce26001dcb1",
+          "file": "dissection-evidence-gallery.spec.ts",
+          "line": 139,
+          "column": 5
+        },
+        {
+          "title": "keyboard comparison focus returns to its frame and disclosure stays independent",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4474,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T19:54:59.360Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "646e7d85efb6e7ec6ff6-6272d933a84aa394b936",
+          "file": "dissection-evidence-gallery.spec.ts",
+          "line": 152,
+          "column": 5
+        },
+        {
+          "title": "Essentials saved frame comparison opens Advanced and returns keyboard focus",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3615,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T19:55:04.081Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "646e7d85efb6e7ec6ff6-43db73c7093e4556a174",
+          "file": "dissection-evidence-gallery.spec.ts",
+          "line": 164,
+          "column": 5
+        },
+        {
+          "title": "toolbar comparison and confirmed notebook management preserve other specimen work",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5296,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T19:55:07.713Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "646e7d85efb6e7ec6ff6-e126c42ce373d763f707",
+          "file": "dissection-evidence-gallery.spec.ts",
+          "line": 180,
+          "column": 5
+        },
+        {
+          "title": "real capture adds one compressed frame and comparison reflows without losing focus",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 4766,
+                  "error": {
+                    "message": "Error: download.saveAs: canceled",
+                    "stack": "Error: download.saveAs: canceled\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-evidence-gallery.spec.ts:211:271",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-evidence-gallery.spec.ts",
+                      "column": 271,
+                      "line": 211
+                    },
+                    "snippet": "  209 |   await expect(close).toBeFocused(); await focusStyle(close); await writeFile(`${out}/text-spacing-metrics.json`, JSON.stringify({ notebook: await readable(notebook(page), 320, true), reference: await readable(reference(page), 320, true) }, null, 2));\n  210 |   await reference(page).screenshot({ path: `${out}/captured-reference-phone-spacing.png`, style: captureStyle }); await page.keyboard.press('Space'); await expect(compare(page, captured.id)).toBeFocused(); await expect(notebook(page)).toHaveAttribute('open', ''); expect((await state(page)).visualEvidence).toEqual(d.visualEvidence); expect(await proof(page)).toEqual(before);\n> 211 |   const downloadButton = card(page, captured.id).getByRole('button', { name: /^Download frame 4:/ }); await downloadButton.focus(); const downloading = page.waitForEvent('download'); await page.keyboard.press('Enter'); const download = await downloading; await download.saveAs(`${out}/downloaded-captured-frame-4.jpg`);\n      |                                                                                                                                                                                                                                                                               ^\n  212 |   expect(download.suggestedFilename()).toBe(`frog_skin_${captured.id}.jpg`); const jpeg = await readFile(`${out}/downloaded-captured-frame-4.jpg`); expect(jpeg.subarray(0, 2)).toEqual(Buffer.from([255, 216])); expect(jpeg).toEqual(Buffer.from(captured.image.split(',')[1], 'base64')); await expect(downloadButton).toBeFocused(); expect(await proof(page)).toEqual(before); expect((await state(page)).visualEvidence).toEqual(d.visualEvidence);\n  213 |   await writeFile(`${out}/capture-proof.json`, JSON.stringify({ paintedColours: painted, captured: { id: captured.id, capturedAt: captured.capturedAt, imageLength: captured.image.length, width: 220, height: 264 }, preserved: await proof(page) }, null, 2));\n  214 | });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-evidence-gallery.spec.ts",
+                        "column": 271,
+                        "line": 211
+                      },
+                      "message": "Error: download.saveAs: canceled\n\n  209 |   await expect(close).toBeFocused(); await focusStyle(close); await writeFile(`${out}/text-spacing-metrics.json`, JSON.stringify({ notebook: await readable(notebook(page), 320, true), reference: await readable(reference(page), 320, true) }, null, 2));\n  210 |   await reference(page).screenshot({ path: `${out}/captured-reference-phone-spacing.png`, style: captureStyle }); await page.keyboard.press('Space'); await expect(compare(page, captured.id)).toBeFocused(); await expect(notebook(page)).toHaveAttribute('open', ''); expect((await state(page)).visualEvidence).toEqual(d.visualEvidence); expect(await proof(page)).toEqual(before);\n> 211 |   const downloadButton = card(page, captured.id).getByRole('button', { name: /^Download frame 4:/ }); await downloadButton.focus(); const downloading = page.waitForEvent('download'); await page.keyboard.press('Enter'); const download = await downloading; await download.saveAs(`${out}/downloaded-captured-frame-4.jpg`);\n      |                                                                                                                                                                                                                                                                               ^\n  212 |   expect(download.suggestedFilename()).toBe(`frog_skin_${captured.id}.jpg`); const jpeg = await readFile(`${out}/downloaded-captured-frame-4.jpg`); expect(jpeg.subarray(0, 2)).toEqual(Buffer.from([255, 216])); expect(jpeg).toEqual(Buffer.from(captured.image.split(',')[1], 'base64')); await expect(downloadButton).toBeFocused(); expect(await proof(page)).toEqual(before); expect((await state(page)).visualEvidence).toEqual(d.visualEvidence);\n  213 |   await writeFile(`${out}/capture-proof.json`, JSON.stringify({ paintedColours: painted, captured: { id: captured.id, capturedAt: captured.capturedAt, imageLength: captured.image.length, width: 220, height: 264 }, preserved: await proof(page) }, null, 2));\n  214 | });\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-evidence-gallery.spec.ts:211:271"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T19:55:13.022Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-capture-clarity-2026-10-05\\gallery-1\\test-results\\dissection-evidence-galler-38857-eflows-without-losing-focus-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-capture-clarity-2026-10-05\\gallery-1\\test-results\\dissection-evidence-galler-38857-eflows-without-losing-focus-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-capture-clarity-2026-10-05\\gallery-1\\test-results\\dissection-evidence-galler-38857-eflows-without-losing-focus-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-capture-clarity-2026-10-05\\gallery-1\\test-results\\dissection-evidence-galler-38857-eflows-without-losing-focus-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-evidence-gallery.spec.ts",
+                    "column": 271,
+                    "line": 211
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "646e7d85efb6e7ec6ff6-5aa148dec0e32238859e",
+          "file": "dissection-evidence-gallery.spec.ts",
+          "line": 200,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-05T19:54:02.003Z",
+    "duration": 77344.497,
+    "expected": 9,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

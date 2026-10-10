@@ -1,0 +1,174 @@
+{
+  "preference": "canvas",
+  "frame": {
+    "id": 1791249757489,
+    "image": "[JPEG 17287 characters]",
+    "captureContents": "canvas",
+    "camera": {
+      "zoom": 1.5,
+      "panX": 15,
+      "panY": -8
+    },
+    "annotationCount": 1,
+    "measurementText": "1.8 cm",
+    "capturedAt": "2026-10-06T01:22:37.489Z",
+    "layer": "skin",
+    "layerName": "Skin",
+    "view": "dorsal",
+    "condition": "standard",
+    "depthAtlas": true,
+    "tissueRelief": true,
+    "selectedOrganId": "nictitating",
+    "selectedOrganName": "Nictitating Membrane",
+    "techniqueScore": 71,
+    "calibrationScore": 0,
+    "toolCalibration": {
+      "bladeAngle": 25,
+      "scissorsAperture": 35,
+      "forcepsGrip": 40,
+      "pinAngle": 65,
+      "probePressure": 30,
+      "salineDose": 1
+    },
+    "observationField": {
+      "quality": 92,
+      "label": "High-definition field",
+      "tone": "clear",
+      "limiter": "No major limiter",
+      "guidance": "The field supports confident structure observation.",
+      "aperture": 87,
+      "clarity": 91,
+      "stability": 84
+    },
+    "observationQuality": 92,
+    "anatomicalExposure": {
+      "score": 93,
+      "label": "Fully exposed field",
+      "next": "The field supports relationship tracing and evidence capture.",
+      "protocolProgress": 100,
+      "aperture": 87,
+      "clarity": 91,
+      "stability": 84
+    },
+    "decisionQuality": 82,
+    "materialInteraction": {
+      "resistance": 28,
+      "calibration": 100,
+      "margin": 38,
+      "label": "Low-resistance material",
+      "response": "elastic skin expected at contact.",
+      "failureMode": "A deep midline stroke can damage the liver, heart, or lungs beneath the body wall."
+    },
+    "toolReadiness": {
+      "score": 66,
+      "tone": "complete",
+      "label": "Technique complete",
+      "cue": "Technique protocol complete. Continue with visible structure identification and evidence.",
+      "checks": [
+        {
+          "id": "sequence",
+          "label": "Sequence",
+          "ready": false
+        },
+        {
+          "id": "learning",
+          "label": "Predict + explain",
+          "ready": true
+        },
+        {
+          "id": "calibration",
+          "label": "Calibration",
+          "ready": true
+        },
+        {
+          "id": "field",
+          "label": "Field + view",
+          "ready": false
+        },
+        {
+          "id": "contact",
+          "label": "Contact",
+          "ready": true
+        }
+      ]
+    },
+    "scenario": {
+      "id": "precision-access",
+      "label": "Precision access",
+      "difficulty": "Core",
+      "status": "active",
+      "progress": 95,
+      "detail": "Technique score 71/75",
+      "elapsedSeconds": 0
+    },
+    "opticalInspection": {
+      "quality": 85,
+      "label": "Resolved",
+      "tone": "resolved",
+      "idealDepth": "surface",
+      "focusDepth": "structure",
+      "focusScore": 66,
+      "magnification": 4,
+      "magnificationScore": 88,
+      "illumination": {
+        "intensity": 60,
+        "score": 100,
+        "label": "Balanced illumination",
+        "tone": "balanced",
+        "glareRisk": 0,
+        "shadowLoss": 0,
+        "reflectivity": 65,
+        "suggestion": "Intensity preserves relief while keeping reflective glare controlled."
+      },
+      "targetName": "Tympanic Membrane",
+      "detail": "structure boundaries",
+      "suggestion": "Set focus depth to surface for this structure."
+    },
+    "illumination": {
+      "intensity": 60,
+      "score": 100,
+      "label": "Balanced illumination",
+      "tone": "balanced",
+      "glareRisk": 0,
+      "shadowLoss": 0,
+      "reflectivity": 65,
+      "suggestion": "Intensity preserves relief while keeping reflective glare controlled."
+    },
+    "lightIntensity": 60,
+    "opticalQuality": 85,
+    "livingFunction": null,
+    "tissuePreservation": 90,
+    "tissueState": {
+      "moisture": 67,
+      "tension": 52,
+      "exposure": 87,
+      "trauma": 0,
+      "clarity": 91,
+      "stability": 84,
+      "risk": 16,
+      "salineDrops": 0,
+      "variantId": "firm",
+      "variantLabel": "Firm preservation",
+      "lastAction": "probe",
+      "lastUpdatedAt": 100,
+      "consequences": []
+    },
+    "consequenceSummary": "",
+    "procedureProtocol": {
+      "title": "Frog ventral midline access",
+      "recommendedView": "ventral",
+      "route": "shallow ventral midline corridor",
+      "protectedLandmarks": [
+        "Heart (3-chamber)",
+        "Liver (3 lobes)",
+        "Lungs"
+      ]
+    },
+    "specimen": "frog"
+  },
+  "priorFrameIds": [
+    101,
+    102,
+    "legacy/frame 103"
+  ]
+}

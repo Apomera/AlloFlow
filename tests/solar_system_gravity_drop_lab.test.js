@@ -67,7 +67,8 @@ describe('Solar System mass, weight, and gravity-drop lab', () => {
     expect(source).toContain('data-gravity-target-force');
     expect(source).toContain("stem.solarsystem.vacuum_drop_height_meters");
     expect(source).toContain('"Vacuum drop height in meters"');
-    expect(source).toContain('role: "img", "aria-label": dropHasRun ? "Ideal vacuum drop from "');
+    expect(source).toContain('className: "solar-drop-shaft", role: "img"');
+    expect(source).toContain('"aria-label": dropHasRun ? "Ideal vacuum drop from "');
     expect(source).toContain('"Ideal vacuum drop setup from " + dropHeight');
     expect(source).toContain("var dropHasRun = dropNonce > 0 && !!predictionChoice;");
     expect(source).toContain("if (!predictionChoice) return;");

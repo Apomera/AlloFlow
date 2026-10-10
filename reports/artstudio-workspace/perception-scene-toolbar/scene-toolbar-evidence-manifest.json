@@ -1,0 +1,107 @@
+{
+  "sourceSHA256": "29d06320f560c7341ed4be4eb7b1b5014091c21f72341cfbf78f30b73d50d2e2",
+  "loadedSourceSHA256": "29d06320f560c7341ed4be4eb7b1b5014091c21f72341cfbf78f30b73d50d2e2",
+  "finalSourceSHA256": "29d06320f560c7341ed4be4eb7b1b5014091c21f72341cfbf78f30b73d50d2e2",
+  "baselineSHA256": "96d8b48cec2f0e5f84016d9b8f8fed310068cbb7a42dc7a60334b2127fb92b49",
+  "passedGroups": 19,
+  "errors": [],
+  "runner": "perception_lab_scene_toolbar_qa.cjs",
+  "runnerSHA256": "5d26b1544e544046bf72c1efa93ddb4c9f44dc4e6da5ee0a7a3ec411b39478be",
+  "artifacts": [
+    {
+      "file": "scene-toolbar-1600-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "scene-toolbar-1600.png",
+      "bytes": 36374,
+      "sha256": "7277fe688d1f48196e409bbf4b62e91788a1605ffa09b81c02f6eea7414fceac"
+    },
+    {
+      "file": "scene-toolbar-320-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "scene-toolbar-320.png",
+      "bytes": 8676,
+      "sha256": "103b813680d9af8be3831520bdcbfaca0cef08461ec0179fadd410058c77d8c4"
+    },
+    {
+      "file": "scene-toolbar-390-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "scene-toolbar-390.png",
+      "bytes": 53711,
+      "sha256": "81bc5f6498cacd7caaa44caccfa937d307d2834b05a74f990964123acd3ff00d"
+    },
+    {
+      "file": "scene-toolbar-700-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "scene-toolbar-700.png",
+      "bytes": 10177,
+      "sha256": "82774a18c0a8d0d9a93cc590f97dc1ceea69300a16b8f27a49901d6069879367"
+    },
+    {
+      "file": "scene-toolbar-320-200-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "scene-toolbar-320-200.png",
+      "bytes": 18793,
+      "sha256": "200b7b7fcc5eca12ea54eee8c5a1328f01cb19380f89fa06756c442f0526738b"
+    },
+    {
+      "file": "scene-toolbar-long-rtl-320-200-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "scene-toolbar-long-rtl-320-200.png",
+      "bytes": 58295,
+      "sha256": "430700a3bb1ee173fd3727302ca625883f94984cc9f03c5286680f54c963fddf"
+    },
+    {
+      "file": "scene-toolbar-dark-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "scene-toolbar-dark.png",
+      "bytes": 9101,
+      "sha256": "b43049bbee3d4838e602e003daefa233c1aa8c69e468cde83fc0188b8d5d680d"
+    },
+    {
+      "file": "scene-toolbar-contrast-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "scene-toolbar-contrast.png",
+      "bytes": 8621,
+      "sha256": "c91b70b9167ad4c767a7c9716d9af0a0ce9e26a77390d781ff39beef8378b609"
+    },
+    {
+      "file": "scene-toolbar-forced-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "scene-toolbar-forced.png",
+      "bytes": 9280,
+      "sha256": "8df11578b44b312bb9c9b14c63f94901b296171c78173b632b1cedacf09de112"
+    },
+    {
+      "file": "scene-toolbar-browser-results.json",
+      "bytes": 78824,
+      "sha256": "3466a2a206be6cb4cc4cc1859d6d4ac41433e32f6951c4b7aa54626e604e9bea"
+    }
+  ]
+}

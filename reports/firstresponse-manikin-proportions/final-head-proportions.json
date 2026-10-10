@@ -1,0 +1,99 @@
+{
+  "sourceSHA256": "16aceaa1b7d8bbd0ed869536b554451ddd2e5e3a832229e2e3322f8ad75f03e2",
+  "measure": "Supine phase 0; exact transformed crown and shoe/sole vertices, along body length Z. No perspective.",
+  "results": [
+    {
+      "age": "adult",
+      "headLongitudinalLength": 0.5476,
+      "crownToFootLongitudinalLength": 3.844642,
+      "headFraction": 0.142432,
+      "bodyInHeadLengths": 7.020894,
+      "headBounds": {
+        "min": [
+          -0.2072,
+          0.025,
+          -1.5238
+        ],
+        "max": [
+          0.2072,
+          0.455688,
+          -0.9762
+        ]
+      },
+      "crownToFootBounds": {
+        "min": [
+          -0.35865,
+          0.025,
+          -1.5238
+        ],
+        "max": [
+          0.35865,
+          0.455688,
+          2.320842
+        ]
+      }
+    },
+    {
+      "age": "child",
+      "headLongitudinalLength": 0.424296,
+      "crownToFootLongitudinalLength": 2.539745,
+      "headFraction": 0.167062,
+      "bodyInHeadLengths": 5.985786,
+      "headBounds": {
+        "min": [
+          -0.167328,
+          0.025,
+          -1.058148
+        ],
+        "max": [
+          0.167328,
+          0.37281,
+          -0.633852
+        ]
+      },
+      "crownToFootBounds": {
+        "min": [
+          -0.258228,
+          0.025,
+          -1.058148
+        ],
+        "max": [
+          0.258228,
+          0.37281,
+          1.481597
+        ]
+      }
+    },
+    {
+      "age": "infant",
+      "headLongitudinalLength": 0.365976,
+      "crownToFootLongitudinalLength": 1.46349,
+      "headFraction": 0.250071,
+      "bodyInHeadLengths": 3.998868,
+      "headBounds": {
+        "min": [
+          -0.150696,
+          0.025,
+          -0.677488
+        ],
+        "max": [
+          0.150696,
+          0.338238,
+          -0.311512
+        ]
+      },
+      "crownToFootBounds": {
+        "min": [
+          -0.164979,
+          0.025,
+          -0.677488
+        ],
+        "max": [
+          0.164979,
+          0.338238,
+          0.786002
+        ]
+      }
+    }
+  ]
+}

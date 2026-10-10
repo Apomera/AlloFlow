@@ -1,0 +1,48 @@
+{
+  "status": "source-passed",
+  "checkedAt": "2026-10-07T03:32:49.323Z",
+  "sourceSha256": "7e67272b7b7aa6521f37cd9c1525a5fbdeb492e6e2dfa773e4dc387afec19b5f",
+  "sourceMirrorsIdentical": true,
+  "syntaxValid": true,
+  "sourceCRLFPreserved": true,
+  "documentedUIEditsReversed": 8,
+  "english": [
+    {
+      "file": "ui_strings.js",
+      "sha256": "f8145032fbe6ce739a25e5d507bd9192454de2d381b37f2710035ae608021788",
+      "literalFallbacksMatched": 1356,
+      "newRouteInsertionMatchedOnce": true,
+      "historicalWriteSha256": "4805f82710be6fc6ec5b7ae442aa10f901a6444332d946bc608c3cc1db8ba96e",
+      "currentMatchesHistoricalWriteHash": false
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "sha256": "f8145032fbe6ce739a25e5d507bd9192454de2d381b37f2710035ae608021788",
+      "literalFallbacksMatched": 1356,
+      "newRouteInsertionMatchedOnce": true,
+      "historicalWriteSha256": "4805f82710be6fc6ec5b7ae442aa10f901a6444332d946bc608c3cc1db8ba96e",
+      "currentMatchesHistoricalWriteHash": false
+    }
+  ],
+  "englishNote": "The shared English registries are checked by their current Bridge Lab values and exact new key insertion. Current whole-file hashes are recorded; historical write hashes are retained without requiring whole-file immutability.",
+  "previousVerification": {
+    "path": "reports/bridgelab-moment-precision-2026-10-06/verification.json",
+    "sha256": "9f6f6ee1fc46a0653108ad6d7fd6f69ef9657fba0d688146a6a876a32762bd79",
+    "status": "verified"
+  },
+  "model": {
+    "configurationsPreviouslyPassed": 144,
+    "freshSweepRun": false,
+    "modelCodeUnchanged": true,
+    "path": "reports/bridgelab-frame-energy-2026-10-06/model-invariants-before-rounding.json",
+    "sha256": "9d0b444ddbf45ef17965c4a5413f716338cb9d8f77c8f79fbdfa7a6c80b7ef81",
+    "sweepSourceSha256": "fd5362d52c5b2515606f211c273adf0d4afb58be699898a5d1fbe10697517d2d",
+    "proof": "Reversing the eight current UI edits, three prior UI edits and prior rounding sentence reproduces the checked model sweep source hash."
+  },
+  "unit": {
+    "status": "not run in this pass",
+    "passed": null,
+    "reason": "The recent focused Vitest run timed out while starting its fork worker, before test cases ran.",
+    "previousRun": "reports/bridgelab-moment-precision-2026-10-06/unit-run.json"
+  }
+}

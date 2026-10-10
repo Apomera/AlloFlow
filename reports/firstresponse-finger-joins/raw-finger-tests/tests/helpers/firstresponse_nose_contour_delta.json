@@ -1,0 +1,10 @@
+{
+  "beforeSHA256": "0af58d9afd30ed0de275caf53197320ddabed9308f08b191cce7bf4927d83f84",
+  "afterSHA256": "164407bb58546fc91584761e51e9a907d2eacd33442a0a5fae31da0c22ef37c0",
+  "edits": [
+    {
+      "old": "    function noseDepth(z) { return .009 + .052*Math.exp(-Math.pow((z-.010)/.051,2)); }",
+      "new": "    function noseDepth(z) { return .014 + .038*Math.exp(-Math.pow((z-.010)/.051,2)); }"
+    }
+  ]
+}

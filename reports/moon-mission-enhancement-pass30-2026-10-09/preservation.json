@@ -1,0 +1,14 @@
+{
+  "sourceSha256": "98327517728da200d877cb7a1332e59519a7701ad5133bbb496a6824be23e324",
+  "sourceBytes": 1417796,
+  "canonicalPublicIdentical": true,
+  "guardedOperations": 2,
+  "reverseMatchesAcceptedPass29": true,
+  "priorTestsUnchanged": 123,
+  "newTests": {
+    "tests/e2e/moon-mission-descent-plume.spec.ts": "00843c4cecbd9410cc243505d6bdbf1c09214c34a6096564e07c8252765b540a"
+  },
+  "scopedIndexUnchanged": true,
+  "currentlyStagedOwnedPaths": [],
+  "syntaxAndDiffWhitespaceChecksPassed": true
+}

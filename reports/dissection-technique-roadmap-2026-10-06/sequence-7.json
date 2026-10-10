@@ -1,0 +1,17 @@
+{
+  "start": "2026-10-07T01:59:21.169Z",
+  "runnerPid": 22588,
+  "jobs": [
+    {
+      "mode": "roadmap",
+      "label": "roadmap-7",
+      "code": 1,
+      "start": "2026-10-07T01:59:21.178Z",
+      "end": "2026-10-07T02:19:52.721Z"
+    }
+  ],
+  "running": null,
+  "success": false,
+  "error": "roadmap-7 failed",
+  "end": "2026-10-07T02:19:54.433Z"
+}

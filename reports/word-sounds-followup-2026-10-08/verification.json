@@ -1,0 +1,47 @@
+{
+  "checkedAt": "2026-10-08T21:45:54.126Z",
+  "focusedTests": 102,
+  "nativeAudioScenarios": [
+    "cold-first-counting",
+    "wrong-answer-sequence",
+    "rapid-correct-response",
+    "syllable-native-sequence",
+    "minimize-cancels",
+    "manual-replay",
+    "lesson-change-cancels"
+  ],
+  "teacherReviewGroups": [
+    "real WordSoundsModal and MiscComponents render the maintenance panel",
+    "clip source labels distinguish known, unknown and mismatched voices",
+    "selected clip survives an incidental readiness update to the prepared words",
+    "selected regeneration updates one clip with strict Kokoro and retains authored choices",
+    "prepared lesson repair upgrades legacy syllables and fills audio without replacing choices",
+    "real uploads decode, preview sequentially, require review, and save embedded syllables to lifted words",
+    "Start Activity delivers the saved recordings and authored choice order to the current item"
+  ],
+  "moduleCopies": 28,
+  "hostPins": 21,
+  "parsedSources": [
+    "word_sounds_core.js",
+    "word_sounds_module.js",
+    "word_sounds_setup_source.jsx",
+    "word_sounds_readiness_contract.js",
+    "misc_components_source.jsx",
+    "view_word_sounds_preview_source.jsx",
+    "live_aac_source.jsx",
+    "module_scope_extras_source.jsx",
+    "AlloFlowANTI.txt",
+    "desktop/web-app/src/AlloFlowANTI.txt",
+    "desktop/web-app/src/App.jsx"
+  ],
+  "moduleHashes": {
+    "word_sounds_module.js": "ed8a9115334281bdf7558f8b6e3ea194c1d69e0f67de52e22c0a67a6874bbb14",
+    "word_sounds_setup_module.js": "c891c55439cdfab02d95670b6c869f4a6132f0af3dc4aab4016cf838ebf73391",
+    "misc_components_module.js": "24ccb78566e3e9bbf1996b098e22e01ab99e86b7649fa224a3b76dc99412c7ad",
+    "view_word_sounds_preview_module.js": "b91582954647ce8b06fec9cc0beac4c18459061f6ac12d6e3a0dd077b52e98d7",
+    "host_handlers_module.js": "db7a735b6d146b74c50cc4f14b0ba90a656a6956cd6aaeebb96c15748ca8f8df",
+    "module_scope_extras_module.js": "9adfc9d6251de6d8d22f2713bc0980d4d47b3e6452fa296e9a8a6587611d9fc8",
+    "live_aac_module.js": "9799084781a9afd209fbae5a130086d84b9636fa1f21949e3f8964727eaab0a2"
+  },
+  "limits": "Local only; no real provider synthesis, microphone hardware test, cloud delivery, full app build, or deployment."
+}

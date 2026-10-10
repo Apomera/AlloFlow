@@ -1,23 +1,32 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { originalGalaxySurface, galaxySurfaceFloats } from './helpers/universe_galaxy_surfaces.js';
 
 let flight, scene, canvas, now, frames, frameId, telemetry, range, dpr, box;
 let buffers, uploads, updates, textureUploads, draws, uniforms, constants, attributes, programAttributes, created, deleted;
 let pointBuffer, surfaceBuffer, pointProgram;
 
-// Source and atlas pins come from accepted enhancement39, before this surface
-// expansion. The new batch repeats existing records; it adds no scenery.
+// Source pins come from accepted enhancement39, before the projected surface
+// expansion. Atlas pins include later accepted emission refinements.
+// The cloud batch continues to repeat exact existing source records.
 const WORLD = {
   neighborhood: { count: 19203, points: 'f0933322797366fbee8bbdc9ce8d2263700b1c07a71caa1bcfa1224d68edc2a3', surfaceFloats: 0, surface: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' },
   galaxy: { count: 36400, points: 'f5dbc73e3ae0b2751dcf15f6fffce2753ae4994b089c62d020975e414889b2ab', surfaceFloats: 1920, surface: 'e97a5ba4db3d27acd2bda8ba417e84c696c7ba32f3b5fd0817d8ba58810890fa' },
   cosmic: { count: 41470, points: '156c66d7c6805406f2d231fb18affab8e613952ec32b5fdf9e9e805104966b85', surfaceFloats: 257280, surface: '102e9fa5c941b24e52de513ac8fb058e749a000ce8ee631740113809bc21253b' },
 };
+// Before enhancement57, the complete galaxy atlas was pinned to
+// 47e61b0e871129a48cbe8f814a5d629263750e16d068766c84e8beeeb057ad53.
+// The smooth disk transfer changes spiral RGB only. The bulge suite and
+// the independent c0 host audit preserve its reconstructed light and alpha;
+// Enhancement72 adds only the cloud atlas's previously unused green channel.
+// The nebula detail suite pins its red/alpha/blue bytes and emission budget;
+// all existing generated source and static surface assertions stay exact.
 const ATLASES = {
-  2048: '7bedb2ee41e173ac302455b9f6b064c1daa5ba60862cf03feb35c2b4750778c3',
-  512: 'b57c6fd38bbb173b026084c3f7977e0a27c8a91bb5446e045cef067a043b2c88',
+  2048: '8a8b5bbb2e4f8b87c6958b80227d7d148e2e708553d47b348fe91f1187f0063e',
+  512: '04221a7f74fd18ad4be28fdf04966498031ccc88b5929db2d30822b59eb78218',
 };
-const STELLAR_CORNERS = new Float32Array([0, 0, 0, -1, -1, 0, 0, 0, 1, -1, 0, 0, 0, 1, 1, 0, 0, 0, -1, -1, 0, 0, 0, 1, 1, 0, 0, 0, -1, 1]);
+const STELLAR_CORNERS = new Float32Array([0,0,0,-1,-1,0, 0,0,0,1,-1,0, 0,0,0,1,1,0, 0,0,0,-1,-1,0, 0,0,0,1,1,0, 0,0,0,-1,1,0]);
 const hash = values => createHash('sha256').update(new Uint8Array(values.buffer, values.byteOffset, values.byteLength)).digest('hex');
 const copy = value => ArrayBuffer.isView(value) || Array.isArray(value) ? Array.from(value) : value;
 
@@ -144,10 +153,10 @@ describe('Universe projected cloud surfaces', () => {
     expect(maps).toHaveLength(2); for (const item of maps) expect(item.hash).toBe(ATLASES[item.width]);
     for (const [region, expected] of Object.entries(WORLD)) {
       scene.set({ region, running: false }); advance();
-      const points = latest(pointBuffer), surfaces = latest(surfaceBuffer), suffix = surfaces.subarray(expected.surfaceFloats + 30);
+      const points = latest(pointBuffer), surfaces = latest(surfaceBuffer), suffix = surfaces.subarray(galaxySurfaceFloats(region, expected.surfaceFloats) + 36);
       expect(points).toHaveLength(expected.count * 9); expect(hash(points)).toBe(expected.points);
-      expect(hash(surfaces.subarray(0, expected.surfaceFloats))).toBe(expected.surface);
-      expect(surfaces.subarray(expected.surfaceFloats, expected.surfaceFloats + 30)).toEqual(STELLAR_CORNERS);
+      expect(hash(originalGalaxySurface(surfaces, expected.surfaceFloats))).toBe(expected.surface);
+      expect(surfaces.subarray(galaxySurfaceFloats(region, expected.surfaceFloats), galaxySurfaceFloats(region, expected.surfaceFloats) + 36)).toEqual(STELLAR_CORNERS);
       expect(suffix).toHaveLength(region === 'neighborhood' ? 66000 : 0);
       if (region !== 'neighborhood') continue;
       const sourceIndices = []; for (let index = 0; index < points.length; index += 9) if (points[index + 8] >= 5) sourceIndices.push(index / 9);
@@ -171,7 +180,7 @@ describe('Universe projected cloud surfaces', () => {
     expect(batch.first).toBe(0); expect(batch.count).toBe(6000);
     expect(batch.blend).toEqual([constants.get('ONE'), constants.get('ONE')]); expect(batch.uniforms.u_stellarQuad).toBe(0);
     for (const [name, size, offset] of [['position', 3, 0], ['color', 3, 12], ['size', 1, 24], ['light', 1, 28], ['cloud', 1, 32], ['corner', 2, 36]]) {
-      expect(batch.attributes['a_' + name]).toMatchObject({ enabled: true, buffer: surfaceBuffer, size, stride: 44, offset: 120 + offset });
+      expect(batch.attributes['a_' + name]).toMatchObject({ enabled: true, buffer: surfaceBuffer, size, stride: 44, offset: 144 + offset });
     }
     const stars = calls.filter(item => item.program === pointProgram && item.mode === constants.get('TRIANGLES') && item.uniforms.u_stellarQuad === 1);
     expect(stars.length).toBeGreaterThan(0); expect(stars.length).toBeLessThanOrEqual(3);

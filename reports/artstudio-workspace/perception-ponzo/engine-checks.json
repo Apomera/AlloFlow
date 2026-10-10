@@ -1,0 +1,182 @@
+{
+  "sourceSHA256": "67f0099c534e98ea6f1a916d8966b61ac19980bcdcaa21d7f30b37f30ec4c5f8",
+  "finalSourceSHA256": "67f0099c534e98ea6f1a916d8966b61ac19980bcdcaa21d7f30b37f30ec4c5f8",
+  "sourceStable": true,
+  "kind": "Standalone built-in assertions of pure engine behavior; no UI framework or Vitest workers",
+  "passed": 43,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "Seventh observation-only experiment defaults and controls",
+      "passed": true
+    },
+    {
+      "name": "Malformed control fallback 0",
+      "passed": true
+    },
+    {
+      "name": "Malformed control fallback 1",
+      "passed": true
+    },
+    {
+      "name": "Malformed control fallback 2",
+      "passed": true
+    },
+    {
+      "name": "Malformed control fallback 3",
+      "passed": true
+    },
+    {
+      "name": "Malformed control fallback 4",
+      "passed": true
+    },
+    {
+      "name": "Malformed control fallback 5",
+      "passed": true
+    },
+    {
+      "name": "Malformed control fallback 6",
+      "passed": true
+    },
+    {
+      "name": "Malformed control fallback 7",
+      "passed": true
+    },
+    {
+      "name": "Malformed control fallback 8",
+      "passed": true
+    },
+    {
+      "name": "Malformed control fallback 9",
+      "passed": true
+    },
+    {
+      "name": "Malformed control fallback 10",
+      "passed": true
+    },
+    {
+      "name": "Malformed control fallback 11",
+      "passed": true
+    },
+    {
+      "name": "Bounded and rounded controls -999",
+      "passed": true
+    },
+    {
+      "name": "Bounded and rounded controls 999",
+      "passed": true
+    },
+    {
+      "name": "Bounded and rounded controls 18.6",
+      "passed": true
+    },
+    {
+      "name": "Bounded and rounded controls 252.6",
+      "passed": true
+    },
+    {
+      "name": "Matching and repeated-study fields never enter Ponzo",
+      "passed": true
+    },
+    {
+      "name": "Equal targets and exact perspective gap at 0",
+      "passed": true
+    },
+    {
+      "name": "Equal targets and exact perspective gap at 25",
+      "passed": true
+    },
+    {
+      "name": "Equal targets and exact perspective gap at 50",
+      "passed": true
+    },
+    {
+      "name": "Equal targets and exact perspective gap at 90",
+      "passed": true
+    },
+    {
+      "name": "Equal targets and exact perspective gap at 100",
+      "passed": true
+    },
+    {
+      "name": "Painted rails never overlap target rectangles at20 boundary combinations",
+      "passed": true
+    },
+    {
+      "name": "Upper target position only changes its height at 150",
+      "passed": true
+    },
+    {
+      "name": "Upper target position only changes its height at 175",
+      "passed": true
+    },
+    {
+      "name": "Upper target position only changes its height at 220",
+      "passed": true
+    },
+    {
+      "name": "Upper target position only changes its height at 260",
+      "passed": true
+    },
+    {
+      "name": "Measurement guides preserve exact target rectangles 0/150",
+      "passed": true
+    },
+    {
+      "name": "Measurement guides preserve exact target rectangles 0/260",
+      "passed": true
+    },
+    {
+      "name": "Measurement guides preserve exact target rectangles 100/150",
+      "passed": true
+    },
+    {
+      "name": "Measurement guides preserve exact target rectangles 100/260",
+      "passed": true
+    },
+    {
+      "name": "JSON state roundtrip preserves Ponzo snapshot and other experiments",
+      "passed": true
+    },
+    {
+      "name": "Pure scoped restore convergence/selected",
+      "passed": true
+    },
+    {
+      "name": "Pure scoped restore convergence/others",
+      "passed": true
+    },
+    {
+      "name": "Pure scoped restore upperY/selected",
+      "passed": true
+    },
+    {
+      "name": "Pure scoped restore upperY/others",
+      "passed": true
+    },
+    {
+      "name": "Pure scoped restore context/selected",
+      "passed": true
+    },
+    {
+      "name": "Pure scoped restore context/others",
+      "passed": true
+    },
+    {
+      "name": "Report snapshot and chosen status convergence",
+      "passed": true
+    },
+    {
+      "name": "Report snapshot and chosen status upperY",
+      "passed": true
+    },
+    {
+      "name": "Report snapshot and chosen status context",
+      "passed": true
+    },
+    {
+      "name": "Notebook JSON import, exact preservation, deduplication and invalid repeat rejection",
+      "passed": true
+    }
+  ]
+}

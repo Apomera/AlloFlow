@@ -1,0 +1,184 @@
+{
+  "success": true,
+  "numPassedTests": 14,
+  "numTotalTests": 14,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Solar System vocabulary browser"
+          ],
+          "fullName": "Solar System vocabulary browser renders labeled native controls, alphabetical terms, and an unselected reader without writes",
+          "status": "passed",
+          "title": "renders labeled native controls, alphabetical terms, and an unselected reader without writes",
+          "duration": 594.7309999999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System vocabulary browser"
+          ],
+          "fullName": "Solar System vocabulary browser searches names and definitions with normalized case and all query words without recording views",
+          "status": "passed",
+          "title": "searches names and definitions with normalized case and all query words without recording views",
+          "duration": 130.1621,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System vocabulary browser"
+          ],
+          "fullName": "Solar System vocabulary browser filters viewed and new terms using unique valid history and explains an empty viewed list",
+          "status": "passed",
+          "title": "filters viewed and new terms using unique valid history and explains an empty viewed list",
+          "duration": 65.86819999999989,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System vocabulary browser"
+          ],
+          "fullName": "Solar System vocabulary browser atomically merges rapid term opens and concurrent lab changes while recording each valid term once",
+          "status": "passed",
+          "title": "atomically merges rapid term opens and concurrent lab changes while recording each valid term once",
+          "duration": 30.63680000000022,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System vocabulary browser"
+          ],
+          "fullName": "Solar System vocabulary browser reads malformed restored state defensively without rewriting it during rendering",
+          "status": "passed",
+          "title": "reads malformed restored state defensively without rewriting it during rendering",
+          "duration": 68.20350000000008,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System vocabulary browser"
+          ],
+          "fullName": "Solar System vocabulary browser requires ten distinct known vocabulary terms for the existing quest",
+          "status": "passed",
+          "title": "requires ten distinct known vocabulary terms for the existing quest",
+          "duration": 13.981899999999769,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System vocabulary browser"
+          ],
+          "fullName": "Solar System vocabulary browser keeps the selected definition when filtered away and can reveal and focus its term again",
+          "status": "passed",
+          "title": "keeps the selected definition when filtered away and can reveal and focus its term again",
+          "duration": 45.8779999999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System vocabulary browser"
+          ],
+          "fullName": "Solar System vocabulary browser preserves the query, filter, selected definition, and history when the glossary closes and reopens",
+          "status": "passed",
+          "title": "preserves the query, filter, selected definition, and history when the glossary closes and reopens",
+          "duration": 28.44100000000026,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System vocabulary browser"
+          ],
+          "fullName": "Solar System vocabulary browser speaks only on the read-aloud action and uses the current term and complete definition",
+          "status": "passed",
+          "title": "speaks only on the read-aloud action and uses the current term and complete definition",
+          "duration": 77.59999999999991,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System vocabulary browser"
+          ],
+          "fullName": "Solar System vocabulary browser focuses search once on its connected opening commit and leaves later edits focused normally",
+          "status": "passed",
+          "title": "focuses search once on its connected opening commit and leaves later edits focused normally",
+          "duration": 27.174400000000333,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System vocabulary browser"
+          ],
+          "fullName": "Solar System vocabulary browser focuses the definition once after opening a new term even when its result button disappears",
+          "status": "passed",
+          "title": "focuses the definition once after opening a new term even when its result button disappears",
+          "duration": 32.74260000000004,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System vocabulary browser"
+          ],
+          "fullName": "Solar System vocabulary browser cancels pending search and definition focus immediately on close or a search/filter change",
+          "status": "passed",
+          "title": "cancels pending search and definition focus immediately on close or a search/filter change",
+          "duration": 120.65350000000035,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System vocabulary browser"
+          ],
+          "fullName": "Solar System vocabulary browser returns to the connected origin button and falls back to the matching-results heading when it is gone",
+          "status": "passed",
+          "title": "returns to the connected origin button and falls back to the matching-results heading when it is gone",
+          "duration": 16.16859999999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System vocabulary browser"
+          ],
+          "fullName": "Solar System vocabulary browser recovers from no matches by clearing both filters and focusing the results without changing history",
+          "status": "passed",
+          "title": "recovers from no matches by clearing both filters and focusing the results without changing history",
+          "duration": 20.031999999999698,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1791569608256,
+      "endTime": 1791569609528.032,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/solar_system_vocabulary_browser.test.js"
+    }
+  ]
+}

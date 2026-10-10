@@ -1,0 +1,5 @@
+{
+  "before": "- 2026-10-09 | Codex Dissection checkpoint coaching IN PROGRESS: owns canonical/public stem_lab/stem_tool_dissection.js, focused unit additions, new tests/e2e/dissection-checkpoint-coaching.spec.ts and reports/dissection-checkpoint-coaching-2026-10-09. Place coaching beside the selected answer and improve retry readability; preserve grading, keyboard flow and saved work. No staging, commit, push or deployment.",
+  "after": "- 2026-10-09 | Codex Dissection checkpoint coaching COMPLETE LOCALLY; ownership RELEASED. Selected answers now carry adjacent retry coaching; original accessible answer names, keyboard flow, grading and saved feedback preserved. Readable 16/18px answers and guidance across narrow/contrast layouts. Canonical/public synchronized. 30 focused unit tests and six browser scenarios pass; four primary scoped axe audits have zero violations/incompletes. 507 protected files and shared HEAD/index unchanged. Report: reports/dissection-checkpoint-coaching-2026-10-09/README.md records the initial memory interruption. No staging, commit, push or deployment.",
+  "otherContentPreserved": true
+}

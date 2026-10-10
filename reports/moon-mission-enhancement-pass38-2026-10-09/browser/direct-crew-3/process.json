@@ -1,0 +1,13 @@
+{
+  "pid": 19588,
+  "command": [
+    "node",
+    "--max-old-space-size=512",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\run-workflow.cjs",
+    "crew"
+  ],
+  "inputs": {
+    "stem_lab/stem_tool_moonmission.js": "4865ec6682a6187ec9bb335125b0d972037bfd9aca3bb858bdcee21fb3c15b64",
+    "desktop/web-app/public/stem_lab/stem_tool_moonmission.js": "4865ec6682a6187ec9bb335125b0d972037bfd9aca3bb858bdcee21fb3c15b64"
+  }
+}

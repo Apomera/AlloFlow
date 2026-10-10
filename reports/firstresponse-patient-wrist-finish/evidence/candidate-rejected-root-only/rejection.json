@@ -1,0 +1,570 @@
+{
+  "accepted": false,
+  "candidateSHA256": "dc9deade4909e37e9aa4918309541168696e808b7eb066575fea3fa91d574c7e",
+  "decisionBy": "Root with independent visual review",
+  "reason": "Adult native comparison passed, but the change was minor polish. The conspicuous wrist/palm edge remained, so root requested a deeper refinement before delivery.",
+  "successfulCPU": {
+    "cases": 30,
+    "assertions": 261909,
+    "negative": 2
+  },
+  "nativeScope": "Only adult-wide was completed for this rejected candidate; child and infant workflows and focused raw tests were not executed for it.",
+  "artifacts": [
+    {
+      "path": "accept-final-cpu.cjs",
+      "sha256": "330c7d9c3fba9aeb6babda6b83d37236b3cd87581262463581f426fbab3e5ed0",
+      "bytes": 2503
+    },
+    {
+      "path": "adjust-probe.cjs",
+      "sha256": "65e937c9dcdcba5162731ab225109267e13e1187493d1f069cf5628bfbbec618",
+      "bytes": 534
+    },
+    {
+      "path": "archive-root-only.cjs",
+      "sha256": "85f5e04b4051132f9771db5165943d64bf828e57ee2b190eac2ff4a313c35e24",
+      "bytes": 2206
+    },
+    {
+      "path": "audit-cpu-delivery.cjs",
+      "sha256": "c5e6759d731b22f9e5d2038cc30c304c94fa9c914bfca59d893d8f41dd811f7d",
+      "bytes": 2642
+    },
+    {
+      "path": "audit-preview-fixture.cjs",
+      "sha256": "a70115ee9038d214d8e064652ea2c1b8671946539cbfcadf8a385fd84e1a071f",
+      "bytes": 10345
+    },
+    {
+      "path": "author-candidate.cjs",
+      "sha256": "d0c322dcdcf27cdd8b9dcb759a155166d4a00e4725058d683c656b75c1549673",
+      "bytes": 5377
+    },
+    {
+      "path": "author-delivery.cjs",
+      "sha256": "57996a01291be66e939356083fe82ce71582b6b20269e98dfaade465537ee4d5",
+      "bytes": 6603
+    },
+    {
+      "path": "author-history.cjs",
+      "sha256": "8430f163b09a07aeb4f3326faf0b0b595e2318c915d48b758501f1b975f66aad",
+      "bytes": 1796
+    },
+    {
+      "path": "baseline.json",
+      "sha256": "e98f25ea113120a5e88ebfc6b2114b3632eae2b00fe9b90f4ad4c19bc3cec41e",
+      "bytes": 865
+    },
+    {
+      "path": "before.js",
+      "sha256": "69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242",
+      "bytes": 798252
+    },
+    {
+      "path": "candidate.js",
+      "sha256": "dc9deade4909e37e9aa4918309541168696e808b7eb066575fea3fa91d574c7e",
+      "bytes": 801272
+    },
+    {
+      "path": "checker-before-probe-adjustment.cjs.saved",
+      "sha256": "364be6cb0540bdac529943cd5f8561fadf79a17dc9aee7932e67030739a37902",
+      "bytes": 13678
+    },
+    {
+      "path": "correct-winding-check.cjs",
+      "sha256": "9c5780a69e894d380f20f58296573299f34e171cc365240031ec6a425abc945b",
+      "bytes": 1931
+    },
+    {
+      "path": "cpu-delivery-selftest/report.json",
+      "sha256": "0aa398a13b30b2e9a7ad898b9c18fdb464b9d8b8f652381e4de174595dc55c92",
+      "bytes": 129945
+    },
+    {
+      "path": "cpu-summary.json",
+      "sha256": "2e5456442b3f7b9fb45f81e3bfb193d01da1937c98b7b4773c24d50052f7ab5a",
+      "bytes": 1249
+    },
+    {
+      "path": "delivery-cpu-schema-review.json",
+      "sha256": "0f5a927e8861e97f55992c65df27e87df93328945dffad6be141fa9aa7b2c252",
+      "bytes": 1030
+    },
+    {
+      "path": "delivery-native.txt",
+      "sha256": "92e0c8de445179a6730d1d1c18907be6a9a6d3f88d2086a69c40ea486e48f903",
+      "bytes": 7947
+    },
+    {
+      "path": "delivery-raw-cpu.txt",
+      "sha256": "2bc262b6bf05b577e68df97998fe0eb718023efdac231214d70985cf5be8c7f7",
+      "bytes": 7156
+    },
+    {
+      "path": "delivery-readme.txt",
+      "sha256": "991109864e496875852f0e6a0a4e7ceffd8d79f11a80524271dd4a95b57d878f",
+      "bytes": 4119
+    },
+    {
+      "path": "delta.json",
+      "sha256": "c0b318571149cb0e88fc08e0fc91c7c48568e6bc91d8af3b475bdbe1f8c375d6",
+      "bytes": 3970
+    },
+    {
+      "path": "diagnose-winding.cjs",
+      "sha256": "ead3087a311267581685f7834a4053eae4831188b1bcca6426f7a6312d1c9037",
+      "bytes": 1601
+    },
+    {
+      "path": "early-check/shading-verification.json",
+      "sha256": "4365401c0da758c30b5ad8581aa185a8b41fbca852ed2fdf7c14c17dfd124f76",
+      "bytes": 2609
+    },
+    {
+      "path": "early-corrected/shading-verification.json",
+      "sha256": "6869c894a95dc539140983ed3f912127fdfd44b2963fd3a0338fb9b3117ec673",
+      "bytes": 5211
+    },
+    {
+      "path": "early-diagnostic/shading-verification.json",
+      "sha256": "4a9f3fbb415b12979695910d8fdbffa8ee31a82d1088a97f8af4faf513891a04",
+      "bytes": 2790
+    },
+    {
+      "path": "face-capture-png.cjs",
+      "sha256": "6009565cd97b35c874ff22325427e40823b4ff197118ea3870d0b2996bd30829",
+      "bytes": 1379
+    },
+    {
+      "path": "face-mount-window.cjs",
+      "sha256": "9e3d95fe4ce8ae16ca7d4a994d26250e064873d675b930fb23d63b33ba43b246",
+      "bytes": 665
+    },
+    {
+      "path": "finish-pass.cjs",
+      "sha256": "9f210ecf72d67b55774b9bdea6d5701378f93a15aba7096af58f56e5f00f7181",
+      "bytes": 38996
+    },
+    {
+      "path": "firstresponse-face-preview.spec.ts",
+      "sha256": "cfa7d4d8093a0e9d96f3fcaf352b70b7b842471e717dafe4fdd75c582db5d1da",
+      "bytes": 27058
+    },
+    {
+      "path": "firstresponse_patient_wrist_finish_delta.cjs",
+      "sha256": "e26987bc42eeef1a05dd5c013f2e387dddaf06cfd428c3c15de0346011b80058",
+      "bytes": 872
+    },
+    {
+      "path": "firstresponse_patient_wrist_finish_delta.json",
+      "sha256": "c0b318571149cb0e88fc08e0fc91c7c48568e6bc91d8af3b475bdbe1f8c375d6",
+      "bytes": 3970
+    },
+    {
+      "path": "fixture-audit.json",
+      "sha256": "e086ee11ef642ccf6e28b347669ecd721492dc3ac9816eb1e3a4bbbe80364f3f",
+      "bytes": 6789
+    },
+    {
+      "path": "fixture-selftest/firstresponse-face-preview.spec.ts.saved",
+      "sha256": "cfa7d4d8093a0e9d96f3fcaf352b70b7b842471e717dafe4fdd75c582db5d1da",
+      "bytes": 27058
+    },
+    {
+      "path": "fixture-selftest/native-evidence.json.saved",
+      "sha256": "0e3bb4fe70de03045cdaa04f8b480d4c3eb379e183ba56288c35f7e9cb11f511",
+      "bytes": 1059
+    },
+    {
+      "path": "fixture-selftest/run-face-browser.cjs.saved",
+      "sha256": "d7e162f49f95d390487c859ba25b26bb5544ffe4e3410aad346cd67dad54d8ea",
+      "bytes": 7839
+    },
+    {
+      "path": "geometry-contract/selftest-candidate.js",
+      "sha256": "dc9deade4909e37e9aa4918309541168696e808b7eb066575fea3fa91d574c7e",
+      "bytes": 801272
+    },
+    {
+      "path": "geometry-contract/shading-verification.json",
+      "sha256": "0aa398a13b30b2e9a7ad898b9c18fdb464b9d8b8f652381e4de174595dc55c92",
+      "bytes": 129945
+    },
+    {
+      "path": "geometry-contract-final/selftest-candidate.js",
+      "sha256": "dc9deade4909e37e9aa4918309541168696e808b7eb066575fea3fa91d574c7e",
+      "bytes": 801272
+    },
+    {
+      "path": "geometry-contract-final/shading-verification.json",
+      "sha256": "0aa398a13b30b2e9a7ad898b9c18fdb464b9d8b8f652381e4de174595dc55c92",
+      "bytes": 129945
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_arm_finish_delta.cjs",
+      "sha256": "a3b82eaa58296ed23c6e8021fa450f0148600b37cb41c26f9d7c5a5e37e05775",
+      "bytes": 999
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_arm_finish_delta.json",
+      "sha256": "de68e78d3411b4a6270c95230983f1a0297f1e2bf209e62c5ab9cd3661705b2a",
+      "bytes": 1033
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_brow_finish_delta.cjs",
+      "sha256": "04d1a5f7cf28a4a822549fd1d0e2a907676e03e96a5cb9496856c57eaac487ff",
+      "bytes": 999
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_brow_finish_delta.json",
+      "sha256": "dd081fa423a8f6df6ec5c19d76b5c1c34a3d98bf975d5528b8f305dddbe85464",
+      "bytes": 671
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_collar_refinement_delta.cjs",
+      "sha256": "d0cc687bdea49d31cf11128526d03cd44ee25ec1af4da20be2c2271e156a8814",
+      "bytes": 994
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_collar_refinement_delta.json",
+      "sha256": "eed676c225276ddbdb18d9ca89be8f20c00e2cea9d68f3a834a197d2a2e23e19",
+      "bytes": 1389
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_ear_lobe_delta.cjs",
+      "sha256": "f55538b9801790da8006ab42ded78bcf4d47aa162a4562564b2d9e3173109954",
+      "bytes": 979
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_ear_lobe_delta.json",
+      "sha256": "cf9050d4874dfa01f234a7bdffbf79381e91c55129d91edbd46b9f51bb313115",
+      "bytes": 885
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_ear_refinement_delta.cjs",
+      "sha256": "164feade528cd96ac34d47e18b8661704e4257bfcd674fb4b191277696161b95",
+      "bytes": 989
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_ear_refinement_delta.json",
+      "sha256": "f1dae0312d2adeb73b39c14721a81ecba206103749bb7db16cc3f937a9a88fc7",
+      "bytes": 13266
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_eyelid_finish_delta.cjs",
+      "sha256": "f869ac848e4e6355d9815450a80a5741d939d6339601c88e1d45152e1674d6e1",
+      "bytes": 1007
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_eyelid_finish_delta.json",
+      "sha256": "8abb0d277ff7494e8db02dacdcb3422518823d3ae66eb9ede2f62f89f6dd0ca1",
+      "bytes": 3677
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_face_refinement_delta.cjs",
+      "sha256": "7fa44791cd18e9c3e248996c829d1d34708d2741e7478d500e3ff40efdd541b3",
+      "bytes": 1018
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_face_refinement_delta.json",
+      "sha256": "9862ce1f10d4c15a1f4f421a5259be3d9ede3a3ca58468c23160abfd2b760a25",
+      "bytes": 4513
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_hand_comparison_delta.cjs",
+      "sha256": "57c130ef1d45e20ab7978fa1d088377f26f6b5c4b2b905b908c8e8d3db66367c",
+      "bytes": 1036
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_hand_comparison_delta.json",
+      "sha256": "7f2b259e501d92210cbf1dd2d084a6e0afa470a3638f7a013f93e6358d16ac54",
+      "bytes": 12733
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_hand_study_delta.cjs",
+      "sha256": "0c04e0064f1bfc9b7ec9029cc1d2454550373d7531878f0dc3d5ea4c0230860f",
+      "bytes": 1025
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_hand_study_delta.json",
+      "sha256": "f946d1a844a2fcaf691476a0cba0358ebc053442b9a36b812a2c4ccdae4c46bb",
+      "bytes": 21819
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_manikin_refinement_delta.cjs",
+      "sha256": "098f33a05a9936e096722dbc3d0e3e882d059b8d54387abcffe356fcb864321b",
+      "bytes": 1011
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_manikin_refinement_delta.json",
+      "sha256": "a26e93a81c4a0587ba3e642ada4360f1b4993d6722aa0e717fdf5e937f27e4d2",
+      "bytes": 4200
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_mouth_refinement_delta.cjs",
+      "sha256": "c9da6cf21954ff95b1d345f405781d3ceeaf66dfa81813da0d8b16b2467a3d8a",
+      "bytes": 1029
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_mouth_refinement_delta.json",
+      "sha256": "30618f6fa7ef014688989bb4cd4ae76f23e5958f25b88851303a8ff0983dab57",
+      "bytes": 444
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_mouth_surface_delta.cjs",
+      "sha256": "72a69701525c661d693b8a2ee9bf30b769df5c1aade1e472ac519a5d4c6ac35e",
+      "bytes": 1001
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_mouth_surface_delta.json",
+      "sha256": "5484053f23c07699fa4a97a44fc49522a6beceae58420f22f8374c394f4df9b4",
+      "bytes": 6748
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_neck_refinement_delta.cjs",
+      "sha256": "8d9d06c56bb71460f07b456307f0ba7f7b1f501e0f6ea3a2f78ed866ea42865c",
+      "bytes": 999
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_neck_refinement_delta.json",
+      "sha256": "4f19fd33af088bd3d20a5177d5fcd8bd722defa8c79fdf5a99ecf96b2012acc6",
+      "bytes": 1315
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_nose_contour_delta.cjs",
+      "sha256": "5681ac9f43d92d6318587b1148791906c8002ce723ed2f77a2b79980c3562078",
+      "bytes": 1005
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_nose_contour_delta.json",
+      "sha256": "a2a30ac8335c0ccb64ae48b6a3ed64f7b58e550a1dbfc786ae8876161d75e1f1",
+      "bytes": 409
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_nose_contrast_delta.cjs",
+      "sha256": "cc87c1278ce6ea30f8bc69388b7f6f8f10b4051ed96efc251b62a6476f71b5cf",
+      "bytes": 1011
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_nose_contrast_delta.json",
+      "sha256": "237030750e60f0e1e6476c081c27629ee4b5e79e889da06e726253a4fd3c93a0",
+      "bytes": 1813
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_patient_wrist_finish_delta.cjs",
+      "sha256": "e26987bc42eeef1a05dd5c013f2e387dddaf06cfd428c3c15de0346011b80058",
+      "bytes": 872
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_patient_wrist_finish_delta.json",
+      "sha256": "c0b318571149cb0e88fc08e0fc91c7c48568e6bc91d8af3b475bdbe1f8c375d6",
+      "bytes": 3970
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_rescuer_wrist_refinement_delta.cjs",
+      "sha256": "da873a22a651d7b9612dd6ce88e8a8bce81e26e1dcb44beb35018ef45594a7fb",
+      "bytes": 1063
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_rescuer_wrist_refinement_delta.json",
+      "sha256": "a3c73be1cd2ea6482cee979cadbbec50f3f3d4c01ee47ed80f81a627575f53a7",
+      "bytes": 4284
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_support_frame_delta.cjs",
+      "sha256": "e612631deacec6a6e7ba3bf6ea3a19e6b91323631379b961fcc6bef9efcae9dd",
+      "bytes": 1024
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_support_frame_delta.json",
+      "sha256": "e121d7817d02cf1bd9084465a12c06567e96823a8ac57fce39d15ed974528de6",
+      "bytes": 2188
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_wrist_shading_refinement_delta.cjs",
+      "sha256": "285a784f6adc74b5d62d5c38948ed5048557ed6edf170056289adef45ecf4d04",
+      "bytes": 1036
+    },
+    {
+      "path": "history-helper-sandbox/firstresponse_wrist_shading_refinement_delta.json",
+      "sha256": "03e4589125a00b734f423346ce41b1db3ff2717d9a6729e453989912aa1065ee",
+      "bytes": 3521
+    },
+    {
+      "path": "history-input-snapshot.json",
+      "sha256": "bf71415fdb4895d0583b7cda6f19ce8246032e9e89169fbdd97db1c3b0e98910",
+      "bytes": 10322
+    },
+    {
+      "path": "history-integration.json",
+      "sha256": "b32215243ecaa750a78af94ec09fec4c15d66573283cca0cb901ab9ed704616f",
+      "bytes": 8719
+    },
+    {
+      "path": "history-preservation.json",
+      "sha256": "10547ebc73c577e75b9e9b2316d3c7f663ce26ab0c42d5a611375b4256c3d10d",
+      "bytes": 21241
+    },
+    {
+      "path": "native-adult-wide/adult-wide-baseline-stage.png",
+      "sha256": "2a54c9d70c8193f8071eb98b3a786a4a8cc48df96f20a4d1c1a30b96d9c8d9e8",
+      "bytes": 87450
+    },
+    {
+      "path": "native-adult-wide/adult-wide-baseline-wrist.png",
+      "sha256": "b8a51df8983d6adb5d666dc4911961018b8de9d17baf0feff0f0363a41209a5e",
+      "bytes": 15997
+    },
+    {
+      "path": "native-adult-wide/adult-wide-candidate-stage.png",
+      "sha256": "57eeaf5e685b0b25cb3c7bc3d05d3f6b4a7e9acc4f035ddd19def6cd67e90710",
+      "bytes": 87320
+    },
+    {
+      "path": "native-adult-wide/adult-wide-candidate-wrist.png",
+      "sha256": "3f5b9728c097ad26ed10d138434728cfd3d9a2f73c11d319f7699dbb8a407905",
+      "bytes": 15872
+    },
+    {
+      "path": "native-adult-wide/adult-wide-evidence.json",
+      "sha256": "4e889fb1ebd0590c6488aaf0e39e34e840a2c77e55f723743b362ed14b25faee",
+      "bytes": 86921
+    },
+    {
+      "path": "native-adult-wide/artifacts/.last-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "bytes": 45
+    },
+    {
+      "path": "native-adult-wide/browser-run.json",
+      "sha256": "1c8a9a6bca23a9475cb165aad793d8efdc18f31c9ffe5bed89a73813d3b33529",
+      "bytes": 2927
+    },
+    {
+      "path": "native-adult-wide/browser-run.log",
+      "sha256": "115227ffd58407670c8686319d6ed1c652cdac4a1db5ed4e366888a80442a7af",
+      "bytes": 584
+    },
+    {
+      "path": "native-adult-wide/face-preview-metrics.json",
+      "sha256": "2cc58412621917ec89a9db57ff5897a1ad3dcb610d3e3ed4c4dcdf181d7f6776",
+      "bytes": 39766
+    },
+    {
+      "path": "native-adult-wide/inputs.json",
+      "sha256": "d909933e26095a4983662462bc800571ef5e2c882960ae50c0496df0a363ef0c",
+      "bytes": 3548
+    },
+    {
+      "path": "native-adult-wide/runner.json",
+      "sha256": "4c9c3758c9177deb96f8506293a92c7fd99965f2086a0a9dc8c98b5e48f1548e",
+      "bytes": 444
+    },
+    {
+      "path": "native-adult-wide/summary.json",
+      "sha256": "c7c6eb84b08960bc2a1a13e3e50d63bb38448d89dce547b7df31cd67b7646ae0",
+      "bytes": 973
+    },
+    {
+      "path": "patient-wrist-contract.cjs",
+      "sha256": "dfcb06b31b735eb58acd705a06ddc3acc4c5f196e8fa426b8f0c378af628b1d1",
+      "bytes": 5866
+    },
+    {
+      "path": "playwright-face.config.cjs",
+      "sha256": "dda618a55a673d8c544dfc13f4273c04d406d7bdd06c8734acddb93ebcdfe7be",
+      "bytes": 576
+    },
+    {
+      "path": "prepare-browser-fixture.cjs",
+      "sha256": "e15e58d7639775e78ce506dc2e8deec0016efb539ae23d111096c050315e772d",
+      "bytes": 7131
+    },
+    {
+      "path": "prepare-history.cjs",
+      "sha256": "4ef07780a2f5e7e04190edec4877dfb0513d75591b5a52e54e8f109268c4582d",
+      "bytes": 11110
+    },
+    {
+      "path": "process-memory.cjs",
+      "sha256": "4ac4970784c79b97f04c18ca6082fb3b0c44d6267ec76cd0e5e76d6afe69a8ae",
+      "bytes": 321
+    },
+    {
+      "path": "reclaimed-archived-copies.json",
+      "sha256": "84ff17e82f7b837c1fd2b78c0703582f83cdc47975f5c673e8393238dadf301a",
+      "bytes": 263800
+    },
+    {
+      "path": "run-face-browser.cjs",
+      "sha256": "d7e162f49f95d390487c859ba25b26bb5544ffe4e3410aad346cd67dad54d8ea",
+      "bytes": 7839
+    },
+    {
+      "path": "run-raw-wrist.cjs",
+      "sha256": "dc8a62a503a1d23121cc25184b795ec51542ea41315c2e3825b3dfb34eca5b81",
+      "bytes": 5145
+    },
+    {
+      "path": "runtime-snapshot/desktop/app-build/stem_lab/stem_tool_firstresponse.js",
+      "sha256": "69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242",
+      "bytes": 798252
+    },
+    {
+      "path": "runtime-snapshot/desktop/web-app/build/stem_lab/stem_tool_firstresponse.js",
+      "sha256": "69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242",
+      "bytes": 798252
+    },
+    {
+      "path": "runtime-snapshot/desktop/web-app/public/stem_lab/stem_tool_firstresponse.js",
+      "sha256": "69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242",
+      "bytes": 798252
+    },
+    {
+      "path": "runtime-snapshot/stem_lab/stem_tool_firstresponse.js",
+      "sha256": "69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242",
+      "bytes": 798252
+    },
+    {
+      "path": "snapshot-history.cjs",
+      "sha256": "45548f603c275ee0774c7f7b8b2ae1a82fe51e302cbd8ddc7402d2f26d80aeb8",
+      "bytes": 2224
+    },
+    {
+      "path": "summarize-cpu.cjs",
+      "sha256": "98d8dbe0bd5c51c8a27e260005af13d1a2ce374a62cd01346334e2cd76f2370e",
+      "bytes": 1400
+    },
+    {
+      "path": "task-processes.ps1",
+      "sha256": "df0294eb67d3991da28fbe7a8d9797c1da98dfb663bbb7f60a8fbfa044f10bb6",
+      "bytes": 263
+    },
+    {
+      "path": "verify-patient-wrist-finish.cjs",
+      "sha256": "2e50fb939394c862fba3409ca7bfe86a2d284850ca849255c8b288ccfb164a5e",
+      "bytes": 14262
+    },
+    {
+      "path": "winding-diagnosis.json",
+      "sha256": "670501e1597afe69f65d523d99e18c636cfb51775e7280d347b01ca873328140",
+      "bytes": 1992
+    },
+    {
+      "path": "winding-diagnostics/selftest-disk-failure.js.saved",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "winding-diagnostics/shading-verification.json",
+      "sha256": "c4c3fb866b6fe13dcb58422ce20eb8b6d66420eeff852389013969f9b29aadbb",
+      "bytes": 113343
+    },
+    {
+      "path": "winding-diagnostics/verify-patient-wrist-finish.cjs.saved",
+      "sha256": "a76fff54e09a9eed8e15680a30b916b5a863cc24260bfc1300f0f3e4c57f4012",
+      "bytes": 13674
+    }
+  ],
+  "sharedWrites": 0
+}

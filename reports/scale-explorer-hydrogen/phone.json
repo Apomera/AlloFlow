@@ -1,0 +1,490 @@
+{
+  "initial": {
+    "stats": {
+      "state": "hydrogen 1s",
+      "stationary": true,
+      "sampling": "equal-weight deterministic positions",
+      "seed": 20261007,
+      "sampleCount": 14000,
+      "rejectedOutsideCutoff": 48,
+      "bohrRadiusPM": 52.9177210544,
+      "bohrUnits": 0.49922378353207547,
+      "referenceMeters": 1.06e-10,
+      "bodyReferenceMeters": 1.06e-10,
+      "bodyExtent": 1,
+      "reference": "catalogue diameter",
+      "cutoffRadiusA0": 5,
+      "cutoffRadiusUnits": 2.4961189176603775,
+      "cutoffProbability": 0.9972306042844884,
+      "omittedProbability": 0.0027693957155116022,
+      "densityFormula": "exp(-2r/a0)/(pi*a0^3)",
+      "radialFormula": "4r^2 exp(-2r) in a0 units",
+      "meanRadiusA0": 1.5038793641522725,
+      "meanSquareRadiusA0": 2.986142053919609,
+      "sampleCentroid": [
+        0.0016931098830538446,
+        0.0035353597845148126,
+        0.0026025186591924826
+      ],
+      "nucleusMarker": "position cross; no proton-sized sphere",
+      "section": "central z=0 density plane",
+      "rayMarchSteps": 64,
+      "view": "cloud",
+      "probability": 90,
+      "detailId": "",
+      "comparison": false,
+      "displayView": "cloud",
+      "selectedRadiusA0": 2.6611601689171067,
+      "selectedRadiusUnits": 1.328514448111655
+    },
+    "type": "webgl",
+    "draws": 180,
+    "identity": [
+      [
+        "hydrogen-cloud-samples",
+        "44CDD5B9-C561-450B-B55B-E57EE7A407FF",
+        "734A6748-155B-4EB0-B9A8-DEAC81D14ABC"
+      ],
+      [
+        "hydrogen-density-volume",
+        "7F906012-1B0D-41FA-9A47-2DAA02DF102F",
+        "A20B1C47-89B2-445F-BF3C-CDD83BE7EEAA"
+      ],
+      [
+        "hydrogen-central-density-section",
+        "CE5CC7E4-C7B9-445B-867A-FC3B96AE5D0D",
+        "6DCD0039-EA44-4101-AFA9-1D1002775B6D"
+      ],
+      [
+        "hydrogen-shell-xy",
+        "9CA8471C-7E44-4870-9537-B047586E6389",
+        "AC18EBFE-809B-4B4D-844B-94AB2A8A6070"
+      ],
+      [
+        "hydrogen-bohr-xy",
+        "F70E92C2-76E5-4BB1-A1F8-BB1FA621D261",
+        "EA93E0AD-3A0B-42E3-8F73-212EC6845EAE"
+      ],
+      [
+        "hydrogen-shell-xz",
+        "EC051477-10A7-462A-8A34-30D9487261BB",
+        "AC18EBFE-809B-4B4D-844B-94AB2A8A6070"
+      ],
+      [
+        "hydrogen-bohr-xz",
+        "CE5D6427-E286-4EFD-9DBB-07E420DD7595",
+        "EA93E0AD-3A0B-42E3-8F73-212EC6845EAE"
+      ],
+      [
+        "hydrogen-shell-yz",
+        "B12F8885-2145-4A0D-AC05-236EDA29C852",
+        "AC18EBFE-809B-4B4D-844B-94AB2A8A6070"
+      ],
+      [
+        "hydrogen-bohr-yz",
+        "635BA580-6CB7-4D7B-964A-CEB6CE0A61A5",
+        "EA93E0AD-3A0B-42E3-8F73-212EC6845EAE"
+      ],
+      [
+        "hydrogen-section-density-0.5",
+        "AED488A8-A041-4E11-A327-5FB36BA3847B",
+        "0587AF04-527E-4E34-8566-FDF6E4FF91B3"
+      ],
+      [
+        "hydrogen-section-density-1",
+        "83701C03-D120-4B1E-B2D0-1FA2C01AD862",
+        "0587AF04-527E-4E34-8566-FDF6E4FF91B3"
+      ],
+      [
+        "hydrogen-section-density-1.5",
+        "DE29F3FB-885A-4BAC-B112-160F059A9855",
+        "0587AF04-527E-4E34-8566-FDF6E4FF91B3"
+      ],
+      [
+        "hydrogen-section-density-2",
+        "C7DE1C76-0C02-4E71-B982-B899A0628CDB",
+        "0587AF04-527E-4E34-8566-FDF6E4FF91B3"
+      ],
+      [
+        "hydrogen-section-density-3",
+        "313E5C05-D5DF-4C6D-ABC8-B2695689D8A9",
+        "0587AF04-527E-4E34-8566-FDF6E4FF91B3"
+      ],
+      [
+        "hydrogen-section-density-4",
+        "3551DDD6-6D3D-4406-BDCD-4B2F8E32D97F",
+        "0587AF04-527E-4E34-8566-FDF6E4FF91B3"
+      ],
+      [
+        "hydrogen-nuclear-position-marker",
+        "DAFD5EC2-F479-4D4A-9A8F-4073FF895629",
+        "E0DE84BE-DF5D-47B2-99C8-9602D47426EB"
+      ],
+      [
+        "hydrogen-selected-radial-measure",
+        "53042D97-4D4C-43A7-9B51-F2812C4818C0",
+        "743C338B-A656-468B-AA3C-2EF25F630617"
+      ]
+    ],
+    "reference": 1,
+    "scale": 3,
+    "ratio": null,
+    "dimension": "x",
+    "view": "PerspectiveCamera",
+    "cloud": true,
+    "volume": true,
+    "section": false,
+    "shell": true,
+    "bohr": true,
+    "marker": true,
+    "points": 14000,
+    "maxShellProjection": 0.4057148094624854,
+    "canvasHeight": 488,
+    "aim": "0.0000,0.0000,0.0000"
+  },
+  "saved": {
+    "itemId": "hydrogen",
+    "detailId": "",
+    "size": 1.06e-10,
+    "you": false,
+    "note": "The cloud extends beyond the reference diameter.",
+    "zoom": 1.8,
+    "yaw": -0.19999999999999998,
+    "pitch": 0.12,
+    "sunAngle": 45,
+    "nebulaReveal": false,
+    "nebulaInside": false,
+    "nebulaPose": null,
+    "nebulaSpeed": 0.8,
+    "terrainRelief": 8,
+    "riverKm": 0,
+    "terrainPoint": {
+      "east": 0,
+      "north": 900
+    },
+    "terrainFlight": null,
+    "terrainFlightSpeed": 180,
+    "terrainFlightWaypoint": null,
+    "pollenGrowth": 0,
+    "cutaway": false,
+    "view": "atlas",
+    "hydrogenView": "section",
+    "hydrogenProbability": 95
+  },
+  "restored": {
+    "stats": {
+      "state": "hydrogen 1s",
+      "stationary": true,
+      "sampling": "equal-weight deterministic positions",
+      "seed": 20261007,
+      "sampleCount": 14000,
+      "rejectedOutsideCutoff": 48,
+      "bohrRadiusPM": 52.9177210544,
+      "bohrUnits": 0.49922378353207547,
+      "referenceMeters": 1.06e-10,
+      "bodyReferenceMeters": 1.06e-10,
+      "bodyExtent": 1,
+      "reference": "catalogue diameter",
+      "cutoffRadiusA0": 5,
+      "cutoffRadiusUnits": 2.4961189176603775,
+      "cutoffProbability": 0.9972306042844884,
+      "omittedProbability": 0.0027693957155116022,
+      "densityFormula": "exp(-2r/a0)/(pi*a0^3)",
+      "radialFormula": "4r^2 exp(-2r) in a0 units",
+      "meanRadiusA0": 1.5038793641522725,
+      "meanSquareRadiusA0": 2.986142053919609,
+      "sampleCentroid": [
+        0.0016931098830538446,
+        0.0035353597845148126,
+        0.0026025186591924826
+      ],
+      "nucleusMarker": "position cross; no proton-sized sphere",
+      "section": "central z=0 density plane",
+      "rayMarchSteps": 64,
+      "view": "section",
+      "probability": 95,
+      "detailId": "",
+      "comparison": false,
+      "displayView": "section",
+      "selectedRadiusA0": 3.1478968109359897,
+      "selectedRadiusUnits": 1.5715049561240193
+    },
+    "type": "webgl",
+    "draws": 328,
+    "identity": [
+      [
+        "hydrogen-cloud-samples",
+        "44CDD5B9-C561-450B-B55B-E57EE7A407FF",
+        "734A6748-155B-4EB0-B9A8-DEAC81D14ABC"
+      ],
+      [
+        "hydrogen-density-volume",
+        "7F906012-1B0D-41FA-9A47-2DAA02DF102F",
+        "A20B1C47-89B2-445F-BF3C-CDD83BE7EEAA"
+      ],
+      [
+        "hydrogen-central-density-section",
+        "CE5CC7E4-C7B9-445B-867A-FC3B96AE5D0D",
+        "6DCD0039-EA44-4101-AFA9-1D1002775B6D"
+      ],
+      [
+        "hydrogen-shell-xy",
+        "9CA8471C-7E44-4870-9537-B047586E6389",
+        "AC18EBFE-809B-4B4D-844B-94AB2A8A6070"
+      ],
+      [
+        "hydrogen-bohr-xy",
+        "F70E92C2-76E5-4BB1-A1F8-BB1FA621D261",
+        "EA93E0AD-3A0B-42E3-8F73-212EC6845EAE"
+      ],
+      [
+        "hydrogen-shell-xz",
+        "EC051477-10A7-462A-8A34-30D9487261BB",
+        "AC18EBFE-809B-4B4D-844B-94AB2A8A6070"
+      ],
+      [
+        "hydrogen-bohr-xz",
+        "CE5D6427-E286-4EFD-9DBB-07E420DD7595",
+        "EA93E0AD-3A0B-42E3-8F73-212EC6845EAE"
+      ],
+      [
+        "hydrogen-shell-yz",
+        "B12F8885-2145-4A0D-AC05-236EDA29C852",
+        "AC18EBFE-809B-4B4D-844B-94AB2A8A6070"
+      ],
+      [
+        "hydrogen-bohr-yz",
+        "635BA580-6CB7-4D7B-964A-CEB6CE0A61A5",
+        "EA93E0AD-3A0B-42E3-8F73-212EC6845EAE"
+      ],
+      [
+        "hydrogen-section-density-0.5",
+        "AED488A8-A041-4E11-A327-5FB36BA3847B",
+        "0587AF04-527E-4E34-8566-FDF6E4FF91B3"
+      ],
+      [
+        "hydrogen-section-density-1",
+        "83701C03-D120-4B1E-B2D0-1FA2C01AD862",
+        "0587AF04-527E-4E34-8566-FDF6E4FF91B3"
+      ],
+      [
+        "hydrogen-section-density-1.5",
+        "DE29F3FB-885A-4BAC-B112-160F059A9855",
+        "0587AF04-527E-4E34-8566-FDF6E4FF91B3"
+      ],
+      [
+        "hydrogen-section-density-2",
+        "C7DE1C76-0C02-4E71-B982-B899A0628CDB",
+        "0587AF04-527E-4E34-8566-FDF6E4FF91B3"
+      ],
+      [
+        "hydrogen-section-density-3",
+        "313E5C05-D5DF-4C6D-ABC8-B2695689D8A9",
+        "0587AF04-527E-4E34-8566-FDF6E4FF91B3"
+      ],
+      [
+        "hydrogen-section-density-4",
+        "3551DDD6-6D3D-4406-BDCD-4B2F8E32D97F",
+        "0587AF04-527E-4E34-8566-FDF6E4FF91B3"
+      ],
+      [
+        "hydrogen-nuclear-position-marker",
+        "DAFD5EC2-F479-4D4A-9A8F-4073FF895629",
+        "E0DE84BE-DF5D-47B2-99C8-9602D47426EB"
+      ],
+      [
+        "hydrogen-selected-radial-measure",
+        "53042D97-4D4C-43A7-9B51-F2812C4818C0",
+        "743C338B-A656-468B-AA3C-2EF25F630617"
+      ]
+    ],
+    "reference": 1,
+    "scale": 3,
+    "ratio": null,
+    "dimension": "x",
+    "view": "PerspectiveCamera",
+    "cloud": false,
+    "volume": false,
+    "section": true,
+    "shell": true,
+    "bohr": true,
+    "marker": true,
+    "points": 14000,
+    "maxShellProjection": 0.8958650717417856,
+    "canvasHeight": 488,
+    "aim": "0.0000,0.0000,0.0000"
+  },
+  "again": {
+    "itemId": "hydrogen",
+    "detailId": "",
+    "size": 1.06e-10,
+    "you": false,
+    "note": "The cloud extends beyond the reference diameter.",
+    "zoom": 1.8,
+    "yaw": -0.19999999999999996,
+    "pitch": 0.12,
+    "sunAngle": 45,
+    "nebulaReveal": false,
+    "nebulaInside": false,
+    "nebulaPose": null,
+    "nebulaSpeed": 0.8,
+    "terrainRelief": 8,
+    "riverKm": 0,
+    "terrainPoint": {
+      "east": 0,
+      "north": 900
+    },
+    "terrainFlight": null,
+    "terrainFlightSpeed": 180,
+    "terrainFlightWaypoint": null,
+    "pollenGrowth": 0,
+    "cutaway": false,
+    "view": "atlas",
+    "hydrogenView": "section",
+    "hydrogenProbability": 95
+  },
+  "compared": {
+    "stats": {
+      "state": "hydrogen 1s",
+      "stationary": true,
+      "sampling": "equal-weight deterministic positions",
+      "seed": 20261007,
+      "sampleCount": 14000,
+      "rejectedOutsideCutoff": 48,
+      "bohrRadiusPM": 52.9177210544,
+      "bohrUnits": 0.49922378353207547,
+      "referenceMeters": 1.06e-10,
+      "bodyReferenceMeters": 1.06e-10,
+      "bodyExtent": 1,
+      "reference": "catalogue diameter",
+      "cutoffRadiusA0": 5,
+      "cutoffRadiusUnits": 2.4961189176603775,
+      "cutoffProbability": 0.9972306042844884,
+      "omittedProbability": 0.0027693957155116022,
+      "densityFormula": "exp(-2r/a0)/(pi*a0^3)",
+      "radialFormula": "4r^2 exp(-2r) in a0 units",
+      "meanRadiusA0": 1.5038793641522725,
+      "meanSquareRadiusA0": 2.986142053919609,
+      "sampleCentroid": [
+        0.0016931098830538446,
+        0.0035353597845148126,
+        0.0026025186591924826
+      ],
+      "nucleusMarker": "position cross; no proton-sized sphere",
+      "section": "central z=0 density plane",
+      "rayMarchSteps": 64,
+      "view": "cloud",
+      "probability": 90,
+      "detailId": "",
+      "comparison": true,
+      "displayView": "cloud",
+      "selectedRadiusA0": 2.6611601689171067,
+      "selectedRadiusUnits": 1.328514448111655
+    },
+    "type": "webgl",
+    "draws": 362,
+    "identity": [
+      [
+        "hydrogen-cloud-samples",
+        "44CDD5B9-C561-450B-B55B-E57EE7A407FF",
+        "734A6748-155B-4EB0-B9A8-DEAC81D14ABC"
+      ],
+      [
+        "hydrogen-density-volume",
+        "7F906012-1B0D-41FA-9A47-2DAA02DF102F",
+        "A20B1C47-89B2-445F-BF3C-CDD83BE7EEAA"
+      ],
+      [
+        "hydrogen-central-density-section",
+        "CE5CC7E4-C7B9-445B-867A-FC3B96AE5D0D",
+        "6DCD0039-EA44-4101-AFA9-1D1002775B6D"
+      ],
+      [
+        "hydrogen-shell-xy",
+        "9CA8471C-7E44-4870-9537-B047586E6389",
+        "AC18EBFE-809B-4B4D-844B-94AB2A8A6070"
+      ],
+      [
+        "hydrogen-bohr-xy",
+        "F70E92C2-76E5-4BB1-A1F8-BB1FA621D261",
+        "EA93E0AD-3A0B-42E3-8F73-212EC6845EAE"
+      ],
+      [
+        "hydrogen-shell-xz",
+        "EC051477-10A7-462A-8A34-30D9487261BB",
+        "AC18EBFE-809B-4B4D-844B-94AB2A8A6070"
+      ],
+      [
+        "hydrogen-bohr-xz",
+        "CE5D6427-E286-4EFD-9DBB-07E420DD7595",
+        "EA93E0AD-3A0B-42E3-8F73-212EC6845EAE"
+      ],
+      [
+        "hydrogen-shell-yz",
+        "B12F8885-2145-4A0D-AC05-236EDA29C852",
+        "AC18EBFE-809B-4B4D-844B-94AB2A8A6070"
+      ],
+      [
+        "hydrogen-bohr-yz",
+        "635BA580-6CB7-4D7B-964A-CEB6CE0A61A5",
+        "EA93E0AD-3A0B-42E3-8F73-212EC6845EAE"
+      ],
+      [
+        "hydrogen-section-density-0.5",
+        "AED488A8-A041-4E11-A327-5FB36BA3847B",
+        "0587AF04-527E-4E34-8566-FDF6E4FF91B3"
+      ],
+      [
+        "hydrogen-section-density-1",
+        "83701C03-D120-4B1E-B2D0-1FA2C01AD862",
+        "0587AF04-527E-4E34-8566-FDF6E4FF91B3"
+      ],
+      [
+        "hydrogen-section-density-1.5",
+        "DE29F3FB-885A-4BAC-B112-160F059A9855",
+        "0587AF04-527E-4E34-8566-FDF6E4FF91B3"
+      ],
+      [
+        "hydrogen-section-density-2",
+        "C7DE1C76-0C02-4E71-B982-B899A0628CDB",
+        "0587AF04-527E-4E34-8566-FDF6E4FF91B3"
+      ],
+      [
+        "hydrogen-section-density-3",
+        "313E5C05-D5DF-4C6D-ABC8-B2695689D8A9",
+        "0587AF04-527E-4E34-8566-FDF6E4FF91B3"
+      ],
+      [
+        "hydrogen-section-density-4",
+        "3551DDD6-6D3D-4406-BDCD-4B2F8E32D97F",
+        "0587AF04-527E-4E34-8566-FDF6E4FF91B3"
+      ],
+      [
+        "hydrogen-nuclear-position-marker",
+        "DAFD5EC2-F479-4D4A-9A8F-4073FF895629",
+        "E0DE84BE-DF5D-47B2-99C8-9602D47426EB"
+      ],
+      [
+        "hydrogen-selected-radial-measure",
+        "53042D97-4D4C-43A7-9B51-F2812C4818C0",
+        "743C338B-A656-468B-AA3C-2EF25F630617"
+      ]
+    ],
+    "reference": 0.9999999999999998,
+    "scale": 1.1563636363636365,
+    "ratio": 2.594339622641509,
+    "dimension": "x",
+    "view": "OrthographicCamera",
+    "cloud": true,
+    "volume": true,
+    "section": false,
+    "shell": false,
+    "bohr": false,
+    "marker": false,
+    "points": 14000,
+    "maxShellProjection": 0.5416443323177667,
+    "canvasHeight": 438,
+    "aim": "0.0000,0.0000,0.0000"
+  },
+  "errors": []
+}

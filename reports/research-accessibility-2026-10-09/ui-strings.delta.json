@@ -1,0 +1,8 @@
+{
+  "input": {
+    "research_transcript_results": "{count} matching excerpts. Page {page} of {pages}.",
+    "research_clip_format": "Time in seconds, minutes:seconds, or hours:minutes:seconds.",
+    "research_paste_disclosure": "Paste text",
+    "research_cancelled": "Research cancelled."
+  }
+}

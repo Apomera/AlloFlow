@@ -1,0 +1,36 @@
+{
+  "mode": "unit",
+  "label": "unit-1",
+  "start": "2026-10-10T02:01:26.775Z",
+  "startHashes": {
+    "stem_lab/stem_tool_dissection.js": "e550fd7ca87d375c12ac5a7b4b8610f8e8693593e507bbeb22563a90df38f7d1",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "e550fd7ca87d375c12ac5a7b4b8610f8e8693593e507bbeb22563a90df38f7d1",
+    "tests/dissection_lab_improvements.test.js": "7c26ad56c4e9bb87a0ca214e30ea4d09e2943f003d5295b95957726736976238",
+    "tests/dissection_replay_evidence.test.js": "4b81b875cba5f3f6b79fe9acddf6cffc894b6216d91f32de89cd8b2921fed58d"
+  },
+  "args": [
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/dissection_lab_improvements.test.js",
+    "tests/dissection_replay_evidence.test.js",
+    "--pool=threads",
+    "--maxWorkers=1",
+    "--no-file-parallelism",
+    "--reporter=verbose",
+    "--reporter=json",
+    "--outputFile=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-replay-evidence-2026-10-09\\unit-1\\results.json",
+    "--testNamePattern=replay evidence|persistent, accessible procedural instrument|renders guided instruments"
+  ],
+  "freeMiB": 757.0546875,
+  "pid": 3772,
+  "exitCode": 0,
+  "signal": null,
+  "end": "2026-10-10T02:01:55.032Z",
+  "endHashes": {
+    "stem_lab/stem_tool_dissection.js": "e550fd7ca87d375c12ac5a7b4b8610f8e8693593e507bbeb22563a90df38f7d1",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "e550fd7ca87d375c12ac5a7b4b8610f8e8693593e507bbeb22563a90df38f7d1",
+    "tests/dissection_lab_improvements.test.js": "7c26ad56c4e9bb87a0ca214e30ea4d09e2943f003d5295b95957726736976238",
+    "tests/dissection_replay_evidence.test.js": "4b81b875cba5f3f6b79fe9acddf6cffc894b6216d91f32de89cd8b2921fed58d"
+  },
+  "inputHashesStable": true
+}

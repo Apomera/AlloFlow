@@ -51,10 +51,13 @@ function ownedInjection(shader,chunk){
   return shader.fragmentShader.slice(from,end).trim();
 }
 const actual=assembled();
+// Execute the actual scalar geology helpers when testing the inherited shallow
+// region. Pass61's shelf/deep material and gradients have their own live tests.
+const shelfHelpers=[...actual.fragmentShader.matchAll(/float (clShelf\w+)\(([^)]*)\)\{([^}]+)\}/g)].map(([,name,args,body])=>'function '+name+'('+args.replace(/float /g,'')+'){'+body.replace(/\bfloat\s+/g,'let ')+'}').join('\n');
 const colorSnippet=ownedInjection(actual,'color_fragment');
 const reliefSnippet=ownedInjection(actual,'normal_fragment_maps');
 const roughnessSnippet=ownedInjection(actual,'roughnessmap_fragment');
-const colorWrite=onlyMatch(colorSnippet,/diffuseColor\.rgb\*=([^\n]+);/g,'actual albedo write');
+const colorWrite=onlyMatch(colorSnippet,/diffuseColor\.rgb\*=([^\n]+clSandDownwelling\));/g,'actual albedo write');
 const colorPrefix=colorSnippet.slice(0,colorWrite.index).trim();
 const albedoExpression=colorWrite[1].slice(0,colorWrite[1].indexOf('*mix('));
 if(!albedoExpression||!colorWrite[1].includes('*mix('))throw new Error('Cannot isolate the actual pre-downwelling albedo factor');
@@ -86,12 +89,12 @@ const smoothstep=(low,high,value)=>{const t=clamp((value-low)/(high-low),0,1);re
 function numerical(enabled){
   const numericColor=capabilityBranch(colorPrefix,enabled),numericRelief=capabilityBranch(closedRawRelief,enabled),numericRoughness=capabilityBranch(roughnessSnippet,enabled);
   const program=scalarize(numericColor+'\n'+numericRelief+'\n'+numericRoughness);
-  const component=new Function('clSandWorld','fwidth','vec2','sin','cos','smoothstep','clamp','roughnessFactor',program+'\nreturn {phase:clRipplePhase,patch:clPatches,wave:clRippleWave,aa:clRippleAA,aa2:clRippleHarmonicAA,amplitude:'+amplitudeExpression+',height:('+amplitudeExpression+')*clRippleWave,albedo:'+albedoExpression+',roughness:roughnessFactor,raw:'+(enabled?'clSandGradient':'0')+'};');
+  const component=new Function('clSandWorld','fwidth','vec2','sin','cos','smoothstep','clamp','roughnessFactor','mix','sqrt',shelfHelpers+'\n'+program+'\nreturn {phase:clRipplePhase,patch:clPatches,wave:clRippleWave,aa:clRippleAA,aa2:clRippleHarmonicAA,amplitude:'+amplitudeExpression+',height:('+amplitudeExpression+')*clRippleWave,albedo:'+albedoExpression+',roughness:roughnessFactor,raw:'+(enabled?'clSandGradient':'0')+'};');
   const cap=enabled?new Function('clSandGradient','min','max','length',capWrite+';return clSandGradient;'):()=>0;
   return{
     ownedSource:numericColor+'\n'+numericRelief+'\n'+numericRoughness,
     at(x,z,footprint){
-      const world={x,z},run=axis=>component(world,()=>footprint,(a,b)=>axis?b:a,Math.sin,Math.cos,smoothstep,clamp,0.94);
+      const world={x,y:0,z},run=axis=>component(world,()=>footprint,(a,b)=>axis?b:a,Math.sin,Math.cos,smoothstep,clamp,0.94,(a,b,t)=>a+(b-a)*t,Math.sqrt);
       const xSample=run(0),zSample=run(1),raw=[xSample.raw,zSample.raw],magnitude=Math.hypot(...raw);
       return{...xSample,raw,capped:raw.map(value=>cap(value,Math.min,Math.max,()=>magnitude))};
     }
@@ -104,11 +107,12 @@ function liveMaterial(isWebGL2,derivatives){
   const live=build(THREE,visualMath,renderer,floorGeo,sandTex,scene);
   return{...live,floorGeo,sandTex,requested,dispose(){floorGeo.dispose();sandTex.dispose();live.floor.material.dispose();}};
 }
-const xs=[-500,-498.0001,-498,-497.9999,-18.0001,-18,-6,0,6,17.9999,18,18.0001,498,500];
+// x<=24 is the actual shallow shelf; keep distant world-coordinate coverage.
+const xs=[-500,-498.0001,-498,-497.9999,-18.0001,-18,-6,0,6,17.9999,18,18.0001,23.9999,24];
 const zs=[-500,-498,-18,-6,0,6,18,497.9999,498,500];
 const finiteValues=row=>[row.phase,row.patch,row.wave,row.aa,row.aa2,row.amplitude,row.height,row.albedo,row.roughness,...row.raw,...row.capped];
 
-describe('Cephalopod Hunter bounded static sand relief',()=>{
+describe('Cephalopod Hunter inherited shallow static sand relief',()=>{
   it('assembles the actual r128 shader and floor material with shared downwelling, capability defines and no extra texture lookup or RNG',()=>{
     expect(THREE.REVISION).toBe('128');
     expect(THREE.ShaderChunk.roughnessmap_fragment).toContain('float roughnessFactor = roughness;');
@@ -157,7 +161,7 @@ describe('Cephalopod Hunter bounded static sand relief',()=>{
     }
     // Both sides of an actual twelve-unit snapped-tile boundary use continuous
     // world coordinates, rather than restarting the relief in a local tile.
-    for(const boundary of [-498,-18,-6,6,18,498]){
+    for(const boundary of [-498,-18,-6,6,18]){
       const a=field.at(boundary-epsilon,3.17,0),b=field.at(boundary+epsilon,3.17,0);
       expect(Math.abs(a.height-b.height)).toBeLessThan(0.0001);
       expect(Math.abs(a.albedo-b.albedo)).toBeLessThan(0.0001);

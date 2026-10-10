@@ -1,0 +1,191 @@
+{
+  "completed": true,
+  "pins": {
+    "stem_lab/universe_flight_scene.js": "11c9f95d62c511ea9b4575598c6847a53c1fc1f37e04e4cd976916d53ef7ee4b",
+    "stem_lab/stem_tool_universe.js": "0bcb80a32407030204eb5422b298e6fa00285d501726d871df8a6ec60330898f"
+  },
+  "harnessSha256": "b214483b38af946ea7a581d745dd42a4af875fec58cf5cf0366e210831bc67b8",
+  "workflows": [
+    {
+      "name": "desktop-toggle",
+      "poseAndClocksUnchanged": true,
+      "pixelsDiffer": true,
+      "exactPixelsOnReturn": true
+    },
+    {
+      "name": "toggle-pauses-running-route",
+      "poseAndClocksUnchanged": true
+    },
+    {
+      "name": "inspection-and-detour",
+      "sharedState": true,
+      "scenicRetainsDust": true,
+      "backRestoresDust": true,
+      "routeReturnExact": true
+    },
+    {
+      "name": "saved-captured-and-exported",
+      "savedDust": false,
+      "savedRestore": true,
+      "captureMetadata": true,
+      "captureRestoreBoth": true,
+      "exportContainsDust": true,
+      "exportCheck": "Generated Blob text; browser download save unavailable on this host"
+    },
+    {
+      "name": "legacy-saved-view",
+      "missingDustDefaultsOn": true
+    },
+    {
+      "name": "phone-and-fullscreen",
+      "width": 320,
+      "sharedState": true,
+      "poseAndClocksUnchanged": true
+    },
+    {
+      "name": "display-reset",
+      "dustOn": true
+    }
+  ],
+  "accessibility": [
+    {
+      "name": "desktop-display",
+      "violations": []
+    },
+    {
+      "name": "desktop-inspector",
+      "violations": []
+    },
+    {
+      "name": "comparison-metadata",
+      "violations": []
+    },
+    {
+      "name": "phone-display",
+      "violations": []
+    },
+    {
+      "name": "phone-inspector",
+      "violations": []
+    },
+    {
+      "name": "phone-fullscreen-compose",
+      "violations": []
+    }
+  ],
+  "captures": [
+    {
+      "name": "desktop-dust-display",
+      "file": "desktop-dust-display.png",
+      "sha256": "3683543c0db673698b31a9e9a915400cebd324f3b0fe41bc4ee25a909b71bc8b"
+    },
+    {
+      "name": "desktop-dust-inspector",
+      "file": "desktop-dust-inspector.png",
+      "sha256": "e952ebb7d87df5281bb82f7686ce2cb8761155b512d4ae3d3e0befe97c05bc58"
+    },
+    {
+      "name": "dust-comparison",
+      "file": "dust-comparison.png",
+      "sha256": "0cfc79b9ee441cb28d130092655c8b0a4ba6c906c5c54056366b77cc9e70c69c"
+    },
+    {
+      "name": "phone-dust-display",
+      "file": "phone-dust-display.png",
+      "sha256": "ddddcd3d64d287704132fce85f0dee3067234bddbe1ea7dbb041a47d132a4eef"
+    },
+    {
+      "name": "phone-dust-inspector",
+      "file": "phone-dust-inspector.png",
+      "sha256": "5b1f11fe931e8fac13c2d3ca8e49b030f4633a5d43411d9304eefe64f047ab13"
+    },
+    {
+      "name": "phone-fullscreen-dust",
+      "file": "phone-fullscreen-dust.png",
+      "sha256": "6f420cb64a8e9c26a91921f4f5173cc8b8ad15d386259b3a646458dda17b387a"
+    }
+  ],
+  "bounds": [
+    {
+      "name": "desktop dust",
+      "left": 1014,
+      "right": 1207,
+      "top": 792.546875,
+      "bottom": 836.546875,
+      "width": 193,
+      "height": 44,
+      "viewport": [
+        1280,
+        850
+      ],
+      "covered": false
+    },
+    {
+      "name": "desktop inspector dust",
+      "left": 676,
+      "right": 937,
+      "top": 369.5,
+      "bottom": 413.5,
+      "width": 261,
+      "height": 44,
+      "viewport": [
+        1280,
+        850
+      ],
+      "covered": false
+    },
+    {
+      "name": "phone dust",
+      "left": 63,
+      "right": 257,
+      "top": 348.40625,
+      "bottom": 392.40625,
+      "width": 194,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "phone inspector dust",
+      "left": 70,
+      "right": 247,
+      "top": 340.90625,
+      "bottom": 384.90625,
+      "width": 177,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "phone fullscreen dust",
+      "left": 57,
+      "right": 263,
+      "top": 415.765625,
+      "bottom": 459.765625,
+      "width": 206,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    }
+  ],
+  "served": [
+    {
+      "file": "stem_lab/stem_tool_universe.js",
+      "sha256": "0bcb80a32407030204eb5422b298e6fa00285d501726d871df8a6ec60330898f"
+    },
+    {
+      "file": "stem_lab/universe_flight_scene.js",
+      "sha256": "11c9f95d62c511ea9b4575598c6847a53c1fc1f37e04e4cd976916d53ef7ee4b"
+    }
+  ],
+  "errors": []
+}

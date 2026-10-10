@@ -1,0 +1,21 @@
+{
+  "loadedAt": "2026-10-08T03:40:39.108Z",
+  "completedAt": "2026-10-08T03:40:43.164Z",
+  "loadedRuntimes": [
+    {
+      "path": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "5753b1b3d4ee100fda579e4dbccdb910f4faa864acb755df45ff162aa02033e3",
+      "bytes": 3317556
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "5753b1b3d4ee100fda579e4dbccdb910f4faa864acb755df45ff162aa02033e3",
+      "bytes": 3317556
+    }
+  ],
+  "loadedTest": {
+    "path": "tests/watercycle_ice_growth_visual.test.js",
+    "sha256": "9d068ff27ca9e539fe9ef437e8226aa164edc79df00af1aa0e8c04e90bec2103",
+    "bytes": 6328
+  }
+}

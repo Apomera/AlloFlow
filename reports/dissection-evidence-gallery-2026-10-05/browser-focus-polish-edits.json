@@ -1,0 +1,38 @@
+{
+  "file": "tests/e2e/dissection-evidence-gallery.spec.ts",
+  "baselineSha256": "e52971cf992b463196d964bf46fb13e6a2776c96a1f72b1fe80603ef15b5e2cd",
+  "finalSha256": "1b00ee257561b6368ef45db3c749ff392f5f22b935c19c47e206fcf225e4620f",
+  "rendererGuards": [
+    {
+      "file": "stem_lab/stem_tool_dissection.js",
+      "sha256": "2790df28e38fc96183113ca2a2ce7a1ede1d854d61eade23df1b0fd8ccc7410e"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "sha256": "2790df28e38fc96183113ca2a2ce7a1ede1d854d61eade23df1b0fd8ccc7410e"
+    }
+  ],
+  "reason": "Use native keyboard activation for the keyboard management preservation test; capture computed confirmation focus-ring color, inset and contrast with screenshots. Strict protected-state assertions retained, including hover.",
+  "edits": [
+    {
+      "offset": 10550,
+      "old": "async function audit(page: Page, name: string) {",
+      "new": "async function confirmationFocus(control: Locator, panel: Locator, name: string) {\n  await expect(control).toBeFocused();\n  const m = await control.evaluate(el => {\n    const s = getComputedStyle(el);\n    const luminance = (colour: string) => { const rgb = colour.match(/[\\d.]+/g)!.slice(0, 3).map(Number).map(n => { const channel = n / 255; return channel <= .04045 ? channel / 12.92 : ((channel + .055) / 1.055) ** 2.4; }); return .2126 * rgb[0] + .7152 * rgb[1] + .0722 * rgb[2]; };\n    const ring = luminance(s.outlineColor), fill = luminance(s.backgroundColor);\n    return { focusVisible: el.matches(':focus-visible'), width: parseFloat(s.outlineWidth), style: s.outlineStyle, color: s.outlineColor, offset: parseFloat(s.outlineOffset), background: s.backgroundColor, contrast: (Math.max(ring, fill) + .05) / (Math.min(ring, fill) + .05) };\n  });\n  expect(m.focusVisible).toBe(true); expect(m.width).toBe(3); expect(m.style).toBe('solid'); expect(m.color).toBe('rgb(255, 255, 255)'); expect(m.offset).toBe(-5); expect(m.background).toBe('rgb(153, 27, 27)'); expect(m.contrast).toBeGreaterThanOrEqual(3);\n  await writeFile(`${out}/${name}-focus.json`, JSON.stringify(m, null, 2)); await panel.screenshot({ path: `${out}/${name}-focus.png`, style: captureStyle }); await expect(control).toBeFocused();\n}\nasync function audit(page: Page, name: string) {"
+    },
+    {
+      "offset": 20214,
+      "old": "  const remove = card(page, 102).locator('[data-evidence-remove-id=\"102\"]'); await remove.focus(); await page.keyboard.press('Enter'); await expect(card(page, 102).locator('[data-evidence-confirm-remove-id=\"102\"]')).toBeFocused();",
+      "new": "  const remove = card(page, 102).locator('[data-evidence-remove-id=\"102\"]'); await remove.focus(); await page.keyboard.press('Enter'); const confirmRemove = card(page, 102).locator('[data-evidence-confirm-remove-id=\"102\"]'); await expect(confirmRemove).toBeFocused(); await confirmationFocus(confirmRemove, card(page, 102), 'confirm-remove');"
+    },
+    {
+      "offset": 21215,
+      "old": "  await compare(page, 'legacy/frame 103').focus(); await page.keyboard.press('Enter'); await expect(heading(page)).toBeFocused(); await reference(page).getByRole('button', { name: 'Close split comparison', exact: true }).click(); await expect(compare(page, 'legacy/frame 103')).toBeFocused();",
+      "new": "  await compare(page, 'legacy/frame 103').focus(); await page.keyboard.press('Enter'); await expect(heading(page)).toBeFocused(); const close = reference(page).getByRole('button', { name: 'Close split comparison', exact: true }); await close.focus(); await page.keyboard.press('Enter'); await expect(compare(page, 'legacy/frame 103')).toBeFocused(); expect(await proof(page)).toEqual(before);"
+    },
+    {
+      "offset": 21508,
+      "old": "  const clear = notebook(page).locator('#diss-evidence-clear-all'); await clear.focus(); await page.keyboard.press('Enter'); await expect(page.locator('#diss-evidence-confirm-clear')).toBeFocused();",
+      "new": "  const clear = notebook(page).locator('#diss-evidence-clear-all'); await clear.focus(); await page.keyboard.press('Enter'); const confirmClear = page.locator('#diss-evidence-confirm-clear'); await expect(confirmClear).toBeFocused(); await confirmationFocus(confirmClear, page.locator('#diss-evidence-clear-confirmation'), 'confirm-clear');"
+    }
+  ]
+}

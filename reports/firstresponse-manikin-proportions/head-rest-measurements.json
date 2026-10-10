@@ -1,0 +1,291 @@
+{
+  "palmAndOriginalHeadCandidateSHA256": "e5def66a5b90e350d5341cd024f2ba6ba2b0cce196e3b1e49610911d8e64ce48",
+  "restCandidateSHA256": "8eef0f19107701555c4d565f4d8d1e3aff48339bad811dff12e31a7da92cbade",
+  "restEdit": {
+    "name": "fit head back above training mat",
+    "before": "    headPivot.position.set(0, 0.07, -1.25 * profile.torso);",
+    "after": "    headPivot.position.set(0, 0.025 / ageScale - 0.30 + 0.30 * profile.head, -1.25 * profile.torso);"
+  },
+  "method": "Actual transformed mesh vertex bounds and neck/cheek triangle raycasts; six models. Body flat transform directly confirmed in all three ages.",
+  "results": [
+    {
+      "age": "adult",
+      "phase": 0,
+      "headLengthsInBody": 7.0208944,
+      "skullBottomWorldY": 0.025,
+      "actualMatTopWorldY": 0.019,
+      "skullMatClearance": 0.006,
+      "bodyLiftLocalY": 0.3,
+      "bodyUniformScale": 1,
+      "headPivotLocal": [
+        0,
+        -0.053,
+        -1.25
+      ],
+      "headRotation": [
+        0,
+        0,
+        0
+      ],
+      "neckEndpointWorld": [
+        0,
+        0.355,
+        -1.12
+      ],
+      "neckTriangleRays": [
+        {
+          "side": -1,
+          "hit": true,
+          "tipInside": true,
+          "entryToTipDistance": 0.1308676
+        },
+        {
+          "side": 1,
+          "hit": true,
+          "tipInside": true,
+          "entryToTipDistance": 0.1309467
+        }
+      ],
+      "neckHeadBoundsOverlap": true,
+      "cheek": null
+    },
+    {
+      "age": "adult",
+      "phase": 5,
+      "headLengthsInBody": null,
+      "skullBottomWorldY": 0.3218223,
+      "actualMatTopWorldY": 0.019,
+      "skullMatClearance": 0.3028223,
+      "bodyLiftLocalY": 0.5573861,
+      "bodyUniformScale": 1,
+      "headPivotLocal": [
+        0,
+        -0.053,
+        -1.25
+      ],
+      "headRotation": [
+        0,
+        0,
+        0
+      ],
+      "neckEndpointWorld": [
+        -0.0484608,
+        0.5833967,
+        -1.12
+      ],
+      "neckTriangleRays": [
+        {
+          "side": -1,
+          "hit": true,
+          "tipInside": true,
+          "entryToTipDistance": 0.0797926
+        },
+        {
+          "side": 1,
+          "hit": true,
+          "tipInside": true,
+          "entryToTipDistance": 0.264017
+        }
+      ],
+      "neckHeadBoundsOverlap": true,
+      "cheek": {
+        "rayHits": true,
+        "signedGap": 0.003,
+        "expectedGap": 0.003,
+        "metadataNormalAgreement": 1,
+        "inspectionRadius": 0.2202489,
+        "center": [
+          -0.0369151,
+          0.7813465,
+          -1.2187798
+        ]
+      }
+    },
+    {
+      "age": "child",
+      "phase": 0,
+      "headLengthsInBody": 5.9857856,
+      "skullBottomWorldY": 0.025,
+      "actualMatTopWorldY": 0.019,
+      "skullMatClearance": 0.006,
+      "bodyLiftLocalY": 0.3,
+      "bodyUniformScale": 0.72,
+      "headPivotLocal": [
+        0,
+        -0.0162778,
+        -1.175
+      ],
+      "headRotation": [
+        0,
+        0,
+        0
+      ],
+      "neckEndpointWorld": [
+        0,
+        0.2556,
+        -0.758016
+      ],
+      "neckTriangleRays": [
+        {
+          "side": -1,
+          "hit": true,
+          "tipInside": true,
+          "entryToTipDistance": 0.1308596
+        },
+        {
+          "side": 1,
+          "hit": true,
+          "tipInside": true,
+          "entryToTipDistance": 0.1308773
+        }
+      ],
+      "neckHeadBoundsOverlap": true,
+      "cheek": null
+    },
+    {
+      "age": "child",
+      "phase": 5,
+      "headLengthsInBody": null,
+      "skullBottomWorldY": 0.20509,
+      "actualMatTopWorldY": 0.019,
+      "skullMatClearance": 0.18609,
+      "bodyLiftLocalY": 0.5286457,
+      "bodyUniformScale": 0.72,
+      "headPivotLocal": [
+        0,
+        -0.0162778,
+        -1.175
+      ],
+      "headRotation": [
+        0,
+        0,
+        0
+      ],
+      "neckEndpointWorld": [
+        -0.0348918,
+        0.3993525,
+        -0.758016
+      ],
+      "neckTriangleRays": [
+        {
+          "side": -1,
+          "hit": true,
+          "tipInside": true,
+          "entryToTipDistance": 0.1043328
+        },
+        {
+          "side": 1,
+          "hit": true,
+          "tipInside": true,
+          "entryToTipDistance": 0.1958492
+        }
+      ],
+      "neckHeadBoundsOverlap": true,
+      "cheek": {
+        "rayHits": true,
+        "signedGap": 0.00216,
+        "expectedGap": 0.00216,
+        "metadataNormalAgreement": 1,
+        "inspectionRadius": 0.1593782,
+        "center": [
+          -0.0491751,
+          0.5715647,
+          -0.8207002
+        ]
+      }
+    },
+    {
+      "age": "infant",
+      "phase": 0,
+      "headLengthsInBody": 3.9988676,
+      "skullBottomWorldY": 0.025,
+      "actualMatTopWorldY": 0.019,
+      "skullMatClearance": 0.006,
+      "bodyLiftLocalY": 0.3,
+      "bodyUniformScale": 0.46,
+      "headPivotLocal": [
+        0,
+        0.1053478,
+        -1.075
+      ],
+      "headRotation": [
+        0,
+        0,
+        0
+      ],
+      "neckEndpointWorld": [
+        0,
+        0.1633,
+        -0.443072
+      ],
+      "neckTriangleRays": [
+        {
+          "side": -1,
+          "hit": true,
+          "tipInside": true,
+          "entryToTipDistance": 0.1352877
+        },
+        {
+          "side": 1,
+          "hit": true,
+          "tipInside": true,
+          "entryToTipDistance": 0.1352789
+        }
+      ],
+      "neckHeadBoundsOverlap": true,
+      "cheek": null
+    },
+    {
+      "age": "infant",
+      "phase": 5,
+      "headLengthsInBody": null,
+      "skullBottomWorldY": 0.0998302,
+      "actualMatTopWorldY": 0.019,
+      "skullMatClearance": 0.0808302,
+      "bodyLiftLocalY": 0.5000173,
+      "bodyUniformScale": 0.46,
+      "headPivotLocal": [
+        0,
+        0.1053478,
+        -1.075
+      ],
+      "headRotation": [
+        0,
+        0,
+        0
+      ],
+      "neckEndpointWorld": [
+        -0.022292,
+        0.2419728,
+        -0.443072
+      ],
+      "neckTriangleRays": [
+        {
+          "side": -1,
+          "hit": true,
+          "tipInside": true,
+          "entryToTipDistance": 0.1640579
+        },
+        {
+          "side": 1,
+          "hit": true,
+          "tipInside": true,
+          "entryToTipDistance": 0.1304152
+        }
+      ],
+      "neckHeadBoundsOverlap": true,
+      "cheek": {
+        "rayHits": true,
+        "signedGap": 0.00138,
+        "expectedGap": 0.00138,
+        "metadataNormalAgreement": 1,
+        "inspectionRadius": 0.1146825,
+        "center": [
+          -0.0896329,
+          0.4199497,
+          -0.4719594
+        ]
+      }
+    }
+  ]
+}

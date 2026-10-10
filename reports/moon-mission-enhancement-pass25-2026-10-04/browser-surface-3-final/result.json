@@ -1,0 +1,122 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass25-2026-10-04\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass25-2026-10-04/browser-surface-3-final/test-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "moon-mission-descent-surface.spec.ts",
+      "file": "moon-mission-descent-surface.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "320 px WebGL contact recovers after context loss and keeps the surface note readable in forced colors",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 57022,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T04:09:38.223Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "phone-bank-contact",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass25-2026-10-04\\browser-surface-3-final\\test-artifacts\\moon-mission-descent-surfa-4863e-e-readable-in-forced-colors-chromium\\attachments\\phone-bank-contact-e89b4fae1fae82ae00c0b4d21cd7757b7af9e0f5.png"
+                    },
+                    {
+                      "name": "phone-context-loss-support",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass25-2026-10-04\\browser-surface-3-final\\test-artifacts\\moon-mission-descent-surfa-4863e-e-readable-in-forced-colors-chromium\\attachments\\phone-context-loss-support-503688007c02d404caa6837846d481d187b08e93.png"
+                    },
+                    {
+                      "name": "phone-forced-notes",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass25-2026-10-04\\browser-surface-3-final\\test-artifacts\\moon-mission-descent-surfa-4863e-e-readable-in-forced-colors-chromium\\attachments\\phone-forced-notes-2d8cf5845a43881ca38634451db2fdd1cf4c5759.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e570bad610777f02938c-c3bbfd8b92b485b686e8",
+          "file": "moon-mission-descent-surface.spec.ts",
+          "line": 171,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-07T04:09:07.335Z",
+    "duration": 108446.10500000001,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

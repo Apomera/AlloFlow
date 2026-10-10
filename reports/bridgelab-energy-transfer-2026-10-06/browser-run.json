@@ -1,0 +1,64 @@
+{
+  "kind": "browser",
+  "startedAt": "2026-10-06T13:44:14.088Z",
+  "workingDirectory": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "--max-old-space-size=4096",
+    "node_modules/@playwright/test/cli.js",
+    "test",
+    "tests/e2e/26-bridgelab-gl.spec.ts",
+    "--config=C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\flow-native-2026-10-06\\validation\\playwright-video-off.config.ts",
+    "--project=chromium",
+    "--workers=1",
+    "--retries=0",
+    "--reporter=json",
+    "--grep=bridge.landscape:|starting.energy:|decay.time:|decay.fraction:|guide.energy:|guided.damping:|claim.interval:|energy.questions:|motion.guide:|motion.coherence:|energy.transfer:"
+  ],
+  "inputsBefore": {
+    "stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "c866926d167b5dc5699578d33ee5a20a72c1d73c1722d2d0ebd4c974456789ec",
+      "bytes": 1070693
+    },
+    "desktop/web-app/public/stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "c866926d167b5dc5699578d33ee5a20a72c1d73c1722d2d0ebd4c974456789ec",
+      "bytes": 1070693
+    },
+    "tests/e2e/26-bridgelab-gl.spec.ts": {
+      "sha256": "78e323a5fbcb0e3bc44d2bbb88b28d1481334a3035fedfc045a697fbc4ab2d70",
+      "bytes": 377882
+    }
+  },
+  "config": {
+    "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\flow-native-2026-10-06\\validation\\playwright-video-off.config.ts",
+    "sha256": "65700c1862e24cc9a8512f6e34e5db7c529c315c506ad27e4a19fa7d2078df0c",
+    "bytes": 812
+  },
+  "video": "off",
+  "retries": 0,
+  "workers": 1,
+  "note": "English registries are checked separately; the harness uses literal fallbacks.",
+  "finishedAt": "2026-10-06T13:49:56.113Z",
+  "exitCode": 0,
+  "signal": null,
+  "inputsAfter": {
+    "stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "c866926d167b5dc5699578d33ee5a20a72c1d73c1722d2d0ebd4c974456789ec",
+      "bytes": 1070693
+    },
+    "desktop/web-app/public/stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "c866926d167b5dc5699578d33ee5a20a72c1d73c1722d2d0ebd4c974456789ec",
+      "bytes": 1070693
+    },
+    "tests/e2e/26-bridgelab-gl.spec.ts": {
+      "sha256": "78e323a5fbcb0e3bc44d2bbb88b28d1481334a3035fedfc045a697fbc4ab2d70",
+      "bytes": 377882
+    }
+  },
+  "inputsUnchanged": true,
+  "result": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-energy-transfer-2026-10-06\\browser-results.json",
+    "sha256": "e9a2e767aa6bef4a67129b92fe2e793df75341f37b6f6b668f80c37dcb77441c",
+    "bytes": 43614
+  }
+}

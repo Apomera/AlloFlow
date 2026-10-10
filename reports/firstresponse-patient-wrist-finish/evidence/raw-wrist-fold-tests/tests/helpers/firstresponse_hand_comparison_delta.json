@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "beforeSHA256": "cc354bd12dd0712e1e628ebfc16689ba584c3b988d1b085df5a41e1f67cecc26",
+  "afterSHA256": "476c1562ef879cb20ac65efdbf290edff9b98fafde9dbd7866f3e612c5750935",
+  "edits": [
+    {
+      "name": "transient-hand-selection",
+      "before": "      var quizState = d.quizState || { idx: 0, score: 0, answered: false, lastChoice: null };\n\n      // ── Hydration + Canvas-survival persistence ──",
+      "after": "      var quizState = d.quizState || { idx: 0, score: 0, answered: false, lastChoice: null };\n\n      // A selected hand is a view choice. Keep it in memory, outside saved practice data.\n      var _frRecoveryHandSelection = useState(null);\n      var frRecoveryHandSelection = _frRecoveryHandSelection[0];\n      var setFrRecoveryHandSelection = _frRecoveryHandSelection[1];\n      var frComparisonCompleted = Array.isArray(d.b3dRec) ? d.b3dRec.length : 0;\n      var frComparisonPose = typeof d.b3dRecView === 'number' && isFinite(d.b3dRecView)\n        ? Math.max(0, Math.min(frComparisonCompleted, Math.floor(d.b3dRecView))) : frComparisonCompleted;\n      var frComparisonReady = BODY3D.status() === 'ready' && d.b3dStatus === 'ready';\n      useEffect(function () {\n        if (view !== 'body3d' || (d.b3dTab || 'gate') !== 'recovery' || !frComparisonReady\n            || (frRecoveryHandSelection === 'near' && frComparisonPose < 2)\n            || (frRecoveryHandSelection === 'support' && frComparisonPose < 3)) {\n          setFrRecoveryHandSelection(null);\n        }\n      }, [view, d.b3dTab, frComparisonReady, frComparisonPose, frRecoveryHandSelection]);\n\n      // ── Hydration + Canvas-survival persistence ──"
+    },
+    {
+      "name": "effective-hand-selection",
+      "before": "        var st3 = (BODY3D.status() === 'failed') ? 'failed' : (d.b3dStatus || 'idle');\n        // The correct AED layout depends on the age, so the pad list does too.",
+      "after": "        var st3 = (BODY3D.status() === 'failed') ? 'failed' : (d.b3dStatus || 'idle');\n        var comparisonHand = tab === 'recovery' && frComparisonReady\n          && ((frRecoveryHandSelection === 'near' && recPose >= 2)\n            || (frRecoveryHandSelection === 'support' && recPose >= 3)) ? frRecoveryHandSelection : null;\n        function recoveryComparisonPressed(kind, pose) { return comparisonHand === kind && recPose === pose; }\n        // The correct AED layout depends on the age, so the pad list does too."
+    },
+    {
+      "name": "detail-camera-selection",
+      "before": "        function cameraPreset(kind) {\n          if (kind === 'supportingHand' && tab === 'recovery' && recPose >= 3) { focusSupportingHand(); return; }\n          if (kind === 'palmDetail' && tab === 'recovery' && recPose >= 2) { focusPalmDetail(); return; }\n          if (kind === 'heelSide') { focusHeelSide(); return; }",
+      "after": "        function cameraPreset(kind) {\n          if (kind === 'supportingHand' && tab === 'recovery' && recPose >= 3) {\n            var supportingFocused = focusSupportingHand();\n            setFrRecoveryHandSelection(frComparisonReady && supportingFocused ? 'support' : null); return;\n          }\n          if (kind === 'palmDetail' && tab === 'recovery' && recPose >= 2) {\n            var palmFocused = focusPalmDetail();\n            setFrRecoveryHandSelection(frComparisonReady && palmFocused ? 'near' : null); return;\n          }\n          setFrRecoveryHandSelection(null);\n          if (kind === 'heelSide') { focusHeelSide(); return; }"
+    },
+    {
+      "name": "palm-camera-selection",
+      "before": "            frHandInspectionFocus = BODY3D.focus('nearPalm', { padding: 1.12, immediate: true }) !== false ? 'palm' : false;\n            return;",
+      "after": "            frHandInspectionFocus = BODY3D.focus('nearPalm', { padding: 1.12, immediate: true }) !== false ? 'palm' : false;\n            setFrRecoveryHandSelection(frComparisonReady && frHandInspectionFocus === 'palm' ? 'near' : null);\n            return;"
+    },
+    {
+      "name": "evidence-selection",
+      "before": "          if (recPose !== pose) upd('b3dRecView', pose);\n          var handLabel = kind === 'near'",
+      "after": "          setFrRecoveryHandSelection(frComparisonReady && frHandInspectionFocus === (kind === 'near' ? 'palmDetail' : 'supportingHand') ? kind : null);\n          if (recPose !== pose) upd('b3dRecView', pose);\n          var handLabel = kind === 'near'"
+    },
+    {
+      "name": "comparison-rail",
+      "before": "        function renderHandStudy() {\n          if (tab !== 'recovery' || recDone.length < 5) return null;",
+      "after": "        function renderRecoveryComparison() {\n          if (tab !== 'recovery' || recDone.length < 4) return null;\n          var handLabel = comparisonHand === 'near'\n            ? __alloT('stem.firstresponse.recovery_compare_near', 'Near hand')\n            : __alloT('stem.firstresponse.recovery_compare_support', 'Supporting hand');\n          var poseLabel = recPose === 4 ? __alloT('stem.firstresponse.recovery_compare_before', 'Before the turn')\n            : recPose === 5 ? __alloT('stem.firstresponse.recovery_compare_after', 'After the turn')\n              : recPose > 0 ? RECOVERY_STEPS[recPose - 1].label\n                : __alloT('stem.firstresponse.recovery_review_before', 'Before the sequence');\n          var caption = !frComparisonReady\n            ? __alloT('stem.firstresponse.recovery_compare_unavailable', '3D view unavailable. Use the hand descriptions and study below.')\n            : comparisonHand\n              ? __alloT('stem.firstresponse.recovery_compare_selected', 'Selected hand: {hand} · Pose {pose} — {label}')\n                .replace('{hand}', handLabel).replace('{pose}', recPose).replace('{label}', poseLabel)\n              : __alloT('stem.firstresponse.recovery_compare_choose', 'Choose a hand close-up to compare the completed poses.');\n          return h('section', { className: 'fr-recovery-comparison', 'aria-labelledby': 'fr-recovery-comparison-title',\n            style: { marginTop: 10, padding: 12, border: '1px solid ' + T.border, borderRadius: 10,\n              background: T.card, color: T.text, minWidth: 0, fontSize: 12, lineHeight: 1.55 } },\n            h('h3', { id: 'fr-recovery-comparison-title', style: { margin: '0 0 6px', fontSize: 13 } },\n              __alloT('stem.firstresponse.recovery_compare_title', 'Compare hand poses')),\n            h('p', { id: 'fr-recovery-comparison-caption', className: 'fr-recovery-comparison-caption',\n              style: { margin: '0 0 10px', fontWeight: 600 } }, caption),\n            h('div', { role: 'group', 'aria-label': __alloT('stem.firstresponse.recovery_compare_hand_group', 'Hand to inspect'),\n              style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 6 } },\n              [['near', 2, 'palmDetail', __alloT('stem.firstresponse.recovery_compare_near', 'Near hand')],\n                ['support', 3, 'supportingHand', __alloT('stem.firstresponse.recovery_compare_support', 'Supporting hand')]].map(function (item) {\n                return h('button', { key: item[0], type: 'button', disabled: !frComparisonReady || recPose < item[1],\n                  'aria-pressed': comparisonHand === item[0], 'data-fr-focusable': true,\n                  style: btn({ minHeight: 44, fontSize: 12, flex: '1 1 125px' }),\n                  onClick: function () {\n                    if (recPose === 4 || recPose === 5) inspectRecoveryHandPose(item[0], recPose);\n                    else cameraPreset(item[2]);\n                  } }, item[3]);\n              })),\n            h('div', { role: 'group', 'aria-label': __alloT('stem.firstresponse.recovery_compare_pose_group', 'Completed poses to compare'),\n              style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },\n              [[4, __alloT('stem.firstresponse.recovery_compare_before', 'Before the turn')],\n                [5, __alloT('stem.firstresponse.recovery_compare_after', 'After the turn')]].map(function (item) {\n                return h('button', { key: item[0], type: 'button', disabled: !comparisonHand || recDone.length < item[0],\n                  'aria-pressed': !!comparisonHand && recPose === item[0], 'data-fr-focusable': true,\n                  style: btn({ minHeight: 44, fontSize: 12, flex: '1 1 125px' }),\n                  onClick: function () { inspectRecoveryHandPose(comparisonHand, item[0]); } }, item[1]);\n              })));\n        }\n\n        function renderHandStudy() {\n          if (tab !== 'recovery' || recDone.length < 5) return null;"
+    },
+    {
+      "name": "study-pressed-state",
+      "before": "                  return h('button', { key: item[0], type: 'button', 'data-fr-focusable': true,\n                    style: btn({ minHeight: 44, fontSize: 12 }), onClick: function () { inspectRecoveryHandPose(kind, item[0]); } }, item[1]);",
+      "after": "                  return h('button', { key: item[0], type: 'button', 'data-fr-focusable': true,\n                    'aria-pressed': recoveryComparisonPressed(kind, item[0]),\n                    style: btn({ minHeight: 44, fontSize: 12 }), onClick: function () { inspectRecoveryHandPose(kind, item[0]); } }, item[1]);"
+    },
+    {
+      "name": "legacy-near-pressed-state",
+      "before": "                    'aria-pressed': recPose === item[0], 'data-fr-focusable': true,\n                    style: btn({ minHeight: 44, fontSize: 12 }), onClick: function () { inspectRecoveryHandPose('near', item[0]); } }, item[1]);",
+      "after": "                    'aria-pressed': recoveryComparisonPressed('near', item[0]), 'data-fr-focusable': true,\n                    style: btn({ minHeight: 44, fontSize: 12 }), onClick: function () { inspectRecoveryHandPose('near', item[0]); } }, item[1]);"
+    },
+    {
+      "name": "legacy-support-pressed-state",
+      "before": "                    'aria-pressed': recPose === item[0], 'data-fr-focusable': true,\n                    style: btn({ minHeight: 44, fontSize: 12 }), onClick: function () { inspectSupportingPose(item[0]); } }, item[1]);",
+      "after": "                    'aria-pressed': recoveryComparisonPressed('support', item[0]), 'data-fr-focusable': true,\n                    style: btn({ minHeight: 44, fontSize: 12 }), onClick: function () { inspectSupportingPose(item[0]); } }, item[1]);"
+    },
+    {
+      "name": "stage-description",
+      "before": "                'data-allo-fs-stage': 'true',\n                'aria-label': __alloT('stem.firstresponse.b3d_viewer_label',",
+      "after": "                'data-allo-fs-stage': 'true',\n                'aria-describedby': tab === 'recovery' && recDone.length >= 4 ? 'fr-recovery-comparison-caption' : undefined,\n                'aria-label': __alloT('stem.firstresponse.b3d_viewer_label',"
+    },
+    {
+      "name": "rail-after-stage",
+      "before": "              h('div', { className: 'fr-body3d-camera', role: 'group', 'aria-label': __alloT('stem.firstresponse.depth_explorer_camera_group', 'Camera viewpoints') },",
+      "after": "              renderRecoveryComparison(),\n              h('div', { className: 'fr-body3d-camera', role: 'group', 'aria-label': __alloT('stem.firstresponse.depth_explorer_camera_group', 'Camera viewpoints') },"
+    },
+    {
+      "name": "view-reset-selection",
+      "before": "                 ['Reset the view', '⌂', function () { BODY3D.reset(); }]].map(function (c) {",
+      "after": "                 ['Reset the view', '⌂', function () { setFrRecoveryHandSelection(null); BODY3D.reset(); }]].map(function (c) {"
+    },
+    {
+      "name": "selected-visual-style",
+      "before": ".fr-hand-inspection button[aria-pressed=true]{box-shadow:inset 0 0 0 2px currentColor}",
+      "after": ".fr-hand-inspection button[aria-pressed=true],.fr-recovery-comparison button[aria-pressed=true]{box-shadow:inset 0 0 0 2px currentColor}"
+    },
+    {
+      "name": "forced-colors-style",
+      "before": "@media(forced-colors:active){.fr-hand-study summary,.fr-hand-study-card,.fr-hand-study-feedback,.fr-hand-study textarea",
+      "after": "@media(forced-colors:active){.fr-recovery-comparison{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.fr-recovery-comparison button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}.fr-recovery-comparison button:disabled{color:GrayText!important;border-color:GrayText!important}.fr-recovery-comparison button[aria-pressed=true]{outline:2px solid Highlight;outline-offset:-3px}.fr-hand-study summary,.fr-hand-study-card,.fr-hand-study-feedback,.fr-hand-study textarea"
+    }
+  ]
+}

@@ -1,0 +1,698 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-view-chooser-2026-10-06/view-2/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "dissection-view-chooser.spec.ts",
+      "file": "dissection-view-chooser.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "view chooser layout phone",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12627,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T12:31:12.825Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "19c2b51aa687f7046ac8-fe5d2c4de054f4ce7f50",
+          "file": "dissection-view-chooser.spec.ts",
+          "line": 128,
+          "column": 30
+        },
+        {
+          "title": "view chooser layout tablet",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 65809,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T12:31:25.971Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "19c2b51aa687f7046ac8-8b136fb422cd11015ca6",
+          "file": "dissection-view-chooser.spec.ts",
+          "line": 128,
+          "column": 30
+        },
+        {
+          "title": "view chooser layout desktop",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 17127,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T12:32:31.803Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "19c2b51aa687f7046ac8-54aaeb381fa6fc31dc7e",
+          "file": "dissection-view-chooser.spec.ts",
+          "line": 128,
+          "column": 30
+        },
+        {
+          "title": "view chooser layout embedded-medium",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 25143,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T12:32:49.084Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "19c2b51aa687f7046ac8-781a06ef3af39604161c",
+          "file": "dissection-view-chooser.spec.ts",
+          "line": 128,
+          "column": 30
+        },
+        {
+          "title": "view chooser layout embedded-large-contrast",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 31310,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T12:33:14.240Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "19c2b51aa687f7046ac8-68fc30728846bd4cc60a",
+          "file": "dissection-view-chooser.spec.ts",
+          "line": 128,
+          "column": 30
+        },
+        {
+          "title": "view chooser layout forced-colors",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 49507,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T12:33:45.563Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "19c2b51aa687f7046ac8-36ec05a7f9e15eda524d",
+          "file": "dissection-view-chooser.spec.ts",
+          "line": 128,
+          "column": 30
+        },
+        {
+          "title": "view chooser native inventory advanced",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 30640,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T12:34:35.107Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "19c2b51aa687f7046ac8-aeeb13b9ba3d4d32a3ca",
+          "file": "dissection-view-chooser.spec.ts",
+          "line": 160,
+          "column": 28
+        },
+        {
+          "title": "view chooser native inventory essentials",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5620,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T12:35:05.922Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "19c2b51aa687f7046ac8-aa88d8b3dedd96b27925",
+          "file": "dissection-view-chooser.spec.ts",
+          "line": 160,
+          "column": 28
+        },
+        {
+          "title": "view chooser native inventory quiz",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 25200,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T12:35:11.558Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "19c2b51aa687f7046ac8-aaa5980491e1f4215856",
+          "file": "dissection-view-chooser.spec.ts",
+          "line": 160,
+          "column": 28
+        },
+        {
+          "title": "view chooser native inventory practical",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 17586,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T12:35:36.790Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "19c2b51aa687f7046ac8-ea4b5fe47e743df37c28",
+          "file": "dissection-view-chooser.spec.ts",
+          "line": 160,
+          "column": 28
+        },
+        {
+          "title": "presentation cycle explains native Accessible effects and retains preferences after leaving it",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 34169,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T12:35:54.393Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "19c2b51aa687f7046ac8-dd4b50eff6f2c7490437",
+          "file": "dissection-view-chooser.spec.ts",
+          "line": 177,
+          "column": 5
+        },
+        {
+          "title": "saved-frame split explains missing evidence, resolves the selected reference and falls back to the last valid frame",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 25291,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T12:36:28.593Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "19c2b51aa687f7046ac8-49568199200530c5ca38",
+          "file": "dissection-view-chooser.spec.ts",
+          "line": 190,
+          "column": 5
+        },
+        {
+          "title": "inspection pin gives a target prerequisite and native magnification and depth cycles preserve saved work",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 32787,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T12:36:53.899Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "19c2b51aa687f7046ac8-c1fe002427b3de6e655f",
+          "file": "dissection-view-chooser.spec.ts",
+          "line": 210,
+          "column": 5
+        },
+        {
+          "title": "variation and tissue before-after change the displayed specimen while retaining recorded technique and camera",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4822,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T12:37:26.700Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "19c2b51aa687f7046ac8-f71ed2c33d4657752034",
+          "file": "dissection-view-chooser.spec.ts",
+          "line": 228,
+          "column": 5
+        },
+        {
+          "title": "native practical hides inspection and reference actions and guards labels until End restores the View chooser",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5994,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T12:37:31.536Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "19c2b51aa687f7046ac8-c55b9604b80a79dbdbe1",
+          "file": "dissection-view-chooser.spec.ts",
+          "line": 239,
+          "column": 5
+        },
+        {
+          "title": "comparison next actions explain empty mapped and unmapped availability and keep native focus routes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 23014,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T12:37:37.571Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "19c2b51aa687f7046ac8-4beb236fef721a8084f2",
+          "file": "dissection-view-chooser.spec.ts",
+          "line": 261,
+          "column": 5
+        },
+        {
+          "title": "pressed and focus cues survive forced-colors embedded resizing and print hides View controls",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 25239,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeHidden\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#diss-view-tools')\nExpected: hidden\nReceived: visible\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeHidden\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#diss-view-tools')\u001b[22m\n\u001b[2m    30 × locator resolved to <div role=\"region\" tabindex=\"-1\" id=\"diss-view-tools\" aria-label=\"View and accessibility controls\" class=\"diss-view-controls diss-tool-panel flex flex-wrap bg-blue-50 rounded-xl border border-blue-200 animate-[fadeIn_0.2s_ease-out]\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"visible\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeHidden\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#diss-view-tools')\nExpected: hidden\nReceived: visible\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeHidden\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#diss-view-tools')\u001b[22m\n\u001b[2m    30 × locator resolved to <div role=\"region\" tabindex=\"-1\" id=\"diss-view-tools\" aria-label=\"View and accessibility controls\" class=\"diss-view-controls diss-tool-panel flex flex-wrap bg-blue-50 rounded-xl border border-blue-200 animate-[fadeIn_0.2s_ease-out]\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"visible\"\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-view-chooser.spec.ts:288:76",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-view-chooser.spec.ts",
+                      "column": 76,
+                      "line": 288
+                    },
+                    "snippet": "  286 |   const narrow = await readable(page, 320, true); expect(narrow.subgroupColumns).toBe(1); for (const g of narrow.subgroups) expect(g.columns).toBe(1); await pressed(sound); await focused(sound); expect(await proof(page)).toEqual(before);\n  287 |   await chooser(page).screenshot({ path: `${out}/forced-resize-pressed-focus-view.png`, style: screenshotStyle }); await audit(page, 'forced-resize');\n> 288 |   await page.emulateMedia({ media: 'print' }); await expect(chooser(page)).toBeHidden(); expect(await proof(page)).toEqual(before); await page.emulateMedia({ media: 'screen' }); await expect(chooser(page)).toBeVisible(); await pressed(sound);\n      |                                                                            ^\n  289 |   await writeFile(`${out}/resize-print-proof.json`, JSON.stringify({ wide, narrow, savedWork: before }, null, 2));\n  290 | });\n  291 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-view-chooser.spec.ts",
+                        "column": 76,
+                        "line": 288
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeHidden\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#diss-view-tools')\nExpected: hidden\nReceived: visible\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeHidden\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#diss-view-tools')\u001b[22m\n\u001b[2m    30 × locator resolved to <div role=\"region\" tabindex=\"-1\" id=\"diss-view-tools\" aria-label=\"View and accessibility controls\" class=\"diss-view-controls diss-tool-panel flex flex-wrap bg-blue-50 rounded-xl border border-blue-200 animate-[fadeIn_0.2s_ease-out]\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"visible\"\u001b[22m\n\n\n  286 |   const narrow = await readable(page, 320, true); expect(narrow.subgroupColumns).toBe(1); for (const g of narrow.subgroups) expect(g.columns).toBe(1); await pressed(sound); await focused(sound); expect(await proof(page)).toEqual(before);\n  287 |   await chooser(page).screenshot({ path: `${out}/forced-resize-pressed-focus-view.png`, style: screenshotStyle }); await audit(page, 'forced-resize');\n> 288 |   await page.emulateMedia({ media: 'print' }); await expect(chooser(page)).toBeHidden(); expect(await proof(page)).toEqual(before); await page.emulateMedia({ media: 'screen' }); await expect(chooser(page)).toBeVisible(); await pressed(sound);\n      |                                                                            ^\n  289 |   await writeFile(`${out}/resize-print-proof.json`, JSON.stringify({ wide, narrow, savedWork: before }, null, 2));\n  290 | });\n  291 |\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-view-chooser.spec.ts:288:76"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-06T12:38:00.601Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-view-chooser-2026-10-06\\view-2\\test-results\\dissection-view-chooser-pr-65f31-d-print-hides-View-controls-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-view-chooser-2026-10-06\\view-2\\test-results\\dissection-view-chooser-pr-65f31-d-print-hides-View-controls-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-view-chooser-2026-10-06\\view-2\\test-results\\dissection-view-chooser-pr-65f31-d-print-hides-View-controls-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-view-chooser-2026-10-06\\view-2\\test-results\\dissection-view-chooser-pr-65f31-d-print-hides-View-controls-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-view-chooser.spec.ts",
+                    "column": 76,
+                    "line": 288
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "19c2b51aa687f7046ac8-12ecd9a317969d82f9a1",
+          "file": "dissection-view-chooser.spec.ts",
+          "line": 282,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-06T12:31:10.822Z",
+    "duration": 451582.43000000005,
+    "expected": 16,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

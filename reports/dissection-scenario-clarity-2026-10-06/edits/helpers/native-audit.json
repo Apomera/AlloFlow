@@ -1,0 +1,45 @@
+{
+  "beforeSha256": "6b5c426f6e2f4d0545dfccce713b0a0457547b5384e33fb911e09a296f071354",
+  "afterSha256": "c9c4d0a4170a44cb7492f19c7e10823bded91490edcc7ad0998e59a814508a56",
+  "changedFunctionDeclarations": [
+    "releaseDissectionSaveOwner",
+    "activateProcedureScenario",
+    "performProcedureAction",
+    "performPrimaryNextAction",
+    "renderNextActionCard"
+  ],
+  "addedFunctionDeclarations": [
+    "procedureScenarioRestartScope",
+    "currentProcedureScenarioRestartReview",
+    "requestProcedureScenarioRestart",
+    "cancelProcedureScenarioRestart",
+    "confirmProcedureScenarioRestart",
+    "handleProcedureScenarioRestartKey"
+  ],
+  "protectedFunctions": {
+    "procedureScenarioStatus": {
+      "present": true,
+      "unchanged": true
+    },
+    "timedProcedureScenarioExpired": {
+      "present": true,
+      "unchanged": true
+    },
+    "formatScenarioTime": {
+      "present": true,
+      "unchanged": true
+    },
+    "formatAccessibleDuration": {
+      "present": true,
+      "unchanged": true
+    },
+    "performNextProcedureStep": {
+      "present": true,
+      "unchanged": true
+    },
+    "procedureScenarioGuidance": {
+      "present": true,
+      "unchanged": true
+    }
+  }
+}

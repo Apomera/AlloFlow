@@ -1,0 +1,80 @@
+{
+  "width": 474.40625,
+  "height": 671.125,
+  "client": 470,
+  "scroll": 470,
+  "containerWidth": 520,
+  "text": [
+    {
+      "text": "Scenario lab · 4-minute technique challenge",
+      "font": 16,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Not started",
+      "font": 16,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Technique challenges apply to the current Skin layer. Study offers a separate two-minute identification check.",
+      "font": 16,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Complete the current layer protocol within four minutes. Safety safeguards and feedback remain active.",
+      "font": 16,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "2/6 protocol steps complete. Start the timer on this attempt, or review Restart scenario for a fresh attempt.",
+      "font": 16,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Choose scenario",
+      "font": 16,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Choosing this challenge starts a four-minute timer on the current attempt. Technique and inspected structures are kept. The deadline continues while you use other activities.",
+      "font": 16,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Restart opens a review of the changes before starting a fresh attempt.",
+      "font": 16,
+      "clipped": false,
+      "textOverflow": "clip"
+    }
+  ],
+  "controls": [
+    {
+      "name": "Choose procedure scenario",
+      "width": 446.40625,
+      "height": 48,
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "name": "Start timer on current attempt",
+      "width": 446.40625,
+      "height": 48,
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "name": "Restart scenario: review changes for 4-minute technique challenge",
+      "width": 446.40625,
+      "height": 48,
+      "font": 16,
+      "clipped": false
+    }
+  ]
+}

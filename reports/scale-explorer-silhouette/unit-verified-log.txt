@@ -1,0 +1,38 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > represents all197 nucleons with79 protons and118 neutrons in a finite illustrative layout 18ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > normalizes only the strict whole/section view and finite numeric section depth 3ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > provides four cited native stops with correct species targets and isolated camera data 245ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > migrates legacy notes and preserves exact native cameras and section settings through backup 117ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > uses actual retained species instances and a fixed14fm reference with finite WebGL1 buffers 334ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > allocates full species colour buffers before hiding inactive section faces 335ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > cuts real species ray hits at the model-local plane and admits only active cap instances 230ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > updates reversible section caps and comparison without reallocating any retained resource 797ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > frames the reference rather than shared unit geometry when instances are transformed 20ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > releases all tracked GPU resources exactly once after section and comparison changes 21ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > restores bounded canyon relief and preserves its new Earth entry point 24ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > restores deep orbital views without extending other specimens’ zoom limits 3ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > recovers nebula visibility and uses the corrected 24-light-year reference 2ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > preserves galaxy landmarks and the recorded viewing direction 5ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > preserves solar layer observations and rejects an unknown solar target 2ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > keeps distinct microscopic structures and their saved cutaway state 1ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > restores planetary lighting and landmarks while accepting older notebook entries 2ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > ignores invalid targets and duplicate records without discarding valid notes 2ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > retains a recorded personal height and bounds damaged camera and note values 2ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > keeps drafts attached to known objects and features, including an intentionally blank edit 2ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > bounds a notebook loaded from oversized storage 7ms
+ ✓ tests/scale_explorer_silhouette.test.js > Scale Explorer larger-object silhouettes > accepts only the saved silhouette presentation enum 9ms
+ ✓ tests/scale_explorer_silhouette.test.js > Scale Explorer larger-object silhouettes > chooses the closest strictly larger object while skipping distances and wavelengths 2ms
+ ✓ tests/scale_explorer_silhouette.test.js > Scale Explorer larger-object silhouettes > uses the current personalized height and never mutates catalog measurements 3ms
+ ✓ tests/scale_explorer_silhouette.test.js > Scale Explorer larger-object silhouettes > bounds mask resolution while preserving aspect and finite dimensions 133ms
+ ✓ tests/scale_explorer_silhouette.test.js > Scale Explorer larger-object silhouettes > restores render targets, scene settings, scissor and every layer including nested lights 213ms
+ ✓ tests/scale_explorer_silhouette.test.js > Scale Explorer larger-object silhouettes > restores all render state after a failed mask pass and leaves no stale silhouette 7ms
+ ✓ tests/scale_explorer_silhouette.test.js > Scale Explorer larger-object silhouettes > retains one mask, one material and one quad across resize, contrast and hide transitions 702ms
+
+ Test Files  3 passed (3)
+      Tests  28 passed (28)
+   Start at  20:31:58
+   Duration  14.77s (transform 278ms, setup 0ms, import 2.89s, tests 3.27s, environment 1ms)
+
+JSON report written to C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-silhouette/unit-verified-results.json

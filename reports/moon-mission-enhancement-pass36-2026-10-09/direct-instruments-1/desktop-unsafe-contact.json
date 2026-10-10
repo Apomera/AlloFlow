@@ -1,0 +1,414 @@
+{
+  "state": {
+    "missionPhase": 7,
+    "animPaused": true,
+    "soundOff": true,
+    "missionXP": 0,
+    "missionLog": [],
+    "earnedBadges": {
+      "first_step": true,
+      "mission_complete": true
+    },
+    "difficulty": "pilot",
+    "lunarSamples": [],
+    "quizCorrect": 0,
+    "ascentRun": {
+      "version": 1,
+      "time": 436.17164546251297,
+      "recorded": true
+    },
+    "ascentResult": {
+      "version": 1,
+      "outcome": "orbit",
+      "cutoffReason": "insertion",
+      "duration": 436.17164546251297,
+      "cutoffAltitude": 20063.28754538795,
+      "cutoffSpeed": 1685.4415970467903,
+      "perilune": 19029.14188549202,
+      "apolune": 85000.0000492027,
+      "eccentricity": 0.018433642833266855,
+      "period": 6790.982229657983,
+      "peakG": 0.5960571154327584,
+      "propellantRemaining": 138.45833963834926,
+      "propellantUsed": 2226.541660361651,
+      "idealDeltaV": 1852.9989295081723
+    },
+    "ascentPaused": true,
+    "dockingRun": {
+      "version": 1,
+      "time": 20.037561101402293,
+      "x": -6.156672841743585e-10,
+      "y": 0,
+      "vx": -3.683911484734229e-8,
+      "vy": 0.7974907783566804,
+      "propellant": 39.99754971759048,
+      "status": "collision",
+      "ax": 0,
+      "ay": 0
+    },
+    "dockingPaused": true,
+    "dockingGuided": true,
+    "dockingResult": null
+  },
+  "title": "Recorded contact measurements",
+  "root": {
+    "left": 57,
+    "right": 1043,
+    "top": 586.0625,
+    "bottom": 909.25,
+    "width": 986,
+    "height": 323.1875
+  },
+  "viewport": 1100,
+  "documentWidth": 1100,
+  "controls": [
+    {
+      "kind": "pause",
+      "left": 57,
+      "right": 180.8125,
+      "top": 478.0625,
+      "bottom": 522.0625,
+      "width": 123.8125,
+      "height": 44
+    },
+    {
+      "kind": "up",
+      "left": 57,
+      "right": 152.625,
+      "top": 530.0625,
+      "bottom": 574.0625,
+      "width": 95.625,
+      "height": 44
+    },
+    {
+      "kind": "down",
+      "left": 160.625,
+      "right": 247.1875,
+      "top": 530.0625,
+      "bottom": 574.0625,
+      "width": 86.5625,
+      "height": 44
+    },
+    {
+      "kind": "approach",
+      "left": 255.1875,
+      "right": 353.15625,
+      "top": 530.0625,
+      "bottom": 574.0625,
+      "width": 97.96875,
+      "height": 44
+    },
+    {
+      "kind": "brake",
+      "left": 361.15625,
+      "right": 434.90625,
+      "top": 530.0625,
+      "bottom": 574.0625,
+      "width": 73.75,
+      "height": 44
+    }
+  ],
+  "metrics": [
+    {
+      "key": "offset",
+      "within": "true",
+      "reading": "< 0.01 m inward",
+      "status": "Within contact limit",
+      "clipped": "Fixed display scale",
+      "card": {
+        "left": 70,
+        "right": 383.328125,
+        "top": 658.75,
+        "bottom": 896.25,
+        "width": 313.328125,
+        "height": 237.5
+      },
+      "track": {
+        "left": 89,
+        "right": 364.328125,
+        "top": 789.25,
+        "bottom": 801.25,
+        "width": 275.328125,
+        "height": 12
+      },
+      "marker": {
+        "left": 218.1709747314453,
+        "right": 235.1415252685547,
+        "top": 786.7647094726562,
+        "bottom": 803.7352905273438,
+        "width": 16.970550537109375,
+        "height": 16.9705810546875
+      },
+      "band": {
+        "left": 185.359375,
+        "right": 267.953125,
+        "top": 787.25,
+        "bottom": 803.25,
+        "width": 82.59375,
+        "height": 16
+      },
+      "scale": {
+        "left": 89,
+        "right": 364.328125,
+        "top": 813.25,
+        "bottom": 831.25,
+        "width": 275.328125,
+        "height": 18
+      },
+      "position": 50,
+      "bandStart": 35,
+      "bandWidth": 30,
+      "markerCss": {
+        "width": 12,
+        "height": 12,
+        "border": 2
+      },
+      "scaleTexts": [
+        "−2",
+        "0",
+        "+2 m"
+      ],
+      "scaleLabels": [
+        {
+          "left": 89,
+          "right": 175.4375,
+          "top": 813.25,
+          "bottom": 831.25,
+          "width": 86.4375,
+          "height": 18
+        },
+        {
+          "left": 183.4375,
+          "right": 269.875,
+          "top": 813.25,
+          "bottom": 831.25,
+          "width": 86.4375,
+          "height": 18
+        },
+        {
+          "left": 277.875,
+          "right": 364.328125,
+          "top": 813.25,
+          "bottom": 831.25,
+          "width": 86.453125,
+          "height": 18
+        }
+      ],
+      "fonts": [
+        13,
+        17,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    {
+      "key": "closing",
+      "within": "false",
+      "reading": "0.797 m/s closing",
+      "status": "Outside contact limit",
+      "clipped": "Outside displayed scale",
+      "card": {
+        "left": 393.328125,
+        "right": 706.65625,
+        "top": 658.75,
+        "bottom": 896.25,
+        "width": 313.328125,
+        "height": 237.5
+      },
+      "track": {
+        "left": 412.328125,
+        "right": 687.65625,
+        "top": 789.25,
+        "bottom": 801.25,
+        "width": 275.328125,
+        "height": 12
+      },
+      "marker": {
+        "left": 679.1709594726562,
+        "right": 696.1415405273438,
+        "top": 786.7647094726562,
+        "bottom": 803.7352905273438,
+        "width": 16.9705810546875,
+        "height": 16.9705810546875
+      },
+      "band": {
+        "left": 549.984375,
+        "right": 618.8125,
+        "top": 787.25,
+        "bottom": 803.25,
+        "width": 68.828125,
+        "height": 16
+      },
+      "scale": {
+        "left": 412.328125,
+        "right": 687.65625,
+        "top": 813.25,
+        "bottom": 831.25,
+        "width": 275.328125,
+        "height": 18
+      },
+      "position": 100,
+      "bandStart": 50,
+      "bandWidth": 25,
+      "markerCss": {
+        "width": 12,
+        "height": 12,
+        "border": 2
+      },
+      "scaleTexts": [
+        "−0.4",
+        "0",
+        "+0.4 m/s"
+      ],
+      "scaleLabels": [
+        {
+          "left": 412.328125,
+          "right": 498.765625,
+          "top": 813.25,
+          "bottom": 831.25,
+          "width": 86.4375,
+          "height": 18
+        },
+        {
+          "left": 506.765625,
+          "right": 593.203125,
+          "top": 813.25,
+          "bottom": 831.25,
+          "width": 86.4375,
+          "height": 18
+        },
+        {
+          "left": 601.203125,
+          "right": 687.65625,
+          "top": 813.25,
+          "bottom": 831.25,
+          "width": 86.453125,
+          "height": 18
+        }
+      ],
+      "fonts": [
+        13,
+        17,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    {
+      "key": "drift",
+      "within": "true",
+      "reading": "< 0.001 m/s inward",
+      "status": "Within contact limit",
+      "clipped": "Fixed display scale",
+      "card": {
+        "left": 716.65625,
+        "right": 1030,
+        "top": 658.75,
+        "bottom": 896.25,
+        "width": 313.34375,
+        "height": 237.5
+      },
+      "track": {
+        "left": 735.65625,
+        "right": 1011,
+        "top": 789.25,
+        "bottom": 801.25,
+        "width": 275.34375,
+        "height": 12
+      },
+      "marker": {
+        "left": 864.8272094726562,
+        "right": 881.7977905273438,
+        "top": 786.7647094726562,
+        "bottom": 803.7352905273438,
+        "width": 16.9705810546875,
+        "height": 16.9705810546875
+      },
+      "band": {
+        "left": 827.4375,
+        "right": 919.21875,
+        "top": 787.25,
+        "bottom": 803.25,
+        "width": 91.78125,
+        "height": 16
+      },
+      "scale": {
+        "left": 735.65625,
+        "right": 1011,
+        "top": 813.25,
+        "bottom": 831.25,
+        "width": 275.34375,
+        "height": 18
+      },
+      "position": 50,
+      "bandStart": 33.3333,
+      "bandWidth": 33.3333,
+      "markerCss": {
+        "width": 12,
+        "height": 12,
+        "border": 2
+      },
+      "scaleTexts": [
+        "−0.3",
+        "0",
+        "+0.3 m/s"
+      ],
+      "scaleLabels": [
+        {
+          "left": 735.65625,
+          "right": 822.09375,
+          "top": 813.25,
+          "bottom": 831.25,
+          "width": 86.4375,
+          "height": 18
+        },
+        {
+          "left": 830.09375,
+          "right": 916.546875,
+          "top": 813.25,
+          "bottom": 831.25,
+          "width": 86.453125,
+          "height": 18
+        },
+        {
+          "left": 924.546875,
+          "right": 1010.984375,
+          "top": 813.25,
+          "bottom": 831.25,
+          "width": 86.4375,
+          "height": 18
+        }
+      ],
+      "fonts": [
+        13,
+        17,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12
+      ]
+    }
+  ],
+  "legacy": {
+    "time": "20.0 s",
+    "range": "0.00 m",
+    "offset": "-0.00 m",
+    "closing": "0.797 m/s",
+    "lateral": "-0.000 m/s",
+    "propellant": "40.00 kg"
+  },
+  "canvas": {
+    "offset": -6.156672841743585e-10,
+    "closing": 0.7974907783566804,
+    "status": "collision"
+  }
+}

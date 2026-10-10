@@ -1,0 +1,339 @@
+[
+  {
+    "dark": true,
+    "state": "pair",
+    "from": "Earth",
+    "to": "Jupiter",
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "minimumContrast": 10.493433493050132,
+    "minimumTargetHeight": 44,
+    "portraits": [
+      {
+        "key": "Earth",
+        "raw": 11.664659352605456,
+        "drawn": 11.664659352605456,
+        "actual": 11.65625
+      },
+      {
+        "key": "Jupiter",
+        "raw": 128,
+        "drawn": 128,
+        "actual": 128
+      }
+    ]
+  },
+  {
+    "dark": false,
+    "state": "pair",
+    "from": "Earth",
+    "to": "Jupiter",
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "minimumContrast": 6.945437128252402,
+    "minimumTargetHeight": 44,
+    "portraits": [
+      {
+        "key": "Earth",
+        "raw": 11.664659352605456,
+        "drawn": 11.664659352605456,
+        "actual": 11.65625
+      },
+      {
+        "key": "Jupiter",
+        "raw": 128,
+        "drawn": 128,
+        "actual": 128
+      }
+    ]
+  },
+  {
+    "dark": true,
+    "state": "counterexample",
+    "from": "Uranus",
+    "to": "Neptune",
+    "width": 736,
+    "scrollWidth": 736,
+    "errors": [],
+    "minimumContrast": 10.493433493050132,
+    "minimumTargetHeight": 44,
+    "portraits": [
+      {
+        "key": "Uranus",
+        "raw": 128,
+        "drawn": 128,
+        "actual": 128
+      },
+      {
+        "key": "Neptune",
+        "raw": 124.26527876350445,
+        "drawn": 124.26527876350445,
+        "actual": 124.25
+      }
+    ]
+  },
+  {
+    "dark": false,
+    "state": "pair",
+    "from": "Earth",
+    "to": "Jupiter",
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "minimumContrast": 6.945437128252402,
+    "minimumTargetHeight": 44,
+    "portraits": [
+      {
+        "key": "Earth",
+        "raw": 11.664659352605456,
+        "drawn": 11.664659352605456,
+        "actual": 11.65625
+      },
+      {
+        "key": "Jupiter",
+        "raw": 128,
+        "drawn": 128,
+        "actual": 128
+      }
+    ]
+  },
+  {
+    "dark": true,
+    "state": "floor",
+    "from": "Pluto",
+    "to": "Jupiter",
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "minimumContrast": 10.493433493050132,
+    "minimumTargetHeight": 44,
+    "portraits": [
+      {
+        "key": "Pluto",
+        "raw": 2.1751083520476033,
+        "drawn": 3,
+        "actual": 3
+      },
+      {
+        "key": "Jupiter",
+        "raw": 128,
+        "drawn": 128,
+        "actual": 128
+      }
+    ]
+  },
+  {
+    "dark": true,
+    "state": "swapped-floor",
+    "from": "Jupiter",
+    "to": "Pluto",
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "minimumContrast": 10.493433493050132,
+    "minimumTargetHeight": 44,
+    "portraits": [
+      {
+        "key": "Jupiter",
+        "raw": 128,
+        "drawn": 128,
+        "actual": 128
+      },
+      {
+        "key": "Pluto",
+        "raw": 2.1751083520476033,
+        "drawn": 3,
+        "actual": 3
+      }
+    ]
+  },
+  {
+    "dark": false,
+    "state": "equal-gravity",
+    "from": "Mercury",
+    "to": "Mars",
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "minimumContrast": 6.945437128252402,
+    "minimumTargetHeight": 44,
+    "portraits": [
+      {
+        "key": "Mercury",
+        "raw": 92.12979351032449,
+        "drawn": 92.12979351032449,
+        "actual": 92.125
+      },
+      {
+        "key": "Mars",
+        "raw": 128,
+        "drawn": 128,
+        "actual": 128
+      }
+    ]
+  },
+  {
+    "dark": true,
+    "state": "same",
+    "from": "Earth",
+    "to": "Earth",
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "minimumContrast": 11.582458568809063,
+    "minimumTargetHeight": 44,
+    "portraits": [
+      {
+        "key": "Earth",
+        "raw": 128,
+        "drawn": 128,
+        "actual": 128
+      },
+      {
+        "key": "Earth",
+        "raw": 128,
+        "drawn": 128,
+        "actual": 128
+      }
+    ]
+  },
+  {
+    "dark": false,
+    "state": "invalid",
+    "from": "broken",
+    "to": "Mars",
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "minimumContrast": 6.945437128252402,
+    "minimumTargetHeight": 44,
+    "portraits": []
+  },
+  {
+    "dark": false,
+    "state": "malformed-draft",
+    "from": "Earth",
+    "to": "Jupiter",
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "minimumContrast": 6.945437128252402,
+    "minimumTargetHeight": 44,
+    "portraits": [
+      {
+        "key": "Earth",
+        "raw": 11.664659352605456,
+        "drawn": 11.664659352605456,
+        "actual": 11.65625
+      },
+      {
+        "key": "Jupiter",
+        "raw": 128,
+        "drawn": 128,
+        "actual": 128
+      }
+    ]
+  },
+  {
+    "dark": false,
+    "state": "table",
+    "from": "Earth",
+    "to": "Jupiter",
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "minimumContrast": 6.945437128252402,
+    "minimumTargetHeight": 44,
+    "portraits": [
+      {
+        "key": "Earth",
+        "raw": 11.664659352605456,
+        "drawn": 11.664659352605456,
+        "actual": 11.65625
+      },
+      {
+        "key": "Jupiter",
+        "raw": 128,
+        "drawn": 128,
+        "actual": 128
+      }
+    ]
+  },
+  {
+    "dark": true,
+    "state": "saved",
+    "from": "Uranus",
+    "to": "Neptune",
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "minimumContrast": 11.582458568809063,
+    "minimumTargetHeight": 44,
+    "portraits": [
+      {
+        "key": "Uranus",
+        "raw": 128,
+        "drawn": 128,
+        "actual": 128
+      },
+      {
+        "key": "Neptune",
+        "raw": 124.26527876350445,
+        "drawn": 124.26527876350445,
+        "actual": 124.25
+      }
+    ]
+  },
+  {
+    "dark": false,
+    "state": "sidebar",
+    "from": "Earth",
+    "to": "Jupiter",
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "minimumContrast": 6.945437128252402,
+    "minimumTargetHeight": 44,
+    "portraits": [
+      {
+        "key": "Earth",
+        "raw": 11.664659352605456,
+        "drawn": 11.664659352605456,
+        "actual": 11.65625
+      },
+      {
+        "key": "Jupiter",
+        "raw": 128,
+        "drawn": 128,
+        "actual": 128
+      }
+    ]
+  },
+  {
+    "dark": true,
+    "state": "sidebar",
+    "from": "Saturn",
+    "to": "Earth",
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "minimumContrast": 11.582458568809063,
+    "minimumTargetHeight": 44,
+    "portraits": [
+      {
+        "key": "Saturn",
+        "raw": 128,
+        "drawn": 128,
+        "actual": 128
+      },
+      {
+        "key": "Earth",
+        "raw": 14.00412144525347,
+        "drawn": 14.00412144525347,
+        "actual": 14
+      }
+    ]
+  }
+]

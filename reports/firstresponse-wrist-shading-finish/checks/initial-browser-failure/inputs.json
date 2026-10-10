@@ -1,0 +1,29 @@
+{
+  "baselineSHA": "f6cfbcccc65323918d7ca7b209737dcd13cf57a31246da4110f2ab980907147f",
+  "finalSHA": "179ddeefd0c930ca4a084d98fc683c321fb4f36f720e62cddf8b30d56b576466",
+  "inputs": {
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-wrist-shading-work\\run-wrists-browser.cjs": "fc270d67f61934bd7308790bd7e37e3f261aa54fb947d6faac44818bec70aded",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-wrist-shading-work\\before.js": "f6cfbcccc65323918d7ca7b209737dcd13cf57a31246da4110f2ab980907147f",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-wrist-shading-work\\candidate.js": "179ddeefd0c930ca4a084d98fc683c321fb4f36f720e62cddf8b30d56b576466",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-wrist-shading-work\\firstresponse-wrists-preview.spec.ts": "b339931994031ad34e6f34a7d519ae2c6656db7a9355cddf5a2ff319fd6e479c",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-wrist-shading-work\\playwright-wrists.config.cjs": "03e6e8f1690f192ca6db595d7b09c8f93118d4f592b2a8aa25800a532faece78",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-wrist-shading-work\\wrist-capture-png.cjs": "b91fcd4304387a0ae181d59d269ea59dfe78597262fbf352a2987aaaff27de8e",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright-core\\lib\\utilsBundle.js": "5c42363c10d2f2f5bc91e07feaa9fa5f417a1a55e6559448d0c20d66f73db9e0",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_firstresponse.js": "f6cfbcccc65323918d7ca7b209737dcd13cf57a31246da4110f2ab980907147f",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_firstresponse.js": "f6cfbcccc65323918d7ca7b209737dcd13cf57a31246da4110f2ab980907147f",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\app-build\\stem_lab\\stem_tool_firstresponse.js": "f6cfbcccc65323918d7ca7b209737dcd13cf57a31246da4110f2ab980907147f",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\build\\stem_lab\\stem_tool_firstresponse.js": "f6cfbcccc65323918d7ca7b209737dcd13cf57a31246da4110f2ab980907147f",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\vendor\\three-r128\\three.min.js": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_lab_module.js": "cf56996d420aa6112626c4979d4a8e3963c9b199bf31deebb3e29d3910227de1"
+  },
+  "selectedViews": [
+    "adult-heel-side"
+  ],
+  "baselineOnly": false,
+  "expectedWorkflows": 1,
+  "expectedEvidence": 4,
+  "workers": 1,
+  "retries": 0,
+  "startedAt": "2026-10-08T14:55:57.538Z"
+}

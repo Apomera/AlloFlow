@@ -1,0 +1,120 @@
+diff --git "a/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-fifty-four\\baseline-source.js" "b/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_cephalopodlab.js"
+index d4bdbbb86..75c074d7c 100644
+--- "a/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-fifty-four\\baseline-source.js"
++++ "b/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_cephalopodlab.js"
+@@ -16162,7 +16162,8 @@ function createCLHuntFish(T,index){
+         controlPanel=document.createElement('div');controlPanel.className='cl-hunt-controls';stage.appendChild(controlPanel);
+         function uiButton(label,fn,parent){var b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=fn;(parent||controlPanel).appendChild(b);return b;}
+         var pauseButton=uiButton('Pause',function(){setPaused(!gameState.paused);canvasEl.focus();});
+-        var viewButton=uiButton('View',function(){closeMobileTools(false);cycleCamera();});
++        var viewButton=uiButton('View · Follow',function(){closeMobileTools(false);cycleCamera();});
++        viewButton.setAttribute('aria-label','View');viewButton.title='Follow view. V or View cycles Follow, Side, Tactical and Hunt.';
+         var inspectButton=uiButton('Inspect [F]',function(){closeMobileTools(false);toggleInspection();});
+         var forageButton=uiButton('Forage [R]',toggleForage);forageButton.setAttribute('aria-pressed','false');forageButton.onpointerdown=function(e){e.preventDefault();};
+         var helpButton=uiButton('Help / settings',function(){closeMobileTools(false);openSettings();});
+@@ -16300,7 +16301,7 @@ function createCLHuntFish(T,index){
+         function openSettings(){if(gameState.gameOver)return;updateHuntHelp();settingsWasPaused=gameState.paused;setPaused(true);settingsPanel.hidden=false;settingsPanel.querySelector('input').focus();}
+         function closeSettings(){settingsPanel.hidden=true;clearInput();setPaused(settingsWasPaused);canvasEl.focus();}
+         settingsPanel.onkeydown=function(e){if(e.key==='Escape'){e.preventDefault();closeSettings();}if(e.key==='Tab'){var nodes=settingsPanel.querySelectorAll('button,input,select'),first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}};
+-        function cycleCamera(){gameState.cameraMode=((gameState.cameraMode||0)+1)%3;if(gameState.paused&&!inspection.active){updateDiveCamera(0,true);if(targetHalo.visible)targetHalo.quaternion.copy(camera.quaternion);}clAnnounce(['Follow view','Side view','Tactical view'][gameState.cameraMode]);canvasEl.focus();}
++        function cycleCamera(){gameState.cameraMode=((gameState.cameraMode||0)+1)%4;var names=['Follow','Side','Tactical','Hunt'];viewButton.textContent='View · '+names[gameState.cameraMode];viewButton.title=names[gameState.cameraMode]+' view. V or View cycles Follow, Side, Tactical and Hunt.';if(!inspection.active&&(gameState.paused||gameState.cameraMode===3)){updateDiveCamera(0,true);if(targetHalo.visible)targetHalo.quaternion.copy(camera.quaternion);}clAnnounce(names[gameState.cameraMode]+' view');canvasEl.focus();}
+         // Inspection freezes the simulation, including hunger, cooldowns and predator movement.
+         inspectionPanel=document.createElement('div');inspectionPanel.className='cl-inspection';inspectionPanel.hidden=true;inspectionPanel.setAttribute('role','region');inspectionPanel.setAttribute('aria-label','Specimen inspection');stage.appendChild(inspectionPanel);
+         var inspectionTitle=document.createElement('div');inspectionTitle.className='cl-inspection-title';
+@@ -16450,14 +16451,57 @@ function createCLHuntFish(T,index){
+           }
+           inspectionOcclusionPosition.copy(camera.position);inspectionOcclusionCenter.copy(inspection.center);
+         }
++        // Hunt view measures the existing animal; no scene objects or materials are added.
++        var huntCameraFrame={ready:false,distance:0,hasPrey:false,boundsVersions:new WeakMap(),look:new THREE.Vector3(),desiredLook:new THREE.Vector3(),prey:new THREE.Vector3(),bounds:new THREE.Box3(),part:new THREE.Box3(),inverse:new THREE.Matrix4(),relative:new THREE.Matrix4(),point:new THREE.Vector3(),direction:new THREE.Vector3(),right:new THREE.Vector3(),up:new THREE.Vector3(),offset:new THREE.Vector3()};
++        function measureHuntCameraFrame(dt,snap){
++          var frame=huntCameraFrame;octopus.updateWorldMatrix(true,true);frame.inverse.copy(octopus.matrixWorld).invert();frame.bounds.makeEmpty();
++          octopus.traverse(function(obj){
++            if(!obj.isMesh||obj.isInstancedMesh||!obj.geometry)return;
++            for(var ancestor=obj;ancestor&&ancestor!==octopus.parent;ancestor=ancestor.parent)if(!ancestor.visible)return;
++            // Tubes, fins and mantle can deform. Refresh their retained bounds before fitting.
++            var geometry=obj.geometry,position=geometry.attributes.position;
++            if(!geometry.boundingBox||frame.boundsVersions.get(geometry)!==position.version){geometry.computeBoundingBox();frame.boundsVersions.set(geometry,position.version);}
++            if(!geometry.boundingBox||geometry.boundingBox.isEmpty())return;
++            frame.relative.multiplyMatrices(frame.inverse,obj.matrixWorld);frame.bounds.union(frame.part.copy(obj.geometry.boundingBox).applyMatrix4(frame.relative));
++          });
++          if(frame.bounds.isEmpty())frame.bounds.set(new THREE.Vector3(-1.7,-0.6,-1.5).multiplyScalar(bodyScale),new THREE.Vector3(1.7,0.8,2).multiplyScalar(bodyScale));
++          frame.bounds.expandByScalar(0.14*bodyScale);frame.bounds.getCenter(frame.desiredLook).applyMatrix4(octopus.matrixWorld);
++          // Keep the accepted catch in frame through recovery, including after prey disposal.
++          var visual=octopusStrikeVisual||squidStrikeVisual,tracked=gameState.pendingStrike?gameState.pendingStrike.target:selectedPrey;
++          var focus=visual?visual.aimWorld:tracked&&tracked.userData.alive?tracked.position:null,maxFocus=Math.max(4.5,Math.min(6,3.8*bodyScale));
++          frame.hasPrey=!!(focus&&Number.isFinite(focus.x)&&Number.isFinite(focus.y)&&Number.isFinite(focus.z)&&focus.distanceToSquared(octopus.position)<=maxFocus*maxFocus);
++          if(frame.hasPrey){frame.prey.copy(focus);frame.desiredLook.lerp(frame.prey,0.30);}
++          var step=Math.max(0,Math.min(0.05,dt||0)),immediate=!frame.ready||snap||gameState.a11y.reducedMotion;
++          frame.look.lerp(frame.desiredLook,immediate?1:1-Math.exp(-5*step));frame.ready=true;
++          return immediate;
++        }
++        function fitHuntCameraDistance(direction){
++          var frame=huntCameraFrame;frame.right.crossVectors(camera.up,direction).normalize();frame.up.crossVectors(direction,frame.right).normalize();
++          var tanV=Math.tan(camera.fov*Math.PI/360),tanH=tanV*Math.max(0.25,Math.min(4,camera.aspect||1)),distance=2.6*bodyScale;
++          for(var group=0;group<(frame.hasPrey?2:1);group++)for(var corner=0;corner<8;corner++){
++            if(group===0){frame.point.set(corner&1?frame.bounds.max.x:frame.bounds.min.x,corner&2?frame.bounds.max.y:frame.bounds.min.y,corner&4?frame.bounds.max.z:frame.bounds.min.z).applyMatrix4(octopus.matrixWorld);}
++            else frame.point.set(frame.prey.x+(corner&1?0.45:-0.45),frame.prey.y+(corner&2?0.45:-0.45),frame.prey.z+(corner&4?0.45:-0.45));
++            frame.point.sub(frame.look);var depth=frame.point.dot(direction);
++            distance=Math.max(distance,depth+Math.abs(frame.point.dot(frame.right))/(tanH*0.82),depth+Math.abs(frame.point.dot(frame.up))/(tanV*0.74),depth+camera.near+0.20);
++          }
++          return distance+0.12*bodyScale;
++        }
+         function updateDiveCamera(dt,snap){
+-          var view=gameState.cameraMode||0,camAngle=inspection.active?inspection.yaw:gameState.facingAngle+(view===1?Math.PI/2:0);
++          var view=gameState.cameraMode||0,camAngle=inspection.active?inspection.yaw:gameState.facingAngle+(view===1?Math.PI/2:view===3?-Math.PI*0.74:0);
+           var camOff=inspection.active?new THREE.Vector3(-Math.sin(camAngle)*Math.cos(inspection.pitch)*inspection.distance,Math.sin(inspection.pitch)*inspection.distance,-Math.cos(camAngle)*Math.cos(inspection.pitch)*inspection.distance):new THREE.Vector3(-Math.sin(camAngle)*(view===2?3:4.6),view===2?9:2.2,-Math.cos(camAngle)*(view===2?3:4.6));
+           var cameraLook=inspection.active&&inspection.center?inspection.center.clone():new THREE.Vector3(octopus.position.x,octopus.position.y+0.15,octopus.position.z);
+           if(inspection.active){
+             var inspectionUp=new THREE.Vector3(Math.sin(camAngle)*Math.sin(inspection.pitch),Math.cos(inspection.pitch),Math.cos(camAngle)*Math.sin(inspection.pitch));
+             cameraLook.addScaledVector(inspectionUp,(inspection.frameOffset||0)*inspection.distance*Math.tan(camera.fov*Math.PI/360));
+           }
++          var huntCameraSnap=false,hunting=!inspection.active&&view===3;
++          if(hunting){
++            huntCameraSnap=measureHuntCameraFrame(dt,snap);cameraLook.copy(huntCameraFrame.look);
++            huntCameraFrame.direction.set(-Math.sin(camAngle)*Math.cos(0.24),Math.sin(0.24),-Math.cos(camAngle)*Math.cos(0.24));
++            var needed=fitHuntCameraDistance(huntCameraFrame.direction),ease=huntCameraSnap?1:1-Math.exp(-3.5*Math.max(0,Math.min(0.05,dt||0)));
++            huntCameraFrame.distance=Math.max(needed,huntCameraFrame.distance+(needed-huntCameraFrame.distance)*ease);
++            camOff.copy(huntCameraFrame.direction).multiplyScalar(huntCameraFrame.distance);
++          }else huntCameraFrame.ready=false;
+           var camTarget=cameraLook.clone().add(camOff),camDir=camOff.clone().normalize();
+           if(!inspection.active){
+             cameraRay.set(cameraLook,camDir);cameraRay.far=camOff.length();
+@@ -16465,7 +16509,7 @@ function createCLHuntFish(T,index){
+             if(cameraHits.length)camTarget.copy(cameraLook).addScaledVector(camDir,Math.max(1.5,cameraHits[0].distance-0.3));
+           }
+           camTarget.y=Math.max(camTarget.y,terrainHeight(camTarget.x,camTarget.z)+0.65);
+-          if(snap&&!inspection.active)camera.position.copy(camTarget);
++          if((snap||huntCameraSnap)&&!inspection.active)camera.position.copy(camTarget);
+           else if(inspection.active&&inspection.snapCamera){camera.position.copy(camTarget);inspection.snapCamera=false;}
+           else camera.position.lerp(camTarget,gameState.a11y.reducedMotion?1:1-Math.exp(-7.7*dt));
+           if(inspection.active){
+@@ -16476,6 +16520,19 @@ function createCLHuntFish(T,index){
+             camera.position.y=Math.max(camera.position.y,terrainHeight(camera.position.x,camera.position.z)+0.65);
+             updateInspectionOcclusion();
+           }
++          if(hunting&&(!cameraHits||!cameraHits.length)){
++            // A follow interpolation chord may move inward. Fit the actual viewing direction too.
++            huntCameraFrame.offset.subVectors(camera.position,cameraLook);var currentDistance=huntCameraFrame.offset.length();
++            if(currentDistance>0.0001){
++              huntCameraFrame.offset.multiplyScalar(1/currentDistance);var currentFit=fitHuntCameraDistance(huntCameraFrame.offset);
++              if(currentDistance<currentFit){
++                cameraRay.set(cameraLook,huntCameraFrame.offset);cameraRay.far=currentFit;
++                var huntHits=cameraRay.intersectObjects(rocks,false);
++                if(!huntHits.length)camera.position.copy(cameraLook).addScaledVector(huntCameraFrame.offset,currentFit);
++              }
++            }
++            camera.position.y=Math.max(camera.position.y,terrainHeight(camera.position.x,camera.position.z)+0.65);
++          }
+           camera.lookAt(cameraLook);camera.updateMatrixWorld();
+           if(inspection.active){
+             octopus.updateMatrixWorld(true);
+@@ -18623,7 +18680,7 @@ function createCLHuntFish(T,index){
+           }
+           actionPrompt.style.boxSizing='border-box';actionPrompt.style.textAlign='center';bioPopup.style.display=touch?'none':'block';tutorial.style.display='none';
+           if(mobileToolsPanel&&!mobileToolsPanel.hidden)pauseOverlay.style.display='none';
+-          if(nW!==huntLayoutWidth||nH!==huntLayoutHeight){huntLayoutWidth=nW;huntLayoutHeight=nH;camera.aspect=nW/nH;camera.updateProjectionMatrix();if(inspection.active)frameInspection(false);renderer.setSize(nW,nH,false);try{if(renderer._alloComposer)renderer._alloComposer.setSize(nW,nH);}catch(e){}}
++          if(nW!==huntLayoutWidth||nH!==huntLayoutHeight){huntLayoutWidth=nW;huntLayoutHeight=nH;camera.aspect=nW/nH;camera.updateProjectionMatrix();if(inspection.active)frameInspection(false);else if(gameState.cameraMode===3){updateDiveCamera(0,true);if(targetHalo.visible)targetHalo.quaternion.copy(camera.quaternion);}renderer.setSize(nW,nH,false);try{if(renderer._alloComposer)renderer._alloComposer.setSize(nW,nH);}catch(e){}}
+         }
+         window.addEventListener('resize',scheduleHuntLayout);window.addEventListener('scroll',scheduleHuntLayout,{passive:true});
+         if(huntViewport){huntViewport.addEventListener('resize',scheduleHuntLayout);huntViewport.addEventListener('scroll',scheduleHuntLayout);}

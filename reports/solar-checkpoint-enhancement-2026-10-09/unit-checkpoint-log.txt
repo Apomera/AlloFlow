@@ -1,0 +1,34 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/solar_system_misconception_checkpoint.test.js
+[deferred-jsdom] Initializing the official DOM environment.
+
+stdout | tests/solar_system_misconception_checkpoint.test.js
+[deferred-jsdom] DOM environment ready.
+
+stdout | tests/solar_system_misconception_checkpoint.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/solar_system_misconception_checkpoint.test.js
+[deferred-jsdom] Existing repository setup loaded.
+
+ ✓ tests/solar_system_misconception_checkpoint.test.js > Solar System misconception checkpoint > offers all eight checkpoints with native labels, neutral choices, and no render-time writes 525ms
+ ✓ tests/solar_system_misconception_checkpoint.test.js > Solar System misconception checkpoint > shows the correct False explanation without prematurely completing or crediting the checkpoint 67ms
+ ✓ tests/solar_system_misconception_checkpoint.test.js > Solar System misconception checkpoint > shows corrective feedback for True and preserves the first answer across same-frame callbacks 21ms
+ ✓ tests/solar_system_misconception_checkpoint.test.js > Solar System misconception checkpoint > merges reviewed history atomically, keeps concurrent learning data, and ignores duplicate acknowledgements 45ms
+ ✓ tests/solar_system_misconception_checkpoint.test.js > Solar System misconception checkpoint > recovers the legacy hidden correct-answer state without auto-crediting or rewriting it 18ms
+ ✓ tests/solar_system_misconception_checkpoint.test.js > Solar System misconception checkpoint > reads malformed saved history, selection, and choices safely without a repair write 56ms
+ ✓ tests/solar_system_misconception_checkpoint.test.js > Solar System misconception checkpoint > reviews completed legacy history honestly when the original choice was not stored 29ms
+ ✓ tests/solar_system_misconception_checkpoint.test.js > Solar System misconception checkpoint > makes all eight explanations reachable and counts only distinct known checkpoints toward the quest 186ms
+ ✓ tests/solar_system_misconception_checkpoint.test.js > Solar System misconception checkpoint > scopes a selected topic to its world and uses stable world IDs with translated display names 37ms
+ ✓ tests/solar_system_misconception_checkpoint.test.js > Solar System misconception checkpoint > reopens explanations without changing answers or progress and speaks only when requested 50ms
+ ✓ tests/solar_system_misconception_checkpoint.test.js > Solar System misconception checkpoint > focuses each destination only once after its node is connected 32ms
+ ✓ tests/solar_system_misconception_checkpoint.test.js > Solar System misconception checkpoint > cancels obsolete focus and stale answer/review callbacks when another question or world is selected 36ms
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  15:49:50
+   Duration  2.21s (transform 51ms, setup 881ms, import 58ms, tests 1.10s, environment 0ms)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/solar-checkpoint-enhancement-2026-10-09/unit-checkpoint-results.json

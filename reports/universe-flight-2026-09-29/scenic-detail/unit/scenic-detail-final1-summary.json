@@ -1,0 +1,38 @@
+{
+  "exitCode": 0,
+  "tests": 71,
+  "passed": 71,
+  "failed": 0,
+  "expected": {
+    "ui": "5223660b4cbdc9ee53124ec148400204dd48a9e73d3e89c9ab829aa933afd797",
+    "renderer": "16d181fbe835baf707ea9b89611958f51a5f492bd2cf831f872cff652bfdde1c"
+  },
+  "before": {
+    "browserTest": "42443dcf73b552aea78f1acaa3241747fd739c503d8572a3af2f0979bc9f402b",
+    "physicsTest": "c181ce38faaa0a0f66b1f202222149fcc7aef2e08019ce4c05d8281107dbccaf",
+    "dustTest": "97358fb4ff5371b6ceff076cbdba031d199b5d6882d0665ef5c0a695ae759a2b",
+    "cloudTest": "ee48e0c12ab072f9abb8a52397c06b8f5894bdb974d5a2c01706c5455022707c",
+    "fineTest": "35b8e2c9c4b329b923ff699e92f91f2511e7a962f5f17bbbc62ef57feba12dca",
+    "guidanceTest": "fb3ef2d98c544a7ce12ea9878a4539ca0aaffb2123596098434cd043c77d7bc3",
+    "renderer": "16d181fbe835baf707ea9b89611958f51a5f492bd2cf831f872cff652bfdde1c",
+    "ui": "5223660b4cbdc9ee53124ec148400204dd48a9e73d3e89c9ab829aa933afd797",
+    "pairTest": "fe0f2c13842c2f8549224139844e48f9bb01d12162ec1fda52bfd2f89af788bb",
+    "inspectorTest": "724cc1d44e96c3476e1ee4c7e8b102a62b928ec2541f9f970a16ab807717b9dd",
+    "layoutTest": "03c3111e6cdb62a7104aa1f8d174cb352e858498669d0083255f15a9ddc89abc"
+  },
+  "after": {
+    "browserTest": "42443dcf73b552aea78f1acaa3241747fd739c503d8572a3af2f0979bc9f402b",
+    "physicsTest": "c181ce38faaa0a0f66b1f202222149fcc7aef2e08019ce4c05d8281107dbccaf",
+    "dustTest": "97358fb4ff5371b6ceff076cbdba031d199b5d6882d0665ef5c0a695ae759a2b",
+    "cloudTest": "ee48e0c12ab072f9abb8a52397c06b8f5894bdb974d5a2c01706c5455022707c",
+    "fineTest": "35b8e2c9c4b329b923ff699e92f91f2511e7a962f5f17bbbc62ef57feba12dca",
+    "guidanceTest": "fb3ef2d98c544a7ce12ea9878a4539ca0aaffb2123596098434cd043c77d7bc3",
+    "renderer": "16d181fbe835baf707ea9b89611958f51a5f492bd2cf831f872cff652bfdde1c",
+    "ui": "5223660b4cbdc9ee53124ec148400204dd48a9e73d3e89c9ab829aa933afd797",
+    "pairTest": "fe0f2c13842c2f8549224139844e48f9bb01d12162ec1fda52bfd2f89af788bb",
+    "inspectorTest": "724cc1d44e96c3476e1ee4c7e8b102a62b928ec2541f9f970a16ab807717b9dd",
+    "layoutTest": "03c3111e6cdb62a7104aa1f8d174cb352e858498669d0083255f15a9ddc89abc"
+  },
+  "unchanged": true,
+  "expectedPins": true
+}

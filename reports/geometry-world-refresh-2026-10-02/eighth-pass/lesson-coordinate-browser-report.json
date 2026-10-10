@@ -1,0 +1,221 @@
+{
+  "startedAt": "2026-10-06T03:13:34.069Z",
+  "checks": [
+    {
+      "name": "latest core source parses",
+      "status": "pass",
+      "evidence": {
+        "syntaxValid": true
+      }
+    },
+    {
+      "name": "short desktop lesson begins with closed Position and records actual pedagogy cues",
+      "status": "pass",
+      "evidence": {
+        "viewport": [
+          1024,
+          600
+        ],
+        "lesson": "areaSurface",
+        "cues": {
+          "compass": null,
+          "placementCue": null,
+          "objectiveCount": 0,
+          "measurementCount": 0
+        }
+      }
+    },
+    {
+      "name": "standard: native Position open hides compact cues without opening objectives",
+      "status": "pass",
+      "evidence": {
+        "compass": null,
+        "placementCue": null,
+        "objectiveCount": 0,
+        "measurementCount": 0,
+        "absentBaselineCuesAreNotApplicable": true
+      }
+    },
+    {
+      "name": "standard: camera and target grid readouts are semantic, readable, and bounded",
+      "status": "pass",
+      "evidence": {
+        "headings": [
+          "Camera position\ngrid units"
+        ],
+        "camera": [
+          2,
+          6,
+          8
+        ],
+        "expected": [
+          2,
+          6,
+          8
+        ],
+        "target": [],
+        "targetExpected": [],
+        "fonts": [
+          13,
+          13,
+          13,
+          13,
+          15,
+          13,
+          15,
+          13,
+          15,
+          13,
+          13
+        ],
+        "rect": {
+          "x": 8,
+          "y": 140,
+          "right": 272,
+          "bottom": 350,
+          "height": 210
+        },
+        "noOverflow": true
+      }
+    },
+    {
+      "name": "standard: scrolling exposes spoken toggle while summary remains reachable",
+      "status": "pass",
+      "evidence": {
+        "button": {
+          "top": 295,
+          "bottom": 339,
+          "height": 44
+        },
+        "hud": {
+          "top": 140,
+          "bottom": 350
+        },
+        "summary": {
+          "top": 141,
+          "bottom": 185,
+          "height": 44
+        }
+      }
+    },
+    {
+      "name": "standard: native close restores both cues and preserves lesson work",
+      "status": "pass",
+      "evidence": {
+        "cuesRestored": true,
+        "lessonGeometryDraftsAndResultsUnchanged": true
+      }
+    },
+    {
+      "name": "large: native Position open hides compact cues without opening objectives",
+      "status": "pass",
+      "evidence": {
+        "compass": null,
+        "placementCue": null,
+        "objectiveCount": 0,
+        "measurementCount": 0,
+        "absentBaselineCuesAreNotApplicable": true
+      }
+    },
+    {
+      "name": "large: camera and target grid readouts are semantic, readable, and bounded",
+      "status": "pass",
+      "evidence": {
+        "headings": [
+          "Camera position\ngrid units"
+        ],
+        "camera": [
+          2,
+          6,
+          8
+        ],
+        "expected": [
+          2,
+          6,
+          8
+        ],
+        "target": [],
+        "targetExpected": [],
+        "fonts": [
+          15,
+          15,
+          15,
+          15,
+          17,
+          15,
+          17,
+          15,
+          17,
+          15,
+          15
+        ],
+        "rect": {
+          "x": 8,
+          "y": 128,
+          "right": 272,
+          "bottom": 350,
+          "height": 222
+        },
+        "noOverflow": true
+      }
+    },
+    {
+      "name": "large: scrolling exposes spoken toggle while summary remains reachable",
+      "status": "pass",
+      "evidence": {
+        "button": {
+          "top": 295,
+          "bottom": 339,
+          "height": 44
+        },
+        "hud": {
+          "top": 128,
+          "bottom": 350
+        },
+        "summary": {
+          "top": 129,
+          "bottom": 173,
+          "height": 44
+        }
+      }
+    },
+    {
+      "name": "large: native close restores both cues and preserves lesson work",
+      "status": "pass",
+      "evidence": {
+        "cuesRestored": true,
+        "lessonGeometryDraftsAndResultsUnchanged": true
+      }
+    },
+    {
+      "name": "guided world remains nonblank and browser-error free",
+      "status": "pass",
+      "evidence": {
+        "lost": false,
+        "nonblack": 768,
+        "errors": [],
+        "lessonFixtures": 869
+      }
+    }
+  ],
+  "failures": [],
+  "screenshots": [
+    "lesson-short-position-standard.png",
+    "lesson-short-position-large.png",
+    "lesson-short-position-restored.png"
+  ],
+  "sourceHash": "F6A70AE6A6529663E7641456E9919469DB2B4897F034BA9A2D0319FBA5BF65A8",
+  "resourcesClosed": true,
+  "readiness": {
+    "preview": {
+      "ready": true,
+      "mode": "lesson"
+    },
+    "activeLesson": "areaSurface",
+    "sandbox": false,
+    "lessonTitle": "Area & Surface Area",
+    "compass": false,
+    "dialogs": []
+  },
+  "completedAt": "2026-10-06T03:14:13.332Z"
+}

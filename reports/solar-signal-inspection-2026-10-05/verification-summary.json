@@ -1,0 +1,143 @@
+{
+  "completedDate": "2026-10-05",
+  "committedByTask": false,
+  "units": {
+    "passed": 59,
+    "files": [
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/solar_system_learning_journey.test.js",
+        "passed": 10
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/solar_system_science_trust.test.js",
+        "passed": 4
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/solar_system_signal_inspection.test.js",
+        "passed": 20
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/solar_system_table_semantics_a11y.test.js",
+        "passed": 2
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/solar_system_themed_color_safety.test.js",
+        "passed": 6
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/solar_system_visual_science.test.js",
+        "passed": 17
+      }
+    ]
+  },
+  "browsers": {
+    "passed": 16,
+    "cases": [
+      {
+        "file": "112-solar-system-signal-inspection.spec.ts",
+        "title": "all eight destinations retain law-of-cosines delays and complete world markers at near, right-angle and far geometry",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "112-solar-system-signal-inspection.spec.ts",
+        "title": "the accessible journey separates equal outbound and return legs on one linear reply-time scale",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "112-solar-system-signal-inspection.spec.ts",
+        "title": "a sent receipt stays tied to its original target and angle while the live journey changes",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "112-solar-system-signal-inspection.spec.ts",
+        "title": "destination drafts and fixed observations survive visits while recording a third angle replaces only B",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "112-solar-system-signal-inspection.spec.ts",
+        "title": "equal restored observations report the same delay and retain equal patterned bars on the shared scale",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "112-solar-system-signal-inspection.spec.ts",
+        "title": "invalid destinations, nonscalar angles, notebook maps and receipts render safe fallbacks without rewriting the raw save",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "112-solar-system-signal-inspection.spec.ts",
+        "title": "accepted observation snapshots derive their distances and delays from geometry while malformed records and inconsistent pings are ignored",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "112-solar-system-signal-inspection.spec.ts",
+        "title": "prediction choices and saved flags are validated, and repeated native saving records once while revised evidence remains saveable",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "112-solar-system-signal-inspection.spec.ts",
+        "title": "320px light inspection preserves readable controls, accessible time legs and locally scrollable geometry",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "112-solar-system-signal-inspection.spec.ts",
+        "title": "320px dark inspection preserves readable controls, accessible time legs and locally scrollable geometry",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "48-solar-system-signal-delay-lab.spec.ts",
+        "title": "models changing Earth-Mars signal time and records the evidence",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "48-solar-system-signal-delay-lab.spec.ts",
+        "title": "keeps the signal investigation usable and exclusive at 340px",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "54-solar-system-signal-notebook.spec.ts",
+        "title": "records fixed observations on a shared scale and saves the student explanation",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "54-solar-system-signal-notebook.spec.ts",
+        "title": "retains destination notebooks and correctly describes a shorter second observation",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "54-solar-system-signal-notebook.spec.ts",
+        "title": "keeps a sent ping tied to its original orbital position",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "54-solar-system-signal-notebook.spec.ts",
+        "title": "fits captured observations and writing controls at 340px in both themes",
+        "project": "chromium",
+        "status": "passed"
+      }
+    ]
+  },
+  "visualStates": 14,
+  "minimumEnabledTextContrast": 5.3577549124490425,
+  "minimumControlHeight": 44,
+  "overflowFree": true,
+  "runtimeErrors": 0,
+  "syntax": "passed",
+  "scopedWhitespace": "passed",
+  "canonicalMirrorIdentical": true,
+  "sourceSha256": "47fdaa727594eb8252237ec6f81631820b26a91d60cb98be6955f82d04b36fe4"
+}

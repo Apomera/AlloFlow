@@ -1,0 +1,1506 @@
+
+<!DOCTYPE HTML>
+
+
+
+<html>
+
+<head>
+<title>CCCBDB listing of experimental data page 2</title> 
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" href="cccbdbx.css">
+<link rel="stylesheet" type="text/css" href="pulldown.css">
+<script type="text/javascript">
+function refcolor(refid)
+  {
+  var tref = document.getElementById("reftable")
+  // get all the cells in this table
+  var tds = tref.getElementsByTagName("td")
+  for (i=0; i<tds.length; i++) 
+    {
+    tds[i].style.color="black"
+    }   
+  document.getElementById(refid).style.color="red"
+  }
+</script>
+<style id="antiClickjack">body{display:none !important;}</style>
+<script type="text/javascript">
+   if (self === top) {
+       var antiClickjack = document.getElementById("antiClickjack");
+       antiClickjack.parentNode.removeChild(antiClickjack);
+   } else {
+       top.location = self.location;
+   }
+</script>
+<script async type="text/javascript" id="_fed_an_ua_tag" src="https://cccbdb.nist.gov/js/federated-analytics.all.min.js?agency=NIST&subagency=cccbdb&pua=UA-37115410-45&yt=true%20HTTP/1.1"></script> 
+</head>
+
+<body>
+
+ <table class="noborder">
+<tr>
+<td rowspan=2 class="noborder"> <A HREF="introx.asp"> <IMG SRC="gifs/cccbdb_logosmall.gif" alt="return to home page" title="Computational Chemistry Comparison and Benchmark Database" width="42" height="60"> </A>
+</td>
+<td class="noborder"><span class="title"><b>C</b>omputational <b>C</b>hemistry <b>C</b>omparison and <b>B</b>enchmark <b>D</b>ata<b>B</b>ase</span>
+Release 22 (May 2022) Standard Reference Database 101 
+<a href="https://www.nist.gov">National Institute of Standards and Technology</a>
+</td>
+</tr>
+<tr>
+
+<td class="noborder">
+
+<div class="pdmenu">
+
+<ul> <li class="homeclass pdheading">
+<a Href="introx.asp">Home</a> 
+<ul> <li class=homesubclass>
+<a Href="alldata1x.asp">All data for one species</a> 
+<li class=homesubclass>
+<a Href="geometriesx.asp">Geometry</a> 
+<ul> <li class=homesub2class>Experimental<ul> <li class=homesub3class>
+<a Href="expgeom1x.asp">Experimental Geometries</a> 
+<li class=homesub3class>
+<a Href="listbondexpx.asp">Same bond/angle many molecules</a> 
+<li class=homesub3class>
+<a Href="expbondlengths1x.asp">Internal Coordinates by type</a> 
+<li class=homesub3class>
+<a Href="expangle1x.asp">Bond angles</a> 
+</ul> <li class=homesub2class>Calculated<ul> <li class=homesub3class>
+<a Href="geom1x.asp">Calculated geometry</a> 
+<li class=homesub3class>
+<a Href="rotcalc1x.asp">Rotational constant</a> 
+<li class=homesub3class>
+<a Href="calcmomint1x.asp">Moments of inertia</a> 
+<li class=homesub3class>
+<a Href="momint1x.asp">Products of moments of inertia</a> 
+<li class=homesub3class>
+<a Href="bsebond1x.asp">BSE Bond lengths</a> 
+<li class=homesub3class>
+<a Href="justgeomx.asp">Show me a  calculated geometry</a> 
+</ul> <li class=homesub2class>Comparisons<ul> <li class=homesub3class>
+<a Href="compgeom1x.asp">Bonds, angles</a> 
+<li class=homesub3class>
+<a Href="rotcomp1x.asp">Rotational Constants</a> 
+<li class=homesub3class>
+<a Href="compmomint1x.asp">Products of moments of inertia</a> 
+<li class=homesub3class>
+<a Href="comppg1x.asp">Point group</a> 
+</ul> <li class=homesub2class>Bad Calculations<ul> <li class=homesub3class>
+<a Href="badcalcgeomx.asp">Bad moment of inertia</a> 
+</ul> <li class=homesub2class>Tutorials and Explanations<ul> <li class=homesub3class>
+<a Href="anglesx.asp">Angle formulas</a> 
+</ul> </ul> <li class=homesubclass>
+<a Href="vibrationsx.asp">Vibrations</a> 
+<ul> <li class=homesub2class>Experimental<ul> <li class=homesub3class>
+<a Href="expvibs1x.asp">Vibrational frequencies</a> 
+</ul> <li class=homesub2class>Calculated<ul> <li class=homesub3class>
+<a Href="vibs1x.asp">Frequencies</a> 
+</ul> <li class=homesub2class>
+<a Href="vibscalejustx.asp">Scale factors</a> 
+</ul> <li class=homesubclass>
+<a Href="reactionsx.asp">Reactions</a> 
+<li class=homesubclass>
+<a Href="entropiesx.asp">Entropies</a> 
+<li class=homesubclass>
+<a Href="ionsx.asp">Ions</a> 
+<ul> <li class=homesub2class>
+<a Href="ionlistx.asp">List Ions</a> 
+<li class=homesub2class>
+<a Href="energy1x.asp">Energy</a> 
+<ul> <li class=homesub3class>
+<a Href="ie1x.asp">Calculated Ionization Energy</a> 
+<li class=homesub3class>
+<a Href="compie1x.asp">Compare Ionzation energy</a> 
+</ul> <li class=homesub2class>Electron Affinity<ul> <li class=homesub3class>
+<a Href="elecaff1x.asp">Calculated Electron affinity</a> 
+<li class=homesub3class>
+<a Href="compea1x.asp">Compare Electron affinity</a> 
+</ul> <li class=homesub2class>Proton Affinity<ul> <li class=homesub3class>
+<a Href="pa1x.asp">Calculated Proton affinity</a> 
+<li class=homesub3class>
+<a Href="comppa1x.asp">Compare Proton affinity</a> 
+</ul> <li class=homesub2class>
+<a Href="ionpgdiffx.asp">Ionization changes point group</a> 
+</ul> </ul> <li class="experclass pdheading">
+<a Href="expdatax.asp">Experimental</a> 
+<ul> <li class=expersubclass>
+<a Href="exp1x.asp">One molecule all properties</a> 
+<li class=expersubclass>
+<a Href="xpx.asp">One property a few molecules</a> 
+<ul> <li class=expersub2class>
+<a Href="xp1x.asp?prop=1">Enthalpy of formation</a> 
+<li class=expersub2class>
+<a Href="xp1x.asp?prop=2">Entropy</a> 
+<li class=expersub2class>
+<a Href="xp1x.asp?prop=3">Integrated Heat Capacity</a> 
+<li class=expersub2class>
+<a Href="xp1x.asp?prop=4">Heat Capacity</a> 
+<li class=expersub2class>
+<a Href="xp1x.asp?prop=5">Rotational Constants</a> 
+<li class=expersub2class>
+<a Href="xp1x.asp?prop=6">Vibrational Frequencies</a> 
+<li class=expersub2class>
+<a Href="xp1x.asp?prop=7">Dipole moment</a> 
+<li class=expersub2class>
+<a Href="xp1x.asp?prop=8">Ionization Energy</a> 
+<li class=expersub2class>
+<a Href="xp1x.asp?prop=9">Polarizability</a> 
+<li class=expersub2class>
+<a Href="xp1x.asp?prop=10">Quadrupole</a> 
+<li class=expersub2class>
+<a Href="exppg1x.asp">Point Groups</a> 
+</ul> <li class=expersubclass>Geometry<ul> <li class=expersub2class>
+<a Href="expgeom1x.asp">Experimental Geometries</a> 
+<li class=expersub2class>
+<a Href="expbondlengths1x.asp">Internal Coordinates by type</a> 
+<li class=expersub2class>
+<a Href="expangle1x.asp">Bond angles</a> 
+<li class=expersub2class>
+<a Href="exprot1x.asp">Rotational Constants</a> 
+<li class=expersub2class>
+<a Href="exppg1x.asp">Point Groups</a> 
+<li class=expersub2class>
+<a Href="diatomicexpbondx.asp">Diatomic bond lengths</a> 
+</ul> <li class=expersubclass>Vibrations<ul> <li class=expersub2class>
+<a Href="expvibs1x.asp">Vibrational frequencies</a> 
+<li class=expersub2class>
+<a Href="expdiatomicsx.asp">Diatomic</a> 
+<li class=expersub2class>
+<a Href="exptriatomicsx.asp">Triatomics</a> 
+</ul> <li class=expersubclass>
+<a Href="energy1x.asp">Energy</a> 
+<ul> <li class=expersub2class>
+<a Href="ea1x.asp">Atomization Energy</a> 
+<li class=expersub2class>
+<a Href="exprotbarx.asp">Internal Rotation</a> 
+</ul> <li class=expersubclass>Electrostatics<ul> <li class=expersub2class>
+<a Href="diplistx.asp">Dipole</a> 
+<li class=expersub2class>
+<a Href="quadlistx.asp">Quadrupole</a> 
+<li class=expersub2class>
+<a Href="pollistx.asp">Polarizability</a> 
+</ul> <li class=expersubclass>Reference Data<ul> <li class=expersub2class>
+<a Href="refstatex.asp">Reference states</a> 
+<li class=expersub2class>
+<a Href="elecspinx.asp">Spin Splittings</a> 
+<li class=expersub2class>
+<a Href="goodlistx.asp">Molecules with good enthalpy</a> 
+<li class=expersub2class>
+<a Href="hf0kx.asp">Enthalpy at 0 Kelvin</a> 
+</ul> </ul> <li class="calcclass pdheading">Calculated<ul> <li class=calcsubclass>
+<a Href="energy1x.asp">Energy</a> 
+<ul> <li class=calcsub2class>Optimized<ul> <li class=calcsub3class>
+<a Href="energy1x.asp">Energy</a> 
+<li class=calcsub3class>
+<a Href="energy1_298x.asp">Energy 298K</a> 
+<li class=calcsub3class>
+<a Href="confmin1x.asp">Minimum conformation</a> 
+<li class=calcsub3class>
+<a Href="dimer_bond1x.asp">Hydrogen bonds</a> 
+<li class=calcsub3class>
+<a Href="dimer_cp_energy1x.asp">H bond with counterpoise</a> 
+</ul> <li class=calcsub2class>Reaction<ul> <li class=calcsub3class>
+<a Href="spec1x.asp">Reaction Energy 0K</a> 
+<li class=calcsub3class>
+<a Href="spec1_298x.asp">Reaction Energy 298K</a> 
+</ul> <li class=calcsub2class>Internal Rotation<ul> <li class=calcsub3class>
+<a Href="rotbar1x.asp">Barriers to internal rotation</a> 
+<li class=calcsub3class>
+<a Href="rotdip1x.asp">Rotational barrier and dipole</a> 
+<li class=calcsub3class>
+<a Href="rbc1x.asp">Rotational Barrier 2 molecules</a> 
+</ul> <li class=calcsub2class>Orbital<ul> <li class=calcsub3class>
+<a Href="gap1x.asp">HOMO LUMO gap</a> 
+<li class=calcsub3class>
+<a Href="homo1x.asp">HOMO</a> 
+<li class=calcsub3class>
+<a Href="orbitalenergy1x.asp">Orbital Energies</a> 
+</ul> <li class=calcsub2class>
+<a Href="nure1x.asp">Nuclear repulsion energy</a> 
+<li class=calcsub2class>Correlation<ul> <li class=calcsub3class>
+<a Href="coreenergy1x.asp">Full vs Frozen core energies</a> 
+<li class=calcsub3class>
+<a Href="correlation1x.asp">Partial correlation energies</a> 
+</ul> <li class=calcsub2class>Ion<ul> <li class=calcsub3class>
+<a Href="ie1x.asp">Calculated Ionization Energy</a> 
+<li class=calcsub3class>
+<a Href="vertie1x.asp">Vertical ionization Energy</a> 
+<li class=calcsub3class>
+<a Href="elecaff1x.asp">Calculated Electron affinity</a> 
+<li class=calcsub3class>
+<a Href="pa1x.asp">Calculated Proton affinity</a> 
+<li class=calcsub3class>
+<a Href="bondcharge1x.asp">Atom charge differences</a> 
+</ul> <li class=calcsub2class>Excited State<ul> <li class=calcsub3class>
+<a Href="stgap1x.asp">Singlet triplet gap</a> 
+<li class=calcsub3class>
+<a Href="calcES1x.asp">Electronic state</a> 
+<li class=calcsub3class>
+<a Href="ts1x.asp">Transition state</a> 
+</ul> <li class=calcsub2class>Basis Set Extrapolation<ul> <li class=calcsub3class>
+<a Href="bseenergy1x.asp">BSE energy</a> 
+<li class=calcsub3class>
+<a Href="bsebond1x.asp">BSE Bond lengths</a> 
+</ul> </ul> <li class=calcsubclass>Geometry<ul> <li class=calcsub2class>
+<a Href="geom1x.asp">Calculated geometry</a> 
+<ul> <li class=calcsub3class>
+<a Href="bondorder1x.asp">AIM bond orders</a> 
+<li class=calcsub3class>
+<a Href="calcbondcomp1x.asp">One type of bond</a> 
+</ul> <li class=calcsub2class>Rotation<ul> <li class=calcsub3class>
+<a Href="rotcalc1x.asp">Rotational constant</a> 
+<li class=calcsub3class>
+<a Href="momint1x.asp">Products of moments of inertia</a> 
+<li class=calcsub3class>
+<a Href="mieigen1x.asp">Moments of inertia</a> 
+<li class=calcsub3class>
+<a Href="inertialdefect1x.asp">Inertial defects</a> 
+<li class=calcsub3class>
+<a Href="calc2moment1x.asp">Second moments</a> 
+</ul> <li class=calcsub2class>
+<a Href="pg1x.asp">Point group</a> 
+<li class=calcsub2class>
+<a Href="elecstate1x.asp">State symmetry</a> 
+<li class=calcsub2class>
+<a Href="r2_1x.asp">&lt;r2&gt;</a> 
+<ul> <li class=calcsub3class>
+<a Href="r2comp1x.asp">Sorted by r2</a> 
+</ul> <li class=calcsub2class>
+<a Href="zmatx.asp">Z-matrix</a> 
+<li class=calcsub2class>Bad Calculations<ul> <li class=calcsub3class>
+<a Href="badcalcgeomx.asp">Bad moment of inertia</a> 
+<li class=calcsub3class>
+<a Href="badbondlengths1x.asp">Bad Calculated Bond Lengths</a> 
+<li class=calcsub3class>
+<a Href="diffpgx.asp">Bad point group</a> 
+<li class=calcsub3class>
+<a Href="badbondsmostx.asp">Worst molecules</a> 
+</ul> </ul> <li class=calcsubclass>Vibrations<ul> <li class=calcsub2class>
+<a Href="vibs1x.asp">Frequencies</a> 
+<ul> <li class=calcsub3class>
+<a Href="anivib1x.asp">Animated vibrations</a> 
+<li class=calcsub3class>
+<a Href="anharm1x.asp">Anharmonic</a> 
+</ul> <li class=calcsub2class>
+<a Href="zpe1x.asp">Zero point energy (ZPE)</a> 
+<li class=calcsub2class>Scale Factors<ul> <li class=calcsub3class>
+<a Href="vibscalejustx.asp">Scale factors</a> 
+<li class=calcsub3class>
+<a Href="vibscalex.asp">Scale factor uncertainty</a> 
+<li class=calcsub3class>
+<a Href="vsfcalc1x.asp">Calculate a scale factor</a> 
+<li class=calcsub3class>
+<a Href="vibnotesx.asp">Why scale vibrations</a> 
+<li class=calcsub3class>
+<a Href="vsfx.asp">Set scaling factors</a> 
+</ul> <li class=calcsub2class>Bad Calculations<ul> <li class=calcsub3class>
+<a Href="badvibpred1x.asp">Bad Vib. HF vs MP2</a> 
+<li class=calcsub3class>
+<a Href="badvib1x.asp">Bad vib. Calc. vs exp.</a> 
+<li class=calcsub3class>
+<a Href="biganharm1x.asp">Big anharmonicity</a> 
+</ul> </ul> <li class=calcsubclass>Electrostatics<ul> <li class=calcsub2class>Charges<ul> <li class=calcsub3class>
+<a Href="mulliken1x.asp">Mulliken</a> 
+<li class=calcsub3class>
+<a Href="chelpg1x.asp">CHELP</a> 
+<li class=calcsub3class>
+<a Href="aimcharge1x.asp">Aim</a> 
+<li class=calcsub3class>
+<a Href="esp1x.asp">ESP</a> 
+</ul> <li class=calcsub2class>Dipole<ul> <li class=calcsub3class>
+<a Href="dipole1x.asp">Dipole</a> 
+<li class=calcsub3class>
+<a Href="dipoleangle1x.asp">Dipole angle</a> 
+<li class=calcsub3class>
+<a Href="diprecalcx.asp">Dipole calculation types</a> 
+</ul> <li class=calcsub2class>
+<a Href="quadrupole1x.asp">Quadrupole</a> 
+<li class=calcsub2class>
+<a Href="polcalc1x.asp">Polarizability</a> 
+<li class=calcsub2class>
+<a Href="spin1x.asp">Spin</a> 
+<ul> <li class=calcsub3class>
+<a Href="spindensity1x.asp">Spin density</a> 
+</ul> </ul> <li class=calcsubclass>
+<a Href="sanyt1x.asp">Entropy and Heat Capacity</a> 
+<ul> <li class=calcsub2class>
+<a Href="entropy1x.asp">Entropy</a> 
+<li class=calcsub2class>
+<a Href="re1x.asp">Reaction entropy</a> 
+<li class=calcsub2class>
+<a Href="cp1x.asp">Heat Capacity</a> 
+</ul> <li class=calcsubclass>Reaction<ul> <li class=calcsub2class>
+<a Href="spec1x.asp">Reaction Energy 0K</a> 
+<li class=calcsub2class>
+<a Href="spec1_298x.asp">Reaction Energy 298K</a> 
+<li class=calcsub2class>
+<a Href="isodesmicx.asp">Isodesmic reactions</a> 
+<li class=calcsub2class>Transition State<ul> <li class=calcsub3class>
+<a Href="ts1x.asp">Transition state</a> 
+<li class=calcsub3class>
+<a Href="tsvib1x.asp">Transition state frequencies</a> 
+<li class=calcsub3class>
+<a Href="tsgeom1x.asp">Transition state geometries</a> 
+<li class=calcsub3class>
+<a Href="irc1x.asp">IRC</a> 
+</ul> </ul> <li class=calcsubclass>Lookup by property<ul> <li class=calcsub2class>
+<a Href="viblookup1x.asp">By frequency</a> 
+</ul> </ul> <li class="compclass pdheading">Comparisons<ul> <li class=compsubclass>Geometry<ul> <li class=compsub2class>
+<a Href="compgeom1x.asp">Bonds, angles</a> 
+<ul> <li class=compsub3class>
+<a Href="geomcalc1x.asp">Bond, angle, or dihedral</a> 
+<li class=compsub3class>
+<a Href="compufpgx.asp">DFT grid size on point group</a> 
+<li class=compsub3class>
+<a Href="compufb1x.asp">DFT grid on bond length</a> 
+<li class=compsub3class>
+<a Href="corebond1x.asp">Core correlation - bond length</a> 
+<li class=compsub3class>
+<a Href="listbondexpx.asp">Same bond/angle many molecules</a> 
+<li class=compsub3class>
+<a Href="isoelectronic1x.asp">Isoelectronic diatomics</a> 
+<li class=compsub3class>
+<a Href="angleiso1x.asp">Isoelectronic triatomic angles</a> 
+<li class=compsub3class>
+<a Href="bondlengthmodel1x.asp">Average bond lengths</a> 
+</ul> <li class=compsub2class>Rotation<ul> <li class=compsub3class>
+<a Href="rotcomp1x.asp">Rotational Constants</a> 
+<li class=compsub3class>
+<a Href="compmomint1x.asp">Products of moments of inertia</a> 
+</ul> <li class=compsub2class>
+<a Href="comppg1x.asp">Point group</a> 
+</ul> <li class=compsubclass>Vibrations<ul> <li class=compsub2class>
+<a Href="compvibs1x.asp">Vibrations</a> 
+<ul> <li class=compsub3class>
+<a Href="comp2vib1x.asp">2 calculations</a> 
+<li class=compsub3class>
+<a Href="vibdiff1x.asp">Frequency differences</a> 
+</ul> <li class=compsub2class>
+<a Href="comp1vib1x.asp">One frequency</a> 
+<li class=compsub2class>
+<a Href="compzpe1x.asp">Zero point energy</a> 
+<li class=compsub2class>Intensity<ul> <li class=compsub3class>
+<a Href="comp1int1x.asp">Intensity for one mode</a> 
+<li class=compsub3class>
+<a Href="compint1x.asp">Vibrational intensities</a> 
+<li class=compsub3class>
+<a Href="comp1redmass1x.asp">Reduced mass comparison</a> 
+</ul> <li class=compsub2class>
+<a Href="companhvibs1x.asp">Anharmonic</a> 
+<ul> <li class=compsub3class>
+<a Href="comptriatomic1x.asp">Triatomic</a> 
+</ul> <li class=compsub2class>
+<a Href="vibscalejustx.asp">Scale factors</a> 
+</ul> <li class=compsubclass>
+<a Href="energy1x.asp">Energy</a> 
+<ul> <li class=compsub2class>Reaction<ul> <li class=compsub3class>
+<a Href="spec1x.asp">Reaction Energy 0K</a> 
+<li class=compsub3class>
+<a Href="spec1_298x.asp">Reaction Energy 298K</a> 
+<li class=compsub3class>
+<a Href="atomize1x.asp">Atomization 0K</a> 
+<li class=compsub3class>
+<a Href="atomize298_1x.asp">Atomization 298K</a> 
+</ul> <li class=compsub2class>
+<a Href="specomp1x.asp">Single point vs optimized</a> 
+<li class=compsub2class>
+<a Href="compufex.asp">DFT grid size on energy</a> 
+<li class=compsub2class>
+<a Href="se298ax.asp">Semiempirical enthalpy</a> 
+<li class=compsub2class>
+<a Href="comprotbarx.asp">Internal rotation</a> 
+<li class=compsub2class>Similar molecules<ul> <li class=compsub3class>
+<a Href="confenergy1x.asp">Conformation</a> 
+<li class=compsub3class>
+<a Href="isoset1x.asp">Sets of isomers</a> 
+<li class=compsub3class>
+<a Href="tauto1x.asp">Sets of tautomers</a> 
+<li class=compsub3class>
+<a Href="isocountx.asp">Isomers</a> 
+</ul> </ul> <li class=compsubclass>Entropy<ul> <li class=compsub2class>
+<a Href="entropy1x.asp">Entropy</a> 
+<li class=compsub2class>
+<a Href="compcpx.asp">Heat capacity</a> 
+<li class=compsub2class>
+<a Href="entropyhist1x.asp">Entropy of several molecules</a> 
+<li class=compsub2class>
+<a Href="compihc1x.asp">Integrated heat capacity</a> 
+<li class=compsub2class>
+<a Href="re1x.asp">Reaction entropy</a> 
+</ul> <li class=compsubclass>Electrostatics<ul> <li class=compsub2class>
+<a Href="compdipole1x.asp">Dipole</a> 
+<li class=compsub2class>
+<a Href="polcomp1x.asp">Polarizability</a> 
+<ul> <li class=compsub3class>
+<a Href="polcalccomp1x.asp">Several molecules</a> 
+</ul> <li class=compsub2class>
+<a Href="compquad1x.asp">Quadrupole</a> 
+</ul> <li class=compsubclass>Ion<ul> <li class=compsub2class>
+<a Href="compie1x.asp">Compare Ionzation energy</a> 
+<ul> <li class=compsub3class>
+<a Href="koopman1x.asp">Koopman ionization energy</a> 
+<li class=compsub3class>
+<a Href="koopmany1x.asp">Koopman IE for a few molecules</a> 
+</ul> <li class=compsub2class>
+<a Href="compea1x.asp">Compare Electron affinity</a> 
+<li class=compsub2class>
+<a Href="comppa1x.asp">Compare Proton affinity</a> 
+<li class=compsub2class>
+<a Href="protonationsitex.asp">Protonation Site</a> 
+</ul> </ul> <li class="resclass pdheading">Resources<ul> <li class=ressubclass>Info on Results<ul> <li class=ressub2class>Calculations Done<ul> <li class=ressub3class>
+<a Href="calcdonex.asp">Method and basis set</a> 
+<li class=ressub3class>
+<a Href="moleculedonex.asp">List molecules</a> 
+<li class=ressub3class>
+<a Href="onecalc1x.asp">One molecule</a> 
+<li class=ressub3class>
+<a Href="conformers1x.asp">Multiple conformers, states</a> 
+<li class=ressub3class>
+<a Href="conformerlistx.asp">Multiple conformers, states</a> 
+</ul> <li class=ressub2class>
+<a Href="nbfx.asp">Basis functions used</a> 
+<li class=ressub2class>
+<a Href="outputx.asp">I/O files</a> 
+<ul> <li class=ressub3class>
+<a Href="gaufiles1x.asp">Input/output files</a> 
+<li class=ressub3class>
+<a Href="mdlmol1x.asp">MOL file</a> 
+<li class=ressub3class>
+<a Href="zmatx.asp">Z-matrix</a> 
+<li class=ressub3class>
+<a Href="wfn1x.asp">wfn files</a> 
+</ul> </ul> <li class=ressubclass>
+<a Href="glossaryx.asp">Glossary</a> 
+<li class=ressubclass>Conversion Forms<ul> <li class=ressub2class>
+<a Href="convertmomintx.asp">B to I, I to B</a> 
+<li class=ressub2class>
+<a Href="anglesx.asp">Angle formulas</a> 
+<li class=ressub2class>
+<a Href="ihccalc1x.asp">Integrated heat Capacity</a> 
+<li class=ressub2class>
+<a Href="enthcalcx.asp">Calculating Enthalpy</a> 
+</ul> <li class=ressubclass>Links<ul> <li class=ressub2class>NIST Links<ul> <li class=ressub3class>
+<a Href="http://webbook.nist.gov/chemistry">NIST webbook</a> 
+<li class=ressub3class>
+<a Href="bibliox.asp">bibliographic data</a> 
+<li class=ressub3class>
+<a Href="http://catalog.data.gov/dataset/nist-computational-chemistry-comparison-and-benchmark-database-srd-101">CCCBDB Experimental data</a> 
+</ul> <li class=ressub2class>External links<ul> <li class=ressub3class>
+<a Href="https://www.basissetexchange.org/">Basis Set Exchange</a> 
+<li class=ressub3class>
+<a Href="http://www.ccl.net/chemistry">Computational Chemistry List</a> 
+<li class=ressub3class>
+<a Href="http://www.gaussian.com/g_whitepap/thermo.htm">Thermochemistry in Gaussian</a> 
+<li class=ressub3class>
+<a Href="http://t1.chem.umn.edu/misc/database_group/database_therm_bh/">Minnesota Database Collection</a> 
+<li class=ressub3class>
+<a Href="http://www.begdb.com">Benchmark Energy and Geometry</a> 
+<li class=ressub3class>
+<a Href="http://symmetry.jacobs-university.de">Point Groups</a> 
+</ul> </ul> <li class=ressubclass>Thermochemistry<ul> <li class=ressub2class>
+<a Href="thermox.asp">Thermochemistry</a> 
+<li class=ressub2class>
+<a Href="goodlistx.asp">Molecules with good enthalpy</a> 
+<li class=ressub2class>
+<a Href="binary1x.asp">A &rarr; B + C</a> 
+<li class=ressub2class>
+<a Href="refstatex.asp">Reference states</a> 
+</ul> <li class=ressubclass>Tutorials<ul> <li class=ressub2class>Vibrations<ul> <li class=ressub3class>
+<a Href="vibnotesx.asp">Why scale vibrations</a> 
+<li class=ressub3class>
+<a Href="zpenotesx.asp">Zero-point energies</a> 
+</ul> <li class=ressub2class>Entropy<ul> <li class=ressub3class>
+<a Href="methylrotorx.asp">Methyl rotor entropy</a> 
+<li class=ressub3class>
+<a Href="configx.asp">Entropy and conformations</a> 
+</ul> <li class=ressub2class>
+<a Href="energy1x.asp">Energy</a> 
+<ul> <li class=ressub3class>
+<a Href="enthformationx.asp">Getting enthalpy of formation</a> 
+<li class=ressub3class>
+<a Href="adiabaticx.asp">Vertical vs adiabatic IE</a> 
+<li class=ressub3class>
+<a Href="nato_asi_1/index.htm">Thermo from calculations</a> 
+</ul> <li class=ressub2class>Electrostatics<ul> <li class=ressub3class>
+<a Href="elecmomsymx.asp">Dipole parts  by point group</a> 
+<li class=ressub3class>
+<a Href="quadrupolex.asp">Quadrupoles</a> 
+</ul> <li class=ressub2class>Geometry<ul> <li class=ressub3class>
+<a Href="anglesx.asp">Angle formulas</a> 
+</ul> <li class=ressub2class>Cost<ul> <li class=ressub3class>
+<a Href="costirikurax.asp">Cost Comparison</a> 
+<li class=ressub3class>
+<a Href="timingsx.asp">Timings Comparison</a> 
+</ul> </ul> <li class=ressubclass>Bad Calculations<ul> <li class=ressub2class>Geometry<ul> <li class=ressub3class>
+<a Href="badcalcgeomx.asp">Bad moment of inertia</a> 
+<li class=ressub3class>
+<a Href="badbondlengths1x.asp">Bad Calculated Bond Lengths</a> 
+<li class=ressub3class>
+<a Href="diffpgx.asp">Bad point group</a> 
+<li class=ressub3class>
+<a Href="badbondsmostx.asp">Worst molecules</a> 
+</ul> <li class=ressub2class>Vibrations<ul> <li class=ressub3class>
+<a Href="badvib1x.asp">Bad vib. Calc. vs exp.</a> 
+<li class=ressub3class>
+<a Href="badvibpred1x.asp">Bad Vib. HF vs MP2</a> 
+<li class=ressub3class>
+<a Href="vsfratiox.asp">Bad scale factors</a> 
+</ul> <li class=ressub2class>
+<a Href="cis1x.asp">Low excited states</a> 
+<li class=ressub2class>
+<a Href="odditiesx.asp">Oddities</a> 
+<ul> <li class=ressub3class>
+<a Href="nacnx.asp">NaCN Is not linear</a> 
+</ul> </ul> </ul> <li class="faqclass pdheading">FAQ Help<ul> <li class=faqsubclass>Units<ul> <li class=faqsub2class>Choose Units<ul> <li class=faqsub3class>
+<a Href="unitsx.asp">Energy</a> 
+<li class=faqsub3class>
+<a Href="bondunitsx.asp">Bond length</a> 
+<li class=faqsub3class>
+<a Href="rotunitsx.asp">Rotational Constant</a> 
+<li class=faqsub3class>
+<a Href="momintunitsx.asp">Moment of Inertia</a> 
+<li class=faqsub3class>
+<a Href="dipunitsx.asp">Dipole and Quadrupole</a> 
+<li class=faqsub3class>
+<a Href="punitsx.asp">Polarizability</a> 
+</ul> <li class=faqsub2class>Explanations<ul> <li class=faqsub3class>
+<a Href="hartreex.asp">Hartree</a> 
+<li class=faqsub3class>
+<a Href="wavenumberx.asp">cm-1</a> 
+<li class=faqsub3class>
+<a Href="debyex.asp">Debye</a> 
+</ul> </ul> <li class=faqsubclass>
+<a Href="creditsx.asp">Credits</a> 
+<li class=faqsubclass>Just show me<ul> <li class=faqsub2class>
+<a Href="justgeomx.asp">Show me a  calculated geometry</a> 
+</ul> <li class=faqsubclass>
+<a Href="summaryx.asp">Summary</a> 
+<li class=faqsubclass>
+<a Href="usingx.asp">Using</a> 
+<ul> <li class=faqsub2class>
+<a Href="oldinterfacex.asp">older interface</a> 
+<li class=faqsub2class>
+<a Href="selectbasis1x.asp">Limit Basis sets</a> 
+<li class=faqsub2class>
+<a Href="mboptionsx.asp">Method options</a> 
+</ul> <li class=faqsubclass>
+<a Href="listx.asp">List</a> 
+<ul> <li class=faqsub2class>
+<a Href="newlistx.asp">Recent molecules</a> 
+<ul> <li class=faqsub3class>
+<a Href="listsomex.asp">Choose a few</a> 
+</ul> <li class=faqsub2class>Molecules<ul> <li class=faqsub3class>
+<a Href="listallnumx.asp">Number of atoms</a> 
+<li class=faqsub3class>
+<a Href="listallx.asp">By heavy atoms</a> 
+<li class=faqsub3class>
+<a Href="diatomics1x.asp">Diatomics</a> 
+<li class=faqsub3class>
+<a Href="inchix.asp">InChI</a> 
+<li class=faqsub3class>
+<a Href="deuteratedx.asp">Deuterated</a> 
+<li class=faqsub3class>
+<a Href="dimerlistx.asp">Dimers</a> 
+</ul> <li class=faqsub2class>Geometry<ul> <li class=faqsub3class>
+<a Href="pglistx.asp">Point group</a> 
+<li class=faqsub3class>
+<a Href="bypg1x.asp">Point group count</a> 
+<li class=faqsub3class>
+<a Href="listbondtypesx.asp">Bonds types</a> 
+<li class=faqsub3class>
+<a Href="isodesmicx.asp">Isodesmic reactions</a> 
+<li class=faqsub3class>
+<a Href="diffpgx.asp">Bad point group</a> 
+<li class=faqsub3class>
+<a Href="conformerlistx.asp">Multiple conformers, states</a> 
+</ul> <li class=faqsub2class>Vibrations<ul> <li class=faqsub3class>
+<a Href="biganharm1x.asp">Big anharmonicity</a> 
+</ul> <li class=faqsub2class>
+<a Href="energy1x.asp">Energy</a> 
+<ul> <li class=faqsub3class>
+<a Href="hf0kx.asp">Enthalpy at 0 Kelvin</a> 
+</ul> <li class=faqsub2class>Similar molecules<ul> <li class=faqsub3class>
+<a Href="similarx.asp">Similar</a> 
+<li class=faqsub3class>
+<a Href="isocountx.asp">Isomers</a> 
+<li class=faqsub3class>
+<a Href="cistransx.asp">Cis/trans</a> 
+<li class=faqsub3class>
+<a Href="tautomersx.asp">Tautomers</a> 
+<li class=faqsub3class>
+<a Href="conformerlistx.asp">Multiple conformers, states</a> 
+</ul> <li class=faqsub2class>Ions, Dipoles, etc.<ul> <li class=faqsub3class>
+<a Href="ionlistx.asp">List Ions</a> 
+<li class=faqsub3class>
+<a Href="ionpgdiffx.asp">Ionization changes point group</a> 
+<li class=faqsub3class>
+<a Href="diplistx.asp">Dipole</a> 
+<li class=faqsub3class>
+<a Href="quadlistx.asp">Quadrupole</a> 
+<li class=faqsub3class>
+<a Href="pollistx.asp">Polarizability</a> 
+<li class=faqsub3class>
+<a Href="palistx.asp">Proton Affinities</a> 
+</ul> </ul> <li class=faqsubclass>
+<a Href="cccbdbindexx.asp">Index of CCCBDB</a> 
+<li class=faqsubclass>Feedback<ul> <li class=faqsub2class>
+<a Href="errorformx.asp">Error form</a> 
+<li class=faqsub2class>
+<a Href="wantsx.asp">Wants</a> 
+
+</ul></ul></ul>
+</div>
+
+</td>
+</tr>
+<tr>
+
+
+</tr>
+<tr>
+<td colspan=2 class="noborder">
+You are here: <b>Experimental &gt; One molecule all properties</b>
+</td>
+</tr>
+</table>
+
+<h1>Experimental data for H<sub>2</sub>O <span class="nowrap">(Water)</span></h1>
+22 02 02 11 45<br>
+
+<table ID="Table1">
+<tr><th class="left">Other names</th></tr>
+<tr><td>
+Dihydrogen oxide; Distilled water; Ice; Water vapor; Water; oxidane; 
+</td></tr>
+</table>
+
+<table ID="idents">
+<tr>
+<th class="center"><abbr title="International Chemical Identifier">INChI</abbr></th>
+<th class="center"><abbr title="IUPAC Standard InChIKey:">INChIKey</abbr></th>
+<th class="center"><abbr title="Simplified Molecular Input Line Entry Sytem">SMILES</abbr></th>
+<th class="center"><span style="white-space: nowrap;"><abbr title="International Union of Pure and Applied Chemistry">IUPAC</abbr> name</span></th>
+</tr>
+
+<tr>
+<td><span style="white-space: nowrap;">InChI=1S/H2O/h1H2</span></td>
+<td><span style="white-space: nowrap;">XLYOFNOQVPJJNP-UHFFFAOYSA-N</span></td>
+<td>O</td>
+<td><span style="white-space: nowrap;">oxidane</span></td>
+</tr>
+
+</table>
+
+<table class="border">
+<tr>
+<th>State</th>
+<th>Conformation</th>
+</tr>
+<tr>
+<td><sup>1</sup>A<sub>1</sub></td>
+<td>C2V</td>
+</tr>
+</table>
+
+<div class="box" title="Enthalpy and Entropy and more">
+  <span class="energyback" style="font-size:150%; width:100%;">Enthalpy of formation (Hfg),
+Entropy, 
+Integrated heat capacity (0 K to 298.15 K) (HH), 
+Heat Capacity (Cp)</span>
+<table Border="1">
+<tr>
+<th>Property</th>
+<th>Value</th>
+<th>Uncertainty</th>
+<th>units</th>
+<th>Reference</th>
+<th>Comment</th>
+</tr>
+
+<tr>
+<td>Hfg(298.15K) <img src="gifs/logoenthf.gif" alt="enthalpy of formation"></td>
+<td class="num">-241.81</td>
+<td>0.03</td>
+<td class="nowrap">kJ mol<sup>-1</sup></td>
+
+<td class="ref" onmousedown="javascript:refcolor('2006Rus/Pin:6592')"><a HREF="#2006Rus/Pin:6592" >2006Rus/Pin:6592</a></td>
+
+<td></td>
+</tr>
+<tr>
+<td>Hfg(0K) <img src="gifs/logoenthf.gif" alt="enthalpy of formation"></td>
+<td class="num">-238.90</td>
+<td>0.03</td>
+<td class="nowrap">kJ mol<sup>-1</sup></td>
+
+<td class="ref" onmousedown="javascript:refcolor('2006Rus/Pin:6592')"><a HREF="#2006Rus/Pin:6592">2006Rus/Pin:6592</a></td>
+
+<td></td>
+</tr>
+
+
+<tr>
+<td>Entropy (298.15K) <img src="gifs/logoentropy.gif" alt="entropy"></td>
+<td class="num">188.84</td>
+<td>0.01</td>
+<td class="nowrap">J K<SUP>-1</SUP> mol<SUP>-1</SUP></td>
+
+<td class="ref" onmousedown="javascript:refcolor('CODATA')"><a HREF="#CODATA">CODATA</a></td>
+
+<td></td>
+</tr>
+
+<tr>
+<td>Integrated Heat Capacity (0 to 298.15K) <img src="gifs/logoihc.gif" alt="integrated heat capacity"></td>
+<td class="num">9.90</td>
+<td>0.00</td>
+<td class="nowrap">kJ mol<sup>-1</sup></td>
+
+<td class="ref" onmousedown="javascript:refcolor('CODATA')"><a HREF="#CODATA">CODATA</a></td>
+
+<td></td>
+</tr>
+
+<tr>
+<td>Heat Capacity (298.15K) <img src="gifs/logocp.gif" alt="heat capacity"></td>
+<td class="num">33.60</td>
+<td>&nbsp;</td>
+<td class="nowrap">J K<SUP>-1</SUP> mol<SUP>-1</SUP></td>
+
+<td class="ref" onmousedown="javascript:refcolor('CODATA')"><a HREF="#CODATA">CODATA</a></td>
+
+<td></td>
+</tr>
+
+</table>
+Information can also be found for this species in the 
+<a HREF="http://webbook.nist.gov/cgi/cbook.cgi?ID=7732185" TARGET="TOP">
+NIST Chemistry Webbook
+</a>
+
+</div>
+
+
+<div class="box" title="Vibrational symmetries, frequencies, and intensities">
+  <span class="vibback" style="font-size:150%; width:100%;">
+Vibrational levels <span class="nowrap">(cm<sup>-1</sup>)</span> <img src="gifs/logovib.gif" alt="vibrations">
+</span>
+<table class="border">
+<tr>
+<th rowspan=2>Mode Number</th>
+<th rowspan=2>Symmetry</th>
+<th colspan=3>Frequency</th>
+<th colspan=3>Intensity</th>
+<th rowspan=2>Comment</th>
+<th rowspan=2>Description</th>
+</tr>
+<tr>
+<th class="nowrap">Fundamental<span class="nowrap">(cm<sup>-1</sup>)</span></th>
+<th class="nowrap">Harmonic<span class="nowrap">(cm<sup>-1</sup>)</span></th>
+<th>Reference</th>
+<th class="nowrap">(km mol<sup>-1</sup>)</th>
+<th>unc.</th>
+<th>Reference</th>
+</tr>
+
+
+<tr>
+<td>1</td>
+<td class="sym">A<sub>1</sub></td>
+<td class="num">3657</td>
+<td class="num">3832</td>
+  
+<td class="ref" onmousedown="javascript:refcolor('Shim')"><a HREF="#Shim">Shim</a></td>
+
+<td class="num">2.9</td>
+<td>&nbsp;</td>
+  
+<td class="ref" onmousedown="javascript:refcolor('1992Cul/Lie:502')"><a HREF="#1992Cul/Lie:502">1992Cul/Lie:502</a></td>
+
+<td></td>
+<TD>OH s-str</TD>
+</tr>
+
+<tr>
+<td>2</td>
+<td class="sym">A<sub>1</sub></td>
+<td class="num">1595</td>
+<td class="num">1649</td>
+  
+<td class="ref" onmousedown="javascript:refcolor('Shim')"><a HREF="#Shim">Shim</a></td>
+
+<td class="num">62.5</td>
+<td>&nbsp;</td>
+  
+<td class="ref" onmousedown="javascript:refcolor('1992Cul/Lie:502')"><a HREF="#1992Cul/Lie:502">1992Cul/Lie:502</a></td>
+
+<td></td>
+<TD>bend</TD>
+</tr>
+
+<tr>
+<td>3</td>
+<td class="sym">B<sub>2</sub></td>
+<td class="num">3756</td>
+<td class="num">3943</td>
+  
+<td class="ref" onmousedown="javascript:refcolor('1979HUB/HER')"><a HREF="#1979HUB/HER">1979HUB/HER</a></td>
+
+<td class="num">41.7</td>
+<td>&nbsp;</td>
+
+<td>&nbsp;</td>
+
+<td></td>
+<TD>OH a-str</TD>
+</tr>
+
+</table>
+<BR>vibrational zero-point energy: 4504.0 cm<SUP>-1</SUP> (from fundamental vibrations)
+
+<br><a HREF="vibs2x.asp">Calculated vibrational frequencies</a> for 
+H<sub>2</sub>O (Water).
+
+<br>Gas-phase IR spectra can be found in the NIST Chemistry Webbook 
+<a HREF="http://webbook.nist.gov/cgi/cbook.cgi?ID=7732185&amp;cIR=on" TARGET="TOP">here.</a>
+
+</div>
+
+<div class="box" title="Rotational Constants">
+  <span class="rotback" style="font-size:150%; width:100%;">
+Rotational Constants (cm<SUP>-1</SUP>) 
+<img src="gifs/logoroto.gif" alt="rotational constants"></span>
+<br>See section <a HREF="rotunitsx.asp">I.F.4 to change rotational constant units</a>
+
+<table BORDER="1">
+<tr>
+<th>A</th>
+<th>B</th>
+<th>C</th>
+<th>reference</th>
+<th>comment</th>
+</tr>
+
+<TR>
+<TD>27.87700</TD>
+<TD>14.51200</TD>
+<TD>9.28500</TD>
+
+<td class="ref" onmousedown="javascript:refcolor('1966Herzberg')"><a HREF="#1966Herzberg">1966Herzberg</a></td>
+  
+<TD></TD>
+
+</table>
+
+<br>
+<a HREF="rotcalc2x.asp">Calculated rotational constants</a>
+for H<sub>2</sub>O (Water).
+
+<br><table border="1">
+<tr>
+<th colspan="5">Product of moments of inertia <img src="gifs/logomomint.gif" alt="moments of inertia"></th></tr>
+<tr>
+<td>1.275365</td><td>amu<sup>3</sup>&Aring;<sup>6</sup></td>
+<td>&nbsp;</td>
+<td>5.83985896432972E-120</td><td>gm<sup>3</sup> cm<sup>6</sup></td>
+</tr>
+</table>
+
+
+</div>
+
+<div class="box" >
+  <span class="geomback" style="font-size:150%; width:100%;">Geometric Data</span>
+
+<br>
+
+<img SRC="gifs/h2o.gif" ALT="picture of Water">
+
+
+<P class="strong">Point Group C<sub>2v</sub></p>
+
+<br><span class="strong">Internal coordinates</span>
+<br>distances (r) in &Aring;, angles (a) in degrees, dihedrals (d) in degrees
+<table border="1">
+<tr>
+<th ROWSPAN="2">Description</th>
+<th ROWSPAN="2">Value</th>
+<th ROWSPAN="2">unc.</th>
+<th COLSPAN="4">Connectivity</th>
+<th ROWSPAN="2">Reference</th>
+<th ROWSPAN="2">Comment</th>
+</tr>
+<tr>
+<th>Atom 1</th>
+<th>Atom 2</th>
+<th>Atom 3</th>
+<th>Atom 4</th>
+</tr>
+
+<tr>
+<td>rOH</td>
+
+<td class="num">0.958</td>
+<td class="num">0.000</td>
+
+<td class="center">1</td>
+<td class="center">2</td>
+<td class="center"></td>
+<td class="center"></td>
+
+<td class="ref" onmousedown="javascript:refcolor('1979Hoy/Bun:1')"><a HREF="#1979Hoy/Bun:1">1979Hoy/Bun:1</a></td>
+<td>re</td>
+
+</tr>
+
+<tr>
+<td>aHOH</td>
+  
+<td class="num">104.4776</td>
+<td class="num">0.0019</td>
+
+<td class="center">2</td>
+<td class="center">1</td>
+<td class="center">3</td>
+<td class="center"></td>
+
+<td class="ref" onmousedown="javascript:refcolor('1979Hoy/Bun:1')"><a HREF="#1979Hoy/Bun:1">1979Hoy/Bun:1</a></td>
+<td>equilibrium</td>
+
+</tr>
+
+</table>
+
+<br>
+
+<span class="strong">Cartesians</span>
+<table BORDER="1">
+<tr>
+<th>Atom</th>
+<th>x (&Aring;)</th>
+<th>y (&Aring;)</th>
+<th>z (&Aring;)</th>
+</tr>
+
+  <tr><td>O1</td>
+      <td class="num">0.0000</td>
+      <td class="num">0.0000</td>
+      <td class="num">0.1173</td></tr>
+
+  <tr><td>H2</td>
+      <td class="num">0.0000</td>
+      <td class="num">0.7572</td>
+      <td class="num">-0.4692</td></tr>
+
+  <tr><td>H3</td>
+      <td class="num">0.0000</td>
+      <td class="num">-0.7572</td>
+      <td class="num">-0.4692</td></tr>
+
+</table>
+
+<br><span class="strong">Atom - Atom Distances</span> <img src="gifs/logobond.gif" alt="bond lengths">
+<br>Distances in &Aring;
+<table BORDER="1">
+<tr>
+<th>&nbsp;</th>
+
+<th>O1</th>
+
+<th>H2</th>
+
+<th>H3</th>
+
+</tr>
+
+<TR>
+<TH>O1</TH>
+
+<TD>&nbsp;</TD>
+<TH>0.9578</TH><TH>0.9578</TH>
+</TR>
+
+<TR>
+<TH>H2</TH>
+<TH>0.9578</TH>
+<TD>&nbsp;</TD>
+<TH>1.5144</TH>
+</TR>
+
+<TR>
+<TH>H3</TH>
+<TH>0.9578</TH><TH>1.5144</TH>
+<TD>&nbsp;</TD>
+
+</TR>
+
+</table>
+<br><a HREF="geom2x.asp">Calculated geometries</a>
+for H<sub>2</sub>O (Water).
+
+
+<p><span class="strong">Experimental Bond Angles</span> (degrees) from cartesians <img src="gifs/logoangle.gif" alt="bond angles">
+
+<table BORDER="1">
+<tr>
+<th>atom1</th>
+<th>atom2</th>
+<th>atom3</th>
+<th>angle</th>
+
+</tr>
+
+<tr>
+<td>H2</td>
+<td>O1</td>
+<td>H3</td>
+<td ALIGN="RIGHT">104.478</td>
+
+
+</tr>
+
+</table>
+
+<p><span class="strong">Bond descriptions</span></p>
+<br>Examples: C-C single bond, C=C, double bond, C#C triple bond, C:C aromatic bond
+<table BORDER="1">
+<tr>
+<th>Bond Type</th>
+<th>Count</th>
+</tr>
+
+<tr>
+<td>H-O</td>
+<td>2</td>
+</tr>
+
+</table>
+
+<br><span class="strong">Connectivity</span>
+<table border="1">
+<tr>
+<th>Atom 1</th>
+<th>Atom 2</th>
+</tr>
+
+<tr>
+<td class="center">O1</td>
+<td class="center">H2</td>
+</tr>
+
+<tr>
+<td class="center">O1</td>
+<td class="center">H3</td>
+</tr>
+
+</table>
+
+
+</div>
+
+<div class="box" title="Electronic Energy Levels">
+<span class="elecback" style="font-size:150%; width:100%;">
+Electronic energy levels <span class="nowrap">(cm<sup>-1</sup>)</span></span>
+
+
+
+<table BORDER="1" ID="Table3">
+<tr>
+<th>Energy (cm<sup>-1</sup>)</th>
+<th>Degeneracy</th>
+<th>reference</th>
+<th>description</th>
+</tr>
+
+<tr>
+<td class="num">0</td>
+<td class="center">1</td>
+
+<td>&nbsp;</td>    
+
+<td><sup>1</sup>A<sub>1</sub></td>
+</tr>    
+
+<tr>
+<td class="num">53800</td>
+<td class="center">1</td>
+
+<td class="ref" onmousedown="javascript:refcolor('1966Herzberg')"><a HREF="#1966Herzberg">1966Herzberg</a></td>
+
+<td></td>
+</tr>    
+
+</table>
+
+<br>
+<span class="strong">Ionization Energies (eV)</span>
+<table border="1">
+<tr>
+<th>Ionization Energy</th>
+<th>I.E. unc.</th>
+<th>vertical I.E.</th> 
+<th>v.I.E. unc.</th>
+<th>reference</th>
+
+</tr>
+<tr>
+<td class="num">12.621</td>
+<td class="num">0.002</td>
+<td class="num">12.600</td>
+<td class="num">&nbsp;</td>
+<td class="ref" onmousedown="javascript:refcolor('webbook')"><a HREF="#webbook">webbook</a></td>
+
+</tr>
+</table>
+
+<br>
+<span class="strong">Proton Affinity (kJ mol<sup>-1</sup>)</span>
+<table border="1">
+<tr>
+<th>Proton Affinity</th>
+<th>unc.</th>
+<th>Product</th>
+<th>reference</th>
+<th>comment</th>
+</tr>
+
+<tr>
+<td class="num">691.0</td>
+<td class="num">&nbsp;</td>
+<td>H<sub>3</sub>O<sup>+</sup></td>
+
+<td class="ref" onmousedown="javascript:refcolor('webbook')"><a HREF="#webbook">webbook</a></td>
+<TD>&nbsp;</TD>
+</tr>
+
+</table>
+
+
+</div>
+
+
+<div class="box" title="Dipole, Quadrupole and Polarizability">
+<span class="chargeback" style="font-size:150%; width:100%;">
+Dipole, Quadrupole and Polarizability</span>
+<br><span class="strong">Electric dipole moment <img src="gifs/logodip.gif" alt="dipole"></span>
+
+
+
+<table border="1">
+<tr>
+<th rowspan=2>State</th>
+<th rowspan=2>Config</th>
+<th rowspan=2>State description</th>
+<th rowspan=2>Conf description</th>
+<th rowspan=2>Exp. min.</th>
+<th colspan=4>Dipole (Debye)</th>
+<th rowspan=2>Reference</th>
+<th rowspan=2>comment</th>
+<th rowspan=2>Point Group</th>
+<th colspan=2><abbr title="Number of components needed to describe the dipole or quadrupole for a given point group">Components</abbr></th>
+</tr>
+<tr>
+<th>x </th>
+<th>y </th>
+<th>z </th>
+<th>total</th>
+<th>dipole</th>
+<th>quadrupole</th>
+</tr>
+<tr>
+
+<tr>
+<td>1</td>
+<td>1</td>
+<td><sup>1</sup>A<sub>1</sub></td>
+<td>C<sub>2v</sub></td>
+<td>True</td>
+
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>1.857</td>
+<td class="ref" onmousedown="javascript:refcolor('1991Sho/Ebe:5875-5882')"><a HREF="#1991Sho/Ebe:5875-5882">1991Sho/Ebe:5875-5882</a></td>
+<td>MW &mu;<sub>e</sub> <br>&mu;<sub>0</sub> = 1.85498 <br> &mu;<sub>&nu;1&nu;2&nu;3</sub> = -1.8570 - 0.051(&nu;1+0.5) + 0.0317(&nu;2+0.5) - 0.0225(&nu;3+0.5)</td>
+<td>C<sub>2v</sub></td>
+<td>1</td>
+<td>2</td>
+</tr>
+
+</table>
+Experimental dipole measurement abbreviations: MW microwave; DT Dielectric with Temperature variation; DR Indirect (usually an upper limit); MB Molecular beam
+<br><a HREF="dipole2x.asp">Calculated electric dipole moments</a> for 
+H<sub>2</sub>O (Water).
+
+
+<br><span class="strong">Vibration specific dipole moments</span>
+<TABLE Border=1>
+<TR>
+<TH>Vibrational Quantum numbers</th>
+<TH>Dip x</th>
+<TH>Dip y</th>
+<TH>Dip z</th>
+<TH>Dip total</th>
+<TH>Squib</th>
+<TH>Comment</th>
+</tr>
+
+<tr>
+<td>equil</td>
+
+
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>1.857</td>
+<td class="ref" onmousedown="javascript:refcolor('1991Sho/Ebe:5875-5882')"><a HREF="#1991Sho/Ebe:5875-5882">1991Sho/Ebe:5875-5882</a></td>
+<td>&nbsp;</td>
+</tr>
+
+<tr>
+<td>000</td>
+
+
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>1.855</td>
+<td class="ref" onmousedown="javascript:refcolor('1991Sho/Ebe:5875-5882')"><a HREF="#1991Sho/Ebe:5875-5882">1991Sho/Ebe:5875-5882</a></td>
+<td>&nbsp;</td>
+</tr>
+
+<tr>
+<td>100</td>
+
+
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>1.860</td>
+<td class="ref" onmousedown="javascript:refcolor('1991Sho/Ebe:5875-5882')"><a HREF="#&nbsp;">&nbsp;</a></td>
+<td>&nbsp;</td>
+</tr>
+
+<tr>
+<td>010</td>
+
+
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>1.823</td>
+<td class="ref" onmousedown="javascript:refcolor('1991Sho/Ebe:5875-5882')"><a HREF="#&nbsp;">&nbsp;</a></td>
+<td>&nbsp;</td>
+</tr>
+
+<tr>
+<td>001</td>
+
+
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>1.877</td>
+<td class="ref" onmousedown="javascript:refcolor('1991Sho/Ebe:5875-5882')"><a HREF="#&nbsp;">&nbsp;</a></td>
+<td>&nbsp;</td>
+</tr>
+
+</table>
+
+<br><span class="strong">Electric quadrupole moment <img src="gifs/logoquad.gif" alt="quadrupole"></span>
+
+
+<table border="1">
+<tr>
+<th rowspan=2>State</th>
+<th rowspan=2>Config</th>
+<th rowspan=2>State description</th>
+<th rowspan=2>Conf description</th>
+<th rowspan=2>Exp. min.</th>
+<th colspan=3>Quadrupole (D &Aring;)</th>
+<th rowspan=2>Reference</th>
+<th rowspan=2>comment</th>
+<th rowspan=2>Point Group</th>
+<th colspan=2><abbr title="Number of components needed to describe the dipole or quadrupole for a given point group">Components</abbr></th>
+</tr>
+<tr>
+<th>xx</th>
+<th>yy</th>
+<th>zz</th>
+<th>dipole</th>
+<th>quadrupole</th>
+</tr>
+
+<tr>
+<td>1</td>
+<td>1</td>
+<td><sup>1</sup>A<sub>1</sub></td>
+<td>C<sub>2v</sub></td>
+<td>True</td>
+
+<td>-2.500</td>
+<td>2.630</td>
+<td>-0.130</td>
+<td class="ref" onmousedown="javascript:refcolor('1974Hel/Hel(II/6)')"><a HREF="#1974Hel/Hel(II/6)">1974Hel/Hel(II/6)</a></td>
+<td>aa=2.63+-0.02 bb=-0.13+-0.03 cc=-2.5+-0.02</td>
+<td>C<sub>2v</sub></td>
+<td>1</td>
+<td>2</td>
+</tr>
+
+</table>
+<br><a HREF="quadrupole2x.asp">Calculated electric quadrupole moments</a> for 
+H<sub>2</sub>O (Water).
+
+  
+<br><strong>Electric dipole polarizability (&Aring;<sup>3</sup>) <img src="gifs/logopol.gif" alt="polarizability"></strong>
+<table border="1">
+<tr>
+<th>alpha</th> 
+<th><abbr title="uncertainty">unc.</abbr></th>
+<th>Reference</th>
+</tr>
+<tr>
+<td>1.501</td>
+
+<td>&nbsp;</td>
+
+<td class="ref" onmousedown="javascript:refcolor('1997Oln/Can:59')"><a HREF="#1997Oln/Can:59">1997Oln/Can:59</a></td>
+</tr>
+</table>
+<br><a HREF="polcomp2x.asp">Calculated electric dipole polarizability</a> for 
+H<sub>2</sub>O (Water).
+
+
+</div>
+
+<hr>
+<div class="box" title="References">
+<span style="font-size:150%; width=100%">
+References</span>
+<br><i>By selecting the following links, you may be leaving NIST webspace. 
+We have provided these links to other web sites because they may have information that would be of interest to you. 
+No inferences should be drawn on account of other sites being referenced, or not, from this page. 
+There may be other web sites that are more appropriate for your purpose. 
+NIST does not necessarily endorse the views expressed, or concur with the facts presented on these sites. 
+Further, NIST does not endorse any commercial products that may be mentioned on these sites. </i>
+Please address comments about this page to <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="60030303020402200e0913144e070f16">[email&#160;protected]</a>.
+<table border="1" id="reftable">
+<tr>
+<th>squib</th>
+<th>reference</th>
+<th><acronym title="Digital Object Identifier">DOI</acronym></th>
+</tr>
+
+  <tr>
+  <td class="ref" id="1966Herzberg"><a NAME="1966Herzberg">1966Herzberg</a></td>
+  <td>Herzberg, G., Electronic spectra and electronic structure of polyatomic molecules,Van Nostrand,New York, 1966</td>
+
+ <td>&nbsp;</td>
+
+  </tr>
+
+  <tr>
+  <td class="ref" id="1974Hel/Hel(II/6)"><a NAME="1974Hel/Hel(II/6)">1974Hel/Hel(II/6)</a></td>
+  <td>Hellwege, KH and AM Hellwege (eds.).  Landolt-Bornstein:  Group II:  Volume 6 Molecular Constants from Microwave, Molecular Beam, and Electron Spin Resonance Spectroscopy Springer-Verlag. Berlin. 1974.</td>
+
+  <td><a href="http://dx.doi.org/10.1007/b19951 " target="top">10.1007/b19951 </a></td>
+
+  </tr>
+
+  <tr>
+  <td class="ref" id="1979Hoy/Bun:1"><a NAME="1979Hoy/Bun:1">1979Hoy/Bun:1</a></td>
+  <td>AR Hoy, PR Bunker, "A precise Solution of the Rotation Beninding Schrodinger Equation for a Triatomic Molecule with Application to the Water Molecule" J. Molecular Spectroscopy 74, 1-8, 1979</td>
+
+  <td><a href="http://dx.doi.org/10.1016/0022-2852(79)90019-5" target="top">10.1016/0022-2852(79)90019-5</a></td>
+
+  </tr>
+
+  <tr>
+  <td class="ref" id="1979HUB/HER"><a NAME="1979HUB/HER">1979HUB/HER</a></td>
+  <td>Huber, K.P.; Herzberg, G., Molecular Spectra and Molecular Structure. IV. Constants of Diatomic Molecules, Van Nostrand Reinhold Co., 1979</td>
+
+  <td><a href="http://dx.doi.org/10.1007/978-1-4757-0961-2" target="top">10.1007/978-1-4757-0961-2</a></td>
+
+  </tr>
+
+  <tr>
+  <td class="ref" id="1991Sho/Ebe:5875-5882"><a NAME="1991Sho/Ebe:5875-5882">1991Sho/Ebe:5875-5882</a></td>
+  <td>SL Shostak, WL Ebenstein, JS Muenter "The dipole moment of water. I. Dipole moments and hyperfine properties of H2O and HDO in the ground and excited vibrational states" J. Chem. Phys. 94, 5875 (1991)</td>
+
+  <td><a href="http://dx.doi.org/10.1063/1.460471" target="top">10.1063/1.460471</a></td>
+
+  </tr>
+
+  <tr>
+  <td class="ref" id="1992Cul/Lie:502"><a NAME="1992Cul/Lie:502">1992Cul/Lie:502</a></td>
+  <td>F Culot, J Lievin "Ab initio Calculation of Vibrational Dipole Moment Matrix Elements. II. The Water Molecule as a Polyatomic Test Case" Physica Scripta 46, 502-517, 1992</td>
+
+  <td><a href="http://dx.doi.org/10.1088/0031-8949/46/6/004" target="top">10.1088/0031-8949/46/6/004</a></td>
+
+  </tr>
+
+  <tr>
+  <td class="ref" id="1997Oln/Can:59"><a NAME="1997Oln/Can:59">1997Oln/Can:59</a></td>
+  <td>TN Olney, NM Cann, G Cooper, CE Brion, Absolute scale determination for photoabsorption spectra and the calculation of molecular properties using dipole sum-rules, Chem. Phys. 223 (1997) 59-98</td>
+
+  <td><a href="http://dx.doi.org/10.1016/S0301-0104(97)00145-6" target="top">10.1016/S0301-0104(97)00145-6</a></td>
+
+  </tr>
+
+  <tr>
+  <td class="ref" id="2006Rus/Pin:6592"><a NAME="2006Rus/Pin:6592">2006Rus/Pin:6592</a></td>
+  <td>B Ruscic, RE Pinzon, ML Morton, NK Srinivasan, M-C Su, JW Sutherland, JV Michael "Active Thermochemical Tables: Accurate Enthalpy of Formation of Hydroperoxyl Radical, HO2" J. Phys. Chem. A 2006, 110, 6592-6601</td>
+
+  <td><a href="http://dx.doi.org/10.1021/jp056311j" target="top">10.1021/jp056311j</a></td>
+
+  </tr>
+
+  <tr>
+  <td class="ref" id="CODATA"><a NAME="CODATA">CODATA</a></td>
+  <td>Cox, J.D.; Wagman, D.D.; Medvedev, V.A.CODATA Key Values for Thermodynamics. Hemisphere, New York, 1989</td>
+
+  <td><a href="http://dx.doi.org/10.1002/bbpc.19900940121" target="top">10.1002/bbpc.19900940121</a></td>
+
+  </tr>
+
+  <tr>
+  <td class="ref" id="Shim"><a NAME="Shim">Shim</a></td>
+  <td>Shimanouchi, T. , Tables of Molecular Vibrational Frequencies, Consolidated Volu</td>
+
+  <td><a href="http://dx.doi.org/10.6028/NBS.NSRDS.39" target="top">10.6028/NBS.NSRDS.39</a></td>
+
+  </tr>
+
+  <tr>
+  <td class="ref" id="webbook"><a NAME="webbook">webbook</a></td>
+  <td>NIST Chemistry Webbook (<A href="http://webbook.nist.gov/chemistry" TARGET=MAIN>http://webbook.nist.gov/chemistry</A>)</td>
+
+  <td><a href="http://dx.doi.org/10.18434/T4D303" target="top">10.18434/T4D303</a></td>
+
+  </tr>
+
+</table>
+<p> Got a better number? Please email us at 
+<a HREF="MAILTO:cccbdb@nist.gov"> <span class="__cf_email__" data-cfemail="10737373727472507e7963643e777f66">[email&#160;protected]</span> </a> <br>
+</div>
+
+<HR>
+<table border="1">
+<TR><TH COLSPAN=2>Browse</th></TR>
+<TR><TH>Previous</th><TH>Next</th></TR>
+<TR><TD><FORM action="getform.asp" method=POST id=form1>
+<INPUT type=hidden id=text1 name=formula value = 7789200>
+<INPUT type="submit" value="D2O (Deuterium oxide)" id=submit1 name=submit1>
+</FORM></td>
+<TD><FORM action="getform.asp" method=POST id=form2>
+<INPUT type=hidden id=text2 name=formula value = 7732185>
+<INPUT type="submit" value="H2O- (water anion)" id=submit2 name=submit2>
+</FORM></td>
+</TR>
+</TABLE>
+
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a46f674e19b2c45e',t:'MTc5MTQwMjI5OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

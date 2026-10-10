@@ -1,0 +1,8 @@
+{
+  "recordedAt": "2026-10-09T22:50:08.940Z",
+  "sequence": "sequence-2.json",
+  "completedJob": "checkpoint-2",
+  "interruptedJob": "roadmap-2",
+  "observed": "Execution session disappeared; the recorded process was no longer present. Two tests had reported success in stdout, but no completed run receipt or results JSON was written.",
+  "counting": "The incomplete roadmap-2 run is excluded from final test and accepted accessibility totals. Original files are retained unchanged. All three selected roadmap cases were rerun successfully in roadmap-3; unit checks completed in unit-3."
+}

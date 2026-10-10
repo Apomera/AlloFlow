@@ -1,0 +1,40 @@
+{
+  "sourceSHA256": "164407bb58546fc91584761e51e9a907d2eacd33442a0a5fae31da0c22ef37c0",
+  "beforeSHA256": "0af58d9afd30ed0de275caf53197320ddabed9308f08b191cce7bf4927d83f84",
+  "exactReversal": true,
+  "sourceOutsideEditIdentical": true,
+  "unknownSourceRejected": true,
+  "historicalAssertionsChanged": false,
+  "sourceHashes": {
+    "stem_lab/stem_tool_firstresponse.js": "0af58d9afd30ed0de275caf53197320ddabed9308f08b191cce7bf4927d83f84",
+    "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js": "0af58d9afd30ed0de275caf53197320ddabed9308f08b191cce7bf4927d83f84",
+    "desktop/app-build/stem_lab/stem_tool_firstresponse.js": "0af58d9afd30ed0de275caf53197320ddabed9308f08b191cce7bf4927d83f84",
+    "desktop/web-app/build/stem_lab/stem_tool_firstresponse.js": "0af58d9afd30ed0de275caf53197320ddabed9308f08b191cce7bf4927d83f84"
+  },
+  "indexSHA256": "108c1be399abb624076a9ef781ec68f7b16a173c899d05f8e5e0c26e0898e735",
+  "additions": [
+    {
+      "file": "tests/helpers/firstresponse_nose_contour_delta.cjs",
+      "content": "const { createHash } = require('node:crypto');\nconst delta = require('./firstresponse_nose_contour_delta.json');\nconst hash = source => createHash('sha256').update(source).digest('hex');\nfunction revertNoseContour(source) {\n  if (hash(source) === delta.beforeSHA256) return source;\n  if (hash(source) !== delta.afterSHA256) throw new Error('Nose contour source does not match its exact refinement delta');\n  for (const edit of [...delta.edits].reverse()) {\n    if (source.split(edit.new).length !== 2) throw new Error('Nose contour reversal is not unique: ' + (edit.name || 'source edit'));\n    source = source.replace(edit.new, edit.old);\n  }\n  if (hash(source) !== delta.beforeSHA256) throw new Error('Nose contour reversal did not recover fixed baseline');\n  return source;\n}\nmodule.exports = { revertNoseContour, delta };\n",
+      "SHA256": "e4bc27922d774170593c86fad4efaaf1b8a713435b1ea71af55e600015805047",
+      "beforeSHA256": null,
+      "afterSHA256": "e4bc27922d774170593c86fad4efaaf1b8a713435b1ea71af55e600015805047"
+    },
+    {
+      "file": "tests/helpers/firstresponse_nose_contour_delta.json",
+      "content": "{\n  \"beforeSHA256\": \"0af58d9afd30ed0de275caf53197320ddabed9308f08b191cce7bf4927d83f84\",\n  \"afterSHA256\": \"164407bb58546fc91584761e51e9a907d2eacd33442a0a5fae31da0c22ef37c0\",\n  \"edits\": [\n    {\n      \"old\": \"    function noseDepth(z) { return .009 + .052*Math.exp(-Math.pow((z-.010)/.051,2)); }\",\n      \"new\": \"    function noseDepth(z) { return .014 + .038*Math.exp(-Math.pow((z-.010)/.051,2)); }\"\n    }\n  ]\n}\n",
+      "SHA256": "a2a30ac8335c0ccb64ae48b6a3ed64f7b58e550a1dbfc786ae8876161d75e1f1",
+      "beforeSHA256": null,
+      "afterSHA256": "a2a30ac8335c0ccb64ae48b6a3ed64f7b58e550a1dbfc786ae8876161d75e1f1"
+    }
+  ],
+  "edits": [
+    {
+      "file": "tests/helpers/firstresponse_ear_lobe_delta.cjs",
+      "before": "const { createHash } = require('node:crypto');\nconst delta = require('./firstresponse_ear_lobe_delta.json');\nconst hash = source => createHash('sha256').update(source).digest('hex');\nfunction revertEarLobe(source) {\n  if (hash(source) === delta.beforeSHA256) return source;\n  if (hash(source) !== delta.afterSHA256) throw new Error('Ear lobe source does not match its exact refinement delta');\n  for (const edit of [...delta.edits].reverse()) {\n    if (source.split(edit.new).length !== 2) throw new Error('Ear lobe reversal is not unique: ' + (edit.name || 'source edit'));\n    source = source.replace(edit.new, edit.old);\n  }\n  if (hash(source) !== delta.beforeSHA256) throw new Error('Ear lobe reversal did not recover fixed baseline');\n  return source;\n}\nmodule.exports = { revertEarLobe, delta };\n",
+      "after": "const { createHash } = require('node:crypto');\nconst delta = require('./firstresponse_ear_lobe_delta.json');\nconst hash = source => createHash('sha256').update(source).digest('hex');\nfunction revertEarLobe(source) {\n  if (hash(source) !== delta.beforeSHA256 && hash(source) !== delta.afterSHA256) {\n    source = require('./firstresponse_nose_contour_delta.cjs').revertNoseContour(source);\n  }\n  if (hash(source) === delta.beforeSHA256) return source;\n  if (hash(source) !== delta.afterSHA256) throw new Error('Ear lobe source does not match its exact refinement delta');\n  for (const edit of [...delta.edits].reverse()) {\n    if (source.split(edit.new).length !== 2) throw new Error('Ear lobe reversal is not unique: ' + (edit.name || 'source edit'));\n    source = source.replace(edit.new, edit.old);\n  }\n  if (hash(source) !== delta.beforeSHA256) throw new Error('Ear lobe reversal did not recover fixed baseline');\n  return source;\n}\nmodule.exports = { revertEarLobe, delta };\n",
+      "beforeSHA256": "e1d1f961ac558d2b3c39e6ce90f377681dca931597bc48b06d5f152e9798c6a0",
+      "afterSHA256": "f55538b9801790da8006ab42ded78bcf4d47aa162a4562564b2d9e3173109954"
+    }
+  ]
+}

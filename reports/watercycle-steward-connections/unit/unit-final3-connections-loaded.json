@@ -1,0 +1,21 @@
+{
+  "loadedAt": "2026-10-07T16:23:31.661Z",
+  "completedAt": "2026-10-07T16:23:33.795Z",
+  "loadedRuntimes": [
+    {
+      "path": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "ad07af85cc74677dacb388dd27a29b5d874fc498773f6688a62953bccaa42a0a",
+      "bytes": 3246268
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "ad07af85cc74677dacb388dd27a29b5d874fc498773f6688a62953bccaa42a0a",
+      "bytes": 3246268
+    }
+  ],
+  "loadedTest": {
+    "path": "tests/watercycle_steward_connections.test.js",
+    "sha256": "7d41a496b51f433ca233a5a9200710420ad71ea8864d3d993fcd5ab06c03d2db",
+    "bytes": 18160
+  }
+}

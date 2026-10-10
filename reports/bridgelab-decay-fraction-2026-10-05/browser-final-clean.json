@@ -1,0 +1,686 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\decay-fraction-2026-10-05\\validation\\playwright-video-off.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/Documents/Codex/2026-09-29/great-work-how-can-we-holistically/decay-fraction-2026-10-05/validation/browser-video-off-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "line"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "26-bridgelab-gl.spec.ts",
+      "file": "26-bridgelab-gl.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Bridge Lab — real WebGL",
+          "file": "26-bridgelab-gl.spec.ts",
+          "line": 420,
+          "column": 6,
+          "specs": [
+            {
+              "title": "guided damping: predict, compare scenes, preserve evidence and print at 1000px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7900,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-05T16:30:10.311Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-cd0cb2f9aa476c79c0cb",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 1242,
+              "column": 9
+            },
+            {
+              "title": "guided damping: qualitative case-study steps and reduced motion at 1000px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5903,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-05T16:30:18.432Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-0327c1c4fcf6bf039061",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 1318,
+              "column": 9
+            },
+            {
+              "title": "guided damping: predict, compare scenes, preserve evidence and print at 320px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6721,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-05T16:30:24.346Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-a084ecf1e3d4fb078ad3",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 1242,
+              "column": 9
+            },
+            {
+              "title": "guided damping: qualitative case-study steps and reduced motion at 320px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4945,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-05T16:30:31.076Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-1bfc09249bd8d622e9b2",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 1318,
+              "column": 9
+            },
+            {
+              "title": "guide energy: inspect, record and print the free-vibration budget at 1000px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10150,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[StemLab] stem_tool_bridgelab.js loaded — Bridge Engineering Lab\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-05T16:30:36.031Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-f686623083270e871772",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 1513,
+              "column": 9
+            },
+            {
+              "title": "guide energy: inspect, record and print the free-vibration budget at 320px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10395,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[StemLab] stem_tool_bridgelab.js loaded — Bridge Engineering Lab\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-05T16:30:46.189Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-d70c92c6816bc000d8a6",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 1513,
+              "column": 9
+            },
+            {
+              "title": "guide energy: prepared-pair provenance survives scene selection and graphics loss",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6135,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[StemLab] stem_tool_bridgelab.js loaded — Bridge Engineering Lab\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-05T16:30:56.593Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-5b6faae53c5361ca5f9a",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 1621,
+              "column": 7
+            },
+            {
+              "title": "claim interval: follow the question, choose signed evidence and print at 1000px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6984,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-05T16:31:02.736Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-e2f37c3c91924cfb562d",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 1684,
+              "column": 9
+            },
+            {
+              "title": "claim interval: follow the question, choose signed evidence and print at 320px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6720,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-05T16:31:09.730Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-d28b0e66cd3c8aa80303",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 1684,
+              "column": 9
+            },
+            {
+              "title": "claim interval: manual quantity and notebook provenance survive scene graphics loss",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4365,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-05T16:31:16.459Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-71933bddc3f84783687e",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 1715,
+              "column": 7
+            },
+            {
+              "title": "claim interval: recorded guide conditions and tiny values persist in the report",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3753,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-05T16:31:20.832Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-3fdfad5e5aae7e57a71b",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 1721,
+              "column": 7
+            },
+            {
+              "title": "energy questions: guided A/B investigations, conservation diagram and saved question at 1000px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5915,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-05T16:31:24.594Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-5ce76c3b4273b4a93bf7",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 2021,
+              "column": 9
+            },
+            {
+              "title": "energy questions: guided A/B investigations, conservation diagram and saved question at 320px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5517,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-05T16:31:30.517Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-793e6c5234750a03e649",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 2021,
+              "column": 9
+            },
+            {
+              "title": "energy questions: zero shaking and manual intervals in labelled 2D with reduced motion",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3459,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-05T16:31:36.043Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-a065b0201b8c5dbe4d7e",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 2051,
+              "column": 7
+            },
+            {
+              "title": "decay fraction: inspect, record and print each trial's fraction remaining at 1000px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 12800,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[StemLab] stem_tool_bridgelab.js loaded — Bridge Engineering Lab\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-05T16:31:39.511Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-751cba161ef88e57a51f",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 2995,
+              "column": 9
+            },
+            {
+              "title": "decay fraction: inspect, record and print each trial's fraction remaining at 320px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 12282,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[StemLab] stem_tool_bridgelab.js loaded — Bridge Engineering Lab\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-05T16:31:52.320Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-7983aa5f7e0f23695603",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 2995,
+              "column": 9
+            },
+            {
+              "title": "decay fraction: guide B and its denominator survive scene A and graphics fallback",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7686,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[StemLab] stem_tool_bridgelab.js loaded — Bridge Engineering Lab\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-05T16:32:04.610Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-d7cf3c415b4b2481ee74",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 3126,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-05T16:30:09.552Z",
+    "duration": 123209.81000000001,
+    "expected": 17,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

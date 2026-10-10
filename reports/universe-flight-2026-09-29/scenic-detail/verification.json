@@ -1,0 +1,25 @@
+{
+  "pins": {
+    "ui": "5223660b4cbdc9ee53124ec148400204dd48a9e73d3e89c9ab829aa933afd797",
+    "renderer": "16d181fbe835baf707ea9b89611958f51a5f492bd2cf831f872cff652bfdde1c"
+  },
+  "mirrorExact": true,
+  "syntax": true,
+  "uiPatchReversible": true,
+  "rendererPatchReversible": true,
+  "previewAssetsVerified": 18,
+  "unitTests": 71,
+  "browserWorkflows": 30,
+  "accessibilityChecks": 7,
+  "nebulaWorkflows": 38,
+  "renderComparisons": 12,
+  "captures": 37,
+  "touchBounds": 16,
+  "atlasAudit": {
+    "broadChannelsExact": true,
+    "generatedSourcesExact": true,
+    "mathFunctionsExact": 16,
+    "maximumTileLightDifference": 0.00026688523864093483
+  },
+  "indexEmpty": true
+}

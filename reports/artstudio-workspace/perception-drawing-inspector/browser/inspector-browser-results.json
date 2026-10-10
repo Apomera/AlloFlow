@@ -1,0 +1,397 @@
+{
+  "sourceSHA256": "73bdf677e5db35de02d5b671fe3dd688ebb42b9dcddedc7be18a7d3e69f67a2e",
+  "loadedSourceSHA256": "73bdf677e5db35de02d5b671fe3dd688ebb42b9dcddedc7be18a7d3e69f67a2e",
+  "finalSourceSHA256": "73bdf677e5db35de02d5b671fe3dd688ebb42b9dcddedc7be18a7d3e69f67a2e",
+  "checks": [
+    {
+      "preview": "inspector-desktop",
+      "equalProjection": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "preview": "inspector-phone-200",
+      "equalProjection": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "preview": "inspector-dark",
+      "equalProjection": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "experiment": "brightness",
+      "free": true,
+      "allZoomsActualProjection": true,
+      "sceneTreeUnchanged": true,
+      "fitReset": true,
+      "noSavedWrites": true,
+      "axe": []
+    },
+    {
+      "experiment": "ebbinghaus",
+      "free": true,
+      "allZoomsActualProjection": true,
+      "sceneTreeUnchanged": true,
+      "fitReset": true,
+      "noSavedWrites": true,
+      "axe": []
+    },
+    {
+      "experiment": "mullerLyer",
+      "free": true,
+      "allZoomsActualProjection": true,
+      "sceneTreeUnchanged": true,
+      "fitReset": true,
+      "noSavedWrites": true,
+      "axe": []
+    },
+    {
+      "experiment": "cafeWall",
+      "free": true,
+      "allZoomsActualProjection": true,
+      "sceneTreeUnchanged": true,
+      "fitReset": true,
+      "noSavedWrites": true,
+      "axe": []
+    },
+    {
+      "experiment": "necker",
+      "free": true,
+      "allZoomsActualProjection": true,
+      "sceneTreeUnchanged": true,
+      "fitReset": true,
+      "noSavedWrites": true,
+      "axe": []
+    },
+    {
+      "experiment": "moire",
+      "free": true,
+      "allZoomsActualProjection": true,
+      "sceneTreeUnchanged": true,
+      "fitReset": true,
+      "noSavedWrites": true,
+      "axe": []
+    },
+    {
+      "experiment": "ponzo",
+      "free": true,
+      "allZoomsActualProjection": true,
+      "sceneTreeUnchanged": true,
+      "fitReset": true,
+      "noSavedWrites": true,
+      "axe": []
+    },
+    {
+      "experiment": "brightness",
+      "allFourComparisonLayouts": true,
+      "equalProjectedScaleAndPosition": true,
+      "sceneTreesUnchanged": true,
+      "noSavedWrites": true,
+      "axe": []
+    },
+    {
+      "experiment": "ebbinghaus",
+      "allFourComparisonLayouts": true,
+      "equalProjectedScaleAndPosition": true,
+      "sceneTreesUnchanged": true,
+      "noSavedWrites": true,
+      "axe": []
+    },
+    {
+      "experiment": "mullerLyer",
+      "allFourComparisonLayouts": true,
+      "equalProjectedScaleAndPosition": true,
+      "sceneTreesUnchanged": true,
+      "noSavedWrites": true,
+      "axe": []
+    },
+    {
+      "experiment": "cafeWall",
+      "allFourComparisonLayouts": true,
+      "equalProjectedScaleAndPosition": true,
+      "sceneTreesUnchanged": true,
+      "noSavedWrites": true,
+      "axe": []
+    },
+    {
+      "experiment": "necker",
+      "allFourComparisonLayouts": true,
+      "equalProjectedScaleAndPosition": true,
+      "sceneTreesUnchanged": true,
+      "noSavedWrites": true,
+      "axe": []
+    },
+    {
+      "experiment": "moire",
+      "allFourComparisonLayouts": true,
+      "equalProjectedScaleAndPosition": true,
+      "sceneTreesUnchanged": true,
+      "noSavedWrites": true,
+      "axe": []
+    },
+    {
+      "experiment": "ponzo",
+      "allFourComparisonLayouts": true,
+      "equalProjectedScaleAndPosition": true,
+      "sceneTreesUnchanged": true,
+      "noSavedWrites": true,
+      "axe": []
+    },
+    {
+      "nativeArrowKeys": true,
+      "shiftMovesFurther": true,
+      "homeFits": true,
+      "escapeExitsPanKeepsFocusDialog": true,
+      "dpadAllDirectionsClamped": true,
+      "noSavedWrites": true
+    },
+    {
+      "nativeMousePan": true,
+      "primaryPointerOwnership": true,
+      "secondaryEventsIgnored": true,
+      "cancelReleasesCapture": true,
+      "viewportReceivesFocus": true,
+      "panAndDividerSeparate": true,
+      "stateUnchanged": true
+    },
+    {
+      "nativeTouchPan": true,
+      "dividerUnaffected": true,
+      "stateUnchanged": true
+    },
+    {
+      "layoutRelocationCancelsDrag": true,
+      "focusRelocationCancelsDrag": true,
+      "cameraPreserved": true
+    },
+    {
+      "nativeResizeCancelsOnMoveAndUp": true,
+      "nativeScrollTranslationCancelsOnMoveAndUp": true,
+      "expandCancelsActivePan": true,
+      "pointerCaptureReleased": true,
+      "cameraPreservedAndFreshPanWorks": true
+    },
+    {
+      "editsNotesLayoutAndFocusKeepCamera": true,
+      "newReferenceContextExperimentAndProfileReset": true,
+      "returnToPriorReferenceDoesNotReviveCamera": true
+    },
+    {
+      "experiment": "brightness",
+      "context": true,
+      "equalProjection": true,
+      "exactScenesPreserved": true,
+      "savedStateUnchanged": true
+    },
+    {
+      "experiment": "ebbinghaus",
+      "context": true,
+      "equalProjection": true,
+      "exactScenesPreserved": true,
+      "savedStateUnchanged": true
+    },
+    {
+      "experiment": "mullerLyer",
+      "context": true,
+      "equalProjection": true,
+      "exactScenesPreserved": true,
+      "savedStateUnchanged": true
+    },
+    {
+      "experiment": "cafeWall",
+      "context": true,
+      "equalProjection": true,
+      "exactScenesPreserved": true,
+      "savedStateUnchanged": true
+    },
+    {
+      "experiment": "necker",
+      "context": true,
+      "equalProjection": true,
+      "exactScenesPreserved": true,
+      "savedStateUnchanged": true
+    },
+    {
+      "experiment": "moire",
+      "context": true,
+      "equalProjection": true,
+      "exactScenesPreserved": true,
+      "savedStateUnchanged": true
+    },
+    {
+      "experiment": "ponzo",
+      "context": true,
+      "equalProjection": true,
+      "exactScenesPreserved": true,
+      "savedStateUnchanged": true
+    },
+    {
+      "experiment": "cafeWall",
+      "inquiry": true,
+      "newBaselineResetsFit": true,
+      "liveEditKeepsSharedCamera": true,
+      "frozenBaselineAndSavedPinPreserved": true
+    },
+    {
+      "experiment": "necker",
+      "inquiry": true,
+      "newBaselineResetsFit": true,
+      "liveEditKeepsSharedCamera": true,
+      "frozenBaselineAndSavedPinPreserved": true
+    },
+    {
+      "experiment": "moire",
+      "inquiry": true,
+      "newBaselineResetsFit": true,
+      "liveEditKeepsSharedCamera": true,
+      "frozenBaselineAndSavedPinPreserved": true
+    },
+    {
+      "experiment": "ponzo",
+      "inquiry": true,
+      "newBaselineResetsFit": true,
+      "liveEditKeepsSharedCamera": true,
+      "frozenBaselineAndSavedPinPreserved": true
+    },
+    {
+      "experiment": "brightness",
+      "hiddenMatchingIntact": true,
+      "studyStartsAtFit": true,
+      "inspectorLockedThroughReveal": true,
+      "studyEndUnlocks": true,
+      "pinPreserved": true
+    },
+    {
+      "experiment": "ebbinghaus",
+      "hiddenMatchingIntact": true,
+      "studyStartsAtFit": true,
+      "inspectorLockedThroughReveal": true,
+      "studyEndUnlocks": true,
+      "pinPreserved": true
+    },
+    {
+      "experiment": "mullerLyer",
+      "hiddenMatchingIntact": true,
+      "studyStartsAtFit": true,
+      "inspectorLockedThroughReveal": true,
+      "studyEndUnlocks": true,
+      "pinPreserved": true
+    },
+    {
+      "pendingStudyImmediatelyFitsAndLocksInspector": true
+    },
+    {
+      "allFourZoomsAndThreeDividerPositionsExportFullCurrentSVG": true,
+      "allFourZoomsAndThreeDividerPositionsExportFullCurrentPNG": true,
+      "pngDimensions": [
+        2400,
+        1440
+      ],
+      "cameraAndSavedStateUnchanged": true
+    },
+    {
+      "moireContinuesThroughInspectorCommands": true,
+      "motionKeepsCamera": true,
+      "pinStationary": true,
+      "noImplicitStopOrSavedWrites": true
+    },
+    {
+      "rtlKeyboardAndDpadAgree": true,
+      "physicalProjectionAligned": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 320,
+      "height": 844,
+      "font": 16,
+      "mainAndFocusedInspectorUsable": true,
+      "equalProjection": true,
+      "nativeHomeFits": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 320,
+      "height": 844,
+      "font": 32,
+      "mainAndFocusedInspectorUsable": true,
+      "equalProjection": true,
+      "nativeHomeFits": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "font": 32,
+      "mainAndFocusedInspectorUsable": true,
+      "equalProjection": true,
+      "nativeHomeFits": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 760,
+      "height": 390,
+      "font": 32,
+      "mainAndFocusedInspectorUsable": true,
+      "equalProjection": true,
+      "nativeHomeFits": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 1440,
+      "height": 1000,
+      "font": 16,
+      "mainAndFocusedInspectorUsable": true,
+      "equalProjection": true,
+      "nativeHomeFits": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 1440,
+      "height": 1000,
+      "font": 32,
+      "mainAndFocusedInspectorUsable": true,
+      "equalProjection": true,
+      "nativeHomeFits": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "theme": "dark",
+      "equalProjection": true,
+      "scientificColorsUnmodified": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "theme": "contrast",
+      "equalProjection": true,
+      "scientificColorsUnmodified": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-light",
+      "equalProjection": true,
+      "scientificColorsUnmodified": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-dark",
+      "equalProjection": true,
+      "scientificColorsUnmodified": true,
+      "noOverflow": true,
+      "axe": []
+    }
+  ],
+  "errors": []
+}

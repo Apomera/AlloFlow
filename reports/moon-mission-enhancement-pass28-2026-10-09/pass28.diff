@@ -1,0 +1,194 @@
+--- pass27/stem_tool_moonmission.js
++++ pass28/stem_tool_moonmission.js
+@@ -1780,6 +1780,98 @@
+     var projected={x:point.x-sun.x*distance,y:point.y-sun.y*distance,z:point.z-sun.z*distance};
+     return ['x','y','z'].every(function(k){return mmNum(projected[k]);})?Object.freeze(projected):null;
+   }
++  // Static hardware in the vehicle's tilted frame. Pad centres and the bell
++  // exit match the side-view support and exhaust geometry.
++  function mmDrawDescentLander2D(ctx,x,y) {
++    ctx.save();ctx.translate(x,y);ctx.lineJoin='round';ctx.lineCap='round';
++    function shape(points,fill,stroke,width) {
++      ctx.beginPath();ctx.moveTo(points[0][0],points[0][1]);
++      for(var i=1;i<points.length;i++)ctx.lineTo(points[i][0],points[i][1]);
++      ctx.closePath();ctx.fillStyle=fill;ctx.fill();
++      if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=width||.6;ctx.stroke();}
++    }
++    function line(points,color,width) {
++      ctx.beginPath();ctx.moveTo(points[0][0],points[0][1]);
++      for(var i=1;i<points.length;i++)ctx.lineTo(points[i][0],points[i][1]);
++      ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();
++    }
++    function pad(px,r,front) {
++      ctx.fillStyle=front?'#8e9290':'#656d72';
++      ctx.beginPath();ctx.arc(px,28,r,0,Math.PI*2);ctx.fill();
++      ctx.fillStyle=front?'#cbd0c4':'#969f9e';
++      ctx.beginPath();ctx.ellipse(px-.25,27.4,r*.8,r*.32,0,0,Math.PI*2);ctx.fill();
++      line([[px-r*.55,29],[px+r*.55,29]],'#414a50',.6);
++    }
++    // Rear supports are cooler and darker; the forward braces catch the Sun.
++    line([[-6,14],[-10,27]],'#596674',1.7);
++    line([[6,14],[10,27]],'#596674',1.7);
++    line([[-11,12],[-10,25],[-4,16]],'#84909b',.65);
++    line([[11,12],[10,25],[4,16]],'#84909b',.65);
++    pad(-10,2,false);pad(10,2,false);
++    line([[-13,12],[-24,27]],'#69747c',2);
++    line([[13,12],[24,27]],'#69747c',2);
++    line([[-12.8,12],[-23.7,26.5]],'#d8d2aa',.65);
++    line([[13,12],[23.8,26.5]],'#adb6b2',.65);
++    line([[-5,15],[-21.5,24]],'#989c8c',.8);
++    line([[5,15],[21.5,24]],'#818c91',.8);
++    line([[-14,15],[-15.7,20]],'#d2b572',1.8);
++    line([[14,15],[15.7,20]],'#ab965f',1.8);
++    // Bell shading stays within its existing exit at y=22.
++    shape([[-3,15],[-6,22],[6,22],[3,15]],'#343d48');
++    shape([[-3,15],[-5.3,21.5],[-1.5,21.5],[-1,15]],'#727b7d');
++    shape([[2,15],[5.3,21.5],[1,21.5],[0,15]],'#202b38');
++    line([[-5.7,21.65],[5.7,21.65]],'#a6aea9',.65);
++    // Faceted foil blankets: fixed folds remain still in paused recordings.
++    shape([[-14,3],[-12,0],[12,0],[14,3],[14,13],[12,16],[-12,16],[-14,13]],'#b78a37','#5c4828',.6);
++    shape([[-12,.4],[10,.4],[12,3],[-12,3],[-13.5,4]],'#e9c774');
++    shape([[-13.6,4],[-10.5,3],[-10.5,14.5],[-12,15.5],[-13.6,12.8]],'#dfb95e');
++    shape([[10,3],[13.6,3],[13.6,12.8],[11.8,15.5],[10,14]],'#775727');
++    shape([[-10.4,3.5],[-1,3.5],[-1,14.8],[-10.4,14.8]],'#cba349');
++    shape([[0,3.5],[9.5,3.5],[9.5,14.8],[0,14.8]],'#b88b36');
++    shape([[-10,4],[-3,5],[-7,8.5],[-10,7]],'#ddba63');
++    shape([[-9,10],[-2,8],[-2,13.8],[-7,13]],'#b58a36');
++    shape([[.5,4],[8.8,4],[5,7]],'#dcb55b');
++    shape([[.5,10],[6,8.4],[9,13.9],[.5,14]],'#cba44b');
++    line([[-9.7,3.5],[-10,9],[-9.3,14.5]],'#efcc78',.45);
++    line([[-.5,3.5],[-.5,14.7]],'#6b522a',.55);
++    line([[.3,7.2],[5,7.5],[8.9,5.8]],'#86662c',.45);
++    line([[-9.3,12],[-5,11.5],[-1.5,13.7]],'#e4bf66',.45);
++    line([[-11,15.3],[10,15.3]],'#71572e',.6);
++    // Angular cabin with bright left facets and a shaded right cheek.
++    shape([[-11,0],[-9,-16],[9,-16],[11,0]],'#a6adb0','#424d57',.65);
++    shape([[-9,-15.6],[-1,-15.6],[-2,-3],[-10.5,-.4]],'#e4e6df');
++    shape([[-.5,-15.6],[7.5,-15.6],[4,-5],[-1.5,-3]],'#c7d0d2');
++    shape([[8,-15.2],[10.5,-.4],[3.5,-2.7],[4,-5]],'#737f8a');
++    shape([[-10.4,-.4],[-2,-3],[3.5,-2.7],[10.4,-.4]],'#9ca5aa');
++    line([[-8.7,-15.5],[8.4,-15.5]],'#f3f2df',.7);
++    // Recessed triangular windows and a restrained glass reflection.
++    shape([[-5,-12.8],[-1.5,-5.8],[-8.3,-5.8]],'#354652','#687c86',.65);
++    shape([[5,-12.8],[1.5,-5.8],[8.3,-5.8]],'#1a2d3d','#536979',.65);
++    shape([[-5,-11.4],[-3.7,-8.9],[-6.5,-7.4]],'#8ab4bf');
++    line([[4.9,-11.2],[3.3,-7.9]],'#6e929f',.65);
++    // Front hatch and porch, with a small ladder ending above the pads.
++    shape([[-2.1,-3],[2.1,-3],[2.8,2.2],[-2.8,2.2]],'#576573','#d0d2c2',.55);
++    line([[-1.4,-1.6],[1,-1.6]],'#202e3c',.5);
++    shape([[-4,2.5],[4,2.5],[5,4],[-5,4]],'#7a8182','#c6c1a1',.45);
++    line([[-2.5,4],[-5.3,20.8]],'#c5b77e',.7);
++    line([[.2,4],[-2.6,20.8]],'#9d987e',.7);
++    for(var rung=0;rung<5;rung++) {
++      var ry=7+rung*2.7,rx=-2.5-(ry-4)/6;
++      line([[rx,ry],[rx+2.7,ry]],rung%2?'#88918c':'#d2c590',.65);
++    }
++    // RCS housings with dark nozzle mouths; no invented firing effects.
++    shape([[-13,-10],[-10,-10],[-10,-6],[-13,-6]],'#a9b2b6','#495661',.45);
++    shape([[10,-10],[13,-10],[13,-6],[10,-6]],'#7b8994','#3d4b58',.45);
++    ctx.fillStyle='#17232f';ctx.fillRect(-13,-8.8,1.2,1.6);ctx.fillRect(11.8,-8.8,1.2,1.6);
++    line([[-12.6,-10],[-10.3,-10]],'#dce0d8',.5);
++    // Mast and dish retain the existing -25.4 upper envelope.
++    line([[2,-16],[2,-22]],'#b9c1bc',.8);
++    ctx.beginPath();ctx.arc(2,-22,3,Math.PI,0);ctx.strokeStyle='#bbc4c0';ctx.lineWidth=.8;ctx.stroke();
++    line([[-.3,-22],[2,-21],[4.3,-22]],'#667681',.5);
++    pad(-24,2.5,true);pad(24,2.5,true);
++    ctx.restore();
++  }
++
+   function mmDescentSidePose(surface,clearance,bank) {
+     if(!mmNum(surface)||!mmNum(clearance)||clearance<0||!mmNum(bank)||Math.abs(bank)>MM_DESCENT.maxTilt+1e-8)return null;
+     var co=Math.cos(bank),si=Math.sin(bank),pads=[[-24,2.5],[-10,2],[10,2],[24,2.5]];
+@@ -11313,6 +11405,8 @@
+                     dPad.appendChild(bLeft); dPad.appendChild(bThrust); dPad.appendChild(bRight);
+                     cvEl.parentElement.appendChild(dPad);
+                   }
++                  var descentPad=cvEl.parentElement&&cvEl.parentElement.querySelector('[data-descent-pad]');
++                  if(descentPad)descentPad.style.display=landed||crashed?'none':'flex';
+ 
+                   function drawDescent() {
+                     // After touchdown the loop only ticks on a timer and writes nothing to
+@@ -11509,6 +11603,9 @@
+                     }
+ 
+                     // Replay has its own presentation values. The graded state remains at contact.
++                    // A completed flight has no live thrust or tilt controls.
++                    var padDisplay=landed||crashed?'none':'flex';
++                    if(descentPad&&descentPad.style.display!==padDisplay)descentPad.style.display=padDisplay;
+                     var review = (landed || crashed) && cvEl._reviewFrame;
+                     var viewAlt = review ? review.alt : alt, viewTilt = review ? review.tilt : tilt;
+                     var viewThrust = review ? review.throttle : thrust, viewFuel = review ? review.fuel : fuel;
+@@ -11682,57 +11779,7 @@
+                     ctx.translate(lmX, lmY);
+                     ctx.rotate(viewTilt);
+                     ctx.translate(-lmX, -lmY);
+-                    // Descent stage (octagonal gold foil)
+-                    ctx.fillStyle = '#c9a04a';
+-                    ctx.beginPath();
+-                    ctx.moveTo(lmX - 14, lmY + 3); ctx.lineTo(lmX - 12, lmY); ctx.lineTo(lmX + 12, lmY);
+-                    ctx.lineTo(lmX + 14, lmY + 3); ctx.lineTo(lmX + 14, lmY + 13);
+-                    ctx.lineTo(lmX + 12, lmY + 16); ctx.lineTo(lmX - 12, lmY + 16); ctx.lineTo(lmX - 14, lmY + 13);
+-                    ctx.closePath(); ctx.fill();
+-                    // Gold foil texture lines
+-                    ctx.strokeStyle = 'rgba(160,120,40,0.3)'; ctx.lineWidth = 0.5;
+-                    for (var fl = 0; fl < 3; fl++) {
+-                      ctx.beginPath(); ctx.moveTo(lmX - 12, lmY + 4 + fl * 4); ctx.lineTo(lmX + 12, lmY + 4 + fl * 4); ctx.stroke();
+-                    }
+-                    // Ascent stage (angular silver with facets)
+-                    ctx.fillStyle = '#c8c8c8';
+-                    ctx.beginPath();
+-                    ctx.moveTo(lmX - 11, lmY); ctx.lineTo(lmX - 9, lmY - 16);
+-                    ctx.lineTo(lmX + 9, lmY - 16); ctx.lineTo(lmX + 11, lmY);
+-                    ctx.closePath(); ctx.fill();
+-                    // Facet shading
+-                    ctx.fillStyle = 'rgba(0,0,0,0.06)';
+-                    ctx.beginPath(); ctx.moveTo(lmX, lmY); ctx.lineTo(lmX + 9, lmY - 16); ctx.lineTo(lmX + 11, lmY); ctx.closePath(); ctx.fill();
+-                    // Triangular windows (like real LM)
+-                    ctx.fillStyle = '#1a2a3a';
+-                    ctx.beginPath(); ctx.moveTo(lmX - 5, lmY - 12); ctx.lineTo(lmX - 2, lmY - 6); ctx.lineTo(lmX - 8, lmY - 6); ctx.closePath(); ctx.fill();
+-                    ctx.beginPath(); ctx.moveTo(lmX + 5, lmY - 12); ctx.lineTo(lmX + 2, lmY - 6); ctx.lineTo(lmX + 8, lmY - 6); ctx.closePath(); ctx.fill();
+-                    // Antenna dish on top
+-                    ctx.strokeStyle = '#aaa'; ctx.lineWidth = 0.8;
+-                    ctx.beginPath(); ctx.moveTo(lmX + 2, lmY - 16); ctx.lineTo(lmX + 2, lmY - 22); ctx.stroke();
+-                    ctx.beginPath(); ctx.arc(lmX + 2, lmY - 22, 3, Math.PI, 0); ctx.stroke();
+-                    // RCS quads (small rectangles on corners)
+-                    ctx.fillStyle = '#999';
+-                    ctx.fillRect(lmX - 13, lmY - 10, 3, 4);
+-                    ctx.fillRect(lmX + 10, lmY - 10, 3, 4);
+-                    // 4 Legs (spread outward)
+-                    ctx.strokeStyle = '#888'; ctx.lineWidth = 1.5;
+-                    ctx.beginPath();
+-                    ctx.moveTo(lmX - 14, lmY + 14); ctx.lineTo(lmX - 24, lmY + 27);
+-                    ctx.moveTo(lmX + 14, lmY + 14); ctx.lineTo(lmX + 24, lmY + 27);
+-                    ctx.moveTo(lmX - 6, lmY + 16); ctx.lineTo(lmX - 10, lmY + 27);
+-                    ctx.moveTo(lmX + 6, lmY + 16); ctx.lineTo(lmX + 10, lmY + 27);
+-                    ctx.stroke();
+-                    // Foot pads (circles)
+-                    ctx.fillStyle = '#888';
+-                    ctx.beginPath(); ctx.arc(lmX - 24, lmY + 28, 2.5, 0, Math.PI * 2); ctx.fill();
+-                    ctx.beginPath(); ctx.arc(lmX + 24, lmY + 28, 2.5, 0, Math.PI * 2); ctx.fill();
+-                    ctx.beginPath(); ctx.arc(lmX - 10, lmY + 28, 2, 0, Math.PI * 2); ctx.fill();
+-                    ctx.beginPath(); ctx.arc(lmX + 10, lmY + 28, 2, 0, Math.PI * 2); ctx.fill();
+-                    // Engine bell and expanding, faint vacuum exhaust.
+-                    ctx.fillStyle = '#34383e';
+-                    ctx.beginPath(); ctx.moveTo(lmX - 3, lmY + 15); ctx.lineTo(lmX - 6, lmY + 22);
+-                    ctx.lineTo(lmX + 6, lmY + 22); ctx.lineTo(lmX + 3, lmY + 15); ctx.closePath(); ctx.fill();
++                    mmDrawDescentLander2D(ctx,lmX,lmY);
+                     if (viewThrust > 0.1 && viewFuel > 0 && !viewDone) {
+                       var fLen = Math.min(10 + viewThrust * 28, visualClearance + 7);
+                       var fW = 4;
+@@ -11770,9 +11817,12 @@
+                     if(cvEl.dataset.descentHudBottom!==String(hudBottom))cvEl.dataset.descentHudBottom=String(hudBottom);
+ 
+                     if (review) {
+-                      ctx.fillStyle = 'rgba(8,19,34,0.94)'; ctx.fillRect(6, H - 92, W - 12, 30);
++                      // Use the inactive controls' space, leaving the surface reference clear.
++                      var replayWidth=Math.min(300,W-24),replayX=(W-replayWidth)/2;
++                      ctx.fillStyle='rgba(8,19,34,0.94)';ctx.fillRect(replayX,H-52,replayWidth,36);
++                      ctx.fillStyle='#67e8f9';ctx.fillRect(replayX,H-52,2,36);
+                       ctx.fillStyle = '#a5f3fc'; ctx.textAlign = 'center'; ctx.font = 'bold 12px system-ui';
+-                      ctx.fillText('RECORDED FRAME  ' + viewTime.toFixed(1) + ' s', W / 2, H - 72);
++                      ctx.fillText('RECORDED FRAME  ' + viewTime.toFixed(1) + ' s', W / 2, H - 29);
+                     }
+ 
+                     // Outcome, on its own backing panel and fitted to the canvas width. At

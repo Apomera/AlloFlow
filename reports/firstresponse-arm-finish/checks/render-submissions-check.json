@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "browserLaunched": false,
+  "helperSHA256": "893061724ad73f66862dcef4527e852d93c502a616f527919c03af1244bae3a2",
+  "onlySubmittedMeshesRecorded": true,
+  "originalCallbacksPreserved": true,
+  "originalArgumentsPreserved": true,
+  "returnValuesPreserved": true,
+  "groupAndDrawRangeIntersectionVerified": true,
+  "restoredOwnAndInheritedCallbacks": true,
+  "restoredOnRenderFailure": true,
+  "restoredOnCallbackFailure": true
+}

@@ -1,0 +1,181 @@
+'use strict';
+
+// Directly execute one unchanged workflow from the repository spec. This is a
+// Playwright API check with the real expect matchers, not a Playwright CLI run.
+// Usage from repo cwd: node <this-file> fallback|native
+// Root supplies PLAYWRIGHT_BROWSERS_PATH and an attempt-specific
+// MM_DESCENT_HUD_REPORT_DIR. No browser is launched merely by requiring this file.
+const fs = require('node:fs');
+const path = require('node:path');
+const crypto = require('node:crypto');
+const Module = require('node:module');
+
+const mode = process.argv[2];
+if (!['fallback', 'native'].includes(mode)) throw Error('Expected exactly one mode: fallback or native');
+const repo = path.resolve(process.env.MM_DESCENT_HUD_REPO || process.cwd());
+const specPath = path.join(repo, 'tests/e2e/moon-mission-descent-hud.spec.ts');
+const harnessPath = path.join(repo, 'tests/e2e/helpers/stem_gl_harness.ts');
+const pixelsPath = path.join(repo, 'tests/e2e/helpers/png_pixels.ts');
+const runtimePath = path.join(repo, 'stem_lab/stem_tool_moonmission.js');
+const mirrorPath = path.join(repo, 'desktop/web-app/public/stem_lab/stem_tool_moonmission.js');
+const output = path.resolve(process.env.MM_DESCENT_HUD_REPORT_DIR ||
+  path.join(repo, 'reports/moon-mission-enhancement-pass27-2026-10-08/browser/direct-' + mode));
+process.env.MM_DESCENT_HUD_REPORT_DIR = output;
+const resultPath = path.join(output, 'direct-' + mode + '-result.json');
+const progressPath = path.join(output, 'direct-' + mode + '-progress.json');
+if (fs.existsSync(resultPath) || fs.existsSync(progressPath)) throw Error('Refusing to overwrite a prior direct run: ' + output);
+fs.mkdirSync(output, { recursive: true });
+process.chdir(repo);
+const requireRepo = Module.createRequire(path.join(repo, 'package.json'));
+const started = Date.now();
+const result = {
+  schema: 'moon-pass27-direct-browser-v1', runner: 'direct-playwright-api', playwrightCliResult: false,
+  mode, status: 'running', startedAt: new Date(started).toISOString(), repo, specPath, output,
+  browserCache: process.env.PLAYWRIGHT_BROWSERS_PATH || null,
+  timeouts: { action: 20000, navigation: 60000, expect: 15000, launch: 60000 },
+  launchOptions: { headless: true, timeout: 60000 },
+  workflowCompleted: false, cleanupCompleted: false, milestones: [], errors: [], attachments: [],
+};
+function errorData(error) {
+  return { name: error?.name || 'Error', message: error?.message || String(error), stack: error?.stack || null };
+}
+function milestone(name, detail) {
+  const row = { name, elapsedMs: Date.now() - started, ...(detail || {}) };
+  result.milestones.push(row); console.log('[pass27-direct] ' + JSON.stringify(row));
+  fs.writeFileSync(progressPath, JSON.stringify(result, null, 2));
+}
+function hash(file) { return crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex'); }
+async function bounded(task, milliseconds, label) {
+  let timer;
+  try {
+    return await Promise.race([Promise.resolve().then(task), new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(label + ' exceeded ' + milliseconds + ' ms')), milliseconds);
+    })]);
+  } finally { clearTimeout(timer); }
+}
+async function phase(name, task, timeout) {
+  milestone(name + ':before');
+  try {
+    const value = timeout ? await bounded(task, timeout, name) : await task();
+    milestone(name + ':after'); return value;
+  } catch (error) { milestone(name + ':failed', { error: errorData(error) }); throw error; }
+}
+
+async function run() {
+  let browser, context, page, hooks, info, beforeAllAttempted = false;
+  const originalLoad = Module._load, originalTs = Module._extensions['.ts'];
+  const originals = new Map();
+  try {
+    milestone('load:before');
+    for (const file of [specPath, harnessPath, pixelsPath, runtimePath, mirrorPath]) originals.set(file, hash(file));
+    if (originals.get(runtimePath) !== originals.get(mirrorPath)) throw Error('Canonical/public source mismatch before verification');
+    result.inputHashes = Object.fromEntries(originals);
+    const realPlaywright = requireRepo('@playwright/test');
+    const babelBundlePath = path.join(repo, 'node_modules/playwright/lib/transform/babelBundle.js');
+    const { babelTransform } = require(babelBundlePath);
+    if (typeof babelTransform !== 'function') throw Error('Installed Playwright Babel transform is unavailable');
+    result.transform = { name: 'Playwright bundled babelTransform', bundlePath: babelBundlePath, sha256: hash(babelBundlePath) };
+    const expect = realPlaywright.expect.configure({ timeout: 15000 });
+    // Current installed expect has a null-testInfo execution path for the
+    // ordinary and locator matchers used here. Snapshot matchers are not used.
+    expect({ standalone: true }).toEqual({ standalone: true });
+    const registered = []; hooks = { beforeAll: [], afterEach: [], afterAll: [] };
+    const mockTest = function(name, callback) {
+      if (typeof name !== 'string' || typeof callback !== 'function') throw Error('Unsupported test registration');
+      registered.push({ name, callback });
+    };
+    for (const name of Object.keys(hooks)) mockTest[name] = callback => {
+      if (typeof callback !== 'function') throw Error('Unsupported ' + name + ' registration');
+      hooks[name].push(callback);
+    };
+    const suite = {};
+    mockTest.describe = { configure(options) { Object.assign(suite, options); } };
+    const allowedTs = new Set([specPath, harnessPath, pixelsPath].map(file => path.normalize(file).toLowerCase()));
+    Module._extensions['.ts'] = function(module, filename) {
+      if (!allowedTs.has(path.normalize(filename).toLowerCase())) {
+        if (originalTs) return originalTs(module, filename);
+        throw Error('Unexpected TypeScript import outside this workflow: ' + filename);
+      }
+      // Installed Playwright's actual signature is (code, filename, isModule,
+      // pluginsPrologue, pluginsEpilogue, jsxImportSource). A .ts filename enables
+      // its bundled TS preset; false selects CommonJS. It disables Babel config
+      // discovery, so no repository plugin or extra package is needed here.
+      const compiled = babelTransform(fs.readFileSync(filename, 'utf8'), filename, false, [], []);
+      if (!compiled || typeof compiled.code !== 'string') throw Error('No transformed code for ' + filename);
+      module._compile(compiled.code, filename);
+    };
+    Module._load = function(request, parent, isMain) {
+      if (request === '@playwright/test' && parent?.filename === specPath)
+        return { ...realPlaywright, test: mockTest, expect };
+      return originalLoad.call(this, request, parent, isMain);
+    };
+    try { require(specPath); }
+    finally {
+      Module._load = originalLoad;
+      if (originalTs) Module._extensions['.ts'] = originalTs;
+      else delete Module._extensions['.ts'];
+    }
+    if (registered.length !== 2) throw Error('Expected exactly two unchanged workflow registrations');
+    const prefix = mode === 'native' ? 'lighter native HUD ' : '2D fallback recorded HUD ';
+    const selected = registered.filter(item => item.name.startsWith(prefix));
+    if (selected.length !== 1) throw Error('Could not uniquely select workflow ' + mode);
+    if (suite.retries !== 0 || !(suite.timeout > 0)) throw Error('Spec retry/timeout contract is missing');
+    result.workflow = selected[0].name; result.suiteOptions = suite;
+    result.timeouts.workflow = suite.timeout;
+    info = { attach: async (name, attachment) => {
+      // The spec writes screenshots before attaching. Preserve their paths;
+      // no Playwright Test reporter or synthetic TestInfo is installed.
+      result.attachments.push({ name, ...attachment });
+    } };
+    milestone('load:after', { workflow: result.workflow, registered: registered.map(item => item.name) });
+    beforeAllAttempted = true;
+    await phase('harness-start', async () => {
+      for (const callback of hooks.beforeAll) await callback({}, info);
+    }, 60000);
+    browser = await phase('browser-launch', () => realPlaywright.chromium.launch(result.launchOptions), 65000);
+    result.browserVersion = browser.version();
+    context = await phase('context-create', () => browser.newContext({ viewport: { width: 1100, height: 1000 },
+      deviceScaleFactor: 1, ignoreHTTPSErrors: false }), 60000);
+    context.setDefaultTimeout(20000); context.setDefaultNavigationTimeout(60000);
+    page = await phase('page-create', () => context.newPage(), 60000);
+    page.setDefaultTimeout(20000); page.setDefaultNavigationTimeout(60000);
+    await phase('workflow', () => selected[0].callback({ page }, info), suite.timeout);
+    result.workflowCompleted = true;
+  } catch (error) {
+    result.errors.push({ phase: 'execution', ...errorData(error) });
+    milestone('execution-failed', { error: errorData(error) });
+  } finally {
+    Module._load = originalLoad;
+    if (originalTs) Module._extensions['.ts'] = originalTs;
+    else delete Module._extensions['.ts'];
+    milestone('cleanup:before');
+    const cleanup = async (name, callback) => {
+      try { await phase(name, callback, name === 'browser-close' ? 60000 : 20000); }
+      catch (error) { result.errors.push({ phase: name, ...errorData(error) }); }
+    };
+    if (page && hooks) await cleanup('after-each', async () => {
+      for (const callback of hooks.afterEach) await callback({ page }, info);
+    });
+    if (context) await cleanup('context-close', () => context.close());
+    if (browser) await cleanup('browser-close', () => browser.close());
+    if (beforeAllAttempted && hooks) await cleanup('harness-stop', async () => {
+      for (const callback of hooks.afterAll) await callback({}, info);
+    });
+    result.cleanupCompleted = !result.errors.some(error =>
+      ['after-each', 'context-close', 'browser-close', 'harness-stop'].includes(error.phase));
+    for (const [file, before] of originals) {
+      try { if (hash(file) !== before) throw Error('Verified input changed during direct workflow: ' + file); }
+      catch (error) { result.errors.push({ phase: 'input-preservation', ...errorData(error) }); }
+    }
+    result.status = result.workflowCompleted && result.cleanupCompleted && result.errors.length === 0 ? 'passed' : 'failed';
+    result.finishedAt = new Date().toISOString(); result.elapsedMs = Date.now() - started;
+    milestone('cleanup:after', { status: result.status });
+    fs.writeFileSync(resultPath, JSON.stringify(result, null, 2));
+    console.log('[pass27-direct] Result ' + result.status + ': ' + resultPath);
+    process.exitCode = result.status === 'passed' ? 0 : 1;
+  }
+}
+if (require.main === module) run().catch(error => {
+  console.error('[pass27-direct] Fatal result-writing failure', error);
+  process.exitCode = 1;
+});

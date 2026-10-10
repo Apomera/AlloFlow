@@ -1,0 +1,35 @@
+{
+  "mode": "unit",
+  "label": "unit-3",
+  "start": "2026-10-09T22:45:34.279Z",
+  "startHashes": {
+    "stem_lab/stem_tool_dissection.js": "f3026824987de7941b9fc4e367238782581236b7b2380d98b0d6e35d25bded27",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "f3026824987de7941b9fc4e367238782581236b7b2380d98b0d6e35d25bded27",
+    "tests/e2e/dissection-checkpoint-clarity.spec.ts": "54ba3de648e23133b6d0edf35331250eb16e50f6d23c68fde8b405cb5dd09816",
+    "tests/e2e/dissection-technique-roadmap.spec.ts": "70bbdf48c371174b553e6a7b0d88b3a0d49e5921e886f58a86b6e2cb7085cf58",
+    "tests/dissection_lab_improvements.test.js": "24bda465f604372660464162bdfed58663edd60c0e879d5ff61b9b2f2c34b7ae"
+  },
+  "args": [
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/dissection_lab_improvements.test.js",
+    "--pool=threads",
+    "--maxWorkers=1",
+    "--no-file-parallelism",
+    "--reporter=verbose",
+    "--reporter=json",
+    "--outputFile=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-plan-handoff-2026-10-09\\unit-3\\results.json",
+    "--testNamePattern=technique roadmap|completed technique checkpoint"
+  ],
+  "pid": 38904,
+  "exitCode": 0,
+  "signal": null,
+  "end": "2026-10-09T22:45:47.747Z",
+  "endHashes": {
+    "stem_lab/stem_tool_dissection.js": "f3026824987de7941b9fc4e367238782581236b7b2380d98b0d6e35d25bded27",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "f3026824987de7941b9fc4e367238782581236b7b2380d98b0d6e35d25bded27",
+    "tests/e2e/dissection-checkpoint-clarity.spec.ts": "54ba3de648e23133b6d0edf35331250eb16e50f6d23c68fde8b405cb5dd09816",
+    "tests/e2e/dissection-technique-roadmap.spec.ts": "70bbdf48c371174b553e6a7b0d88b3a0d49e5921e886f58a86b6e2cb7085cf58",
+    "tests/dissection_lab_improvements.test.js": "24bda465f604372660464162bdfed58663edd60c0e879d5ff61b9b2f2c34b7ae"
+  }
+}

@@ -1,0 +1,231 @@
+{
+  "completed": true,
+  "pins": {
+    "stem_lab/universe_flight_scene.js": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7",
+    "stem_lab/stem_tool_universe.js": "b0251862f75ab2de31ca16daeb1bdd30ec3773dae0f1ae2715a2dcb2cb96eed1"
+  },
+  "harnessSha256": "c6284511c96906166dc7f9ee874850580983fdf3fdc6e8c254546b658f0ce10d",
+  "workflows": [
+    {
+      "name": "narrow-lens-recovery-preserves-distances",
+      "fixture": "group-elliptical",
+      "readings": {
+        "text": [
+          "327,452.29 ly",
+          "1,424,298.07 ly",
+          "1,403,744.99 ly"
+        ],
+        "rails": [
+          0.22990432471175004,
+          1
+        ]
+      }
+    },
+    {
+      "name": "keyboard-reframe-widens-only-as-needed",
+      "turns": 1,
+      "fromFov": 43,
+      "toFov": 77
+    },
+    {
+      "name": "repeated-frame-is-stable",
+      "exactPixels": true
+    },
+    {
+      "name": "reframe-preserves-existing-wide-lens"
+    },
+    {
+      "name": "minimized-reframe-preserves-disclosure-and-focus"
+    },
+    {
+      "name": "narrow-window-disables-impossible-frame-without-changing-view"
+    },
+    {
+      "name": "repeated-reframing-preserves-single-back-and-exact-flyby-return"
+    },
+    {
+      "name": "phone-keyboard-recovery"
+    },
+    {
+      "name": "fullscreen-and-forced-colors-recovery"
+    },
+    {
+      "name": "landscape-recovery-and-clean-exit"
+    }
+  ],
+  "accessibility": [
+    {
+      "name": "desktop-reframe",
+      "violations": []
+    },
+    {
+      "name": "unavailable-phone-reframe",
+      "violations": []
+    },
+    {
+      "name": "phone-reframe",
+      "violations": []
+    },
+    {
+      "name": "fullscreen-reframe",
+      "violations": []
+    },
+    {
+      "name": "forced-colors-reframe",
+      "violations": []
+    },
+    {
+      "name": "landscape-reframe",
+      "violations": []
+    }
+  ],
+  "captures": [
+    {
+      "name": "galaxy-reframed",
+      "file": "galaxy-reframed.png",
+      "sha256": "34d0542dc03bd077dc6b72c5a15d28ee45467adaf46b4d66b3cf133875763287"
+    },
+    {
+      "name": "compact-reframed",
+      "file": "compact-reframed.png",
+      "sha256": "5903410054de81c1fc0aec4c664a3613c083992c4073372e602812795a98f91a"
+    },
+    {
+      "name": "phone-unavailable-frame",
+      "file": "phone-unavailable-frame.png",
+      "sha256": "b283859b3a85baf2dd1812297a48f958d14b26937c840fba372b05e53b872725"
+    },
+    {
+      "name": "phone-reframed",
+      "file": "phone-reframed.png",
+      "sha256": "26080f653a2dee4574321c6347c0e34f59a3b8ed87ffe13b3379b579de32332d"
+    },
+    {
+      "name": "fullscreen-reframed",
+      "file": "fullscreen-reframed.png",
+      "sha256": "09c1e08559d8cd0f3ac2608eae24331a6bf2a5fc00950859b392e82f87cc65e0"
+    },
+    {
+      "name": "forced-colors-reframed",
+      "file": "forced-colors-reframed.png",
+      "sha256": "3f8a4729b9283d5ba8f65d5d88697615ca2e0e36fade6e18d02edeb5aff9cc54"
+    },
+    {
+      "name": "landscape-reframed",
+      "file": "landscape-reframed.png",
+      "sha256": "5056dc1f5791f2860f04fe080c5419f9cb47c586fd738763c23e240c1fbefcef"
+    }
+  ],
+  "bounds": [
+    {
+      "name": "compact Frame both",
+      "left": 753,
+      "right": 855,
+      "top": 706.8125,
+      "bottom": 750.8125,
+      "width": 102,
+      "height": 44,
+      "viewport": [
+        1280,
+        850
+      ],
+      "covered": false
+    },
+    {
+      "name": "phone Frame both",
+      "left": 69,
+      "right": 131,
+      "top": 277.21875,
+      "bottom": 321.21875,
+      "width": 62,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "phone Move panel",
+      "left": 137,
+      "right": 199,
+      "top": 277.21875,
+      "bottom": 321.21875,
+      "width": 62,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "phone Minimize",
+      "left": 205,
+      "right": 267,
+      "top": 277.21875,
+      "bottom": 321.21875,
+      "width": 62,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "fullscreen Frame both",
+      "left": 99,
+      "right": 161,
+      "top": 221,
+      "bottom": 265,
+      "width": 62,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "landscape Frame both",
+      "left": 271,
+      "right": 333,
+      "top": 21,
+      "bottom": 65,
+      "width": 62,
+      "height": 44,
+      "viewport": [
+        740,
+        320
+      ],
+      "covered": false
+    },
+    {
+      "name": "landscape compact Frame both",
+      "left": 265,
+      "right": 367,
+      "top": 259,
+      "bottom": 303,
+      "width": 102,
+      "height": 44,
+      "viewport": [
+        740,
+        320
+      ],
+      "covered": false
+    }
+  ],
+  "served": [
+    {
+      "file": "stem_lab/stem_tool_universe.js",
+      "sha256": "b0251862f75ab2de31ca16daeb1bdd30ec3773dae0f1ae2715a2dcb2cb96eed1"
+    },
+    {
+      "file": "stem_lab/universe_flight_scene.js",
+      "sha256": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7"
+    }
+  ],
+  "errors": [],
+  "fixtureSha256": "cce0344e366f20c14897ab6d2ab432aba17f81d6f97c3ca803f453955c9549e7"
+}

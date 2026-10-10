@@ -1,0 +1,25 @@
+{
+  "refinedAt": "2026-10-05T14:46:10.076Z",
+  "files": [
+    {
+      "relative": "stem_lab/stem_tool_bridgelab.js",
+      "beforeSha256": "1f3facf8d5b80122416299d48555812ccdd84107c46af4b1f312bec52266713c",
+      "afterSha256": "881533effeb1901421273557fb8954f813801f7309f136a4663a2733a2bb99b8"
+    },
+    {
+      "relative": "desktop/web-app/public/stem_lab/stem_tool_bridgelab.js",
+      "beforeSha256": "1f3facf8d5b80122416299d48555812ccdd84107c46af4b1f312bec52266713c",
+      "afterSha256": "881533effeb1901421273557fb8954f813801f7309f136a4663a2733a2bb99b8"
+    },
+    {
+      "relative": "tests/bridgelab_immersive_motion.test.js",
+      "beforeSha256": "24e2a59ad36f58bc5aa79208e9827b536fb1d659f79560e25b4a0eacf90a952f",
+      "afterSha256": "401d490424d846ddf59bab765711f97ed055c2bf5c518feac59875f8c8d93717"
+    },
+    {
+      "relative": "tests/e2e/26-bridgelab-gl.spec.ts",
+      "beforeSha256": "01c593af4991379f8de9095bbf3567ed1c5fdac9f58160bc74143c794113966c",
+      "afterSha256": "bbb2ef568aa94e251a93ff0af3eb307844bfabfeef7284659259e420c3ece595"
+    }
+  ]
+}

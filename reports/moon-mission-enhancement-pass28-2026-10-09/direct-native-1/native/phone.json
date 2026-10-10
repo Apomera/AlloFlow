@@ -1,0 +1,367 @@
+{
+  "name": "phone",
+  "hud": {
+    "state": {
+      "alt": 300,
+      "vVel": -9,
+      "hVel": 4,
+      "fuel": 110,
+      "thrust": 0,
+      "tilt": 0,
+      "x": 0,
+      "elapsed": 0
+    },
+    "expected": [
+      "110 s",
+      "300.0 m",
+      "4.0 m/s",
+      "9.0 m/s",
+      "Altitude",
+      "Down · land <3",
+      "Drift",
+      "Engine 0%",
+      "Hover reserve",
+      "Right · land <5",
+      "Vertical"
+    ],
+    "generation": 447,
+    "width": 310,
+    "height": 420,
+    "rows": [
+      {
+        "text": "Altitude",
+        "x": 20,
+        "y": 26,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "align": "left",
+        "baseline": "alphabetic",
+        "alpha": 1,
+        "color": "#c4d5e4",
+        "width": 43.60546875,
+        "box": {
+          "left": 19,
+          "right": 64.23046875,
+          "top": 17,
+          "bottom": 26
+        },
+        "transform": {
+          "a": 2,
+          "b": 0,
+          "c": 0,
+          "d": 2,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "text": "300.0 m",
+        "x": 20,
+        "y": 52,
+        "font": "bold 24px system-ui, sans-serif",
+        "size": 24,
+        "cssSize": 24,
+        "align": "left",
+        "baseline": "alphabetic",
+        "alpha": 1,
+        "color": "#b9f0ff",
+        "width": 90.328125,
+        "box": {
+          "left": 21,
+          "right": 109.34375,
+          "top": 35,
+          "bottom": 52
+        },
+        "transform": {
+          "a": 2,
+          "b": 0,
+          "c": 0,
+          "d": 2,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "text": "Hover reserve",
+        "x": 163,
+        "y": 26,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "align": "left",
+        "baseline": "alphabetic",
+        "alpha": 1,
+        "color": "#c4d5e4",
+        "width": 75.650390625,
+        "box": {
+          "left": 163,
+          "right": 239.275390625,
+          "top": 17,
+          "bottom": 26
+        },
+        "transform": {
+          "a": 2,
+          "b": 0,
+          "c": 0,
+          "d": 2,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "text": "110 s",
+        "x": 163,
+        "y": 52,
+        "font": "bold 22px system-ui, sans-serif",
+        "size": 22,
+        "cssSize": 22,
+        "align": "left",
+        "baseline": "alphabetic",
+        "alpha": 1,
+        "color": "#f5f9ff",
+        "width": 53.7109375,
+        "box": {
+          "left": 165,
+          "right": 217.0322265625,
+          "top": 36,
+          "bottom": 52
+        },
+        "transform": {
+          "a": 2,
+          "b": 0,
+          "c": 0,
+          "d": 2,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "text": "Vertical",
+        "x": 20,
+        "y": 79,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "align": "left",
+        "baseline": "alphabetic",
+        "alpha": 1,
+        "color": "#c4d5e4",
+        "width": 40.60546875,
+        "box": {
+          "left": 19,
+          "right": 60.470703125,
+          "top": 70,
+          "bottom": 79
+        },
+        "transform": {
+          "a": 2,
+          "b": 0,
+          "c": 0,
+          "d": 2,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "text": "Drift",
+        "x": 163,
+        "y": 79,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "align": "left",
+        "baseline": "alphabetic",
+        "alpha": 1,
+        "color": "#c4d5e4",
+        "width": 24.87890625,
+        "box": {
+          "left": 163,
+          "right": 188.54296875,
+          "top": 70,
+          "bottom": 79
+        },
+        "transform": {
+          "a": 2,
+          "b": 0,
+          "c": 0,
+          "d": 2,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "text": "9.0 m/s",
+        "x": 20,
+        "y": 102,
+        "font": "bold 20px system-ui, sans-serif",
+        "size": 20,
+        "cssSize": 20,
+        "align": "left",
+        "baseline": "alphabetic",
+        "alpha": 1,
+        "color": "#ffdb99",
+        "width": 69.931640625,
+        "box": {
+          "left": 20,
+          "right": 90.1328125,
+          "top": 88,
+          "bottom": 104
+        },
+        "transform": {
+          "a": 2,
+          "b": 0,
+          "c": 0,
+          "d": 2,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "text": "4.0 m/s",
+        "x": 163,
+        "y": 102,
+        "font": "bold 20px system-ui, sans-serif",
+        "size": 20,
+        "cssSize": 20,
+        "align": "left",
+        "baseline": "alphabetic",
+        "alpha": 1,
+        "color": "#f5f9ff",
+        "width": 69.931640625,
+        "box": {
+          "left": 163,
+          "right": 233.1328125,
+          "top": 88,
+          "bottom": 104
+        },
+        "transform": {
+          "a": 2,
+          "b": 0,
+          "c": 0,
+          "d": 2,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "text": "Down · land <3",
+        "x": 20,
+        "y": 121,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "align": "left",
+        "baseline": "alphabetic",
+        "alpha": 1,
+        "color": "#c4d5e4",
+        "width": 83.267578125,
+        "box": {
+          "left": 20,
+          "right": 103.60546875,
+          "top": 112,
+          "bottom": 121
+        },
+        "transform": {
+          "a": 2,
+          "b": 0,
+          "c": 0,
+          "d": 2,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "text": "Right · land <5",
+        "x": 163,
+        "y": 121,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "align": "left",
+        "baseline": "alphabetic",
+        "alpha": 1,
+        "color": "#c4d5e4",
+        "width": 80.572265625,
+        "box": {
+          "left": 163,
+          "right": 243.91015625,
+          "top": 112,
+          "bottom": 124
+        },
+        "transform": {
+          "a": 2,
+          "b": 0,
+          "c": 0,
+          "d": 2,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "text": "Engine 0%",
+        "x": 20,
+        "y": 146,
+        "font": "600 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "align": "left",
+        "baseline": "alphabetic",
+        "alpha": 1,
+        "color": "#f5f9ff",
+        "width": 57,
+        "box": {
+          "left": 20,
+          "right": 76.916015625,
+          "top": 137,
+          "bottom": 149
+        },
+        "transform": {
+          "a": 2,
+          "b": 0,
+          "c": 0,
+          "d": 2,
+          "e": 0,
+          "f": 0
+        }
+      }
+    ],
+    "layout": "compact",
+    "bottom": "156",
+    "cssWidth": 310,
+    "backingWidth": 620,
+    "horizontalOverflow": false,
+    "reviewTime": "",
+    "renderer": "on",
+    "collisions": []
+  },
+  "framing": {
+    "width": 310,
+    "height": 420,
+    "mode": "chase",
+    "controlsTop": 368,
+    "zoom": 0.6829967918708066,
+    "viewEnabled": true,
+    "lander": {
+      "left": 131.5393972235208,
+      "right": 179.44193291865355,
+      "top": 180.0653085427411,
+      "bottom": 223.9950776690273,
+      "near": 0.9950657709496556,
+      "far": 0.9958153134252414,
+      "vertices": 2925,
+      "objects": 67
+    },
+    "nadir": {
+      "left": 128.82411483659726,
+      "right": 180.5155898250047,
+      "top": 317.19360177571434,
+      "bottom": 355.99999999999994,
+      "near": 0.9966315740530238,
+      "far": 0.9971572813003134,
+      "vertices": 64,
+      "objects": 1
+    }
+  },
+  "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass28-2026-10-09\\direct-native-1\\native\\phone.png"
+}

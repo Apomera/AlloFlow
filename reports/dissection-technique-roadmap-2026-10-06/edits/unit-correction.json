@@ -1,0 +1,21 @@
+{
+  "at": "2026-10-07T01:31:28.363Z",
+  "beforeSha256": "3dd0b7306ccb79d313a21f6f8ce068b31dce8d8d50682314a3f9a8d151b6fede",
+  "afterSha256": "09a1ced8e0352c69624dc6682b6c2846619de0a696dedb42fabc739fce27f64f",
+  "exactOneEdit": true,
+  "correction": {
+    "file": "tests/dissection_lab_improvements.test.js",
+    "beforeSha256": "3dd0b7306ccb79d313a21f6f8ce068b31dce8d8d50682314a3f9a8d151b6fede",
+    "afterSha256": "09a1ced8e0352c69624dc6682b6c2846619de0a696dedb42fabc739fce27f64f",
+    "edits": [
+      {
+        "before": "['timed practical', { practicalMode: true }]",
+        "after": "['timed practical', { practicalMode: true, quizMode: true }]"
+      }
+    ],
+    "inverseVerified": true,
+    "cumulativeBaselineSha256": "e2468a2b7e90db503e29ca3ae5c4c4d29f663e2c61de2c875ea1a9116b3eaba1",
+    "suiteExecuted": false,
+    "appliedToRepository": false
+  }
+}

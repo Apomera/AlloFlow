@@ -1,0 +1,100 @@
+{
+  "completed": false,
+  "pins": {
+    "stem_lab/universe_flight_scene.js": "11c9f95d62c511ea9b4575598c6847a53c1fc1f37e04e4cd976916d53ef7ee4b",
+    "stem_lab/stem_tool_universe.js": "0bcb80a32407030204eb5422b298e6fa00285d501726d871df8a6ec60330898f"
+  },
+  "harnessSha256": "cb401574baaa4f979e6920babbe811b6f36f7aba83ec0032f840df210cf7ec00",
+  "workflows": [
+    {
+      "name": "desktop-toggle",
+      "poseAndClocksUnchanged": true,
+      "pixelsDiffer": true,
+      "exactPixelsOnReturn": true
+    },
+    {
+      "name": "toggle-pauses-running-route",
+      "poseAndClocksUnchanged": true
+    },
+    {
+      "name": "inspection-and-detour",
+      "sharedState": true,
+      "scenicRetainsDust": true,
+      "backRestoresDust": true,
+      "routeReturnExact": true
+    }
+  ],
+  "accessibility": [
+    {
+      "name": "desktop-display",
+      "violations": []
+    },
+    {
+      "name": "desktop-inspector",
+      "violations": []
+    },
+    {
+      "name": "comparison-metadata",
+      "violations": []
+    }
+  ],
+  "captures": [
+    {
+      "name": "desktop-dust-display",
+      "file": "desktop-dust-display.png",
+      "sha256": "3683543c0db673698b31a9e9a915400cebd324f3b0fe41bc4ee25a909b71bc8b"
+    },
+    {
+      "name": "desktop-dust-inspector",
+      "file": "desktop-dust-inspector.png",
+      "sha256": "e952ebb7d87df5281bb82f7686ce2cb8761155b512d4ae3d3e0befe97c05bc58"
+    },
+    {
+      "name": "dust-comparison",
+      "file": "dust-comparison.png",
+      "sha256": "0cfc79b9ee441cb28d130092655c8b0a4ba6c906c5c54056366b77cc9e70c69c"
+    }
+  ],
+  "bounds": [
+    {
+      "name": "desktop dust",
+      "left": 1014,
+      "right": 1207,
+      "top": 792.546875,
+      "bottom": 836.546875,
+      "width": 193,
+      "height": 44,
+      "viewport": [
+        1280,
+        850
+      ],
+      "covered": false
+    },
+    {
+      "name": "desktop inspector dust",
+      "left": 676,
+      "right": 937,
+      "top": 369.5,
+      "bottom": 413.5,
+      "width": 261,
+      "height": 44,
+      "viewport": [
+        1280,
+        850
+      ],
+      "covered": false
+    }
+  ],
+  "served": [
+    {
+      "file": "stem_lab/stem_tool_universe.js",
+      "sha256": "0bcb80a32407030204eb5422b298e6fa00285d501726d871df8a6ec60330898f"
+    },
+    {
+      "file": "stem_lab/universe_flight_scene.js",
+      "sha256": "11c9f95d62c511ea9b4575598c6847a53c1fc1f37e04e4cd976916d53ef7ee4b"
+    }
+  ],
+  "errors": [],
+  "failure": "download.saveAs: canceled\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-stellar-dust61\\browser-check.cjs:37:177"
+}

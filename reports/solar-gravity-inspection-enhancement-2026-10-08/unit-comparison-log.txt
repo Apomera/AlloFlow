@@ -1,0 +1,41 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/solar_system_comparison_scale_navigation.test.js
+[deferred-jsdom] Initializing the official DOM environment.
+
+stdout | tests/solar_system_comparison_scale_navigation.test.js
+[deferred-jsdom] DOM environment ready.
+
+stdout | tests/solar_system_comparison_scale_navigation.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/solar_system_comparison_scale_navigation.test.js
+[deferred-jsdom] Existing repository setup loaded.
+
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > defaults to pair-fit zero-baseline bars and retains exact measurements 4800ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > keeps fixed diameter and gravity ceilings across pair changes and swaps 2245ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > uses pair-fit geometry for malformed restored mode undefined without repairing saved state 133ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > uses pair-fit geometry for malformed restored mode null without repairing saved state 205ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > uses pair-fit geometry for malformed restored mode false without repairing saved state 173ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > uses pair-fit geometry for malformed restored mode true without repairing saved state 127ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > uses pair-fit geometry for malformed restored mode "SYSTEM" without repairing saved state 109ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > uses pair-fit geometry for malformed restored mode "fixed" without repairing saved state 111ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > uses pair-fit geometry for malformed restored mode 1 without repairing saved state 139ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > uses pair-fit geometry for malformed restored mode ["system"] without repairing saved state 138ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > uses pair-fit geometry for malformed restored mode {"mode":"system"} without repairing saved state 124ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > uses pair-fit geometry for malformed restored mode "system" without repairing saved state 133ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > restores the literal system mode and limits native mode changes to their own setting 538ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > focuses Explore Earth only when its matching detail heading commits 286ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > focuses Explore Jupiter only when its matching detail heading commits 244ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > returns focus to the originating connected Explore button without resetting the comparison 250ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > does not focus or scroll an Explore origin that has left the document 229ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > keeps a matching heading request pending until its node is connected 229ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > cancels pending Explore focus when a different native world selection supersedes it 466ms
+
+ Test Files  1 passed (1)
+      Tests  19 passed (19)
+   Start at  11:55:01
+   Duration  25.34s (transform 2.37s, setup 10.26s, import 2.61s, tests 10.69s, environment 0ms)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/solar-gravity-inspection-enhancement-2026-10-08/unit-comparison-results.json

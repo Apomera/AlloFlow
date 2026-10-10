@@ -232,6 +232,67 @@ describe('what a child actually hears on entering Sound Counting', () => {
     expect(
       instructions.length,
       `the counting instruction played ${instructions.length} times; audio was: ${JSON.stringify(played)}`,
-    ).toBeLessThanOrEqual(1);
+    ).toBe(1);
   });
+// Add within the existing final describe() in the instruction single-channel
+// regression file. Also change the warm-start assertion from <= 1 to === 1.
+  it('waits for the first lazy instruction bank and does not replay on later bank events', async () => {
+    const previousGetAudio = window.getAudio;
+    window.getAudio = () => null;
+    window.__ALLO_INSTRUCTION_AUDIO = {};
+    captureAudio();
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    root = ReactDOMClient.createRoot(container);
+    try {
+      await act(async () => {
+        root.render(React.createElement(WordSoundsModal, props()));
+      });
+      await act(async () => { await new Promise((r) => setTimeout(r, 950)); });
+      expect(played.filter((s) => s.includes('INSTRUCTION_inst_counting'))).toHaveLength(0);
+      await act(async () => {
+        stubAudioBank();
+        window.dispatchEvent(new Event('audio_bank_loaded'));
+        await new Promise((r) => setTimeout(r, 600));
+      });
+      expect(played.filter((s) => s.includes('INSTRUCTION_inst_counting'))).toHaveLength(1);
+      await act(async () => {
+        window.dispatchEvent(new Event('audio_bank_loaded'));
+        await new Promise((r) => setTimeout(r, 100));
+      });
+      expect(played.filter((s) => s.includes('INSTRUCTION_inst_counting'))).toHaveLength(1);
+    } finally {
+      window.getAudio = previousGetAudio;
+    }
+  });
+
+  it('does not play a late first instruction after the activity is minimized', async () => {
+    const previousGetAudio = window.getAudio;
+    window.getAudio = () => null;
+    window.__ALLO_INSTRUCTION_AUDIO = {};
+    captureAudio();
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    root = ReactDOMClient.createRoot(container);
+    try {
+      await act(async () => {
+        root.render(React.createElement(WordSoundsModal, props()));
+      });
+      await act(async () => { await new Promise((r) => setTimeout(r, 950)); });
+      await act(async () => {
+        const minimize = container.querySelector('[data-icon="Minimize"]')?.closest('button');
+        expect(minimize, 'activity toolbar has a minimize control').not.toBeNull();
+        minimize.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+      await act(async () => {
+        stubAudioBank();
+        window.dispatchEvent(new Event('audio_bank_loaded'));
+        await new Promise((r) => setTimeout(r, 600));
+      });
+      expect(played.filter((s) => s.includes('INSTRUCTION_inst_counting'))).toHaveLength(0);
+    } finally {
+      window.getAudio = previousGetAudio;
+    }
+  });
+
 });

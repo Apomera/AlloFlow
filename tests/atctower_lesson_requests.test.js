@@ -14,13 +14,13 @@ function deferred() {
   return { promise, resolve, reject };
 }
 
-function mountLesson(config, callGemini) {
+function mountLesson(config, callGemini, initial = {}) {
   const host = document.createElement('div');
   document.body.appendChild(host);
   const root = ReactDOMClient.createRoot(host);
   const api = { host, updateCount: 0 };
   function Harness() {
-    const [data, setData] = React.useState({ view: 'lesson', selectedLesson: 'separation' });
+    const [data, setData] = React.useState({ view: 'lesson', selectedLesson: 'separation', ...initial });
     api.data = data;
     api.set = (patch) => setData((previous) => ({ ...previous, ...patch }));
     return config.render({
@@ -61,6 +61,20 @@ afterEach(() => {
 });
 
 describe('ATC lesson explanations respect mounted instance and reading context', () => {
+  it('recovers unsupported saved lesson names and still opens a valid workbench', async () => {
+    loadTool('stem_lab/stem_tool_atctower.js', 'atcTower');
+    for (const selectedLesson of [undefined, null, 'missing', '__proto__', 'constructor', 'toString', ['separation']]) {
+      const api = mountLesson(window.StemLab._registry.atcTower, undefined, { selectedLesson, atcMenuPanel: 'airports', totalScore: 75 });
+      expect(api.host.querySelector('.atc-menu')).not.toBeNull();
+      expect(api.host.querySelectorAll('[data-atctower-lesson]')).toHaveLength(5);
+      expect(api.host.querySelector('[data-atctower-playing]')).toBeNull();
+      await api.click('[data-atctower-lesson="separation"]');
+      expect(api.host.querySelector('[data-atctower-explorer="separation"]')).not.toBeNull();
+      expect(api.data.totalScore).toBe(75);
+      api.dispose();
+    }
+  });
+
   it('ignores an obsolete level request and clears prior text when the level changes', async () => {
     loadTool('stem_lab/stem_tool_atctower.js', 'atcTower');
     const first = deferred();

@@ -1,0 +1,205 @@
+{
+  "schema": "moon-pass33-direct-browser-v1",
+  "runner": "direct-playwright-api",
+  "playwrightCliResult": false,
+  "mode": "recorder",
+  "status": "failed",
+  "startedAt": "2026-10-09T23:01:04.878Z",
+  "repo": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "specPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-recorder.spec.ts",
+  "output": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\direct-recorder-1",
+  "browserCache": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+  "timeouts": {
+    "action": 20000,
+    "navigation": 60000,
+    "expect": 15000,
+    "launch": 60000,
+    "workflow": 180000
+  },
+  "launchOptions": {
+    "headless": true,
+    "timeout": 60000
+  },
+  "workflowCompleted": false,
+  "cleanupCompleted": false,
+  "milestones": [
+    {
+      "name": "load:before",
+      "elapsedMs": 2
+    },
+    {
+      "name": "load:after",
+      "elapsedMs": 1539,
+      "workflow": "responsive landing recorder keeps charts readable and selects actual recorded times without changing the flight",
+      "registered": [
+        "responsive landing recorder keeps charts readable and selects actual recorded times without changing the flight"
+      ]
+    },
+    {
+      "name": "harness-start:before",
+      "elapsedMs": 1548
+    },
+    {
+      "name": "harness-start:after",
+      "elapsedMs": 1559
+    },
+    {
+      "name": "browser-launch:before",
+      "elapsedMs": 1560
+    },
+    {
+      "name": "browser-launch:after",
+      "elapsedMs": 1788
+    },
+    {
+      "name": "context-create:before",
+      "elapsedMs": 1789
+    },
+    {
+      "name": "context-create:after",
+      "elapsedMs": 1797
+    },
+    {
+      "name": "page-create:before",
+      "elapsedMs": 1798
+    },
+    {
+      "name": "page-create:after",
+      "elapsedMs": 2115
+    },
+    {
+      "name": "workflow:before",
+      "elapsedMs": 2116
+    },
+    {
+      "name": "workflow:failed",
+      "elapsedMs": 25179,
+      "error": {
+        "name": "TimeoutError",
+        "message": "locator.evaluate: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-descent-canvas]')\u001b[22m\n",
+        "stack": "locator.evaluate: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-descent-canvas]')\u001b[22m\n\n    at physicalState (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-recorder.spec.ts:143:48)\n    at preserved (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-recorder.spec.ts:414:29)\n    at async Object.callback (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-recorder.spec.ts:450:3)\n    at async bounded (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\run-workflow.cjs:54:12)\n    at async phase (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\run-workflow.cjs:62:29)\n    at async run (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\run-workflow.cjs:149:5)"
+      }
+    },
+    {
+      "name": "execution-failed",
+      "elapsedMs": 25179,
+      "error": {
+        "name": "TimeoutError",
+        "message": "locator.evaluate: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-descent-canvas]')\u001b[22m\n",
+        "stack": "locator.evaluate: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-descent-canvas]')\u001b[22m\n\n    at physicalState (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-recorder.spec.ts:143:48)\n    at preserved (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-recorder.spec.ts:414:29)\n    at async Object.callback (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-recorder.spec.ts:450:3)\n    at async bounded (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\run-workflow.cjs:54:12)\n    at async phase (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\run-workflow.cjs:62:29)\n    at async run (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\run-workflow.cjs:149:5)"
+      }
+    },
+    {
+      "name": "cleanup:before",
+      "elapsedMs": 25180
+    },
+    {
+      "name": "after-each:before",
+      "elapsedMs": 25180
+    },
+    {
+      "name": "after-each:failed",
+      "elapsedMs": 45201,
+      "error": {
+        "name": "Error",
+        "message": "after-each exceeded 20000 ms",
+        "stack": "Error: after-each exceeded 20000 ms\n    at Timeout.<anonymous> (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\run-workflow.cjs:55:39)\n    at listOnTimeout (node:internal/timers:605:17)\n    at process.processTimers (node:internal/timers:541:7)"
+      }
+    },
+    {
+      "name": "context-close:before",
+      "elapsedMs": 45219
+    },
+    {
+      "name": "context-close:after",
+      "elapsedMs": 45281
+    },
+    {
+      "name": "browser-close:before",
+      "elapsedMs": 45282
+    },
+    {
+      "name": "browser-close:after",
+      "elapsedMs": 69792
+    },
+    {
+      "name": "harness-stop:before",
+      "elapsedMs": 69793
+    },
+    {
+      "name": "harness-stop:after",
+      "elapsedMs": 69795
+    },
+    {
+      "name": "cleanup:after",
+      "elapsedMs": 69812,
+      "status": "failed"
+    }
+  ],
+  "errors": [
+    {
+      "phase": "execution",
+      "name": "TimeoutError",
+      "message": "locator.evaluate: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-descent-canvas]')\u001b[22m\n",
+      "stack": "locator.evaluate: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-descent-canvas]')\u001b[22m\n\n    at physicalState (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-recorder.spec.ts:143:48)\n    at preserved (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-recorder.spec.ts:414:29)\n    at async Object.callback (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-recorder.spec.ts:450:3)\n    at async bounded (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\run-workflow.cjs:54:12)\n    at async phase (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\run-workflow.cjs:62:29)\n    at async run (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\run-workflow.cjs:149:5)"
+    },
+    {
+      "phase": "after-each",
+      "name": "Error",
+      "message": "after-each exceeded 20000 ms",
+      "stack": "Error: after-each exceeded 20000 ms\n    at Timeout.<anonymous> (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\run-workflow.cjs:55:39)\n    at listOnTimeout (node:internal/timers:605:17)\n    at process.processTimers (node:internal/timers:541:7)"
+    }
+  ],
+  "attachments": [
+    {
+      "name": "phone-touchdown",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\direct-recorder-1\\phone-touchdown.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "phone-touchdown-state",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\direct-recorder-1\\phone-touchdown.json",
+      "contentType": "application/json"
+    },
+    {
+      "name": "phone-neutral-frame",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\direct-recorder-1\\phone-neutral-frame.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "phone-neutral-frame-state",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\direct-recorder-1\\phone-neutral-frame.json",
+      "contentType": "application/json"
+    },
+    {
+      "name": "phone-up-left-frame",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\direct-recorder-1\\phone-up-left-frame.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "phone-up-left-frame-state",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\direct-recorder-1\\phone-up-left-frame.json",
+      "contentType": "application/json"
+    }
+  ],
+  "inputHashes": {
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-recorder.spec.ts": "5747beebc63ec701821f24c47f53bb0a578735e67522e2948a24a50aec3c2d06",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_moonmission.js": "c4d9746f4495fcdaf83f9443e4911daa30868d4b1126dfb2728fc7f7ffcf505f",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_moonmission.js": "c4d9746f4495fcdaf83f9443e4911daa30868d4b1126dfb2728fc7f7ffcf505f"
+  },
+  "transform": {
+    "name": "Playwright bundled babelTransform",
+    "bundlePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\transform\\babelBundle.js",
+    "sha256": "9201df11ae9c9ee1febd587c5013c4f862aa7e9981b92b86ccbbbd37e71f9124"
+  },
+  "workflow": "responsive landing recorder keeps charts readable and selects actual recorded times without changing the flight",
+  "suiteOptions": {
+    "timeout": 180000,
+    "retries": 0
+  },
+  "browserVersion": "148.0.7778.96",
+  "finishedAt": "2026-10-09T23:02:14.690Z",
+  "elapsedMs": 69812
+}

@@ -1,0 +1,40 @@
+{
+  "sourceSha256": "204ac52053002dcf5d72ff83398ff7c4bef6243daabc717b5c2c1b53fb642636",
+  "baselineSha256": "19cec942d81964763454883e177aaad381ea988e5954c1e96937d75bbe440d77",
+  "verifiedAt": "2026-10-09T22:16:43.187Z",
+  "desktopMirrorMatches": true,
+  "units": {
+    "passed": 45,
+    "total": 45,
+    "suites": [
+      "tests\\solar_system_quiz_workbench.test.js",
+      "tests\\stem_position_bias_fixes.test.js"
+    ]
+  },
+  "browser": {
+    "passed": 4,
+    "cases": [
+      "quiz-1060-dark",
+      "quiz-1060-light",
+      "quiz-320-dark",
+      "quiz-320-light"
+    ]
+  },
+  "validatedBehavior": [
+    "Responsive answer cards with 16px copy and explicit chosen/correct status",
+    "Start, skip, next-question and next-round actions describe their current behavior",
+    "Persistent correct and incorrect explanations",
+    "Keyboard focus reaches matching committed question and feedback headings",
+    "Cumulative score and current streak survive draws and round changes",
+    "Only the first answer counts; duplicate and stale actions cannot overwrite progress",
+    "Pure atomic question/history updates keep shuffled choices stable",
+    "All 15 questions drawn once before a round restarts",
+    "Legacy longest-year wording and history map to worlds rather than calling Pluto a planet",
+    "Malformed saved question and counter recovery",
+    "Journal, comparison, vocabulary, checkpoint, learning-path and assignment state preserved",
+    "Readable desktop and 320px layouts in both themes with no overflow or browser errors"
+  ],
+  "syntax": "passed",
+  "whitespace": "passed",
+  "committed": false
+}

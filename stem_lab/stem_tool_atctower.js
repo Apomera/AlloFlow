@@ -286,12 +286,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
     var close = distNm(ac.x, ac.y, geometry.threshold.x, geometry.threshold.y) < 3;
     return close && Math.abs(headingDifference(ac.heading, rwy.hdg)) < 20;
   };
-  var advanceAircraft = function(ac, elapsedSeconds) {
+  var atcTrackHistory = function(points, clock) {
+    if (!atcFinite(clock) || clock < 0) return [];
+    var last = -1;
+    var history = (Array.isArray(points) ? points : []).slice(-50).filter(function(point) {
+      if (!point || !atcFinite(point.x) || !atcFinite(point.y) || !atcFinite(point.time) || point.x < -100 || point.x > 500 || point.y < -100 || point.y > 500 || point.time < Math.max(0, clock - 120) - 1e-7 || point.time > clock + 1e-7 || point.time <= last) return false;
+      last = point.time; return true;
+    }).slice(-25).map(function(point) { return { x: point.x, y: point.y, time: point.time }; });
+    return history.length && clock - history[history.length - 1].time > 5 + 1e-7 ? [] : history;
+  };
+  var advanceAircraft = function(ac, elapsedSeconds, recordTrack) {
+    if (!atcFinite(elapsedSeconds) || elapsedSeconds <= 0 || !atcActiveAircraft(ac)) return;
+    if (ac.fuel <= 1e-7) { ac.fuel = 0; return; }
+    if (ac.x < -20 || ac.x > 420 || ac.y < -20 || ac.y > 420) return;
+    var tracing = recordTrack !== false;
+    if (tracing) {
+      ac.trackClock = atcFinite(ac.trackClock) && ac.trackClock >= 0 ? ac.trackClock : 0;
+      ac.trackHistory = atcTrackHistory(ac.trackHistory, ac.trackClock);
+      // A recovered gap has no recorded route; restart at the known live position.
+      if (!ac.trackHistory.length) ac.trackHistory.push({ x: ac.x, y: ac.y, time: ac.trackClock });
+    }
     var remaining = Math.max(0, elapsedSeconds) * ATC_TIME_ACCELERATION;
     // Small flight-time steps preserve the same turns and captures at any FPS.
-    while (remaining > 0.000001 && ac.state !== 'landed' && ac.state !== 'departed') {
+    while (remaining > 0.000001 && ac.state !== 'landed' && ac.state !== 'departed' && ac.fuel > 0) {
       var dt = Math.min(1, remaining);
       remaining -= dt;
+      var previousX = ac.x, previousY = ac.y, previousClock = ac.trackClock;
       var turnRate = 3;
       if (ac.state === 'approach' && ac.assignedRunway) {
         var geometry = runwayGeometry(ac.assignedRunway);
@@ -335,8 +355,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
       ac.x += Math.sin(toRad(ac.heading)) * distance;
       ac.y -= Math.cos(toRad(ac.heading)) * distance;
       ac.fuel = Math.max(0, ac.fuel - dt / 60);
+      if (ac.fuel <= 1e-7) ac.fuel = 0;
+      if (tracing) {
+        ac.trackClock += dt;
+        var sampleTime = ac.trackHistory[ac.trackHistory.length - 1].time + 5;
+        if (sampleTime <= ac.trackClock + 1e-7) {
+          var fraction = Math.max(0, Math.min(1, (sampleTime - previousClock) / dt));
+          ac.trackHistory.push({ x: previousX + (ac.x - previousX) * fraction, y: previousY + (ac.y - previousY) * fraction, time: sampleTime });
+          ac.trackHistory = ac.trackHistory.slice(-25);
+        }
+      }
       // Stop on capture so a long frame cannot fly through the threshold.
       if (aircraftCanLand(ac, ac.assignedRunway)) { ac.touchdownReady = true; break; }
+      // Stop at the first exit, matching the forecast and the traffic loop's departure check.
+      if (ac.x < -20 || ac.x > 420 || ac.y < -20 || ac.y > 420) break;
     }
   };
 
@@ -403,6 +435,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
   var atcTrafficFrozen = function(game, hidden) {
     return !!(hidden || game && (game.gameOver || game.paused || game.showHelp || game.commandEntry || game.mathChallenge));
   };
+  // Relative markers show current and instructed values, never completion.
+  var atcFlightInstruments = function(ac, frozen) {
+    var readback = atcAircraftReadback(ac);
+    if (!readback || ac.altitude > 45000 || ac.speed > 600) return null;
+    return { mode: readback.mode, rows: readback.rows.map(function(row) {
+      var target = row.target;
+      if (row.automatic && frozen || row.id === 'altitude' && target != null && (target < 0 || target > 45000) || row.id === 'speed' && target != null && (target <= 0 || target > 600)) target = null;
+      var delta = target == null ? null : row.id === 'heading' ? headingDifference(target, row.current) : target - row.current;
+      var direction = target == null ? row.automatic ? 'guided' : 'maintain' : Math.abs(delta) <= 1e-7 ? row.automatic ? 'guided' : 'on-target' :
+        row.id === 'heading' ? delta < 0 ? 'left' : 'right' : row.id === 'altitude' ? delta < 0 ? 'descending' : 'climbing' : delta < 0 ? 'slowing' : 'accelerating';
+      var padding = row.id === 'altitude' ? 1000 : 20, ceiling = row.id === 'altitude' ? 45000 : 600;
+      var minimum = row.id === 'heading' ? 0 : Math.max(0, Math.floor((Math.min(row.current, target == null ? row.current : target) - padding) / padding) * padding);
+      var maximum = row.id === 'heading' ? 360 : Math.min(ceiling, Math.ceil((Math.max(row.current, target == null ? row.current : target) + padding) / padding) * padding);
+      return { id: row.id, current: row.current, target: target, automatic: row.automatic, direction: direction, delta: delta, remaining: delta == null ? null : Math.abs(delta), minimum: minimum, maximum: maximum,
+        currentPosition: (row.current - minimum) / (maximum - minimum), targetPosition: target == null ? null : (target - minimum) / (maximum - minimum) };
+    }) };
+  };
   var atcImmediateCommandInfo = function(ac, key, airport, runwayIndex) {
     if (!atcActiveAircraft(ac) || !atcFinite(ac.altitude) || ac.altitude < 0 || ['d', 'u', 'p', 'r'].indexOf(key) === -1) return null;
     var approach = ac.state === 'approach';
@@ -460,6 +509,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
       result.proposedEtaMinutes = result.distanceNm / proposed * 60;
     }
     return result;
+  };
+
+  // Follow the same guidance and gradual rates as live traffic on an isolated
+  // aircraft. This path does not resolve other aircraft or runway occupancy.
+  var atcFlightPath = function(ac, seconds, draft) {
+    if (!atcAircraftReadback(ac) || !atcFinite(ac.x) || !atcFinite(ac.y) || !atcFinite(ac.fuel) || ac.x < -100 || ac.x > 500 || ac.y < -100 || ac.y > 500 || ac.speed > 600 || ac.altitude > 45000 || ac.fuel < 0) return null;
+    if (ac.assignedRunway && (['x','y','hdg','len'].some(function(key) { return !atcFinite(ac.assignedRunway[key]); }) || ac.assignedRunway.len <= 0)) return null;
+    var horizon = atcFinite(seconds) ? Math.max(10, Math.min(120, Math.round(seconds))) : 60;
+    var copy = { x: ac.x, y: ac.y, heading: normalizeHeading(ac.heading), speed: ac.speed, altitude: ac.altitude, fuel: ac.fuel <= 1e-7 ? 0 : ac.fuel,
+      state: ac.state, assignedRunway: ac.assignedRunway, approachStage: ac.approachStage, touchdownReady: false,
+      targetHeading: atcFinite(ac.targetHeading) ? normalizeHeading(ac.targetHeading) : null,
+      targetSpeed: atcFinite(ac.targetSpeed) && ac.targetSpeed > 0 && ac.targetSpeed <= 600 ? ac.targetSpeed : null,
+      targetAltitude: atcFinite(ac.targetAltitude) && ac.targetAltitude >= 0 && ac.targetAltitude <= 45000 ? ac.targetAltitude : null,
+      holdCenter: ac.holdCenter && atcFinite(ac.holdCenter.x) && atcFinite(ac.holdCenter.y) ? { x: ac.holdCenter.x, y: ac.holdCenter.y } : null };
+    if (draft) {
+      var instruction = atcCommandPreview(ac, draft.kind, draft.value, null);
+      if (!instruction) return null;
+      if (instruction.kind === 'heading') {
+        copy.targetHeading = instruction.value;
+        if (instruction.cancelsApproach) copy.targetAltitude = copy.altitude;
+        if (instruction.cancelsApproach || instruction.releasesHold) { copy.state = 'inbound'; copy.approachStage = null; copy.holdCenter = null; }
+      } else copy.targetSpeed = instruction.value;
+    }
+    var point = function(time, distance) { return { seconds: time, x: copy.x, y: copy.y, heading: copy.heading, altitude: copy.altitude, speed: copy.speed, fuel: copy.fuel, distanceNm: distance }; };
+    var endReason = function() { return aircraftCanLand(copy, copy.assignedRunway) ? 'threshold' : copy.x < -20 || copy.x > 420 || copy.y < -20 || copy.y > 420 ? 'airspace' : copy.fuel <= 0 ? 'fuel' : null; };
+    var points = [point(0, 0)], elapsed = 0, flown = 0, reason = endReason();
+    while (!reason && elapsed < horizon) {
+      var previousX = copy.x, previousY = copy.y;
+      advanceAircraft(copy, 1 / ATC_TIME_ACCELERATION, false); elapsed++;
+      flown += distNm(previousX, previousY, copy.x, copy.y) / ATC_UNITS_PER_NM;
+      reason = endReason();
+      if (elapsed % 5 === 0 || elapsed === horizon || reason) points.push(point(elapsed, flown));
+    }
+    return { points: points, end: points[points.length - 1], elapsedSeconds: elapsed, horizonSeconds: horizon, distanceNm: flown, reason: reason || 'horizon', draft: !!draft };
+  };
+  // Explore only integrator samples. An early endpoint keeps its real time;
+  // never extrapolate motion after threshold capture, an exit, or fuel exhaustion.
+  var atcFlightMoment = function(path, seconds) {
+    if (!path || !Array.isArray(path.points) || !path.points.length || !atcFinite(path.horizonSeconds) || path.horizonSeconds < 10 || path.horizonSeconds > 120 || !atcFinite(path.elapsedSeconds) || path.elapsedSeconds < 0 || path.elapsedSeconds > path.horizonSeconds || !atcFinite(path.distanceNm) || path.distanceNm < 0) return null;
+    var keys = ['seconds','x','y','heading','altitude','speed','fuel','distanceNm'], previousTime = -1, previousDistance = -1;
+    for (var sampleIndex = 0; sampleIndex < path.points.length; sampleIndex++) {
+      var point = path.points[sampleIndex];
+      if (!point || keys.some(function(key) { return !atcFinite(point[key]); }) || point.seconds < 0 || point.seconds > path.elapsedSeconds || point.seconds <= previousTime || point.distanceNm < previousDistance || point.distanceNm < 0) return null;
+      previousTime = point.seconds; previousDistance = point.distanceNm;
+    }
+    var first = path.points[0], last = path.points[path.points.length - 1];
+    if (first.seconds !== 0 || first.distanceNm !== 0 || last.seconds !== path.elapsedSeconds || Math.abs(last.distanceNm - path.distanceNm) > 1e-7) return null;
+    var requested = atcFinite(seconds) ? Math.max(0, Math.min(path.horizonSeconds, Math.round(seconds / 5) * 5)) : path.elapsedSeconds;
+    var index = 0;
+    path.points.forEach(function(point, candidate) { if (point.seconds <= requested + 1e-7) index = candidate; });
+    var chosen = path.points[index], copy = {};
+    keys.forEach(function(key) { copy[key] = chosen[key]; });
+    return { point: copy, requestedSeconds: requested, index: index, ended: chosen.seconds === path.elapsedSeconds };
+  };
+  var atcCanStepTraffic = function(game, hidden) {
+    return !!(game && game.airport && game.paused && !hidden && !game.committed && !game.gameOver && !game.showHelp && !game.commandEntry && !game.mathChallenge && !(game.practice && game.practice.completed));
   };
 
   // ── AIRPORT CONFIGURATIONS ──
@@ -817,6 +922,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         runwayIndex: airport.runways.indexOf(ac.assignedRunway), approachStage: ac.approachStage === 'final' ? 'final' : 'entry',
         touchdownReady: !!ac.touchdownReady, fuelWarningIssued: !!ac.fuelWarningIssued };
       ['x', 'y', 'heading', 'speed', 'altitude', 'fuel', 'spawnTime', 'targetHeading', 'targetSpeed', 'targetAltitude'].forEach(function(key) { item[key] = ac[key]; });
+      item.trackClock = ac.trackClock;
+      item.trackHistory = atcTrackHistory(ac.trackHistory, ac.trackClock);
       if (ac.holdCenter) item.holdCenter = { x: ac.holdCenter.x, y: ac.holdCenter.y };
       if (ac.emergency) item.emergency = { type: atcShortText(ac.emergency.type, 24), label: atcShortText(ac.emergency.label, 64), msg: atcShortText(ac.emergency.msg, 240), lesson: atcShortText(ac.emergency.lesson, 1000), priority: !!ac.emergency.priority };
       saved.aircraft.push(item);
@@ -878,6 +985,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         approachStage: item.state === 'approach' && rwy ? (item.approachStage === 'final' ? 'final' : 'entry') : null,
         touchdownReady: !!item.touchdownReady && item.state === 'approach' && !!rwy,
         fuelWarningIssued: !!item.fuelWarningIssued, emergency: null };
+      ac.trackClock = atcBoundedNumber(item.trackClock, 0, 10368000, 0);
+      ac.trackHistory = atcTrackHistory(item.trackHistory, ac.trackClock);
       if (item.holdCenter && typeof item.holdCenter.x === 'number' && isFinite(item.holdCenter.x) && typeof item.holdCenter.y === 'number' && isFinite(item.holdCenter.y)) ac.holdCenter = { x: atcBoundedNumber(item.holdCenter.x, 0, 400, 200), y: atcBoundedNumber(item.holdCenter.y, 0, 400, 200) };
       if (item.emergency && ['engine', 'medical', 'birdstrike', 'hydraulic'].includes(item.emergency.type)) ac.emergency = { type: item.emergency.type, label: atcShortText(item.emergency.label, 64), msg: atcShortText(item.emergency.msg, 240), lesson: atcShortText(item.emergency.lesson, 1000), priority: !!item.emergency.priority };
       game.aircraft.push(ac);
@@ -1046,6 +1155,96 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
     if (type === 'missed' || (type === 'fuel' && aircraft && aircraft.state === 'departed')) recordPracticeOutcome(game, 'lost', aircraft);
   };
 
+  // Ops Lab is a standalone teaching index; its controls never configure a shift.
+  var ATC_OPS_FIELDS = {
+    wind: { min: 0, max: 30, step: 1, initial: 10, weight: 25 },
+    spawn: { min: 1, max: 10, step: 1, initial: 5, weight: 30, inverse: true },
+    sep: { min: 5, max: 20, step: 1, initial: 8, weight: 25, inverse: true },
+    descent: { min: 0.5, max: 2, step: 0.1, initial: 1, weight: 10 },
+    timeout: { min: 10, max: 60, step: 5, initial: 30, weight: 10, inverse: true }
+  };
+  var atcOpsModel = function(input) {
+    input = input && typeof input === 'object' ? input : {};
+    var values = {}, contributions = {}, score = 0;
+    Object.keys(ATC_OPS_FIELDS).forEach(function(key) {
+      var field = ATC_OPS_FIELDS[key];
+      var bounded = atcBoundedNumber(input[key], field.min, field.max, field.initial);
+      var value = Number((field.min + Math.round((bounded - field.min) / field.step) * field.step).toFixed(1));
+      values[key] = value;
+      var fraction = (value - field.min) / (field.max - field.min);
+      contributions[key] = (field.inverse ? 1 - fraction : fraction) * field.weight;
+      score += contributions[key];
+    });
+    score = Number(score.toFixed(10));
+    return { values: values, contributions: contributions, score: score, index: score / 100,
+      band: score < 35 ? 'sandbox' : score < 55 ? 'training' : score < 75 ? 'operational' : score < 90 ? 'stressed' : 'overload',
+      signature: Object.keys(ATC_OPS_FIELDS).map(function(key) { return values[key]; }).join('|') };
+  };
+  var atcOpsEvidence = function(log) {
+    if (!Array.isArray(log)) return [];
+    return log.reduce(function(entries, entry, index) {
+      if (!entry || typeof entry !== 'object') return entries;
+      var valid = Object.keys(ATC_OPS_FIELDS).every(function(key) {
+        var field = ATC_OPS_FIELDS[key], value = entry[key];
+        return typeof value === 'number' && isFinite(value) && value >= field.min && value <= field.max &&
+          Math.abs((value - field.min) / field.step - Math.round((value - field.min) / field.step)) < 1e-8;
+      });
+      if (valid) entries.push({ number: index + 1, model: atcOpsModel(entry) });
+      return entries;
+    }, []);
+  };
+  var atcOpsComparison = function(first, second) {
+    if (!first || !second) return null;
+    var a = atcOpsModel(first), b = atcOpsModel(second);
+    var changed = Object.keys(ATC_OPS_FIELDS).filter(function(key) { return a.values[key] !== b.values[key]; });
+    return { first: a, second: b, changed: changed, delta: Number((b.score - a.score).toFixed(10)),
+      state: changed.length === 1 ? 'one-variable' : changed.length ? 'multiple-variables' : 'duplicate', sameBand: a.band === b.band };
+  };
+
+  // Standalone lesson experiments never write to a shift or award progress.
+  var ATC_EXPLORER_FIELDS = {
+    separation: { horizontal: [0, 10, 2], vertical: [0, 3000, 500] },
+    sequencing: { distanceA: [5, 60, 30], speedA: [60, 240, 90], distanceB: [5, 60, 45], speedB: [60, 240, 180] },
+    vectors: { current: [0, 360, 350], target: [0, 360, 10] },
+    weather: { runway: [0, 360, 270], windFrom: [0, 360, 300], windSpeed: [0, 40, 20] },
+    communication: {}
+  };
+  var atcLessonExplorer = function(kind, input) {
+    if (!Object.prototype.hasOwnProperty.call(ATC_EXPLORER_FIELDS, kind)) return null;
+    input = input && typeof input === 'object' ? input : {};
+    var values = {}, fields = ATC_EXPLORER_FIELDS[kind];
+    Object.keys(fields).forEach(function(key) { var range = fields[key]; values[key] = atcBoundedNumber(input[key], range[0], range[1], range[2]); });
+    var result = { kind: kind, values: values };
+    if (kind === 'separation') {
+      values.heavy = input.heavy === true;
+      result.minimum = values.heavy ? 6 : 3;
+      result.horizontalMet = values.horizontal >= result.minimum;
+      result.verticalMet = values.vertical >= 1000;
+      result.conflict = !result.horizontalMet && !result.verticalMet;
+    } else if (kind === 'sequencing') {
+      result.etaA = values.distanceA / values.speedA * 60;
+      result.etaB = values.distanceB / values.speedB * 60;
+      var difference = values.distanceA * values.speedB - values.distanceB * values.speedA;
+      result.first = Math.abs(difference) < 1e-9 ? 'tie' : difference < 0 ? 'A' : 'B';
+      result.gap = Math.abs(result.etaA - result.etaB);
+      result.horizon = Math.max(5, Math.ceil(Math.max(result.etaA, result.etaB) / 5) * 5);
+    } else if (kind === 'vectors') {
+      result.turn = headingDifference(values.target, values.current);
+      result.turnSeconds = Math.abs(result.turn) / 3;
+    } else if (kind === 'weather') {
+      var angle = toRad(headingDifference(values.windFrom, values.runway));
+      var clean = function(value) { return Math.abs(value) < 1e-9 ? 0 : value; };
+      result.headwind = clean(values.windSpeed * Math.cos(angle));
+      result.crosswind = clean(Math.abs(values.windSpeed * Math.sin(angle)));
+    } else {
+      values.sample = ['heading', 'altitude', 'runway'].indexOf(input.sample) !== -1 ? input.sample : 'heading';
+      values.response = ['match', 'callsign', 'instruction'].indexOf(input.response) !== -1 ? input.response : '';
+      result.answer = { heading: 'match', altitude: 'callsign', runway: 'instruction' }[values.sample];
+      result.correct = values.response ? values.response === result.answer : null;
+    }
+    return result;
+  };
+
   // ── EDUCATIONAL LESSONS ──
   var ATC_LESSONS = {
     separation: { title: 'Why Separation Matters', icon: '📏', content: 'Controllers keep aircraft separated to prevent collisions and wake encounters. This classroom model uses 3 nautical miles horizontally or 1,000 feet vertically; it expands horizontal spacing to 6 nautical miles for a pair involving a heavy or super aircraft. Real separation rules depend on airspace, equipment, flight phase, and the leading and following aircraft. Wake vortices can remain hazardous after the aircraft passes, so extra spacing and flight-path awareness matter.', formula: 'Model conflict: horizontal spacing below 3nm (6nm with heavy/super) AND vertical spacing below 1,000ft', source: 'https://www.faa.gov/air_traffic/publications/atpubs/atc_html/chap5_section_5.html', sourceLabel: 'FAA: radar separation and wake minima' },
@@ -1093,7 +1292,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           d: 'M16 5v22M7 18l9 9 9-9',
           u: 'M16 27V5M7 14l9-9 9 9',
           complete: 'M7 16l6 6L26 9M28 16a12 12 0 1 1-12-12',
-          review: 'M23 23l6 6M25 14a11 11 0 1 1-22 0 11 11 0 0 1 22 0M14 8v7m0 4h.1'
+          review: 'M23 23l6 6M25 14a11 11 0 1 1-22 0 11 11 0 0 1 22 0M14 8v7m0 4h.1',
+          readback: 'M5 7h22v15H14l-6 5v-5H5V7M10 12h12M10 17h8',
+          wind: 'M4 10h17a4 4 0 1 0-4-4M4 16h22a4 4 0 1 1-4 4M4 22h9a3 3 0 1 1-3 3'
         };
         return h('svg', { className: className, viewBox: '0 0 32 32', 'aria-hidden': true, focusable: false }, h('path', { d: paths[kind] || paths.review }));
       };
@@ -1133,7 +1334,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
       var callGemini = ctx.callGemini;
       var gradeLevel = ctx.gradeLevel;
 
-      var view = d.view || 'menu';
+      var hasSelectedLesson = typeof d.selectedLesson === 'string' && Object.prototype.hasOwnProperty.call(ATC_LESSONS, d.selectedLesson);
+      var view = d.view === 'lesson' && !hasSelectedLesson ? 'menu' : d.view || 'menu';
+      var lessonTopics = {
+        separation: { name: t('stem.atctower.topic_separation', 'Separation'), symbol: 'separation_recovery', question: t('stem.atctower.explore_separation_question', 'What changes when you add vertical spacing?') },
+        sequencing: { name: t('stem.atctower.topic_sequencing', 'Arrival order'), symbol: 'arrival_sequence', question: t('stem.atctower.explore_sequencing_question', 'Can an aircraft farther away arrive first?') },
+        vectors: { name: t('stem.atctower.topic_vectors', 'Headings'), symbol: 'h', question: t('stem.atctower.explore_vectors_question', 'Which turn reaches the heading sooner?') },
+        communication: { name: t('stem.atctower.topic_communication', 'Readbacks'), symbol: 'readback', question: t('stem.atctower.explore_communication_question', 'Does the readback match the instruction?') },
+        weather: { name: t('stem.atctower.topic_weather', 'Wind'), symbol: 'wind', question: t('stem.atctower.explore_weather_question', 'How does wind direction change the components?') }
+      };
       towerCss += '.atc-practice-preview{border-top:1px solid #486a7d;margin-top:2px}.atc-practice-preview summary{color:#b7f5e9;font-size:13px}.atc-practice-preview p{font-size:13px;line-height:1.55}.atc-practice-preview .atc-preview-airport{font-weight:750;color:#e4fcf9}.atc-preview-traffic{list-style:none;margin:8px 0 12px;padding:0;display:grid;gap:8px}.atc-preview-traffic li{border:1px solid #486a7d;border-radius:8px;background:#102b36;padding:10px 12px;font-size:12px}.atc-preview-traffic li strong,.atc-preview-traffic li span{display:block;overflow-wrap:anywhere}.atc-preview-traffic li strong{color:#b7f5e9;margin-bottom:3px}.atc-practice-measurements{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}.atc-practice-measurements>div{background:#142939;border:1px solid #486a7d;border-radius:8px;padding:8px 10px;min-width:0}.atc-practice-measurements span{display:block;font-size:11px;color:#d5e5ee}.atc-practice-measurements strong{display:block;font:750 14px/1.5 ui-monospace,monospace;color:#b7f5e9}.atc-launch-context{font-size:12px;margin:0!important}.atc-launch-context span{display:block;margin-top:4px;color:#d5e5ee}@media(max-width:360px){.atc-practice-measurements{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.atc-practice-preview summary,.atc-practice-preview .atc-preview-airport,.atc-preview-traffic li strong,.atc-practice-measurements strong,.atc-practice-measurements span,.atc-launch-context span{color:CanvasText!important}.atc-preview-traffic li,.atc-practice-measurements>div{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}}';
       towerCss += '.atc-practice-preview summary{min-height:44px;padding:10px 0}@media(forced-colors:active){.atc-menu div,.atc-menu strong,.atc-menu kbd{color:CanvasText!important}}';
       towerCss += `/* Cohesive visual layer. Layout follows the same keyboard and reading order. */
@@ -1197,16 +1406,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
 .atc-tower[data-contrast=true] .atc-arrival-button,.atc-tower[data-contrast=true] .atc-arrival-button[data-selected=true],.atc-tower[data-contrast=true] .atc-arrival-gap[data-concern=true],.atc-tower[data-contrast=true] .atc-arrival-alert{background:#000;color:#fff;border-color:#ffff00;box-shadow:none}.atc-tower[data-contrast=true] .atc-arrival-button[data-selected=true]{outline:2px solid #ffff00;outline-offset:-4px}.atc-tower[data-contrast=true] .atc-arrival-dot{background:#ffff00;border-color:#fff}.atc-tower[data-contrast=true] .atc-arrival-track{background:#fff}
 @media(forced-colors:active){.atc-tower .atc-arrival-button,.atc-tower .atc-arrival-button[data-selected=true],.atc-arrival-gap[data-concern=true],.atc-arrival-alert{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important}.atc-tower .atc-arrival-button[data-selected=true]{outline:2px solid Highlight;outline-offset:-4px}.atc-arrival-scale,.atc-arrival-rank{border-color:CanvasText}.atc-arrival-occupancy,.atc-arrival-priority{color:CanvasText!important}.atc-arrival-track{background:CanvasText}.atc-arrival-dot,.atc-arrival-dot[data-priority=true]{background:Highlight;border-color:CanvasText}.atc-arrival-occupied-band{background:Canvas;border:1px dashed CanvasText}}
 `;
+      towerCss += `
+.atc-lesson-index{padding:0 24px 24px}.atc-lesson-index>h3{font-size:25px}.atc-lesson-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px}.atc-menu .atc-lesson-card{display:flex;flex-direction:column;align-items:flex-start;gap:12px;min-width:0;text-align:left;padding:20px;border:1px solid var(--atc-control-line);border-radius:15px;background:var(--atc-surface);color:var(--atc-ink);cursor:pointer}.atc-lesson-card>strong{font-size:19px;line-height:1.35}.atc-lesson-question{color:var(--atc-muted);line-height:1.6;font-size:14px}.atc-lesson-card-action{margin-top:auto;padding-top:10px;font-size:12px;color:var(--atc-accent);font-weight:650}
+.atc-tower.atc-lesson-workspace{max-width:1180px;margin:0 auto;padding:24px}.atc-lesson-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:20px}.atc-lesson-header{display:flex;gap:16px;align-items:center;margin:8px 0 18px}.atc-lesson-header h2{font-size:clamp(25px,3vw,34px);line-height:1.2;margin:0 0 8px}.atc-lesson-header p{margin:0;color:var(--atc-muted);font-size:15px}.atc-lesson-nav{display:flex;flex-wrap:wrap;gap:7px;padding:14px 0 20px;border-top:1px solid var(--atc-line)}.atc-lesson-nav button{font-size:13px}.atc-lesson-nav button[aria-current=page]{border-color:var(--atc-accent);box-shadow:inset 0 -3px 0 var(--atc-accent);background:#183e43}.atc-lesson-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px;align-items:start}.atc-lesson-grid>*,.atc-lesson-reading>*{min-width:0}.atc-lesson-reading{display:grid;gap:16px}.atc-lesson-reading .atc-card{padding:20px}.atc-lesson-reading p{font-size:14px;line-height:1.8;color:var(--atc-muted)}.atc-lesson-formula{background:var(--atc-raised);border:1px solid var(--atc-line);border-left:3px solid var(--atc-accent);border-radius:10px;padding:14px;margin:16px 0}.atc-lesson-formula>span{font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--atc-muted);display:block;margin-bottom:7px}.atc-lesson-formula>strong{font:600 13px/1.7 ui-monospace,monospace;overflow-wrap:anywhere;display:block}.atc-lesson-source{display:inline-block;color:#bddcff;line-height:1.6;font-size:12px;min-height:44px;padding:9px 0}.atc-lesson-workspace a:focus-visible,.atc-lesson-workspace:focus-visible{outline:3px solid #fcd34d;outline-offset:3px}.atc-lesson-practice{width:100%;margin-top:12px;text-align:left}.atc-lesson-tutor-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}.atc-lesson-tutor-head h3{margin:0}.atc-lesson-levels{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.atc-lesson-levels button{font-size:12px}.atc-lesson-tutor>button{width:100%;margin:0 0 12px}.atc-lesson-tutor [role=alert]{color:#ffbfca}.atc-lesson-ai-answer{background:var(--atc-raised);padding:12px;border-radius:8px;overflow-wrap:anywhere}
+.atc-explorer{padding:20px!important;border-top:3px solid #91cfc2!important}.atc-explorer-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}.atc-explorer-heading h3{margin:0;font-size:18px}.atc-explorer-heading button{font-size:12px;padding:8px 10px}.atc-explorer-note{font-size:12px!important;color:var(--atc-muted);line-height:1.6}.atc-explorer-display{background:#0a1c2a;border:1px solid var(--atc-line);border-radius:12px;padding:18px;margin-bottom:18px;min-width:0}.atc-explorer-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:14px}.atc-explorer-metric{min-width:0}.atc-explorer-metric>span{font-size:12px;color:var(--atc-muted);display:block;margin-bottom:5px}.atc-explorer-metric>strong{display:block;font:650 25px/1.35 ui-monospace,monospace;overflow-wrap:anywhere;color:var(--atc-ink)}.atc-explorer-metric>small{display:block;color:var(--atc-muted);font-size:11px;line-height:1.5;margin-top:6px}.atc-explorer-rail{position:relative;margin:16px 6px 20px;height:5px;background:#628496;border-radius:4px}.atc-explorer-point{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:var(--atc-accent);border:2px solid #f0fffa}.atc-explorer-limit{position:absolute;top:-5px;height:15px;border-left:2px dashed #fcd34d}.atc-explorer-summary{padding:10px 12px;margin:0!important;border-left:3px solid #8cbfb9;background:#163740;border-radius:5px;font-size:13px;line-height:1.65}.atc-explorer-summary[data-state=review]{border-color:#f5ce81;background:#352d1c;color:#ffe8bf}.atc-explorer-axis{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:var(--atc-muted);margin-bottom:16px}.atc-explorer-timeline-row{margin-bottom:18px}.atc-explorer-timeline-row>div:first-child{display:flex;justify-content:space-between;gap:10px;align-items:baseline}.atc-explorer-timeline-row strong{font:650 20px ui-monospace,monospace}.atc-explorer-timeline-row small{font:12px/1.6 ui-monospace,monospace;color:var(--atc-muted);display:block}.atc-explorer-timeline-row[data-flight=B] .atc-explorer-point{border-radius:2px;background:#ffda87}
+.atc-explorer-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.atc-explorer-range{display:block;min-width:0;padding:10px 12px;border:1px solid var(--atc-line);border-radius:9px;background:var(--atc-raised)}.atc-explorer-range>span{display:flex;justify-content:space-between;gap:8px;font-size:12px;line-height:1.6;flex-wrap:wrap}.atc-explorer-range strong{font:650 13px/1.6 ui-monospace,monospace;color:var(--atc-accent)}.atc-tower.atc-lesson-workspace input[type=range]{padding:0;margin:5px 0 0;min-height:44px;border:0;background:transparent;accent-color:var(--atc-accent);cursor:pointer}.atc-explorer-options{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}.atc-explorer-options>button{flex:1 1 120px;font-size:12px}.atc-explorer-controls+fieldset{margin-top:14px}.atc-explorer fieldset{border:0;padding:0;margin:0;min-width:0}.atc-explorer legend{font-size:13px;color:var(--atc-muted);padding:0}.atc-explorer-compass{display:block;width:100%;max-width:240px;height:auto;margin:0 auto 16px;color:var(--atc-muted)}.atc-explorer-compass text{fill:currentColor;font:12px ui-monospace,monospace}.atc-explorer-compass .atc-lab-ring{fill:none;stroke:#67899b;stroke-width:1}.atc-explorer-compass .atc-lab-current{fill:none;stroke:#c9dce5;stroke-width:3;stroke-dasharray:5 4}.atc-explorer-compass .atc-lab-target{fill:none;stroke:var(--atc-accent);stroke-width:3;stroke-linejoin:round}.atc-lab-runway{fill:#516879;stroke:#bdd1dc;stroke-width:1}.atc-lab-centerline{stroke:#edf8ff;stroke-dasharray:5 4;stroke-width:1.5}.atc-explorer-legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:11px;color:var(--atc-muted);margin-bottom:14px}.atc-explorer-messages{display:grid;gap:12px;margin:12px 0 18px}.atc-explorer-message{padding:14px;border:1px solid var(--atc-line);border-radius:10px;background:var(--atc-raised)}.atc-explorer-message>span{display:block;font-size:11px;color:var(--atc-muted);margin-bottom:8px}.atc-explorer-message p{font:600 15px/1.65 ui-monospace,monospace;margin:0;overflow-wrap:anywhere}.atc-explorer-message[data-highlight=true]{border-color:#f5ce81;border-left:3px solid #f5ce81}.atc-explorer-feedback{margin-top:14px}.atc-explorer-feedback strong{display:block;margin-bottom:5px}.atc-explorer-footer{margin:18px 0 0!important;padding-top:12px;border-top:1px solid var(--atc-line)}
+.atc-explorer-metric>small{min-height:33px}
+@media(max-width:1000px){.atc-lesson-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.atc-lesson-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:760px){.atc-lesson-index{padding:0 18px 18px}.atc-lesson-cards{grid-template-columns:minmax(0,1fr)}.atc-tower.atc-lesson-workspace{padding:14px}.atc-lesson-header{gap:10px;align-items:flex-start}.atc-lesson-header p{font-size:13px}.atc-lesson-header h2{font-size:25px}.atc-lesson-nav{gap:6px}.atc-lesson-nav button{padding:8px 10px;font-size:12px}.atc-explorer{padding:14px!important}.atc-explorer-display{padding:12px}.atc-explorer-controls{grid-template-columns:minmax(0,1fr);gap:9px}.atc-explorer-metric>strong{font-size:21px}.atc-explorer-metrics{gap:10px}.atc-lesson-reading .atc-card{padding:16px}.atc-explorer-heading{align-items:flex-start}.atc-explorer-heading h3{font-size:16px}.atc-explorer-heading button{max-width:100px}.atc-explorer-message{padding:12px}.atc-explorer-message p{font-size:13px}}
+@media(max-width:360px){.atc-explorer-metric>strong{font-size:18px}}
+.atc-lesson-workspace[data-contrast=true] .atc-explorer-display,.atc-lesson-workspace[data-contrast=true] .atc-explorer-summary,.atc-lesson-workspace[data-contrast=true] .atc-lesson-nav button[aria-current=page]{background:#000;color:#fff;border-color:#ffff00}.atc-lesson-workspace[data-contrast=true] .atc-lab-runway{fill:#000;stroke:#fff}.atc-lesson-workspace[data-contrast=true] .atc-lab-ring{stroke:#fff}.atc-lesson-workspace[data-contrast=true] .atc-lab-target{stroke:#ffff00}.atc-lesson-workspace[data-contrast=true] .atc-explorer-point{background:#ffff00}.atc-lesson-workspace[data-contrast=true] .atc-lesson-source{color:#ffff00}
+@media(forced-colors:active){.atc-explorer-display,.atc-explorer-summary,.atc-explorer-range,.atc-lesson-formula,.atc-explorer-message,.atc-lesson-ai-answer{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.atc-explorer-rail{background:CanvasText}.atc-explorer-point{background:Highlight!important;border-color:CanvasText}.atc-explorer-limit{border-color:CanvasText}.atc-explorer-compass text{fill:CanvasText}.atc-explorer-compass .atc-lab-ring,.atc-explorer-compass .atc-lab-current{stroke:CanvasText}.atc-explorer-compass .atc-lab-target{stroke:Highlight}.atc-lab-runway{fill:Canvas;stroke:CanvasText}.atc-lab-centerline{stroke:CanvasText}.atc-lesson-nav button[aria-current=page]{outline:2px solid Highlight;outline-offset:-4px}.atc-lesson-source{color:LinkText}.atc-explorer-metric>small,.atc-explorer-timeline-row small{color:CanvasText}}
+`;
+      towerCss += `
+.atc-ops{padding:0 24px 24px}.atc-ops-tools{display:flex;justify-content:flex-end;margin:0 0 10px}.atc-ops-comparison-scores button{width:100%;margin-top:9px;font-size:11px;padding:8px}.atc-ops[data-contrast=true]{--atc-bg:#000;--atc-surface:#000;--atc-raised:#111;--atc-line:#fff;--atc-control-line:#fff;--atc-ink:#fff;--atc-muted:#fff;--atc-accent:#ffff00;--atc-accent-ink:#000;background:#000;color:#fff}.atc-ops-intro{display:flex;align-items:center;gap:16px;margin:8px 0 18px}.atc-ops-intro h3{font-size:clamp(23px,3vw,30px);letter-spacing:-.4px}.atc-ops-intro p:last-child{margin:0;font-size:14px;line-height:1.6}.atc-ops-steps{list-style:none;padding:0;margin:0 0 20px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.atc-ops-steps li{display:flex;gap:10px;align-items:center;background:var(--atc-raised);border:1px solid var(--atc-line);border-radius:10px;padding:12px}.atc-ops-steps li>span{display:grid;place-items:center;flex:0 0 28px;height:28px;border-radius:50%;border:1px solid var(--atc-control-line);font:600 13px ui-monospace,monospace}.atc-ops-steps strong,.atc-ops-steps small{display:block;line-height:1.5}.atc-ops-steps strong{font-size:13px}.atc-ops-steps small{font-size:11px;color:var(--atc-muted);margin-top:2px}.atc-ops-steps li[data-complete=true]>span{background:var(--atc-accent);color:var(--atc-accent-ink);border-color:var(--atc-accent)}
+.atc-ops-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}.atc-ops-card{min-width:0;padding:20px;border:1px solid var(--atc-line);border-radius:15px;background:var(--atc-surface)}.atc-ops-card h4{font-size:18px;margin:0 0 14px}.atc-ops-card h5{font-size:13px;margin:20px 0 12px}.atc-ops-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.atc-ops-heading h4{margin:0}.atc-ops .atc-ops-small{font-size:12px;line-height:1.6;color:var(--atc-muted);margin:0 0 12px}.atc-ops button{border:1px solid var(--atc-control-line);background:var(--atc-raised);color:var(--atc-ink);border-radius:8px;padding:9px 12px;font-size:12px;font-weight:650;cursor:pointer}.atc-ops button:hover{background:#244557}.atc-ops button.atc-primary{background:var(--atc-accent);color:var(--atc-accent-ink)}.atc-ops button:disabled{cursor:default}.atc-ops select,.atc-ops textarea{width:100%;min-width:0;border:1px solid var(--atc-control-line);border-radius:8px;background:var(--atc-raised);color:var(--atc-ink);font:inherit;padding:10px;min-height:44px}.atc-ops textarea{line-height:1.65;resize:vertical}.atc-ops textarea:disabled{opacity:.65}.atc-ops textarea::placeholder{color:var(--atc-muted);opacity:1}.atc-ops :is(input,select,textarea,[tabindex]):focus-visible{outline:3px solid #fcd34d;outline-offset:3px}
+.atc-ops-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.atc-ops-control{display:block;min-width:0;border:1px solid var(--atc-line);border-radius:10px;padding:12px;background:var(--atc-raised)}.atc-ops-control>span{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px;line-height:1.6}.atc-ops-control strong{color:var(--atc-accent);font:600 14px/1.5 ui-monospace,monospace}.atc-ops-control input[type=range]{width:100%;min-width:0;min-height:44px;padding:0;margin:6px 0;background:transparent;accent-color:var(--atc-accent);cursor:pointer}.atc-ops-control small{display:block;font-size:11px;line-height:1.55;color:var(--atc-muted)}.atc-ops-log-action{border-top:1px solid var(--atc-line);margin-top:16px;padding-top:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}.atc-ops-log-action .atc-primary{flex-shrink:0}.atc-ops-log-action p{flex:1 1 180px;margin:0!important}
+.atc-ops-model{border-top:3px solid var(--atc-accent)}.atc-ops-score{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:14px 0 20px;flex-wrap:wrap}.atc-ops-score>div{display:flex;align-items:baseline;gap:9px}.atc-ops-score strong{font:650 46px/1 ui-monospace,monospace;letter-spacing:-2px}.atc-ops-score>div>span{color:var(--atc-muted);font:13px ui-monospace,monospace}.atc-ops-band{padding:6px 10px;border-radius:20px;border:1px solid var(--atc-control-line);color:var(--atc-accent);font-size:12px}.atc-ops-scale{position:relative;height:16px;margin:0 7px 12px}.atc-ops-bands{display:flex;height:100%;gap:3px;border-radius:4px;overflow:hidden}.atc-ops-bands span{background:#477484}.atc-ops-bands span:nth-child(2){background:#5b91a0}.atc-ops-bands span:nth-child(3){background:#81b0b4}.atc-ops-bands span:nth-child(4){background:#bbcaad}.atc-ops-bands span:nth-child(5){background:#e8cd99}.atc-ops-scale>i{position:absolute;top:-4px;height:24px;width:4px;background:#f7fffc;transform:translateX(-50%);box-shadow:0 0 0 2px #071d29;border-radius:2px}.atc-ops-scale-caption{text-align:center;font-size:11px!important}.atc-ops-contributions{list-style:none;padding:0;margin:0 0 18px;display:grid;gap:15px}.atc-ops-contributions li>div:first-child{display:flex;justify-content:space-between;gap:12px;font-size:12px;line-height:1.6}.atc-ops-contributions li>div:first-child>span:last-child{white-space:nowrap;color:var(--atc-muted);font-size:11px}.atc-ops-contributions strong{font:600 14px ui-monospace,monospace;color:var(--atc-ink)}.atc-ops-contribution-track{position:relative;height:6px;margin:8px 2px 0;background:#284758;border-radius:4px}.atc-ops-contribution-track>span{display:block;height:100%;background:var(--atc-accent);border-radius:4px}.atc-ops-contribution-track>i{position:absolute;top:-3px;height:12px;border-left:2px dashed #ffdc98;transform:translateX(-1px)}.atc-ops .atc-ops-scope{padding:11px 12px;border-left:3px solid #91b7c2;border-radius:5px;background:var(--atc-raised);font-size:12px;line-height:1.65;margin:14px 0 0}.atc-ops-notes{border-top:1px solid var(--atc-line);margin-top:15px;padding-top:3px}.atc-ops-notes summary{font-size:12px;min-height:44px;padding:12px 0}.atc-ops-notes p{font-size:12px;line-height:1.7}
+.atc-ops-history{margin:18px 0}.atc-ops-history .atc-ops-heading p{margin:5px 0 0}.atc-ops-history-list{list-style:none;padding:0;margin:14px 0 0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.atc-ops-history-list>li{min-width:0;padding:14px;border:1px solid var(--atc-control-line);border-radius:11px;background:var(--atc-raised)}.atc-ops-history-list>li[data-current=true]{border-color:var(--atc-accent);box-shadow:inset 0 3px 0 var(--atc-accent)}.atc-ops-record-heading{display:flex;align-items:baseline;justify-content:space-between;gap:6px;flex-wrap:wrap}.atc-ops-record-heading h5{margin:0;font-size:13px}.atc-ops-record-heading>span{font-size:11px;color:var(--atc-muted)}.atc-ops-record-score{display:block;font:650 26px/1.4 ui-monospace,monospace;margin:12px 0 6px}.atc-ops-record-score small{font-size:11px;color:var(--atc-muted);font-weight:400}.atc-ops-record-track{height:5px;background:#3a5869;border-radius:4px;margin:7px 0 14px}.atc-ops-record-track>span{display:block;height:100%;border-radius:4px;background:var(--atc-accent)}.atc-ops-history-list button{width:100%;font-size:11px;padding:8px}.atc-ops-empty{border:1px dashed var(--atc-control-line);border-radius:10px;padding:22px;font-size:14px;line-height:1.65;margin:14px 0 0!important}.atc-ops-undo{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border:1px solid var(--atc-control-line);border-radius:9px;padding:12px;margin:12px 0;background:var(--atc-raised)}.atc-ops-undo p{margin:0;font-size:13px}
+.atc-ops-review-grid{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)}.atc-ops-selectors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.atc-ops-selectors label{min-width:0;font-size:12px;line-height:1.6;color:var(--atc-muted)}.atc-ops-selectors select{margin-top:6px;font-size:12px}.atc-ops-comparison-scores{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0}.atc-ops-comparison-scores>div{min-width:0;border:1px solid var(--atc-line);border-radius:9px;background:var(--atc-raised);padding:12px}.atc-ops-comparison-scores span,.atc-ops-comparison-scores small{display:block;font-size:11px;line-height:1.5;color:var(--atc-muted)}.atc-ops-comparison-scores strong{display:block;font:650 25px/1.5 ui-monospace,monospace}.atc-ops-comparison-scores .atc-ops-delta{border-color:#7db4b0}.atc-ops-delta strong{color:var(--atc-accent)}.atc-ops-comparison-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px;line-height:1.6;margin:16px 0}.atc-ops-comparison-table caption{text-align:left;font-size:11px;color:var(--atc-muted);padding-bottom:9px}.atc-ops-comparison-table th,.atc-ops-comparison-table td{text-align:left;border-bottom:1px solid var(--atc-line);padding:9px 7px;overflow-wrap:anywhere}.atc-ops-comparison-table th:first-child{width:48%}.atc-ops-comparison-table thead th{color:var(--atc-muted);font-weight:600}.atc-ops-comparison-table td{font-family:ui-monospace,monospace}.atc-ops-comparison-table tbody tr[data-changed=true]{background:#1a3b43}.atc-ops-comparison-table tbody th{font-weight:500}.atc-ops-comparison-table th small{display:block;color:var(--atc-accent);font-size:10px;font-weight:600}.atc-ops .atc-ops-fair-test{font-size:12px;line-height:1.7;margin:14px 0 0;padding:12px;border-left:3px solid #f4ce85;border-radius:5px;background:#352d1c;color:#ffe8bd}.atc-ops .atc-ops-fair-test[data-fair=true]{border-color:var(--atc-accent);background:#163b3e;color:var(--atc-ink)}.atc-ops-explanation>label>span{font-size:12px;line-height:1.6;display:block;margin-bottom:8px;color:var(--atc-muted)}.atc-ops-explanation textarea{font-size:14px;margin-bottom:8px}.atc-ops-explanation>button{width:100%;text-align:left}.atc-ops-prompts{padding:14px;border:1px dashed var(--atc-control-line);border-radius:9px;margin:12px 0;font-size:12px;line-height:1.7}.atc-ops-prompts ul{padding-left:18px;margin:8px 0 0}.atc-ops-prompts li+li{margin-top:8px}.atc-ops .atc-ops-progress{font-size:12px;line-height:1.7;padding-top:14px;margin:14px 0 0;border-top:1px solid var(--atc-line)}.atc-ops-progress[data-atctower-inquiry-progress=complete]{color:var(--atc-accent)}
+.atc-ops-mobile-score{display:none}
+@media(max-width:1000px){.atc-ops-grid{grid-template-columns:minmax(0,1fr)}.atc-ops-history-list{grid-template-columns:repeat(2,minmax(0,1fr))}.atc-ops-steps{gap:7px}.atc-ops-steps li{padding:10px}.atc-ops-mobile-score{position:sticky;top:8px;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 14px;padding:10px 12px;background:var(--atc-surface);border:1px solid var(--atc-accent);border-radius:9px;box-shadow:0 4px 14px #02081450}.atc-ops-mobile-score>div{min-width:0;font-size:11px;line-height:1.5}.atc-ops-mobile-score small{display:block;font-size:11px;color:var(--atc-accent)}.atc-ops-mobile-score>span{white-space:nowrap;color:var(--atc-muted);font:11px ui-monospace,monospace}.atc-ops-mobile-score strong{font:650 25px ui-monospace,monospace;color:var(--atc-ink)}.atc-ops-control{scroll-margin-top:100px}}
+@media(max-width:760px){.atc-ops{padding:0 18px 18px}.atc-ops-intro{align-items:flex-start;gap:10px}.atc-ops-intro h3{font-size:23px}.atc-ops-intro p:last-child{font-size:13px}.atc-ops-steps{grid-template-columns:minmax(0,1fr)}.atc-ops-steps li{padding:10px 12px}.atc-ops-steps strong{font-size:12px}.atc-ops-card{padding:15px}.atc-ops-controls{grid-template-columns:minmax(0,1fr);gap:10px}.atc-ops-heading{align-items:flex-start}.atc-ops-heading h4{font-size:16px}.atc-ops-heading>button{max-width:110px}.atc-ops-log-action{align-items:stretch;flex-direction:column;gap:10px}.atc-ops-log-action p{flex:auto}.atc-ops-score strong{font-size:38px}.atc-ops-contributions li>div:first-child{gap:8px}.atc-ops-history-list{grid-template-columns:minmax(0,1fr)}.atc-ops-selectors{grid-template-columns:minmax(0,1fr);gap:10px}.atc-ops-comparison-scores{grid-template-columns:repeat(2,minmax(0,1fr))}.atc-ops-comparison-scores .atc-ops-delta{grid-column:1/-1}.atc-ops-comparison-table{font-size:11px}.atc-ops-comparison-table th,.atc-ops-comparison-table td{padding:8px 5px}.atc-ops-comparison-scores strong{font-size:23px}}
+.atc-ops[data-contrast=true] .atc-ops-card,.atc-ops[data-contrast=true] .atc-ops-control,.atc-ops[data-contrast=true] .atc-ops-history-list>li,.atc-ops[data-contrast=true] .atc-ops-comparison-scores>div,.atc-ops[data-contrast=true] .atc-ops-fair-test,.atc-ops[data-contrast=true] .atc-ops-scope,.atc-ops[data-contrast=true] .atc-ops-undo,.atc-ops[data-contrast=true] .atc-ops-steps li{background:#000;color:#fff;border-color:#fff}.atc-ops[data-contrast=true] :is(select,textarea,button){background:#000;color:#fff;border-color:#ffff00}.atc-ops[data-contrast=true] .atc-ops-comparison-table tr[data-changed=true]{background:#000}.atc-ops[data-contrast=true] .atc-ops-comparison-table th small{color:#ffff00}.atc-ops[data-contrast=true] .atc-ops-contribution-track>span,.atc-ops[data-contrast=true] .atc-ops-record-track>span{background:#ffff00}
+@media(forced-colors:active){.atc-ops-card,.atc-ops-control,.atc-ops-steps li,.atc-ops-history-list>li,.atc-ops-comparison-scores>div,.atc-ops-fair-test,.atc-ops-scope,.atc-ops-undo,.atc-ops-comparison-table tr,.atc-ops select,.atc-ops textarea{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.atc-ops :is(p,small,strong,span,th,td){color:CanvasText!important}.atc-ops :is(th,td){border-color:CanvasText}.atc-ops-scale .atc-ops-bands>span{background:Canvas;border:1px solid CanvasText}.atc-ops-scale>i{background:Highlight;box-shadow:0 0 0 1px CanvasText;forced-color-adjust:none}.atc-ops-contribution-track,.atc-ops-record-track{background:Canvas;border:1px solid CanvasText}.atc-ops-contribution-track>span,.atc-ops-record-track>span{background:Highlight;forced-color-adjust:none}.atc-ops-contribution-track>i{border-color:CanvasText}.atc-ops-history-list>li[data-current=true]{outline:2px solid Highlight;outline-offset:-5px}.atc-ops-comparison-table tbody th small{font-weight:800;text-decoration:underline}.atc-ops-steps li[data-complete=true]>span{background:Highlight;color:HighlightText!important;forced-color-adjust:none}}
+`;
+      towerCss += `
+.atc-flight-lab{margin:12px 0 0;background:var(--atc-surface);border:1px solid var(--atc-line);border-radius:12px;padding:16px}.atc-flight-heading{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}.atc-flight-heading h4{margin:0;font-size:16px}.atc-flight-actions{display:flex;gap:8px;flex-wrap:wrap}.atc-flight-actions button{font-size:12px}.atc-flight-horizon{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:14px 0}.atc-flight-horizon>span{font-size:12px;margin-right:6px;color:var(--atc-muted)}.atc-flight-horizon button{font-size:12px;min-width:48px}.atc-flight-legend{display:flex;gap:8px 16px;flex-wrap:wrap;margin:12px 0;font-size:11px;color:var(--atc-muted)}.atc-flight-legend span{display:flex;align-items:center;gap:6px}.atc-flight-legend i{display:inline-block;width:22px;border-top:2px solid var(--atc-accent)}.atc-flight-legend span:nth-child(2) i{border-top-style:dashed}.atc-flight-legend span:nth-child(3) i{border-top:2px dotted #ffda87}.atc-flight-projections{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.atc-flight-projections[data-draft=false]{grid-template-columns:minmax(0,1fr)}.atc-flight-projection{min-width:0;padding:12px;background:var(--atc-raised);border:1px solid var(--atc-line);border-radius:9px}.atc-flight-projection[data-atctower-projection=draft]{border-color:#c8a76d}.atc-flight-projection h5{font-size:12px;margin:0 0 8px}.atc-flight-projection>p{font-size:11px;line-height:1.6;margin:0 0 9px}.atc-flight-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0}.atc-flight-metrics>div{min-width:0}.atc-flight-metrics dt{font-size:11px;color:var(--atc-muted)}.atc-flight-metrics dd{font:600 20px/1.5 ui-monospace,monospace;color:var(--atc-ink);margin:2px 0 0;overflow-wrap:anywhere}.atc-flight-lab .atc-flight-note{font-size:12px;line-height:1.65;margin:12px 0 0;color:var(--atc-muted)}.atc-flight-lab .atc-flight-empty{font-size:13px;line-height:1.6;margin:12px 0 0}.atc-flight-projection[data-atctower-projection=draft] h5{color:#ffda87}
+.atc-flight-column{grid-column:2;grid-row:1/span 2;display:grid;gap:12px;align-self:start;min-width:0}.atc-flight-column>.atc-control-panel{grid-column:auto;grid-row:auto}.atc-flight-lab{margin:0}
+@media(max-width:760px){.atc-flight-column{display:contents}.atc-flight-column>.atc-control-panel{grid-column:1;grid-row:2}.atc-flight-lab{grid-column:1;grid-row:3;padding:12px}.atc-operations-panel{grid-row:4}.atc-review-panel{grid-row:5}.atc-flight-projections{grid-template-columns:minmax(0,1fr)}.atc-flight-heading{align-items:flex-start}.atc-flight-metrics dd{font-size:19px}.atc-flight-horizon>span{width:100%}}
+.atc-tower[data-contrast=true] .atc-flight-lab,.atc-tower[data-contrast=true] .atc-flight-projection{background:#000;border-color:#fff;color:#fff}.atc-tower[data-contrast=true] .atc-flight-metrics dd,.atc-tower[data-contrast=true] .atc-flight-projection h5{color:#fff}.atc-tower[data-contrast=true] .atc-flight-legend i{border-color:#ffff00}
+@media(forced-colors:active){.atc-flight-lab,.atc-flight-projection{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.atc-flight-lab :is(p,span,dt,dd,h5){color:CanvasText!important}.atc-flight-legend i{border-color:CanvasText!important}}
+.atc-flight-readouts{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:12px;align-items:start;min-width:0}.atc-flight-readouts[data-draft=true],.atc-flight-readouts[data-empty=true]{grid-template-columns:minmax(0,1fr)}.atc-flight-readouts>div{min-width:0}
+@media(min-width:761px){.atc-flight-horizon{margin:10px 0}.atc-flight-legend{margin:8px 0}.atc-flight-lab .atc-flight-note{margin:8px 0 0;line-height:1.5}.atc-flight-lab .atc-flight-detail{margin-top:8px}}
+@media(max-width:760px){.atc-flight-readouts{grid-template-columns:minmax(0,1fr)}}
+.atc-flight-timeline{display:grid;grid-template-columns:auto minmax(50px,1fr) auto auto;gap:6px;align-items:center;margin-top:8px;min-width:0}.atc-flight-timeline label{font-size:11px;line-height:1.3;max-width:44px;color:var(--atc-muted)}.atc-flight-timeline input[type=range]{width:100%;min-width:0;min-height:44px;padding:0;margin:0;accent-color:var(--atc-accent);background:transparent;border:0;cursor:pointer}.atc-flight-time-value{font:600 12px ui-monospace,monospace;white-space:nowrap}.atc-flight-timeline button{min-width:44px;padding:8px;font-size:11px}.atc-flight-exploration{margin-top:8px;border-top:1px solid var(--atc-line)}.atc-flight-exploration summary{font-size:12px;color:var(--atc-muted)}.atc-flight-exploration .atc-flight-note{margin-top:4px}
+.atc-flight-focus-ring{fill:none;stroke-width:2}.atc-flight-focus-aircraft{stroke:#0a1d2b;stroke-width:1.5}.atc-flight-focus-current{color:#99f6e4}.atc-flight-focus-draft{color:#ffda87}.atc-flight-focus-ring{stroke:currentColor}.atc-flight-focus-aircraft{fill:currentColor}.atc-flight-detail .atc-flight-scale-text{font-weight:500}
+.atc-flight-timeline button[aria-disabled=true]{opacity:.6;cursor:default}
+.atc-instruments{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0 12px}.atc-instrument{min-width:0;border:1px solid var(--atc-line);border-radius:9px;background:#0a1d2b;padding:8px}.atc-tower .atc-instrument h4{font-size:12px;margin:0 0 4px;color:var(--atc-muted)}.atc-instrument-graphic{display:block;width:100%;height:62px;color:var(--atc-ink)}.atc-instrument-graphic text{fill:currentColor;font:12px ui-monospace,monospace}.atc-instrument-scale{fill:none;stroke:var(--atc-line);stroke-width:1.5}.atc-instrument-current{stroke:var(--atc-accent);fill:var(--atc-accent)}.atc-instrument-target{stroke:#ffda87;fill:#ffda87;stroke-width:1.5}.atc-instrument dl{margin:6px 0 0}.atc-instrument dl>div{display:block;margin-top:5px}.atc-instrument dt{font-size:10px;color:var(--atc-muted)}.atc-instrument dd{font:600 13px ui-monospace,monospace;margin:2px 0 0;overflow-wrap:anywhere}.atc-instrument dt:before{display:inline-block;margin-right:4px;content:'●';color:var(--atc-accent)}.atc-instrument-target-value dt:before{content:'◆';color:#ffda87}.atc-tower .atc-instrument-status{font-size:11px;line-height:1.4;margin:6px 0 0;color:var(--atc-muted)}.atc-instrument-status span{display:block}.atc-tower[data-contrast=true] .atc-instrument{background:#000}.atc-tower[data-contrast=true] :is(.atc-instrument-current,.atc-instrument-target){stroke:#ffff00;fill:#ffff00}.atc-tower[data-contrast=true] .atc-instrument-scale{stroke:#fff}
+@media(max-width:760px){.atc-instruments{grid-template-columns:minmax(0,1fr)}.atc-instrument{display:grid;grid-template-columns:68px minmax(0,1fr);column-gap:10px;align-items:center}.atc-tower .atc-instrument h4{grid-column:1/-1}.atc-instrument-graphic{grid-row:2/4;height:68px}.atc-instrument dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:0}.atc-instrument dl>div{margin:0}.atc-tower .atc-instrument-status{grid-column:2;margin-top:5px}.atc-instrument-status span{display:inline;margin-left:5px}}
+@media(forced-colors:active){.atc-instrument{background:Canvas!important;border-color:CanvasText!important}.atc-instrument :is(.atc-instrument-current,.atc-instrument-target){stroke:CanvasText!important;fill:CanvasText!important}.atc-instrument-scale{stroke:CanvasText!important}.atc-instrument dt:before{color:CanvasText!important}}
+.atc-instrument-arc{fill:none!important}.atc-instrument-graphic text{font-size:20px}.atc-tower .atc-instrument-range{font:10px ui-monospace,monospace;color:var(--atc-muted);margin:4px 0 0;overflow-wrap:anywhere}@media(max-width:760px){.atc-instrument-range{grid-column:2}}
+@media(min-width:761px){.atc-instrument-graphic{height:48px}.atc-instrument-graphic text{font-size:24px}.atc-instrument dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.atc-instrument dl>div{margin-top:0}.atc-instrument dd{font-size:12px}.atc-instrument-status span{display:inline;margin-left:4px}}
+.atc-tower[data-contrast=true] .atc-flight-focus-current,.atc-tower[data-contrast=true] .atc-flight-focus-draft{color:#ffff00}.atc-tower[data-contrast=true] .atc-flight-focus-aircraft{stroke:#000}@media(forced-colors:active){.atc-flight-focus-current,.atc-flight-focus-draft{color:CanvasText!important}.atc-flight-focus-ring{stroke:CanvasText!important}.atc-flight-focus-aircraft{fill:CanvasText!important;stroke:Canvas!important}.atc-flight-exploration{border-color:CanvasText}.atc-flight-timeline input[type=range]{accent-color:Highlight}}
+`;
+      towerCss += `.atc-flight-detail{display:block;width:100%;max-width:480px;height:auto;aspect-ratio:3/2;margin:12px auto 0;border:1px solid var(--atc-line);border-radius:9px;background:#0a1d2b;color:var(--atc-ink)}.atc-flight-detail .atc-flight-grid{stroke:#294858;stroke-width:1}.atc-flight-detail .atc-path-recorded{stroke:#81b8c2;stroke-width:2;fill:none}.atc-flight-detail .atc-path-current{stroke:#99f6e4;stroke-width:2;fill:none;stroke-dasharray:7 5}.atc-flight-detail .atc-path-draft{stroke:#ffda87;stroke-width:2.5;fill:none;stroke-dasharray:2 5}.atc-flight-detail .atc-path-marker{stroke-dasharray:none;fill:#0a1d2b}.atc-flight-detail text{fill:currentColor;font-family:ui-monospace,monospace;font-weight:600}.atc-flight-detail .atc-path-aircraft{fill:#f1f9ff}.atc-tower[data-contrast=true] .atc-flight-detail{background:#000;color:#fff}.atc-tower[data-contrast=true] .atc-flight-detail :is(.atc-path-recorded,.atc-path-current,.atc-path-draft){stroke:#ffff00}.atc-tower[data-contrast=true] .atc-flight-detail .atc-path-marker{fill:#000}@media(forced-colors:active){.atc-flight-detail{background:Canvas!important;color:CanvasText!important}.atc-flight-detail :is(.atc-flight-grid,.atc-path-recorded,.atc-path-current,.atc-path-draft){stroke:CanvasText!important}.atc-flight-detail .atc-path-marker{fill:Canvas!important}.atc-flight-detail .atc-path-aircraft,.atc-flight-detail text{fill:CanvasText!important}}`;
       var lessonViewRef = useRef(null), menuViewRef = useRef(null), previousViewRef = useRef(view);
       // Each mounted tower owns its requests. Keep the current context in a
       // ref so a response is invalid as soon as a different lesson renders.
       var lessonRequestRef = useRef({ generation: 0, mounted: false, pending: null });
       var lessonContextRef = useRef('');
-      var currentLesson = view === 'lesson' && ATC_LESSONS[d.selectedLesson] ? d.selectedLesson : '';
+      var currentLesson = view === 'lesson' && hasSelectedLesson ? d.selectedLesson : '';
       useEffect(function() {
         if (view === 'lesson' && lessonViewRef.current) lessonViewRef.current.focus();
         if (view === 'menu' && (previousViewRef.current === 'lesson' || previousViewRef.current === 'debrief') && menuViewRef.current) {
-          var card = previousViewRef.current === 'lesson' && ATC_LESSONS[d.selectedLesson] && menuViewRef.current.querySelector('[data-atctower-lesson="' + d.selectedLesson + '"]');
+          var card = previousViewRef.current === 'lesson' && hasSelectedLesson && menuViewRef.current.querySelector('[data-atctower-lesson="' + d.selectedLesson + '"]');
           var target = card || menuViewRef.current.querySelector('[role="tab"][aria-selected="true"]');
           if (target) target.focus();
         }
@@ -1269,6 +1523,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
       var _commandFeedback = useState(null), commandFeedback = _commandFeedback[0], setCommandFeedback = _commandFeedback[1];
       var _evidenceFilter = useState('all'), evidenceFilter = _evidenceFilter[0], setEvidenceFilter = _evidenceFilter[1];
       var _reflectionEvent = useState(''), reflectionEvent = _reflectionEvent[0], setReflectionEvent = _reflectionEvent[1];
+      var _lessonExplorers = useState({}), lessonExplorers = _lessonExplorers[0], setLessonExplorers = _lessonExplorers[1];
+      var _opsPair = useState(null), opsPair = _opsPair[0], setOpsPair = _opsPair[1];
+      var _opsUndo = useState(null), opsUndo = _opsUndo[0], setOpsUndo = _opsUndo[1];
+      var _flightHorizon = useState(60), flightHorizon = _flightHorizon[0], setFlightHorizon = _flightHorizon[1];
+      var _showFlightPath = useState(true), showFlightPath = _showFlightPath[0], setShowFlightPath = _showFlightPath[1];
+      var _flightTime = useState(null), flightTime = _flightTime[0], setFlightTime = _flightTime[1];
+      var flightSelection = view === 'playing' && gameRef.current ? String(gameRef.current.shiftId || '') + ':' + String(gameRef.current.selected) : '';
+      useEffect(function() { setFlightTime(null); }, [view, flightSelection]);
+      var flightDisplayRef = useRef(null), flightCacheRef = useRef(null), pendingStepRef = useRef(false);
+      flightDisplayRef.current = { horizon: flightHorizon, visible: showFlightPath, draft: commandDraft };
+      var opsControlsRef = useRef(null), opsEvidenceRef = useRef(null), opsUndoRef = useRef(null);
+      useEffect(function() { if (opsUndo && opsUndoRef.current) opsUndoRef.current.focus(); }, [opsUndo]);
       useEffect(function() { if (view === 'debrief') { setEvidenceFilter('all'); setReflectionEvent(''); } }, [view, d.lastShift && d.lastShift.shiftId]);
       var mathFocusRef = useRef('');
       var flightOrderRef = useRef(null);
@@ -1334,17 +1600,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         if (view !== 'playing') return;
         checkpointShift();
         var timer = setInterval(checkpointShift, 5000);
-        var onVisibility = function() { if (document.hidden) checkpointShift(); };
+        var onVisibility = function() { if (document.hidden) { pendingStepRef.current = false; checkpointShift(); } };
+        var onPageHide = function() { pendingStepRef.current = false; checkpointShift(); };
         document.addEventListener('visibilitychange', onVisibility);
-        window.addEventListener('pagehide', checkpointShift);
+        window.addEventListener('pagehide', onPageHide);
         return function() {
           clearInterval(timer);
           document.removeEventListener('visibilitychange', onVisibility);
-          window.removeEventListener('pagehide', checkpointShift);
+          window.removeEventListener('pagehide', onPageHide);
+          pendingStepRef.current = false;
           checkpointShift();
         };
       }, [view]);
       var finishShift = function() {
+        pendingStepRef.current = false;
         var game = gameRef.current;
         if (!game.airport || game.committed) return;
         if (!game.shiftId) game.shiftId = atcShiftId();
@@ -1523,6 +1792,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         var game = gameRef.current;
         if (game.practice && game.practice.completed) { announce('Exercise objectives are complete. End the shift to record your result or retry.'); return; }
         game.paused = !game.paused;
+        pendingStepRef.current = false;
         announce(game.paused ? 'Game paused' : 'Game resumed');
         refreshTower();
       };
@@ -1795,6 +2065,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         gameRef.current.radarAvailable = !!gfx;
 
         var lastFrameTime = null;
+        var resetFrameClock = function() { lastFrameTime = null; };
+        document.addEventListener('visibilitychange', resetFrameClock);
         var loop = function(frameTime) {
           if (!runningRef.current) return;
           var game = gameRef.current;
@@ -1808,7 +2080,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           if (canvas.width !== backingWidth || canvas.height !== backingHeight) { canvas.width = backingWidth; canvas.height = backingHeight; }
           if (gfx && gfx.setTransform) gfx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
           if (gfx) gfx.clearRect(0, 0, W, H);
-          var dt = frozen ? 0 : elapsed;
+          var stepping = pendingStepRef.current === game && atcCanStepTraffic(game, document.hidden);
+          pendingStepRef.current = false;
+          var dt = stepping ? 10 / ATC_TIME_ACCELERATION : frozen ? 0 : elapsed;
           game.time += dt;
 
           var airport = game.airport;
@@ -1921,6 +2195,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             recordAtcDecision(game, 'exercise', null, exercise.scenario.title + ': objectives met.');
             checkpointShift(); refreshTower();
             announce('Exercise objectives met. Traffic paused. End the shift to save your debrief.');
+          }
+          if (stepping) {
+            checkpointShift(); refreshTower();
+            announce('Advanced 10 flight seconds. Traffic remains paused.');
           }
 
           // ═══ RENDER ═══
@@ -2128,6 +2406,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             gfx.beginPath(); gfx.moveTo(rx + dx, ry + dy); gfx.lineTo(rx + dx + perpX * 4, ry + dy + perpY * 4); gfx.stroke();
           });
 
+          var flightView = flightDisplayRef.current;
+          var flightAircraft = flightView && flightView.visible && game.aircraft.find(function(ac) { return ac.id === game.selected && atcActiveAircraft(ac); });
+          if (flightAircraft) {
+            var pathKey = JSON.stringify([flightAircraft.id, flightAircraft.x, flightAircraft.y, flightAircraft.heading, flightAircraft.speed, flightAircraft.altitude, flightAircraft.fuel, flightAircraft.state, flightAircraft.approachStage, flightAircraft.targetHeading, flightAircraft.targetSpeed, flightAircraft.targetAltitude, flightAircraft.assignedRunway && [flightAircraft.assignedRunway.x,flightAircraft.assignedRunway.y,flightAircraft.assignedRunway.hdg], flightAircraft.holdCenter, flightView.horizon, flightView.draft && [flightView.draft.kind,flightView.draft.value]]);
+            if (!flightCacheRef.current || flightCacheRef.current.key !== pathKey) flightCacheRef.current = { key: pathKey, current: atcFlightPath(flightAircraft, flightView.horizon), draft: flightView.draft && flightView.draft.aircraftId === flightAircraft.id ? atcFlightPath(flightAircraft, flightView.horizon, flightView.draft) : null };
+            var drawFlightPath = function(path, proposed) {
+              if (!path || path.points.length < 2) return;
+              gfx.save(); gfx.strokeStyle = hc ? proposed ? '#ffff00' : '#ffffff' : proposed ? '#ffda87' : '#99f6e4'; gfx.fillStyle = gfx.strokeStyle;
+              gfx.lineWidth = proposed ? 2.5 : 2; gfx.setLineDash(proposed ? [2,5] : [7,5]);
+              gfx.beginPath(); path.points.forEach(function(point,index) { if (index) gfx.lineTo(point.x * scale,point.y * scale); else gfx.moveTo(point.x * scale,point.y * scale); }); gfx.stroke(); gfx.setLineDash([]);
+              path.points.forEach(function(point) { if (!point.seconds || point.seconds % 30 && point !== path.end) return;
+                var px = point.x * scale, py = point.y * scale;
+                if (proposed) gfx.strokeRect(px - 4,py - 4,8,8); else { gfx.beginPath(); gfx.arc(px,py,4,0,Math.PI * 2); gfx.stroke(); }
+                if (point === path.end) { gfx.font = 'bold 11px ui-monospace,monospace'; gfx.textAlign = 'left'; gfx.fillText('+' + point.seconds + 's',Math.max(4,Math.min(W - 48,px + 8)),Math.max(14,Math.min(H - 6,py + (proposed ? 15 : -8)))); }
+              }); gfx.restore();
+            };
+            drawFlightPath(flightCacheRef.current.current,false); drawFlightPath(flightCacheRef.current.draft,true);
+          } else flightCacheRef.current = null;
+
           // Aircraft labels reserve room for selected and urgent traffic.
           var radarTags = atcRadarTagLayout(game.aircraft, W, H, game.selected, conflicts.reduce(function(ids, pair) { return ids.concat([pair.a.id, pair.b.id]); }, []));
           radarTagsRef.current = radarTags;
@@ -2138,15 +2435,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             var isSelected = game.selected === ac.id;
             var isConflict = conflicts.some(function(c) { return c.a.id === ac.id || c.b.id === ac.id; });
 
-            // Target line (if heading assigned)
-            if (isSelected && ac.targetHeading !== null) {
-              gfx.strokeStyle = 'rgba(251,191,36,0.3)'; gfx.lineWidth = 1; gfx.setLineDash([3, 3]);
-              gfx.beginPath(); gfx.moveTo(ax, ay);
-              gfx.lineTo(ax + Math.sin(toRad(ac.targetHeading)) * 60 * scale, ay - Math.cos(toRad(ac.targetHeading)) * 60 * scale);
-              gfx.stroke(); gfx.setLineDash([]);
-            }
-
-            // Radar afterglow trail (fading blips from previous sweep)
+            // Recorded positions show the path actually flown, including turns.
             var blipColor = hc ? '#ffff00' : isConflict ? '#fb7185' : tag.priority ? '#fbbf24' : ac.fuel < 10 ? '#fb923c' : ac.emergency ? '#c4b5fd' : '#67e8f9';
             // Emergency aircraft: pulsing red ring + label
             if (ac.emergency) {
@@ -2156,12 +2445,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               gfx.fillStyle = 'rgba(239,68,68,' + emAlpha + ')'; gfx.font = 'bold ' + (7 * scale) + 'px system-ui'; gfx.textAlign = 'center';
               gfx.fillText('🚨 ' + ac.emergency.label, ax, ay - 18 * scale);
             }
-            for (var tr = 6; tr >= 1; tr--) {
-              var trX = ax - Math.sin(toRad(ac.heading)) * tr * 4 * scale;
-              var trY = ay + Math.cos(toRad(ac.heading)) * tr * 4 * scale;
-              var trAlpha = (1 - tr / 7) * 0.2;
-              gfx.fillStyle = isConflict ? 'rgba(239,68,68,' + trAlpha + ')' : 'rgba(34,197,94,' + trAlpha + ')';
-              gfx.beginPath(); gfx.arc(trX, trY, (2 + (6 - tr) * 0.3) * scale, 0, Math.PI * 2); gfx.fill();
+            var history = ac.trackHistory || [];
+            if (history.length) {
+              gfx.save(); gfx.strokeStyle = blipColor; gfx.fillStyle = blipColor; gfx.lineWidth = isSelected ? 1.8 : 1; gfx.globalAlpha = isSelected ? 0.55 : 0.28;
+              gfx.beginPath(); history.forEach(function(point,index) { if (index) gfx.lineTo(point.x * scale,point.y * scale); else gfx.moveTo(point.x * scale,point.y * scale); }); gfx.lineTo(ax,ay); gfx.stroke();
+              history.forEach(function(point,index) { if (index % 3) return; gfx.beginPath(); gfx.arc(point.x * scale,point.y * scale,isSelected ? 2 : 1.2,0,Math.PI * 2); gfx.fill(); }); gfx.restore();
             }
 
             // Radar blip glow (bloom effect) — brighter for selected/emergency
@@ -2510,7 +2798,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         animRef.current = requestAnimationFrame(loop);
         return function() {
           runningRef.current = false;
+          pendingStepRef.current = false;
           cancelAnimationFrame(animRef.current);
+          document.removeEventListener('visibilitychange', resetFrameClock);
           canvas.removeEventListener('click', onClick);
           canvas.removeEventListener('keydown', onKey);
           commandRef.current = null;
@@ -2524,7 +2814,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
       if (view === 'menu') {
         var savedShift = restoreAtcShift(d.activeShift);
         var recentShifts = atcShiftHistory(d.shiftHistory);
-        var atcMenuPanel = d.atcMenuPanel || 'airports';
+        var atcMenuPanel = d.view === 'lesson' && !hasSelectedLesson ? 'lessons' : d.atcMenuPanel || 'airports';
         var earnedCount = Object.keys(earnedATCBadges).length;
         var selectedAirportId = d.atcSelectedAirport || 'simple';
         var selectedAirport = AIRPORTS.find(function(a) { return a.id === selectedAirportId; }) || AIRPORTS[0];
@@ -2538,11 +2828,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         };
         var selectedTone = difficultyTone(selectedAirport.difficulty);
         var opsDefaults = { wind: 10, spawn: 5, sep: 8, descent: 1.0, timeout: 30, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-        var iq = Object.assign({}, opsDefaults, d.opsControl || {});
+        var opsModel = atcOpsModel(d.opsControl);
+        var iq = Object.assign({}, opsDefaults, d.opsControl || {}, opsModel.values);
         function setIQ(patch) { upd('opsControl', Object.assign({}, iq, patch)); }
         function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
-        var loadIdx = (iq.wind / 30) * 0.25 + (1 - (iq.spawn - 1) / 9) * 0.30 + (1 - (iq.sep - 5) / 15) * 0.25 + ((iq.descent - 0.5) / 1.5) * 0.10 + (1 - (iq.timeout - 10) / 50) * 0.10;
-        var loadState = loadIdx < 0.35 ? 'sandbox' : loadIdx < 0.55 ? 'training' : loadIdx < 0.75 ? 'operational' : loadIdx < 0.9 ? 'stressed' : 'overload';
+        var loadIdx = opsModel.index;
+        var loadState = opsModel.band;
         var loadMeta = ({
           sandbox: { label: t('stem.atctower.sandbox', 'Sandbox'), color: '#86efac', bg: '#06351f', border: '#22c55e', desc: t('stem.atctower.light_traffic_generous_spacing_good_fo', 'Light traffic, generous spacing - good for new controllers.') },
           training: { label: t('stem.atctower.training', 'Training'), color: '#67e8f9', bg: '#083344', border: '#06b6d4', desc: t('stem.atctower.manageable_load_focus_on_technique_wit', 'Manageable load - focus on technique without time pressure.') },
@@ -2586,7 +2877,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           ref: menuViewRef,
           'data-atctower-command': 'true',
           'aria-labelledby': 'atctower-command-title',
-          style: { minHeight: '500px', background: 'linear-gradient(135deg, #03170f 0%, #082f2a 48%, #111827 100%)', borderRadius: '16px', overflow: 'hidden', color: '#f8fafc', border: '1px solid rgba(45, 212, 191, 0.26)' }
+          style: { minHeight: '500px', background: 'linear-gradient(135deg, #03170f 0%, #082f2a 48%, #111827 100%)', borderRadius: '16px', overflow: atcMenuPanel === 'ops' ? 'clip' : 'hidden', color: '#f8fafc', border: '1px solid rgba(45, 212, 191, 0.26)' }
         },
 h('style', null, towerCss),
 atcMenuPanel !== 'airports' && h('header', { className: 'atc-menu-heading' }, h('p', { className: 'atc-eyebrow' }, t('stem.atctower.atc_tower', 'ATC Tower')), h('h2', { id: 'atctower-command-title' }, atcMenuPanel === 'practice' ? t('stem.atctower.practice_pathway', 'Practice pathway') : t('stem.atctower.tower_routes', 'Tower routes'))),
@@ -2683,23 +2974,11 @@ h('div', { role: 'tabpanel', id: 'stem-atctower-panel-' + atcMenuPanel, 'aria-la
             )
           ),
           atcMenuPanel === 'ops' && (function() {
-            var opsLog = Array.isArray(iq.log) ? iq.log : [];
-            function opsSetupSignature(entry) {
-              var descentValue = Number(entry && entry.descent);
-              return [
-                entry && entry.wind,
-                entry && entry.spawn,
-                entry && entry.sep,
-                isFinite(descentValue) ? descentValue.toFixed(1) : 'na',
-                entry && entry.timeout
-              ].join('|');
-            }
+            var rawOpsLog = Array.isArray(iq.log) ? iq.log : [];
+            var opsLog = atcOpsEvidence(rawOpsLog);
             var controlLabels = {
-              wind: t('stem.atctower.wind_speed', 'Wind speed'),
-              spawn: t('stem.atctower.arrival_interval', 'Aircraft arrival interval'),
-              sep: t('stem.atctower.min_separation', 'Minimum separation'),
-              descent: t('stem.atctower.descent_multiplier', 'Descent multiplier'),
-              timeout: t('stem.atctower.decision_window', 'Decision window')
+              wind: t('stem.atctower.wind_speed', 'Wind speed'), spawn: t('stem.atctower.arrival_interval', 'Aircraft arrival interval'),
+              sep: t('stem.atctower.min_separation', 'Minimum separation'), descent: t('stem.atctower.descent_multiplier', 'Descent multiplier'), timeout: t('stem.atctower.decision_window', 'Decision window')
             };
             var controlHints = {
               wind: t('stem.atctower.wind_model_hint', 'Higher wind adds to the modeled workload.'),
@@ -2708,191 +2987,122 @@ h('div', { role: 'tabpanel', id: 'stem-atctower-panel-' + atcMenuPanel, 'aria-la
               descent: t('stem.atctower.descent_model_hint', 'A larger multiplier adds to the modeled workload.'),
               timeout: t('stem.atctower.decision_window_model_hint', 'Fewer seconds means more decision pressure.')
             };
-            var liveLoadDescription = ({
-              sandbox: t('stem.atctower.sandbox_model_desc', 'The teaching index classifies this setup as low modeled workload.'),
-              training: t('stem.atctower.training_model_desc', 'The teaching index classifies this setup as moderate-low modeled workload.'),
-              operational: t('stem.atctower.operational_model_desc', 'The teaching index classifies this setup as mid-range modeled workload.'),
-              stressed: t('stem.atctower.stressed_model_desc', 'The teaching index classifies this setup as high modeled workload.'),
-              overload: t('stem.atctower.overload_model_desc', 'The teaching index classifies this setup as very high modeled workload.')
-            })[loadState];
-            var loggedSignatures = {};
-            opsLog.forEach(function(entry) {
-              loggedSignatures[opsSetupSignature(entry)] = true;
-            });
-            var currentSignature = opsSetupSignature(iq);
+            var bandLabels = { sandbox: t('stem.atctower.sandbox', 'Sandbox'), training: t('stem.atctower.training', 'Training'), operational: t('stem.atctower.operational', 'Operational'), stressed: t('stem.atctower.stressed', 'Stressed'), overload: t('stem.atctower.overload', 'Overload') };
+            var setupName = function(entry) { return t('stem.atctower.ops_setup', 'Setup') + ' ' + entry.number; };
+            var settingText = function(key, value) { var slider = opsSliders.find(function(item) { return item.k === key; }); return (slider.step < 1 ? value.toFixed(1) : value) + ' ' + slider.unit; };
+            var loggedSignatures = Object.create(null);
+            opsLog.forEach(function(entry) { loggedSignatures[entry.model.signature] = true; });
+            var currentSignature = opsModel.signature;
             var currentAlreadyLogged = !!loggedSignatures[currentSignature];
             var distinctLogCount = Object.keys(loggedSignatures).length;
-            var comparisonEntries = opsLog.slice(-2);
-            var changedControls = [];
-            if (comparisonEntries.length === 2) {
-              Object.keys(controlLabels).forEach(function(key) {
-                if (String(comparisonEntries[0][key]) !== String(comparisonEntries[1][key])) changedControls.push(key);
-              });
-            }
-            var fairTestState = comparisonEntries.length < 2
-              ? 'needs-two-setups'
-              : changedControls.length === 1
-                ? 'one-variable'
-                : changedControls.length === 0
-                  ? 'duplicate'
-                  : 'multiple-variables';
-            var fairTestText = comparisonEntries.length < 2
-              ? t('stem.atctower.fair_test_needs_two', 'Fair-test check: log two different setups to compare them.')
-              : changedControls.length === 1
-                ? t('stem.atctower.fair_test_one_variable', 'Fair-test check: one control changed') + ' (' + controlLabels[changedControls[0]] + ').'
-                : changedControls.length === 0
-                  ? t('stem.atctower.fair_test_duplicate', 'Fair-test check: these two logs use the same settings; change one control for the next log.')
-                  : t('stem.atctower.fair_test_multiple', 'Fair-test check: several controls changed. That comparison cannot isolate one control; try changing only one next.');
-            var explanationText = String(iq.explanation || iq.hypothesis || '');
+            var firstIndex = opsPair && Number.isInteger(opsPair.first) && opsPair.first >= 0 && opsPair.first < opsLog.length ? opsPair.first : Math.max(0, opsLog.length - 2);
+            var secondIndex = opsPair && Number.isInteger(opsPair.second) && opsPair.second >= 0 && opsPair.second < opsLog.length ? opsPair.second : Math.max(0, opsLog.length - 1);
+            if (opsLog.length > 1 && firstIndex === secondIndex) secondIndex = firstIndex === opsLog.length - 1 ? opsLog.length - 2 : opsLog.length - 1;
+            var comparisonEntries = opsLog.length >= 2 ? [opsLog[firstIndex], opsLog[secondIndex]] : [];
+            var comparison = comparisonEntries.length === 2 ? atcOpsComparison(comparisonEntries[0].model.values, comparisonEntries[1].model.values) : null;
+            var changedControls = comparison ? comparison.changed : [];
+            var fairTestState = !comparison ? 'needs-two-setups' : changedControls.length === 1 ? 'one-variable' : changedControls.length === 0 ? 'duplicate' : 'multiple-variables';
+            var fairTestText = !comparison ? t('stem.atctower.fair_test_needs_two', 'Fair-test check: log two different setups to compare them.')
+              : changedControls.length === 1 ? t('stem.atctower.fair_test_one_variable', 'Fair-test check: one control changed') + ' (' + controlLabels[changedControls[0]] + ').'
+              : changedControls.length === 0 ? t('stem.atctower.fair_test_duplicate', 'Fair-test check: these two logs use the same settings; change one control for the next log.')
+              : t('stem.atctower.fair_test_multiple', 'Fair-test check: several controls changed. That comparison cannot isolate one control; try changing only one next.');
+            var explanationText = typeof iq.explanation === 'string' && iq.explanation ? iq.explanation : typeof iq.hypothesis === 'string' ? iq.hypothesis : '';
             var evidenceReady = distinctLogCount >= 2;
             var explanationComplete = evidenceReady && !!explanationText.trim();
-
-            return h('div', { style: { padding: '0 24px 18px' } },
-              h('div', {
-                style: { padding: '16px', borderRadius: '14px', background: loadMeta.bg, border: '1px solid ' + loadMeta.border, color: '#f8fafc' },
-                'data-atctower-live-inquiry': 'observe-log-explain',
-                'data-atctower-inquiry-credit': 'two-distinct-logs-plus-explanation',
-                'aria-labelledby': 'atctower-ops-title'
-              },
-                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', justifyContent: 'space-between' } },
-                  h('div', null,
-                    h('div', { 'data-atctower-inquiry-label': 'live-evidence', style: { color: '#bae6fd', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '3px' } }, t('stem.atctower.inquiry_widget_live_evidence', 'Inquiry widget · live evidence')),
-                    h('h3', { id: 'atctower-ops-title', style: { margin: 0, color: loadMeta.color, fontSize: '17px', fontWeight: 900 } }, t('stem.atctower.ops_live_model_title', 'Ops Control — Live Load Model')),
-                    h('p', { id: 'atctower-ops-instructions', style: { margin: '4px 0 0', color: '#e2e8f0', fontSize: '12px', lineHeight: 1.45, maxWidth: '72ch' } },
-                      t('stem.atctower.ops_live_model_instructions', 'The result is visible and updates live, so this is an observe–log–explain investigation, not a prediction quiz. Change one control at a time, log at least two different setups, then explain the evidence.')
-                    )
-                  ),
-                  h('span', {
-                    role: 'status',
-                    'aria-live': 'polite',
-                    'aria-atomic': 'true',
-                    'data-atctower-live-load': 'visible-model-output',
-                    style: { borderRadius: '16px', padding: '6px 10px', background: loadMeta.color, color: '#0f172a', fontSize: '12px', fontWeight: 900 }
-                  }, t('stem.atctower.live_modeled_load', 'Live modeled load') + ': ' + loadMeta.label)
-                ),
-                h('p', { style: { margin: '8px 0 0', color: '#e2e8f0', fontSize: '12px', lineHeight: 1.45 } }, liveLoadDescription),
-                h('div', {
-                  'data-atctower-model-boundary': 'simplified-weighted-index',
-                  style: { marginTop: '10px', padding: '9px 10px', borderRadius: '9px', background: 'rgba(2, 6, 23, 0.48)', border: '1px solid rgba(148, 163, 184, 0.28)', color: '#dbeafe', fontSize: '11px', lineHeight: 1.45 }
-                },
-                  h('strong', null, t('stem.atctower.model_boundary_label', 'Model boundary: ')),
-                  t('stem.atctower.model_boundary_copy', 'This standalone teaching index combines arrival frequency (30%), wind (25%), reduced-separation pressure (25%), descent rate (10%), and decision-window pressure (10%). It does not configure the tower shift or predict real-airport safety.')
-                ),
-                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginTop: '14px' } },
-                  opsSliders.map(function(s) {
-                    return h('label', { key: s.k, style: { display: 'block', color: '#f8fafc', fontSize: '12px', fontWeight: 800 } },
-                      h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '8px', marginBottom: '5px' } },
-                        h('span', null, s.label),
-                        h('span', { style: { color: loadMeta.color, fontFamily: 'monospace', fontWeight: 900 } }, (s.step < 1 ? iq[s.k].toFixed(1) : iq[s.k]) + ' ' + s.unit)
-                      ),
-                      h('input', { type: 'range', 'aria-label': s.label, 'aria-describedby': 'atctower-' + s.k + '-hint', min: s.min, max: s.max, step: s.step, value: iq[s.k], onChange: function(e) { setKey(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } }),
-                      h('span', { id: 'atctower-' + s.k + '-hint', style: { display: 'block', marginTop: '3px', color: '#cbd5e1', fontSize: '10px', fontWeight: 500, lineHeight: 1.35 } }, controlHints[s.k])
-                    );
-                  })
-                ),
-                h('div', {
-                  'data-atctower-evidence-log': 'distinct-setups',
-                  style: { marginTop: '14px', padding: '10px', borderRadius: '10px', background: 'rgba(2, 6, 23, 0.52)', border: '1px solid rgba(148, 163, 184, 0.28)' }
-                },
-                  h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', justifyContent: 'space-between' } },
-                    h('div', null,
-                      h('div', { style: { color: '#f8fafc', fontSize: '12px', fontWeight: 900 } }, t('stem.atctower.evidence_log_title', 'Evidence log') + ' · ' + distinctLogCount + '/2 ' + t('stem.atctower.distinct_setups', 'distinct setups')),
-                      h('div', { style: { marginTop: '2px', color: '#cbd5e1', fontSize: '10px', lineHeight: 1.35 } }, t('stem.atctower.evidence_log_hint', 'For the clearest comparison, keep four controls fixed and change one.'))
-                    ),
-                    h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
-                      h('button', {
-                        type: 'button',
-                        disabled: currentAlreadyLogged,
-                        'aria-disabled': currentAlreadyLogged ? 'true' : 'false',
-                        'aria-label': currentAlreadyLogged ? t('stem.atctower.current_setup_logged_a11y', 'Current ATC setup already logged') : t('stem.atctower.log_setup_a11y', 'Log current ATC setup as evidence'),
-                        onClick: function() {
-                          if (currentAlreadyLogged) return;
-                          var stamp = new Date().toISOString().slice(11, 19);
-                          setIQ({ log: opsLog.concat([{ t: stamp, wind: iq.wind, spawn: iq.spawn, sep: iq.sep, descent: iq.descent, timeout: iq.timeout, state: loadMeta.label, loadIndex: Number(loadIdx.toFixed(3)) }]) });
-                        },
-                        style: { padding: '8px 10px', borderRadius: '8px', border: '1px solid ' + loadMeta.border, background: 'rgba(2, 6, 23, 0.52)', color: loadMeta.color, fontSize: '11px', fontWeight: 900, cursor: currentAlreadyLogged ? 'not-allowed' : 'pointer', opacity: currentAlreadyLogged ? 0.68 : 1 }
-                      }, currentAlreadyLogged ? t('stem.atctower.setup_already_logged', 'Setup already logged') : t('stem.atctower.log_current_setup', 'Log current setup')),
-                      opsLog.length > 0 && h('button', {
-                        type: 'button',
-                        'aria-label': t('stem.atctower.clear_evidence_log_a11y', 'Clear ATC evidence log and explanation'),
-                        onClick: function() { setIQ({ log: [], explanation: '', hypothesis: '', understood: false }); },
-                        style: { padding: '8px 10px', borderRadius: '8px', border: '1px solid rgba(148, 163, 184, 0.42)', background: 'rgba(15, 23, 42, 0.72)', color: '#cbd5e1', fontSize: '11px', fontWeight: 800, cursor: 'pointer' }
-                      }, t('stem.atctower.clear_evidence', 'Clear evidence'))
-                    )
-                  ),
-                  opsLog.length > 0 && h('div', { role: 'list', 'aria-label': t('stem.atctower.logged_load_evidence', 'Logged ATC load evidence'), style: { marginTop: '9px', padding: '7px', borderRadius: '7px', background: 'rgba(2, 6, 23, 0.58)', color: '#cbd5e1', fontSize: '10px', fontFamily: 'monospace', lineHeight: 1.5 } },
-                    opsLog.slice(-4).map(function(entry, index) {
-                      var entryText = entry.t + '  ' + entry.state + '  wind ' + entry.wind + 'kt · interval ' + entry.spawn + 's · separation ' + entry.sep + 'nm · descent ' + Number(entry.descent).toFixed(1) + 'x · window ' + entry.timeout + 's';
-                      return h('div', { key: opsSetupSignature(entry) + '-' + index, role: 'listitem', 'aria-label': entryText }, entryText);
-                    })
-                  ),
-                  h('p', { role: 'status', 'aria-live': 'polite', 'data-atctower-fair-test-check': fairTestState, style: { margin: '8px 0 0', color: changedControls.length === 1 ? '#bbf7d0' : '#fde68a', fontSize: '10px', fontWeight: 750, lineHeight: 1.4 } }, fairTestText)
-                ),
-                h('div', { style: { marginTop: '10px' } },
-                  h('button', {
-                    type: 'button',
-                    'aria-expanded': iq.stuckRevealed ? 'true' : 'false',
-                    'aria-controls': 'atctower-ops-investigation-prompts',
-                    onClick: function() { setIQ({ stuckRevealed: !iq.stuckRevealed }); },
-                    style: { padding: '7px 10px', borderRadius: '8px', border: '1px solid ' + loadMeta.border, background: 'rgba(2, 6, 23, 0.5)', color: loadMeta.color, fontSize: '11px', fontWeight: 850, cursor: 'pointer' }
-                  }, iq.stuckRevealed
-                    ? t('stem.atctower.hide_investigation_prompts', 'Hide investigation prompts')
-                    : t('stem.atctower.show_investigation_prompts', "I'm stuck — show investigation prompts")
-                  ),
-                  iq.stuckRevealed && h('div', {
-                    id: 'atctower-ops-investigation-prompts',
-                    role: 'note',
-                    'data-atctower-investigation-prompts': 'scaffold-only',
-                    style: { marginTop: '7px', padding: '9px 10px', borderRadius: '8px', background: 'rgba(2, 6, 23, 0.5)', border: '1px dashed ' + loadMeta.border, color: '#dbeafe', fontSize: '10px', lineHeight: 1.45 }
-                  },
-                    h('div', { style: { color: loadMeta.color, fontWeight: 900, marginBottom: '4px' } }, t('stem.atctower.investigation_prompts', 'Investigation prompts — no answer key')),
-                    h('ul', { style: { margin: 0, paddingLeft: '17px' } },
-                      h('li', null, t('stem.atctower.prompt_compare_logs', 'What stayed fixed between your last two logs, and what changed?')),
-                      h('li', null, t('stem.atctower.prompt_next_fair_test', 'Which one control could you change next for a clearer fair test?')),
-                      h('li', null, t('stem.atctower.prompt_same_band', 'Can two different setups fall in the same modeled load band? What evidence would show that?'))
-                    )
-                  )
-                ),
-                h('label', { style: { display: 'block', marginTop: '12px', color: '#f8fafc', fontSize: '12px', fontWeight: 850 } },
-                  h('span', null, t('stem.atctower.evidence_explanation_prompt', 'Evidence-based explanation from your logged setups')),
-                  h('textarea', {
-                    value: explanationText,
-                    disabled: !evidenceReady,
-                    'aria-disabled': evidenceReady ? 'false' : 'true',
-                    'aria-label': t('stem.atctower.evidence_explanation_input', 'Evidence-based ATC load explanation'),
-                    'aria-describedby': 'atctower-ops-explanation-help',
-                    onChange: function(e) { setIQ({ explanation: e.target.value, hypothesis: '' }); },
-                    rows: 3,
-                    placeholder: t('stem.atctower.evidence_explanation_example', 'What changed, what stayed fixed, and how did the live modeled load respond? Cite both logged setups.'),
-                    style: { width: '100%', marginTop: '6px', padding: '8px', borderRadius: '8px', border: '1px solid ' + loadMeta.border, background: 'rgba(2, 6, 23, 0.66)', color: '#f8fafc', fontSize: '12px', resize: 'vertical', opacity: evidenceReady ? 1 : 0.66 }
-                  })
-                ),
-                h('p', { id: 'atctower-ops-explanation-help', style: { margin: '5px 0 0', color: '#cbd5e1', fontSize: '10px', lineHeight: 1.4 } },
-                  evidenceReady
-                    ? t('stem.atctower.explanation_ready_hint', 'Use the logs to name the control you changed and the direction of the modeled response.')
-                    : t('stem.atctower.explanation_locked_hint', 'Log two distinct setups before writing the explanation.')
-                ),
-                h('p', {
-                  role: 'status',
-                  'aria-live': 'polite',
-                  'data-atctower-inquiry-progress': explanationComplete ? 'complete' : evidenceReady ? 'explain' : 'collect-evidence',
-                  style: { margin: '9px 0 0', color: explanationComplete ? '#bbf7d0' : '#dbeafe', fontSize: '11px', fontWeight: 800, lineHeight: 1.4 }
-                }, explanationComplete
-                  ? t('stem.atctower.inquiry_complete', 'Evidence explanation recorded. Investigation complete; no answer is scored for agreement.')
-                  : evidenceReady
-                    ? t('stem.atctower.inquiry_explain_next', 'Evidence collected. Explain the comparison to complete the investigation.')
-                    : t('stem.atctower.inquiry_collect_next', 'Collect two distinct setups. Completion depends on logging and explaining, not matching a hidden answer.')
-                )
-              )
-            );
+            var logSetup = function() {
+              if (currentAlreadyLogged) return;
+              setIQ({ log: rawOpsLog.concat([Object.assign({ t: new Date().toISOString().slice(11, 19), state: loadMeta.label, loadIndex: Number(loadIdx.toFixed(3)) }, opsModel.values)]) });
+              setOpsPair(null); setOpsUndo(null);
+            };
+            var loadSetup = function(entry) { setIQ(entry.model.values); if (opsControlsRef.current) opsControlsRef.current.focus(); };
+            var selectSetup = function(which, label, current, other) {
+              return h('label', null, label, h('select', { 'data-atctower-ops-compare': which, value: current, onChange: function(e) { setOpsPair(which === 'first' ? { first: Number(e.target.value), second: secondIndex } : { first: firstIndex, second: Number(e.target.value) }); } },
+                opsLog.map(function(entry, index) { return h('option', { key: entry.number, value: index, disabled: index === other }, setupName(entry) + ' · ' + entry.model.score.toFixed(1) + '/100'); })));
+            };
+            return h('section', { className: 'atc-ops', 'data-contrast': highContrast ? 'true' : 'false', 'data-atctower-live-inquiry': 'observe-log-explain', 'data-atctower-inquiry-credit': 'two-distinct-logs-plus-explanation', 'aria-labelledby': 'atctower-ops-title' },
+              h('div', { className: 'atc-ops-tools' }, h('button', { 'aria-pressed': !!highContrast, onClick: function() { upd('highContrast', !highContrast); } }, t('stem.atctower.high_contrast', 'High contrast'))),
+              h('header', { className: 'atc-ops-intro' }, atcVisualSymbol('review', 'atc-skill-symbol'), h('div', null,
+                h('p', { className: 'atc-eyebrow', 'data-atctower-inquiry-label': 'live-evidence' }, t('stem.atctower.ops_observe_log_explain', 'Observe · log · explain')),
+                h('h3', { id: 'atctower-ops-title' }, t('stem.atctower.ops_investigation_title', 'Explore what drives workload')),
+                h('p', null, t('stem.atctower.ops_investigation_intro', 'Change a control, see its contribution, then compare your recorded evidence.')))),
+              h('ol', { className: 'atc-ops-steps', 'aria-label': t('stem.atctower.ops_investigation_steps', 'Investigation steps') },
+                [[t('stem.atctower.ops_step_observe', 'Observe the live model'), true], [t('stem.atctower.ops_step_log', 'Log two distinct setups'), evidenceReady], [t('stem.atctower.ops_step_explain', 'Explain the evidence'), explanationComplete]].map(function(step, index) {
+                  return h('li', { key: index, 'data-complete': index > 0 && step[1] ? 'true' : 'false' }, h('span', { 'aria-hidden': true }, index + 1), h('div', null, h('strong', null, step[0]), h('small', null, index === 0 ? t('stem.atctower.ops_live_now', 'Updates as you adjust') : step[1] ? t('stem.atctower.ops_step_recorded', 'Recorded') : index === 1 ? Math.min(distinctLogCount, 2) + '/2 ' + t('stem.atctower.distinct_setups', 'distinct setups') : t('stem.atctower.ops_use_your_comparison', 'Use your comparison'))));
+                })),
+              h('div', { className: 'atc-ops-grid' },
+                h('section', { className: 'atc-ops-card atc-ops-control-panel', 'aria-labelledby': 'atctower-ops-controls-title' },
+                  h('div', { className: 'atc-ops-heading' }, h('h4', { id: 'atctower-ops-controls-title', tabIndex: -1, ref: opsControlsRef }, t('stem.atctower.ops_change_control', 'Change one control')), h('button', { 'data-atctower-ops-reset': 'true', onClick: function() { setIQ(atcOpsModel().values); } }, t('stem.atctower.ops_reset_controls', 'Reset controls'))),
+                  h('p', { className: 'atc-ops-small' }, t('stem.atctower.ops_reset_hint', 'Reset returns these controls to their starting values. Your evidence stays recorded.')),
+                  h('div', { className: 'atc-ops-mobile-score', 'aria-hidden': true }, h('div', null, t('stem.atctower.live_modeled_load', 'Live modeled load'), h('small', null, loadMeta.label)), h('span', null, h('strong', null, opsModel.score.toFixed(1)), ' / 100')),
+                  h('div', { className: 'atc-ops-controls' }, opsSliders.map(function(s) {
+                    return h('label', { key: s.k, className: 'atc-ops-control' }, h('span', null, s.label, h('strong', { 'aria-hidden': true }, settingText(s.k, iq[s.k]))),
+                      h('input', { type: 'range', 'data-atctower-ops-input': s.k, 'aria-label': s.label, 'aria-valuetext': settingText(s.k, iq[s.k]), 'aria-describedby': 'atctower-' + s.k + '-hint', min: s.min, max: s.max, step: s.step, value: iq[s.k], onChange: function(e) { setKey(s.k, Number(e.target.value)); } }),
+                      h('small', { id: 'atctower-' + s.k + '-hint' }, controlHints[s.k]));
+                  })),
+                  h('div', { className: 'atc-ops-log-action' }, h('button', { className: 'atc-primary', 'data-atctower-ops-log': 'true', disabled: currentAlreadyLogged, 'aria-disabled': currentAlreadyLogged ? 'true' : 'false', 'aria-label': currentAlreadyLogged ? t('stem.atctower.current_setup_logged_a11y', 'Current ATC setup already logged') : t('stem.atctower.log_setup_a11y', 'Log current ATC setup as evidence'), onClick: logSetup }, currentAlreadyLogged ? t('stem.atctower.setup_already_logged', 'Setup already logged') : t('stem.atctower.log_current_setup', 'Log current setup')),
+                    h('p', { className: 'atc-ops-small' }, t('stem.atctower.ops_log_hint', 'Record this setup, change one control, then record the next.')))),
+                h('section', { className: 'atc-ops-card atc-ops-model', 'aria-labelledby': 'atctower-ops-model-title' },
+                  h('h4', { id: 'atctower-ops-model-title' }, t('stem.atctower.live_modeled_load', 'Live modeled load')),
+                  h('div', { className: 'atc-ops-score', role: 'status', 'aria-atomic': true, 'data-atctower-live-load': 'visible-model-output' }, h('div', null, h('strong', { 'data-atctower-ops-score': 'true' }, opsModel.score.toFixed(1)), h('span', null, '/ 100')), h('span', { className: 'atc-ops-band', 'data-atctower-ops-band': loadState }, loadMeta.label)),
+                  h('div', { className: 'atc-ops-scale', role: 'meter', 'aria-label': t('stem.atctower.ops_index_meter', 'Teaching workload index'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Number(opsModel.score.toFixed(1)), 'aria-valuetext': opsModel.score.toFixed(1) + ' / 100 · ' + loadMeta.label },
+                    h('div', { className: 'atc-ops-bands', 'aria-hidden': true }, [35,20,20,15,10].map(function(width, index) { return h('span', { key: index, style: { flex: width } }); })), h('i', { 'aria-hidden': true, style: { left: opsModel.score + '%' } })),
+                  h('p', { className: 'atc-ops-small atc-ops-scale-caption' }, t('stem.atctower.ops_band_boundaries', 'Bands change at 35, 55, 75, and 90 points.')),
+                  h('h5', null, t('stem.atctower.ops_contributions', 'Where the points come from')),
+                  h('ul', { className: 'atc-ops-contributions' }, opsSliders.map(function(s) { var field = ATC_OPS_FIELDS[s.k], points = opsModel.contributions[s.k]; return h('li', { key: s.k, 'data-atctower-ops-contribution': s.k },
+                    h('div', null, h('span', null, s.label), h('span', null, h('strong', null, points.toFixed(1)), ' / ' + field.weight + ' ' + t('stem.atctower.ops_points', 'points'))),
+                    h('div', { className: 'atc-ops-contribution-track', 'aria-hidden': true }, h('span', { style: { width: points / 30 * 100 + '%' } }), h('i', { style: { left: field.weight / 30 * 100 + '%' } }))); })),
+                  h('p', { className: 'atc-ops-small' }, t('stem.atctower.ops_contribution_scale', 'Each bar uses a 0–30 point scale. Dashed marks show that factor’s maximum weight.')),
+                  h('p', { className: 'atc-ops-scope', 'data-atctower-model-boundary': 'simplified-weighted-index' }, t('stem.atctower.ops_model_scope', 'Standalone teaching index. It does not configure the tower shift or predict real-airport safety.')),
+                  h('details', { className: 'atc-ops-notes' }, h('summary', null, t('stem.atctower.ops_about_model', 'About this model and investigation')),
+                    h('p', null, t('stem.atctower.model_boundary_copy', 'This standalone teaching index combines arrival frequency (30%), wind (25%), reduced-separation pressure (25%), descent rate (10%), and decision-window pressure (10%). It does not configure the tower shift or predict real-airport safety.')),
+                    h('p', null, t('stem.atctower.ops_live_model_instructions', 'The result is visible and updates live, so this is an observe–log–explain investigation, not a prediction quiz. Change one control at a time, log at least two different setups, then explain the evidence.'))))),
+              h('section', { className: 'atc-ops-card atc-ops-history', 'data-atctower-evidence-log': 'distinct-setups', 'aria-labelledby': 'atctower-ops-evidence-title' },
+                h('div', { className: 'atc-ops-heading' }, h('div', null, h('h4', { id: 'atctower-ops-evidence-title', ref: opsEvidenceRef, tabIndex: -1 }, t('stem.atctower.evidence_log_title', 'Evidence log')), h('p', { className: 'atc-ops-small' }, Math.min(distinctLogCount, 2) + '/2 ' + t('stem.atctower.distinct_setups', 'distinct setups'))),
+                  h('button', { disabled: !rawOpsLog.length && !explanationText, 'aria-label': t('stem.atctower.clear_evidence_log_a11y', 'Clear ATC evidence log and explanation'), onClick: function() { setOpsUndo({ log: rawOpsLog, explanation: explanationText, hypothesis: typeof iq.hypothesis === 'string' ? iq.hypothesis : '' }); setIQ({ log: [], explanation: '', hypothesis: '', understood: false }); setOpsPair(null); } }, t('stem.atctower.clear_evidence', 'Clear evidence'))),
+                opsUndo && !rawOpsLog.length && h('div', { className: 'atc-ops-undo', role: 'status' }, h('p', null, t('stem.atctower.ops_evidence_cleared', 'Evidence and explanation cleared.')), h('button', { ref: opsUndoRef, 'data-atctower-ops-undo': 'true', onClick: function() { if (rawOpsLog.length) return; setIQ(opsUndo); setOpsUndo(null); setOpsPair(null); if (opsEvidenceRef.current) opsEvidenceRef.current.focus(); } }, t('stem.atctower.ops_undo_clear', 'Undo clear'))),
+                rawOpsLog.length > opsLog.length && h('p', { className: 'atc-ops-scope' }, t('stem.atctower.ops_unavailable_records', 'Some saved setups have incomplete or unsupported values. Valid setups remain available for comparison.')),
+                opsLog.length ? h(React.Fragment, null,
+                  h('p', { className: 'atc-ops-small' }, t('stem.atctower.ops_history_hint', 'Recent setups appear below. Compare any two recorded setups using the selectors.')),
+                  h('ol', { className: 'atc-ops-history-list', 'aria-label': t('stem.atctower.logged_load_evidence', 'Logged ATC load evidence') }, opsLog.slice(-4).map(function(entry) { return h('li', { key: entry.number, 'data-atctower-ops-record': entry.number, 'data-current': entry.model.signature === currentSignature ? 'true' : 'false' },
+                    h('div', { className: 'atc-ops-record-heading' }, h('h5', null, setupName(entry)), h('span', null, bandLabels[entry.model.band])),
+                    h('strong', { className: 'atc-ops-record-score' }, entry.model.score.toFixed(1), h('small', null, ' / 100')),
+                    h('div', { className: 'atc-ops-record-track', 'aria-hidden': true }, h('span', { style: { width: entry.model.score + '%' } })),
+                    h('button', { 'data-atctower-ops-load': entry.number, 'aria-label': t('stem.atctower.ops_load_setup', 'Load into controls') + ': ' + setupName(entry), onClick: function() { loadSetup(entry); } }, t('stem.atctower.ops_load_setup', 'Load into controls'))); })))
+                  : h('p', { className: 'atc-ops-empty' }, t('stem.atctower.ops_empty_evidence', 'Your investigation starts with one recorded setup. Use “Log current setup” above to keep the first result.'))),
+              h('div', { className: 'atc-ops-grid atc-ops-review-grid' },
+                h('section', { className: 'atc-ops-card', 'data-atctower-ops-comparison': fairTestState, 'aria-labelledby': 'atctower-ops-comparison-title' },
+                  h('h4', { id: 'atctower-ops-comparison-title' }, t('stem.atctower.ops_compare_setups', 'Compare recorded setups')),
+                  comparison && h(React.Fragment, null,
+                    h('div', { className: 'atc-ops-selectors' }, selectSetup('first', t('stem.atctower.ops_setup_a', 'A · starting setup'), firstIndex, secondIndex), selectSetup('second', t('stem.atctower.ops_setup_b', 'B · comparison setup'), secondIndex, firstIndex)),
+                    h('div', { className: 'atc-ops-comparison-scores' }, comparisonEntries.map(function(entry, index) { return h('div', { key: index }, h('span', null, (index ? 'B · ' : 'A · ') + setupName(entry)), h('strong', null, entry.model.score.toFixed(1)), h('small', null, bandLabels[entry.model.band]), h('button', { 'data-atctower-ops-load-comparison': index ? 'B' : 'A', 'aria-label': t('stem.atctower.ops_load_setup', 'Load into controls') + ': ' + (index ? 'B · ' : 'A · ') + setupName(entry), onClick: function() { loadSetup(entry); } }, index ? t('stem.atctower.ops_load_b', 'Load B') : t('stem.atctower.ops_load_a', 'Load A'))); }),
+                      h('div', { className: 'atc-ops-delta', 'data-atctower-ops-delta': 'true' }, h('span', null, t('stem.atctower.ops_change_a_b', 'Change · A to B')), h('strong', null, (comparison.delta > 0 ? '+' : comparison.delta < 0 ? '−' : '') + Math.abs(comparison.delta).toFixed(1)), h('small', null, t('stem.atctower.ops_model_points', 'model points')))),
+                    h('table', { className: 'atc-ops-comparison-table' }, h('caption', null, t('stem.atctower.ops_settings_caption', 'Recorded settings · changed controls are marked')),
+                      h('thead', null, h('tr', null, h('th', { scope: 'col' }, t('stem.atctower.ops_control_column', 'Control')), h('th', { scope: 'col' }, 'A'), h('th', { scope: 'col' }, 'B'))),
+                      h('tbody', null, opsSliders.map(function(s) { var changed = changedControls.indexOf(s.k) !== -1; return h('tr', { key: s.k, 'data-atctower-ops-setting': s.k, 'data-changed': changed ? 'true' : 'false' }, h('th', { scope: 'row' }, s.label, changed && h('small', null, t('stem.atctower.ops_changed', 'Changed'))), h('td', null, settingText(s.k, comparison.first.values[s.k])), h('td', null, settingText(s.k, comparison.second.values[s.k]))); }))),
+                    comparison.sameBand && comparison.delta !== 0 && h('p', { className: 'atc-ops-scope', 'data-atctower-ops-same-band': 'true' }, t('stem.atctower.ops_same_band_evidence', 'The numeric score changed even though the workload band stayed the same. Use both values in your explanation.'))),
+                  h('p', { role: 'status', 'data-atctower-fair-test-check': fairTestState, className: 'atc-ops-fair-test', 'data-fair': fairTestState === 'one-variable' ? 'true' : 'false' }, fairTestText)),
+                h('section', { className: 'atc-ops-card atc-ops-explanation', 'aria-labelledby': 'atctower-ops-explanation-title' },
+                  h('h4', { id: 'atctower-ops-explanation-title' }, t('stem.atctower.ops_explain_evidence', 'Explain what the evidence shows')),
+                  h('label', null, h('span', null, t('stem.atctower.evidence_explanation_prompt', 'Evidence-based explanation from your logged setups')),
+                    h('textarea', { value: explanationText, disabled: !evidenceReady, 'aria-disabled': evidenceReady ? 'false' : 'true', 'aria-label': t('stem.atctower.evidence_explanation_input', 'Evidence-based ATC load explanation'), 'aria-describedby': 'atctower-ops-explanation-help', onChange: function(e) { setIQ({ explanation: e.target.value, hypothesis: '' }); }, rows: 5, placeholder: t('stem.atctower.ops_explanation_starter', 'Name the setups you compared. What changed, what stayed fixed, and how did the numeric score respond?') })),
+                  h('p', { id: 'atctower-ops-explanation-help', className: 'atc-ops-small' }, evidenceReady ? t('stem.atctower.explanation_ready_hint', 'Use the logs to name the control you changed and the direction of the modeled response.') : t('stem.atctower.explanation_locked_hint', 'Log two distinct setups before writing the explanation.')),
+                  h('button', { 'aria-expanded': iq.stuckRevealed ? 'true' : 'false', 'aria-controls': 'atctower-ops-investigation-prompts', onClick: function() { setIQ({ stuckRevealed: !iq.stuckRevealed }); } }, iq.stuckRevealed ? t('stem.atctower.hide_investigation_prompts', 'Hide investigation prompts') : t('stem.atctower.show_investigation_prompts', "I'm stuck — show investigation prompts")),
+                  iq.stuckRevealed && h('div', { id: 'atctower-ops-investigation-prompts', role: 'note', className: 'atc-ops-prompts', 'data-atctower-investigation-prompts': 'scaffold-only' },
+                    h('strong', null, t('stem.atctower.investigation_prompts', 'Investigation prompts — no answer key')),
+                    h('ul', null, h('li', null, t('stem.atctower.ops_selected_comparison_prompt', 'Which setups are you comparing, and which controls stayed fixed?')), h('li', null, t('stem.atctower.prompt_next_fair_test', 'Which one control could you change next for a clearer fair test?')), h('li', null, t('stem.atctower.prompt_same_band', 'Can two different setups fall in the same modeled load band? What evidence would show that?')))),
+                  h('p', { role: 'status', className: 'atc-ops-progress', 'data-atctower-inquiry-progress': explanationComplete ? 'complete' : evidenceReady ? 'explain' : 'collect-evidence' }, explanationComplete ? t('stem.atctower.inquiry_complete', 'Evidence explanation recorded. Investigation complete; no answer is scored for agreement.') : evidenceReady ? t('stem.atctower.inquiry_explain_next', 'Evidence collected. Explain the comparison to complete the investigation.') : t('stem.atctower.inquiry_collect_next', 'Collect two distinct setups. Completion depends on logging and explaining, not matching a hidden answer.')))));
           })(),
-          atcMenuPanel === 'lessons' && h('div', { style: { padding: '0 24px 18px' } },
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px' } },
+          atcMenuPanel === 'lessons' && h('div', { className: 'atc-lesson-index' },
+            h('h3', null, t('stem.atctower.explore_a_concept', 'Explore a concept')),
+            h('p', null, t('stem.atctower.lesson_index_intro', 'Change an example, compare the result, then put it into practice.')),
+            h('div', { className: 'atc-lesson-cards' },
               Object.keys(ATC_LESSONS).map(function(key) {
                 var les = ATC_LESSONS[key];
-                return h('button', { key: key, 'data-atctower-lesson': key, onClick: function() { updMulti({ view: 'lesson', selectedLesson: key }); }, style: { padding: '14px', borderRadius: '12px', border: '1px solid rgba(125, 211, 252, 0.35)', background: 'rgba(8, 47, 73, 0.58)', color: '#f8fafc', cursor: 'pointer', textAlign: 'left', minHeight: '106px' } },
-                  h('div', { style: { color: '#bae6fd', fontSize: '15px', fontWeight: 900, lineHeight: 1.25 } }, les.title),
-                  h('div', { style: { color: '#cbd5e1', fontSize: '12px', lineHeight: 1.4, marginTop: '8px' } }, __alloT('stem.atctower.' + key + '_formula_v2', les.formula))
+                return h('button', { key: key, className: 'atc-lesson-card', 'data-atctower-lesson': key, onClick: function() { updMulti({ view: 'lesson', selectedLesson: key }); } },
+                  atcVisualSymbol(lessonTopics[key].symbol, 'atc-skill-symbol'),
+                  h('strong', null, les.title),
+                  h('span', { className: 'atc-lesson-question' }, lessonTopics[key].question),
+                  h('span', { className: 'atc-lesson-card-action' }, t('stem.atctower.open_interactive_lesson', 'Open interactive lesson') + ' →')
                 );
               })
             )
@@ -3093,7 +3303,7 @@ h('div', { style: { padding: '12px 24px 18px', borderTop: '1px solid rgba(148, 1
       }
 
       // ═══ LESSON VIEW ═══
-      if (view === 'lesson' && d.selectedLesson && ATC_LESSONS[d.selectedLesson]) {
+      if (view === 'lesson' && hasSelectedLesson) {
         var les = ATC_LESSONS[d.selectedLesson];
         var aiKey = 'aiExplain_' + d.selectedLesson;
         var aiLevelKey = 'aiLevel_' + d.selectedLesson;
@@ -3143,57 +3353,97 @@ h('div', { style: { padding: '12px 24px 18px', borderTop: '1px solid rgba(148, 1
           });
         };
         var lessonPracticeId = { separation: 'separation_recovery', sequencing: 'arrival_sequence', vectors: 'first_landing', communication: 'first_landing' }[d.selectedLesson] || null;
-        return h('section', { ref: lessonViewRef, tabIndex: -1, 'aria-labelledby': 'atc-lesson-title', 'data-atctower-lesson-view': d.selectedLesson, style: { padding: '24px', maxWidth: '600px', margin: '0 auto' } },
-          h('button', { onClick: function() { updMulti({ view: 'menu', atcMenuPanel: 'lessons' }); }, style: { marginBottom: '16px', fontSize: '13px', color: '#4ade80', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, t('stem.atctower.back_to_tower', '← Back to Tower')),
-          h('div', { style: { background: 'linear-gradient(135deg, #021a0a, #0a2e1a)', borderRadius: '16px', padding: '24px', color: '#fff' } },
-            h('div', { style: { fontSize: '40px', textAlign: 'center', marginBottom: '8px' }, 'aria-hidden': true }, les.icon),
-            h('h2', { id: 'atc-lesson-title', style: { fontSize: '20px', fontWeight: 900, textAlign: 'center', marginBottom: '16px' } }, les.title),
-            h('p', { style: { fontSize: '14px', lineHeight: '1.7', color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: '16px' } }, __alloT('stem.atctower.' + (d.selectedLesson) + '_content_v2', les.content)),
-            h('div', { style: { background: '#0a1a0a', borderRadius: '12px', padding: '16px', border: '1px solid #1a3a2a' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', marginBottom: '6px' } }, t('stem.atctower.key_formula', 'Key Formula')),
-              h('div', { style: { fontSize: '14px', fontWeight: 800, color: '#4ade80', fontFamily: 'monospace', marginBottom: '8px' } }, __alloT('stem.atctower.' + d.selectedLesson + '_formula_v2', les.formula))
-            ),
-            les.source && h('a', { href: les.source, target: '_blank', rel: 'noopener noreferrer', style: { display: 'inline-block', marginTop: '12px', color: '#93c5fd', fontSize: '12px', textDecoration: 'underline' } }, les.sourceLabel),
-
-            // ── AI Tutor Panel ──
-            h('div', { style: { marginTop: '12px', padding: '12px', borderRadius: '12px', background: '#0a1a0a', border: '1px solid #6b21a8' }, role: 'region', 'aria-label': t('stem.atctower.ai_tutor', 'AI tutor') },
-              h('div', { style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '6px' } },
-                h('span', { style: { fontSize: '12px', fontWeight: 800, color: '#c084fc' } }, t('stem.atctower.explain_at_my_level', '✨ Explain at my level')),
-                h('div', { style: { marginLeft: 'auto', display: 'flex', gap: '4px' }, role: 'group', 'aria-label': t('stem.atctower.reading_level', 'Reading level') },
-                  LEVELS.map(function (L) {
-                    var active = aiLevel === L.id;
-                    return h('button', {
-                      key: L.id,
-                      onClick: function () {
-                        if (active) return;
-                        lessonRequestRef.current.generation += 1;
-                        lessonRequestRef.current.pending = null;
-                        var nextLevel = {}; nextLevel[aiLevelKey] = L.id; nextLevel[aiKey] = ''; nextLevel[aiLoadingKey] = false; nextLevel[aiErrorKey] = ''; nextLevel[aiTextLevelKey] = L.id;
-                        updMulti(nextLevel);
-                      },
-                      'aria-label': 'Reading level: ' + L.label + (active ? ' (selected)' : ''),
-                      'aria-pressed': active,
-                      style: { padding: '3px 8px', borderRadius: '4px', border: '1px solid ' + (active ? '#a855f7' : '#374151'), background: active ? '#9333ea' : 'transparent', color: active ? '#fff' : '#cbd5e1', fontSize: '10px', fontWeight: 700, cursor: 'pointer' }
-                    }, L.label);
-                  })
-                ),
-                h('button', {
-                  onClick: explain,
-                  disabled: aiLoading,
-                  'aria-label': 'Generate AI explanation at ' + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + ' level',
-                  style: { padding: '4px 10px', borderRadius: '6px', border: 'none', background: '#9333ea', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: aiLoading ? 'default' : 'pointer', opacity: aiLoading ? 0.5 : 1 }
-                }, aiLoading ? '⏳ Thinking...' : (aiText ? '🔄 Re-explain' : '🧠 Explain'))
-              ),
-              aiError && h('p', { style: { fontSize: '11px', color: '#fca5a5', margin: 0 }, role: 'alert' }, aiError),
-              aiText && h('p', { style: { fontSize: '12px', color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: '1.6', background: '#000', padding: '10px', borderRadius: '8px', margin: '6px 0 0 0', border: '1px solid #3730a3' } }, aiText),
-              !aiText && !aiLoading && !aiError && h('p', { style: { fontSize: '11px', fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)', margin: 0 } }, t('stem.atctower.click_explain_for_a_plain_language_bre', 'Click "Explain" for a plain-language breakdown of this ATC concept.'))
-            ),
-
-            h('button', { 'data-atctower-lesson-practice': d.selectedLesson, disabled: !!d.activeShift && !!lessonPracticeId, onClick: function() { if (lessonPracticeId) startPractice(lessonPracticeId); else updMulti({ view: 'menu', atcMenuPanel: 'practice' }); },
-              style: { width: '100%', marginTop: '16px', padding: '12px', borderRadius: '10px', border: 'none', background: '#15803d', color: '#fff', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }
-            }, lessonPracticeId ? t('stem.atctower.practice_this_concept', 'Practice this concept') : t('stem.atctower.browse_exercises', 'Browse practice exercises'))
-          )
-        );
+        var labKind = d.selectedLesson, lab = atcLessonExplorer(labKind, lessonExplorers[labKind]), labValues = lab.values;
+        var setLab = function(patch) { setLessonExplorers(function(previous) { var next = Object.assign({}, previous); next[labKind] = Object.assign({}, previous[labKind] || {}, patch); return next; }); };
+        var resetLab = function() { setLessonExplorers(function(previous) { var next = Object.assign({}, previous); next[labKind] = {}; return next; }); };
+        var headingText = function(value) { return String(Math.round(normalizeHeading(value))).padStart(3, '0') + '°'; };
+        var labRange = function(key, label, step, unit) {
+          var limits = ATC_EXPLORER_FIELDS[labKind][key], value = labValues[key], id = 'atc-explorer-' + labKind + '-' + key;
+          return h('label', { key: key, className: 'atc-explorer-range', htmlFor: id }, h('span', null, label, h('strong', { 'aria-hidden': true }, value.toLocaleString() + ' ' + unit)),
+            h('input', { id: id, 'data-atctower-explorer-input': key, type: 'range', min: limits[0], max: limits[1], step: step, value: value, 'aria-valuetext': value.toLocaleString() + ' ' + unit, onChange: function(e) { var patch = {}; patch[key] = Number(e.target.value); setLab(patch); } }));
+        };
+        var labRail = function(value, maximum, limit) { return h('div', { className: 'atc-explorer-rail', 'aria-hidden': true }, limit != null && h('span', { className: 'atc-explorer-limit', style: { left: limit / maximum * 100 + '%' } }), h('span', { className: 'atc-explorer-point', style: { left: value / maximum * 100 + '%' } })); };
+        var labMetric = function(key, label, value, note) { return h('div', { className: 'atc-explorer-metric', 'data-atctower-explorer-metric': key }, h('span', null, label), h('strong', null, value), note && h('small', null, note)); };
+        var labSummary = function(text, review) { return h('p', { className: 'atc-explorer-summary', 'data-atctower-explorer-summary': labKind, 'data-state': review ? 'review' : 'ready', role: 'status', 'aria-atomic': true }, text); };
+        var labCompass = function(weather) {
+          return h('svg', { className: 'atc-explorer-compass', viewBox: '0 0 240 240', 'aria-hidden': true, focusable: false },
+            h('circle', { className: 'atc-lab-ring', cx: 120, cy: 120, r: 94 }), h('circle', { className: 'atc-lab-ring', cx: 120, cy: 120, r: 60 }),
+            [['N',120,15],['E',228,124],['S',120,237],['W',12,124]].map(function(item) { return h('text', { key: item[0], x: item[1], y: item[2], textAnchor: 'middle' }, item[0]); }),
+            weather ? h('g', { transform: 'translate(120 120) rotate(' + labValues.runway + ')' }, h('rect', { className: 'atc-lab-runway', x: -6, y: -80, width: 12, height: 160, rx: 3 }), h('line', { className: 'atc-lab-centerline', x1: 0, y1: -75, x2: 0, y2: 75 })) : h('g', { className: 'atc-lab-current', transform: 'translate(120 120) rotate(' + labValues.current + ')' }, h('line', { x1: 0, y1: 0, x2: 0, y2: -76 }), h('circle', { cx: 0, cy: -76, r: 4 })),
+            (!weather || labValues.windSpeed > 0) && h('g', { className: 'atc-lab-target', 'data-atctower-explorer-vector': weather ? 'wind' : 'heading', transform: 'translate(120 120) rotate(' + (weather ? labValues.windFrom : labValues.target) + ')' },
+              h('line', { x1: 0, y1: weather ? -96 : 0, x2: 0, y2: weather ? -30 : -78 }), h('path', { d: weather ? 'M-5-39 0-30 5-39' : 'M-5-69 0-78 5-69' })));
+        };
+        var labContent;
+        if (labKind === 'separation') {
+          var limitText = t('stem.atctower.model_limit', 'Model limit');
+          labContent = h(React.Fragment, null,
+            h('div', { className: 'atc-explorer-display' },
+              h('div', { className: 'atc-explorer-metrics' },
+                h('div', null, labMetric('horizontal', t('stem.atctower.horizontal_gap', 'Horizontal gap'), labValues.horizontal.toFixed(1) + ' nm', limitText + ': ' + lab.minimum + ' nm'), labRail(labValues.horizontal, 10, lab.minimum)),
+                h('div', null, labMetric('vertical', t('stem.atctower.vertical_gap', 'Vertical gap'), labValues.vertical.toLocaleString() + ' ft', limitText + ': 1,000 ft'), labRail(labValues.vertical, 3000, 1000))),
+              labSummary(lab.conflict ? t('stem.atctower.explorer_spacing_conflict', 'Model conflict: both gaps are below their limits.') : t('stem.atctower.explorer_spacing_met', 'Model spacing maintained: at least one gap meets its limit.'), lab.conflict)),
+            h('div', { className: 'atc-explorer-controls' }, labRange('horizontal', t('stem.atctower.horizontal_gap', 'Horizontal gap'), .5, 'nm'), labRange('vertical', t('stem.atctower.vertical_gap', 'Vertical gap'), 500, 'ft')),
+            h('fieldset', null, h('legend', null, t('stem.atctower.aircraft_pair', 'Aircraft pair')), h('div', { className: 'atc-explorer-options' },
+              h('button', { 'aria-pressed': !labValues.heavy, onClick: function() { setLab({ heavy: false }); } }, t('stem.atctower.light_medium_pair', 'Light / medium')),
+              h('button', { 'aria-pressed': labValues.heavy, onClick: function() { setLab({ heavy: true }); } }, t('stem.atctower.heavy_super_pair', 'Includes heavy / super')))),
+            h('p', { className: 'atc-explorer-note' }, t('stem.atctower.explorer_spacing_try', 'Try a 4 nm gap, then change the aircraft pair. Keep the altitude gap fixed to see the effect of wake category. Dashed marks show the model limits.')));
+        } else if (labKind === 'sequencing') {
+          labContent = h(React.Fragment, null,
+            h('div', { className: 'atc-explorer-display' },
+              h('div', { className: 'atc-explorer-axis', 'aria-hidden': true }, h('span', null, '0'), h('span', null, t('stem.atctower.arrival_axis', 'Flight minutes from now')), h('span', null, lab.horizon)),
+              ['A','B'].map(function(letter) { var eta = letter === 'A' ? lab.etaA : lab.etaB; return h('div', { key: letter, className: 'atc-explorer-timeline-row', 'data-flight': letter },
+                h('div', null, h('span', null, letter === 'A' ? t('stem.atctower.aircraft_a', 'Aircraft A') : t('stem.atctower.aircraft_b', 'Aircraft B')), h('strong', { 'data-atctower-explorer-eta': letter }, eta.toFixed(1) + ' min')),
+                labRail(eta, lab.horizon), h('small', null, labValues['distance' + letter] + ' nm ÷ ' + labValues['speed' + letter] + ' kt × 60 = ' + eta.toFixed(1) + ' min')); }),
+              labSummary((lab.first === 'tie' ? t('stem.atctower.explorer_arrival_tie', 'Both estimates are equal.') : (lab.first === 'A' ? t('stem.atctower.aircraft_a', 'Aircraft A') : t('stem.atctower.aircraft_b', 'Aircraft B')) + ' ' + t('stem.atctower.arrives_first', 'arrives first.')) + ' ' + t('stem.atctower.arrival_gap', 'Arrival gap') + ': ' + lab.gap.toFixed(1) + ' min.')),
+            h('div', { className: 'atc-explorer-controls' }, labRange('distanceA', t('stem.atctower.aircraft_a_distance', 'A · distance'), 5, 'nm'), labRange('speedA', t('stem.atctower.aircraft_a_speed', 'A · groundspeed'), 10, 'kt'), labRange('distanceB', t('stem.atctower.aircraft_b_distance', 'B · distance'), 5, 'nm'), labRange('speedB', t('stem.atctower.aircraft_b_speed', 'B · groundspeed'), 10, 'kt')),
+            h('p', { className: 'atc-explorer-note' }, t('stem.atctower.explorer_arrival_try', 'Keep both distances fixed and change one speed. These estimates assume constant groundspeed along the remaining route.')));
+        } else if (labKind === 'vectors') {
+          labContent = h(React.Fragment, null,
+            h('div', { className: 'atc-explorer-display' }, labCompass(false),
+              h('div', { className: 'atc-explorer-legend' }, h('span', null, t('stem.atctower.current_heading_dashed', 'Dashed · current heading')), h('span', null, t('stem.atctower.target_heading_solid', 'Solid · instructed heading'))),
+              h('div', { className: 'atc-explorer-metrics' }, labMetric('turn', t('stem.atctower.shortest_turn', 'Shortest turn'), Math.abs(lab.turn) + '°'), labMetric('turnTime', t('stem.atctower.time_at_model_rate', 'At 3° per second'), lab.turnSeconds.toFixed(1) + ' s')),
+              labSummary(lab.turn === 0 ? t('stem.atctower.heading_already_met', 'Already on the instructed heading.') : Math.abs(lab.turn) === 180 ? t('stem.atctower.heading_equal_turn', 'Either direction is equally short for a 180° turn.') : lab.turn > 0 ? t('stem.atctower.heading_turn_right', 'Turn right (clockwise) for the shorter path.') : t('stem.atctower.heading_turn_left', 'Turn left (counterclockwise) for the shorter path.'))),
+            h('div', { className: 'atc-explorer-controls' }, labRange('current', t('stem.atctower.current_heading', 'Current heading'), 10, '°'), labRange('target', t('stem.atctower.instructed_heading', 'Instructed heading'), 10, '°')),
+            h('p', { className: 'atc-explorer-note' }, t('stem.atctower.explorer_heading_try', 'Try 350° to 010° across north. The time uses this simulator’s manual turn rate in flight seconds; approach guidance uses a different rate.')));
+        } else if (labKind === 'weather') {
+          labContent = h(React.Fragment, null,
+            h('div', { className: 'atc-explorer-display' }, labCompass(true),
+              h('div', { className: 'atc-explorer-legend' }, h('span', null, t('stem.atctower.runway_heading', 'Runway heading') + ' ' + headingText(labValues.runway)), h('span', null, t('stem.atctower.wind_from', 'Wind from') + ' ' + headingText(labValues.windFrom))),
+              h('div', { className: 'atc-explorer-metrics' }, labMetric('headwind', lab.headwind < 0 ? t('stem.atctower.tailwind_component', 'Tailwind component') : t('stem.atctower.headwind_component', 'Headwind component'), Math.abs(lab.headwind).toFixed(1) + ' kt'), labMetric('crosswind', t('stem.atctower.crosswind_component', 'Crosswind magnitude'), lab.crosswind.toFixed(1) + ' kt')),
+              labSummary(labValues.windSpeed === 0 ? t('stem.atctower.explorer_calm', 'Calm: both wind components are zero.') : t('stem.atctower.wind_arrow_note', 'The arrow points from the wind source toward the runway.'))),
+            h('div', { className: 'atc-explorer-controls' }, labRange('runway', t('stem.atctower.runway_heading', 'Runway heading'), 10, '°'), labRange('windFrom', t('stem.atctower.wind_from', 'Wind from'), 10, '°'), labRange('windSpeed', t('stem.atctower.wind_speed', 'Wind speed'), 1, 'kt')),
+            h('p', { className: 'atc-explorer-note' }, t('stem.atctower.explorer_wind_try', 'Rotate the wind through a quarter turn while keeping its speed fixed. Components describe the wind; this example does not set an aircraft operating limit.')));
+        } else {
+          var controllerLine = labValues.sample === 'heading' ? t('stem.atctower.readback_controller_heading', 'TRAIN101, turn right heading 090.') : labValues.sample === 'altitude' ? t('stem.atctower.readback_controller_altitude', 'TRAIN101, maintain 6,000 feet.') : t('stem.atctower.readback_controller_runway', 'TRAIN101, cleared approach runway 27.');
+          var pilotLine = labValues.sample === 'heading' ? controllerLine : labValues.sample === 'altitude' ? t('stem.atctower.readback_pilot_altitude', 'TRAIN110, maintain 6,000 feet.') : t('stem.atctower.readback_pilot_runway', 'TRAIN101, cleared approach runway 18.');
+          var readbackExplanation = lab.answer === 'match' ? t('stem.atctower.readback_match_explanation', 'The callsign, turn direction, and heading all match.') : lab.answer === 'callsign' ? t('stem.atctower.readback_callsign_explanation', 'The callsign changed from TRAIN101 to TRAIN110. The altitude matches; the aircraft identity needs correction.') : t('stem.atctower.readback_instruction_explanation', 'The runway changed from 27 to 18. The callsign matches; the runway needs correction.');
+          labContent = h(React.Fragment, null,
+            h('fieldset', null, h('legend', null, t('stem.atctower.choose_readback_example', 'Choose an example')), h('div', { className: 'atc-explorer-options' }, ['heading','altitude','runway'].map(function(sample) { return h('button', { key: sample, 'data-atctower-readback-sample': sample, 'aria-pressed': labValues.sample === sample, onClick: function() { setLab({ sample: sample, response: '' }); } }, sample === 'heading' ? t('stem.atctower.heading', 'Heading') : sample === 'altitude' ? t('stem.atctower.altitude', 'Altitude') : t('stem.atctower.runway', 'Runway')); }))),
+            h('div', { className: 'atc-explorer-messages' }, h('div', { className: 'atc-explorer-message' }, h('span', null, t('stem.atctower.controller_instruction', 'Controller instruction')), h('p', null, controllerLine)), h('div', { className: 'atc-explorer-message', 'data-highlight': !!labValues.response && lab.answer !== 'match' ? 'true' : 'false' }, h('span', null, t('stem.atctower.pilot_readback', 'Pilot readback')), h('p', null, pilotLine))),
+            h('fieldset', null, h('legend', null, t('stem.atctower.what_do_you_notice', 'What do you notice?')), h('div', { className: 'atc-explorer-options' }, ['match','callsign','instruction'].map(function(response) { return h('button', { key: response, 'data-atctower-readback-response': response, 'aria-pressed': labValues.response === response, onClick: function() { setLab({ response: response }); } }, response === 'match' ? t('stem.atctower.readback_matches', 'The details match') : response === 'callsign' ? t('stem.atctower.readback_callsign_differs', 'Callsign differs') : t('stem.atctower.readback_instruction_differs', 'Instruction differs')); }))),
+            labValues.response && h('div', { className: 'atc-explorer-feedback atc-explorer-summary', 'data-atctower-readback-feedback': lab.correct ? 'correct' : 'review', 'data-state': lab.correct ? 'ready' : 'review', role: 'status' }, h('strong', null, lab.correct ? t('stem.atctower.readback_check_correct', 'That’s the key detail.') : t('stem.atctower.readback_check_review', 'Compare the details again.')), readbackExplanation));
+        }
+        return h('section', { ref: lessonViewRef, tabIndex: -1, className: 'atc-tower atc-lesson-workspace', 'data-contrast': highContrast ? 'true' : 'false', 'aria-labelledby': 'atc-lesson-title', 'data-atctower-lesson-view': d.selectedLesson },
+          h('style', null, towerCss),
+          h('div', { className: 'atc-lesson-toolbar' }, h('button', { onClick: function() { updMulti({ view: 'menu', atcMenuPanel: 'lessons' }); } }, t('stem.atctower.back_to_tower', '← Back to Tower')), h('button', { 'aria-pressed': !!highContrast, onClick: function() { upd('highContrast', !highContrast); } }, t('stem.atctower.high_contrast', 'High contrast'))),
+          h('header', { className: 'atc-lesson-header' }, atcVisualSymbol(lessonTopics[labKind].symbol, 'atc-skill-symbol'), h('div', null, h('p', { className: 'atc-eyebrow' }, t('stem.atctower.interactive_lesson', 'Interactive lesson')), h('h2', { id: 'atc-lesson-title' }, les.title), h('p', null, lessonTopics[labKind].question))),
+          h('nav', { className: 'atc-lesson-nav', 'aria-label': t('stem.atctower.lesson_topics', 'Lesson topics') }, Object.keys(lessonTopics).map(function(key) { return h('button', { key: key, 'data-atctower-lesson-topic': key, 'aria-current': key === labKind ? 'page' : undefined, onClick: function() { if (key !== labKind) upd('selectedLesson', key); } }, lessonTopics[key].name); })),
+          h('div', { className: 'atc-lesson-grid' },
+            h('section', { className: 'atc-card atc-explorer', 'data-atctower-explorer': labKind, 'aria-labelledby': 'atc-explorer-title' },
+              h('div', { className: 'atc-explorer-heading' }, h('h3', { id: 'atc-explorer-title' }, t('stem.atctower.try_the_concept', 'Try the concept')), h('button', { 'data-atctower-explorer-reset': labKind, onClick: resetLab }, t('stem.atctower.reset_example', 'Reset example'))), labContent,
+              h('p', { className: 'atc-explorer-note atc-explorer-footer' }, t('stem.atctower.explorer_scope', 'Explore freely. This example does not change your tower shift.'))),
+            h('div', { className: 'atc-lesson-reading' },
+              h('section', { className: 'atc-card', 'aria-labelledby': 'atc-lesson-idea' }, h('h3', { id: 'atc-lesson-idea' }, t('stem.atctower.understand_the_idea', 'Understand the idea')),
+                h('p', null, __alloT('stem.atctower.' + d.selectedLesson + '_content_v2', les.content)),
+                h('div', { className: 'atc-lesson-formula' }, h('span', null, t('stem.atctower.key_formula', 'Key Formula')), h('strong', null, __alloT('stem.atctower.' + d.selectedLesson + '_formula_v2', les.formula))),
+                les.source && h('a', { className: 'atc-lesson-source', href: les.source, target: '_blank', rel: 'noopener noreferrer' }, les.sourceLabel),
+                h('button', { className: 'atc-primary atc-lesson-practice', 'data-atctower-lesson-practice': d.selectedLesson, disabled: !!d.activeShift && !!lessonPracticeId, onClick: function() { if (lessonPracticeId) startPractice(lessonPracticeId); else updMulti({ view: 'menu', atcMenuPanel: 'practice' }); } }, lessonPracticeId ? t('stem.atctower.practice_this_concept', 'Practice this concept') : t('stem.atctower.browse_exercises', 'Browse practice exercises'))),
+              h('section', { className: 'atc-card atc-lesson-tutor', role: 'region', 'aria-label': t('stem.atctower.ai_tutor', 'AI tutor') },
+                h('div', { className: 'atc-lesson-tutor-head' }, h('h3', null, t('stem.atctower.lesson_tutor_title', 'Explain at my level'))),
+                h('div', { className: 'atc-lesson-levels', role: 'group', 'aria-label': t('stem.atctower.reading_level', 'Reading level') }, LEVELS.map(function(L) { var active = aiLevel === L.id; return h('button', { key: L.id, onClick: function() { if (active) return; lessonRequestRef.current.generation += 1; lessonRequestRef.current.pending = null; var nextLevel = {}; nextLevel[aiLevelKey] = L.id; nextLevel[aiKey] = ''; nextLevel[aiLoadingKey] = false; nextLevel[aiErrorKey] = ''; nextLevel[aiTextLevelKey] = L.id; updMulti(nextLevel); }, 'aria-label': 'Reading level: ' + L.label + (active ? ' (selected)' : ''), 'aria-pressed': active }, L.label); })),
+                h('button', { onClick: explain, disabled: aiLoading, 'aria-label': 'Generate AI explanation at ' + ((LEVELS.find(function(L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + ' level' }, aiLoading ? t('stem.atctower.tutor_thinking', 'Thinking…') : aiText ? t('stem.atctower.tutor_reexplain', 'Re-explain') : t('stem.atctower.tutor_explain', 'Explain')),
+                aiError && h('p', { role: 'alert' }, aiError), aiText && h('p', { className: 'atc-lesson-ai-answer' }, aiText),
+                !aiText && !aiLoading && !aiError && h('p', null, t('stem.atctower.click_explain_for_a_plain_language_bre', 'Click "Explain" for a plain-language breakdown of this ATC concept.'))))));
       }
 
       // ═══ SHIFT DEBRIEF ═══
@@ -3282,6 +3532,66 @@ h('details', { className: 'atc-card', style: { marginTop: 12 }, open: true, 'dat
         var readback = atcAircraftReadback(selected);
         var draftAircraft = commandDraft && aircraft.find(function(ac) { return ac.id === commandDraft.aircraftId; });
         var preview = commandDraft && atcCommandPreview(draftAircraft, commandDraft.kind, commandDraft.value, airport);
+        var currentPath = showFlightPath && selected ? atcFlightPath(selected, flightHorizon) : null;
+        var proposedPath = showFlightPath && preview ? atcFlightPath(draftAircraft, flightHorizon, commandDraft) : null;
+        var requestedFlightTime = flightTime == null ? flightHorizon : Math.max(0, Math.min(flightHorizon, flightTime));
+        var currentMoment = atcFlightMoment(currentPath, requestedFlightTime), proposedMoment = atcFlightMoment(proposedPath, requestedFlightTime);
+        var flightTimeText = '+' + requestedFlightTime + ' ' + t('stem.atctower.flight_seconds','flight seconds');
+        var flightTimeAccessible = flightTimeText;
+        if (currentMoment && currentMoment.point.seconds < requestedFlightTime) flightTimeAccessible += ' · ' + t('stem.atctower.flight_path_current','Following active instructions') + ': +' + currentMoment.point.seconds + ' ' + t('stem.atctower.flight_seconds','flight seconds');
+        if (proposedMoment && proposedMoment.point.seconds < requestedFlightTime) flightTimeAccessible += ' · ' + t('stem.atctower.flight_path_draft','If this draft is sent') + ': +' + proposedMoment.point.seconds + ' ' + t('stem.atctower.flight_seconds','flight seconds');
+        var pathSummary = function(path, proposed) {
+          if (!path) return null;
+          var moment = proposed ? proposedMoment : currentMoment;
+          if (!moment) return null;
+          var endpoint = moment.point;
+          var caption = moment.ended ? path.reason === 'threshold' ? t('stem.atctower.flight_path_threshold', 'Reaches the runway threshold; landing depends on runway availability.') : path.reason === 'airspace' ? t('stem.atctower.flight_path_airspace', 'Reaches the airspace boundary.') : path.reason === 'fuel' ? t('stem.atctower.flight_path_fuel', 'Reaches fuel exhaustion in this model.') : t('stem.atctower.flight_path_at_horizon', 'Projected values at the end of the look-ahead.') : endpoint.seconds === 0 ? t('stem.atctower.flight_time_start','Starting values before future movement.') : t('stem.atctower.flight_time_values','Projected values at this moment.');
+          return h('article', { className: 'atc-flight-projection', 'data-atctower-projection': proposed ? 'draft' : 'current', 'data-atctower-path-end': path.reason, 'data-atctower-path-seconds': endpoint.seconds, 'data-atctower-path-requested': requestedFlightTime },
+            h('h5', null, proposed ? t('stem.atctower.flight_path_draft', 'If this draft is sent') : t('stem.atctower.flight_path_current', 'Following active instructions')),
+            h('p', null, '+' + endpoint.seconds + ' ' + t('stem.atctower.flight_seconds', 'flight seconds') + ' · ' + caption),
+            h('dl', { className: 'atc-flight-metrics' }, [
+              ['heading',t('stem.atctower.heading','Heading'),endpoint.heading,String(Math.round(endpoint.heading) % 360).padStart(3,'0') + '°'],
+              ['altitude',t('stem.atctower.altitude','Altitude'),endpoint.altitude,Math.round(endpoint.altitude).toLocaleString() + ' ft'],
+              ['speed',t('stem.atctower.speed','Speed'),endpoint.speed,Math.round(endpoint.speed) + ' kt'],
+              ['distance',t('stem.atctower.flight_path_distance','Distance flown'),endpoint.distanceNm,endpoint.distanceNm.toFixed(1) + ' nm']
+            ].map(function(metric) { return h('div', { key: metric[0] }, h('dt',null,metric[1]),h('dd',{'data-atctower-path-value':metric[0],'data-value':metric[2]},metric[3])); })));
+        };
+        var pathDetail = function() {
+          if (!selected || !currentPath) return null;
+          var history = (selected.trackHistory || []).concat([{x:selected.x,y:selected.y}]);
+          var points = history.concat(currentPath.points,proposedPath ? proposedPath.points : []);
+          var minX = Math.min.apply(null,points.map(function(p){return p.x;})),maxX = Math.max.apply(null,points.map(function(p){return p.x;}));
+          var minY = Math.min.apply(null,points.map(function(p){return p.y;})),maxY = Math.max.apply(null,points.map(function(p){return p.y;}));
+          var width = Math.max(12,maxX-minX,(maxY-minY)*1.5)*1.3,height = width/1.5;
+          var left = (minX+maxX-width)/2,top = (minY+maxY-height)/2,fontSize = width/22,radius = width/70;
+          var line = function(list){return list.map(function(p){return p.x+','+p.y;}).join(' ');};
+          var pathElements = function(path,proposed) {
+            if (!path) return null;
+            var className = proposed ? 'atc-path-draft' : 'atc-path-current';
+            return h('g',null,h('polyline',{points:line(path.points),className:className,vectorEffect:'non-scaling-stroke'}),
+              path.points.filter(function(p){return p.seconds&&(p.seconds%30===0||p===path.end);}).map(function(p){return proposed ? h('rect',{key:p.seconds,x:p.x-radius,y:p.y-radius,width:radius*2,height:radius*2,className:className+' atc-path-marker',vectorEffect:'non-scaling-stroke'}) : h('circle',{key:p.seconds,cx:p.x,cy:p.y,r:radius,className:className+' atc-path-marker',vectorEffect:'non-scaling-stroke'});}),
+              h('text',{x:Math.max(left+radius,Math.min(left+width-fontSize*4,path.end.x+radius*2)),y:Math.max(top+fontSize,Math.min(top+height-fontSize/2,path.end.y+(proposed?fontSize*1.5:-fontSize/2))),fontSize:fontSize},'+'+path.elapsedSeconds+'s'));
+          };
+          var focusAircraft = function(moment,proposed) {
+            if (!moment) return null;
+            var point = moment.point, className = proposed ? 'atc-flight-focus-draft' : 'atc-flight-focus-current';
+            return h('g', { className: className, 'data-atctower-path-focus':proposed?'draft':'current', 'data-seconds':point.seconds, 'data-x':point.x, 'data-y':point.y, 'data-heading':point.heading, transform:'translate('+point.x+' '+point.y+')' },
+              proposed ? h('rect',{x:-radius*1.8,y:-radius*1.8,width:radius*3.6,height:radius*3.6,className:'atc-flight-focus-ring',vectorEffect:'non-scaling-stroke'}) : h('circle',{cx:0,cy:0,r:radius*1.8,className:'atc-flight-focus-ring',vectorEffect:'non-scaling-stroke'}),
+              point.seconds > 0 && h('g',{transform:'rotate('+point.heading+')'},h('polygon',{points:'0,'+(-radius*1.6)+' '+radius+','+radius+' 0,0 '+(-radius)+','+radius,className:'atc-flight-focus-aircraft',vectorEffect:'non-scaling-stroke'})));
+          };
+          return h('div',{'data-atctower-path-detail':'true'},h('svg',{className:'atc-flight-detail',viewBox:left+' '+top+' '+width+' '+height,'aria-hidden':true,focusable:false},
+            [1,2,3].map(function(i){return h('line',{key:'v'+i,x1:left+width*i/4,x2:left+width*i/4,y1:top,y2:top+height,className:'atc-flight-grid',vectorEffect:'non-scaling-stroke'});}),
+            [1,2].map(function(i){return h('line',{key:'h'+i,x1:left,x2:left+width,y1:top+height*i/3,y2:top+height*i/3,className:'atc-flight-grid',vectorEffect:'non-scaling-stroke'});}),
+            h('text',{x:left+radius*2,y:top+fontSize*1.3,fontSize:fontSize},'N ↑'),
+            h('text',{x:left+width-radius*2,y:top+fontSize*1.3,fontSize:fontSize*0.8,textAnchor:'end',className:'atc-flight-scale-text'},'↔ '+(width/ATC_UNITS_PER_NM).toFixed(1)+' nm'),
+            h('polyline',{points:line(history),className:'atc-path-recorded',vectorEffect:'non-scaling-stroke'}),pathElements(currentPath,false),pathElements(proposedPath,true),
+            h('g',{transform:'translate('+selected.x+' '+selected.y+') rotate('+selected.heading+')'},h('polygon',{points:'0,'+(-radius*2)+' '+radius+','+radius+' 0,0 '+(-radius)+','+radius,className:'atc-path-aircraft'})),focusAircraft(currentMoment,false),focusAircraft(proposedMoment,true)),
+            h('span',{className:'sr-only','data-atctower-path-scale':width/ATC_UNITS_PER_NM},t('stem.atctower.flight_detail_width','Detail width')+': '+(width/ATC_UNITS_PER_NM).toFixed(1)+' nm · '+t('stem.atctower.flight_detail_north','north is up')),
+            h('div',{className:'atc-flight-timeline'},h('label',{htmlFor:'atc-flight-time'},t('stem.atctower.flight_time_label','Preview time')),
+              h('input',{id:'atc-flight-time',type:'range',min:0,max:flightHorizon,step:5,value:requestedFlightTime,'data-atctower-flight-time':'true','aria-valuetext':flightTimeAccessible,onChange:function(e){setFlightTime(Number(e.target.value));}}),
+              h('span',{className:'atc-flight-time-value'},'+'+requestedFlightTime+'s'),
+              h('button',{'data-atctower-flight-time-reset':'true','aria-disabled':requestedFlightTime===flightHorizon,title:t('stem.atctower.flight_time_reset','Back to look-ahead end'),'aria-label':t('stem.atctower.flight_time_reset','Back to look-ahead end'),onClick:function(){if(requestedFlightTime!==flightHorizon)setFlightTime(null);}},t('stem.atctower.flight_time_end','End'))));
+        };
         var feedback = commandFeedback && (commandFeedback.aircraftId == null || (selected && commandFeedback.aircraftId === selected.id)) ? commandFeedback : null;
         var challenge = live.mathChallenge;
         var trafficStatus = live.gameOver ? 'closed' : (atcTrafficFrozen(live, document.hidden) || commandDraft) ? 'paused' : 'live';
@@ -3307,6 +3617,36 @@ h('details', { className: 'atc-card', style: { marginTop: 12 }, open: true, 'dat
           if (value == null) return row.automatic ? t('stem.atctower.guided_target', 'Guided') : t('stem.atctower.maintain_current', 'Maintain');
           var shown = row.id === 'heading' ? String(Math.round(value) % 360).padStart(3, '0') + '°' : Math.round(value).toLocaleString() + (row.id === 'altitude' ? ' ft' : ' kt');
           return target && row.automatic ? t('stem.atctower.automatic_target', 'Auto') + ' · ' + shown : shown;
+        };
+        var instruments = atcFlightInstruments(selected, !!(live.paused || live.showHelp || commandDraft || challenge));
+        var instrumentGraphic = function(row) {
+          if (row.id === 'heading') {
+            var position = function(heading, radius) { return [56 + Math.sin(toRad(heading)) * radius, 56 - Math.cos(toRad(heading)) * radius]; };
+            var start = position(row.current, 32), end = row.target == null ? null : position(row.target, 32);
+            return h('svg', { className: 'atc-instrument-graphic', viewBox: '0 0 112 112', 'aria-hidden': true, focusable: false },
+              h('circle', { cx: 56, cy: 56, r: 40, className: 'atc-instrument-scale' }),
+              [['N',56,13],['E',104,60],['S',56,108],['W',8,60]].map(function(item) { return h('text', { key: item[0], x: item[1], y: item[2], textAnchor: 'middle' }, item[0]); }),
+              end && Math.abs(row.delta) > 1e-7 && h('path', { d: 'M ' + start.join(' ') + ' A 32 32 0 0 ' + (row.delta > 0 ? 1 : 0) + ' ' + end.join(' '), className: 'atc-instrument-target atc-instrument-arc', fill: 'none', strokeDasharray: '3 3' }),
+              row.target != null && h('g', { transform: 'rotate(' + row.target + ' 56 56)', className: 'atc-instrument-target' }, h('line', { x1: 56, y1: 56, x2: 56, y2: 19, strokeDasharray: '3 3' }), h('polygon', { points: '56,13 61,19 56,25 51,19' })),
+              h('g', { transform: 'rotate(' + row.current + ' 56 56)', className: 'atc-instrument-current' }, h('line', { x1: 56, y1: 56, x2: 56, y2: 25, strokeWidth: 3 }), h('circle', { cx: 56, cy: 23, r: 4 })), h('circle', { cx: 56, cy: 56, r: 3, fill: 'currentColor' }));
+          }
+          var x = function(value) { return 12 + value * 136; }, unit = row.id === 'altitude' ? ' ft' : ' kt';
+          return h('svg', { className: 'atc-instrument-graphic', viewBox: '0 0 160 76', 'aria-hidden': true, focusable: false },
+            h('line', { x1: 12, y1: 34, x2: 148, y2: 34, className: 'atc-instrument-scale' }),
+            [12,80,148].map(function(mark) { return h('line', { key: mark, x1: mark, y1: 29, x2: mark, y2: 39, className: 'atc-instrument-scale' }); }),
+            row.targetPosition != null && h('g', { className: 'atc-instrument-target', transform: 'translate(' + x(row.targetPosition) + ' 0)' }, h('line', { x1: 0, y1: 19, x2: 0, y2: 49, strokeDasharray: '3 3' }), h('polygon', { points: '0,12 5,18 0,24 -5,18' })),
+            h('g', { className: 'atc-instrument-current' }, h('line', { x1: x(row.currentPosition), y1: 34, x2: x(row.currentPosition), y2: 50, strokeWidth: 2 }), h('circle', { cx: x(row.currentPosition), cy: 50, r: 4 })));
+        };
+        var instrumentCard = function(row) {
+          var status = ({ left:t('stem.atctower.instrument_left','Turning left'), right:t('stem.atctower.instrument_right','Turning right'), climbing:t('stem.atctower.instrument_climbing','Climbing'), descending:t('stem.atctower.instrument_descending','Descending'), accelerating:t('stem.atctower.instrument_accelerating','Accelerating'), slowing:t('stem.atctower.instrument_slowing','Slowing'), maintain:t('stem.atctower.instrument_maintain','Maintaining'), guided:t('stem.atctower.guided_target','Guided'), 'on-target':t('stem.atctower.instrument_at_target','At instruction') })[row.direction];
+          var remaining = row.remaining > 1e-7 ? (row.remaining < 1 ? '<1' : row.remaining < 10 ? row.remaining.toFixed(1).replace(/\.0$/, '') : Math.round(row.remaining).toLocaleString()) + (row.id === 'heading' ? '°' : row.id === 'altitude' ? ' ft' : ' kt') : '';
+          return h('section', { key:row.id, className:'atc-instrument', 'data-atctower-instrument':row.id, 'data-atctower-readback-row':row.id, 'data-direction':row.direction, 'data-current':row.current, 'data-target':row.target == null ? '' : row.target },
+            h('h4', null, row.id === 'heading' ? t('stem.atctower.heading','Heading') : row.id === 'altitude' ? t('stem.atctower.altitude','Altitude') : t('stem.atctower.speed','Speed')),
+            instrumentGraphic(row),
+            h('dl', null, h('div', { className:'atc-instrument-current-value' }, h('dt',null,t('stem.atctower.current_value','Current')), h('dd', { 'data-atctower-readback-current':row.id },readbackValue(row,false))),
+              h('div', { className:'atc-instrument-target-value' }, h('dt',null,t('stem.atctower.active_instruction','Instruction')), h('dd', { 'data-atctower-readback-target':row.id },readbackValue(row,true)))),
+            h('p', { className:'atc-instrument-status' }, status, remaining && h('span',null,remaining + ' ' + t('stem.atctower.instrument_to_target','to instruction'))),
+            row.id !== 'heading' && h('p', { className:'atc-instrument-range' }, t('stem.atctower.instrument_range','Scale') + ' ' + row.minimum.toLocaleString() + '–' + row.maximum.toLocaleString() + (row.id === 'altitude' ? ' ft' : ' kt')));
         };
         var previewCard = function() {
           if (!commandDraft) return null;
@@ -3444,6 +3784,7 @@ h('p', { id: 'atc-radar-guide', className: 'atc-muted', style: { marginTop: 8 } 
 h('div', { className: 'atc-mobile-nav', 'data-atctower-radar-nav': 'true' }, h('span', null, selected ? selected.callsign : t('stem.atctower.no_aircraft_selected', 'No aircraft selected')),
   h('button', { 'data-atctower-jump-controls': 'true', disabled: !selected || !!commandDraft || !!challenge, onClick: function() { jumpTo('controls'); } }, t('stem.atctower.aircraft_controls', 'Aircraft controls') + ' ↓')),
 h('p', { className: 'atc-muted' }, t('stem.atctower.wind', 'Wind') + ': ' + (live.wind ? String(live.wind.dir).padStart(3, '0') + '° / ' + live.wind.speed + ' kt' : '—') + ' · ' + t('stem.atctower.conflict_time', 'Conflict time') + ': ' + Math.round(live.conflicts || 0) + ' s')),
+h('div', { className: 'atc-flight-column' },
 h('div',
 { className: 'atc-control-panel', style: { display: 'grid', gap: 12, minWidth: 0 } },
 challenge && h('section', { className: 'atc-card', 'data-atctower-math-challenge': challenge.type, 'aria-labelledby': 'atc-math-title' },
@@ -3471,11 +3812,7 @@ h('section', { className: 'atc-card', 'data-atctower-aircraft-controls': 'true',
                 selected && h('p', { className: 'atc-muted' }, stateName(selected) + ' · ' + t('stem.atctower.heading', 'Heading') + ' ' + String(Math.round(selected.heading) % 360).padStart(3, '0') + '° · ' + t('stem.atctower.fuel', 'Fuel') + ' ' + Math.max(0, selected.fuel).toFixed(1) + ' min'),
                 readback && h('div', { 'data-atctower-readback': readback.mode },
                   h('p', { className: 'atc-guidance-mode' }, readback.mode === 'approach' ? t('stem.atctower.mode_approach_v2', 'Approach guidance · targets update as traffic moves') : readback.mode === 'hold' ? t('stem.atctower.mode_hold_v2', 'Teaching hold · heading updates as traffic moves') : readback.mode === 'goAround' ? t('stem.atctower.mode_go_around', 'Go-around · following recovery instructions') : t('stem.atctower.mode_manual', 'Inbound · following your instructions')),
-                  h('div', { className: 'atc-readback' }, h('div', { className: 'atc-readback-head', 'aria-hidden': true }, h('span', null, t('stem.atctower.flight_value', 'Flight value')), h('span', null, t('stem.atctower.current_value', 'Current')), h('span', null, t('stem.atctower.active_instruction', 'Instruction'))),
-                    h('dl', null, readback.rows.map(function(row) { return h('div', { key: row.id, 'data-atctower-readback-row': row.id },
-                      h('dt', null, row.id === 'heading' ? t('stem.atctower.heading', 'Heading') : row.id === 'altitude' ? t('stem.atctower.altitude', 'Altitude') : t('stem.atctower.speed', 'Speed')),
-                      h('dd', { 'data-atctower-readback-current': row.id }, h('span', { className: 'sr-only' }, t('stem.atctower.current_value', 'Current') + ': '), readbackValue(row, false)),
-                      h('dd', { 'data-atctower-readback-target': row.id }, h('span', { className: 'sr-only' }, t('stem.atctower.active_instruction', 'Instruction') + ': '), readbackValue(row, true))); })))),
+                  instruments && h('div', { className: 'atc-instruments' }, instruments.rows.map(instrumentCard))),
                 !tutorialRef.current.dismissed && !live.gameOver && !(exerciseProgress && exerciseProgress.complete) && h('div', { className: 'atc-local-coaching', 'data-atctower-coaching': 'true' },
                   h('h4', null, t('stem.atctower.next_action', 'Next action')), h('p', null, coachingText),
                   h('button', { onClick: function() { tutorialRef.current.dismissed = true; refreshTower(); } }, t('stem.atctower.hide_coaching', 'Hide coaching'))),
@@ -3498,6 +3835,20 @@ h('section', { className: 'atc-card', 'data-atctower-aircraft-controls': 'true',
                   previewCard(),
                   commandDraft.error && h('p', { id: 'atc-command-error', role: 'alert' }, commandDraft.error),
                   h('div', { className: 'atc-toolbar' }, h('button', { type: 'submit', className: 'atc-primary' }, t('stem.atctower.send_instruction', 'Send instruction')), h('button', { type: 'button', onClick: closeEntry }, t('stem.atctower.cancel', 'Cancel')))))),
+h('section', { className: 'atc-flight-lab', 'data-atctower-flight-lab': 'true', 'aria-labelledby': 'atc-flight-lab-title' },
+  h('div', { className: 'atc-flight-heading' }, h('h4', { id: 'atc-flight-lab-title' }, t('stem.atctower.flight_path_lab','Inspect flight motion')), h('div', { className: 'atc-flight-actions' },
+    h('button', { 'data-atctower-step': '10', disabled: !atcCanStepTraffic(live,document.hidden) || !!commandDraft, onClick: function() { if (atcCanStepTraffic(gameRef.current,document.hidden)) pendingStepRef.current = gameRef.current; } }, t('stem.atctower.flight_step_10','Step 10 flight seconds')),
+    h('button', { 'data-atctower-flight-path-toggle': 'true', 'aria-pressed': showFlightPath, onClick: function() { setShowFlightPath(!showFlightPath); } }, showFlightPath ? t('stem.atctower.flight_path_hide','Hide projection') : t('stem.atctower.flight_path_show','Show projection')))),
+  showFlightPath && h(React.Fragment,null,
+    h('div', { className: 'atc-flight-horizon', role: 'group', 'aria-label': t('stem.atctower.flight_path_horizon','Flight path look-ahead') }, h('span',null,t('stem.atctower.flight_path_lookahead','Look ahead · flight seconds')), [10,30,60,120].map(function(seconds) { return h('button', { key: seconds, 'data-atctower-flight-horizon':seconds,'aria-pressed':flightHorizon===seconds,onClick:function(){setFlightHorizon(seconds);setFlightTime(null);} },seconds + ' s'); })),
+    h('div', { className: 'atc-flight-legend', 'aria-label':t('stem.atctower.flight_path_legend','Flight path legend') }, [t('stem.atctower.flight_path_recorded','Recorded trail'),t('stem.atctower.flight_path_active','Active projection'),t('stem.atctower.flight_path_draft_legend','Draft projection')].map(function(label,index){return index===2&&!commandDraft?null:h('span',{key:index},h('i',{'aria-hidden':true}),label);})),
+    h('div',{className:'atc-flight-readouts','data-draft':commandDraft?'true':'false','data-empty':selected?'false':'true'},pathDetail(),
+      selected ? h('div',{className:'atc-flight-projections','data-draft':proposedPath?'true':'false'},pathSummary(currentPath,false),pathSummary(proposedPath,true)) : h('p',{className:'atc-flight-empty'},t('stem.atctower.flight_path_select','Select an aircraft to inspect its next turn, speed change, or approach.'))),
+    commandDraft && !proposedPath && h('p',{className:'atc-flight-note'},t('stem.atctower.flight_path_invalid_draft','Enter a valid heading or speed to compare the draft path.')),
+    h('details',{className:'atc-flight-exploration','data-atctower-flight-exploration':'true'},h('summary',null,t('stem.atctower.flight_time_explore','Explore and compare')),
+      h('p',{className:'atc-flight-note'},t('stem.atctower.flight_time_guide','Move Preview time to inspect a projected turn or speed change. Compare the active and draft paths at the same requested time. To observe actual motion, pause traffic, choose 10 seconds, then use Step 10 flight seconds.')),
+      h('p',{className:'atc-flight-note'},t('stem.atctower.flight_path_scope','Projection follows this aircraft’s current guidance. Other traffic, runway occupancy, and new instructions can change the outcome.')),
+      h('p',{className:'atc-flight-note'},t('stem.atctower.flight_step_hint','While paused, step advances all aircraft, fuel, and runway timing, then keeps traffic paused. Recorded trails retain the last two flight minutes.')))))),
 h('div', { className: 'atc-operations-panel', 'data-atctower-operations': 'true' },
 h('section', { className: 'atc-card', 'data-atctower-separation-watch': 'true', 'aria-labelledby': 'atc-watch-title' },
                 h('h3', { id: 'atc-watch-title', tabIndex: -1 }, t('stem.atctower.separation_watch', 'Separation watch')),

@@ -1,0 +1,149 @@
+{
+  "snapshot": {
+    "version": 1,
+    "settings": {
+      "mode": "explore",
+      "region": "neighborhood",
+      "beta": 0.9,
+      "compareRest": false,
+      "dust": true,
+      "fov": 64,
+      "exposure": 1,
+      "quality": "high"
+    },
+    "state": {
+      "position": [
+        6.73258751546719,
+        2.7454985975874995,
+        25.541291740103556
+      ],
+      "yaw": 0.2618995875860213,
+      "pitch": -0.49659423354569576,
+      "distanceLy": 31.56416830318879,
+      "universeYears": 0,
+      "travelerYears": 0
+    },
+    "targetId": "blue-nebula"
+  },
+  "status": {
+    "state": "ready",
+    "message": "Saved view restored. Travel is paused."
+  },
+  "telemetry": {
+    "distanceLy": 31.56416830318879,
+    "universeYears": 0,
+    "travelerYears": 0,
+    "position": [
+      6.73258751546719,
+      2.7454985975874995,
+      25.541291740103556
+    ],
+    "yaw": 0.2618995875860213,
+    "pitch": -0.49659423354569576,
+    "running": false,
+    "dust": true,
+    "target": {
+      "id": "blue-nebula",
+      "name": "Blue emission region",
+      "distanceLy": 9.9604548962766,
+      "coincident": false,
+      "guide": {
+        "screen": [
+          0.5000000000000001,
+          0.5
+        ],
+        "inView": true,
+        "angleDeg": 7.111936473907612e-15,
+        "behind": false,
+        "sector": "lower-right",
+        "arrowDeg": 26.56505117707799,
+        "edge": [
+          0.9,
+          0.8200000000000001
+        ]
+      },
+      "screen": [
+        0.5000000000000001,
+        0.5
+      ],
+      "inView": true,
+      "doppler": 1,
+      "restAngleDeg": 31.872077976413387,
+      "apparentAngleDeg": 31.872077976413372
+    },
+    "navigation": {
+      "active": false,
+      "targetId": null,
+      "completed": false,
+      "alreadyWithin": false,
+      "remainingLy": 0,
+      "arrivalRadiusLy": 0,
+      "estimatedSeconds": 0,
+      "progress": 0
+    },
+    "flyby": {
+      "active": false,
+      "completed": false,
+      "id": null,
+      "name": null,
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "durationSeconds": 0,
+      "autoLook": false,
+      "phase": null,
+      "rate": 1,
+      "pauseAtHighlights": false,
+      "remainingPlaybackSeconds": null
+    },
+    "flybyDetour": {
+      "active": false
+    },
+    "distanceGlide": {
+      "active": false,
+      "completed": false,
+      "targetId": null,
+      "direction": null,
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "durationSeconds": 3,
+      "startRangeLy": 0,
+      "endRangeLy": 0
+    },
+    "viewpointGlide": {
+      "active": false,
+      "completed": false,
+      "targetId": null,
+      "direction": null,
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "durationSeconds": 3,
+      "rangeLy": 0,
+      "distanceLy": 0
+    },
+    "orbit": {
+      "active": false,
+      "targetId": null
+    },
+    "motion": {
+      "smoothTravel": false,
+      "paceLyPerSecond": 0,
+      "targetLyPerSecond": 2,
+      "kind": "free"
+    },
+    "framing": {
+      "canLeft": true,
+      "canCenter": true,
+      "canRight": true,
+      "canUndo": false,
+      "placement": null
+    },
+    "trail": [
+      [
+        6.73258751546719,
+        2.7454985975874995,
+        25.541291740103556
+      ]
+    ],
+    "cameraMoves": 0
+  }
+}

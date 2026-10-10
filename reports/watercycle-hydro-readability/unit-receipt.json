@@ -1,0 +1,73 @@
+{
+  "sourceSha256": "6252fd6fd2ccfc1159a9df831ff6857dd1d09ca36e3179e279a8726a44974a4f",
+  "files": [
+    "tests/watercycle_hydro_quest.test.js"
+  ],
+  "configFile": "hydro-vitest.config.mjs",
+  "configSha256": "20fc040106cdc9e1437347acea84b15d1bdd2c97af5c394563d133e96f38c1db",
+  "finalConfigSha256": "20fc040106cdc9e1437347acea84b15d1bdd2c97af5c394563d133e96f38c1db",
+  "runnerFile": "run-tests-node.cjs",
+  "runnerSha256": "8de3e3e3e2fefff95d497c7763ea8d1f3cd598118fc79678075f3a11d30f8f84",
+  "finalRunnerSha256": "8de3e3e3e2fefff95d497c7763ea8d1f3cd598118fc79678075f3a11d30f8f84",
+  "environment": "node",
+  "pool": "forks",
+  "startedAt": "2026-10-06T23:34:54.366Z",
+  "completedAt": "2026-10-06T23:37:19.035Z",
+  "exitCode": 0,
+  "runtimeBefore": [
+    {
+      "file": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "6252fd6fd2ccfc1159a9df831ff6857dd1d09ca36e3179e279a8726a44974a4f"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "6252fd6fd2ccfc1159a9df831ff6857dd1d09ca36e3179e279a8726a44974a4f"
+    }
+  ],
+  "runtimeAfter": [
+    {
+      "file": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "6252fd6fd2ccfc1159a9df831ff6857dd1d09ca36e3179e279a8726a44974a4f"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "6252fd6fd2ccfc1159a9df831ff6857dd1d09ca36e3179e279a8726a44974a4f"
+    }
+  ],
+  "testsBefore": [
+    {
+      "file": "tests/watercycle_hydro_quest.test.js",
+      "sha256": "02cf12e4297cb75f32dd324651c8538bae7ddd19be5fdae4258545e1f4d02e51"
+    }
+  ],
+  "testsAfter": [
+    {
+      "file": "tests/watercycle_hydro_quest.test.js",
+      "sha256": "02cf12e4297cb75f32dd324651c8538bae7ddd19be5fdae4258545e1f4d02e51"
+    }
+  ],
+  "supportBefore": [
+    {
+      "file": "ui_strings.js",
+      "sha256": "be85509311461c168d85955430a31b6c342169b494848b3998393284980df4ab"
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "sha256": "be85509311461c168d85955430a31b6c342169b494848b3998393284980df4ab"
+    }
+  ],
+  "supportAfter": [
+    {
+      "file": "ui_strings.js",
+      "sha256": "be85509311461c168d85955430a31b6c342169b494848b3998393284980df4ab"
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "sha256": "be85509311461c168d85955430a31b6c342169b494848b3998393284980df4ab"
+    }
+  ],
+  "successful": true,
+  "passed": 4,
+  "failed": 0,
+  "skipped": 0
+}

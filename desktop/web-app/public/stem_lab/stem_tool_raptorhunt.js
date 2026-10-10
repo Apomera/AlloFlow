@@ -908,7 +908,7 @@
     '@media(max-width:760px){[data-raptor-flight-stage="true"]{height:58vh;min-height:390px;}.rh-flight-controls{display:grid;grid-template-columns:1fr;align-items:stretch;gap:8px;max-height:42vh;overflow-y:auto;overscroll-behavior:contain;}.rh-flight-controls-group{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%;gap:7px;}.rh-flight-controls-run{grid-template-columns:repeat(3,minmax(0,1fr));}.rh-flight-controls-flight{grid-template-columns:repeat(3,minmax(0,1fr));}.rh-flight-control-label{grid-column:1/-1;}.rh-flight-btn{width:100%;min-width:0;padding-left:6px;padding-right:6px;}.rh-flight-mission-hud{top:104px;left:auto;right:8px;bottom:auto;max-width:calc(50% - 12px);}.rh-flight-wind{max-width:calc(47% - 8px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.rh-flight-altitude-gauge{right:7px;top:58%;}.rh-flight-lock-meters{left:8px;transform:none;top:184px;width:min(190px,calc(50% - 16px));}.rh-flight-altitude-track{height:96px;}.rh-flight-coach{left:8px;right:8px;bottom:8px;width:auto;}}@media(max-width:400px){.rh-flight-controls-flight{grid-template-columns:repeat(2,minmax(0,1fr));}}',
     '@media(max-width:760px){.rh-flight-telemetry-strip{top:8px;left:8px;right:8px;transform:none;max-width:none;width:auto;}.rh-flight-metric{min-width:0;flex:1 1 0;padding:6px 4px;overflow:hidden;}.rh-flight-metric-value{font-size:11px;}.rh-flight-metric:nth-child(6){display:none;}.rh-flight-settings{width:100%;}.rh-flight-settings>summary{width:100%;}.rh-flight-settings-panel{position:static;width:100%;margin-top:8px;}.rh-active-flight-bar{align-items:flex-start;}}',
     '@media(prefers-reduced-motion:reduce){.rh-flight-reticle{transition:none;}.rh-flight-reticle[data-target-state="ready"]{transform:translate(-50%,-50%);}}@media(max-width:760px){.rh-flight-species-profile{grid-template-columns:1fr;gap:9px;}.rh-flight-species-profile-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}@media(max-width:430px){[data-raptor-flight-stage="true"]{height:54vh;min-height:350px;}.rh-flight-btn{font-size:11px;padding:8px 4px;}.rh-flight-target-cue{top:54px;font-size:10px;}.rh-flight-lock-meters{top:176px;width:min(160px,calc(50% - 14px));}.rh-flight-mission-hud{top:91px;font-size:10px;max-width:calc(48% - 10px);}.rh-flight-wind{font-size:8px;letter-spacing:0;}.rh-flight-altitude-gauge{right:5px;}.rh-flight-altitude-label{font-size:7px;}.rh-flight-altitude-track{height:84px;width:7px;}.rh-flight-altitude-value{font-size:8px;min-width:30px;}.rh-flight-coach-copy{font-size:11px;}.rh-flight-coach-actions .rh-flight-btn{width:auto;min-width:68px;}.rh-flight-species-profile-grid{gap:5px;}.rh-flight-species-profile-stat{padding:6px;}.rh-flight-debrief{grid-template-columns:repeat(2,minmax(0,1fr));}}',
-    '@media(max-width:760px){[data-raptor-flight-stage]{min-height:460px;}[data-raptor-flight-stage] .rh-flight-target-cue{top:64px;left:max(144px,calc(47% + 10px));right:8px;max-width:none;transform:none;box-sizing:border-box;padding:5px 7px;font-size:10px;line-height:1.3;overflow-wrap:anywhere;}[data-raptor-flight-stage] .rh-flight-mission-hud{top:104px;}}',
+    '@media(max-width:760px){[data-raptor-flight-stage]{min-height:460px;}[data-raptor-flight-stage] .rh-flight-target-cue{top:64px;left:max(144px,calc(47% + 10px));right:8px;max-width:none;transform:none;box-sizing:border-box;padding:5px 7px;font-size:10px;line-height:1.3;overflow-wrap:anywhere;}[data-raptor-flight-stage] .rh-flight-mission-hud{top:max(104px,var(--rh-cue-bottom,104px));}}',
     '@media(max-width:430px){.rh-flight-mission-hud[data-hunt-step] .rh-flight-mission-route-label{font-size:6px;letter-spacing:0;}}',
     '@media(max-width:430px){.rh-flight-metric{min-width:0}.rh-flight-metric:nth-child(4),.rh-flight-metric:nth-child(6){display:none;}.rh-flight-metric-value{font-size:12px;}}',
     '@media(forced-colors:active){.rh-flight-telemetry-strip,.rh-flight-metric{border-color:CanvasText;background:Canvas;color:CanvasText;}.rh-flight-metric-label,.rh-flight-metric-value,.rh-flight-energy-label{color:CanvasText;}.rh-flight-vertical-speed{color:CanvasText!important;}.rh-flight-energy-fill{background:Highlight!important;}}',
@@ -1288,6 +1288,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     if (reducedMotion) return 1;
     var progress = Math.max(0, Math.min(1, (ageMs-900)/200));
     return 1-progress*progress*(3-2*progress);
+  }
+  function raptorCarryGrip(ageMs, reducedMotion, paused) {
+    if (reducedMotion || paused) return 1;
+    var progress = Math.max(0, Math.min(1, ageMs/160));
+    return 1-Math.pow(1-progress,3);
   }
   // Each pooled contact ring fades independently; water ripples last a little longer.
   function raptorContactPulseOpacity(age, water, reducedMotion) {
@@ -13891,6 +13896,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // Curved bough panels retain depth while sharing each forest type's instanced draw.
         var vegetationWindState={x:0,z:0},vegetationWind={value:new THREE.Vector3()};
         var vegetationShaderCounts={surface:0,shadow:0};
+        var cameraFoliage={subject:{value:new THREE.Vector3()},enabled:{value:0}};
         function updateVegetationWind(state,speed,direction,reduced,dt) {
           if(reduced){state.x=state.z=0;return state;}
           var strength=Number.isFinite(speed)?Math.max(0,Math.min(18,speed))/18:0;
@@ -13899,6 +13905,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           state.x+=(Math.sin(bearing)*strength-state.x)*alpha;
           state.z+=(-Math.cos(bearing)*strength-state.z)*alpha;
           return state;
+        }
+        function softenCameraFoliage(material,state,reuseAerialWorld) {
+          if(material.isMeshDepthMaterial)return;
+          var previousCompile=material.onBeforeCompile,previousKey=material.customProgramCacheKey;
+          material.onBeforeCompile=function(shader,renderer) {
+            previousCompile.call(this,shader,renderer);
+            shader.uniforms.rhFoliageSubject=state.subject;
+            shader.uniforms.rhFoliageClearance=state.enabled;
+            var worldVarying=reuseAerialWorld?'vRhAerialWorld':'vRhFoliageWorld';
+            if(!reuseAerialWorld){
+            shader.vertexShader='varying vec3 vRhFoliageWorld;\n'+shader.vertexShader;
+            shader.vertexShader=shader.vertexShader.replace('#include <project_vertex>',[
+              '#include <project_vertex>',
+              'vec4 rhFoliagePoint=vec4(transformed,1.0);',
+              '#ifdef USE_INSTANCING',
+              'rhFoliagePoint=instanceMatrix*rhFoliagePoint;',
+              '#endif',
+              'vRhFoliageWorld=(modelMatrix*rhFoliagePoint).xyz;'
+            ].join('\n'));
+            }
+            shader.fragmentShader=(reuseAerialWorld?'':'varying vec3 vRhFoliageWorld;\n')+'uniform vec3 rhFoliageSubject; uniform float rhFoliageClearance;\n'+shader.fragmentShader;
+            shader.fragmentShader=shader.fragmentShader.replace('#include <alphatest_fragment>',[
+              // A small view corridor keeps the bird and carried prey readable inside
+              // canopy cards. World-space bounds preserve the surrounding habitat.
+              'vec3 rhViewSegment=rhFoliageSubject-cameraPosition;',
+              'float rhViewLength=length(rhViewSegment);',
+              'if(rhFoliageClearance>0.5&&rhViewLength>=1.0&&rhViewLength<=18.0){',
+              'float rhAlong=dot('+worldVarying+'-cameraPosition,rhViewSegment)/rhViewLength;',
+              'float rhT=clamp(rhAlong/rhViewLength,0.0,1.0);',
+              'float rhRadius=mix(2.5,4.2,rhT);',
+              'float rhRadial=length('+worldVarying+'-cameraPosition-rhViewSegment*(rhAlong/rhViewLength));',
+              'float rhClear=(1.0-smoothstep(rhRadius*0.60,rhRadius,rhRadial))*smoothstep(-2.0,0.0,rhAlong)*(1.0-smoothstep(rhViewLength+0.75,rhViewLength+2.5,rhAlong));',
+              // A fixed Bayer pattern feathers opaque alpha-tested leaves without
+              // transparent sorting or a time-varying noise effect.
+              'vec2 rhPixel=mod(floor(gl_FragCoord.xy),4.0),rhLo=mod(rhPixel,2.0),rhHi=floor(rhPixel/2.0);',
+              'float rhThreshold=(4.0*(2.0*rhLo.x+3.0*rhLo.y-4.0*rhLo.x*rhLo.y)+(2.0*rhHi.x+3.0*rhHi.y-4.0*rhHi.x*rhHi.y)+0.5)/16.0;',
+              'if(rhClear>rhThreshold)discard;',
+              '}',
+              '#include <alphatest_fragment>'
+            ].join('\n'));
+            material.userData.cameraFoliageCompiled=true;
+          };
+          material.customProgramCacheKey=function(){return previousKey.call(this)+'-camera-corridor-v1-'+(reuseAerialWorld?'aerial':'local');};
+          material.userData.cameraFoliage=state;
         }
         function applyVegetationWind(material,kind) {
           material.onBeforeCompile=function(shader) {
@@ -13944,7 +13994,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             material.userData.foliageTransmission = foliageTransmission;
           }
           material.customProgramCacheKey=function(){return 'raptor-vegetation-wind-v2-'+kind+'-'+species.biome;};
-          if (!material.isMeshDepthMaterial) applyLandscapeAtmosphere(material);
+          if (!material.isMeshDepthMaterial) {
+            applyLandscapeAtmosphere(material);
+            if(kind==='bough'||kind==='shrub')softenCameraFoliage(material,cameraFoliage,true);
+          }
         }
         function canopyTexture(broadleaf) {
           var canvas=document.createElement('canvas');canvas.width=canvas.height=512;
@@ -15415,11 +15468,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // owls and ospreys can adopt two forward/two back. This is one visual
         // arrangement, not an outer-toe articulation or grip-force simulation.
         function createRaptorFootGeometry(side,owl,opposed) {
-          var positions=[],colors=[],surface=[],indices=[];
+          var positions=[],colors=[],surface=[],indices=[],gripFactors=[];
           var skin=new THREE.Color(owl?0xaaa08a:0xb28c43).convertSRGBToLinear();
           var legColor=new THREE.Color(owl?0x887254:0xb69753).convertSRGBToLinear();
           var clawColor=new THREE.Color(0x302c29).convertSRGBToLinear();
-          function tube(controls,controlRadii,color,kind) {
+          function tube(controls,controlRadii,color,kind,gripStart,gripEnd) {
             var base=positions.length/3,segments=graphicsQuality==='low'?8:12,subdivisions=graphicsQuality==='low'?3:4;
             var points=[],radii=[],right=new THREE.Vector3(),up=new THREE.Vector3(),direction=new THREE.Vector3();
             // Interpolate the authored path once. Both flight and standing poses
@@ -15445,11 +15498,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 var angle=j/segments*Math.PI*2,co=Math.cos(angle),si=Math.sin(angle),radius=radii[i];
                 positions.push(point[0]+radius*(right.x*co+up.x*si),point[1]+radius*(right.y*co+up.y*si),point[2]+radius*(right.z*co+up.z*si));
                 var shade=0.96+si*0.04;colors.push(color.r*shade,color.g*shade,color.b*shade);
-                surface.push(i/(points.length-1),si,kind);
+                var along=i/(points.length-1);
+                surface.push(along,si,kind);
+                gripFactors.push(gripStart===undefined?1:gripStart+(gripEnd-gripStart)*along*along*(3-2*along));
                 if(i<points.length-1){var v=base+i*segments+j,n=base+i*segments+(j+1)%segments;indices.push(v,v+segments,n,n,v+segments,n+segments);}
               }
             }
-            [0,points.length-1].forEach(function(end){var center=positions.length/3,p=points[end];positions.push(p[0],p[1],p[2]);colors.push(color.r,color.g,color.b);surface.push(end/(points.length-1),0,kind);
+            [0,points.length-1].forEach(function(end){var center=positions.length/3,p=points[end];positions.push(p[0],p[1],p[2]);colors.push(color.r,color.g,color.b);surface.push(end/(points.length-1),0,kind);gripFactors.push(gripStart===undefined?1:end===0?gripStart:gripEnd);
               for(var j=0;j<segments;j++){var v=base+end*segments+j,n=base+end*segments+(j+1)%segments;if(end===0)indices.push(center,v,n);else indices.push(center,n,v);}
             });
           }
@@ -15458,8 +15513,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var lengths=opposed?[0.12,0.14,0.12,0.13]:[0.13,0.17,0.13,0.11];
           angles.forEach(function(angle,index){
             var dx=Math.sin(angle),dz=Math.cos(angle),length=lengths[index];
-            tube([[0,-0.316,0.12],[dx*length*0.30,-0.332,0.12+dz*length*0.30],[dx*length*0.72,-0.344,0.12+dz*length*0.72],[dx*length,-0.344,0.12+dz*length]],[0.018,0.020,0.015,0.011],skin,owl?-1:1);
-            tube([[dx*length,-0.344,0.12+dz*length],[dx*(length+0.026),-0.330,0.12+dz*(length+0.026)],[dx*(length+0.05),-0.346,0.12+dz*(length+0.05)],[dx*(length+0.058),-0.362,0.12+dz*(length+0.058)]],[0.011,0.010,0.005,0.001],clawColor,2);
+            tube([[0,-0.316,0.12],[dx*length*0.30,-0.332,0.12+dz*length*0.30],[dx*length*0.72,-0.344,0.12+dz*length*0.72],[dx*length,-0.344,0.12+dz*length]],[0.018,0.020,0.015,0.011],skin,owl?-1:1,1,0.62);
+            tube([[dx*length,-0.344,0.12+dz*length],[dx*(length+0.026),-0.330,0.12+dz*(length+0.026)],[dx*(length+0.05),-0.346,0.12+dz*(length+0.05)],[dx*(length+0.058),-0.362,0.12+dz*(length+0.058)]],[0.011,0.010,0.005,0.001],clawColor,2,0.62,0.58);
           });
           // Mirror the finished surface and its winding together, including the
           // cross sections, so the left and right feet have identical curvature.
@@ -15468,7 +15523,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           for(var i=0;i<positions.length;i+=3)tucked.push(positions[i]*0.8,-0.13+(positions[i+1]+0.18)*0.48,-0.10+(positions[i+2]-0.10)*0.45);
           var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(tucked,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.setAttribute('rhFootSurface',new THREE.Float32BufferAttribute(surface,3));geometry.setIndex(indices);geometry.computeVertexNormals();
           var standing=geometry.clone();standing.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));standing.computeVertexNormals();
-          geometry.morphAttributes.position=[standing.attributes.position];geometry.morphAttributes.normal=[standing.attributes.normal];geometry.morphAttributes.position[0].name='extended-feet';standing.dispose();
+          // Gather the distal toes and hooked claws around the pad. The legs,
+          // toe roots and every vertex height retain the original support pose.
+          var gripped=[];
+          for(var i=0;i<positions.length;i+=3){var factor=gripFactors[i/3];gripped.push(positions[i]*factor,positions[i+1],factor===1?positions[i+2]:0.12+(positions[i+2]-0.12)*factor);}
+          var gripping=new THREE.BufferGeometry();gripping.setIndex(geometry.index);gripping.setAttribute('position',new THREE.Float32BufferAttribute(gripped,3));gripping.computeVertexNormals();
+          geometry.morphAttributes.position=[standing.attributes.position,gripping.attributes.position];geometry.morphAttributes.normal=[standing.attributes.normal,gripping.attributes.normal];
+          geometry.morphAttributes.position[0].name='extended-feet';geometry.morphAttributes.position[1].name='gripping-feet';standing.dispose();gripping.dispose();
           geometry.userData.toeCount=4;geometry.userData.forwardToes=opposed?2:3;geometry.userData.rearToes=opposed?2:1;return geometry;
         }
         var talonGroup = new THREE.Group();talonGroup.name='raptor-feet';
@@ -15501,8 +15562,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var footContactVector=new THREE.Vector3();
         function raptorFootSurfaceClearance() {
           var min=Infinity,support=activePerch?activePerch.y:terrainHeightAt(raptor.x,raptor.z);
-          raptorFeet.forEach(function(foot){foot.updateWorldMatrix(true,false);var p=foot.geometry.attributes.position,q=foot.geometry.morphAttributes.position[0],amount=foot.morphTargetInfluences[0];
-            for(var i=0;i<p.count;i++){footContactVector.set(p.getX(i)*(1-amount)+q.getX(i)*amount,p.getY(i)*(1-amount)+q.getY(i)*amount,p.getZ(i)*(1-amount)+q.getZ(i)*amount).applyMatrix4(foot.matrixWorld);min=Math.min(min,footContactVector.y-support);}
+          raptorFeet.forEach(function(foot){foot.updateWorldMatrix(true,false);var p=foot.geometry.attributes.position,q=foot.geometry.morphAttributes.position[0],g=foot.geometry.morphAttributes.position[1],open=foot.morphTargetInfluences[0],grip=foot.morphTargetInfluences[1],tucked=1-open-grip;
+            for(var i=0;i<p.count;i++){footContactVector.set(p.getX(i)*tucked+q.getX(i)*open+g.getX(i)*grip,p.getY(i)*tucked+q.getY(i)*open+g.getY(i)*grip,p.getZ(i)*tucked+q.getZ(i)*open+g.getZ(i)*grip).applyMatrix4(foot.matrixWorld);min=Math.min(min,footContactVector.y-support);}
           });return min;
         }
         raptorGroup.add(talonGroup);
@@ -15884,65 +15945,97 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           strikeContactOpacityAttribute.needsUpdate = true;
         }
 
-        // One terrain-conforming draw grounds all land prey. Instances are
-        // updated in place; submerged/aerial prey do not receive false pads.
-        var PREY_CONTACT_CAPACITY = 12;
-        var preyContactGeometry = new THREE.CircleGeometry(1, 20);
-        var preyContactMaterial = new THREE.MeshBasicMaterial({
-          color: 0x07111d,
-          transparent: true,
-          opacity: 0.34,
-          side: THREE.DoubleSide,
-          depthWrite: false,
-          polygonOffset: true,
-          polygonOffsetFactor: -1,
-          polygonOffsetUnits: -1
-        });
-        var preyContactMesh = new THREE.InstancedMesh(
-          preyContactGeometry,
-          preyContactMaterial,
-          PREY_CONTACT_CAPACITY
-        );
-        preyContactMesh.name = 'raptor-prey-contact-pool';
-        preyContactMesh.frustumCulled = false;
-        if (preyContactMesh.instanceMatrix.setUsage && THREE.DynamicDrawUsage) {
-          preyContactMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+        function createPreyContactGeometry(capacity) {
+          // Small sampled patches share one draw and retain their buffers for the hunt.
+          var positions=new Float32Array(capacity*81*3),uv=new Float32Array(capacity*81*2);
+          var opacity=new Float32Array(capacity*81),indices=new Uint16Array(capacity*384);
+          for(var slot=0;slot<capacity;slot++){
+            for(var row=0;row<9;row++)for(var column=0;column<9;column++){
+              var vertex=slot*81+row*9+column;
+              uv[vertex*2]=column/8;uv[vertex*2+1]=row/8;
+            }
+            for(var y=0;y<8;y++)for(var x=0;x<8;x++){
+              var a=slot*81+y*9+x,b=a+1,c=a+9,d=c+1,index=slot*384+(y*8+x)*6;
+              indices[index]=a;indices[index+1]=c;indices[index+2]=b;
+              indices[index+3]=b;indices[index+4]=c;indices[index+5]=d;
+            }
+          }
+          var geometry=new THREE.BufferGeometry();
+          geometry.setAttribute('position',new THREE.BufferAttribute(positions,3).setUsage(THREE.DynamicDrawUsage));
+          geometry.setAttribute('uv',new THREE.BufferAttribute(uv,2));
+          geometry.setAttribute('preyContactOpacity',new THREE.BufferAttribute(opacity,1).setUsage(THREE.DynamicDrawUsage));
+          geometry.setIndex(new THREE.BufferAttribute(indices,1));geometry.setDrawRange(0,0);return geometry;
         }
+        function preyContactProfile(profile,size,height,kind,spread) {
+          var scale=Math.max(0.75,size),h=Math.max(0,height)/scale;
+          var diffusion=Math.min(1,h/4),growth=1+diffusion*0.70;
+          var wingSpread=kind==='bird'?Math.max(0,Math.min(1,spread)):0;
+          profile.width=scale*((kind==='snake'?0.34:0.55)+wingSpread*0.7)*growth;
+          profile.length=scale*(kind==='snake'?1.1:0.85)*growth;
+          profile.opacity=Math.pow(Math.max(0,1-h/12),2)/(1+h*0.28);
+          profile.diffusion=diffusion;return profile;
+        }
+        function writePreyContactPatch(geometry,slot,x,z,heading,profile,heightAt) {
+          var positions=geometry.attributes.position,uv=geometry.attributes.uv;
+          var opacity=geometry.attributes.preyContactOpacity,c=Math.cos(heading),s=Math.sin(heading);
+          for(var i=slot*81;i<(slot+1)*81;i++){
+            var across=(uv.getX(i)*2-1)*profile.width,along=(uv.getY(i)*2-1)*profile.length;
+            var wx=x+c*across+s*along,wz=z-s*across+c*along;
+            positions.setXYZ(i,wx,heightAt(wx,wz)+0.035,wz);opacity.setX(i,profile.opacity);
+          }
+        }
+        function finishPreyContactPatches(geometry,count) {
+          geometry.setDrawRange(0,count*384);
+          if(!count)return;
+          geometry.attributes.position.updateRange.offset=0;geometry.attributes.position.updateRange.count=count*81*3;
+          geometry.attributes.preyContactOpacity.updateRange.offset=0;geometry.attributes.preyContactOpacity.updateRange.count=count*81;
+          geometry.attributes.position.needsUpdate=true;geometry.attributes.preyContactOpacity.needsUpdate=true;
+        }
+        function softenPreyContactMaterial(material,light) {
+          material.onBeforeCompile=function(shader){
+            shader.uniforms.preyContactLight=light;
+            shader.vertexShader='attribute float preyContactOpacity; varying float vPreyContactOpacity; varying vec2 vPreyContactUV;\n'+shader.vertexShader;
+            shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvPreyContactOpacity=preyContactOpacity;vPreyContactUV=uv*2.0-1.0;');
+            shader.fragmentShader='uniform float preyContactLight; varying float vPreyContactOpacity; varying vec2 vPreyContactUV;\n'+shader.fragmentShader;
+            shader.fragmentShader=shader.fragmentShader.replace('vec4 diffuseColor = vec4( diffuse, opacity );',[
+              'vec4 diffuseColor = vec4( diffuse, opacity );',
+              'float contactFalloff=1.0-smoothstep(0.04,1.0,dot(vPreyContactUV,vPreyContactUV));',
+              'diffuseColor.a*=contactFalloff*contactFalloff*vPreyContactOpacity*preyContactLight;'
+            ].join('\n'));
+            material.userData.softContactCompiled=true;
+          };
+          material.customProgramCacheKey=function(){return 'raptor-soft-prey-contact-v1';};
+        }
+        var PREY_CONTACT_CAPACITY = 12;
+        var preyContactGeometry = createPreyContactGeometry(PREY_CONTACT_CAPACITY);
+        var preyContactMaterial = new THREE.MeshBasicMaterial({
+          color: new THREE.Color(0x263448).convertSRGBToLinear(),
+          transparent:true,opacity:0.42,side:THREE.DoubleSide,depthWrite:false,
+          polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1
+        });
+        var preyContactLight={value:1};
+        softenPreyContactMaterial(preyContactMaterial,preyContactLight);
+        var preyContactMesh = new THREE.Mesh(preyContactGeometry,preyContactMaterial);
+        preyContactMesh.name = 'raptor-prey-contact-pool';
+        preyContactMesh.frustumCulled=false;preyContactMesh.visible=false;
         scene.add(preyContactMesh);
-        var preyContactDummy = new THREE.Object3D();
-        var preyContactCount = 0;
+        var preyContactCount=0,preyContactShape={width:1,length:1,opacity:1,diffusion:0};
         function updatePreyContacts() {
-          preyContactCount = 0;
-          for (var preyContactIndex = 0;
-               preyContactIndex < preyMeshes.length && preyContactCount < PREY_CONTACT_CAPACITY;
-               preyContactIndex++) {
-            var contactPrey = preyMeshes[preyContactIndex];
-            if (!contactPrey || contactPrey.surfaceMode !== 'terrain') continue;
-            var contactX = contactPrey.mesh.position.x;
-            var contactZ = contactPrey.mesh.position.z;
-            var contactHeading = Math.atan2(contactPrey.vx, -contactPrey.vz);
-            var contactY = sampleTerrainContactFrame(contactX, contactZ, contactHeading) + 0.018;
-            var visualSize = Math.max(0.75, contactPrey.data.sizeM * 9 / 12);
-            var heightFade = 1 / (1 + Math.max(0, contactPrey.flightHeight) * 0.09);
-            preyContactDummy.position.set(contactX, contactY, contactZ);
-            preyContactDummy.quaternion.copy(terrainContactQuaternion);
-            preyContactDummy.scale.set(
-              visualSize * 1.4 * heightFade,
-              visualSize * 0.82 * heightFade,
-              1
-            );
-            preyContactDummy.updateMatrix();
-            preyContactMesh.setMatrixAt(preyContactCount, preyContactDummy.matrix);
+          preyContactCount=0;
+          for(var preyContactIndex=0;preyContactIndex<preyMeshes.length&&preyContactCount<PREY_CONTACT_CAPACITY;preyContactIndex++){
+            var contactPrey=preyMeshes[preyContactIndex];
+            if(!contactPrey||contactPrey.surfaceMode!=='terrain')continue;
+            var contactX=contactPrey.mesh.position.x,contactZ=contactPrey.mesh.position.z;
+            var contactHeight=Math.max(0,contactPrey.mesh.position.y-terrainHeightAt(contactX,contactZ)-contactPrey.groundClearance)+Math.max(0,contactPrey.visual.position.y);
+            var contactHeading=contactPrey.animation.pose.heading;
+            if(contactHeading===null)contactHeading=Math.atan2(contactPrey.vx,contactPrey.vz);
+            preyContactProfile(preyContactShape,contactPrey.visualSize,contactHeight,contactPrey.animation.kind,contactPrey.animation.pose.spread);
+            if(preyContactShape.opacity<0.003)continue;
+            writePreyContactPatch(preyContactGeometry,preyContactCount,contactX,contactZ,contactHeading,preyContactShape,terrainHeightAt);
             preyContactCount++;
           }
-          for (var hiddenContact = preyContactCount; hiddenContact < PREY_CONTACT_CAPACITY; hiddenContact++) {
-            preyContactDummy.position.set(0, -10000, 0);
-            preyContactDummy.scale.setScalar(0.0001);
-            preyContactDummy.updateMatrix();
-            preyContactMesh.setMatrixAt(hiddenContact, preyContactDummy.matrix);
-          }
-          preyContactMesh.visible = preyContactCount > 0;
-          preyContactMesh.instanceMatrix.needsUpdate = true;
+          finishPreyContactPatches(preyContactGeometry,preyContactCount);
+          preyContactMesh.visible=preyContactCount>0;
         }
 
         // A pooled touchdown cue makes landing, crash recovery, and takeoff
@@ -16137,6 +16230,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (kind === 'snake') return { mode: 'slither', detectionScale: 0.75, zigzag: 0.55, climb: 0, seekCover: true };
           return { mode: 'sprint-cover', detectionScale: 1.0, zigzag: 0.32, climb: 0, seekCover: true };
         }
+        function initialPreyVelocity(preyData,randomSample) {
+          return (randomSample-0.5)*(preyData.behavior==='still'?0:preyData.speedMps)*0.3;
+        }
+        function preyReactsToApproach(preyData,kind,distance,radius) {
+          // Insects wander while undisturbed, then use their existing jink-and-climb escape.
+          return distance<radius&&(preyData.behavior==='flee-on-sight'||kind==='insect');
+        }
         // CPU counterpart of rhLakeWave: floating bodies share the rendered lake surface.
         function sampleLakeSurface(out,x,z,depth,time,windX,windZ) {
           function smoothBand(value,span){var t=Math.max(0,Math.min(1,value/span));return t*t*(3-2*t);}
@@ -16182,6 +16282,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var row=rows[id]||rows.songbird,keys=['back','belly','head','neck','flight','bar','bill','breast'],palette={id:id};
           keys.forEach(function(key,index){palette[key]=new THREE.Color(row[index]).convertSRGBToLinear();});
           palette.tail=id==='ptarmigan'?new THREE.Color(0x414947).convertSRGBToLinear():palette.flight;
+          // Construction-only silhouettes: torso, head/bill, wing planform, then tail fan.
+          // Body Y stays fixed so ground clearance and the waterbird draft stay intact.
+          var shapes={
+            pigeon:[1,1,1,1,1,0.055,0.20,1,0,1,1,0.65,1,0.86,0.88,0.045],
+            mourningDove:[0.90,1.09,0.90,0.90,0.90,0.047,0.20,1,0,1.07,0.90,0.82,1.08,0.62,1.48,0.28],
+            songbird:[0.90,0.90,0.96,0.96,0.95,0.050,0.16,1,0,0.96,0.92,0.74,0.91,0.74,0.96,0.045],
+            shorebird:[0.86,1.09,0.84,0.86,0.88,0.027,0.42,0.85,0.025,1.08,0.82,0.82,1.06,0.70,0.77,0.055],
+            duck:[1.15,1.11,0.94,1.00,1.08,0.095,0.30,1.35,0,1.05,1.10,0.70,0.93,0.82,0.67,0.075],
+            waterfowl:[1.16,1.10,1.00,1.04,1.08,0.090,0.28,1.40,0,1.05,1.12,0.68,0.95,0.90,0.72,0.055],
+            grouse:[1.18,0.94,0.92,0.96,0.93,0.057,0.15,1,0,0.90,1.22,0.48,0.76,1.40,0.92,0.12],
+            ptarmigan:[1.20,0.90,1.00,1.02,0.96,0.055,0.14,1,0,0.88,1.20,0.50,0.74,1.10,0.70,0.06],
+            smallOwl:[1.06,0.87,1.28,1.34,1.17,0.065,0.14,1,0.24,1.02,1.25,0.47,0.72,1.05,0.66,0.05]
+          };
+          var shapeKeys=['bodyWidth','bodyLength','headWidth','headHeight','headLength','billRadius','billLength','billWidth','billDrop','wingSpan','wingChord','wingTaper','wingSweep','tailWidth','tailLength','tailCurve'];
+          palette.shape={};shapeKeys.forEach(function(key,index){palette.shape[key]=(shapes[id]||shapes.songbird)[index];});
           return palette;
         }
         function createPreyBirdBodyGeometry(size,palette) {
@@ -16189,22 +16304,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           for(var i=0;i<p.count;i++) {
             var y=p.getY(i)/(size*0.42),z=p.getZ(i)/(size*0.42);
             // Narrow the rump, keeping the original belly/contact height exactly.
-            p.setX(i,p.getX(i)*(1-Math.max(0,-z)*0.28));
+            p.setX(i,p.getX(i)*(1-Math.max(0,-z)*0.28)*palette.shape.bodyWidth);p.setZ(i,p.getZ(i)*palette.shape.bodyLength);
             var back=Math.max(0,Math.min(1,(y+0.12)/0.82));back=back*back*(3-2*back);
             color.copy(palette.belly).lerp(palette.back,back);
             var breast=Math.max(0,z)*Math.max(0,1-Math.abs(y)*1.5);
             color.lerp(palette.breast,breast*0.78);
+            if(palette.id==='grouse'||palette.id==='smallOwl'){
+              var barring=(0.5+0.5*Math.sin(y*31+z*7))*Math.max(0,1-Math.abs(y)*1.6);
+              color.lerp(palette.flight,barring*0.22);
+            }
             var featherShade=1+Math.sin(z*27+Math.abs(p.getX(i)/size)*19)*Math.sin(y*21)*0.025;
             color.multiplyScalar(featherShade);colors.push(color.r,color.g,color.b);
           }
           geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.computeVertexNormals();return geometry;
         }
         function createPreyWingGeometry(size, side, palette) {
-          var positions=[],colors=[],indices=[];
+          var positions=[],colors=[],indices=[],shape=palette&&palette.shape;
           for(var i=0;i<=8;i++)for(var j=0;j<=4;j++) {
-            var u=i/8,v=j/4,chord=0.26*Math.pow(1-u,0.65)+0.018;
+            var u=i/8,v=j/4,chord=(0.26*Math.pow(1-u,shape?shape.wingTaper:0.65)+0.018)*(shape?shape.wingChord:1);
             var featherEdge=j===4 && i>3 ? (i%2)*0.045 : 0;
-            positions.push(side*size*(0.06+u),size*Math.sin(v*Math.PI)*0.045*(1-u),size*(-u*u*0.27+(1-2*v)*chord-featherEdge));
+            positions.push(side*size*(0.06+u*(shape?shape.wingSpan:1)),size*Math.sin(v*Math.PI)*0.045*(1-u),size*(-u*u*0.27*(shape?shape.wingSweep:1)+(1-2*v)*chord-featherEdge));
             var tone=(j===4?0.16:0.27)+(i>2 && i<5?0.07:0);
             if(palette) {
               var wingColor=palette.back.clone().lerp(palette.flight,Math.min(1,u*0.55+v*0.48));
@@ -16220,25 +16339,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var geometry=new THREE.BufferGeometry();
           geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
           geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
-          geometry.setIndex(indices);geometry.computeVertexNormals();return geometry;
+          geometry.setIndex(indices);geometry.computeVertexNormals();
+          if(palette){
+            // Fixed shoulders and two construction-time outer-wing arcs. Only
+            // the blend weights change in flight; source buffers stay untouched.
+            var wingPositions=geometry.attributes.position,span=size*shape.wingSpan;
+            var bendStart=size*0.06+span*0.5,bendLength=span*0.5;
+            geometry.morphAttributes.position=[];geometry.morphAttributes.normal=[];
+            [0.32,-0.32].forEach(function(curvature){
+              var bent=new Float32Array(wingPositions.array);
+              for(var vertex=0;vertex<wingPositions.count;vertex++){
+                var lateral=side*wingPositions.getX(vertex),y=wingPositions.getY(vertex);
+                if(lateral>bendStart+size*0.000001){
+                  var angle=curvature*(lateral-bendStart)/bendLength;
+                  bent[vertex*3]=side*(bendStart+bendLength*Math.sin(angle)/curvature-y*Math.sin(angle));
+                  bent[vertex*3+1]=bendLength*(1-Math.cos(angle))/curvature+y*Math.cos(angle);
+                }
+              }
+              var target=new THREE.BufferGeometry();target.setIndex(geometry.index);
+              target.setAttribute('position',new THREE.Float32BufferAttribute(bent,3));target.computeVertexNormals();
+              geometry.morphAttributes.position.push(target.attributes.position);
+              geometry.morphAttributes.normal.push(target.attributes.normal);target.dispose();
+            });
+            // Include both absolute targets so folded or flexed tips cannot be culled.
+            geometry.computeBoundingBox();geometry.computeBoundingSphere();
+          }
+          return geometry;
         }
         function createPreyTailGeometry(size, palette) {
-          var positions=[0,size*0.025,0],indices=[];
-          for(var i=0;i<=8;i++){
-            var across=i/4-1;
-            positions.push(across*size*0.26,size*0.012*(1-Math.abs(across)),-size*(0.52+(i%2)*0.04-Math.abs(across)*0.04));
-            if(i>0)indices.push(0,i+1,i);
-          }
-          var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
-          if(palette){
-            var colors=[palette.back.r,palette.back.g,palette.back.b];
-            for(var feather=0;feather<=8;feather++){
-              var color=palette.tail.clone().multiplyScalar(feather%2?0.84:1);
+          var positions=[0,size*0.025,0],indices=[],colors=palette?[palette.back.r,palette.back.g,palette.back.b]:[],shape=palette&&palette.shape;
+          var width=0.26*(shape?shape.tailWidth:1),length=0.52*(shape?shape.tailLength:1),curve=shape?shape.tailCurve:0.04;
+          for(var ring=0;ring<2;ring++)for(var i=0;i<=8;i++){
+            var across=i/4-1,mix=ring===0?0.68:1,tip=length-curve*Math.pow(Math.abs(across),1.5)+(i%2)*0.016;
+            var edgeY=0.012*(1-Math.abs(across));
+            positions.push(across*size*width*mix,size*(0.025+(edgeY-0.025)*mix),-size*tip*mix);
+            if(palette){
+              var color=palette.tail.clone().multiplyScalar(i%2?0.86:1);
+              if(ring===0)color.lerp(palette.back,0.24).multiplyScalar(1.08);
+              else if(palette.id==='pigeon'||palette.id==='grouse'||palette.id==='smallOwl')color.multiplyScalar(palette.id==='smallOwl'?0.74:0.62);
               colors.push(color.r,color.g,color.b);
             }
-            geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
+            if(i>0){
+              if(ring===0)indices.push(0,i+1,i);
+              else {var inner=i,outer=9+i;indices.push(inner,outer+1,outer,inner,inner+1,outer+1);}
+            }
           }
-          geometry.setIndex(indices);geometry.computeVertexNormals();return geometry;
+          var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+          if(palette)geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
+          geometry.setIndex(indices);geometry.computeVertexNormals();
+          if(palette){
+            // Gather the existing fan inward; its root, center feather, depth and
+            // neutral buffers stay fixed. Only the retained GPU weight animates.
+            var tailPositions=geometry.attributes.position,gathered=new Float32Array(tailPositions.array);
+            for(var vertex=0;vertex<tailPositions.count;vertex++)gathered[vertex*3]*=0.42;
+            var gatherTarget=new THREE.BufferGeometry();gatherTarget.setIndex(geometry.index);
+            gatherTarget.setAttribute('position',new THREE.Float32BufferAttribute(gathered,3));gatherTarget.computeVertexNormals();
+            geometry.morphAttributes.position=[gatherTarget.attributes.position];
+            geometry.morphAttributes.normal=[gatherTarget.attributes.normal];gatherTarget.dispose();
+            // The inward target stays inside the original fan's bounds, including
+            // when Three measures folded prey for the first carried frame.
+            geometry.computeBoundingBox();geometry.computeBoundingSphere();
+          }
+          return geometry;
         }
         function advancePreyVisualPose(pose,vx,vz,height,now,phase,alerted,dt,reduced) {
           var moving=vx*vx+vz*vz>0.01;
@@ -16261,7 +16423,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             pose.rate=rateGoal+(pose.rate-rateGoal)*decay;
             pose.wingAmplitude=amplitudeGoal+(pose.wingAmplitude-amplitudeGoal)*decay;
           }
-          pose.wingAngle=reduced?0.08:0.08*(1-pose.spread)+Math.sin(pose.phase*1.7)*pose.wingAmplitude*pose.spread;
+          if(!Number.isFinite(pose.motionBlend))pose.motionBlend=1;
+          pose.motionBlend=reduced?0:pose.motionBlend+(1-pose.motionBlend)*(1-Math.exp(-8*Math.max(0,dt)));
+          var activeAngle=0.08*(1-pose.spread)+Math.sin(pose.phase*1.7)*pose.wingAmplitude*pose.spread;
+          pose.wingAngle=0.08+(activeAngle-0.08)*pose.motionBlend;
+          // The tip lags the existing wingbeat by a quarter cycle and fades
+          // with spread and the reduced-motion recovery envelope.
+          pose.wingFlex=reduced?0:-Math.cos(pose.phase*1.7)*Math.min(1,pose.wingAmplitude/0.65)*pose.spread*pose.motionBlend;
+          if(pose.tailReferenceSpeed>0){
+            var tailSpeed=Math.hypot(vx,vz),tailDt=Math.max(0,dt);
+            if(!Number.isFinite(pose.tailSpeed))pose.tailSpeed=tailSpeed;
+            pose.tailSpeed+=(tailSpeed-pose.tailSpeed)*(1-Math.exp(-4*tailDt));
+            var cruise=Math.max(0,Math.min(1,tailSpeed/pose.tailReferenceSpeed));
+            var turning=Math.max(0,Math.min(1,Math.abs(pose.bank)/0.24));
+            var slowing=Math.max(0,Math.min(1,(pose.tailSpeed-tailSpeed)*2.5/pose.tailReferenceSpeed));
+            var gatherGoal=0.82*pose.spread*cruise*(1-0.85*turning)*(1-slowing);
+            if(!Number.isFinite(pose.tailGatherResponse))pose.tailGatherResponse=0;
+            pose.tailGatherResponse=reduced?0:pose.tailGatherResponse+(gatherGoal-pose.tailGatherResponse)*(1-Math.exp(-6*tailDt));
+            pose.tailGather=reduced?0:pose.tailGatherResponse*pose.motionBlend;
+          }
+        }
+        function bendFishPreyGeometry(geometry,size) {
+          // Precompute both rear-trunk arcs once; swimming only changes GPU weights.
+          var p=geometry.attributes.position,n=geometry.attributes.normal,length=size*0.589;
+          geometry.morphAttributes.position=[];geometry.morphAttributes.normal=[];
+          [-0.22,0.22].forEach(function(curvature){
+            var positions=new Float32Array(p.array.length),normals=new Float32Array(n.array.length);
+            for(var i=0;i<p.count;i++){
+              var x=p.getX(i),y=p.getY(i),z=p.getZ(i),nx=n.getX(i),ny=n.getY(i),nz=n.getZ(i);
+              if(z<0){
+                var angle=curvature*(-z/length),sn=Math.sin(angle),cs=Math.cos(angle),stretch=1-x*curvature/length;
+                positions[i*3]=length*(1-cs)/curvature+x*cs;positions[i*3+1]=y;positions[i*3+2]=-length*sn/curvature+x*sn;
+                var bentX=nx*cs-nz*sn/stretch,bentZ=nx*sn+nz*cs/stretch,normalLength=Math.hypot(bentX,ny,bentZ)||1;
+                normals[i*3]=bentX/normalLength;normals[i*3+1]=ny/normalLength;normals[i*3+2]=bentZ/normalLength;
+              }else{
+                positions[i*3]=x;positions[i*3+1]=y;positions[i*3+2]=z;
+                normals[i*3]=nx;normals[i*3+1]=ny;normals[i*3+2]=nz;
+              }
+            }
+            geometry.morphAttributes.position.push(new THREE.Float32BufferAttribute(positions,3));
+            geometry.morphAttributes.normal.push(new THREE.Float32BufferAttribute(normals,3));
+          });
+          geometry.morphTargetsRelative=false;geometry.computeBoundingBox();geometry.computeBoundingSphere();
+          return geometry;
         }
         function createFishBodyGeometry(size) {
           var geometry=new THREE.SphereGeometry(size*0.38,16,12);geometry.scale(0.65,0.55,1.55);
@@ -16272,29 +16476,80 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             p.setX(i,p.getX(i)*(1-Math.pow(tail,1.6)*0.56));p.setY(i,p.getY(i)*(1-tail*0.32));
             var vertical=p.getY(i)/(size*0.209);
             color.copy(flank).lerp(vertical>0?back:belly,Math.min(1,Math.abs(vertical)*1.2));
+            color.multiplyScalar(1+Math.sin(p.getZ(i)/size*61+vertical*14)*Math.cos(p.getX(i)/size*48)*0.025);
             colors.push(color.r,color.g,color.b);
           }
           geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.computeVertexNormals();
           var expanded=geometry.toNonIndexed();geometry.dispose();
           var positions=Array.from(expanded.attributes.position.array),normals=Array.from(expanded.attributes.normal.array);colors=Array.from(expanded.attributes.color.array);expanded.dispose();
+          function append(surface,tint){
+            var part=surface.index?surface.toNonIndexed():surface;
+            for(var vertex=0;vertex<part.attributes.position.count;vertex++){
+              positions.push(part.attributes.position.getX(vertex),part.attributes.position.getY(vertex),part.attributes.position.getZ(vertex));
+              normals.push(part.attributes.normal.getX(vertex),part.attributes.normal.getY(vertex),part.attributes.normal.getZ(vertex));colors.push(tint.r,tint.g,tint.b);
+            }
+            if(part!==surface)part.dispose();surface.dispose();
+          }
           [-1,1].forEach(function(side){
-            var eyeSource=new THREE.SphereGeometry(size*0.024,8,6),eye=eyeSource.toNonIndexed();eyeSource.dispose();
-            eye.translate(side*size*0.188,size*0.052,size*0.38);
-            for(var i=0;i<eye.attributes.position.count;i++){positions.push(eye.attributes.position.getX(i),eye.attributes.position.getY(i),eye.attributes.position.getZ(i));normals.push(eye.attributes.normal.getX(i),eye.attributes.normal.getY(i),eye.attributes.normal.getZ(i));colors.push(0.008,0.014,0.016);}eye.dispose();
-            // Paired pectoral fins share the body draw and sweep back from the shoulders.
+            var eye=new THREE.SphereGeometry(size*0.024,8,6);eye.translate(side*size*0.188,size*0.052,size*0.38);append(eye,new THREE.Color(0.008,0.014,0.016));
+            var glint=new THREE.SphereGeometry(size*0.0055,6,4);glint.translate(side*size*0.208,size*0.061,size*0.389);append(glint,new THREE.Color(0.58,0.68,0.65));
+            // A curved operculum accent lies on the shoulder; the forward face stays still.
+            var gillPositions=[];
+            for(var segment=0;segment<6;segment++){
+              var low=-0.115+segment*0.23/6,high=-0.115+(segment+1)*0.23/6;
+              [[low,-1],[high,-1],[low,1],[high,-1],[high,1],[low,1]].forEach(function(point){
+                var gy=point[0],gz=0.255-0.075*Math.pow(gy/0.115,2)+point[1]*0.007;
+                var gx=side*0.247*Math.sqrt(Math.max(0,1-Math.pow(gy/0.209,2)-Math.pow(gz/0.589,2)))*1.012;
+                gillPositions.push(gx*size,gy*size,gz*size);
+              });
+            }
+            var gill=new THREE.BufferGeometry();gill.setAttribute('position',new THREE.Float32BufferAttribute(gillPositions,3));gill.computeVertexNormals();append(gill,back.clone().lerp(flank,0.24));
+            // Pectoral rays are baked into one fan in the existing body draw.
             var fin=[side*0.17,-0.055,0.22,side*0.39,-0.10,-0.06,side*0.13,-0.075,-0.08];
-            var order=side>0?[0,1,2]:[0,2,1];
-            var a=new THREE.Vector3().fromArray(fin,order[0]*3),b=new THREE.Vector3().fromArray(fin,order[1]*3),c=new THREE.Vector3().fromArray(fin,order[2]*3);
-            var normal=b.sub(a).cross(c.sub(a)).normalize();
-            for(var vertex=0;vertex<3;vertex++){var index=order[vertex]*3;positions.push(fin[index]*size,fin[index+1]*size,fin[index+2]*size);normals.push(normal.x,normal.y,normal.z);colors.push(back.r,back.g,back.b);}
+            var a=new THREE.Vector3().fromArray(fin,0),b=new THREE.Vector3().fromArray(fin,side>0?3:6),c=new THREE.Vector3().fromArray(fin,side>0?6:3),normal=b.sub(a).cross(c.sub(a)).normalize();
+            for(var ray=0;ray<5;ray++){
+              var vertices=[[0,0],[1,ray/5],[1,(ray+1)/5]];if(side<0)vertices.reverse();
+              vertices.forEach(function(vertex,index){
+                var t=vertex[1],offset=vertex[0]?3:0;
+                positions.push((offset?fin[3]+(fin[6]-fin[3])*t:fin[0])*size,(offset?fin[4]+(fin[7]-fin[4])*t:fin[1])*size,(offset?fin[5]+(fin[8]-fin[5])*t:fin[2])*size);
+                normals.push(normal.x,normal.y,normal.z);var tone=vertex[0]?(ray%2?0.79:0.96):1.16;
+                colors.push(back.r*tone,back.g*tone,back.b*tone);
+              });
+            }
           });
-          geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('normal',new THREE.Float32BufferAttribute(normals,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));return geometry;
+          geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('normal',new THREE.Float32BufferAttribute(normals,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));return bendFishPreyGeometry(geometry,size);
         }
         function createFishFinGeometry(size,tail) {
           var shape=new THREE.Shape();
           if(tail){shape.moveTo(0,0.06);shape.lineTo(-0.36,0.29);shape.lineTo(-0.23,0);shape.lineTo(-0.36,-0.29);shape.lineTo(0,-0.06);}
           else {shape.moveTo(0.18,0.15);shape.lineTo(0.015,0.37);shape.lineTo(-0.28,0.16);}
-          shape.closePath();var geometry=new THREE.ShapeGeometry(shape);geometry.rotateY(-Math.PI/2);geometry.scale(size,size,size);return geometry;
+          shape.closePath();var original=new THREE.ShapeGeometry(shape);original.rotateY(-Math.PI/2);original.scale(size,size,size);
+          var p=original.attributes.position,n=original.attributes.normal,positions=Array.from(p.array),normals=Array.from(n.array),indices=Array.from(original.index.array),colors=[];
+          var finColor=new THREE.Color(0x577871).convertSRGBToLinear(),rayColor=new THREE.Color(0x9cac8d).convertSRGBToLinear();
+          for(var i=0;i<p.count;i++){var tone=0.85+0.18*(1-Math.min(1,Math.abs(p.getZ(i))/(size*0.36)));colors.push(finColor.r*tone,finColor.g*tone,finColor.b*tone);}
+          function ray(fromZ,fromY,toZ,toY){
+            // Lift each thin ray off both sides of the same fin surface.
+            [-1,1].forEach(function(side){
+              var first=positions.length/3,width=0.0025;
+              [[fromZ,fromY-width],[toZ,toY-width],[toZ,toY+width],[fromZ,fromY+width]].forEach(function(v){positions.push(side*size*0.0015,v[1]*size,v[0]*size);normals.push(side,0,0);colors.push(rayColor.r,rayColor.g,rayColor.b);});
+              if(side>0)indices.push(first,first+1,first+2,first,first+2,first+3);else indices.push(first,first+2,first+1,first,first+3,first+2);
+            });
+          }
+          if(tail){[-1,1].forEach(function(side){for(var r=1;r<=5;r++){var y=side*(0.048+r*0.042),z=-0.23-0.13*Math.abs(y)/0.29;ray(-0.027,side*0.021,z*0.95,y*0.95);}});}
+          else for(var r=0;r<7;r++){var t=r/6;ray(0.035,0.18,0.035+(0.015+(-0.28-0.015)*t-0.035)*0.9,0.18+(0.37+(0.16-0.37)*t-0.18)*0.9);}
+          original.dispose();var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('normal',new THREE.Float32BufferAttribute(normals,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.setIndex(indices);
+          return tail?geometry:bendFishPreyGeometry(geometry,size);
+        }
+        function applyFishSwim(animation) {
+          var swim=animation.swim,size=swim.size,bend=Math.max(-1,Math.min(1,swim.tailYaw/0.305)),weight=Math.abs(bend);
+          swim.bend=bend;
+          animation.body.morphTargetInfluences[0]=Math.max(0,bend);animation.body.morphTargetInfluences[1]=Math.max(0,-bend);
+          animation.fins.forEach(function(fin){fin.morphTargetInfluences[0]=Math.max(0,bend);fin.morphTargetInfluences[1]=Math.max(0,-bend);});
+          var curvature=bend>=0?-0.22:0.22,length=size*0.589,angle=curvature*0.49/0.589,sn=Math.sin(angle),cs=Math.cos(angle);
+          // Follow the same linearly blended arc used by the body morph, including its tangent.
+          animation.tail.position.x=weight*length*(1-cs)/curvature;
+          animation.tail.position.z=-size*0.49+weight*(-length*sn/curvature+size*0.49);
+          animation.tail.rotation.y=Math.atan2(-weight*sn,1+weight*(cs-1))+swim.tailYaw*0.65;animation.tail.rotation.z=0;
         }
         function advanceFishSwim(state,speed,maxSpeed,dt,reduced,phaseSeed) {
           if(state.phase===null)state.phase=phaseSeed;
@@ -16308,6 +16563,582 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           state.tailYaw=Math.sin(state.phase)*state.amplitude;
           state.bodyYaw=Math.sin(state.phase-0.6)*state.amplitude*0.13;
           state.roll=Math.sin(state.phase)*state.amplitude*0.06;
+        }
+        function mergeGroundPreyParts(parts) {
+          var positions=[],normals=[],colors=[];
+          parts.forEach(function(part){
+            var original=part.geometry,geometry=original.index?original.toNonIndexed():original;
+            var p=geometry.attributes.position,n=geometry.attributes.normal,c=geometry.attributes.color;
+            for(var i=0;i<p.count;i++){
+              positions.push(p.getX(i),p.getY(i),p.getZ(i));normals.push(n.getX(i),n.getY(i),n.getZ(i));
+              colors.push(c?c.getX(i):part.color.r,c?c.getY(i):part.color.g,c?c.getZ(i):part.color.b);
+            }
+            if(geometry!==original)geometry.dispose();original.dispose();
+          });
+          var merged=new THREE.BufferGeometry();
+          merged.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+          merged.setAttribute('normal',new THREE.Float32BufferAttribute(normals,3));
+          merged.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));return merged;
+        }
+        function buildGroundPreyParts(preyData,size,kind,material) {
+          var id=preyData.id,rabbit=kind==='rabbit',winter=id==='hare'||id==='arcticHare',skunk=id==='skunk';
+          var fur=new THREE.Color(skunk?0x303532:winter?0xd7d9d0:id==='squirrel'?0x80786a:id==='groundSquirrel'?0x9b8263:id==='lemming'?0x897455:id==='rodent'?0x98785b:0x9c8267).convertSRGBToLinear();
+          var belly=new THREE.Color(skunk?0xdddcd0:winter?0xefede1:0xd4c4a9).convertSRGBToLinear();
+          var inner=new THREE.Color(winter?0xb9afa1:0xad8b7c).convertSRGBToLinear();
+          var dark=new THREE.Color(0x252922).convertSRGBToLinear(),eye=new THREE.Color(0x111918).convertSRGBToLinear();
+          var glint=new THREE.Color(0xb8c9c5).convertSRGBToLinear();
+          material.color.setHex(0xffffff);material.vertexColors=true;material.roughness=0.91;
+          material.emissive.copy(belly);material.emissiveIntensity=0.018;
+          function ellipsoid(rx,ry,rz,x,y,z,color,segments){
+            var geometry=new THREE.SphereGeometry(1,segments||10,8);geometry.scale(rx*size,ry*size,rz*size);geometry.translate(x*size,y*size,z*size);
+            return {geometry:geometry,color:color};
+          }
+          var bodyGeometry=new THREE.SphereGeometry(size*0.38,16,12);
+          bodyGeometry.scale(rabbit?0.72:0.80,0.66,skunk?1.55:1.30);
+          var p=bodyGeometry.attributes.position,colors=[],color=new THREE.Color();
+          for(var i=0;i<p.count;i++){
+            var y=p.getY(i)/(size*0.2508),x=p.getX(i)/(size*0.304),z=p.getZ(i)/size;
+            // A fuller rump makes rabbit haunches readable without separate meshes.
+            if(rabbit)p.setX(i,p.getX(i)*(1+Math.max(0,-z)*0.26));
+            var top=Math.max(0,Math.min(1,(y+0.45)/1.05));top=top*top*(3-2*top);
+            color.copy(belly).lerp(fur,top);
+            if(skunk){var stripe=Math.max(0,1-Math.abs(Math.abs(x)-0.42)/0.25)*Math.max(0,Math.min(1,y*3));color.lerp(belly,stripe);}
+            colors.push(color.r,color.g,color.b);
+          }
+          bodyGeometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));bodyGeometry.computeVertexNormals();
+          var body=new THREE.Mesh(bodyGeometry,material);body.name='prey-ground-body';body.position.y=-size*0.025;
+          var face=[ellipsoid(rabbit?0.18:0.19,0.165,0.215,0,0,0,fur,12),ellipsoid(0.115,0.085,skunk?0.155:0.11,0,-0.045,0.165,belly,10),ellipsoid(0.031,0.023,0.027,0,-0.026,skunk?0.306:0.265,dark,8)];
+          [-1,1].forEach(function(side){
+            face.push(ellipsoid(0.027,0.032,0.028,side*0.161,0.044,0.09,eye,8));
+            face.push(ellipsoid(0.007,0.007,0.007,side*0.182,0.056,0.097,glint,6));
+            if(rabbit){
+              var earHeight=id==='hare'?0.58:id==='arcticHare'?0.48:0.42;
+              var outer=ellipsoid(0.06,earHeight*0.5,0.047,0,0,0,fur,10),ep=outer.geometry.attributes.position,ec=[];
+              for(var e=0;e<ep.count;e++){
+                var tip=winter?Math.max(0,Math.min(1,(ep.getY(e)/(size*earHeight)-0.25)*5)):0;
+                color.copy(fur).lerp(dark,tip);ec.push(color.r,color.g,color.b);
+              }
+              outer.geometry.setAttribute('color',new THREE.Float32BufferAttribute(ec,3));
+              outer.geometry.rotateZ(-side*0.13);outer.geometry.translate(side*size*0.105,size*(0.15+earHeight*0.42),-size*0.035);face.push(outer);
+              var inset=ellipsoid(0.032,earHeight*0.34,0.018,0,0,0,inner,10);inset.geometry.rotateZ(-side*0.13);inset.geometry.translate(side*size*0.105,size*(0.15+earHeight*0.42),size*0.006);face.push(inset);
+            }else{
+              var earRadius=skunk?0.062:id==='lemming'?0.068:0.091;
+              face.push(ellipsoid(earRadius,earRadius*1.05,earRadius*0.43,side*0.135,0.15,-0.035,fur,10));
+              face.push(ellipsoid(earRadius*0.62,earRadius*0.71,earRadius*0.17,side*0.135,0.153,0.001,inner,10));
+            }
+          });
+          var head=new THREE.Mesh(mergeGroundPreyParts(face),material);head.name='prey-ground-face';head.position.set(0,size*0.12,size*0.43);
+          var tailParts=[];
+          if(rabbit)tailParts.push(ellipsoid(0.12,0.13,0.13,0,0.06,-0.50,belly,10));
+          else if(id==='squirrel'||id==='groundSquirrel'||skunk){
+            var bushy=skunk||id==='squirrel',height=bushy?1:0.60;
+            var tailCurve=new THREE.CatmullRomCurve3([new THREE.Vector3(0,0.035,-0.42),new THREE.Vector3(0,0.24*height,-0.60),new THREE.Vector3(0,0.50*height,-0.71),new THREE.Vector3(0,0.73*height,-0.66),new THREE.Vector3(0,0.83*height,-0.55)].map(function(v){return v.multiplyScalar(size);}));
+            var tailGeometry=new THREE.TubeGeometry(tailCurve,20,1,12,false),tp=tailGeometry.attributes.position,tc=[];
+            // One continuous tapered surface keeps the bushy silhouette smooth.
+            for(var ring=0;ring<=20;ring++){
+              var t=ring/20,center=tailCurve.getPointAt(t),radius=size*((1-t)*0.055+Math.pow(Math.sin(Math.PI*t),0.8)*(bushy?0.145:0.095));
+              for(var spoke=0;spoke<=12;spoke++){
+                var index=ring*13+spoke;
+                tp.setXYZ(index,center.x+(tp.getX(index)-center.x)*radius,center.y+(tp.getY(index)-center.y)*radius,center.z+(tp.getZ(index)-center.z)*radius);
+                color.copy(fur).lerp(belly,skunk?Math.max(0,Math.min(1,(t-0.16)*2.7)):Math.max(0,t-0.72)*0.65);
+                tc.push(color.r,color.g,color.b);
+              }
+            }
+            tailGeometry.setAttribute('color',new THREE.Float32BufferAttribute(tc,3));tailGeometry.computeVertexNormals();
+            tailParts.push({geometry:tailGeometry,color:fur});
+          }else if(id==='lemming')tailParts.push(ellipsoid(0.065,0.066,0.12,0,0.02,-0.49,fur,8));
+          else{
+            var curve=new THREE.CatmullRomCurve3([new THREE.Vector3(0,0.04,-0.43),new THREE.Vector3(0.035,0.08,-0.65),new THREE.Vector3(0.08,0.09,-0.86),new THREE.Vector3(0.12,0.07,-1.00)].map(function(v){return v.multiplyScalar(size);}));
+            tailParts.push({geometry:new THREE.TubeGeometry(curve,12,size*0.023,5,false),color:inner});
+          }
+          var tail=new THREE.Mesh(mergeGroundPreyParts(tailParts),material);tail.name='prey-ground-tail';
+          var legs=[];
+          for(var pair=0;pair<2;pair++){
+            var legParts=[];
+            [-1,1].forEach(function(side){
+              var x=side*(pair===1?0.20:0.17);
+              if(pair===1&&rabbit)legParts.push(ellipsoid(0.135,0.17,0.18,x,-0.065,-0.03,fur,12));
+              var limb=new THREE.CylinderGeometry(size*0.042,size*0.048,size*0.22,6);limb.translate(x*size,-size*0.11,0);legParts.push({geometry:limb,color:fur});
+              legParts.push(ellipsoid(pair===1&&rabbit?0.076:0.055,0.03,pair===1&&rabbit?0.14:0.092,x,-0.25,0.046,belly,10));
+            });
+            var leg=new THREE.Mesh(mergeGroundPreyParts(legParts),material);leg.name=pair===0?'prey-front-feet':'prey-hind-feet';
+            leg.position.set(0,-size*0.14,size*(pair===0?0.24:-0.25));leg.geometry.computeBoundingBox();
+            leg.userData.restY=leg.position.y;leg.userData.depth=-leg.geometry.boundingBox.min.y;
+            leg.userData.reach=Math.max(Math.abs(leg.geometry.boundingBox.min.z),Math.abs(leg.geometry.boundingBox.max.z));legs.push(leg);
+          }
+          return {body:body,head:head,tail:tail,legs:legs};
+        }
+        function buildMammalPreyParts(id,size,material) {
+          var fox=id==='fox',pronghorn=id==='pronghornCalf';
+          var fur=new THREE.Color(fox?0xb75b30:pronghorn?0xb79562:0xa98155).convertSRGBToLinear();
+          var belly=new THREE.Color(fox?0xe6d5b5:0xe8dfc5).convertSRGBToLinear(),dark=new THREE.Color(0x352d27).convertSRGBToLinear();
+          var inner=new THREE.Color(0xba9982).convertSRGBToLinear(),glint=new THREE.Color(0xe8e5d3).convertSRGBToLinear(),tone=new THREE.Color();
+          function ellipsoid(rx,ry,rz,x,y,z,color,segments){var g=new THREE.SphereGeometry(1,segments||14,segments>24?24:segments===24?16:10);g.scale(rx*size,ry*size,rz*size);g.translate(x*size,y*size,z*size);return {geometry:g,color:color};}
+          var bodyY=fox?0.025:0.23,bodyHeight=fox?0.20:0.28;
+          var torso=ellipsoid(fox?0.23:0.245,bodyHeight,pronghorn?0.56:0.52,0,bodyY,0,fur,!fox&&!pronghorn?48:24),p=torso.geometry.attributes.position,colors=[];
+          for(var i=0;i<p.count;i++){
+            var x=p.getX(i)/size,y=(p.getY(i)/size-bodyY)/bodyHeight,z=p.getZ(i)/size;
+            p.setX(i,p.getX(i)*(1-Math.max(0,z)*0.18));
+            tone.copy(belly).lerp(fur,Math.max(0,Math.min(1,(y+0.65)/0.80)));
+            if(pronghorn){var rump=Math.max(0,Math.min(1,(-z-0.27)/0.13));tone.lerp(belly,rump*0.96);}
+            else if(!fox){
+              // Coat markings follow the flank surface and share the body draw.
+              var spots=0;
+              for(var row=0;row<3;row++)for(var spot=0;spot<6;spot++){
+                var dz=(z-(-0.38+spot*0.145+(row%2)*0.055))/0.035,dy=(y-(0.05+row*0.28))/0.065;
+                spots=Math.max(spots,Math.max(0,1-dz*dz-dy*dy));
+              }
+              tone.lerp(belly,spots*Math.max(0,Math.min(1,(Math.abs(x)-0.08)/0.08)));
+            }
+            tone.multiplyScalar(1+Math.sin(z*36+y*17)*0.018);colors.push(tone.r,tone.g,tone.b);
+          }
+          torso.geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));torso.geometry.computeVertexNormals();
+          var bodyParts=[torso];
+          if(!fox){var neck=ellipsoid(0.115,0.31,0.15,0,0,0,fur);neck.geometry.rotateX(-0.28);neck.geometry.translate(0,size*0.40,size*0.32);bodyParts.push(neck);bodyParts.push(ellipsoid(0.09,0.20,0.04,0,0.40,0.465,belly));}
+          var body=new THREE.Mesh(mergeGroundPreyParts(bodyParts),material);body.name='prey-mammal-body';
+          var face=[ellipsoid(fox?0.16:0.135,fox?0.15:0.18,fox?0.19:0.20,0,0,0,fur),ellipsoid(fox?0.09:0.10,fox?0.065:0.09,fox?0.18:0.16,0,-0.055,fox?0.16:0.15,belly)];
+          face.push(ellipsoid(fox?0.038:0.048,0.028,0.035,0,-0.025,fox?0.32:0.295,dark,10));
+          [-1,1].forEach(function(side){
+            var ear=ellipsoid(fox?0.10:0.105,fox?0.18:0.17,0.048,0,0,0,fur),ep=ear.geometry.attributes.position;
+            for(var e=0;e<ep.count;e++){var up=ep.getY(e)/(size*(fox?0.18:0.17));ep.setX(e,ep.getX(e)*(1-Math.max(0,up)*0.72));}
+            ear.geometry.computeVertexNormals();ear.geometry.rotateZ(-side*(fox?0.22:0.52));ear.geometry.translate(side*size*0.13,size*(fox?0.19:0.21),-size*0.02);face.push(ear);
+            var inset=ellipsoid(0.050,fox?0.105:0.105,0.013,0,0,0,inner,10);inset.geometry.rotateZ(-side*(fox?0.22:0.52));inset.geometry.translate(side*size*0.14,size*(fox?0.20:0.22),size*0.028);face.push(inset);
+            if(pronghorn)face.push(ellipsoid(0.014,0.075,0.084,side*0.125,-0.005,0.09,dark,12));
+            face.push(ellipsoid(0.020,0.024,0.025,side*(fox?0.143:0.124),0.035,0.075,dark,10));
+            face.push(ellipsoid(0.006,0.006,0.007,side*(fox?0.16:0.14),0.043,0.086,glint,8));
+          });
+          var head=new THREE.Mesh(mergeGroundPreyParts(face),material);head.name='prey-mammal-head';head.position.set(0,size*(fox?0.20:0.66),size*(fox?0.48:0.44));
+          var points=fox?[[0,0,0],[0,-0.03,-0.24],[0.04,-0.12,-0.55],[0.08,-0.10,-0.86]]:[[0,0,0],[0,-0.06,-0.09],[0,-0.12,-0.20]];
+          var curve=new THREE.CatmullRomCurve3(points.map(function(v){return new THREE.Vector3(v[0]*size,v[1]*size,v[2]*size);}));
+          var tailGeometry=new THREE.TubeGeometry(curve,24,1,12,false),tp=tailGeometry.attributes.position,tc=[];
+          for(var ring=0;ring<=24;ring++){
+            var t=ring/24,center=curve.getPointAt(t),radius=size*((1-t)*0.045+Math.pow(Math.sin(t*Math.PI),0.8)*(fox?0.135:0.046)+0.002);
+            tone.copy(fur).lerp(belly,fox?Math.max(0,Math.min(1,(t-0.70)/0.15)):0.7);
+            for(var spoke=0;spoke<=12;spoke++){var v=ring*13+spoke;tp.setXYZ(v,center.x+(tp.getX(v)-center.x)*radius,center.y+(tp.getY(v)-center.y)*radius,center.z+(tp.getZ(v)-center.z)*radius);tc.push(tone.r,tone.g,tone.b);}
+          }
+          tailGeometry.setAttribute('color',new THREE.Float32BufferAttribute(tc,3));tailGeometry.computeVertexNormals();
+          var tail=new THREE.Mesh(tailGeometry,material);tail.name='prey-mammal-tail';tail.position.set(0,size*(fox?0.055:0.34),-size*0.46);
+          var legs=[],restY=fox?0.04:0.22,depth=restY+0.42;
+          for(var pair=0;pair<2;pair++)[-1,1].forEach(function(side){
+            var limbParts=[ellipsoid(fox?0.060:0.068,depth*0.30,0.080,0,-depth*0.25,-0.01,fur,12)];
+            var shin=new THREE.CylinderGeometry(size*0.026,size*0.033,size*depth*0.59,8);shin.translate(0,-size*depth*0.61,size*0.025);limbParts.push({geometry:shin,color:fox?dark:fur});
+            limbParts.push(ellipsoid(fox?0.060:0.055,0.035,fox?0.10:0.075,0,-depth+0.035,0.055,dark,12));
+            var leg=new THREE.Mesh(mergeGroundPreyParts(limbParts),material);leg.name='prey-mammal-'+(pair?'hind':'front')+'-'+(side<0?'left':'right');
+            leg.position.set(side*size*(pair?0.20:0.18),size*restY,size*(pair?-0.33:0.33));leg.geometry.computeBoundingBox();
+            leg.userData.restY=leg.position.y;leg.userData.depth=-leg.geometry.boundingBox.min.y;leg.userData.reach=Math.max(Math.abs(leg.geometry.boundingBox.min.z),Math.abs(leg.geometry.boundingBox.max.z));legs.push(leg);
+          });
+          material.color.setHex(0xffffff);material.vertexColors=true;material.roughness=0.86;material.emissive.copy(belly);material.emissiveIntensity=0.025;
+          return {body:body,head:head,tail:tail,legs:legs};
+        }
+        function buildRainforestPreyParts(id,size,material) {
+          var sloth=id==='sloth',coati=id==='coati',howler=id==='howlerMonkey',monkey=!sloth&&!coati;
+          var fur=new THREE.Color(sloth?0x849083:coati?0x987348:howler?0x40372e:0x786349).convertSRGBToLinear();
+          var belly=new THREE.Color(sloth?0xb4b9a4:coati?0xd2b995:howler?0x72614d:0xcdbb99).convertSRGBToLinear();
+          var faceColor=new THREE.Color(sloth?0xd1d4bc:coati?0xdccfb2:howler?0x6c6150:0xe2d5b9).convertSRGBToLinear();
+          var dark=new THREE.Color(sloth?0x354238:0x30291f).convertSRGBToLinear(),inner=new THREE.Color(0xae8b72).convertSRGBToLinear();
+          var glint=new THREE.Color(0xe9e4d0).convertSRGBToLinear(),tone=new THREE.Color();
+          function ellipsoid(rx,ry,rz,x,y,z,color,segments){var g=new THREE.SphereGeometry(1,segments||16,segments>20?16:10);g.scale(rx*size,ry*size,rz*size);g.translate(x*size,y*size,z*size);return {geometry:g,color:color};}
+          var bodyY=sloth?-0.13:coati?0.025:howler?0.14:0.11,bodyHeight=sloth?0.24:coati?0.20:howler?0.30:0.27;
+          var torso=ellipsoid(sloth?0.30:coati?0.215:howler?0.27:0.235,bodyHeight,sloth?0.43:coati?0.48:0.36,0,bodyY,0,fur,32);
+          var p=torso.geometry.attributes.position,colors=[];
+          for(var i=0;i<p.count;i++){
+            var y=(p.getY(i)/size-bodyY)/bodyHeight,z=p.getZ(i)/size,x=p.getX(i)/size;
+            if(sloth){var shag=1+Math.sin(z*49+y*23)*Math.cos(x*37)*0.018;p.setX(i,p.getX(i)*shag);p.setZ(i,p.getZ(i)*shag);}
+            else p.setX(i,p.getX(i)*(1-Math.max(0,z)*0.20));
+            tone.copy(belly).lerp(fur,Math.max(0,Math.min(1,(y+0.67)/0.80)));
+            if(id==='capuchin')tone.lerp(faceColor,Math.max(0,Math.min(0.8,(z-0.10)*3.8)));
+            tone.multiplyScalar(1+Math.sin(z*40+y*27)*0.025);colors.push(tone.r,tone.g,tone.b);
+          }
+          torso.geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));torso.geometry.computeVertexNormals();
+          var bodyParts=[torso];
+          if(monkey)bodyParts.push(ellipsoid(howler?0.19:0.15,0.21,0.17,0,0.22,0.22,fur,20));
+          var body=new THREE.Mesh(mergeGroundPreyParts(bodyParts),material);body.name='prey-rainforest-body';
+          var face=[];
+          if(coati){
+            face.push(ellipsoid(0.135,0.125,0.19,0,0,0,fur));
+            face.push(ellipsoid(0.075,0.055,0.22,0,-0.032,0.17,faceColor,20));
+            face.push(ellipsoid(0.031,0.027,0.035,0,-0.050,0.383,dark,12));
+          }else{
+            face.push(ellipsoid(sloth?0.21:0.20,sloth?0.19:0.205,sloth?0.17:0.19,0,0,0,fur,24));
+            face.push(ellipsoid(sloth?0.175:0.165,sloth?0.13:0.145,0.045,0,-0.010,sloth?0.145:0.17,faceColor,24));
+            if(monkey)face.push(ellipsoid(0.095,0.062,0.070,0,-0.070,0.204,faceColor));
+            face.push(ellipsoid(sloth?0.027:0.022,0.020,0.023,0,sloth?-0.010:-0.048,sloth?0.190:0.263,dark,12));
+            if(howler)face.push(ellipsoid(0.14,0.12,0.13,0,-0.18,0.045,fur,20));
+          }
+          [-1,1].forEach(function(side){
+            var earX=coati?0.108:sloth?0.16:0.19,earY=coati?0.126:sloth?0.065:0.030;
+            face.push(ellipsoid(coati?0.070:sloth?0.050:0.067,coati?0.078:sloth?0.060:0.072,0.035,side*earX,earY,-0.030,fur,14));
+            if(!sloth)face.push(ellipsoid(coati?0.039:0.045,coati?0.047:0.048,0.014,side*(earX+0.008),earY,0.005,inner,12));
+            if(sloth)face.push(ellipsoid(0.077,0.036,0.018,side*0.085,0.015,0.170,dark,20));
+            if(coati)face.push(ellipsoid(0.045,0.018,0.039,side*0.108,0.089,0.102,faceColor,14));
+            var eyeX=coati?0.120:sloth?0.085:0.081,eyeY=coati?0.050:0.024,eyeZ=coati?0.100:sloth?0.186:0.207;
+            face.push(ellipsoid(0.017,0.020,0.016,side*eyeX,eyeY,eyeZ,dark,12));
+            face.push(ellipsoid(0.005,0.006,0.005,side*(eyeX+0.004),eyeY+0.007,eyeZ+0.015,glint,8));
+            if(monkey)face.push(ellipsoid(0.032,0.006,0.006,side*0.029,-0.104,0.254,dark,10));
+          });
+          var head=new THREE.Mesh(mergeGroundPreyParts(face),material);head.name='prey-rainforest-head';head.position.set(0,size*(sloth?0.020:coati?0.135:0.34),size*(sloth?0.355:coati?0.43:0.35));
+          var tailParts=[],tailY=sloth?-0.11:0.10,tailZ=sloth?-0.40:coati?-0.40:-0.32;
+          if(sloth)tailParts.push(ellipsoid(0.062,0.050,0.070,0,0,0,fur,12));
+          else{
+            var points=coati?[[0,0,0],[0,0.26,-0.14],[0.02,0.56,-0.22],[0.03,0.88,-0.19]]:
+              howler?[[0,0,0],[0,-0.03,-0.28],[0.08,0.08,-0.57],[0.15,0.37,-0.74],[0.18,0.61,-0.58]]:
+              [[0,0,0],[0,-0.045,-0.30],[0.08,0.035,-0.61],[0.18,0.30,-0.77],[0.22,0.49,-0.56]];
+            var curve=new THREE.CatmullRomCurve3(points.map(function(v){return new THREE.Vector3(v[0]*size,v[1]*size,v[2]*size);}));
+            var rings=40,sides=12,geometry=new THREE.TubeGeometry(curve,rings,1,sides,false),tp=geometry.attributes.position,tc=[];
+            for(var ring=0;ring<=rings;ring++){
+              var t=ring/rings,center=curve.getPointAt(t),radius=size*(coati?(0.055*(1-t)+Math.pow(Math.sin(Math.PI*t),0.8)*0.042+0.004):((howler?0.070:0.052)*(1-t)+0.007));
+              tone.copy(fur);
+              if(coati){var band=Math.pow(Math.max(0,Math.cos(t*Math.PI*16)),0.55);tone.lerp(faceColor,band*0.82);}
+              else tone.multiplyScalar(0.80+t*0.12);
+              for(var spoke=0;spoke<=sides;spoke++){var v=ring*(sides+1)+spoke;tp.setXYZ(v,center.x+(tp.getX(v)-center.x)*radius,center.y+(tp.getY(v)-center.y)*radius,center.z+(tp.getZ(v)-center.z)*radius);tc.push(tone.r,tone.g,tone.b);}
+            }
+            geometry.setAttribute('color',new THREE.Float32BufferAttribute(tc,3));geometry.computeVertexNormals();tailParts.push({geometry:geometry,color:fur});
+            var tip=curve.getPointAt(1);tailParts.push(ellipsoid(coati?0.005:0.008,coati?0.005:0.008,coati?0.005:0.008,tip.x/size,tip.y/size,tip.z/size,tone,10));
+          }
+          var tail=new THREE.Mesh(mergeGroundPreyParts(tailParts),material);tail.name='prey-rainforest-tail';tail.position.set(0,size*tailY,size*tailZ);
+          var legs=[],supportX=0,supportZ=0;
+          for(var pair=0;pair<2;pair++)[-1,1].forEach(function(side){
+            var restY=sloth?(pair?-0.02:0.02):coati?0.10:pair?0.04:0.22,depth=restY+0.42;
+            var limbParts=[ellipsoid(pair&&monkey?0.105:sloth?0.080:coati?0.058:0.080,depth*0.30,pair&&monkey?0.115:0.085,0,-depth*0.23,-0.012,fur,16)];
+            var bend=new THREE.CatmullRomCurve3([new THREE.Vector3(0,-depth*0.15,-0.010),new THREE.Vector3(0,-depth*0.52,0.035),new THREE.Vector3(0,-depth+0.065,0.064)].map(function(v){return v.multiplyScalar(size);}));
+            limbParts.push({geometry:new THREE.TubeGeometry(bend,10,size*(sloth?0.034:coati?0.025:0.039),8,false),color:fur});
+            var handColor=sloth?fur:coati?dark:inner,handWidth=coati?0.062:0.088;
+            limbParts.push(ellipsoid(handWidth,0.033,0.10,0,-depth+0.033,0.063,handColor,16));
+            var digits=sloth?3:4;
+            for(var digit=0;digit<digits;digit++){
+              var dx=(digit-(digits-1)*0.5)*(sloth?0.043:0.028),claw=new THREE.CatmullRomCurve3([
+                new THREE.Vector3(dx,-depth+0.057,0.110),new THREE.Vector3(dx,-depth+0.034,sloth?0.183:0.153),new THREE.Vector3(dx,-depth+0.019,sloth?0.166:0.160)
+              ].map(function(v){return v.multiplyScalar(size);}));
+              limbParts.push({geometry:new THREE.TubeGeometry(claw,6,size*(sloth?0.011:0.008),5,false),color:sloth?faceColor:handColor});
+            }
+            var leg=new THREE.Mesh(mergeGroundPreyParts(limbParts),material);leg.name='prey-rainforest-'+(pair?'hind':'front')+'-'+(side<0?'left':'right');
+            leg.position.set(side*size*(sloth?0.25:coati?0.18:pair?0.21:0.23),size*restY,size*(pair?-0.25:sloth?0.25:coati?0.28:0.25));leg.geometry.computeBoundingBox();
+            var box=leg.geometry.boundingBox;leg.userData.restY=leg.position.y;leg.userData.depth=-box.min.y;leg.userData.reach=Math.max(Math.abs(box.min.z),Math.abs(box.max.z));
+            supportX=Math.max(supportX,(Math.abs(leg.position.x)+Math.max(Math.abs(box.min.x),Math.abs(box.max.x)))/size);
+            supportZ=Math.max(supportZ,(Math.abs(leg.position.z)+Math.hypot(leg.userData.depth,leg.userData.reach))/size);legs.push(leg);
+          });
+          material.color.setHex(0xffffff);material.vertexColors=true;material.roughness=sloth?0.96:0.87;material.emissive.copy(belly);material.emissiveIntensity=howler?0.055:0.035;
+          return {body:body,head:head,tail:tail,legs:legs,supportX:supportX+0.02,supportZ:supportZ+0.02};
+        }
+        function advanceGroundPreyGait(gait,speed,maxSpeed,size,kind,dt,reduced,seed) {
+          if(gait.phase===null)gait.phase=seed||0;
+          if(reduced){gait.rate=gait.effort=gait.front=gait.hind=gait.bob=gait.tail=0;if(gait.strides)for(var quietLeg=0;quietLeg<4;quietLeg++)gait.strides[quietLeg]=0;return;}
+          var effortGoal=Math.max(0,Math.min(1,(Math.max(0,speed)-0.06)/Math.max(0.2,maxSpeed-0.06)));
+          var rateGoal=effortGoal*(6+effortGoal*10)*(gait.rateScale===undefined?1:gait.rateScale),decay=Math.exp(-7*Math.max(0,dt));
+          gait.phase+=rateGoal*dt+(gait.rate-rateGoal)*(1-decay)/7;
+          gait.rate=rateGoal+(gait.rate-rateGoal)*decay;gait.effort=effortGoal+(gait.effort-effortGoal)*decay;
+          if(gait.quadruped){
+            // Ease from diagonal walking pairs into a restrained running bound.
+            var run=Math.max(0,Math.min(1,(gait.effort-0.35)/0.45));run=run*run*(3-2*run);
+            for(var limb=0;limb<4;limb++){
+              var offset=limb===0?0:limb===1?Math.PI+(0.65-Math.PI)*run:limb===2?Math.PI+0.45+(2.70-Math.PI-0.45)*run:0.45+(3.35-0.45)*run;
+              gait.strides[limb]=Math.sin(gait.phase+offset)*(0.32+run*0.20)*gait.effort*(gait.strideScale===undefined?1:gait.strideScale);
+            }
+            gait.front=gait.strides[0];gait.hind=gait.strides[2];
+            gait.bob=Math.pow(Math.max(0,Math.sin(gait.phase-0.4)),2)*size*(gait.bobScale===undefined?(gait.fox?0.025:0.045):gait.bobScale)*gait.effort;
+            gait.tail=Math.sin(gait.phase*0.5)*(gait.tailScale===undefined?(gait.fox?0.13:0.055):gait.tailScale)*gait.effort;return;
+          }
+          gait.front=Math.sin(gait.phase)*0.44*gait.effort;
+          gait.hind=Math.sin(gait.phase+(kind==='rabbit'?2.15:Math.PI))*(kind==='rabbit'?0.60:0.44)*gait.effort;
+          gait.bob=Math.pow(Math.max(0,Math.sin(gait.phase-0.5)),2)*size*(kind==='rabbit'?0.075:0.025)*gait.effort;
+          gait.tail=Math.sin(gait.phase*0.5)*0.10*gait.effort;
+        }
+        function advanceGroundPreyHead(state,effort,bearing,elevation,alerted,dt,reduced,seed) {
+          if(state.phase===null)state.phase=seed||0;
+          if(!state.lookSide)state.lookSide=Math.sin(seed||0)<0?-1:1;
+          if(reduced){state.rate=state.activity=state.yaw=state.pitch=state.roll=0;return;}
+          var step=Math.max(0,dt),work=Math.max(0,Math.min(1,effort));
+          var rateGoal=(0.65+work*0.20+(alerted?0.18:0))*state.rateScale,decay=Math.exp(-4*step);
+          state.phase+=rateGoal*step+(state.rate-rateGoal)*(1-decay)/4;
+          state.rate=rateGoal+(state.rate-rateGoal)*decay;
+          state.activity+=((alerted?1:0)-state.activity)*(1-Math.exp(-5*step));
+          var quiet=1-work*0.78,scan=Math.sin(state.phase)*(0.35+0.65*Math.pow(Math.sin(state.phase*0.5),2));
+          var idleYaw=scan*state.yawLimit*0.34*quiet;
+          var idlePitch=Math.cos(state.phase*0.67+(seed||0)*0.25)*0.035*quiet+work*0.018;
+          var alertYaw=0,alertPitch=0;
+          if(alerted){
+            var wrapped=Math.atan2(Math.sin(bearing),Math.cos(bearing));
+            // Keep one side glance while the hunter crosses directly behind the prey.
+            // This prevents the signed-angle seam from flipping the head repeatedly.
+            if(Math.abs(wrapped)<2.6&&Math.abs(wrapped)>0.15)state.lookSide=wrapped<0?-1:1;
+            alertYaw=Math.abs(wrapped)>=2.6?state.lookSide*state.yawLimit:Math.max(-state.yawLimit,Math.min(state.yawLimit,wrapped));
+            alertPitch=Math.max(-state.pitchLimit,Math.min(state.pitchLimit,-elevation));
+          }
+          var alpha=1-Math.exp(-6*step),blend=state.activity;
+          state.yaw+=(idleYaw*(1-blend)+alertYaw*blend-state.yaw)*alpha;
+          state.pitch+=(idlePitch*(1-blend)+alertPitch*blend-state.pitch)*alpha;
+          state.roll+=(Math.sin(state.phase*0.47)*0.012*quiet*(1-blend)-state.roll)*alpha;
+        }
+        function applyGroundPreyHeadPose(animation) {
+          if(!animation.head||!animation.look)return;
+          var look=animation.look;animation.head.rotation.set(look.pitch,look.yaw,look.roll,'YXZ');
+        }
+        var headAnchorWorld=new THREE.Vector3(),headLookDirection=new THREE.Vector3(),headLookMatrix=new THREE.Matrix4();
+        function updateGroundPreyHead(prey,dt,reduced) {
+          var animation=prey.animation,bearing=0,elevation=0;
+          if(!animation.look)return;
+          if(prey.alerted&&!reduced){
+            // Track the real hunter in the head's parent coordinates, including slopes.
+            // Only alerted prey need these matrix calculations; scratch objects are reused.
+            prey.visual.updateWorldMatrix(true,false);
+            headAnchorWorld.copy(animation.head.position).applyMatrix4(prey.visual.matrixWorld);
+            headLookMatrix.copy(prey.visual.matrixWorld).invert();
+            headLookDirection.set(raptor.x,raptor.y,raptor.z).sub(headAnchorWorld).transformDirection(headLookMatrix);
+            bearing=Math.atan2(headLookDirection.x,headLookDirection.z);
+            elevation=Math.atan2(headLookDirection.y,Math.hypot(headLookDirection.x,headLookDirection.z));
+          }
+          advanceGroundPreyHead(animation.look,animation.gait.effort,bearing,elevation,prey.alerted,dt,reduced,prey.bobPhase);
+          applyGroundPreyHeadPose(animation);
+        }
+        function advanceBirdPreyHead(state,spread,bearing,elevation,alerted,bank,dt,reduced,seed) {
+          if(state.phase===null)state.phase=seed||0;
+          if(!state.lookSide)state.lookSide=Math.sin(seed||0)<0?-1:1;
+          if(reduced){state.rate=state.activity=state.yaw=state.pitch=state.roll=0;return;}
+          var step=Math.max(0,dt),flight=Math.max(0,Math.min(1,spread));
+          var rateGoal=(0.58+flight*0.28+(alerted?0.14:0))*state.rateScale,decay=Math.exp(-4*step);
+          state.phase+=rateGoal*step+(state.rate-rateGoal)*(1-decay)/4;
+          state.rate=rateGoal+(state.rate-rateGoal)*decay;
+          state.activity+=((alerted?1:0)-state.activity)*(1-Math.exp(-5*step));
+          // Quiet scanning gives way to a small side glance while fleeing in flight.
+          // Keep the integrated phase independent of wingbeats and body bobbing.
+          var quiet=1-flight*0.76,scan=Math.sin(state.phase)*(0.35+0.65*Math.pow(Math.sin(state.phase*0.5),2));
+          var idleYaw=scan*state.yawLimit*0.38*quiet;
+          var idlePitch=Math.cos(state.phase*0.73+(seed||0)*0.20)*0.025*quiet;
+          var alertYaw=0,alertPitch=0;
+          if(alerted){
+            var wrapped=Math.atan2(Math.sin(bearing),Math.cos(bearing));
+            // Retain one glance side across the signed-angle seam behind the bird.
+            if(Math.abs(wrapped)<2.6&&Math.abs(wrapped)>0.15)state.lookSide=wrapped<0?-1:1;
+            var yawLimit=state.yawLimit*(1-flight*0.35);
+            alertYaw=Math.abs(wrapped)>=2.6?state.lookSide*yawLimit:Math.max(-yawLimit,Math.min(yawLimit,wrapped));
+            var pitchLimit=state.pitchLimit*(1-flight*0.45);
+            alertPitch=Math.max(-pitchLimit,Math.min(pitchLimit,-elevation));
+          }
+          var alpha=1-Math.exp(-6*step),blend=state.activity;
+          state.yaw+=(idleYaw*(1-blend)+alertYaw*blend-state.yaw)*alpha;
+          state.pitch+=(idlePitch*(1-blend)+alertPitch*blend-state.pitch)*alpha;
+          // Partially steady the face through banking or water roll, without
+          // moving its neck pivot or overriding the direction of the gaze.
+          var steadyRoll=Math.max(-state.rollLimit,Math.min(state.rollLimit,-bank*0.65));
+          state.roll+=(steadyRoll-state.roll)*alpha;
+        }
+        function applyBirdPreyHeadPose(animation) {
+          if(!animation.birdHead||!animation.birdLook)return;
+          var look=animation.birdLook;animation.birdHead.rotation.set(look.pitch,look.yaw,look.roll,'YXZ');
+        }
+        function updateBirdPreyHead(prey,dt,reduced) {
+          var animation=prey.animation,bearing=0,elevation=0;
+          if(!animation.birdLook)return;
+          if(prey.alerted&&!reduced){
+            prey.visual.updateWorldMatrix(true,false);
+            headAnchorWorld.copy(animation.birdHead.position).applyMatrix4(prey.visual.matrixWorld);
+            headLookMatrix.copy(prey.visual.matrixWorld).invert();
+            headLookDirection.set(raptor.x,raptor.y,raptor.z).sub(headAnchorWorld).transformDirection(headLookMatrix);
+            bearing=Math.atan2(headLookDirection.x,headLookDirection.z);
+            elevation=Math.atan2(headLookDirection.y,Math.hypot(headLookDirection.x,headLookDirection.z));
+          }
+          advanceBirdPreyHead(animation.birdLook,animation.pose.spread,bearing,elevation,prey.alerted,prey.visual.rotation.z,dt,reduced,prey.bobPhase);
+          applyBirdPreyHeadPose(animation);
+        }
+        function setGroundPreyLegPose(leg,angle) {
+          leg.rotation.x=angle;
+          // Lift only the amount needed to keep the swept paw envelope above the
+          // original contact plane, including the longer rabbit hind feet.
+          var d=leg.userData.depth,r=leg.userData.reach;
+          leg.position.y=leg.userData.restY+Math.max(0,d*Math.cos(angle)+r*Math.abs(Math.sin(angle))-d);
+        }
+        function advanceGroundPreyTerrain(state,x,y,z,heading,size,clearance,dt,reduced,heightAt) {
+          var c=Math.cos(heading),s=Math.sin(heading),side=size*0.24,fore=size*0.40;
+          var center=heightAt(x,z),height=Math.max(0,y-center-clearance);
+          var contact=Math.max(0,1-height/Math.max(0.2,size*0.45));contact=contact*contact*(3-2*contact);
+          var across=(heightAt(x+c*side,z-s*side)-heightAt(x-c*side,z+s*side))/(2*side);
+          var along=(heightAt(x+s*fore,z+c*fore)-heightAt(x-s*fore,z-c*fore))/(2*fore);
+          var pitchGoal=Math.max(-0.50,Math.min(0.50,-Math.atan(along)))*contact;
+          var rollGoal=Math.max(-0.50,Math.min(0.50,Math.atan(across*Math.cos(pitchGoal))))*contact;
+          var alpha=reduced||state.pitch===null?1:1-Math.exp(-10*Math.max(0,dt));
+          state.pitch=state.pitch===null?pitchGoal:state.pitch+(pitchGoal-state.pitch)*alpha;
+          state.roll+=(rollGoal-state.roll)*alpha;state.contact=contact;
+          var cp=Math.cos(state.pitch),sp=Math.sin(state.pitch),cr=Math.cos(state.roll),sr=Math.sin(state.roll),lift=0;
+          // Sample the complete swept paw envelope in the current, smoothed pose.
+          // This keeps uphill feet clear while the body eases across slope changes.
+          for(var row=-1;row<=1;row++)for(var column=-1;column<=1;column++){
+            var px=column*size*(state.supportX||0.36),pz=row*size*(state.supportZ||0.62);
+            var rx=cr*px+sr*clearance,ry=sr*px-cr*clearance;
+            var py=cp*ry-sp*pz,rz=sp*ry+cp*pz;
+            var wx=x+c*rx+s*rz,wz=z-s*rx+c*rz;
+            lift=Math.max(lift,heightAt(wx,wz)-y-py);
+          }
+          state.lift=Math.max(0,lift);
+        }
+        function applyGroundPreyTerrain(prey,dt,reduced) {
+          var gait=prey.animation.gait,state=gait.terrain;
+          var heading=prey.animation.pose.heading;
+          if(heading===null)heading=Math.atan2(prey.vx,prey.vz);
+          advanceGroundPreyTerrain(state,prey.mesh.position.x,prey.mesh.position.y,prey.mesh.position.z,heading,gait.size,prey.groundClearance,dt,reduced,terrainHeightAt);
+          prey.visual.rotation.set(state.pitch,heading,state.roll,'YXZ');
+          prey.visual.position.y=gait.bob+state.lift;
+        }
+        function buildSnakePreyParts(size,material) {
+          var rings=41,sides=12,vertices=rings*(sides+1)+2,positions=new Float32Array(vertices*3),colors=new Float32Array(vertices*3),indices=[];
+          var back=new THREE.Color(0x526142).convertSRGBToLinear(),flank=new THREE.Color(0x818563).convertSRGBToLinear();
+          var belly=new THREE.Color(0xc4b787).convertSRGBToLinear(),stripe=new THREE.Color(0xd9bc72).convertSRGBToLinear(),dark=new THREE.Color(0x304035).convertSRGBToLinear(),color=new THREE.Color();
+          for(var i=0;i<rings;i++)for(var j=0;j<=sides;j++){
+            var angle=j/sides*Math.PI*2,up=Math.sin(angle),u=i/(rings-1),index=i*(sides+1)+j;
+            color.copy(up<0?belly:flank).lerp(back,Math.max(0,up));
+            color.lerp(stripe,Math.pow(Math.max(0,up),18)*0.9);
+            var check=Math.pow(Math.max(0,Math.cos(u*Math.PI*24+(j%2)*Math.PI)),4)*Math.max(0,1-Math.abs(up-0.25)*2);
+            color.lerp(dark,check*0.55);colors.set([color.r,color.g,color.b],index*3);
+            if(i<rings-1&&j<sides){var a=index,b=a+sides+1;indices.push(a,b,a+1,a+1,b,b+1);}
+          }
+          var front=rings*(sides+1),tip=front+1;
+          colors.set([back.r,back.g,back.b],front*3);colors.set([back.r,back.g,back.b],tip*3);
+          for(var cap=0;cap<sides;cap++){indices.push(front,cap,cap+1);var tail=(rings-1)*(sides+1)+cap;indices.push(tip,tail+1,tail);}
+          var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(positions,3).setUsage(THREE.DynamicDrawUsage));
+          geometry.setAttribute('normal',new THREE.BufferAttribute(new Float32Array(vertices*3),3).setUsage(THREE.DynamicDrawUsage));
+          geometry.setAttribute('color',new THREE.BufferAttribute(colors,3));geometry.setIndex(indices);
+          geometry.boundingBox=new THREE.Box3();geometry.boundingSphere=new THREE.Sphere();
+          material.color.setHex(0xffffff);material.vertexColors=true;material.roughness=0.78;material.emissive.copy(belly);material.emissiveIntensity=0.025;
+          var body=new THREE.Mesh(geometry,material);body.name='prey-snake-body';
+          function part(rx,ry,rz,x,y,z,tone){var g=new THREE.SphereGeometry(1,12,8);g.scale(rx*size,ry*size,rz*size);g.translate(x*size,y*size,z*size);return {geometry:g,color:tone};}
+          var skull=part(0.135,0.075,0.20,0,0,0,back),p=skull.geometry.attributes.position,headColors=[];
+          for(var h=0;h<p.count;h++){color.copy(belly).lerp(back,Math.max(0,Math.min(1,(p.getY(h)/size+0.025)/0.07)));headColors.push(color.r,color.g,color.b);}
+          skull.geometry.setAttribute('color',new THREE.Float32BufferAttribute(headColors,3));
+          var face=[skull,part(0.108,0.025,0.15,0,-0.040,0.025,belly)],eye=new THREE.Color(0x101b18).convertSRGBToLinear(),glint=new THREE.Color(0xbccbc0).convertSRGBToLinear();
+          [-1,1].forEach(function(side){face.push(part(0.017,0.018,0.022,side*0.119,0.029,0.070,eye));face.push(part(0.0045,0.0045,0.005,side*0.133,0.036,0.077,glint));face.push(part(0.005,0.005,0.007,side*0.056,0.020,0.180,dark));});
+          var head=new THREE.Mesh(mergeGroundPreyParts(face),material);head.name='prey-snake-head';head.position.z=size*0.62;
+          var slither={size:size,phase:0,rate:0,amplitude:0.14,rings:rings,sides:sides,geometry:geometry,head:head};
+          updateSnakePreySurface(slither,0,size*0.15,0,0,size*0.15,null);
+          return {body:body,head:head,slither:slither};
+        }
+        function advanceSnakeSlither(state,speed,maxSpeed,dt,reduced) {
+          if(reduced||dt<=0)return;
+          var effort=Math.max(0,Math.min(1,speed/Math.max(0.2,maxSpeed))),decay=Math.exp(-7*dt);
+          var rateGoal=effort*(0.65+effort*1.25)*Math.PI*2,amplitudeGoal=0.12+effort*0.10;
+          // Integrated rate preserves the travelling wave when an escape starts or stops.
+          state.phase=(state.phase+rateGoal*dt+(state.rate-rateGoal)*(1-decay)/7)%(Math.PI*2);
+          state.rate=rateGoal+(state.rate-rateGoal)*decay;
+          state.amplitude=amplitudeGoal+(state.amplitude-amplitudeGoal)*decay;
+        }
+        function updateSnakePreySurface(state,x,y,z,heading,clearance,heightAt) {
+          var size=state.size,geometry=state.geometry,p=geometry.attributes.position.array,n=geometry.attributes.normal.array,index=geometry.index.array;
+          var sides=state.sides,rings=state.rings,c=Math.cos(heading),s=Math.sin(heading),bounds=geometry.boundingBox;
+          bounds.makeEmpty();
+          for(var i=0;i<rings;i++){
+            var t=i/(rings-1),envelope=1-Math.exp(-18*t*t),wave=t*9.4-state.phase;
+            var px=size*state.amplitude*Math.sin(wave)*envelope,pz=size*(0.52-t*1.47);
+            var derivative=state.amplitude*(9.4*Math.cos(wave)*envelope+Math.sin(wave)*36*t*(1-envelope));
+            var sx=1/Math.sqrt(1+Math.pow(derivative/1.47,2)),sz=derivative/1.47*sx;
+            var radius=size*(0.108*Math.pow(1-t,0.6)+0.002),wx=x+c*px+s*pz,wz=z-s*px+c*pz;
+            var sideX=c*sx+s*sz,sideZ=-s*sx+c*sz;
+            var ground=heightAt?heightAt(wx,wz)-y:-clearance;
+            var slope=heightAt?(heightAt(wx+sideX*radius,wz+sideZ*radius)-heightAt(wx-sideX*radius,wz-sideZ*radius))/(2*radius):0;
+            var cy=ground+radius*0.72+size*0.012;
+            for(var j=0;j<=sides;j++){
+              var angle=j/sides*Math.PI*2,side=Math.cos(angle)*radius,k=(i*(sides+1)+j)*3;
+              var vx=px+side*sx,vy=cy+Math.sin(angle)*radius*0.72+side*slope,vz=pz+side*sz;
+              p[k]=vx;p[k+1]=vy;p[k+2]=vz;
+              bounds.min.x=Math.min(bounds.min.x,vx);bounds.min.y=Math.min(bounds.min.y,vy);bounds.min.z=Math.min(bounds.min.z,vz);
+              bounds.max.x=Math.max(bounds.max.x,vx);bounds.max.y=Math.max(bounds.max.y,vy);bounds.max.z=Math.max(bounds.max.z,vz);
+            }
+            if(i===0||i===rings-1){var cap=(rings*(sides+1)+(i===0?0:1))*3;p[cap]=px;p[cap+1]=cy;p[cap+2]=pz;}
+          }
+          // Recompute smooth normals in the existing buffer, including the tube seam.
+          n.fill(0);
+          for(var tri=0;tri<index.length;tri+=3){
+            var a=index[tri]*3,b=index[tri+1]*3,d=index[tri+2]*3;
+            var abx=p[b]-p[a],aby=p[b+1]-p[a+1],abz=p[b+2]-p[a+2],acx=p[d]-p[a],acy=p[d+1]-p[a+1],acz=p[d+2]-p[a+2];
+            var nx=aby*acz-abz*acy,ny=abz*acx-abx*acz,nz=abx*acy-aby*acx;
+            n[a]+=nx;n[a+1]+=ny;n[a+2]+=nz;n[b]+=nx;n[b+1]+=ny;n[b+2]+=nz;n[d]+=nx;n[d+1]+=ny;n[d+2]+=nz;
+          }
+          for(var seam=0;seam<rings;seam++){var first=seam*(sides+1)*3,last=first+sides*3;for(var axis=0;axis<3;axis++)n[first+axis]=n[last+axis]=n[first+axis]+n[last+axis];}
+          for(var v=0;v<n.length;v+=3){var length=Math.hypot(n[v],n[v+1],n[v+2])||1;n[v]/=length;n[v+1]/=length;n[v+2]/=length;}
+          geometry.attributes.position.needsUpdate=true;geometry.attributes.normal.needsUpdate=true;
+          bounds.getCenter(geometry.boundingSphere.center);geometry.boundingSphere.radius=Math.hypot(bounds.max.x-bounds.min.x,bounds.max.y-bounds.min.y,bounds.max.z-bounds.min.z)*0.5;
+          var head=state.head,hz=size*0.62,hx=x+s*hz,hy=z+c*hz;
+          var headGround=heightAt?heightAt(hx,hy)-y:-clearance;
+          var along=heightAt?(heightAt(hx+s*size*0.20,hy+c*size*0.20)-heightAt(hx-s*size*0.20,hy-c*size*0.20))/(size*0.40):0;
+          var across=heightAt?(heightAt(hx+c*size*0.135,hy-s*size*0.135)-heightAt(hx-c*size*0.135,hy+s*size*0.135))/(size*0.27):0;
+          var pitch=-Math.atan(along),roll=Math.atan(across*Math.cos(pitch));
+          head.rotation.set(pitch,0,roll,'YXZ');head.position.y=headGround+size*(0.075*Math.sqrt(1+along*along+across*across)+0.012);
+        }
+        function applySnakePreySurface(prey) {
+          var heading=prey.animation.pose.heading;
+          if(heading===null)heading=Math.atan2(prey.vx,prey.vz);
+          prey.visual.position.y=0;prey.visual.rotation.set(0,heading,0);
+          updateSnakePreySurface(prey.animation.slither,prey.mesh.position.x,prey.mesh.position.y,prey.mesh.position.z,heading,prey.groundClearance,terrainHeightAt);
+        }
+        function createInsectWingGeometry(size,side,cicada,hind) {
+          var positions=[],colors=[],indices=[],span=cicada?(hind?0.62:0.78):(hind?0.88:0.96);
+          var width=cicada?(hind?0.48:0.32):(hind?0.29:0.23),sweep=hind?0.20:0.10;
+          var membrane=new THREE.Color(cicada?0xd7d6ac:0xc1dde0).convertSRGBToLinear(),vein=new THREE.Color(cicada?0x6e7850:0x567f83).convertSRGBToLinear();
+          function point(u,v){return [side*size*span*u,size*Math.sin(v*Math.PI)*0.012*(1-u),size*(-sweep*u*u+(v-0.5)*(0.025+width*Math.pow(Math.sin(u*Math.PI),0.65)))];}
+          for(var i=0;i<=10;i++)for(var j=0;j<=4;j++){
+            var u=i/10,v=j/4,p=point(u,v),tone=membrane.clone().lerp(vein,(j===0?0.25:0)+u*0.08);
+            positions.push(p[0],p[1],p[2]);colors.push(tone.r,tone.g,tone.b);
+            if(i<10&&j<4){var a=i*5+j,b=a+5;if(side>0)indices.push(a,a+1,b,b,a+1,b+1);else indices.push(a,b,a+1,b,b+1,a+1);}
+          }
+          function ribbon(a,b,width){
+            var dx=b[0]-a[0],dz=b[2]-a[2],length=Math.hypot(dx,dz)||1,nx=-dz/length*width,nz=dx/length*width,start=positions.length/3;
+            positions.push(a[0]-nx,a[1]+size*0.002,a[2]-nz,a[0]+nx,a[1]+size*0.002,a[2]+nz,b[0]-nx,b[1]+size*0.002,b[2]-nz,b[0]+nx,b[1]+size*0.002,b[2]+nz);
+            for(var k=0;k<4;k++)colors.push(vein.r,vein.g,vein.b);
+            indices.push(start,start+1,start+2,start+2,start+1,start+3);
+          }
+          [0,0.34,0.70,1].forEach(function(v){for(var i=0;i<10;i++)ribbon(point(i/10,v),point((i+1)/10,v),size*0.0028);});
+          for(var cross=2;cross<10;cross++){var u=cross/10;ribbon(point(u,0.04),point(u+0.035,0.94),size*0.0018);}
+          var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.setIndex(indices);geometry.computeVertexNormals();return geometry;
+        }
+        function buildInsectPreyParts(id,size,material) {
+          var cicada=id==='cicada',blue=id==='dragonfly';
+          var shell=new THREE.Color(cicada?0x596447:blue?0x3e8f98:0x849451).convertSRGBToLinear(),belly=new THREE.Color(cicada?0xc1b482:blue?0xacc3b4:0xc5c19a).convertSRGBToLinear();
+          var dark=new THREE.Color(0x26382e).convertSRGBToLinear(),eye=new THREE.Color(cicada?0x865b33:blue?0x38615b:0x626c38).convertSRGBToLinear(),glint=new THREE.Color(0xc3dacf).convertSRGBToLinear();
+          function ellipsoid(rx,ry,rz,x,y,z,tone){var g=new THREE.SphereGeometry(1,12,8);g.scale(rx*size,ry*size,rz*size);g.translate(x*size,y*size,z*size);return {geometry:g,color:tone};}
+          var abdomen=ellipsoid(cicada?0.145:0.057,cicada?0.105:0.058,cicada?0.33:0.49,0,-0.015,cicada?-0.14:-0.24,shell),p=abdomen.geometry.attributes.position,colors=[],tone=new THREE.Color();
+          for(var i=0;i<p.count;i++){
+            var z=p.getZ(i)/size,rear=Math.max(0,Math.min(1,(-z-0.1)/(cicada?0.37:0.63)));
+            p.setX(i,p.getX(i)*(1-rear*0.50));
+            tone.copy(belly).lerp(shell,Math.max(0,Math.min(1,(p.getY(i)/size+0.04)/0.07)));
+            var band=Math.pow(Math.max(0,Math.cos((z+0.65)*(cicada?55:62))),10);tone.lerp(dark,band*(cicada?0.24:0.64));colors.push(tone.r,tone.g,tone.b);
+          }
+          abdomen.geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));abdomen.geometry.computeVertexNormals();
+          var parts=[abdomen,ellipsoid(cicada?0.17:0.105,cicada?0.12:0.095,cicada?0.18:0.14,0,0.005,0.18,shell),ellipsoid(cicada?0.16:0.115,0.08,0.105,0,0.015,0.365,dark)];
+          function filament(points,radius,color){var curve=new THREE.CatmullRomCurve3(points.map(function(p){return new THREE.Vector3(p[0]*size,p[1]*size,p[2]*size);}));parts.push({geometry:new THREE.TubeGeometry(curve,8,radius*size,5,false),color:color});}
+          [-1,1].forEach(function(side){
+            parts.push(ellipsoid(cicada?0.044:0.066,cicada?0.047:0.067,0.065,side*(cicada?0.145:0.097),0.036,0.385,eye));
+            parts.push(ellipsoid(0.010,0.012,0.014,side*(cicada?0.169:0.134),0.076,0.413,glint));
+            filament([[side*0.06,0.03,0.415],[side*0.08,0.05,0.48],[side*(cicada?0.13:0.095),0.09,cicada?0.59:0.53]],0.005,dark);
+            for(var leg=0;leg<3;leg++){
+              var start=0.23-leg*0.12,end=start+(1-leg)*0.10;
+              filament([[side*0.08,-0.035,start],[side*0.17,-0.08,end],[side*0.23,-0.147,end-0.035]],0.008,dark);
+            }
+          });
+          material.color.setHex(0xffffff);material.vertexColors=true;material.roughness=0.72;material.emissive.copy(belly);material.emissiveIntensity=0.045;
+          var body=new THREE.Mesh(mergeGroundPreyParts(parts),material);body.name='prey-insect-body';
+          var wingMaterial=new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.48,metalness:0.04,transparent:true,opacity:cicada?0.76:0.66,side:THREE.DoubleSide,depthWrite:false});
+          var wings=[];
+          [false,true].forEach(function(hind){[-1,1].forEach(function(side){
+            var wing=new THREE.Mesh(createInsectWingGeometry(size,side,cicada,hind),wingMaterial);wing.name=hind?'prey-insect-hindwing':'prey-insect-forewing';
+            wing.position.set(side*size*0.07,size*(hind?0.043:0.055),size*(hind?-0.015:0.19));wing.userData.side=side;wing.userData.hind=hind;wings.push(wing);
+          });});
+          return {body:body,wings:wings,insect:{id:id,size:size,phase:null,rate:18,amplitude:0,effort:0,lift:0,clearanceMix:0,foreAngle:0.12,hindAngle:0.12,sweep:cicada?0.98:0.10,pitch:0,bob:0}};
+        }
+        function advanceInsectFlight(state,speed,maxSpeed,height,dt,reduced,phaseSeed) {
+          if(state.phase===null)state.phase=phaseSeed||0;
+          var effort=Math.max(0,Math.min(1,speed/Math.max(0.2,maxSpeed))),lift=Math.max(0,Math.min(1,height/(state.size*0.75)));
+          var restSweep=state.id==='cicada'?0.98:0.10;state.clearanceMix=lift;
+          if(reduced){state.lift=lift;state.amplitude=state.pitch=state.bob=0;state.foreAngle=state.hindAngle=0.12;state.sweep=restSweep*(1-lift);return;}
+          var elapsed=Math.max(0,dt),decay=Math.exp(-8*elapsed),rateGoal=18+effort*12;
+          state.phase=(state.phase+rateGoal*elapsed+(state.rate-rateGoal)*(1-decay)/8)%(Math.PI*2);
+          state.rate=rateGoal+(state.rate-rateGoal)*decay;state.effort=effort+(state.effort-effort)*decay;
+          state.lift=lift+(state.lift-lift)*decay;state.amplitude=0.42*lift+(state.amplitude-0.42*lift)*decay;
+          // Clamp the downstroke to available clearance, including during a quick landing.
+          var lower=-Math.asin(Math.min(1,(Math.max(0,height)+state.size*0.18)/(state.size*1.12)));
+          state.foreAngle=Math.max(lower,0.12+Math.sin(state.phase)*state.amplitude);
+          state.hindAngle=Math.max(lower,0.12+Math.sin(state.phase-(state.id==='cicada'?0.45:1.1))*state.amplitude*0.86);
+          state.sweep=restSweep*(1-state.lift);state.pitch=state.effort*lift*0.09;state.bob=(1-Math.cos(state.phase))*state.size*0.012*lift;
+        }
+        function applyInsectFlight(animation,bank) {
+          var state=animation.insect;animation.root.position.y=state.bob;animation.root.rotation.x=state.pitch;animation.root.rotation.z=bank*state.clearanceMix;
+          animation.wings.forEach(function(wing){var side=wing.userData.side;wing.rotation.set(0,side*state.sweep,side*(wing.userData.hind?state.hindAngle:state.foreAngle),'YXZ');});
         }
         function buildPreyVisual(preyData, size) {
           var kind = preyKindFor(preyData);
@@ -16323,8 +17154,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var legs = [];
           var tail = null;
           var body;
+          var gait=null,slither=null,insect=null,head=null,look=null,birdLook=null,fins=[];
           if (kind === 'bird') {
-            var birdPalette=preyBirdPalette(preyData.id);
+            var birdPalette=preyBirdPalette(preyData.id),birdShape=birdPalette.shape;
             material.color.setHex(0xffffff);material.vertexColors=true;material.roughness=0.86;
             material.emissive.copy(birdPalette.belly);material.emissiveIntensity=0.06;
             body = new THREE.Mesh(createPreyBirdBodyGeometry(size,birdPalette), material);
@@ -16335,24 +17167,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var headPositions=birdHeadGeometry.attributes.position,headColors=[];
             var headColor=new THREE.Color(),beakColor=birdPalette.bill;
             for(var headVertex=0;headVertex<headPositions.count;headVertex++){
-              var headY=headPositions.getY(headVertex)/size,headZ=headPositions.getZ(headVertex)/size;
+              var headX=headPositions.getX(headVertex)/size,headY=headPositions.getY(headVertex)/size,headZ=headPositions.getZ(headVertex)/size;
               var throat=Math.max(0,Math.min(1,(-headY-0.07)/0.10));
               headColor.copy(birdPalette.head).lerp(birdPalette.neck,throat);
-              if(preyData.id==='smallOwl')headColor.lerp(birdPalette.neck,Math.max(0,headZ/0.24)*0.75);
+              if(preyData.id==='smallOwl'){
+                var disk=Math.max(0,1-Math.pow((Math.abs(headX)-0.10)/0.15,2)-Math.pow((headY-0.01)/0.20,2))*Math.max(0,Math.min(1,headZ/0.12));
+                headColor.lerp(birdPalette.neck,disk*0.92);
+                if(headY>0.07&&headY<0.16&&headZ>0.08)headColor.lerp(birdPalette.flight,0.28);
+              }
               headColors.push(headColor.r,headColor.g,headColor.b);
             }
             birdHeadGeometry.setAttribute('color',new THREE.Float32BufferAttribute(headColors,3));birdHeadGeometry.computeVertexNormals();
             // Eyes share the head's geometry and material, adding detail without draw calls.
             var expandedHead=birdHeadGeometry.toNonIndexed();birdHeadGeometry.dispose();
             var facePositions=Array.from(expandedHead.attributes.position.array),faceColors=Array.from(expandedHead.attributes.color.array),faceNormals=Array.from(expandedHead.attributes.normal.array);
-            var broadBill=preyData.id==='duck' || preyData.id==='waterfowl';
-            var billSource=new THREE.ConeGeometry(size*(broadBill?0.09:0.055),size*(broadBill?0.28:0.20),6);
-            billSource.rotateX(Math.PI/2);billSource.scale(broadBill?1.3:1,0.5,1);billSource.translate(0,-size*0.04,size*(broadBill?0.28:0.26));
+            var billSource=new THREE.ConeGeometry(size*birdShape.billRadius,size*birdShape.billLength,6);
+            billSource.rotateX(Math.PI/2+birdShape.billDrop);billSource.scale(birdShape.billWidth,0.5,1);billSource.translate(0,-size*0.04,size*(0.24+birdShape.billLength*0.35));
             var bill=billSource.toNonIndexed();billSource.dispose();
             for(var billVertex=0;billVertex<bill.attributes.position.count;billVertex++){
               facePositions.push(bill.attributes.position.getX(billVertex),bill.attributes.position.getY(billVertex),bill.attributes.position.getZ(billVertex));
               faceNormals.push(bill.attributes.normal.getX(billVertex),bill.attributes.normal.getY(billVertex),bill.attributes.normal.getZ(billVertex));
-              faceColors.push(beakColor.r,beakColor.g,beakColor.b);
+              var billTone=bill.attributes.position.getZ(billVertex)>size*(0.24+birdShape.billLength*0.60)?0.80:1;
+              faceColors.push(beakColor.r*billTone,beakColor.g*billTone,beakColor.b*billTone);
             }
             bill.dispose();
             [-1,1].forEach(function(side){
@@ -16372,6 +17208,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 faceColors.push(0.56,0.62,0.60);
               }
               glint.dispose();
+              if(preyData.id==='smallOwl'){
+                // Small ear tufts are merged into the face, retaining one head draw.
+                var tuftSource=new THREE.ConeGeometry(size*0.047,size*0.16,6);tuftSource.rotateZ(-side*0.14);tuftSource.translate(side*size*0.135,size*0.252,-size*0.015);
+                var tuft=tuftSource.toNonIndexed();tuftSource.dispose();
+                for(var tv=0;tv<tuft.attributes.position.count;tv++){
+                  facePositions.push(tuft.attributes.position.getX(tv),tuft.attributes.position.getY(tv),tuft.attributes.position.getZ(tv));
+                  faceNormals.push(tuft.attributes.normal.getX(tv),tuft.attributes.normal.getY(tv),tuft.attributes.normal.getZ(tv));
+                  var tuftColor=tuft.attributes.position.getY(tv)>size*0.29?birdPalette.flight:birdPalette.head;faceColors.push(tuftColor.r,tuftColor.g,tuftColor.b);
+                }
+                tuft.dispose();
+              }
             });
             expandedHead.dispose();birdHeadGeometry=new THREE.BufferGeometry();
             birdHeadGeometry.setAttribute('position',new THREE.Float32BufferAttribute(facePositions,3));
@@ -16379,10 +17226,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             birdHeadGeometry.setAttribute('normal',new THREE.Float32BufferAttribute(faceNormals,3));
             var birdHead = new THREE.Mesh(birdHeadGeometry,new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.78}));
             birdHead.name='prey-plumage-head';
-            birdHead.scale.setScalar(preyData.id==='smallOwl'?0.96:0.82);
-            birdHead.position.set(0, size * 0.10, size * 0.52);
+            birdHead.scale.set(0.82*birdShape.headWidth,0.82*birdShape.headHeight,0.82*birdShape.headLength);
+            birdHead.position.set(0, size * 0.10, size*(0.44+0.08*birdShape.bodyLength));
             root.add(birdHead);
-            var preyWingMaterial=new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.86,side:THREE.DoubleSide});
+            var birdGazeProfiles={
+              pigeon:[1,0.28,0.08],mourningDove:[0.90,0.26,0.075],songbird:[1.20,0.30,0.09],
+              shorebird:[1.05,0.22,0.06],duck:[0.80,0.24,0.055],waterfowl:[0.75,0.25,0.06],
+              grouse:[0.85,0.27,0.075],ptarmigan:[0.85,0.26,0.075],smallOwl:[0.65,0.45,0.10]
+            },birdGaze=birdGazeProfiles[preyData.id]||birdGazeProfiles.pigeon;
+            birdLook={phase:null,rate:0,activity:0,yaw:0,pitch:0,roll:0,lookSide:0,
+              rateScale:birdGaze[0],yawLimit:birdGaze[1],pitchLimit:birdGaze[2],rollLimit:0.12};
+            var preyWingMaterial=new THREE.MeshStandardMaterial({vertexColors:true,morphTargets:true,morphNormals:true,roughness:0.86,side:THREE.DoubleSide});
             [-1, 1].forEach(function(side) {
               var wing = new THREE.Mesh(createPreyWingGeometry(size,side,birdPalette),preyWingMaterial);
               wing.name='prey-tapered-wing';
@@ -16394,33 +17248,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var preyTailGeometry=createPreyTailGeometry(size,birdPalette);
             var preyTailMaterial=darkMaterial;preyTailMaterial.side=THREE.DoubleSide;
             preyTailMaterial.color.setHex(0xffffff);preyTailMaterial.vertexColors=true;
+            preyTailMaterial.morphTargets=true;preyTailMaterial.morphNormals=true;
             tail = new THREE.Mesh(preyTailGeometry,preyTailMaterial);
             tail.position.z = -size * 0.40;
-            root.add(tail);
+            root.add(tail);paleMaterial.dispose();
           } else if (kind === 'fish') {
             material.color.setHex(0xffffff);material.vertexColors=true;material.side=THREE.DoubleSide;
-            material.roughness=0.44;material.metalness=0.12;material.emissive.setHex(0x294947);material.emissiveIntensity=0.04;
-            body = new THREE.Mesh(createFishBodyGeometry(size),material);root.add(body);
-            var finMaterial=new THREE.MeshStandardMaterial({color:new THREE.Color(0x577871).convertSRGBToLinear(),roughness:0.65,side:THREE.DoubleSide});
+            material.morphTargets=true;material.morphNormals=true;material.roughness=0.44;material.metalness=0.12;material.emissive.setHex(0x294947);material.emissiveIntensity=0.04;
+            body = new THREE.Mesh(createFishBodyGeometry(size),material);body.name='prey-fish-body';root.add(body);
+            var finMaterial=new THREE.MeshStandardMaterial({vertexColors:true,morphTargets:true,morphNormals:true,roughness:0.65,side:THREE.DoubleSide});
             tail = new THREE.Mesh(createFishFinGeometry(size,true),finMaterial);
             tail.name='prey-forked-tail';tail.position.z=-size*0.49;root.add(tail);
-            var dorsal=new THREE.Mesh(createFishFinGeometry(size,false),finMaterial);root.add(dorsal);
+            var dorsal=new THREE.Mesh(createFishFinGeometry(size,false),finMaterial);dorsal.name='prey-fish-dorsal';root.add(dorsal);fins.push(dorsal);darkMaterial.dispose();paleMaterial.dispose();
           } else if (kind === 'insect') {
-            body = new THREE.Mesh(new THREE.SphereGeometry(size * 0.24, 8, 6), darkMaterial);
-            body.scale.set(0.65, 0.65, 1.8);
-            root.add(body);
-            [-1, 1].forEach(function(side) {
-              var insectWing = new THREE.Mesh(new THREE.BoxGeometry(size * 0.65, 0.018, size * 0.22), paleMaterial);
-              insectWing.position.set(side * size * 0.38, size * 0.04, 0);
-              root.add(insectWing);
-              wings.push(insectWing);
-            });
+            var insectParts=buildInsectPreyParts(preyData.id,size,material);
+            body=insectParts.body;wings=insectParts.wings;insect=insectParts.insect;root.add(body);wings.forEach(function(wing){root.add(wing);});
+            applyInsectFlight({root:root,wings:wings,insect:insect},0);darkMaterial.dispose();paleMaterial.dispose();
           } else if (kind === 'snake') {
-            for (var snakeIndex = 0; snakeIndex < 6; snakeIndex++) {
-              var segment = new THREE.Mesh(new THREE.SphereGeometry(size * (0.15 - snakeIndex * 0.01), 7, 5), material);
-              segment.position.set(Math.sin(snakeIndex * 0.9) * size * 0.13, 0, (snakeIndex - 2.5) * size * 0.28);
-              root.add(segment);
-            }
+            var snakeParts=buildSnakePreyParts(size,material);
+            body=snakeParts.body;slither=snakeParts.slither;root.add(body);root.add(snakeParts.head);
+            darkMaterial.dispose();paleMaterial.dispose();
+          } else if(preyData.id==='sloth'||preyData.id==='howlerMonkey'||preyData.id==='capuchin'||preyData.id==='coati') {
+            var rainforestParts=buildRainforestPreyParts(preyData.id,size,material),slothPrey=preyData.id==='sloth',coatiPrey=preyData.id==='coati';
+            body=rainforestParts.body;tail=rainforestParts.tail;legs=rainforestParts.legs;head=rainforestParts.head;
+            root.add(body);root.add(head);root.add(tail);legs.forEach(function(leg){root.add(leg);});
+            gait={phase:null,rate:0,effort:0,front:0,hind:0,bob:0,tail:0,size:size,quadruped:true,strides:[0,0,0,0],
+              rateScale:slothPrey?0.16:coatiPrey?1:0.85,strideScale:slothPrey?0.30:coatiPrey?0.92:0.86,
+              bobScale:slothPrey?0.005:coatiPrey?0.018:0.026,tailScale:slothPrey?0.018:coatiPrey?0.09:0.06,
+              terrain:{pitch:null,roll:0,lift:0,contact:1,supportX:rainforestParts.supportX,supportZ:rainforestParts.supportZ}};
+            darkMaterial.dispose();paleMaterial.dispose();
+          } else if(preyData.id==='fawnDeer'||preyData.id==='pronghornCalf'||preyData.id==='fox') {
+            var mammalParts=buildMammalPreyParts(preyData.id,size,material);
+            body=mammalParts.body;tail=mammalParts.tail;legs=mammalParts.legs;head=mammalParts.head;
+            root.add(body);root.add(head);root.add(tail);legs.forEach(function(leg){root.add(leg);});
+            gait={phase:null,rate:0,effort:0,front:0,hind:0,bob:0,tail:0,size:size,quadruped:true,fox:preyData.id==='fox',strides:[0,0,0,0],terrain:{pitch:null,roll:0,lift:0,contact:1,supportX:0.36,supportZ:0.82}};
+            darkMaterial.dispose();paleMaterial.dispose();
+          } else if(kind==='rabbit'||kind==='rodent'||preyData.id==='skunk') {
+            var groundParts=buildGroundPreyParts(preyData,size,kind,material);
+            body=groundParts.body;tail=groundParts.tail;legs=groundParts.legs;head=groundParts.head;
+            root.add(body);root.add(head);root.add(tail);legs.forEach(function(leg){root.add(leg);});
+            gait={phase:null,rate:0,effort:0,front:0,hind:0,bob:0,tail:0,size:size,terrain:{pitch:null,roll:0,lift:0,contact:1}};
           } else {
             body = new THREE.Mesh(new THREE.SphereGeometry(size * 0.38, 10, 7), material);
             body.scale.set(kind === 'rabbit' ? 0.72 : 0.80, 0.66, kind === 'mammal' ? 1.55 : 1.30);
@@ -16450,7 +17317,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               legs.push(leg);
             });
           }
-          return { root: root, kind: kind, body: body, wings: wings, legs: legs, tail: tail, pose: { heading:null, bank:0, spread:0, wingAngle:0.08, phase:null, rate:8, wingAmplitude:0.3 }, float: {height:0,slopeX:0,slopeZ:0,pitch:0,roll:0,offset:0,contact:0}, swim: {phase:null,rate:Math.PI*1.3,amplitude:0,tailYaw:0,bodyYaw:0,roll:0} };
+          if(head){
+            look={phase:null,rate:0,activity:0,yaw:0,pitch:0,roll:0,lookSide:0,
+              rateScale:preyData.id==='sloth'?0.20:kind==='rodent'?1.15:kind==='rabbit'?1.10:preyData.id==='howlerMonkey'?0.80:1,
+              yawLimit:preyData.id==='sloth'?0.18:preyData.id==='fox'?0.40:kind==='rodent'?0.38:kind==='rabbit'?0.32:0.34,
+              pitchLimit:preyData.id==='sloth'?0.055:kind==='rodent'||kind==='rabbit'?0.12:preyData.id==='coati'?0.105:0.14};
+          }
+          return { root: root, kind: kind, body: body, head:head, look:look, birdHead:birdHead||null, birdLook:birdLook, fins:fins, wings: wings, legs: legs, tail: tail, gait:gait, slither:slither, insect:insect, pose: { heading:null, bank:0, spread:0, wingAngle:0.08, wingFlex:0, tailGather:0, tailGatherResponse:0, tailSpeed:null, tailReferenceSpeed:kind==='bird'?Math.max(0.1,Number(preyData.speedMps)||1):0, phase:null, rate:8, wingAmplitude:0.3, motionBlend:1 }, float: {height:0,slopeX:0,slopeZ:0,pitch:0,roll:0,offset:0,contact:0}, swim: {size:size,bend:0,phase:null,rate:Math.PI*1.3,amplitude:0,tailYaw:0,bodyYaw:0,roll:0} };
         }
         function nearestPreyCoverTarget(x, z) {
           var best = null;
@@ -16506,6 +17379,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var groundClearance = Math.max(0.03, -preyBoundsScratch.min.y);
           // Keep the original fish-body contact envelope while its tail silhouette improves.
           if(preyVisual.kind==='fish')groundClearance=size*0.38*0.55;
+          if(preyVisual.kind==='snake')groundClearance=size*0.15;
+          if(preyVisual.insect)groundClearance=size*0.24*0.65;
           var preySurfaceMode = species.biome === 'lake' && pd.id === 'fish'
             ? 'subsurface'
             : species.biome === 'lake' && (pd.id === 'duck' || pd.id === 'waterfowl')
@@ -16541,7 +17416,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               : terrainHeightAt(px, pz) + groundClearance;
           preyGroup.position.set(px, preyBaseY, pz);
           scene.add(preyGroup);
-          return {
+          var spawnedPrey = {
             mesh: preyGroup,    // group, not single mesh
             visual: mesh,        // for animation
             beacon: beacon,
@@ -16549,12 +17424,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             data: pd,
             animation: preyVisual,
             groundClearance: groundClearance,
+            visualSize: size,
             surfaceMode: preySurfaceMode,
             waterY: py,
             escapeProfile: preyEscapeProfile(pd),
             vy: 0,
-            vx: (Math.random() - 0.5) * pd.speedMps * 0.3,
-            vz: (Math.random() - 0.5) * pd.speedMps * 0.3,
+            vx: initialPreyVelocity(pd,Math.random()),
+            vz: initialPreyVelocity(pd,Math.random()),
             spawnedAt: motionNow,
             alerted: false,
             fleeBoost: 1.0,
@@ -16564,6 +17440,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             escapePhase: Math.random() * Math.PI * 2,
             bobPhase: Math.random() * Math.PI * 2
           };
+          if(preyVisual.gait&&preySurfaceMode==='terrain')applyGroundPreyTerrain(spawnedPrey,0,true);
+          if(preyVisual.look)updateGroundPreyHead(spawnedPrey,0,true);
+          if(preyVisual.slither){preyVisual.slither.phase=spawnedPrey.bobPhase;applySnakePreySurface(spawnedPrey);}
+          if(preyVisual.insect)preyVisual.insect.phase=spawnedPrey.bobPhase;
+          return spawnedPrey;
         }
         for (var pi = 0; pi < 12; pi++) {
           var spawned = spawnPrey();
@@ -16758,6 +17639,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           starVisibility = Math.max(0, Math.min(1, 1 - daylight * 1.35)) * (1 - visualCloudCover * 0.90);
           readabilityLightTerm = Math.max(0.04, Math.min(0.22, 0.05 + (1 - daylight) * 0.10 + visualCloudCover * 0.06));
           shadowLightTerm = Math.max(0, daylight * (1 - visualCloudCover * 0.72) + moonlight * 0.06);
+          preyContactLight.value=0.58+Math.min(1,shadowLightTerm)*0.42;
           skyLuminance = relativeLuminanceOfColor(skyFrameColor);
         }
         updateEnvironmentalLight(dayPhase);
@@ -17387,6 +18269,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var carriedPreyBounds = new THREE.Box3(), carriedPreySize = new THREE.Vector3(), carriedPreyCenter = new THREE.Vector3();
         function clearCarriedPrey() {
           if (!carriedPrey) return;
+          if(carriedPrey.feet)carriedPrey.feet.forEach(function(foot){foot.morphTargetInfluences[0]+=foot.morphTargetInfluences[1];foot.morphTargetInfluences[1]=0;});
           var root = carriedPrey.prey.mesh;
           if (root.parent) root.parent.remove(root);
           var resources = new Set();
@@ -17399,7 +18282,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           carriedPrey = null;
           studyBoundsDirty = true;
         }
-        function beginCarriedPrey(prey) {
+        function beginCarriedPrey(prey,pausedCatch) {
           clearCarriedPrey();
           scene.remove(prey.mesh);
           if (prey.beacon) prey.beacon.visible = false;
@@ -17418,7 +18301,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (prey.animation.kind === 'bird') prey.animation.wings.forEach(function(wing,i) {
             var side = i === 0 ? -1 : 1;
             wing.rotation.set(0,side*1.15,side*0.08); wing.scale.x=0.3;
+            wing.morphTargetInfluences[0]=wing.morphTargetInfluences[1]=0;
           });
+          if(prey.animation.kind==='bird'){
+            prey.animation.pose.wingFlex=0;prey.animation.pose.tailGather=0;prey.animation.pose.tailGatherResponse=0;prey.animation.pose.tailSpeed=null;
+            prey.animation.tail.morphTargetInfluences[0]=0;prey.animation.tail.rotation.set(0,0,0);
+          }
+          if(prey.animation.birdLook){advanceBirdPreyHead(prey.animation.birdLook,0,0,0,false,0,0,true,prey.bobPhase);applyBirdPreyHeadPose(prey.animation);}
+          if(prey.animation.kind==='fish'){advanceFishSwim(prey.animation.swim,0,prey.data.speedMps,0,true,prey.bobPhase);applyFishSwim(prey.animation);}
+          if(prey.animation.gait){prey.animation.legs.forEach(function(leg){setGroundPreyLegPose(leg,0);});prey.animation.tail.rotation.z=0;}
+          if(prey.animation.look){advanceGroundPreyHead(prey.animation.look,0,0,0,false,0,true,prey.bobPhase);applyGroundPreyHeadPose(prey.animation);}
+          if(prey.animation.slither)updateSnakePreySurface(prey.animation.slither,0,prey.groundClearance,0,0,prey.groundClearance,null);
+          if(prey.animation.insect){advanceInsectFlight(prey.animation.insect,0,prey.data.speedMps,0,0,true,prey.bobPhase);applyInsectFlight(prey.animation,0);}
           prey.mesh.updateMatrixWorld(true);
           carriedPreyBounds.setFromObject(prey.visual);
           carriedPreyBounds.getSize(carriedPreySize); carriedPreyBounds.getCenter(carriedPreyCenter);
@@ -17427,25 +18321,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           prey.mesh.scale.setScalar(carryScale);
           prey.mesh.position.set(anchor.x,anchor.y-(_rmFX?0:0.06),anchor.z+(_rmFX?0:0.08));
           talonGroup.add(prey.mesh);
-          strikeFootExtension=1;raptorFeet.forEach(function(foot){foot.morphTargetInfluences[0]=1;});
+          var heldGrip=_rmFX||pausedCatch?1:0;
+          strikeFootExtension=1;raptorFeet.forEach(function(foot){foot.morphTargetInfluences[0]=1-heldGrip;foot.morphTargetInfluences[1]=heldGrip;});
           var carryMaterials = [], seenCarryMaterials = new Set();
           prey.visual.traverse(function(object) {
             var materials = Array.isArray(object.material) ? object.material : object.material ? [object.material] : [];
             materials.forEach(function(material) {
               if (seenCarryMaterials.has(material)) return;
               seenCarryMaterials.add(material);
-              carryMaterials.push({material:material,opacity:material.opacity});
-              material.transparent = true; material.depthWrite = false; material.needsUpdate = true;
+              carryMaterials.push({material:material,opacity:material.opacity,transparent:material.transparent,depthWrite:material.depthWrite});
             });
           });
-          carriedPrey = {prey:prey,anchor:anchor,materials:carryMaterials,until:motionNow+1100,startedAt:motionNow};
+          carriedPrey = {prey:prey,anchor:anchor,materials:carryMaterials,until:motionNow+1100,startedAt:motionNow,grip:heldGrip,feet:raptorFeet};
           studyBoundsDirty = true;
         }
         function updateCarriedPrey(dt) {
           if (!carriedPrey) return;
           if (motionNow >= carriedPrey.until) { clearCarriedPrey(); return; }
+          carriedPrey.grip=Math.max(carriedPrey.grip,raptorCarryGrip(motionNow-carriedPrey.startedAt,_rmFX,simPaused));
+          raptorFeet.forEach(function(foot){var extension=foot.morphTargetInfluences[0]+foot.morphTargetInfluences[1];foot.morphTargetInfluences[0]=extension*(1-carriedPrey.grip);foot.morphTargetInfluences[1]=extension*carriedPrey.grip;});
           var fade = raptorCarryOpacity(motionNow-carriedPrey.startedAt,_rmFX);
-          carriedPrey.materials.forEach(function(entry) { entry.material.opacity=entry.opacity*fade; });
+          // Retain solid surface occlusion until the existing final fade begins.
+          carriedPrey.materials.forEach(function(entry) {
+            var material=entry.material,transparent=fade<1?true:entry.transparent,depthWrite=fade<1?false:entry.depthWrite;
+            material.opacity=entry.opacity*fade;
+            if(material.transparent!==transparent||material.depthWrite!==depthWrite){
+              material.transparent=transparent;material.depthWrite=depthWrite;material.needsUpdate=true;
+            }
+          });
           var root=carriedPrey.prey.mesh, anchor=carriedPrey.anchor;
           var alpha=_rmFX?1:dampingAlpha(24,dt);
           root.position.x+=(anchor.x-root.position.x)*alpha;
@@ -17814,6 +18717,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (!nextPaused && studyActive) leaveStudy();
           var wasPaused = simPaused;
           simPaused = !!nextPaused;
+          if(simPaused&&carriedPrey){carriedPrey.grip=1;strikeFootExtension=1;raptorFeet.forEach(function(foot){foot.morphTargetInfluences[0]=0;foot.morphTargetInfluences[1]=1;});}
           clearHeldInputs();
           updateFlightState(simPaused ? 'paused' : raptor.crashed ? 'stunned' : raptor.landed ? (activePerch ? 'perched' : 'landed') : raptor.pullingUp ? 'pull-up' : raptor.diving ? 'dive' : 'glide');
           var showPauseOverlay = simPaused && missionOutcome === 'active';
@@ -19186,6 +20090,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             carriedPreyLabel: carriedPrey ? carriedPrey.prey.data.label : null,
             carriedPreyMs: carriedPrey ? Math.max(0, carriedPrey.until-motionNow) : 0,
             talonExtension: strikeFootExtension,
+            talonGrip: carriedPrey ? carriedPrey.grip : 0,
             strikeWindowOpen: !!(snapshotTarget && strikeReady && !raptor.landed && !raptor.crashed && !activePerch && talonThrowWindow(snapshotTarget)),
             focusTimeScale: Math.round(focusTimeScale * 1000) / 1000,
             focusActive: focusEpisode.active,
@@ -19207,7 +20112,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             wingAngle: wingPose.angle,
             wingFold: wingPose.fold,
             visualGroundClearance: raptorGroup.position.y-terrainHeightAt(raptor.x,raptor.z),
-            footSupportClearance:raptorFootClearance,footSurfaceClearance:raptorFootSurfaceClearance(),footExtension:raptorFeet[0].morphTargetInfluences[0],footToeCount:raptorFeet[0].geometry.userData.toeCount,footForwardToes:raptorFeet[0].geometry.userData.forwardToes,footPositionVersion:raptorFeet[0].geometry.attributes.position.version,
+            footSupportClearance:raptorFootClearance,footSurfaceClearance:raptorFootSurfaceClearance(),footExtension:raptorFeet[0].morphTargetInfluences[0]+raptorFeet[0].morphTargetInfluences[1],footGrip:raptorFeet[0].morphTargetInfluences[1],footToeCount:raptorFeet[0].geometry.userData.toeCount,footForwardToes:raptorFeet[0].geometry.userData.forwardToes,footPositionVersion:raptorFeet[0].geometry.attributes.position.version,
             airflowOverlayVisible: airflowLines.visible,
             speedOverlayVisible: speedLines.visible,
             wingRestSpan: raptorWingPoseSpan(),
@@ -19267,6 +20172,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             vegetationWindZ: vegetationWindState.z,
             vegetationSurfacePrograms: vegetationShaderCounts.surface,
             vegetationShadowPrograms: vegetationShaderCounts.shadow,
+            canopyViewClearance:cameraFoliage.enabled.value>0,
             terrainClearance: raptor.y-terrainHeightAt(raptor.x,raptor.z),
             meadowBladeCount: grassInstanceCount ? grassGeometry.attributes.position.count/8 : 0,
             fixedLandmarks: true,
@@ -19289,8 +20195,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             targetMotionArrowVisible: targetGuide.visible && targetGuideGeometry.drawRange.count===8,
             targetHaloVisible: targetFocusHalo.visible,
             preyCount: preyMeshes.length,
-            fishSwimPoses: preyMeshes.filter(function(prey){return prey.animation.kind==='fish';}).map(function(prey){var swim=prey.animation.swim;return {phase:swim.phase,amplitude:swim.amplitude,tailYaw:swim.tailYaw,bodyYaw:swim.bodyYaw,roll:swim.roll,visualY:prey.visual.position.y};}),
-            preyVisualPoses: preyMeshes.map(function(prey){return {kind:prey.animation.kind,heading:prey.animation.pose.heading,bank:prey.animation.pose.bank,spread:prey.animation.pose.spread,wingAngle:prey.animation.pose.wingAngle,phase:prey.animation.pose.phase,rate:prey.animation.pose.rate,height:prey.flightHeight};}),
+            fishSwimPoses: preyMeshes.filter(function(prey){return prey.animation.kind==='fish';}).map(function(prey){var swim=prey.animation.swim;return {id:prey.data.id,phase:swim.phase,rate:swim.rate,amplitude:swim.amplitude,tailYaw:swim.tailYaw,bodyYaw:swim.bodyYaw,roll:swim.roll,bend:swim.bend,tailX:prey.animation.tail.position.x,tailZ:prey.animation.tail.position.z,morphs:prey.animation.body.morphTargetInfluences.slice(),finMorphs:prey.animation.fins[0].morphTargetInfluences.slice(),visualY:prey.visual.position.y};}),
+            insectFlightPoses: preyMeshes.filter(function(prey){return !!prey.animation.insect;}).map(function(prey){var insect=prey.animation.insect;return {id:prey.data.id,phase:insect.phase,rate:insect.rate,amplitude:insect.amplitude,lift:insect.lift,fore:insect.foreAngle,hind:insect.hindAngle,sweep:insect.sweep,pitch:insect.pitch,bob:insect.bob,height:prey.flightHeight};}),
+            snakeSlitherPoses: preyMeshes.filter(function(prey){return !!prey.animation.slither;}).map(function(prey){var snake=prey.animation.slither;return {phase:snake.phase,rate:snake.rate,amplitude:snake.amplitude,visualY:prey.visual.position.y};}),
+            groundPreyTerrain: preyMeshes.filter(function(prey){return !!prey.animation.gait;}).map(function(prey){var t=prey.animation.gait.terrain;return {id:prey.data.id,pitch:t.pitch,roll:t.roll,lift:t.lift,contact:t.contact,visualY:prey.visual.position.y};}),
+            birdPreyHeads:preyMeshes.filter(function(prey){return !!prey.animation.birdLook;}).map(function(prey){var look=prey.animation.birdLook;return {id:prey.data.id,phase:look.phase,rate:look.rate,activity:look.activity,yaw:look.yaw,pitch:look.pitch,roll:look.roll,lookSide:look.lookSide,alerted:prey.alerted};}),
+            groundPreyHeads:preyMeshes.filter(function(prey){return !!prey.animation.look;}).map(function(prey){var look=prey.animation.look;return {id:prey.data.id,phase:look.phase,rate:look.rate,activity:look.activity,yaw:look.yaw,pitch:look.pitch,roll:look.roll,lookSide:look.lookSide,alerted:prey.alerted};}),
+            groundPreyGaits: preyMeshes.filter(function(prey){return !!prey.animation.gait;}).map(function(prey){var g=prey.animation.gait;return {id:prey.data.id,phase:g.phase,rate:g.rate,effort:g.effort,bob:g.bob,front:g.front,hind:g.hind,strides:g.strides?g.strides.slice():null};}),
+            preyVisualPoses: preyMeshes.map(function(prey){return {kind:prey.animation.kind,heading:prey.animation.pose.heading,bank:prey.animation.pose.bank,spread:prey.animation.pose.spread,wingAngle:prey.animation.pose.wingAngle,wingFlex:prey.animation.pose.wingFlex,tailGather:prey.animation.pose.tailGather,phase:prey.animation.pose.phase,rate:prey.animation.pose.rate,motionBlend:prey.animation.pose.motionBlend,height:prey.flightHeight};}),
             activeTargetIndex: snapshotTarget ? snapshotTarget.index : -1,
             visibleBeaconCount: countVisiblePreyBeacons(),
             precipitationMode: precipitationMode,
@@ -19893,7 +20805,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           spawnCatchFx(impact.x, impact.y, impact.z, caught.data.color || 0xfde047, caught.surfaceMode, caught.animation.kind);
           // Publish the fresh pooled slot even when this catch freezes the mission.
           updateCatchFx(0);
-          beginCarriedPrey(caught);
+          beginCarriedPrey(caught,simPaused);
           preyMeshes.splice(hitIdx, 1);
           runCatches++;
           missionCatches += 1;
@@ -20005,9 +20917,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (_rmFX) {
             gazeTarget=null;gazeState.yaw=gazeState.pitch=0;headMesh.rotation.set(0,0,0);
             tail.rotation.y=0;tail.rotation.x=raptor.landed||raptor.crashed?-0.08:0;
-            strikeFootExtension=carriedPrey?1:0;raptorFeet.forEach(function(foot){foot.morphTargetInfluences[0]=carriedPrey?1:wingPose.fold;});
+            strikeFootExtension=carriedPrey?1:0;if(carriedPrey)carriedPrey.grip=1;raptorFeet.forEach(function(foot){foot.morphTargetInfluences[0]=carriedPrey?0:wingPose.fold;foot.morphTargetInfluences[1]=carriedPrey?1:0;});
             clearTouchdownFx();
-            preyMeshes.forEach(function(prey){if(prey.animation.kind==='fish'){var swim=prey.animation.swim;swim.amplitude=swim.tailYaw=swim.bodyYaw=swim.roll=0;prey.animation.tail.rotation.y=0;prey.visual.rotation.y=prey.animation.pose.heading||0;prey.visual.rotation.z=0;prey.visual.position.y=0;}});
+            preyMeshes.forEach(function(prey){if(prey.animation.gait){var gait=prey.animation.gait;advanceGroundPreyGait(gait,0,prey.data.speedMps,gait.size,prey.animation.kind,0,true,prey.bobPhase);prey.visual.position.y=0;prey.animation.legs.forEach(function(leg){setGroundPreyLegPose(leg,0);});prey.animation.tail.rotation.z=0;if(prey.surfaceMode==='terrain')applyGroundPreyTerrain(prey,0,true);}});
+            preyMeshes.forEach(function(prey){if(prey.animation.kind==='bird'){
+              var pose=prey.animation.pose;pose.bank=0;pose.wingAngle=0.08;pose.wingFlex=0;pose.tailGather=0;pose.tailGatherResponse=0;pose.tailSpeed=null;pose.motionBlend=0;prey.visual.rotation.z=0;
+              prey.visual.position.y=prey.surfaceMode==='water-surface'?prey.animation.float.offset:0;
+              prey.animation.wings.forEach(function(wing,i){var side=i===0?-1:1;wing.rotation.z=side*0.08;wing.rotation.y=side*1.15*(1-pose.spread);wing.scale.x=0.3+0.7*pose.spread;wing.morphTargetInfluences[0]=wing.morphTargetInfluences[1]=0;});
+              prey.animation.tail.morphTargetInfluences[0]=0;prey.animation.tail.rotation.set(0,0,0);
+            }});
+            preyMeshes.forEach(function(prey){if(prey.animation.look)updateGroundPreyHead(prey,0,true);if(prey.animation.birdLook)updateBirdPreyHead(prey,0,true);});
+            preyMeshes.forEach(function(prey){if(prey.animation.kind==='fish'){var swim=prey.animation.swim;advanceFishSwim(swim,0,prey.data.speedMps,0,true,prey.bobPhase);applyFishSwim(prey.animation);prey.visual.rotation.y=prey.animation.pose.heading||0;prey.visual.rotation.z=0;prey.visual.position.y=0;}});
+            preyMeshes.forEach(function(prey){if(prey.animation.insect){advanceInsectFlight(prey.animation.insect,Math.hypot(prey.vx,prey.vz),prey.data.speedMps,prey.flightHeight,0,true,prey.bobPhase);applyInsectFlight(prey.animation,0);}});
             waterWakeEntries.forEach(function(entry){entry.state.opacity=0;entry.wake.visible=false;entry.wake.material.opacity=0;});
             vegetationWindState.x=vegetationWindState.z=0;vegetationWind.value.set(0,0,0);
             preyMeshes.forEach(function(prey){if(prey.surfaceMode==='water-surface'){prey.animation.float.pitch=prey.animation.float.roll=0;prey.visual.rotation.x=prey.visual.rotation.z=0;}});
@@ -21309,7 +22230,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var pdz = pm2.mesh.position.z - raptor.z;
             var pd3 = Math.sqrt(pdx * pdx + pdy * pdy + pdz * pdz);   // true distance, for detection
             var preyDetectionRadius = detectionR * pm2.escapeProfile.detectionScale;
-            if (pd3 < preyDetectionRadius && pm2.data.behavior === 'flee-on-sight') {
+            if (preyReactsToApproach(pm2.data,pm2.animation.kind,pd3,preyDetectionRadius)) {
               if (!pm2.alerted && pm2.escapeProfile.seekCover) {
                 pm2.coverTarget = nearestPreyCoverTarget(pm2.mesh.position.x, pm2.mesh.position.z);
               }
@@ -21406,6 +22327,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     ? Math.abs(rawPreyBob) * 0.22
                     : Math.max(0, rawPreyBob) * 0.08;
               }
+              if(pm2.animation.gait){
+                var groundGait=pm2.animation.gait;
+                advanceGroundPreyGait(groundGait,Math.hypot(pm2.vx,pm2.vz),pm2.data.speedMps,groundGait.size,pm2.animation.kind,dt,_rmFX,pm2.bobPhase);
+                preyBob=groundGait.bob;
+              }
               pm2.visual.position.y = preyBob;
               pm2.visual.rotation.y=preyPose.heading;
               pm2.visual.rotation.z=pm2.animation.kind==='bird'?preyPose.bank:0;
@@ -21413,7 +22339,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 var swim=pm2.animation.swim;
                 advanceFishSwim(swim,Math.hypot(pm2.vx,pm2.vz),pm2.data.speedMps,dt,_rmFX,pm2.bobPhase);
                 pm2.visual.position.y=0;pm2.visual.rotation.order='YXZ';
-                pm2.visual.rotation.y=preyPose.heading+swim.bodyYaw;pm2.visual.rotation.z=swim.roll;
+                pm2.visual.rotation.y=preyPose.heading+swim.bodyYaw;pm2.visual.rotation.z=swim.roll;applyFishSwim(pm2.animation);
               }
               if(pm2.surfaceMode==='water-surface'){
                 var floatState=pm2.animation.float;
@@ -21425,22 +22351,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 pm2.visual.rotation.x=floatState.pitch;
                 pm2.visual.rotation.z=floatState.roll+preyPose.bank*(1-floatState.contact);
               }
-              pm2.animation.wings.forEach(function(wing, wingIndex) {
+              if(pm2.animation.insect){advanceInsectFlight(pm2.animation.insect,Math.hypot(pm2.vx,pm2.vz),pm2.data.speedMps,pm2.flightHeight,dt,_rmFX,pm2.bobPhase);applyInsectFlight(pm2.animation,preyPose.bank);}
+              else pm2.animation.wings.forEach(function(wing, wingIndex) {
                 var wingSide = wingIndex === 0 ? 1 : -1;
                 if(pm2.animation.kind==='bird'){
                   var side=wingIndex===0?-1:1;
                   wing.rotation.z=side*preyPose.wingAngle;
                   wing.rotation.y=side*1.15*(1-preyPose.spread);
                   wing.scale.x=0.3+0.7*preyPose.spread;
+                  wing.morphTargetInfluences[0]=Math.max(0,preyPose.wingFlex);
+                  wing.morphTargetInfluences[1]=Math.max(0,-preyPose.wingFlex);
                 } else wing.rotation.z = wingSide * (_rmFX ? 0.08 : Math.sin(motionPhase * 1.7) * (0.24+0.46*(preyPose.rate-8)/10));
               });
               pm2.animation.legs.forEach(function(leg, legIndex) {
-                leg.rotation.x = _rmFX ? 0 : Math.sin(motionPhase * 1.4 + legIndex * Math.PI) * 0.55;
+                if(pm2.animation.gait)setGroundPreyLegPose(leg,pm2.animation.gait.quadruped?pm2.animation.gait.strides[legIndex]:legIndex===0?pm2.animation.gait.front:pm2.animation.gait.hind);
+                else leg.rotation.x = _rmFX ? 0 : Math.sin(motionPhase * 1.4 + legIndex * Math.PI) * 0.55;
               });
-              if (pm2.animation.tail) {
-                if(pm2.animation.kind==='fish'){pm2.animation.tail.rotation.y=pm2.animation.swim.tailYaw;pm2.animation.tail.rotation.z=0;}
+              if (pm2.animation.tail&&pm2.animation.kind!=='fish') {
+                if(pm2.animation.kind==='bird')pm2.animation.tail.morphTargetInfluences[0]=preyPose.tailGather||0;
+                if(pm2.animation.gait)pm2.animation.tail.rotation.z=pm2.animation.gait.tail;
                 else pm2.animation.tail.rotation.z = _rmFX ? 0 : Math.sin(motionPhase * 0.8) * (pm2.animation.kind==='bird'?0.06*preyPose.spread:0.22);
               }
+              if(pm2.animation.gait&&pm2.surfaceMode==='terrain')applyGroundPreyTerrain(pm2,dt,_rmFX);
+              if(pm2.animation.look)updateGroundPreyHead(pm2,dt,_rmFX);
+              if(pm2.animation.birdLook)updateBirdPreyHead(pm2,dt,_rmFX);
+              if(pm2.animation.slither){advanceSnakeSlither(pm2.animation.slither,Math.hypot(pm2.vx,pm2.vz),pm2.data.speedMps,dt,_rmFX);applySnakePreySurface(pm2);}
             }
             // Despawn ancient prey
             if (motionNow - pm2.spawnedAt > 60000) {
@@ -21653,7 +22588,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           updateCarriedPrey(dt);
           strikeFootExtension+=(talonStrikeAmount-strikeFootExtension)*dampingAlpha(20,dt);
           var footExtension=wingPose.fold+(1-wingPose.fold)*strikeFootExtension;
-          raptorFeet.forEach(function(foot){foot.morphTargetInfluences[0]=footExtension;});
+          var talonGrip=carriedPrey?carriedPrey.grip:0;
+          raptorFeet.forEach(function(foot){foot.morphTargetInfluences[0]=footExtension*(1-talonGrip);foot.morphTargetInfluences[1]=footExtension*talonGrip;});
 
           var tailResting=raptor.landed||raptor.crashed;
           var tailSteerTarget = (_rmFX||tailResting)?0:Math.max(-0.34, Math.min(0.34, -visualTurnRate * flightAnimationProfile.tailGain));
@@ -22018,6 +22954,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
         }
         function renderFlightScene() {
+          // Refresh once per draw, including paused camera changes and study return.
+          // First-person and study views retain their normal habitat appearance.
+          cameraFoliage.subject.value.copy(raptorGroup.position);
+          cameraFoliage.enabled.value=studyActive||camMode==='fp'?0:1;
           if (studyActive && studyPresentation === 'studio') {
             if (!studyStudioBackground) {
               var backdrop = document.createElement('canvas'); backdrop.width = backdrop.height = 512;
@@ -22065,6 +23005,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var onResize = function() {
           if (disposed) return;
           targetHudBoundsDirty = true;
+          // Long catch names can wrap to three lines on phones. Keep progress below them.
+          var cueNode=hudParent.querySelector('.rh-flight-target-cue'),cueRect=cueNode&&cueNode.getBoundingClientRect();
+          var cueBottom=cueRect&&cueRect.height?Math.ceil(cueRect.bottom-hudParent.getBoundingClientRect().top+8):104;
+          hudParent.style.setProperty('--rh-cue-bottom',cueBottom+'px');
           var width = canvasEl.clientWidth;
           var height = canvasEl.clientHeight;
           if (!width || !height || (width === W && height === H)) return;
@@ -22116,6 +23060,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           delete hudParent.dataset.raptorTrailResult;
           delete hudParent.dataset.raptorPerched;
           delete hudParent.dataset.raptorStudy;
+          hudParent.style.removeProperty('--rh-cue-bottom');
           studyClose.onclick = studyResume.onclick = pauseStudy.onclick = studyZoom.oninput = null;
           studyKeep.onclick = studyReview.onclick = studyMatch.onclick = null;
           studyInspect.onchange = studyLightSelect.onchange = null;

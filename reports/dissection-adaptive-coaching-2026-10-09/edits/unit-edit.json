@@ -1,0 +1,23 @@
+{
+  "baseline": "46fc37513940c40c277cd6a862ae6f1264160dac379668e765e668f9f8d5f550",
+  "current": "51c3c34fc267efe2760ac4d30c56c2098637cfe6425edeaab1822a97a4c2d2fa",
+  "addition": "b6975038b906debd748f5516737656aa8e47655009861b8c70677873e4e357f0",
+  "newline": "\r\n",
+  "insertionByteOffset": 526459,
+  "insertedBytes": 8812,
+  "namedCases": 10,
+  "edits": [
+    {
+      "before": "expect(source).toContain('function applyAdaptiveCoaching()');",
+      "after": "expect(source).toContain('function focusAdaptiveCoaching()');"
+    },
+    {
+      "before": "expect(html).toContain('Adaptive focus: Orientation');",
+      "after": "expect(html).toContain('Adaptive coaching');\r\n    expect(html).toContain('id=\"diss-adaptive-coaching-title\">Orientation');"
+    },
+    {
+      "before": "expect(html).toContain('Apply coaching setup');",
+      "after": "expect(html).toContain('Review technique controls');"
+    }
+  ]
+}

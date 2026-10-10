@@ -1,0 +1,46 @@
+{
+  "checkedAt": "2026-10-07T21:53:59.923Z",
+  "sourceSha256": "e7e0acd6ee8a59fdffb59a63849660e0f154fda0820c4bdf129cee2fcadf87ca",
+  "workers": 1,
+  "retries": 0,
+  "substitution": "stem_lab/stem_tool_scaleexplorer.js=C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-source.js",
+  "collectedCases": 2,
+  "expectedCases": 2,
+  "exitCode": 1,
+  "before": {
+    "sourceSha256": "e7e0acd6ee8a59fdffb59a63849660e0f154fda0820c4bdf129cee2fcadf87ca",
+    "actualSourceSha256": "de20974db8f350264fd6ec10e982b12f45a18d9fdcacd841eec8b56d0157fc5f",
+    "actualMirrorSha256": "de20974db8f350264fd6ec10e982b12f45a18d9fdcacd841eec8b56d0157fc5f",
+    "tests": {
+      "scale_explorer_water.test.js": "0772ed5a2d89dfca9aeb99c02edbc0a314bfcb324af55ad3ffb6796d6f573fd5",
+      "scale-explorer-water.spec.ts": "2250b5ff9f0f5d5c78332e71501009782d8565eeeae43a18e978e7d4ecf20d6f",
+      "adapted-water.test.js": "5a1d09e0d6af78b4243a1eac5c0edf6ee4e6ba80db7f609fa5722095c4102bc4",
+      "adapted-water.spec.ts": "eb8c071c6b4ef19594eda39b9840141c99c529a7826ce66bee327cc33b0d6d31",
+      "unit.config.cjs": "de89bd4098ce92b55bbc72d0d1c764ee80d6ca2d4042c3da48cee5f4905a3d5e",
+      "browser.config.cjs": "5b6f0206f8e2d08257f8c5563405ba9eb9ebcc59947d93559dc1c6fcc6adf837"
+    },
+    "helpers": {
+      "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+      "tests/e2e/helpers/scale_explorer_workspace.ts": "8d242f36656d08fe10f98ae5f7705525c3de4aa3d2bbfabf166c5d93a39a506f"
+    }
+  },
+  "after": {
+    "sourceSha256": "e7e0acd6ee8a59fdffb59a63849660e0f154fda0820c4bdf129cee2fcadf87ca",
+    "actualSourceSha256": "de20974db8f350264fd6ec10e982b12f45a18d9fdcacd841eec8b56d0157fc5f",
+    "actualMirrorSha256": "de20974db8f350264fd6ec10e982b12f45a18d9fdcacd841eec8b56d0157fc5f",
+    "tests": {
+      "scale_explorer_water.test.js": "0772ed5a2d89dfca9aeb99c02edbc0a314bfcb324af55ad3ffb6796d6f573fd5",
+      "scale-explorer-water.spec.ts": "2250b5ff9f0f5d5c78332e71501009782d8565eeeae43a18e978e7d4ecf20d6f",
+      "adapted-water.test.js": "5a1d09e0d6af78b4243a1eac5c0edf6ee4e6ba80db7f609fa5722095c4102bc4",
+      "adapted-water.spec.ts": "eb8c071c6b4ef19594eda39b9840141c99c529a7826ce66bee327cc33b0d6d31",
+      "unit.config.cjs": "de89bd4098ce92b55bbc72d0d1c764ee80d6ca2d4042c3da48cee5f4905a3d5e",
+      "browser.config.cjs": "5b6f0206f8e2d08257f8c5563405ba9eb9ebcc59947d93559dc1c6fcc6adf837"
+    },
+    "helpers": {
+      "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+      "tests/e2e/helpers/scale_explorer_workspace.ts": "8d242f36656d08fe10f98ae5f7705525c3de4aa3d2bbfabf166c5d93a39a506f"
+    }
+  },
+  "unchanged": true,
+  "passed": false
+}

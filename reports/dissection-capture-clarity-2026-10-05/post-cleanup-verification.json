@@ -1,0 +1,32 @@
+{
+  "at": "2026-10-05T21:53:56.745Z",
+  "archiveEntriesVerifiedBeforeFinalization": 409,
+  "applicationInputsVerified": 8,
+  "sourceHashes": {
+    "stem_lab/stem_tool_dissection.js": "bf89763b349b9cc74a24f440e4a0c2f98b11660de700bb82ac1debe2129723dd",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "bf89763b349b9cc74a24f440e4a0c2f98b11660de700bb82ac1debe2129723dd",
+    "tests/e2e/dissection-capture-clarity.spec.ts": "007db45b401ce6470082eb456b845ee48dfb5ab5ecaec0b55a5ea713177ae2f7",
+    "tests/dissection_lab_improvements.test.js": "a8154bdfe3220be90876c32e93e870cba750979234fe262fbbc274ce5c8706b2",
+    "tests/dissection_canvas_loop.test.js": "b31bbe5cc07efe789e0b2262d12441366c3425966f2e804ad818513a6d22e5ca",
+    "tests/dissection_workspace_bands.test.js": "9c59fde98d1fd7e103edf4dffb72b1b9dbea39524d5acfd5bc67760dcf56f98c",
+    "tests/e2e/dissection-evidence-gallery.spec.ts": "fd03716a63f5cdbe3e7010ec309eba3128d2a0284b67eef9bb94cb0d235f2c89",
+    "tests/e2e/dissection-point-workflow.spec.ts": "16a2da740146027522f4d11c7824394ae62f8ef9672160a293999075fdcc17d9"
+  },
+  "bothRenderersParse": true,
+  "sharedHandoff": {
+    "rowUnchanged": true,
+    "offset": 19346,
+    "currentSha256": "da5780c904debfd43b7bf1df3ed78a3ed563d2eb6692f5e4285aa521c005eccc",
+    "sha256AtOurWrite": "b3885f69ecfd214b247c16f8c3129c43eaaefd15547665933b67cbe6a444d9fb",
+    "wholeFileChangedAfterOurWrite": true,
+    "handling": "Preserved subsequent changes outside our unchanged completion row."
+  },
+  "stagedPaths": [],
+  "scopedDiffCheckPassed": true,
+  "scratchRemoved": true,
+  "ownedTemporaryBaseRemoved": true,
+  "temporaryCleanup": {
+    "nonterminatingEnumerationErrors": true,
+    "result": "Only verified task-owned absolute target directories were removed; archive, application inputs and completion row verified afterward."
+  }
+}

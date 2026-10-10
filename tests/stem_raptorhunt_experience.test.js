@@ -4794,7 +4794,12 @@ describe('Raptor Hunt prey detection distance', () => {
     // only the horizontal distance was compared.
     expect(init).toContain('var pdy = pm2.mesh.position.y - raptor.y;');
     expect(init).toContain('var pd3 = Math.sqrt(pdx * pdx + pdy * pdy + pdz * pdz);');
-    expect(init).toContain("if (pd3 < preyDetectionRadius && pm2.data.behavior === 'flee-on-sight') {");
+    expect(init).toContain('if (preyReactsToApproach(pm2.data,pm2.animation.kind,pd3,preyDetectionRadius)) {');
+    const reacts = compilePureFunction(text, 'preyReactsToApproach');
+    expect(reacts({behavior:'flee-on-sight'}, 'rabbit', Math.hypot(30,25), 44)).toBe(true);
+    expect(reacts({behavior:'flee-on-sight'}, 'rabbit', Math.hypot(99,25), 44)).toBe(false);
+    expect(reacts({behavior:'wander'}, 'insect', Math.hypot(30,25), 56)).toBe(true);
+    expect(reacts({behavior:'wander'}, 'insect', Math.hypot(99,25), 56)).toBe(false);
     expect(init).not.toContain('var pd2 = Math.sqrt(pdx * pdx + pdz * pdz);');
     expect(init).not.toMatch(/\bpd2\b/);
   });

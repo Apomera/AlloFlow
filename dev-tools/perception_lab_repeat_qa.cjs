@@ -35,7 +35,7 @@ const shell = read('dev-tools/pixel_contrast_probe.cjs').match(/const SHELL = `(
       assert(await focusIs('#perception-match-value'));
       assert.equal((await state()).models[id].matchValue, starts[0]);
       assert(await button('Record match').isDisabled());
-      for (const label of ['Observe', 'Remove surroundings', 'Swap surroundings', 'Reveal measurements', 'Reset comparison', 'Save observation', 'Export SVG']) assert(await button(label).isDisabled());
+      for (const label of ['Observe', 'Remove surroundings', 'Swap surroundings', 'Reveal measurements', 'Equalize drawing values', 'Save observation', 'Export SVG']) assert(await button(label).isDisabled());
       assert.equal(await page.locator('[data-perception-study-summary]').count(), 0);
       await page.locator('#perception-match-value').focus(); await page.keyboard.press('ArrowRight');
       assert.equal((await state()).models[id].matchValue, starts[0] + 1);

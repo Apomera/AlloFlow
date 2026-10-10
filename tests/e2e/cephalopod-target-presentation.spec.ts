@@ -13,10 +13,10 @@ async function mount(page:Page,kind:'fish'|'crab',phone=false){
     const fish=scene.children.filter((o:any)=>o.userData.alive&&o.userData.offset),crabs=scene.children.filter((o:any)=>o.userData.alive&&o.userData.cfg);
     if(!fish.length||crabs.length<2)throw new Error('Actual seeded prey required');w.__p40Fish=fish[0];w.__p40Crabs=crabs;
     w.__p40Step=0;w.__p40Ticks=0;w.__p40Frames={};T.Clock.prototype.getDelta=function(){const dt=w.__p40Step;w.__p40Step=0;if(dt)w.__p40Ticks++;return dt;};
-    // Observe the original school in a frozen frame, restoring the hook immediately.
+    // Observe the original school during one controlled positive tick, restoring the hook immediately.
     const each=Array.prototype.forEach;let school:any;
     (Array.prototype as any).forEach=function(callback:any,thisArg:any){if(this.length&&this[0]?.center?.isVector3&&Array.isArray(this[0]?.fish))each.call(this,(candidate:any)=>{if(candidate?.fish?.includes(fish[0]))school=candidate;});return each.call(this,callback,thisArg);};
-    try{await new Promise<void>(resolve=>requestAnimationFrame(()=>resolve()));}finally{Array.prototype.forEach=each;}
+    try{w.__p40Step=.05;for(let attempt=0;attempt<60&&w.__p40Step;attempt++)await new Promise<void>(resolve=>requestAnimationFrame(()=>resolve()));if(w.__p40Step)throw new Error('School discovery tick was not consumed');}finally{Array.prototype.forEach=each;}
     if(!school)throw new Error('Actual fish-school state required');w.__p40School=school;
     fish.forEach((o:any)=>o.position.set(80,4,80));crabs.forEach((o:any)=>{o.position.set(80,.18,80);o.userData.speed=0;});
     scene.children.forEach((o:any)=>{if(o.userData.substrate==='rock'){o.position.set(-45,o.position.y,-45);o.userData.substrateRadius=0;}if('cooldownUntil'in o.userData)o.userData.cooldownUntil=1e9;});

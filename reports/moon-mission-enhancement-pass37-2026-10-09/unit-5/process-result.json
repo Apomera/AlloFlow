@@ -1,0 +1,9 @@
+{
+  "exitCode": 1,
+  "elapsedSeconds": 20.725676774978638,
+  "inputs": {
+    "stem_lab/stem_tool_moonmission.js": "ba51463af733dabcb40d8e9336542a1be21f7b6e8c48c0b9f83ddfc0f1e042c0",
+    "desktop/web-app/public/stem_lab/stem_tool_moonmission.js": "ba51463af733dabcb40d8e9336542a1be21f7b6e8c48c0b9f83ddfc0f1e042c0"
+  },
+  "inputsPreserved": true
+}

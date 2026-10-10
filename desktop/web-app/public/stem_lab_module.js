@@ -2988,6 +2988,29 @@
     // Future Bee migrations can inspect it without invalidating other tool data.
     var _BEEHIVE_PERSISTENCE_VERSION = 1;
   // BEEHIVE_STATE_RECOVERY_START
+  // Preserve completed readings before recovery supplies playable defaults.
+  // This helper stays inside the shared recovery block used by each host.
+  function bhQueenNotebookRecord(queenData) {
+    function record(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
+    function number(value) { return Number.isFinite(value) ? value : null; }
+    function words(value) { return typeof value === 'string' ? value : null; }
+    var match = record(queenData), rival = record(match.rival), signals = record(match.pheromones), carryover = record(match.carryover);
+    var saved = {
+      active: match.active === true, paused: match.paused === true,
+      result: match.result ? (typeof match.result === 'string' ? match.result : 'unrecorded') : null,
+      day: number(match.day), phase: words(match.phase),
+      difficulty: words(match.difficulty), opening: words(match.opening), scenario: words(match.scenario),
+      hiveHealth: number(match.hiveHealth), territory: number(match.territory),
+      rival: { name: words(rival.name), health: number(rival.health), pressure: number(rival.pressure) },
+      pheromones: { qmp: number(signals.qmp) }, carryover: { label: words(carryover.label) }
+    };
+    var conditions = match.notebookMatchConditions;
+    if (conditions && typeof conditions === 'object' && !Array.isArray(conditions)) saved.notebookMatchConditions = {
+      difficulty: words(conditions.difficulty), opening: words(conditions.opening), scenario: words(conditions.scenario)
+    };
+    return saved;
+  }
+
   // These validators also run in the host loader; keep them self-contained.
   function bhColonyObservationsUnsupported(value) {
     return !!value && typeof value === 'object' && !Array.isArray(value) &&
@@ -3288,7 +3311,9 @@
           }
         });
       if (queen.buildMode != null && ['brood', 'honey', 'pollen', 'guard', 'nursery', 'fan'].indexOf(queen.buildMode) < 0) cleanQueen = Object.assign({}, cleanQueen, { buildMode: null });
-      if (queen.result != null && ['victory', 'defeat'].indexOf(queen.result) < 0) cleanQueen = Object.assign({}, cleanQueen, { result: null });
+      if (queen.result != null && ['victory', 'defeat'].indexOf(queen.result) < 0) cleanQueen = Object.assign({}, cleanQueen, queen.result ? { result: null, active: false, paused: false } : { result: null });
+      // Keep completed evidence before recovery supplies safe simulation defaults.
+      if (queen.result && cleanQueen !== queen && !(isRecord(queen.notebookMatchEvidence) && queen.notebookMatchEvidence.result)) cleanQueen = Object.assign({}, cleanQueen, { notebookMatchEvidence: bhQueenNotebookRecord(queen) });
       if (cleanQueen !== queen) replace('queen', cleanQueen);
     }
     if (state.activeEvent) {

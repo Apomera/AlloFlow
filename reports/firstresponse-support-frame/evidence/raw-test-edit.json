@@ -1,0 +1,27 @@
+{
+  "file": "tests/firstresponse_supporting_hand.test.js",
+  "beforeSHA256": "1c6477d40e7988ced0f94b18a20a59f9c995bfa617da6d152fd03024ef451fa0",
+  "afterSHA256": "7c9815f750e27ee63c48b37ecd5c6c147c7ba2265068f588aa4a5cc82d7fad1f",
+  "beforeFile": "raw-support-before.test.js",
+  "afterFile": "raw-support-candidate.test.js",
+  "edits": [
+    {
+      "old": "function assertFraming(scene, content, aspect) {",
+      "new": "function assertFaceFrame(scene, info) {\n  expect(info.faceFrame).toBeTruthy();\n  expect(info.faceFrame.center).toHaveLength(3);\n  expect(info.faceFrame.center.every(value => typeof value === 'number' && Number.isFinite(value))).toBe(true);\n  expect(typeof info.faceFrame.radius).toBe('number');\n  expect(Number.isFinite(info.faceFrame.radius)).toBe(true);\n  expect(info.faceFrame.radius).toBeGreaterThanOrEqual(info.radius);\n  const center = new THREE.Vector3().fromArray(info.faceFrame.center);\n  const points = handVertices(part(scene, 'fr-patient-right-hand'))\n    .concat(handVertices(part(scene, 'fr-manikin-head-pivot')),\n      info.context.map(point => new THREE.Vector3().fromArray(point)));\n  let farthest = 0;\n  for (const point of points) farthest = Math.max(farthest, point.distanceTo(center));\n  expect(farthest, 'narrow frame contains the actual head, hand and cheek context')\n    .toBeLessThanOrEqual(info.faceFrame.radius + 1e-7);\n}\nfunction assertFraming(scene, content, aspect) {"
+    },
+    {
+      "old": "  expect(target.distanceTo(new THREE.Vector3().fromArray(info.center))).toBeLessThan(1e-7);\n  const points = handVertices(part(scene, 'fr-patient-right-hand'))\n    .concat(info.context.map(point => new THREE.Vector3().fromArray(point)));",
+      "new": "  assertFaceFrame(scene, info);\n  const narrow = aspect < 1.15;\n  expect(target.distanceTo(new THREE.Vector3().fromArray(narrow ? info.faceFrame.center : info.center))).toBeLessThan(1e-7);\n  const points = handVertices(part(scene, 'fr-patient-right-hand'))\n    .concat(info.context.map(point => new THREE.Vector3().fromArray(point)),\n      narrow ? handVertices(part(scene, 'fr-manikin-head-pivot')) : []);"
+    },
+    {
+      "old": "  expect(nearest, 'whole hand and cheek clear the near plane').toBeLessThan(-.105);\n  expect(x, 'complete hand and cheek stay inside the horizontal frame').toBeLessThan(.94);\n  expect(y, 'complete hand and cheek stay inside the vertical frame').toBeLessThan(.94);",
+      "new": "  expect(nearest, 'whole hand, cheek and narrow-view head clear the near plane').toBeLessThan(-.105);\n  expect(x, 'complete hand, cheek and narrow-view head stay inside the horizontal frame').toBeLessThan(.94);\n  expect(y, 'complete hand, cheek and narrow-view head stay inside the vertical frame').toBeLessThan(.94);"
+    },
+    {
+      "old": "frames the complete $age supporting hand and cheek at pose $phase with guides=$guides on desktop and phone",
+      "new": "frames the complete $age supporting hand and cheek, including the whole head on phone, at pose $phase with guides=$guides"
+    }
+  ],
+  "unchangedOutsideListedEdits": true,
+  "intent": "Retain fixed historical scene assertions and all original hand/cheek checks; require numeric head-inclusive metadata and actual complete head projection within the existing margin on narrow supporting-hand views."
+}

@@ -1,0 +1,42 @@
+{
+  "width": 274.40625,
+  "client": 269,
+  "scroll": 269,
+  "text": [
+    {
+      "text": "Adaptive coaching",
+      "font": 16,
+      "client": 237,
+      "scroll": 237
+    },
+    {
+      "text": "Surface moisture",
+      "font": 16,
+      "client": 237,
+      "scroll": 237
+    },
+    {
+      "text": "Review the Dropper for one controlled saline dose before further traction or cutting.",
+      "font": 16,
+      "client": 237,
+      "scroll": 237
+    },
+    {
+      "text": "Review Dropper",
+      "font": 16,
+      "client": 233,
+      "scroll": 233
+    },
+    {
+      "text": "Opens controls for review.",
+      "font": 16,
+      "client": 237,
+      "scroll": 237
+    }
+  ],
+  "button": {
+    "height": 48,
+    "outlineWidth": 3,
+    "outlineStyle": "solid"
+  }
+}

@@ -1,0 +1,167 @@
+{
+  "schema": "moon-pass33-direct-browser-v1",
+  "runner": "direct-playwright-api",
+  "playwrightCliResult": false,
+  "mode": "review",
+  "status": "passed",
+  "startedAt": "2026-10-09T23:08:49.821Z",
+  "repo": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "specPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-flight-review.spec.ts",
+  "output": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\direct-review-2",
+  "browserCache": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+  "timeouts": {
+    "action": 20000,
+    "navigation": 60000,
+    "expect": 15000,
+    "launch": 60000,
+    "workflow": 180000
+  },
+  "launchOptions": {
+    "headless": true,
+    "timeout": 60000,
+    "downloadsPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\direct-review-2\\downloads"
+  },
+  "workflowCompleted": true,
+  "cleanupCompleted": true,
+  "milestones": [
+    {
+      "name": "load:before",
+      "elapsedMs": 2
+    },
+    {
+      "name": "load:after",
+      "elapsedMs": 919,
+      "workflow": "a saved touchdown can be inspected and exported, then retried without losing earlier attempts",
+      "registered": [
+        "camera views change the rendered perspective while a paused flight remains unchanged",
+        "a saved touchdown can be inspected and exported, then retried without losing earlier attempts",
+        "phone recorder fits the viewport and supports keyboard inspection"
+      ]
+    },
+    {
+      "name": "harness-start:before",
+      "elapsedMs": 920
+    },
+    {
+      "name": "harness-start:after",
+      "elapsedMs": 929
+    },
+    {
+      "name": "browser-launch:before",
+      "elapsedMs": 931
+    },
+    {
+      "name": "browser-launch:after",
+      "elapsedMs": 1197
+    },
+    {
+      "name": "context-create:before",
+      "elapsedMs": 1200
+    },
+    {
+      "name": "context-create:after",
+      "elapsedMs": 1208
+    },
+    {
+      "name": "page-create:before",
+      "elapsedMs": 1209
+    },
+    {
+      "name": "page-create:after",
+      "elapsedMs": 1545
+    },
+    {
+      "name": "workflow:before",
+      "elapsedMs": 1546
+    },
+    {
+      "name": "workflow:after",
+      "elapsedMs": 22901
+    },
+    {
+      "name": "cleanup:before",
+      "elapsedMs": 22902
+    },
+    {
+      "name": "after-each:before",
+      "elapsedMs": 22903
+    },
+    {
+      "name": "after-each:after",
+      "elapsedMs": 22926
+    },
+    {
+      "name": "context-close:before",
+      "elapsedMs": 22927
+    },
+    {
+      "name": "page-close",
+      "elapsedMs": 22932
+    },
+    {
+      "name": "context-close:after",
+      "elapsedMs": 22938
+    },
+    {
+      "name": "browser-close:before",
+      "elapsedMs": 22939
+    },
+    {
+      "name": "browser-close:after",
+      "elapsedMs": 31118
+    },
+    {
+      "name": "harness-stop:before",
+      "elapsedMs": 31118
+    },
+    {
+      "name": "harness-stop:after",
+      "elapsedMs": 31119
+    },
+    {
+      "name": "cleanup:after",
+      "elapsedMs": 31132,
+      "status": "passed"
+    }
+  ],
+  "errors": [],
+  "attachments": [
+    {
+      "name": "recorded-approach",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\direct-review-2\\review\\recorded-approach-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "flight-recording-csv",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\direct-review-2\\review\\saved-landing.csv",
+      "contentType": "text/csv"
+    }
+  ],
+  "inputHashes": {
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-flight-review.spec.ts": "01f889b41e6ae7b1cae5347c40fac086dbb57b70a09155204934e45cb9c791c9",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_moonmission.js": "c4d9746f4495fcdaf83f9443e4911daa30868d4b1126dfb2728fc7f7ffcf505f",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_moonmission.js": "c4d9746f4495fcdaf83f9443e4911daa30868d4b1126dfb2728fc7f7ffcf505f"
+  },
+  "transform": {
+    "name": "Playwright bundled babelTransform",
+    "bundlePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\transform\\babelBundle.js",
+    "sha256": "9201df11ae9c9ee1febd587c5013c4f862aa7e9981b92b86ccbbbd37e71f9124"
+  },
+  "workflow": "a saved touchdown can be inspected and exported, then retried without losing earlier attempts",
+  "suiteOptions": {
+    "timeout": 180000,
+    "retries": 0
+  },
+  "browserVersion": "148.0.7778.96",
+  "pageEvents": [
+    {
+      "event": "close",
+      "elapsedMs": 22932,
+      "message": null
+    }
+  ],
+  "finishedAt": "2026-10-09T23:09:20.953Z",
+  "elapsedMs": 31132
+}

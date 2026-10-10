@@ -1,0 +1,61 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/solar_system_seasons_observer.test.js
+[deferred-jsdom] Initializing the official DOM environment.
+
+stdout | tests/solar_system_seasons_observer.test.js
+[deferred-jsdom] DOM environment ready.
+
+stdout | tests/solar_system_seasons_observer.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/solar_system_seasons_observer.test.js
+[deferred-jsdom] Existing repository setup loaded.
+
+ ✓ tests/solar_system_seasons_observer.test.js > Solar System seasons observer workbench > names the investigation and exposes Earth observer measurements on a shared daylight scale 10362ms
+ ✓ tests/solar_system_seasons_observer.test.js > Solar System seasons observer workbench > uses only own whitelisted world names and leaves malformed restored keys untouched 6903ms
+ ✓ tests/solar_system_seasons_observer.test.js > Solar System seasons observer workbench > preserves finite fractional phase inputs and clamps numeric values without render writes 2492ms
+ ✓ tests/solar_system_seasons_observer.test.js > Solar System seasons observer workbench > uses phase 25 for malformed restored types without silently repairing persisted state 83844ms
+ ✓ tests/solar_system_seasons_observer.test.js > Solar System seasons observer workbench > names exact checkpoints distinctly from neighboring orbital positions 91885ms
+ ✓ tests/solar_system_seasons_observer.test.js > Solar System seasons observer workbench > reports signed solar-noon elevation when Earth polar winter puts the Sun below the horizon 22135ms
+ ✓ tests/solar_system_seasons_observer.test.js > Solar System seasons observer workbench > preserves fractional latitude restoration and clamps only outside the disclosed range 43364ms
+ ✓ tests/solar_system_seasons_observer.test.js > Solar System seasons observer workbench > uses latitude 45 for malformed restored values without rewriting the draft or raw state 100244ms
+ ✓ tests/solar_system_seasons_observer.test.js > Solar System seasons observer workbench > shows equal twelve-hour equatorial traces and opposite polar daylight without changing meter scales 72866ms
+ ✓ tests/solar_system_seasons_observer.test.js > Solar System seasons observer workbench > accepts each own typed interpretation choice only for exact current world and fractional phase 28838ms
+ ✓ tests/solar_system_seasons_observer.test.js > Solar System seasons observer workbench > rejects inherited, untyped, unknown and mismatched interpretation records without render writes 127891ms
+ ✓ tests/solar_system_seasons_observer.test.js > Solar System seasons observer workbench > requires a literal true saved marker and lets malformed truthy markers save valid evidence 10209ms
+ ✓ tests/solar_system_seasons_observer.test.js > Solar System seasons observer workbench > merges native world and phase updates from latest state and starts an unsaved interpretation 1673ms
+ ✓ tests/solar_system_seasons_observer.test.js > Solar System seasons observer workbench > allows the evidence interpretation to be revised while keeping the current physical trial fixed 1533ms
+ ✓ tests/solar_system_seasons_observer.test.js > Solar System seasons observer workbench > deduplicates captured interpretation saves and journals exact fractional geometry without XP 1365ms
+ ✓ tests/solar_system_seasons_observer.test.js > Solar System seasons observer workbench > ignores a captured interpretation save after native geometry changes before rerender 3454ms
+ ✓ tests/solar_system_seasons_observer.test.js > Solar System seasons observer workbench > deduplicates latitude saves and permits a changed valid explanation to be saved without XP 3206ms
+ ✓ tests/solar_system_seasons_observer.test.js > Solar System seasons observer workbench > ignores captured latitude saves after latitude, phase, world or explanation changes 6926ms
+
+
+#
+# Fatal process out of memory: Worklist::Segment::Create
+#
+
+#
+# Fatal process out of memory: Worklist::Segment::Create
+#
+
+
+#
+# Fatal process out of memory: Worklist::Segment::Create
+#
+
+
+
+#
+# Fatal process out of memory: Worklist::Segment::Create
+#
+----- Native stack trace -----
+
+----- Native stack trace -----
+
+----- Native stack trace -----
+
+----- Native stack trace -----
+

@@ -1,0 +1,32 @@
+{
+  "mode": "browser",
+  "label": "browser-3",
+  "start": "2026-10-09T23:28:24.827Z",
+  "startHashes": {
+    "stem_lab/stem_tool_dissection.js": "c7708b29982ee76b498aff5427cdf265672359430f1e559d483265de4f51e39c",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "c7708b29982ee76b498aff5427cdf265672359430f1e559d483265de4f51e39c",
+    "tests/e2e/dissection-technique-availability.spec.ts": "1267ac206443a839b7097f12a2eb5c408eeed8366375c825d8e9a96ab67499d3",
+    "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6"
+  },
+  "args": [
+    "node_modules/@playwright/test/cli.js",
+    "test",
+    "tests/e2e/dissection-technique-availability.spec.ts",
+    "--workers=1",
+    "--retries=0",
+    "--max-failures=1",
+    "--project=chromium",
+    "--reporter=list,json",
+    "--output=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-technique-availability-2026-10-09\\browser-3\\test-results"
+  ],
+  "pid": 15776,
+  "exitCode": 0,
+  "signal": null,
+  "end": "2026-10-09T23:28:44.738Z",
+  "endHashes": {
+    "stem_lab/stem_tool_dissection.js": "c7708b29982ee76b498aff5427cdf265672359430f1e559d483265de4f51e39c",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "c7708b29982ee76b498aff5427cdf265672359430f1e559d483265de4f51e39c",
+    "tests/e2e/dissection-technique-availability.spec.ts": "1267ac206443a839b7097f12a2eb5c408eeed8366375c825d8e9a96ab67499d3",
+    "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6"
+  }
+}

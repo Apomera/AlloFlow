@@ -268,12 +268,12 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain("'CORRECTION'");
       expect(source).toContain("'STEP ' + (replayIndex + 1) + '/' + replayActions.length");
       expect(source).toContain('Previous attempt \\u00B7 dashed pressure trail');
-      expect(source).toContain('Recorded attempt replay progressively traces pressure with line width and states path alignment in text and shape');
+      expect(source).toContain('Attempt replay follows saved action order and distinguishes saved paths from teaching illustrations; pressure and settings appear only when recorded');
       expect(source).toContain('function saveTechniqueAttempt()');
       expect(source).toContain('function startNewTechniqueAttempt()');
       expect(source).toContain('function techniqueComparisonData()');
       expect(source).toContain('function adaptiveCoachingData()');
-      expect(source).toContain('function applyAdaptiveCoaching()');
+      expect(source).toContain('function focusAdaptiveCoaching()');
       expect(source).toContain('attemptArchive: d.attemptArchive || {}');
       expect(source).toContain('adaptiveGuidance: d.adaptiveGuidance !== false');
       expect(source).toContain("ctx.fillText('Previous attempt \\u00B7 dashed pressure trail'");
@@ -813,7 +813,7 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain("'RINGS IN / DEEPER'");
       expect(source).toContain('View and layer navigation uses a labeled orientation sweep with circle start and diamond target markers');
       expect(source).toContain("'; spatial navigation transitions: orientation sweep, circle start, diamond target, and layer depth rings encoded; reduced motion switches instantly'");      expect(source).toContain('d.rulerStart.x * W');
-      expect(source).toContain('Measurement complete: ');
+      expect(source).toContain('Measurement complete. Approximate model distance: ');
       expect(source).toContain('Clear annotations');
       expect(source).toContain("Technique cautions reviewed: ");
       expect(source).toContain("Current layer technique score: ");
@@ -863,7 +863,8 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toMatch(/function keyboardPreview\(organ\) \{[\s\S]{0,320}target\._keyboardPreviewOrganId = organ\.id;/);
       expect(source).toContain('var keyboardCommitId = target._keyboardPreviewOrganId;');
       expect(source).toContain('Use an Arrow key, Home, or End to preview a structure before pressing Enter.');
-      expect(source).toContain('onBlur: function (e) { e.currentTarget._keyboardFocus = false; e.currentTarget._keyboardPreviewOrganId = null; }');
+      expect(source).toMatch(/onBlur: function \(e\) \{[\s\S]{0,400}blurredCanvas\._keyboardFocus = false; blurredCanvas\._keyboardPreviewOrganId = null;/);
+      expect(source).toContain("if (hadPointAnchor && blurredCanvas._dissMotionReduced && typeof blurredCanvas._drawDissectionNow === 'function') blurredCanvas._drawDissectionNow();");
       expect(source).not.toContain('var keyboardCommitId = d.quizMode ? d.hoveredOrgan : d.selectedOrgan;');
       expect(source).toContain("upd('selectedOrgan', organ.id)");
       expect(source).not.toContain('function keyboardChoose(organ)');
@@ -4017,7 +4018,9 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
     expect(html).toContain('3 Explain');
     expect(html).toContain('Choose the safest plan');
     expect(html).not.toContain('Pre-contact check');
-    expect(html).toContain('Prepare next');
+    const planningMonitorAction = guidedDocument.querySelector('.diss-stage__telemetry-prepare');
+    expect(planningMonitorAction.textContent).toBe('Review plan');
+    expect(planningMonitorAction.getAttribute('aria-controls')).toBe('diss-learning-checkpoint');
     // 2026-09-03: the checkpoint panel now opens the same column, a couple of hundred pixels
     // above the stage, so the handoff names the phase instead of repeating the whole question.
     expect(html).not.toContain('Next · Which plan best protects anatomy during the initial entry?');
@@ -4060,8 +4063,9 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
     expect(html).toContain('Start new attempt');
     expect(html).toContain('Compare attempts');
     expect(html).toContain('Adaptive coaching on');
-    expect(html).toContain('Adaptive focus: Orientation');
-    expect(html).toContain('Apply coaching setup');
+    expect(html).toContain('Adaptive coaching');
+    expect(html).toContain('id="diss-adaptive-coaching-title">Orientation');
+    expect(html).toContain('Review technique controls');
     expect(html).toContain('Previous attempt vs current attempt');
     expect(html).toContain('Saved baseline: dorsal view, mouse');
     expect(html).toContain('Input');
@@ -4239,7 +4243,7 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
     expect(cuttingHtml).toContain('Three-dimensional instrument pitch feedback is active');
     expect(cuttingHtml).toContain('Light-aware instrument elevation feedback is active');
     expect(cuttingHtml).toContain('Equivalent keyboard and button actions include an instrument approach, contact, and release replay');
-    expect(cuttingHtml).toContain('Recorded attempt replay progressively traces pressure with line width and states path alignment in text and shape');
+    expect(cuttingHtml).toContain('Attempt replay follows saved action order and distinguishes saved paths from teaching illustrations; pressure and settings appear only when recorded');
     expect(cuttingHtml).toContain('Direct forceps press-drag-release manipulation shows live lift direction, safe range, calibrated grip, speed, control, slip risk, and excess tension with text and geometry; the technique action button remains equivalent.');
     expect(cuttingHtml).toContain('Live pin stability preview shows endpoint spacing, calibrated angle, insertion depth, and flap tension with text and geometry');
     expect(cuttingHtml).toContain('Live probe palpation preview shows calibrated pressure, material resistance, anatomical depth, and tissue deformation with text and shape');
@@ -4295,7 +4299,7 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
       expect(source).toContain("e.key === 'Enter' || e.key === ' '");
       expect(source).toContain("e.key === '+' || e.key === '='");
       expect(source).toContain("e.key === '-' || e.key === '_'");
-      expect(source).toContain("'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Home End Enter Space 0 R V' + (advancedWorkspace ? ' X M P F' : '') + ' 1 2 3 4 5 6 7'");
+      expect(source).toContain("'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Home End Enter Space Escape 0 R V' + (advancedWorkspace ? ' X M P F' : '') + ' 1 2 3 4 5 6 7'");
       expect(source).toContain("className: \"diss-shortcuts\"");
       expect(source).toContain("'Ctrl + wheel', 'Zoom around the pointer'");
       expect(source).toContain('var macroLikelyOnLeft = inspectionLens && macroInset');
@@ -4469,8 +4473,12 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
       expect(source).toContain('inspectionQualityColor');
       expect(source).toContain('liveOpticalInspection.quality / 100');
       expect(source).toContain('opticalInspection: Object.assign({}, currentOpticalInspection)');
-      expect(source).toContain("referenceEvidence.opticalQuality != null ? ' · optics '");
-      expect(source).toContain("evidence.opticalQuality != null ? ' · optics '");
+      expect(source).toContain('function evidenceScore(value)');
+      expect(source).toContain("if ((typeof value !== 'number' && typeof value !== 'string') || (typeof value === 'string' && !value.trim())) return null;");
+      expect(source).toContain('return isFinite(score) ? Math.max(0, Math.min(100, Math.round(score))) : null;');
+      expect(source).toContain('var optics = evidenceScore(evidence.opticalQuality);');
+      expect(source).toContain('renderEvidenceMetadata(referenceEvidence,');
+      expect(source).toContain('renderEvidenceMetadata(evidence,');
       expect(source).toContain("report += 'Optical inspection: '");
       expect(source).toContain("'Optical inspection \\u00B7 ' + currentOpticalInspection.label");
       expect(source).toContain(`"aria-label": __alloT('stem.dissection.a11y_inspection_focus_depth', 'Inspection focus depth')`);
@@ -5160,29 +5168,34 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
         },
       },
     });
-    document.body.innerHTML = html;
-    const root = document.querySelector('[data-dissection-root]');
-    expect(root).not.toBeNull();
+    const previousMarkup = document.body.innerHTML;
+    try {
+      document.body.innerHTML = html;
+      const root = document.querySelector('[data-dissection-root]');
+      expect(root).not.toBeNull();
 
-    const results = await axe.run(root, {
-      runOnly: {
-        type: 'tag',
-        values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'],
-      },
-      rules: {
-        // jsdom cannot calculate layout or computed color contrast reliably.
-        // Explicit palette contrast checks above cover the changed readiness labels.
-        'color-contrast': { enabled: false },
-      },
-    });
+      const results = await axe.run(root, {
+        runOnly: {
+          type: 'tag',
+          values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'],
+        },
+        rules: {
+          // jsdom cannot calculate layout or computed color contrast reliably.
+          // Explicit palette contrast checks above cover the changed readiness labels.
+          'color-contrast': { enabled: false },
+        },
+      });
 
-    expect(results.violations.map(function (violation) {
-      return {
-        id: violation.id,
-        impact: violation.impact,
-        targets: violation.nodes.map(function (node) { return node.target; }),
-      };
-    })).toEqual([]);
+      expect(results.violations.map(function (violation) {
+        return {
+          id: violation.id,
+          impact: violation.impact,
+          targets: violation.nodes.map(function (node) { return node.target; }),
+        };
+      })).toEqual([]);
+    } finally {
+      document.body.innerHTML = previousMarkup;
+    }
   }, 180000);
 
 
@@ -5234,7 +5247,7 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
     expect(html).toContain('Pool detected');
     expect(html).toContain('Wick excess saline');
     expect(html).toContain('1-7');
-    expect(html).toContain('aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Home End Enter Space 0 R V 1 2 3 4 5 6 7"');
+    expect(html).toContain('aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Home End Enter Space Escape 0 R V 1 2 3 4 5 6 7"');
   });
 
 
@@ -5429,8 +5442,8 @@ expect(html).toContain('Scenario center');
         procedureByLayer: { skin: { inspected: true, pins: [] } },
       },
     });
-    expect(timedHtml).toContain('Timed practical');
-    expect(timedHtml).toContain('2:05 remaining');
+    expect(timedHtml).toContain('4-minute technique challenge');
+    expect(timedHtml).toContain('2 minutes 5 seconds remaining');
     expect(timedHtml).toContain('role="timer"');
   });
 
@@ -6079,6 +6092,2083 @@ expect(html).toContain('Scenario center');
     }
   }, 60000);
 
+  async function mountMarkingFixture(patch = {}, savedRecords = {}) {
+    // Native React events exercise the actual tool callbacks. Canvas drawing is
+    // unrelated to these state contracts and has its own browser verification.
+    const contextSpy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const config = window.StemLab._registry.dissection;
+    const awardXP = vi.fn();
+    let latest;
+    let update;
+    let root;
+    let host;
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    for (const specimen of ['frog', 'pig']) localStorage.removeItem('dissection_progress_' + specimen);
+    for (const [specimen, record] of Object.entries(savedRecords)) {
+      localStorage.setItem('dissection_progress_' + specimen, JSON.stringify(record));
+    }
+    const initial = {
+      specimen: 'frog', _dissLoadedSpec: 'frog', activeLayer: 'skin', anatomicalView: 'dorsal',
+      workspaceMode: 'advanced', toolbarToolsOpen: true,
+      visualRealism: 'accessible', parallaxDepth: false, reducedMotion: true, soundEnabled: false,
+      selectedOrgan: 'nictitating', hoveredOrgan: 'tympanum',
+      canvasZoom: 1.5, canvasPanX: 15, canvasPanY: -8,
+      inspectionLens: true, lensPinned: true, lensPinnedOrganId: 'nictitating',
+      lensPinnedPoint: { x: 0.6, y: 0.18 }, lensMagnification: 4, lensFocusDepth: 'surface',
+      activeInstrument: 'probe', revealedLayers: { skin: true },
+      exploredOrgans: { 'frog|nictitating': true },
+      organNotes: { 'frog|nictitating': 'Transparent membrane noted before adding marks.' },
+      organConfidence: { 'frog|nictitating': 3 },
+      verifiedIdentifications: { 'frog|nictitating': { status: 'verified', at: 88 } },
+      procedureByLayer: { skin: { inspected: true, history: ['inspect'], actionLog: [{ action: 'inspect', at: 50 }] } },
+      toolCalibration: { bladeAngle: 25, scissorsAperture: 35, forcepsGrip: 40, pinAngle: 65, probePressure: 30, salineDose: 1 },
+      visualEvidence: [{ id: 11, image: 'data:image/jpeg;base64,eA==', layer: 'skin', view: 'dorsal' }],
+      referenceEvidenceId: 11, quizScore: 1, quizTotal: 2,
+      annotations: [], rulerMode: false, annotateMode: false, rulerStart: null, rulerEnd: null,
+      ...patch,
+    };
+    function Component() {
+      const [toolData, setToolData] = React.useState({ dissection: initial });
+      latest = toolData.dissection;
+      update = setToolData;
+      return config.render(makeCtx({ toolData, setToolData, awardXP }));
+    }
+    function prepareCanvas() {
+      const canvas = host.querySelector('[data-diss-canvas]');
+      expect(canvas).not.toBeNull();
+      canvas._logicalW = 500;
+      canvas._logicalH = 600;
+      canvas._interactionZoom = latest.canvasZoom || 1;
+      canvas._interactionPanX = latest.canvasPanX || 0;
+      canvas._interactionPanY = latest.canvasPanY || 0;
+      canvas._parallaxX = 0;
+      canvas._parallaxY = 0;
+      canvas._cameraTransition = null;
+      canvas.getBoundingClientRect = () => ({ left: 10, top: 20, right: 1010, bottom: 1220, width: 1000, height: 1200, x: 10, y: 20, toJSON() {} });
+      return canvas;
+    }
+    async function close() {
+      if (root) await act(async () => { root.unmount(); await Promise.resolve(); });
+      if (host) host.remove();
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      for (const specimen of ['frog', 'pig']) localStorage.removeItem('dissection_progress_' + specimen);
+      window._dissectionKeyHandler = null;
+      document.getElementById('allo-live-dissection')?.remove();
+      contextSpy.mockRestore();
+    }
+    try {
+      host = document.createElement('div');
+      document.body.appendChild(host);
+      root = ReactDOMClient.createRoot(host);
+      await act(async () => { root.render(React.createElement(Component)); await Promise.resolve(); });
+      prepareCanvas();
+    } catch (error) {
+      await close();
+      throw error;
+    }
+    return {
+      get state() { return latest; },
+      get host() { return host; },
+      awardXP,
+      close,
+      async patch(next) {
+        await act(async () => { update((previous) => ({ ...previous, dissection: { ...previous.dissection, ...next } })); await Promise.resolve(); });
+      },
+      async clickPoint(point) {
+        // Dorsal Accessible view keeps specimen scale at 1; project canonical
+        // coordinates through the current camera before sending a real click.
+        const canvas = prepareCanvas();
+        const zoom = latest.canvasZoom || 1;
+        const rawX = (point.x - 0.5) * zoom + 0.5 + (latest.canvasPanX || 0) / 500;
+        const rawY = (point.y - 0.5) * zoom + 0.5 + (latest.canvasPanY || 0) / 600;
+        await act(async () => {
+          canvas.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: Math.round(10 + rawX * 1000), clientY: Math.round(20 + rawY * 1200) }));
+          await Promise.resolve();
+        });
+      },
+      async key(key) {
+        const canvas = prepareCanvas();
+        canvas.focus();
+        await act(async () => { canvas.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true })); await Promise.resolve(); });
+      },
+    };
+  }
+
+  function markingWorkProof(state) {
+    return JSON.parse(JSON.stringify({
+      selectedOrgan: state.selectedOrgan, hoveredOrgan: state.hoveredOrgan,
+      activeLayer: state.activeLayer, anatomicalView: state.anatomicalView,
+      revealedLayers: state.revealedLayers, exploredOrgans: state.exploredOrgans,
+      verifiedIdentifications: state.verifiedIdentifications, completedObjectives: state.completedObjectives,
+      organNotes: state.organNotes, organConfidence: state.organConfidence,
+      procedureByLayer: state.procedureByLayer, toolCalibration: state.toolCalibration,
+      visualEvidence: state.visualEvidence, referenceEvidenceId: state.referenceEvidenceId,
+      canvasZoom: state.canvasZoom, canvasPanX: state.canvasPanX, canvasPanY: state.canvasPanY,
+      inspectionLens: state.inspectionLens, lensPinned: state.lensPinned,
+      lensPinnedPoint: state.lensPinnedPoint, lensPinnedOrganId: state.lensPinnedOrganId,
+      lensMagnification: state.lensMagnification, lensFocusDepth: state.lensFocusDepth,
+      quizScore: state.quizScore, quizTotal: state.quizTotal,
+    }));
+  }
+
+  it('adds annotation points immutably through the camera while preserving inspection and recorded work', async () => {
+    const previousAnnotations = [{ x: 0.4, y: 0.4, type: 'dot' }];
+    const beforeAnnotations = JSON.parse(JSON.stringify(previousAnnotations));
+    const fixture = await mountMarkingFixture({ annotateMode: true, annotations: previousAnnotations });
+    try {
+      const before = markingWorkProof(fixture.state);
+      // Hit a different visible organ, then the selected organ. Neither action
+      // should change selection or award the structure inspection credit.
+      await fixture.clickPoint({ x: 0.5, y: 0.38 });
+      expect(previousAnnotations).toEqual(beforeAnnotations);
+      expect(fixture.state.annotations).not.toBe(previousAnnotations);
+      expect(fixture.state.annotations).toHaveLength(2);
+      expect(fixture.state.annotations[1]).toMatchObject({ type: 'dot', prevX: 0.4, prevY: 0.4 });
+      expect(fixture.state.annotations[1].x).toBeCloseTo(0.5, 8);
+      expect(fixture.state.annotations[1].y).toBeCloseTo(0.38, 8);
+      const intermediateAnnotations = fixture.state.annotations;
+      const intermediateCopy = JSON.parse(JSON.stringify(intermediateAnnotations));
+      await fixture.clickPoint({ x: 0.6, y: 0.18 });
+      expect(intermediateAnnotations).toEqual(intermediateCopy);
+      expect(fixture.state.annotations).not.toBe(intermediateAnnotations);
+      expect(fixture.state.annotations).toHaveLength(3);
+      expect(fixture.state.annotations[2].prevX).toBeCloseTo(0.5, 8);
+      expect(fixture.state.annotations[2].prevY).toBeCloseTo(0.38, 8);
+      expect(fixture.state.annotations[2].x).toBeCloseTo(0.6, 8);
+      expect(fixture.state.annotations[2].y).toBeCloseTo(0.18, 8);
+      // Leaving the canvas for observation controls preserves the inspector.
+      const canvas = fixture.host.querySelector('[data-diss-canvas]');
+      const undo = fixture.host.querySelector('[data-diss-point-undo]');
+      expect(undo).not.toBeNull();
+      await act(async () => {
+        canvas.dispatchEvent(new MouseEvent('pointerout', { bubbles: true, relatedTarget: undo }));
+        await Promise.resolve();
+      });
+      expect(fixture.state.hoveredOrgan).toBe(before.hoveredOrgan);
+      expect(markingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('starts, finishes, and restarts pointer measurements without recording technique or changing the inspection target', async () => {
+    const fixture = await mountMarkingFixture({ rulerMode: true });
+    try {
+      const before = markingWorkProof(fixture.state);
+      await fixture.clickPoint({ x: 0.5, y: 0.38 });
+      expect(fixture.state.rulerStart.x).toBeCloseTo(0.5, 8);
+      expect(fixture.state.rulerStart.y).toBeCloseTo(0.38, 8);
+      expect(fixture.state.rulerEnd).toBeNull();
+      expect(fixture.state.procedureFeedback.message).toMatch(/second point|second endpoint/i);
+      await fixture.clickPoint({ x: 0.65, y: 0.24 });
+      expect(fixture.state.rulerEnd.x).toBeCloseTo(0.65, 8);
+      expect(fixture.state.rulerEnd.y).toBeCloseTo(0.24, 8);
+      expect(fixture.state.procedureFeedback.message).toContain('1.6 cm');
+      const guide = fixture.host.querySelector('[data-pointer-guide-instruction]');
+      expect(guide.textContent).not.toMatch(/second endpoint|second point/i);
+      expect(guide.textContent).toMatch(/new measurement|start again|first point|first endpoint/i);
+      await fixture.clickPoint({ x: 0.6, y: 0.18 });
+      expect(fixture.state.rulerStart.x).toBeCloseTo(0.6, 8);
+      expect(fixture.state.rulerStart.y).toBeCloseTo(0.18, 8);
+      expect(fixture.state.rulerEnd).toBeNull();
+      expect(markingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('uses keyboard structure anchors for annotation without selecting, inspecting, or running a procedure', async () => {
+    const fixture = await mountMarkingFixture({ annotateMode: true });
+    try {
+      const before = markingWorkProof(fixture.state);
+      await fixture.key('Home');
+      expect(markingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.state.annotations).toEqual([]);
+      await fixture.key('Enter');
+      expect(fixture.state.annotations).toEqual([{ x: 0.5, y: 0.38, type: 'dot' }]);
+      await fixture.key('ArrowRight');
+      expect(markingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.state.annotations).toHaveLength(1);
+      await fixture.key(' ');
+      expect(fixture.state.annotations[1]).toMatchObject({ x: 0.65, y: 0.24, prevX: 0.5, prevY: 0.38 });
+      await fixture.key('End');
+      expect(markingWorkProof(fixture.state)).toEqual(before);
+      await fixture.key('Enter');
+      expect(fixture.state.annotations[2]).toMatchObject({ x: 0.6, y: 0.18, prevX: 0.65, prevY: 0.24 });
+      const recordedPoints = JSON.parse(JSON.stringify(fixture.state.annotations));
+      // A frozen canvas must clear its keyboard anchor as focus moves to the
+      // observation controls. This redraw must not place a point or inspect it.
+      const canvas = fixture.host.querySelector('[data-diss-canvas]');
+      const undo = fixture.host.querySelector('[data-diss-point-undo]');
+      const redraw = vi.fn();
+      canvas._drawDissectionNow = redraw;
+      canvas._dissMotionReduced = true;
+      expect(canvas._keyboardFocus).toBe(true);
+      expect(canvas._keyboardPreviewOrganId).toBe('nictitating');
+      await act(async () => { undo.focus(); await Promise.resolve(); });
+      expect(document.activeElement).toBe(undo);
+      expect(canvas._keyboardFocus).toBe(false);
+      expect(canvas._keyboardPreviewOrganId).toBeNull();
+      expect(redraw).toHaveBeenCalledTimes(1);
+      expect(fixture.state.annotations).toEqual(recordedPoints);
+      expect(markingWorkProof(fixture.state)).toEqual(before);
+      // Returning to the canvas cannot commit the cleared candidate.
+      await fixture.key('Enter');
+      expect(fixture.state.annotations).toEqual(recordedPoints);
+      expect(markingWorkProof(fixture.state)).toEqual(before);
+      await fixture.key('Escape');
+      expect(fixture.state.annotateMode).toBe(false);
+      expect(fixture.state.rulerMode).toBe(false);
+      expect(fixture.state.annotations).toEqual(recordedPoints);
+      expect(markingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('uses keyboard structure anchors for a ruler and exits with Escape while retaining the completed measurement', async () => {
+    const fixture = await mountMarkingFixture({ rulerMode: true });
+    try {
+      const before = markingWorkProof(fixture.state);
+      await fixture.key('Home');
+      expect(markingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.state.rulerStart).toBeNull();
+      await fixture.key('Enter');
+      expect(fixture.state.rulerStart).toEqual({ x: 0.5, y: 0.38 });
+      expect(fixture.state.rulerEnd).toBeNull();
+      await fixture.key('ArrowRight');
+      expect(markingWorkProof(fixture.state)).toEqual(before);
+      await fixture.key(' ');
+      expect(fixture.state.rulerEnd).toEqual({ x: 0.65, y: 0.24 });
+      expect(fixture.state.procedureFeedback.message).toContain('1.6 cm');
+      await fixture.key('Escape');
+      expect(fixture.state.rulerMode).toBe(false);
+      expect(fixture.state.annotateMode).toBe(false);
+      expect(fixture.state.rulerStart).toEqual({ x: 0.5, y: 0.38 });
+      expect(fixture.state.rulerEnd).toEqual({ x: 0.65, y: 0.24 });
+      expect(markingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('stops annotation and ruler modes when Essentials hides their controls while retaining the drawing and measurement', async () => {
+    const marks = [{ x: 0.4, y: 0.4, type: 'dot' }];
+    const start = { x: 0.5, y: 0.38 };
+    const end = { x: 0.65, y: 0.24 };
+    const fixture = await mountMarkingFixture({ annotateMode: true, rulerMode: true, annotations: marks, rulerStart: start, rulerEnd: end });
+    try {
+      const before = markingWorkProof(fixture.state);
+      const essentials = fixture.host.querySelector('[aria-label="Essentials workspace"]');
+      expect(essentials).not.toBeNull();
+      await act(async () => { essentials.click(); await Promise.resolve(); });
+      expect(fixture.state.workspaceMode).toBe('essentials');
+      expect(fixture.state.toolbarToolsOpen).toBe(false);
+      expect(fixture.state.annotateMode).toBe(false);
+      expect(fixture.state.rulerMode).toBe(false);
+      expect(fixture.state.annotations).toEqual(marks);
+      expect(fixture.state.rulerStart).toEqual(start);
+      expect(fixture.state.rulerEnd).toEqual(end);
+      expect(markingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('clears ruler interaction state on a successful saved-progress load while restoring specimen annotations and notes', async () => {
+    const savedMarks = [{ x: 0.3, y: 0.45, type: 'dot' }];
+    const savedNote = 'This note belongs to the loaded frog record.';
+    const fixture = await mountMarkingFixture({
+      _dissLoadedSpec: null, rulerMode: true, annotateMode: true,
+      rulerStart: { x: 0.5, y: 0.38 }, rulerEnd: { x: 0.65, y: 0.24 },
+    }, {
+      frog: { schemaVersion: 21, activeLayer: 'skin', annotations: savedMarks, organNotes: { 'frog|dorsal_skin': savedNote } },
+    });
+    try {
+      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+      expect(fixture.state._dissLoadedSpec).toBe('frog');
+      expect(fixture.state.rulerMode).toBe(false);
+      expect(fixture.state.annotateMode).toBe(false);
+      expect(fixture.state.rulerStart).toBeNull();
+      expect(fixture.state.rulerEnd).toBeNull();
+      expect(fixture.state.annotations).toEqual(savedMarks);
+      expect(fixture.state.organNotes['frog|dorsal_skin']).toBe(savedNote);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('clears ruler interaction state on specimen change and confirmed reset without erasing the departed specimen drawing', async () => {
+    const frogMarks = [{ x: 0.4, y: 0.4, type: 'dot' }];
+    const pigMarks = [{ x: 0.45, y: 0.3, type: 'dot' }];
+    const fixture = await mountMarkingFixture({
+      rulerMode: true, annotateMode: true, annotations: frogMarks,
+      rulerStart: { x: 0.5, y: 0.38 }, rulerEnd: { x: 0.65, y: 0.24 },
+    }, { pig: { schemaVersion: 21, activeLayer: 'skin', annotations: pigMarks } });
+    try {
+      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+      expect(fixture.state._dissLoadedSpec).toBe('frog');
+      const specimenTabs = Array.from(fixture.host.querySelectorAll('[role="tab"]')).map((tab) => tab.id);
+      expect(specimenTabs).toContain('diss-specimen-tab-pig');
+      const pigTab = fixture.host.querySelector('[id="diss-specimen-tab-pig"]');
+      expect(pigTab).not.toBeNull();
+      await act(async () => { pigTab.click(); await Promise.resolve(); });
+      expect(fixture.state.specimen).toBe('pig');
+      expect(fixture.state.rulerMode).toBe(false);
+      expect(fixture.state.annotateMode).toBe(false);
+      expect(fixture.state.rulerStart).toBeNull();
+      expect(fixture.state.rulerEnd).toBeNull();
+      expect(JSON.parse(localStorage.getItem('dissection_progress_frog')).annotations).toEqual(frogMarks);
+      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+      expect(fixture.state._dissLoadedSpec).toBe('pig');
+      expect(fixture.state.annotations).toEqual(pigMarks);
+      await fixture.patch({ workspaceMode: 'advanced', toolbarToolsOpen: true, toolbarViewOpen: false, rulerMode: true, annotateMode: true, rulerStart: { x: 0.2, y: 0.3 }, rulerEnd: { x: 0.3, y: 0.4 } });
+      const reset = fixture.host.querySelector('[id="diss-reset-specimen"]');
+      expect(reset).not.toBeNull();
+      await act(async () => { reset.click(); await Promise.resolve(); });
+      await act(async () => { fixture.host.querySelector('[id="diss-reset-confirm"]').click(); await Promise.resolve(); });
+      expect(fixture.state.rulerMode).toBe(false);
+      expect(fixture.state.annotateMode).toBe(false);
+      expect(fixture.state.rulerStart).toBeNull();
+      expect(fixture.state.rulerEnd).toBeNull();
+      expect(fixture.state.annotations).toEqual([]);
+      expect(JSON.parse(localStorage.getItem('dissection_progress_frog')).annotations).toEqual(frogMarks);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('undoes annotation points and clears a retained measurement through native controls without changing recorded work', async () => {
+    const marks = [{ x: 0.5, y: 0.38, type: 'dot' }, { x: 0.65, y: 0.24, type: 'dot', prevX: 0.5, prevY: 0.38 }];
+    const fixture = await mountMarkingFixture({ annotateMode: true, annotations: marks });
+    try {
+      const before = markingWorkProof(fixture.state);
+      const undo = fixture.host.querySelector('[data-diss-point-undo]');
+      expect(undo).not.toBeNull();
+      await act(async () => { undo.click(); await Promise.resolve(); });
+      expect(fixture.state.annotations).toEqual([marks[0]]);
+      expect(marks).toHaveLength(2);
+      await act(async () => { undo.click(); await new Promise((resolve) => setTimeout(resolve, 0)); });
+      expect(fixture.state.annotations).toEqual([]);
+      expect(undo.disabled).toBe(true);
+      expect(document.activeElement).toBe(fixture.host.querySelector('[data-diss-canvas]'));
+      const exit = fixture.host.querySelector('[data-diss-point-exit]');
+      expect(exit).not.toBeNull();
+      await act(async () => { exit.click(); await new Promise((resolve) => setTimeout(resolve, 0)); });
+      expect(fixture.state.annotateMode).toBe(false);
+      expect(fixture.state.rulerMode).toBe(false);
+      expect(fixture.host.querySelector('.diss-point-mode')).toBeNull();
+      expect(document.activeElement).toBe(fixture.host.querySelector('[data-diss-canvas]'));
+      await fixture.patch({ rulerStart: { x: 0.5, y: 0.38 }, rulerEnd: { x: 0.65, y: 0.24 } });
+      expect(fixture.host.querySelector('[data-diss-point-status]').textContent).toContain('1.6 cm');
+      const clear = fixture.host.querySelector('[data-diss-measurement-clear]');
+      expect(clear).not.toBeNull();
+      clear.focus();
+      await act(async () => { clear.click(); await new Promise((resolve) => setTimeout(resolve, 0)); });
+      expect(fixture.state.rulerStart).toBeNull();
+      expect(fixture.state.rulerEnd).toBeNull();
+      expect(fixture.host.querySelector('.diss-point-mode')).toBeNull();
+      expect(document.activeElement).toBe(fixture.host.querySelector('[data-diss-canvas]'));
+      expect(markingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  function evidenceWorkProof(state) {
+    const proof = markingWorkProof(state);
+    delete proof.visualEvidence;
+    delete proof.referenceEvidenceId;
+    return JSON.parse(JSON.stringify({
+      ...proof,
+      annotations: state.annotations,
+      rulerMode: state.rulerMode, annotateMode: state.annotateMode,
+      rulerStart: state.rulerStart, rulerEnd: state.rulerEnd,
+      assessmentEvidence: state.assessmentEvidence,
+      dissInquiry: state.dissInquiry,
+    }));
+  }
+
+  async function clickEvidenceControl(control) {
+    expect(control).not.toBeNull();
+    // Commit the native event before its deferred focus callback looks up the
+    // newly rendered heading or confirmation button. A timer inside the same
+    // async act can run while React still holds that update in its test batch.
+    await act(async () => { control.click(); });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+  }
+
+  async function toggleEvidenceNotebook(fixture, open) {
+    const notebook = fixture.host.querySelector('[id="diss-evidence-notebook"]');
+    expect(notebook).not.toBeNull();
+    await act(async () => {
+      notebook.open = open;
+      notebook.dispatchEvent(new Event('toggle'));
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+    expect(fixture.state.evidenceNotebookOpen).toBe(open);
+    expect(notebook.open).toBe(open);
+    return notebook;
+  }
+
+  it('keeps notebook disclosure independent and returns comparison focus to the distinct same-layer frame control', async () => {
+    const frames = [101, 102].map((id) => ({ id, image: 'data:image/jpeg;base64,eA==', layer: 'skin', view: 'dorsal', condition: 'standard' }));
+    const preservedFrames = JSON.parse(JSON.stringify(frames));
+    const fixture = await mountMarkingFixture({
+      visualEvidence: frames, referenceEvidenceId: 101, splitComparison: false, evidenceNotebookOpen: false,
+      annotations: [{ x: 0.5, y: 0.38, type: 'dot' }],
+      rulerStart: { x: 0.5, y: 0.38 }, rulerEnd: { x: 0.65, y: 0.24 },
+    });
+    try {
+      const before = evidenceWorkProof(fixture.state);
+      const notebook = fixture.host.querySelector('[id="diss-evidence-notebook"]');
+      expect(notebook.open).toBe(false);
+      expect(fixture.host.querySelector('.diss-split-reference')).toBeNull();
+      for (const [index, frame] of frames.entries()) {
+        const card = fixture.host.querySelector('[data-evidence-id="' + frame.id + '"]');
+        expect(card.querySelector('strong').textContent).toBe('Skin');
+        expect(card.textContent).toContain('Frame ' + (index + 1));
+        const compare = card.querySelector('[id="diss-evidence-compare-' + frame.id + '"]');
+        expect(compare.getAttribute('aria-label')).toBe('Compare frame ' + (index + 1) + ': Skin');
+      }
+      await toggleEvidenceNotebook(fixture, true);
+      await fixture.patch({ procedureFeedback: { message: 'An unrelated status refresh.', tone: 'working', at: 99 } });
+      expect(notebook.open).toBe(true);
+      expect(fixture.state.splitComparison).toBe(false);
+
+      const secondCompare = fixture.host.querySelector('[id="diss-evidence-compare-102"]');
+      await clickEvidenceControl(secondCompare);
+      const heading = fixture.host.querySelector('[id="diss-reference-heading"]');
+      expect(heading.textContent).toBe('Reference frame 2');
+      expect(heading.getAttribute('tabindex')).toBe('-1');
+      expect(document.activeElement).toBe(heading);
+      expect(fixture.state.referenceEvidenceId).toBe(102);
+      expect(fixture.state.splitComparison).toBe(true);
+      expect(fixture.state.evidenceNotebookOpen).toBe(true);
+      expect(secondCompare.getAttribute('aria-pressed')).toBe('true');
+      await clickEvidenceControl(fixture.host.querySelector('button[aria-label="Close split comparison"]'));
+      expect(fixture.host.querySelector('.diss-split-reference')).toBeNull();
+      expect(document.activeElement).toBe(secondCompare);
+      expect(fixture.state.referenceEvidenceId).toBe(102);
+      expect(fixture.state.evidenceNotebookOpen).toBe(true);
+      expect(notebook.open).toBe(true);
+
+      await toggleEvidenceNotebook(fixture, false);
+      await fixture.patch({ procedureFeedback: { message: 'Another status refresh.', tone: 'working', at: 100 } });
+      expect(notebook.open).toBe(false);
+      expect(fixture.state.referenceEvidenceId).toBe(102);
+      await toggleEvidenceNotebook(fixture, true);
+      const firstCompare = fixture.host.querySelector('[id="diss-evidence-compare-101"]');
+      await clickEvidenceControl(firstCompare);
+      await toggleEvidenceNotebook(fixture, false);
+      expect(fixture.state.splitComparison).toBe(true);
+      expect(fixture.host.querySelector('[id="diss-reference-heading"]').textContent).toBe('Reference frame 1');
+      await clickEvidenceControl(fixture.host.querySelector('button[aria-label="Close split comparison"]'));
+      expect(document.activeElement).toBe(firstCompare);
+      expect(fixture.state.evidenceNotebookOpen).toBe(true);
+      expect(notebook.open).toBe(true);
+      expect(fixture.state.visualEvidence).toEqual(preservedFrames);
+      expect(frames).toEqual(preservedFrames);
+      expect(evidenceWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('shows full UTC capture times and distinguishes valid zero metadata from missing or invalid legacy scores', async () => {
+    const frames = [
+      { id: 101, image: 'data:image/jpeg;base64,eA==', layer: 'skin', layerName: 'External Anatomy', view: 'dorsal', condition: 'preserved', capturedAt: '2026-07-23T16:30:00+02:00', techniqueScore: 0, opticalQuality: 0 },
+      { id: 102, image: 'data:image/jpeg;base64,eA==', layer: 'skin', techniqueScore: null, opticalQuality: null },
+      { id: 103, image: 'data:image/jpeg;base64,eA==', layer: 'skin', capturedAt: '', techniqueScore: '', opticalQuality: '' },
+      { id: 104, image: 'data:image/jpeg;base64,eA==', layer: 'unknown-legacy-layer', capturedAt: 'not-a-date', techniqueScore: 'Infinity', opticalQuality: 'not-a-number' },
+      { id: 105, image: 'data:image/jpeg;base64,eA==', layer: 'skin', capturedAt: '2026-02-31T12:00:00Z', techniqueScore: [], opticalQuality: false },
+    ];
+    const preservedFrames = JSON.parse(JSON.stringify(frames));
+    const fixture = await mountMarkingFixture({ visualEvidence: frames, referenceEvidenceId: 101, splitComparison: true });
+    try {
+      const before = evidenceWorkProof(fixture.state);
+      // Older saved records can request comparison without owning disclosure.
+      // A missing notebook flag starts closed and native opening records it.
+      expect(fixture.state.evidenceNotebookOpen).toBeUndefined();
+      expect(fixture.host.querySelector('[id="diss-evidence-notebook"]').open).toBe(false);
+      expect(fixture.host.querySelector('[id="diss-reference-heading"]').textContent).toBe('Reference frame 1');
+      await toggleEvidenceNotebook(fixture, true);
+      const zeroCard = fixture.host.querySelector('[data-evidence-id="101"]');
+      expect(zeroCard.querySelector('strong').textContent).toBe('External Anatomy');
+      expect(zeroCard.textContent).toContain('Technique 0/100');
+      expect(zeroCard.textContent).toMatch(/(?:optics|optical quality)[:\s·]*0%/i);
+      expect(zeroCard.textContent).toContain('2026-07-23 14:30:00 UTC');
+      expect(zeroCard.querySelector('time').getAttribute('datetime')).toBe('2026-07-23T14:30:00.000Z');
+      for (const frame of frames.slice(1)) {
+        const card = fixture.host.querySelector('[data-evidence-id="' + frame.id + '"]');
+        expect(card.querySelector('img').getAttribute('alt')).toContain('not recorded view');
+        expect(card.textContent).toContain('Technique not recorded');
+        expect(card.textContent).toContain('Optical quality not recorded');
+        expect(card.textContent).toContain('Capture time unavailable');
+        expect(card.textContent).not.toContain('Technique 0/100');
+        expect(card.textContent).not.toMatch(/(?:optics|optical quality)[:\s·]*0%/i);
+        expect(card.textContent).not.toMatch(/NaN|Infinity|not-a-date|not-a-number/);
+        expect(card.querySelector('time')).toBeNull();
+        await clickEvidenceControl(card.querySelector('[id="diss-evidence-compare-' + frame.id + '"]'));
+        const reference = fixture.host.querySelector('.diss-split-reference');
+        expect(reference.querySelector('img').getAttribute('alt')).toContain('not recorded view, not recorded');
+        expect(reference.textContent).toContain('Technique not recorded');
+        expect(reference.textContent).toContain('Optical quality not recorded');
+        expect(reference.textContent).toContain('Capture time unavailable');
+        expect(reference.textContent).not.toContain('Technique 0/100');
+        expect(reference.querySelector('time')).toBeNull();
+        await clickEvidenceControl(reference.querySelector('button[aria-label="Close split comparison"]'));
+      }
+      await clickEvidenceControl(fixture.host.querySelector('[id="diss-evidence-compare-101"]'));
+      const reference = fixture.host.querySelector('.diss-split-reference');
+      expect(reference.textContent).toContain('Technique 0/100');
+      expect(reference.textContent).toMatch(/(?:optics|optical quality)[:\s·]*0%/i);
+      expect(reference.textContent).toContain('2026-07-23 14:30:00 UTC');
+      expect(reference.querySelector('time').getAttribute('datetime')).toBe('2026-07-23T14:30:00.000Z');
+      expect(fixture.state.visualEvidence).toEqual(preservedFrames);
+      expect(frames).toEqual(preservedFrames);
+      expect(evidenceWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('captures a fresh distinct frame, focuses its reference, and downloads it without changing learner work', async () => {
+    const collisionAt = Date.parse('2026-07-23T14:30:00.000Z');
+    const frames = [{ id: collisionAt, image: 'data:image/jpeg;base64,b2xk', layer: 'skin', view: 'dorsal', techniqueScore: 30 }];
+    const preservedFrames = JSON.parse(JSON.stringify(frames));
+    const fixture = await mountMarkingFixture({
+      visualEvidence: frames, referenceEvidenceId: collisionAt, splitComparison: false, evidenceNotebookOpen: false,
+      annotations: [{ x: 0.5, y: 0.38, type: 'dot' }],
+      rulerMode: true, rulerStart: { x: 0.5, y: 0.38 }, rulerEnd: { x: 0.65, y: 0.24 },
+    });
+    const thumbnailContext = { drawImage: vi.fn() };
+    const downloads = [];
+    const nowSpy = vi.spyOn(Date, 'now').mockReturnValue(collisionAt);
+    const imageSpy = vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue('data:image/jpeg;base64,bmV3');
+    const downloadSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function () {
+      downloads.push({ href: this.href, download: this.download });
+    });
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(function () {
+      return this.width === 220 && this.height === 264 ? thumbnailContext : null;
+    });
+    try {
+      const before = evidenceWorkProof(fixture.state);
+      const previousFrames = fixture.state.visualEvidence;
+      const sourceCanvas = fixture.host.querySelector('[data-diss-canvas]');
+      const specimenCapture = vi.fn().mockReturnValue(true);
+      sourceCanvas._captureDissectionEvidence = specimenCapture;
+      const contents = fixture.host.querySelector('[id="diss-evidence-capture-contents"]');
+      expect(contents).not.toBeNull();
+      expect(contents.value).toBe('specimen');
+      expect(fixture.host.querySelector('label[for="diss-evidence-capture-contents"]').textContent).toBe('Frame contents');
+      expect(Array.from(contents.options).map((option) => [option.value, option.textContent])).toEqual([
+        ['specimen', 'Specimen and marks'], ['canvas', 'Full canvas with guides'],
+      ]);
+      await clickEvidenceControl(fixture.host.querySelector('[data-evidence-capture]'));
+      expect(specimenCapture).toHaveBeenCalledExactlyOnceWith(thumbnailContext, 220, 264);
+      expect(thumbnailContext.drawImage).not.toHaveBeenCalled();
+      expect(imageSpy).toHaveBeenCalledWith('image/jpeg', 0.72);
+      expect(fixture.state.visualEvidence).toHaveLength(2);
+      expect(fixture.state.visualEvidence).not.toBe(previousFrames);
+      expect(fixture.state.visualEvidence[0]).toEqual(preservedFrames[0]);
+      expect(frames).toEqual(preservedFrames);
+      const captured = fixture.state.visualEvidence[1];
+      expect(captured).toMatchObject({
+        id: collisionAt + 1, image: 'data:image/jpeg;base64,bmV3',
+        capturedAt: '2026-07-23T14:30:00.001Z', layer: 'skin', layerName: 'Skin',
+        view: 'dorsal', selectedOrganId: 'nictitating', specimen: 'frog',
+        captureContents: 'specimen', camera: { zoom: 1.5, panX: 15, panY: -8 }, annotationCount: 1,
+      });
+      expect(captured.measurementText).toContain('1.6 cm');
+      expect(captured.selectedOrganName).toEqual(expect.any(String));
+      expect(captured.selectedOrganName.length).toBeGreaterThan(0);
+      expect(fixture.state.referenceEvidenceId).toBe(captured.id);
+      expect(fixture.state.splitComparison).toBe(true);
+      expect(fixture.state.evidenceNotebookOpen).toBe(true);
+      const heading = fixture.host.querySelector('[id="diss-reference-heading"]');
+      expect(heading.textContent).toBe('Reference frame 2');
+      expect(document.activeElement).toBe(heading);
+      const capturedCard = fixture.host.querySelector('[data-evidence-id="' + captured.id + '"]');
+      const cardContext = capturedCard.querySelector('p[data-evidence-capture-context]');
+      const referenceContext = fixture.host.querySelector('.diss-split-reference p[data-evidence-capture-context]');
+      expect(cardContext.textContent).toContain('Specimen and marks');
+      expect(cardContext.textContent).toContain('Zoom 1.5×');
+      expect(cardContext.textContent).toContain('1 observation mark');
+      expect(cardContext.textContent).toContain(captured.measurementText);
+      expect(referenceContext.textContent).toBe(cardContext.textContent);
+      const download = Array.from(capturedCard.querySelectorAll('button')).find((button) => button.textContent === 'Download');
+      expect(download).not.toBeNull();
+      download.focus();
+      const notebookBeforeDownload = JSON.parse(JSON.stringify(fixture.state.visualEvidence));
+      await clickEvidenceControl(download);
+      expect(downloads).toEqual([{ href: captured.image, download: 'frog_skin_' + captured.id + '.jpg' }]);
+      expect(document.activeElement).toBe(download);
+      expect(fixture.state.visualEvidence).toEqual(notebookBeforeDownload);
+      expect(fixture.state.referenceEvidenceId).toBe(captured.id);
+      expect(fixture.state.splitComparison).toBe(true);
+      await clickEvidenceControl(fixture.host.querySelector('button[aria-label="Close split comparison"]'));
+      expect(document.activeElement).toBe(fixture.host.querySelector('[id="diss-evidence-compare-' + captured.id + '"]'));
+      expect(fixture.state.referenceEvidenceId).toBe(captured.id);
+      expect(fixture.state.evidenceNotebookOpen).toBe(true);
+      expect(evidenceWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally {
+      nowSpy.mockRestore(); imageSpy.mockRestore(); downloadSpy.mockRestore();
+      await fixture.close();
+    }
+  });
+
+
+  async function chooseEvidenceCaptureContents(fixture, value) {
+    const select = fixture.host.querySelector('[id="diss-evidence-capture-contents"]');
+    expect(select).not.toBeNull();
+    await act(async () => {
+      select.value = value;
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(fixture.state.evidenceCaptureContents).toBe(value);
+    expect(select.value).toBe(value);
+  }
+
+  it('names specimen display tasks while retaining native control order and focus stops', async () => {
+    const fixture = await mountMarkingFixture({ toolbarViewOpen: true });
+    try {
+      const panel = fixture.host.querySelector('#diss-view-tools');
+      expect(panel.getAttribute('role')).toBe('region');
+      expect(panel.getAttribute('tabindex')).toBe('-1');
+      expect(Array.from(panel.querySelectorAll('[data-diss-view-group]')).map((group) => group.getAttribute('data-diss-view-group')))
+        .toEqual(['accessibility', 'specimen', 'lighting', 'workspace']);
+      const specimen = panel.querySelector('[data-diss-view-group="specimen"]');
+      const groups = Array.from(specimen.querySelectorAll('[data-diss-view-subgroup]'));
+      expect(groups.map((group) => group.getAttribute('data-diss-view-subgroup')))
+        .toEqual(['presentation', 'inspection', 'scene', 'reference']);
+      const names = ['Anatomy and presentation', 'Local inspection', 'Scene and landmarks', 'Reference and variation'];
+      groups.forEach((group, index) => {
+        expect(group.getAttribute('role')).toBe('group');
+        const id = group.getAttribute('aria-labelledby');
+        const heading = group.querySelector('[id="' + id + '"]');
+        expect(heading.tagName).toBe('H5');
+        expect(heading.textContent).toBe(names[index]);
+        expect(fixture.host.querySelectorAll('[id="' + id + '"]')).toHaveLength(1);
+        expect(group.hasAttribute('tabindex')).toBe(false);
+      });
+      expect(groups.map((group) => group.querySelectorAll('button').length)).toEqual([6, 4, 8, 3]);
+      expect(Array.from(specimen.querySelectorAll('button')).map((button) => button.textContent.replace(/^[^A-Za-z]+/, ''))).toEqual([
+        'Visuals: Accessible', 'View: dorsal', 'Layer map off', 'Condition: standard', 'Relationships off', 'Quality: auto',
+        'Lens on', 'Unpin lens', 'Magnify 4x', 'Focus: surface', 'Visual tools on', 'Macro view on', 'Scene detail on',
+        'Depth atlas on', 'Tissue relief on', 'Flow motion on', 'Focus mode on', 'Depth motion off',
+        'Split compare off', 'Variation 1', 'Tissue: after',
+      ]);
+      const controls = Array.from(panel.querySelectorAll('button, input'));
+      expect(panel.querySelectorAll('button')).toHaveLength(33);
+      expect(panel.querySelectorAll('input')).toHaveLength(1);
+      expect(Array.from(panel.querySelectorAll('a[href], button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])'))).toEqual(controls);
+      for (const button of specimen.querySelectorAll('button[aria-describedby]')) {
+        for (const id of button.getAttribute('aria-describedby').split(/\s+/)) {
+          const help = specimen.querySelector('[id="' + id + '"]');
+          expect(help).not.toBeNull();
+          expect(help.textContent.trim().length).toBeGreaterThan(0);
+          expect(fixture.host.querySelectorAll('[id="' + id + '"]')).toHaveLength(1);
+        }
+      }
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('explains Essentials display limits and retains assessment presentation controls without exposing inspection tasks', () => {
+    const base = {
+      specimen: 'frog', _dissLoadedSpec: 'frog', activeLayer: 'skin', anatomicalView: 'dorsal',
+      workspaceMode: 'essentials', toolbarViewOpen: true, visualRealism: 'realistic',
+    };
+    const essentials = new DOMParser().parseFromString(renderTool('dissection', { dissection: base }), 'text/html');
+    const panel = essentials.querySelector('#diss-view-tools');
+    expect(panel.querySelectorAll('button')).toHaveLength(33);
+    expect(panel.querySelector('#diss-view-presentation-help').textContent)
+      .toBe('Essentials uses Guided presentation. Select Advanced workspace to use the other presentation modes.');
+    expect(panel.querySelector('#diss-view-inspection-help').textContent)
+      .toBe('Local lens inspection is available in Advanced workspace.');
+    expect(panel.querySelector('#diss-view-scene-help').textContent)
+      .toContain('Essentials uses the default scene display.');
+    expect(panel.querySelector('#diss-view-reference-help').textContent)
+      .toContain('Saved-frame split comparison is available in Advanced workspace.');
+    expect(panel.querySelector('button[aria-label^="Visual presentation"]').textContent).toContain('Visuals: Guided');
+    const assessment = new DOMParser().parseFromString(renderTool('dissection', {
+      dissection: { ...base, workspaceMode: 'advanced', quizMode: true, visualRealism: 'guided' },
+    }), 'text/html');
+    const assessed = assessment.querySelector('#diss-view-tools');
+    expect(Array.from(assessed.querySelectorAll('[data-diss-view-subgroup]')).map((group) => group.getAttribute('data-diss-view-subgroup')))
+      .toEqual(['presentation']);
+    expect(assessed.querySelector('[data-diss-view-subgroup="presentation"]').querySelectorAll('button')).toHaveLength(1);
+    expect(assessed.querySelector('#diss-view-presentation-help').textContent)
+      .toBe('Guided uses balanced materials and visible technique targets.');
+    expect(assessed.querySelector('#diss-view-cycle')).toBeNull();
+    expect(assessed.querySelector('button[aria-label="Organ name labels hidden during assessment"]').disabled).toBe(true);
+    expect(assessed.querySelector('button[aria-label="Toggle high contrast mode"]')).not.toBeNull();
+    expect(assessed.querySelector('#diss-light-intensity-range')).toBeNull();
+  });
+
+  it('describes native presentation changes and retains Accessible preferences when returning to Guided', async () => {
+    const fixture = await mountMarkingFixture({ toolbarViewOpen: true, visualRealism: 'guided', highContrast: false, animSpeed: 'normal' });
+    try {
+      const before = studyChooserWorkProof(fixture.state);
+      const control = () => fixture.host.querySelector('#diss-view-tools button[aria-label^="Visual presentation"]');
+      const help = () => fixture.host.querySelector('#diss-view-presentation-help').textContent;
+      await clickEvidenceControl(control());
+      expect(fixture.state.visualRealism).toBe('realistic');
+      expect(help()).toContain('richer materials, natural landmark variation, and reduced teaching emphasis');
+      expect(fixture.state.highContrast).toBe(false);
+      expect(fixture.state.animSpeed).toBe('normal');
+      await clickEvidenceControl(control());
+      expect(fixture.state.visualRealism).toBe('accessible');
+      expect(fixture.state.highContrast).toBe(true);
+      expect(fixture.state.animSpeed).toBe('slow');
+      expect(help()).toContain('High contrast and slow animation stay active when you change presentation.');
+      expect(fixture.host.querySelector('#diss-view-tools button[aria-label="Toggle high contrast mode"]').getAttribute('aria-pressed')).toBe('true');
+      await clickEvidenceControl(control());
+      expect(fixture.state.visualRealism).toBe('guided');
+      expect(control().textContent).toContain('Visuals: Guided');
+      expect(fixture.state.highContrast).toBe(true);
+      expect(fixture.state.animSpeed).toBe('slow');
+      expect(help()).toBe('Guided uses balanced materials and visible technique targets.');
+      expect(studyChooserWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it.each([
+    ['the explicitly selected valid frame', 101, 1, 'Outer skin frame', 'data:image/jpeg;base64,YQ=='],
+    ['the final valid frame when the saved reference is missing', 999, 2, 'Organ frame', 'data:image/jpeg;base64,Yg=='],
+    ['missing valid evidence', 103, null, null, null],
+  ])('describes and opens %s through the native split resolver while preserving saved evidence', async (_case, referenceEvidenceId, frameNumber, layerName, image) => {
+    const frames = [
+      { id: 101, image: 'data:image/jpeg;base64,YQ==', layer: 'skin', layerName: 'Outer skin frame', view: 'dorsal' },
+      { id: 102, image: 'data:image/jpeg;base64,Yg==', layer: 'organs', layerName: 'Organ frame', view: 'internal' },
+      { id: 103, image: null, layer: 'skin' },
+    ];
+    const fixture = await mountMarkingFixture({ toolbarViewOpen: true, visualEvidence: frameNumber ? frames : frames.slice(2), referenceEvidenceId, splitComparison: false });
+    try {
+      const before = studyChooserWorkProof(fixture.state);
+      const split = fixture.host.querySelector('#diss-view-tools button[aria-label="Toggle live and reference split comparison"]');
+      expect(split.getAttribute('aria-describedby')).toBe('diss-view-reference-help');
+      if (!frameNumber) {
+        expect(split.disabled).toBe(true);
+        expect(split.getAttribute('aria-pressed')).toBe('false');
+        expect(fixture.host.querySelector('#diss-view-reference-help').textContent)
+          .toBe('Capture a frame in Lab tools to enable the live/reference split.');
+        await clickEvidenceControl(split);
+        expect(fixture.state.splitComparison).toBe(false);
+        expect(fixture.host.querySelector('.diss-split-reference')).toBeNull();
+        expect(studyChooserWorkProof(fixture.state)).toEqual(before);
+        expect(fixture.awardXP).not.toHaveBeenCalled();
+        return;
+      }
+      expect(split.disabled).toBe(false);
+      expect(fixture.host.querySelector('#diss-view-reference-help').textContent)
+        .toBe('Compare the live specimen with Frame ' + frameNumber + ' from ' + layerName + '.');
+      await clickEvidenceControl(split);
+      expect(fixture.state.splitComparison).toBe(true);
+      expect(split.getAttribute('aria-pressed')).toBe('true');
+      expect(fixture.host.querySelector('#diss-reference-heading').textContent).toBe('Reference frame ' + frameNumber);
+      expect(fixture.host.querySelector('.diss-split-reference img').getAttribute('src')).toBe(image);
+      expect(fixture.host.querySelector('.diss-split-reference').textContent).toContain(layerName);
+      await clickEvidenceControl(split);
+      expect(fixture.state.splitComparison).toBe(false);
+      expect(split.getAttribute('aria-pressed')).toBe('false');
+      expect(fixture.host.querySelector('.diss-split-reference')).toBeNull();
+      expect(studyChooserWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('keeps native pin prerequisites and cycles local inspection without changing zoom or learner records', async () => {
+    const fixture = await mountMarkingFixture({
+      toolbarViewOpen: true, selectedOrgan: null, hoveredOrgan: null, inspectionLens: false,
+      lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, lensMagnification: 2, lensFocusDepth: 'surface',
+    });
+    try {
+      const pin = () => fixture.host.querySelector('#diss-view-tools button[aria-label="Pin inspection lens to selected structure or current pointer"]');
+      const before = studyChooserWorkProof(fixture.state);
+      expect(pin().getAttribute('aria-describedby')).toBe('diss-view-inspection-help diss-view-pin-help');
+      expect(fixture.host.querySelector('#diss-view-pin-help').textContent)
+        .toBe('Select a structure or move over the specimen before pinning.');
+      delete fixture.host.querySelector('[data-diss-canvas]')._toolPointer;
+      await clickEvidenceControl(pin());
+      expect(fixture.state.lensPinned).toBe(false);
+      expect(fixture.state.procedureFeedback.message).toBe('Move over the specimen or select a structure before pinning the lens.');
+      expect(studyChooserWorkProof(fixture.state)).toEqual(before);
+      await fixture.patch({ selectedOrgan: 'nictitating' });
+      const selectedWork = studyChooserWorkProof(fixture.state);
+      await clickEvidenceControl(pin());
+      expect(fixture.state.inspectionLens).toBe(true);
+      expect(fixture.state.lensPinned).toBe(true);
+      expect(fixture.state.lensPinnedOrganId).toBe('nictitating');
+      expect(Number.isFinite(fixture.state.lensPinnedPoint.x)).toBe(true);
+      expect(Number.isFinite(fixture.state.lensPinnedPoint.y)).toBe(true);
+      const magnify = fixture.host.querySelector('#diss-view-tools button[aria-label^="Cycle inspection magnification"]');
+      for (const expected of [4, 6, 2]) {
+        await clickEvidenceControl(magnify);
+        expect(fixture.state.lensMagnification).toBe(expected);
+        expect(magnify.textContent).toContain('Magnify ' + expected + 'x');
+      }
+      const focus = fixture.host.querySelector('#diss-view-tools button[aria-label^="Cycle inspection focus depth"]');
+      for (const expected of ['structure', 'deep', 'surface']) {
+        await clickEvidenceControl(focus);
+        expect(fixture.state.lensFocusDepth).toBe(expected);
+        expect(focus.textContent).toContain('Focus: ' + expected);
+      }
+      await clickEvidenceControl(fixture.host.querySelector('#diss-view-tools button[aria-label="Release pinned inspection target"]'));
+      expect(fixture.state.lensPinned).toBe(false);
+      expect(fixture.state.lensPinnedPoint).toBeNull();
+      expect(fixture.state.lensPinnedOrganId).toBeNull();
+      const expectedWork = { ...selectedWork, inspectionLens: true };
+      expect(studyChooserWorkProof(fixture.state)).toEqual(expectedWork);
+      await fixture.patch({ selectedOrgan: null });
+      const pointerWork = studyChooserWorkProof(fixture.state);
+      fixture.host.querySelector('[data-diss-canvas]')._toolPointer = { x: 0.42, y: 0.31 };
+      await clickEvidenceControl(fixture.host.querySelector('#diss-view-tools button[aria-label="Pin inspection lens to selected structure or current pointer"]'));
+      expect(fixture.state.lensPinnedPoint).toEqual({ x: 0.42, y: 0.31 });
+      expect(fixture.state.lensPinnedOrganId).toBeNull();
+      expect(studyChooserWorkProof(fixture.state)).toEqual({
+        ...pointerWork, inspectionLens: true, lensPinned: true, lensPinnedPoint: { x: 0.42, y: 0.31 }, lensPinnedOrganId: null,
+      });
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('changes displayed variation and tissue overlay while preserving recorded technique and evidence', async () => {
+    const fixture = await mountMarkingFixture({ toolbarViewOpen: true, variationSeed: 3, beforeTechniqueView: false });
+    try {
+      const before = studyChooserWorkProof(fixture.state);
+      const variation = fixture.host.querySelector('#diss-view-tools button[aria-label="Generate another deterministic specimen variation"]');
+      expect(fixture.host.querySelector('#diss-view-tissue-help').textContent)
+        .toBe('Tissue before/after changes the displayed technique overlay. Your recorded technique stays saved.');
+      await clickEvidenceControl(variation);
+      expect(fixture.state.variationSeed).toBe(4);
+      expect(variation.textContent).toContain('Variation 4');
+      expect(fixture.state.procedureFeedback.message).toContain('Loaded specimen variation 4.');
+      const tissue = fixture.host.querySelector('#diss-view-tools button[aria-label^="Tissue: after technique"]');
+      expect(tissue.getAttribute('aria-describedby')).toBe('diss-view-tissue-help');
+      await clickEvidenceControl(tissue);
+      expect(fixture.state.beforeTechniqueView).toBe(true);
+      expect(tissue.getAttribute('aria-label')).toBe('Tissue: before technique. Activate to show the tissue after the technique.');
+      await clickEvidenceControl(tissue);
+      expect(fixture.state.beforeTechniqueView).toBe(false);
+      expect(tissue.getAttribute('aria-label')).toBe('Tissue: after technique. Activate to show the tissue before the technique.');
+      expect(studyChooserWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('uses actual timed-practical entry and teardown to hide orientation and disable labels while preserving work', async () => {
+    const fixture = await mountMarkingFixture({
+      toolbarViewOpen: true, toolbarStudyOpen: true, selectedOrgan: null, hoveredOrgan: null,
+      labelMode: 'show', inspectionLens: false, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null,
+      quizScore: 0, quizTotal: 0,
+    });
+    try {
+      const before = studyChooserWorkProof(fixture.state);
+      expect(fixture.host.querySelector('#diss-view-cycle')).not.toBeNull();
+      await clickEvidenceControl(fixture.host.querySelector('#diss-study-tools button[aria-label="Start 2-minute timed practical"]'));
+      expect(fixture.state.practicalMode).toBe(true);
+      expect(fixture.state.quizMode).toBe(true);
+      expect(fixture.state.labelMode).toBe('hidden');
+      expect(fixture.state.toolbarViewOpen).toBe(false);
+      await clickEvidenceControl(fixture.host.querySelector('button[aria-label="Accessibility options"]'));
+      expect(fixture.host.querySelector('#diss-view-cycle')).toBeNull();
+      expect(fixture.host.querySelector('#diss-view-tools [data-diss-view-subgroup="inspection"]')).toBeNull();
+      const labels = fixture.host.querySelector('#diss-view-tools button[aria-label="Organ name labels hidden during assessment"]');
+      expect(labels.disabled).toBe(true);
+      expect(labels.getAttribute('aria-pressed')).toBe('false');
+      await clickEvidenceControl(labels);
+      expect(fixture.state.labelMode).toBe('hidden');
+      expect(studyChooserWorkProof(fixture.state)).toEqual(before);
+      await clickEvidenceControl(fixture.host.querySelector('#diss-route-study'));
+      await clickEvidenceControl(fixture.host.querySelector('#diss-study-tools button[aria-label="End timed practical"]'));
+      expect(fixture.state.practicalMode).toBe(false);
+      expect(fixture.state.quizMode).toBe(false);
+      expect(fixture.state.labelMode).toBe('show');
+      await clickEvidenceControl(fixture.host.querySelector('button[aria-label="View and accessibility options"]'));
+      expect(fixture.host.querySelector('#diss-view-cycle').disabled).toBe(false);
+      expect(fixture.host.querySelector('#diss-view-tools button[aria-label="Toggle organ name labels"]').disabled).toBe(false);
+      expect(studyChooserWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it.each([
+    ['no selection', { selectedOrgan: null }, 'Select a structure to compare',
+      'Inspect a visible structure first to check whether cross-specimen references are mapped for it.', 'canvas', '#diss-canvas'],
+    ['an unmapped selection', { selectedOrgan: 'nictitating' }, 'No cross-specimen comparison is mapped for Nictitating Membrane',
+      'Open the comparison panel to review its scope, or inspect another visible structure to check reference availability.', 'comparison', '#diss-comparison-panel'],
+    ['a mapped selection', { activeLayer: 'organs', anatomicalView: 'ventral', selectedOrgan: 'heart' }, 'Compare this structure across specimens',
+      'Use the selected structure as the shared anatomical reference.', 'comparison', '#diss-comparison-panel'],
+  ])('keeps comparison next-action guidance honest for %s and uses the native focus route without awarding work', async (_case, patch, title, description, action, target) => {
+    const fixture = await mountMarkingFixture({ compareMode: true, ...patch });
+    try {
+      const before = studyChooserWorkProof(fixture.state);
+      const next = fixture.host.querySelector('[data-dissection-next-action]');
+      expect(next.getAttribute('data-next-action')).toBe(action);
+      expect(next.querySelector('#diss-next-action-title').textContent).toBe(title);
+      expect(next.querySelector('.diss-next-action__body > p').textContent).toBe(description);
+      expect(fixture.host.querySelector('.diss-stage__handoff').textContent).toContain(title);
+      const primary = next.querySelector('.diss-next-action__primary');
+      expect(primary.textContent).toBe(action === 'canvas' ? 'Go to specimen' : 'Go to comparison');
+      await clickEvidenceControl(primary);
+      expect(document.activeElement).toBe(fixture.host.querySelector(target));
+      if (action === 'canvas') expect(fixture.host.querySelector('#diss-comparison-panel')).toBeNull();
+      else expect(fixture.host.querySelector('#diss-comparison-panel').getAttribute('data-comparison-group'))
+        .toBe(patch.selectedOrgan === 'heart' ? 'pumps' : 'unmapped');
+      expect(studyChooserWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  function scenarioSessionWorkProof(state) {
+    return JSON.parse(JSON.stringify({
+      ...studyChooserWorkProof(state),
+      activeInstrument: state.activeInstrument, procedureMode: state.procedureMode,
+      procedureScenario: state.procedureScenario, scenarioStartedAt: state.scenarioStartedAt,
+      scenarioTimeRemaining: state.scenarioTimeRemaining, scenarioCompletedAt: state.scenarioCompletedAt,
+      relationshipTraceIndex: state.relationshipTraceIndex, relationshipTraceCount: state.relationshipTraceCount,
+      compareTechniqueAttempts: state.compareTechniqueAttempts,
+      labelMode: state.labelMode, highContrast: state.highContrast, reducedMotion: state.reducedMotion,
+      largeText: state.largeText, simplifiedInstructions: state.simplifiedInstructions,
+    }));
+  }
+
+  function queuedScenarioConfirmation(button) {
+    expect(button).not.toBeNull();
+    // Retain the actual mounted handler to model a queued click from an old
+    // review. Clicking a detached node would bypass React event delegation and
+    // would never exercise the stale-callback guard.
+    const propsKey = Object.keys(button).find((key) => key.startsWith('__reactProps$'));
+    expect(propsKey).toBeDefined();
+    const handler = button[propsKey].onClick;
+    expect(typeof handler).toBe('function');
+    return async () => {
+      await act(async () => { handler({ currentTarget: button, preventDefault() {}, stopPropagation() {} }); });
+      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+    };
+  }
+
+  it('distinguishes an unstarted four-minute technique challenge and starts the native clock on the current attempt without resetting work', async () => {
+    const now = 1800000000000;
+    const clock = vi.spyOn(Date, 'now').mockReturnValue(now);
+    let fixture;
+    try {
+      fixture = await mountMarkingFixture({
+        revealedLayers: {}, procedureScenario: 'timed-practical', scenarioStartedAt: 0,
+        scenarioTimeRemaining: 125, scenarioCompletedAt: 0, techniquePanelOpen: true,
+      });
+      const before = scenarioSessionWorkProof(fixture.state);
+      const panel = fixture.host.querySelector('.diss-scenario-console');
+      expect(panel.textContent).toContain('4-minute technique challenge');
+      expect(panel.querySelector('.diss-scenario-console__state').getAttribute('data-state')).toBe('not-started');
+      expect(panel.querySelector('#diss-scenario-time')).toBeNull();
+      expect(panel.querySelector('[role="timer"]')).toBeNull();
+      const start = panel.querySelector('#diss-scenario-start');
+      expect(start.disabled).toBe(false);
+      const helpIds = start.getAttribute('aria-describedby').split(/\s+/);
+      expect(helpIds.length).toBeGreaterThan(0);
+      for (const id of helpIds) expect(panel.querySelector('[id="' + id + '"]').textContent.trim().length).toBeGreaterThan(0);
+      await clickEvidenceControl(start);
+      expect(fixture.state.procedureScenario).toBe('timed-practical');
+      expect(fixture.state.scenarioStartedAt).toBe(now);
+      expect(fixture.state.scenarioTimeRemaining).toBe(240);
+      expect(fixture.state.scenarioCompletedAt).toBe(0);
+      expect(scenarioSessionWorkProof(fixture.state)).toEqual({
+        ...before, scenarioStartedAt: now, scenarioTimeRemaining: 240, scenarioCompletedAt: 0,
+      });
+      expect(panel.querySelector('.diss-scenario-console__state').getAttribute('data-state')).toBe('active');
+      expect(panel.querySelectorAll('[role="timer"]')).toHaveLength(1);
+      expect(panel.querySelector('#diss-scenario-time').getAttribute('aria-live')).toBe('off');
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { if (fixture) await fixture.close(); clock.mockRestore(); }
+  });
+
+  it('uses the real expired deadline despite a stale positive counter and opens challenge recovery without resetting the attempt', async () => {
+    const now = 1800000000000;
+    const clock = vi.spyOn(Date, 'now').mockReturnValue(now);
+    let fixture;
+    try {
+      fixture = await mountMarkingFixture({
+        revealedLayers: {}, procedureScenario: 'timed-practical', scenarioStartedAt: now - 241000,
+        scenarioTimeRemaining: 125, scenarioCompletedAt: 0, techniquePanelOpen: false,
+      });
+      const before = scenarioSessionWorkProof(fixture.state);
+      const next = fixture.host.querySelector('[data-dissection-next-action]');
+      expect(next.getAttribute('data-next-action')).toBe('scenario-recovery');
+      const primary = next.querySelector('#diss-next-action-primary');
+      expect(primary.textContent).toBe('Review challenge recovery');
+      await clickEvidenceControl(primary);
+      expect(fixture.state.techniquePanelOpen).toBe(true);
+      const panel = fixture.host.querySelector('.diss-scenario-console');
+      expect(panel.querySelector('.diss-scenario-console__state').getAttribute('data-state')).toBe('expired');
+      const timer = panel.querySelector('#diss-scenario-time');
+      expect(timer.textContent).toMatch(/0:00|0 seconds/);
+      expect(timer.getAttribute('aria-live')).toBe('off');
+      expect(fixture.state.scenarioTimeRemaining).toBe(125);
+      expect(panel.querySelector('#diss-scenario-start')).toBeNull();
+      const restart = panel.querySelector('#diss-scenario-restart');
+      expect(document.activeElement).toBe(restart);
+      expect(panel.querySelector('#diss-scenario-restart-review')).toBeNull();
+      expect(scenarioSessionWorkProof(fixture.state)).toEqual(before);
+      await clickEvidenceControl(restart);
+      expect(panel.querySelector('#diss-scenario-restart-review')).not.toBeNull();
+      expect(scenarioSessionWorkProof(fixture.state)).toEqual(before);
+      await clickEvidenceControl(panel.querySelector('#diss-scenario-restart-cancel'));
+      expect(scenarioSessionWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { if (fixture) await fixture.close(); clock.mockRestore(); }
+  });
+
+  it('keeps native completed-challenge time frozen with one quiet timer after the deadline passes', async () => {
+    const startedAt = 1800000000000;
+    const clock = vi.spyOn(Date, 'now').mockReturnValue(startedAt + 241000);
+    let fixture;
+    try {
+      fixture = await mountMarkingFixture({
+        revealedLayers: {}, procedureScenario: 'timed-practical', scenarioStartedAt: startedAt,
+        scenarioTimeRemaining: 125, scenarioCompletedAt: startedAt + 115000, techniquePanelOpen: true,
+        procedureByLayer: { skin: {
+          inspected: true, incisionStarted: true, incisionExtended: true, retracted: true,
+          pins: [{ x: 0.42, y: 0.36 }, { x: 0.58, y: 0.64 }], probed: true,
+          history: ['inspect', 'pin', 'scalpel', 'scissors', 'forceps', 'probe'],
+        } },
+      });
+      const before = scenarioSessionWorkProof(fixture.state);
+      const panel = fixture.host.querySelector('.diss-scenario-console');
+      const state = panel.querySelector('.diss-scenario-console__state');
+      expect(state.getAttribute('data-state')).toBe('complete');
+      expect(panel.querySelectorAll('[role="timer"]')).toHaveLength(1);
+      const timer = panel.querySelector('#diss-scenario-time');
+      expect(timer.textContent).toMatch(/2:05|2 minutes 5 seconds/);
+      expect(timer.getAttribute('aria-live')).toBe('off');
+      expect(timer.closest('[aria-live="polite"], [aria-live="assertive"]')).toBeNull();
+      const text = timer.textContent;
+      clock.mockReturnValue(startedAt + 600000);
+      await fixture.patch({ procedureFeedback: { message: 'Reviewing recorded technique.', tone: 'working', at: startedAt + 600000 } });
+      expect(state.getAttribute('data-state')).toBe('complete');
+      expect(timer.textContent).toBe(text);
+      expect(fixture.host.querySelector('[data-dissection-next-action]').getAttribute('data-next-action')).not.toBe('scenario-recovery');
+      expect(scenarioSessionWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { if (fixture) await fixture.close(); clock.mockRestore(); }
+  });
+
+  it('reviews scenario restart consequences and cancels through its native button or Escape without changing learner work', async () => {
+    const fixture = await mountMarkingFixture({ revealedLayers: {}, techniquePanelOpen: true, procedureScenario: 'precision-access' });
+    try {
+      const before = scenarioSessionWorkProof(fixture.state);
+      const restart = fixture.host.querySelector('#diss-scenario-restart');
+      await clickEvidenceControl(restart);
+      let review = fixture.host.querySelector('#diss-scenario-restart-review');
+      expect(review.getAttribute('role')).toBe('group');
+      expect(review.getAttribute('tabindex')).toBe('-1');
+      expect(review.getAttribute('aria-labelledby')).toBe('diss-scenario-restart-title');
+      expect(review.getAttribute('aria-describedby')).toBe('diss-scenario-restart-effects');
+      const warning = review.querySelector('#diss-scenario-restart-effects').textContent;
+      expect(warning).toMatch(/technique/i);
+      expect(warning).toMatch(/inspect/i);
+      expect(warning).toMatch(/specimen/i);
+      expect(document.activeElement).toBe(review.querySelector('#diss-scenario-restart-cancel'));
+      expect(scenarioSessionWorkProof(fixture.state)).toEqual(before);
+      await clickEvidenceControl(review.querySelector('#diss-scenario-restart-cancel'));
+      expect(fixture.host.querySelector('#diss-scenario-restart-review')).toBeNull();
+      expect(document.activeElement).toBe(restart);
+      expect(scenarioSessionWorkProof(fixture.state)).toEqual(before);
+      await clickEvidenceControl(restart);
+      review = fixture.host.querySelector('#diss-scenario-restart-review');
+      await act(async () => { review.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); });
+      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+      expect(fixture.host.querySelector('#diss-scenario-restart-review')).toBeNull();
+      expect(document.activeElement).toBe(restart);
+      expect(scenarioSessionWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('confirms exactly the native restart scope while retaining updated notes, other layers, other specimens, frames and archived attempts', async () => {
+    const now = 1800000000000;
+    const clock = vi.spyOn(Date, 'now').mockReturnValue(now);
+    let fixture;
+    try {
+      fixture = await mountMarkingFixture({
+        revealedLayers: {}, techniquePanelOpen: true, procedureScenario: 'timed-practical',
+        scenarioStartedAt: now - 50000, scenarioTimeRemaining: 190, scenarioCompletedAt: 0,
+        exploredOrgans: { 'frog|nictitating': true, 'frog|heart': true, 'pig|heart': true },
+        procedureByLayer: {
+          skin: { inspected: true, incisionStarted: true, history: ['inspect', 'scalpel'], actionLog: [{ action: 'inspect', at: 50 }], errors: 2,
+            tissueState: { clarity: 32, moisture: 78, stability: 44, risk: 48 } },
+          organs: { inspected: true, history: ['inspect'], actionLog: [{ action: 'inspect', at: 60 }] },
+        },
+        attemptArchive: { skin: [{ id: 7, score: 80, history: ['inspect'], actionLog: [{ action: 'inspect', at: 40 }] }] },
+        relationshipTraceIndex: 2, relationshipTraceCount: 3, compareTechniqueAttempts: true,
+      });
+      await clickEvidenceControl(fixture.host.querySelector('#diss-scenario-restart'));
+      const updatedNotes = { ...fixture.state.organNotes, 'frog|nictitating': 'Keep the revised observation before restarting technique.' };
+      await fixture.patch({ organNotes: updatedNotes });
+      expect(fixture.host.querySelector('#diss-scenario-restart-review')).not.toBeNull();
+      const before = scenarioSessionWorkProof(fixture.state);
+      await clickEvidenceControl(fixture.host.querySelector('#diss-scenario-restart-confirm'));
+      expect(fixture.host.querySelector('#diss-scenario-restart-review')).toBeNull();
+      expect(fixture.state.procedureScenario).toBe('timed-practical');
+      expect(fixture.state.scenarioStartedAt).toBe(now);
+      expect(fixture.state.scenarioTimeRemaining).toBe(240);
+      expect(fixture.state.scenarioCompletedAt).toBe(0);
+      expect(fixture.state.exploredOrgans).toEqual({ 'pig|heart': true });
+      expect(fixture.state.selectedOrgan).toBeNull();
+      const fresh = fixture.state.procedureByLayer.skin;
+      expect(fresh).toMatchObject({
+        inspected: false, incisionStarted: false, incisionExtended: false, retracted: false,
+        pins: [], probed: false, errors: 0, protocolDeviations: 0,
+        history: [], actionLog: [], cautionLog: [], learningChecks: {},
+      });
+      expect(fresh.tissueState).not.toEqual(before.procedureByLayer.skin.tissueState);
+      expect(fixture.state.procedureByLayer.organs).toEqual(before.procedureByLayer.organs);
+      expect(scenarioSessionWorkProof(fixture.state)).toEqual({
+        ...before, selectedOrgan: null, exploredOrgans: { 'pig|heart': true },
+        procedureByLayer: { ...before.procedureByLayer, skin: fresh },
+        scenarioStartedAt: now, scenarioTimeRemaining: 240, scenarioCompletedAt: 0,
+        relationshipTraceIndex: 0, relationshipTraceCount: 0, compareTechniqueAttempts: false,
+      });
+      expect(fixture.state.organNotes).toEqual(updatedNotes);
+      expect(document.activeElement).toBe(fixture.host.querySelector('#diss-scenario-restart'));
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { if (fixture) await fixture.close(); clock.mockRestore(); }
+  });
+
+  it.each([
+    ['the selected specimen changes', (state) => ({ specimen: 'pig', _dissLoadedSpec: 'pig' })],
+    ['the selected layer changes', (state) => ({ activeLayer: 'organs' })],
+    ['the scenario changes', (state) => ({ procedureScenario: 'preservation' })],
+    ['the current technique changes', (state) => ({ procedureByLayer: { ...state.procedureByLayer, skin: { ...state.procedureByLayer.skin, history: [...state.procedureByLayer.skin.history, 'probe'] } } })],
+    ['inspection records change', (state) => ({ exploredOrgans: { ...state.exploredOrgans, 'frog|dorsal_skin': true } })],
+    ['another layer technique changes', (state) => ({ procedureByLayer: { ...state.procedureByLayer, organs: { ...state.procedureByLayer.organs, history: [...state.procedureByLayer.organs.history, 'probe'] } } })],
+    ['another specimen inspection changes', (state) => ({ exploredOrgans: { ...state.exploredOrgans, 'pig|heart': true } })],
+  ])('rejects a queued restart confirmation after %s', async (_case, patch) => {
+    const fixture = await mountMarkingFixture({
+      revealedLayers: {}, techniquePanelOpen: true, procedureScenario: 'precision-access',
+      procedureByLayer: {
+        skin: { inspected: true, history: ['inspect'], actionLog: [{ action: 'inspect', at: 50 }] },
+        organs: { inspected: true, history: ['inspect'], actionLog: [{ action: 'inspect', at: 60 }] },
+      },
+    });
+    try {
+      await clickEvidenceControl(fixture.host.querySelector('#diss-scenario-restart'));
+      const queuedConfirm = queuedScenarioConfirmation(fixture.host.querySelector('#diss-scenario-restart-confirm'));
+      await fixture.patch(patch(fixture.state));
+      expect(fixture.host.querySelector('#diss-scenario-restart-review')).toBeNull();
+      const currentWork = scenarioSessionWorkProof(fixture.state);
+      await queuedConfirm();
+      expect(scenarioSessionWorkProof(fixture.state)).toEqual(currentWork);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('ignores canceled review callbacks after reopening the same scope and keeps the current review usable', async () => {
+    const fixture = await mountMarkingFixture({ revealedLayers: {}, techniquePanelOpen: true, procedureScenario: 'precision-access' });
+    try {
+      const before = scenarioSessionWorkProof(fixture.state);
+      await clickEvidenceControl(fixture.host.querySelector('#diss-scenario-restart'));
+      const oldReview = fixture.host.querySelector('#diss-scenario-restart-review');
+      const queuedOldConfirm = queuedScenarioConfirmation(oldReview.querySelector('#diss-scenario-restart-confirm'));
+      const queuedOldCancel = queuedScenarioConfirmation(oldReview.querySelector('#diss-scenario-restart-cancel'));
+      const oldReviewPropsKey = Object.keys(oldReview).find((key) => key.startsWith('__reactProps$'));
+      expect(oldReviewPropsKey).toBeDefined();
+      const queuedOldEscape = oldReview[oldReviewPropsKey].onKeyDown;
+      expect(typeof queuedOldEscape).toBe('function');
+      await clickEvidenceControl(oldReview.querySelector('#diss-scenario-restart-cancel'));
+      await clickEvidenceControl(fixture.host.querySelector('#diss-scenario-restart'));
+      const currentReview = fixture.host.querySelector('#diss-scenario-restart-review');
+      expect(currentReview).not.toBe(oldReview);
+      const cancel = currentReview.querySelector('#diss-scenario-restart-cancel');
+      expect(document.activeElement).toBe(cancel);
+      await queuedOldConfirm();
+      expect(fixture.host.querySelector('#diss-scenario-restart-review')).toBe(currentReview);
+      expect(document.activeElement).toBe(cancel);
+      expect(scenarioSessionWorkProof(fixture.state)).toEqual(before);
+      await queuedOldCancel();
+      expect(fixture.host.querySelector('#diss-scenario-restart-review')).toBe(currentReview);
+      expect(document.activeElement).toBe(cancel);
+      expect(scenarioSessionWorkProof(fixture.state)).toEqual(before);
+      const staleEscape = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+      await act(async () => { queuedOldEscape(staleEscape); });
+      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+      expect(staleEscape.defaultPrevented).toBe(false);
+      expect(fixture.host.querySelector('#diss-scenario-restart-review')).toBe(currentReview);
+      expect(document.activeElement).toBe(cancel);
+      expect(scenarioSessionWorkProof(fixture.state)).toEqual(before);
+      await clickEvidenceControl(currentReview.querySelector('#diss-scenario-restart-confirm'));
+      expect(fixture.host.querySelector('#diss-scenario-restart-review')).toBeNull();
+      expect(fixture.state.procedureByLayer.skin.inspected).toBe(false);
+      expect(fixture.state.procedureByLayer.skin.history).toEqual([]);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it.each([
+    ['Compare', { compareMode: true }, 'comparison'],
+    ['Flashcard', { flashcardMode: true }, 'flashcards'],
+    ['practice assessment', { quizMode: true }, 'quiz'],
+    ['timed identification', { practicalMode: true, quizMode: true, practicalTimer: 75, practicalEndsAt: 1800000075000, practicalTargetIds: ['nictitating', 'tympanum'] }, 'quiz'],
+    ['Guided investigation', { guidedMode: true, guidedStep: 0, guidedTargetIds: ['nictitating'] }, 'canvas'],
+  ])('keeps %s guidance ahead of expired technique recovery', async (_case, patch, expectedAction) => {
+    const clock = vi.spyOn(Date, 'now').mockReturnValue(1800000000000);
+    let fixture;
+    try {
+      fixture = await mountMarkingFixture({
+        revealedLayers: {}, procedureScenario: 'timed-practical', scenarioStartedAt: 1799999759000,
+        scenarioTimeRemaining: 125, scenarioCompletedAt: 0, ...patch,
+      });
+      expect(fixture.host.querySelector('[data-dissection-next-action]').getAttribute('data-next-action')).toBe(expectedAction);
+      expect(fixture.host.querySelector('#diss-next-action-primary').textContent).not.toBe('Review challenge recovery');
+      expect(fixture.host.querySelector('#diss-scenario-restart-review')).toBeNull();
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { if (fixture) await fixture.close(); clock.mockRestore(); }
+  });
+  function studyChooserWorkProof(state) {
+    return JSON.parse(JSON.stringify({
+      ...evidenceWorkProof(state),
+      visualEvidence: state.visualEvidence, referenceEvidenceId: state.referenceEvidenceId,
+      attemptArchive: state.attemptArchive,
+      quizFirstAttemptScore: state.quizFirstAttemptScore, quizFirstAttemptTotal: state.quizFirstAttemptTotal,
+      quizSupportedCount: state.quizSupportedCount, quizReviewQueue: state.quizReviewQueue,
+      assessmentCompletedAt: state.assessmentCompletedAt,
+      assessmentRecordedScore: state.assessmentRecordedScore, assessmentRecordedTotal: state.assessmentRecordedTotal,
+    }));
+  }
+
+  it('names study activity groups and describes the native controls without adding tab stops', async () => {
+    const fixture = await mountMarkingFixture({ toolbarStudyOpen: true });
+    try {
+      const panel = fixture.host.querySelector('[id="diss-study-tools"]');
+      expect(panel.getAttribute('role')).toBe('region');
+      expect(panel.getAttribute('aria-label')).toBe('Study tools');
+      expect(panel.getAttribute('tabindex')).toBe('-1');
+      const groups = Array.from(panel.querySelectorAll('[data-study-tools-group]'));
+      expect(groups.map((group) => group.getAttribute('data-study-tools-group'))).toEqual(['practice', 'practical']);
+      const headings = [
+        ['diss-study-practice-heading', 'Review and compare'],
+        ['diss-study-practical-heading', 'Timed identification'],
+      ];
+      groups.forEach((group, index) => {
+        const [id, name] = headings[index];
+        expect(group.getAttribute('role')).toBe('group');
+        expect(group.getAttribute('aria-labelledby')).toBe(id);
+        const heading = group.querySelector('[id="' + id + '"]');
+        expect(heading.tagName).toMatch(/^H[1-6]$/);
+        expect(heading.textContent).toBe(name);
+        expect(fixture.host.querySelectorAll('[id="' + id + '"]')).toHaveLength(1);
+      });
+      const controls = Array.from(panel.querySelectorAll('button'));
+      expect(controls.map((button) => button.getAttribute('aria-label'))).toEqual([
+        'Flashcard', 'Compare', 'Start 2-minute timed practical',
+      ]);
+      expect(controls.map((button) => button.textContent)).toEqual([
+        'Flashcard', 'Compare', 'Start 2-minute timed practical',
+      ]);
+      const descriptions = [
+        ['diss-study-flashcard-help'],
+        ['diss-study-compare-help'],
+        ['diss-practical-study-help', 'diss-practical-readiness'],
+      ];
+      controls.forEach((button, index) => {
+        expect(button.getAttribute('aria-describedby').split(/\s+/)).toEqual(descriptions[index]);
+        expect(button.getAttribute('aria-pressed')).toBe('false');
+        for (const id of descriptions[index]) {
+          const owned = groups[index < 2 ? 0 : 1].querySelector('[id="' + id + '"]');
+          expect(owned).not.toBeNull();
+          expect(owned.textContent.trim().length).toBeGreaterThan(0);
+          expect(fixture.host.querySelectorAll('[id="' + id + '"]')).toHaveLength(1);
+        }
+      });
+      expect(panel.querySelector('[id="diss-study-flashcard-help"]').textContent)
+        .toBe('Recall functions, reveal the reference answer, and mark cards to review.');
+      expect(panel.querySelector('[id="diss-practical-study-help"]').textContent)
+        .toBe('Two-minute identification check with structure labels hidden.');
+      expect(Array.from(groups[0].querySelectorAll('button'))).toEqual(controls.slice(0, 2));
+      expect(Array.from(groups[1].querySelectorAll('button'))).toEqual(controls.slice(2));
+      expect(Array.from(panel.querySelectorAll('a[href], button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])'))).toEqual(controls);
+      expect(panel.querySelector('[data-study-activity="eye"]')).toBeNull();
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it.each([
+    ['no selected structure', { selectedOrgan: null },
+      'Choose a structure to see whether reference comparisons are available.'],
+    ['an unmapped structure', { selectedOrgan: 'nictitating' },
+      'No cross-specimen comparison is mapped for Nictitating Membrane. Select another structure to compare.'],
+    ['a mapped structure', { activeLayer: 'organs', anatomicalView: 'ventral', selectedOrgan: 'heart' },
+      'Compare Heart (3-chamber) across reference specimens.'],
+  ])('explains comparison for %s and preserves native focus and learner work', async (_case, patch, purpose) => {
+    const fixture = await mountMarkingFixture({
+      toolbarStudyOpen: true,
+      annotations: [{ x: 0.5, y: 0.38, type: 'dot' }],
+      rulerStart: { x: 0.5, y: 0.38 }, rulerEnd: { x: 0.65, y: 0.24 },
+      ...patch,
+    });
+    try {
+      const before = studyChooserWorkProof(fixture.state);
+      const compare = fixture.host.querySelector('#diss-study-tools button[aria-label="Compare"]');
+      const help = fixture.host.querySelector('[id="diss-study-compare-help"]');
+      expect(help.textContent).toBe(purpose);
+      expect(compare.disabled).toBe(false);
+      compare.focus();
+      await clickEvidenceControl(compare);
+      expect(fixture.state.compareMode).toBe(true);
+      expect(compare.getAttribute('aria-pressed')).toBe('true');
+      expect(document.activeElement).toBe(compare);
+      const panel = fixture.host.querySelector('[id="diss-comparison-panel"]');
+      if (patch.selectedOrgan === null) expect(panel).toBeNull();
+      else {
+        expect(panel.getAttribute('aria-labelledby')).toBe('diss-comparison-title');
+        if (patch.selectedOrgan === 'heart') expect(panel.getAttribute('data-comparison-group')).toBe('pumps');
+        else {
+          expect(panel.getAttribute('data-comparison-group')).toBe('unmapped');
+          expect(panel.textContent).toContain('No cross-specimen comparison is mapped for this structure.');
+        }
+      }
+      expect(help.textContent).toBe(purpose);
+      expect(studyChooserWorkProof(fixture.state)).toEqual(before);
+      await clickEvidenceControl(compare);
+      expect(fixture.state.compareMode).toBe(false);
+      expect(compare.getAttribute('aria-pressed')).toBe('false');
+      expect(fixture.host.querySelector('[id="diss-comparison-panel"]')).toBeNull();
+      expect(document.activeElement).toBe(compare);
+      expect(studyChooserWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('opens native flashcard recall with prompt focus and returns to the specimen while preserving recorded work', async () => {
+    const fixture = await mountMarkingFixture({
+      toolbarStudyOpen: true,
+      annotations: [{ x: 0.5, y: 0.38, type: 'dot' }],
+      assessmentEvidence: { 'frog|nictitating': { verified: true, at: 88 } },
+      quizFirstAttemptScore: 2, quizFirstAttemptTotal: 3,
+      assessmentRecordedScore: 2, assessmentRecordedTotal: 3,
+      quizReviewQueue: ['tympanum'],
+    });
+    try {
+      const before = studyChooserWorkProof(fixture.state);
+      const expected = { ...before, selectedOrgan: null, hoveredOrgan: null };
+      const flashcard = fixture.host.querySelector('#diss-study-tools button[aria-label="Flashcard"]');
+      flashcard.focus();
+      await clickEvidenceControl(flashcard);
+      expect(fixture.state.flashcardMode).toBe(true);
+      expect(fixture.state.quizMode).toBe(false);
+      expect(fixture.state.compareMode).toBe(false);
+      expect(flashcard.getAttribute('aria-pressed')).toBe('true');
+      const panel = fixture.host.querySelector('[id="diss-flashcard-panel"]');
+      const prompt = panel.querySelector('[id="diss-flashcard-prompt"]');
+      expect(prompt.getAttribute('tabindex')).toBe('-1');
+      expect(document.activeElement).toBe(prompt);
+      expect(panel.querySelector('[id="diss-flashcard-draft"]')).not.toBeNull();
+      expect(studyChooserWorkProof(fixture.state)).toEqual(expected);
+      const returnToSpecimen = Array.from(panel.querySelectorAll('button'))
+        .find((button) => button.textContent === 'Return to specimen');
+      await clickEvidenceControl(returnToSpecimen);
+      expect(fixture.state.flashcardMode).toBe(false);
+      expect(fixture.state._flashcardPractice).toBeNull();
+      expect(fixture.host.querySelector('[id="diss-flashcard-panel"]')).toBeNull();
+      expect(document.activeElement).toBe(fixture.host.querySelector('[data-diss-canvas]'));
+      expect(flashcard.getAttribute('aria-pressed')).toBe('false');
+      expect(studyChooserWorkProof(fixture.state)).toEqual(expected);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('matches practical readiness to the native visible-pool and active-transition guards', async () => {
+    const fixture = await mountMarkingFixture({ toolbarStudyOpen: true, anatomicalView: 'internal' });
+    try {
+      const readiness = fixture.host.querySelector('[id="diss-practical-readiness"]');
+      const practical = fixture.host.querySelector('#diss-study-tools button[aria-label="Start 2-minute timed practical"]');
+      expect(readiness.getAttribute('role')).toBe('status');
+      expect(readiness.getAttribute('aria-live')).toBe('polite');
+      expect(readiness.getAttribute('aria-atomic')).toBe('true');
+      expect(readiness.getAttribute('data-practical-ready')).toBe('false');
+      expect(readiness.textContent).toBe('Needs at least two visible structures. Improve the field or change view.');
+      expect(practical.disabled).toBe(false);
+      const occludedWork = studyChooserWorkProof(fixture.state);
+      practical.focus();
+      await clickEvidenceControl(practical);
+      expect(fixture.state.practicalMode).not.toBe(true);
+      expect(fixture.state.quizMode).not.toBe(true);
+      expect(fixture.state.procedureFeedback.message)
+        .toBe('Timed practical unavailable: at least two structures must be visible. Improve the field or change view first.');
+      expect(document.activeElement).toBe(practical);
+      expect(studyChooserWorkProof(fixture.state)).toEqual(occludedWork);
+
+      await fixture.patch({ anatomicalView: 'dorsal' });
+      expect(readiness.getAttribute('data-practical-ready')).toBe('true');
+      expect(readiness.textContent).toBe('3 visible structures available. Starts a new timed identification attempt.');
+      const incision = { active: true, startTick: Date.now(), layerName: 'skin' };
+      await fixture.patch({ _incisionAnim: incision });
+      expect(readiness.getAttribute('data-practical-ready')).toBe('false');
+      expect(readiness.textContent).toBe('Finish the current layer transition before starting.');
+      expect(practical.disabled).toBe(false);
+      const transitioningWork = studyChooserWorkProof(fixture.state);
+      await clickEvidenceControl(practical);
+      expect(fixture.state.practicalMode).not.toBe(true);
+      expect(fixture.state.quizMode).not.toBe(true);
+      expect(fixture.state._incisionAnim).toEqual(incision);
+      expect(fixture.state.procedureFeedback.message)
+        .toBe('Finish the current layer transition before starting the timed practical.');
+      expect(studyChooserWorkProof(fixture.state)).toEqual(transitioningWork);
+      await fixture.patch({ _incisionAnim: null });
+      expect(readiness.getAttribute('data-practical-ready')).toBe('true');
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('shows the native practical countdown with quiet timer semantics and ends through native teardown', async () => {
+    const fixture = await mountMarkingFixture({
+      toolbarStudyOpen: true, selectedOrgan: null, hoveredOrgan: null,
+      labelMode: 'show', inspectionLens: false, lensPinned: false,
+      lensPinnedPoint: null, lensPinnedOrganId: null, quizScore: 0, quizTotal: 0,
+      annotations: [{ x: 0.5, y: 0.38, type: 'dot' }],
+    });
+    try {
+      const before = studyChooserWorkProof(fixture.state);
+      const practical = fixture.host.querySelector('#diss-study-tools button[aria-label="Start 2-minute timed practical"]');
+      expect(fixture.host.querySelector('[id="diss-practical-time-status"]')).toBeNull();
+      await clickEvidenceControl(practical);
+      expect(fixture.state.practicalMode).toBe(true);
+      expect(fixture.state.quizMode).toBe(true);
+      expect(fixture.state.labelMode).toBe('hidden');
+      expect(fixture.state._prePracticalLabelMode).toBe('show');
+      expect(fixture.state.practicalTargetIds).toHaveLength(3);
+      expect(fixture.state.practicalTargetIds).toEqual(expect.arrayContaining(['dorsal_skin', 'tympanum', 'nictitating']));
+      expect(fixture.state.practicalEndsAt).toBeGreaterThan(Date.now());
+      expect(window.__alloDissectionPracticalInterval).not.toBeNull();
+      const end = fixture.host.querySelector('#diss-study-tools button[aria-label="End timed practical"]');
+      expect(end).toBe(practical);
+      expect(end.getAttribute('aria-pressed')).toBe('true');
+      expect(end.getAttribute('aria-describedby').split(/\s+/)).toEqual([
+        'diss-practical-study-help', 'diss-practical-readiness', 'diss-practical-time-status',
+      ]);
+      const timer = fixture.host.querySelector('[id="diss-practical-time-status"]');
+      expect(timer.tagName).toBe('OUTPUT');
+      expect(timer.hidden).toBe(false);
+      expect(timer.getAttribute('role')).toBe('timer');
+      expect(timer.getAttribute('aria-live')).toBe('off');
+      expect(timer.getAttribute('aria-atomic')).toBe('true');
+      expect(timer.textContent).toMatch(/^Timed practical: (?:2 minutes|1 minute 59 seconds) remaining$/);
+      expect(fixture.host.querySelectorAll('[id="diss-practical-time-status"]')).toHaveLength(1);
+      expect(fixture.host.querySelector('[id="diss-practical-readiness"]').textContent)
+        .toBe('The timed practical is active. End it to return to reference study.');
+      expect(studyChooserWorkProof(fixture.state)).toEqual(before);
+      end.focus();
+      await clickEvidenceControl(end);
+      expect(fixture.state.practicalMode).toBe(false);
+      expect(fixture.state.quizMode).toBe(false);
+      expect(fixture.state.practicalTimer).toBe(0);
+      expect(fixture.state.practicalEndsAt).toBe(0);
+      expect(fixture.state.practicalTargetIds).toEqual([]);
+      expect(fixture.state.labelMode).toBe('show');
+      expect(window.__alloDissectionPracticalInterval).toBeNull();
+      expect(fixture.host.querySelector('[data-diss-canvas]')._dissPracticalTimer).toBeNull();
+      expect(fixture.host.querySelector('[id="diss-practical-time-status"]')).toBeNull();
+      expect(practical.getAttribute('aria-label')).toBe('Start 2-minute timed practical');
+      expect(practical.getAttribute('aria-pressed')).toBe('false');
+      expect(practical.getAttribute('aria-describedby').split(/\s+/)).toEqual([
+        'diss-practical-study-help', 'diss-practical-readiness',
+      ]);
+      expect(document.activeElement).toBe(practical);
+      expect(studyChooserWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('describes the sheep-eye companion in native order and removes that entry during assessment', () => {
+    const base = {
+      specimen: 'sheepEye', _dissLoadedSpec: 'sheepEye', activeLayer: 'skin', anatomicalView: 'dorsal',
+      workspaceMode: 'advanced', toolbarStudyOpen: true, eyeStudyMode: false, reducedMotion: true,
+    };
+    // Static rendering covers chooser gating without starting the WebGL companion.
+    const page = new DOMParser().parseFromString(renderTool('dissection', { dissection: base }), 'text/html');
+    const panel = page.querySelector('[id="diss-study-tools"]');
+    const practice = panel.querySelector('[data-study-tools-group="practice"]');
+    const eye = practice.querySelector('[id="diss-eye-study-toggle"]');
+    expect(Array.from(practice.querySelectorAll('button')).map((button) => button.textContent))
+      .toEqual(['3D eye study', 'Flashcard', 'Compare']);
+    expect(eye.getAttribute('type')).toBe('button');
+    expect(eye.getAttribute('aria-pressed')).toBe('false');
+    expect(eye.getAttribute('aria-describedby')).toBe('diss-study-eye-help');
+    const help = eye.closest('[data-study-activity="eye"]').querySelector('[id="diss-study-eye-help"]');
+    expect(help.textContent).toBe('Explore the eye schematic from different viewpoints.');
+    expect(panel.querySelectorAll('[id="diss-study-eye-help"]')).toHaveLength(1);
+    expect(page.querySelector('[id="diss-eye-study-title"]')).toBeNull();
+    for (const assessment of [
+      { quizMode: true },
+      { practicalMode: true, quizMode: true, practicalTimer: 90, practicalEndsAt: Date.now() + 90000,
+        practicalTargetIds: ['cornea', 'sclera'] },
+    ]) {
+      const assessed = new DOMParser().parseFromString(renderTool('dissection', {
+        dissection: { ...base, ...assessment },
+      }), 'text/html');
+      const study = assessed.querySelector('[id="diss-study-tools"]');
+      expect(study.querySelector('[id="diss-eye-study-toggle"]')).toBeNull();
+      expect(study.querySelector('[data-study-activity="eye"]')).toBeNull();
+      expect(study.querySelector('[id="diss-study-eye-help"]')).toBeNull();
+      expect(study.querySelector('button[aria-label="Flashcard"]')).not.toBeNull();
+      expect(study.querySelector('button[aria-label="Compare"]')).not.toBeNull();
+    }
+  });
+
+  it('groups advanced lab controls by observation, evidence capture, and records with named headings', async () => {
+    const fixture = await mountMarkingFixture({ annotations: [{ x: 0.5, y: 0.38, type: 'dot' }] });
+    try {
+      const panel = fixture.host.querySelector('[id="diss-lab-tools"]');
+      expect(panel.getAttribute('role')).toBe('region');
+      const groups = Array.from(panel.querySelectorAll('.diss-lab-tool-group'));
+      expect(groups.map((group) => group.getAttribute('data-lab-tools-group'))).toEqual(['observe', 'evidence', 'records']);
+      const names = [
+        ['diss-lab-observe-heading', 'Observe and measure'],
+        ['diss-lab-evidence-heading', 'Capture and download'],
+        ['diss-lab-records-heading', 'Report and reset'],
+      ];
+      groups.forEach((group, index) => {
+        const [id, name] = names[index];
+        expect(group.getAttribute('role')).toBe('group');
+        expect(group.getAttribute('aria-labelledby')).toBe(id);
+        const heading = group.querySelector('[id="' + id + '"]');
+        expect(heading.tagName).toMatch(/^H[1-6]$/);
+        expect(heading.textContent).toBe(name);
+        expect(panel.querySelectorAll('[id="' + id + '"]')).toHaveLength(1);
+      });
+      const [observe, evidence, records] = groups;
+      expect(Array.from(observe.querySelectorAll('button')).map((button) => button.getAttribute('aria-label'))).toEqual([
+        'Ruler', 'Annotate', 'Clear annotations',
+      ]);
+      const options = evidence.querySelector('.diss-capture-options');
+      const contents = options.querySelector('[id="diss-evidence-capture-contents"]');
+      const capture = evidence.querySelector('[data-evidence-capture]');
+      const download = evidence.querySelector('[data-canvas-download]');
+      expect(contents.tagName).toBe('SELECT');
+      const actions = evidence.querySelector('.diss-lab-tool-actions');
+      expect(options.nextElementSibling).toBe(actions);
+      expect(actions.firstElementChild).toBe(capture);
+      expect(capture.nextElementSibling).toBe(download);
+      expect(download.nextElementSibling).toBeNull();
+      expect(Array.from(evidence.querySelectorAll('select, button'))).toEqual([contents, capture, download]);
+      expect(download.getAttribute('aria-label')).toBe('Download full canvas PNG');
+      expect(download.textContent).toContain('Download full canvas PNG');
+      expect(download.getAttribute('data-canvas-download')).toBe('true');
+      expect(evidence.querySelectorAll('button')).toHaveLength(2);
+      expect(records.querySelector('[aria-label="Copy lab report to clipboard"]')).not.toBeNull();
+      expect(records.querySelector('[id="diss-reset-specimen"]')).not.toBeNull();
+      expect(records.querySelectorAll('button')).toHaveLength(2);
+      expect(panel.querySelectorAll('button')).toHaveLength(7);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('retains native observation toggles and reset cancellation inside their lab control groups', async () => {
+    const marks = [{ x: 0.5, y: 0.38, type: 'dot' }];
+    const start = { x: 0.5, y: 0.38 };
+    const end = { x: 0.65, y: 0.24 };
+    const fixture = await mountMarkingFixture({ annotations: marks, rulerStart: start, rulerEnd: end });
+    try {
+      const before = markingWorkProof(fixture.state);
+      const observe = fixture.host.querySelector('[data-lab-tools-group="observe"]');
+      const ruler = observe.querySelector('[aria-label="Ruler"]');
+      const annotate = observe.querySelector('[aria-label="Annotate"]');
+      await clickEvidenceControl(ruler);
+      expect(fixture.state.rulerMode).toBe(true);
+      expect(fixture.state.annotateMode).toBe(false);
+      expect(ruler.getAttribute('aria-pressed')).toBe('true');
+      expect(annotate.getAttribute('aria-pressed')).toBe('false');
+      expect(markingWorkProof(fixture.state)).toEqual(before);
+      await clickEvidenceControl(annotate);
+      expect(fixture.state.rulerMode).toBe(false);
+      expect(fixture.state.annotateMode).toBe(true);
+      expect(ruler.getAttribute('aria-pressed')).toBe('false');
+      expect(annotate.getAttribute('aria-pressed')).toBe('true');
+      expect(markingWorkProof(fixture.state)).toEqual(before);
+      await clickEvidenceControl(annotate);
+      expect(fixture.state.rulerMode).toBe(false);
+      expect(fixture.state.annotateMode).toBe(false);
+      expect(fixture.state.annotations).toEqual(marks);
+      expect(fixture.state.rulerStart).toEqual(start);
+      expect(fixture.state.rulerEnd).toEqual(end);
+      const reset = fixture.host.querySelector('[data-lab-tools-group="records"] [id="diss-reset-specimen"]');
+      const beforeReset = evidenceWorkProof(fixture.state);
+      await clickEvidenceControl(reset);
+      const confirmation = fixture.host.querySelector('[id="diss-reset-confirmation"]');
+      expect(confirmation.closest('[data-lab-tools-group]')).toBe(fixture.host.querySelector('[data-lab-tools-group="records"]'));
+      expect(document.activeElement).toBe(confirmation.querySelector('[id="diss-reset-confirm"]'));
+      expect(evidenceWorkProof(fixture.state)).toEqual(beforeReset);
+      await clickEvidenceControl(confirmation.querySelector('[id="diss-reset-cancel"]'));
+      expect(fixture.state.resetConfirmPending).toBe(false);
+      expect(fixture.host.querySelector('[id="diss-reset-confirmation"]')).toBeNull();
+      expect(document.activeElement).toBe(reset);
+      expect(evidenceWorkProof(fixture.state)).toEqual(beforeReset);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  function canvasDownloadWorkProof(state) {
+    return JSON.parse(JSON.stringify({
+      ...evidenceWorkProof(state),
+      visualEvidence: state.visualEvidence, referenceEvidenceId: state.referenceEvidenceId,
+      splitComparison: state.splitComparison, evidenceNotebookOpen: state.evidenceNotebookOpen,
+      evidenceReturnFocusId: state.evidenceReturnFocusId, evidenceCaptureContents: state.evidenceCaptureContents,
+      evidenceRemovePendingId: state.evidenceRemovePendingId, evidenceClearPending: state.evidenceClearPending,
+      activeInstrument: state.activeInstrument, attemptArchive: state.attemptArchive,
+    }));
+  }
+
+  it.each(['specimen', 'canvas'])('downloads a fresh full PNG with %s frame preference even when the notebook is full', async (contents) => {
+    const frames = [101, 102, 103, 104, 105, 106].map((id) => ({ id, image: 'data:image/jpeg;base64,b2xk', layer: 'skin', view: 'dorsal' }));
+    const preservedFrames = JSON.parse(JSON.stringify(frames));
+    const fixture = await mountMarkingFixture({
+      visualEvidence: frames, referenceEvidenceId: 102, splitComparison: true, evidenceNotebookOpen: true,
+      evidenceReturnFocusId: 'diss-evidence-compare-102', evidenceCaptureContents: contents,
+      annotations: [{ x: 0.5, y: 0.38, type: 'dot' }],
+      rulerMode: true, rulerStart: { x: 0.5, y: 0.38 }, rulerEnd: { x: 0.65, y: 0.24 },
+      assessmentEvidence: { 'frog|nictitating': { verified: true } },
+      dissInquiry: { hypothesis: 'The transparent membrane protects the eye.', explanation: 'Its position matches the observed structure.', log: [{ at: 77, approach: 'careful' }] },
+    });
+    const sourceCanvas = fixture.host.querySelector('[data-diss-canvas]');
+    sourceCanvas.width = 864;
+    sourceCanvas.height = 1036;
+    const originalCamera = { zoom: 1.25, panX: 4, panY: -3 };
+    const ownedCamera = contents === 'specimen';
+    if (ownedCamera) sourceCanvas._lastCaptureCamera = originalCamera;
+    else delete sourceCanvas._lastCaptureCamera;
+    const outputContext = { drawImage: vi.fn(), fillRect: vi.fn() };
+    const wrongCapture = vi.fn(() => { throw new Error('Full PNG must use the full-frame API'); });
+    sourceCanvas._captureDissectionEvidence = wrongCapture;
+    let encodedImage;
+    const firstCapture = vi.fn((context) => {
+      sourceCanvas._lastCaptureCamera = { zoom: 2, panX: 20, panY: -10 };
+      context.fillRect(0, 0, 864, 1036);
+      encodedImage = 'data:image/png;base64,Zmlyc3Q=';
+      return true;
+    });
+    const secondCapture = vi.fn((context) => {
+      sourceCanvas._lastCaptureCamera = { zoom: 3, panX: -12, panY: 6 };
+      context.fillRect(0, 0, 864, 1036);
+      encodedImage = 'data:image/png;base64,c2Vjb25k';
+      return true;
+    });
+    sourceCanvas._captureFullDissectionEvidence = firstCapture;
+    const outputs = [];
+    const createdAnchors = [];
+    const nativeCreateElement = document.createElement.bind(document);
+    const createSpy = vi.spyOn(document, 'createElement').mockImplementation((tag, options) => {
+      const node = nativeCreateElement(tag, options);
+      if (String(tag).toLowerCase() === 'canvas') outputs.push(node);
+      if (String(tag).toLowerCase() === 'a') createdAnchors.push(node);
+      return node;
+    });
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(function (kind) {
+      return this !== sourceCanvas && this.width === 864 && this.height === 1036 && kind === '2d' ? outputContext : null;
+    });
+    const imageSpy = vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockImplementation(function () {
+      expect(this).not.toBe(sourceCanvas);
+      expect(this.width).toBe(864);
+      expect(this.height).toBe(1036);
+      return encodedImage;
+    });
+    const staleImageSpy = vi.fn(() => { throw new Error('Stale canvas bitmap must not be downloaded'); });
+    Object.defineProperty(sourceCanvas, 'toDataURL', { configurable: true, value: staleImageSpy });
+    const downloads = [];
+    const downloadSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function () {
+      downloads.push({ href: this.href, download: this.download });
+    });
+    try {
+      const before = canvasDownloadWorkProof(fixture.state);
+      const previousFrames = fixture.state.visualEvidence;
+      const capture = fixture.host.querySelector('[data-evidence-capture]');
+      expect(capture.textContent).toContain('Evidence full');
+      const download = fixture.host.querySelector('[data-canvas-download]');
+      expect(download.disabled).toBe(false);
+      download.focus();
+      await clickEvidenceControl(download);
+      expect(firstCapture).toHaveBeenCalledExactlyOnceWith(outputContext, 864, 1036);
+      expect(Object.prototype.hasOwnProperty.call(sourceCanvas, '_lastCaptureCamera')).toBe(ownedCamera);
+      if (ownedCamera) expect(sourceCanvas._lastCaptureCamera).toBe(originalCamera);
+      // A second click must call the current API again and encode its fresh frame.
+      sourceCanvas._captureFullDissectionEvidence = secondCapture;
+      await clickEvidenceControl(download);
+      expect(secondCapture).toHaveBeenCalledExactlyOnceWith(outputContext, 864, 1036);
+      expect(firstCapture).toHaveBeenCalledTimes(1);
+      expect(wrongCapture).not.toHaveBeenCalled();
+      expect(staleImageSpy).not.toHaveBeenCalled();
+      expect(imageSpy).toHaveBeenCalledTimes(2);
+      expect(imageSpy.mock.calls).toEqual([['image/png'], ['image/png']]);
+      expect(outputs).toHaveLength(2);
+      expect(outputs[0]).not.toBe(outputs[1]);
+      expect(outputs.every((output) => output.width === 864 && output.height === 1036)).toBe(true);
+      expect(createdAnchors).toHaveLength(2);
+      expect(downloads).toEqual([
+        { href: 'data:image/png;base64,Zmlyc3Q=', download: 'frog_dissection.png' },
+        { href: 'data:image/png;base64,c2Vjb25k', download: 'frog_dissection.png' },
+      ]);
+      expect(Object.prototype.hasOwnProperty.call(sourceCanvas, '_lastCaptureCamera')).toBe(ownedCamera);
+      if (ownedCamera) expect(sourceCanvas._lastCaptureCamera).toBe(originalCamera);
+      expect(fixture.state.visualEvidence).toBe(previousFrames);
+      expect(fixture.state.visualEvidence).toEqual(preservedFrames);
+      expect(frames).toEqual(preservedFrames);
+      expect(document.activeElement).toBe(download);
+      expect(fixture.state.procedureFeedback).toMatchObject({ message: 'Full canvas saved as frog_dissection.png.', tone: 'success' });
+      expect(canvasDownloadWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally {
+      createSpy.mockRestore(); delete sourceCanvas.toDataURL; imageSpy.mockRestore(); downloadSpy.mockRestore();
+      await fixture.close();
+    }
+  });
+
+  it.each(['specimen', 'canvas'].flatMap((contents) => ['missing', 'false', 'throw', 'context', 'encoding', 'invalid-png'].map((failure) => ({ contents, failure }))))('keeps full PNG failure $failure with $contents preference from downloading or changing work and focus', async ({ contents, failure }) => {
+    const frames = [{ id: 101, image: 'data:image/jpeg;base64,b2xk', layer: 'skin', view: 'dorsal' }];
+    const preservedFrames = JSON.parse(JSON.stringify(frames));
+    const fixture = await mountMarkingFixture({
+      visualEvidence: frames, referenceEvidenceId: 101, splitComparison: true, evidenceNotebookOpen: true,
+      evidenceReturnFocusId: 'diss-evidence-compare-101', evidenceCaptureContents: contents,
+      annotations: [{ x: 0.5, y: 0.38, type: 'dot' }],
+      rulerMode: true, rulerStart: { x: 0.5, y: 0.38 }, rulerEnd: { x: 0.65, y: 0.24 },
+    });
+    const sourceCanvas = fixture.host.querySelector('[data-diss-canvas]');
+    sourceCanvas.width = 864;
+    sourceCanvas.height = 1036;
+    const originalCamera = { zoom: 1.25, panX: 4, panY: -3 };
+    const ownedCamera = contents === 'specimen';
+    if (ownedCamera) sourceCanvas._lastCaptureCamera = originalCamera;
+    else delete sourceCanvas._lastCaptureCamera;
+    const outputContext = { drawImage: vi.fn() };
+    const wrongCapture = vi.fn(() => { throw new Error('Wrong capture API'); });
+    sourceCanvas._captureDissectionEvidence = wrongCapture;
+    const fullCapture = vi.fn(() => {
+      sourceCanvas._lastCaptureCamera = { zoom: 3, panX: 40, panY: -20 };
+      if (failure === 'throw') throw new Error('Full frame capture unavailable');
+      return failure !== 'false';
+    });
+    if (failure === 'missing') delete sourceCanvas._captureFullDissectionEvidence;
+    else sourceCanvas._captureFullDissectionEvidence = fullCapture;
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(function (kind) {
+      return failure !== 'context' && this !== sourceCanvas && this.width === 864 && this.height === 1036 && kind === '2d' ? outputContext : null;
+    });
+    const imageSpy = vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockImplementation(function () {
+      expect(this).not.toBe(sourceCanvas);
+      if (failure === 'encoding') throw new Error('PNG encoding failed');
+      return failure === 'invalid-png' ? 'data:image/jpeg;base64,d3Jvbmc=' : 'data:image/png;base64,dW51c2Vk';
+    });
+    const staleImageSpy = vi.fn(() => { throw new Error('Stale bitmap must not be downloaded'); });
+    Object.defineProperty(sourceCanvas, 'toDataURL', { configurable: true, value: staleImageSpy });
+    const nativeCreateElement = document.createElement.bind(document);
+    const createdAnchors = [];
+    const createSpy = vi.spyOn(document, 'createElement').mockImplementation((tag, options) => {
+      const node = nativeCreateElement(tag, options);
+      if (String(tag).toLowerCase() === 'a') createdAnchors.push(node);
+      return node;
+    });
+    const downloadSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    try {
+      const before = canvasDownloadWorkProof(fixture.state);
+      const previousFrames = fixture.state.visualEvidence;
+      const download = fixture.host.querySelector('[data-canvas-download]');
+      download.focus();
+      await clickEvidenceControl(download);
+      if (failure === 'missing' || failure === 'context') expect(fullCapture).not.toHaveBeenCalled();
+      else expect(fullCapture).toHaveBeenCalledExactlyOnceWith(outputContext, 864, 1036);
+      expect(wrongCapture).not.toHaveBeenCalled();
+      expect(staleImageSpy).not.toHaveBeenCalled();
+      expect(outputContext.drawImage).not.toHaveBeenCalled();
+      if (failure === 'encoding' || failure === 'invalid-png') expect(imageSpy).toHaveBeenCalledExactlyOnceWith('image/png');
+      else expect(imageSpy).not.toHaveBeenCalled();
+      expect(createdAnchors).toEqual([]);
+      expect(downloadSpy).not.toHaveBeenCalled();
+      expect(Object.prototype.hasOwnProperty.call(sourceCanvas, '_lastCaptureCamera')).toBe(ownedCamera);
+      if (ownedCamera) expect(sourceCanvas._lastCaptureCamera).toBe(originalCamera);
+      expect(fixture.state.visualEvidence).toBe(previousFrames);
+      expect(fixture.state.visualEvidence).toEqual(preservedFrames);
+      expect(frames).toEqual(preservedFrames);
+      expect(document.activeElement).toBe(download);
+      expect(fixture.state.procedureFeedback).toMatchObject({ message: 'Canvas download is unavailable in this view.', tone: 'caution' });
+      expect(canvasDownloadWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally {
+      createSpy.mockRestore(); delete sourceCanvas.toDataURL; imageSpy.mockRestore(); downloadSpy.mockRestore();
+      await fixture.close();
+    }
+  });
+
+  it('captures the full canvas only after an explicit contents choice and preserves learner work', async () => {
+    const fixture = await mountMarkingFixture({
+      visualEvidence: [], referenceEvidenceId: null, splitComparison: false, evidenceNotebookOpen: false,
+      annotations: [{ x: 0.5, y: 0.38, type: 'dot' }, { x: 0.4, y: 0.32, type: 'dot' }],
+    });
+    const thumbnailContext = { drawImage: vi.fn() };
+    const imageSpy = vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue('data:image/jpeg;base64,ZnVsbA==');
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(function () {
+      return this.width === 220 && this.height === 264 ? thumbnailContext : null;
+    });
+    try {
+      const before = evidenceWorkProof(fixture.state);
+      const sourceCanvas = fixture.host.querySelector('[data-diss-canvas]');
+      const specimenCapture = vi.fn(() => { throw new Error('Specimen API must not be used for full canvas'); });
+      const fullCapture = vi.fn((context, width, height) => { context.drawImage(sourceCanvas, 0, 0, width, height); return true; });
+      sourceCanvas._captureDissectionEvidence = specimenCapture;
+      sourceCanvas._captureFullDissectionEvidence = fullCapture;
+      await chooseEvidenceCaptureContents(fixture, 'canvas');
+      expect(evidenceWorkProof(fixture.state)).toEqual(before);
+      await clickEvidenceControl(fixture.host.querySelector('[data-evidence-capture]'));
+      expect(specimenCapture).not.toHaveBeenCalled();
+      expect(fullCapture).toHaveBeenCalledExactlyOnceWith(thumbnailContext, 220, 264);
+      expect(thumbnailContext.drawImage).toHaveBeenCalledExactlyOnceWith(sourceCanvas, 0, 0, 220, 264);
+      expect(imageSpy).toHaveBeenCalledWith('image/jpeg', 0.72);
+      expect(fixture.state.visualEvidence).toHaveLength(1);
+      const captured = fixture.state.visualEvidence[0];
+      expect(captured).toMatchObject({
+        image: 'data:image/jpeg;base64,ZnVsbA==', captureContents: 'canvas',
+        camera: { zoom: 1.5, panX: 15, panY: -8 }, annotationCount: 2,
+      });
+      expect(captured.measurementText).toBe('');
+      expect(fixture.host.querySelector('[data-evidence-id="' + captured.id + '"] p[data-evidence-capture-context]').textContent).toContain('Full canvas with guides');
+      expect(fixture.state.evidenceCaptureContents).toBe('canvas');
+      expect(fixture.state.referenceEvidenceId).toBe(captured.id);
+      expect(fixture.state.splitComparison).toBe(true);
+      expect(document.activeElement).toBe(fixture.host.querySelector('[id="diss-reference-heading"]'));
+      expect(evidenceWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally {
+      imageSpy.mockRestore();
+      await fixture.close();
+    }
+  });
+
+  it.each(['specimen', 'canvas'].flatMap((contents) => ['missing', 'false', 'throw', 'encoding'].map((failure) => ({ contents, failure }))))('keeps $contents capture failure $failure from saving a mislabeled canvas or changing focus and work', async ({ contents, failure }) => {
+    const frames = [{ id: 101, image: 'data:image/jpeg;base64,b2xk', layer: 'skin', view: 'dorsal' }];
+    const preservedFrames = JSON.parse(JSON.stringify(frames));
+    const fixture = await mountMarkingFixture({
+      visualEvidence: frames, referenceEvidenceId: 101, splitComparison: false, evidenceNotebookOpen: false,
+      evidenceReturnFocusId: 'diss-evidence-compare-101',
+      annotations: [{ x: 0.5, y: 0.38, type: 'dot' }],
+      rulerMode: true, rulerStart: { x: 0.5, y: 0.38 }, rulerEnd: { x: 0.65, y: 0.24 },
+    });
+    const thumbnailContext = { drawImage: vi.fn() };
+    const imageSpy = vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockImplementation(() => {
+      if (failure === 'encoding') throw new Error('Image encoding failed');
+      return 'data:image/jpeg;base64,dW51c2Vk';
+    });
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(function () {
+      return this.width === 220 && this.height === 264 ? thumbnailContext : null;
+    });
+    try {
+      const before = evidenceWorkProof(fixture.state);
+      const previousFrames = fixture.state.visualEvidence;
+      const sourceCanvas = fixture.host.querySelector('[data-diss-canvas]');
+      let specimenCapture;
+      if (contents === 'canvas') await chooseEvidenceCaptureContents(fixture, 'canvas');
+      const captureApi = contents === 'canvas' ? '_captureFullDissectionEvidence' : '_captureDissectionEvidence';
+      const otherApi = contents === 'canvas' ? '_captureDissectionEvidence' : '_captureFullDissectionEvidence';
+      const wrongCapture = vi.fn(() => { throw new Error('Wrong frame contents API must not be used'); });
+      sourceCanvas[otherApi] = wrongCapture;
+      if (failure === 'missing') delete sourceCanvas[captureApi];
+      else {
+        specimenCapture = vi.fn(() => {
+          if (failure === 'throw') throw new Error('Frame capture unavailable');
+          return failure === 'encoding';
+        });
+        sourceCanvas[captureApi] = specimenCapture;
+      }
+      const capture = fixture.host.querySelector('[data-evidence-capture]');
+      capture.focus();
+      await clickEvidenceControl(capture);
+      if (specimenCapture) expect(specimenCapture).toHaveBeenCalledExactlyOnceWith(thumbnailContext, 220, 264);
+      expect(wrongCapture).not.toHaveBeenCalled();
+      expect(thumbnailContext.drawImage).not.toHaveBeenCalled();
+      if (failure === 'encoding') expect(imageSpy).toHaveBeenCalledExactlyOnceWith('image/jpeg', 0.72);
+      else expect(imageSpy).not.toHaveBeenCalled();
+      expect(fixture.state.visualEvidence).toBe(previousFrames);
+      expect(fixture.state.visualEvidence).toEqual(preservedFrames);
+      expect(frames).toEqual(preservedFrames);
+      expect(fixture.state.referenceEvidenceId).toBe(101);
+      expect(fixture.state.splitComparison).toBe(false);
+      expect(fixture.state.evidenceNotebookOpen).toBe(false);
+      expect(fixture.state.evidenceReturnFocusId).toBe('diss-evidence-compare-101');
+      expect(fixture.host.querySelector('[id="diss-evidence-notebook"]').open).toBe(false);
+      expect(fixture.host.querySelector('[id="diss-reference-heading"]')).toBeNull();
+      expect(document.activeElement).toBe(capture);
+      expect(fixture.state.procedureFeedback).toMatchObject({ tone: 'caution' });
+      expect(fixture.state.procedureFeedback.message).toMatch(/unavailable/i);
+      expect(evidenceWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally {
+      imageSpy.mockRestore();
+      await fixture.close();
+    }
+  });
+
+  it('shows capture context from frozen frames and leaves missing legacy context unknown after live view changes', async () => {
+    const frames = [
+      { id: 101, image: 'data:image/jpeg;base64,b2xk', layer: 'skin', view: 'dorsal' },
+      { id: 102, image: 'data:image/jpeg;base64,bmV3', layer: 'skin', view: 'dorsal',
+        captureContents: 'specimen', camera: { zoom: 2, panX: 25, panY: -10 }, annotationCount: 3, measurementText: '2.4 cm model distance' },
+    ];
+    const preservedFrames = JSON.parse(JSON.stringify(frames));
+    const fixture = await mountMarkingFixture({ visualEvidence: frames, referenceEvidenceId: 102, splitComparison: true, evidenceNotebookOpen: true });
+    try {
+      const before = evidenceWorkProof(fixture.state);
+      const frozenCard = fixture.host.querySelector('[data-evidence-id="102"] p[data-evidence-capture-context]');
+      expect(frozenCard.textContent).toContain('Specimen and marks');
+      expect(frozenCard.textContent).toContain('Zoom 2×');
+      expect(frozenCard.textContent).toContain('3 observation marks');
+      expect(frozenCard.textContent).toContain('2.4 cm model distance');
+      const frozenText = frozenCard.textContent;
+      expect(fixture.host.querySelector('.diss-split-reference p[data-evidence-capture-context]').textContent).toBe(frozenText);
+      const legacyContext = fixture.host.querySelector('[data-evidence-id="101"] p[data-evidence-capture-context]');
+      expect(legacyContext.textContent).toMatch(/contents.*not recorded/i);
+      expect(legacyContext.textContent).not.toMatch(/Specimen and marks|Full canvas with guides|Zoom|mark|cm/);
+      const legacyText = legacyContext.textContent;
+      await fixture.patch({
+        canvasZoom: 3, canvasPanX: -25, canvasPanY: 10,
+        annotations: [{ x: 0.4, y: 0.4, type: 'dot' }],
+        rulerStart: { x: 0.5, y: 0.38 }, rulerEnd: { x: 0.65, y: 0.24 },
+      });
+      expect(fixture.host.querySelector('[data-evidence-id="102"] p[data-evidence-capture-context]').textContent).toBe(frozenText);
+      expect(fixture.host.querySelector('.diss-split-reference p[data-evidence-capture-context]').textContent).toBe(frozenText);
+      expect(fixture.host.querySelector('[data-evidence-id="101"] p[data-evidence-capture-context]').textContent).toBe(legacyText);
+      await clickEvidenceControl(fixture.host.querySelector('[id="diss-evidence-compare-101"]'));
+      expect(fixture.host.querySelector('.diss-split-reference p[data-evidence-capture-context]').textContent).toBe(legacyText);
+      expect(fixture.state.visualEvidence).toEqual(preservedFrames);
+      expect(frames).toEqual(preservedFrames);
+      const expected = { ...before, canvasZoom: 3, canvasPanX: -25, canvasPanY: 10,
+        annotations: [{ x: 0.4, y: 0.4, type: 'dot' }], rulerStart: { x: 0.5, y: 0.38 }, rulerEnd: { x: 0.65, y: 0.24 } };
+      expect(evidenceWorkProof(fixture.state)).toEqual(expected);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('saves the explicit frame contents preference and restores it with the specimen notebook', async () => {
+    const fixture = await mountMarkingFixture({ evidenceNotebookOpen: true });
+    let saved;
+    try {
+      const before = evidenceWorkProof(fixture.state);
+      const frames = JSON.parse(JSON.stringify(fixture.state.visualEvidence));
+      expect(fixture.host.querySelector('[id="diss-evidence-capture-contents"]').value).toBe('specimen');
+      await chooseEvidenceCaptureContents(fixture, 'canvas');
+      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 150)); });
+      saved = JSON.parse(localStorage.getItem('dissection_progress_frog'));
+      expect(saved.evidenceCaptureContents).toBe('canvas');
+      expect(saved.visualEvidence).toEqual(frames);
+      expect(saved.organNotes).toEqual(before.organNotes);
+      expect(evidenceWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+    const loaded = await mountMarkingFixture({ _dissLoadedSpec: null }, { frog: saved });
+    try {
+      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+      expect(loaded.state._dissLoadedSpec).toBe('frog');
+      expect(loaded.state.evidenceCaptureContents).toBe('canvas');
+      expect(loaded.host.querySelector('[id="diss-evidence-capture-contents"]').value).toBe('canvas');
+      expect(loaded.state.visualEvidence).toEqual(saved.visualEvidence);
+      expect(loaded.state.organNotes).toEqual(saved.organNotes);
+      expect(loaded.awardXP).not.toHaveBeenCalled();
+    } finally { await loaded.close(); }
+  });
+
+  it('confirms notebook deletion with focus recovery and preserves learner work through reference fallback and clearing', async () => {
+    const frames = [101, 102, 103].map((id) => ({ id, image: 'data:image/jpeg;base64,eA==', layer: 'skin', view: 'dorsal' }));
+    const preservedFrames = JSON.parse(JSON.stringify(frames));
+    const fixture = await mountMarkingFixture({
+      visualEvidence: frames, referenceEvidenceId: 102, splitComparison: true, evidenceNotebookOpen: true,
+      annotations: [{ x: 0.5, y: 0.38, type: 'dot' }],
+      rulerStart: { x: 0.5, y: 0.38 }, rulerEnd: { x: 0.65, y: 0.24 },
+    });
+    try {
+      const before = evidenceWorkProof(fixture.state);
+      const remove = fixture.host.querySelector('[data-evidence-remove-id="102"]');
+      await clickEvidenceControl(remove);
+      expect(fixture.state.evidenceRemovePendingId).toBe(102);
+      expect(document.activeElement).toBe(fixture.host.querySelector('[data-evidence-confirm-remove-id="102"]'));
+      expect(fixture.state.visualEvidence).toEqual(preservedFrames);
+      const cancelRemoval = Array.from(fixture.host.querySelector('[data-evidence-id="102"]').querySelectorAll('button')).find((button) => button.textContent === 'Cancel');
+      await clickEvidenceControl(cancelRemoval);
+      expect(fixture.state.evidenceRemovePendingId).toBeNull();
+      expect(document.activeElement).toBe(fixture.host.querySelector('[data-evidence-remove-id="102"]'));
+      expect(fixture.state.referenceEvidenceId).toBe(102);
+      expect(fixture.state.visualEvidence).toEqual(preservedFrames);
+      await clickEvidenceControl(fixture.host.querySelector('[data-evidence-remove-id="102"]'));
+      await clickEvidenceControl(fixture.host.querySelector('[data-evidence-confirm-remove-id="102"]'));
+      expect(fixture.state.visualEvidence).toEqual([preservedFrames[0], preservedFrames[2]]);
+      expect(frames).toEqual(preservedFrames);
+      expect(fixture.state.referenceEvidenceId).toBe(103);
+      expect(fixture.state.splitComparison).toBe(true);
+      expect(fixture.state.evidenceNotebookOpen).toBe(true);
+      expect(fixture.state.evidenceRemovePendingId).toBeNull();
+      expect(document.activeElement).toBe(fixture.host.querySelector('[id="diss-evidence-notebook"] summary'));
+      expect(fixture.host.querySelector('[id="diss-reference-heading"]').textContent).toBe('Reference frame 2');
+      await clickEvidenceControl(fixture.host.querySelector('button[aria-label="Close split comparison"]'));
+      expect(document.activeElement).toBe(fixture.host.querySelector('[id="diss-evidence-compare-103"]'));
+
+      await clickEvidenceControl(fixture.host.querySelector('[id="diss-evidence-clear-all"]'));
+      expect(fixture.state.evidenceClearPending).toBe(true);
+      expect(document.activeElement).toBe(fixture.host.querySelector('[id="diss-evidence-confirm-clear"]'));
+      const cancelClear = Array.from(fixture.host.querySelector('[id="diss-evidence-clear-confirmation"]').querySelectorAll('button')).find((button) => button.textContent === 'Cancel');
+      await clickEvidenceControl(cancelClear);
+      expect(fixture.state.evidenceClearPending).toBe(false);
+      expect(fixture.state.visualEvidence).toEqual([preservedFrames[0], preservedFrames[2]]);
+      expect(fixture.state.referenceEvidenceId).toBe(103);
+      expect(document.activeElement).toBe(fixture.host.querySelector('[id="diss-evidence-clear-all"]'));
+      await clickEvidenceControl(fixture.host.querySelector('[id="diss-evidence-clear-all"]'));
+      await clickEvidenceControl(fixture.host.querySelector('[id="diss-evidence-confirm-clear"]'));
+      expect(fixture.state.visualEvidence).toEqual([]);
+      expect(fixture.state.referenceEvidenceId).toBeNull();
+      expect(fixture.state.splitComparison).toBe(false);
+      expect(fixture.state.evidenceClearPending).toBe(false);
+      expect(fixture.state.evidenceNotebookOpen).toBe(true);
+      expect(fixture.host.querySelector('[id="diss-evidence-notebook"]').open).toBe(true);
+      expect(document.activeElement).toBe(fixture.host.querySelector('[id="diss-evidence-notebook"] summary'));
+      expect(fixture.host.querySelector('.diss-split-reference')).toBeNull();
+      expect(evidenceWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+
+  it('opens an Essentials notebook comparison in Advanced and returns focus without changing learner work', async () => {
+    const frames = [{ id: 101, image: 'data:image/jpeg;base64,eA==', layer: 'skin', view: 'dorsal' }];
+    const preservedFrames = JSON.parse(JSON.stringify(frames));
+    const fixture = await mountMarkingFixture({
+      workspaceMode: 'essentials', toolbarToolsOpen: false,
+      visualEvidence: frames, referenceEvidenceId: null, splitComparison: false, evidenceNotebookOpen: true,
+      annotations: [{ x: 0.5, y: 0.38, type: 'dot' }],
+      rulerStart: { x: 0.5, y: 0.38 }, rulerEnd: { x: 0.65, y: 0.24 },
+    });
+    try {
+      const before = evidenceWorkProof(fixture.state);
+      expect(fixture.state.workspaceMode).toBe('essentials');
+      expect(fixture.host.querySelector('[id="diss-evidence-notebook"]').open).toBe(true);
+      expect(fixture.host.querySelector('[id="diss-reference-heading"]')).toBeNull();
+      const compare = fixture.host.querySelector('[id="diss-evidence-compare-101"]');
+      expect(compare).not.toBeNull();
+      expect(compare.textContent).toBe('Open comparison in Advanced');
+      expect(compare.getAttribute('aria-label')).toBe('Open comparison in Advanced for frame 1: Skin');
+      await clickEvidenceControl(compare);
+      expect(fixture.state.workspaceMode).toBe('advanced');
+      expect(fixture.state.referenceEvidenceId).toBe(101);
+      expect(fixture.state.splitComparison).toBe(true);
+      expect(fixture.state.evidenceNotebookOpen).toBe(true);
+      const heading = fixture.host.querySelector('[id="diss-reference-heading"]');
+      expect(heading.textContent).toBe('Reference frame 1');
+      expect(document.activeElement).toBe(heading);
+      expect(evidenceWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.state.visualEvidence).toEqual(preservedFrames);
+      expect(frames).toEqual(preservedFrames);
+      await clickEvidenceControl(fixture.host.querySelector('button[aria-label="Close split comparison"]'));
+      const returnedCompare = fixture.host.querySelector('[id="diss-evidence-compare-101"]');
+      expect(document.activeElement).toBe(returnedCompare);
+      expect(returnedCompare.getAttribute('aria-label')).toBe('Compare frame 1: Skin');
+      expect(fixture.host.querySelector('[id="diss-reference-heading"]')).toBeNull();
+      expect(fixture.state.workspaceMode).toBe('advanced');
+      expect(fixture.state.referenceEvidenceId).toBe(101);
+      expect(fixture.state.splitComparison).toBe(false);
+      expect(fixture.state.evidenceNotebookOpen).toBe(true);
+      expect(fixture.host.querySelector('[id="diss-evidence-notebook"]').open).toBe(true);
+      expect(fixture.state.visualEvidence).toEqual(preservedFrames);
+      expect(evidenceWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+
   it('preserves a deliberate zero-caution scenario threshold', () => {
     const html = renderTool('dissection', {
       dissection: {
@@ -6088,5 +8178,1145 @@ expect(html).toContain('Scenario center');
     });
     expect(html).toContain('Max cautions: 0');
     expect(html).toContain('Scenario thresholds');
+  });
+
+// Technique sequence clarity: use the mounted tool and real callbacks so the
+  // display reflects action facts without changing scoring or navigation.
+  function techniqueRoadmapState(procedure = {}, patch = {}) {
+    return {
+      revealedLayers: {}, guidedMode: false, quizMode: false, practicalMode: false,
+      toolbarStudyOpen: false, flashcardMode: false, compareMode: false, eyeStudyMode: false,
+      activeLayer: 'skin', anatomicalView: 'ventral', activeInstrument: 'probe',
+      selectedOrgan: null, hoveredOrgan: null, inspectionLens: false, lensPinned: false,
+      canvasZoom: 1, canvasPanX: 0, canvasPanY: 0, procedureScenario: 'precision-access',
+      techniquePanelOpen: true, procedureByLayer: { skin: procedure },
+      ...patch,
+    };
+  }
+
+  function readTechniqueRoadmap(fixture) {
+    const roadmap = fixture.host.querySelector('[id="diss-technique-roadmap"]');
+    expect(roadmap).not.toBeNull();
+    const sequence = roadmap.querySelector('ol');
+    expect(sequence).not.toBeNull();
+    const rows = Array.from(sequence.querySelectorAll('li[data-technique-action]'));
+    const progress = roadmap.querySelector('progress');
+    expect(progress).not.toBeNull();
+    expect(progress.max).toBe(rows.length);
+    expect(roadmap.querySelector('summary')?.textContent).toBe('View technique sequence');
+    expect(sequence.querySelector('button, a, input, select, textarea')).toBeNull();
+    return { roadmap, rows, progress };
+  }
+
+  function expectTechniqueCurrent(rows, action, state) {
+    const current = rows.filter((row) => row.getAttribute('aria-current') === 'step');
+    expect(current).toHaveLength(1);
+    expect(current[0].getAttribute('data-technique-action')).toBe(action);
+    expect(current[0].getAttribute('data-step-state')).toBe(state);
+  }
+
+  it('shows the initial technique plan and opens its native sequence without changing learner work', async () => {
+    const fixture = await mountMarkingFixture(techniqueRoadmapState());
+    try {
+      const before = markingWorkProof(fixture.state);
+      const { roadmap, rows, progress } = readTechniqueRoadmap(fixture);
+      expect(roadmap.textContent).toContain('Technique 1 of 6');
+      expect(roadmap.textContent).toContain('0 of 6 steps verified');
+      expect(progress.value).toBe(0);
+      expectTechniqueCurrent(rows, 'inspect', 'plan');
+      expect(rows.slice(1).every((row) => row.getAttribute('data-step-state') === 'upcoming')).toBe(true);
+      const details = roadmap.querySelector('details');
+      expect(details).not.toBeNull();
+      expect(details.open).toBe(false);
+      await act(async () => {
+        roadmap.querySelector('summary').click();
+        await Promise.resolve();
+      });
+      expect(details.open).toBe(true);
+      await act(async () => { roadmap.querySelector('summary').click(); await Promise.resolve(); });
+      expect(details.open).toBe(false);
+      expect(markingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+      expect(fixture.host.querySelector('[data-next-action="learning"]')).toBeNull();
+    } finally { await fixture.close(); }
+  });
+
+  it('shows a confirmed technique plan as ready to perform without giving verification credit', async () => {
+    const fixture = await mountMarkingFixture(techniqueRoadmapState({
+      learningChecks: { inspect: { predictionCorrect: true } },
+    }));
+    try {
+      const { roadmap, rows, progress } = readTechniqueRoadmap(fixture);
+      expect(roadmap.textContent).toContain('Technique 1 of 6');
+      expect(progress.value).toBe(0);
+      expectTechniqueCurrent(rows, 'inspect', 'perform');
+      expect(fixture.state.procedureByLayer.skin.inspected).not.toBe(true);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('keeps a completed action current until its reflection is verified', async () => {
+    const fixture = await mountMarkingFixture(techniqueRoadmapState({
+      inspected: true, history: ['inspect'],
+      learningChecks: { inspect: { predictionCorrect: true, reflectionCorrect: false } },
+    }));
+    try {
+      const { roadmap, rows, progress } = readTechniqueRoadmap(fixture);
+      expect(roadmap.textContent).toContain('Technique 1 of 6');
+      expect(progress.value).toBe(0);
+      expectTechniqueCurrent(rows, 'inspect', 'reflect');
+      expect(rows.find((row) => row.getAttribute('data-technique-action') === 'scalpel').getAttribute('data-step-state')).toBe('upcoming');
+      expect(fixture.host.querySelector('[id="diss-learning-checkpoint"]').getAttribute('data-phase')).toBe('reflect');
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('advances the current technique action only after action, plan, and explanation are verified', async () => {
+    const fixture = await mountMarkingFixture(techniqueRoadmapState({
+      inspected: true, history: ['inspect'],
+      learningChecks: { inspect: { predictionCorrect: true, reflectionCorrect: true } },
+    }));
+    try {
+      const { roadmap, rows, progress } = readTechniqueRoadmap(fixture);
+      expect(roadmap.textContent).toContain('Technique 2 of 6');
+      expect(roadmap.textContent).toContain('1 of 6 steps verified');
+      expect(progress.value).toBe(1);
+      expect(rows[0].getAttribute('data-step-state')).toBe('verified');
+      expect(rows[0].hasAttribute('aria-current')).toBe(false);
+      expectTechniqueCurrent(rows, 'scalpel', 'plan');
+    } finally { await fixture.close(); }
+  });
+
+  it('does not verify a cached plan and reflection when the technique action was never performed', async () => {
+    const fixture = await mountMarkingFixture(techniqueRoadmapState({
+      inspected: true, incisionStarted: false, history: ['inspect'],
+      learningChecks: {
+        inspect: { predictionCorrect: true, reflectionCorrect: true },
+        scalpel: { predictionCorrect: true, reflectionCorrect: true },
+      },
+    }));
+    try {
+      const { rows, progress } = readTechniqueRoadmap(fixture);
+      expect(progress.value).toBe(1);
+      expectTechniqueCurrent(rows, 'scalpel', 'perform');
+      expect(rows.filter((row) => row.getAttribute('data-step-state') === 'verified')).toHaveLength(1);
+      expect(fixture.state.procedureByLayer.skin.incisionStarted).toBe(false);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('labels a legacy completed action with missing plan evidence without changing the native current action', async () => {
+    const fixture = await mountMarkingFixture(techniqueRoadmapState({
+      inspected: true, history: ['inspect'],
+      learningChecks: { inspect: { predictionCorrect: false, reflectionCorrect: true } },
+    }));
+    try {
+      const before = markingWorkProof(fixture.state);
+      const { rows, progress } = readTechniqueRoadmap(fixture);
+      expect(progress.value).toBe(0);
+      expect(rows[0].getAttribute('data-technique-action')).toBe('inspect');
+      expect(rows[0].getAttribute('data-step-state')).toBe('recorded');
+      expect(rows[0].textContent).toContain('Recorded action; evidence incomplete');
+      expect(rows[0].hasAttribute('aria-current')).toBe(false);
+      expectTechniqueCurrent(rows, 'scalpel', 'plan');
+      expect(markingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('follows the native reflection gate when a completed legacy action has no saved prediction', async () => {
+    const fixture = await mountMarkingFixture(techniqueRoadmapState({
+      inspected: true, history: ['inspect'],
+      learningChecks: { inspect: { predictionCorrect: false, reflectionCorrect: false } },
+    }));
+    try {
+      const before = markingWorkProof(fixture.state);
+      const { rows, progress } = readTechniqueRoadmap(fixture);
+      expect(progress.value).toBe(0);
+      expectTechniqueCurrent(rows, 'inspect', 'reflect');
+      expect(fixture.host.querySelector('[id="diss-learning-checkpoint"]').getAttribute('data-phase')).toBe('reflect');
+      expect(markingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('returns roadmap verification and current phase to the restored action after native undo', async () => {
+    const fixture = await mountMarkingFixture(techniqueRoadmapState({
+      inspected: true, history: ['inspect'], actionLog: [{ action: 'inspect', at: 50 }],
+      learningChecks: { inspect: { predictionCorrect: true, reflectionCorrect: true } },
+    }));
+    try {
+      expect(readTechniqueRoadmap(fixture).progress.value).toBe(1);
+      const before = markingWorkProof(fixture.state);
+      const undo = fixture.host.querySelector('[aria-label="Undo the last technique action and visually restore the previous tissue state"]');
+      expect(undo).not.toBeNull();
+      expect(undo.disabled).toBe(false);
+      await act(async () => { undo.click(); await Promise.resolve(); });
+      const { roadmap, rows, progress } = readTechniqueRoadmap(fixture);
+      expect(roadmap.textContent).toContain('Technique 1 of 6');
+      expect(progress.value).toBe(0);
+      expectTechniqueCurrent(rows, 'inspect', 'perform');
+      expect(fixture.state.procedureByLayer.skin.inspected).toBe(false);
+      expect(fixture.state.procedureByLayer.skin.learningChecks.inspect).toMatchObject({ predictionCorrect: true, reflectionCorrect: false });
+      expect(fixture.state.organNotes).toEqual(before.organNotes);
+      expect(fixture.state.organConfidence).toEqual(before.organConfidence);
+      expect(fixture.state.exploredOrgans).toEqual(before.exploredOrgans);
+      expect(fixture.state.verifiedIdentifications).toEqual(before.verifiedIdentifications);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it.each([
+    ['frog', 'ventral', ['inspect', 'scalpel', 'scissors', 'forceps', 'pin', 'probe']],
+    ['earthworm', 'dorsal', ['inspect', 'pin', 'scalpel', 'scissors', 'forceps', 'probe']],
+    ['pig', 'ventral', ['inspect', 'scalpel', 'scissors', 'forceps', 'pin', 'probe']],
+    ['perch', 'lateral', ['inspect', 'scalpel', 'scissors', 'forceps', 'pin', 'probe']],
+    ['crayfish', 'dorsal', ['inspect', 'scalpel', 'scissors', 'forceps', 'pin', 'probe']],
+    ['sheepEye', 'lateral', ['inspect', 'pin', 'scalpel', 'scissors', 'forceps', 'probe']],
+    ['sheepHeart', 'ventral', ['inspect', 'scalpel', 'scissors', 'forceps', 'pin', 'probe']],
+  ])('uses the native %s protocol order in the technique roadmap', async (specimen, anatomicalView, expectedOrder) => {
+    const fixture = await mountMarkingFixture(techniqueRoadmapState({}, {
+      specimen, _dissLoadedSpec: specimen, anatomicalView,
+    }));
+    try {
+      const { rows, progress } = readTechniqueRoadmap(fixture);
+      expect(rows.map((row) => row.getAttribute('data-technique-action'))).toEqual(expectedOrder);
+      expect(progress.max).toBe(expectedOrder.length);
+      expectTechniqueCurrent(rows, 'inspect', 'plan');
+    } finally {
+      await fixture.close();
+      localStorage.removeItem('dissection_progress_' + specimen);
+    }
+  });
+
+  it.each([
+    ['guided investigation', { guidedMode: true }],
+    ['practice assessment', { quizMode: true }],
+    ['timed practical', { practicalMode: true, quizMode: true }],
+    ['revealed layer', { revealedLayers: { skin: true } }],
+    ['study tools', { toolbarStudyOpen: true }],
+  ])('keeps the technique roadmap out of %s', async (_case, patch) => {
+    const activePatch = _case === 'timed practical' ? {
+      ...patch, practicalTimer: 300, practicalEndsAt: Date.now() + 300000,
+      practicalTargetIds: ['ventral_skin', 'tympanum'],
+    } : patch;
+    const fixture = await mountMarkingFixture(techniqueRoadmapState({}, activePatch));
+    try {
+      if (_case === 'timed practical') {
+        expect(fixture.state.practicalMode).toBe(true);
+        expect(fixture.state.quizMode).toBe(true);
+        expect(fixture.state.practicalEndsAt).toBeGreaterThan(Date.now());
+        expect(fixture.state.practicalTimer).toBeGreaterThan(0);
+        expect(fixture.state.practicalTargetIds).toEqual(['ventral_skin', 'tympanum']);
+        expect(fixture.host.querySelector('[data-dissection-root]')?.getAttribute('data-assessment-mode')).toBe('true');
+      }
+      expect(fixture.host.querySelector('[id="diss-technique-roadmap"]')).toBeNull();
+      expect(fixture.host.querySelector('[id="diss-learning-checkpoint"]')).toBeNull();
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  // Action handoff follows the real post-action learning gate. These cases
+  // exercise native controls and leave all authored plans/explanations intact.
+  const actionHandoffOrder = ['inspect', 'scalpel', 'scissors', 'forceps', 'pin', 'probe'];
+  const actionHandoffTissue = { moisture: 67, tension: 52, exposure: 87, trauma: 0, clarity: 91, stability: 84, risk: 16, salineDrops: 0 };
+  const actionHandoffReflection = 'Next: explain what changed in the learning checkpoint before another technique action.';
+
+  function actionHandoffProcedure(action, patch = {}) {
+    const before = actionHandoffOrder.slice(0, actionHandoffOrder.indexOf(action));
+    return {
+      tissueState: { ...actionHandoffTissue },
+      inspected: before.includes('inspect'), incisionStarted: before.includes('scalpel'),
+      incisionExtended: before.includes('scissors'), retracted: before.includes('forceps'),
+      pins: before.includes('pin') ? [{ x: .45, y: .3 }, { x: .55, y: .8 }] : [],
+      probed: false, history: [...before], actionLog: [], errors: 0, protocolDeviations: 0,
+      learningChecks: {
+        ...Object.fromEntries(before.map((step) => [step, { predictionCorrect: true, reflectionCorrect: true }])),
+        [action]: { predictionCorrect: true, reflectionCorrect: false },
+      },
+      ...patch,
+    };
+  }
+
+  async function performActionHandoff(fixture) {
+    const button = fixture.host.querySelector('.diss-procedure__next');
+    expect(button).not.toBeNull();
+    expect(button.disabled, button.getAttribute('aria-label')).toBe(false);
+    await clickEvidenceControl(button);
+    return fixture.state.procedureFeedback.message;
+  }
+
+  it.each(actionHandoffOrder)('action handoff sends completed %s to its pending explanation', async (action) => {
+    const procedure = actionHandoffProcedure(action, action === 'pin' ? { pins: [{ x: .45, y: .3 }] } : {});
+    const instrument = action === 'inspect' ? 'probe' : action;
+    const fixture = await mountMarkingFixture(techniqueRoadmapState(procedure, { activeInstrument: instrument }));
+    try {
+      const checks = JSON.parse(JSON.stringify(fixture.state.procedureByLayer.skin.learningChecks));
+      const message = await performActionHandoff(fixture);
+      expect(message).toContain(actionHandoffReflection);
+      expect(message).not.toMatch(/Switch to scissors|Use forceps next|Place two well-spaced pins|Next protocol action:|Record evidence or complete the layer|Next checkpoint:/);
+      const checkpoint = fixture.host.querySelector('[id="diss-learning-checkpoint"]');
+      expect(checkpoint.getAttribute('data-phase')).toBe('reflect');
+      expect(checkpoint.getAttribute('data-learning-action')).toBe(action);
+      expect(fixture.state.procedureByLayer.skin.actionLog.at(-1).action).toBe(action);
+      expect(fixture.state.procedureByLayer.skin.learningChecks).toEqual(checks);
+      expect(fixture.state.activeInstrument).toBe(instrument);
+      expect(fixture.state.revealedLayers).toEqual({});
+      expect(fixture.state.organNotes['frog|nictitating']).toBe('Transparent membrane noted before adding marks.');
+      expect([fixture.state.quizScore, fixture.state.quizTotal]).toEqual([1, 2]);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('action handoff keeps the first pin on its second placement before requesting an explanation', async () => {
+    const fixture = await mountMarkingFixture(techniqueRoadmapState(actionHandoffProcedure('pin'), { activeInstrument: 'pin' }));
+    try {
+      const firstMessage = await performActionHandoff(fixture);
+      expect(fixture.state.procedureByLayer.skin.pins).toHaveLength(1);
+      const secondPlacement = fixture.host.querySelector('.diss-procedure__next').textContent.replace('Motor-neutral: ', '');
+      expect(firstMessage).toContain('Next: ' + secondPlacement + '.');
+      expect(firstMessage).not.toContain(actionHandoffReflection);
+      expect(fixture.host.querySelector('[id="diss-learning-checkpoint"]').getAttribute('data-phase')).toBe('perform');
+      const secondMessage = await performActionHandoff(fixture);
+      expect(fixture.state.procedureByLayer.skin.pins).toHaveLength(2);
+      expect(secondMessage).toContain(actionHandoffReflection);
+      expect(fixture.host.querySelector('[id="diss-learning-checkpoint"]').getAttribute('data-phase')).toBe('reflect');
+      expect(fixture.state.procedureByLayer.skin.actionLog.map((entry) => entry.action)).toEqual(['pin', 'pin']);
+    } finally { await fixture.close(); }
+  });
+
+  it('action handoff uses earthworm order after a forceps action with saved explanation credit', async () => {
+    const procedure = actionHandoffProcedure('forceps', {
+      pins: [{ x: .45, y: .3 }, { x: .55, y: .8 }],
+      learningChecks: Object.fromEntries(['inspect', 'pin', 'scalpel', 'scissors', 'forceps'].map((action) => [action, { predictionCorrect: true, reflectionCorrect: true }])),
+    });
+    const fixture = await mountMarkingFixture(techniqueRoadmapState(procedure, {
+      specimen: 'earthworm', _dissLoadedSpec: 'earthworm', anatomicalView: 'dorsal', activeInstrument: 'forceps',
+    }));
+    try {
+      const message = await performActionHandoff(fixture);
+      expect(message).toContain('Next: use the learning checkpoint to plan this step: Trace the digestive tract or a visible vessel.');
+      expect(message).not.toMatch(/Place two well-spaced pins|Next checkpoint:/);
+      expect(fixture.host.querySelector('[id="diss-learning-checkpoint"]').getAttribute('data-learning-action')).toBe('probe');
+      expect(fixture.host.querySelector('[id="diss-learning-checkpoint"]').getAttribute('data-phase')).toBe('predict');
+      expect(fixture.state.procedureByLayer.skin.pins).toHaveLength(2);
+      expect(fixture.state.procedureByLayer.skin.retracted).toBe(true);
+      expect(fixture.state.procedureByLayer.skin.learningChecks.forceps.reflectionCorrect).toBe(true);
+    } finally {
+      await fixture.close();
+      localStorage.removeItem('dissection_progress_earthworm');
+    }
+  });
+
+  it('action handoff honors saved orientation evidence during an orientation rescue recheck', async () => {
+    const fixture = await mountMarkingFixture(techniqueRoadmapState(actionHandoffProcedure('inspect', {
+      inspected: true, orientationRecheckRequired: true,
+      learningChecks: { inspect: { predictionCorrect: true, reflectionCorrect: true } },
+    }), { procedureScenario: 'orientation-rescue', scenarioCompletedAt: 0 }));
+    try {
+      const message = await performActionHandoff(fixture);
+      expect(message).toContain('Next: use the learning checkpoint to plan this step: Begin the shallow ventral midline opening.');
+      expect(message).toContain('Scenario checkpoint: 100%.');
+      expect(message).toContain('Objective complete.');
+      expect(message).not.toContain('Review the debrief or restart');
+      expect(message).not.toContain(actionHandoffReflection);
+      expect(fixture.state.procedureByLayer.skin.orientationRecheckRequired).toBe(false);
+      expect(fixture.state.procedureByLayer.skin.learningChecks.inspect.reflectionCorrect).toBe(true);
+      expect(fixture.state.scenarioCompletedAt).toBeGreaterThan(0);
+    } finally { await fixture.close(); }
+  });
+
+  it('action handoff offers evidence review after a final probe with saved explanation credit', async () => {
+    const procedure = actionHandoffProcedure('probe');
+    procedure.learningChecks.probe.reflectionCorrect = true;
+    const fixture = await mountMarkingFixture(techniqueRoadmapState(procedure));
+    try {
+      const message = await performActionHandoff(fixture);
+      expect(message).toContain('Next: review your observations and the remaining layer evidence.');
+      expect(message).not.toContain(actionHandoffReflection);
+      expect(message).not.toContain('Record evidence or complete the layer');
+      expect(fixture.state.procedureByLayer.skin.probed).toBe(true);
+      expect(fixture.state.revealedLayers).toEqual({});
+      expect(fixture.host.querySelector('[id="diss-learning-checkpoint"]')).toBeNull();
+      expect(fixture.state.quizScore).toBe(1);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('action handoff leaves optional hydration on native scenario guidance without a new learning cycle', async () => {
+    const procedure = actionHandoffProcedure('scalpel');
+    const fixture = await mountMarkingFixture(techniqueRoadmapState(procedure, { activeInstrument: 'dropper' }));
+    try {
+      const checks = JSON.parse(JSON.stringify(fixture.state.procedureByLayer.skin.learningChecks));
+      const control = Array.from(fixture.host.querySelectorAll('button')).find((button) => button.textContent.includes('Apply controlled drop'));
+      expect(control).not.toBeNull();
+      expect(control.disabled).toBe(false);
+      await clickEvidenceControl(control);
+      const message = fixture.state.procedureFeedback.message;
+      expect(message).toContain('Controlled saline dose applied');
+      expect(message).toContain('Next checkpoint: Begin the shallow ventral midline opening.');
+      expect(message).not.toContain('Next:');
+      expect(fixture.state.procedureByLayer.skin.actionLog.at(-1).action).toBe('dropper');
+      expect(fixture.state.procedureByLayer.skin.learningChecks).toEqual(checks);
+      expect(fixture.state.procedureByLayer.skin.incisionStarted).toBe(false);
+      expect(fixture.state.procedureByLayer.skin.tissueState.salineDrops).toBeGreaterThan(0);
+      expect(fixture.host.querySelector('[id="diss-learning-checkpoint"]').getAttribute('data-learning-action')).toBe('scalpel');
+    } finally { await fixture.close(); }
+  });
+
+  it('hides the completed technique checkpoint and uses an honest review title before understanding is verified', async () => {
+    const actions = ['inspect', 'scalpel', 'scissors', 'forceps', 'pin', 'probe'];
+    const verifiedProcedure = {
+      inspected: true, incisionStarted: true, incisionExtended: true, retracted: true,
+      pins: [{ x: 0.4, y: 0.4 }, { x: 0.6, y: 0.4 }], probed: true,
+      learningChecks: Object.fromEntries(actions.map((action) => [action, { predictionCorrect: true, reflectionCorrect: true }])),
+    };
+    const structures = ['brain', 'spinal_cord', 'sciatic_n', 'brachial_n', 'cranial_n', 'optic_lobe'];
+    const fixture = await mountMarkingFixture(techniqueRoadmapState(verifiedProcedure, {
+      activeLayer: 'nervous', revealedLayers: { skin: true, muscle: true, organs: true, skeletal: true, nervous: true },
+      procedureByLayer: { nervous: verifiedProcedure },
+      exploredOrgans: Object.fromEntries(structures.map((id) => ['frog|' + id, true])),
+      organNotes: Object.fromEntries(structures.map((id) => ['frog|' + id, 'Recorded observation.'])),
+      organConfidence: Object.fromEntries(structures.map((id) => ['frog|' + id, 3])),
+      verifiedIdentifications: {}, assessmentCompletedAt: 0,
+    }));
+    try {
+      const before = markingWorkProof(fixture.state);
+      expect(fixture.host.querySelector('[id="diss-technique-roadmap"]')).toBeNull();
+      expect(fixture.host.querySelector('[id="diss-learning-checkpoint"]')).toBeNull();
+      const next = fixture.host.querySelector('[data-dissection-next-action]');
+      expect(next.getAttribute('data-next-action')).toBe('start-assessment');
+      expect(next.querySelector('h3').textContent).toBe('Review your specimen investigation');
+      expect(next.textContent).not.toContain('Specimen investigation complete');
+      expect(fixture.state.assessmentCompletedAt).toBe(0);
+      expect(markingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+
+  // Technique availability explains the native action gate and offers only
+  // a focus handoff; the learner still supplies every plan and explanation.
+  it('technique availability lets learners review a required plan without changing work', async () => {
+    const fixture = await mountMarkingFixture(techniqueRoadmapState());
+    try {
+      const before = markingWorkProof(fixture.state);
+      const instrument = fixture.state.activeInstrument;
+      const feedback = fixture.state.procedureFeedback;
+      const action = fixture.host.querySelector('.diss-procedure__next');
+      const hint = fixture.host.querySelector('#diss-equivalent-technique-note');
+      const link = fixture.host.querySelector('#diss-equivalent-checkpoint-link');
+      expect(action.disabled).toBe(true);
+      expect(hint.tagName).toBe('P');
+      expect(hint.classList.contains('diss-sr-only')).toBe(false);
+      expect(hint.textContent).toContain('Choose a safe plan');
+      expect(action.getAttribute('aria-describedby')).toBe(hint.id);
+      expect(link.textContent).toBe('Review plan');
+      expect(link.getAttribute('aria-controls')).toBe('diss-learning-checkpoint');
+      expect(link.getAttribute('aria-describedby')).toBe(hint.id);
+      await clickEvidenceControl(link);
+      expect(document.activeElement).toBe(fixture.host.querySelector('#diss-learning-check-title'));
+      expect(markingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.state.activeInstrument).toBe(instrument);
+      expect(fixture.state.procedureFeedback).toEqual(feedback);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('technique availability returns to the pending explanation before the next action', async () => {
+    const fixture = await mountMarkingFixture(techniqueRoadmapState({
+      inspected: true, history: ['inspect'],
+      learningChecks: { inspect: { predictionCorrect: true, reflectionCorrect: false } },
+    }));
+    try {
+      const before = markingWorkProof(fixture.state);
+      const action = fixture.host.querySelector('.diss-procedure__next');
+      const link = fixture.host.querySelector('#diss-equivalent-checkpoint-link');
+      expect(action.disabled).toBe(true);
+      expect(fixture.host.querySelector('#diss-equivalent-technique-note').textContent).toContain('Explain the observed result');
+      expect(link.textContent).toBe('Explain result');
+      await clickEvidenceControl(link);
+      expect(document.activeElement).toBe(fixture.host.querySelector('#diss-learning-check-title'));
+      expect(fixture.host.querySelector('#diss-learning-checkpoint').getAttribute('data-learning-action')).toBe('inspect');
+      expect(fixture.host.querySelector('#diss-learning-checkpoint').getAttribute('data-phase')).toBe('reflect');
+      expect(markingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('technique availability waits for the final native explanation before claiming completion', async () => {
+    const fixture = await mountMarkingFixture(techniqueRoadmapState(actionHandoffProcedure('probe', {
+      probed: true, history: [...actionHandoffOrder], cautionLog: [],
+      tissueState: {
+        ...actionHandoffTissue, consequences: [], lastAction: 'prepared', lastUpdatedAt: 100,
+        variantId: 'firm', variantLabel: 'Firm preservation',
+      },
+    })));
+    try {
+      const before = markingWorkProof(fixture.state);
+      const action = fixture.host.querySelector('.diss-procedure__next');
+      expect(action.disabled).toBe(true);
+      expect(action.textContent).toBe('Final explanation needed');
+      expect(action.getAttribute('aria-label')).toBe('Final explanation needed. Complete the reflection checkpoint before continuing.');
+      expect(action.getAttribute('aria-label')).not.toContain('protocol complete');
+      expect(fixture.host.querySelector('#diss-equivalent-technique-note').textContent).toContain('Explain the observed result');
+      expect(fixture.host.querySelector('#diss-equivalent-checkpoint-link').textContent).toBe('Explain result');
+      const answer = Array.from(fixture.host.querySelectorAll('#diss-learning-checkpoint button')).find((button) =>
+        button.textContent.includes('The visible boundary is traced and identified without increasing tissue stress.'));
+      await clickEvidenceControl(answer);
+      const completeAction = fixture.host.querySelector('.diss-procedure__next');
+      expect(completeAction.disabled).toBe(true);
+      expect(completeAction.textContent).toBe('Technique complete');
+      expect(fixture.host.querySelector('#diss-equivalent-technique-note').textContent).toContain('Technique actions and explanations are complete');
+      expect(fixture.host.querySelector('#diss-equivalent-checkpoint-link')).toBeNull();
+      expect(fixture.host.querySelector('#diss-learning-checkpoint')).toBeNull();
+      expect(fixture.state.procedureByLayer.skin.learningChecks.probe.reflectionCorrect).toBe(true);
+      const after = markingWorkProof(fixture.state);
+      const beforeProcedure = before.procedureByLayer.skin;
+      const afterProcedure = after.procedureByLayer.skin;
+      expect({ ...afterProcedure, learningChecks: undefined }).toEqual({ ...beforeProcedure, learningChecks: undefined });
+      expect({ ...after, procedureByLayer: undefined }).toEqual({ ...before, procedureByLayer: undefined });
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('technique availability explains a wrong instrument without selecting one automatically', async () => {
+    const fixture = await mountMarkingFixture(techniqueRoadmapState({
+      learningChecks: { inspect: { predictionCorrect: true } },
+    }, { activeInstrument: 'scalpel' }));
+    try {
+      const before = markingWorkProof(fixture.state);
+      expect(fixture.host.querySelector('.diss-procedure__next').disabled).toBe(true);
+      expect(fixture.host.querySelector('#diss-equivalent-technique-note').textContent).toContain('Select Probe in the instrument tray');
+      expect(fixture.host.querySelector('#diss-equivalent-checkpoint-link')).toBeNull();
+      expect(fixture.state.activeInstrument).toBe('scalpel');
+      expect(markingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('technique availability identifies a ready equivalent action while retaining the native action', async () => {
+    const fixture = await mountMarkingFixture(techniqueRoadmapState({
+      learningChecks: { inspect: { predictionCorrect: true } },
+    }));
+    try {
+      const action = fixture.host.querySelector('.diss-procedure__next');
+      expect(action.disabled).toBe(false);
+      expect(fixture.host.querySelector('#diss-equivalent-technique-note').textContent).toContain('Ready. This records a supported technique action');
+      expect(fixture.host.querySelector('#diss-equivalent-checkpoint-link')).toBeNull();
+      await clickEvidenceControl(action);
+      expect(fixture.state.procedureByLayer.skin.inspected).toBe(true);
+      expect(fixture.state.procedureByLayer.skin.learningChecks.inspect.reflectionCorrect).not.toBe(true);
+      expect(fixture.host.querySelector('#diss-learning-checkpoint').getAttribute('data-phase')).toBe('reflect');
+      expect(fixture.host.querySelector('#diss-equivalent-checkpoint-link').textContent).toBe('Explain result');
+    } finally { await fixture.close(); }
+  });
+
+  it.each([
+    ['guided investigation', { guidedMode: true }],
+    ['practice assessment', { quizMode: true }],
+    ['timed practical', { practicalMode: true, quizMode: true }],
+    ['revealed layer', { revealedLayers: { skin: true } }],
+    ['study tools', { toolbarStudyOpen: true }],
+  ])('technique availability has no checkpoint handoff in %s', async (_case, patch) => {
+    const activePatch = _case === 'timed practical' ? {
+      ...patch, practicalTimer: 300, practicalEndsAt: Date.now() + 300000,
+      practicalTargetIds: ['ventral_skin', 'tympanum'],
+    } : patch;
+    const fixture = await mountMarkingFixture(techniqueRoadmapState({}, activePatch));
+    try {
+      const before = markingWorkProof(fixture.state);
+      expect(fixture.host.querySelector('#diss-learning-checkpoint')).toBeNull();
+      expect(fixture.host.querySelector('#diss-equivalent-checkpoint-link')).toBeNull();
+      expect(markingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+
+  // Field-monitor navigation follows the current learning phase. These tests
+  // use the native monitor control and preserve learner-authored work.
+  async function openHandoffMonitor(fixture) {
+    const monitor = fixture.host.querySelector('.diss-field-monitor');
+    expect(monitor).not.toBeNull();
+    if (!monitor.open) await clickEvidenceControl(monitor.querySelector('summary'));
+    expect(monitor.open).toBe(true);
+    return monitor;
+  }
+
+  function monitorHandoffWorkProof(state) {
+    return JSON.parse(JSON.stringify({
+      work: markingWorkProof(state), activeInstrument: state.activeInstrument,
+      techniquePanelOpen: state.techniquePanelOpen, procedureFeedback: state.procedureFeedback,
+      simplifiedInstructions: state.simplifiedInstructions,
+    }));
+  }
+
+  it('monitor handoff names the required plan and focuses it without changing work', async () => {
+    const fixture = await mountMarkingFixture(techniqueRoadmapState({}, { simplifiedInstructions: true }));
+    try {
+      const monitor = await openHandoffMonitor(fixture);
+      const before = monitorHandoffWorkProof(fixture.state);
+      const action = monitor.querySelector('.diss-stage__telemetry-prepare');
+      expect(action.disabled).toBe(false);
+      expect(action.textContent).toBe('Review plan');
+      expect(action.getAttribute('aria-label')).toContain('Review plan');
+      expect(action.getAttribute('aria-controls')).toBe('diss-learning-checkpoint');
+      expect(fixture.host.querySelector('#diss-procedure-title').textContent).toBe('Technique practice · Plan needed');
+      expect(fixture.host.querySelector('#diss-procedure-summary > span').textContent).toMatch(/[Pp]lan/);
+      expect(fixture.host.querySelector('#diss-active-tool-help').textContent).toBe('Next: choose a safe plan.');
+      const performed = fixture.host.querySelector('.diss-procedure__steps');
+      expect(performed.getAttribute('role')).toBe('group');
+      expect(performed.getAttribute('aria-label')).toBe('0 of 6 actions performed');
+      await clickEvidenceControl(action);
+      expect(document.activeElement).toBe(fixture.host.querySelector('#diss-learning-check-title'));
+      expect(monitorHandoffWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('monitor handoff keeps the performed action current until its explanation is verified', async () => {
+    const fixture = await mountMarkingFixture(techniqueRoadmapState({
+      inspected: true, history: ['inspect'],
+      learningChecks: { inspect: { predictionCorrect: true, reflectionCorrect: false } },
+    }, { simplifiedInstructions: true }));
+    try {
+      const monitor = await openHandoffMonitor(fixture);
+      const before = monitorHandoffWorkProof(fixture.state);
+      const action = monitor.querySelector('.diss-stage__telemetry-prepare');
+      expect(action.disabled).toBe(false);
+      expect(action.textContent).toBe('Explain result');
+      expect(action.getAttribute('aria-label')).toContain('Explain result');
+      expect(action.getAttribute('aria-controls')).toBe('diss-learning-checkpoint');
+      expect(fixture.host.querySelector('#diss-procedure-title').textContent).toBe('Technique practice · Explanation needed');
+      const summary = fixture.host.querySelector('#diss-procedure-summary > span').textContent;
+      const simplified = fixture.host.querySelector('#diss-active-tool-help').textContent;
+      expect(summary).toMatch(/[Ee]xpla(?:in|nation)/);
+      expect(simplified).toBe('Next: explain the observed result.');
+      expect(summary + simplified).not.toContain('Begin the shallow ventral midline opening');
+      expect(fixture.host.querySelector('.diss-procedure__steps').getAttribute('aria-label')).toBe('1 of 6 actions performed');
+      expect(readTechniqueRoadmap(fixture).progress.value).toBe(0);
+      await clickEvidenceControl(action);
+      expect(document.activeElement).toBe(fixture.host.querySelector('#diss-learning-check-title'));
+      expect(fixture.host.querySelector('#diss-learning-checkpoint').getAttribute('data-learning-action')).toBe('inspect');
+      expect(monitorHandoffWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('monitor handoff waits for the final explanation before presenting technique completion', async () => {
+    const fixture = await mountMarkingFixture(techniqueRoadmapState(actionHandoffProcedure('probe', {
+      probed: true, history: [...actionHandoffOrder], cautionLog: [],
+      tissueState: {
+        ...actionHandoffTissue, consequences: [], lastAction: 'prepared', lastUpdatedAt: 100,
+        variantId: 'firm', variantLabel: 'Firm preservation',
+      },
+    }), { simplifiedInstructions: true }));
+    try {
+      const monitor = await openHandoffMonitor(fixture);
+      const before = monitorHandoffWorkProof(fixture.state);
+      const action = monitor.querySelector('.diss-stage__telemetry-prepare');
+      expect(action.disabled).toBe(false);
+      expect(action.textContent).toBe('Explain result');
+      expect(action.getAttribute('aria-label')).not.toMatch(/protocol complete|technique complete/i);
+      expect(fixture.host.querySelector('#diss-procedure-title').textContent).toBe('Technique practice · Explanation needed');
+      expect(fixture.host.querySelector('#diss-active-tool-help').textContent).toBe('Next: explain the observed result.');
+      expect(fixture.host.querySelector('#diss-active-tool-help').textContent).not.toContain('Done. Complete this layer.');
+      expect(fixture.host.querySelector('.diss-procedure__steps').getAttribute('aria-label')).toBe('6 of 6 actions performed');
+      expect(readTechniqueRoadmap(fixture).progress.value).toBe(5);
+      await clickEvidenceControl(action);
+      expect(document.activeElement).toBe(fixture.host.querySelector('#diss-learning-check-title'));
+      expect(monitorHandoffWorkProof(fixture.state)).toEqual(before);
+      const answer = Array.from(fixture.host.querySelectorAll('#diss-learning-checkpoint button')).find((button) =>
+        button.textContent.includes('The visible boundary is traced and identified without increasing tissue stress.'));
+      await clickEvidenceControl(answer);
+      const completeAction = monitor.querySelector('.diss-stage__telemetry-prepare');
+      expect(completeAction.disabled).toBe(true);
+      expect(completeAction.textContent).toBe('Technique complete');
+      expect(completeAction.hasAttribute('aria-controls')).toBe(false);
+      expect(fixture.host.querySelector('#diss-procedure-title').textContent).toBe('Technique practice · Technique complete');
+      expect(fixture.host.querySelector('#diss-active-tool-help').textContent).toBe('Technique complete. Review specimen evidence.');
+      expect(fixture.host.querySelector('#diss-learning-checkpoint')).toBeNull();
+      expect(fixture.state.procedureByLayer.skin.learningChecks.probe.reflectionCorrect).toBe(true);
+      const after = markingWorkProof(fixture.state);
+      const beforeWork = before.work;
+      expect({ ...after.procedureByLayer.skin, learningChecks: undefined }).toEqual({ ...beforeWork.procedureByLayer.skin, learningChecks: undefined });
+      expect({ ...after, procedureByLayer: undefined }).toEqual({ ...beforeWork, procedureByLayer: undefined });
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('monitor handoff preserves native preparation and leaves instrument selection to the learner', async () => {
+    const fixture = await mountMarkingFixture(techniqueRoadmapState(actionHandoffProcedure('scalpel'), {
+      activeInstrument: 'probe', techniquePanelOpen: false,
+    }));
+    try {
+      const monitor = await openHandoffMonitor(fixture);
+      const before = markingWorkProof(fixture.state);
+      const action = monitor.querySelector('.diss-stage__telemetry-prepare');
+      expect(action.disabled).toBe(false);
+      expect(action.textContent).toMatch(/^Prepare/);
+      expect(action.getAttribute('aria-controls')).not.toBe('diss-learning-checkpoint');
+      expect(fixture.host.querySelector('#diss-procedure-title').textContent).toBe('Technique practice · Step 2 of 6');
+      await clickEvidenceControl(action);
+      expect(document.activeElement).toBe(fixture.host.querySelector('#diss-instrument-scalpel'));
+      expect(fixture.state.techniquePanelOpen).toBe(true);
+      expect(fixture.state.activeInstrument).toBe('probe');
+      expect(markingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('monitor handoff labels a revealed layer without offering a nonexistent checkpoint', async () => {
+    const fixture = await mountMarkingFixture(techniqueRoadmapState({}, { revealedLayers: { skin: true } }));
+    try {
+      const monitor = await openHandoffMonitor(fixture);
+      const before = monitorHandoffWorkProof(fixture.state);
+      const action = monitor.querySelector('.diss-stage__telemetry-prepare');
+      expect(action.disabled).toBe(true);
+      expect(action.textContent).toBe('Layer revealed');
+      expect(action.hasAttribute('aria-controls')).toBe(false);
+      expect(fixture.host.querySelector('#diss-procedure-title').textContent).toBe('Technique practice · Layer revealed');
+      expect(fixture.host.querySelector('#diss-learning-checkpoint')).toBeNull();
+      await clickEvidenceControl(action);
+      expect(monitorHandoffWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('monitor handoff pauses navigation during an animation and restores the same planning route', async () => {
+    const fixture = await mountMarkingFixture(techniqueRoadmapState());
+    try {
+      const monitor = await openHandoffMonitor(fixture);
+      const incision = { active: true, startTick: Date.now(), layerName: 'skin' };
+      await fixture.patch({ _incisionAnim: incision });
+      const before = monitorHandoffWorkProof(fixture.state);
+      const action = monitor.querySelector('.diss-stage__telemetry-prepare');
+      expect(action.disabled).toBe(true);
+      expect(action.textContent).toMatch(/^Technique in progress/);
+      expect(action.hasAttribute('aria-controls')).toBe(false);
+      await clickEvidenceControl(action);
+      expect(fixture.state._incisionAnim).toEqual(incision);
+      expect(monitorHandoffWorkProof(fixture.state)).toEqual(before);
+      await fixture.patch({ _incisionAnim: null });
+      const restored = monitor.querySelector('.diss-stage__telemetry-prepare');
+      expect(restored.disabled).toBe(false);
+      expect(restored.textContent).toBe('Review plan');
+      expect(restored.getAttribute('aria-controls')).toBe('diss-learning-checkpoint');
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it.each([
+    ['guided investigation', { guidedMode: true }],
+    ['practice assessment', { quizMode: true }],
+    ['timed practical', { practicalMode: true, quizMode: true }],
+    ['study tools', { toolbarStudyOpen: true }],
+  ])('monitor handoff hides the procedure action in %s while keeping field metrics', async (_case, patch) => {
+    const activePatch = _case === 'timed practical' ? {
+      ...patch, practicalTimer: 300, practicalEndsAt: Date.now() + 300000,
+      practicalTargetIds: ['ventral_skin', 'tympanum'],
+    } : patch;
+    const fixture = await mountMarkingFixture(techniqueRoadmapState({}, activePatch));
+    try {
+      const monitor = await openHandoffMonitor(fixture);
+      const before = monitorHandoffWorkProof(fixture.state);
+      expect(monitor.querySelector('.diss-stage__telemetry-prepare')).toBeNull();
+      expect(monitor.querySelectorAll('.diss-stage__telemetry-metric')).toHaveLength(4);
+      expect(fixture.host.querySelector('#diss-learning-checkpoint')).toBeNull();
+      expect(monitorHandoffWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+
+  // Coaching stays associated with the native selected response. No retry
+  // helper supplies an answer or substitutes for the learner's next choice.
+  function checkpointCoachingProcedure(patch = {}) {
+    return {
+      ...actionHandoffProcedure('inspect'), cautionLog: [], learningChecks: {},
+      tissueState: {
+        ...actionHandoffTissue, consequences: [], lastAction: 'prepared', lastUpdatedAt: 100,
+        variantId: 'firm', variantLabel: 'Firm preservation',
+      },
+      ...patch,
+    };
+  }
+
+  function checkpointCoachingWorkProof(state) {
+    const proof = markingWorkProof(state);
+    proof.procedureByLayer = Object.fromEntries(Object.entries(proof.procedureByLayer || {}).map(([layer, procedure]) => {
+      const { learningChecks, ...physical } = procedure;
+      return [layer, physical];
+    }));
+    proof.activeInstrument = state.activeInstrument;
+    return proof;
+  }
+
+  function expectSelectedCoaching(panel, button, feedbackId, nativeMessage) {
+    const feedback = panel.querySelector('[id="' + feedbackId + '"]');
+    expect(panel.querySelectorAll('[id="' + feedbackId + '"]')).toHaveLength(1);
+    expect(button.parentElement.classList.contains('diss-learning-check__choice')).toBe(true);
+    expect(button.nextElementSibling).toBe(feedback);
+    expect(feedback.tagName).toBe('P');
+    expect(feedback.getAttribute('data-result')).toBe('incorrect');
+    expect(feedback.querySelector('.diss-learning-check__feedback-title').textContent.trim()).toBe('Try another choice.');
+    expect(feedback.textContent).toContain(nativeMessage);
+    expect(button.getAttribute('aria-describedby')).toBe(feedbackId);
+    expect(button.textContent).not.toContain(nativeMessage);
+    const others = Array.from(panel.querySelectorAll('.diss-learning-check__option')).filter((choice) => choice !== button);
+    expect(others.every((choice) => !choice.hasAttribute('aria-describedby'))).toBe(true);
+    return feedback;
+  }
+
+  it('checkpoint coaching follows repeated wrong plans without moving focus or recording a technique', async () => {
+    const fixture = await mountMarkingFixture(techniqueRoadmapState(checkpointCoachingProcedure()));
+    try {
+      const panel = fixture.host.querySelector('#diss-learning-checkpoint');
+      const choices = Array.from(panel.querySelectorAll('.diss-learning-check__option'));
+      const answerText = choices.map((choice) => choice.querySelector('.diss-learning-check__answer').textContent);
+      const before = checkpointCoachingWorkProof(fixture.state);
+      const coaching = 'Look for the recommended view, planned route, and protected landmarks before contact.';
+      choices[1].focus();
+      await clickEvidenceControl(choices[1]);
+      expect(document.activeElement).toBe(choices[1]);
+      expect(panel.querySelectorAll('.diss-learning-check__option')[1]).toBe(choices[1]);
+      const firstFeedback = expectSelectedCoaching(panel, choices[1], 'diss-learning-check-feedback', coaching);
+      expect(fixture.state.procedureByLayer.skin.learningChecks.inspect).toMatchObject({ predictionChoice: 'deep-view', predictionCorrect: false, predictionAttempts: 1 });
+      expect(checkpointCoachingWorkProof(fixture.state)).toEqual(before);
+      choices[2].focus();
+      await clickEvidenceControl(choices[2]);
+      expect(document.activeElement).toBe(choices[2]);
+      expect(firstFeedback.isConnected).toBe(false);
+      expectSelectedCoaching(panel, choices[2], 'diss-learning-check-feedback', coaching);
+      expect(fixture.state.procedureByLayer.skin.learningChecks.inspect).toMatchObject({ predictionChoice: 'tool-first', predictionCorrect: false, predictionAttempts: 2 });
+      expect(choices.map((choice) => choice.querySelector('.diss-learning-check__answer').textContent)).toEqual(answerText);
+      const beforeBrowsing = JSON.parse(JSON.stringify(fixture.state.procedureByLayer));
+      await act(async () => { choices[2].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true, cancelable: true })); });
+      expect(document.activeElement).toBe(choices[1]);
+      expect(fixture.state.procedureByLayer).toEqual(beforeBrowsing);
+      expectSelectedCoaching(panel, choices[2], 'diss-learning-check-feedback', coaching);
+      expect(checkpointCoachingWorkProof(fixture.state)).toEqual(before);
+      choices[0].focus();
+      await clickEvidenceControl(choices[0]);
+      expect(panel.getAttribute('data-phase')).toBe('perform');
+      expect(document.activeElement).toBe(fixture.host.querySelector('#diss-learning-check-title'));
+      expect(fixture.state.procedureByLayer.skin.learningChecks.inspect).toMatchObject({ predictionChoice: 'confirm-route', predictionCorrect: true, predictionAttempts: 3 });
+      const confirmed = panel.querySelector('#diss-learning-check-feedback');
+      expect(panel.querySelectorAll('#diss-learning-check-feedback')).toHaveLength(1);
+      expect(confirmed.getAttribute('data-result')).toBe('correct');
+      expect(confirmed.closest('.diss-learning-check__choice')).toBeNull();
+      expect(confirmed.textContent).toContain('Plan confirmed.');
+      expect(confirmed.textContent).not.toContain('Try another choice.');
+      expect(checkpointCoachingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('checkpoint coaching keeps reflection feedback beside the chosen answer until native verification', async () => {
+    const fixture = await mountMarkingFixture(techniqueRoadmapState(checkpointCoachingProcedure({
+      inspected: true, history: ['inspect'],
+      learningChecks: { inspect: { predictionChoice: 'confirm-route', predictionCorrect: true, reflectionCorrect: false } },
+    })));
+    try {
+      const panel = fixture.host.querySelector('#diss-learning-checkpoint');
+      const choices = Array.from(panel.querySelectorAll('.diss-learning-check__option'));
+      const before = checkpointCoachingWorkProof(fixture.state);
+      choices[0].focus();
+      await clickEvidenceControl(choices[0]);
+      expect(document.activeElement).toBe(choices[0]);
+      expectSelectedCoaching(panel, choices[0], 'diss-learning-check-feedback', 'Base the conclusion on view alignment and identifiable landmarks, not tool selection.');
+      expect(panel.getAttribute('data-phase')).toBe('reflect');
+      expect(fixture.state.procedureByLayer.skin.learningChecks.inspect).toMatchObject({ reflectionChoice: 'largest-area', reflectionCorrect: false, reflectionAttempts: 1 });
+      expect(checkpointCoachingWorkProof(fixture.state)).toEqual(before);
+      choices[1].focus();
+      await clickEvidenceControl(choices[1]);
+      expect(panel.getAttribute('data-phase')).toBe('predict');
+      expect(panel.getAttribute('data-learning-action')).toBe('scalpel');
+      expect(document.activeElement).toBe(fixture.host.querySelector('#diss-learning-check-title'));
+      expect(fixture.state.procedureByLayer.skin.learningChecks.inspect).toMatchObject({ reflectionChoice: 'aligned-landmarks', reflectionCorrect: true, reflectionAttempts: 2 });
+      expect(panel.querySelector('#diss-learning-check-feedback')).toBeNull();
+      expect(checkpointCoachingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  function checkpointCoachingGuidedState(feedback) {
+    return techniqueRoadmapState(checkpointCoachingProcedure(), {
+      guidedMode: true, guidedStep: 0, guidedTargetIds: ['ventral_skin', 'tympanum'],
+      guidedObservationPending: 'ventral_skin', guidedObservationFeedback: feedback,
+    });
+  }
+
+  it('checkpoint coaching supports Guided retries without granting identification credit', async () => {
+    const fixture = await mountMarkingFixture(checkpointCoachingGuidedState(null));
+    try {
+      const panel = fixture.host.querySelector('#diss-guided-observation-check');
+      const choices = Array.from(panel.querySelectorAll('.diss-learning-check__option'));
+      expect(choices).toHaveLength(3);
+      const before = checkpointCoachingWorkProof(fixture.state);
+      const coaching = 'That observation belongs to a different structure. Compare position, tissue appearance, and function, then try again.';
+      choices[1].focus();
+      await clickEvidenceControl(choices[1]);
+      expect(document.activeElement).toBe(choices[1]);
+      const firstFeedback = expectSelectedCoaching(panel, choices[1], 'diss-guided-observation-feedback', coaching);
+      expect(fixture.state.guidedStep).toBe(0);
+      expect(fixture.state.guidedObservationPending).toBe('ventral_skin');
+      expect(checkpointCoachingWorkProof(fixture.state)).toEqual(before);
+      choices[2].focus();
+      await clickEvidenceControl(choices[2]);
+      expect(document.activeElement).toBe(choices[2]);
+      expect(firstFeedback.isConnected).toBe(false);
+      expectSelectedCoaching(panel, choices[2], 'diss-guided-observation-feedback', coaching);
+      const beforeBrowsing = JSON.parse(JSON.stringify(fixture.state.guidedObservationFeedback));
+      await act(async () => { choices[2].dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true, cancelable: true })); });
+      expect(document.activeElement).toBe(choices[0]);
+      expect(fixture.state.guidedObservationFeedback).toEqual(beforeBrowsing);
+      expect(checkpointCoachingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+      await clickEvidenceControl(choices[0]);
+      expect(fixture.host.querySelector('#diss-guided-observation-check')).toBeNull();
+      expect(fixture.host.querySelector('#diss-guided-observation-feedback')).toBeNull();
+      expect(document.activeElement).toBe(fixture.host.querySelector('#diss-canvas'));
+      expect(fixture.state.guidedStep).toBe(1);
+      expect(fixture.state.guidedObservationPending).toBeNull();
+      expect(fixture.state.verifiedIdentifications['frog|ventral_skin'].status).toBe('verified');
+      const after = checkpointCoachingWorkProof(fixture.state);
+      expect({ ...after, selectedOrgan: before.selectedOrgan, verifiedIdentifications: before.verifiedIdentifications }).toEqual(before);
+      expect(fixture.awardXP).toHaveBeenCalledTimes(1);
+    } finally { await fixture.close(); }
+  });
+
+  it.each([
+    ['missing', undefined],
+    ['obsolete', 'retired-choice'],
+  ])('checkpoint coaching retains saved feedback for a %s plan choice without inventing a selected answer', async (_case, savedChoice) => {
+    const savedFeedback = 'Review the saved orientation response before trying again.';
+    const fixture = await mountMarkingFixture(techniqueRoadmapState(checkpointCoachingProcedure({
+      learningChecks: { inspect: { predictionChoice: savedChoice, predictionCorrect: false, predictionFeedback: savedFeedback } },
+    })));
+    try {
+      const panel = fixture.host.querySelector('#diss-learning-checkpoint');
+      const before = checkpointCoachingWorkProof(fixture.state);
+      const feedback = panel.querySelector('#diss-learning-check-feedback');
+      expect(panel.querySelectorAll('#diss-learning-check-feedback')).toHaveLength(1);
+      expect(feedback.textContent).toContain(savedFeedback);
+      expect(feedback.closest('.diss-learning-check__choice')).toBeNull();
+      expect(panel.querySelector('.diss-learning-check__option[aria-pressed="true"]')).toBeNull();
+      expect(panel.querySelector('.diss-learning-check__option[aria-describedby]')).toBeNull();
+      const correct = panel.querySelector('.diss-learning-check__option');
+      await clickEvidenceControl(correct);
+      expect(fixture.state.procedureByLayer.skin.learningChecks.inspect).toMatchObject({ predictionChoice: 'confirm-route', predictionCorrect: true, predictionAttempts: 1 });
+      expect(panel.getAttribute('data-phase')).toBe('perform');
+      expect(panel.querySelectorAll('#diss-learning-check-feedback')).toHaveLength(1);
+      expect(checkpointCoachingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it.each([
+    ['empty', ''],
+    ['non-string', { unsupported: true }],
+  ])('checkpoint coaching leaves no dangling description for %s saved planning feedback', async (_case, savedFeedback) => {
+    const fixture = await mountMarkingFixture(techniqueRoadmapState(checkpointCoachingProcedure({
+      learningChecks: { inspect: { predictionChoice: 'deep-view', predictionCorrect: false, predictionFeedback: savedFeedback } },
+    })));
+    try {
+      const panel = fixture.host.querySelector('#diss-learning-checkpoint');
+      const before = checkpointCoachingWorkProof(fixture.state);
+      const choice = panel.querySelectorAll('.diss-learning-check__option')[1];
+      expect(choice.getAttribute('aria-pressed')).toBe('true');
+      expect(choice.hasAttribute('aria-describedby')).toBe(false);
+      expect(panel.querySelector('#diss-learning-check-feedback')).toBeNull();
+      choice.focus();
+      await clickEvidenceControl(choice);
+      expect(document.activeElement).toBe(choice);
+      expectSelectedCoaching(panel, choice, 'diss-learning-check-feedback', 'Look for the recommended view, planned route, and protected landmarks before contact.');
+      expect(fixture.state.procedureByLayer.skin.learningChecks.inspect.predictionAttempts).toBe(1);
+      expect(fixture.state.procedureByLayer.skin.learningChecks.inspect.predictionCorrect).toBe(false);
+      expect(checkpointCoachingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('checkpoint coaching retains unmatched Guided feedback until a native response is selected', async () => {
+    const savedFeedback = 'Review the previous observation against the current specimen.';
+    const fixture = await mountMarkingFixture(checkpointCoachingGuidedState({ correct: false, choiceId: 'retired-structure', message: savedFeedback }));
+    try {
+      const panel = fixture.host.querySelector('#diss-guided-observation-check');
+      const before = checkpointCoachingWorkProof(fixture.state);
+      const feedback = panel.querySelector('#diss-guided-observation-feedback');
+      expect(panel.querySelectorAll('#diss-guided-observation-feedback')).toHaveLength(1);
+      expect(feedback.textContent).toContain(savedFeedback);
+      expect(feedback.closest('.diss-learning-check__choice')).toBeNull();
+      expect(panel.querySelector('.diss-learning-check__option[aria-describedby]')).toBeNull();
+      const wrong = panel.querySelectorAll('.diss-learning-check__option')[1];
+      wrong.focus();
+      await clickEvidenceControl(wrong);
+      expect(document.activeElement).toBe(wrong);
+      expect(feedback.isConnected).toBe(false);
+      expectSelectedCoaching(panel, wrong, 'diss-guided-observation-feedback', 'That observation belongs to a different structure.');
+      expect(fixture.state.guidedStep).toBe(0);
+      expect(checkpointCoachingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it.each([
+    ['empty', ''],
+    ['non-string', { unsupported: true }],
+  ])('checkpoint coaching leaves no dangling description for %s Guided feedback', async (_case, savedFeedback) => {
+    const fixture = await mountMarkingFixture(checkpointCoachingGuidedState({ correct: false, choiceId: 'ventral_skin', message: savedFeedback }));
+    try {
+      const panel = fixture.host.querySelector('#diss-guided-observation-check');
+      const before = checkpointCoachingWorkProof(fixture.state);
+      const choices = panel.querySelectorAll('.diss-learning-check__option');
+      expect(choices[0].getAttribute('aria-pressed')).toBe('true');
+      expect(choices[0].hasAttribute('aria-describedby')).toBe(false);
+      expect(panel.querySelector('#diss-guided-observation-feedback')).toBeNull();
+      choices[1].focus();
+      await clickEvidenceControl(choices[1]);
+      expect(document.activeElement).toBe(choices[1]);
+      expectSelectedCoaching(panel, choices[1], 'diss-guided-observation-feedback', 'That observation belongs to a different structure.');
+      expect(fixture.state.guidedStep).toBe(0);
+      expect(fixture.state.guidedObservationPending).toBe('ventral_skin');
+      expect(checkpointCoachingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+
+  // Adaptive advice navigates to the controls the learner needs without
+  // performing a technique, changing calibration, or supplying an answer.
+  const adaptiveCoachingMetrics = { alignment: 95, coverage: 95, angleControl: 95, control: 95, precision: 95, smoothness: 95 };
+
+  function adaptiveCoachingProcedure(patch = {}, tissuePatch = {}) {
+    const base = checkpointCoachingProcedure();
+    return { ...base, ...patch, tissueState: { ...base.tissueState, ...tissuePatch } };
+  }
+
+  function adaptiveCoachingFixtureState(procedure, patch = {}) {
+    return techniqueRoadmapState(procedure, {
+      procedureMode: 'independent', activeInstrument: 'scalpel',
+      adaptiveGuidance: true, instructorTarget: 82,
+      toolbarViewOpen: false, compareTechniqueAttempts: false,
+      procedureFeedback: { message: 'Keep this recorded feedback.', tone: 'working' },
+      ...patch,
+    });
+  }
+
+  function adaptiveCoachingWorkProof(state) {
+    const { techniquePanelOpen, toolbarViewOpen, compareTechniqueAttempts, ...work } = state;
+    return JSON.parse(JSON.stringify(work));
+  }
+
+  function adaptiveCoachingAction(fixture, focus, label, target, mounted = true) {
+    const panel = fixture.host.querySelector('#diss-adaptive-coaching');
+    expect(panel).not.toBeNull();
+    expect(panel.getAttribute('aria-labelledby')).toBe('diss-adaptive-coaching-title');
+    expect(panel.querySelector('#diss-adaptive-coaching-title').textContent).toBe(focus);
+    const button = panel.querySelector('button');
+    expect(button.textContent).toBe(label);
+    expect(button.getAttribute('aria-controls')).toBe(mounted ? target : null);
+    const describedIds = button.getAttribute('aria-describedby').split(/\s+/);
+    expect(describedIds).toEqual(['diss-adaptive-coaching-suggestion', 'diss-adaptive-coaching-help']);
+    for (const id of describedIds) expect(fixture.host.querySelectorAll('[id="' + id + '"]')).toHaveLength(1);
+    expect(panel.querySelector('#diss-adaptive-coaching-help').textContent).toBe('Opens controls for review.');
+    return button;
+  }
+
+  it.each([
+    ['dry field', {}, { moisture: 25 }, {}, 'Surface moisture', 'Review Dropper', 'diss-instrument-dropper'],
+    ['restricted dry field', {}, { moisture: 25 }, { procedureScenario: 'restricted-tray' }, 'Surface moisture', 'Review tissue condition', 'diss-field-monitor-summary'],
+    ['tissue trauma', {}, { trauma: 48 }, {}, 'Tissue preservation', 'Review tissue condition', 'diss-field-monitor-summary'],
+    ['high tension', {}, { tension: 90 }, {}, 'Retraction tension', 'Review tissue condition', 'diss-field-monitor-summary'],
+    ['recorded safety caution', { cautionLog: [{ message: 'Verify the corridor before further contact.', at: 100 }] }, {}, {}, 'Safety sequence', 'Review technique controls', 'diss-procedure-summary'],
+    ['orientation', {}, {}, {}, 'Orientation', 'Review technique controls', 'diss-procedure-summary'],
+    ['low field quality', { incisionMetrics: adaptiveCoachingMetrics }, { clarity: 20, exposure: 20, stability: 30 }, {}, 'Access width', 'Review tissue condition', 'diss-field-monitor-summary'],
+  ])('adaptive coaching reviews %s without changing learner work or selecting an instrument', async (_case, procedurePatch, tissuePatch, statePatch, focus, label, targetId) => {
+    const fixture = await mountMarkingFixture(adaptiveCoachingFixtureState(adaptiveCoachingProcedure(procedurePatch, tissuePatch), statePatch));
+    try {
+      const action = adaptiveCoachingAction(fixture, focus, label, targetId);
+      const before = adaptiveCoachingWorkProof(fixture.state);
+      if (_case === 'restricted dry field') {
+        expect(fixture.host.querySelector('#diss-instrument-dropper').disabled).toBe(true);
+        expect(fixture.host.querySelector('#diss-adaptive-coaching-suggestion').textContent).toContain('Hydration tools are unavailable');
+      }
+      action.focus();
+      await clickEvidenceControl(action);
+      const target = fixture.host.querySelector('#' + targetId);
+      expect(document.activeElement).toBe(target);
+      expect(fixture.state.techniquePanelOpen).toBe(true);
+      if (targetId === 'diss-field-monitor-summary') expect(target.closest('details').open).toBe(true);
+      if (targetId === 'diss-instrument-dropper') expect(target.getAttribute('aria-checked')).toBe('false');
+      expect(fixture.state.toolbarViewOpen).toBe(false);
+      expect(fixture.state.compareTechniqueAttempts).toBe(false);
+      expect(adaptiveCoachingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('adaptive coaching opens optical controls without changing the inspected target or focus settings', async () => {
+    const procedure = adaptiveCoachingProcedure({ incisionMetrics: adaptiveCoachingMetrics });
+    const fixture = await mountMarkingFixture(adaptiveCoachingFixtureState(procedure, {
+      selectedOrgan: 'ventral_skin', inspectionLens: true, lensPinned: false,
+      lensFocusDepth: 'deep', lensMagnification: 6,
+    }));
+    try {
+      const action = adaptiveCoachingAction(fixture, 'Optical focus', 'Review view controls', 'diss-view-tools', false);
+      expect(fixture.host.querySelector('#diss-view-tools')).toBeNull();
+      const before = adaptiveCoachingWorkProof(fixture.state);
+      await clickEvidenceControl(action);
+      const viewControls = fixture.host.querySelector('#diss-view-tools');
+      expect(document.activeElement).toBe(viewControls);
+      expect(fixture.state.toolbarViewOpen).toBe(true);
+      expect(fixture.state.compareTechniqueAttempts).toBe(false);
+      adaptiveCoachingAction(fixture, 'Optical focus', 'Review view controls', 'diss-view-tools');
+      expect(adaptiveCoachingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('adaptive coaching reviews the next instrument without applying calibration or changing the selected tool', async () => {
+    const procedure = adaptiveCoachingProcedure({
+      ...actionHandoffProcedure('scissors'), incisionMetrics: adaptiveCoachingMetrics,
+    });
+    const fixture = await mountMarkingFixture(adaptiveCoachingFixtureState(procedure, {
+      toolCalibration: { bladeAngle: 25, scissorsAperture: 70, forcepsGrip: 40, pinAngle: 65, probePressure: 30, salineDose: 1 },
+    }));
+    try {
+      const action = adaptiveCoachingAction(fixture, 'Instrument calibration', 'Review Scissors', 'diss-instrument-scissors');
+      const before = adaptiveCoachingWorkProof(fixture.state);
+      await clickEvidenceControl(action);
+      const scissors = fixture.host.querySelector('#diss-instrument-scissors');
+      expect(document.activeElement).toBe(scissors);
+      expect(scissors.getAttribute('aria-checked')).toBe('false');
+      expect(fixture.state.activeInstrument).toBe('scalpel');
+      expect(fixture.state.toolCalibration.scissorsAperture).toBe(70);
+      expect(adaptiveCoachingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
+  });
+
+  it('adaptive coaching reveals saved comparison without starting playback or replacing the baseline', async () => {
+    const procedure = adaptiveCoachingProcedure({ incisionMetrics: adaptiveCoachingMetrics });
+    const fixture = await mountMarkingFixture(adaptiveCoachingFixtureState(procedure, {
+      compareReplayProgress: 0.37, compareReplayPlaying: false,
+      attemptArchive: { skin: [{ id: 7, score: 100, precision: 90, coverage: 90, control: 90, angleControl: 90, cautions: 0, view: 'ventral', inputType: 'mouse', incisionPath: [{ x: 0.5, y: 0.3 }, { x: 0.5, y: 0.6 }] }] },
+    }));
+    try {
+      const action = adaptiveCoachingAction(fixture, 'Strategy change', 'Review saved comparison', 'diss-compare-replay-progress', false);
+      expect(fixture.host.querySelector('#diss-compare-replay-progress')).toBeNull();
+      const before = adaptiveCoachingWorkProof(fixture.state);
+      await clickEvidenceControl(action);
+      const replay = fixture.host.querySelector('#diss-compare-replay-progress');
+      expect(document.activeElement).toBe(replay);
+      expect(fixture.state.compareTechniqueAttempts).toBe(true);
+      expect(fixture.state.techniquePanelOpen).toBe(true);
+      expect(fixture.state.toolbarViewOpen).toBe(false);
+      adaptiveCoachingAction(fixture, 'Strategy change', 'Review saved comparison', 'diss-compare-replay-progress');
+      expect(adaptiveCoachingWorkProof(fixture.state)).toEqual(before);
+      expect(fixture.awardXP).not.toHaveBeenCalled();
+    } finally { await fixture.close(); }
   });
 });

@@ -1,0 +1,22 @@
+[
+  {
+    "from": "    cloudAtlasBytes = data;",
+    "to": "    // Green refines the fixed broad red map on enlarged nearby surfaces.\n    // These nested threads and knots are static emission styling, without\n    // gas dynamics or additional extinction. Red/alpha/blue stay byte-exact.\n    for (var fineTile = 0; fineTile < 4; fineTile++) {\n      var finePhase = fineTile * 1.37, fineSeed = 389 + fineTile * 97;\n      var fineProfiles = [], broadTotal = 0;\n      for (var fy = CLOUD_GUTTER; fy < size - CLOUD_GUTTER; fy++) for (var fx = CLOUD_GUTTER; fx < size - CLOUD_GUTTER; fx++) {\n        var fu = (fx - CLOUD_GUTTER) / (span - 1) * 2 - 1;\n        var fv = (fy - CLOUD_GUTTER) / (span - 1) * 2 - 1;\n        var fr2 = fu * fu + fv * fv, fineIndex = (fy * size * 4 + fineTile * size + fx) * 4;\n        var broad = data[fineIndex] / 255;\n        var fineWarp = (emissionNoise(fu * 3 + 23, fv * 3 + 31, fineSeed) - 0.5) * 0.27;\n        var ribbons = 0, smallKnots = 0;\n        for (var ft = 0; ft < 3; ft++) {\n          var fineCenter = (ft - 1) * 0.27 + Math.sin(fu * (2.4 + fineTile * 0.25) + finePhase + ft * 1.9) * 0.22 + fineWarp;\n          for (var branch = 0; branch < 2; branch++) {\n            var offset = (branch ? 0.052 : -0.048) + Math.sin(fu * 7 + ft * 1.3 + finePhase + branch) * 0.025;\n            var width = 0.048 + ft * 0.006;\n            var breaks = 0.68 + 0.32 * Math.sin(fu * 6 + ft + finePhase + branch) * Math.sin(fu * 6 + ft + finePhase + branch);\n            ribbons += Math.exp(-Math.pow((fv - fineCenter - offset) / width, 2)) * breaks;\n          }\n          smallKnots += Math.exp(-Math.pow((fu - [-0.48, 0.12, 0.56][ft]) / 0.095, 2) - Math.pow((fv - fineCenter) / 0.08, 2));\n        }\n        var fineGrain = 0.85 + 0.15 * emissionNoise(fu * 21 + 11, fv * 21 + 7, fineSeed);\n        var profile = broad * (0.54 + 0.9 * ribbons + 0.42 * smallKnots) * fineGrain;\n        var weight = clamp((1 - fr2) / (1 - 0.72), 0, 1);weight = weight * weight * (3 - 2 * weight);\n        broadTotal += broad * weight;fineProfiles.push({index:fineIndex,profile:profile,weight:weight});\n      }\n      function fineTotal(gain) {var total=0;fineProfiles.forEach(function(p){total+=0.94*(1-Math.exp(-p.profile*gain/0.94))*p.weight;});return total;}\n      var fineLow=0,fineHigh=1;while(fineTotal(fineHigh)<broadTotal)fineHigh*=2;\n      for(var fi=0;fi<24;fi++){var fineMiddle=(fineLow+fineHigh)*0.5;if(fineTotal(fineMiddle)<broadTotal)fineLow=fineMiddle;else fineHigh=fineMiddle;}\n      var fineGain=(fineLow+fineHigh)*0.5;\n      fineProfiles.forEach(function(p){data[p.index+1]=Math.round(255*0.94*(1-Math.exp(-p.profile*fineGain/0.94)));});\n    }\n    cloudAtlasBytes = data;"
+  },
+  {
+    "from": "    '  v_stellarDetail = vec4(resolved, mix(seed, cloudDetail, isCloud), 2.0 / spriteSize, quadBlend);',",
+    "to": "    // Both point and quad contributions use the same projected pixel budget\n    // through their handoff. The fade finishes within the local quad's cap.\n    '  float detailPixelStep = (isCloud > 0.5 && a_cloud >= 5.0) ? 2.0 / max(1.0, min(projectedSize, 384.0 * u_dpr)) : 2.0 / spriteSize;',\n    '  v_stellarDetail = vec4(resolved, mix(seed, cloudDetail, isCloud), detailPixelStep, quadBlend);',"
+  },
+  {
+    "from": "    '    float detail = emission.r;',",
+    "to": "    '    float detail = emission.r, fineEmission = emission.g;',"
+  },
+  {
+    "from": "    '      detail = mix(detail,texture2D(u_cloudTexture,front/vec2(512.0,128.0)).r*0.6+texture2D(u_cloudTexture,back/vec2(512.0,128.0)).r*0.4,0.75);',",
+    "to": "    '      vec4 frontEmission = texture2D(u_cloudTexture,front/vec2(512.0,128.0));',\n    '      vec4 backEmission = texture2D(u_cloudTexture,back/vec2(512.0,128.0));',\n    '      detail = mix(detail,frontEmission.r*0.6+backEmission.r*0.4,0.75);',\n    '      fineEmission = mix(fineEmission,frontEmission.g*0.6+backEmission.g*0.4,0.75);',"
+  },
+  {
+    "from": "    '    cloud = mix(emission.a, detail, v_stellarDetail.y) * 0.55;',",
+    "to": "    // Keep unresolved output exact. Fine threads need enough physical pixels\n    // to sample; the static atlas uses the existing direction-layer offsets.\n    '    float fineBlend = 0.55 * smoothstep(96.0,192.0,2.0/v_stellarDetail.z) * v_stellarDetail.y;',\n    '    detail = mix(detail,fineEmission,fineBlend);',\n    '    cloud = mix(emission.a, detail, v_stellarDetail.y) * 0.55;',"
+  }
+]

@@ -1,0 +1,64 @@
+{
+  "errors": [],
+  "diagnostics": [
+    {
+      "event": "workflow:before",
+      "elapsedMs": 0,
+      "detail": null
+    },
+    {
+      "event": "keyboard-end:before",
+      "elapsedMs": 1955,
+      "detail": null
+    },
+    {
+      "event": "keyboard-end:after",
+      "elapsedMs": 1970,
+      "detail": null
+    },
+    {
+      "event": "keyboard-end:selected",
+      "elapsedMs": 2133,
+      "detail": null
+    },
+    {
+      "event": "keyboard-end:preserved:saved:before",
+      "elapsedMs": 2134,
+      "detail": null
+    },
+    {
+      "event": "keyboard-end:preserved:saved:after",
+      "elapsedMs": 2138,
+      "detail": null
+    },
+    {
+      "event": "keyboard-end:preserved:physical:before",
+      "elapsedMs": 2139,
+      "detail": null
+    },
+    {
+      "event": "keyboard-end:preserved:physical:after",
+      "elapsedMs": 2166,
+      "detail": {
+        "time": "40.000",
+        "alt": "0",
+        "v": "-0.9",
+        "h": "-0.1",
+        "fuel": "60",
+        "mass": "7227.25",
+        "thrust": "0.00",
+        "x": "11.000"
+      }
+    },
+    {
+      "event": "keyboard-end:preserved:after",
+      "elapsedMs": 2167,
+      "detail": null
+    },
+    {
+      "event": "workflow:after",
+      "elapsedMs": 4484,
+      "detail": null
+    }
+  ]
+}

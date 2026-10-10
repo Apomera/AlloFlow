@@ -1,0 +1,6 @@
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');const stage=__dirname,sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+let source=fs.readFileSync(path.join(stage,'native-final-check.cjs'),'utf8');assert.equal(sha(source),'055ffb29f1f05c2a0f0a3c2d029438f811415acc48bbe03f6c9a588d38a65454');const changes=[];
+function replace(before,after,count=1){assert.equal(source.split(before).length,count+1,before);source=source.replaceAll(before,after);changes.push({before,after,count});}
+replace("report=path.join(stage,'native-final-report')","report=path.join(stage,'native-v2-report')");
+replace("path.join(stage,phase+'-renderer.js')","path.join(stage,phase==='candidate'?'candidate-v2-renderer.js':phase+'-renderer.js')",2);
+fs.writeFileSync(path.join(stage,'native-v2-check.cjs'),source);fs.writeFileSync(path.join(stage,'native-v2-driver-provenance.json'),JSON.stringify({baseDriverSha256:'055ffb29f1f05c2a0f0a3c2d029438f811415acc48bbe03f6c9a588d38a65454',driverSha256:sha(source),changes,scope:'File path changes only. Initial 256-sample source and captured failed design attempt stay preserved.'},null,2)+'\n');console.log(sha(source));

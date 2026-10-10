@@ -1976,7 +1976,7 @@ async function searchBudgetRefusal(request, env) {
 }
 
 // BEGIN PUBLIC SEARCH POLICY
-/* External search accepts only canonical public reference queries.
+/* Automatic contextual search accepts only canonical public reference queries.
  * This is an allowlist, not a PII detector or a claim of FERPA compliance.
  * Never add arbitrary user text, model output, school names or identifiers here.
  */
@@ -2023,6 +2023,16 @@ publicSearchQuery.topics = Object.freeze(['orbital period & seasons', 'weather f
     'phonemic awareness', 'phonics', 'executive function', 'cooperative learning',
     'common core reading standards grade 3',
     'udl', 'cell structure', 'ecosystems', 'food webs', 'natural selection', 'biodiversity', 'climate change', 'moon phases', 'energy transfer', 'forces and motion', 'magnetism', 'sound waves', 'states of matter', 'chemical reactions', 'area and perimeter', 'place value', 'ratios', 'proportional relationships', 'linear equations', 'probability', 'data analysis', 'argument and evidence', 'context clues', 'figurative language', 'central idea', 'perspective taking', 'student choice', 'accessible assessment', 'multiple means of representation', 'feedback', 'metacognition']);
+// Explicit research uses only the user's separate topic field. This normalizer
+// bounds transport input; it must never be used to extract a query from context.
+publicSearchQuery.userTopic = function (value) {
+  if (typeof value !== 'string' || value.length > 500 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value)) return '';
+  const query = value.trim().replace(/\s+/g, ' ');
+  return query;
+};
+publicSearchQuery.forIntent = function (value, intent) {
+  return intent === 'user-topic' ? publicSearchQuery.userTopic(value) : publicSearchQuery(value);
+};
 // END PUBLIC SEARCH POLICY
 async function handleSearch(request, env, url) {
   if (env.DISABLE_SEARCH_PROXY === 'true' || env.DISABLE_SEARCH_PROXY === true) {
@@ -2032,9 +2042,10 @@ async function handleSearch(request, env, url) {
     return jsonResponse({ ok: false, error: 'search-not-configured' }, 503);
   }
 
-  const query = publicSearchQuery(url.searchParams.get('q'));
+  const intent = url.searchParams.get('intent');
+  const query = publicSearchQuery.forIntent(url.searchParams.get('q'), intent);
   if (!query) {
-    return jsonResponse({ ok: false, error: 'public-query-required' }, 400);
+    return jsonResponse({ ok: false, error: intent === 'user-topic' ? 'user-topic-required' : 'public-query-required' }, 400);
   }
 
   const requested = Number.parseInt(url.searchParams.get('num') || url.searchParams.get('limit'), 10);

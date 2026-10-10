@@ -2,9 +2,9 @@
 const fs=require('node:fs');
 const core=fs.readFileSync('word_sounds_core.js','utf8').trim();
 const block='// BEGIN GENERATED WORD SOUNDS CORE\n'+core+'\nconst WS_CORE = createWordSoundsCore();\n// END GENERATED WORD SOUNDS CORE';
-for(const file of ['word_sounds_module.js','word_sounds_setup_source.jsx']){
+for(const file of ['word_sounds_module.js','word_sounds_setup_source.jsx','word_sounds_readiness_contract.js']){
  const source=fs.readFileSync(file,'utf8');
  const pattern=/\/\/ BEGIN GENERATED WORD SOUNDS CORE[\s\S]*?\/\/ END GENERATED WORD SOUNDS CORE/;
- const next=pattern.test(source)?source.replace(pattern,()=>block):file.endsWith('.jsx')?block+'\n'+source:source.replace('    // word_sounds_module.js',()=>block+'\n    // word_sounds_module.js');
- if(process.argv.includes('--check')){if(next!==source)throw Error('Stale embedded core: '+file);}else fs.writeFileSync(file,next);
+ const next=pattern.test(source)?source.replace(pattern,()=>block):file.endsWith('.jsx')?block+'\n'+source:file.endsWith('readiness_contract.js')?source.replace("  'use strict';",()=>"  'use strict';\n"+block):source.replace('    // word_sounds_module.js',()=>block+'\n    // word_sounds_module.js');
+ if(process.argv.includes('--check')){if(next!==source)throw Error('Stale embedded core: '+file);}else if(next!==source)fs.writeFileSync(file,next);
 }

@@ -1,0 +1,48 @@
+{
+  "sourceSHA256": "147670787861ae0251c9b4c65c90847a613c6b879d41737533749c19a5f6f891",
+  "baselineSHA256": "69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242",
+  "primaryWork": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work",
+  "diagnosticWork": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-fold-diagnostic-work",
+  "derivation": {
+    "file": "firstresponse-face-preview.spec.ts",
+    "old": "{id:'adult-wide',age:'adult',width:1280,height:1080,pose:5,contrast:false,head:false}",
+    "next": "{id:'adult-wide',age:'adult',width:1280,height:1080,pose:8,contrast:false,head:false}",
+    "edits": 1
+  },
+  "primaryInputs": {
+    "firstresponse-face-preview.spec.ts": "cfa7d4d8093a0e9d96f3fcaf352b70b7b842471e717dafe4fdd75c582db5d1da",
+    "run-face-browser.cjs": "d7e162f49f95d390487c859ba25b26bb5544ffe4e3410aad346cd67dad54d8ea",
+    "playwright-face.config.cjs": "56b7e2efdc5abf1164be3a87bf1a5b70b57192e1b2b29e001e6fd19e24b721a7",
+    "face-capture-png.cjs": "6009565cd97b35c874ff22325427e40823b4ff197118ea3870d0b2996bd30829",
+    "face-mount-window.cjs": "9e3d95fe4ce8ae16ca7d4a994d26250e064873d675b930fb23d63b33ba43b246",
+    "patient-wrist-contract.cjs": "dfcb06b31b735eb58acd705a06ddc3acc4c5f196e8fa426b8f0c378af628b1d1",
+    "candidate.js": "147670787861ae0251c9b4c65c90847a613c6b879d41737533749c19a5f6f891",
+    "before.js": "69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242",
+    "delta.json": "c693910ffcd72b0e15255d523c0882a1aa4cd91b928afe6bec2aae756838b72c",
+    "audit-preview-fixture.cjs": "89b8fc6c406af3220961bef2978738c56f2b244ee283983711e267b6b7b0b683"
+  },
+  "diagnosticInputs": {
+    "firstresponse-face-preview.spec.ts": "21c4924e107d6075e9f683692e0945b4bae4143048d21127eff3100a959f2d92",
+    "run-face-browser.cjs": "d7e162f49f95d390487c859ba25b26bb5544ffe4e3410aad346cd67dad54d8ea",
+    "playwright-face.config.cjs": "56b7e2efdc5abf1164be3a87bf1a5b70b57192e1b2b29e001e6fd19e24b721a7",
+    "face-capture-png.cjs": "6009565cd97b35c874ff22325427e40823b4ff197118ea3870d0b2996bd30829",
+    "face-mount-window.cjs": "9e3d95fe4ce8ae16ca7d4a994d26250e064873d675b930fb23d63b33ba43b246",
+    "patient-wrist-contract.cjs": "dfcb06b31b735eb58acd705a06ddc3acc4c5f196e8fa426b8f0c378af628b1d1",
+    "candidate.js": "147670787861ae0251c9b4c65c90847a613c6b879d41737533749c19a5f6f891",
+    "before.js": "69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242",
+    "delta.json": "c693910ffcd72b0e15255d523c0882a1aa4cd91b928afe6bec2aae756838b72c",
+    "audit-preview-fixture.cjs": "89b8fc6c406af3220961bef2978738c56f2b244ee283983711e267b6b7b0b683"
+  },
+  "selftest": [
+    {
+      "kind": "unapproved-fixture-edit",
+      "rejected": true,
+      "error": "only the adult pose differs: firstresponse-face-preview.spec.ts\n+ actual - expected\n... Skipped lines\n\n  Buffer(27058) [Uint8Array] [\n    105,\n    109,\n    112,\n    111,\n...\n    58,\n+   55,\n-   56,\n    44,\n    99,\n    111,\n    110,\n    116,\n",
+      "restoredAndReread": true,
+      "restoredSHA256": "21c4924e107d6075e9f683692e0945b4bae4143048d21127eff3100a959f2d92"
+    }
+  ],
+  "primaryInputsUnchanged": true,
+  "sharedFilesWritten": 0,
+  "scope": "Targeted adult recovery pose8 diagnostic. Existing adult-wide ID and Supporting hand close-up are retained to use the unchanged wide-view assertions. This is separate from the three primary rendered comparisons."
+}

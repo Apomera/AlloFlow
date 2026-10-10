@@ -1,0 +1,303 @@
+import { test, expect, type Page, type Locator } from '@playwright/test';
+import { GlHarness, looksBlank } from './helpers/stem_gl_harness';
+import { showScaleExplorerTools } from './helpers/scale_explorer_workspace';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import vm from 'node:vm';
+import path from 'node:path';
+
+test.describe.configure({ mode: 'serial', retries: 0, timeout: 270000 });
+test.use({ video: 'off', trace: 'off', hasTouch: true });
+const out = path.resolve(process.env.SCALE_PYRAMID_REPORT_DIR || 'reports/scale-explorer-pyramid');
+const canvas = (page: Page) => page.locator('[data-atlas-ready]');
+const route = (page: Page) => page.getByRole('region', { name: 'Pyramid navigation', exact: true });
+const study = (page: Page) => page.getByRole('region', { name: 'Pyramid field study', exact: true });
+const slider = (page: Page) => route(page).getByRole('slider', { name: 'Pyramid landmark', exact: true });
+const ids = ['base', 'casing', 'entrance', 'descending', 'subterranean', 'ascending', 'gallery', 'queen-chamber', 'king-chamber'];
+const replacement = (process.env.STEM_GL_SUBSTITUTE || '').split(';').find(value => value.startsWith('stem_lab/stem_tool_scaleexplorer.js='));
+const sourceFile = replacement ? replacement.slice(replacement.indexOf('=') + 1) : 'stem_lab/stem_tool_scaleexplorer.js';
+const sandbox = { window: { StemLab: { registerTool() {} } }, console: { log() {} } } as any;
+vm.runInNewContext(readFileSync(sourceFile, 'utf8').replace(
+  "  window.StemLab.registerTool('scaleExplorer', {",
+  "  window.__pyramidChecks={details:atlasDetails,point:pyramidPoint};\n  window.StemLab.registerTool('scaleExplorer', {"
+), sandbox);
+const checks = sandbox.window.__pyramidChecks;
+const metadata = JSON.parse(JSON.stringify({ details: checks.details('pyramid', (_: string, fallback: string) => fallback), points: ids.map(id => checks.point(id)) }));
+const harness = new GlHarness({
+  toolFile: 'stem_lab/stem_tool_scaleexplorer.js', toolId: 'scaleExplorer', width: 1400, height: 1100,
+  layout: 'document', preScripts: ['stem_lab/stem_lab_module.js'], extraScripts: ['vendor/three-r128/GLTFLoader.js'],
+  probes: `const Original=THREE.WebGLRenderer;THREE.WebGLRenderer=new Proxy(Original,{construct(target,args){const renderer=Reflect.construct(target,args),render=renderer.render;renderer.render=function(scene,camera){window.__pyramidCamera=camera;return render.apply(this,arguments);};return renderer;}});`
+});
+
+function save(name: string, value: unknown) { writeFileSync(path.join(out, name + '.json'), JSON.stringify(value, null, 2) + '\n'); }
+
+async function mount(page: Page, phone = false) {
+  const errors: string[] = [], external: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+  await page.route('**/*', request => {
+    const url = request.request().url();
+    if (/^https?:/.test(url) && !/^http:\/\/(127\.0\.0\.1|localhost)(:|\/)/.test(url)) { external.push(url); return request.abort(); }
+    return request.continue();
+  });
+  await page.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.getContext;
+    (HTMLCanvasElement.prototype as any).getContext = function(type: string, ...args: any[]) {
+      return type === 'webgl2' ? null : original.apply(this, [type, ...args] as any);
+    };
+  });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.setViewportSize({ width: phone ? 320 : 1400, height: phone ? 780 : 1100 });
+  await harness.mount(page, { _scaleExplorer: { ambient: false } }, '!!document.querySelector("[data-atlas-ready]")');
+  await showScaleExplorerTools(page);
+  await page.addStyleTag({ content: '#wrap{width:100%!important}body{font-family:system-ui,sans-serif}button,input,select,textarea{font-family:inherit}' });
+  await fly(page, 'pyramid');
+  return { errors, external };
+}
+
+async function fly(page: Page, id: string) {
+  await page.getByRole('combobox', { name: 'Choose a destination', exact: true }).selectOption(id);
+  await expect(canvas(page)).toHaveAttribute('data-atlas-objects', id);
+  await expect.poll(() => canvas(page).evaluate((element: HTMLElement) => Math.abs(Number(element.dataset.atlasExponent) - Number(element.dataset.atlasTarget)))).toBeLessThan(.002);
+}
+
+async function scene(page: Page) {
+  return page.evaluate(metadata => {
+    const w = window as any, T = w.THREE, record = w.__glRecorder.records.find((r: any) => !r.ctx.isContextLost());
+    let root: any, human: any;
+    const visible = (object: any) => { if (!object) return false; for (let node = object; node; node = node.parent) if (!node.visible) return false; return true; };
+    const desert: any[] = [];
+    record.scene.traverse((object: any) => {
+      if (object.userData.itemId === 'pyramid') root = object;
+      if (object.userData.itemId === 'human' && visible(object)) human = object;
+      if (object.userData.pyramidDesert || object.name === 'pyramid desert') desert.push({ name: object.name, visible: visible(object), coverVisible: visible(object.userData.cover) });
+    });
+    const model = root.userData.model, pyramid = model.userData.pyramid, camera = w.__pyramidCamera;
+    const element = document.querySelector('[data-atlas-ready]') as HTMLElement;
+    const detail = element.dataset.atlasDetail || '', point = element.dataset.atlasObjects === 'pyramid' ? metadata.details.find((value: any) => value.id === detail) : null;
+    const aim = new T.Vector3().fromArray(element.dataset.atlasAim!.split(',').map(Number));
+    const expected = point ? model.localToWorld(new T.Vector3().fromArray(point.at)) : null;
+    const direction = camera.getWorldDirection(new T.Vector3());
+    const bounds = new T.Box3().setFromObject(pyramid.exterior);
+    const base = model.localToWorld(new T.Vector3(0, -.3, 0));
+    const humanBounds = human ? new T.Box3().setFromObject(human.userData.model) : null;
+    return {
+      type: record.type, scale: root.scale.x, declaredExtent: model.userData.extent, dimension: model.userData.dimension, measureCenter: model.userData.measureCenter,
+      referenceWidth: model.localToWorld(new T.Vector3(.5, -.3, 0)).distanceTo(model.localToWorld(new T.Vector3(-.5, -.3, 0))) / root.scale.x,
+      exteriorHeight: (bounds.max.y - bounds.min.y) / root.scale.x,
+      aligned: direction.dot(aim.clone().sub(camera.position).normalize()), targetError: expected ? expected.distanceTo(aim) : 0,
+      aim: aim.toArray(), yaw: Math.atan2(-direction.x, -direction.z), pitch: Math.asin(-direction.y), near: camera.near,
+      sectionVisible: visible(pyramid.section), guideVisible: visible(pyramid.guide), desert,
+      detail: pyramid.detailId, stats: pyramid.stats,
+      meshes: pyramid.meshes.map((mesh: any) => ({ geometry: mesh.geometry.uuid, material: Array.isArray(mesh.material) ? mesh.material.map((value: any) => value.uuid) : mesh.material.uuid, detail: mesh.userData.pyramidDetailId })),
+      comparisonRatio: human ? root.scale.x / human.scale.x : null,
+      comparisonGroundError: humanBounds ? Math.abs(base.y - humanBounds.min.y) : null,
+      draws: record.draws, renders: record.renders
+    };
+  }, metadata);
+}
+
+function desertVisible(view: any, section = false) {
+  expect(view.desert.length, 'the plateau belongs to a separate environment').toBeGreaterThan(0);
+  expect(view.desert.some((value: any) => value.visible)).toBe(true);
+  expect(view.desert.some((value: any) => value.coverVisible)).toBe(!section);
+}
+function desertHidden(view: any) { expect(view.desert.every((value: any) => !value.visible && !value.coverVisible)).toBe(true); }
+
+async function site(page: Page, id: string) {
+  const point = metadata.points.find((value: any) => value.id === id), n = ids.indexOf(id) + 1;
+  await expect(canvas(page)).toHaveAttribute('data-atlas-pyramid-site', id);
+  await expect(canvas(page)).toHaveAttribute('data-atlas-detail', id);
+  await expect(canvas(page)).toHaveAttribute('data-atlas-pyramid-section', point.cutaway ? 'revealed' : 'closed');
+  await expect(canvas(page)).toHaveAttribute('data-atlas-pyramid-desert', 'true');
+  await expect(canvas(page)).toHaveAttribute('data-atlas-pyramid-cover', String(!point.cutaway));
+  await expect(slider(page)).toHaveValue(String(n));
+  await expect.poll(async () => (await scene(page)).aligned).toBeGreaterThan(.99999);
+  await expect.poll(async () => (await scene(page)).targetError).toBeLessThan(.0002);
+  const view = await scene(page);
+  expect(view.sectionVisible).toBe(point.cutaway); expect(view.guideVisible).toBe(point.cutaway);
+  desertVisible(view, point.cutaway);
+}
+
+async function setRange(control: Locator, value: number) {
+  await control.evaluate((input: HTMLInputElement, value: number) => {
+    const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!;
+    set.call(input, String(value));
+    input.dispatchEvent(new Event('input', { bubbles: true })); input.dispatchEvent(new Event('change', { bubbles: true }));
+  }, value);
+}
+
+async function landmark(page: Page, n: number) { await setRange(slider(page), n); await site(page, ids[n - 1]); }
+
+async function capture(page: Page, name: string) {
+  await canvas(page).scrollIntoViewIfNeeded();
+  await page.locator('.sx-stage').screenshot({ path: path.join(out, name + '-stage.png') });
+  const pixels = await harness.glPixels(page);
+  expect(pixels).not.toBeNull(); expect(looksBlank(pixels!)).toBe(false);
+  writeFileSync(path.join(out, name + '-gl.png'), pixels!.png);
+}
+
+async function pickActual(page: Page, wanted: string) {
+  await canvas(page).scrollIntoViewIfNeeded();
+  await expect.poll(() => page.evaluate(async () => {
+    const camera = (window as any).__pyramidCamera, before = camera.position.clone();
+    await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+    return before.distanceTo(camera.position);
+  })).toBeLessThan(.000001);
+  const point = await page.evaluate(wanted => {
+    const w = window as any, T = w.THREE, record = w.__glRecorder.records.find((r: any) => !r.ctx.isContextLost());
+    let root: any; record.scene.traverse((object: any) => { if (object.userData.itemId === 'pyramid') root = object; });
+    const model = root.userData.model, camera = w.__pyramidCamera, ray = new T.Raycaster();
+    const element = document.querySelector('[data-atlas-ready]')!, rect = element.getBoundingClientRect();
+    const visible = (object: any) => { for (let node = object; node; node = node.parent) if (!node.visible) return false; return true; };
+    const hit = (x: number, y: number) => {
+      ray.setFromCamera(new T.Vector2((x - rect.x) / rect.width * 2 - 1, 1 - (y - rect.y) / rect.height * 2), camera);
+      return ray.intersectObjects(model.children, true).find((value: any) => value.object.isMesh && visible(value.object));
+    };
+    const targets = model.userData.pyramid.meshes.filter((mesh: any) => mesh.isMesh && mesh.userData.pyramidDetailId === wanted && visible(mesh));
+    for (const mesh of targets) {
+      const positions = mesh.geometry.attributes.position, index = mesh.geometry.index, count = index ? index.count : positions.count;
+      const step = Math.max(3, Math.floor(count / 1000 / 3) * 3);
+      for (let i = 0; i + 2 < count; i += step) {
+        const centroid = new T.Vector3();
+        for (let j = 0; j < 3; j++) centroid.add(new T.Vector3().fromBufferAttribute(positions, index ? index.getX(i + j) : i + j));
+        const projected = mesh.localToWorld(centroid.multiplyScalar(1 / 3)).project(camera);
+        if (Math.abs(projected.x) > .86 || Math.abs(projected.y) > .70 || projected.z < -1 || projected.z >= 1) continue;
+        const x = Math.round(rect.x + (projected.x + 1) * rect.width / 2), y = Math.round(rect.y + (1 - projected.y) * rect.height / 2);
+        let margin = true;
+        for (let dx = -1; dx <= 1 && margin; dx++) for (let dy = -1; dy <= 1; dy++) {
+          if (document.elementFromPoint(x + dx, y + dy) !== element || hit(x + dx, y + dy)?.object.userData.pyramidDetailId !== wanted) { margin = false; break; }
+        }
+        if (margin) return { x, y, wanted, marginPx: 1 };
+      }
+    }
+    return null;
+  }, wanted);
+  expect(point, 'an exposed face of the actual pyramid masonry or interior').not.toBeNull();
+  await page.mouse.click(point!.x, point!.y);
+  return point;
+}
+
+test.beforeAll(async () => {
+  mkdirSync(out, { recursive: true });
+  const sha = (file: string) => createHash('sha256').update(readFileSync(file)).digest('hex');
+  save('pyramid-browser-source', { checkedAt: new Date().toISOString(), source: sha('stem_lab/stem_tool_scaleexplorer.js'), desktop: sha('desktop/web-app/public/stem_lab/stem_tool_scaleexplorer.js'), substitution: process.env.STEM_GL_SUBSTITUTE || null });
+  await harness.start();
+});
+test.afterAll(async () => { await harness.stop(); });
+test.afterEach(async ({ page }) => { await harness.unmount(page); expect(await harness.leakedAfterUnmount(page)).toEqual([]); });
+
+test('native masonry and chamber picks reveal nine landmarks while retaining the 230 metre base', async ({ page }) => {
+  const log = await mount(page), initial = await scene(page);
+  expect(initial.type).toBe('webgl'); expect(initial.declaredExtent).toBe(1); expect(initial.dimension).toBe('x'); expect(initial.measureCenter).toBe(0);
+  expect(initial.referenceWidth).toBeCloseTo(1, 8); expect(initial.exteriorHeight).toBeCloseTo(138.5 / 230, 4);
+  expect(initial.stats).toMatchObject({ baseWidthMeters: 230, reference: 'base-width', currentHeightMeters: 138.5, originalHeightMeters: 146.5 });
+  expect(initial.sectionVisible).toBe(false); expect(initial.guideVisible).toBe(false); desertVisible(initial);
+  await capture(page, 'pyramid-desktop-whole');
+  await study(page).getByRole('button', { name: 'Explore the passages', exact: true }).click(); await site(page, 'entrance');
+  await landmark(page, 2); await setRange(page.getByRole('slider', { name: 'Inspection magnification', exact: true }), 2);
+  await expect.poll(async () => (await scene(page)).aligned).toBeGreaterThan(.99999);
+  const exteriorPick = await pickActual(page, 'base'); await site(page, 'base');
+  await study(page).getByRole('button', { name: metadata.details[7].label, exact: true }).click(); await site(page, 'queen-chamber');
+  await setRange(page.getByRole('slider', { name: 'Inspection magnification', exact: true }), 4);
+  await expect.poll(async () => (await scene(page)).aligned).toBeGreaterThan(.99999);
+  const interiorPick = await pickActual(page, 'gallery'); await site(page, 'gallery');
+  await capture(page, 'pyramid-desktop-gallery');
+  const views = [];
+  for (let n = 1; n <= ids.length; n++) {
+    await landmark(page, n);
+    const view = await scene(page);
+    expect(view.scale).toBe(initial.scale); expect(view.meshes).toEqual(initial.meshes); expect(view.referenceWidth).toBeCloseTo(1, 8);
+    expect(view.exteriorHeight).toBeCloseTo(138.5 / 230, 4); views.push(view);
+  }
+  expect(new Set(views.map(view => view.aim.join(','))).size).toBe(9);
+  await capture(page, 'pyramid-desktop-king-chamber');
+  await route(page).getByRole('button', { name: 'Whole pyramid', exact: true }).click();
+  await expect(route(page)).toHaveCount(0); await expect(canvas(page)).toHaveAttribute('data-atlas-detail', '');
+  await expect(canvas(page)).toHaveAttribute('data-atlas-zoom', '1.00'); await expect(canvas(page)).toHaveAttribute('data-atlas-pyramid-section', 'closed');
+  save('pyramid-desktop', { initial, exteriorPick, interiorPick, views, ...log });
+  expect(log.errors).toEqual([]); expect(log.external).toEqual([]);
+});
+
+test('320 pixel WebGL 1 landmarks support touch, keyboard bounds, section controls and Escape', async ({ page }) => {
+  const log = await mount(page, true), initial = await scene(page); expect(initial.type).toBe('webgl');
+  await capture(page, 'pyramid-phone-whole');
+  const begin = page.getByRole('region', { name: 'Enter the pyramid study', exact: true }).getByRole('button', { name: 'Explore the passages', exact: true });
+  await begin.scrollIntoViewIfNeeded(); const box = await begin.boundingBox();
+  expect(box!.height).toBeGreaterThanOrEqual(44); expect(box!.width).toBeGreaterThanOrEqual(44);
+  await begin.tap(); await site(page, 'entrance');
+  await expect(slider(page)).toHaveAttribute('min', '1'); await expect(slider(page)).toHaveAttribute('max', '9'); await expect(slider(page)).toHaveAttribute('step', '1');
+  await slider(page).focus(); await slider(page).press('ArrowRight'); await site(page, 'descending');
+  await slider(page).press('End'); await site(page, 'king-chamber'); await expect(route(page).getByRole('button', { name: 'Next landmark', exact: true })).toBeDisabled();
+  await slider(page).press('Home'); await site(page, 'base'); await expect(route(page).getByRole('button', { name: 'Previous landmark', exact: true })).toBeDisabled();
+  await route(page).getByRole('button', { name: 'Next landmark', exact: true }).tap(); await site(page, 'casing');
+  for (const label of ['Previous landmark', 'Next landmark', 'Whole pyramid']) expect((await route(page).getByRole('button', { name: label, exact: true }).boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  expect((await slider(page).boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  await study(page).getByRole('button', { name: 'Reveal interior', exact: true }).tap(); await site(page, 'gallery');
+  await expect(study(page).getByRole('button', { name: 'Reveal interior', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await capture(page, 'pyramid-phone-gallery');
+  await slider(page).focus(); await slider(page).press('Escape');
+  await expect(route(page)).toHaveCount(0); await expect(study(page).getByRole('button', { name: 'Explore the passages', exact: true })).toBeFocused();
+  await expect(canvas(page)).toHaveAttribute('data-atlas-zoom', '1.00'); await expect(canvas(page)).toHaveAttribute('data-atlas-pyramid-section', 'closed');
+  await study(page).getByRole('button', { name: 'Inspect the granite chamber', exact: true }).tap(); await site(page, 'king-chamber');
+  await canvas(page).focus(); await canvas(page).press('Escape');
+  await expect(route(page)).toHaveCount(0); await expect(canvas(page)).toHaveAttribute('data-atlas-detail', '');
+  await expect(canvas(page)).toHaveAttribute('data-atlas-zoom', '1.00'); await expect(study(page).getByRole('button', { name: 'Explore the passages', exact: true })).toBeFocused();
+  await study(page).getByRole('button', { name: 'Reveal interior', exact: true }).tap(); await site(page, 'gallery');
+  await study(page).getByRole('button', { name: 'Reveal interior', exact: true }).tap();
+  await expect(route(page)).toHaveCount(0); await expect(study(page).getByRole('button', { name: 'Reveal interior', exact: true })).toHaveAttribute('aria-pressed', 'false');
+  await expect(study(page).getByRole('button', { name: 'Explore the passages', exact: true })).toBeFocused();
+  await canvas(page).scrollIntoViewIfNeeded(); const restored = await scene(page);
+  expect(restored.scale).toBe(initial.scale); expect(restored.sectionVisible).toBe(false); expect(restored.guideVisible).toBe(false); desertVisible(restored);
+  save('pyramid-phone', { initial, restored, ...log }); expect(log.errors).toEqual([]); expect(log.external).toEqual([]);
+});
+
+test('notebook restores interior and exterior cameras while comparisons exclude the plateau and section', async ({ page }) => {
+  const log = await mount(page), book = page.getByRole('region', { name: 'Field notebook', exact: true });
+  await study(page).getByRole('button', { name: 'Inspect the granite chamber', exact: true }).click(); await site(page, 'king-chamber');
+  await setRange(page.getByRole('slider', { name: 'Inspection magnification', exact: true }), 17.5);
+  await page.getByRole('button', { name: 'Orbit left', exact: true }).click();
+  await book.getByRole('textbox', { name: 'What do you notice?', exact: true }).fill('Granite beams above the stone sarcophagus.');
+  await book.getByRole('button', { name: 'Save observation', exact: true }).click();
+  const saved = await page.evaluate(() => (window as any).__toolData._scaleExplorer.observations.find((note: any) => note.detailId === 'king-chamber'));
+  expect(saved).toMatchObject({ itemId: 'pyramid', detailId: 'king-chamber', size: 230, zoom: 17.5, cutaway: true, note: 'Granite beams above the stone sarcophagus.' });
+  await canvas(page).scrollIntoViewIfNeeded();
+  await expect.poll(async () => (await scene(page)).yaw).toBeCloseTo(saved.yaw, 4); await expect.poll(async () => (await scene(page)).pitch).toBeCloseTo(saved.pitch, 4);
+  const viewpoint = await scene(page);
+  await fly(page, 'sequoia'); desertHidden(await scene(page));
+  await book.locator('[data-observation="pyramid:king-chamber"]').getByRole('button', { name: /^Return to/ }).click();
+  await canvas(page).scrollIntoViewIfNeeded(); await site(page, 'king-chamber'); await expect(canvas(page)).toHaveAttribute('data-atlas-zoom', '17.50');
+  const returned = await scene(page); expect(returned.yaw).toBeCloseTo(saved.yaw, 4); expect(returned.pitch).toBeCloseTo(saved.pitch, 4);
+  await expect(study(page).getByRole('button', { name: 'Reveal interior', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(book.getByRole('textbox')).toHaveValue('Granite beams above the stone sarcophagus.');
+  await study(page).getByRole('button', { name: metadata.details[1].label, exact: true }).click(); await site(page, 'casing');
+  await setRange(page.getByRole('slider', { name: 'Inspection magnification', exact: true }), 10.2);
+  await page.getByRole('button', { name: 'Orbit right', exact: true }).click();
+  await book.getByRole('textbox', { name: 'What do you notice?', exact: true }).fill('Weathered core beside the smooth casing example.');
+  await book.getByRole('button', { name: 'Save observation', exact: true }).click();
+  const casing = await page.evaluate(() => (window as any).__toolData._scaleExplorer.observations.find((note: any) => note.detailId === 'casing'));
+  expect(casing).toMatchObject({ itemId: 'pyramid', detailId: 'casing', size: 230, zoom: 10.2, cutaway: false, note: 'Weathered core beside the smooth casing example.' });
+  await fly(page, 'blue-whale'); desertHidden(await scene(page));
+  await book.locator('[data-observation="pyramid:casing"]').getByRole('button', { name: /^Return to/ }).click();
+  await canvas(page).scrollIntoViewIfNeeded(); await site(page, 'casing'); await expect(canvas(page)).toHaveAttribute('data-atlas-zoom', '10.20');
+  const returnedCasing = await scene(page); expect(returnedCasing.yaw).toBeCloseTo(casing.yaw, 4); expect(returnedCasing.pitch).toBeCloseTo(casing.pitch, 4);
+  await expect(study(page).getByRole('button', { name: 'Reveal interior', exact: true })).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.locator('.sx-details').getByRole('link', { name: 'Read the science source', exact: true })).toHaveAttribute('href', /^https:\/\//);
+  await book.locator('[data-observation="pyramid:king-chamber"]').getByRole('button', { name: /^Return to/ }).click();
+  await canvas(page).scrollIntoViewIfNeeded(); await site(page, 'king-chamber');
+  const panel = page.locator('.sx-comparison-workbench');
+  if (await panel.getAttribute('open') === null) await panel.locator(':scope > summary').click();
+  await panel.getByRole('combobox', { name: 'First thing', exact: true }).selectOption('pyramid');
+  await panel.getByRole('combobox', { name: 'Second thing', exact: true }).selectOption('human');
+  await panel.getByRole('button', { name: 'Compare them', exact: true }).click();
+  await expect(canvas(page)).toHaveAttribute('data-atlas-comparison', 'pyramid:human');
+  await expect(route(page)).toHaveCount(0); await expect(study(page)).toHaveCount(0);
+  const compared = await scene(page); desertHidden(compared);
+  expect(compared.sectionVisible).toBe(false); expect(compared.guideVisible).toBe(false); expect(compared.detail).toBe('');
+  expect(compared.referenceWidth).toBeCloseTo(1, 8); expect(compared.comparisonRatio).toBeCloseTo(230 / 1.7, 8);
+  expect(compared.comparisonGroundError).toBeLessThan(.0001);
+  await capture(page, 'pyramid-human-comparison');
+  save('pyramid-notebook', { saved, viewpoint, returned, casing, returnedCasing, compared, ...log });
+  expect(log.errors).toEqual([]); expect(log.external).toEqual([]);
+});

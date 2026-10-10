@@ -1,0 +1,15 @@
+{
+  "directory": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-2\\scale-water\\final-science-e7e0acd6ee8a",
+  "manifestSha256": "bf8ba59171b1580999992917be91a5f1ccb8aad4984ac3cf326fe7cd80f3b777",
+  "candidateSourceSha256": "e7e0acd6ee8a59fdffb59a63849660e0f154fda0820c4bdf129cee2fcadf87ca",
+  "rendererSha256": "6152d8afe782118ff0669999217d54d307f60852dde9e7eb371e9760ec7ed77c",
+  "metadataSha256": "b3dcc7d3f8055cf588e80f83e6a3c855f910295a404b3f31f0867776e0ca7322",
+  "scienceDataSha256": "f296f6bcc14790c642faa5825acf87cc8a5ce475b770f0b1186ed03f93935580",
+  "files": 25,
+  "bytes": 47595246,
+  "failureCount": 0,
+  "failures": [],
+  "oldArchivesPreserved": true,
+  "previousArchives": [],
+  "copiedFileHashesVerified": true
+}

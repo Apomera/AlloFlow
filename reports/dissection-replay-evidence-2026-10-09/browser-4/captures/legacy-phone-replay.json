@@ -1,0 +1,39 @@
+{
+  "records": [
+    {
+      "text": "STEP 1/1 · INCISED",
+      "font": "bold 10px Inter, system-ui",
+      "x": 88.63568997383118,
+      "y": 382.9698954820633,
+      "end": 177.26850588839153,
+      "width": 500,
+      "height": 600
+    },
+    {
+      "text": "PRESSURE NOT RECORDED",
+      "font": "bold 10px Inter, system-ui",
+      "x": 88.63568997383118,
+      "y": 394.86146342754364,
+      "end": 215.5302261124162,
+      "width": 500,
+      "height": 600
+    },
+    {
+      "text": "TEACHING PATH",
+      "font": "bold 10px Inter, system-ui",
+      "x": 88.63568997383118,
+      "y": 408.7349593639374,
+      "end": 167.0829586209955,
+      "width": 500,
+      "height": 600
+    }
+  ],
+  "savedStatePreserved": true,
+  "replayActions": [
+    {
+      "action": "scalpel",
+      "label": "Incised",
+      "at": 0
+    }
+  ]
+}

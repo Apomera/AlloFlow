@@ -175,16 +175,66 @@ test('real WebGL consumes the same ballistic samples, draws dust pixels and reta
   await mount(page, seed(), true); await expect(page.locator('[data-descent-canvas]')).toHaveAttribute('data-descent3d', 'on');
   await pilotToDust(page); const held = await state(page), picture = await dust(page);
   const projected = await page.evaluate(() => {
-    const w = (window as any).__dustGL, g = w.dust.geometry, n = g.drawRange.count;
-    return { count: n, positions: Array.from(g.attributes.position.array.slice(0, n * 3)), opacity: Array.from(g.attributes.opacity.array.slice(0, n)) };
+    const w = (window as any).__dustGL, g = w.dust.geometry, n = g.drawRange.count, T = (window as any).THREE;
+    const terrain = w.scene.getObjectByName('moon-descent-terrain'), rows = w.dust.userData.terrainDustFrame;
+    if (!terrain || !Array.isArray(rows)) throw Error('Native terrain dust frame is unavailable');
+    const surface = terrain.geometry, positions = surface.attributes.position, indices = surface.index;
+    const columns = surface.parameters.widthSegments + 1, segments = columns - 1;
+    const xs = Array.from({ length: columns }, (_, i) => positions.getX(i));
+    const zs = Array.from({ length: surface.parameters.heightSegments + 1 }, (_, i) => positions.getZ(i * columns));
+    const ray = new T.Ray(), a = new T.Vector3(), b = new T.Vector3(), c = new T.Vector3(), hit = new T.Vector3();
+    function cell(axis: number[], value: number) {
+      if (value < axis[0] || value > axis[axis.length - 1]) throw Error('Drawn dust left the indexed terrain');
+      let lo = 0, hi = axis.length - 2;
+      while (lo < hi) { const mid = Math.ceil((lo + hi) / 2); if (axis[mid] <= value) lo = mid; else hi = mid - 1; }
+      return lo;
+    }
+    const gaps: number[] = [];
+    function gap(point: any) {
+      const col = cell(xs, point.x), row = cell(zs, point.z); let height: number | null = null;
+      ray.origin.set(point.x, 10000, point.z); ray.direction.set(0, -1, 0);
+      for (let face = 0; face < 2; face++) {
+        const offset = (row * segments + col) * 6 + face * 3;
+        a.fromBufferAttribute(positions, indices.getX(offset)); b.fromBufferAttribute(positions, indices.getX(offset + 1));
+        c.fromBufferAttribute(positions, indices.getX(offset + 2));
+        if (ray.intersectTriangle(a, b, c, false, hit)) height = height === null ? hit.y : Math.max(height, hit.y);
+      }
+      if (height === null) throw Error('No indexed terrain face below a drawn dust point');
+      return point.y - height;
+    }
+    rows.forEach((row: any) => {
+      row.trail.forEach((point: any) => gaps.push(gap(point)));
+      for (let i = 1; i < row.trail.length; i++) {
+        const a = row.trail[i - 1], b = row.trail[i];
+        for (const t of [.25, .5, .75]) gaps.push(gap({
+          x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, z: a.z + (b.z - a.z) * t,
+        }));
+      }
+    });
+    return { count: n, capacity: g.attributes.position.count,
+      positions: Array.from(g.attributes.position.array.slice(0, n * 3)),
+      opacity: Array.from(g.attributes.opacity.array.slice(0, n)), rows, gaps,
+      mode: w.dust.userData.terrainDustMode, time: w.dust.userData.terrainDustTime,
+      ground: terrain.position.toArray(), frozen: Object.isFrozen(rows) && rows.every((row: any) =>
+        Object.isFrozen(row) && Object.isFrozen(row.trail) && row.trail.every(Object.isFrozen)) };
   });
-  expect(projected.count).toBe(picture.grains.length * 2);
-  picture.grains.forEach((p, i) => {
-    const head = (i * 2 + 1) * 3, tail = i * 2 * 3;
-    expect(projected.positions[head]).toBeCloseTo((p.x - held.x) * .6, 4); expect(projected.positions[head + 2]).toBeCloseTo(p.z * .6, 4);
-    expect(projected.positions[tail]).toBeCloseTo((p.tailX - held.x) * .6, 4);
-    expect(projected.positions[head + 1] - projected.positions[tail + 1]).toBeCloseTo((p.height - p.tailHeight) * .6, 4);
-    expect(projected.opacity[i * 2]).toBeCloseTo(p.opacity, 6); expect(projected.opacity[i * 2 + 1]).toBeCloseTo(p.opacity, 6);
+  expect(projected.mode).toBe('mesh-triangles'); expect(projected.time).toBe(picture.time);
+  expect(projected.frozen).toBe(true); expect(projected.rows.length).toBeGreaterThan(0);
+  expect(projected.count).toBe(projected.rows.reduce((sum, row) => sum + (row.trail.length - 1) * 2, 0));
+  expect(projected.count).toBeLessThanOrEqual(projected.capacity);
+  expect(projected.gaps.every(gap => gap >= -1e-4)).toBe(true);
+  let vertex = 0;
+  projected.rows.forEach(row => {
+    expect(row.age).toBeGreaterThanOrEqual(0); expect(row.age).toBeLessThan(row.life);
+    expect(row.trail.length).toBeGreaterThanOrEqual(2); expect(row.trail.length - 1).toBeLessThanOrEqual(16);
+    expect(['impact', 'mesh-exit', 'display-limit']).toContain(row.endKind);
+    for (let i = 1; i < row.trail.length; i++) for (const point of [row.trail[i - 1], row.trail[i]]) {
+      const offset = vertex * 3;
+      expect(projected.positions[offset]).toBeCloseTo(point.x + projected.ground[0], 4);
+      expect(projected.positions[offset + 1]).toBeCloseTo(point.y + projected.ground[1], 4);
+      expect(projected.positions[offset + 2]).toBeCloseTo(point.z + projected.ground[2], 4);
+      expect(projected.opacity[vertex]).toBeCloseTo(row.opacity, 6); vertex++;
+    }
   });
   await capture(page, info, 'webgl-ballistic-dust');
   const pixels = await page.evaluate(() => {

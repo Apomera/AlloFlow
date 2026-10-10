@@ -1,0 +1,31 @@
+{
+  "start": "2026-10-09T21:58:41.600Z",
+  "runnerPid": 37216,
+  "jobs": [
+    {
+      "mode": "unit-practical",
+      "label": "unit-practical-9",
+      "code": 0,
+      "start": "2026-10-09T21:58:41.619Z",
+      "end": "2026-10-09T21:59:21.017Z"
+    },
+    {
+      "mode": "unit-axe",
+      "label": "unit-axe-9",
+      "code": 0,
+      "start": "2026-10-09T21:59:21.275Z",
+      "end": "2026-10-09T22:00:18.387Z"
+    },
+    {
+      "mode": "roadmap",
+      "label": "roadmap-9",
+      "code": 3221226505,
+      "start": "2026-10-09T22:00:18.501Z",
+      "end": "2026-10-09T22:00:24.254Z"
+    }
+  ],
+  "running": null,
+  "success": false,
+  "error": "roadmap-9 failed",
+  "end": "2026-10-09T22:00:24.292Z"
+}

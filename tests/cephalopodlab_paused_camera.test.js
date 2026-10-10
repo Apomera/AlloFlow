@@ -2,11 +2,11 @@ import {afterEach,describe,it} from 'vitest';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
-const require=createRequire(import.meta.url),T=require('../vendor/three-r128/three.min.js'),{restorePass42CameraSource}=require('./helpers/cephalopod_pass42_reference.cjs'),source=readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE||'stem_lab/stem_tool_cephalopodlab.js','utf8'),prior=source.includes('function updateDiveCamera(dt,snap)')?restorePass42CameraSource(source):source,owned=[];
+const require=createRequire(import.meta.url),T=require('../vendor/three-r128/three.min.js'),{restorePass42CameraSource}=require('./helpers/cephalopod_pass42_reference.cjs'),source=readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE||'stem_lab/stem_tool_cephalopodlab.js','utf8'),prior=source.includes('function updateDiveCamera(dt,snap)')?restorePass42CameraSource(require('./helpers/cephalopod_pass54_reference.cjs').restorePass54Source(source)):source,owned=[];
 function fixture(text=source){
-  const a=text.indexOf('        function updateDiveCamera('),b=text.indexOf('        function preyCandidates()',a),update=text.slice(a,b),cycle=text.match(/function cycleCamera\(\)\{[^\n]*\}/)[0];assert.ok(a>=0&&b>a);
+  const a=text.indexOf('        function updateDiveCamera('),b=text.indexOf('        function preyCandidates()',a),helpers=text.includes('var huntCameraFrame=')?text.slice(text.indexOf('        var huntCameraFrame='),a):'',update=helpers+text.slice(a,b),cycle=text.match(/function cycleCamera\(\)\{[^\n]*\}/)[0];assert.ok(a>=0&&b>a);
   const context=[
-    "const gameState={paused:true,cameraMode:0,facingAngle:0,a11y:{reducedMotion:false},strikeReadyAt:1900},gameNow=1234,pendingStrike={at:1700,target:{alive:true}},octopus=new THREE.Group(),camera=new THREE.PerspectiveCamera(48,1.3,.1,100),targetHalo=new THREE.Mesh(new THREE.BufferGeometry(),new THREE.MeshBasicMaterial()),cameraRay=new THREE.Raycaster(),rocks=[],inspection={active:false,snapCamera:true,yaw:.4,pitch:.3,distance:5,center:new THREE.Vector3(0,2,0)},anatomyLabels=[];",
+    "const bodyScale=1,selectedPrey=null,octopusStrikeVisual=null,squidStrikeVisual=null,viewButton={textContent:'',title:''};const gameState={paused:true,cameraMode:0,facingAngle:0,a11y:{reducedMotion:false},strikeReadyAt:1900},gameNow=1234,pendingStrike={at:1700,target:{alive:true}},octopus=new THREE.Group(),camera=new THREE.PerspectiveCamera(48,1.3,.1,100),targetHalo=new THREE.Mesh(new THREE.BufferGeometry(),new THREE.MeshBasicMaterial()),cameraRay=new THREE.Raycaster(),rocks=[],inspection={active:false,snapCamera:true,yaw:.4,pitch:.3,distance:5,center:new THREE.Vector3(0,2,0)},anatomyLabels=[];",
     "octopus.position.set(0,2,0);camera.position.set(0,4,-4.6);camera.lookAt(0,2.15,0);camera.updateMatrixWorld();let ground=0,focus=0,occlusions=0;const announcements=[],canvasEl={focus(){focus++;},getBoundingClientRect(){return{left:0,top:0,width:800,height:600};}},inspectionPanel={getBoundingClientRect(){return{left:0,top:0};}},inspectionTitle={getBoundingClientRect(){return{bottom:10};}},inspectionTools={getBoundingClientRect(){return{top:580};}},terrainHeight=()=>ground,updateInspectionOcclusion=()=>{occlusions++;},layoutCLAnatomyLabels=()=>[],clAnnounce=text=>announcements.push(text);"
   ].join('\n');
   return new Function('THREE',context+'\n'+update+'\n'+cycle+'\nreturn{gameState,octopus,camera,targetHalo,rocks,inspection,pendingStrike,cycle:cycleCamera,update:updateDiveCamera,setGround(n){ground=n;},clock(){return gameNow;},get focus(){return focus;},announcements,get occlusions(){return occlusions;}};')(T);
@@ -14,9 +14,10 @@ function fixture(text=source){
 const snapshot=f=>({position:f.camera.position.toArray(),quaternion:f.camera.quaternion.toArray(),inspectionSnap:f.inspection.snapCamera}),near=(a,b)=>assert.ok(a.distanceTo(b)<1e-9,JSON.stringify([a.toArray(),b.toArray()]));
 afterEach(()=>{for(const o of owned.splice(0)){o.geometry.dispose();o.material.dispose();}});
 describe('Paused dive camera presentation',()=>{
-  it('switches all three paused views immediately and billboards the existing target without advancing gameplay',()=>{
+  it('retains the original three paused view positions immediately and billboards the existing target without advancing gameplay',()=>{
     const f=fixture(),pending=f.pendingStrike,actor=f.octopus.position.clone();
-    for(const [name,point]of [['Side view',[-4.6,4.35,0]],['Tactical view',[0,11.15,-3]],['Follow view',[0,4.35,-4.6]]]){
+    for(const [mode,name,point]of [[0,'Side view',[-4.6,4.35,0]],[1,'Tactical view',[0,11.15,-3]],[3,'Follow view',[0,4.35,-4.6]]]){
+      f.gameState.cameraMode=mode;
       f.cycle();near(f.camera.position,new T.Vector3(...point));assert.ok(Math.abs(f.camera.quaternion.dot(f.targetHalo.quaternion))>1-1e-12);assert.equal(f.announcements.at(-1),name);near(f.octopus.position,actor);assert.equal(f.clock(),1234);assert.equal(f.pendingStrike,pending);assert.equal(pending.at,1700);assert.equal(f.gameState.strikeReadyAt,1900);assert.equal(f.inspection.snapCamera,true);
     }assert.equal(f.focus,3);
   });

@@ -1,0 +1,119 @@
+{
+  "events": [
+    {
+      "type": "loadedmetadata",
+      "id": 0,
+      "label": "word:corn",
+      "at": 2011.2999999821186,
+      "position": 0,
+      "duration": 0.606
+    },
+    {
+      "type": "play",
+      "id": 1,
+      "label": "instruction:inst_counting",
+      "at": 2822.899999976158,
+      "position": 0,
+      "duration": null
+    },
+    {
+      "type": "loadedmetadata",
+      "id": 1,
+      "label": "instruction:inst_counting",
+      "at": 2838.899999976158,
+      "position": 0,
+      "duration": 2.330647
+    },
+    {
+      "type": "playing",
+      "id": 1,
+      "label": "instruction:inst_counting",
+      "at": 2885.2999999821186,
+      "position": 0,
+      "duration": 2.330647
+    },
+    {
+      "type": "pause",
+      "id": 1,
+      "label": "instruction:inst_counting",
+      "at": 5418.399999976158,
+      "position": 2.330647,
+      "duration": 2.330647
+    },
+    {
+      "type": "ended",
+      "id": 1,
+      "label": "instruction:inst_counting",
+      "at": 5419.399999976158,
+      "position": 2.330647,
+      "duration": 2.330647
+    },
+    {
+      "type": "play",
+      "id": 0,
+      "label": "word:corn",
+      "at": 5840.399999976158,
+      "position": 0,
+      "duration": 0.606
+    },
+    {
+      "type": "playing",
+      "id": 0,
+      "label": "word:corn",
+      "at": 5840.5999999940395,
+      "position": 0,
+      "duration": 0.606
+    },
+    {
+      "type": "pause",
+      "id": 0,
+      "label": "word:corn",
+      "at": 6506.0999999940395,
+      "position": 0.606,
+      "duration": 0.606
+    },
+    {
+      "type": "ended",
+      "id": 0,
+      "label": "word:corn",
+      "at": 6506.199999988079,
+      "position": 0.606,
+      "duration": 0.606
+    },
+    {
+      "type": "play",
+      "id": 0,
+      "label": "word:corn",
+      "at": 6709.5999999940395,
+      "position": 0,
+      "duration": 0.606
+    },
+    {
+      "type": "playing",
+      "id": 0,
+      "label": "word:corn",
+      "at": 6714.799999982119,
+      "position": 0,
+      "duration": 0.606
+    },
+    {
+      "type": "pause",
+      "id": 0,
+      "label": "word:corn",
+      "at": 7389.5,
+      "position": 0.606,
+      "duration": 0.606
+    },
+    {
+      "type": "ended",
+      "id": 0,
+      "label": "word:corn",
+      "at": 7389.5999999940395,
+      "position": 0.606,
+      "duration": 0.606
+    }
+  ],
+  "overlaps": [],
+  "synthesis": [],
+  "pageErrors": []
+}

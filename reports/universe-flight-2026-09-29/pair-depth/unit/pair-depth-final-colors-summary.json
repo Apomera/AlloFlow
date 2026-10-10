@@ -1,0 +1,19 @@
+{
+  "exitCode": 0,
+  "tests": 9,
+  "passed": 9,
+  "failed": 0,
+  "before": {
+    "renderer": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7",
+    "ui": "71ae3be563ac26756fadfe303ddf4df350ed01d965614f8726fb29d6305b51ff",
+    "pairTest": "fe0f2c13842c2f8549224139844e48f9bb01d12162ec1fda52bfd2f89af788bb",
+    "inspectorTest": "724cc1d44e96c3476e1ee4c7e8b102a62b928ec2541f9f970a16ab807717b9dd"
+  },
+  "after": {
+    "renderer": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7",
+    "ui": "71ae3be563ac26756fadfe303ddf4df350ed01d965614f8726fb29d6305b51ff",
+    "pairTest": "fe0f2c13842c2f8549224139844e48f9bb01d12162ec1fda52bfd2f89af788bb",
+    "inspectorTest": "724cc1d44e96c3476e1ee4c7e8b102a62b928ec2541f9f970a16ab807717b9dd"
+  },
+  "unchanged": true
+}

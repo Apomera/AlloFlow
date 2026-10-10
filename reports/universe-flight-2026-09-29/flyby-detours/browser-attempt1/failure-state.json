@@ -1,0 +1,149 @@
+{
+  "snapshot": {
+    "version": 1,
+    "settings": {
+      "mode": "explore",
+      "region": "galaxy",
+      "beta": 0.9,
+      "compareRest": false,
+      "fov": 10,
+      "exposure": 1,
+      "quality": "auto"
+    },
+    "state": {
+      "position": [
+        40253.415894648264,
+        5223.76900351209,
+        -8419.07075414125
+      ],
+      "yaw": 4.896343303996947,
+      "pitch": 0.07903788497987514,
+      "distanceLy": 31186.58399154746,
+      "universeYears": 0,
+      "travelerYears": 0
+    },
+    "targetId": "inner-arm"
+  },
+  "info": {
+    "distanceLy": 31186.58399154746,
+    "universeYears": 0,
+    "travelerYears": 0,
+    "position": [
+      40253.415894648264,
+      5223.76900351209,
+      -8419.07075414125
+    ],
+    "yaw": 4.896343303996947,
+    "pitch": 0.07903788497987514,
+    "running": false,
+    "target": {
+      "id": "inner-arm",
+      "name": "Inner spiral arm",
+      "distanceLy": 60745.910713899204,
+      "coincident": false,
+      "guide": {
+        "screen": [
+          0.16460652765569267,
+          0.49686617615257894
+        ],
+        "inView": true,
+        "angleDeg": 6.722739372314532,
+        "behind": false,
+        "sector": "left",
+        "arrowDeg": -179.7334630189603,
+        "edge": [
+          0.09999999999999998,
+          0.4962625106260817
+        ]
+      },
+      "screen": [
+        0.16460652765569267,
+        0.49686617615257894
+      ],
+      "inView": true,
+      "doppler": 1,
+      "restAngleDeg": 86.21587840283395,
+      "apparentAngleDeg": 86.21587840283395
+    },
+    "navigation": {
+      "active": false,
+      "targetId": null,
+      "completed": false,
+      "alreadyWithin": false,
+      "remainingLy": 0,
+      "arrivalRadiusLy": 0,
+      "estimatedSeconds": 0,
+      "progress": 0
+    },
+    "flyby": {
+      "active": false,
+      "completed": false,
+      "id": null,
+      "name": null,
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "durationSeconds": 0,
+      "autoLook": false,
+      "phase": null,
+      "rate": 0.5,
+      "pauseAtHighlights": true,
+      "remainingPlaybackSeconds": null
+    },
+    "flybyDetour": {
+      "active": true,
+      "id": "disk",
+      "name": "Spiral disk passage",
+      "elapsedSeconds": 10,
+      "durationSeconds": 44,
+      "targetId": "inner-arm"
+    },
+    "distanceGlide": {
+      "active": false,
+      "completed": false,
+      "targetId": null,
+      "direction": null,
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "durationSeconds": 3,
+      "startRangeLy": 0,
+      "endRangeLy": 0
+    },
+    "viewpointGlide": {
+      "active": false,
+      "completed": false,
+      "targetId": null,
+      "direction": null,
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "durationSeconds": 3,
+      "rangeLy": 0,
+      "distanceLy": 0
+    },
+    "orbit": {
+      "active": false,
+      "targetId": null
+    },
+    "motion": {
+      "smoothTravel": true,
+      "paceLyPerSecond": 0,
+      "targetLyPerSecond": 290.0124819770266,
+      "kind": "free"
+    },
+    "framing": {
+      "canLeft": true,
+      "canCenter": true,
+      "canRight": true,
+      "canUndo": false,
+      "placement": null
+    },
+    "trail": [
+      [
+        40253.415894648264,
+        5223.76900351209,
+        -8419.07075414125
+      ]
+    ],
+    "cameraMoves": 0
+  },
+  "text": "Universe Explorer\n13.8 billion years of cosmic history\n🌍 Present Day⭐ 25 RP\n\nA JOURNEY THROUGH COSMIC TIME\n\nHow did the universe become what we see today?\n\nChoose an epoch, notice what changes, then explain it using evidence. Start with the timeline or follow a guided investigation.\n\nObserve\nTravel through time\nExplain\nInvestigate the evidence\nExplore\nFind a topic or practice\nDark appearance\nHow to use this tool\n\nSPACE, AT YOUR PACE\n\nTake the controls. Explore the universe.\n\nFly between stars, pull back to a galaxy, or stop and look around. Explore freely, then try Einstein’s thought experiment.\n\nClose flight explorer\nFree exploration\nEinstein’s light chase\nFreely moving camera · accelerated exploration\nTake a scenic flight\n\nScenic camera journeys with an automatic pause at the end. Starts a fresh journey; pause and look around any time.\n\nStellar close pass\nSweep beside three stars, inspect their surfaces, and look back across the glowing clouds\n46 seconds at standard pace\nDive toward the spiral\nArms, stars, and the central bulge\nAbout 20 seconds\nDrift between stars\nNearby clusters and glowing clouds\nAbout 20 seconds\nApproach an island galaxy\nA galaxy grows against the distant group\nAbout 20 seconds\nHalo flyby\nSkim an arm, pass the cluster, and reveal the spiral\n36 seconds at standard pace\nNebula passage\nSweep past blue filaments and turn toward the violet cloud\n40 seconds at standard pace\nGalaxy group flyby\nPass the spiral and golden elliptical, then reveal the group\n48 seconds at standard pace\nSpiral disk passage\nDescend through the star field, then emerge beyond the disk for a wide panorama\n44 seconds at standard pace\n\nPAUSED · LOOK AROUND\n+\nInner spiral arm\n\n60,745.91 ly · Paused\n\n×\nReturn to flyby · 10.0 s\n−\n10°\n+\nDetails\nApproach\nOrbit view\n281° heading · 5° pitch\n3D MODEL\nHide overlay\nFull screen\n↶\nYour flyby is waiting\n\nSpiral disk passage · 10.0 / 44 s\n\nExplore freely. Return restores this route moment, camera and lens, paused and ready to continue.\n\nReturn to flyby\nKeep exploring\n\nKeep exploring releases the return point. Your current view stays in place.\n\nStart travel\nReset position\nSave image\nCapture reference view\nPrevious position, lens and journey counters restored. Travel is paused.\nLook\nLeft\nForward\nRight\nBehind\nAbove\nBelow\n\nDrag the view or use the direction buttons. With the view focused: arrow keys look, Space starts or pauses, Escape pauses. Free exploration follows your gaze; the light chase travels on a fixed heading.\n\nCompose your view\nComposition grid\nLeft third\nCenter\nRight third\nUndo framing\n\nFraming pauses travel and ends a camera orbit. Your position, clocks, and lens stay fixed.\n\nPrecision camera · frame your view\n\nGenerated 3D scenery. Each scale is a separate scene; object sizes, colors, and brightness are illustrative.\n\nA DIFFERENT PERSPECTIVE\n\nScenic viewpoints\nJump to a paused view · resets journey counters\n01\nSpiral portrait\n65° field of view\n02\nAbove the arms\n60° field of view\n03\nAcross the disk\n80° field of view\n04\nHalo star cluster\n50° field of view\n05\nSpiral galaxy side view\n50° field of view\n\nEXPLORE WITH A ROUTE\n\nLandmark tour\n9 stops in this scene\n\nVisit the scene’s landmarks with a pause at every stop. Each leg prepares a pace near 45 seconds; you decide when to start or continue.\n\nStart landmark tour\n\nGET YOUR BEARINGS\n\nPlaces to explore\nGenerated landmarks\nGalactic center\nInner spiral arm\nOuter disk\nHalo cluster 1\nHalo cluster 2\nHalo cluster 3\nHalo cluster 4\nHalo cluster 5\nHalo cluster 6\nInner spiral arm\n\nA survey point within a spiral arm, where the disk has visible thickness and depth.\n\nDistance from camera\n60,745.91 ly\nFrom view center\n7°\nPlan your approach\nViewing distance\nDetail · nearest survey point\nBalanced · twice as far\nWide · four times as far\nStop from destination\n3,500 ly\nDistance to viewing point\n57,245.91 ly\nEstimated travel\n3.29 minutes of playback\nMatch pace to this trip\n\nThe estimate includes slowdown near arrival. Match pace aims for about 45 seconds of playback; scene speed limits still apply. Travel pauses when the view is off screen.\n\nCenter on destination\nOpen landmark inspector\nFly to destination\nOrbit destination\nLevel\nTilted\nOrbit pace · 3°/s\nReverse orbit direction\n\nOrbit keeps the destination centered at a fixed distance. Level keeps a steady height; Tilted rises and falls. It uses orbit pace. This is a camera move, not a gravitational orbit. Dragging or using Look ends the orbit and pauses.\n\nThe approach uses your camera speed, slows near the destination, and stops at a viewing distance. Looking around does not steer a guided approach.\n\nNAVIGATION\n\nExplore a scale\nStellar neighborhood\nSpiral galaxy\nGalaxy groups\nCamera travel speed\n290.01\nlight-years / playback second\nSlow survey\nFast traversal\nSmooth camera travel\nON\nCurrent camera pace\n0 ly/s\nPaused\n\nFree flight eases speed changes. Pause stops immediately. Guided approaches, flybys, and camera orbits use their own pace.\n\nThis speed moves the camera through the model. It does not represent a spacecraft’s velocity, so there is no relativistic distortion.\n\nPath traveled\n31,186.58 ly\nNavigation chart\nTop view · X/Z\nSide view · X/Y\n+Z ↑\n+X →\n20,000 ly\n1\n2\n3\n4\n5\n6\n7\n8\n9\n1. Galactic center\n2. Inner spiral arm\n3. Outer disk\n4. Halo cluster 1\n5. Halo cluster 2\n6. Halo cluster 3\n7. Halo cluster 4\n8. Halo cluster 5\n9. Halo cluster 6\n\nTriangle: your gaze. Teal line: recent path. Dashed line: selected destination. The chart fits the camera, landmarks, and recent path.\n\nStationary scene coordinates; one dimension is omitted.\n\nView settings\nSaved views and field notes · 0 / 12\nWhat is realistic in this simulation?\n⏳ Cosmic Timeline13.8 Gyr\nBig BangFuture\n\nEqual space per epoch, not equal time. Gyr = billion years; Myr = million years. Future is a possible scenario.\n\n▶ Play\nSpeed1x\nPlayback can be paused at any time.\nCOSMIC HISTORY · ILLUSTRATED\nStructure guides\nAll scenes: still\n← Previous epoch\nEpoch 8 / 9\nNext epoch →\n⛶\n13.8 Gyr\nPresent Day\n\nTeaching model • Colors, sizes, and motion are illustrative. This is not telescope footage or a view from outside the universe. Structure guides show illustrative matter halos and connections in later epochs.\n\nChoose an epoch\n\nNine chapters, from early light to possible futures.\n\n1 / 9 visited\n1\nThe Big Bang\nBig Bang\n2\nRecombination\n380 thousand years\n3\nThe Dark Ages\n1.0 Myr\n4\nFirst Stars (Cosmic Dawn)\n200 Myr\n5\nFirst Galaxies\n400 Myr\n6\nMilky Way assembly\n4.6 Gyr\n7\nOur Sun Is Born\n9.2 Gyr\n8\nPresent Day\n✓\n13.8 Gyr\n9\nThe Far Future\nFuture fate preview\n🌍\nPresent Day\n\n13.8 billion years after the Big Bang\n\nEpoch 8 of 9\n\nTHE BIG IDEA\n\nToday, observations let us reconstruct the past.\n\nCompare this structured scene with the early afterglow.\n\nPAUSE & EXPLAIN\n\nHow can astronomers study the past without traveling back in time?\n\nWrite my explanation\nCompare with an explanation\nCompare two epochs\nWords for this idea\nRead the science: events, scale & key facts\nInvestigate the evidence\nGuided missions, real observations & your notebook\nResearch challenges\n2 earned · 25 research points\n🧭 Explore 36 topicsChoose a topic below\nCollapse all\nSearch topics\n✦ All 36⭐ Stars 6🌌 Galaxies & Structure 6🌀 Cosmology 8🔭 Observing 6👽 Big Questions 6🧠 Practice 4\nStar Lifecycle\nStars\nHR Diagram\nStars\nDistance Ladder\nCosmology\nDark Energy & Matter\nCosmology\nWhat If?\nBig Questions\nElement Origins\nCosmology\nCosmic Structure\nGalaxies & Structure\nTelescopes\nObserving\nCosmic Quiz\nPractice\nBig Numbers\nCosmology\nCosmic Calendar\nCosmology\nGalaxy Types\nGalaxies & Structure\nBlack Holes\nGalaxies & Structure\nDrake Equation\nBig Questions\nHubble & Expansion\nCosmology\nSupernovae\nStars\nAstronomers\nObserving\nObservable Universe\nGalaxies & Structure\nExoplanets\nBig Questions\nSpace Missions\nObserving\nFermi Paradox\nBig Questions\nGravitational Lensing\nGalaxies & Structure\nOpen Mysteries\nBig Questions\nMultiverse\nCosmology\nRedshift & Blueshift\nCosmology\nStellar Nurseries\nStars\nPlanetary Nebulae\nStars\nCatastrophes\nBig Questions\nEM Spectrum\nObserving\nPowers of Ten\nGalaxies & Structure\nSpectral Classes\nStars\nGravity Calculator\nPractice\nFamous Images\nObserving\nCosmic Speeds\nPractice\nCitizen Science\nObserving\nGlossary\nPractice\n🧑‍🚀 AI Cosmos Tutor\nAsk\nWhat is dark energy?How do black holes form?What is the CMB?Will the universe end?\n🧾 Your sessionHere is what you covered.\n\nTopics opened\n\n0 / 36\n\n0% of the library\n\nEpochs visited\n\n1 / 9\n\nof cosmic history\n\nChallenges\n\n2 / 43\n\n25 RP earned\n\nBest quiz\n\n—\n\nnot attempted\n\n36 topics still unopened — try one of these next\n\n+ Star Lifecycle+ Black Holes+ Redshift & Blueshift\n↺ Reset my progress\n☀️ Dark Mode🌠 Epochs visited: 1/9\n📸 Snapshot"
+}

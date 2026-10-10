@@ -1,0 +1,12 @@
+{
+  "sourceSHA256": "9f074c7fff26b8ec9ac78732af7ae762dffa90a3b3e00e1d191ca50413402b2e",
+  "desktopSHA256": "9f074c7fff26b8ec9ac78732af7ae762dffa90a3b3e00e1d191ca50413402b2e",
+  "baselineSHA256": "e1cd854e04d31aa3e04cc1d46631b3d9a2f48f774e8ce70e3c8605947af70c1c",
+  "compile": true,
+  "catalogParity": true,
+  "englishKeys": 577,
+  "baselineSceneCases": 84,
+  "engineAPIUnchanged": true,
+  "baselineMetadataUnchanged": true,
+  "baselineModelsAndMeasurementsUnchanged": true
+}

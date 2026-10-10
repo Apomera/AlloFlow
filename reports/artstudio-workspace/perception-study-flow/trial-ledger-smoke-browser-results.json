@@ -1,0 +1,29 @@
+{
+  "checks": [
+    {
+      "savedExperiment": "brightness",
+      "exactPersistedStartsMatchesSignedDifferences": true,
+      "positiveZeroNegativeDeltas": true,
+      "explicitHeaderAssociations": true,
+      "noWrites": true
+    },
+    {
+      "savedExperiment": "ebbinghaus",
+      "exactPersistedStartsMatchesSignedDifferences": true,
+      "positiveZeroNegativeDeltas": true,
+      "explicitHeaderAssociations": true,
+      "noWrites": true
+    },
+    {
+      "savedExperiment": "mullerLyer",
+      "exactPersistedStartsMatchesSignedDifferences": true,
+      "positiveZeroNegativeDeltas": true,
+      "explicitHeaderAssociations": true,
+      "noWrites": true
+    }
+  ],
+  "errors": [],
+  "sourceSHA256": "e1cd854e04d31aa3e04cc1d46631b3d9a2f48f774e8ce70e3c8605947af70c1c",
+  "loadedSourceSHA256": "e1cd854e04d31aa3e04cc1d46631b3d9a2f48f774e8ce70e3c8605947af70c1c",
+  "finalSourceSHA256": "e1cd854e04d31aa3e04cc1d46631b3d9a2f48f774e8ce70e3c8605947af70c1c"
+}

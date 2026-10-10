@@ -1,0 +1,4130 @@
+{
+  "passed": true,
+  "expectedHash": "9a31c9d2107ccaf74c578e3423958d5066915cd0dcd8b42b9fb5dc6442a56ed9",
+  "root": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "startHashes": {
+    "stem_lab/stem_tool_watercycle.js": "9a31c9d2107ccaf74c578e3423958d5066915cd0dcd8b42b9fb5dc6442a56ed9",
+    "desktop/web-app/public/stem_lab/stem_tool_watercycle.js": "9a31c9d2107ccaf74c578e3423958d5066915cd0dcd8b42b9fb5dc6442a56ed9"
+  },
+  "cases": [
+    {
+      "name": "near-cloud-end",
+      "input": [
+        -1,
+        25,
+        35
+      ],
+      "expected": {
+        "temps": [
+          -1,
+          25,
+          35
+        ],
+        "crossings": [
+          0.021153846153846155
+        ],
+        "touches": [],
+        "bands": []
+      },
+      "actual": {
+        "attrs": {
+          "class": "wc-precip-profile-editor wc-air-profile",
+          "data-temperature-profile-editor": "three-point",
+          "data-air-crossings": "1",
+          "data-air-touches": "0"
+        },
+        "text": "Read the air column\nCloud ↓ surface\nCloud\n-1°C\nMiddle\n+25°C\nSurface\n+35°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n1\n\nAir crosses 0°C once (warming).\n\n1\nInto warmer air: below 0°C to above 0°C.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nCompare air with particle state",
+        "svg": "0 0 260 208",
+        "crossings": [
+          {
+            "attrs": {
+              "class": "wc-profile-crossing-point",
+              "cx": "143",
+              "cy": "40.96153846153846",
+              "r": "3.5"
+            },
+            "parent": {
+              "data-air-crossing": "warming",
+              "data-air-crossing-progress": "0.021153846153846155"
+            },
+            "cx": 143,
+            "cy": 40.96153846153846
+          }
+        ],
+        "ariaLabel": "Cloud base: -1°C, Middle atmosphere: +25°C, Surface: +35°C. Air crosses 0°C once (warming). Horizontal axis: air temperature. Vertical positions are schematic.",
+        "points": [
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "0",
+              "cx": "140.57142857142856",
+              "cy": "38",
+              "r": "4"
+            },
+            "cx": 140.57142857142856,
+            "cy": 38
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "1",
+              "cx": "203.7142857142857",
+              "cy": "115",
+              "r": "4"
+            },
+            "cx": 203.7142857142857,
+            "cy": 115
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "2",
+              "cx": "228",
+              "cy": "178",
+              "r": "4"
+            },
+            "cx": 228,
+            "cy": 178
+          }
+        ],
+        "badges": [
+          {
+            "attrs": {
+              "class": "wc-air-crossing-badge",
+              "data-air-badge": "0",
+              "cx": "246",
+              "cy": "46",
+              "r": "8"
+            },
+            "bbox": null,
+            "text": ""
+          }
+        ],
+        "leaders": [
+          {
+            "class": "wc-air-crossing-leader",
+            "d": "M147 40.96153846153846H230L238 46"
+          }
+        ],
+        "readouts": [
+          {
+            "attrs": {
+              "data-air-level": "0"
+            },
+            "text": "Cloud\n-1°C",
+            "value": "-1°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "1"
+            },
+            "text": "Middle\n+25°C",
+            "value": "+25°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "2"
+            },
+            "text": "Surface\n+35°C",
+            "value": "+35°C"
+          }
+        ],
+        "touches": [],
+        "zeroBands": []
+      }
+    },
+    {
+      "name": "near-surface-end",
+      "input": [
+        5,
+        5,
+        -0.1
+      ],
+      "expected": {
+        "temps": [
+          5,
+          5,
+          -0.1
+        ],
+        "crossings": [
+          0.9911764705882353
+        ],
+        "touches": [],
+        "bands": []
+      },
+      "actual": {
+        "attrs": {
+          "class": "wc-precip-profile-editor wc-air-profile",
+          "data-temperature-profile-editor": "three-point",
+          "data-air-crossings": "1",
+          "data-air-touches": "0"
+        },
+        "text": "Read the air column\nCloud ↓ surface\nCloud\n+5°C\nMiddle\n+5°C\nSurface\n-0.1°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n1\n\nAir crosses 0°C once (cooling).\n\nShaded lower band: below-freezing air before arrival.\n\n1\nInto colder air: above 0°C to below 0°C.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nModeled arrival: supercooled liquid. The drop reaches a cold surface as liquid, where it can form an ice coating.\n\nCompare air with particle state",
+        "svg": "0 0 260 208",
+        "crossings": [
+          {
+            "attrs": {
+              "class": "wc-profile-crossing-point",
+              "cx": "143",
+              "cy": "176.76470588235296",
+              "r": "3.5"
+            },
+            "parent": {
+              "data-air-crossing": "cooling",
+              "data-air-crossing-progress": "0.9911764705882353"
+            },
+            "cx": 143,
+            "cy": 176.76470588235296
+          }
+        ],
+        "ariaLabel": "Cloud base: +5°C, Middle atmosphere: +5°C, Surface: -0.1°C. Air crosses 0°C once (cooling). Horizontal axis: air temperature. Vertical positions are schematic.",
+        "points": [
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "0",
+              "cx": "155.14285714285714",
+              "cy": "38",
+              "r": "4"
+            },
+            "cx": 155.14285714285714,
+            "cy": 38
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "1",
+              "cx": "155.14285714285714",
+              "cy": "115",
+              "r": "4"
+            },
+            "cx": 155.14285714285714,
+            "cy": 115
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "2",
+              "cx": "142.75714285714287",
+              "cy": "178",
+              "r": "4"
+            },
+            "cx": 142.75714285714287,
+            "cy": 178
+          }
+        ],
+        "badges": [
+          {
+            "attrs": {
+              "class": "wc-air-crossing-badge",
+              "data-air-badge": "0",
+              "cx": "246",
+              "cy": "170",
+              "r": "8"
+            },
+            "bbox": null,
+            "text": ""
+          }
+        ],
+        "leaders": [
+          {
+            "class": "wc-air-crossing-leader",
+            "d": "M147 176.76470588235296H230L238 170"
+          }
+        ],
+        "readouts": [
+          {
+            "attrs": {
+              "data-air-level": "0"
+            },
+            "text": "Cloud\n+5°C",
+            "value": "+5°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "1"
+            },
+            "text": "Middle\n+5°C",
+            "value": "+5°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "2"
+            },
+            "text": "Surface\n-0.1°C",
+            "value": "-0.1°C"
+          }
+        ],
+        "touches": [],
+        "zeroBands": []
+      }
+    },
+    {
+      "name": "two-crossings",
+      "input": [
+        -5,
+        5,
+        -5
+      ],
+      "expected": {
+        "temps": [
+          -5,
+          5,
+          -5
+        ],
+        "crossings": [
+          0.275,
+          0.775
+        ],
+        "touches": [],
+        "bands": []
+      },
+      "actual": {
+        "attrs": {
+          "class": "wc-precip-profile-editor wc-air-profile",
+          "data-temperature-profile-editor": "three-point",
+          "data-air-crossings": "2",
+          "data-air-touches": "0"
+        },
+        "text": "Read the air column\nCloud ↓ surface\nCloud\n-5°C\nMiddle\n+5°C\nSurface\n-5°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n1\n2\n\nAir crosses 0°C twice (warming, then cooling).\n\nShaded lower band: below-freezing air before arrival.\n\n1\nInto warmer air: below 0°C to above 0°C.\n2\nInto colder air: above 0°C to below 0°C.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nModeled arrival: supercooled liquid. The drop reaches a cold surface as liquid, where it can form an ice coating.\n\nCompare air with particle state",
+        "svg": "0 0 260 208",
+        "crossings": [
+          {
+            "attrs": {
+              "class": "wc-profile-crossing-point",
+              "cx": "143",
+              "cy": "76.5",
+              "r": "3.5"
+            },
+            "parent": {
+              "data-air-crossing": "warming",
+              "data-air-crossing-progress": "0.275"
+            },
+            "cx": 143,
+            "cy": 76.5
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-crossing-point",
+              "cx": "143",
+              "cy": "146.5",
+              "r": "3.5"
+            },
+            "parent": {
+              "data-air-crossing": "cooling",
+              "data-air-crossing-progress": "0.775"
+            },
+            "cx": 143,
+            "cy": 146.5
+          }
+        ],
+        "ariaLabel": "Cloud base: -5°C, Middle atmosphere: +5°C, Surface: -5°C. Air crosses 0°C twice (warming, then cooling). Horizontal axis: air temperature. Vertical positions are schematic.",
+        "points": [
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "0",
+              "cx": "130.85714285714283",
+              "cy": "38",
+              "r": "4"
+            },
+            "cx": 130.85714285714283,
+            "cy": 38
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "1",
+              "cx": "155.14285714285714",
+              "cy": "115",
+              "r": "4"
+            },
+            "cx": 155.14285714285714,
+            "cy": 115
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "2",
+              "cx": "130.85714285714283",
+              "cy": "178",
+              "r": "4"
+            },
+            "cx": 130.85714285714283,
+            "cy": 178
+          }
+        ],
+        "badges": [
+          {
+            "attrs": {
+              "class": "wc-air-crossing-badge",
+              "data-air-badge": "0",
+              "cx": "246",
+              "cy": "76.5",
+              "r": "8"
+            },
+            "bbox": null,
+            "text": ""
+          },
+          {
+            "attrs": {
+              "class": "wc-air-crossing-badge",
+              "data-air-badge": "1",
+              "cx": "246",
+              "cy": "146.5",
+              "r": "8"
+            },
+            "bbox": null,
+            "text": ""
+          }
+        ],
+        "leaders": [
+          {
+            "class": "wc-air-crossing-leader",
+            "d": "M147 76.5H230L238 76.5"
+          },
+          {
+            "class": "wc-air-crossing-leader",
+            "d": "M147 146.5H230L238 146.5"
+          }
+        ],
+        "readouts": [
+          {
+            "attrs": {
+              "data-air-level": "0"
+            },
+            "text": "Cloud\n-5°C",
+            "value": "-5°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "1"
+            },
+            "text": "Middle\n+5°C",
+            "value": "+5°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "2"
+            },
+            "text": "Surface\n-5°C",
+            "value": "-5°C"
+          }
+        ],
+        "touches": [],
+        "zeroBands": []
+      }
+    },
+    {
+      "name": "middle-zero-warming",
+      "input": [
+        -5,
+        0,
+        5
+      ],
+      "expected": {
+        "temps": [
+          -5,
+          0,
+          5
+        ],
+        "crossings": [
+          0.55
+        ],
+        "touches": [],
+        "bands": []
+      },
+      "actual": {
+        "attrs": {
+          "class": "wc-precip-profile-editor wc-air-profile",
+          "data-temperature-profile-editor": "three-point",
+          "data-air-crossings": "1",
+          "data-air-touches": "0"
+        },
+        "text": "Read the air column\nCloud ↓ surface\nCloud\n-5°C\nMiddle\n0°C\nSurface\n+5°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n1\n\nAir crosses 0°C once (warming).\n\n1\nInto warmer air: below 0°C to above 0°C.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nCompare air with particle state",
+        "svg": "0 0 260 208",
+        "crossings": [
+          {
+            "attrs": {
+              "class": "wc-profile-crossing-point",
+              "cx": "143",
+              "cy": "115",
+              "r": "3.5"
+            },
+            "parent": {
+              "data-air-crossing": "warming",
+              "data-air-crossing-progress": "0.55"
+            },
+            "cx": 143,
+            "cy": 115
+          }
+        ],
+        "ariaLabel": "Cloud base: -5°C, Middle atmosphere: 0°C, Surface: +5°C. Air crosses 0°C once (warming). Horizontal axis: air temperature. Vertical positions are schematic.",
+        "points": [
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "0",
+              "cx": "130.85714285714283",
+              "cy": "38",
+              "r": "4"
+            },
+            "cx": 130.85714285714283,
+            "cy": 38
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "1",
+              "cx": "143",
+              "cy": "115",
+              "r": "4"
+            },
+            "cx": 143,
+            "cy": 115
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "2",
+              "cx": "155.14285714285714",
+              "cy": "178",
+              "r": "4"
+            },
+            "cx": 155.14285714285714,
+            "cy": 178
+          }
+        ],
+        "badges": [
+          {
+            "attrs": {
+              "class": "wc-air-crossing-badge",
+              "data-air-badge": "0",
+              "cx": "246",
+              "cy": "115",
+              "r": "8"
+            },
+            "bbox": null,
+            "text": ""
+          }
+        ],
+        "leaders": [
+          {
+            "class": "wc-air-crossing-leader",
+            "d": "M147 115H230L238 115"
+          }
+        ],
+        "readouts": [
+          {
+            "attrs": {
+              "data-air-level": "0"
+            },
+            "text": "Cloud\n-5°C",
+            "value": "-5°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "1"
+            },
+            "text": "Middle\n0°C",
+            "value": "0°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "2"
+            },
+            "text": "Surface\n+5°C",
+            "value": "+5°C"
+          }
+        ],
+        "touches": [],
+        "zeroBands": []
+      }
+    },
+    {
+      "name": "middle-zero-cooling",
+      "input": [
+        5,
+        0,
+        -5
+      ],
+      "expected": {
+        "temps": [
+          5,
+          0,
+          -5
+        ],
+        "crossings": [
+          0.55
+        ],
+        "touches": [],
+        "bands": []
+      },
+      "actual": {
+        "attrs": {
+          "class": "wc-precip-profile-editor wc-air-profile",
+          "data-temperature-profile-editor": "three-point",
+          "data-air-crossings": "1",
+          "data-air-touches": "0"
+        },
+        "text": "Read the air column\nCloud ↓ surface\nCloud\n+5°C\nMiddle\n0°C\nSurface\n-5°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n1\n\nAir crosses 0°C once (cooling).\n\n1\nInto colder air: above 0°C to below 0°C.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nCompare air with particle state",
+        "svg": "0 0 260 208",
+        "crossings": [
+          {
+            "attrs": {
+              "class": "wc-profile-crossing-point",
+              "cx": "143",
+              "cy": "115",
+              "r": "3.5"
+            },
+            "parent": {
+              "data-air-crossing": "cooling",
+              "data-air-crossing-progress": "0.55"
+            },
+            "cx": 143,
+            "cy": 115
+          }
+        ],
+        "ariaLabel": "Cloud base: +5°C, Middle atmosphere: 0°C, Surface: -5°C. Air crosses 0°C once (cooling). Horizontal axis: air temperature. Vertical positions are schematic.",
+        "points": [
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "0",
+              "cx": "155.14285714285714",
+              "cy": "38",
+              "r": "4"
+            },
+            "cx": 155.14285714285714,
+            "cy": 38
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "1",
+              "cx": "143",
+              "cy": "115",
+              "r": "4"
+            },
+            "cx": 143,
+            "cy": 115
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "2",
+              "cx": "130.85714285714283",
+              "cy": "178",
+              "r": "4"
+            },
+            "cx": 130.85714285714283,
+            "cy": 178
+          }
+        ],
+        "badges": [
+          {
+            "attrs": {
+              "class": "wc-air-crossing-badge",
+              "data-air-badge": "0",
+              "cx": "246",
+              "cy": "115",
+              "r": "8"
+            },
+            "bbox": null,
+            "text": ""
+          }
+        ],
+        "leaders": [
+          {
+            "class": "wc-air-crossing-leader",
+            "d": "M147 115H230L238 115"
+          }
+        ],
+        "readouts": [
+          {
+            "attrs": {
+              "data-air-level": "0"
+            },
+            "text": "Cloud\n+5°C",
+            "value": "+5°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "1"
+            },
+            "text": "Middle\n0°C",
+            "value": "0°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "2"
+            },
+            "text": "Surface\n-5°C",
+            "value": "-5°C"
+          }
+        ],
+        "touches": [],
+        "zeroBands": []
+      }
+    },
+    {
+      "name": "tangent",
+      "input": [
+        5,
+        0,
+        5
+      ],
+      "expected": {
+        "temps": [
+          5,
+          0,
+          5
+        ],
+        "crossings": [],
+        "touches": [
+          0.55
+        ],
+        "bands": []
+      },
+      "actual": {
+        "attrs": {
+          "class": "wc-precip-profile-editor wc-air-profile",
+          "data-temperature-profile-editor": "three-point",
+          "data-air-crossings": "0",
+          "data-air-touches": "1"
+        },
+        "text": "Read the air column\nCloud ↓ surface\nCloud\n+5°C\nMiddle\n0°C\nSurface\n+5°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n\nAir stays at or above 0°C throughout the profile.\n\nAt 0°C: Middle atmosphere. The plotted air does not pass from one side of 0°C to the other there.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nCompare air with particle state",
+        "svg": "0 0 260 208",
+        "crossings": [],
+        "ariaLabel": "Cloud base: +5°C, Middle atmosphere: 0°C, Surface: +5°C. Air stays at or above 0°C throughout the profile. Horizontal axis: air temperature. Vertical positions are schematic.",
+        "points": [
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "0",
+              "cx": "155.14285714285714",
+              "cy": "38",
+              "r": "4"
+            },
+            "cx": 155.14285714285714,
+            "cy": 38
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "1",
+              "cx": "143",
+              "cy": "115",
+              "r": "4"
+            },
+            "cx": 143,
+            "cy": 115
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "2",
+              "cx": "155.14285714285714",
+              "cy": "178",
+              "r": "4"
+            },
+            "cx": 155.14285714285714,
+            "cy": 178
+          }
+        ],
+        "badges": [],
+        "leaders": [],
+        "readouts": [
+          {
+            "attrs": {
+              "data-air-level": "0"
+            },
+            "text": "Cloud\n+5°C",
+            "value": "+5°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "1"
+            },
+            "text": "Middle\n0°C",
+            "value": "0°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "2"
+            },
+            "text": "Surface\n+5°C",
+            "value": "+5°C"
+          }
+        ],
+        "touches": [
+          {
+            "class": "wc-air-touch",
+            "data-air-touch": "0",
+            "d": "M143 110l5 5-5 5-5-5Z"
+          }
+        ],
+        "zeroBands": []
+      }
+    },
+    {
+      "name": "cloud-zero",
+      "input": [
+        0,
+        5,
+        5
+      ],
+      "expected": {
+        "temps": [
+          0,
+          5,
+          5
+        ],
+        "crossings": [],
+        "touches": [
+          0
+        ],
+        "bands": []
+      },
+      "actual": {
+        "attrs": {
+          "class": "wc-precip-profile-editor wc-air-profile",
+          "data-temperature-profile-editor": "three-point",
+          "data-air-crossings": "0",
+          "data-air-touches": "1"
+        },
+        "text": "Read the air column\nCloud ↓ surface\nCloud\n0°C\nMiddle\n+5°C\nSurface\n+5°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n\nAir stays at or above 0°C throughout the profile.\n\nAt 0°C: Cloud base. The plotted air does not pass from one side of 0°C to the other there.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nCompare air with particle state",
+        "svg": "0 0 260 208",
+        "crossings": [],
+        "ariaLabel": "Cloud base: 0°C, Middle atmosphere: +5°C, Surface: +5°C. Air stays at or above 0°C throughout the profile. Horizontal axis: air temperature. Vertical positions are schematic.",
+        "points": [
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "0",
+              "cx": "143",
+              "cy": "38",
+              "r": "4"
+            },
+            "cx": 143,
+            "cy": 38
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "1",
+              "cx": "155.14285714285714",
+              "cy": "115",
+              "r": "4"
+            },
+            "cx": 155.14285714285714,
+            "cy": 115
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "2",
+              "cx": "155.14285714285714",
+              "cy": "178",
+              "r": "4"
+            },
+            "cx": 155.14285714285714,
+            "cy": 178
+          }
+        ],
+        "badges": [],
+        "leaders": [],
+        "readouts": [
+          {
+            "attrs": {
+              "data-air-level": "0"
+            },
+            "text": "Cloud\n0°C",
+            "value": "0°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "1"
+            },
+            "text": "Middle\n+5°C",
+            "value": "+5°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "2"
+            },
+            "text": "Surface\n+5°C",
+            "value": "+5°C"
+          }
+        ],
+        "touches": [
+          {
+            "class": "wc-air-touch",
+            "data-air-touch": "0",
+            "d": "M143 33l5 5-5 5-5-5Z"
+          }
+        ],
+        "zeroBands": []
+      }
+    },
+    {
+      "name": "surface-zero",
+      "input": [
+        5,
+        5,
+        0
+      ],
+      "expected": {
+        "temps": [
+          5,
+          5,
+          0
+        ],
+        "crossings": [],
+        "touches": [
+          1
+        ],
+        "bands": []
+      },
+      "actual": {
+        "attrs": {
+          "class": "wc-precip-profile-editor wc-air-profile",
+          "data-temperature-profile-editor": "three-point",
+          "data-air-crossings": "0",
+          "data-air-touches": "1"
+        },
+        "text": "Read the air column\nCloud ↓ surface\nCloud\n+5°C\nMiddle\n+5°C\nSurface\n0°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n\nAir stays at or above 0°C throughout the profile.\n\nAt 0°C: Surface. The plotted air does not pass from one side of 0°C to the other there.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nModeled arrival: supercooled liquid. The drop reaches a cold surface as liquid, where it can form an ice coating.\n\nCompare air with particle state",
+        "svg": "0 0 260 208",
+        "crossings": [],
+        "ariaLabel": "Cloud base: +5°C, Middle atmosphere: +5°C, Surface: 0°C. Air stays at or above 0°C throughout the profile. Horizontal axis: air temperature. Vertical positions are schematic.",
+        "points": [
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "0",
+              "cx": "155.14285714285714",
+              "cy": "38",
+              "r": "4"
+            },
+            "cx": 155.14285714285714,
+            "cy": 38
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "1",
+              "cx": "155.14285714285714",
+              "cy": "115",
+              "r": "4"
+            },
+            "cx": 155.14285714285714,
+            "cy": 115
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "2",
+              "cx": "143",
+              "cy": "178",
+              "r": "4"
+            },
+            "cx": 143,
+            "cy": 178
+          }
+        ],
+        "badges": [],
+        "leaders": [],
+        "readouts": [
+          {
+            "attrs": {
+              "data-air-level": "0"
+            },
+            "text": "Cloud\n+5°C",
+            "value": "+5°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "1"
+            },
+            "text": "Middle\n+5°C",
+            "value": "+5°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "2"
+            },
+            "text": "Surface\n0°C",
+            "value": "0°C"
+          }
+        ],
+        "touches": [
+          {
+            "class": "wc-air-touch",
+            "data-air-touch": "0",
+            "d": "M143 173l5 5-5 5-5-5Z"
+          }
+        ],
+        "zeroBands": []
+      }
+    },
+    {
+      "name": "all-zero",
+      "input": [
+        0,
+        0,
+        0
+      ],
+      "expected": {
+        "temps": [
+          0,
+          0,
+          0
+        ],
+        "crossings": [],
+        "touches": [],
+        "bands": [
+          {
+            "start": 0,
+            "end": 1
+          }
+        ]
+      },
+      "actual": {
+        "attrs": {
+          "class": "wc-precip-profile-editor wc-air-profile",
+          "data-temperature-profile-editor": "three-point",
+          "data-air-crossings": "0",
+          "data-air-touches": "0"
+        },
+        "text": "Read the air column\nCloud ↓ surface\nCloud\n0°C\nMiddle\n0°C\nSurface\n0°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n\nAir stays at 0°C throughout the profile.\n\nThe highlighted part of the line stays at 0°C between the sampled levels.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nCompare air with particle state",
+        "svg": "0 0 260 208",
+        "crossings": [],
+        "ariaLabel": "Cloud base: 0°C, Middle atmosphere: 0°C, Surface: 0°C. Air stays at 0°C throughout the profile. Horizontal axis: air temperature. Vertical positions are schematic.",
+        "points": [
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "0",
+              "cx": "143",
+              "cy": "38",
+              "r": "4"
+            },
+            "cx": 143,
+            "cy": 38
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "1",
+              "cx": "143",
+              "cy": "115",
+              "r": "4"
+            },
+            "cx": 143,
+            "cy": 115
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "2",
+              "cx": "143",
+              "cy": "178",
+              "r": "4"
+            },
+            "cx": 143,
+            "cy": 178
+          }
+        ],
+        "badges": [],
+        "leaders": [],
+        "readouts": [
+          {
+            "attrs": {
+              "data-air-level": "0"
+            },
+            "text": "Cloud\n0°C",
+            "value": "0°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "1"
+            },
+            "text": "Middle\n0°C",
+            "value": "0°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "2"
+            },
+            "text": "Surface\n0°C",
+            "value": "0°C"
+          }
+        ],
+        "touches": [],
+        "zeroBands": [
+          {
+            "class": "wc-air-zero-band",
+            "x1": "143",
+            "x2": "143",
+            "y1": "38",
+            "y2": "178",
+            "data-air-zero-band": "0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "zero-band",
+      "input": [
+        0,
+        0,
+        5
+      ],
+      "expected": {
+        "temps": [
+          0,
+          0,
+          5
+        ],
+        "crossings": [],
+        "touches": [],
+        "bands": [
+          {
+            "start": 0,
+            "end": 0.55
+          }
+        ]
+      },
+      "actual": {
+        "attrs": {
+          "class": "wc-precip-profile-editor wc-air-profile",
+          "data-temperature-profile-editor": "three-point",
+          "data-air-crossings": "0",
+          "data-air-touches": "0"
+        },
+        "text": "Read the air column\nCloud ↓ surface\nCloud\n0°C\nMiddle\n0°C\nSurface\n+5°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n\nAir stays at or above 0°C throughout the profile.\n\nThe highlighted part of the line stays at 0°C between the sampled levels.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nCompare air with particle state",
+        "svg": "0 0 260 208",
+        "crossings": [],
+        "ariaLabel": "Cloud base: 0°C, Middle atmosphere: 0°C, Surface: +5°C. Air stays at or above 0°C throughout the profile. Horizontal axis: air temperature. Vertical positions are schematic.",
+        "points": [
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "0",
+              "cx": "143",
+              "cy": "38",
+              "r": "4"
+            },
+            "cx": 143,
+            "cy": 38
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "1",
+              "cx": "143",
+              "cy": "115",
+              "r": "4"
+            },
+            "cx": 143,
+            "cy": 115
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "2",
+              "cx": "155.14285714285714",
+              "cy": "178",
+              "r": "4"
+            },
+            "cx": 155.14285714285714,
+            "cy": 178
+          }
+        ],
+        "badges": [],
+        "leaders": [],
+        "readouts": [
+          {
+            "attrs": {
+              "data-air-level": "0"
+            },
+            "text": "Cloud\n0°C",
+            "value": "0°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "1"
+            },
+            "text": "Middle\n0°C",
+            "value": "0°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "2"
+            },
+            "text": "Surface\n+5°C",
+            "value": "+5°C"
+          }
+        ],
+        "touches": [],
+        "zeroBands": [
+          {
+            "class": "wc-air-zero-band",
+            "x1": "143",
+            "x2": "143",
+            "y1": "38",
+            "y2": "115",
+            "data-air-zero-band": "0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "near-zero",
+      "input": [
+        -0.00004,
+        0.00004,
+        -0.00004
+      ],
+      "expected": {
+        "temps": [
+          -0.00004,
+          0.00004,
+          -0.00004
+        ],
+        "crossings": [
+          0.275,
+          0.775
+        ],
+        "touches": [],
+        "bands": []
+      },
+      "actual": {
+        "attrs": {
+          "class": "wc-precip-profile-editor wc-air-profile",
+          "data-temperature-profile-editor": "three-point",
+          "data-air-crossings": "2",
+          "data-air-touches": "0"
+        },
+        "text": "Read the air column\nCloud ↓ surface\nCloud\n-0.00004°C\nMiddle\n+0.00004°C\nSurface\n-0.00004°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n1\n2\n\nAir crosses 0°C twice (warming, then cooling).\n\nShaded lower band: below-freezing air before arrival.\n\n1\nInto warmer air: below 0°C to above 0°C.\n2\nInto colder air: above 0°C to below 0°C.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nModeled arrival: supercooled liquid. The drop reaches a cold surface as liquid, where it can form an ice coating.\n\nCompare air with particle state",
+        "svg": "0 0 260 208",
+        "crossings": [
+          {
+            "attrs": {
+              "class": "wc-profile-crossing-point",
+              "cx": "143",
+              "cy": "76.5",
+              "r": "3.5"
+            },
+            "parent": {
+              "data-air-crossing": "warming",
+              "data-air-crossing-progress": "0.275"
+            },
+            "cx": 143,
+            "cy": 76.5
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-crossing-point",
+              "cx": "143",
+              "cy": "146.5",
+              "r": "3.5"
+            },
+            "parent": {
+              "data-air-crossing": "cooling",
+              "data-air-crossing-progress": "0.775"
+            },
+            "cx": 143,
+            "cy": 146.5
+          }
+        ],
+        "ariaLabel": "Cloud base: -0.00004°C, Middle atmosphere: +0.00004°C, Surface: -0.00004°C. Air crosses 0°C twice (warming, then cooling). Horizontal axis: air temperature. Vertical positions are schematic.",
+        "points": [
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "0",
+              "cx": "142.99990285714284",
+              "cy": "38",
+              "r": "4"
+            },
+            "cx": 142.99990285714284,
+            "cy": 38
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "1",
+              "cx": "143.00009714285716",
+              "cy": "115",
+              "r": "4"
+            },
+            "cx": 143.00009714285716,
+            "cy": 115
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "2",
+              "cx": "142.99990285714284",
+              "cy": "178",
+              "r": "4"
+            },
+            "cx": 142.99990285714284,
+            "cy": 178
+          }
+        ],
+        "badges": [
+          {
+            "attrs": {
+              "class": "wc-air-crossing-badge",
+              "data-air-badge": "0",
+              "cx": "246",
+              "cy": "76.5",
+              "r": "8"
+            },
+            "bbox": null,
+            "text": ""
+          },
+          {
+            "attrs": {
+              "class": "wc-air-crossing-badge",
+              "data-air-badge": "1",
+              "cx": "246",
+              "cy": "146.5",
+              "r": "8"
+            },
+            "bbox": null,
+            "text": ""
+          }
+        ],
+        "leaders": [
+          {
+            "class": "wc-air-crossing-leader",
+            "d": "M147 76.5H230L238 76.5"
+          },
+          {
+            "class": "wc-air-crossing-leader",
+            "d": "M147 146.5H230L238 146.5"
+          }
+        ],
+        "readouts": [
+          {
+            "attrs": {
+              "data-air-level": "0"
+            },
+            "text": "Cloud\n-0.00004°C",
+            "value": "-0.00004°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "1"
+            },
+            "text": "Middle\n+0.00004°C",
+            "value": "+0.00004°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "2"
+            },
+            "text": "Surface\n-0.00004°C",
+            "value": "-0.00004°C"
+          }
+        ],
+        "touches": [],
+        "zeroBands": []
+      }
+    },
+    {
+      "name": "near-coincident",
+      "input": [
+        -35,
+        0.01,
+        -35
+      ],
+      "expected": {
+        "temps": [
+          -35,
+          0.01,
+          -15
+        ],
+        "crossings": [
+          0.549842902027992,
+          0.5502998001332445
+        ],
+        "touches": [],
+        "bands": []
+      },
+      "actual": {
+        "attrs": {
+          "class": "wc-precip-profile-editor wc-air-profile",
+          "data-temperature-profile-editor": "three-point",
+          "data-air-crossings": "2",
+          "data-air-touches": "0"
+        },
+        "text": "Read the air column\nCloud ↓ surface\nCloud\n-35°C\nMiddle\n+0.01°C\nSurface\n-15°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n1\n2\n\nAir crosses 0°C twice (warming, then cooling).\n\nShaded lower band: below-freezing air before arrival.\n\n1\nInto warmer air: below 0°C to above 0°C.\n2\nInto colder air: above 0°C to below 0°C.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nModeled arrival: ice pellets. The illustrated drop freezes in the air before reaching the surface.\n\nCompare air with particle state",
+        "svg": "0 0 260 208",
+        "crossings": [
+          {
+            "attrs": {
+              "class": "wc-profile-crossing-point",
+              "cx": "143",
+              "cy": "114.97800628391889",
+              "r": "3.5"
+            },
+            "parent": {
+              "data-air-crossing": "warming",
+              "data-air-crossing-progress": "0.549842902027992"
+            },
+            "cx": 143,
+            "cy": 114.97800628391889
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-crossing-point",
+              "cx": "143",
+              "cy": "115.04197201865423",
+              "r": "3.5"
+            },
+            "parent": {
+              "data-air-crossing": "cooling",
+              "data-air-crossing-progress": "0.5502998001332445"
+            },
+            "cx": 143,
+            "cy": 115.04197201865423
+          }
+        ],
+        "ariaLabel": "Cloud base: -35°C, Middle atmosphere: +0.01°C, Surface: -15°C. Air crosses 0°C twice (warming, then cooling). Horizontal axis: air temperature. Vertical positions are schematic.",
+        "points": [
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "0",
+              "cx": "58",
+              "cy": "38",
+              "r": "4"
+            },
+            "cx": 58,
+            "cy": 38
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "1",
+              "cx": "143.02428571428572",
+              "cy": "115",
+              "r": "4"
+            },
+            "cx": 143.02428571428572,
+            "cy": 115
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "2",
+              "cx": "106.57142857142857",
+              "cy": "178",
+              "r": "4"
+            },
+            "cx": 106.57142857142857,
+            "cy": 178
+          }
+        ],
+        "badges": [
+          {
+            "attrs": {
+              "class": "wc-air-crossing-badge",
+              "data-air-badge": "0",
+              "cx": "246",
+              "cy": "104.00998915128656",
+              "r": "8"
+            },
+            "bbox": null,
+            "text": ""
+          },
+          {
+            "attrs": {
+              "class": "wc-air-crossing-badge",
+              "data-air-badge": "1",
+              "cx": "246",
+              "cy": "126.00998915128656",
+              "r": "8"
+            },
+            "bbox": null,
+            "text": ""
+          }
+        ],
+        "leaders": [
+          {
+            "class": "wc-air-crossing-leader",
+            "d": "M147 114.97800628391889H230L238 104.00998915128656"
+          },
+          {
+            "class": "wc-air-crossing-leader",
+            "d": "M147 115.04197201865423H230L238 126.00998915128656"
+          }
+        ],
+        "readouts": [
+          {
+            "attrs": {
+              "data-air-level": "0"
+            },
+            "text": "Cloud\n-35°C",
+            "value": "-35°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "1"
+            },
+            "text": "Middle\n+0.01°C",
+            "value": "+0.01°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "2"
+            },
+            "text": "Surface\n-15°C",
+            "value": "-15°C"
+          }
+        ],
+        "touches": [],
+        "zeroBands": []
+      }
+    },
+    {
+      "name": "warm",
+      "input": [
+        5,
+        8,
+        14
+      ],
+      "expected": {
+        "temps": [
+          5,
+          8,
+          14
+        ],
+        "crossings": [],
+        "touches": [],
+        "bands": []
+      },
+      "actual": {
+        "attrs": {
+          "class": "wc-precip-profile-editor wc-air-profile",
+          "data-temperature-profile-editor": "three-point",
+          "data-air-crossings": "0",
+          "data-air-touches": "0"
+        },
+        "text": "Read the air column\nCloud ↓ surface\nCloud\n+5°C\nMiddle\n+8°C\nSurface\n+14°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n\nAir stays above 0°C throughout the profile.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nCompare air with particle state",
+        "svg": "0 0 260 208",
+        "crossings": [],
+        "ariaLabel": "Cloud base: +5°C, Middle atmosphere: +8°C, Surface: +14°C. Air stays above 0°C throughout the profile. Horizontal axis: air temperature. Vertical positions are schematic.",
+        "points": [
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "0",
+              "cx": "155.14285714285714",
+              "cy": "38",
+              "r": "4"
+            },
+            "cx": 155.14285714285714,
+            "cy": 38
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "1",
+              "cx": "162.42857142857144",
+              "cy": "115",
+              "r": "4"
+            },
+            "cx": 162.42857142857144,
+            "cy": 115
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "2",
+              "cx": "177",
+              "cy": "178",
+              "r": "4"
+            },
+            "cx": 177,
+            "cy": 178
+          }
+        ],
+        "badges": [],
+        "leaders": [],
+        "readouts": [
+          {
+            "attrs": {
+              "data-air-level": "0"
+            },
+            "text": "Cloud\n+5°C",
+            "value": "+5°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "1"
+            },
+            "text": "Middle\n+8°C",
+            "value": "+8°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "2"
+            },
+            "text": "Surface\n+14°C",
+            "value": "+14°C"
+          }
+        ],
+        "touches": [],
+        "zeroBands": []
+      }
+    },
+    {
+      "name": "cold",
+      "input": [
+        -16,
+        -10,
+        -5
+      ],
+      "expected": {
+        "temps": [
+          -16,
+          -10,
+          -5
+        ],
+        "crossings": [],
+        "touches": [],
+        "bands": []
+      },
+      "actual": {
+        "attrs": {
+          "class": "wc-precip-profile-editor wc-air-profile",
+          "data-temperature-profile-editor": "three-point",
+          "data-air-crossings": "0",
+          "data-air-touches": "0"
+        },
+        "text": "Read the air column\nCloud ↓ surface\nCloud\n-16°C\nMiddle\n-10°C\nSurface\n-5°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n\nAir stays below 0°C throughout the profile.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nCompare air with particle state",
+        "svg": "0 0 260 208",
+        "crossings": [],
+        "ariaLabel": "Cloud base: -16°C, Middle atmosphere: -10°C, Surface: -5°C. Air stays below 0°C throughout the profile. Horizontal axis: air temperature. Vertical positions are schematic.",
+        "points": [
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "0",
+              "cx": "104.14285714285714",
+              "cy": "38",
+              "r": "4"
+            },
+            "cx": 104.14285714285714,
+            "cy": 38
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "1",
+              "cx": "118.71428571428572",
+              "cy": "115",
+              "r": "4"
+            },
+            "cx": 118.71428571428572,
+            "cy": 115
+          },
+          {
+            "attrs": {
+              "class": "wc-profile-temperature-point",
+              "data-air-point": "2",
+              "cx": "130.85714285714283",
+              "cy": "178",
+              "r": "4"
+            },
+            "cx": 130.85714285714283,
+            "cy": 178
+          }
+        ],
+        "badges": [],
+        "leaders": [],
+        "readouts": [
+          {
+            "attrs": {
+              "data-air-level": "0"
+            },
+            "text": "Cloud\n-16°C",
+            "value": "-16°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "1"
+            },
+            "text": "Middle\n-10°C",
+            "value": "-10°C"
+          },
+          {
+            "attrs": {
+              "data-air-level": "2"
+            },
+            "text": "Surface\n-5°C",
+            "value": "-5°C"
+          }
+        ],
+        "touches": [],
+        "zeroBands": []
+      }
+    }
+  ],
+  "captures": [
+    "near-cloud-end-desktop.png",
+    "near-surface-end-desktop.png",
+    "two-crossings-desktop.png",
+    "all-zero-desktop.png",
+    "near-zero-desktop.png",
+    "near-coincident-desktop.png",
+    "close-crossings-phone-390.png",
+    "close-crossings-phone-320.png",
+    "precise-values-phone-320.png",
+    "two-crossings-dark-phone.png",
+    "two-crossings-forced-colors-phone.png"
+  ],
+  "layouts": [
+    {
+      "name": "near-cloud-end-desktop",
+      "width": 1280,
+      "forcedColors": false,
+      "canvasText": "rgb(0, 0, 0)",
+      "profile": {
+        "x": 790.4375,
+        "y": 438.015625,
+        "width": 336.5625,
+        "height": 562.4375,
+        "top": 438.015625,
+        "right": 1127,
+        "bottom": 1000.453125,
+        "left": 790.4375
+      },
+      "documentOverflow": false,
+      "overflowingElements": [],
+      "svg": {
+        "x": 803.4375,
+        "y": 551.015625,
+        "width": 310.5625,
+        "height": 248.4375,
+        "top": 551.015625,
+        "right": 1114,
+        "bottom": 799.453125,
+        "left": 803.4375
+      },
+      "texts": [
+        {
+          "text": "-30°C",
+          "box": {
+            "x": 866.8809814453125,
+            "y": 774.09228515625,
+            "width": 40.9111328125,
+            "height": 21,
+            "top": 774.09228515625,
+            "right": 907.7921142578125,
+            "bottom": 795.09228515625,
+            "left": 866.8809814453125
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "0°C",
+          "box": {
+            "x": 961.70703125,
+            "y": 774.09228515625,
+            "width": 25.29266357421875,
+            "height": 21,
+            "top": 774.09228515625,
+            "right": 986.9996948242188,
+            "bottom": 795.09228515625,
+            "left": 961.70703125
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "+30°C",
+          "box": {
+            "x": 1038.5330810546875,
+            "y": 774.09228515625,
+            "width": 45.6854248046875,
+            "height": 21,
+            "top": 774.09228515625,
+            "right": 1084.218505859375,
+            "bottom": 795.09228515625,
+            "left": 1038.5330810546875
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "COLDER",
+          "box": {
+            "x": 879.8876342773438,
+            "y": 558.7094116210938,
+            "width": 58.890625,
+            "height": 19,
+            "top": 558.7094116210938,
+            "right": 938.7782592773438,
+            "bottom": 577.7094116210938,
+            "left": 879.8876342773438
+          },
+          "font": "12px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "WARMER",
+          "box": {
+            "x": 996.37890625,
+            "y": 558.7094116210938,
+            "width": 71.03125,
+            "height": 19,
+            "top": 558.7094116210938,
+            "right": 1067.41015625,
+            "bottom": 577.7094116210938,
+            "left": 996.37890625
+          },
+          "font": "12px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Cloud",
+          "box": {
+            "x": 804.6397094726562,
+            "y": 583.180908203125,
+            "width": 47.74639892578125,
+            "height": 22,
+            "top": 583.180908203125,
+            "right": 852.3861083984375,
+            "bottom": 605.180908203125,
+            "left": 804.6397094726562
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Middle",
+          "box": {
+            "x": 804.6397094726562,
+            "y": 675.1505737304688,
+            "width": 58.27410888671875,
+            "height": 21.99993896484375,
+            "top": 675.1505737304688,
+            "right": 862.913818359375,
+            "bottom": 697.1505126953125,
+            "left": 804.6397094726562
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Surface",
+          "box": {
+            "x": 804.6397094726562,
+            "y": 750.3984375,
+            "width": 62.18463134765625,
+            "height": 22,
+            "top": 750.3984375,
+            "right": 866.8243408203125,
+            "bottom": 772.3984375,
+            "left": 804.6397094726562
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "1",
+          "box": {
+            "x": 1093.8328857421875,
+            "y": 597.1389770507812,
+            "width": 6.875,
+            "height": 16,
+            "top": 597.1389770507812,
+            "right": 1100.7078857421875,
+            "bottom": 613.1389770507812,
+            "left": 1093.8328857421875
+          },
+          "font": "10px",
+          "fill": "rgb(113, 63, 18)"
+        }
+      ],
+      "readouts": [
+        {
+          "text": "Cloud\n-1°C",
+          "box": {
+            "x": 803.4375,
+            "y": 484.015625,
+            "width": 100.1875,
+            "height": 55,
+            "top": 484.015625,
+            "right": 903.625,
+            "bottom": 539.015625,
+            "left": 803.4375
+          }
+        },
+        {
+          "text": "Middle\n+25°C",
+          "box": {
+            "x": 908.625,
+            "y": 484.015625,
+            "width": 100.1875,
+            "height": 55,
+            "top": 484.015625,
+            "right": 1008.8125,
+            "bottom": 539.015625,
+            "left": 908.625
+          }
+        },
+        {
+          "text": "Surface\n+35°C",
+          "box": {
+            "x": 1013.8125,
+            "y": 484.015625,
+            "width": 100.1875,
+            "height": 55,
+            "top": 484.015625,
+            "right": 1114,
+            "bottom": 539.015625,
+            "left": 1013.8125
+          }
+        }
+      ],
+      "style": {
+        "color": "rgb(23, 60, 69)",
+        "background": "rgb(244, 248, 251)"
+      },
+      "text": "Read the air column\nCloud ↓ surface\nCloud\n-1°C\nMiddle\n+25°C\nSurface\n+35°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n1\n\nAir crosses 0°C once (warming).\n\n1\nInto warmer air: below 0°C to above 0°C.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nCompare air with particle state"
+    },
+    {
+      "name": "near-surface-end-desktop",
+      "width": 1280,
+      "forcedColors": false,
+      "canvasText": "rgb(0, 0, 0)",
+      "profile": {
+        "x": 790.4375,
+        "y": 347.015625,
+        "width": 336.5625,
+        "height": 653.4375,
+        "top": 347.015625,
+        "right": 1127,
+        "bottom": 1000.453125,
+        "left": 790.4375
+      },
+      "documentOverflow": false,
+      "overflowingElements": [],
+      "svg": {
+        "x": 803.4375,
+        "y": 460.015625,
+        "width": 310.5625,
+        "height": 248.4375,
+        "top": 460.015625,
+        "right": 1114,
+        "bottom": 708.453125,
+        "left": 803.4375
+      },
+      "texts": [
+        {
+          "text": "-30°C",
+          "box": {
+            "x": 866.8809814453125,
+            "y": 683.09228515625,
+            "width": 40.9111328125,
+            "height": 21,
+            "top": 683.09228515625,
+            "right": 907.7921142578125,
+            "bottom": 704.09228515625,
+            "left": 866.8809814453125
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "0°C",
+          "box": {
+            "x": 961.70703125,
+            "y": 683.09228515625,
+            "width": 25.29266357421875,
+            "height": 21,
+            "top": 683.09228515625,
+            "right": 986.9996948242188,
+            "bottom": 704.09228515625,
+            "left": 961.70703125
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "+30°C",
+          "box": {
+            "x": 1038.5330810546875,
+            "y": 683.09228515625,
+            "width": 45.6854248046875,
+            "height": 21,
+            "top": 683.09228515625,
+            "right": 1084.218505859375,
+            "bottom": 704.09228515625,
+            "left": 1038.5330810546875
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "COLDER",
+          "box": {
+            "x": 879.8876342773438,
+            "y": 467.7094421386719,
+            "width": 58.890625,
+            "height": 19,
+            "top": 467.7094421386719,
+            "right": 938.7782592773438,
+            "bottom": 486.7094421386719,
+            "left": 879.8876342773438
+          },
+          "font": "12px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "WARMER",
+          "box": {
+            "x": 996.37890625,
+            "y": 467.7094421386719,
+            "width": 71.03125,
+            "height": 19,
+            "top": 467.7094421386719,
+            "right": 1067.41015625,
+            "bottom": 486.7094421386719,
+            "left": 996.37890625
+          },
+          "font": "12px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Cloud",
+          "box": {
+            "x": 804.6397094726562,
+            "y": 492.1808776855469,
+            "width": 47.74639892578125,
+            "height": 22.000030517578125,
+            "top": 492.1808776855469,
+            "right": 852.3861083984375,
+            "bottom": 514.180908203125,
+            "left": 804.6397094726562
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Middle",
+          "box": {
+            "x": 804.6397094726562,
+            "y": 584.1505737304688,
+            "width": 58.27410888671875,
+            "height": 21.99993896484375,
+            "top": 584.1505737304688,
+            "right": 862.913818359375,
+            "bottom": 606.1505126953125,
+            "left": 804.6397094726562
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Surface",
+          "box": {
+            "x": 804.6397094726562,
+            "y": 659.3984375,
+            "width": 62.18463134765625,
+            "height": 22,
+            "top": 659.3984375,
+            "right": 866.8243408203125,
+            "bottom": 681.3984375,
+            "left": 804.6397094726562
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "1",
+          "box": {
+            "x": 1093.8328857421875,
+            "y": 654.2459716796875,
+            "width": 6.875,
+            "height": 15.99993896484375,
+            "top": 654.2459716796875,
+            "right": 1100.7078857421875,
+            "bottom": 670.2459106445312,
+            "left": 1093.8328857421875
+          },
+          "font": "10px",
+          "fill": "rgb(113, 63, 18)"
+        }
+      ],
+      "readouts": [
+        {
+          "text": "Cloud\n+5°C",
+          "box": {
+            "x": 803.4375,
+            "y": 393.015625,
+            "width": 100.1875,
+            "height": 55,
+            "top": 393.015625,
+            "right": 903.625,
+            "bottom": 448.015625,
+            "left": 803.4375
+          }
+        },
+        {
+          "text": "Middle\n+5°C",
+          "box": {
+            "x": 908.625,
+            "y": 393.015625,
+            "width": 100.1875,
+            "height": 55,
+            "top": 393.015625,
+            "right": 1008.8125,
+            "bottom": 448.015625,
+            "left": 908.625
+          }
+        },
+        {
+          "text": "Surface\n-0.1°C",
+          "box": {
+            "x": 1013.8125,
+            "y": 393.015625,
+            "width": 100.1875,
+            "height": 55,
+            "top": 393.015625,
+            "right": 1114,
+            "bottom": 448.015625,
+            "left": 1013.8125
+          }
+        }
+      ],
+      "style": {
+        "color": "rgb(23, 60, 69)",
+        "background": "rgb(244, 248, 251)"
+      },
+      "text": "Read the air column\nCloud ↓ surface\nCloud\n+5°C\nMiddle\n+5°C\nSurface\n-0.1°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n1\n\nAir crosses 0°C once (cooling).\n\nShaded lower band: below-freezing air before arrival.\n\n1\nInto colder air: above 0°C to below 0°C.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nModeled arrival: supercooled liquid. The drop reaches a cold surface as liquid, where it can form an ice coating.\n\nCompare air with particle state"
+    },
+    {
+      "name": "two-crossings-desktop",
+      "width": 1280,
+      "forcedColors": false,
+      "canvasText": "rgb(0, 0, 0)",
+      "profile": {
+        "x": 790.4375,
+        "y": 321.015625,
+        "width": 336.5625,
+        "height": 679.4375,
+        "top": 321.015625,
+        "right": 1127,
+        "bottom": 1000.453125,
+        "left": 790.4375
+      },
+      "documentOverflow": false,
+      "overflowingElements": [],
+      "svg": {
+        "x": 803.4375,
+        "y": 434.015625,
+        "width": 310.5625,
+        "height": 248.4375,
+        "top": 434.015625,
+        "right": 1114,
+        "bottom": 682.453125,
+        "left": 803.4375
+      },
+      "texts": [
+        {
+          "text": "-30°C",
+          "box": {
+            "x": 866.8809814453125,
+            "y": 657.09228515625,
+            "width": 40.9111328125,
+            "height": 21,
+            "top": 657.09228515625,
+            "right": 907.7921142578125,
+            "bottom": 678.09228515625,
+            "left": 866.8809814453125
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "0°C",
+          "box": {
+            "x": 961.70703125,
+            "y": 657.09228515625,
+            "width": 25.29266357421875,
+            "height": 21,
+            "top": 657.09228515625,
+            "right": 986.9996948242188,
+            "bottom": 678.09228515625,
+            "left": 961.70703125
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "+30°C",
+          "box": {
+            "x": 1038.5330810546875,
+            "y": 657.09228515625,
+            "width": 45.6854248046875,
+            "height": 21,
+            "top": 657.09228515625,
+            "right": 1084.218505859375,
+            "bottom": 678.09228515625,
+            "left": 1038.5330810546875
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "COLDER",
+          "box": {
+            "x": 879.8876342773438,
+            "y": 441.7094421386719,
+            "width": 58.890625,
+            "height": 19,
+            "top": 441.7094421386719,
+            "right": 938.7782592773438,
+            "bottom": 460.7094421386719,
+            "left": 879.8876342773438
+          },
+          "font": "12px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "WARMER",
+          "box": {
+            "x": 996.37890625,
+            "y": 441.7094421386719,
+            "width": 71.03125,
+            "height": 19,
+            "top": 441.7094421386719,
+            "right": 1067.41015625,
+            "bottom": 460.7094421386719,
+            "left": 996.37890625
+          },
+          "font": "12px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Cloud",
+          "box": {
+            "x": 804.6397094726562,
+            "y": 466.1808776855469,
+            "width": 47.74639892578125,
+            "height": 22,
+            "top": 466.1808776855469,
+            "right": 852.3861083984375,
+            "bottom": 488.1808776855469,
+            "left": 804.6397094726562
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Middle",
+          "box": {
+            "x": 804.6397094726562,
+            "y": 558.1505737304688,
+            "width": 58.27410888671875,
+            "height": 21.99993896484375,
+            "top": 558.1505737304688,
+            "right": 862.913818359375,
+            "bottom": 580.1505126953125,
+            "left": 804.6397094726562
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Surface",
+          "box": {
+            "x": 804.6397094726562,
+            "y": 633.3984375,
+            "width": 62.18463134765625,
+            "height": 22,
+            "top": 633.3984375,
+            "right": 866.8243408203125,
+            "bottom": 655.3984375,
+            "left": 804.6397094726562
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "1",
+          "box": {
+            "x": 1093.8328857421875,
+            "y": 516.5684814453125,
+            "width": 6.875,
+            "height": 16,
+            "top": 516.5684814453125,
+            "right": 1100.7078857421875,
+            "bottom": 532.5684814453125,
+            "left": 1093.8328857421875
+          },
+          "font": "10px",
+          "fill": "rgb(113, 63, 18)"
+        },
+        {
+          "text": "2",
+          "box": {
+            "x": 1093.8328857421875,
+            "y": 600.17724609375,
+            "width": 7,
+            "height": 16,
+            "top": 600.17724609375,
+            "right": 1100.8328857421875,
+            "bottom": 616.17724609375,
+            "left": 1093.8328857421875
+          },
+          "font": "10px",
+          "fill": "rgb(113, 63, 18)"
+        }
+      ],
+      "readouts": [
+        {
+          "text": "Cloud\n-5°C",
+          "box": {
+            "x": 803.4375,
+            "y": 367.015625,
+            "width": 100.1875,
+            "height": 55,
+            "top": 367.015625,
+            "right": 903.625,
+            "bottom": 422.015625,
+            "left": 803.4375
+          }
+        },
+        {
+          "text": "Middle\n+5°C",
+          "box": {
+            "x": 908.625,
+            "y": 367.015625,
+            "width": 100.1875,
+            "height": 55,
+            "top": 367.015625,
+            "right": 1008.8125,
+            "bottom": 422.015625,
+            "left": 908.625
+          }
+        },
+        {
+          "text": "Surface\n-5°C",
+          "box": {
+            "x": 1013.8125,
+            "y": 367.015625,
+            "width": 100.1875,
+            "height": 55,
+            "top": 367.015625,
+            "right": 1114,
+            "bottom": 422.015625,
+            "left": 1013.8125
+          }
+        }
+      ],
+      "style": {
+        "color": "rgb(23, 60, 69)",
+        "background": "rgb(244, 248, 251)"
+      },
+      "text": "Read the air column\nCloud ↓ surface\nCloud\n-5°C\nMiddle\n+5°C\nSurface\n-5°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n1\n2\n\nAir crosses 0°C twice (warming, then cooling).\n\nShaded lower band: below-freezing air before arrival.\n\n1\nInto warmer air: below 0°C to above 0°C.\n2\nInto colder air: above 0°C to below 0°C.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nModeled arrival: supercooled liquid. The drop reaches a cold surface as liquid, where it can form an ice coating.\n\nCompare air with particle state"
+    },
+    {
+      "name": "all-zero-desktop",
+      "width": 1280,
+      "forcedColors": false,
+      "canvasText": "rgb(0, 0, 0)",
+      "profile": {
+        "x": 790.4375,
+        "y": 321.015625,
+        "width": 336.5625,
+        "height": 578.4375,
+        "top": 321.015625,
+        "right": 1127,
+        "bottom": 899.453125,
+        "left": 790.4375
+      },
+      "documentOverflow": false,
+      "overflowingElements": [],
+      "svg": {
+        "x": 803.4375,
+        "y": 434.015625,
+        "width": 310.5625,
+        "height": 248.4375,
+        "top": 434.015625,
+        "right": 1114,
+        "bottom": 682.453125,
+        "left": 803.4375
+      },
+      "texts": [
+        {
+          "text": "-30°C",
+          "box": {
+            "x": 866.8809814453125,
+            "y": 657.09228515625,
+            "width": 40.9111328125,
+            "height": 21,
+            "top": 657.09228515625,
+            "right": 907.7921142578125,
+            "bottom": 678.09228515625,
+            "left": 866.8809814453125
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "0°C",
+          "box": {
+            "x": 961.70703125,
+            "y": 657.09228515625,
+            "width": 25.29266357421875,
+            "height": 21,
+            "top": 657.09228515625,
+            "right": 986.9996948242188,
+            "bottom": 678.09228515625,
+            "left": 961.70703125
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "+30°C",
+          "box": {
+            "x": 1038.5330810546875,
+            "y": 657.09228515625,
+            "width": 45.6854248046875,
+            "height": 21,
+            "top": 657.09228515625,
+            "right": 1084.218505859375,
+            "bottom": 678.09228515625,
+            "left": 1038.5330810546875
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "COLDER",
+          "box": {
+            "x": 879.8876342773438,
+            "y": 441.7094421386719,
+            "width": 58.890625,
+            "height": 19,
+            "top": 441.7094421386719,
+            "right": 938.7782592773438,
+            "bottom": 460.7094421386719,
+            "left": 879.8876342773438
+          },
+          "font": "12px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "WARMER",
+          "box": {
+            "x": 996.37890625,
+            "y": 441.7094421386719,
+            "width": 71.03125,
+            "height": 19,
+            "top": 441.7094421386719,
+            "right": 1067.41015625,
+            "bottom": 460.7094421386719,
+            "left": 996.37890625
+          },
+          "font": "12px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Cloud",
+          "box": {
+            "x": 804.6397094726562,
+            "y": 466.1808776855469,
+            "width": 47.74639892578125,
+            "height": 22,
+            "top": 466.1808776855469,
+            "right": 852.3861083984375,
+            "bottom": 488.1808776855469,
+            "left": 804.6397094726562
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Middle",
+          "box": {
+            "x": 804.6397094726562,
+            "y": 558.1505737304688,
+            "width": 58.27410888671875,
+            "height": 21.99993896484375,
+            "top": 558.1505737304688,
+            "right": 862.913818359375,
+            "bottom": 580.1505126953125,
+            "left": 804.6397094726562
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Surface",
+          "box": {
+            "x": 804.6397094726562,
+            "y": 633.3984375,
+            "width": 62.18463134765625,
+            "height": 22,
+            "top": 633.3984375,
+            "right": 866.8243408203125,
+            "bottom": 655.3984375,
+            "left": 804.6397094726562
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        }
+      ],
+      "readouts": [
+        {
+          "text": "Cloud\n0°C",
+          "box": {
+            "x": 803.4375,
+            "y": 367.015625,
+            "width": 100.1875,
+            "height": 55,
+            "top": 367.015625,
+            "right": 903.625,
+            "bottom": 422.015625,
+            "left": 803.4375
+          }
+        },
+        {
+          "text": "Middle\n0°C",
+          "box": {
+            "x": 908.625,
+            "y": 367.015625,
+            "width": 100.1875,
+            "height": 55,
+            "top": 367.015625,
+            "right": 1008.8125,
+            "bottom": 422.015625,
+            "left": 908.625
+          }
+        },
+        {
+          "text": "Surface\n0°C",
+          "box": {
+            "x": 1013.8125,
+            "y": 367.015625,
+            "width": 100.1875,
+            "height": 55,
+            "top": 367.015625,
+            "right": 1114,
+            "bottom": 422.015625,
+            "left": 1013.8125
+          }
+        }
+      ],
+      "style": {
+        "color": "rgb(23, 60, 69)",
+        "background": "rgb(244, 248, 251)"
+      },
+      "text": "Read the air column\nCloud ↓ surface\nCloud\n0°C\nMiddle\n0°C\nSurface\n0°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n\nAir stays at 0°C throughout the profile.\n\nThe highlighted part of the line stays at 0°C between the sampled levels.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nCompare air with particle state"
+    },
+    {
+      "name": "near-zero-desktop",
+      "width": 1280,
+      "forcedColors": false,
+      "canvasText": "rgb(0, 0, 0)",
+      "profile": {
+        "x": 790.4375,
+        "y": 271.015625,
+        "width": 336.5625,
+        "height": 728.9375,
+        "top": 271.015625,
+        "right": 1127,
+        "bottom": 999.953125,
+        "left": 790.4375
+      },
+      "documentOverflow": false,
+      "overflowingElements": [],
+      "svg": {
+        "x": 803.4375,
+        "y": 433.515625,
+        "width": 310.5625,
+        "height": 248.4375,
+        "top": 433.515625,
+        "right": 1114,
+        "bottom": 681.953125,
+        "left": 803.4375
+      },
+      "texts": [
+        {
+          "text": "-30°C",
+          "box": {
+            "x": 866.8809814453125,
+            "y": 656.59228515625,
+            "width": 40.9111328125,
+            "height": 21,
+            "top": 656.59228515625,
+            "right": 907.7921142578125,
+            "bottom": 677.59228515625,
+            "left": 866.8809814453125
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "0°C",
+          "box": {
+            "x": 961.70703125,
+            "y": 656.59228515625,
+            "width": 25.29266357421875,
+            "height": 21,
+            "top": 656.59228515625,
+            "right": 986.9996948242188,
+            "bottom": 677.59228515625,
+            "left": 961.70703125
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "+30°C",
+          "box": {
+            "x": 1038.5330810546875,
+            "y": 656.59228515625,
+            "width": 45.6854248046875,
+            "height": 21,
+            "top": 656.59228515625,
+            "right": 1084.218505859375,
+            "bottom": 677.59228515625,
+            "left": 1038.5330810546875
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "COLDER",
+          "box": {
+            "x": 879.8876342773438,
+            "y": 441.2094421386719,
+            "width": 58.890625,
+            "height": 19,
+            "top": 441.2094421386719,
+            "right": 938.7782592773438,
+            "bottom": 460.2094421386719,
+            "left": 879.8876342773438
+          },
+          "font": "12px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "WARMER",
+          "box": {
+            "x": 996.37890625,
+            "y": 441.2094421386719,
+            "width": 71.03125,
+            "height": 19,
+            "top": 441.2094421386719,
+            "right": 1067.41015625,
+            "bottom": 460.2094421386719,
+            "left": 996.37890625
+          },
+          "font": "12px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Cloud",
+          "box": {
+            "x": 804.6397094726562,
+            "y": 465.6808776855469,
+            "width": 47.74639892578125,
+            "height": 22,
+            "top": 465.6808776855469,
+            "right": 852.3861083984375,
+            "bottom": 487.6808776855469,
+            "left": 804.6397094726562
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Middle",
+          "box": {
+            "x": 804.6397094726562,
+            "y": 557.6505737304688,
+            "width": 58.27410888671875,
+            "height": 21.99993896484375,
+            "top": 557.6505737304688,
+            "right": 862.913818359375,
+            "bottom": 579.6505126953125,
+            "left": 804.6397094726562
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Surface",
+          "box": {
+            "x": 804.6397094726562,
+            "y": 632.8984375,
+            "width": 62.18463134765625,
+            "height": 22,
+            "top": 632.8984375,
+            "right": 866.8243408203125,
+            "bottom": 654.8984375,
+            "left": 804.6397094726562
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "1",
+          "box": {
+            "x": 1093.8328857421875,
+            "y": 516.0684814453125,
+            "width": 6.875,
+            "height": 16,
+            "top": 516.0684814453125,
+            "right": 1100.7078857421875,
+            "bottom": 532.0684814453125,
+            "left": 1093.8328857421875
+          },
+          "font": "10px",
+          "fill": "rgb(113, 63, 18)"
+        },
+        {
+          "text": "2",
+          "box": {
+            "x": 1093.8328857421875,
+            "y": 599.67724609375,
+            "width": 7,
+            "height": 16,
+            "top": 599.67724609375,
+            "right": 1100.8328857421875,
+            "bottom": 615.67724609375,
+            "left": 1093.8328857421875
+          },
+          "font": "10px",
+          "fill": "rgb(113, 63, 18)"
+        }
+      ],
+      "readouts": [
+        {
+          "text": "Cloud\n-0.00004°C",
+          "box": {
+            "x": 803.4375,
+            "y": 317.015625,
+            "width": 310.5625,
+            "height": 31.5,
+            "top": 317.015625,
+            "right": 1114,
+            "bottom": 348.515625,
+            "left": 803.4375
+          }
+        },
+        {
+          "text": "Middle\n+0.00004°C",
+          "box": {
+            "x": 803.4375,
+            "y": 353.515625,
+            "width": 310.5625,
+            "height": 31.5,
+            "top": 353.515625,
+            "right": 1114,
+            "bottom": 385.015625,
+            "left": 803.4375
+          }
+        },
+        {
+          "text": "Surface\n-0.00004°C",
+          "box": {
+            "x": 803.4375,
+            "y": 390.015625,
+            "width": 310.5625,
+            "height": 31.5,
+            "top": 390.015625,
+            "right": 1114,
+            "bottom": 421.515625,
+            "left": 803.4375
+          }
+        }
+      ],
+      "style": {
+        "color": "rgb(23, 60, 69)",
+        "background": "rgb(244, 248, 251)"
+      },
+      "text": "Read the air column\nCloud ↓ surface\nCloud\n-0.00004°C\nMiddle\n+0.00004°C\nSurface\n-0.00004°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n1\n2\n\nAir crosses 0°C twice (warming, then cooling).\n\nShaded lower band: below-freezing air before arrival.\n\n1\nInto warmer air: below 0°C to above 0°C.\n2\nInto colder air: above 0°C to below 0°C.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nModeled arrival: supercooled liquid. The drop reaches a cold surface as liquid, where it can form an ice coating.\n\nCompare air with particle state"
+    },
+    {
+      "name": "near-coincident-desktop",
+      "width": 1280,
+      "forcedColors": false,
+      "canvasText": "rgb(0, 0, 0)",
+      "profile": {
+        "x": 790.4375,
+        "y": 271.015625,
+        "width": 336.5625,
+        "height": 661.4375,
+        "top": 271.015625,
+        "right": 1127,
+        "bottom": 932.453125,
+        "left": 790.4375
+      },
+      "documentOverflow": false,
+      "overflowingElements": [],
+      "svg": {
+        "x": 803.4375,
+        "y": 384.015625,
+        "width": 310.5625,
+        "height": 248.4375,
+        "top": 384.015625,
+        "right": 1114,
+        "bottom": 632.453125,
+        "left": 803.4375
+      },
+      "texts": [
+        {
+          "text": "-30°C",
+          "box": {
+            "x": 866.8809814453125,
+            "y": 607.09228515625,
+            "width": 40.9111328125,
+            "height": 21,
+            "top": 607.09228515625,
+            "right": 907.7921142578125,
+            "bottom": 628.09228515625,
+            "left": 866.8809814453125
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "0°C",
+          "box": {
+            "x": 961.70703125,
+            "y": 607.09228515625,
+            "width": 25.29266357421875,
+            "height": 21,
+            "top": 607.09228515625,
+            "right": 986.9996948242188,
+            "bottom": 628.09228515625,
+            "left": 961.70703125
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "+30°C",
+          "box": {
+            "x": 1038.5330810546875,
+            "y": 607.09228515625,
+            "width": 45.6854248046875,
+            "height": 21,
+            "top": 607.09228515625,
+            "right": 1084.218505859375,
+            "bottom": 628.09228515625,
+            "left": 1038.5330810546875
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "COLDER",
+          "box": {
+            "x": 879.8876342773438,
+            "y": 391.7094421386719,
+            "width": 58.890625,
+            "height": 19,
+            "top": 391.7094421386719,
+            "right": 938.7782592773438,
+            "bottom": 410.7094421386719,
+            "left": 879.8876342773438
+          },
+          "font": "12px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "WARMER",
+          "box": {
+            "x": 996.37890625,
+            "y": 391.7094421386719,
+            "width": 71.03125,
+            "height": 19,
+            "top": 391.7094421386719,
+            "right": 1067.41015625,
+            "bottom": 410.7094421386719,
+            "left": 996.37890625
+          },
+          "font": "12px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Cloud",
+          "box": {
+            "x": 804.6397094726562,
+            "y": 416.1808776855469,
+            "width": 47.74639892578125,
+            "height": 22,
+            "top": 416.1808776855469,
+            "right": 852.3861083984375,
+            "bottom": 438.1808776855469,
+            "left": 804.6397094726562
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Middle",
+          "box": {
+            "x": 804.6397094726562,
+            "y": 508.1505432128906,
+            "width": 58.27410888671875,
+            "height": 21.999969482421875,
+            "top": 508.1505432128906,
+            "right": 862.913818359375,
+            "bottom": 530.1505126953125,
+            "left": 804.6397094726562
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Surface",
+          "box": {
+            "x": 804.6397094726562,
+            "y": 583.3984375,
+            "width": 62.18463134765625,
+            "height": 22,
+            "top": 583.3984375,
+            "right": 866.8243408203125,
+            "bottom": 605.3984375,
+            "left": 804.6397094726562
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "1",
+          "box": {
+            "x": 1093.8328857421875,
+            "y": 499.4267578125,
+            "width": 6.875,
+            "height": 16,
+            "top": 499.4267578125,
+            "right": 1100.7078857421875,
+            "bottom": 515.4267578125,
+            "left": 1093.8328857421875
+          },
+          "font": "10px",
+          "fill": "rgb(113, 63, 18)"
+        },
+        {
+          "text": "2",
+          "box": {
+            "x": 1093.8328857421875,
+            "y": 525.7037963867188,
+            "width": 7,
+            "height": 16,
+            "top": 525.7037963867188,
+            "right": 1100.8328857421875,
+            "bottom": 541.7037963867188,
+            "left": 1093.8328857421875
+          },
+          "font": "10px",
+          "fill": "rgb(113, 63, 18)"
+        }
+      ],
+      "readouts": [
+        {
+          "text": "Cloud\n-35°C",
+          "box": {
+            "x": 803.4375,
+            "y": 317.015625,
+            "width": 100.1875,
+            "height": 55,
+            "top": 317.015625,
+            "right": 903.625,
+            "bottom": 372.015625,
+            "left": 803.4375
+          }
+        },
+        {
+          "text": "Middle\n+0.01°C",
+          "box": {
+            "x": 908.625,
+            "y": 317.015625,
+            "width": 100.1875,
+            "height": 55,
+            "top": 317.015625,
+            "right": 1008.8125,
+            "bottom": 372.015625,
+            "left": 908.625
+          }
+        },
+        {
+          "text": "Surface\n-15°C",
+          "box": {
+            "x": 1013.8125,
+            "y": 317.015625,
+            "width": 100.1875,
+            "height": 55,
+            "top": 317.015625,
+            "right": 1114,
+            "bottom": 372.015625,
+            "left": 1013.8125
+          }
+        }
+      ],
+      "style": {
+        "color": "rgb(23, 60, 69)",
+        "background": "rgb(244, 248, 251)"
+      },
+      "text": "Read the air column\nCloud ↓ surface\nCloud\n-35°C\nMiddle\n+0.01°C\nSurface\n-15°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n1\n2\n\nAir crosses 0°C twice (warming, then cooling).\n\nShaded lower band: below-freezing air before arrival.\n\n1\nInto warmer air: below 0°C to above 0°C.\n2\nInto colder air: above 0°C to below 0°C.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nModeled arrival: ice pellets. The illustrated drop freezes in the air before reaching the surface.\n\nCompare air with particle state"
+    },
+    {
+      "name": "close-crossings-phone-390",
+      "width": 390,
+      "forcedColors": false,
+      "canvasText": "rgb(0, 0, 0)",
+      "profile": {
+        "x": 44,
+        "y": 156.40625,
+        "width": 302,
+        "height": 687.796875,
+        "top": 156.40625,
+        "right": 346,
+        "bottom": 844.203125,
+        "left": 44
+      },
+      "documentOverflow": false,
+      "overflowingElements": [],
+      "svg": {
+        "x": 57,
+        "y": 269.40625,
+        "width": 276,
+        "height": 220.796875,
+        "top": 269.40625,
+        "right": 333,
+        "bottom": 490.203125,
+        "left": 57
+      },
+      "texts": [
+        {
+          "text": "-30°C",
+          "box": {
+            "x": 113.38211059570312,
+            "y": 467.7724609375,
+            "width": 36.46549987792969,
+            "height": 18,
+            "top": 467.7724609375,
+            "right": 149.8476104736328,
+            "bottom": 485.7724609375,
+            "left": 113.38211059570312
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "0°C",
+          "box": {
+            "x": 197.65916442871094,
+            "y": 467.7724609375,
+            "width": 22.587997436523438,
+            "height": 18,
+            "top": 467.7724609375,
+            "right": 220.24716186523438,
+            "bottom": 485.7724609375,
+            "left": 197.65916442871094
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "+30°C",
+          "box": {
+            "x": 265.93621826171875,
+            "y": 467.7724609375,
+            "width": 40.707550048828125,
+            "height": 18,
+            "top": 467.7724609375,
+            "right": 306.6437683105469,
+            "bottom": 485.7724609375,
+            "left": 265.93621826171875
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "COLDER",
+          "box": {
+            "x": 124.939453125,
+            "y": 275.5751953125,
+            "width": 53.239654541015625,
+            "height": 17,
+            "top": 275.5751953125,
+            "right": 178.17910766601562,
+            "bottom": 292.5751953125,
+            "left": 124.939453125
+          },
+          "font": "12px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "WARMER",
+          "box": {
+            "x": 228.3955078125,
+            "y": 275.5751953125,
+            "width": 64.13519287109375,
+            "height": 17,
+            "top": 275.5751953125,
+            "right": 292.53070068359375,
+            "bottom": 292.5751953125,
+            "left": 228.3955078125
+          },
+          "font": "12px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Cloud",
+          "box": {
+            "x": 58.0634765625,
+            "y": 297.990234375,
+            "width": 42.65858459472656,
+            "height": 20,
+            "top": 297.990234375,
+            "right": 100.72206115722656,
+            "bottom": 317.990234375,
+            "left": 58.0634765625
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Middle",
+          "box": {
+            "x": 58.0634765625,
+            "y": 379.7275390625,
+            "width": 51.90385437011719,
+            "height": 20,
+            "top": 379.7275390625,
+            "right": 109.96733093261719,
+            "bottom": 399.7275390625,
+            "left": 58.0634765625
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Surface",
+          "box": {
+            "x": 58.0634765625,
+            "y": 446.603515625,
+            "width": 55.37940979003906,
+            "height": 20,
+            "top": 446.603515625,
+            "right": 113.44288635253906,
+            "bottom": 466.603515625,
+            "left": 58.0634765625
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "1",
+          "box": {
+            "x": 315.08203125,
+            "y": 372.5306396484375,
+            "width": 6.109375,
+            "height": 13.999969482421875,
+            "top": 372.5306396484375,
+            "right": 321.19140625,
+            "bottom": 386.5306091308594,
+            "left": 315.08203125
+          },
+          "font": "10px",
+          "fill": "rgb(113, 63, 18)"
+        },
+        {
+          "text": "2",
+          "box": {
+            "x": 315.08203125,
+            "y": 395.8841552734375,
+            "width": 6.109375,
+            "height": 14,
+            "top": 395.8841552734375,
+            "right": 321.19140625,
+            "bottom": 409.8841552734375,
+            "left": 315.08203125
+          },
+          "font": "10px",
+          "fill": "rgb(113, 63, 18)"
+        }
+      ],
+      "readouts": [
+        {
+          "text": "Cloud\n-35°C",
+          "box": {
+            "x": 57,
+            "y": 202.40625,
+            "width": 88.65625,
+            "height": 55,
+            "top": 202.40625,
+            "right": 145.65625,
+            "bottom": 257.40625,
+            "left": 57
+          }
+        },
+        {
+          "text": "Middle\n+0.01°C",
+          "box": {
+            "x": 150.65625,
+            "y": 202.40625,
+            "width": 88.671875,
+            "height": 55,
+            "top": 202.40625,
+            "right": 239.328125,
+            "bottom": 257.40625,
+            "left": 150.65625
+          }
+        },
+        {
+          "text": "Surface\n-15°C",
+          "box": {
+            "x": 244.328125,
+            "y": 202.40625,
+            "width": 88.65625,
+            "height": 55,
+            "top": 202.40625,
+            "right": 332.984375,
+            "bottom": 257.40625,
+            "left": 244.328125
+          }
+        }
+      ],
+      "style": {
+        "color": "rgb(23, 60, 69)",
+        "background": "rgb(244, 248, 251)"
+      },
+      "text": "Read the air column\nCloud ↓ surface\nCloud\n-35°C\nMiddle\n+0.01°C\nSurface\n-15°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n1\n2\n\nAir crosses 0°C twice (warming, then cooling).\n\nShaded lower band: below-freezing air before arrival.\n\n1\nInto warmer air: below 0°C to above 0°C.\n2\nInto colder air: above 0°C to below 0°C.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nModeled arrival: ice pellets. The illustrated drop freezes in the air before reaching the surface.\n\nCompare air with particle state"
+    },
+    {
+      "name": "close-crossings-phone-320",
+      "width": 320,
+      "forcedColors": false,
+      "canvasText": "rgb(0, 0, 0)",
+      "profile": {
+        "x": 44,
+        "y": 157.0625,
+        "width": 232,
+        "height": 717.859375,
+        "top": 157.0625,
+        "right": 276,
+        "bottom": 874.921875,
+        "left": 44
+      },
+      "documentOverflow": false,
+      "overflowingElements": [],
+      "svg": {
+        "x": 57,
+        "y": 290.5625,
+        "width": 206,
+        "height": 164.796875,
+        "top": 290.5625,
+        "right": 263,
+        "bottom": 455.359375,
+        "left": 57
+      },
+      "texts": [
+        {
+          "text": "-30°C",
+          "box": {
+            "x": 99.08344268798828,
+            "y": 438.8133239746094,
+            "width": 27.494552612304688,
+            "height": 14,
+            "top": 438.8133239746094,
+            "right": 126.57799530029297,
+            "bottom": 452.8133239746094,
+            "left": 99.08344268798828
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "0°C",
+          "box": {
+            "x": 161.9873046875,
+            "y": 438.8133239746094,
+            "width": 17.139251708984375,
+            "height": 14,
+            "top": 438.8133239746094,
+            "right": 179.12655639648438,
+            "bottom": 452.8133239746094,
+            "left": 161.9873046875
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "+30°C",
+          "box": {
+            "x": 212.94586181640625,
+            "y": 438.8133239746094,
+            "width": 30.659927368164062,
+            "height": 14,
+            "top": 438.8133239746094,
+            "right": 243.6057891845703,
+            "bottom": 452.8133239746094,
+            "left": 212.94586181640625
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "COLDER",
+          "box": {
+            "x": 107.70867919921875,
+            "y": 295.6160583496094,
+            "width": 39.26861572265625,
+            "height": 12,
+            "top": 295.6160583496094,
+            "right": 146.977294921875,
+            "bottom": 307.6160583496094,
+            "left": 107.70867919921875
+          },
+          "font": "12px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "WARMER",
+          "box": {
+            "x": 184.6767578125,
+            "y": 295.6160583496094,
+            "width": 47.65338134765625,
+            "height": 12,
+            "top": 295.6160583496094,
+            "right": 232.33013916015625,
+            "bottom": 307.6160583496094,
+            "left": 184.6767578125
+          },
+          "font": "12px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Cloud",
+          "box": {
+            "x": 57.794246673583984,
+            "y": 311.83880615234375,
+            "width": 31.499996185302734,
+            "height": 15,
+            "top": 311.83880615234375,
+            "right": 89.29424285888672,
+            "bottom": 326.83880615234375,
+            "left": 57.794246673583984
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Middle",
+          "box": {
+            "x": 57.794246673583984,
+            "y": 372.8453369140625,
+            "width": 39.019100189208984,
+            "height": 15,
+            "top": 372.8453369140625,
+            "right": 96.81334686279297,
+            "bottom": 387.8453369140625,
+            "left": 57.794246673583984
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Surface",
+          "box": {
+            "x": 57.794246673583984,
+            "y": 422.759765625,
+            "width": 41.61289596557617,
+            "height": 15,
+            "top": 422.759765625,
+            "right": 99.40714263916016,
+            "bottom": 437.759765625,
+            "left": 57.794246673583984
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "1",
+          "box": {
+            "x": 249.6246795654297,
+            "y": 366.74188232421875,
+            "width": 4.5625152587890625,
+            "height": 11,
+            "top": 366.74188232421875,
+            "right": 254.18719482421875,
+            "bottom": 377.74188232421875,
+            "left": 249.6246795654297
+          },
+          "font": "10px",
+          "fill": "rgb(113, 63, 18)"
+        },
+        {
+          "text": "2",
+          "box": {
+            "x": 249.6246795654297,
+            "y": 384.17230224609375,
+            "width": 5.0000152587890625,
+            "height": 11,
+            "top": 384.17230224609375,
+            "right": 254.62469482421875,
+            "bottom": 395.17230224609375,
+            "left": 249.6246795654297
+          },
+          "font": "10px",
+          "fill": "rgb(113, 63, 18)"
+        }
+      ],
+      "readouts": [
+        {
+          "text": "Cloud\n-35°C",
+          "box": {
+            "x": 57,
+            "y": 223.5625,
+            "width": 65.328125,
+            "height": 55,
+            "top": 223.5625,
+            "right": 122.328125,
+            "bottom": 278.5625,
+            "left": 57
+          }
+        },
+        {
+          "text": "Middle\n+0.01°C",
+          "box": {
+            "x": 127.328125,
+            "y": 223.5625,
+            "width": 65.328125,
+            "height": 55,
+            "top": 223.5625,
+            "right": 192.65625,
+            "bottom": 278.5625,
+            "left": 127.328125
+          }
+        },
+        {
+          "text": "Surface\n-15°C",
+          "box": {
+            "x": 197.65625,
+            "y": 223.5625,
+            "width": 65.34375,
+            "height": 55,
+            "top": 223.5625,
+            "right": 263,
+            "bottom": 278.5625,
+            "left": 197.65625
+          }
+        }
+      ],
+      "style": {
+        "color": "rgb(23, 60, 69)",
+        "background": "rgb(244, 248, 251)"
+      },
+      "text": "Read the air column\nCloud ↓ surface\nCloud\n-35°C\nMiddle\n+0.01°C\nSurface\n-15°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n1\n2\n\nAir crosses 0°C twice (warming, then cooling).\n\nShaded lower band: below-freezing air before arrival.\n\n1\nInto warmer air: below 0°C to above 0°C.\n2\nInto colder air: above 0°C to below 0°C.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nModeled arrival: ice pellets. The illustrated drop freezes in the air before reaching the surface.\n\nCompare air with particle state"
+    },
+    {
+      "name": "precise-values-phone-320",
+      "width": 320,
+      "forcedColors": false,
+      "canvasText": "rgb(0, 0, 0)",
+      "profile": {
+        "x": 44,
+        "y": 204.953125,
+        "width": 232,
+        "height": 785.359375,
+        "top": 204.953125,
+        "right": 276,
+        "bottom": 990.3125,
+        "left": 44
+      },
+      "documentOverflow": false,
+      "overflowingElements": [],
+      "svg": {
+        "x": 57,
+        "y": 387.953125,
+        "width": 206,
+        "height": 164.796875,
+        "top": 387.953125,
+        "right": 263,
+        "bottom": 552.75,
+        "left": 57
+      },
+      "texts": [
+        {
+          "text": "-30°C",
+          "box": {
+            "x": 99.08344268798828,
+            "y": 536.2039794921875,
+            "width": 27.494552612304688,
+            "height": 14,
+            "top": 536.2039794921875,
+            "right": 126.57799530029297,
+            "bottom": 550.2039794921875,
+            "left": 99.08344268798828
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "0°C",
+          "box": {
+            "x": 161.9873046875,
+            "y": 536.2039794921875,
+            "width": 17.139251708984375,
+            "height": 14,
+            "top": 536.2039794921875,
+            "right": 179.12655639648438,
+            "bottom": 550.2039794921875,
+            "left": 161.9873046875
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "+30°C",
+          "box": {
+            "x": 212.94586181640625,
+            "y": 536.2039794921875,
+            "width": 30.659927368164062,
+            "height": 14,
+            "top": 536.2039794921875,
+            "right": 243.6057891845703,
+            "bottom": 550.2039794921875,
+            "left": 212.94586181640625
+          },
+          "font": "13px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "COLDER",
+          "box": {
+            "x": 107.70867919921875,
+            "y": 393.0066833496094,
+            "width": 39.26861572265625,
+            "height": 12,
+            "top": 393.0066833496094,
+            "right": 146.977294921875,
+            "bottom": 405.0066833496094,
+            "left": 107.70867919921875
+          },
+          "font": "12px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "WARMER",
+          "box": {
+            "x": 184.6767578125,
+            "y": 393.0066833496094,
+            "width": 47.65338134765625,
+            "height": 12,
+            "top": 393.0066833496094,
+            "right": 232.33013916015625,
+            "bottom": 405.0066833496094,
+            "left": 184.6767578125
+          },
+          "font": "12px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Cloud",
+          "box": {
+            "x": 57.794246673583984,
+            "y": 409.22943115234375,
+            "width": 31.499996185302734,
+            "height": 15,
+            "top": 409.22943115234375,
+            "right": 89.29424285888672,
+            "bottom": 424.22943115234375,
+            "left": 57.794246673583984
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Middle",
+          "box": {
+            "x": 57.794246673583984,
+            "y": 470.2359619140625,
+            "width": 39.019100189208984,
+            "height": 15,
+            "top": 470.2359619140625,
+            "right": 96.81334686279297,
+            "bottom": 485.2359619140625,
+            "left": 57.794246673583984
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "Surface",
+          "box": {
+            "x": 57.794246673583984,
+            "y": 520.150390625,
+            "width": 41.61289596557617,
+            "height": 15,
+            "top": 520.150390625,
+            "right": 99.40714263916016,
+            "bottom": 535.150390625,
+            "left": 57.794246673583984
+          },
+          "font": "14px",
+          "fill": "rgb(51, 65, 85)"
+        },
+        {
+          "text": "1",
+          "box": {
+            "x": 249.6246795654297,
+            "y": 442.3365478515625,
+            "width": 4.5625152587890625,
+            "height": 10.999969482421875,
+            "top": 442.3365478515625,
+            "right": 254.18719482421875,
+            "bottom": 453.3365173339844,
+            "left": 249.6246795654297
+          },
+          "font": "10px",
+          "fill": "rgb(113, 63, 18)"
+        },
+        {
+          "text": "2",
+          "box": {
+            "x": 249.6246795654297,
+            "y": 497.7969970703125,
+            "width": 5.0000152587890625,
+            "height": 11,
+            "top": 497.7969970703125,
+            "right": 254.62469482421875,
+            "bottom": 508.7969970703125,
+            "left": 249.6246795654297
+          },
+          "font": "10px",
+          "fill": "rgb(113, 63, 18)"
+        }
+      ],
+      "readouts": [
+        {
+          "text": "Cloud\n-0.00004°C",
+          "box": {
+            "x": 57,
+            "y": 271.453125,
+            "width": 206,
+            "height": 31.5,
+            "top": 271.453125,
+            "right": 263,
+            "bottom": 302.953125,
+            "left": 57
+          }
+        },
+        {
+          "text": "Middle\n+0.00004°C",
+          "box": {
+            "x": 57,
+            "y": 307.953125,
+            "width": 206,
+            "height": 31.5,
+            "top": 307.953125,
+            "right": 263,
+            "bottom": 339.453125,
+            "left": 57
+          }
+        },
+        {
+          "text": "Surface\n-0.00004°C",
+          "box": {
+            "x": 57,
+            "y": 344.453125,
+            "width": 206,
+            "height": 31.5,
+            "top": 344.453125,
+            "right": 263,
+            "bottom": 375.953125,
+            "left": 57
+          }
+        }
+      ],
+      "style": {
+        "color": "rgb(23, 60, 69)",
+        "background": "rgb(244, 248, 251)"
+      },
+      "text": "Read the air column\nCloud ↓ surface\nCloud\n-0.00004°C\nMiddle\n+0.00004°C\nSurface\n-0.00004°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n1\n2\n\nAir crosses 0°C twice (warming, then cooling).\n\nShaded lower band: below-freezing air before arrival.\n\n1\nInto warmer air: below 0°C to above 0°C.\n2\nInto colder air: above 0°C to below 0°C.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nModeled arrival: supercooled liquid. The drop reaches a cold surface as liquid, where it can form an ice coating.\n\nCompare air with particle state"
+    },
+    {
+      "name": "two-crossings-dark-phone",
+      "width": 390,
+      "forcedColors": false,
+      "canvasText": "rgb(0, 0, 0)",
+      "profile": {
+        "x": 44,
+        "y": 204.796875,
+        "width": 302,
+        "height": 687.796875,
+        "top": 204.796875,
+        "right": 346,
+        "bottom": 892.59375,
+        "left": 44
+      },
+      "documentOverflow": false,
+      "overflowingElements": [],
+      "svg": {
+        "x": 57,
+        "y": 317.796875,
+        "width": 276,
+        "height": 220.796875,
+        "top": 317.796875,
+        "right": 333,
+        "bottom": 538.59375,
+        "left": 57
+      },
+      "texts": [
+        {
+          "text": "-30°C",
+          "box": {
+            "x": 113.38211059570312,
+            "y": 516.1630859375,
+            "width": 36.46549987792969,
+            "height": 18,
+            "top": 516.1630859375,
+            "right": 149.8476104736328,
+            "bottom": 534.1630859375,
+            "left": 113.38211059570312
+          },
+          "font": "13px",
+          "fill": "rgb(226, 232, 240)"
+        },
+        {
+          "text": "0°C",
+          "box": {
+            "x": 197.65916442871094,
+            "y": 516.1630859375,
+            "width": 22.587997436523438,
+            "height": 18,
+            "top": 516.1630859375,
+            "right": 220.24716186523438,
+            "bottom": 534.1630859375,
+            "left": 197.65916442871094
+          },
+          "font": "13px",
+          "fill": "rgb(226, 232, 240)"
+        },
+        {
+          "text": "+30°C",
+          "box": {
+            "x": 265.93621826171875,
+            "y": 516.1630859375,
+            "width": 40.707550048828125,
+            "height": 18,
+            "top": 516.1630859375,
+            "right": 306.6437683105469,
+            "bottom": 534.1630859375,
+            "left": 265.93621826171875
+          },
+          "font": "13px",
+          "fill": "rgb(226, 232, 240)"
+        },
+        {
+          "text": "COLDER",
+          "box": {
+            "x": 124.939453125,
+            "y": 323.9658203125,
+            "width": 53.239654541015625,
+            "height": 17,
+            "top": 323.9658203125,
+            "right": 178.17910766601562,
+            "bottom": 340.9658203125,
+            "left": 124.939453125
+          },
+          "font": "12px",
+          "fill": "rgb(226, 232, 240)"
+        },
+        {
+          "text": "WARMER",
+          "box": {
+            "x": 228.3955078125,
+            "y": 323.9658203125,
+            "width": 64.13519287109375,
+            "height": 17,
+            "top": 323.9658203125,
+            "right": 292.53070068359375,
+            "bottom": 340.9658203125,
+            "left": 228.3955078125
+          },
+          "font": "12px",
+          "fill": "rgb(226, 232, 240)"
+        },
+        {
+          "text": "Cloud",
+          "box": {
+            "x": 58.0634765625,
+            "y": 346.380859375,
+            "width": 42.65858459472656,
+            "height": 20,
+            "top": 346.380859375,
+            "right": 100.72206115722656,
+            "bottom": 366.380859375,
+            "left": 58.0634765625
+          },
+          "font": "14px",
+          "fill": "rgb(226, 232, 240)"
+        },
+        {
+          "text": "Middle",
+          "box": {
+            "x": 58.0634765625,
+            "y": 428.1181640625,
+            "width": 51.90385437011719,
+            "height": 20,
+            "top": 428.1181640625,
+            "right": 109.96733093261719,
+            "bottom": 448.1181640625,
+            "left": 58.0634765625
+          },
+          "font": "14px",
+          "fill": "rgb(226, 232, 240)"
+        },
+        {
+          "text": "Surface",
+          "box": {
+            "x": 58.0634765625,
+            "y": 494.994140625,
+            "width": 55.37940979003906,
+            "height": 20,
+            "top": 494.994140625,
+            "right": 113.44288635253906,
+            "bottom": 514.994140625,
+            "left": 58.0634765625
+          },
+          "font": "14px",
+          "fill": "rgb(226, 232, 240)"
+        },
+        {
+          "text": "1",
+          "box": {
+            "x": 315.08203125,
+            "y": 391.71875,
+            "width": 6.109375,
+            "height": 14,
+            "top": 391.71875,
+            "right": 321.19140625,
+            "bottom": 405.71875,
+            "left": 315.08203125
+          },
+          "font": "10px",
+          "fill": "rgb(113, 63, 18)"
+        },
+        {
+          "text": "2",
+          "box": {
+            "x": 315.08203125,
+            "y": 466.025390625,
+            "width": 6.109375,
+            "height": 14,
+            "top": 466.025390625,
+            "right": 321.19140625,
+            "bottom": 480.025390625,
+            "left": 315.08203125
+          },
+          "font": "10px",
+          "fill": "rgb(113, 63, 18)"
+        }
+      ],
+      "readouts": [
+        {
+          "text": "Cloud\n-5°C",
+          "box": {
+            "x": 57,
+            "y": 250.796875,
+            "width": 88.65625,
+            "height": 55,
+            "top": 250.796875,
+            "right": 145.65625,
+            "bottom": 305.796875,
+            "left": 57
+          }
+        },
+        {
+          "text": "Middle\n+5°C",
+          "box": {
+            "x": 150.65625,
+            "y": 250.796875,
+            "width": 88.671875,
+            "height": 55,
+            "top": 250.796875,
+            "right": 239.328125,
+            "bottom": 305.796875,
+            "left": 150.65625
+          }
+        },
+        {
+          "text": "Surface\n-5°C",
+          "box": {
+            "x": 244.328125,
+            "y": 250.796875,
+            "width": 88.65625,
+            "height": 55,
+            "top": 250.796875,
+            "right": 332.984375,
+            "bottom": 305.796875,
+            "left": 244.328125
+          }
+        }
+      ],
+      "style": {
+        "color": "rgb(186, 230, 253)",
+        "background": "rgb(16, 37, 53)"
+      },
+      "text": "Read the air column\nCloud ↓ surface\nCloud\n-5°C\nMiddle\n+5°C\nSurface\n-5°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n1\n2\n\nAir crosses 0°C twice (warming, then cooling).\n\nShaded lower band: below-freezing air before arrival.\n\n1\nInto warmer air: below 0°C to above 0°C.\n2\nInto colder air: above 0°C to below 0°C.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nModeled arrival: supercooled liquid. The drop reaches a cold surface as liquid, where it can form an ice coating.\n\nCompare air with particle state"
+    },
+    {
+      "name": "two-crossings-forced-colors-phone",
+      "width": 390,
+      "forcedColors": true,
+      "canvasText": "rgb(0, 0, 0)",
+      "profile": {
+        "x": 44,
+        "y": 204.796875,
+        "width": 302,
+        "height": 687.796875,
+        "top": 204.796875,
+        "right": 346,
+        "bottom": 892.59375,
+        "left": 44
+      },
+      "documentOverflow": false,
+      "overflowingElements": [],
+      "svg": {
+        "x": 57,
+        "y": 317.796875,
+        "width": 276,
+        "height": 220.796875,
+        "top": 317.796875,
+        "right": 333,
+        "bottom": 538.59375,
+        "left": 57
+      },
+      "texts": [
+        {
+          "text": "-30°C",
+          "box": {
+            "x": 113.38211059570312,
+            "y": 516.1630859375,
+            "width": 36.46549987792969,
+            "height": 18,
+            "top": 516.1630859375,
+            "right": 149.8476104736328,
+            "bottom": 534.1630859375,
+            "left": 113.38211059570312
+          },
+          "font": "13px",
+          "fill": "rgb(0, 0, 0)"
+        },
+        {
+          "text": "0°C",
+          "box": {
+            "x": 197.65916442871094,
+            "y": 516.1630859375,
+            "width": 22.587997436523438,
+            "height": 18,
+            "top": 516.1630859375,
+            "right": 220.24716186523438,
+            "bottom": 534.1630859375,
+            "left": 197.65916442871094
+          },
+          "font": "13px",
+          "fill": "rgb(0, 0, 0)"
+        },
+        {
+          "text": "+30°C",
+          "box": {
+            "x": 265.93621826171875,
+            "y": 516.1630859375,
+            "width": 40.707550048828125,
+            "height": 18,
+            "top": 516.1630859375,
+            "right": 306.6437683105469,
+            "bottom": 534.1630859375,
+            "left": 265.93621826171875
+          },
+          "font": "13px",
+          "fill": "rgb(0, 0, 0)"
+        },
+        {
+          "text": "COLDER",
+          "box": {
+            "x": 124.939453125,
+            "y": 323.9658203125,
+            "width": 53.239654541015625,
+            "height": 17,
+            "top": 323.9658203125,
+            "right": 178.17910766601562,
+            "bottom": 340.9658203125,
+            "left": 124.939453125
+          },
+          "font": "12px",
+          "fill": "rgb(0, 0, 0)"
+        },
+        {
+          "text": "WARMER",
+          "box": {
+            "x": 228.3955078125,
+            "y": 323.9658203125,
+            "width": 64.13519287109375,
+            "height": 17,
+            "top": 323.9658203125,
+            "right": 292.53070068359375,
+            "bottom": 340.9658203125,
+            "left": 228.3955078125
+          },
+          "font": "12px",
+          "fill": "rgb(0, 0, 0)"
+        },
+        {
+          "text": "Cloud",
+          "box": {
+            "x": 58.0634765625,
+            "y": 346.380859375,
+            "width": 42.65858459472656,
+            "height": 20,
+            "top": 346.380859375,
+            "right": 100.72206115722656,
+            "bottom": 366.380859375,
+            "left": 58.0634765625
+          },
+          "font": "14px",
+          "fill": "rgb(0, 0, 0)"
+        },
+        {
+          "text": "Middle",
+          "box": {
+            "x": 58.0634765625,
+            "y": 428.1181640625,
+            "width": 51.90385437011719,
+            "height": 20,
+            "top": 428.1181640625,
+            "right": 109.96733093261719,
+            "bottom": 448.1181640625,
+            "left": 58.0634765625
+          },
+          "font": "14px",
+          "fill": "rgb(0, 0, 0)"
+        },
+        {
+          "text": "Surface",
+          "box": {
+            "x": 58.0634765625,
+            "y": 494.994140625,
+            "width": 55.37940979003906,
+            "height": 20,
+            "top": 494.994140625,
+            "right": 113.44288635253906,
+            "bottom": 514.994140625,
+            "left": 58.0634765625
+          },
+          "font": "14px",
+          "fill": "rgb(0, 0, 0)"
+        },
+        {
+          "text": "1",
+          "box": {
+            "x": 315.08203125,
+            "y": 391.71875,
+            "width": 6.109375,
+            "height": 14,
+            "top": 391.71875,
+            "right": 321.19140625,
+            "bottom": 405.71875,
+            "left": 315.08203125
+          },
+          "font": "10px",
+          "fill": "rgb(0, 0, 0)"
+        },
+        {
+          "text": "2",
+          "box": {
+            "x": 315.08203125,
+            "y": 466.025390625,
+            "width": 6.109375,
+            "height": 14,
+            "top": 466.025390625,
+            "right": 321.19140625,
+            "bottom": 480.025390625,
+            "left": 315.08203125
+          },
+          "font": "10px",
+          "fill": "rgb(0, 0, 0)"
+        }
+      ],
+      "readouts": [
+        {
+          "text": "Cloud\n-5°C",
+          "box": {
+            "x": 57,
+            "y": 250.796875,
+            "width": 88.65625,
+            "height": 55,
+            "top": 250.796875,
+            "right": 145.65625,
+            "bottom": 305.796875,
+            "left": 57
+          }
+        },
+        {
+          "text": "Middle\n+5°C",
+          "box": {
+            "x": 150.65625,
+            "y": 250.796875,
+            "width": 88.671875,
+            "height": 55,
+            "top": 250.796875,
+            "right": 239.328125,
+            "bottom": 305.796875,
+            "left": 150.65625
+          }
+        },
+        {
+          "text": "Surface\n-5°C",
+          "box": {
+            "x": 244.328125,
+            "y": 250.796875,
+            "width": 88.65625,
+            "height": 55,
+            "top": 250.796875,
+            "right": 332.984375,
+            "bottom": 305.796875,
+            "left": 244.328125
+          }
+        }
+      ],
+      "style": {
+        "color": "rgb(0, 0, 0)",
+        "background": "rgb(255, 255, 255)"
+      },
+      "text": "Read the air column\nCloud ↓ surface\nCloud\n-5°C\nMiddle\n+5°C\nSurface\n-5°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n1\n2\n\nAir crosses 0°C twice (warming, then cooling).\n\nShaded lower band: below-freezing air before arrival.\n\n1\nInto warmer air: below 0°C to above 0°C.\n2\nInto colder air: above 0°C to below 0°C.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nModeled arrival: supercooled liquid. The drop reaches a cold surface as liquid, where it can form an ice coating.\n\nCompare air with particle state"
+    }
+  ],
+  "keyboard": {
+    "compareButtonSpaceOpensAndFocuses": true,
+    "nativeSliderArrowUpdatesGraph": true
+  },
+  "errors": [],
+  "failedRequests": [],
+  "endHashes": {
+    "stem_lab/stem_tool_watercycle.js": "9a31c9d2107ccaf74c578e3423958d5066915cd0dcd8b42b9fb5dc6442a56ed9",
+    "desktop/web-app/public/stem_lab/stem_tool_watercycle.js": "9a31c9d2107ccaf74c578e3423958d5066915cd0dcd8b42b9fb5dc6442a56ed9"
+  }
+}

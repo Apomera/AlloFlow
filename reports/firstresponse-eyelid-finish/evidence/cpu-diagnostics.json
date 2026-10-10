@@ -1,0 +1,11 @@
+{
+  "sourceSHA256": "9c05c086f710ce14387153275b36e780bf2d0069239b725a42e560680da9bc2e",
+  "baselineSHA256": "af6ecb094af6d67ebb0955170a55e0a9726308c59f4ddd9b196d56cfe434e4c7",
+  "provenance": "Diagnostic outputs observed from exec sessions11157,9572,8671,77401. Detailed earlier cpu-early.json files were overwritten by subsequent early runs before the preserve request; these records retain the actual errors and hashes from tool output. No failed run is counted as accepted.",
+  "failures": [
+    {"session":11157,"checkerSHA256":"b9ac84655ba70bbf8f9a85761ab5ac53afda9b9a1e29603cdc6ad57d85dfc22a","checks":7,"error":"all geometry outside six eye meshes; all materials, transforms, selection and contacts preserved","cause":"Private checker incorrectly compared geometry.type inside the already-authorized changed lid geometry scope."},
+    {"session":9572,"checkerSHA256":"f106ad5f724890abc19d60c516353af53900df7cebbea86b96c377cba1284fbe","checks":7,"error":"all geometry outside six eye meshes; all materials, transforms, selection and contacts preserved","details":"scope-differences.json records exactly two SphereGeometry to BufferGeometry type changes from Three r128 cloning; all other snapshot fields identical."},
+    {"session":8671,"checkerSHA256":"ff762422f799a3c5e6cdf01929472f996a605d60e0ebd890e23e76d4c1959320","checks":16849,"error":"fr-manikin-eye-right crease clears rendered surface shallowly","cause":"Private checker incorrectly applied vertex lift limit to interior triangle samples."},
+    {"session":77401,"checkerSHA256":"d1e0ed7530e2a8f9218928a3de515928f9801a4f141848cbabf12d30b97ef5e5","checks":16849,"error":"fr-manikin-eye-right crease clears rendered surface shallowly","gap":0.001122437602866053,"sample":737,"point":[0.0606795959174633,0.18983853608369827,-0.07051080837845802],"cause":"Same overbroad private interior threshold; gap is positive and remains shallow. Existing accepted checker bounds vertices below.001 and requires positive interior/edge clearance. New final checker retains those checks, adds.003 interior bound and records baseline extrema."}
+  ]
+}

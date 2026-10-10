@@ -1,0 +1,655 @@
+{
+  "mode": "full",
+  "beforeSHA256": "16aceaa1b7d8bbd0ed869536b554451ddd2e5e3a832229e2e3322f8ad75f03e2",
+  "candidateSHA256": "e8678347f414d45b2ac6e4483e4f16bd69df7682fb9db1959c0e73b22a8cc933",
+  "assertionCount": 29190,
+  "fixtureInputs": [
+    {
+      "name": "firstresponse_ear_folds.test.js",
+      "originalSHA256": "135d73e4bcca8709fe2205bfd3c5403125db86424347dd7ef0f6ea19bbadbea2",
+      "registeredCases": 27
+    },
+    {
+      "name": "firstresponse_ear_rims.test.js",
+      "originalSHA256": "2cc8e19ed7d491a6b77c115dafcf82160cbd68f1be406da70fe5908f8edf275c",
+      "registeredCases": 21
+    }
+  ],
+  "results": [
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "fitted manikin inner ear folds / uses closed outward ear-fold shells with continuous finite normals and bilateral geometry for %s \"adult\"",
+      "status": "passed",
+      "checks": 4003,
+      "durationMs": 107008
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "fitted manikin inner ear folds / uses closed outward ear-fold shells with continuous finite normals and bilateral geometry for %s \"child\"",
+      "status": "passed",
+      "checks": 4003,
+      "durationMs": 70605
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "fitted manikin inner ear folds / uses closed outward ear-fold shells with continuous finite normals and bilateral geometry for %s \"infant\"",
+      "status": "passed",
+      "checks": 4003,
+      "durationMs": 42688
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "fitted manikin inner ear folds / keeps shallow relief and tapered buried joins on the actual $age ear base in pose $phase {\"age\":\"adult\",\"phase\":0}",
+      "status": "passed",
+      "checks": 434,
+      "durationMs": 7710
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "fitted manikin inner ear folds / keeps shallow relief and tapered buried joins on the actual $age ear base in pose $phase {\"age\":\"adult\",\"phase\":8}",
+      "status": "passed",
+      "checks": 434,
+      "durationMs": 1943
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "fitted manikin inner ear folds / keeps shallow relief and tapered buried joins on the actual $age ear base in pose $phase {\"age\":\"child\",\"phase\":0}",
+      "status": "passed",
+      "checks": 434,
+      "durationMs": 1487
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "fitted manikin inner ear folds / keeps shallow relief and tapered buried joins on the actual $age ear base in pose $phase {\"age\":\"child\",\"phase\":8}",
+      "status": "passed",
+      "checks": 434,
+      "durationMs": 1054
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "fitted manikin inner ear folds / keeps shallow relief and tapered buried joins on the actual $age ear base in pose $phase {\"age\":\"infant\",\"phase\":0}",
+      "status": "passed",
+      "checks": 434,
+      "durationMs": 1277
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "fitted manikin inner ear folds / keeps shallow relief and tapered buried joins on the actual $age ear base in pose $phase {\"age\":\"infant\",\"phase\":8}",
+      "status": "passed",
+      "checks": 434,
+      "durationMs": 771
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "fitted manikin inner ear folds / keeps the $age inner folds inside the ear outline and clear of the outer helix in pose $phase {\"age\":\"adult\",\"phase\":0}",
+      "status": "passed",
+      "checks": 48,
+      "durationMs": 820
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "fitted manikin inner ear folds / keeps the $age inner folds inside the ear outline and clear of the outer helix in pose $phase {\"age\":\"adult\",\"phase\":8}",
+      "status": "passed",
+      "checks": 48,
+      "durationMs": 776
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "fitted manikin inner ear folds / keeps the $age inner folds inside the ear outline and clear of the outer helix in pose $phase {\"age\":\"child\",\"phase\":0}",
+      "status": "passed",
+      "checks": 48,
+      "durationMs": 763
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "fitted manikin inner ear folds / keeps the $age inner folds inside the ear outline and clear of the outer helix in pose $phase {\"age\":\"child\",\"phase\":8}",
+      "status": "passed",
+      "checks": 48,
+      "durationMs": 853
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "fitted manikin inner ear folds / keeps the $age inner folds inside the ear outline and clear of the outer helix in pose $phase {\"age\":\"infant\",\"phase\":0}",
+      "status": "passed",
+      "checks": 48,
+      "durationMs": 1166
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "fitted manikin inner ear folds / keeps the $age inner folds inside the ear outline and clear of the outer helix in pose $phase {\"age\":\"infant\",\"phase\":8}",
+      "status": "passed",
+      "checks": 48,
+      "durationMs": 2183
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "fitted manikin inner ear folds / carries the %s inner ear folds with the head and preserves shape and material through recovery \"adult\"",
+      "status": "passed",
+      "checks": 93,
+      "durationMs": 7539
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "fitted manikin inner ear folds / carries the %s inner ear folds with the head and preserves shape and material through recovery \"child\"",
+      "status": "passed",
+      "checks": 93,
+      "durationMs": 3151
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "fitted manikin inner ear folds / carries the %s inner ear folds with the head and preserves shape and material through recovery \"infant\"",
+      "status": "passed",
+      "checks": 93,
+      "durationMs": 13523
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "fitted manikin inner ear folds / preserves opaque skin relief and distinct concha shading in %s app contrast \"adult\"",
+      "status": "passed",
+      "checks": 41,
+      "durationMs": 31858
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "fitted manikin inner ear folds / preserves opaque skin relief and distinct concha shading in %s app contrast \"child\"",
+      "status": "passed",
+      "checks": 41,
+      "durationMs": 35016
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "fitted manikin inner ear folds / preserves opaque skin relief and distinct concha shading in %s app contrast \"infant\"",
+      "status": "passed",
+      "checks": 41,
+      "durationMs": 33718
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "refined pinna base / closed bilateral base and actual skull attachment {\"age\":\"adult\",\"phase\":0}",
+      "status": "failed",
+      "checks": 16,
+      "durationMs": 37573,
+      "error": "ReferenceError: Cannot access 'THREE' before initialization\n    at Object.fn (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-ear-work\\verify-ear.cjs:72:20)\n    at runCase (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-ear-work\\verify-ear.cjs:48:53)\n    at Object.<anonymous> (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-ear-work\\verify-ear.cjs:98:5)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)"
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "refined pinna base / closed bilateral base and actual skull attachment {\"age\":\"adult\",\"phase\":8}",
+      "status": "failed",
+      "checks": 16,
+      "durationMs": 29102,
+      "error": "ReferenceError: Cannot access 'THREE' before initialization\n    at Object.fn (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-ear-work\\verify-ear.cjs:72:20)\n    at runCase (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-ear-work\\verify-ear.cjs:48:53)\n    at Object.<anonymous> (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-ear-work\\verify-ear.cjs:98:5)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)"
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "refined pinna base / closed bilateral base and actual skull attachment {\"age\":\"child\",\"phase\":0}",
+      "status": "failed",
+      "checks": 16,
+      "durationMs": 18548,
+      "error": "ReferenceError: Cannot access 'THREE' before initialization\n    at Object.fn (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-ear-work\\verify-ear.cjs:72:20)\n    at runCase (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-ear-work\\verify-ear.cjs:48:53)\n    at Object.<anonymous> (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-ear-work\\verify-ear.cjs:98:5)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)"
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "refined pinna base / closed bilateral base and actual skull attachment {\"age\":\"child\",\"phase\":8}",
+      "status": "failed",
+      "checks": 16,
+      "durationMs": 12641,
+      "error": "ReferenceError: Cannot access 'THREE' before initialization\n    at Object.fn (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-ear-work\\verify-ear.cjs:72:20)\n    at runCase (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-ear-work\\verify-ear.cjs:48:53)\n    at Object.<anonymous> (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-ear-work\\verify-ear.cjs:98:5)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)"
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "refined pinna base / closed bilateral base and actual skull attachment {\"age\":\"infant\",\"phase\":0}",
+      "status": "failed",
+      "checks": 16,
+      "durationMs": 10623,
+      "error": "ReferenceError: Cannot access 'THREE' before initialization\n    at Object.fn (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-ear-work\\verify-ear.cjs:72:20)\n    at runCase (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-ear-work\\verify-ear.cjs:48:53)\n    at Object.<anonymous> (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-ear-work\\verify-ear.cjs:98:5)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)"
+    },
+    {
+      "suite": "firstresponse_ear_folds.test.js",
+      "name": "refined pinna base / closed bilateral base and actual skull attachment {\"age\":\"infant\",\"phase\":8}",
+      "status": "failed",
+      "checks": 16,
+      "durationMs": 6355,
+      "error": "ReferenceError: Cannot access 'THREE' before initialization\n    at Object.fn (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-ear-work\\verify-ear.cjs:72:20)\n    at runCase (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-ear-work\\verify-ear.cjs:48:53)\n    at Object.<anonymous> (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-ear-work\\verify-ear.cjs:98:5)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)"
+    },
+    {
+      "suite": "firstresponse_ear_rims.test.js",
+      "name": "fitted manikin outer ear rims / uses closed genus-one ear rims with continuous outward normals and bilateral geometry for %s \"adult\"",
+      "status": "passed",
+      "checks": 2079,
+      "durationMs": 21901
+    },
+    {
+      "suite": "firstresponse_ear_rims.test.js",
+      "name": "fitted manikin outer ear rims / uses closed genus-one ear rims with continuous outward normals and bilateral geometry for %s \"child\"",
+      "status": "passed",
+      "checks": 2079,
+      "durationMs": 1960
+    },
+    {
+      "suite": "firstresponse_ear_rims.test.js",
+      "name": "fitted manikin outer ear rims / uses closed genus-one ear rims with continuous outward normals and bilateral geometry for %s \"infant\"",
+      "status": "passed",
+      "checks": 2079,
+      "durationMs": 1533
+    },
+    {
+      "suite": "firstresponse_ear_rims.test.js",
+      "name": "fitted manikin outer ear rims / keeps a continuous loop of shallow relief and buried joins on the actual $age ear in pose $phase {\"age\":\"adult\",\"phase\":0}",
+      "status": "passed",
+      "checks": 1132,
+      "durationMs": 1136
+    },
+    {
+      "suite": "firstresponse_ear_rims.test.js",
+      "name": "fitted manikin outer ear rims / keeps a continuous loop of shallow relief and buried joins on the actual $age ear in pose $phase {\"age\":\"adult\",\"phase\":8}",
+      "status": "passed",
+      "checks": 1132,
+      "durationMs": 1669
+    },
+    {
+      "suite": "firstresponse_ear_rims.test.js",
+      "name": "fitted manikin outer ear rims / keeps a continuous loop of shallow relief and buried joins on the actual $age ear in pose $phase {\"age\":\"child\",\"phase\":0}",
+      "status": "passed",
+      "checks": 1132,
+      "durationMs": 1536
+    },
+    {
+      "suite": "firstresponse_ear_rims.test.js",
+      "name": "fitted manikin outer ear rims / keeps a continuous loop of shallow relief and buried joins on the actual $age ear in pose $phase {\"age\":\"child\",\"phase\":8}",
+      "status": "passed",
+      "checks": 1132,
+      "durationMs": 1702
+    },
+    {
+      "suite": "firstresponse_ear_rims.test.js",
+      "name": "fitted manikin outer ear rims / keeps a continuous loop of shallow relief and buried joins on the actual $age ear in pose $phase {\"age\":\"infant\",\"phase\":0}",
+      "status": "passed",
+      "checks": 1132,
+      "durationMs": 1927
+    },
+    {
+      "suite": "firstresponse_ear_rims.test.js",
+      "name": "fitted manikin outer ear rims / keeps a continuous loop of shallow relief and buried joins on the actual $age ear in pose $phase {\"age\":\"infant\",\"phase\":8}",
+      "status": "passed",
+      "checks": 1132,
+      "durationMs": 24962
+    },
+    {
+      "suite": "firstresponse_ear_rims.test.js",
+      "name": "fitted manikin outer ear rims / keeps the $age rims inside the ear outline and clear of visible inner-ear detail in pose $phase {\"age\":\"adult\",\"phase\":0}",
+      "status": "passed",
+      "checks": 58,
+      "durationMs": 76051
+    },
+    {
+      "suite": "firstresponse_ear_rims.test.js",
+      "name": "fitted manikin outer ear rims / keeps the $age rims inside the ear outline and clear of visible inner-ear detail in pose $phase {\"age\":\"adult\",\"phase\":8}",
+      "status": "passed",
+      "checks": 58,
+      "durationMs": 66642
+    },
+    {
+      "suite": "firstresponse_ear_rims.test.js",
+      "name": "fitted manikin outer ear rims / keeps the $age rims inside the ear outline and clear of visible inner-ear detail in pose $phase {\"age\":\"child\",\"phase\":0}",
+      "status": "passed",
+      "checks": 58,
+      "durationMs": 79088
+    },
+    {
+      "suite": "firstresponse_ear_rims.test.js",
+      "name": "fitted manikin outer ear rims / keeps the $age rims inside the ear outline and clear of visible inner-ear detail in pose $phase {\"age\":\"child\",\"phase\":8}",
+      "status": "passed",
+      "checks": 58,
+      "durationMs": 66685
+    },
+    {
+      "suite": "firstresponse_ear_rims.test.js",
+      "name": "fitted manikin outer ear rims / keeps the $age rims inside the ear outline and clear of visible inner-ear detail in pose $phase {\"age\":\"infant\",\"phase\":0}",
+      "status": "passed",
+      "checks": 58,
+      "durationMs": 64950
+    },
+    {
+      "suite": "firstresponse_ear_rims.test.js",
+      "name": "fitted manikin outer ear rims / keeps the $age rims inside the ear outline and clear of visible inner-ear detail in pose $phase {\"age\":\"infant\",\"phase\":8}",
+      "status": "passed",
+      "checks": 58,
+      "durationMs": 61381
+    },
+    {
+      "suite": "firstresponse_ear_rims.test.js",
+      "name": "fitted manikin outer ear rims / carries the %s ear rims with the head and preserves geometry and material through recovery \"adult\"",
+      "status": "passed",
+      "checks": 87,
+      "durationMs": 65695
+    },
+    {
+      "suite": "firstresponse_ear_rims.test.js",
+      "name": "fitted manikin outer ear rims / carries the %s ear rims with the head and preserves geometry and material through recovery \"child\"",
+      "status": "passed",
+      "checks": 87,
+      "durationMs": 13404
+    },
+    {
+      "suite": "firstresponse_ear_rims.test.js",
+      "name": "fitted manikin outer ear rims / carries the %s ear rims with the head and preserves geometry and material through recovery \"infant\"",
+      "status": "passed",
+      "checks": 87,
+      "durationMs": 20642
+    },
+    {
+      "suite": "firstresponse_ear_rims.test.js",
+      "name": "fitted manikin outer ear rims / preserves opaque ear skin and distinct recessed shading in %s app contrast \"adult\"",
+      "status": "passed",
+      "checks": 43,
+      "durationMs": 19576
+    },
+    {
+      "suite": "firstresponse_ear_rims.test.js",
+      "name": "fitted manikin outer ear rims / preserves opaque ear skin and distinct recessed shading in %s app contrast \"child\"",
+      "status": "passed",
+      "checks": 43,
+      "durationMs": 21368
+    },
+    {
+      "suite": "firstresponse_ear_rims.test.js",
+      "name": "fitted manikin outer ear rims / preserves opaque ear skin and distinct recessed shading in %s app contrast \"infant\"",
+      "status": "passed",
+      "checks": 43,
+      "durationMs": 19489
+    }
+  ],
+  "preservationCases": [
+    {
+      "age": "adult",
+      "phase": 0,
+      "contrast": false,
+      "status": "passed",
+      "before": {
+        "SHA256": "60d6da0cbe5c5bd26277a58440e01c2ab444fe7bc8674a053bd3791775a63b13",
+        "resources": {
+          "nodes": 199,
+          "meshes": 134,
+          "geometries": 132,
+          "materials": 24
+        }
+      },
+      "candidate": {
+        "SHA256": "60d6da0cbe5c5bd26277a58440e01c2ab444fe7bc8674a053bd3791775a63b13",
+        "resources": {
+          "nodes": 199,
+          "meshes": 134,
+          "geometries": 132,
+          "materials": 24
+        }
+      }
+    },
+    {
+      "age": "adult",
+      "phase": 0,
+      "contrast": true,
+      "status": "passed",
+      "before": {
+        "SHA256": "dae9a071d4acd7d91b5be9c85243d6e8f31492f41bccf609919e5d1f70a3aaf2",
+        "resources": {
+          "nodes": 198,
+          "meshes": 134,
+          "geometries": 132,
+          "materials": 25
+        }
+      },
+      "candidate": {
+        "SHA256": "dae9a071d4acd7d91b5be9c85243d6e8f31492f41bccf609919e5d1f70a3aaf2",
+        "resources": {
+          "nodes": 198,
+          "meshes": 134,
+          "geometries": 132,
+          "materials": 25
+        }
+      }
+    },
+    {
+      "age": "adult",
+      "phase": 8,
+      "contrast": false,
+      "status": "passed",
+      "before": {
+        "SHA256": "85c12184f9a076b83455c91868accb3484edbec69c33f7e7acd7c682e881ffb8",
+        "resources": {
+          "nodes": 205,
+          "meshes": 138,
+          "geometries": 136,
+          "materials": 27
+        }
+      },
+      "candidate": {
+        "SHA256": "85c12184f9a076b83455c91868accb3484edbec69c33f7e7acd7c682e881ffb8",
+        "resources": {
+          "nodes": 205,
+          "meshes": 138,
+          "geometries": 136,
+          "materials": 27
+        }
+      }
+    },
+    {
+      "age": "adult",
+      "phase": 8,
+      "contrast": true,
+      "status": "passed",
+      "before": {
+        "SHA256": "d8c3eefc02877abf5fbc71d9c88bb8889cf97c4ab8782c2eafd6b562a7831b1f",
+        "resources": {
+          "nodes": 204,
+          "meshes": 138,
+          "geometries": 136,
+          "materials": 28
+        }
+      },
+      "candidate": {
+        "SHA256": "d8c3eefc02877abf5fbc71d9c88bb8889cf97c4ab8782c2eafd6b562a7831b1f",
+        "resources": {
+          "nodes": 204,
+          "meshes": 138,
+          "geometries": 136,
+          "materials": 28
+        }
+      }
+    },
+    {
+      "age": "child",
+      "phase": 0,
+      "contrast": false,
+      "status": "passed",
+      "before": {
+        "SHA256": "0bb13fed245d3e65c686fa52eba02f5d625b70072c4bbc9719e30227d8031fec",
+        "resources": {
+          "nodes": 198,
+          "meshes": 133,
+          "geometries": 131,
+          "materials": 24
+        }
+      },
+      "candidate": {
+        "SHA256": "0bb13fed245d3e65c686fa52eba02f5d625b70072c4bbc9719e30227d8031fec",
+        "resources": {
+          "nodes": 198,
+          "meshes": 133,
+          "geometries": 131,
+          "materials": 24
+        }
+      }
+    },
+    {
+      "age": "child",
+      "phase": 0,
+      "contrast": true,
+      "status": "passed",
+      "before": {
+        "SHA256": "6bfee33e39bf154ad7fe51b6caea79ab01bd1a236d1eac40c1fe56a4a0d53d80",
+        "resources": {
+          "nodes": 197,
+          "meshes": 133,
+          "geometries": 131,
+          "materials": 25
+        }
+      },
+      "candidate": {
+        "SHA256": "6bfee33e39bf154ad7fe51b6caea79ab01bd1a236d1eac40c1fe56a4a0d53d80",
+        "resources": {
+          "nodes": 197,
+          "meshes": 133,
+          "geometries": 131,
+          "materials": 25
+        }
+      }
+    },
+    {
+      "age": "child",
+      "phase": 8,
+      "contrast": false,
+      "status": "passed",
+      "before": {
+        "SHA256": "6ac2e41bf276cd5d34da62abb7fcc5029b7243e5a6266ca95c23642404033b6c",
+        "resources": {
+          "nodes": 204,
+          "meshes": 137,
+          "geometries": 135,
+          "materials": 27
+        }
+      },
+      "candidate": {
+        "SHA256": "6ac2e41bf276cd5d34da62abb7fcc5029b7243e5a6266ca95c23642404033b6c",
+        "resources": {
+          "nodes": 204,
+          "meshes": 137,
+          "geometries": 135,
+          "materials": 27
+        }
+      }
+    },
+    {
+      "age": "child",
+      "phase": 8,
+      "contrast": true,
+      "status": "passed",
+      "before": {
+        "SHA256": "7b75322aa61db65d6feb1fdd2118567f47decf7d5844dcca8c251ac6870cb302",
+        "resources": {
+          "nodes": 203,
+          "meshes": 137,
+          "geometries": 135,
+          "materials": 28
+        }
+      },
+      "candidate": {
+        "SHA256": "7b75322aa61db65d6feb1fdd2118567f47decf7d5844dcca8c251ac6870cb302",
+        "resources": {
+          "nodes": 203,
+          "meshes": 137,
+          "geometries": 135,
+          "materials": 28
+        }
+      }
+    },
+    {
+      "age": "infant",
+      "phase": 0,
+      "contrast": false,
+      "status": "passed",
+      "before": {
+        "SHA256": "edc6ad836888450cf433e490747139d23506c8c316291a13fb25e00273429aa7",
+        "resources": {
+          "nodes": 169,
+          "meshes": 115,
+          "geometries": 113,
+          "materials": 24
+        }
+      },
+      "candidate": {
+        "SHA256": "edc6ad836888450cf433e490747139d23506c8c316291a13fb25e00273429aa7",
+        "resources": {
+          "nodes": 169,
+          "meshes": 115,
+          "geometries": 113,
+          "materials": 24
+        }
+      }
+    },
+    {
+      "age": "infant",
+      "phase": 0,
+      "contrast": true,
+      "status": "passed",
+      "before": {
+        "SHA256": "623a1c7d48d2ac54d868f994937eaeb052286c9434f69f264e06a97bbc7721f1",
+        "resources": {
+          "nodes": 168,
+          "meshes": 115,
+          "geometries": 113,
+          "materials": 25
+        }
+      },
+      "candidate": {
+        "SHA256": "623a1c7d48d2ac54d868f994937eaeb052286c9434f69f264e06a97bbc7721f1",
+        "resources": {
+          "nodes": 168,
+          "meshes": 115,
+          "geometries": 113,
+          "materials": 25
+        }
+      }
+    },
+    {
+      "age": "infant",
+      "phase": 8,
+      "contrast": false,
+      "status": "passed",
+      "before": {
+        "SHA256": "11cb2936f9238f6dee5954f8790a6d6cfb54263e6d8d7c7680c899c3014094dc",
+        "resources": {
+          "nodes": 175,
+          "meshes": 119,
+          "geometries": 117,
+          "materials": 27
+        }
+      },
+      "candidate": {
+        "SHA256": "11cb2936f9238f6dee5954f8790a6d6cfb54263e6d8d7c7680c899c3014094dc",
+        "resources": {
+          "nodes": 175,
+          "meshes": 119,
+          "geometries": 117,
+          "materials": 27
+        }
+      }
+    },
+    {
+      "age": "infant",
+      "phase": 8,
+      "contrast": true,
+      "status": "passed",
+      "before": {
+        "SHA256": "63e3d4d5d79aaf5264945f8d517523788dda37b7689b47485ada26bba12a4557",
+        "resources": {
+          "nodes": 174,
+          "meshes": 119,
+          "geometries": 117,
+          "materials": 28
+        }
+      },
+      "candidate": {
+        "SHA256": "63e3d4d5d79aaf5264945f8d517523788dda37b7689b47485ada26bba12a4557",
+        "resources": {
+          "nodes": 174,
+          "meshes": 119,
+          "geometries": 117,
+          "materials": 28
+        }
+      }
+    }
+  ],
+  "attachmentMetrics": [],
+  "passed": 42,
+  "failed": 6
+}

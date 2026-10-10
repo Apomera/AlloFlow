@@ -1,0 +1,232 @@
+{
+  "schemaVersion": 1,
+  "sealedAt": "2026-10-07T00:22:10.994Z",
+  "classification": "incomplete_due_to_worker_startup_errors",
+  "requested": {
+    "cases": 364,
+    "files": 31
+  },
+  "actual": {
+    "success": true,
+    "cases": 61,
+    "failures": 0,
+    "files": 6,
+    "reportSha256": "3d8d2db72b86e27a9dd474eb19e858aee54f003d0cd4f8eb9b5d1196ceb2631a",
+    "counters": {
+      "numTotalTestSuites": 15,
+      "numPassedTestSuites": 15,
+      "numFailedTestSuites": 0,
+      "numPendingTestSuites": 0,
+      "numTotalTests": 61,
+      "numPassedTests": 61,
+      "numFailedTests": 0,
+      "numPendingTests": 0,
+      "numTodoTests": 0
+    },
+    "reportedFileNames": [
+      "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_accessibility.test.js",
+      "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_content_invariants.test.js",
+      "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_detail_lens.test.js",
+      "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_discovery.test.js",
+      "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_preview_urls.test.js",
+      "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_guided_navigation.test.js"
+    ]
+  },
+  "naturalExit": {
+    "code": 1,
+    "observedAt": "2026-10-07T00:01:11.620Z",
+    "externallyStopped": false
+  },
+  "startupErrors": [
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_navigation.test.js.",
+      "cause": "Timeout waiting for worker to respond"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_elliptical_projection.test.js.",
+      "cause": "Timeout waiting for worker to respond"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_physics.test.js.",
+      "cause": "Timeout waiting for worker to respond"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_texture_filtering.test.js.",
+      "cause": "Timeout waiting for worker to respond"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_cloud_surfaces.test.js.",
+      "cause": "Timeout waiting for worker to respond"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_blue_shell.test.js.",
+      "cause": "Timeout waiting for worker to respond"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_stellar_surfaces.test.js.",
+      "cause": "Timeout waiting for worker to respond"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_violet_ridges.test.js.",
+      "cause": "Timeout waiting for worker to respond"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_barred_detail.test.js.",
+      "cause": "Timeout waiting for worker to respond"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_two_arm_detail.test.js.",
+      "cause": "Timeout waiting for worker to respond"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_spiral_detail.test.js.",
+      "cause": "Timeout waiting for worker to respond"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_viewpoint_glide.test.js.",
+      "cause": "Timeout waiting for worker to respond"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_galactic_band.test.js.",
+      "cause": "Timeout waiting for worker to respond"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_bulges.test.js.",
+      "cause": "Timeout waiting for worker to respond"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_stellar_structure.test.js.",
+      "cause": "Timeout waiting for worker to respond"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_tutorial_dialog_a11y.test.js.",
+      "cause": "Timeout waiting for worker to respond"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_evidence_svg_a11y.test.js.",
+      "cause": "Timeout waiting for worker to respond"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_tilted_orbit.test.js.",
+      "cause": "Timeout waiting for worker to respond"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_cinematic.test.js.",
+      "cause": "Timeout waiting for worker to respond"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_playback_a11y.test.js.",
+      "cause": "Timeout waiting for worker to respond"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_form_controls_a11y.test.js.",
+      "cause": "Timeout waiting for worker to respond"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_inspector.test.js.",
+      "cause": "Timeout waiting for worker to respond"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_distance.test.js.",
+      "cause": "Timeout waiting for worker to respond"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_perspective.test.js.",
+      "cause": "Timeout waiting for worker to respond"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_web_geometry.test.js.",
+      "cause": "Timeout waiting for worker to respond"
+    }
+  ],
+  "observedShutdownErrors": [
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_galactic_band.test.js.",
+      "toolChunkId": "82a481",
+      "observedAt": null,
+      "observationWindowUtc": {
+        "after": "2026-10-06T23:33:31Z",
+        "before": "2026-10-06T23:52:05.707Z"
+      }
+    }
+  ],
+  "completedAllRequestedFiles": false,
+  "fullRegressionVerified": false,
+  "all31InputHashesMatch": true,
+  "allFourRuntimePinsMatch": true,
+  "preservedEvidenceMatches": true,
+  "inputAudit": "unit-suite-inputs.json",
+  "pins": {
+    "stem_lab/universe_flight_scene.js": "c0cc2486b3d5edd620e5975daec3d23b8f2e995a24db151be27ac30820d058c7",
+    "desktop/web-app/public/stem_lab/universe_flight_scene.js": "c0cc2486b3d5edd620e5975daec3d23b8f2e995a24db151be27ac30820d058c7",
+    "stem_lab/stem_tool_universe.js": "166dd6c8a059c03fd21e79c646c14bd104ea0be93d8cc43105231fd6f5576742",
+    "desktop/web-app/public/stem_lab/stem_tool_universe.js": "166dd6c8a059c03fd21e79c646c14bd104ea0be93d8cc43105231fd6f5576742"
+  },
+  "execution": {
+    "sessionId": 13427,
+    "startedAt": "2026-10-06T23:22:41.239Z",
+    "args": [
+      "node_modules/vitest/vitest.mjs",
+      "--run",
+      "tests\\universe_accessibility.test.js",
+      "tests\\universe_content_invariants.test.js",
+      "tests\\universe_evidence_svg_a11y.test.js",
+      "tests\\universe_flight_barred_detail.test.js",
+      "tests\\universe_flight_blue_shell.test.js",
+      "tests\\universe_flight_bulges.test.js",
+      "tests\\universe_flight_cinematic.test.js",
+      "tests\\universe_flight_cloud_surfaces.test.js",
+      "tests\\universe_flight_detail_lens.test.js",
+      "tests\\universe_flight_discovery.test.js",
+      "tests\\universe_flight_distance.test.js",
+      "tests\\universe_flight_elliptical_projection.test.js",
+      "tests\\universe_flight_galactic_band.test.js",
+      "tests\\universe_flight_inspector.test.js",
+      "tests\\universe_flight_navigation.test.js",
+      "tests\\universe_flight_perspective.test.js",
+      "tests\\universe_flight_physics.test.js",
+      "tests\\universe_flight_preview_urls.test.js",
+      "tests\\universe_flight_spiral_detail.test.js",
+      "tests\\universe_flight_stellar_structure.test.js",
+      "tests\\universe_flight_stellar_surfaces.test.js",
+      "tests\\universe_flight_texture_filtering.test.js",
+      "tests\\universe_flight_tilted_orbit.test.js",
+      "tests\\universe_flight_two_arm_detail.test.js",
+      "tests\\universe_flight_viewpoint_glide.test.js",
+      "tests\\universe_flight_violet_ridges.test.js",
+      "tests\\universe_form_controls_a11y.test.js",
+      "tests\\universe_guided_navigation.test.js",
+      "tests\\universe_playback_a11y.test.js",
+      "tests\\universe_tutorial_dialog_a11y.test.js",
+      "tests\\universe_web_geometry.test.js",
+      "--pool=forks",
+      "--maxWorkers=1",
+      "--no-file-parallelism",
+      "--isolate",
+      "--testTimeout",
+      "60000",
+      "--hookTimeout",
+      "60000",
+      "--reporter=default",
+      "--reporter=json",
+      "--outputFile",
+      "reports/universe-flight-2026-09-29/prominence-edges/unit-tests.json"
+    ],
+    "vitestVersion": "4.1.5",
+    "environmentOverrides": {
+      "TEMP": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-3/universe-detail-lens/temp",
+      "TMP": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-3/universe-detail-lens/temp"
+    }
+  },
+  "sealedArtifacts": {
+    "unit-suite-inputs.json": "7972e375314c9fad3c706cb0b5a62940787f06fe18ac05416120cb7573b28007",
+    "unit-suite-run.json": "5ff0a7ec3085f579fbd4089ac3b06e334ce4516034105fe48075e73946fb1b2c",
+    "unit-suite-plan.json": "ef28eb13a504267b202cdb3b61b1c3b891a28716534482ba310203c7930379ea",
+    "unit-tests.json": "3d8d2db72b86e27a9dd474eb19e858aee54f003d0cd4f8eb9b5d1196ceb2631a",
+    "unit-suite-final-console.txt": "01a158b5f0540aef39de9f17ee3e392591c6e0ec685066a112cfa65d29375a0d",
+    "unit-suite-tool-progress.json": "efd5d100a32256ef5c8bf458e3e61bb70f8882e8eb3fba92c5799941e786b4a2",
+    "unit-suite-process-observations.json": "da2e25580055934ca27ae206524b0adbcf59504f515a9cb632a79128c7fb4baa",
+    "diagnostic-attempts.json": "9cabdf5875d33c2738b1a34abf73607cc5aaf7166e9b968cfc4de5ef31e1d86f",
+    "unit-suite-abandoned-attempt.json": "1ab89910b9560aa007ee5b38acc1154287778f6abd8372c2c9e5446aaa856024"
+  }
+}

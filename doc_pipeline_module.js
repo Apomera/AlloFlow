@@ -40246,6 +40246,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   };
   const generateResourceHTML = (item, isTeacher, responses = {}, config = null) => {
       const cfg = config || exportConfig;
+      const studentReadingText = value => {
+          if (isTeacher || typeof value !== 'string') return value;
+          const sources = window.AlloModules?.StudentSources || window.AlloModules?.TextPipelineHelpers?.studentSources;
+          if (typeof sources?.publicText === 'function') return sources.publicText(value, item.studentSources);
+          if (/^#{1,6}[ \t]+(?:Your Document References|Research Review)[ \t]*:?[ \t]*\r?$/mi.test(value)) {
+              throw new Error('Student source privacy controls are unavailable. Reload before exporting this reading.');
+          }
+          return value;
+      };
       const readingContract = typeof window !== 'undefined' && window.AlloModules?.InstructionalContext;
       const originalReading = !!readingContract?.isSupportedOriginal?.(item);
       const readingRoleLabel = ['analysis', 'simplified'].includes(item.type) ? readingContract?.getReadingRoleLabel?.(item) || '' : '';
@@ -40253,6 +40262,40 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       // displays as text instead of garbling or injecting markup (WCAG 4.1.1). Use ONLY for
       // plain-text fields interpolated directly — never for fields rendered via parseMarkdownToHTML.
       const _escTxt = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      const studentSourceExcerptsHTML = value => {
+          if (isTeacher || typeof value !== 'string') return '';
+          const api = window.AlloModules?.StudentSources || window.AlloModules?.TextPipelineHelpers?.studentSources;
+          if (typeof api?.forText !== 'function') return '';
+          const sources = (api.forText(item.studentSources, value)?.sources || []).filter(source => source.kind === 'web' && source.passages.length);
+          if (!sources.length) return '';
+          const label = (key, fallback) => { const value = t('simplified.' + key); return value && value !== 'simplified.' + key ? value : fallback; };
+          const title = label('sources_title', 'Sources');
+          const entries = sources.map(source => '<section style="margin-top:12px;break-inside:avoid;overflow-wrap:anywhere;">'
+              + '<h4 style="margin:0 0 6px;"><a href="' + _escTxt(source.url) + '">' + _escTxt(source.title) + '</a></h4>'
+              + source.passages.map(passage => {
+                  const aiNote = passage.evidenceType === 'Source-linked AI note';
+                  const videoTranscript = passage.evidenceType === 'AI video transcript';
+                  const snippet = passage.evidenceType === 'Search snippet';
+                  const evidenceLabel = aiNote ? label('sources_ai_note', 'AI-linked note')
+                      : videoTranscript ? label('sources_video_transcript', 'AI video transcript')
+                      : snippet ? label('sources_snippet', 'Search snippet')
+                      : passage.evidenceType === 'Page excerpt' ? label('sources_page_excerpt', 'Page excerpt') : label('sources_excerpt', 'Source excerpt');
+                  const caution = aiNote ? label('sources_ai_note_limit', "This is an AI note linked to the source, not the source's exact wording.")
+                      : videoTranscript ? label('sources_video_transcript_limit', 'AI-generated transcript, not verified captions. It may contain transcription errors.')
+                      : snippet ? label('sources_snippet_limit', 'This is a search preview, not a passage from a page that was read.') : '';
+                  const tag = aiNote || videoTranscript ? 'div' : 'blockquote';
+                  const clip = api.videoClipDetails?.(passage, source.url);
+                  const clipLabel = clip ? label('sources_video_clip', 'Requested clip {start} to {end}').replace('{start}', clip.startLabel).replace('{end}', clip.endLabel) : '';
+                  return '<div data-source-evidence="' + _escTxt(passage.evidenceType) + '" style="margin:8px 0;">'
+                      + '<strong>' + _escTxt(evidenceLabel) + '</strong>'
+                      + (passage.locatorLabel ? '<div>' + _escTxt(passage.locatorLabel) + '</div>' : '')
+                      + (clip ? '<div>' + (passage.locatorLabel?.includes(clip.label) ? '' : _escTxt(clipLabel) + ' ')
+                          + '<a href="' + _escTxt(clip.url) + '">' + _escTxt(label('sources_open_clip_start', 'Open clip start')) + '</a></div>' : '')
+                      + (caution ? '<div style="font-size:0.85em;color:#475569;">' + _escTxt(caution) + '</div>' : '')
+                      + '<' + tag + ' style="white-space:pre-wrap;margin:6px 0 8px;padding-left:12px;border-left:2px solid #94a3b8;">' + _escTxt(passage.text) + '</' + tag + '></div>';
+              }).join('') + '</section>').join('');
+          return '<aside class="reading-source-excerpts" aria-label="' + _escTxt(title) + '" style="margin:16px 0;padding-top:12px;border-top:1px solid #cbd5e1;"><h3>' + _escTxt(title) + '</h3>' + entries + '</aside>';
+      };
       // ── Worksheet (paper) mode helpers ──
       // When cfg.isWorksheet is true, the export is being rendered for paper
       // (cut, write by hand). Replace interactive inputs with handwriting
@@ -40485,6 +40528,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           return '<section class="section" id="' + _escTxt(item.id) + '" data-ka-readable style="border-left:4px solid #d97706;border-radius:12px;padding:16px;overflow-wrap:anywhere;"><h2 class="resource-header">' + _escTxt(title) + '</h2>' + _alloParsePreviewMarkdown(body) + goalHtml + choiceHtml + '</section>';
       }
       if (item.type === 'simplified') {
+          const sourceExcerptsHTML = studentSourceExcerptsHTML(item.data);
           // Word help as a list. A teacher's picture prints beside its word, with the
           // credit its licence requires (no <p>, so read-aloud leaves the list alone).
           const _wordHelpList = annotations => {
@@ -40502,15 +40546,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               const notes = supports.annotations.length ? '<aside class="reading-support-notes" aria-label="Word help"><h3>Word help</h3><p>Explanations for the original text.</p>' + _wordHelpList(supports.annotations) + '</aside>' : '';
               const unavailableNotes = supports.status !== 'complete' ? '<p role="note">Some word help could not be matched to this original and is unavailable.</p>' : '';
               // Entity-encode CR so HTML parsing retains even CRLF source strings.
-              const sourceText = _escTxt(item.data).replace(/\r/g, '&#13;');
+              const sourceText = _escTxt(studentReadingText(item.data)).replace(/\r/g, '&#13;');
               return '<section class="section" id="' + _escTxt(item.id) + '" data-reading-form="same-text-supported" style="border-left:4px solid #2563eb;border-radius:12px;padding:16px;">'
                   + '<h2 class="resource-header">' + _escTxt(title) + '</h2><p><strong>Original with supports</strong>' + (readingRoleLabel ? ' <span class="reading-role">· ' + _escTxt(readingRoleLabel) + '</span>' : '') + '</p>'
                   + '<div data-ka-readable data-original-text="true" dir="auto" style="white-space:pre-wrap;overflow-wrap:anywhere;font-family:Georgia,serif;line-height:1.9;">' + sourceText + '</div>'
-                  + notes + unavailableNotes + '</section>';
+                  + notes + unavailableNotes + sourceExcerptsHTML + '</section>';
           }
           // Reading passage. Tagged data-ka-readable so the HTML export's
           // download-time read-aloud step can convert it into inline sentence-karaoke.
-          const _passageHtml = parseMarkdownToHTML(item.data);
+          const _passageHtml = parseMarkdownToHTML(studentReadingText(item.data));
           const _readingRoleHtml = readingRoleLabel ? '<p class="reading-role">' + _escTxt(readingRoleLabel) + '</p>' : '';
           if (_clozeIsOn) {
               const _built = _clozeBuild(_passageHtml, Array.isArray(cfg.__clozeGlossary) ? cfg.__clozeGlossary : []);
@@ -40526,6 +40570,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   <div style="font-family:Georgia,'Times New Roman',serif;font-size:1.05em;line-height:2.4;color:#1e293b;padding:8px 4px;">${_built.html}</div>
                   ${_clozeWordBankHTML(_built.answers)}
               </div>
+              ${sourceExcerptsHTML}
           `;
               }
           }
@@ -40539,6 +40584,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   <div style="font-family:Georgia,'Times New Roman',serif;font-size:1.05em;line-height:1.9;color:#1e293b;padding:8px 4px;">${_passageHtml}</div>
                   ${_adaptedHelpHtml}
               </div>
+              ${sourceExcerptsHTML}
           `;
       } else if (item.type === 'glossary') {
           const wordSearchHtml = (isTeacher && cfg.includeTeacherKey !== false && cfg.assessmentMode !== true && item.gameData && item.gameData.grid) ? (() => {
@@ -42399,9 +42445,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       <p><strong>${t('output.analysis_concepts')}:</strong> ${item.data.concepts.join(', ')}</p>
                       <p><strong>${t('output.analysis_grammar')}:</strong> ${item.data.grammar.join('; ')}</p>
                   </div>
-                  <div style="margin-top:15px; color: #475569;">${parseMarkdownToHTML(item.data.originalText)}</div>
+                  <div style="margin-top:15px; color: #475569;">${parseMarkdownToHTML(studentReadingText(item.data.originalText))}</div>
                   ${citationsHtml}
               </div>
+              ${studentSourceExcerptsHTML(item.data.originalText)}
           `;
       } else if (item.type === 'udl-advice') {
           return `

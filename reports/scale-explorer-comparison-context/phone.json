@@ -1,0 +1,119 @@
+{
+  "personal": {
+    "roots": {
+      "human": {
+        "scale": 2.0625,
+        "position": [
+          0,
+          1.0312499999999998,
+          0
+        ],
+        "modelVisible": true,
+        "axis": "y",
+        "anchor": [
+          0.39942944472745795,
+          0,
+          0
+        ],
+        "geometry": [
+          "5309608D-C1EF-424B-A98B-2261E5ED6AE6",
+          "AD5D02B1-CE4C-4D35-900A-BD6C4673FFCB",
+          "3E392EAB-4734-4E76-8AB9-63817223D04F",
+          "4AD51426-3786-48AB-824E-F2A47FD589B9",
+          "5309608D-C1EF-424B-A98B-2261E5ED6AE6",
+          "7D496D01-4613-48E9-8E7B-5D70A699B9B3",
+          "5309608D-C1EF-424B-A98B-2261E5ED6AE6",
+          "D156BACC-6608-4A56-9CDE-A89010F09232",
+          "5309608D-C1EF-424B-A98B-2261E5ED6AE6",
+          "E2A78172-4123-48EC-A057-0FB1AC40674C",
+          "5309608D-C1EF-424B-A98B-2261E5ED6AE6"
+        ]
+      },
+      "elephant": {
+        "scale": 3.0000000000000004,
+        "position": [
+          0,
+          1.5000000000000002,
+          0
+        ],
+        "modelVisible": true,
+        "axis": "y",
+        "anchor": [
+          0.9794530010223389,
+          0,
+          0
+        ],
+        "geometry": [
+          "83F5DA88-37B6-475B-B9E2-6D0F0E792C2B",
+          "105A9470-61AC-4564-9E8D-F7025F74836E",
+          "406C708E-3DB4-444D-85E2-F8C2E6E99E89",
+          "05617D9F-F1F6-45EB-A23E-68799538D438",
+          "46673ADD-A0BB-42F1-A97C-AFBA4B58FCAE",
+          "20EB9057-68CA-4BFE-A90A-146EA5CF8CDC",
+          "9EFF5AE5-C4DB-4AE1-B1DC-2785FAFAB520",
+          "CBA149BA-9346-41A9-B698-124BFB23F79E",
+          "F97B8582-0C44-488E-A614-37DD1EAD47FE",
+          "6234A405-A941-4FBC-BBDA-F6383041F0D4",
+          "8C70021C-21A0-4CA6-86A8-438A121E4DEA",
+          "AF441F99-78A1-4A80-ABF4-656FB1DD8DD3",
+          "E9B8B86C-A315-45D9-928E-71947B705279",
+          "0C81948F-AF7C-4011-90D2-2079D3D6ED11"
+        ]
+      }
+    },
+    "stats": {
+      "active": true,
+      "bigId": "elephant",
+      "width": 495,
+      "height": 804,
+      "maskPasses": 3
+    },
+    "mask": {
+      "coverage": 0.08354942459420071,
+      "width": 495,
+      "height": 804
+    },
+    "identity": [
+      "3B536C3B-09BF-46FB-AC2C-2375331709D8",
+      "5DC089AB-AA85-4CC9-95C3-ECA42DB74F76",
+      "BA42B3C4-D1A3-4A05-840F-DCA2E4D8AE2F"
+    ],
+    "quadVisible": true,
+    "renderTarget": true,
+    "projection": "OrthographicCamera",
+    "canvasHeight": 536,
+    "theme": "101f2a",
+    "type": "webgl"
+  },
+  "labels": [
+    {
+      "id": "human",
+      "x": 150,
+      "y": 215.89999389648438,
+      "width": 104,
+      "height": 60,
+      "viewportWidth": 330,
+      "viewportHeight": 536.40625,
+      "anchor": [
+        201.98,
+        332.18
+      ],
+      "text": "You2.2 mtall"
+    },
+    {
+      "id": "elephant",
+      "x": 214,
+      "y": 331.1000061035156,
+      "width": 104,
+      "height": 59.999969482421875,
+      "viewportWidth": 330,
+      "viewportHeight": 536.40625,
+      "anchor": [
+        278.83,
+        313.06
+      ],
+      "text": "An African elephant3.2 mshoulder height"
+    }
+  ],
+  "errors": []
+}

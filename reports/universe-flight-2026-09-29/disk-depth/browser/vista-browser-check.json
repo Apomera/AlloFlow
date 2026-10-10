@@ -1,0 +1,426 @@
+{
+  "completed": true,
+  "pins": {
+    "stem_lab/stem_tool_universe.js": "a744f3d2e32b5bec28864c8ee29468ec68178cd20d9bb08bcd8fa3d9eefc19a9",
+    "stem_lab/universe_flight_scene.js": "8121868ef2aa764c5e3e88284089ebf76fe0c9e1ec264ee4ae95fe434d7e9bc9"
+  },
+  "harnessHash": "403eebcb11bdb0a9218571f6d0f23f4c6ad98877544bb0736c082e748e4b9ddc",
+  "checks": [
+    "Desktop scenic views append the disk profile while keeping all five existing indices, and open the exact paused galaxy pose",
+    "The fullscreen menu exposes the same disk profile and returns focus to the paused canvas",
+    "The 320 px scenic menu stays reachable without overflow, and reduced motion keeps the viewpoint stationary",
+    "The 320 px fullscreen scenic menu remains reachable and preserves the paused pose with reduced motion",
+    "The short landscape menus preserve the paused profile and canvas focus",
+    "System colors preserve reachable scenic controls and a paused viewport",
+    "Increased text spacing keeps the profile control and fullscreen menu reachable"
+  ],
+  "accessibility": [
+    {
+      "name": "desktop",
+      "violations": []
+    },
+    {
+      "name": "desktop-fullscreen-menu",
+      "violations": []
+    },
+    {
+      "name": "desktop-fullscreen",
+      "violations": []
+    },
+    {
+      "name": "phone-reduced-motion",
+      "violations": []
+    },
+    {
+      "name": "phone-fullscreen-reduced-motion-menu",
+      "violations": []
+    },
+    {
+      "name": "phone-fullscreen-reduced-motion",
+      "violations": []
+    },
+    {
+      "name": "landscape-reduced-motion",
+      "violations": []
+    },
+    {
+      "name": "landscape-fullscreen-reduced-motion-menu",
+      "violations": []
+    },
+    {
+      "name": "landscape-fullscreen-reduced-motion",
+      "violations": []
+    },
+    {
+      "name": "system-colors",
+      "violations": []
+    },
+    {
+      "name": "system-colors-fullscreen-menu",
+      "violations": []
+    },
+    {
+      "name": "system-colors-fullscreen",
+      "violations": []
+    },
+    {
+      "name": "text-spacing",
+      "violations": []
+    },
+    {
+      "name": "text-spacing-fullscreen-menu",
+      "violations": []
+    },
+    {
+      "name": "text-spacing-fullscreen",
+      "violations": []
+    }
+  ],
+  "captures": [
+    {
+      "name": "desktop",
+      "file": "vista-desktop.png",
+      "hash": "6e16c332cdd6dcee2a91dcf0464ef6de4d368331ba5c41ec2f76963c79f1530f"
+    },
+    {
+      "name": "desktop-fullscreen",
+      "file": "vista-desktop-fullscreen.png",
+      "hash": "cb2c3862edf43084e1ce3694dca550963c2823127ae0123f2d709bb5608a52b1"
+    },
+    {
+      "name": "phone-reduced-motion",
+      "file": "vista-phone-reduced-motion.png",
+      "hash": "49d1131f8cf4b59388073418f2f8c072d46fb4744a8d217e1910da60f63328a9"
+    },
+    {
+      "name": "phone-fullscreen-reduced-motion",
+      "file": "vista-phone-fullscreen-reduced-motion.png",
+      "hash": "d1d1c93598c6bd9f533c446deec07ef09486047a7a2e92cbf7150f6c2b8fa227"
+    },
+    {
+      "name": "landscape-reduced-motion",
+      "file": "vista-landscape-reduced-motion.png",
+      "hash": "9464aa83748d370d2de7b41f59525627b56c86ed485da1e981efcd4cade4b0e1"
+    },
+    {
+      "name": "landscape-fullscreen-reduced-motion",
+      "file": "vista-landscape-fullscreen-reduced-motion.png",
+      "hash": "1f889374ef483b15c98c15cf336a2c744126e9d7bc9f23be2ed967e7e3d17ebe"
+    },
+    {
+      "name": "system-colors",
+      "file": "vista-system-colors.png",
+      "hash": "848337ca1e08d8e2a8c9c44c3067ad72cafb3fcd0fc02b2ba1531c73d7afb0a1"
+    },
+    {
+      "name": "system-colors-fullscreen",
+      "file": "vista-system-colors-fullscreen.png",
+      "hash": "0ab0e5ba16533817d290014507510502c0b08a17067f8f67e0e9323c199e7055"
+    },
+    {
+      "name": "text-spacing",
+      "file": "vista-text-spacing.png",
+      "hash": "bb1ed6ace30f3e608fa7242b8e30cf8677c189576c53f86c3d33c0e9d0bf1db7"
+    },
+    {
+      "name": "text-spacing-fullscreen",
+      "file": "vista-text-spacing-fullscreen.png",
+      "hash": "c79def939f9c56643b34a1c3c82f961f9283f3e24e4883bc5b451bb2bf041b52"
+    }
+  ],
+  "poses": [
+    {
+      "name": "desktop",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 32,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -110690.92383041693,
+            -303239.13173364406,
+            313518.0192062244
+          ],
+          "yaw": 2.8021936669306964,
+          "pitch": 0.7394271065336057,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      }
+    },
+    {
+      "name": "desktop-fullscreen",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 32,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -110690.92383041693,
+            -303239.13173364406,
+            313518.0192062244
+          ],
+          "yaw": 2.8021936669306964,
+          "pitch": 0.7394271065336057,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      }
+    },
+    {
+      "name": "phone-reduced-motion",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 32,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -110690.92383041693,
+            -303239.13173364406,
+            313518.0192062244
+          ],
+          "yaw": 2.8021936669306964,
+          "pitch": 0.7394271065336057,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      }
+    },
+    {
+      "name": "phone-fullscreen-reduced-motion",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 32,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -110690.92383041693,
+            -303239.13173364406,
+            313518.0192062244
+          ],
+          "yaw": 2.8021936669306964,
+          "pitch": 0.7394271065336057,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      }
+    },
+    {
+      "name": "landscape-reduced-motion",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 32,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -110690.92383041693,
+            -303239.13173364406,
+            313518.0192062244
+          ],
+          "yaw": 2.8021936669306964,
+          "pitch": 0.7394271065336057,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      }
+    },
+    {
+      "name": "landscape-fullscreen-reduced-motion",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 32,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -110690.92383041693,
+            -303239.13173364406,
+            313518.0192062244
+          ],
+          "yaw": 2.8021936669306964,
+          "pitch": 0.7394271065336057,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      }
+    },
+    {
+      "name": "system-colors",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 32,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -110690.92383041693,
+            -303239.13173364406,
+            313518.0192062244
+          ],
+          "yaw": 2.8021936669306964,
+          "pitch": 0.7394271065336057,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      }
+    },
+    {
+      "name": "system-colors-fullscreen",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 32,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -110690.92383041693,
+            -303239.13173364406,
+            313518.0192062244
+          ],
+          "yaw": 2.8021936669306964,
+          "pitch": 0.7394271065336057,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      }
+    },
+    {
+      "name": "text-spacing",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 32,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -110690.92383041693,
+            -303239.13173364406,
+            313518.0192062244
+          ],
+          "yaw": 2.8021936669306964,
+          "pitch": 0.7394271065336057,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      }
+    },
+    {
+      "name": "text-spacing-fullscreen",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "cosmic",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 32,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -110690.92383041693,
+            -303239.13173364406,
+            313518.0192062244
+          ],
+          "yaw": 2.8021936669306964,
+          "pitch": 0.7394271065336057,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "near-galaxy"
+      }
+    }
+  ],
+  "served": [
+    {
+      "path": "/stem_lab/stem_tool_universe.js",
+      "hash": "a744f3d2e32b5bec28864c8ee29468ec68178cd20d9bb08bcd8fa3d9eefc19a9"
+    },
+    {
+      "path": "/stem_lab/universe_flight_scene.js",
+      "hash": "8121868ef2aa764c5e3e88284089ebf76fe0c9e1ec264ee4ae95fe434d7e9bc9"
+    }
+  ],
+  "errors": [],
+  "sourceReadErrors": [],
+  "loaderRetries": []
+}

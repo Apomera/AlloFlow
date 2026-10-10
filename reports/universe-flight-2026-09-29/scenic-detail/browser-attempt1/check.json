@@ -1,0 +1,199 @@
+{
+  "completed": false,
+  "pins": {
+    "stem_lab/universe_flight_scene.js": "16d181fbe835baf707ea9b89611958f51a5f492bd2cf831f872cff652bfdde1c",
+    "stem_lab/stem_tool_universe.js": "5223660b4cbdc9ee53124ec148400204dd48a9e73d3e89c9ab829aa933afd797"
+  },
+  "harnessSha256": "3eda0ff87f654a042aa4a833bcdc95fd54a404fb432fa967921c30bcd4695397",
+  "workflows": [
+    {
+      "name": "opening-preserves-scene-and-focus",
+      "ids": [
+        "pale-star",
+        "blue-nebula",
+        "violet-nebula",
+        "blue-star"
+      ]
+    },
+    {
+      "name": "exact-desktop-marker-centers",
+      "markers": [
+        {
+          "id": "pale-star",
+          "inView": true,
+          "actual": [
+            479.9375,
+            197.046875
+          ],
+          "expected": [
+            479.947882344982,
+            197.26935749545072
+          ],
+          "size": [
+            44,
+            44
+          ],
+          "covered": false,
+          "overlap": false
+        },
+        {
+          "id": "blue-nebula",
+          "inView": true,
+          "actual": [
+            567.21875,
+            255.328125
+          ],
+          "expected": [
+            567.2281713355716,
+            255.60626029679366
+          ],
+          "size": [
+            44,
+            44
+          ],
+          "covered": false,
+          "overlap": false
+        },
+        {
+          "id": "violet-nebula",
+          "inView": true,
+          "actual": [
+            372.640625,
+            185.109375
+          ],
+          "expected": [
+            372.64167046986944,
+            185.3208352349347
+          ],
+          "size": [
+            44,
+            44
+          ],
+          "covered": false,
+          "overlap": false
+        }
+      ]
+    },
+    {
+      "name": "escape-from-numbered-marker"
+    },
+    {
+      "name": "marker-focus-recovers-to-stable-row-on-resize"
+    },
+    {
+      "name": "coincident-center-has-no-invented-bearing"
+    },
+    {
+      "name": "preview-assets-match-their-actual-landmarks"
+    },
+    {
+      "name": "preview-failure-keeps-placeholder-and-actions-usable"
+    },
+    {
+      "name": "expanded-previews-match-authored-landmarks-and-preserve-paused-pixels",
+      "previews": 5
+    },
+    {
+      "name": "expanded-preview-markers-avoid-panel",
+      "markers": [
+        {
+          "id": "pale-star",
+          "inView": true,
+          "actual": [
+            479.9375,
+            197.046875
+          ],
+          "expected": [
+            479.947882344982,
+            197.26935749545072
+          ],
+          "size": [
+            44,
+            44
+          ],
+          "covered": false,
+          "overlap": false
+        },
+        {
+          "id": "blue-nebula",
+          "inView": true,
+          "actual": [
+            567.21875,
+            255.328125
+          ],
+          "expected": [
+            567.2281713355716,
+            255.60626029679366
+          ],
+          "size": [
+            44,
+            44
+          ],
+          "covered": false,
+          "overlap": false
+        },
+        {
+          "id": "violet-nebula",
+          "inView": true,
+          "actual": [
+            372.640625,
+            185.109375
+          ],
+          "expected": [
+            372.64167046986944,
+            185.3208352349347
+          ],
+          "size": [
+            44,
+            44
+          ],
+          "covered": false,
+          "overlap": false
+        }
+      ]
+    },
+    {
+      "name": "failed-scenic-open-keeps-browser-camera-and-history"
+    }
+  ],
+  "accessibility": [
+    {
+      "name": "desktop-landmark-browser",
+      "violations": []
+    },
+    {
+      "name": "desktop-expanded-scenic-viewpoints",
+      "violations": []
+    }
+  ],
+  "captures": [
+    {
+      "name": "desktop-landmarks",
+      "file": "desktop-landmarks.png",
+      "sha256": "e81a7529960c520f23333ca21d0b8c12e3f1600731c02d339997374d4f245db4"
+    },
+    {
+      "name": "destination-preview-cards",
+      "file": "destination-preview-cards.png",
+      "sha256": "9414545d548c630dba59fccc00ff2d2d11e7c1cb950b535e16b807ddd104ef22"
+    },
+    {
+      "name": "desktop-expanded-scenic",
+      "file": "desktop-expanded-scenic.png",
+      "sha256": "65a147de7593c7a39b7a8a1a697d539d5c6e70221f3b6995993621fef0775f91"
+    }
+  ],
+  "bounds": [],
+  "served": [
+    {
+      "file": "stem_lab/stem_tool_universe.js",
+      "sha256": "5223660b4cbdc9ee53124ec148400204dd48a9e73d3e89c9ab829aa933afd797"
+    },
+    {
+      "file": "stem_lab/universe_flight_scene.js",
+      "sha256": "16d181fbe835baf707ea9b89611958f51a5f492bd2cf831f872cff652bfdde1c"
+    }
+  ],
+  "errors": [],
+  "failure": "locator.uncheck: Timeout 45000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#uf-dust')\u001b[22m\n\u001b[2m    - locator resolved to <input checked id=\"uf-dust\" type=\"checkbox\" aria-describedby=\"uf-dust-help\"/>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    85 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-scenic-detail72\\browser-check.cjs:67:33"
+}

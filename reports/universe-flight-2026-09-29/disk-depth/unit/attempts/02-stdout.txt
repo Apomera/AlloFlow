@@ -1,0 +1,112 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+ ❯ tests/universe_flight_stellar_surfaces.test.js (8 tests | 8 failed) 932ms
+     × preserves all generated point and initial surface bytes and its six static stellar corners 25ms
+     × uses exact Float32 named-star records and restores point arrays after constant-attribute quad draws 85ms
+     × keeps distant stars on the original point path and does not select clouds or other regions for quads 2ms
+     × has finite bounded uniforms and skips behind-camera and coincident sources 2ms
+     × reuses static geometry across paused camera, lens, exposure, quality and DPR changes 2ms
+     × draws the same named stellar surface beyond a 32-pixel point limit at DPR2 2ms
+     × composites at most three stellar surfaces from far to near and restores additive blending 1ms
+     × restores the same surface draws after a region change and during a native star orbit without extra resources 1ms
+ ✓ tests/universe_flight_bulges.test.js (10 tests) 64913ms
+     ✓ fades smoothly inside the proxy and keeps zero-light bulges on their own texture layer  32967ms
+     ✓ keeps original disk xyz, UV, and point bytes and appends distinct bulge and disk ranges per spiral  18195ms
+     ✓ reconstructs accepted spiral light within byte quantization and preserves the elliptical and cloud maps  3701ms
+     ✓ uploads only projected ranges when position changes and caches paused, look, lens, and exposure changes  3147ms
+     ✓ refreshes during native orbit and distance glides, freezes on pause, and restores the same surface  1642ms
+     ✓ matches the source vertical spread with a nonnegative decreasing smooth disk and balances its exterior projected area  3964ms
+     ✓ fades the smooth exterior disk before entering the source and keeps its presentation class distinct at numerical zero  339ms
+     ✓ uses the same two buffers, textures, and programs through movement and releases each resource once  768ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/universe_flight_stellar_surfaces.test.js > Universe projected stellar surfaces > preserves all generated point and initial surface bytes and its six static stellar corners
+ FAIL  tests/universe_flight_stellar_surfaces.test.js > Universe projected stellar surfaces > uses exact Float32 named-star records and restores point arrays after constant-attribute quad draws
+ FAIL  tests/universe_flight_stellar_surfaces.test.js > Universe projected stellar surfaces > keeps distant stars on the original point path and does not select clouds or other regions for quads
+ FAIL  tests/universe_flight_stellar_surfaces.test.js > Universe projected stellar surfaces > has finite bounded uniforms and skips behind-camera and coincident sources
+ FAIL  tests/universe_flight_stellar_surfaces.test.js > Universe projected stellar surfaces > reuses static geometry across paused camera, lens, exposure, quality and DPR changes
+ FAIL  tests/universe_flight_stellar_surfaces.test.js > Universe projected stellar surfaces > draws the same named stellar surface beyond a 32-pixel point limit at DPR2
+ FAIL  tests/universe_flight_stellar_surfaces.test.js > Universe projected stellar surfaces > composites at most three stellar surfaces from far to near and restores additive blending
+ FAIL  tests/universe_flight_stellar_surfaces.test.js > Universe projected stellar surfaces > restores the same surface draws after a region change and during a native star orbit without extra resources
+Error: The property "toDataURL" is not defined on the object.
+ ❯ tests/universe_flight_stellar_surfaces.test.js:106:6
+    104|   vi.spyOn(canvas, 'getContext').mockReturnValue(gl);
+    105|   vi.spyOn(canvas, 'getBoundingClientRect').mockReturnValue({ width: 8…
+    106|   vi.spyOn(canvas, 'toDataURL').mockReturnValue('data:image/png;base64…
+       |      ^
+    107|   scene = flight.create(canvas);
+    108|   advance();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 5 unhandled errors during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_physics.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_cloud_surfaces.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_barred_detail.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_two_arm_detail.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_spiral_detail.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  8 failed | 10 passed (18)
+     Errors  5 errors
+   Start at  23:51:02
+   Duration  448.42s (transform 445ms, setup 113ms, import 940ms, tests 65.84s, environment 1ms)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/universe-flight-2026-09-29/disk-depth/unit/results.json

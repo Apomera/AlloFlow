@@ -1,0 +1,31 @@
+{
+  "baseDriverSha256": "4e023c8bdb4a16dc233148451fce3effde81f66087e5264962951f260f67ffa5",
+  "driverSha256": "055ffb29f1f05c2a0f0a3c2d029438f811415acc48bbe03f6c9a588d38a65454",
+  "originalFailure": "TypeError: Cannot read properties of undefined (reading autoLook)",
+  "changes": [
+    {
+      "before": "report=path.join(stage,'native-report')",
+      "after": "report=path.join(stage,'native-final-report')"
+    },
+    {
+      "before": "fov:route.id==='halo'?62:route.id==='group'?48:route.id==='stellar'?52:60",
+      "after": "fov:route.fov"
+    },
+    {
+      "before": "assert.equal(freeLook.flyby.autoLook,false);",
+      "after": "const freeLookRoute=await page.evaluate(()=>__telemetry.flyby);assert.equal(freeLookRoute.autoLook,false);"
+    },
+    {
+      "before": "freeLookRetainsPositionAndCounters:true,snapshot,freeLook",
+      "after": "freeLookRetainsPositionAndCounters:true,snapshot,freeLook,freeLookRoute"
+    },
+    {
+      "before": "a.snapshot.flyby.elapsedSeconds-b.snapshot.flyby.elapsedSeconds",
+      "after": "a.telemetry.flyby.elapsedSeconds-b.telemetry.flyby.elapsedSeconds"
+    },
+    {
+      "before": "c.snapshot.flyby.elapsedSeconds",
+      "after": "c.telemetry.flyby.elapsedSeconds"
+    }
+  ]
+}

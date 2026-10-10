@@ -1,0 +1,141 @@
+{
+  "resumedClock": {
+    "elapsedMs": 11731.959999994486,
+    "motionReduced": false
+  },
+  "observations": [
+    {
+      "contents": "canvas",
+      "width": 220,
+      "height": 264,
+      "entryOffscreen": false,
+      "entryMotionReduced": false,
+      "entryCameraTransition": "{\"startedAt\":1791236225210,\"duration\":520,\"fromZoom\":1.5,\"fromPanX\":15,\"fromPanY\":-8,\"toZoom\":1.5,\"toPanX\":69,\"toPanY\":-8}",
+      "stageCopies": 1,
+      "textBeforeCopy": [
+        "SEQUENCE 6/6 · COMPLETE",
+        "Complete the frog ventral-access",
+        "sequence",
+        "STABLE ANCHOR",
+        "1",
+        "2",
+        "Section A",
+        "Section B",
+        "Section C",
+        "1/37 viewed · observation 3%",
+        "View: dorsal",
+        "Heart (3-chamber)",
+        "Lungs",
+        "Liver (3 lobes) · occluded",
+        "Gallbladder",
+        "Stomach · occluded",
+        "Small Intestine · occluded",
+        "Large Intestine · occluded",
+        "Spleen",
+        "Kidneys",
+        "Fat Bodies",
+        "Pancreas",
+        "Cloaca",
+        "🫁 Organs Layer",
+        "🐸 Frog (Rana)  /  DORSAL",
+        "A ↑  ↓ P",
+        "anterior-posterior",
+        "1 cm  /  1.5x",
+        "LIVING MODEL",
+        "BUCCAL INTAKE"
+      ],
+      "textAfterCopy": [],
+      "entryClock": [
+        5398.595999997519,
+        8425.699999999255,
+        0
+      ],
+      "stageCamera": [
+        1.5,
+        15.024002901684115,
+        -8
+      ],
+      "stageView": "dorsal",
+      "injectedFailure": true,
+      "result": false,
+      "bitmapRestored": true,
+      "datasetRestored": true,
+      "keysRestored": true,
+      "changedReferences": [],
+      "changedValues": [],
+      "requestCleared": true,
+      "exitClock": [
+        5398.595999997519,
+        8425.699999999255,
+        0
+      ],
+      "exitCameraTransition": "{\"startedAt\":1791236225210,\"duration\":520,\"fromZoom\":1.5,\"fromPanX\":15,\"fromPanY\":-8,\"toZoom\":1.5,\"toPanX\":69,\"toPanY\":-8}"
+    },
+    {
+      "contents": "canvas",
+      "width": 220,
+      "height": 264,
+      "entryOffscreen": true,
+      "entryMotionReduced": false,
+      "entryCameraTransition": "{\"startedAt\":1791236225951,\"duration\":520,\"fromZoom\":1.5,\"fromPanX\":56.89393644742831,\"fromPanY\":-8,\"toZoom\":1.5,\"toPanX\":110.8939364474283,\"toPanY\":-8}",
+      "stageCopies": 1,
+      "textBeforeCopy": [
+        "SEQUENCE 6/6 · COMPLETE",
+        "Complete the frog ventral-access",
+        "sequence",
+        "STABLE ANCHOR",
+        "1",
+        "2",
+        "Section A",
+        "Section B",
+        "Section C",
+        "1/37 viewed · observation 3%",
+        "View: dorsal",
+        "Heart (3-chamber)",
+        "Lungs",
+        "Liver (3 lobes) · occluded",
+        "Gallbladder",
+        "Stomach · occluded",
+        "Small Intestine · occluded",
+        "Large Intestine · occluded",
+        "Spleen",
+        "Kidneys",
+        "Fat Bodies",
+        "Pancreas",
+        "Cloaca",
+        "🫁 Organs Layer",
+        "🐸 Frog (Rana)  /  DORSAL",
+        "A ↑  ↓ P",
+        "anterior-posterior",
+        "1 cm  /  1.5x",
+        "LIVING MODEL",
+        "BUCCAL INTAKE"
+      ],
+      "textAfterCopy": [],
+      "entryClock": [
+        5546.595999997519,
+        null,
+        0
+      ],
+      "stageCamera": [
+        1.5,
+        56.902895482476104,
+        -8
+      ],
+      "stageView": "dorsal",
+      "result": true,
+      "bitmapRestored": true,
+      "datasetRestored": true,
+      "keysRestored": true,
+      "changedReferences": [],
+      "changedValues": [],
+      "requestCleared": true,
+      "exitClock": [
+        5546.595999997519,
+        null,
+        0
+      ],
+      "exitCameraTransition": "{\"startedAt\":1791236225951,\"duration\":520,\"fromZoom\":1.5,\"fromPanX\":56.89393644742831,\"fromPanY\":-8,\"toZoom\":1.5,\"toPanX\":110.8939364474283,\"toPanY\":-8}"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "completed": true,
+  "enhancement": 63,
+  "pins": {
+    "renderer": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7",
+    "ui": "30f1ae3bb21b233b5d34dbb477d9d330759eac143a22de23107d33ba467754df"
+  },
+  "sourceSyntax": true,
+  "sourceMirrorsExact": true,
+  "uiReversePatchExact": true,
+  "rendererUnchangedFrom62": true,
+  "previewImagesUnchanged": 18,
+  "previewMirrorsExact": true,
+  "scopedWhitespace": true,
+  "indexEmpty": true,
+  "unit": {
+    "passed": 4,
+    "failed": 0,
+    "evidence": "unit/inspector-final-layout-summary.json"
+  },
+  "browser": {
+    "workflows": 7,
+    "accessibilityScopes": 3,
+    "screenshots": 5,
+    "touchTargets": 4,
+    "evidence": "browser-attempt4/check.json"
+  },
+  "mainReport": {
+    "beforeSha256": "1b192f03c2d5aadb34bd4d0327e26944b09d78387535eccbf834adfacec4b69c",
+    "afterSha256": "c3d725dce096026262990b963cad4bd246bccb1f7104d157a703b2321cc0f8a5"
+  },
+  "limits": [
+    "Generated teaching scenery; scenic previews use authored viewpoints, not the current camera.",
+    "Browser checked with Chromium SwiftShader; physical-device GPU matrix and full application suite not run."
+  ],
+  "committed": false
+}

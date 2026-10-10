@@ -1,0 +1,8 @@
+baseline beta09-edge-visible
+candidate beta09-edge-visible
+{
+  "completed": true,
+  "captures": 2,
+  "harnessSha256": "6eb290ebfdb8a8a9878bdf38fe676d4ea90cad2da1c10524dbee1fc00230c792",
+  "errors": []
+}

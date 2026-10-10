@@ -1,0 +1,41 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/solar_system_activity_shortcuts.test.js
+[deferred-jsdom] Initializing the official DOM environment.
+
+stdout | tests/solar_system_activity_shortcuts.test.js
+[deferred-jsdom] DOM environment ready.
+
+stdout | tests/solar_system_activity_shortcuts.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/solar_system_activity_shortcuts.test.js
+[deferred-jsdom] Existing repository setup loaded.
+
+ ✓ tests/solar_system_activity_shortcuts.test.js > Solar System saved activities and resume shortcuts > falls back to results when a connected return origin cannot receive focus 1405ms
+ ✓ tests/solar_system_activity_shortcuts.test.js > Solar System saved activities and resume shortcuts > uses a labeled collection control and independent named bookmark buttons 358ms
+ ✓ tests/solar_system_activity_shortcuts.test.js > Solar System saved activities and resume shortcuts > projects only known unique bookmarks without rewriting malformed or older saved records 226ms
+ ✓ tests/solar_system_activity_shortcuts.test.js > Solar System saved activities and resume shortcuts > combines saved collection, normalized search, and topic without changing bookmarks 448ms
+ ✓ tests/solar_system_activity_shortcuts.test.js > Solar System saved activities and resume shortcuts > handles invalid restored collections and bookmarks without any render-time write 839ms
+ ✓ tests/solar_system_activity_shortcuts.test.js > Solar System saved activities and resume shortcuts > merges rapid bookmarks with concurrent changes and ignores duplicate stale desired-state callbacks 381ms
+ ✓ tests/solar_system_activity_shortcuts.test.js > Solar System saved activities and resume shortcuts > returns focus to results after removing a saved-only card and cancels that focus after filtering 460ms
+ ✓ tests/solar_system_activity_shortcuts.test.js > Solar System saved activities and resume shortcuts > records explicit opens with world context and does not record render, save, search, or return 572ms
+ ✓ tests/solar_system_activity_shortcuts.test.js > Solar System saved activities and resume shortcuts > keeps six recent activity/world pairs in saved recency order and moves a reopened pair to the front 399ms
+ ✓ tests/solar_system_activity_shortcuts.test.js > Solar System saved activities and resume shortcuts > atomically appends rapid opens without losing newer history or unrelated state 244ms
+ ✓ tests/solar_system_activity_shortcuts.test.js > Solar System saved activities and resume shortcuts > ignores malformed, unknown, duplicate, and unsupported recent records without rewriting stored history 529ms
+ ✓ tests/solar_system_activity_shortcuts.test.js > Solar System saved activities and resume shortcuts > offers Continue with the finder closed and resumes the recorded world without changing simulation settings 226ms
+ ✓ tests/solar_system_activity_shortcuts.test.js > Solar System saved activities and resume shortcuts > uses compatible resume worlds and records the actual fallback world 1026ms
+ ✓ tests/solar_system_activity_shortcuts.test.js > Solar System saved activities and resume shortcuts > stores stable world keys while resolving translated world names on resume 405ms
+ ✓ tests/solar_system_activity_shortcuts.test.js > Solar System saved activities and resume shortcuts > uses the latest selected world and valid descent setting when an older card callback is invoked 432ms
+ ✓ tests/solar_system_activity_shortcuts.test.js > Solar System saved activities and resume shortcuts > never focuses or launches restored shortcuts until an explicit interaction 116ms
+ ✓ tests/solar_system_activity_shortcuts.test.js > Solar System saved activities and resume shortcuts > focuses the committed resume destination once and rejects superseded or filtered focus requests 427ms
+ ✓ tests/solar_system_activity_shortcuts.test.js > Solar System saved activities and resume shortcuts > clears only recent shortcuts and restores keyboard focus to results after commit 205ms
+ ✓ tests/solar_system_activity_shortcuts.test.js > Solar System saved activities and resume shortcuts > returns a removed recent origin to finder results while keeping saved collection and filters 334ms
+
+ Test Files  1 passed (1)
+      Tests  19 passed (19)
+   Start at  19:21:11
+   Duration  10.73s (transform 61ms, setup 1.43s, import 82ms, tests 9.04s, environment 0ms)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/solar-activity-shortcuts-enhancement-2026-10-09/unit-shortcuts-results.json

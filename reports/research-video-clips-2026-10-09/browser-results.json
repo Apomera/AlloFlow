@@ -1,0 +1,55 @@
+{
+  "base": "http://127.0.0.1:54694",
+  "hashes": {
+    "content_engine_module.js": "7e0353118ae3d8a79dbf5301f3b924d81ecdb274587a3f35f75e9b5222193ebe",
+    "gemini_api_module.js": "704c22ea299b44d14371ed55a002a6d058e30fd04b0d254b633bcf409d130845",
+    "view_misc_panels_module.js": "85efb2f5c229e58410def4b7c44d34f5c7114c0eae8f92e54053297ca5921d8c"
+  },
+  "success": true,
+  "passed": 8,
+  "results": [
+    "Timestamped links default to the unchanged whole-video payload with no search or HTML request",
+    "Explicit linked-start opt-in requires a valid end time and sends only bounded media plus the private-context-free task at 320px",
+    "Older video transport explains unavailable clip support while keeping explicit whole-video reading available",
+    "Non-Gemini preflight disables both video scopes without switching providers",
+    "A failed clip never automatically expands to whole video; a separate whole-video action is required",
+    "Two clips remain one source with separate choosers; replacing excerpts preserves the other clip and the four-passage source limit",
+    "Same-topic reopen retains clip drafts and cached transcripts; topic changes clear them, and missing clips reload their saved bounds",
+    "Ordinary webpage research remains unchanged and has no clip controls"
+  ],
+  "observations": [
+    {
+      "name": "clip-controls-320",
+      "geometry": {
+        "width": true,
+        "nonoverlap": true,
+        "visible": true,
+        "scrollHeight": 478,
+        "overflowing": 0
+      }
+    },
+    {
+      "name": "clip-preflight-390",
+      "geometry": {
+        "width": true,
+        "nonoverlap": true,
+        "visible": true,
+        "scrollHeight": 682,
+        "overflowing": 0
+      }
+    },
+    {
+      "name": "two-clip-review-desktop",
+      "geometry": {
+        "width": true,
+        "nonoverlap": true,
+        "visible": true,
+        "scrollHeight": 738,
+        "overflowing": 0
+      }
+    }
+  ],
+  "errors": [],
+  "unexpected": [],
+  "failure": null
+}

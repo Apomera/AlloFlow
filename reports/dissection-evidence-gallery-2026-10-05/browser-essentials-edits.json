@@ -1,0 +1,26 @@
+{
+  "file": "tests/e2e/dissection-evidence-gallery.spec.ts",
+  "baselineSha256": "1b00ee257561b6368ef45db3c749ff392f5f22b935c19c47e206fcf225e4620f",
+  "finalSha256": "fd03716a63f5cdbe3e7010ec309eba3128d2a0284b67eef9bb94cb0d235f2c89",
+  "addedTests": 1,
+  "rendererBaselineSha256": "2790df28e38fc96183113ca2a2ce7a1ede1d854d61eade23df1b0fd8ccc7410e",
+  "rendererApplicationSha256": "a077a647a5073de5ea02a320305822fa52281f1499c636723b6645ed3dac35f9",
+  "rendererGuards": [
+    {
+      "file": "stem_lab/stem_tool_dissection.js",
+      "sha256": "a077a647a5073de5ea02a320305822fa52281f1499c636723b6645ed3dac35f9"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_dissection.js",
+      "sha256": "a077a647a5073de5ea02a320305822fa52281f1499c636723b6645ed3dac35f9"
+    }
+  ],
+  "reason": "Verify the explicit Essentials saved-frame action opens Advanced comparison with keyboard focus and preserves all nonimage specimen work, image frames and selected reference through Close.",
+  "edits": [
+    {
+      "offset": 20411,
+      "old": "test('toolbar comparison and confirmed notebook management preserve other specimen work', async ({ page }) => {",
+      "new": "test('Essentials saved frame comparison opens Advanced and returns keyboard focus', async ({ page }) => {\n  test.skip(baseline); await mount(page, { workspaceMode: 'essentials', evidenceNotebookOpen: true, splitComparison: false }, 320); await openNotebook(page);\n  const before = await proof(page), saved = (await state(page)).visualEvidence, frame = compare(page, 101), advanced = page.getByRole('button', { name: 'Advanced workspace', exact: true });\n  expect(saved).toEqual(frames); await expect(advanced).toHaveAttribute('aria-pressed', 'false'); await expect(reference(page)).toHaveCount(0);\n  await expect(frame).toHaveText('Open comparison in Advanced'); await expect(frame).toHaveAccessibleName('Open comparison in Advanced for frame 1: External Anatomy');\n  await frame.focus(); await page.keyboard.press('Enter'); await expect(advanced).toHaveAttribute('aria-pressed', 'true'); await expect(page.locator('[data-dissection-root]')).toHaveAttribute('data-workspace-mode', 'advanced');\n  await expect(reference(page)).toBeVisible(); await expect(heading(page)).toHaveText('Reference frame 1'); await expect(heading(page)).toBeFocused(); await expect(notebook(page)).toHaveAttribute('open', '');\n  expect((await state(page)).referenceEvidenceId).toBe(101); expect((await state(page)).visualEvidence).toEqual(saved); expect(await proof(page)).toEqual(before);\n  await page.keyboard.press('Tab'); const close = reference(page).getByRole('button', { name: 'Close split comparison', exact: true }); await expect(close).toBeFocused(); await page.keyboard.press('Space');\n  await expect(reference(page)).toHaveCount(0); await expect(frame).toBeFocused(); await expect(frame).toHaveAccessibleName('Compare frame 1: External Anatomy'); await expect(frame).toHaveText('Compare with live view');\n  await expect(notebook(page)).toHaveAttribute('open', ''); await expect(card(page, 101)).toHaveAttribute('data-reference', 'true'); await expect(card(page, 101).locator('.diss-evidence__identity')).toContainText('Reference selected'); await expect(card(page, 101).locator('.diss-evidence__identity')).not.toContainText('Comparing now');\n  expect((await state(page)).referenceEvidenceId).toBe(101); expect((await state(page)).visualEvidence).toEqual(saved); expect(await proof(page)).toEqual(before); await expect(advanced).toHaveAttribute('aria-pressed', 'true');\n  await writeFile(`${out}/essentials-comparison-proof.json`, JSON.stringify({ workspaceMode: (await state(page)).workspaceMode, referenceEvidenceId: 101, frameIds: saved.map((entry: any) => entry.id), preserved: await proof(page) }, null, 2));\n});\n\n\ntest('toolbar comparison and confirmed notebook management preserve other specimen work', async ({ page }) => {"
+    }
+  ]
+}

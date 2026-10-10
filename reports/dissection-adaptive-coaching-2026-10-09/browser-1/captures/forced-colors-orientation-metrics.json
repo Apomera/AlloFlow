@@ -1,0 +1,42 @@
+{
+  "width": 344.40625,
+  "client": 339,
+  "scroll": 339,
+  "text": [
+    {
+      "text": "Adaptive coaching",
+      "font": 16,
+      "client": 307,
+      "scroll": 307
+    },
+    {
+      "text": "Orientation",
+      "font": 16,
+      "client": 307,
+      "scroll": 307
+    },
+    {
+      "text": "Inspect the layer, choose shallow depth, and preview the teaching corridor before drawing.",
+      "font": 16,
+      "client": 307,
+      "scroll": 307
+    },
+    {
+      "text": "Review technique controls",
+      "font": 16,
+      "client": 238,
+      "scroll": 238
+    },
+    {
+      "text": "Opens controls for review.",
+      "font": 16,
+      "client": 240,
+      "scroll": 240
+    }
+  ],
+  "button": {
+    "height": 48,
+    "outlineWidth": 3,
+    "outlineStyle": "solid"
+  }
+}

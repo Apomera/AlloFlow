@@ -1,0 +1,56 @@
+{
+  "reviewedCandidateSha256": "e7fb104c826f70b0af9478fab307cc8015bf7e42813749d3ec74f6b1254110b1",
+  "reviewedFiles": [
+    "renderer-next.js",
+    "renderer-edits.json",
+    "lab-unit-additions.jsfrag",
+    "lab-unit-next.js",
+    "dissection-tools-cohesion.spec.ts",
+    "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js"
+  ],
+  "scope": "Static independent read-only code review and inspection of existing generated screenshots/metrics. No runtime tests or browser interactions were performed by this reviewer.",
+  "actionableIssues": [],
+  "sourceWrites": false,
+  "suitesRun": false,
+  "browserActions": false,
+  "visualReview": {
+    "status": "complete",
+    "artifactRoot": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-tools-cohesion-2026-10-05",
+    "screenshotsReviewed": [
+      "baseline-1/captures/before-phone-tools.png",
+      "baseline-1/captures/before-tablet-tools.png",
+      "baseline-1/captures/before-desktop-tools.png",
+      "baseline-1/captures/before-embedded-medium-tools.png",
+      "baseline-1/captures/before-embedded-large-contrast-tools.png",
+      "baseline-1/captures/before-forced-colors-tools.png",
+      "tools-2/captures/after-phone-tools.png",
+      "tools-2/captures/after-tablet-tools.png",
+      "tools-2/captures/after-desktop-tools.png",
+      "tools-2/captures/after-embedded-medium-tools.png",
+      "tools-2/captures/after-embedded-large-contrast-tools.png",
+      "tools-2/captures/after-forced-colors-tools.png",
+      "tools-2/captures/keyboard-native-full-canvas.png",
+      "tools-2/captures/offscreen-lateral-native-full-canvas.png",
+      "tools-2/captures/animated-native-full-canvas-retry.png"
+    ],
+    "metricsReviewed": [
+      "tools-2/captures/after-phone-metrics.json",
+      "tools-2/captures/after-tablet-metrics.json",
+      "tools-2/captures/after-desktop-metrics.json",
+      "tools-2/captures/after-embedded-medium-metrics.json",
+      "tools-2/captures/after-embedded-large-contrast-metrics.json",
+      "tools-2/captures/after-forced-colors-metrics.json"
+    ],
+    "findings": [],
+    "observations": [
+      "Named groups and the separate reset boundary are visible at all six layouts, with no visible text clipping or unreadable labels.",
+      "All six metrics show panel scroll width equal to client width and zero clipped text/control entries.",
+      "Controls are at least 48 pixels high in ordinary layouts and at least 49.78 pixels high with large text; maximum height is 80.56 pixels.",
+      "Control font size is at least 16 pixels in ordinary layouts and 18 pixels with large text; descriptive text is at least 14 and 16 pixels respectively.",
+      "Grouped pressed and disabled states remain visible in high contrast and forced colors.",
+      "Desktop and tablet controls no longer stretch to the frame-options height. The large-text Annotate button wraps onto two readable lines.",
+      "Native PNG artifacts visibly contain the current canvas anatomy, guides, and configured lens overlays; the offscreen export visibly uses the lateral view."
+    ]
+  },
+  "unitGuardRevision": "Reviewed the repository unit tests after the root replaced inherited source-instance spies with independent own vi.fn guards and deleted those own properties during cleanup. Assertions remain strict."
+}

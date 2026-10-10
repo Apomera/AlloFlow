@@ -1,0 +1,19 @@
+/* Deliberate cookware handling, with equivalent controls for every phase. */
+.water-handling-tools #drainSvg{display:block;width:100%;height:auto;max-width:560px;max-height:none;margin:12px auto;overflow:visible;touch-action:none;user-select:none}
+.water-handling-tools #drainPot{transform-box:view-box;transition:none}
+.water-handling-tools .pot-drain-grip{cursor:grab}
+.water-handling-tools[data-pot-drain-held="true"] .pot-drain-grip{cursor:grabbing}
+.water-handling-tools #drainHandleLeft:focus-visible .pot-drain-handle-target,.water-handling-tools #drainHandleRight:focus-visible .pot-drain-handle-target{fill:#ffe5a8;fill-opacity:.4;stroke:#345943;stroke-width:3}
+.water-handling-tools #drainHandleLeft[aria-disabled="true"] .pot-drain-grip,.water-handling-tools #drainHandleRight[aria-disabled="true"] .pot-drain-grip{cursor:default;opacity:.55}
+.pot-drain-steps{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.water-handling-tools .pot-drain-steps button{min-height:44px;min-width:44px;padding:10px 14px;flex:1 1 145px}
+.water-handling-tools .pot-drain-steps button:focus-visible{outline:3px solid #345943;outline-offset:3px}
+.water-handling-tools #drainHold{touch-action:none}
+.water-handling-tools #drainHold:active{background:#345943;color:#fff8dc}
+.water-handling-tools #drainReading{font-variant-numeric:tabular-nums}
+@media(max-width:480px){.water-handling-tools .pot-drain-steps button{flex-basis:calc(50% - 8px);font-size:.9rem}.water-handling-tools #drainSvg{margin:10px auto}}
+@media(prefers-reduced-motion:reduce){.water-handling-tools #drainSvg *{animation:none!important;transition:none!important}}
+@media(forced-colors:active){.water-handling-tools #drainSvg{forced-color-adjust:auto}.water-handling-tools .pot-drain-grip{stroke:ButtonText}.water-handling-tools #drainHandleLeft:focus-visible .pot-drain-handle-target,.water-handling-tools #drainHandleRight:focus-visible .pot-drain-handle-target{fill:Highlight;stroke:HighlightText}.water-handling-tools #drainLanding{stroke:Highlight}.water-handling-tools #drainHold:active{background:Highlight;color:HighlightText}}
+
+/* Keep the held pot and colander visible beneath the current movement cue. */
+@media(max-width:650px){#sceneGestureCoach[data-tool="drain"]:not([data-mode="receipt"]){padding:8px 10px;top:8px;bottom:auto}#sceneGestureCoach[data-tool="drain"]:not([data-mode="receipt"]) .gesture-heading{margin-bottom:4px}#sceneGestureCoach[data-tool="drain"]:not([data-mode="receipt"]) #gestureInstruction{font-size:12px;line-height:1.4}#sceneGestureCoach[data-tool="drain"]:not([data-mode="receipt"]) #gestureDetail,#sceneGestureCoach[data-tool="drain"]:not([data-mode="receipt"]) .gesture-exit{display:none}#sceneGestureCoach[data-tool="drain"]:not([data-mode="receipt"]) progress{margin:6px 0 0}}

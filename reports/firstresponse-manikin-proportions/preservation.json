@@ -1,0 +1,39 @@
+{
+  "sourceSHA256": "16aceaa1b7d8bbd0ed869536b554451ddd2e5e3a832229e2e3322f8ad75f03e2",
+  "beforeSHA256": "476c1562ef879cb20ac65efdbf290edff9b98fafde9dbd7866f3e612c5750935",
+  "bytes": 778717,
+  "mirrorsIdentical": true,
+  "uniqueEdits": 3,
+  "baselineRestored": true,
+  "previousStudySHA256": "970fbb0e068412f3d3e3fb4ed01013a1afb56b9d5270fb2eb18d24201bfd012c",
+  "fixtureAdapters": [
+    {
+      "file": "tests/firstresponse_patient_finish.test.js",
+      "beforeSHA256": "84b81da9e679f82e5888db409ddeb005c01a3acc0e0b218873b7c9f21a9fe1b6",
+      "afterSHA256": "59ed72f453d37af25581978bf22e1f22660cd34cbfed05b4ec2ddd5db8da77b1"
+    },
+    {
+      "file": "tests/firstresponse_patient_contrast.test.js",
+      "beforeSHA256": "85d9c0d038dbd0b7d49c86cfcbf952cbe195ed702d4f664dcef3d50201a21705",
+      "afterSHA256": "16ad3253e543cc6d79081a7eaf6140f90cbbfdfca5867bf938d46f7c26ae9288"
+    },
+    {
+      "file": "tests/firstresponse_patient_wrists.test.js",
+      "beforeSHA256": "3cdb18beced6432e9e9037b6c93706db42fe2f58d016204511a50f3ef051a1cf",
+      "afterSHA256": "d575633db97da7a03fecc2325f9af24068640fba67361882a04ec23c1bda29d4"
+    },
+    {
+      "file": "tests/firstresponse_patient_sleeves.test.js",
+      "beforeSHA256": "ab631e024435409d320d8dc582ca4e78f4cde28ac5d1016b158f982960f00f8f",
+      "afterSHA256": "010360382688054d7cde434ed9053b4406fc4ab5fa1ecf595bbee8fe9fcf0e72"
+    },
+    {
+      "file": "tests/firstresponse_supporting_hand.test.js",
+      "beforeSHA256": "99bd6d238351f39eac6389f52770d0201bbdc10c2c7a5838a653f03d80a7ce11",
+      "afterSHA256": "1c6477d40e7988ced0f94b18a20a59f9c995bfa617da6d152fd03024ef451fa0"
+    }
+  ],
+  "comparisonHelperBeforeSHA256": "0c4364ada7809ff9e7ae5b53a78438e3d450a2b039d048b6dfaf5386c9811d73",
+  "comparisonHelperAfterSHA256": "57c130ef1d45e20ab7978fa1d088377f26f6b5c4b2b905b908c8e8d3db66367c",
+  "handoffOtherRowsPreserved": true
+}

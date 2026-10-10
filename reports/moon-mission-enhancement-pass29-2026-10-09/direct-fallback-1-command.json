@@ -1,0 +1,14 @@
+{
+  "args": [
+    "node",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass29-2026-10-09\\run-workflow.cjs",
+    "fallback"
+  ],
+  "cwd": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "browserCache": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+  "processTimeoutSeconds": 360,
+  "pid": 41200,
+  "startUtc": "2026-10-09T17:13:51.661446+00:00",
+  "sourceSha256": "4215be43398228194b9abebeb49f591fbc0e33cb239fb7c1735d80f3afb200b3",
+  "specSha256": "5b053cbe88334b55997b22183f6b18b493596c02581dcfa3bfaebb9ea83bc3eb"
+}

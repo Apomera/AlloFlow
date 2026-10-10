@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-09",
+  "sourceSHA256": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76",
+  "beforeSHA256": "8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940",
+  "failedRun": "native-infant-contrast",
+  "recoveredRun": "native-infant-contrast-recovered",
+  "failedStage": "Chromium launch before scene capture",
+  "browserExitCode": 3221225495,
+  "originalCaptureCount": 0,
+  "failedStats": {
+    "startTime": "2026-10-09T00:34:18.915Z",
+    "duration": 22082.037,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  "manualReruns": 1,
+  "automaticRetries": 0,
+  "reason": "Manual rerun after environment refresh; candidate and test inputs unchanged.",
+  "inputsByteIdentical": true,
+  "inputHashes": {
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\app-build\\stem_lab\\stem_tool_firstresponse.js": "8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\build\\stem_lab\\stem_tool_firstresponse.js": "8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\delta.json": "30618f6fa7ef014688989bb4cd4ae76f23e5958f25b88851303a8ff0983dab57",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\face-capture-png.cjs": "6009565cd97b35c874ff22325427e40823b4ff197118ea3870d0b2996bd30829",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\face-mount-window.cjs": "9e3d95fe4ce8ae16ca7d4a994d26250e064873d675b930fb23d63b33ba43b246",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright-core\\lib\\utilsBundle.js": "5c42363c10d2f2f5bc91e07feaa9fa5f417a1a55e6559448d0c20d66f73db9e0",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\run-face-browser.cjs": "942175f178eb845be3e0b33eb6d48c0cab8a2027b00490745328f7935935d024",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\before.js": "8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\candidate.js": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\firstresponse-face-preview.spec.ts": "b90a771f2d355db09b58de74b4eb5c1ca5cde110355a73368a8bed32c554ccde",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-detail-work\\playwright-face.config.cjs": "dda618a55a673d8c544dfc13f4273c04d406d7bdd06c8734acddb93ebcdfe7be",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_firstresponse.js": "8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_firstresponse.js": "8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\vendor\\three-r128\\three.min.js": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_lab_module.js": "cf56996d420aa6112626c4979d4a8e3963c9b199bf31deebb3e29d3910227de1"
+  },
+  "recoveredPassed": true,
+  "recoveredStats": {
+    "startTime": "2026-10-09T05:02:48.576Z",
+    "duration": 92947.512,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "failedEvidenceHashes": {
+    "artifacts/.last-run.json": "653faf856ca76847b6dd190959749c54630cb60ec63c082a4cd93d197b415279",
+    "artifacts/firstresponse-face-preview-0cfdb-native-supporting-hand-view/error-context.md": "152ccb6632e251178aac5ffb237620eb157d2031dd1058b0387586fcf7050e7f",
+    "browser-run.json": "3dc1068e54a0390b3fea7294c85234d363c7ae2ca93e5606bfd433f33189a3d1",
+    "browser-run.log": "b5fb67334e04487f7aaa1fb95278d33c3725a05d7759a2b55fb4d30235f518f4",
+    "face-preview-metrics.json": "b1ef81358cd443e8725f8368d3ff9b9d2cac0463def680c3e096431336dcf64b",
+    "failure.json": "2c19218263c989876f5c11e89aa0b44f862605b671ce5d428b0ca7fdb1e8ae94",
+    "inputs.json": "9f9b63ab798a3b8a2042b34917bf52eebcea0a85407f3bcb83d88daa21d31446",
+    "runner.json": "d5e1f812598b8bbbb26282cc65f7d0d55cd54ad84d0ea635fda58040b8bf8943"
+  }
+}

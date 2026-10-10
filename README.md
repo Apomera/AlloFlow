@@ -150,7 +150,7 @@ The STEM Lab is a dynamically-loaded suite of browser-based interactive tools. A
 
 Each tool supports **Generate Drill** for instant related practice sets and saves/restores state with the session.
 
-Perception Lab adds six visual experiments and three **Match by eye** activities for brightness, circle size, and line length. Learners can swap or remove surroundings, reveal drawing values, compare pinned settings at the same scale, and save observations with deletion undo and JSON export. See the [Perception Lab enhancement report](reports/artstudio-workspace/perception-deep/enhancements.md) for previews and verification.
+Perception Lab offers seven visual experiments and three **Match by eye** activities for brightness, circle size, and line length. Learners can swap or remove surroundings, reveal drawing values, compare pinned settings at the same scale, and save observations with deletion undo and JSON export. See the [Perception Lab enhancement report](reports/artstudio-workspace/perception-deep/enhancements.md) for previews and verification.
 
 Each matching activity also supports a **three-match study** with fixed surroundings, varied starting positions, and separate notes. After recording all three, learners can reveal their median and range, review a saved study, or repeat its settings. See the [repeated-study enhancement report](reports/artstudio-workspace/perception-repeat/enhancements.md) for verification and previews.
 
@@ -172,9 +172,72 @@ Recorded Perception drawings can be enlarged into a modal viewer with nearly ful
 
 Compatible Perception studies can also open together in an enlarged A/B viewer, with independent trial choices, equal drawing scale, and responsive or manual stacking. See the [paired drawing enhancement report](reports/artstudio-workspace/perception-paired-viewer/enhancements.md).
 
+Saved A/B reviews now offer **Switch drawings in one position**, with buttons and arrow keys for comparing complete recorded trials at a fixed position and scale. Independent trials, guides, and notes stay intact; saved data and complete reports are preserved. See the [stationary saved-drawing comparison report](reports/artstudio-workspace/perception-recorded-switch/enhancements.md).
+
+Saved trial drawings now have **shared zoom and pan** in enlarged reviews, with Fit, keyboard navigation, and native mouse/touch dragging. A/B views stay aligned while preserving saved data and complete reports. See the [saved-drawing inspector report](reports/artstudio-workspace/perception-recorded-inspector/enhancements.md).
+
+Enlarged saved drawings now show **Whole drawing** or the current cropped magnification beside the artwork, with a local Inspect/Fit action that keeps keyboard focus visible. See the [saved-drawing frame report](reports/artstudio-workspace/perception-recorded-frame/enhancements.md).
+
+Saved study comparisons now use a responsive plot with readable labels and trial dots, a shared linear scale, and explicit range, median, and reference markers. See the [study comparison plot report](reports/artstudio-workspace/perception-study-plot/enhancements.md).
+
+Individual study results now use responsive trial cards, with clear column labels, aligned values, and visible trial numbering on narrow screens and at larger text sizes. See the [study trial ledger report](reports/artstudio-workspace/perception-trial-ledger/enhancements.md).
+
+Active three-match studies now show recorded, current, and upcoming steps beneath the results heading, with clear states for results awaiting reveal and revealed results. See the [active study progress report](reports/artstudio-workspace/perception-study-flow/enhancements.md).
+
+A/B comparison details now keep result metrics and changed settings readable in compact, labelled rows on narrow screens and at enlarged text sizes. See the [comparison details report](reports/artstudio-workspace/perception-pair-details/enhancements.md).
+
+Saved notebook observations now use responsive cards that separate the observation identity, recorded impression, full notes, and available actions. See the [notebook observation cards report](reports/artstudio-workspace/perception-notebook-cards/enhancements.md).
+
+On narrow screens, a collapsible gallery now shows starting drawings for all seven experiments, with selection and keyboard focus preserved when switching experiments or resizing the workspace. See the [mobile experiment preview gallery report](reports/artstudio-workspace/perception-mobile-gallery/enhancements.md).
+
+Current and reference drawing captions now identify the surroundings or cube face cue and whether guides are visible, using each drawing's own settings throughout normal, switched, sliding, and focused views. See the [drawing conditions report](reports/artstudio-workspace/perception-drawing-conditions/enhancements.md).
+
+The live settings comparison table now stacks reference and current values into readable rows on narrow screens while preserving the existing comparison and hidden-value behavior. See the [drawing changes report](reports/artstudio-workspace/perception-drawing-changes/enhancements.md).
+
+The current drawing now includes its impression prompt and a shortcut that opens the adjustment controls and focuses the selected or first impression choice. See the [impression shortcut report](reports/artstudio-workspace/perception-impression-shortcut/enhancements.md).
+
+The impression choices now include Go to drawing, completing the keyboard and touch route between the drawing and its observation controls. Choice columns also adapt to narrow spaces and enlarged text. See the [drawing return report](reports/artstudio-workspace/perception-drawing-return/enhancements.md).
+
+Magnified drawings now show a Cropped view indicator beside a direct Fit whole drawing shortcut, including when inspection controls are closed. The shortcut restores the full view and keyboard focus without changing saved experiment data. See the [live frame report](reports/artstudio-workspace/perception-live-frame/enhancements.md).
+
+The drawing actions now share a clearer toolbar with labeled icons, a visible expanded inspection state, and responsive spacing. Comparison selection and closing controls sit above the action row, with guidance beneath. See the [scene toolbar report](reports/artstudio-workspace/perception-scene-toolbar/enhancements.md).
+
+The live drawing inspector now groups zoom and pan controls in a compact responsive panel. Viewing tips open on demand, while a concise crop reminder remains visible when magnified. See the [inspector layout report](reports/artstudio-workspace/perception-inspector-layout/enhancements.md).
+
+Experiment settings now appear in distinct adjustment cards with clearer current values, responsive exact-value and Reset rows, and visible focus and validation states. See the [adjustment cards report](reports/artstudio-workspace/perception-adjustment-cards/enhancements.md).
+
 Perception Lab now has illustrated experiment choices, a clearer drawing workspace, compact recorded-drawing controls, and distinct results and note sections across responsive and accessible themes. See the [visual presentation enhancement report](reports/artstudio-workspace/perception-visual-presentation/enhancements.md).
 
 Use **Focus experiment** to work in a nearly full-window Perception workspace with live controls, notes, matching studies, and pinned comparisons. Closing it preserves the drawing and returns keyboard focus to the workspace. See the [focused experiment enhancement report](reports/artstudio-workspace/perception-focus-workspace/enhancements.md).
+
+Perception Lab can export the current drawing as a 2400 × 1440 PNG with an opaque white background, from either workspace. Exports preserve the captured frame and cancel safely when study or learner context changes. See the [PNG export enhancement report](reports/artstudio-workspace/perception-png-export/enhancements.md).
+
+Perception Lab offers side-by-side, full-width stacked, and stationary switch-view layouts for live comparisons. The shared toolbar works in the focused workspace, preserves drawing colors and scale, and keeps dark-theme comparison tables readable. See the [live comparison enhancement report](reports/artstudio-workspace/perception-live-comparison/enhancements.md).
+
+**Slide drawings** compares the current drawing with a reference from the same experiment in one view at the same scale. Drag the divider or use Arrow keys, Home, and End; buttons show either complete drawing or center the divider. It works with pinned, surroundings, and starting-view comparisons in both workspaces, including phones. Divider position is a local view preference; saved data and hidden measurements remain protected. SVG and PNG exports contain the complete current drawing. See the [slide comparison enhancement report](reports/artstudio-workspace/perception-slide-comparison/enhancements.md).
+
+**Inspect drawing** adds 150%, 200%, and 300% magnification with bounded pan, direction controls, and keyboard navigation. Comparison drawings move together, including Slide drawings. The view works in both workspaces, preserves saved data and full exports, and returns to Fit for repeated studies. See the [drawing inspector enhancement report](reports/artstudio-workspace/perception-drawing-inspector/enhancements.md).
+
+The drawing inspector now includes a **Current drawing overview** with an outlined viewing window. Select or drag in the miniature to navigate magnified details, or use Arrow keys and Enter. Comparison views stay aligned, and saved data and full exports remain unchanged. See the [drawing overview enhancement report](reports/artstudio-workspace/perception-drawing-overview/enhancements.md).
+
+Perception Lab supports direct numeric entry and individual resets for all thirteen experiment settings. Values apply on Enter or blur; invalid entries leave the drawing unchanged, and repeated-study controls remain locked. See the [precision controls enhancement report](reports/artstudio-workspace/perception-precision-controls/enhancements.md).
+
+The focused Perception workspace now keeps controls beside the drawing when space allows, with quick drawing/control navigation and room for enlarged text. Browse all seven experiments through its selector or Previous/Next controls while retaining each experiment's settings and notes. Browsing pauses moiré motion and stays locked until an active repeated study ends. See the [focused browsing enhancement report](reports/artstudio-workspace/perception-focus-browsing/enhancements.md).
+
+Use **Compare surroundings** to inspect two live drawings at the same scale, with only their context differing. Both views follow your adjustments, preserve unrevealed matching values, and keep your saved pin available. The cube requires a face cue; tiles and grid views use explicit labels. The comparison works in all available layouts and both workspaces, and stays disabled throughout repeated studies. See the [surroundings comparison enhancement report](reports/artstudio-workspace/perception-context-comparison/enhancements.md).
+
+Free **Match by eye** activities now enter at a different starting point rather than equal drawing values. **New starting point** lets learners make another fresh match; **Equalize drawing values** explicitly restores equality. Both clear the previous impression and reveal while preserving notes and surroundings. Saved matching values and controlled repeated-study starts are retained. See the [matching starting points enhancement report](reports/artstudio-workspace/perception-match-start/enhancements.md).
+
+**Try one change** adds a fixed starting-view comparison for café wall, ambiguous cube, moiré, and Ponzo perspective. Learners choose a setting to explore, capture the current drawing, and compare their impressions while a change count distinguishes their chosen setting from other edits. Moiré capture pauses at the visible angle. The temporary starting view uses the existing comparison layouts, keeps the saved pin, and preserves ordinary observations and exports. See the [starting-view inquiry enhancement report](reports/artstudio-workspace/perception-inquiry/enhancements.md).
+
+The inquiry guide now shows the chosen setting's starting and current values and provides **Adjust chosen setting** from both the guide and drawing. **Restore chosen setting** returns only that setting to the captured value; **Restore other settings** keeps the chosen change while returning the other changed settings. Notes, impressions, measurement guides, and the fixed starting view are preserved. See the [inquiry controls enhancement report](reports/artstudio-workspace/perception-inquiry-controls/enhancements.md).
+
+The inquiry guide can now export a standalone **inquiry report** for café wall, ambiguous cube, moiré, and Ponzo perspective. It preserves both drawings at the same scale, all settings, impressions, and full notes; measurement-guide differences are identified separately. Reports capture the visible moiré frame and can be read or printed without changing the experiment or notebook. See the [inquiry report enhancement report](reports/artstudio-workspace/perception-inquiry-report/enhancements.md).
+
+**Ponzo perspective** adds adjustable perspective rails around two equal-length bars. Compare surroundings, reveal aligned endpoint guides, capture a starting view, restore individual inquiry settings, and export a printable inquiry report. The seventh experiment is available in both workspaces and the notebook. See the [Ponzo expansion report](reports/artstudio-workspace/perception-ponzo/enhancements.md).
+
+Saved observations now offer **Review observation** with a drawing-first layout, labeled impression and note panels, saved settings, and a full-width drawing option on wide screens. Reviews preserve saved measurement visibility and can export a standalone printable HTML report without changing the live experiment or notebook. See the [saved observation review enhancement report](reports/artstudio-workspace/perception-observation-review/enhancements.md).
+
 
 ---
 

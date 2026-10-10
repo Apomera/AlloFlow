@@ -1,0 +1,144 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-contrast-work\\playwright-face.config.cjs",
+    "rootDir": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-14/firstresponse-face-contrast-work",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-14/firstresponse-face-contrast-work/native-infant-contrast/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-14/firstresponse-face-contrast-work",
+        "testIgnore": [],
+        "testMatch": [
+          "firstresponse-face-preview.spec.ts"
+        ],
+        "timeout": 450000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "firstresponse-face-preview.spec.ts",
+      "file": "firstresponse-face-preview.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "nose contrast infant-pose8-contrast preview at matching native supporting-hand view",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 450000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 85191,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 0\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[31m+   \"_baseOpacity\": 1,\u001b[39m\n\u001b[2m    \"frNoseContourStrength\": Object {\u001b[22m\n\u001b[2m      \"value\": 1,\u001b[22m\n\u001b[2m    },\u001b[22m\n\u001b[2m  }\u001b[22m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 0\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[31m+   \"_baseOpacity\": 1,\u001b[39m\n\u001b[2m    \"frNoseContourStrength\": Object {\u001b[22m\n\u001b[2m      \"value\": 1,\u001b[22m\n\u001b[2m    },\u001b[22m\n\u001b[2m  }\u001b[22m\n    at validNose (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-contrast-work\\firstresponse-face-preview.spec.ts:143:92)\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-contrast-work\\firstresponse-face-preview.spec.ts:187:7",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-contrast-work\\firstresponse-face-preview.spec.ts",
+                      "column": 92,
+                      "line": 143
+                    },
+                    "snippet": "  141 |   if(value.contrast&&variant==='candidate'){\n  142 |     expect(nose.separateFromHead).toBe(true);expect(nose.strength).toBe(1);\n> 143 |     expect(nose.material.name).toBe('fr-patient-nose-skin');expect(nose.material.userData).toEqual({frNoseContourStrength:{value:1}});\n      |                                                                                            ^\n  144 |     expect(nose.hooks.cacheKey).toBe('fr-patient-nose-contrast-contours-v1');\n  145 |     for(const fragment of ['shader.uniforms.frNoseContourStrength = noseContourStrength','frNoseSurfaceNormal = normalize(normalMatrix * normal)','frNoseViewPosition = -mvPosition.xyz','abs(dot(normalize(frNoseSurfaceNormal), normalize(frNoseViewPosition)))','mix(0.08, 1.0, smoothstep(0.20, 0.45, frNoseFacing))','diffuseColor.rgb *= mix(1.0, frNoseContour, frNoseContourStrength)'])expect(nose.hooks.compile).toContain(fragment);\n  146 |     const clean=JSON.parse(JSON.stringify(nose.material));delete clean.name;delete clean.userData;expect(clean).toEqual(value.headMaterial);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-contrast-work\\firstresponse-face-preview.spec.ts",
+                        "column": 92,
+                        "line": 143
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 0\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[31m+   \"_baseOpacity\": 1,\u001b[39m\n\u001b[2m    \"frNoseContourStrength\": Object {\u001b[22m\n\u001b[2m      \"value\": 1,\u001b[22m\n\u001b[2m    },\u001b[22m\n\u001b[2m  }\u001b[22m\n\n  141 |   if(value.contrast&&variant==='candidate'){\n  142 |     expect(nose.separateFromHead).toBe(true);expect(nose.strength).toBe(1);\n> 143 |     expect(nose.material.name).toBe('fr-patient-nose-skin');expect(nose.material.userData).toEqual({frNoseContourStrength:{value:1}});\n      |                                                                                            ^\n  144 |     expect(nose.hooks.cacheKey).toBe('fr-patient-nose-contrast-contours-v1');\n  145 |     for(const fragment of ['shader.uniforms.frNoseContourStrength = noseContourStrength','frNoseSurfaceNormal = normalize(normalMatrix * normal)','frNoseViewPosition = -mvPosition.xyz','abs(dot(normalize(frNoseSurfaceNormal), normalize(frNoseViewPosition)))','mix(0.08, 1.0, smoothstep(0.20, 0.45, frNoseFacing))','diffuseColor.rgb *= mix(1.0, frNoseContour, frNoseContourStrength)'])expect(nose.hooks.compile).toContain(fragment);\n  146 |     const clean=JSON.parse(JSON.stringify(nose.material));delete clean.name;delete clean.userData;expect(clean).toEqual(value.headMaterial);\n    at validNose (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-contrast-work\\firstresponse-face-preview.spec.ts:143:92)\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-contrast-work\\firstresponse-face-preview.spec.ts:187:7"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T05:42:36.774Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-contrast-work\\native-infant-contrast\\artifacts\\firstresponse-face-preview-a4048-native-supporting-hand-view\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-contrast-work\\native-infant-contrast\\artifacts\\firstresponse-face-preview-a4048-native-supporting-hand-view\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-face-contrast-work\\firstresponse-face-preview.spec.ts",
+                    "column": 92,
+                    "line": 143
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "abe53d2d327fe7af75d4-31663a77a5dcd723764c",
+          "file": "firstresponse-face-preview.spec.ts",
+          "line": 159,
+          "column": 29
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-09T05:41:36.153Z",
+    "duration": 212355.027,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

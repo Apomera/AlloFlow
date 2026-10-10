@@ -1,0 +1,42 @@
+{
+  "sourceSha256": "7220922323828d60b08b6b8d003032bc9078ef4a91fbd6737b57d131aeb4df8a",
+  "completed": true,
+  "results": [
+    {
+      "name": "gravity-measurement-320-pluto",
+      "scrollWidth": 320,
+      "headings": [
+        {
+          "label": "Earth",
+          "arrival": "Arrival · 4.52 s",
+          "gap": 16,
+          "clipped": false
+        },
+        {
+          "label": "Pluto",
+          "arrival": "Arrival · 18.44 s",
+          "gap": 16,
+          "clipped": false
+        }
+      ]
+    },
+    {
+      "name": "gravity-measurement-320-neptune",
+      "scrollWidth": 320,
+      "headings": [
+        {
+          "label": "Earth",
+          "arrival": "Arrival · 4.52 s",
+          "gap": 16,
+          "clipped": false
+        },
+        {
+          "label": "Neptune",
+          "arrival": "Arrival · 4.23 s",
+          "gap": 16,
+          "clipped": false
+        }
+      ]
+    }
+  ]
+}

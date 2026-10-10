@@ -1,0 +1,18 @@
+{
+  "originalControllerSession": 98010,
+  "originalEvidenceFolder": "final-browser",
+  "originalLaunchRecordPresent": false,
+  "originalLogPresent": false,
+  "lookupSessionsCanceled": [
+    52079,
+    37360
+  ],
+  "lookupScope": "Exact task-owned private run-browser.cjs path; no other owners targeted.",
+  "freshControllerSession": 78747,
+  "freshEvidenceFolder": "recovered-browser",
+  "freshBrowserChild": 49624,
+  "freshWorkflowsPassed": 2,
+  "progressReadApprovalTimedOut": true,
+  "saferProgressReadSucceeded": true,
+  "sourceSHA256": "476c1562ef879cb20ac65efdbf290edff9b98fafde9dbd7866f3e612c5750935"
+}

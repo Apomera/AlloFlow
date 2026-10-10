@@ -1,0 +1,387 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-comparison-bench-enhancement-2026-10-04\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/solar-comparison-bench-enhancement-2026-10-04/browser-artifacts-final",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 240000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "line"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "111-solar-system-comparison-bench.spec.ts",
+      "file": "111-solar-system-comparison-bench.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "diameter portraits and meters use scientific proportions, including the disclosed Pluto visibility floor",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4544,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T14:40:04.131Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c01a7d0133465c951e1f-1e0a4379b710f6087f6e",
+          "file": "111-solar-system-comparison-bench.spec.ts",
+          "line": 214,
+          "column": 5
+        },
+        {
+          "title": "equal gravity and a restored same-world pair report equality without claiming a stronger world or permitting a save",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7688,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T14:40:08.916Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c01a7d0133465c951e1f-d5247d8d35b11dc6c282",
+          "file": "111-solar-system-comparison-bench.spec.ts",
+          "line": 227,
+          "column": 5
+        },
+        {
+          "title": "the smaller Neptune counterexample has stronger gravity and weight force on independently scaled meters",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4066,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T14:40:16.626Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c01a7d0133465c951e1f-f9d93fecdd4d3c47f0bf",
+          "file": "111-solar-system-comparison-bench.spec.ts",
+          "line": 240,
+          "column": 5
+        },
+        {
+          "title": "pair-specific explanations survive swapping and switching, while repeated saving records once and a revision remains saveable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8618,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T14:40:20.704Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c01a7d0133465c951e1f-4a90d1562d25091842bf",
+          "file": "111-solar-system-comparison-bench.spec.ts",
+          "line": 252,
+          "column": 5
+        },
+        {
+          "title": "canonical keys and legacy translated names resolve without rewriting raw saves, and invalid worlds swap as empty selections",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 14546,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T14:40:29.338Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c01a7d0133465c951e1f-6d9987bae3967d736a97",
+          "file": "111-solar-system-comparison-bench.spec.ts",
+          "line": 287,
+          "column": 5
+        },
+        {
+          "title": "malformed saved draft values remain untouched until deliberate writing, and the shared builder remains inspectable in the sidebar",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 14329,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T14:40:43.899Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c01a7d0133465c951e1f-4ce986043652e0a71102",
+          "file": "111-solar-system-comparison-bench.spec.ts",
+          "line": 313,
+          "column": 5
+        },
+        {
+          "title": "320px light comparison keeps readable controls and a pinned measure alongside locally scrolled exact values",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 3661,
+                  "error": {
+                    "message": "Error: rendered labels, measurements, exact values and explanations retain readable themed contrast\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 22\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"font\": 14,\u001b[39m\n\u001b[31m+     \"ratio\": 1.0462758042084466,\u001b[39m\n\u001b[31m+     \"text\": \"Earth\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"font\": 13,\u001b[39m\n\u001b[31m+     \"ratio\": 1.48470221380943,\u001b[39m\n\u001b[31m+     \"text\": \"12,742 km diameter\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"font\": 14,\u001b[39m\n\u001b[31m+     \"ratio\": 1.0462758042084466,\u001b[39m\n\u001b[31m+     \"text\": \"Jupiter\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"font\": 13,\u001b[39m\n\u001b[31m+     \"ratio\": 1.48470221380943,\u001b[39m\n\u001b[31m+     \"text\": \"139,822 km diameter\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                    "stack": "Error: rendered labels, measurements, exact values and explanations retain readable themed contrast\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 22\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"font\": 14,\u001b[39m\n\u001b[31m+     \"ratio\": 1.0462758042084466,\u001b[39m\n\u001b[31m+     \"text\": \"Earth\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"font\": 13,\u001b[39m\n\u001b[31m+     \"ratio\": 1.48470221380943,\u001b[39m\n\u001b[31m+     \"text\": \"12,742 km diameter\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"font\": 14,\u001b[39m\n\u001b[31m+     \"ratio\": 1.0462758042084466,\u001b[39m\n\u001b[31m+     \"text\": \"Jupiter\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"font\": 13,\u001b[39m\n\u001b[31m+     \"ratio\": 1.48470221380943,\u001b[39m\n\u001b[31m+     \"text\": \"139,822 km diameter\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at readableText (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\111-solar-system-comparison-bench.spec.ts:211:116)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\111-solar-system-comparison-bench.spec.ts:348:5",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\111-solar-system-comparison-bench.spec.ts",
+                      "column": 116,
+                      "line": 211
+                    },
+                    "snippet": "  209 |     }).filter((value) => value.font < 13 || value.ratio < 4.5);\n  210 |   });\n> 211 |   expect(failures, 'rendered labels, measurements, exact values and explanations retain readable themed contrast').toEqual([]);\n      |                                                                                                                    ^\n  212 | }\n  213 |\n  214 | test('diameter portraits and meters use scientific proportions, including the disclosed Pluto visibility floor', async ({ page }) => {"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\111-solar-system-comparison-bench.spec.ts",
+                        "column": 116,
+                        "line": 211
+                      },
+                      "message": "Error: rendered labels, measurements, exact values and explanations retain readable themed contrast\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 22\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"font\": 14,\u001b[39m\n\u001b[31m+     \"ratio\": 1.0462758042084466,\u001b[39m\n\u001b[31m+     \"text\": \"Earth\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"font\": 13,\u001b[39m\n\u001b[31m+     \"ratio\": 1.48470221380943,\u001b[39m\n\u001b[31m+     \"text\": \"12,742 km diameter\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"font\": 14,\u001b[39m\n\u001b[31m+     \"ratio\": 1.0462758042084466,\u001b[39m\n\u001b[31m+     \"text\": \"Jupiter\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"font\": 13,\u001b[39m\n\u001b[31m+     \"ratio\": 1.48470221380943,\u001b[39m\n\u001b[31m+     \"text\": \"139,822 km diameter\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n  209 |     }).filter((value) => value.font < 13 || value.ratio < 4.5);\n  210 |   });\n> 211 |   expect(failures, 'rendered labels, measurements, exact values and explanations retain readable themed contrast').toEqual([]);\n      |                                                                                                                    ^\n  212 | }\n  213 |\n  214 | test('diameter portraits and meters use scientific proportions, including the disclosed Pluto visibility floor', async ({ page }) => {\n    at readableText (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\111-solar-system-comparison-bench.spec.ts:211:116)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\111-solar-system-comparison-bench.spec.ts:348:5"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T14:40:58.246Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-comparison-bench-enhancement-2026-10-04\\browser-artifacts-final\\111-solar-system-compariso-9b75a-cally-scrolled-exact-values-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-comparison-bench-enhancement-2026-10-04\\browser-artifacts-final\\111-solar-system-compariso-9b75a-cally-scrolled-exact-values-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\solar-comparison-bench-enhancement-2026-10-04\\browser-artifacts-final\\111-solar-system-compariso-9b75a-cally-scrolled-exact-values-chromium\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\111-solar-system-comparison-bench.spec.ts",
+                    "column": 116,
+                    "line": 211
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "c01a7d0133465c951e1f-8c9b606abbf4b50fb9f6",
+          "file": "111-solar-system-comparison-bench.spec.ts",
+          "line": 343,
+          "column": 7
+        },
+        {
+          "title": "320px dark comparison keeps readable controls and a pinned measure alongside locally scrolled exact values",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8796,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T14:41:07.099Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c01a7d0133465c951e1f-7b8d67a78c3913dfba76",
+          "file": "111-solar-system-comparison-bench.spec.ts",
+          "line": 343,
+          "column": 7
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-05T14:40:03.089Z",
+    "duration": 73694.568,
+    "expected": 7,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

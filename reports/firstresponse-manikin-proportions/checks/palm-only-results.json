@@ -1,0 +1,1084 @@
+{
+  "schema": 1,
+  "baselineSHA256": "476c1562ef879cb20ac65efdbf290edff9b98fafde9dbd7866f3e612c5750935",
+  "candidateSHA256": "3ae3c3dbdb6377e1afc284db558e34fed6c1d4cabb20a0e40ed160aa14ea3554",
+  "threeRevision": "128",
+  "changedMeshes": [
+    "fr-patient-left-palm-crease",
+    "fr-patient-left-thumb-crease",
+    "fr-patient-right-palm-crease",
+    "fr-patient-right-thumb-crease"
+  ],
+  "cases": [
+    {
+      "age": "adult",
+      "phase": 2,
+      "contrast": false,
+      "resources": {
+        "nodes": 217,
+        "meshes": 148,
+        "geometries": 146,
+        "materials": 28,
+        "allocatedGeometries": 144,
+        "allocatedMaterials": 26,
+        "picks": [],
+        "meshKeys": [
+          "arms",
+          "head",
+          "legs",
+          "manikin",
+          "nearPalm",
+          "patientArms"
+        ]
+      },
+      "ribbons": [
+        {
+          "name": "fr-patient-left-palm-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.000349998019916177,
+            0.00035000216801117645
+          ],
+          "interiorClearance": [
+            0.0003094843118166407,
+            0.00035181627866605336
+          ],
+          "width": [
+            0.00017599780804816107,
+            0.0022000069431682783
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-left-thumb-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.0003499979877985976,
+            0.00035000227129440564
+          ],
+          "interiorClearance": [
+            0.0003047939981603645,
+            0.00035000212369468847
+          ],
+          "width": [
+            0.00017600052341580418,
+            0.0022000028236404826
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-right-palm-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.00034999785456261284,
+            0.0003500025037343202
+          ],
+          "interiorClearance": [
+            0.00031186500803230544,
+            0.0003510033752704561
+          ],
+          "width": [
+            0.00017599780804816107,
+            0.0022000069431682783
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-right-thumb-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.0003499979507283757,
+            0.0003500020790764974
+          ],
+          "interiorClearance": [
+            0.0002979423057448763,
+            0.0003519432191013763
+          ],
+          "width": [
+            0.00017600052341580418,
+            0.0022000028236404826
+          ],
+          "boundaryEdges": 98
+        }
+      ]
+    },
+    {
+      "age": "adult",
+      "phase": 4,
+      "contrast": false,
+      "resources": {
+        "nodes": 217,
+        "meshes": 148,
+        "geometries": 146,
+        "materials": 28,
+        "allocatedGeometries": 144,
+        "allocatedMaterials": 26,
+        "picks": [],
+        "meshKeys": [
+          "arms",
+          "head",
+          "legs",
+          "manikin",
+          "nearPalm",
+          "patientArms",
+          "supportingHand"
+        ]
+      },
+      "ribbons": [
+        {
+          "name": "fr-patient-left-palm-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.000349998019916177,
+            0.00035000216801117645
+          ],
+          "interiorClearance": [
+            0.0003094843118166407,
+            0.00035181627866605336
+          ],
+          "width": [
+            0.00017599780804816107,
+            0.0022000069431682783
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-left-thumb-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.0003499979877985976,
+            0.00035000227129440564
+          ],
+          "interiorClearance": [
+            0.0003047939981603645,
+            0.00035000212369468847
+          ],
+          "width": [
+            0.00017600052341580418,
+            0.0022000028236404826
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-right-palm-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.00034999785456261284,
+            0.0003500025037343202
+          ],
+          "interiorClearance": [
+            0.00031186500803230544,
+            0.0003510033752704561
+          ],
+          "width": [
+            0.00017599780804816107,
+            0.0022000069431682783
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-right-thumb-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.0003499979507283757,
+            0.0003500020790764974
+          ],
+          "interiorClearance": [
+            0.0002979423057448763,
+            0.0003519432191013763
+          ],
+          "width": [
+            0.00017600052341580418,
+            0.0022000028236404826
+          ],
+          "boundaryEdges": 98
+        }
+      ]
+    },
+    {
+      "age": "adult",
+      "phase": 5,
+      "contrast": false,
+      "resources": {
+        "nodes": 217,
+        "meshes": 148,
+        "geometries": 146,
+        "materials": 28,
+        "allocatedGeometries": 144,
+        "allocatedMaterials": 26,
+        "picks": [],
+        "meshKeys": [
+          "arms",
+          "head",
+          "legs",
+          "manikin",
+          "nearPalm",
+          "patientArms",
+          "supportingHand"
+        ]
+      },
+      "ribbons": [
+        {
+          "name": "fr-patient-left-palm-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.000349998019916177,
+            0.00035000216801117645
+          ],
+          "interiorClearance": [
+            0.0003094843118166407,
+            0.00035181627866605336
+          ],
+          "width": [
+            0.00017599780804816107,
+            0.0022000069431682783
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-left-thumb-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.0003499979877985976,
+            0.00035000227129440564
+          ],
+          "interiorClearance": [
+            0.0003047939981603645,
+            0.00035000212369468847
+          ],
+          "width": [
+            0.00017600052341580418,
+            0.0022000028236404826
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-right-palm-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.00034999785456261284,
+            0.0003500025037343202
+          ],
+          "interiorClearance": [
+            0.00031186500803230544,
+            0.0003510033752704561
+          ],
+          "width": [
+            0.00017599780804816107,
+            0.0022000069431682783
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-right-thumb-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.0003499979507283757,
+            0.0003500020790764974
+          ],
+          "interiorClearance": [
+            0.0002979423057448763,
+            0.0003519432191013763
+          ],
+          "width": [
+            0.00017600052341580418,
+            0.0022000028236404826
+          ],
+          "boundaryEdges": 98
+        }
+      ]
+    },
+    {
+      "age": "child",
+      "phase": 2,
+      "contrast": false,
+      "resources": {
+        "nodes": 216,
+        "meshes": 147,
+        "geometries": 145,
+        "materials": 28,
+        "allocatedGeometries": 143,
+        "allocatedMaterials": 26,
+        "picks": [],
+        "meshKeys": [
+          "arms",
+          "head",
+          "legs",
+          "manikin",
+          "nearPalm",
+          "patientArms"
+        ]
+      },
+      "ribbons": [
+        {
+          "name": "fr-patient-left-palm-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.000349998019916177,
+            0.00035000216801117645
+          ],
+          "interiorClearance": [
+            0.0003094843118166407,
+            0.00035181627866605336
+          ],
+          "width": [
+            0.00017599780804816107,
+            0.0022000069431682783
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-left-thumb-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.0003499979877985976,
+            0.00035000227129440564
+          ],
+          "interiorClearance": [
+            0.0003047939981603645,
+            0.00035000212369468847
+          ],
+          "width": [
+            0.00017600052341580418,
+            0.0022000028236404826
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-right-palm-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.00034999785456261284,
+            0.0003500025037343202
+          ],
+          "interiorClearance": [
+            0.00031186500803230544,
+            0.0003510033752704561
+          ],
+          "width": [
+            0.00017599780804816107,
+            0.0022000069431682783
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-right-thumb-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.0003499979507283757,
+            0.0003500020790764974
+          ],
+          "interiorClearance": [
+            0.0002979423057448763,
+            0.0003519432191013763
+          ],
+          "width": [
+            0.00017600052341580418,
+            0.0022000028236404826
+          ],
+          "boundaryEdges": 98
+        }
+      ]
+    },
+    {
+      "age": "child",
+      "phase": 4,
+      "contrast": false,
+      "resources": {
+        "nodes": 216,
+        "meshes": 147,
+        "geometries": 145,
+        "materials": 28,
+        "allocatedGeometries": 143,
+        "allocatedMaterials": 26,
+        "picks": [],
+        "meshKeys": [
+          "arms",
+          "head",
+          "legs",
+          "manikin",
+          "nearPalm",
+          "patientArms",
+          "supportingHand"
+        ]
+      },
+      "ribbons": [
+        {
+          "name": "fr-patient-left-palm-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.000349998019916177,
+            0.00035000216801117645
+          ],
+          "interiorClearance": [
+            0.0003094843118166407,
+            0.00035181627866605336
+          ],
+          "width": [
+            0.00017599780804816107,
+            0.0022000069431682783
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-left-thumb-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.0003499979877985976,
+            0.00035000227129440564
+          ],
+          "interiorClearance": [
+            0.0003047939981603645,
+            0.00035000212369468847
+          ],
+          "width": [
+            0.00017600052341580418,
+            0.0022000028236404826
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-right-palm-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.00034999785456261284,
+            0.0003500025037343202
+          ],
+          "interiorClearance": [
+            0.00031186500803230544,
+            0.0003510033752704561
+          ],
+          "width": [
+            0.00017599780804816107,
+            0.0022000069431682783
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-right-thumb-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.0003499979507283757,
+            0.0003500020790764974
+          ],
+          "interiorClearance": [
+            0.0002979423057448763,
+            0.0003519432191013763
+          ],
+          "width": [
+            0.00017600052341580418,
+            0.0022000028236404826
+          ],
+          "boundaryEdges": 98
+        }
+      ]
+    },
+    {
+      "age": "child",
+      "phase": 5,
+      "contrast": false,
+      "resources": {
+        "nodes": 216,
+        "meshes": 147,
+        "geometries": 145,
+        "materials": 28,
+        "allocatedGeometries": 143,
+        "allocatedMaterials": 26,
+        "picks": [],
+        "meshKeys": [
+          "arms",
+          "head",
+          "legs",
+          "manikin",
+          "nearPalm",
+          "patientArms",
+          "supportingHand"
+        ]
+      },
+      "ribbons": [
+        {
+          "name": "fr-patient-left-palm-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.000349998019916177,
+            0.00035000216801117645
+          ],
+          "interiorClearance": [
+            0.0003094843118166407,
+            0.00035181627866605336
+          ],
+          "width": [
+            0.00017599780804816107,
+            0.0022000069431682783
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-left-thumb-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.0003499979877985976,
+            0.00035000227129440564
+          ],
+          "interiorClearance": [
+            0.0003047939981603645,
+            0.00035000212369468847
+          ],
+          "width": [
+            0.00017600052341580418,
+            0.0022000028236404826
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-right-palm-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.00034999785456261284,
+            0.0003500025037343202
+          ],
+          "interiorClearance": [
+            0.00031186500803230544,
+            0.0003510033752704561
+          ],
+          "width": [
+            0.00017599780804816107,
+            0.0022000069431682783
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-right-thumb-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.0003499979507283757,
+            0.0003500020790764974
+          ],
+          "interiorClearance": [
+            0.0002979423057448763,
+            0.0003519432191013763
+          ],
+          "width": [
+            0.00017600052341580418,
+            0.0022000028236404826
+          ],
+          "boundaryEdges": 98
+        }
+      ]
+    },
+    {
+      "age": "infant",
+      "phase": 2,
+      "contrast": false,
+      "resources": {
+        "nodes": 187,
+        "meshes": 129,
+        "geometries": 127,
+        "materials": 28,
+        "allocatedGeometries": 125,
+        "allocatedMaterials": 26,
+        "picks": [],
+        "meshKeys": [
+          "arms",
+          "head",
+          "legs",
+          "manikin",
+          "nearPalm",
+          "patientArms"
+        ]
+      },
+      "ribbons": [
+        {
+          "name": "fr-patient-left-palm-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.000349998019916177,
+            0.00035000216801117645
+          ],
+          "interiorClearance": [
+            0.0003094843118166407,
+            0.00035181627866605336
+          ],
+          "width": [
+            0.00017599780804816107,
+            0.0022000069431682783
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-left-thumb-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.0003499979877985976,
+            0.00035000227129440564
+          ],
+          "interiorClearance": [
+            0.0003047939981603645,
+            0.00035000212369468847
+          ],
+          "width": [
+            0.00017600052341580418,
+            0.0022000028236404826
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-right-palm-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.00034999785456261284,
+            0.0003500025037343202
+          ],
+          "interiorClearance": [
+            0.00031186500803230544,
+            0.0003510033752704561
+          ],
+          "width": [
+            0.00017599780804816107,
+            0.0022000069431682783
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-right-thumb-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.0003499979507283757,
+            0.0003500020790764974
+          ],
+          "interiorClearance": [
+            0.0002979423057448763,
+            0.0003519432191013763
+          ],
+          "width": [
+            0.00017600052341580418,
+            0.0022000028236404826
+          ],
+          "boundaryEdges": 98
+        }
+      ]
+    },
+    {
+      "age": "infant",
+      "phase": 4,
+      "contrast": false,
+      "resources": {
+        "nodes": 187,
+        "meshes": 129,
+        "geometries": 127,
+        "materials": 28,
+        "allocatedGeometries": 125,
+        "allocatedMaterials": 26,
+        "picks": [],
+        "meshKeys": [
+          "arms",
+          "head",
+          "legs",
+          "manikin",
+          "nearPalm",
+          "patientArms",
+          "supportingHand"
+        ]
+      },
+      "ribbons": [
+        {
+          "name": "fr-patient-left-palm-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.000349998019916177,
+            0.00035000216801117645
+          ],
+          "interiorClearance": [
+            0.0003094843118166407,
+            0.00035181627866605336
+          ],
+          "width": [
+            0.00017599780804816107,
+            0.0022000069431682783
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-left-thumb-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.0003499979877985976,
+            0.00035000227129440564
+          ],
+          "interiorClearance": [
+            0.0003047939981603645,
+            0.00035000212369468847
+          ],
+          "width": [
+            0.00017600052341580418,
+            0.0022000028236404826
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-right-palm-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.00034999785456261284,
+            0.0003500025037343202
+          ],
+          "interiorClearance": [
+            0.00031186500803230544,
+            0.0003510033752704561
+          ],
+          "width": [
+            0.00017599780804816107,
+            0.0022000069431682783
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-right-thumb-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.0003499979507283757,
+            0.0003500020790764974
+          ],
+          "interiorClearance": [
+            0.0002979423057448763,
+            0.0003519432191013763
+          ],
+          "width": [
+            0.00017600052341580418,
+            0.0022000028236404826
+          ],
+          "boundaryEdges": 98
+        }
+      ]
+    },
+    {
+      "age": "infant",
+      "phase": 5,
+      "contrast": false,
+      "resources": {
+        "nodes": 187,
+        "meshes": 129,
+        "geometries": 127,
+        "materials": 28,
+        "allocatedGeometries": 125,
+        "allocatedMaterials": 26,
+        "picks": [],
+        "meshKeys": [
+          "arms",
+          "head",
+          "legs",
+          "manikin",
+          "nearPalm",
+          "patientArms",
+          "supportingHand"
+        ]
+      },
+      "ribbons": [
+        {
+          "name": "fr-patient-left-palm-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.000349998019916177,
+            0.00035000216801117645
+          ],
+          "interiorClearance": [
+            0.0003094843118166407,
+            0.00035181627866605336
+          ],
+          "width": [
+            0.00017599780804816107,
+            0.0022000069431682783
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-left-thumb-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.0003499979877985976,
+            0.00035000227129440564
+          ],
+          "interiorClearance": [
+            0.0003047939981603645,
+            0.00035000212369468847
+          ],
+          "width": [
+            0.00017600052341580418,
+            0.0022000028236404826
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-right-palm-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.00034999785456261284,
+            0.0003500025037343202
+          ],
+          "interiorClearance": [
+            0.00031186500803230544,
+            0.0003510033752704561
+          ],
+          "width": [
+            0.00017599780804816107,
+            0.0022000069431682783
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-right-thumb-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.0003499979507283757,
+            0.0003500020790764974
+          ],
+          "interiorClearance": [
+            0.0002979423057448763,
+            0.0003519432191013763
+          ],
+          "width": [
+            0.00017600052341580418,
+            0.0022000028236404826
+          ],
+          "boundaryEdges": 98
+        }
+      ]
+    },
+    {
+      "age": "child",
+      "phase": 4,
+      "contrast": true,
+      "resources": {
+        "nodes": 215,
+        "meshes": 147,
+        "geometries": 145,
+        "materials": 29,
+        "allocatedGeometries": 143,
+        "allocatedMaterials": 26,
+        "picks": [],
+        "meshKeys": [
+          "arms",
+          "head",
+          "legs",
+          "manikin",
+          "nearPalm",
+          "patientArms",
+          "supportingHand"
+        ]
+      },
+      "ribbons": [
+        {
+          "name": "fr-patient-left-palm-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.000349998019916177,
+            0.00035000216801117645
+          ],
+          "interiorClearance": [
+            0.0003094843118166407,
+            0.00035181627866605336
+          ],
+          "width": [
+            0.00017599780804816107,
+            0.0022000069431682783
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-left-thumb-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.0003499979877985976,
+            0.00035000227129440564
+          ],
+          "interiorClearance": [
+            0.0003047939981603645,
+            0.00035000212369468847
+          ],
+          "width": [
+            0.00017600052341580418,
+            0.0022000028236404826
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-right-palm-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.00034999785456261284,
+            0.0003500025037343202
+          ],
+          "interiorClearance": [
+            0.00031186500803230544,
+            0.0003510033752704561
+          ],
+          "width": [
+            0.00017599780804816107,
+            0.0022000069431682783
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-right-thumb-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.0003499979507283757,
+            0.0003500020790764974
+          ],
+          "interiorClearance": [
+            0.0002979423057448763,
+            0.0003519432191013763
+          ],
+          "width": [
+            0.00017600052341580418,
+            0.0022000028236404826
+          ],
+          "boundaryEdges": 98
+        }
+      ]
+    },
+    {
+      "age": "infant",
+      "phase": 5,
+      "contrast": true,
+      "resources": {
+        "nodes": 186,
+        "meshes": 129,
+        "geometries": 127,
+        "materials": 29,
+        "allocatedGeometries": 125,
+        "allocatedMaterials": 26,
+        "picks": [],
+        "meshKeys": [
+          "arms",
+          "head",
+          "legs",
+          "manikin",
+          "nearPalm",
+          "patientArms",
+          "supportingHand"
+        ]
+      },
+      "ribbons": [
+        {
+          "name": "fr-patient-left-palm-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.000349998019916177,
+            0.00035000216801117645
+          ],
+          "interiorClearance": [
+            0.0003094843118166407,
+            0.00035181627866605336
+          ],
+          "width": [
+            0.00017599780804816107,
+            0.0022000069431682783
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-left-thumb-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.0003499979877985976,
+            0.00035000227129440564
+          ],
+          "interiorClearance": [
+            0.0003047939981603645,
+            0.00035000212369468847
+          ],
+          "width": [
+            0.00017600052341580418,
+            0.0022000028236404826
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-right-palm-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.00034999785456261284,
+            0.0003500025037343202
+          ],
+          "interiorClearance": [
+            0.00031186500803230544,
+            0.0003510033752704561
+          ],
+          "width": [
+            0.00017599780804816107,
+            0.0022000069431682783
+          ],
+          "boundaryEdges": 98
+        },
+        {
+          "name": "fr-patient-right-thumb-crease",
+          "vertices": 98,
+          "triangles": 96,
+          "vertexClearance": [
+            0.0003499979507283757,
+            0.0003500020790764974
+          ],
+          "interiorClearance": [
+            0.0002979423057448763,
+            0.0003519432191013763
+          ],
+          "width": [
+            0.00017600052341580418,
+            0.0022000028236404826
+          ],
+          "boundaryEdges": 98
+        }
+      ]
+    }
+  ],
+  "checkedFrames": 45,
+  "checkedRibbons": 44,
+  "checkedVertices": 4312,
+  "disposedResources": 4020,
+  "passed": true,
+  "elapsedMs": 148868
+}

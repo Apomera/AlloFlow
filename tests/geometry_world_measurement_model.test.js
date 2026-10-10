@@ -670,7 +670,9 @@ describe('Geometry World measurement model', () => {
     expect(SOURCE).toContain("'data-geometry-prediction-cycle': 'commit-before-measure'");
     expect(SOURCE).toContain("'data-geometry-estimation-challenge': 'draft-commit-measure-reflect'");
     expect(SOURCE).toContain('This is an ungraded estimate. Aim at one unmeasured structure');
-    expect(SOURCE).toContain('Estimate locked for the aimed structure. Measure that same structure; the original stays fixed.');
+    expect(SOURCE).toContain("'Estimate of ' + formatMeasurementQuantity(volumeEstimateCommitment.prediction, 'volume') + ' locked'");
+    expect(SOURCE).toContain('Number.isFinite(volumeEstimateCommitment.prediction) && volumeEstimateCommitment.prediction > 0');
+    expect(SOURCE).toContain(' for the aimed structure. Measure that same structure; the original stays fixed.');
     expect(SOURCE).toContain("'data-geometry-estimate-action': volumeEstimateCommitment ? 'change' : 'commit'");
     expect(SOURCE).toContain("'data-geometry-misconception-feedback': predictionResult.diagnosisCode");
     expect(SOURCE).toContain("'data-geometry-revision-result': 'true'");

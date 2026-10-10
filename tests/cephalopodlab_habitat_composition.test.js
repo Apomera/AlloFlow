@@ -9,7 +9,15 @@ const require=createRequire(import.meta.url),THREE=require(resolve('vendor/three
 const {restoreOriginalSeagrassSource}=require('./helpers/cephalopod_seagrass_reference.cjs');
 const {restorePass37ReefSource,restorePass37RockSource,restorePass37CoralSource}=require('./helpers/cephalopod_reef_form_reference.cjs');
 const {restorePass38CoralSource}=require('./helpers/cephalopod_coral_organic_reference.cjs');
+const {restorePass44Source}=require('./helpers/cephalopod_pass44_reference.cjs');
+const {restorePass46Source}=require('./helpers/cephalopod_pass46_reference.cjs');
+const {restorePass47Source:restorePass47Only}=require('./helpers/cephalopod_pass47_reference.cjs');
+const {restorePass48Source:restorePass48Only}=require('./helpers/cephalopod_pass48_reference.cjs');
+// These historical hashes predate the current oral tissue surface and motion.
+const restorePass47Source=source=>restorePass47Only(restorePass48Source(source));
 const source=readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE||'stem_lab/stem_tool_cephalopodlab.js','utf8').replace(/\r\n/g,'\n');
+// Historical byte oracles exclude only the guarded surface/configuration edits; live fixtures use source.
+const beforePlantSurface=require('./helpers/cephalopod_pass57_reference.cjs').restorePass57Source(source);
 const original=JSON.parse(readFileSync(process.env.CEPHALOPOD_HABITAT_FIXTURE||'tests/fixtures/cephalopod_habitat_original.json','utf8'));
 const sha=value=>createHash('sha256').update(value).digest('hex');
 assert.equal(original.version,1);assert.equal(original.baselineSourceSha256,'22314e02f0487b3ac626f26450392da440b2ea04ed0e1118b1326d4898d51c7e');
@@ -102,10 +110,10 @@ function sameResources(rows){for(const row of rows){assert.equal(row.mesh.geomet
 describe('Cephalopod Hunter deterministic habitat composition',()=>{
   it('preserves baseline random call sites, plant geometry and spawn bytes after reversing only approved water flow and rock shadow faces',()=>{
     const randomLines=value=>value.split('\n').filter(line=>line.includes('Math.random'));
-    assert.deepEqual(randomLines(source),original.randomLines);
+    assert.deepEqual(randomLines(restorePass46Source(restorePass47Source(source))),original.randomLines);
     const protectedRegions=[['plantFactoryAndFlex','      function shadeCLHuntPlantFlex(','      function createCLHuntMarineSnowGeometry('],['grassSpawn','        var grass = [];','        // Terrain-conforming caustics:'],['kelpSpawn','        var kelpStrands = [];','        // ─── Hydrothermal vent'],['rockSpawn','        var rocks = [];','        // ─── Curved branching coral colonies'],['coralFactoryAndSpawn','        // ─── Curved branching coral colonies','        // ─── Sea grass']];
     assert.deepEqual(original.protectedRegions.map(entry=>entry.name),protectedRegions.map(entry=>entry[0]));
-    for(const [name,start,end] of protectedRegions){const live=region(start,end),restored=name==='plantFactoryAndFlex'?reverseApprovedPlantFlow(restoreOriginalSeagrassSource(live)):name==='rockSpawn'?reverseApprovedRockShadowPolicy(restorePass37RockSource(live)):name==='coralFactoryAndSpawn'?restorePass37CoralSource(restorePass38CoralSource(live)):live;assert.equal(sha(restored),original.protectedRegions.find(entry=>entry.name===name).sha256,'Baseline owned region drifted: '+name);}
+    for(const [name,start,end] of protectedRegions){const live=region(start,end,beforePlantSurface),restored=name==='plantFactoryAndFlex'?reverseApprovedPlantFlow(restoreOriginalSeagrassSource(live)):name==='rockSpawn'?reverseApprovedRockShadowPolicy(restorePass37RockSource(restorePass44Source(live))):name==='coralFactoryAndSpawn'?restorePass37CoralSource(restorePass38CoralSource(live)):live;assert.equal(sha(restored),original.protectedRegions.find(entry=>entry.name===name).sha256,'Baseline owned region drifted: '+name);}
   });
 
   it('casts solid reef rocks from both faces while keeping opaque receivers and other habitat material policies',()=>{
@@ -117,7 +125,7 @@ describe('Cephalopod Hunter deterministic habitat composition',()=>{
   },90000);
 
   it('retains actual plant spawn order and all 525 owned random draws, resource counts, heights, yaw and phase',()=>{
-    const rng=stream(),plain=new Function('THREE','Math',plantHelpers+';var scene=new THREE.Scene();'+grassSpawn+kelpSpawn+';return{scene:scene,grass:grass,kelp:kelpStrands};')(THREE,rng.math);
+    const rng=stream(),plain=new Function('THREE','Math',plantHelpers+';var renderer={capabilities:{isWebGL2:true}};var scene=new THREE.Scene();'+grassSpawn+kelpSpawn+';return{scene:scene,grass:grass,kelp:kelpStrands};')(THREE,rng.math);
     const expected=stream();for(let i=0;i<525;i++)expected.math.random();
     try{
       assert.deepEqual(rng.draws,expected.draws);assert.equal(plain.grass.length,80);assert.equal(plain.kelp.length,25);
@@ -179,3 +187,6 @@ describe('Cephalopod Hunter deterministic habitat composition',()=>{
     for(const text of ['updateCLHuntPlantFlex(k.flex,now,k.phase,0.0008,gameState.a11y.reducedMotion);','updateCLHuntPlantFlex(g.flex,now,g.phase,0.001,gameState.a11y.reducedMotion);','grounded.forEach(function(o){if(o)o.position.y=terrainHeight(o.position.x,o.position.z)+o.userData.groundOffset;});','if(disposed)return;','scene.traverse(function(obj) {','if (obj.geometry) obj.geometry.dispose();'])assert.ok(source.includes(text),'Protected static lifecycle changed: '+text);
   });
 });
+
+// Historical references predate the ink surface. Keep live fixtures on current visuals.
+function restorePass48Source(source){return restorePass48Only(require('./helpers/cephalopod_pass49_reference.cjs').restorePass49Source(require('./helpers/cephalopod_pass50_reference.cjs').restorePass50Source(require('./helpers/cephalopod_pass51_reference.cjs').restorePass51Source(require('./helpers/cephalopod_pass52_reference.cjs').restorePass52Source(require('./helpers/cephalopod_pass53_reference.cjs').restorePass53Source(require('./helpers/cephalopod_pass54_reference.cjs').restorePass54Source(source)))))));}

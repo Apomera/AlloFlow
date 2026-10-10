@@ -1,0 +1,46 @@
+{
+  "passed": true,
+  "sourceSHA256": "179ddeefd0c930ca4a084d98fc683c321fb4f36f720e62cddf8b30d56b576466",
+  "beforeSHA256": "f6cfbcccc65323918d7ca7b209737dcd13cf57a31246da4110f2ab980907147f",
+  "sourceCopies": [
+    "stem_lab/stem_tool_firstresponse.js",
+    "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js",
+    "desktop/app-build/stem_lab/stem_tool_firstresponse.js",
+    "desktop/web-app/build/stem_lab/stem_tool_firstresponse.js"
+  ],
+  "sourceCopiesIdentical": 4,
+  "rawTestsUnchanged": 39,
+  "historicalHelperChains": 9,
+  "preparedAdditionsVerified": 2,
+  "preparedEditsVerified": 1,
+  "executedCheckerPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-wrist-shading-work\\verify-shading.cjs",
+  "executedCheckerSHA256": "bf7a6ff8cd49c09a16e84830b63c7fdad254710705c3ef7b36836a0e884e220e",
+  "geometryResultPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-wrist-shading-work\\shading-verification.json",
+  "geometryResultSHA256": "067c6173566340e5dab7b776c1e70a73b704e4bae1b59c34bf63d033b745deeb",
+  "sharedCheckerFile": "dev-tools/firstresponse_wrist_shading_refinement_check.cjs",
+  "portableCheckerMatchesExecutedBytes": true,
+  "syntaxFiles": [
+    "stem_lab/stem_tool_firstresponse.js",
+    "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js",
+    "desktop/app-build/stem_lab/stem_tool_firstresponse.js",
+    "desktop/web-app/build/stem_lab/stem_tool_firstresponse.js",
+    "tests/helpers/firstresponse_wrist_shading_refinement_delta.cjs",
+    "tests/helpers/firstresponse_rescuer_wrist_refinement_delta.cjs",
+    "dev-tools/firstresponse_wrist_shading_refinement_check.cjs"
+  ],
+  "reportLinksVerified": 28,
+  "reportExternalLinks": 0,
+  "stagedNames": [],
+  "indexBytesPreserved": true,
+  "indexEmpty": true,
+  "negative": {
+    "requested": true,
+    "ran": true,
+    "changedPrivateCheckerRejected": true,
+    "changedSharedCheckerRejected": true,
+    "mutationScope": "in-memory bytes only",
+    "originalsReread": true
+  },
+  "sharedFilesWritten": 0,
+  "limitations": "Source, compatibility, syntax and report-link checks; geometry execution is pinned above and browser acceptance is verified separately."
+}

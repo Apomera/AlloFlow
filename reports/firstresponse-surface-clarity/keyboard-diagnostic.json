@@ -1,0 +1,14 @@
+{
+  "keys": [
+    {
+      "key": "ArrowLeft",
+      "target": "fr-body3d-stage is-depth",
+      "prevented": false
+    }
+  ],
+  "active": "fr-body3d-stage is-depth",
+  "size": [
+    559,
+    418
+  ]
+}

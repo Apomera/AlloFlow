@@ -143,11 +143,22 @@ function seed(fixture = fixtures[0], options = {}) {
     for (const width of [320, 390, 768, 1280, 1600]) {
       phase = 'width-' + width; await page.setViewportSize({ width, height: 1000 }); await mount(); await openReview(); await open('review');
       await noOverflow(); await targets(); await accessibleSVGs();
-      const sizes = await dialog.evaluate(node => { const svg = node.querySelector('svg'), bounds = node.getBoundingClientRect(); return { viewport: innerWidth, dialog: bounds.width, x: bounds.x, right: bounds.right, content: node.clientWidth, scroll: node.scrollWidth, svg: svg.getBoundingClientRect().width }; });
-      assert(sizes.x >= 0 && sizes.right <= width); assert(sizes.scroll <= sizes.content + 1); assert(sizes.dialog >= Math.min(width - 24, 1440) - 2); assert(sizes.svg >= sizes.dialog - 100);
+      const sizes = await dialog.evaluate(node => { const bounds = node.getBoundingClientRect(); return { viewport: innerWidth, dialog: bounds.width, x: bounds.x, right: bounds.right, content: node.clientWidth, scroll: node.scrollWidth }; });
+      assert(sizes.x >= 0 && sizes.right <= width); assert(sizes.scroll <= sizes.content + 1); assert(sizes.dialog >= Math.min(width - 24, 1440) - 2);
+      // Measure the projected drawing, not a wider SVG box that may contain letterboxing.
+      const fit = await scene('viewer').evaluate(svg => {
+        const figure = svg.closest('figure'), bounds = figure.getBoundingClientRect(), matrix = svg.getScreenCTM();
+        if (!matrix) throw new Error('Recorded drawing has no screen matrix.');
+        const corners = [[0, 0], [800, 0], [800, 480], [0, 480]].map(([x, y]) => { const point = new DOMPoint(x, y).matrixTransform(matrix); return { x: point.x, y: point.y }; });
+        return { a: matrix.a, b: matrix.b, c: matrix.c, d: matrix.d, expected: Math.min(figure.clientWidth / 800, innerHeight * .65 / 480), left: bounds.left, top: bounds.top, right: bounds.right, bottom: bounds.bottom, center: bounds.left + bounds.width / 2, corners };
+      });
+      assert(fit.a > 0 && fit.d > 0); assert(Math.abs(fit.b) < 1e-8 && Math.abs(fit.c) < 1e-8);
+      assert(Math.abs(fit.a - fit.d) < 1e-8); assert(Math.abs(fit.a - fit.expected) < .002);
+      for (const point of fit.corners) assert(point.x >= fit.left - 1.5 && point.x <= fit.right + 1.5 && point.y >= fit.top - 1.5 && point.y <= fit.bottom + 1.5);
+      assert(Math.abs((fit.corners[0].x + fit.corners[1].x) / 2 - fit.center) < 1.5);
       await audit('viewer-' + width); await dialog.screenshot({ path: path.join(out, 'viewer-' + width + '.png') });
       await preview('viewer').locator('.perception-recorded-note').scrollIntoViewIfNeeded(); assert(await preview('viewer').locator('.perception-recorded-note').isVisible());
-      await close(); checks.push({ width, nearlyFullWidthDrawing: true, noOverflow: true, fullNoteReachable: true, controls44px: true, axe: [] });
+      await close(); checks.push({ width, completeDrawingUsesAvailableFitSpace: true, noOverflow: true, fullNoteReachable: true, controls44px: true, axe: [] });
     }
     await page.setViewportSize({ width: 1280, height: 1000 });
     for (const theme of ['dark', 'contrast', 'forced-light', 'forced-dark']) {

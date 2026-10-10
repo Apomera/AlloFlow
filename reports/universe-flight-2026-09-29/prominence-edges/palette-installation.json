@@ -1,0 +1,18 @@
+{
+  "completed": true,
+  "installed": true,
+  "baselineUiHash": "609b91840f54bbf05447bfb877a4a87e024f6b1d7cfbf65744d2b9c9904a60c6",
+  "candidateUiHash": "166dd6c8a059c03fd21e79c646c14bd104ea0be93d8cc43105231fd6f5576742",
+  "rendererHash": "c0cc2486b3d5edd620e5975daec3d23b8f2e995a24db151be27ac30820d058c7",
+  "backup": "pre-palette-ui.js",
+  "byteStartInclusive": 226826,
+  "byteEndExclusive": 227496,
+  "insertionBytes": 670,
+  "insertion": "  @media(forced-colors:active){\n    [data-universe-tool] .uf-vistas{background:Canvas;color:CanvasText;border-color:CanvasText;box-shadow:none;}\n    [data-universe-tool] .uf-vistas .uf-section-heading h3,[data-universe-tool] .uf-vistas .uf-section-heading p,[data-universe-tool] .uf-vistas .uf-section-heading span{color:CanvasText!important;}\n    [data-universe-tool] .uf-vista-list button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;}\n    [data-universe-tool] .uf-vista-list button span,[data-universe-tool] .uf-vista-list button strong,[data-universe-tool] .uf-vista-list button small{color:ButtonText!important;}\n  }\n",
+  "pins": {
+    "stem_lab/stem_tool_universe.js": "166dd6c8a059c03fd21e79c646c14bd104ea0be93d8cc43105231fd6f5576742",
+    "desktop/web-app/public/stem_lab/stem_tool_universe.js": "166dd6c8a059c03fd21e79c646c14bd104ea0be93d8cc43105231fd6f5576742",
+    "stem_lab/universe_flight_scene.js": "c0cc2486b3d5edd620e5975daec3d23b8f2e995a24db151be27ac30820d058c7",
+    "desktop/web-app/public/stem_lab/universe_flight_scene.js": "c0cc2486b3d5edd620e5975daec3d23b8f2e995a24db151be27ac30820d058c7"
+  }
+}

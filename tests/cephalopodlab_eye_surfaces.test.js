@@ -13,7 +13,7 @@ if (start < 0 || end <= start) throw new Error('Cannot find the actual animal ri
 const build = new Function('T', 'species', 'Math', source.slice(start, end) + ';return createCLHuntAnimal(T,species);');
 // Pass30 reverses only the exact accepted Humboldt fin roll for this older protected fingerprint.
 // All live geometry/material/motion assertions still use the actual production build.
-const {restorePass42AnimalSource}=require('./helpers/cephalopod_pass42_reference.cjs');
+const {restorePass42AnimalSource:restorePass42AnimalOnly}=require('./helpers/cephalopod_pass42_reference.cjs');
 const protectedBuild=new Function('T','species','Math',restoreCLSquidFinReference(restorePass42AnimalSource(source.slice(start,end)))+';return createCLHuntAnimal(T,species);');
 
 const noRandom = Object.assign(Object.create(Math), { random() { throw new Error('Eye construction consumed dive RNG'); } });
@@ -232,3 +232,6 @@ describe('Cephalopod curved swimmer eyes', () => {
     for (const [id, expected] of Object.entries(before)) {const animal=protectedBuild(THREE,{id,bodyColor:0xbc6048},noRandom);allocated.push(animal);expect(hash(animal,ids.includes(id)||id==='commonOcto'),id).toBe(expected);}
   });
 });
+
+// Historical body fingerprints predate the closed octopus cups.
+function restorePass42AnimalSource(source){return restorePass42AnimalOnly(require('./helpers/cephalopod_pass50_reference.cjs').restorePass50Source(require('./helpers/cephalopod_pass51_reference.cjs').restorePass51Source(require('./helpers/cephalopod_pass52_reference.cjs').restorePass52Source(require('./helpers/cephalopod_pass53_reference.cjs').restorePass53Source(require('./helpers/cephalopod_pass54_reference.cjs').restorePass54Source(source))))));}

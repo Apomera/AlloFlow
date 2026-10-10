@@ -1,0 +1,354 @@
+{
+  "syntax": "passed",
+  "sourceMirrors": "identical",
+  "sourceSha256": "881533effeb1901421273557fb8954f813801f7309f136a4663a2733a2bb99b8",
+  "matchingEnglishKeys": 1325,
+  "completeUnitChecksPassed": 261,
+  "existingGuideEnergyChecksPassed": 9,
+  "newDecayFractionChecksPassed": 10,
+  "browserWorkflowsPassed": 17,
+  "newBrowserWorkflowsPassed": 3,
+  "inputCombinations": 144,
+  "pairWindows": 576,
+  "extraPairWindows": 16,
+  "amplitudePairWindows": 288,
+  "newFeatureCaptures": 12,
+  "reportFreshness": "passed: required inputs were last modified no later than each run start",
+  "runTimestamps": {
+    "unit": {
+      "startTimeMs": 1791214298858,
+      "iso": "2026-10-05T15:31:38.858Z"
+    },
+    "browser": {
+      "startTimeMs": 1791217809552,
+      "iso": "2026-10-05T16:30:09.552Z"
+    }
+  },
+  "runInputFiles": {
+    "unit": [
+      "stem_lab/stem_tool_bridgelab.js",
+      "desktop/web-app/public/stem_lab/stem_tool_bridgelab.js",
+      "tests/bridgelab_immersive_motion.test.js",
+      "tests/bridgelab_seismic_model.test.js",
+      "tests/bridgelab_seismic_inertia.test.js"
+    ],
+    "browser": [
+      "stem_lab/stem_tool_bridgelab.js",
+      "desktop/web-app/public/stem_lab/stem_tool_bridgelab.js",
+      "tests/e2e/26-bridgelab-gl.spec.ts"
+    ]
+  },
+  "independentlyCheckedEnglishFiles": [
+    {
+      "file": "ui_strings.js",
+      "sha256": "122d5c363e3b366ef097c75aa12a1c34f210814d1f5b29fa78224abccd23deea",
+      "matchingBridgeKeys": 1325
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "sha256": "122d5c363e3b366ef097c75aa12a1c34f210814d1f5b29fa78224abccd23deea",
+      "matchingBridgeKeys": 1325
+    }
+  ],
+  "browserFreshFullRun": {
+    "kind": "bridge-lab-fresh-full-run-v1",
+    "method": "17 clean specifications from one fresh full run",
+    "report": {
+      "file": "reports/bridgelab-decay-fraction-2026-10-05/browser-final-clean.json",
+      "sha256": "088d9dd85e955aa3c8b55c85e8149531529395e5f962aa7dde4a78d69999e6bc",
+      "startTime": "2026-10-05T16:30:09.552Z",
+      "durationMs": 123209.81000000001,
+      "stats": {
+        "startTime": "2026-10-05T16:30:09.552Z",
+        "duration": 123209.81000000001,
+        "expected": 17,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    "config": {
+      "file": "C:/Users/cabba/Documents/Codex/2026-09-29/great-work-how-can-we-holistically/decay-fraction-2026-10-05/validation/playwright-video-off.config.ts",
+      "sha256": "e2411a1cefb02de924ed7f8f8bb51cb553d76451bb4e03400a9e366ed9cd7e89",
+      "mtimeMs": 1791214298691.7966,
+      "appliesTo": "reports/bridgelab-decay-fraction-2026-10-05/browser-final-clean.json"
+    },
+    "identities": [
+      {
+        "suitePath": [
+          "26-bridgelab-gl.spec.ts",
+          "Bridge Lab — real WebGL"
+        ],
+        "file": "26-bridgelab-gl.spec.ts",
+        "line": 1242,
+        "column": 9,
+        "id": "0f4949b97cc65d74f1aa-cd0cb2f9aa476c79c0cb",
+        "title": "guided damping: predict, compare scenes, preserve evidence and print at 1000px",
+        "projectId": "chromium",
+        "projectName": "chromium",
+        "timeoutMs": 180000
+      },
+      {
+        "suitePath": [
+          "26-bridgelab-gl.spec.ts",
+          "Bridge Lab — real WebGL"
+        ],
+        "file": "26-bridgelab-gl.spec.ts",
+        "line": 1318,
+        "column": 9,
+        "id": "0f4949b97cc65d74f1aa-0327c1c4fcf6bf039061",
+        "title": "guided damping: qualitative case-study steps and reduced motion at 1000px",
+        "projectId": "chromium",
+        "projectName": "chromium",
+        "timeoutMs": 180000
+      },
+      {
+        "suitePath": [
+          "26-bridgelab-gl.spec.ts",
+          "Bridge Lab — real WebGL"
+        ],
+        "file": "26-bridgelab-gl.spec.ts",
+        "line": 1242,
+        "column": 9,
+        "id": "0f4949b97cc65d74f1aa-a084ecf1e3d4fb078ad3",
+        "title": "guided damping: predict, compare scenes, preserve evidence and print at 320px",
+        "projectId": "chromium",
+        "projectName": "chromium",
+        "timeoutMs": 180000
+      },
+      {
+        "suitePath": [
+          "26-bridgelab-gl.spec.ts",
+          "Bridge Lab — real WebGL"
+        ],
+        "file": "26-bridgelab-gl.spec.ts",
+        "line": 1318,
+        "column": 9,
+        "id": "0f4949b97cc65d74f1aa-1bfc09249bd8d622e9b2",
+        "title": "guided damping: qualitative case-study steps and reduced motion at 320px",
+        "projectId": "chromium",
+        "projectName": "chromium",
+        "timeoutMs": 180000
+      },
+      {
+        "suitePath": [
+          "26-bridgelab-gl.spec.ts",
+          "Bridge Lab — real WebGL"
+        ],
+        "file": "26-bridgelab-gl.spec.ts",
+        "line": 1513,
+        "column": 9,
+        "id": "0f4949b97cc65d74f1aa-f686623083270e871772",
+        "title": "guide energy: inspect, record and print the free-vibration budget at 1000px",
+        "projectId": "chromium",
+        "projectName": "chromium",
+        "timeoutMs": 180000
+      },
+      {
+        "suitePath": [
+          "26-bridgelab-gl.spec.ts",
+          "Bridge Lab — real WebGL"
+        ],
+        "file": "26-bridgelab-gl.spec.ts",
+        "line": 1513,
+        "column": 9,
+        "id": "0f4949b97cc65d74f1aa-d70c92c6816bc000d8a6",
+        "title": "guide energy: inspect, record and print the free-vibration budget at 320px",
+        "projectId": "chromium",
+        "projectName": "chromium",
+        "timeoutMs": 180000
+      },
+      {
+        "suitePath": [
+          "26-bridgelab-gl.spec.ts",
+          "Bridge Lab — real WebGL"
+        ],
+        "file": "26-bridgelab-gl.spec.ts",
+        "line": 1621,
+        "column": 7,
+        "id": "0f4949b97cc65d74f1aa-5b6faae53c5361ca5f9a",
+        "title": "guide energy: prepared-pair provenance survives scene selection and graphics loss",
+        "projectId": "chromium",
+        "projectName": "chromium",
+        "timeoutMs": 180000
+      },
+      {
+        "suitePath": [
+          "26-bridgelab-gl.spec.ts",
+          "Bridge Lab — real WebGL"
+        ],
+        "file": "26-bridgelab-gl.spec.ts",
+        "line": 1684,
+        "column": 9,
+        "id": "0f4949b97cc65d74f1aa-e2f37c3c91924cfb562d",
+        "title": "claim interval: follow the question, choose signed evidence and print at 1000px",
+        "projectId": "chromium",
+        "projectName": "chromium",
+        "timeoutMs": 180000
+      },
+      {
+        "suitePath": [
+          "26-bridgelab-gl.spec.ts",
+          "Bridge Lab — real WebGL"
+        ],
+        "file": "26-bridgelab-gl.spec.ts",
+        "line": 1684,
+        "column": 9,
+        "id": "0f4949b97cc65d74f1aa-d28b0e66cd3c8aa80303",
+        "title": "claim interval: follow the question, choose signed evidence and print at 320px",
+        "projectId": "chromium",
+        "projectName": "chromium",
+        "timeoutMs": 180000
+      },
+      {
+        "suitePath": [
+          "26-bridgelab-gl.spec.ts",
+          "Bridge Lab — real WebGL"
+        ],
+        "file": "26-bridgelab-gl.spec.ts",
+        "line": 1715,
+        "column": 7,
+        "id": "0f4949b97cc65d74f1aa-71933bddc3f84783687e",
+        "title": "claim interval: manual quantity and notebook provenance survive scene graphics loss",
+        "projectId": "chromium",
+        "projectName": "chromium",
+        "timeoutMs": 180000
+      },
+      {
+        "suitePath": [
+          "26-bridgelab-gl.spec.ts",
+          "Bridge Lab — real WebGL"
+        ],
+        "file": "26-bridgelab-gl.spec.ts",
+        "line": 1721,
+        "column": 7,
+        "id": "0f4949b97cc65d74f1aa-3fdfad5e5aae7e57a71b",
+        "title": "claim interval: recorded guide conditions and tiny values persist in the report",
+        "projectId": "chromium",
+        "projectName": "chromium",
+        "timeoutMs": 180000
+      },
+      {
+        "suitePath": [
+          "26-bridgelab-gl.spec.ts",
+          "Bridge Lab — real WebGL"
+        ],
+        "file": "26-bridgelab-gl.spec.ts",
+        "line": 2021,
+        "column": 9,
+        "id": "0f4949b97cc65d74f1aa-5ce76c3b4273b4a93bf7",
+        "title": "energy questions: guided A/B investigations, conservation diagram and saved question at 1000px",
+        "projectId": "chromium",
+        "projectName": "chromium",
+        "timeoutMs": 180000
+      },
+      {
+        "suitePath": [
+          "26-bridgelab-gl.spec.ts",
+          "Bridge Lab — real WebGL"
+        ],
+        "file": "26-bridgelab-gl.spec.ts",
+        "line": 2021,
+        "column": 9,
+        "id": "0f4949b97cc65d74f1aa-793e6c5234750a03e649",
+        "title": "energy questions: guided A/B investigations, conservation diagram and saved question at 320px",
+        "projectId": "chromium",
+        "projectName": "chromium",
+        "timeoutMs": 180000
+      },
+      {
+        "suitePath": [
+          "26-bridgelab-gl.spec.ts",
+          "Bridge Lab — real WebGL"
+        ],
+        "file": "26-bridgelab-gl.spec.ts",
+        "line": 2051,
+        "column": 7,
+        "id": "0f4949b97cc65d74f1aa-a065b0201b8c5dbe4d7e",
+        "title": "energy questions: zero shaking and manual intervals in labelled 2D with reduced motion",
+        "projectId": "chromium",
+        "projectName": "chromium",
+        "timeoutMs": 180000
+      },
+      {
+        "suitePath": [
+          "26-bridgelab-gl.spec.ts",
+          "Bridge Lab — real WebGL"
+        ],
+        "file": "26-bridgelab-gl.spec.ts",
+        "line": 2995,
+        "column": 9,
+        "id": "0f4949b97cc65d74f1aa-751cba161ef88e57a51f",
+        "title": "decay fraction: inspect, record and print each trial's fraction remaining at 1000px",
+        "projectId": "chromium",
+        "projectName": "chromium",
+        "timeoutMs": 180000
+      },
+      {
+        "suitePath": [
+          "26-bridgelab-gl.spec.ts",
+          "Bridge Lab — real WebGL"
+        ],
+        "file": "26-bridgelab-gl.spec.ts",
+        "line": 2995,
+        "column": 9,
+        "id": "0f4949b97cc65d74f1aa-7983aa5f7e0f23695603",
+        "title": "decay fraction: inspect, record and print each trial's fraction remaining at 320px",
+        "projectId": "chromium",
+        "projectName": "chromium",
+        "timeoutMs": 180000
+      },
+      {
+        "suitePath": [
+          "26-bridgelab-gl.spec.ts",
+          "Bridge Lab — real WebGL"
+        ],
+        "file": "26-bridgelab-gl.spec.ts",
+        "line": 3126,
+        "column": 7,
+        "id": "0f4949b97cc65d74f1aa-d7cf3c415b4b2481ee74",
+        "title": "decay fraction: guide B and its denominator survive scene A and graphics fallback",
+        "projectId": "chromium",
+        "projectName": "chromium",
+        "timeoutMs": 180000
+      }
+    ],
+    "inputSha256": {
+      "stem_lab/stem_tool_bridgelab.js": "881533effeb1901421273557fb8954f813801f7309f136a4663a2733a2bb99b8",
+      "desktop/web-app/public/stem_lab/stem_tool_bridgelab.js": "881533effeb1901421273557fb8954f813801f7309f136a4663a2733a2bb99b8",
+      "tests/e2e/26-bridgelab-gl.spec.ts": "bbb2ef568aa94e251a93ff0af3eb307844bfabfeef7284659259e420c3ece595"
+    },
+    "inputMtimeMs": {
+      "stem_lab/stem_tool_bridgelab.js": 1791211570071.788,
+      "desktop/web-app/public/stem_lab/stem_tool_bridgelab.js": 1791211570073.788,
+      "tests/e2e/26-bridgelab-gl.spec.ts": 1791211570075.788
+    }
+  },
+  "inputMtimeMs": {
+    "stem_lab/stem_tool_bridgelab.js": 1791211570071.788,
+    "desktop/web-app/public/stem_lab/stem_tool_bridgelab.js": 1791211570073.788,
+    "tests/bridgelab_immersive_motion.test.js": 1791211570074.7888,
+    "tests/bridgelab_seismic_model.test.js": 1791210189616.0251,
+    "tests/bridgelab_seismic_inertia.test.js": 1790650191508.933,
+    "C:/Users/cabba/Documents/Codex/2026-09-29/great-work-how-can-we-holistically/decay-fraction-2026-10-05/validation/playwright-video-off.config.ts": 1791214298691.7966,
+    "tests/e2e/26-bridgelab-gl.spec.ts": 1791211570075.788
+  },
+  "inputSha256": {
+    "stem_lab/stem_tool_bridgelab.js": "881533effeb1901421273557fb8954f813801f7309f136a4663a2733a2bb99b8",
+    "desktop/web-app/public/stem_lab/stem_tool_bridgelab.js": "881533effeb1901421273557fb8954f813801f7309f136a4663a2733a2bb99b8",
+    "ui_strings.js": "122d5c363e3b366ef097c75aa12a1c34f210814d1f5b29fa78224abccd23deea",
+    "desktop/web-app/public/ui_strings.js": "122d5c363e3b366ef097c75aa12a1c34f210814d1f5b29fa78224abccd23deea",
+    "tests/bridgelab_immersive_motion.test.js": "401d490424d846ddf59bab765711f97ed055c2bf5c518feac59875f8c8d93717",
+    "tests/bridgelab_seismic_model.test.js": "6e68c533d3124be844810fc262451c732641442575f5ee9431b299953fe8aac9",
+    "tests/bridgelab_seismic_inertia.test.js": "b4ce34ebd70dfaebb6f6368e48c5bcc7100250476ee883470d77081982b23e5f",
+    "C:/Users/cabba/Documents/Codex/2026-09-29/great-work-how-can-we-holistically/decay-fraction-2026-10-05/validation/playwright-video-off.config.ts": "e2411a1cefb02de924ed7f8f8bb51cb553d76451bb4e03400a9e366ed9cd7e89",
+    "tests/e2e/26-bridgelab-gl.spec.ts": "bbb2ef568aa94e251a93ff0af3eb307844bfabfeef7284659259e420c3ece595"
+  },
+  "reportSha256": {
+    "reports/bridgelab-decay-fraction-2026-10-05/unit-results.json": "2b5e9f5db843527cfd5545c831d2caa2f06171d5f92a9927268e9a337783e914",
+    "reports/bridgelab-decay-fraction-2026-10-05/browser-results.json": "088d9dd85e955aa3c8b55c85e8149531529395e5f962aa7dde4a78d69999e6bc",
+    "reports/bridgelab-decay-fraction-2026-10-05/browser-final-clean.json": "088d9dd85e955aa3c8b55c85e8149531529395e5f962aa7dde4a78d69999e6bc",
+    "reports/bridgelab-decay-fraction-2026-10-05/model-invariants.json": "a1b5b02cd0537742110b645a0530ae019676c9e59251d06dd8395d31eedad724"
+  },
+  "commit": "not created; changes remain uncommitted"
+}

@@ -168,11 +168,12 @@ exports.searchProxy = onRequest(
       return;
     }
 
-    const query = publicSearchQuery(req.body && req.body.query);
+    const intent = req.body && req.body.intent;
+    const query = publicSearchQuery.forIntent(req.body && req.body.query, intent);
     const requested = Number.parseInt(req.body && req.body.num, 10);
     const num = Number.isFinite(requested) ? Math.max(1, Math.min(requested, MAX_RESULTS)) : 5;
-    if (query.length < 2) {
-      sendError(res, 400, "public-query-required");
+    if (!query) {
+      sendError(res, 400, intent === 'user-topic' ? "user-topic-required" : "public-query-required");
       return;
     }
 

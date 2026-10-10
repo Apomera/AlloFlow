@@ -1,0 +1,12 @@
+{
+  "started": "2026-10-07T01:34:32.234Z",
+  "fixture": "Canonical React component with installed Chrome; native controls advance actual traffic.",
+  "checks": [],
+  "errors": [],
+  "screenshots": [],
+  "sourceHash": "b1db98e0502ca2e561572f8d8b111d56d89fda712aec4a321f68cb84117a7fec",
+  "passed": 0,
+  "failed": 0,
+  "sourceStable": true,
+  "completed": "2026-10-07T01:35:24.255Z"
+}

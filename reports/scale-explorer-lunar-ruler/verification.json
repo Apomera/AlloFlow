@@ -1,0 +1,22 @@
+{
+  "sha": "eb6b9ebd444375139df63b02add321f989f8d2674022e8e6934f7646ed4a3901",
+  "bytes": 2340135,
+  "unit": {
+    "passed": 80,
+    "files": 4
+  },
+  "browser": {
+    "startTime": "2026-10-09T21:35:56.645Z",
+    "duration": 67016.048,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "english": {
+    "keys": 16,
+    "copies": 4
+  },
+  "staged": [],
+  "diffCheck": "passed"
+}

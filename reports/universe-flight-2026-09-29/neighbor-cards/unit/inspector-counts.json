@@ -1,0 +1,31 @@
+{
+  "catalogCounts": {
+    "neighborhood": 8,
+    "galaxy": 9,
+    "cosmic": 4
+  },
+  "landmarkCount": 21,
+  "authoredViews": 18,
+  "manifestViews": 18,
+  "rendererSha256": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7",
+  "testBeforeSha256": "afd11ae03a9a485dce15343851eb7190e10383a8f903dad9809ef1524ff27125",
+  "testAfterSha256": "724cc1d44e96c3476e1ee4c7e8b102a62b928ec2541f9f970a16ab807717b9dd",
+  "edits": [
+    [
+      "all eighteen landmarks",
+      "all twenty-one landmarks"
+    ],
+    [
+      "expect(count).toBe(18);",
+      "expect(count).toBe(21);"
+    ],
+    [
+      "all twelve authored scenic previews",
+      "all eighteen authored scenic previews"
+    ],
+    [
+      "expect(count).toBe(12);",
+      "expect(count).toBe(18);"
+    ]
+  ]
+}

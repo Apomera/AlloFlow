@@ -1,0 +1,156 @@
+{
+  "files": [
+    "stem_lab/stem_tool_dissection.js",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js"
+  ],
+  "baselineSha256": "a077a647a5073de5ea02a320305822fa52281f1499c636723b6645ed3dac35f9",
+  "finalSha256": "552654074f6136fd415f7cdb8c0c03a788b96a4c6e85c657e4cf1673fb8e9f75",
+  "edits": [
+    {
+      "label": "Capture preference",
+      "offset": 419036,
+      "old": "          var evidenceFrameLimit = 6;",
+      "new": "          var evidenceFrameLimit = 6;\n          var evidenceCaptureContents = d.evidenceCaptureContents === 'canvas' ? 'canvas' : 'specimen';"
+    },
+    {
+      "label": "Capture controls CSS",
+      "offset": 79604,
+      "old": ".diss-canvas-layout { display: grid; gap: .65rem; }",
+      "new": ".diss-capture-options { display: grid; flex: 1 1 18rem; min-width: 0; gap: .35rem; padding: .75rem; border: 1px solid #9fb8ba; border-radius: .7rem; background: #fff; color: #183f43; }\n.diss-capture-options label { font-size: .875rem; font-weight: 850; }\n.diss-capture-options select { width: 100%; min-width: 0; min-height: 48px; padding: .65rem; border: 1px solid #71849c; border-radius: .5rem; background: #fff; color: #183f43; font-size: 1rem; }\n.diss-capture-options p { margin: 0; font-size: .875rem; line-height: 1.5; overflow-wrap: anywhere; }\n[data-dissection-root][data-large-text=\"true\"] .diss-capture-options :is(label,p) { font-size: 1rem; }\n[data-dissection-root][data-large-text=\"true\"] .diss-capture-options select { font-size: 1.125rem; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-capture-options { border: 2px solid #000; background: #fff; color: #000; }\n@media (forced-colors: active) { .diss-capture-options, .diss-capture-options select { border-color: CanvasText; background: Canvas; color: CanvasText; } }\n.diss-canvas-layout { display: grid; gap: .65rem; }"
+    },
+    {
+      "label": "Native capture helpers",
+      "offset": 706859,
+      "old": "            canvas._drawDissectionNow = function () { if (dissAlive && canvas.isConnected && !isDissectionHidden() && !isDissectionOffscreen()) drawDissectionFrame(); };",
+      "new": "            canvas._drawDissectionNow = function () { if (dissAlive && canvas.isConnected && !isDissectionHidden() && !isDissectionOffscreen()) drawDissectionFrame(); };\n            // Capture one current frame on demand. Restore the visible bitmap and render\n            // bookkeeping so taking a photo never advances playback or changes interaction.\n            function captureDissectionCanvasFrame(context, width, height, contents) {\n              if (!context || typeof context.drawImage !== 'function' || !dissAlive || !canvas.isConnected || isDissectionHidden() || canvas._evidenceCaptureRequest) return false;\n              var retainedBitmap = document.createElement('canvas');\n              retainedBitmap.width = canvas.width; retainedBitmap.height = canvas.height;\n              var retainedContext = retainedBitmap.getContext('2d');\n              if (!retainedContext) return false;\n              retainedContext.drawImage(canvas, 0, 0);\n              var retainedState = {};\n              Object.keys(canvas).forEach(function (key) { if (key.charAt(0) === '_' && key !== '_dissAnim') retainedState[key] = canvas[key]; });\n              var retainedDataset = Object.assign({}, canvas.dataset);\n              var retainedTick = dissTick, retainedDrawAt = dissLastDrawAt, retainedFrameCost = dissFrameCostAverage, retainedMotionReduced = dissMotionReduced;\n              var retainedData = d, retainedInstrumentVisuals = instrumentVisuals;\n              var request = { context: context, width: width, height: height, contents: contents, captured: false, failed: false, instrumentVisuals: (canvas._drawD || d).instrumentVisuals !== false };\n              cancelDissectionFrame();\n              canvas._evidenceCaptureRequest = request;\n              if (contents === 'specimen') {\n                canvas._toolPointer = null; canvas._toolStroke = null; canvas._keyboardFocus = false;\n                canvas._cameraTransition = null;\n              }\n              try {\n                drawDissectionFrame(0, true);\n                return request.captured && !request.failed;\n              } finally {\n                cancelDissectionFrame();\n                Object.keys(canvas).forEach(function (key) { if (key.charAt(0) === '_' && key !== '_dissAnim' && !Object.prototype.hasOwnProperty.call(retainedState, key)) delete canvas[key]; });\n                Object.keys(retainedState).forEach(function (key) { canvas[key] = retainedState[key]; });\n                canvas._evidenceCaptureRequest = null;\n                dissTick = retainedTick; dissLastDrawAt = retainedDrawAt; dissFrameCostAverage = retainedFrameCost; dissMotionReduced = retainedMotionReduced;\n                d = retainedData; instrumentVisuals = retainedInstrumentVisuals;\n                Object.keys(canvas.dataset).forEach(function (key) { if (!Object.prototype.hasOwnProperty.call(retainedDataset, key)) delete canvas.dataset[key]; });\n                Object.keys(retainedDataset).forEach(function (key) { canvas.dataset[key] = retainedDataset[key]; });\n                // Reassigning the backing size also clears any clip/save stack left by a failed render.\n                canvas.width = retainedBitmap.width; canvas.height = retainedBitmap.height;\n                ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'copy'; ctx.drawImage(retainedBitmap, 0, 0); ctx.globalCompositeOperation = 'source-over';\n                if (request.captured && !request.failed) canvas._lastCaptureCamera = request.camera;\n                scheduleDissectionFrame();\n              }\n            }\n            canvas._captureDissectionEvidence = function (context, width, height) { return captureDissectionCanvasFrame(context, width, height, 'specimen'); };\n            canvas._captureFullDissectionEvidence = function (context, width, height) { return captureDissectionCanvasFrame(context, width, height, 'canvas'); };"
+    },
+    {
+      "label": "Capture helper cleanup",
+      "offset": 715017,
+      "old": "              canvas._dissKeyHandler = null; canvas._drawDissectionNow = null; canvas._dissMotionReduced = null; canvas._dissInViewport = null;",
+      "new": "              canvas._dissKeyHandler = null; canvas._drawDissectionNow = null; canvas._dissMotionReduced = null; canvas._dissInViewport = null;\n              canvas._captureDissectionEvidence = null; canvas._captureFullDissectionEvidence = null; canvas._evidenceCaptureRequest = null; canvas._lastCaptureCamera = null;"
+    },
+    {
+      "label": "Explicit offscreen capture",
+      "offset": 720021,
+      "old": "              if (isDissectionOffscreen()) { cancelDissectionFrame(); return; }",
+      "new": "              if (isDissectionOffscreen() && arguments[1] !== true) { cancelDissectionFrame(); return; }"
+    },
+    {
+      "label": "Render-only capture presentation",
+      "offset": 730181,
+      "old": "              d = canvas._drawD || d;",
+      "new": "              d = canvas._drawD || d;\n              var specimenEvidenceCapture = !!(canvas._evidenceCaptureRequest && canvas._evidenceCaptureRequest.contents === 'specimen');\n              if (specimenEvidenceCapture) d = Object.assign({}, d, { hoveredOrgan: null, instrumentVisuals: false, _procedureDemo: null, _procedureReplay: null });"
+    },
+    {
+      "label": "Omit early progress and coaching",
+      "offset": 734374,
+      "old": "              var detailedCanvasHud = liveWorkspaceMode === 'advanced' || fullscreenCanvas;",
+      "new": "              var detailedCanvasHud = !specimenEvidenceCapture && (liveWorkspaceMode === 'advanced' || fullscreenCanvas);"
+    },
+    {
+      "label": "Omit annotation instructions",
+      "offset": 1018178,
+      "old": "              if (!d.quizMode && d.annotateMode && d.annotations && d.annotations.length > 0) {",
+      "new": "              if (!specimenEvidenceCapture && !d.quizMode && d.annotateMode && d.annotations && d.annotations.length > 0) {"
+    },
+    {
+      "label": "Omit before-technique label",
+      "offset": 1018674,
+      "old": "              if (d.beforeTechniqueView) {\n                ctx.save(); ctx.font",
+      "new": "              if (d.beforeTechniqueView && !specimenEvidenceCapture) {\n                ctx.save(); ctx.font"
+    },
+    {
+      "label": "Keep technique marks without panel",
+      "offset": 1082033,
+      "old": "                if (!evidenceCues.length) return;",
+      "new": "                if (!evidenceCues.length || specimenEvidenceCapture) return;"
+    },
+    {
+      "label": "Keep committed tissue consequence marks",
+      "offset": 1233186,
+      "old": "              if (sceneDetail && instrumentVisuals && liveTissueState) {",
+      "new": "              if (sceneDetail && (instrumentVisuals || (specimenEvidenceCapture && canvas._evidenceCaptureRequest.instrumentVisuals)) && liveTissueState) {"
+    },
+    {
+      "label": "Omit prospective access corridor",
+      "offset": 1133372,
+      "old": "              if (!d.quizMode && (d.procedureMode || 'guided') === 'guided' && (d.visualRealism || 'guided') !== 'realistic' && !d.beforeTechniqueView && !canvasProcedure.incisionStarted && !revealedLayers[activeLayer]) {",
+      "new": "              if (!specimenEvidenceCapture && !d.quizMode && (d.procedureMode || 'guided') === 'guided' && (d.visualRealism || 'guided') !== 'realistic' && !d.beforeTechniqueView && !canvasProcedure.incisionStarted && !revealedLayers[activeLayer]) {"
+    },
+    {
+      "label": "Omit hover tooltip",
+      "offset": 1205039,
+      "old": "              if (hovOrg && !d.quizMode && d.selectedOrgan !== hovOrg.id) {",
+      "new": "              if (hovOrg && !specimenEvidenceCapture && !d.quizMode && d.selectedOrgan !== hovOrg.id) {"
+    },
+    {
+      "label": "Omit layer-map panel",
+      "offset": 1213847,
+      "old": "              if (d.crossSectionMode) {\n                var sectionX",
+      "new": "              if (d.crossSectionMode && !specimenEvidenceCapture) {\n                var sectionX"
+    },
+    {
+      "label": "Omit comparison control legend",
+      "offset": 1149700,
+      "old": "                ctx.save();\n                ctx.font = 'bold 9px Inter, system-ui'; ctx.fillStyle = highContrastEnabled ? '#ffffff' : '#f8fafc';\n                // Previous attempt \\u00B7 dashed pressure trail remains the saved-path semantic.\n                // ctx.fillText('Previous attempt \\u00B7 dashed pressure trail' ...legacy canvas wording...);\n                var comparisonLegend = 'COMPARE ' + Math.round(compareCanvasProgress * 100) + '%  ·  current solid cyan  ·  saved dashed magenta';\n                var comparisonLegendWidth = Math.min(W - 24, Math.max(192, Math.ceil(ctx.measureText(comparisonLegend).width) + 16));\n                var comparisonLegendX = 12, comparisonLegendY = Math.max(10, H - 35);\n                ctx.fillStyle = highContrastEnabled ? '#000000' : 'rgba(15,23,42,0.88)';\n                ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(comparisonLegendX, comparisonLegendY, comparisonLegendWidth, 22, 5); else ctx.rect(comparisonLegendX, comparisonLegendY, comparisonLegendWidth, 22); ctx.fill();\n                ctx.strokeStyle = highContrastEnabled ? '#ffffff' : '#67e8f9'; ctx.lineWidth = 1; ctx.stroke(); ctx.fillStyle = highContrastEnabled ? '#ffffff' : '#f8fafc'; ctx.fillText(comparisonLegend.slice(0, 60), comparisonLegendX + 8, comparisonLegendY + 14); ctx.restore();",
+      "new": "                if (!specimenEvidenceCapture) {\n                ctx.save();\n                ctx.font = 'bold 9px Inter, system-ui'; ctx.fillStyle = highContrastEnabled ? '#ffffff' : '#f8fafc';\n                // Previous attempt \\u00B7 dashed pressure trail remains the saved-path semantic.\n                // ctx.fillText('Previous attempt \\u00B7 dashed pressure trail' ...legacy canvas wording...);\n                var comparisonLegend = 'COMPARE ' + Math.round(compareCanvasProgress * 100) + '%  ·  current solid cyan  ·  saved dashed magenta';\n                var comparisonLegendWidth = Math.min(W - 24, Math.max(192, Math.ceil(ctx.measureText(comparisonLegend).width) + 16));\n                var comparisonLegendX = 12, comparisonLegendY = Math.max(10, H - 35);\n                ctx.fillStyle = highContrastEnabled ? '#000000' : 'rgba(15,23,42,0.88)';\n                ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(comparisonLegendX, comparisonLegendY, comparisonLegendWidth, 22, 5); else ctx.rect(comparisonLegendX, comparisonLegendY, comparisonLegendWidth, 22); ctx.fill();\n                ctx.strokeStyle = highContrastEnabled ? '#ffffff' : '#67e8f9'; ctx.lineWidth = 1; ctx.stroke(); ctx.fillStyle = highContrastEnabled ? '#ffffff' : '#f8fafc'; ctx.fillText(comparisonLegend.slice(0, 60), comparisonLegendX + 8, comparisonLegendY + 14); ctx.restore();\n                }"
+    },
+    {
+      "label": "Keep keyboard preview out of evidence",
+      "offset": 1175317,
+      "old": "              if (!d.quizMode && (d.annotateMode || d.rulerMode) && canvas._keyboardFocus && canvas._keyboardPreviewOrganId) {",
+      "new": "              if (!specimenEvidenceCapture && !d.quizMode && (d.annotateMode || d.rulerMode) && canvas._keyboardFocus && canvas._keyboardPreviewOrganId) {"
+    },
+    {
+      "label": "Copy anatomy and marks before fixed panels",
+      "offset": 1240119,
+      "old": "              ctx.restore(); // End zoom transform",
+      "new": "              ctx.restore(); // End zoom transform\n              if (specimenEvidenceCapture) {\n                var specimenRequest = canvas._evidenceCaptureRequest;\n                specimenRequest.context.drawImage(canvas, 0, 0, specimenRequest.width, specimenRequest.height);\n                specimenRequest.camera = { zoom: zoom, panX: panX, panY: panY };\n                specimenRequest.captured = true;\n              }"
+    },
+    {
+      "label": "Full frame and fail closed",
+      "offset": 1376357,
+      "old": "              } catch (e) { console.error('[DissectionLab] render error:', e); try { ctx.restore(); ctx.restore(); } catch (_) {} }",
+      "new": "                if (canvas._evidenceCaptureRequest && canvas._evidenceCaptureRequest.contents === 'canvas') {\n                  var fullRequest = canvas._evidenceCaptureRequest;\n                  fullRequest.context.drawImage(canvas, 0, 0, fullRequest.width, fullRequest.height);\n                  fullRequest.camera = { zoom: zoom, panX: panX, panY: panY };\n                  fullRequest.captured = true;\n                }\n              } catch (e) { if (canvas._evidenceCaptureRequest) canvas._evidenceCaptureRequest.failed = true; console.error('[DissectionLab] render error:', e); try { ctx.restore(); ctx.restore(); } catch (_) {} }"
+    },
+    {
+      "label": "Persist capture preference",
+      "offset": 1381518,
+      "old": "              visualEvidence: visualEvidence,",
+      "new": "              evidenceCaptureContents: evidenceCaptureContents,\n              visualEvidence: visualEvidence,"
+    },
+    {
+      "label": "Restore capture preference",
+      "offset": 1389958,
+      "old": "                visualEvidence: Array.isArray(data.visualEvidence)",
+      "new": "                evidenceCaptureContents: data.evidenceCaptureContents === 'canvas' ? 'canvas' : 'specimen',\n                visualEvidence: Array.isArray(data.visualEvidence)"
+    },
+    {
+      "label": "Frozen frame context",
+      "offset": 1551306,
+      "old": "              capturedIso ? React.createElement(\"time\", { dateTime: capturedIso }, 'Captured ' + capturedIso.slice(0, 19).replace('T', ' ') + ' UTC') : React.createElement(\"p\", null, 'Capture time unavailable')",
+      "new": "              React.createElement(\"p\", { \"data-evidence-capture-context\": true },\n                (evidence.captureContents === 'specimen' ? 'Specimen and marks' : (evidence.captureContents === 'canvas' ? 'Full canvas with guides' : 'Frame contents not recorded'))\n                + (evidence.camera && typeof evidence.camera.zoom === 'number' && isFinite(evidence.camera.zoom) && evidence.camera.zoom > 0 ? ' · Zoom ' + Math.round(evidence.camera.zoom * 100) / 100 + '×' : '')\n                + (typeof evidence.annotationCount === 'number' && isFinite(evidence.annotationCount) && evidence.annotationCount >= 0 ? ' · ' + Math.floor(evidence.annotationCount) + ' observation mark' + (evidence.annotationCount === 1 ? '' : 's') : '')\n                + (typeof evidence.measurementText === 'string' && evidence.measurementText ? ' · Approximate model distance: ' + evidence.measurementText : '')\n              ),\n              capturedIso ? React.createElement(\"time\", { dateTime: capturedIso }, 'Captured ' + capturedIso.slice(0, 19).replace('T', ' ') + ' UTC') : React.createElement(\"p\", null, 'Capture time unavailable')"
+    },
+    {
+      "label": "Capture current requested contents",
+      "offset": 1555194,
+      "old": "              thumbnailContext.drawImage(sourceCanvas, 0, 0, thumbnail.width, thumbnail.height);",
+      "new": "              var captureFrame = evidenceCaptureContents === 'canvas' ? sourceCanvas._captureFullDissectionEvidence : sourceCanvas._captureDissectionEvidence;\n              if (typeof captureFrame === 'function') {\n                if (!captureFrame(thumbnailContext, thumbnail.width, thumbnail.height)) throw new Error('Evidence render unavailable');\n              } else throw new Error('Evidence render unavailable');"
+    },
+    {
+      "label": "Record immutable spatial context",
+      "offset": 1555993,
+      "old": "                image: thumbnail.toDataURL('image/jpeg', 0.72),",
+      "new": "                image: thumbnail.toDataURL('image/jpeg', 0.72),\n                captureContents: evidenceCaptureContents,\n                camera: Object.assign({}, sourceCanvas._lastCaptureCamera || { zoom: Number(d.canvasZoom) || 1, panX: Number(d.canvasPanX) || 0, panY: Number(d.canvasPanY) || 0 }),\n                annotationCount: Array.isArray(d.annotations) ? d.annotations.length : 0,\n                measurementText: d.rulerStart && d.rulerEnd ? modelMeasurementText(d.rulerStart, d.rulerEnd) : '',"
+    },
+    {
+      "label": "Frame contents choice",
+      "offset": 1671260,
+      "old": "              React.createElement(\"button\", { \"aria-label\": visualEvidence.length >= evidenceFrameLimit ? \"Evidence notebook full; manage frames before capturing another\" : \"Capture compressed visual evidence frame\",",
+      "new": "              React.createElement(\"div\", { className: \"diss-capture-options\" },\n                React.createElement(\"label\", { htmlFor: \"diss-evidence-capture-contents\" }, 'Frame contents'),\n                React.createElement(\"select\", { id: \"diss-evidence-capture-contents\", value: evidenceCaptureContents, \"aria-describedby\": \"diss-evidence-capture-help\", onChange: function (event) { upd('evidenceCaptureContents', event.target.value === 'canvas' ? 'canvas' : 'specimen'); } },\n                  React.createElement(\"option\", { value: \"specimen\" }, 'Specimen and marks'),\n                  React.createElement(\"option\", { value: \"canvas\" }, 'Full canvas with guides')\n                ),\n                React.createElement(\"p\", { id: \"diss-evidence-capture-help\" }, 'Specimen captures keep anatomy and your marks. Choose full canvas to include lens windows and guide panels.')\n              ),\n              React.createElement(\"button\", { \"aria-label\": visualEvidence.length >= evidenceFrameLimit ? \"Evidence notebook full; manage frames before capturing another\" : \"Capture compressed visual evidence frame\","
+    }
+  ],
+  "parsed": true,
+  "exactReversal": true
+}

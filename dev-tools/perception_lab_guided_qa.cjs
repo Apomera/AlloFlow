@@ -88,7 +88,7 @@ function seed(fixture, { hidden = true, model = {}, extras = [] } = {}) {
       assert.deepEqual(started.models.moire, before.models.moire); assert.equal(started.models[fixture.id][fixture.key], fixture.value);
       assert.equal(started.models[fixture.id].matchValue, fixture.starts[0]); assert.equal(started.models[fixture.id].prediction, ''); assert.equal(started.models[fixture.id].note, ''); assert.equal(started.models[fixture.id].reveal, false);
       assert.equal(await planner().count(), 0); assert.equal(await page.locator('#perception-stage-reference').count(), 0); assert.equal(await page.locator('[data-perception-study]').count(), 0);
-      for (const label of ['Observe', 'Remove surroundings', 'Swap surroundings', 'Reveal measurements', 'Reset comparison', 'Save observation', 'Export SVG']) assert(await button(label).isDisabled(), label + ' must remain locked.');
+      for (const label of ['Observe', 'Remove surroundings', 'Swap surroundings', 'Reveal measurements', 'Equalize drawing values', 'Save observation', 'Export SVG']) assert(await button(label).isDisabled(), label + ' must remain locked.');
       assert(await page.locator('#perception-' + fixture.key).isDisabled());
       for (let index = 0; index < 3; index++) {
         await record(fixture.b[index], 'Fresh repeat note ' + (index + 1)); const next = await state(), retained = next.studies.filter(item => item.repeat && item.repeat.id === groupId);

@@ -1,0 +1,20 @@
+{
+  "sourceSHA256": "2596a28e45d0dc4f8a348ca712d8e45584fc25b8dd159bb3c79a64961ae9a00c",
+  "beforeSHA256": "9e338c48eec53d00ba8233921b0c51f65138641b0ce4c0a9a5f0e360395fa338",
+  "sourceCompiles": true,
+  "mirrored": true,
+  "existingScienceAndSavedFormatsUnchanged": true,
+  "englishKeys": 487,
+  "addedEnglishKeys": 13,
+  "newTests": 77,
+  "regressionTests": 569,
+  "totalTests": 646,
+  "browserGroups": 38,
+  "browserErrors": [],
+  "externalResourceRequests": [],
+  "downloadTransport": "native",
+  "printedPagesVisuallyReviewed": 2,
+  "printRenderer": "Poppler 100 dpi",
+  "targetedChromiumOnly": true,
+  "committed": false
+}

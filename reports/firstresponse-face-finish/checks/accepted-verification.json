@@ -1,0 +1,402 @@
+{
+  "candidateSHA256": "f21eeaf8d3bd87810142d77f2cfe5e7ab9ee56e80a6548d927a4dcabec7af511",
+  "beforeSHA256": "0cc79f45f9a57ce3c4f1d5fa674b56f462a2418c4b253dbc648557b37a6b2639",
+  "checkerSHA256": "944fbef50a345bd0697bc99fd90a05205754b7781ad75749e013ea40765c27f4",
+  "meshHelperSHA256": "199157f91711eef18270c8aa22f540fd9ab7eff51c7d248459d6e633cfc3efbf",
+  "assertions": 147431,
+  "passed": 6,
+  "failed": 0,
+  "inputPinsHeld": true,
+  "negativeTests": [
+    {
+      "type": "eye",
+      "rejected": true,
+      "error": "eye ribbon vertex clears actual lid/skin surface"
+    },
+    {
+      "type": "lid",
+      "rejected": true,
+      "error": "lid back stays beneath actual skull"
+    }
+  ],
+  "cases": [
+    {
+      "age": "adult",
+      "phase": 8,
+      "contrast": false,
+      "resources": {
+        "geometries": 146,
+        "materials": 28,
+        "allocatedGeometries": 144,
+        "allocatedMaterials": 26
+      },
+      "eyes": [
+        {
+          "name": "fr-manikin-eye-left",
+          "vertices": 287,
+          "triangles": 380,
+          "minVertexClearance": 0.0007499861209332226,
+          "maxVertexClearance": 0.0007500129480068183,
+          "minInteriorOrEdgeClearance": 0.0006617810414284532
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "vertices": 287,
+          "triangles": 380,
+          "minVertexClearance": 0.0007499861209332602,
+          "maxVertexClearance": 0.0007500130714319622,
+          "minInteriorOrEdgeClearance": 0.0006590505317247517
+        }
+      ],
+      "lids": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0007110280319234903,
+          "backs": 297,
+          "maxBackGap": -0.0007110280319234903,
+          "maxFrontGap": 0.003731394038694827
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0006387100032700932,
+          "backs": 297,
+          "maxBackGap": -0.0006387100032700932,
+          "maxFrontGap": 0.002086837944591997
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0007741400899929543,
+          "backs": 297,
+          "maxBackGap": -0.0007741400899929543,
+          "maxFrontGap": 0.00363767852438558
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0011599176950122623,
+          "backs": 297,
+          "maxBackGap": -0.0011599176950122623,
+          "maxFrontGap": 0.0019373731098584531
+        }
+      ]
+    },
+    {
+      "age": "child",
+      "phase": 8,
+      "contrast": false,
+      "resources": {
+        "geometries": 145,
+        "materials": 28,
+        "allocatedGeometries": 143,
+        "allocatedMaterials": 26
+      },
+      "eyes": [
+        {
+          "name": "fr-manikin-eye-left",
+          "vertices": 287,
+          "triangles": 380,
+          "minVertexClearance": 0.0007499878272966236,
+          "maxVertexClearance": 0.0007500112932050903,
+          "minInteriorOrEdgeClearance": 0.0006908985121220122
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "vertices": 287,
+          "triangles": 380,
+          "minVertexClearance": 0.0007499880113953438,
+          "maxVertexClearance": 0.0007500116913765794,
+          "minInteriorOrEdgeClearance": 0.0006587553183182662
+        }
+      ],
+      "lids": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0007873218404112675,
+          "backs": 297,
+          "maxBackGap": -0.0007873218404112675,
+          "maxFrontGap": 0.0036889598188376803
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0006196884602507189,
+          "backs": 297,
+          "maxBackGap": -0.0006196884602507189,
+          "maxFrontGap": 0.0019011566256296709
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0009440816615839993,
+          "backs": 297,
+          "maxBackGap": -0.0009440816615839993,
+          "maxFrontGap": 0.003673325182065968
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0009440816615839993,
+          "backs": 297,
+          "maxBackGap": -0.0009440816615839993,
+          "maxFrontGap": 0.0018178849829755316
+        }
+      ]
+    },
+    {
+      "age": "infant",
+      "phase": 8,
+      "contrast": false,
+      "resources": {
+        "geometries": 127,
+        "materials": 28,
+        "allocatedGeometries": 125,
+        "allocatedMaterials": 26
+      },
+      "eyes": [
+        {
+          "name": "fr-manikin-eye-left",
+          "vertices": 287,
+          "triangles": 380,
+          "minVertexClearance": 0.0007499842547601569,
+          "maxVertexClearance": 0.0007500158430298111,
+          "minInteriorOrEdgeClearance": 0.0006030078757793908
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "vertices": 287,
+          "triangles": 380,
+          "minVertexClearance": 0.0007499841402337248,
+          "maxVertexClearance": 0.0007500158430298111,
+          "minInteriorOrEdgeClearance": 0.0006829909521521469
+        }
+      ],
+      "lids": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0007840408492496888,
+          "backs": 297,
+          "maxBackGap": -0.0007840408492496888,
+          "maxFrontGap": 0.0033559590958181446
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0008040684510442388,
+          "backs": 297,
+          "maxBackGap": -0.0008040684510442388,
+          "maxFrontGap": 0.002016149975181782
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0009145996559080324,
+          "backs": 297,
+          "maxBackGap": -0.0009145996559080324,
+          "maxFrontGap": 0.0032869170338323643
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0009145996559080324,
+          "backs": 297,
+          "maxBackGap": -0.0009145996559080324,
+          "maxFrontGap": 0.0020341297625576303
+        }
+      ]
+    },
+    {
+      "age": "adult",
+      "phase": 0,
+      "contrast": false,
+      "resources": {
+        "geometries": 142,
+        "materials": 25,
+        "allocatedGeometries": 140,
+        "allocatedMaterials": 23
+      },
+      "eyes": [
+        {
+          "name": "fr-manikin-eye-left",
+          "vertices": 287,
+          "triangles": 380,
+          "minVertexClearance": 0.0007499861209332226,
+          "maxVertexClearance": 0.0007500129480068183,
+          "minInteriorOrEdgeClearance": 0.0006617810414284532
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "vertices": 287,
+          "triangles": 380,
+          "minVertexClearance": 0.0007499861209332602,
+          "maxVertexClearance": 0.0007500130714319622,
+          "minInteriorOrEdgeClearance": 0.0006590505317247517
+        }
+      ],
+      "lids": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0007110280319234903,
+          "backs": 297,
+          "maxBackGap": -0.0007110280319234903,
+          "maxFrontGap": 0.003731394038694827
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0006387100032700932,
+          "backs": 297,
+          "maxBackGap": -0.0006387100032700932,
+          "maxFrontGap": 0.002086837944591997
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0007741400899929543,
+          "backs": 297,
+          "maxBackGap": -0.0007741400899929543,
+          "maxFrontGap": 0.00363767852438558
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0011599176950122623,
+          "backs": 297,
+          "maxBackGap": -0.0011599176950122623,
+          "maxFrontGap": 0.0019373731098584531
+        }
+      ]
+    },
+    {
+      "age": "adult",
+      "phase": 5,
+      "contrast": false,
+      "resources": {
+        "geometries": 146,
+        "materials": 28,
+        "allocatedGeometries": 144,
+        "allocatedMaterials": 26
+      },
+      "eyes": [
+        {
+          "name": "fr-manikin-eye-left",
+          "vertices": 287,
+          "triangles": 380,
+          "minVertexClearance": 0.0007499861209332226,
+          "maxVertexClearance": 0.0007500129480068183,
+          "minInteriorOrEdgeClearance": 0.0006617810414284532
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "vertices": 287,
+          "triangles": 380,
+          "minVertexClearance": 0.0007499861209332602,
+          "maxVertexClearance": 0.0007500130714319622,
+          "minInteriorOrEdgeClearance": 0.0006590505317247517
+        }
+      ],
+      "lids": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0007110280319234903,
+          "backs": 297,
+          "maxBackGap": -0.0007110280319234903,
+          "maxFrontGap": 0.003731394038694827
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0006387100032700932,
+          "backs": 297,
+          "maxBackGap": -0.0006387100032700932,
+          "maxFrontGap": 0.002086837944591997
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0007741400899929543,
+          "backs": 297,
+          "maxBackGap": -0.0007741400899929543,
+          "maxFrontGap": 0.00363767852438558
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0011599176950122623,
+          "backs": 297,
+          "maxBackGap": -0.0011599176950122623,
+          "maxFrontGap": 0.0019373731098584531
+        }
+      ]
+    },
+    {
+      "age": "infant",
+      "phase": 8,
+      "contrast": true,
+      "resources": {
+        "geometries": 127,
+        "materials": 29,
+        "allocatedGeometries": 125,
+        "allocatedMaterials": 26
+      },
+      "eyes": [
+        {
+          "name": "fr-manikin-eye-left",
+          "vertices": 287,
+          "triangles": 380,
+          "minVertexClearance": 0.0007499842547601569,
+          "maxVertexClearance": 0.0007500158430298111,
+          "minInteriorOrEdgeClearance": 0.0006030078757793908
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "vertices": 287,
+          "triangles": 380,
+          "minVertexClearance": 0.0007499841402337248,
+          "maxVertexClearance": 0.0007500158430298111,
+          "minInteriorOrEdgeClearance": 0.0006829909521521469
+        }
+      ],
+      "lids": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0007840408492496888,
+          "backs": 297,
+          "maxBackGap": -0.0007840408492496888,
+          "maxFrontGap": 0.0033559590958181446
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0008040684510442388,
+          "backs": 297,
+          "maxBackGap": -0.0008040684510442388,
+          "maxFrontGap": 0.002016149975181782
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0009145996559080324,
+          "backs": 297,
+          "maxBackGap": -0.0009145996559080324,
+          "maxFrontGap": 0.0032869170338323643
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "boundaries": 33,
+          "maxBoundaryGap": -0.0009145996559080324,
+          "backs": 297,
+          "maxBackGap": -0.0009145996559080324,
+          "maxFrontGap": 0.0020341297625576303
+        }
+      ]
+    }
+  ]
+}

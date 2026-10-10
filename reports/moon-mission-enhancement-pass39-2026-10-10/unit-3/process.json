@@ -1,0 +1,22 @@
+{
+  "pid": 34000,
+  "launcherPid": 7404,
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "--max-old-space-size=768",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/moonmission_entry_horizon.test.js",
+    "tests/moonmission_entry_physics.test.js",
+    "tests/moonmission_entry_trajectory.test.js",
+    "tests/moonmission_entry_guidance.test.js",
+    "tests/moonmission_entry_saved_state.test.js",
+    "--pool=threads",
+    "--maxWorkers=1",
+    "--testTimeout=30000"
+  ],
+  "inputs": {
+    "stem_lab/stem_tool_moonmission.js": "305fdc3bcffb0dd94f06fd5631bedf4dc6079c752c2318aa5ad0049a2b75bd0b",
+    "desktop/web-app/public/stem_lab/stem_tool_moonmission.js": "305fdc3bcffb0dd94f06fd5631bedf4dc6079c752c2318aa5ad0049a2b75bd0b"
+  }
+}

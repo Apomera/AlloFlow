@@ -1,0 +1,23 @@
+{
+  "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/dissection_lab_improvements.test.js",
+  "baselineSha256": "ba3243777f81b25672ff740f9fbff5669ef362a171c7579a3cb92ff2ba3d7741",
+  "finalSha256": "6ced973ef13f4ad0e875ee60db06e1432bf26fc3bb282a5d54ed2994562b3b20",
+  "edits": [
+    {
+      "old": "    document.body.innerHTML = html;\n    const root = document.querySelector('[data-dissection-root]');\n    expect(root).not.toBeNull();\n\n    const results = await axe.run(root, {\n      runOnly: {\n        type: 'tag',\n        values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'],\n      },\n      rules: {\n        // jsdom cannot calculate layout or computed color contrast reliably.\n        // Explicit palette contrast checks above cover the changed readiness labels.\n        'color-contrast': { enabled: false },\n      },\n    });\n\n    expect(results.violations.map(function (violation) {\n      return {\n        id: violation.id,\n        impact: violation.impact,\n        targets: violation.nodes.map(function (node) { return node.target; }),\n      };\n    })).toEqual([]);",
+      "new": "    const previousMarkup = document.body.innerHTML;\n    try {\n      document.body.innerHTML = html;\n      const root = document.querySelector('[data-dissection-root]');\n      expect(root).not.toBeNull();\n\n      const results = await axe.run(root, {\n        runOnly: {\n          type: 'tag',\n          values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'],\n        },\n        rules: {\n          // jsdom cannot calculate layout or computed color contrast reliably.\n          // Explicit palette contrast checks above cover the changed readiness labels.\n          'color-contrast': { enabled: false },\n        },\n      });\n\n      expect(results.violations.map(function (violation) {\n        return {\n          id: violation.id,\n          impact: violation.impact,\n          targets: violation.nodes.map(function (node) { return node.target; }),\n        };\n      })).toEqual([]);\n    } finally {\n      document.body.innerHTML = previousMarkup;\n    }"
+    },
+    {
+      "old": "fixture.host.querySelector('#diss-specimen-tab-pig')",
+      "new": "fixture.host.querySelector('[id=\"diss-specimen-tab-pig\"]')"
+    },
+    {
+      "old": "fixture.host.querySelector('#diss-reset-specimen')",
+      "new": "fixture.host.querySelector('[id=\"diss-reset-specimen\"]')"
+    },
+    {
+      "old": "fixture.host.querySelector('#diss-reset-confirm')",
+      "new": "fixture.host.querySelector('[id=\"diss-reset-confirm\"]')"
+    }
+  ]
+}

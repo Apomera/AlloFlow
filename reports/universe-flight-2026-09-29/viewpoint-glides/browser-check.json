@@ -1,0 +1,704 @@
+{
+  "completed": true,
+  "pins": {
+    "stem_lab/stem_tool_universe.js": "98cce7fbc3bdebe424f8cdac77e871e001267d568e3ebe8c9904cb3a6f5e2959",
+    "stem_lab/universe_flight_scene.js": "1bc026596a0244f335a5ef69bdcc1d2fc4aa1d5b1f17033cad72eadb307e1f21"
+  },
+  "harnessHash": "5ae61c1ba7e87445092992c0491339fc7d4031e68f615a67f96716aedc6304ca",
+  "checks": [
+    "Twenty fixed-range angular glides across stars, cloud, spiral, elliptical and barred galaxy follow independent arc samples, change pixels, reach exact endpoints, preserve lenses/clocks and restore exact paused Back without GPU allocations",
+    "The shared Step style retains exact instantaneous perspective moves and reversible Back",
+    "Back is available before the first movement frame and restores the launch origin immediately",
+    "End leaves the partial view paused, keeps Back, and returns focus to Details",
+    "Live reduced motion ends the angular glide at the current view and selects Step; system colors preserve controls",
+    "Phone and short landscape preserve reachable angular controls, progress and paused Back without overflow",
+    "Text spacing and Escape preserve accessible movement and return history",
+    "Completed progress survives an inactive cancel and clears when manual camera control takes over",
+    "Distance and viewpoint glides reject overlapping launches atomically",
+    "A glide clipped at 85 degrees keeps its initiating action focusable in motion, then transfers focus to Details when that direction is exhausted",
+    "Glide planning disables pole moves that cannot stay centered; Step moves away from the pole and restores smooth movement",
+    "Physical light-chase mode rejects viewpoint glides without mutation"
+  ],
+  "accessibility": [
+    {
+      "name": "viewpoint-amber-star",
+      "violations": []
+    },
+    {
+      "name": "viewpoint-blue-nebula",
+      "violations": []
+    },
+    {
+      "name": "viewpoint-galactic-center",
+      "violations": []
+    },
+    {
+      "name": "viewpoint-golden-elliptical",
+      "violations": []
+    },
+    {
+      "name": "viewpoint-distant-galaxy",
+      "violations": []
+    },
+    {
+      "name": "viewpoint-reduced-motion-colors",
+      "violations": []
+    },
+    {
+      "name": "viewpoint-320",
+      "violations": []
+    },
+    {
+      "name": "viewpoint-568",
+      "violations": []
+    },
+    {
+      "name": "viewpoint-text-spacing",
+      "violations": []
+    }
+  ],
+  "captures": [
+    {
+      "name": "viewpoint-amber-star",
+      "hash": "c920cfc20aebdf8b2dcf24c26917ad6eadc72f6682220c7b7e413714098eca65"
+    },
+    {
+      "name": "viewpoint-blue-nebula",
+      "hash": "e0fa4b5007b601cced8767d8400429135986fe3b8a749b792dfa4a31bdd52201"
+    },
+    {
+      "name": "viewpoint-galactic-center",
+      "hash": "4f239037138712c8619c1087c3be6975bb5ba444ef2d8c37dd82e80510cef109"
+    },
+    {
+      "name": "viewpoint-golden-elliptical",
+      "hash": "2c0193918cc7a6210ed735fcd09a5d13b2c74f25658d2fb4f9508cc237c78ead"
+    },
+    {
+      "name": "viewpoint-distant-galaxy",
+      "hash": "a320e02765bb2fa2e6c5e9ee3d5581dffd4e440f231f161c052fef6c969d4575"
+    },
+    {
+      "name": "viewpoint-reduced-motion-colors",
+      "hash": "e48c7b67307c3d4caeb0cddbdf3e2b571560aeb9602be0d1a02b07f8586242a7"
+    },
+    {
+      "name": "viewpoint-320",
+      "hash": "f05aa0b0393be03e0a51f7338a44cd0cc458099657d6c1a7d77f3aa717c4dac8"
+    },
+    {
+      "name": "viewpoint-568",
+      "hash": "7df34e5f42350f6a8eb003bd94079a763b3820811e099a0fde0368391e839e9e"
+    },
+    {
+      "name": "viewpoint-text-spacing",
+      "hash": "007308c99d391a1c6648d80d5c3df6db47bdcef8a6e222a904b15e1a1e7536d2"
+    }
+  ],
+  "views": [
+    {
+      "region": "neighborhood",
+      "id": "amber-star",
+      "direction": "left",
+      "from": [
+        -3.78,
+        1.2,
+        8.65
+      ],
+      "to": [
+        -3.718006705111188,
+        1.2,
+        8.820885824613075
+      ],
+      "arcLy": 0.1823033791301723,
+      "radiusLy": 0.7244998274671979
+    },
+    {
+      "region": "neighborhood",
+      "id": "amber-star",
+      "direction": "right",
+      "from": [
+        -3.78,
+        1.2,
+        8.65
+      ],
+      "to": [
+        -3.7956524186419447,
+        1.2,
+        8.468891923273647
+      ],
+      "arcLy": 0.1823033791301723,
+      "radiusLy": 0.7244998274671979
+    },
+    {
+      "region": "neighborhood",
+      "id": "amber-star",
+      "direction": "up",
+      "from": [
+        -3.78,
+        1.2,
+        8.65
+      ],
+      "to": [
+        -3.706280971762997,
+        1.3734131898612665,
+        8.633738449653602
+      ],
+      "arcLy": 0.18967361129150173,
+      "radiusLy": 0.7244998274671979
+    },
+    {
+      "region": "neighborhood",
+      "id": "amber-star",
+      "direction": "down",
+      "from": [
+        -3.78,
+        1.2,
+        8.65
+      ],
+      "to": [
+        -3.807378151990135,
+        1.0129571406543607,
+        8.656039298233118
+      ],
+      "arcLy": 0.1896736112915018,
+      "radiusLy": 0.7244998274671979
+    },
+    {
+      "region": "neighborhood",
+      "id": "blue-nebula",
+      "direction": "left",
+      "from": [
+        6.73258751546719,
+        2.7454985975874995,
+        25.541291740103556
+      ],
+      "to": [
+        4.620572927712293,
+        2.7454985975874995,
+        26.416364768821676
+      ],
+      "arcLy": 2.2926647698390776,
+      "radiusLy": 9.9604548962766
+    },
+    {
+      "region": "neighborhood",
+      "id": "blue-nebula",
+      "direction": "right",
+      "from": [
+        6.73258751546719,
+        2.7454985975874995,
+        25.541291740103556
+      ],
+      "to": [
+        8.9991225169667,
+        2.7454985975874995,
+        25.242665700621046
+      ],
+      "arcLy": 2.2926647698390776,
+      "radiusLy": 9.9604548962766
+    },
+    {
+      "region": "neighborhood",
+      "id": "blue-nebula",
+      "direction": "up",
+      "from": [
+        6.73258751546719,
+        2.7454985975874995,
+        25.541291740103556
+      ],
+      "to": [
+        7.127854724457168,
+        4.850364566415286,
+        27.01585802583989
+      ],
+      "arcLy": 2.6076409940462546,
+      "radiusLy": 9.9604548962766
+    },
+    {
+      "region": "neighborhood",
+      "id": "blue-nebula",
+      "direction": "down",
+      "from": [
+        6.73258751546719,
+        2.7454985975874995,
+        25.541291740103556
+      ],
+      "to": [
+        6.491840720221825,
+        0.31723474164135324,
+        24.64317244360283
+      ],
+      "arcLy": 2.607640994046254,
+      "radiusLy": 9.9604548962766
+    },
+    {
+      "region": "galaxy",
+      "id": "galactic-center",
+      "direction": "left",
+      "from": [
+        57537.37470667912,
+        28979.93440151232,
+        22193.098330829456
+      ],
+      "to": [
+        61320.8327239044,
+        28979.93440151232,
+        6545.118463832375
+      ],
+      "arcLy": 16144.943678250516,
+      "radiusLy": 68138.97342618702
+    },
+    {
+      "region": "galaxy",
+      "id": "galactic-center",
+      "direction": "right",
+      "from": [
+        57537.37470667912,
+        28979.93440151232,
+        22193.098330829456
+      ],
+      "to": [
+        49832.839688201144,
+        28979.93440151232,
+        36328.65522240961
+      ],
+      "arcLy": 16144.943678250516,
+      "radiusLy": 68138.97342618702
+    },
+    {
+      "region": "galaxy",
+      "id": "galactic-center",
+      "direction": "up",
+      "from": [
+        57537.37470667912,
+        28979.93440151232,
+        22193.098330829456
+      ],
+      "to": [
+        48578.806798693025,
+        43953.61558322345,
+        18737.633435204512
+      ],
+      "arcLy": 17838.74152823827,
+      "radiusLy": 68138.97342618702
+    },
+    {
+      "region": "galaxy",
+      "id": "galactic-center",
+      "direction": "down",
+      "from": [
+        57537.37470667912,
+        28979.93440151232,
+        22193.098330829456
+      ],
+      "to": [
+        62574.86561341251,
+        12031.318581944111,
+        24136.14025103747
+      ],
+      "arcLy": 17838.74152823827,
+      "radiusLy": 68138.97342618702
+    },
+    {
+      "region": "cosmic",
+      "id": "golden-elliptical",
+      "direction": "left",
+      "from": [
+        720000,
+        410000,
+        565000
+      ],
+      "to": [
+        648962.5060426561,
+        410000,
+        595416.6631158172
+      ],
+      "arcLy": 77496.59874460507,
+      "radiusLy": 327452.2866006588
+    },
+    {
+      "region": "cosmic",
+      "id": "golden-elliptical",
+      "direction": "right",
+      "from": [
+        720000,
+        410000,
+        565000
+      ],
+      "to": [
+        796489.3617510931,
+        410000,
+        554005.6158994139
+      ],
+      "arcLy": 77496.59874460507,
+      "radiusLy": 327452.2866006588
+    },
+    {
+      "region": "cosmic",
+      "id": "golden-elliptical",
+      "direction": "up",
+      "from": [
+        720000,
+        410000,
+        565000
+      ],
+      "to": [
+        712933.283781257,
+        491384.7563178329,
+        539824.823470728
+      ],
+      "arcLy": 85726.80816548408,
+      "radiusLy": 327452.2866006588
+    },
+    {
+      "region": "cosmic",
+      "id": "golden-elliptical",
+      "direction": "down",
+      "from": [
+        720000,
+        410000,
+        565000
+      ],
+      "to": [
+        732518.5840124921,
+        338156.0123212279,
+        609597.455544503
+      ],
+      "arcLy": 85726.80816548408,
+      "radiusLy": 327452.2866006588
+    },
+    {
+      "region": "cosmic",
+      "id": "distant-galaxy",
+      "direction": "left",
+      "from": [
+        2154702.2467841906,
+        -530145.3445710132,
+        4431918.367405569
+      ],
+      "to": [
+        2212863.203318533,
+        -530145.3445710132,
+        4409857.957390189
+      ],
+      "arcLy": 62382.166004057515,
+      "radiusLy": 360000.0000000003
+    },
+    {
+      "region": "cosmic",
+      "id": "distant-galaxy",
+      "direction": "right",
+      "from": [
+        2154702.2467841906,
+        -530145.3445710132,
+        4431918.367405569
+      ],
+      "to": [
+        2092813.422531243,
+        -530145.3445710132,
+        4438173.923945483
+      ],
+      "arcLy": 62382.166004057515,
+      "radiusLy": 360000.0000000003
+    },
+    {
+      "region": "cosmic",
+      "id": "distant-galaxy",
+      "direction": "up",
+      "from": [
+        2154702.2467841906,
+        -530145.3445710132,
+        4431918.367405569
+      ],
+      "to": [
+        2136804.401268964,
+        -477668.4159506399,
+        4356037.770976977
+      ],
+      "arcLy": 94247.77960769388,
+      "radiusLy": 360000.0000000003
+    },
+    {
+      "region": "cosmic",
+      "id": "distant-galaxy",
+      "direction": "down",
+      "from": [
+        2154702.2467841906,
+        -530145.3445710132,
+        4431918.367405569
+      ],
+      "to": [
+        2168872.224580812,
+        -601012.4220029685,
+        4491994.110358695
+      ],
+      "arcLy": 94247.77960769388,
+      "radiusLy": 360000.0000000003
+    }
+  ],
+  "served": [
+    {
+      "path": "/stem_lab/stem_tool_universe.js",
+      "hash": "98cce7fbc3bdebe424f8cdac77e871e001267d568e3ebe8c9904cb3a6f5e2959"
+    },
+    {
+      "path": "/stem_lab/universe_flight_scene.js",
+      "hash": "1bc026596a0244f335a5ef69bdcc1d2fc4aa1d5b1f17033cad72eadb307e1f21"
+    }
+  ],
+  "errors": [],
+  "focusOnly": false,
+  "limitSample": {
+    "info": {
+      "distanceLy": 11.594695153878186,
+      "universeYears": 0,
+      "travelerYears": 0,
+      "position": [
+        -3.1,
+        2.982889722747621,
+        8.761052384440102
+      ],
+      "yaw": 3.141592653589793,
+      "pitch": -1.4398966328953224,
+      "running": true,
+      "target": {
+        "id": "amber-star",
+        "name": "Amber star",
+        "distanceLy": 2,
+        "coincident": false,
+        "guide": {
+          "screen": [
+            0.5,
+            0.49999999999999994
+          ],
+          "inView": true,
+          "angleDeg": 3.309793888333414e-15,
+          "behind": false,
+          "sector": "up",
+          "arrowDeg": -73.93585184918568,
+          "edge": [
+            0.5573464155089456,
+            0.09999999999999998
+          ]
+        },
+        "screen": [
+          0.5,
+          0.49999999999999994
+        ],
+        "inView": true,
+        "doppler": 1,
+        "restAngleDeg": 97.49999999999997,
+        "apparentAngleDeg": 97.49999999999997
+      },
+      "navigation": {
+        "active": false,
+        "targetId": null,
+        "completed": false,
+        "alreadyWithin": false,
+        "remainingLy": 0,
+        "arrivalRadiusLy": 0,
+        "estimatedSeconds": 0,
+        "progress": 0
+      },
+      "flyby": {
+        "active": false,
+        "completed": false,
+        "id": null,
+        "name": null,
+        "progress": 0,
+        "elapsedSeconds": 0,
+        "durationSeconds": 0,
+        "autoLook": false,
+        "phase": null,
+        "rate": 1,
+        "pauseAtHighlights": false,
+        "remainingPlaybackSeconds": null
+      },
+      "distanceGlide": {
+        "active": false,
+        "completed": false,
+        "targetId": null,
+        "direction": null,
+        "progress": 0,
+        "elapsedSeconds": 0,
+        "durationSeconds": 3,
+        "startRangeLy": 0,
+        "endRangeLy": 0
+      },
+      "viewpointGlide": {
+        "active": true,
+        "completed": false,
+        "targetId": "amber-star",
+        "direction": "up",
+        "progress": 0.5,
+        "elapsedSeconds": 1.5,
+        "durationSeconds": 3,
+        "rangeLy": 2,
+        "distanceLy": 0.1745329251994323
+      },
+      "orbit": {
+        "active": false,
+        "targetId": null
+      },
+      "motion": {
+        "smoothTravel": true,
+        "paceLyPerSecond": 0.08726646259971615,
+        "targetLyPerSecond": 0.08726646259971615,
+        "kind": "glide"
+      },
+      "framing": {
+        "canLeft": false,
+        "canCenter": true,
+        "canRight": false,
+        "canUndo": false,
+        "placement": null
+      },
+      "trail": [
+        [
+          -3.1,
+          2.9696155060244163,
+          8.84729635533386
+        ],
+        [
+          -3.1,
+          2.982889722747621,
+          8.761052384440102
+        ]
+      ],
+      "cameraMoves": 0
+    },
+    "snapshot": {
+      "version": 1,
+      "settings": {
+        "mode": "explore",
+        "region": "neighborhood",
+        "beta": 0.9,
+        "compareRest": false,
+        "fov": 62,
+        "exposure": 0.86,
+        "quality": "auto"
+      },
+      "state": {
+        "position": [
+          -3.1,
+          2.982889722747621,
+          8.761052384440102
+        ],
+        "yaw": 3.141592653589793,
+        "pitch": -1.4398966328953224,
+        "distanceLy": 11.594695153878186,
+        "universeYears": 0,
+        "travelerYears": 0
+      },
+      "targetId": "amber-star"
+    },
+    "launch": {
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            2.9696155060244163,
+            8.84729635533386
+          ],
+          "yaw": 3.141592653589793,
+          "pitch": -1.396263401595464,
+          "distanceLy": 11.50742869127847,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      },
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 62,
+          "exposure": 0.86,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            2.9696155060244163,
+            8.84729635533386
+          ],
+          "yaw": 3.141592653589793,
+          "pitch": -1.396263401595464,
+          "distanceLy": 11.50742869127847,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      },
+      "id": "amber-star",
+      "direction": "up",
+      "degrees": 15,
+      "plan": {
+        "position": [
+          -3.1,
+          2.992389396183491,
+          8.674311485495316
+        ],
+        "distanceLy": 0.1745329251994323,
+        "radiusLy": 2,
+        "elevationDeg": 85
+      },
+      "center": [
+        -3.1,
+        1,
+        8.5
+      ],
+      "success": true,
+      "allocations": 6,
+      "afterAllocations": 6
+    },
+    "style": "true",
+    "buttons": [
+      {
+        "direction": "left",
+        "disabled": false,
+        "busy": "true"
+      },
+      {
+        "direction": "right",
+        "disabled": false,
+        "busy": "true"
+      },
+      {
+        "direction": "up",
+        "disabled": false,
+        "busy": "true"
+      },
+      {
+        "direction": "down",
+        "disabled": false,
+        "busy": "true"
+      }
+    ]
+  },
+  "runs": [
+    {
+      "file": "browser-check-initial.json",
+      "hash": "3888db2f0d09a4069a55cb73a116d992bfa95a9a7a613692aedf63941f5775a2"
+    },
+    {
+      "file": "focus-followup/browser-check.json",
+      "hash": "1445d153b9ac1a7ad26483cf2112a940290342dcbe959148ba9fc66b3b846740"
+    }
+  ],
+  "verificationNote": "Nine completed workflow groups in the initial run and three completed groups in the targeted focus followup. The followup corrected a harness assertion to inspect native button.disabled separately from aria-disabled, which intentionally marks active actions unavailable. Product source pins are identical in both runs."
+}

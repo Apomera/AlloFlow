@@ -1,0 +1,107 @@
+{
+  "sourceSHA256": "64e1feeb153f179311bbed8f7ee11dbb2ca188c6deaa5a64d8382387c1f24749",
+  "loadedSourceSHA256": "64e1feeb153f179311bbed8f7ee11dbb2ca188c6deaa5a64d8382387c1f24749",
+  "finalSourceSHA256": "64e1feeb153f179311bbed8f7ee11dbb2ca188c6deaa5a64d8382387c1f24749",
+  "baselineSHA256": "0172a87887dfded48dcdaed4465e232882bfc890e9f8e353c90885ee0749f3ab",
+  "passedGroups": 17,
+  "errors": [],
+  "runner": "perception_lab_drawing_changes_qa.cjs",
+  "runnerSHA256": "dacd8c4901a82be2bcccb20a6e1eeccfb7035a60bfe02ccb2210138efc5640bb",
+  "artifacts": [
+    {
+      "file": "drawing-changes-1600-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "drawing-changes-1600.png",
+      "bytes": 21001,
+      "sha256": "4e53811dc5920fb89d15b32c38622e96844789c829658998838c070600412d54"
+    },
+    {
+      "file": "drawing-changes-320-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "drawing-changes-320.png",
+      "bytes": 35963,
+      "sha256": "dd3a1ca0db5b81bd770bd3355f089ebd05661c8a68f733931efba87f28f65630"
+    },
+    {
+      "file": "drawing-changes-390-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "drawing-changes-390.png",
+      "bytes": 36804,
+      "sha256": "8fca0e7d2cc15d086d962a42e0f5dfc12c1f3fee7612a0f21c8f1359ea1ddacf"
+    },
+    {
+      "file": "drawing-changes-700-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "drawing-changes-700.png",
+      "bytes": 20188,
+      "sha256": "08aacabf85844cc81d9746c7b404ada4dbada80c140e483f5b60a492cb0e21b4"
+    },
+    {
+      "file": "drawing-changes-320-200-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "drawing-changes-320-200.png",
+      "bytes": 101450,
+      "sha256": "7b2efed1a69cd975d0d5b88dbc1b892102a35718589f59b4f3f4c5488a821a54"
+    },
+    {
+      "file": "drawing-changes-long-rtl-320-200-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "drawing-changes-long-rtl-320-200.png",
+      "bytes": 241547,
+      "sha256": "d0a657197cadf25940fb0c12e465348c576af2fd8c4b472750ca94ddbb31b452"
+    },
+    {
+      "file": "drawing-changes-dark-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "drawing-changes-dark.png",
+      "bytes": 36759,
+      "sha256": "a8af3af03303a5d30d503a41f1b31b7066654b0ce7c8a3dbe0018bd0af928cbf"
+    },
+    {
+      "file": "drawing-changes-contrast-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "drawing-changes-contrast.png",
+      "bytes": 28145,
+      "sha256": "773cbaf7636a9d9693437f9a1f2dc6b37a15535216e8359fe0048693ee55b0c2"
+    },
+    {
+      "file": "drawing-changes-forced-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "drawing-changes-forced.png",
+      "bytes": 28235,
+      "sha256": "66d44043ccfa20e9df750fe6e0c54db6a94dfb8954a7d37844004ce495367048"
+    },
+    {
+      "file": "drawing-changes-browser-results.json",
+      "bytes": 168582,
+      "sha256": "8b0d94e29822bb5219630874b6d3e148ae2938bfae8f8689be655ca566c2f31b"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "checks": [
+    {
+      "experiment": "brightness",
+      "sixActualPersistedValues": true,
+      "sharedNativeLinearScale": true,
+      "mediansReferenceAndAxis": true,
+      "completeTable": true,
+      "previewViewBoxes": true,
+      "noWrites": true
+    },
+    {
+      "experiment": "ebbinghaus",
+      "sixActualPersistedValues": true,
+      "sharedNativeLinearScale": true,
+      "mediansReferenceAndAxis": true,
+      "completeTable": true,
+      "previewViewBoxes": true,
+      "noWrites": true
+    },
+    {
+      "experiment": "mullerLyer",
+      "sixActualPersistedValues": true,
+      "sharedNativeLinearScale": true,
+      "mediansReferenceAndAxis": true,
+      "completeTable": true,
+      "previewViewBoxes": true,
+      "noWrites": true
+    }
+  ],
+  "errors": [],
+  "sourceSHA256": "76e6095a48f09671c3c9fc80dac06c0c941c99630bc1f95a2660278866e2f9cb",
+  "loadedSourceSHA256": "76e6095a48f09671c3c9fc80dac06c0c941c99630bc1f95a2660278866e2f9cb",
+  "finalSourceSHA256": "76e6095a48f09671c3c9fc80dac06c0c941c99630bc1f95a2660278866e2f9cb"
+}

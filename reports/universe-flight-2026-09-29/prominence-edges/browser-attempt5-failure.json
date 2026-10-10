@@ -1,0 +1,722 @@
+{
+  "completed": false,
+  "pins": {
+    "stem_lab/stem_tool_universe.js": "609b91840f54bbf05447bfb877a4a87e024f6b1d7cfbf65744d2b9c9904a60c6",
+    "stem_lab/universe_flight_scene.js": "c0cc2486b3d5edd620e5975daec3d23b8f2e995a24db151be27ac30820d058c7"
+  },
+  "harnessHash": "a475caec90a0faca8fe7a40a6616401edcaf52294bfda5f0f18c8dde4ca6d53a",
+  "startup": [
+    {
+      "name": "loaded",
+      "apiPresent": true,
+      "hookedCreate": true,
+      "scenePresent": true,
+      "status": {
+        "state": "ready",
+        "message": "3D flight explorer ready."
+      },
+      "telemetryPresent": true,
+      "stagePresent": true,
+      "sceneText": "−\n65°\n+\nPAUSED · LOOK AROUND\nSTELLAR NEIGHBORHOOD\n+\nIN YOUR VIEW\nPale star\n→\n\n24.13 ly · Generated star\n\nInspect\nFly here\n0° heading · 0° pitch\n3D MODEL\nHide overlay\nFull screen",
+      "canvas": {
+        "width": 940,
+        "height": 468,
+        "clientWidth": 940,
+        "clientHeight": 468,
+        "glError": 0
+      }
+    }
+  ],
+  "loaderRetries": [],
+  "checks": [
+    "The appended stellar limb scenic button preserves existing indices and opens the exact paused Amber star pose, selected target, 18 degree lens and zero journey counters",
+    "An actual Orbit destination action moves around the limb view at fixed range and height, keeps the narrow lens and physical clocks, and pauses cleanly",
+    "Field notes save and restore the new limb vista, and Back restores its exact pose after an actual perspective step",
+    "Fullscreen Explore exposes the new scenic option and restores the exact paused limb pose with focus on the canvas",
+    "Phone and short landscape scenic controls stay reachable without overflow, including fullscreen and reduced motion",
+    "Phone and short landscape Detail 10 degree lenses enlarge the measured stellar surface while preserving its exact paused camera pose, selected target and journey counters"
+  ],
+  "accessibility": [
+    {
+      "name": "desktop",
+      "violations": []
+    },
+    {
+      "name": "desktop-after-orbit",
+      "violations": []
+    },
+    {
+      "name": "saved-and-back-return",
+      "violations": []
+    },
+    {
+      "name": "desktop-fullscreen-origin",
+      "violations": []
+    },
+    {
+      "name": "desktop-fullscreen-menu",
+      "violations": []
+    },
+    {
+      "name": "desktop-fullscreen",
+      "violations": []
+    },
+    {
+      "name": "reduced-motion-320",
+      "violations": []
+    },
+    {
+      "name": "reduced-motion-detail-320",
+      "violations": []
+    },
+    {
+      "name": "reduced-motion-detail-reset-320",
+      "violations": []
+    },
+    {
+      "name": "reduced-motion-fullscreen-320-menu",
+      "violations": []
+    },
+    {
+      "name": "reduced-motion-fullscreen-320",
+      "violations": []
+    },
+    {
+      "name": "reduced-motion-568",
+      "violations": []
+    },
+    {
+      "name": "reduced-motion-detail-568",
+      "violations": []
+    },
+    {
+      "name": "reduced-motion-detail-reset-568",
+      "violations": []
+    },
+    {
+      "name": "reduced-motion-fullscreen-568-menu",
+      "violations": []
+    },
+    {
+      "name": "reduced-motion-fullscreen-568",
+      "violations": []
+    },
+    {
+      "name": "system-colors",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            [
+              ".uf-vistas > .uf-section-heading > div > .uf-eyebrow"
+            ],
+            [
+              ".uf-vistas > .uf-section-heading > div > h3"
+            ],
+            [
+              ".uf-vistas > .uf-section-heading > span"
+            ],
+            [
+              ".uf-vista-list > button[type=\"button\"]:nth-child(1) > span[aria-hidden=\"true\"]"
+            ],
+            [
+              ".uf-vista-list > button[type=\"button\"]:nth-child(1) > strong"
+            ],
+            [
+              ".uf-vista-list > button[type=\"button\"]:nth-child(1) > small"
+            ],
+            [
+              ".uf-vista-list > button[type=\"button\"]:nth-child(2) > span[aria-hidden=\"true\"]"
+            ],
+            [
+              ".uf-vista-list > button[type=\"button\"]:nth-child(2) > strong"
+            ],
+            [
+              ".uf-vista-list > button[type=\"button\"]:nth-child(2) > small"
+            ],
+            [
+              ".uf-vista-list > button[type=\"button\"]:nth-child(3) > span[aria-hidden=\"true\"]"
+            ],
+            [
+              ".uf-vista-list > button[type=\"button\"]:nth-child(3) > strong"
+            ],
+            [
+              ".uf-vista-list > button[type=\"button\"]:nth-child(3) > small"
+            ],
+            [
+              ".uf-vista-list > button[type=\"button\"]:nth-child(4) > span[aria-hidden=\"true\"]"
+            ],
+            [
+              ".uf-vista-list > button[type=\"button\"]:nth-child(4) > strong"
+            ],
+            [
+              ".uf-vista-list > button[type=\"button\"]:nth-child(4) > small"
+            ],
+            [
+              ".uf-vista-list > button[type=\"button\"]:nth-child(5) > span[aria-hidden=\"true\"]"
+            ],
+            [
+              ".uf-vista-list > button[type=\"button\"]:nth-child(5) > strong"
+            ],
+            [
+              ".uf-vista-list > button[type=\"button\"]:nth-child(5) > small"
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "captures": [
+    {
+      "name": "desktop",
+      "file": "vista-desktop.png",
+      "hash": "96ba924426cad5b733202cf7752ceb19ff6543fa7e6ca46d60514698fa51ff79"
+    },
+    {
+      "name": "desktop-after-orbit",
+      "file": "vista-desktop-after-orbit.png",
+      "hash": "96ba924426cad5b733202cf7752ceb19ff6543fa7e6ca46d60514698fa51ff79"
+    },
+    {
+      "name": "desktop-fullscreen-origin",
+      "file": "vista-desktop-fullscreen-origin.png",
+      "hash": "96ba924426cad5b733202cf7752ceb19ff6543fa7e6ca46d60514698fa51ff79"
+    },
+    {
+      "name": "desktop-fullscreen",
+      "file": "vista-desktop-fullscreen.png",
+      "hash": "70d30ac1579f162f341cced410027c37212fc7eb990ddf4dbaeff59e7f41cdf8"
+    },
+    {
+      "name": "reduced-motion-320",
+      "file": "vista-reduced-motion-320.png",
+      "hash": "42064c2d0dcb563624842bd7668d33459a6adae9a6e9b2c5a323ac0c3926a0e2"
+    },
+    {
+      "name": "reduced-motion-detail-320",
+      "file": "vista-reduced-motion-detail-320.png",
+      "hash": "5425b9d17c4363f8f7b14ab5410c1e966c5d97ea2d3ca601849485eee8d19973"
+    },
+    {
+      "name": "reduced-motion-detail-reset-320",
+      "file": "vista-reduced-motion-detail-reset-320.png",
+      "hash": "42064c2d0dcb563624842bd7668d33459a6adae9a6e9b2c5a323ac0c3926a0e2"
+    },
+    {
+      "name": "reduced-motion-fullscreen-320",
+      "file": "vista-reduced-motion-fullscreen-320.png",
+      "hash": "46f2ca835d5dcf330efb74686100487fe42cd2e3ee8a62a3501c0ea3f607e595"
+    },
+    {
+      "name": "reduced-motion-568",
+      "file": "vista-reduced-motion-568.png",
+      "hash": "ef7bdfebd25d87ec1e6d8dc6128a1b39df30172a8a8aeb10c8cfb6bc1c62600d"
+    },
+    {
+      "name": "reduced-motion-detail-568",
+      "file": "vista-reduced-motion-detail-568.png",
+      "hash": "3fca74f277fc155d8a54d5b416831b8958d9f7befce3cb779db4688fce9cfcf6"
+    },
+    {
+      "name": "reduced-motion-detail-reset-568",
+      "file": "vista-reduced-motion-detail-reset-568.png",
+      "hash": "ef7bdfebd25d87ec1e6d8dc6128a1b39df30172a8a8aeb10c8cfb6bc1c62600d"
+    },
+    {
+      "name": "reduced-motion-fullscreen-568",
+      "file": "vista-reduced-motion-fullscreen-568.png",
+      "hash": "902d3e3a16027acfc714994168c1a39e7177e7bffca6ac59b97de464571184b4"
+    }
+  ],
+  "poses": [
+    {
+      "name": "desktop",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 18,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -2.8705938420238812,
+            1.5515762513665616,
+            8.443995950047807
+          ],
+          "yaw": 4.951831751638937,
+          "pitch": -1.166282251957214,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      }
+    },
+    {
+      "name": "desktop-after-orbit",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 18,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -2.8705938420238812,
+            1.5515762513665616,
+            8.443995950047807
+          ],
+          "yaw": 4.951831751638937,
+          "pitch": -1.166282251957214,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      }
+    },
+    {
+      "name": "saved-return",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 18,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -2.8705938420238812,
+            1.5515762513665616,
+            8.443995950047807
+          ],
+          "yaw": 4.951831751638938,
+          "pitch": -1.166282251957214,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      }
+    },
+    {
+      "name": "back-return",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 18,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -2.8705938420238812,
+            1.5515762513665616,
+            8.443995950047807
+          ],
+          "yaw": 4.951831751638937,
+          "pitch": -1.166282251957214,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      }
+    },
+    {
+      "name": "desktop-fullscreen-origin",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 18,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -2.8705938420238812,
+            1.5515762513665616,
+            8.443995950047807
+          ],
+          "yaw": 4.951831751638937,
+          "pitch": -1.166282251957214,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      }
+    },
+    {
+      "name": "desktop-fullscreen",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 18,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -2.8705938420238812,
+            1.5515762513665616,
+            8.443995950047807
+          ],
+          "yaw": 4.951831751638937,
+          "pitch": -1.166282251957214,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      }
+    },
+    {
+      "name": "reduced-motion-320",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 18,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -2.8705938420238812,
+            1.5515762513665616,
+            8.443995950047807
+          ],
+          "yaw": 4.951831751638937,
+          "pitch": -1.166282251957214,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      }
+    },
+    {
+      "name": "reduced-motion-detail-reset-320",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 18,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -2.8705938420238812,
+            1.5515762513665616,
+            8.443995950047807
+          ],
+          "yaw": 4.951831751638937,
+          "pitch": -1.166282251957214,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      }
+    },
+    {
+      "name": "reduced-motion-fullscreen-320",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 18,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -2.8705938420238812,
+            1.5515762513665616,
+            8.443995950047807
+          ],
+          "yaw": 4.951831751638937,
+          "pitch": -1.166282251957214,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      }
+    },
+    {
+      "name": "reduced-motion-568",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 18,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -2.8705938420238812,
+            1.5515762513665616,
+            8.443995950047807
+          ],
+          "yaw": 4.951831751638937,
+          "pitch": -1.166282251957214,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      }
+    },
+    {
+      "name": "reduced-motion-detail-reset-568",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 18,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -2.8705938420238812,
+            1.5515762513665616,
+            8.443995950047807
+          ],
+          "yaw": 4.951831751638937,
+          "pitch": -1.166282251957214,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      }
+    },
+    {
+      "name": "reduced-motion-fullscreen-568",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 18,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -2.8705938420238812,
+            1.5515762513665616,
+            8.443995950047807
+          ],
+          "yaw": 4.951831751638937,
+          "pitch": -1.166282251957214,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      }
+    },
+    {
+      "name": "system-colors",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 18,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -2.8705938420238812,
+            1.5515762513665616,
+            8.443995950047807
+          ],
+          "yaw": 4.951831751638937,
+          "pitch": -1.166282251957214,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      }
+    }
+  ],
+  "detailMeasurements": [
+    {
+      "name": "reduced-motion-detail-320",
+      "before": {
+        "width": 260,
+        "height": 400,
+        "surfacePixels": 10911,
+        "bounds": {
+          "left": 71,
+          "right": 188,
+          "top": 141,
+          "bottom": 258,
+          "width": 118,
+          "height": 118
+        }
+      },
+      "after": {
+        "width": 260,
+        "height": 400,
+        "surfacePixels": 35712,
+        "bounds": {
+          "left": 23,
+          "right": 236,
+          "top": 93,
+          "bottom": 305,
+          "width": 214,
+          "height": 213
+        }
+      },
+      "areaRatio": 3.2730272202364588,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 10,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -2.8705938420238812,
+            1.5515762513665616,
+            8.443995950047807
+          ],
+          "yaw": -1.331353555540649,
+          "pitch": -1.166282251957214,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      }
+    },
+    {
+      "name": "reduced-motion-detail-568",
+      "before": {
+        "width": 508,
+        "height": 400,
+        "surfacePixels": 10911,
+        "bounds": {
+          "left": 195,
+          "right": 312,
+          "top": 141,
+          "bottom": 258,
+          "width": 118,
+          "height": 118
+        }
+      },
+      "after": {
+        "width": 508,
+        "height": 400,
+        "surfacePixels": 35712,
+        "bounds": {
+          "left": 147,
+          "right": 360,
+          "top": 93,
+          "bottom": 305,
+          "width": 214,
+          "height": 213
+        }
+      },
+      "areaRatio": 3.2730272202364588,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 10,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -2.8705938420238812,
+            1.5515762513665616,
+            8.443995950047807
+          ],
+          "yaw": -1.331353555540649,
+          "pitch": -1.166282251957214,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      }
+    }
+  ],
+  "served": [
+    {
+      "path": "/stem_lab/stem_tool_universe.js",
+      "hash": "609b91840f54bbf05447bfb877a4a87e024f6b1d7cfbf65744d2b9c9904a60c6"
+    },
+    {
+      "path": "/stem_lab/universe_flight_scene.js",
+      "hash": "c0cc2486b3d5edd620e5975daec3d23b8f2e995a24db151be27ac30820d058c7"
+    }
+  ],
+  "servedReadErrors": [],
+  "errors": [],
+  "failure": "AssertionError [ERR_ASSERTION]: system-colors has no scoped accessibility violations\n+ actual - expected\n\n+ [\n+   {\n+     id: 'color-contrast',\n+     targets: [\n+       [\n+         '.uf-vistas > .uf-section-heading > div > .uf-eyebrow'\n+       ],\n+       [\n+         '.uf-vistas > .uf-section-heading > div > h3'\n+       ],\n+       [\n+         '.uf-vistas > .uf-section-heading > span'\n+       ],\n+       [\n+         '.uf-vista-list > button[type=\"button\"]:nth-child(1) > span[aria-hidden=\"true\"]'\n+       ],\n+       [\n+         '.uf-vista-list > button[type=\"button\"]:nth-child(1) > strong'\n+       ],\n+       [\n+         '.uf-vista-list > button[type=\"button\"]:nth-child(1) > small'\n+       ],\n+       [\n+         '.uf-vista-list > button[type=\"button\"]:nth-child(2) > span[aria-hidden=\"true\"]'\n+       ],\n+       [\n+         '.uf-vista-list > button[type=\"button\"]:nth-child(2) > strong'\n+       ],\n+       [\n+         '.uf-vista-list > button[type=\"button\"]:nth-child(2) > small'\n+       ],\n+       [\n+         '.uf-vista-list > button[type=\"button\"]:nth-child(3) > span[aria-hidden=\"true\"]'\n+       ],\n+       [\n+         '.uf-vista-list > button[type=\"button\"]:nth-child(3) > strong'\n+       ],\n+       [\n+         '.uf-vista-list > button[type=\"button\"]:nth-child(3) > small'\n+       ],\n+       [\n+         '.uf-vista-list > button[type=\"button\"]:nth-child(4) > span[aria-hidden=\"true\"]'\n+       ],\n+       [\n+         '.uf-vista-list > button[type=\"button\"]:nth-child(4) > strong'\n+       ],\n+       [\n+         '.uf-vista-list > button[type=\"button\"]:nth-child(4) > small'\n+       ],\n+       [\n+         '.uf-vista-list > button[type=\"button\"]:nth-child(5) > span[aria-hidden=\"true\"]'\n+       ],\n+       [\n+         '.uf-vista-list > button[type=\"button\"]:nth-child(5) > strong'\n+       ],\n+       [\n+         '.uf-vista-list > button[type=\"button\"]:nth-child(5) > small'\n+       ]\n+     ]\n+   }\n+ ]\n- []\n"
+}

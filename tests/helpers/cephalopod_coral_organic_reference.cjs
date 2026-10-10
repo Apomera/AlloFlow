@@ -26,5 +26,5 @@ const patches=[
     "expectedMatches": 1
   }
 ];
-function restorePass38CoralSource(source){for(const p of patches.slice().reverse()){assert.equal(source.split(p.after).length-1,1,'Approved pass38 source changed: '+p.name);source=source.replace(p.after,p.before);}return source;}
+function restorePass38CoralSource(source){source=require('./cephalopod_pass64_reference.cjs').restorePass64CoralSource(source);for(const p of patches.slice().reverse()){assert.equal(source.split(p.after).length-1,1,'Approved pass38 source changed: '+p.name);source=source.replace(p.after,p.before);}return source;}
 module.exports={restorePass38CoralSource};

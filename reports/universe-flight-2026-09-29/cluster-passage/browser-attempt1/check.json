@@ -1,0 +1,79 @@
+{
+  "completed": false,
+  "pins": {
+    "stem_lab/universe_flight_scene.js": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7",
+    "stem_lab/stem_tool_universe.js": "ed103e8452ed283bd6fdc64a71135f1bd0847d03527033d46720cdd2fceb1807"
+  },
+  "harnessSha256": "04824be440a5e2730dea9e82b5692ddd31a28b7a8ec3413eaf23956652fe5dd6",
+  "workflows": [
+    {
+      "name": "launch-and-three-highlights",
+      "seconds": [
+        8,
+        18,
+        32
+      ],
+      "previewImagesLoaded": true
+    },
+    {
+      "name": "playback-and-pause",
+      "pausedExact": true
+    },
+    {
+      "name": "explore-and-return",
+      "lensAndOrbit": true,
+      "poseAndPixelsExact": true
+    }
+  ],
+  "accessibility": [
+    {
+      "name": "desktop-route",
+      "violations": []
+    }
+  ],
+  "captures": [
+    {
+      "name": "cluster-approach",
+      "file": "cluster-approach.png",
+      "sha256": "52ca387f0bd162a11462091552b158aad06382537c55c113fec544c1787ad627"
+    },
+    {
+      "name": "cluster-heart",
+      "file": "cluster-heart.png",
+      "sha256": "7b017eb3e5fffcbd0f512d9c4d00519893494f546569ba2b229bb9b1f6b2a3c6"
+    },
+    {
+      "name": "cluster-reveal",
+      "file": "cluster-reveal.png",
+      "sha256": "0fb0ece391a9d6cddcfb663e3243584fe370d7e813a8bf3d12b014d6691052ad"
+    }
+  ],
+  "bounds": [
+    {
+      "name": "desktop cluster launch",
+      "left": 60,
+      "right": 636,
+      "top": 364.625,
+      "bottom": 446.421875,
+      "width": 576,
+      "height": 81.796875,
+      "viewport": [
+        1280,
+        850
+      ],
+      "covered": false
+    }
+  ],
+  "served": [
+    {
+      "file": "stem_lab/stem_tool_universe.js",
+      "sha256": "ed103e8452ed283bd6fdc64a71135f1bd0847d03527033d46720cdd2fceb1807"
+    },
+    {
+      "file": "stem_lab/universe_flight_scene.js",
+      "sha256": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7"
+    }
+  ],
+  "errors": [],
+  "failure": "locator.waitFor: Timeout 90000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.uf-inspector') to be visible\u001b[22m\n\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-cluster-passage62\\browser-check.cjs:39:341"
+}

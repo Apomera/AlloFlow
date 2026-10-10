@@ -1,0 +1,148 @@
+{
+  "expectedHash": "03874d513249cf4aa85947ee51b05e8aca9317d9a1191642cc573ab2775710b8",
+  "passed": true,
+  "checks": 1981,
+  "scenarios": [
+    {
+      "preset": "summerStorm",
+      "phases": [
+        "rain",
+        "rain",
+        "rain"
+      ]
+    },
+    {
+      "preset": "mountainSnow",
+      "phases": [
+        "snow",
+        "snow",
+        "snow"
+      ]
+    },
+    {
+      "preset": "virga",
+      "phases": [
+        "virga",
+        "virga",
+        "virga"
+      ]
+    },
+    {
+      "preset": "freezingRain",
+      "phases": [
+        "freezing-rain",
+        "freezing-rain",
+        "freezing-rain"
+      ]
+    },
+    {
+      "preset": "hailstorm",
+      "phases": [
+        "hail",
+        "hail",
+        "hail"
+      ]
+    }
+  ],
+  "zeroActivity": [],
+  "captures": [
+    {
+      "file": "gentle-rain-phone-320.png",
+      "bytes": 84305,
+      "sha256": "68445eabdcab63c0537d08d2c6a08bd089673f9f74efdee30c397f24b8281c8d"
+    },
+    {
+      "file": "virga-zero-ground-desktop.png",
+      "bytes": 108393,
+      "sha256": "0760da25c61ed41d4aac93d5722d90857cd79ffd21c19bcb83aa7788c356c484"
+    },
+    {
+      "file": "gentle-rain-desktop.png",
+      "bytes": 124150,
+      "sha256": "c466d45879ba66dbf16938ec671141e74bf1922f0c268e6e051f6b9da09fd14e"
+    },
+    {
+      "file": "gentle-rain-phone-390.png",
+      "bytes": 89927,
+      "sha256": "7a8a52ffded5ed966ffeb2aaa9221d13c5d60e412321d864420ebba3da15e207"
+    },
+    {
+      "file": "gentle-rain-dark-phone.png",
+      "bytes": 86477,
+      "sha256": "6000c6b7dee9dd21daf3ffe666345287387ed10d9c3e439cc6b6ad508447e622"
+    },
+    {
+      "file": "gentle-rain-forced-colors-phone.png",
+      "bytes": 58036,
+      "sha256": "99813c630f3e4c293b13978429286b8f1487f33b73c33d7ff3e777993b7e80c8"
+    },
+    {
+      "file": "gentle-rain-contrast-phone.png",
+      "bytes": 67540,
+      "sha256": "36cb94c37b65c4ceed3ad570c8359905c542114ae85b0db4ce017e92f48e73c2"
+    },
+    {
+      "file": "zero-ground-phone-320.png",
+      "bytes": 87377,
+      "sha256": "06f4cbe4629b165e6e65b34ba99a0c500c1210896cbc8fe6a6652cd947543f3e"
+    }
+  ],
+  "accessibility": [
+    {
+      "name": "light",
+      "violations": 0
+    },
+    {
+      "name": "phone",
+      "violations": 0
+    },
+    {
+      "name": "dark",
+      "violations": 0
+    },
+    {
+      "name": "forced",
+      "violations": 0
+    }
+  ],
+  "runtimeBefore": [
+    {
+      "path": "stem_lab/stem_tool_watercycle.js",
+      "bytes": 3347026,
+      "sha256": "03874d513249cf4aa85947ee51b05e8aca9317d9a1191642cc573ab2775710b8"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "bytes": 3347026,
+      "sha256": "03874d513249cf4aa85947ee51b05e8aca9317d9a1191642cc573ab2775710b8"
+    }
+  ],
+  "runtimeAfter": [
+    {
+      "path": "stem_lab/stem_tool_watercycle.js",
+      "bytes": 3347026,
+      "sha256": "03874d513249cf4aa85947ee51b05e8aca9317d9a1191642cc573ab2775710b8"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "bytes": 3347026,
+      "sha256": "03874d513249cf4aa85947ee51b05e8aca9317d9a1191642cc573ab2775710b8"
+    }
+  ],
+  "errors": [],
+  "failedRequests": [],
+  "externalRequests": [],
+  "startedAt": "2026-10-08T23:40:21.003Z",
+  "completedAt": "2026-10-08T23:41:37.646Z",
+  "resultHash": "7545df71323501dc93a035e3e72526c883f69c5500c9569cb31b7bace357adbe",
+  "runnerHash": "694824cd23b99f1c07b0d6bfd89c67bb876036d77ef0940176a268ecba681155",
+  "visualReview": {
+    "reviewed": [
+      "gentle-rain-phone-320.png",
+      "gentle-rain-desktop.png",
+      "gentle-rain-dark-phone.png",
+      "gentle-rain-forced-colors-phone.png"
+    ],
+    "finding": "All reviewed tracks, numbers, stage highlights, selected-scene cues, focus rings and practice placement are clear; no overlaps observed."
+  }
+}

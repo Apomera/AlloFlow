@@ -1,0 +1,14 @@
+{
+  "pid": 41824,
+  "launcherPid": 25796,
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "--max-old-space-size=512",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass39-2026-10-10\\run-workflow.cjs",
+    "horizon"
+  ],
+  "inputs": {
+    "stem_lab/stem_tool_moonmission.js": "305fdc3bcffb0dd94f06fd5631bedf4dc6079c752c2318aa5ad0049a2b75bd0b",
+    "desktop/web-app/public/stem_lab/stem_tool_moonmission.js": "305fdc3bcffb0dd94f06fd5631bedf4dc6079c752c2318aa5ad0049a2b75bd0b"
+  }
+}

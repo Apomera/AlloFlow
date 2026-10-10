@@ -2,7 +2,7 @@
 (function(root){
   'use strict';
   function dependency(name,file){return root[name]||(typeof require==='function'?require('./'+file):null);}
-  var R=dependency('KitchenRecipes','recipe_lab_engine.js');
+  var R=dependency('KitchenRecipes','recipe_lab_engine.js'),PotDrain=dependency('KitchenPotDrain','recipe_lab_pot_drain.js');
   var W=dependency('KitchenWorkspace','recipe_lab_workspace.js');
   var Fresh=dependency('KitchenFreshWater','recipe_lab_fresh_water.js');
   var Dry=dependency('KitchenDryPasta','recipe_lab_dry_pasta.js');
@@ -11,6 +11,7 @@
   var Oil=dependency('KitchenOil','recipe_lab_oil.js');
   var Timer=dependency('KitchenTimerWinding','recipe_lab_timer_winding.js');
   var PanChoice=dependency('KitchenPanChoice','recipe_lab_pan_choice.js');
+  var PanCarry=dependency('KitchenPanCarry','recipe_lab_pan_carry.js');
   var Wash=dependency('KitchenHandwashing','recipe_lab_handwashing.js');
   var Rinse=dependency('KitchenRinsing','recipe_lab_rinsing.js');
   var Lid=dependency('KitchenLid','recipe_lab_lid.js');
@@ -79,7 +80,8 @@
       var item=tool==='dry'?'cloth':tool==='ladle'?'ladle':'jug';hit={item:item};status=Objects.resolve(s,hit,tool,locked);
       return result(hit,status.name,tool==='dry'?'Hold the folded cloth; carry it onto a wet area of the produce.':tool==='ladle'?'Hold the ladle; carry it over the pot, dip and lift, then carry level to the jug.':'Hold the saved-water jug; carry level over the sauce pan, then pull down to tilt.',status);
     }
-    if(tool==='pot-stir'||tool==='sample'||tool==='drain')return target(s,tool,{pot:true},'Pasta pot',tool==='pot-stir'?'Press inside the pot; sweep the spoon through the visible pasta clumps.':tool==='sample'?'Start inside the pot; carry a fork sample to the small saucer.':'Hold the pot; carry it level over the colander, then pull down to tilt.',locked);
+    if(tool==='drain')return result({pot:true,potHandle:1},'Pasta pot handle','Hold a side handle; lift straight up, carry level over the colander, then tilt. Lift back to level to stop.',PotDrain.available(s,locked));
+    if(tool==='pot-stir'||tool==='sample')return target(s,tool,{pot:true},'Pasta pot',tool==='pot-stir'?'Press inside the pot; sweep the spoon through the visible pasta clumps.':tool==='sample'?'Start inside the pot; carry a fork sample to the small saucer.':'Hold the pot; carry it level over the colander, then pull down to tilt.',locked);
     if(tool==='burner'){
       var burner=s.pot.water&&!s.pot.drained?'pot':'pan';
       if(burner==='pan'&&R.panPosition(s).site==='trivet')burner='pot';
@@ -97,13 +99,13 @@
     if(tool==='turn'||tool==='arrange'||tool==='inspect'){
       panPieces=R.panSurface(s).pieces;if(!s.pan.produce||!panPieces.length)return result({pan:true},'Sauce pan','Add prepared produce before working with individual pieces.',W.availability(s,tool,locked));
       hit={piece:panPieces[0].index};
-      return tool==='turn'?result(hit,'Slice '+(hit.piece+1),'Start on the slice; slide right, lift up, sweep left to turn, lower, then release.',Turning.available(s,hit.piece,locked)):target(s,tool,hit,'Piece '+(hit.piece+1),tool==='inspect'?'Start on this visible piece; slide across the pan to magnify its exposed face.':'Start on this piece; drag inside the pan to spread it, or tap to turn it.',locked);
+      return tool==='turn'?result(hit,'Slice '+(hit.piece+1),'Start on the slice; slide right, lift up, sweep left to turn, lower, then release.',Turning.available(s,hit.piece,locked)):target(s,tool,hit,'Piece '+(hit.piece+1),tool==='inspect'?'Start on this visible piece, sweep steadily across the pan, then release over food to keep your first view or compare a later scan.':'Start on this piece; drag inside the pan to spread it, or tap to turn it.',locked);
     }
     if(tool==='serve'){
       var serving=R.serving(s),plate=serving.remaining? -1:serving.plates.findIndex(function(n){return n>0;});hit=plate<0?{pan:true}:{servingPlate:plate};
       return target(s,tool,hit,plate<0?'Finished dish in the pan':'Plate '+(plate+1),plate<0?'Start on food in the pan; scoop down, lift, carry level to a plate, then tip and release.':'Start on food on this plate; scoop, lift, carry level back to the pan, then tip and release.',locked);
     }
-    var startHit={pan:true};if(tool==='stir'||tool==='sauce-check')startHit.start=tool;return target(s,tool,startHit,'Sauce pan',tool==='sauce-check'?'Start at the left side of the sauce; draw steadily right, then release to read its trail.':tool==='stir'?'Start on the dotted ring; gather with a full circle, draw inward to fold if pasta is added, then release.':'Hold the pan by its body or handle; carry it onto the trivet or back to its burner, then release.',locked);
+    if(tool==='pan')return result({panHandle:true},'Sauce pan handle','Hold the handle; lift straight up, carry level over the other marked surface, lower straight down, then release.',PanCarry.available(s,locked));var startHit={pan:true};if(tool==='stir'||tool==='sauce-check')startHit.start=tool;return target(s,tool,startHit,'Sauce pan',tool==='sauce-check'?'Start at the left side of the sauce; draw steadily right, then release to read its trail.':tool==='stir'?'Start on the dotted ring; gather with a full circle, draw inward to fold if pasta is added, then release.':'Hold the handle; lift, carry level, lower and release.',locked);
   }
   var api={find:find};root.KitchenDiscovery=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

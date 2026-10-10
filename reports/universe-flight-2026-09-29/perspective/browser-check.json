@@ -1,0 +1,138 @@
+{
+  "completed": true,
+  "pins": {
+    "stem_lab/stem_tool_universe.js": "5b25be7b8794cb14be3f722c6f0cfcde36c1c6772831f9a2b0950c130e4deb1d",
+    "stem_lab/universe_flight_scene.js": "980e7bee3d17eee679379769010853e08979767f66d89ab27adc2a4cfe3a04b0"
+  },
+  "harnessHash": "ca263acfe13cd9a4c21633f0605212093c6edef6c2f8c477fdb8c28a0532069a",
+  "checks": [
+    "Four viewpoint directions preserve the lens and clocks, add only the camera arc, center the landmark, and undo in order without allocating GPU resources",
+    "Inspector orbit pace and reversal share the main controls, preserve a pause, and hand off cleanly to a reversible viewpoint step",
+    "The same viewpoint controls reveal new paused perspectives in the spiral, emission cloud and galaxy group",
+    "Elevation stops at 85° with a disabled upward control, while a lower viewpoint remains available",
+    "Phone, short landscape, system colors, text spacing and Escape keep viewpoint actions reachable and return history intact",
+    "Viewpoint moves remain unavailable in the physical light-chase mode"
+  ],
+  "accessibility": [
+    {
+      "name": "desktop-perspective",
+      "violations": []
+    },
+    {
+      "name": "orbit-controls",
+      "violations": []
+    },
+    {
+      "name": "galaxy",
+      "violations": []
+    },
+    {
+      "name": "neighborhood",
+      "violations": []
+    },
+    {
+      "name": "cosmic",
+      "violations": []
+    },
+    {
+      "name": "mobile-320",
+      "violations": []
+    },
+    {
+      "name": "mobile-568",
+      "violations": []
+    },
+    {
+      "name": "system-colors",
+      "violations": []
+    },
+    {
+      "name": "text-spacing",
+      "violations": []
+    }
+  ],
+  "captures": [
+    {
+      "name": "amber-perspective",
+      "hash": "38d000e9583cad6bf3d89f09847926eaccf6747d65c04730736ef102132a93e7"
+    },
+    {
+      "name": "orbit-controls",
+      "hash": "05a19a1ebba0bd3bebf0b75aa40fbd962b0c7562e4e5991606c349322e24a3ae"
+    },
+    {
+      "name": "galaxy-perspective",
+      "hash": "9ca94db6225a5c0acfcc1a2baeda8aff5bea2d2281eca6148aa375588ae90418"
+    },
+    {
+      "name": "neighborhood-perspective",
+      "hash": "252878af39618c202aee2cadc19bbd902019e9ca777762bb94b0090e723fc1a9"
+    },
+    {
+      "name": "cosmic-perspective",
+      "hash": "5c4655af017699c9db4e3be2c666e04f37aa9882f0936b2488a985a5c96432c2"
+    },
+    {
+      "name": "perspective-320",
+      "hash": "350b4b88ed35ee92e90360d2482f176e6e6f1fb89ee2118f08b6e952ca78aff1"
+    },
+    {
+      "name": "perspective-568",
+      "hash": "8737c49400cc63723b2258cae4e79610c741a289ea8595bda933169707ce35eb"
+    },
+    {
+      "name": "perspective-system-colors",
+      "hash": "73d4fd7fe60d90d84be52501013e97c74bbb3a186656d21ee3149e4dea09524a"
+    },
+    {
+      "name": "perspective-text-spacing",
+      "hash": "5d0735a47a65289b4e5a5be08607ce03e6f2e95cea26bbdedd289e0af82edfbc"
+    }
+  ],
+  "views": [
+    {
+      "region": "galaxy",
+      "id": "galactic-center",
+      "view": "halo-panorama",
+      "position": [
+        51773.180490345265,
+        43953.61558322345,
+        5526.043670744023
+      ],
+      "paused": true
+    },
+    {
+      "region": "neighborhood",
+      "id": "blue-nebula",
+      "view": "nebula-filaments",
+      "position": [
+        5.38401757117556,
+        4.850364566415286,
+        27.738383745198423
+      ],
+      "paused": true
+    },
+    {
+      "region": "cosmic",
+      "id": "near-galaxy",
+      "view": "group-spiral",
+      "position": [
+        -1597.872665299101,
+        205076.65909559638,
+        -17870.589308649873
+      ],
+      "paused": true
+    }
+  ],
+  "served": [
+    {
+      "path": "/stem_lab/stem_tool_universe.js",
+      "hash": "5b25be7b8794cb14be3f722c6f0cfcde36c1c6772831f9a2b0950c130e4deb1d"
+    },
+    {
+      "path": "/stem_lab/universe_flight_scene.js",
+      "hash": "980e7bee3d17eee679379769010853e08979767f66d89ab27adc2a4cfe3a04b0"
+    }
+  ],
+  "errors": []
+}

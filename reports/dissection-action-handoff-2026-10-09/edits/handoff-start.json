@@ -1,0 +1,5 @@
+{
+  "row": "- 2026-10-09 | Codex Dissection action handoff IN PROGRESS: owns canonical/public stem_lab/stem_tool_dissection.js, tests/dissection_lab_improvements.test.js, new action-handoff browser fixture and reports/dissection-action-handoff-2026-10-09. Align successful technique feedback with the post-action learning gate and actual specimen protocol; preserve actions, scoring, focus and saved work. No staging, commit, push or deployment.",
+  "before": "875713d93a37df06859d9397bc2f0aa739778a42badf8ee99263d160dc2d522e",
+  "after": "724592946399ba1f54f052bdc711941468b162da7e419ea56429cf546bb86a78"
+}

@@ -282,3 +282,330 @@ describe('Equal-scale earthquake evidence and event inspection', () => {
     expect(app.query('[data-pt-slab-line="fit"]')).toBeNull();noEffects(app);
   });
 });
+
+
+describe('Recorded earthquake projections remain explicit, local and quiet', () => {
+  beforeEach(() => {
+    if (!window.HTMLElement.prototype.scrollIntoView) Object.defineProperty(window.HTMLElement.prototype, 'scrollIntoView', { configurable: true, writable: true, value() {} });
+  });
+  function captureProjection() {
+    const engine = window.__alloTectGL, original = engine.submit;
+    let latest;
+    vi.spyOn(engine, 'submit').mockImplementation(function (value) { latest = value; return original.call(engine, value); });
+    return () => latest?.observationProjection ?? null;
+  }
+  function noWritesOrRewards(app) { for (const [key, callback] of Object.entries(app.effects)) if (key !== 'announce') expect(callback).not.toHaveBeenCalled(); }
+  function clearEffects(app) { for (const callback of Object.values(app.effects)) callback.mockClear(); }
+  function expectControlledFrame(app) {
+    const action = app.query('[data-pt-quake-project]');
+    expect(action.getAttribute('aria-controls')).toBe('pt-quake-model-frame');
+    expect(app.query('#' + action.getAttribute('aria-controls'))).toBe(app.query('.pt-tect-frame'));
+  }
+  function expectSource(app, captured) {
+    const source = app.query('[data-pt-quake-projection-source]');
+    expect(source.dataset.ptQuakeProjectionSource).toBe(captured ? 'captured' : 'live');
+    expect(source.textContent).toBe(captured ? 'From your fixed checked sample.' : 'From the current observation log.');
+  }
+  function project(app) { app.click('[data-pt-quake-project]'); }
+  async function flushProjectionEffects() { await act(async () => { await Promise.resolve(); await Promise.resolve(); }); }
+  function camera(app) { return { view: app.query('[data-tect-gl]')?.dataset.tectView, cut: app.query('#tect-cut')?.value }; }
+
+  it('selects exact recorded coordinates without opening 3D, changing focus or scrolling during 1200 quiet frames', () => {
+    const getProjection = captureProjection(), loader = vi.spyOn(window.StemLab, 'ensureThree'), app = mount();
+    const scroll = vi.spyOn(window.HTMLElement.prototype, 'scrollIntoView'), before = model(app), focus = document.activeElement;
+    app.select('2');
+    const action = app.query('[data-pt-quake-project]');
+    expect(action).not.toBeNull(); expect(action.type).toBe('button'); expect(action.style.minHeight).toBe('44px'); expectControlledFrame(app);
+    expect(coordinates(app)).toEqual({ x: String(saved.points[2].x), z: String(saved.points[2].z) });
+    for (let i = 0; i < 1200; i++) app.frame();
+    expect(app.query('[data-tect-gl]')).toBeNull(); expect(getProjection()).toBeNull();
+    expect(loader).not.toHaveBeenCalled(); expect(scroll).not.toHaveBeenCalled(); expect(document.activeElement).toBe(focus);
+    expect(model(app)).toEqual(before); noEffects(app);
+  });
+
+  it('projects the exact displayed event only after the explicit action and focuses the quiet nearby explanation', async () => {
+    const getProjection = captureProjection(), app = mount(); app.select('2');
+    const scroll = vi.spyOn(window.HTMLElement.prototype, 'scrollIntoView'), focus = vi.spyOn(window.HTMLElement.prototype, 'focus'), before = model(app), frozen = JSON.stringify(saved);
+    const action = app.query('[data-pt-quake-project]'); action.focus(); focus.mockClear(); project(app); await flushProjectionEffects();
+    expect(getProjection()).toEqual({ x: saved.points[2].x, z: saved.points[2].z, index: 2, captured: true });
+    expect(camera(app)).toEqual({ view: '0,0,1.00', cut: '0' });
+    const status = app.query('#pt-quake-projection-status');
+    expect(app.query('[data-pt-quake-projection-panel]').contains(status)).toBe(true); expectSource(app, true); expectControlledFrame(app);
+    expect(status.getAttribute('aria-live')).toBe('off'); expect(status.tabIndex).toBe(-1); expect(document.activeElement).toBe(status);
+    expect(focus).toHaveBeenCalledTimes(1); expect(focus).toHaveBeenLastCalledWith({ preventScroll: true });
+    expect(scroll).toHaveBeenCalledTimes(1); expect(scroll.mock.instances[0]).toBe(app.query('.pt-tect-frame'));
+    expect(app.query('[data-tect-section]').getAttribute('aria-hidden')).toBe('false');
+    expect(model(app)).toEqual(before); expect(JSON.stringify(saved)).toBe(frozen); noWritesOrRewards(app);
+    clearEffects(app); scroll.mockClear(); focus.mockClear(); for (let i = 0; i < 1200; i++) app.frame();
+    expect(getProjection()).toEqual({ x: saved.points[2].x, z: saved.points[2].z, index: 2, captured: true });
+    expect(scroll).not.toHaveBeenCalled(); expect(focus).not.toHaveBeenCalled(); noEffects(app);
+  });
+
+  it('follows deliberate point and Previous/Next choices in the checked sample while new live earthquakes stay separate', async () => {
+    const getProjection = captureProjection(), app = mount(); app.select('2'); project(app); await flushProjectionEffects();
+    clearEffects(app); const scroll = vi.spyOn(window.HTMLElement.prototype, 'scrollIntoView'), beforeCamera = camera(app), status = app.query('#pt-quake-projection-status');
+    app.click('[data-pt-quake-inspect-next]');
+    expect(getProjection()).toEqual({ x: saved.points[3].x, z: saved.points[3].z, index: 3, captured: true });
+    app.click('[data-pt-quake-inspect-prev]');
+    expect(getProjection()).toEqual({ x: saved.points[2].x, z: saved.points[2].z, index: 2, captured: true });
+    const point = plotPosition(app, 7); clickPlot(app, point.x, point.y);
+    const checked = { x: saved.points[7].x, z: saved.points[7].z, index: 7, captured: true };
+    expect(getProjection()).toEqual(checked); expect(camera(app)).toEqual(beforeCamera); expect(document.activeElement).toBe(status);
+    expect(scroll).not.toHaveBeenCalled(); noEffects(app);
+    app.click('[data-pt-model-play]'); app.effects.announce.mockClear(); for (let i = 0; i < 8; i++) app.frame();
+    expect(getProjection()).toEqual(checked); expect(app.query('[data-pt-quake-log]').dataset.ptQuakeLiveCount).toBe('8');
+    expect(app.all('[data-pt-quake-point]')).toHaveLength(8); expect(camera(app)).toEqual(beforeCamera); noEffects(app);
+  });
+
+  it('removes a live projection when its specific observation leaves the rolling log without selecting its replacement', async () => {
+    const getProjection = captureProjection(), app = mount(undefined); app.click('[data-pt-model-play]');
+    for (let i = 0; i < 200; i++) app.frame(); app.select('0'); project(app); await flushProjectionEffects();
+    expect(getProjection()?.captured).toBe(false); expectSource(app, false); const beforeCamera = camera(app); clearEffects(app);
+    app.frame();
+    expect(getProjection()).toBeNull(); expect(inspection(app)).toBeNull(); expect(app.query('[data-pt-quake-project]')).toBeNull();
+    expect(app.all('[data-pt-quake-point]')).toHaveLength(200); expect(camera(app)).toEqual(beforeCamera); noEffects(app);
+  });
+
+  it('clears projection requests across Check, Revise, reset and a boundary change without changing assessment behavior', async () => {
+    const getProjection = captureProjection(), app = mount(undefined); app.click('[data-pt-model-play]'); for (let i = 0; i < 8; i++) app.frame();
+    app.click('[data-pt-model-play]'); app.select('1'); project(app); await flushProjectionEffects(); clearEffects(app);
+    expect(getProjection()?.captured).toBe(false); expectSource(app, false); app.click('[data-pt-quake-lock]');
+    expect(getProjection()).toBeNull(); expect(inspection(app)).toBeNull(); expect(app.effects.record).toHaveBeenCalledTimes(1);
+    app.select('1'); expect(getProjection()).toBeNull(); project(app); await flushProjectionEffects(); expect(getProjection()?.captured).toBe(true); expectSource(app, true);
+    clearEffects(app); app.click('[data-pt-slab-revise]'); expect(getProjection()).toBeNull(); expect(inspection(app)).toBeNull();
+    app.select('1'); expect(getProjection()).toBeNull(); project(app); await flushProjectionEffects();
+    clearEffects(app); app.click('[data-pt-model-reset]'); expect(getProjection()).toBeNull(); expect(inspection(app)).toBeNull();
+    app.click('[data-pt-model-step]'); app.select('0'); project(app); await flushProjectionEffects(); expect(getProjection()).not.toBeNull();
+    clearEffects(app); app.click('[data-tect-mode="transform"]'); expect(getProjection()).toBeNull(); expect(inspection(app)).toBeNull();
+    expect(app.effects.xp).not.toHaveBeenCalled(); expect(app.effects.beep).not.toHaveBeenCalled();
+  });
+
+  it('closing the log clears the projection request while keeping the chosen observation available on reopening', async () => {
+    const getProjection = captureProjection(), app = mount(); app.select('3'); project(app); await flushProjectionEffects();
+    const selected = coordinates(app), beforeCamera = camera(app); clearEffects(app); const log = app.query('[data-pt-quake-log]');
+    act(() => { log.open = false; log.dispatchEvent(new window.Event('toggle', { bubbles: true })); });
+    expect(getProjection()).toBeNull(); app.open(); expect(coordinates(app)).toEqual(selected); expect(getProjection()).toBeNull();
+    expect(app.query('[data-pt-quake-project]')).not.toBeNull(); expect(camera(app)).toEqual(beforeCamera); noEffects(app);
+  });
+
+  it('preserves out-of-picture coordinates and never clamps them onto the finite block', async () => {
+    const record = { version: 1, angle: 42, points: saved.points.map((point, index) => ({ ...point, x: index === 7 ? 800 : point.x })) };
+    const getProjection = captureProjection(), app = mount(record); app.select('7');
+    expect(coordinates(app).x).toBe('800'); expect(app.query('[data-pt-quake-project]')).toBeNull(); expect(app.query('[data-pt-quake-projection-limit]')).not.toBeNull(); noEffects(app);
+    app.select('2'); project(app); await flushProjectionEffects(); expect(getProjection()?.x).toBe(record.points[2].x);
+    clearEffects(app); const beforeCamera = camera(app); app.select('7');
+    expect(getProjection()).toEqual({ x: 800, z: record.points[7].z, index: 7, captured: true }); expect(coordinates(app).x).toBe('800'); expect(app.query('[data-pt-quake-project]')).toBeNull();
+    expect(app.query('[data-pt-quake-projection-limit]')).not.toBeNull(); expect(camera(app)).toEqual(beforeCamera); noEffects(app);
+  });
+
+  it('hides only the projection and explicitly reactivates the same cut-face preset with fresh focus and frame reveal', async () => {
+    const getProjection = captureProjection(), app = mount(); app.select('4');
+    const originalDescription = app.query('#tect-gl-description').textContent;
+    expect(originalDescription).toContain('The labeled focus and dashed guide');
+    project(app); await flushProjectionEffects();
+    const projectedDescription = app.query('#tect-gl-description').textContent;
+    expect(projectedDescription).not.toContain('The labeled focus and dashed guide');
+    expect(projectedDescription).toContain('arrow keys turn it');
+    expect(app.query('[data-pt-model-focus-guide]')).toBeNull();
+    const before = model(app), beforeCamera = camera(app), status = app.query('#pt-quake-projection-status');
+    clearEffects(app); app.click('[data-pt-quake-projection-hide]'); await flushProjectionEffects();
+    expect(getProjection()).toBeNull(); expect(inspection(app)).not.toBeNull(); expect(model(app)).toEqual(before); expect(camera(app)).toEqual(beforeCamera);
+    expect(app.query('#tect-gl-description').textContent).toBe(originalDescription);
+    expect(app.query('[data-pt-model-focus-guide]').textContent).toContain('the labeled focus is the newest event retained by the slice');
+    expect(document.activeElement).toBe(app.query('[data-tect-section]')); noEffects(app);
+    const scroll = vi.spyOn(window.HTMLElement.prototype, 'scrollIntoView'), focus = vi.spyOn(window.HTMLElement.prototype, 'focus');
+    project(app); await flushProjectionEffects();
+    expect(getProjection()).toEqual({ x: saved.points[4].x, z: saved.points[4].z, index: 4, captured: true });
+    expect(camera(app)).toEqual(beforeCamera); expect(model(app)).toEqual(before); expect(document.activeElement).toBe(app.query('#pt-quake-projection-status'));
+    expect(app.query('[data-pt-model-focus-guide]')).toBeNull();
+    expect(app.query('#tect-gl-description').textContent).toBe(projectedDescription);
+    expect(focus).toHaveBeenLastCalledWith({ preventScroll: true }); expect(scroll).toHaveBeenCalledTimes(1); expect(scroll.mock.instances[0]).toBe(app.query('.pt-tect-frame')); noWritesOrRewards(app);
+  });
+
+  it('keeps the selected evidence and nearby status focus when explicit 3D loading fails and stays quiet afterward', async () => {
+    let rejectEngine; const deferred = new Promise((resolve, reject) => { rejectEngine = reject; });
+    const loader = vi.spyOn(window.StemLab, 'ensureThree').mockReturnValue(deferred), getProjection = captureProjection(), app = mount();
+    app.select('2'); const before = model(app), selected = coordinates(app); expectControlledFrame(app); project(app); await flushProjectionEffects();
+    const status = app.query('#pt-quake-projection-status'); expect(document.activeElement).toBe(status); expect(getProjection()).not.toBeNull(); expectControlledFrame(app); expectSource(app, true);
+    expect(app.query('[data-tect-section]').getAttribute('aria-hidden')).toBe('false');
+    await act(async () => { rejectEngine(new Error('simulated projection engine unavailable')); await Promise.resolve(); await Promise.resolve(); });
+    expect(app.query('[data-tect-gl]')).toBeNull(); expect(app.query('[data-tect-section]').getAttribute('aria-hidden')).toBe('false'); expectControlledFrame(app); expectSource(app, true);
+    expect(document.activeElement).toBe(app.query('#pt-quake-projection-status')); expect(model(app)).toEqual(before); expect(coordinates(app)).toEqual(selected); noWritesOrRewards(app);
+    clearEffects(app); const scroll = vi.spyOn(window.HTMLElement.prototype, 'scrollIntoView'); for (let i = 0; i < 1200; i++) app.frame();
+    expect(loader).toHaveBeenCalledTimes(1); expect(scroll).not.toHaveBeenCalled(); expect(model(app)).toEqual(before); expect(coordinates(app)).toEqual(selected); noEffects(app);
+  });
+});
+
+describe('Displayed earthquake sample projections preserve observation evidence', () => {
+  beforeEach(() => {
+    if (!window.HTMLElement.prototype.scrollIntoView) Object.defineProperty(window.HTMLElement.prototype, 'scrollIntoView', { configurable: true, writable: true, value() {} });
+  });
+  function captureSampleModel() {
+    const engine = window.__alloTectGL, original = engine.submit;
+    let latest;
+    vi.spyOn(engine, 'submit').mockImplementation(function (value) { latest = value; return original.call(engine, value); });
+    return () => latest;
+  }
+  function clearSampleEffects(app) { for (const callback of Object.values(app.effects)) callback.mockClear(); }
+  function noSampleWrites(app) { for (const [key, callback] of Object.entries(app.effects)) if (key !== 'announce') expect(callback).not.toHaveBeenCalled(); }
+  function sampleCamera(app) { return { view: app.query('[data-tect-gl]')?.dataset.tectView, cut: app.query('#tect-cut')?.value }; }
+  async function flushSampleEffects() { await act(async () => { await Promise.resolve(); await Promise.resolve(); }); }
+  async function showSample(app) { app.click('[data-pt-quake-sample-project]'); await flushSampleEffects(); }
+  function expectSampleCounts(app, total, inbounds, outside) {
+    const count = app.query('[data-pt-quake-sample-counts]');
+    expect(count).not.toBeNull();
+    expect(Number(count.getAttribute('data-total'))).toBe(total);
+    expect(Number(count.getAttribute('data-inbounds'))).toBe(inbounds);
+    expect(Number(count.getAttribute('data-outside'))).toBe(outside);
+  }
+  function expectSampleSource(app, captured) {
+    expect(app.query('[data-pt-quake-projection-source]').dataset.ptQuakeProjectionSource).toBe(captured ? 'captured' : 'live');
+  }
+  function sampleCoordinates(value) { return value?.observationSample?.points?.map(point => ({ x: point.x, z: point.z, ...(point.m == null ? {} : { m: point.m }) })) ?? null; }
+
+  it('requires a nonempty displayed sample and leaves empty evidence, model and view quiet', () => {
+    const getModel = captureSampleModel(), loader = vi.spyOn(window.StemLab, 'ensureThree'), app = mount(undefined);
+    const action = app.query('[data-pt-quake-sample-project]'), before = model(app), focus = document.activeElement;
+    const scroll = vi.spyOn(window.HTMLElement.prototype, 'scrollIntoView');
+    expect(action == null || action.disabled).toBe(true); if (action) app.click('[data-pt-quake-sample-project]');
+    for (let i = 0; i < 30; i++) app.frame();
+    expect(getModel()?.observationSample ?? null).toBeNull(); expect(getModel()?.observationProjection ?? null).toBeNull();
+    expect(app.query('[data-pt-quake-projection-panel]')).toBeNull(); expect(app.query('[data-tect-gl]')).toBeNull();
+    expect(loader).not.toHaveBeenCalled(); expect(scroll).not.toHaveBeenCalled(); expect(document.activeElement).toBe(focus);
+    expect(model(app)).toEqual(before); noEffects(app);
+  });
+
+  it('explicitly projects a checked sample without selecting an event and visits its stable quiet explanation', async () => {
+    const getModel = captureSampleModel(), app = mount(), before = model(app), frozen = JSON.stringify(saved);
+    const action = app.query('[data-pt-quake-sample-project]');
+    expect(action).not.toBeNull(); expect(action.type).toBe('button'); expect(action.disabled).toBe(false);
+    expect(action.getAttribute('aria-controls')).toBe('pt-quake-model-frame');
+    expect(app.query('#' + action.getAttribute('aria-controls'))).toBe(app.query('.pt-tect-frame'));
+    action.focus(); const focus = vi.spyOn(window.HTMLElement.prototype, 'focus'), scroll = vi.spyOn(window.HTMLElement.prototype, 'scrollIntoView');
+    await showSample(app);
+    expect(sampleCoordinates(getModel())).toEqual(saved.points); expect(getModel().observationSample.captured).toBe(true);
+    expect(getModel().observationProjection).toBeNull(); expect(inspection(app)).toBeNull();
+    expect(sampleCamera(app)).toEqual({ view: '0,0,1.00', cut: '0' }); expectSampleCounts(app, 8, 8, 0); expectSampleSource(app, true);
+    const status = app.query('#pt-quake-projection-status');
+    expect(app.all('[data-pt-quake-projection-panel]')).toHaveLength(1); expect(status.tabIndex).toBe(-1); expect(status.getAttribute('aria-live')).toBe('off');
+    expect(document.activeElement).toBe(status); expect(focus).toHaveBeenCalledTimes(1); expect(focus).toHaveBeenLastCalledWith({ preventScroll: true });
+    expect(scroll).toHaveBeenCalledTimes(1); expect(scroll.mock.instances[0]).toBe(app.query('.pt-tect-frame'));
+    expect(app.query('[data-pt-quake-sample-toggle]').getAttribute('aria-pressed')).toBe('true');
+    const depthKey = app.query('[data-pt-quake-sample-depth-key]'); expect(depthKey).not.toBeNull();
+    for (const range of ['0–<70 km', '70–<300 km', '300–700 km']) expect(depthKey.textContent).toContain(range);
+    expect(app.query('#pt-quake-projection-explanation').textContent).toContain('Position along the boundary was not recorded');
+    expect(model(app)).toEqual(before); expect(JSON.stringify(saved)).toBe(frozen); noSampleWrites(app);
+  });
+
+  it('updates only the selected diamond and keeps the whole requested sample through deselection without revisiting the model', async () => {
+    const getModel = captureSampleModel(), app = mount(); await showSample(app); clearSampleEffects(app);
+    const before = model(app), camera = sampleCamera(app), sample = sampleCoordinates(getModel()), status = app.query('#pt-quake-projection-status');
+    const focus = vi.spyOn(window.HTMLElement.prototype, 'focus'), scroll = vi.spyOn(window.HTMLElement.prototype, 'scrollIntoView');
+    app.select('2'); expect(getModel().observationProjection).toEqual({ x: saved.points[2].x, z: saved.points[2].z, index: 2, captured: true });
+    app.click('[data-pt-quake-inspect-next]'); expect(getModel().observationProjection.index).toBe(3);
+    app.click('[data-pt-quake-inspect-clear]'); await flushSampleEffects();
+    expect(getModel().observationProjection).toBeNull(); expect(sampleCoordinates(getModel())).toEqual(sample); expect(inspection(app)).toBeNull();
+    expectSampleCounts(app, 8, 8, 0); expect(app.query('[data-pt-quake-projection-panel]')).not.toBeNull();
+    expect(document.activeElement).toBe(status); expect(focus).not.toHaveBeenCalled(); expect(scroll).not.toHaveBeenCalled();
+    expect(sampleCamera(app)).toEqual(camera); expect(model(app)).toEqual(before); noEffects(app);
+  });
+
+  it('keeps checked projected coordinates and counts fixed as a separate live log grows', async () => {
+    const getModel = captureSampleModel(), app = mount(); await showSample(app); app.select('3');
+    const sample = sampleCoordinates(getModel()), camera = sampleCamera(app), status = app.query('#pt-quake-projection-status');
+    app.click('[data-pt-model-play]'); clearSampleEffects(app);
+    const focus = vi.spyOn(window.HTMLElement.prototype, 'focus'), scroll = vi.spyOn(window.HTMLElement.prototype, 'scrollIntoView');
+    for (let i = 0; i < 12; i++) app.frame();
+    expect(sampleCoordinates(getModel())).toEqual(sample); expect(getModel().observationSample.captured).toBe(true);
+    expect(getModel().observationProjection).toEqual({ x: saved.points[3].x, z: saved.points[3].z, index: 3, captured: true });
+    expect(app.query('[data-pt-quake-log]').dataset.ptQuakeLiveCount).toBe('12'); expectSampleCounts(app, 8, 8, 0); expectSampleSource(app, true);
+    expect(app.all('[data-pt-quake-point]')).toHaveLength(8); expect(sampleCamera(app)).toEqual(camera); expect(document.activeElement).toBe(status);
+    expect(focus).not.toHaveBeenCalled(); expect(scroll).not.toHaveBeenCalled(); noEffects(app);
+  });
+
+  it('follows the latest 200 live observations while an expired selection clears only its highlight and no fit is revealed', async () => {
+    const getModel = captureSampleModel(), app = mount(undefined); app.click('[data-pt-model-play]'); clearSampleEffects(app);
+    for (let i = 0; i < 200; i++) app.frame(); await showSample(app); app.select('0'); clearSampleEffects(app);
+    const originalFirst = getModel().observationSample.points[0], camera = sampleCamera(app), status = app.query('#pt-quake-projection-status');
+    const focus = vi.spyOn(window.HTMLElement.prototype, 'focus'), scroll = vi.spyOn(window.HTMLElement.prototype, 'scrollIntoView'); app.frame(0.2);
+    expect(getModel().observationProjection).toBeNull(); expect(inspection(app)).toBeNull();
+    expect(getModel().observationSample.captured).toBe(false); expect(getModel().observationSample.points).toHaveLength(200);
+    expect(getModel().observationSample.points[0]).not.toBe(originalFirst);
+    const last = app.query('[data-pt-quake-point="199"]');
+    expect(getModel().observationSample.points[199].x).toBe(Number(last.getAttribute('data-distance-km')));
+    expect(getModel().observationSample.points[199].z).toBe(Number(last.getAttribute('data-depth-km')));
+    expectSampleCounts(app, 200, 200, 0); expectSampleSource(app, false);
+    expect(app.query('[data-pt-slab-line="fit"]')).toBeNull(); expect(app.query('[data-pt-quake-fit]')).toBeNull();
+    expect(sampleCamera(app)).toEqual(camera); expect(document.activeElement).toBe(status); expect(focus).not.toHaveBeenCalled(); expect(scroll).not.toHaveBeenCalled(); noEffects(app);
+  });
+
+  it('clears sample requests through Check, Revise, log closure, reset and boundary change while preserving explicit assessment behavior', async () => {
+    const getModel = captureSampleModel(), app = mount(undefined); app.click('[data-pt-model-play]'); for (let i = 0; i < 8; i++) app.frame();
+    app.click('[data-pt-model-play]'); await showSample(app); clearSampleEffects(app); app.click('[data-pt-quake-lock]');
+    expect(getModel().observationSample).toBeNull(); expect(app.query('[data-pt-quake-projection-panel]')).toBeNull(); expect(app.effects.record).toHaveBeenCalledTimes(1);
+    await showSample(app); expect(getModel().observationSample.captured).toBe(true); clearSampleEffects(app); app.click('[data-pt-slab-revise]');
+    expect(getModel().observationSample).toBeNull(); await showSample(app); expect(getModel().observationSample.captured).toBe(false); clearSampleEffects(app);
+    const log = app.query('[data-pt-quake-log]'); act(() => { log.open = false; log.dispatchEvent(new window.Event('toggle', { bubbles: true })); });
+    expect(getModel().observationSample).toBeNull(); app.open(); expect(getModel().observationSample).toBeNull(); noEffects(app);
+    await showSample(app); clearSampleEffects(app); app.click('[data-pt-model-reset]'); expect(getModel().observationSample).toBeNull();
+    app.click('[data-pt-model-step]'); await showSample(app); expect(getModel().observationSample).not.toBeNull(); clearSampleEffects(app);
+    app.click('[data-tect-mode="transform"]'); expect(getModel().observationSample).toBeNull(); expect(app.query('[data-pt-quake-projection-panel]')).toBeNull();
+    expect(app.effects.record).not.toHaveBeenCalled(); expect(app.effects.xp).not.toHaveBeenCalled(); expect(app.effects.beep).not.toHaveBeenCalled();
+  });
+
+  it('toggles only the sample pattern beside a selected event without changing camera, focus or page position', async () => {
+    const getModel = captureSampleModel(), app = mount(); app.select('2'); app.click('[data-pt-quake-project]'); await flushSampleEffects(); clearSampleEffects(app);
+    const toggle = app.query('[data-pt-quake-sample-toggle]'), selected = getModel().observationProjection, before = model(app), camera = sampleCamera(app);
+    expect(toggle.getAttribute('aria-pressed')).toBe('false'); toggle.focus();
+    const focus = vi.spyOn(window.HTMLElement.prototype, 'focus'), scroll = vi.spyOn(window.HTMLElement.prototype, 'scrollIntoView');
+    app.click('[data-pt-quake-sample-toggle]'); await flushSampleEffects();
+    expect(getModel().observationSample.points).toHaveLength(8); expect(getModel().observationProjection).toEqual(selected);
+    expect(app.query('[data-pt-quake-sample-toggle]').getAttribute('aria-pressed')).toBe('true');
+    app.click('[data-pt-quake-sample-toggle]'); await flushSampleEffects();
+    expect(getModel().observationSample).toBeNull(); expect(getModel().observationProjection).toEqual(selected);
+    expect(app.query('[data-pt-quake-sample-toggle]').getAttribute('aria-pressed')).toBe('false'); expect(app.query('[data-pt-quake-projection-panel]')).not.toBeNull();
+    expect(document.activeElement).toBe(toggle); expect(focus).not.toHaveBeenCalled(); expect(scroll).not.toHaveBeenCalled();
+    expect(sampleCamera(app)).toEqual(camera); expect(model(app)).toEqual(before); noEffects(app);
+  });
+
+  it('hides a sample without selection to the visible canvas and explicitly revisits the same preset with a fresh local focus action', async () => {
+    const getModel = captureSampleModel(), app = mount(); await showSample(app); clearSampleEffects(app);
+    const before = model(app), camera = sampleCamera(app); app.click('[data-pt-quake-sample-toggle]'); await flushSampleEffects();
+    expect(getModel().observationSample).toBeNull(); expect(getModel().observationProjection).toBeNull(); expect(app.query('[data-pt-quake-projection-panel]')).toBeNull();
+    expect(document.activeElement).toBe(app.query('[data-tect-section]')); expect(sampleCamera(app)).toEqual(camera); expect(model(app)).toEqual(before); noEffects(app);
+    const focus = vi.spyOn(window.HTMLElement.prototype, 'focus'), scroll = vi.spyOn(window.HTMLElement.prototype, 'scrollIntoView');
+    await showSample(app); expect(getModel().observationSample.points).toHaveLength(8); expect(document.activeElement).toBe(app.query('#pt-quake-projection-status'));
+    expect(focus).toHaveBeenLastCalledWith({ preventScroll: true }); expect(scroll).toHaveBeenCalledTimes(1); expect(sampleCamera(app)).toEqual(camera);
+    app.select('2'); clearSampleEffects(app); app.click('[data-pt-quake-projection-hide]'); await flushSampleEffects();
+    expect(getModel().observationSample).toBeNull(); expect(getModel().observationProjection).toBeNull(); expect(inspection(app)).not.toBeNull();
+    expect(document.activeElement).toBe(app.query('[data-tect-section]')); expect(model(app)).toEqual(before); noEffects(app);
+  });
+
+  it('retains signed decimal coordinates, duplicate records and exact outside-block omissions without clamping a selected event', async () => {
+    const points = [...Array.from({ length: 8 }, () => ({ x: 100.125, z: 300.625, m: 4 })), { x: -149.875, z: 0, m: 2 }, { x: 760, z: 70, m: 3 }, { x: 800, z: 299.999, m: 4 }, { x: 800, z: 700, m: 4 }];
+    const record = { version: 1, angle: 42, points }, getModel = captureSampleModel(), app = mount(record); await showSample(app); clearSampleEffects(app);
+    expect(sampleCoordinates(getModel())).toEqual(points); expectSampleCounts(app, 12, 10, 2); expect(app.all('[data-pt-quake-point]')).toHaveLength(12);
+    app.select('10'); expect(getModel().observationProjection).toEqual({ x: 800, z: 299.999, index: 10, captured: true });
+    expect(coordinates(app)).toEqual({ x: '800', z: '299.999' }); expect(app.query('[data-pt-quake-project]')).toBeNull();
+    expectSampleCounts(app, 12, 10, 2); expect(sampleCoordinates(getModel())).toEqual(points); noEffects(app);
+    const allOutside = mount({ version: 1, angle: 42, points: Array.from({ length: 8 }, () => ({ x: 800, z: 415.625, m: 4 })) });
+    await showSample(allOutside); expectSampleCounts(allOutside, 8, 0, 8);
+    expect(app.query('[data-pt-quake-sample-status]')).not.toBeNull(); expect(allOutside.query('[data-pt-quake-sample-status]')).not.toBeNull();
+    expect(sampleCoordinates(getModel())).toEqual(Array.from({ length: 8 }, () => ({ x: 800, z: 415.625, m: 4 }))); noSampleWrites(allOutside);
+  });
+
+  it('retains the full sample, counts and nearby focus during 3D loading failure and stays quiet through 1200 settled frames', async () => {
+    let rejectEngine; const deferred = new Promise((resolve, reject) => { rejectEngine = reject; });
+    const loader = vi.spyOn(window.StemLab, 'ensureThree').mockReturnValue(deferred), getModel = captureSampleModel(), app = mount();
+    const before = model(app); await showSample(app); expect(sampleCoordinates(getModel())).toEqual(saved.points); expectSampleCounts(app, 8, 8, 0);
+    expect(document.activeElement).toBe(app.query('#pt-quake-projection-status')); expect(app.query('[data-pt-quake-sample-status]')).not.toBeNull();
+    await act(async () => { rejectEngine(new Error('simulated sample projection engine unavailable')); await Promise.resolve(); await Promise.resolve(); });
+    expect(app.query('[data-tect-gl]')).toBeNull(); expect(app.query('[data-tect-section]').getAttribute('aria-hidden')).toBe('false');
+    expect(sampleCoordinates(getModel())).toEqual(saved.points); expectSampleCounts(app, 8, 8, 0); expectSampleSource(app, true);
+    expect(document.activeElement).toBe(app.query('#pt-quake-projection-status')); expect(model(app)).toEqual(before); noSampleWrites(app);
+    clearSampleEffects(app); const focus = vi.spyOn(window.HTMLElement.prototype, 'focus'), scroll = vi.spyOn(window.HTMLElement.prototype, 'scrollIntoView');
+    for (let i = 0; i < 1200; i++) app.frame();
+    expect(loader).toHaveBeenCalledTimes(1); expect(focus).not.toHaveBeenCalled(); expect(scroll).not.toHaveBeenCalled();
+    expect(sampleCoordinates(getModel())).toEqual(saved.points); expectSampleCounts(app, 8, 8, 0); expect(model(app)).toEqual(before); noEffects(app);
+  });
+});

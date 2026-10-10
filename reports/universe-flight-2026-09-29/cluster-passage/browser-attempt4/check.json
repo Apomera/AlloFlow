@@ -1,0 +1,149 @@
+{
+  "completed": true,
+  "pins": {
+    "stem_lab/universe_flight_scene.js": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7",
+    "stem_lab/stem_tool_universe.js": "87d34fea4ff6c3db26cc11ff4390046b6c9fd4edc7d39bbfad0d1642d39201df"
+  },
+  "harnessSha256": "93eaed987e56be8d856bc8eb7f2f005d8f48d81494b0db65e49ce5aac4cd403b",
+  "workflows": [
+    {
+      "name": "launch-and-three-highlights",
+      "seconds": [
+        8,
+        18,
+        32
+      ],
+      "previewImagesLoaded": true
+    },
+    {
+      "name": "playback-and-pause",
+      "pausedExact": true
+    },
+    {
+      "name": "explore-and-return",
+      "lensAndOrbit": true,
+      "poseAndPixelsExact": true
+    },
+    {
+      "name": "three-group-inspectors",
+      "landmarks": 3,
+      "automaticDetourForActiveRoute": true,
+      "exactReturn": true
+    },
+    {
+      "name": "phone-and-fullscreen",
+      "width": 320,
+      "highlightSeek": true
+    }
+  ],
+  "accessibility": [
+    {
+      "name": "desktop-route",
+      "violations": []
+    },
+    {
+      "name": "phone-route",
+      "violations": []
+    },
+    {
+      "name": "phone-fullscreen",
+      "violations": []
+    }
+  ],
+  "captures": [
+    {
+      "name": "cluster-approach",
+      "file": "cluster-approach.png",
+      "sha256": "52ca387f0bd162a11462091552b158aad06382537c55c113fec544c1787ad627"
+    },
+    {
+      "name": "cluster-heart",
+      "file": "cluster-heart.png",
+      "sha256": "7b017eb3e5fffcbd0f512d9c4d00519893494f546569ba2b229bb9b1f6b2a3c6"
+    },
+    {
+      "name": "cluster-reveal",
+      "file": "cluster-reveal.png",
+      "sha256": "0fb0ece391a9d6cddcfb663e3243584fe370d7e813a8bf3d12b014d6691052ad"
+    },
+    {
+      "name": "phone-route",
+      "file": "phone-route.png",
+      "sha256": "75bf8f28dea22d2ca9adf1a9ba0a6e730a2eddecb2026740b04edde8d222a1ec"
+    },
+    {
+      "name": "phone-fullscreen-controls",
+      "file": "phone-fullscreen-controls.png",
+      "sha256": "a5fb861bd506a3703fc72497e1d415483f5691ab188e427068f75b19f3fd111f"
+    }
+  ],
+  "bounds": [
+    {
+      "name": "desktop cluster launch",
+      "left": 60,
+      "right": 636,
+      "top": 364.625,
+      "bottom": 446.421875,
+      "width": 576,
+      "height": 81.796875,
+      "viewport": [
+        1280,
+        850
+      ],
+      "covered": false
+    },
+    {
+      "name": "phone cluster launch",
+      "left": 42,
+      "right": 278,
+      "top": 325.84375,
+      "bottom": 422.640625,
+      "width": 236,
+      "height": 96.796875,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "phone highlight",
+      "left": 63,
+      "right": 257,
+      "top": 289.890625,
+      "bottom": 449.671875,
+      "width": 194,
+      "height": 159.78125,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "fullscreen highlight",
+      "left": 57,
+      "right": 263,
+      "top": 319.921875,
+      "bottom": 434.703125,
+      "width": 206,
+      "height": 114.78125,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    }
+  ],
+  "served": [
+    {
+      "file": "stem_lab/stem_tool_universe.js",
+      "sha256": "87d34fea4ff6c3db26cc11ff4390046b6c9fd4edc7d39bbfad0d1642d39201df"
+    },
+    {
+      "file": "stem_lab/universe_flight_scene.js",
+      "sha256": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7"
+    }
+  ],
+  "errors": []
+}

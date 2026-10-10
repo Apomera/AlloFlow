@@ -1,0 +1,164 @@
+{
+  "passed": true,
+  "memoryOnly": false,
+  "checks": [
+    {
+      "name": "six physical bays render and the new corner and tile objects are ray-pickable"
+    },
+    {
+      "name": "dragging a physical corner rotates it while the camera remains still",
+      "detail": {
+        "angleBefore": 90,
+        "angleAfter": 125
+      }
+    },
+    {
+      "name": "opaque display backs prevent ray interactions and walking respects their boundaries"
+    },
+    {
+      "name": "corner alternatives wrap angles, solve with hints, and keep guesses insufficient"
+    },
+    {
+      "name": "tile selection toggles through both scene rays and checkboxes without accepting a third choice"
+    },
+    {
+      "name": "the physical surround switch changes the scene while preserving every central tile pixel color",
+      "detail": {
+        "tileColors": [
+          {
+            "choice": "A",
+            "rgb": [
+              136,
+              136,
+              136
+            ]
+          },
+          {
+            "choice": "B",
+            "rgb": [
+              160,
+              160,
+              160
+            ]
+          },
+          {
+            "choice": "C",
+            "rgb": [
+              136,
+              136,
+              136
+            ]
+          },
+          {
+            "choice": "D",
+            "rgb": [
+              112,
+              112,
+              112
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "new puzzle records and notes survive reload and resets remain scoped"
+    },
+    {
+      "name": "mobile scenes, six-station navigation, new controls, and waypoints fit at 390 and 320 pixels"
+    },
+    {
+      "name": "WebGL-unavailable plan supports both puzzle solutions and reveal-assisted progress"
+    }
+  ],
+  "screenshots": [
+    {
+      "name": "contour-start",
+      "width": 1054,
+      "height": 621,
+      "colors": 140,
+      "colored": 2111,
+      "hash": "010ee65c0b5a81353ea0565b0db286e2df6f1e46f03da2742f202c73b2cc7e1b"
+    },
+    {
+      "name": "context-start",
+      "width": 1054,
+      "height": 621,
+      "colors": 132,
+      "colored": 2156,
+      "hash": "e487a83d21b976d94cc7aa40d020fb01db88b63a5351512da7492b3605742e15"
+    },
+    {
+      "name": "contour-before-drag",
+      "width": 1054,
+      "height": 621,
+      "colors": 140,
+      "colored": 2111,
+      "hash": "010ee65c0b5a81353ea0565b0db286e2df6f1e46f03da2742f202c73b2cc7e1b"
+    },
+    {
+      "name": "contour-after-drag",
+      "width": 1054,
+      "height": 621,
+      "colors": 139,
+      "colored": 2111,
+      "hash": "fe8434e3779ef66b2a841f6debe7fe581aa112e3400584102bf0472028f12d80"
+    },
+    {
+      "name": "contour-solved",
+      "width": 1054,
+      "height": 621,
+      "colors": 141,
+      "colored": 2208,
+      "hash": "2ba60f21f446a33ec1005448adf955cfb72c5de3c15932c203f96786fba0fe4c"
+    },
+    {
+      "name": "context-colored-surrounds",
+      "width": 1054,
+      "height": 621,
+      "colors": 140,
+      "colored": 2744,
+      "hash": "1acd286d81b5897e8c88258cfa05fe4fc81fba94a5ce24b278815f1561e9c9ab"
+    },
+    {
+      "name": "context-neutral-surrounds",
+      "width": 1054,
+      "height": 621,
+      "colors": 152,
+      "colored": 2800,
+      "hash": "d2981c0c981f4b9f3408d5f286c5e1ead9ec33f7461d87b064cf054b5cbf1872"
+    },
+    {
+      "name": "contour-mobile-390",
+      "width": 350,
+      "height": 361,
+      "colors": 110,
+      "colored": 609,
+      "hash": "ad7e8fe865200ff0f2777314cda78de10c13ecfa5ca5031f5fa24f8da875a672"
+    },
+    {
+      "name": "context-mobile-390",
+      "width": 350,
+      "height": 361,
+      "colors": 102,
+      "colored": 602,
+      "hash": "5439052df6aad9265f0c285d43ac45bbbff788f8de61a5f41e54aac4fb3f100d"
+    },
+    {
+      "name": "contour-mobile-320",
+      "width": 280,
+      "height": 321,
+      "colors": 110,
+      "colored": 541,
+      "hash": "eed0879aa4c3f2bf180fad4b11ebc763fb5f6f85fa3044851773caa6903e49ef"
+    },
+    {
+      "name": "context-mobile-320",
+      "width": 280,
+      "height": 321,
+      "colors": 108,
+      "colored": 524,
+      "hash": "3161d0c4f716880f3d5ad673274b82224ef55aa43fc715d3bfd473e11160342b"
+    }
+  ],
+  "errors": []
+}

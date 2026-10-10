@@ -16,8 +16,8 @@ describe('Drone-to-Notebook evidence handoff', () => {
     expect(html).toContain('Flight evidence');
     expect(html).toContain('Notebook synthesis');
     expect(html).toContain('Use the successful flight as evidence');
-    expect(html).toContain('180 ft');
-    expect(html).toContain('720 m');
+    expect(html).toContain('180 model ft');
+    expect(html).toContain('720 model m');
     expect(html).toContain('Hazard conflicts');
     expect(html).toContain('3');
   });
@@ -31,7 +31,7 @@ describe('Drone-to-Notebook evidence handoff', () => {
     });
 
     expect(html).toContain('Use the revised route as evidence');
-    expect(html).toContain('410 m');
+    expect(html).toContain('410 model m');
     expect(html).toContain('controllable choice');
   });
 });

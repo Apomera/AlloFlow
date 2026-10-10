@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "checkedAt": "2026-10-06T23:27:22.938Z",
+  "sourceSha256": "a8ad1578d7555df6f460d004da49b4bfc392dd817adb66d0d7ef6464189926a5",
+  "sourceMirrorsIdentical": true,
+  "syntaxValid": true,
+  "independentlyCheckedEnglishFiles": [
+    {
+      "file": "ui_strings.js",
+      "sha256": "be85509311461c168d85955430a31b6c342169b494848b3998393284980df4ab",
+      "literalFallbacksMatched": 1355
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "sha256": "be85509311461c168d85955430a31b6c342169b494848b3998393284980df4ab",
+      "literalFallbacksMatched": 1355
+    }
+  ],
+  "numericConfigurations": 144,
+  "numericProof": {
+    "file": "model-invariants-before-rounding.json",
+    "sweepSourceSha256": "fd5362d52c5b2515606f211c273adf0d4afb58be699898a5d1fbe10697517d2d",
+    "sweepMatchesCurrentSource": false,
+    "modelCodeUnchanged": true,
+    "finalDifference": "One sentence in display text: Displayed values are rounded."
+  }
+}

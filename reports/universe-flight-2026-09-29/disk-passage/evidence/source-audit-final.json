@@ -1,0 +1,166 @@
+{
+  "completed": true,
+  "driverHash": "674bf9347a5d098e105482c14f1f9e3f0876d4d31bef4b23b47323025019f009",
+  "startedAt": "2026-10-07T20:02:23.424Z",
+  "scope": "Independent host audit of staged59 source invariants and sampled authored route geometry; no native WebGL or physical trajectory claim.",
+  "baselineHash": "6f1267255407b7de52bb685922281301fef58de9c91cc8a036577a7c317e56e8",
+  "candidateHash": "255f57893385f5e0ae1a932d00f3ba8e7e98cacc8851bc6ce8985003bd025a75",
+  "canonicalBefore": "6f1267255407b7de52bb685922281301fef58de9c91cc8a036577a7c317e56e8",
+  "preserved": {
+    "helpers": [
+      "makeRegion",
+      "galaxyGeometry",
+      "galaxyPixels",
+      "cloudPixels",
+      "spiralPlaneMarker",
+      "writeSpiralPlane",
+      "projectedGalaxyView",
+      "ellipticalView",
+      "spiralBulgeView",
+      "spiralDiskView",
+      "writeProjectedSurface",
+      "diskLightProfile"
+    ],
+    "mathFunctions": [
+      "gamma",
+      "aberrate",
+      "doppler",
+      "stepFlight",
+      "viewSpectrum",
+      "lightClock",
+      "chartView",
+      "approachPlan",
+      "targetView",
+      "targetFrame",
+      "orbitView",
+      "rangeView",
+      "orbitPlane",
+      "easePace"
+    ],
+    "shaders": [
+      "pointVertex",
+      "pointFragment",
+      "galaxyVertex",
+      "galaxyFragment"
+    ],
+    "originalRouteIds": [
+      "halo",
+      "nebula",
+      "group",
+      "stellar"
+    ],
+    "originalSampledPoses": 8196
+  },
+  "regions": {
+    "neighborhood": {
+      "pointCount": 19203,
+      "pointsHash": "f0933322797366fbee8bbdc9ce8d2263700b1c07a71caa1bcfa1224d68edc2a3",
+      "geometryHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "geometryFloats": 0
+    },
+    "galaxy": {
+      "pointCount": 36400,
+      "pointsHash": "f5dbc73e3ae0b2751dcf15f6fffce2753ae4994b089c62d020975e414889b2ab",
+      "geometryHash": "539ba7bb97a10622f59dcd734c2588edf0c20899f6db3dce1b3d140ce3fe248f",
+      "geometryFloats": 6912
+    },
+    "cosmic": {
+      "pointCount": 41470,
+      "pointsHash": "156c66d7c6805406f2d231fb18affab8e613952ec32b5fdf9e9e805104966b85",
+      "geometryHash": "319cff53d08cc55c6ac0606d4febd777e0c3616da96e693a31015346488bf018",
+      "geometryFloats": 714240
+    }
+  },
+  "atlases": {
+    "galaxy": "8a8b5bbb2e4f8b87c6958b80227d7d148e2e708553d47b348fe91f1187f0063e",
+    "cloud": "b57c6fd38bbb173b026084c3f7977e0a27c8a91bb5446e045cef067a043b2c88"
+  },
+  "route": {
+    "id": "disk",
+    "durationSeconds": 44,
+    "metadata": {
+      "id": "disk",
+      "name": "Spiral disk passage",
+      "region": "galaxy",
+      "durationSeconds": 44,
+      "position": [
+        63127.46206453789,
+        25688.2137830559,
+        -12650.660296061507
+      ],
+      "aim": [
+        -20170,
+        10020,
+        -4410
+      ],
+      "fov": 64,
+      "targetId": "inner-arm",
+      "highlights": [
+        {
+          "id": "arms",
+          "name": "Above the spiral arms",
+          "seconds": 10,
+          "description": "Look toward the inner arm from above the generated disk.",
+          "targetId": "inner-arm"
+        },
+        {
+          "id": "crossing",
+          "name": "Inside the stellar disk",
+          "seconds": 17,
+          "description": "Pause among the existing three-dimensional stars and emission records as the camera crosses the disk.",
+          "targetId": "inner-arm"
+        },
+        {
+          "id": "panorama",
+          "name": "Beyond the disk",
+          "seconds": 40,
+          "description": "Look back at the spiral after emerging on the other side of the tilted disk.",
+          "targetId": "galactic-center"
+        }
+      ]
+    },
+    "sampleCount": 44001,
+    "dt": 0.001,
+    "minimumCentralRangeLy": 26268.474936466642,
+    "maximumRangeLy": 111211.51019566276,
+    "maximumPaceLyPerAuthoredSecond": 10553.436514042243,
+    "insideSamples": 7999,
+    "insideAuthoredSeconds": 7.9990000000000006,
+    "planeCrossings": 1,
+    "joinChecks": [
+      {
+        "time": 7,
+        "pace": 2955.5113379844997,
+        "worldVelocityRelativeJump": 0.0004504417933908588
+      },
+      {
+        "time": 13,
+        "pace": 2294.871942397058,
+        "worldVelocityRelativeJump": 0.000284971430181693
+      },
+      {
+        "time": 21,
+        "pace": 2035.39470210661,
+        "worldVelocityRelativeJump": 0.0007964480239603088
+      },
+      {
+        "time": 27,
+        "pace": 2904.5591589917517,
+        "worldVelocityRelativeJump": 0.0015443440551964039
+      },
+      {
+        "time": 35,
+        "pace": 5952.775847714948,
+        "worldVelocityRelativeJump": 0.0007096640536163074
+      }
+    ],
+    "crossingSourceFrame": [
+      30391.7287368851,
+      -22.131815312582603,
+      -2659.776866107327
+    ],
+    "totalDistanceLy": 176390.12002843956,
+    "limits": "Geometry is a Hermite teaching camera curve, with sampled arc-length lookup. Distance timing is smooth; sampled world velocity is approximate rather than mathematically exact C1."
+  },
+  "finishedAt": "2026-10-07T20:04:39.198Z"
+}

@@ -1,0 +1,40 @@
+{
+  "completed": true,
+  "enhancement": 68,
+  "pins": {
+    "renderer": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7",
+    "ui": "b6a59c6f698eadcce977e4e8ba598c0a5badb76350928b3802cc88f4c1eeb5c2"
+  },
+  "sourceSyntax": true,
+  "sourceMirrorsExact": true,
+  "uiReversePatchExact": true,
+  "rendererUnchanged": true,
+  "previewManifestUnchanged": true,
+  "previewImagesUnchanged": 18,
+  "previewMirrorsExact": true,
+  "scopedWhitespace": true,
+  "indexEmpty": true,
+  "unit": {
+    "passed": 21,
+    "failed": 0,
+    "projectionCases": 240,
+    "layoutViewportCases": 288,
+    "evidence": "unit/pair-guidance-final-summary.json"
+  },
+  "browser": {
+    "workflows": 9,
+    "accessibilityScopes": 5,
+    "screenshots": 7,
+    "touchTargets": 3,
+    "evidence": "browser-attempt1/check.json"
+  },
+  "mainReport": {
+    "beforeSha256": "1bf5f484e125735c56aba6376a972bbbba746e9c9de06bb29bd46096cb4094fa",
+    "afterSha256": "60d6b1d0ec985507c3a90a0e0617be44ec7d045313cca7385f3f0cd26db633d3"
+  },
+  "limits": [
+    "Directions describe generated landmark centers, not whole-object visibility or occlusion.",
+    "Chromium SwiftShader browser checks; full application suite and physical-device GPU matrix not run."
+  ],
+  "committed": false
+}

@@ -1,0 +1,11 @@
+{
+  "beforeSha256": "c7595e94eaedd6c89b7967683007c2b60a9d1156d2f39d532c6c20c584923b83",
+  "afterSha256": "0423d68ba4940e99de8d26f9c5ff41665f4a8b5d765d9d20d896e71d873e0d5c",
+  "edits": [
+    {
+      "before": "- 2026-10-05 | Codex Dissection study chooser IN PROGRESS: root owns canonical/public stem_lab/stem_tool_dissection.js, focused lab unit/new study chooser browser fixture, and reports/dissection-study-chooser-2026-10-05. Make reference activities and timed identification clear, show native readiness and remaining time, preserve native modes/focus/assessment guards and all prior work. No staging, commit, push or deployment.",
+      "after": "- 2026-10-05 | Codex Dissection study chooser COMPLETE: grouped untimed reference activities and timed identification with readable purpose cues, native mapped/unmapped comparison availability, practical readiness, exact start/end labels and a visible live-off countdown. Native activity handlers/focus, scoring, assessment guards and prior work preserved; canonical/public mirror synced. 249 scoped unit checks and 23 current browser cases passed; six baseline layouts archived. Report: reports/dissection-study-chooser-2026-10-05/README.md. No staging, commit, push or deployment."
+    }
+  ],
+  "otherContentPreserved": true
+}

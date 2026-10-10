@@ -1,0 +1,259 @@
+{
+  "completed": true,
+  "pins": {
+    "stem_lab/universe_flight_scene.js": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7",
+    "stem_lab/stem_tool_universe.js": "e487e503c86194b227e6d0c087f6f0c8cb139e229c0db37a6a4790593a1a7d33"
+  },
+  "harnessSha256": "ebd2adafd4e815c1883818293bcf82cff0fa5f32224ffa2e5ba1dc48790773e4",
+  "workflows": [
+    {
+      "name": "galaxy-comparison-clears-both-labels",
+      "fixture": "group-elliptical",
+      "readings": {
+        "text": [
+          "327,452.29 ly",
+          "1,424,298.07 ly",
+          "1,403,744.99 ly"
+        ],
+        "rails": [
+          0.22990432471175004,
+          1
+        ]
+      }
+    },
+    {
+      "name": "keyboard-minimize-keeps-labels-and-view",
+      "detailsOpen": true,
+      "exactPixels": true
+    },
+    {
+      "name": "keyboard-restore-preserves-disclosure-and-focus"
+    },
+    {
+      "name": "layout-preserves-exact-flyby-return"
+    },
+    {
+      "name": "panel-stays-still-during-pan",
+      "turns": 4
+    },
+    {
+      "name": "move-panel-clears-center-without-moving-camera",
+      "before": "bottom-right",
+      "after": "bottom-center",
+      "exactPixels": true
+    },
+    {
+      "name": "phone-distances-preserved",
+      "fixture": "cluster-heart",
+      "readings": {
+        "text": [
+          "4.32 ly",
+          "14.07 ly",
+          "9.76 ly"
+        ],
+        "rails": [
+          0.3068804430886639,
+          1
+        ]
+      }
+    },
+    {
+      "name": "phone-fullscreen-high-contrast",
+      "width": 320
+    },
+    {
+      "name": "short-landscape-controls-remain-reachable",
+      "height": 320
+    }
+  ],
+  "accessibility": [
+    {
+      "name": "desktop-layout",
+      "violations": []
+    },
+    {
+      "name": "phone-layout",
+      "violations": []
+    },
+    {
+      "name": "fullscreen-layout",
+      "violations": []
+    },
+    {
+      "name": "forced-colors-layout",
+      "violations": []
+    },
+    {
+      "name": "landscape-layout",
+      "violations": []
+    }
+  ],
+  "captures": [
+    {
+      "name": "galaxy-clear-comparison",
+      "file": "galaxy-clear-comparison.png",
+      "sha256": "73c2f6b30455e7747354b653bbb547e7fa19ec113b3e4e2495fb0066ef1179a8"
+    },
+    {
+      "name": "galaxy-minimized",
+      "file": "galaxy-minimized.png",
+      "sha256": "88068ca2e187c4f9331e175c62eb7af4c2c485af8b9ed1e214378263dccf24e8"
+    },
+    {
+      "name": "manually-cleared-landmarks",
+      "file": "manually-cleared-landmarks.png",
+      "sha256": "cdd668ad7fdfb3876126a6d3220544311f31f4bdebb22f3400548ba51976a2f4"
+    },
+    {
+      "name": "phone-comparison",
+      "file": "phone-comparison.png",
+      "sha256": "928bbc18c2a99c10a2131e884bb1c8bf878d26b8248d58cbe8ac21439dc1b9c3"
+    },
+    {
+      "name": "phone-minimized",
+      "file": "phone-minimized.png",
+      "sha256": "d6f0434bb85449688e84582fd2761e05bd1e7f3192ea0af2ddda4b18791d1df7"
+    },
+    {
+      "name": "fullscreen-comparison",
+      "file": "fullscreen-comparison.png",
+      "sha256": "14128aa0e0dbe88f99b3571f8c8e07b7cc49734434fd4cbb8e374407d4cb0d74"
+    },
+    {
+      "name": "forced-colors-comparison",
+      "file": "forced-colors-comparison.png",
+      "sha256": "c8c2cca8feaac59208c33efc3ad8b8ecac9d7868d8a71c024ea732375a608e60"
+    },
+    {
+      "name": "landscape-comparison",
+      "file": "landscape-comparison.png",
+      "sha256": "91e95cfd21be4eba78c083d8b57fa71b4715db18b306202c837ea006be142470"
+    }
+  ],
+  "bounds": [
+    {
+      "name": "phone Move panel",
+      "left": 69,
+      "right": 165,
+      "top": 299.21875,
+      "bottom": 343.21875,
+      "width": 96,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "phone Minimize",
+      "left": 171,
+      "right": 267,
+      "top": 299.21875,
+      "bottom": 343.21875,
+      "width": 96,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "phone End paired view",
+      "left": 69,
+      "right": 267,
+      "top": 615.21875,
+      "bottom": 659.21875,
+      "width": 198,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "phone Show comparison",
+      "left": 111,
+      "right": 273,
+      "top": 597.21875,
+      "bottom": 641.21875,
+      "width": 162,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "fullscreen End paired view",
+      "left": 99,
+      "right": 297,
+      "top": 539,
+      "bottom": 583,
+      "width": 198,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "landscape Minimize",
+      "left": 373,
+      "right": 469,
+      "top": 21,
+      "bottom": 65,
+      "width": 96,
+      "height": 44,
+      "viewport": [
+        740,
+        320
+      ],
+      "covered": false
+    },
+    {
+      "name": "landscape End paired view",
+      "left": 271,
+      "right": 469,
+      "top": 255,
+      "bottom": 299,
+      "width": 198,
+      "height": 44,
+      "viewport": [
+        740,
+        320
+      ],
+      "covered": false
+    },
+    {
+      "name": "landscape Show comparison",
+      "left": 289,
+      "right": 451,
+      "top": 259,
+      "bottom": 303,
+      "width": 162,
+      "height": 44,
+      "viewport": [
+        740,
+        320
+      ],
+      "covered": false
+    }
+  ],
+  "served": [
+    {
+      "file": "stem_lab/stem_tool_universe.js",
+      "sha256": "e487e503c86194b227e6d0c087f6f0c8cb139e229c0db37a6a4790593a1a7d33"
+    },
+    {
+      "file": "stem_lab/universe_flight_scene.js",
+      "sha256": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7"
+    }
+  ],
+  "errors": [],
+  "fixtureSha256": "cce0344e366f20c14897ab6d2ab432aba17f81d6f97c3ca803f453955c9549e7"
+}

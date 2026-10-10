@@ -1,0 +1,134 @@
+{
+  "before": "e3a88070afa77800d1be26612e69ad68d5949ee6322c588c49f2a3b192f5990d",
+  "after": "ca1ebfd63cce6cd95c722e3354ad4e813eef3ae48d61e6e5ace6c917cb0d3654",
+  "edits": [
+    {
+      "before": "          function showProcedureReplay() {",
+      "after": "          function procedureReplayPosition(replay, now) {\n            var empty = { active: false, elapsed: 0, progress: 0, index: 0, localProgress: 0 };\n            if (!replay || !Array.isArray(replay.actions) || !replay.actions.length || typeof replay.duration !== 'number' || !isFinite(replay.duration) || replay.duration <= 0 || typeof replay.startedAt !== 'number' || !isFinite(replay.startedAt)) return empty;\n            var elapsed = replay.paused ? replay.elapsed : now - replay.startedAt;\n            if (replay.paused && elapsed == null) elapsed = 0;\n            if (typeof elapsed !== 'number' || !isFinite(elapsed)) return empty;\n            elapsed = Math.max(0, Math.min(replay.duration, elapsed));\n            var progress = Math.min(0.999, elapsed / replay.duration);\n            var index = Math.min(replay.actions.length - 1, Math.floor(progress * replay.actions.length));\n            return { active: !!replay.paused || elapsed < replay.duration, elapsed: elapsed, progress: progress, index: index, localProgress: progress * replay.actions.length - index };\n          }\n          function procedureReplayReviewStep(replay, index) {\n            if (!procedureReplayPosition(replay, replay && replay.startedAt).active || typeof index !== 'number' || !isFinite(index)) return null;\n            var boundedIndex = Math.max(0, Math.min(replay.actions.length - 1, Math.floor(index)));\n            return Object.assign({}, replay, { paused: true, elapsed: (boundedIndex + 0.5) / replay.actions.length * replay.duration });\n          }\n          function liveProcedureReplay() {\n            var latest = canvasRefNode && canvasRefNode._drawD || d;\n            var replay = latest._procedureReplay;\n            return replay && replay.layer === activeLayer && (latest.specimen || 'frog') === specimen && (!replay.specimen || replay.specimen === specimen) ? replay : null;\n          }\n          function stopProcedureReplay(restoreFocus, quiet) {\n            var replay = liveProcedureReplay();\n            clearDissectionCanvasTimer(canvasRefNode, 'procedureReplay');\n            if (!replay) return;\n            upd('_procedureReplay', null);\n            if (!quiet) setProcedureFeedback('Attempt review ended. Your recorded work is unchanged.', 'working');\n            if (restoreFocus) focusDissectionTarget(replay.returnFocusId || 'diss-replay-attempt');\n          }\n          function scheduleProcedureReplayFinish(replay) {\n            var replayCanvas = canvasRefNode;\n            var remaining = Math.max(0, replay.duration - procedureReplayPosition(replay, Date.now()).elapsed);\n            scheduleDissectionCanvasTimer(replayCanvas, 'procedureReplay', function () {\n              var latest = replayCanvas && replayCanvas._drawD || {};\n              var current = latest._procedureReplay;\n              if (!current || current.paused || current.startedAt !== replay.startedAt || current.layer !== replay.layer || (latest.specimen || 'frog') !== specimen) return;\n              var panel = queryDissectionNode('#diss-replay-review');\n              var returnFocus = panel && typeof document !== 'undefined' && panel.contains(document.activeElement);\n              clearOwnedTimedDissectionState('_procedureReplay', replay.startedAt, specimen);\n              if (returnFocus) focusDissectionTarget(current.returnFocusId || 'diss-replay-attempt');\n            }, remaining + 250);\n          }\n          function toggleProcedureReplayPause() {\n            var replay = liveProcedureReplay();\n            if (!replay) return;\n            var position = procedureReplayPosition(replay, Date.now());\n            if (!position.active) { stopProcedureReplay(true); return; }\n            clearDissectionCanvasTimer(canvasRefNode, 'procedureReplay');\n            var next = Object.assign({}, replay, { paused: !replay.paused, elapsed: position.elapsed, startedAt: replay.paused ? Date.now() - position.elapsed : replay.startedAt });\n            upd('_procedureReplay', next);\n            if (!next.paused) scheduleProcedureReplayFinish(next);\n          }\n          function reviewProcedureReplayAction(direction) {\n            var replay = liveProcedureReplay();\n            if (!replay) return;\n            var position = procedureReplayPosition(replay, Date.now());\n            var next = procedureReplayReviewStep(replay, position.index + direction);\n            if (!next) return;\n            clearDissectionCanvasTimer(canvasRefNode, 'procedureReplay');\n            upd('_procedureReplay', next);\n            var nextIndex = procedureReplayPosition(next, Date.now()).index;\n            if (direction < 0 && nextIndex === 0) focusDissectionTarget(next.actions.length > 1 ? 'diss-replay-next' : 'diss-replay-toggle');\n            else if (direction > 0 && nextIndex === next.actions.length - 1) focusDissectionTarget(next.actions.length > 1 ? 'diss-replay-previous' : 'diss-replay-toggle');\n          }\n          var activeProcedureReplay = liveProcedureReplay();\n          var activeReplayPosition = procedureReplayPosition(activeProcedureReplay, Date.now());\n          function showProcedureReplay(reviewOnly) {"
+    },
+    {
+      "before": "            var replayCanvas = canvasRefNode;\n            var replayStartedAt = Date.now();\n            scheduleDissectionCanvasTimer(replayCanvas, 'procedureReplay', function () {\n              clearOwnedTimedDissectionState('_procedureReplay', replayStartedAt, specimen);\n            }, duration + 250);\n            upd('_procedureReplay', { layer: activeLayer, startedAt: replayStartedAt, duration: duration, actions: actions });",
+      "after": "            var replayStartedAt = Date.now();\n            var review = reviewOnly === true;\n            clearDissectionCanvasTimer(canvasRefNode, 'procedureReplay');\n            var replay = { specimen: specimen, layer: activeLayer, startedAt: replayStartedAt, duration: duration, actions: actions,\n              paused: review, elapsed: 0, returnFocusId: review ? 'diss-review-actions' : 'diss-replay-attempt' };\n            if (review) replay = procedureReplayReviewStep(replay, 0);\n            upd('_procedureReplay', replay);\n            if (!review) scheduleProcedureReplayFinish(replay);\n            focusDissectionTarget('diss-replay-toggle');"
+    },
+    {
+      "before": "              if (!d.quizMode && liveReplay && liveReplay.layer === activeLayer && Date.now() - liveReplay.startedAt < liveReplay.duration) {\n                var replayProgress = Math.max(0, Math.min(0.999, (Date.now() - liveReplay.startedAt) / liveReplay.duration));\n                var replayActions = liveReplay.actions || [];\n                var replayIndex = Math.min(replayActions.length - 1, Math.floor(replayProgress * replayActions.length));",
+      "after": "              var replayPosition = procedureReplayPosition(liveReplay, Date.now());\n              if (!d.quizMode && liveReplay && liveReplay.layer === activeLayer && (!liveReplay.specimen || liveReplay.specimen === specimen) && replayPosition.active) {\n                var replayProgress = replayPosition.progress;\n                var replayActions = liveReplay.actions || [];\n                var replayIndex = replayPosition.index;"
+    },
+    {
+      "before": "                var replayLocal = replayProgress * Math.max(1, replayActions.length) - Math.max(0, replayIndex);\n                var replayDisplayProgress = dissMotionReduced ? 1 : replayLocal;",
+      "after": "                var replayLocal = replayPosition.localProgress;\n                var replayDisplayProgress = dissMotionReduced || liveReplay.paused ? 1 : replayLocal;"
+    },
+    {
+      "before": "React.createElement(\"button\", { type: \"button\", disabled: !((currentProcedure.actionLog || []).length || (currentProcedure.history || []).length), onClick: showProcedureReplay, \"aria-describedby\": \"diss-replay-evidence-help\"",
+      "after": "React.createElement(\"button\", { id: \"diss-replay-attempt\", type: \"button\", disabled: !((currentProcedure.actionLog || []).length || (currentProcedure.history || []).length), onClick: showProcedureReplay, \"aria-controls\": \"diss-replay-review\", \"aria-describedby\": \"diss-replay-evidence-help\""
+    },
+    {
+      "before": "                      React.createElement(\"p\", { id: \"diss-replay-evidence-help\" }",
+      "after": "                      React.createElement(\"button\", { id: \"diss-review-actions\", type: \"button\", disabled: !((currentProcedure.actionLog || []).length || (currentProcedure.history || []).length), onClick: function () { showProcedureReplay(true); }, \"aria-controls\": \"diss-replay-review\", \"aria-describedby\": \"diss-replay-evidence-help\" }, 'Review actions'),\n                      React.createElement(\"p\", { id: \"diss-replay-evidence-help\" }"
+    },
+    {
+      "before": "                  React.createElement(\"p\", { id: \"diss-canvas-status\",",
+      "after": "                  !d.quizMode && activeProcedureReplay && activeReplayPosition.active && React.createElement(\"section\", { id: \"diss-replay-review\", className: \"diss-replay-review\", role: \"group\", \"aria-label\": \"Attempt replay controls\", onKeyDown: function (event) { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); stopProcedureReplay(true); } } },\n                    React.createElement(\"strong\", null, 'Attempt review'),\n                    React.createElement(\"p\", { id: \"diss-replay-review-status\", role: \"status\", \"aria-live\": \"polite\", \"aria-atomic\": \"true\" }, activeProcedureReplay.paused\n                      ? 'Paused · Action ' + (activeReplayPosition.index + 1) + ' of ' + activeProcedureReplay.actions.length + ' · ' + (activeProcedureReplay.actions[activeReplayPosition.index].label || procedureActionLabel(activeProcedureReplay.actions[activeReplayPosition.index].action))\n                      : 'Playing replay · ' + activeProcedureReplay.actions.length + ' actions. Pause to inspect an action.'),\n                    React.createElement(\"div\", { className: \"diss-replay-review__buttons\" },\n                      React.createElement(\"button\", { id: \"diss-replay-toggle\", type: \"button\", onClick: toggleProcedureReplayPause }, activeProcedureReplay.paused ? 'Resume replay' : 'Pause replay'),\n                      React.createElement(\"button\", { id: \"diss-replay-previous\", type: \"button\", disabled: !!activeProcedureReplay.paused && activeReplayPosition.index === 0, onClick: function () { reviewProcedureReplayAction(-1); } }, 'Previous action'),\n                      React.createElement(\"button\", { id: \"diss-replay-next\", type: \"button\", disabled: !!activeProcedureReplay.paused && activeReplayPosition.index === activeProcedureReplay.actions.length - 1, onClick: function () { reviewProcedureReplayAction(1); } }, 'Next action'),\n                      React.createElement(\"button\", { id: \"diss-replay-stop\", type: \"button\", onClick: function () { stopProcedureReplay(true); } }, 'Stop replay')\n                    ),\n                    React.createElement(\"p\", { className: \"diss-replay-review__help\" }, 'Previous and Next hold the full action on the specimen. Resume continues from that action. Escape ends the review.')\n                  ),\n                  React.createElement(\"p\", { id: \"diss-canvas-status\","
+    },
+    {
+      "before": "\n#diss-replay-evidence-help {",
+      "after": "\n.diss-replay-review { display: grid; gap: .6rem; min-width: 0; margin: .65rem 0; padding: .85rem; border: 2px solid #0e7490; border-radius: .8rem; background: #ecfeff; color: #164e63; }\n.diss-replay-review > strong, .diss-replay-review p, .diss-replay-review button { font-size: 1rem !important; line-height: 1.5; }\n.diss-replay-review > strong { font-weight: 850; }\n.diss-replay-review p { margin: 0; overflow-wrap: anywhere; }\n.diss-replay-review__buttons { display: flex; flex-wrap: wrap; gap: .5rem; }\n.diss-replay-review button { flex: 1 1 8rem; min-width: 0; min-height: 44px; padding: .55rem .7rem; border: 1px solid #0e7490; border-radius: .55rem; background: #fff; color: #164e63; font-weight: 750; cursor: pointer; }\n.diss-replay-review button:disabled { color: #475569; border-color: #94a3b8; background: #f1f5f9; cursor: default; }\n.diss-replay-review button:focus-visible { outline: 3px solid #0e7490; outline-offset: 3px; }\n[data-dissection-root][data-text-size=\"large\"] .diss-replay-review p, [data-dissection-root][data-text-size=\"large\"] .diss-replay-review button, [data-dissection-root][data-text-size=\"large\"] .diss-replay-review > strong { font-size: 1.125rem !important; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-replay-review { background: #fff; color: #000; border-color: #000; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-replay-review button { color: #000; border-color: #000; }\n@media (forced-colors: active) { .diss-replay-review { background: Canvas; color: CanvasText; border-color: CanvasText; } .diss-replay-review button { background: ButtonFace; color: ButtonText; border-color: ButtonText; } .diss-replay-review button:focus-visible { outline-color: Highlight; } }\n#diss-replay-evidence-help {"
+    },
+    {
+      "before": "            stopTechniqueCompareReplay();\n            var map = Object.assign({}, d.procedureByLayer || {});",
+      "after": "            stopTechniqueCompareReplay();\n            stopProcedureReplay(false, true);\n            var map = Object.assign({}, d.procedureByLayer || {});"
+    },
+    {
+      "before": "          function performProcedureAction(action, payload) {\n            payload = payload || {};",
+      "after": "          function performProcedureAction(action, payload) {\n            stopProcedureReplay(false, true);\n            payload = payload || {};"
+    },
+    {
+      "before": "            if (!action) { setProcedureFeedback('There is no technique action to undo.'); return; }",
+      "after": "            if (!action) { setProcedureFeedback('There is no technique action to undo.'); return; }\n            stopProcedureReplay(false, true);"
+    },
+    {
+      "before": "            cancelActiveCanvasGesture('Specimen gesture canceled before changing anatomical view; no action was recorded.');",
+      "after": "            cancelActiveCanvasGesture('Specimen gesture canceled before changing anatomical view; no action was recorded.');\n            stopProcedureReplay(false, true);"
+    },
+    {
+      "before": "            cancelActiveCanvasGesture('Specimen gesture canceled before changing layers; no action was recorded.');",
+      "after": "            cancelActiveCanvasGesture('Specimen gesture canceled before changing layers; no action was recorded.');\n            stopProcedureReplay(false, true);"
+    },
+    {
+      "before": "          function showProcedureDemonstration() {",
+      "after": "          function showProcedureDemonstration() {\n            stopProcedureReplay(false, true);"
+    },
+    {
+      "before": "          var activeProcedureReplay = liveProcedureReplay();",
+      "after": "          var activeProcedureReplay = d._procedureReplay && d._procedureReplay.layer === activeLayer && (!d._procedureReplay.specimen || d._procedureReplay.specimen === specimen) ? d._procedureReplay : null;"
+    },
+    {
+      "before": "            setProcedureFeedback('Attempt replay started. Follow the saved action order. Labels distinguish saved paths from teaching illustrations; pressure and settings appear only when recorded.');",
+      "after": "            setProcedureFeedback(review ? 'Attempt review opened. The first action is held on the specimen. Use Previous and Next to inspect each action.' : 'Attempt replay started. Follow the saved action order. Labels distinguish saved paths from teaching illustrations; pressure and settings appear only when recorded.');"
+    },
+    {
+      "before": "          function showProcedureReplay(reviewOnly) {",
+      "after": "          function focusProcedureReplayControl(targetId, showSpecimen) {\n            var root = currentDissectionRootNode(), attempts = 2;\n            function focusWhenReady() {\n              if (!root || !root.isConnected) return;\n              var target = scopedDissectionQuery(root, '#' + targetId);\n              if (!target && attempts-- > 0) { setTimeout(focusWhenReady, 0); return; }\n              if (!target) return;\n              if (showSpecimen && canvasRefNode && canvasRefNode.scrollIntoView) canvasRefNode.scrollIntoView({ block: 'start', behavior: 'auto' });\n              if (target.focus) target.focus({ preventScroll: true });\n              if (target.scrollIntoView) target.scrollIntoView({ block: 'nearest', behavior: 'auto' });\n            }\n            setTimeout(focusWhenReady, 0);\n          }\n          function showProcedureReplay(reviewOnly) {"
+    },
+    {
+      "before": "            focusDissectionTarget('diss-replay-toggle');",
+      "after": "            focusProcedureReplayControl('diss-replay-toggle', true);"
+    },
+    {
+      "before": "focusDissectionTarget(next.actions.length > 1 ? 'diss-replay-next' : 'diss-replay-toggle');",
+      "after": "focusProcedureReplayControl(next.actions.length > 1 ? 'diss-replay-next' : 'diss-replay-toggle');"
+    },
+    {
+      "before": "focusDissectionTarget(next.actions.length > 1 ? 'diss-replay-previous' : 'diss-replay-toggle');",
+      "after": "focusProcedureReplayControl(next.actions.length > 1 ? 'diss-replay-previous' : 'diss-replay-toggle');"
+    },
+    {
+      "before": "          function showProcedureReplay(reviewOnly) {",
+      "after": "          function showProcedureReplay() {\n            startProcedureReplay(false);\n          }\n          function startProcedureReplay(reviewOnly) {"
+    },
+    {
+      "before": "onClick: function () { showProcedureReplay(true); }",
+      "after": "onClick: function () { startProcedureReplay(true); }"
+    },
+    {
+      "before": "              if (showSpecimen && canvasRefNode && canvasRefNode.scrollIntoView) canvasRefNode.scrollIntoView({ block: 'start', behavior: 'auto' });",
+      "after": "              var specimenCanvas = scopedDissectionQuery(root, '[data-diss-canvas]');\n              if (showSpecimen && specimenCanvas && specimenCanvas.scrollIntoView) specimenCanvas.scrollIntoView({ block: 'start', behavior: 'auto' });"
+    },
+    {
+      "before": "          var activeReplayPosition = procedureReplayPosition(activeProcedureReplay, Date.now());",
+      "after": "          var activeReplayPosition = procedureReplayPosition(activeProcedureReplay, Date.now());\n          // Keep focused controls mounted until the owned completion timer clears the review.\n          var replayReviewVisible = activeReplayPosition.active || activeReplayPosition.elapsed > 0;"
+    },
+    {
+      "before": "!d.quizMode && activeProcedureReplay && activeReplayPosition.active && React.createElement(\"section\", { id: \"diss-replay-review\",",
+      "after": "!d.quizMode && activeProcedureReplay && replayReviewVisible && React.createElement(\"section\", { id: \"diss-replay-review\","
+    },
+    {
+      "before": "            var review = reviewOnly === true;\n            clearDissectionCanvasTimer(canvasRefNode, 'procedureReplay');",
+      "after": "            var review = reviewOnly === true;\n            clearDissectionCanvasTimer(canvasRefNode, 'procedureReplay');\n            clearDissectionCanvasTimer(canvasRefNode, 'procedureDemo');"
+    },
+    {
+      "before": "            if (review) replay = procedureReplayReviewStep(replay, 0);\n            upd('_procedureReplay', replay);",
+      "after": "            if (review) replay = procedureReplayReviewStep(replay, 0);\n            updMany({ _procedureReplay: replay, _procedureDemo: null });"
+    },
+    {
+      "before": "          function stopProcedureReplay(restoreFocus, quiet) {",
+      "after": "          function returnProcedureReplayFocus(replay) {\n            var root = currentDissectionRootNode();\n            var techniquePanel = scopedDissectionQuery(root, '#diss-procedure-panel');\n            var targetId = techniquePanel && !techniquePanel.open ? 'diss-procedure-summary' : replay.returnFocusId || 'diss-replay-attempt';\n            focusDissectionTarget(targetId, null, root);\n          }\n          function stopProcedureReplay(restoreFocus, quiet) {"
+    },
+    {
+      "before": "            if (restoreFocus) focusDissectionTarget(replay.returnFocusId || 'diss-replay-attempt');",
+      "after": "            if (restoreFocus) returnProcedureReplayFocus(replay);"
+    },
+    {
+      "before": "              if (returnFocus) focusDissectionTarget(current.returnFocusId || 'diss-replay-attempt');",
+      "after": "              if (returnFocus) returnProcedureReplayFocus(current);"
+    },
+    {
+      "before": "              if (!stage || !window.__alloStemFS) throw new Error('Fullscreen unavailable');\n              stage._dissFullscreenReturn = control;",
+      "after": "              if (!stage || !window.__alloStemFS) throw new Error('Fullscreen unavailable');\n              var endedReplayReview = !!liveProcedureReplay();\n              if (endedReplayReview) stopProcedureReplay(false, true);\n              stage._dissFullscreenReturn = control;"
+    },
+    {
+      "before": "              setProcedureFeedback('Fullscreen specimen mode opened with view and tool controls. Use Exit fullscreen or press Escape to return.');",
+      "after": "              setProcedureFeedback('Fullscreen specimen mode opened with view and tool controls. Use Exit fullscreen or press Escape to return.' + (endedReplayReview ? ' Attempt review ended. Your recorded work is unchanged.' : ''));"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "file": "tests/watercycle_groundwater_lens.test.js",
+  "originalSha256": "7ae7f27b198b5efcb98b430e191480c9cf34042cdff949af4d9b9cdfd73445c2",
+  "updatedSha256": "3d334ffcb1386a0c3a1be646fc9ab8926acb53f599918f5ad722e01afd1ea112",
+  "original": "      expect(session.focus).toEqual(['wcGroundwater-explorer-DetailTitle']);",
+  "replacement": "      // Zone selection retains the native selector focus beside the diagrams.\n      expect(session.focus).toEqual([]);"
+}

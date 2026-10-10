@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-09",
+  "sourceSHA256": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76",
+  "inputs": [
+    {
+      "path": "stem_lab/stem_tool_firstresponse.js",
+      "SHA256": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76",
+      "bytes": 791304
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js",
+      "SHA256": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76",
+      "bytes": 791304
+    },
+    {
+      "path": "desktop/app-build/stem_lab/stem_tool_firstresponse.js",
+      "SHA256": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76",
+      "bytes": 791304
+    },
+    {
+      "path": "desktop/web-app/build/stem_lab/stem_tool_firstresponse.js",
+      "SHA256": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76",
+      "bytes": 791304
+    }
+  ],
+  "sharedWrites": 0
+}

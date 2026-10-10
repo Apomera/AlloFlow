@@ -1,0 +1,13 @@
+{
+  "file": "AGENT_HANDOFF.md",
+  "baselineSha256": "600c02c1f0d5bc9714fae866a721c99c393b2786ccc5b4a5887059979f4c2db7",
+  "finalSha256": "b3885f69ecfd214b247c16f8c3129c43eaaefd15547665933b67cbe6a444d9fb",
+  "edits": [
+    {
+      "offset": 19346,
+      "old": "- 2026-10-05 | Codex Dissection capture clarity IN PROGRESS: root owns canonical/public stem_lab/stem_tool_dissection.js, focused evidence/canvas tests and reports/dissection-capture-clarity-2026-10-05. Improve saved specimen imagery, explicit capture contents and contextual metadata while preserving camera, lens, marks, progress and prior uncommitted work. User requested no commit; no staging, push or deployment.",
+      "new": "- 2026-10-05 | Codex Dissection capture clarity COMPLETE: root added native specimen/full-canvas captures, frozen camera/mark/measurement context, saved contents preference, fresh offscreen anatomy, exact canvas/clock rollback, settled anatomy snapshots, readable capture controls and corrected the manual/RAF animation clock. Canonical/public renderers match. 225 distinct unit and 22 browser checks passed; six before layouts verified. Report: reports/dissection-capture-clarity-2026-10-05. User requested no commit; no staging, push or deployment."
+    }
+  ],
+  "exactReversal": true
+}

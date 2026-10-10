@@ -35,6 +35,12 @@
     if(a.time!==b.time)notes.push(Math.abs(b.time-a.time)+' simulated seconds '+(b.time>a.time?'later.':'earlier.'));
     return notes.join(' ');
   }
+  function briefComparison(a,b){
+    var notes=compare(a,b).split(/\. (?=[A-Z0-9])/).filter(function(note){return note&&!/^Comparing piece /.test(note)&&!/^\d+(?:\.\d+)? simulated seconds /.test(note);}).map(function(note){return /\.$/.test(note)?note:note+'.';});
+    function rank(note){return /^The piece was turned/.test(note)?0:/^Upward color:/.test(note)?1:/^Shape:/.test(note)?2:/^Cut width:/.test(note)?3:/^Position:/.test(note)?4:5;}
+    notes.sort(function(a,b){return rank(a)-rank(b);});
+    return {text:notes.slice(0,2).join(' ')||'Compare the piece and face labels above.',more:notes.length>2};
+  }
   var tones={pale:'#e5d1ae',golden:'#d6a159',dark:'#92603c',scorched:'#49322a',firm:'#d95e43',softened:'#b94931'};
   function sketch(o){
     if(!o)return '';
@@ -52,10 +58,21 @@
     document.querySelector('.camera-row').after(panel);
     var loupe=document.createElement('div');loupe.className='food-loupe';loupe.hidden=true;loupe.setAttribute('aria-hidden','true');
     loupe.innerHTML='<canvas width="288" height="288"></canvas><span></span>';document.getElementById('recipeScene').append(loupe);
-    var $=function(id){return panel.querySelector('#'+id);},lensCanvas=loupe.querySelector('canvas'),ctx=lensCanvas.getContext('2d');
+    var card=document.createElement('div');card.id='sceneLensObservation';card.className='scene-lens-observation';card.hidden=true;card.setAttribute('aria-hidden','true');
+    card.innerHTML='<div class="scene-lens-heading"><strong>Food lens</strong><span id="sceneLensOutcome"></span></div><div class="scene-lens-pair"><figure><figcaption id="sceneLensHeldTitle"></figcaption><div id="sceneLensHeldArt"></div></figure><figure><figcaption id="sceneLensCurrentTitle"></figcaption><div id="sceneLensCurrentArt"></div></figure></div><p id="sceneLensDifference"></p><p id="sceneLensPrompt"></p>';document.getElementById('recipeScene').append(card);
+    var $=function(id){return panel.querySelector('#'+id);},scene$=function(id){return card.querySelector('#'+id);},lensCanvas=loupe.querySelector('canvas'),ctx=lensCanvas.getContext('2d');
     function on(el,type,fn){el.addEventListener(type,fn);listeners.push(function(){el.removeEventListener(type,fn);});}
-    function hide(){loupe.hidden=true;}
-    function paint(){
+    function hide(){loupe.hidden=true;card.hidden=true;}
+    function publish(message){var output=$('lensComparison');output.setAttribute('aria-live','polite');if(output.textContent!==message)output.textContent=message;}
+    function frameTitle(prefix,o){return prefix+' · Piece '+(o.index+1)+' · Face '+(o.face+1)+' · '+stamp(o);}
+    function keptMessage(o){return 'View kept. '+frameTitle(o.historical?'Recorded':'Observed',o)+'. '+(o.historical?'Compare another recorded piece or moment.':'Change one cooking variable, then scan again.');}
+    function showObservation(o,outcome){
+      if(!held||!o)return;loupe.hidden=true;card.hidden=false;card.dataset.mode='observation';card.dataset.outcome=outcome;scene$('sceneLensOutcome').textContent=outcome==='kept'?'View kept':'Comparison ready';
+      scene$('sceneLensHeldTitle').textContent=frameTitle('Kept',held);scene$('sceneLensCurrentTitle').textContent=frameTitle(o.historical?'Recorded':'Scanned',o);
+      var brief=briefComparison(held,o);scene$('sceneLensHeldArt').innerHTML=sketch(held);scene$('sceneLensCurrentArt').innerHTML=sketch(o);scene$('sceneLensDifference').textContent=brief.text;
+      scene$('sceneLensPrompt').textContent=brief.more?'Full comparison in Food lens.':o.historical?'Compare another recorded piece or moment.':outcome==='kept'?'Change one cooking variable, then scan again.':'What changed? Use the kept view as your reference.';
+    }
+    function paint(refreshComparison){
       var o=view&&describe(view,selected,historical),choices=o?pieces(view):[],choice=$('lensPiece');
       if(choice.options.length!==choices.length){choice.replaceChildren();choices.forEach(function(p){choice.append(new Option('Piece '+(p.index+1)+(p.width?' · '+p.width+' mm':''),String(p.index)));});}
       choice.value=String(selected);choice.disabled=!o;$('lensKeep').disabled=!o;$('lensClear').disabled=!held;
@@ -64,29 +81,41 @@
       $('lensLiveArt').innerHTML=sketch(o);$('lensLiveReading').textContent=o?reading(o):'';
       $('lensHeld').classList.toggle('lens-unkept',!held);$('lensHeldTitle').textContent=held?'Kept view · '+stamp(held):'Your kept view';
       $('lensHeldArt').innerHTML=sketch(held);$('lensHeldReading').textContent=held?reading(held):'Keep a view to compare it with another piece or a later moment.';
-      $('lensComparison').textContent=compare(held,o);
+      if(refreshComparison!==false){var comparison=$('lensComparison'),text=compare(held,o);comparison.setAttribute('aria-live','off');if(comparison.textContent!==text)comparison.textContent=text;}
       $('lensQuestion').textContent=!o?'':view.id==='tomato'?'Try an observation: keep a firm piece in view. After heating, how does its shape respond to a press?':'Try an observation: keep a pale piece in view. Does turning it show the same color on both faces?';
     }
-    function choose(index){if(!view||!describe(view,index,historical))return;host.pause();if(selected!==index){selected=index;paint();}}
-    on($('lensPiece'),'change',function(){choose(Number(this.value));});
-    on($('lensKeep'),'click',function(){host.pause();var o=view&&describe(view,selected,historical);if(o){held=Object.assign({},o);paint();}});
-    on($('lensClear'),'click',function(){held=null;paint();});on(panel,'toggle',function(){if(panel.open)host.pause();else hide();});
+    function choose(index,scanning){if(!view||!describe(view,index,historical))return;host.pause();if(selected!==index){selected=index;paint(scanning?false:undefined);}return describe(view,selected,historical);}
+    function keep(){
+      host.pause();var o=view&&describe(view,selected,historical);if(!o)return {captured:false,outcome:'selected',message:'No food view is available to keep.'};
+      held=Object.assign({},o);paint(false);showObservation(o,'kept');var message=keptMessage(o);publish(message);return {captured:true,outcome:'kept',message:message};
+    }
+    function finishScan(index,deliberate){
+      hide();var o=choose(index,true);if(!o)return {captured:false,outcome:'selected',message:'No food view captured. Slide across a visible piece, then release on it.'};
+      if(deliberate!==true){var message='Piece '+(o.index+1)+' selected. No new view kept. Sweep steadily across food, then release on a visible piece; a tap only selects.';publish(message);return {captured:false,outcome:'selected',message:message};}
+      var outcome=held?'compared':'kept';if(!held)held=Object.assign({},o);paint(false);showObservation(o,outcome);
+      var message=outcome==='kept'?keptMessage(o):'Comparison ready. '+frameTitle(o.historical?'Recorded':'Scanned',o)+'. '+compare(held,o);
+      publish(message);return {captured:true,outcome:outcome,message:message};
+    }
+    on($('lensPiece'),'change',function(){var o=choose(Number(this.value),true);if(o){paint(false);if(held)showObservation(o,'compared');else hide();publish(compare(held,o)||'Piece '+(o.index+1)+' selected. Keep a view to compare after a cooking change.');}});
+    on($('lensKeep'),'click',keep);
+    on($('lensClear'),'click',function(){held=null;hide();paint(false);publish('Kept view cleared. Scan a visible piece or use Keep this view to start another comparison.');});on(panel,'toggle',function(){if(panel.open)host.pause();else hide();});
     function render(s,recorded){
+      if(view!==s)hide();
       if(last&&(last.id!==s.id||last.servings!==s.servings||historical!==!!recorded||!recorded&&(s.log.length<last.log.length||!s.log.length&&last!==s||!!last.rescue!==!!s.rescue))){held=null;selected=0;hide();}
-      last=s;view=s;historical=!!recorded;var choices=pieces(s);selected=Math.max(0,Math.min(selected,choices.length-1));paint();
+      last=s;view=s;historical=!!recorded;var choices=pieces(s);selected=Math.max(0,Math.min(selected,choices.length-1));if(!choices.length)hide();paint();
     }
     function open(keyboard){panel.open=true;host.pause();paint();if(keyboard){$('lensPiece').focus();panel.scrollIntoView({block:'nearest'});}}
-    function scan(index,e,source,capture){
-      choose(index);if(!view||!describe(view,index,historical))return;sceneCanvas=source;var box=source.getBoundingClientRect(),parent=source.parentElement.getBoundingClientRect(),px=e.clientX-box.left,py=e.clientY-box.top;
+    function scan(index,e,source,capture,progress){
+      choose(index,true);if(!view||!describe(view,index,historical)){hide();return;}card.hidden=false;card.dataset.mode='scan';delete card.dataset.outcome;scene$('sceneLensOutcome').textContent=Number.isFinite(progress)?progress>=1?'Release on food':'Sweeping · '+Math.round(Math.max(0,Math.min(1,progress))*100)+'%':'Hold & sweep';scene$('sceneLensPrompt').textContent='Keep holding and sweep across food. Release on a visible piece to '+(held?'compare.':'keep a view.');sceneCanvas=source;var box=source.getBoundingClientRect(),parent=source.parentElement.getBoundingClientRect(),px=e.clientX-box.left,py=e.clientY-box.top;
       var crop=Math.min(50,box.width,box.height),sx=Math.max(0,Math.min(box.width-crop,px-crop/2)),sy=Math.max(0,Math.min(box.height-crop,py-crop/2));
       loupe.hidden=false;var size=loupe.getBoundingClientRect().width,x=px+28;if(x+size>parent.width-8)x=px-size-28;
       loupe.style.left=Math.max(8,Math.min(parent.width-size-8,x))+'px';loupe.style.top=Math.max(8,Math.min(parent.height-loupe.getBoundingClientRect().height-8,py-72))+'px';
       ctx.clearRect(0,0,288,288);
       var closeup=capture&&capture({x:sx,y:sy,width:crop,height:crop,screenWidth:box.width,screenHeight:box.height,size:288});
       if(closeup)ctx.putImageData(closeup,0,0);else ctx.drawImage(sceneCanvas,sx*source.width/box.width,sy*source.height/box.height,crop*source.width/box.width,crop*source.height/box.height,0,0,288,288);
-      loupe.querySelector('span').textContent='Piece '+(index+1)+' · '+describe(view,index,historical).color;
+      var hint=Number.isFinite(progress)?' · '+(progress>=1?'Release on food to '+(held?'compare':'keep the view'):'Keep sweeping · '+Math.round(Math.max(0,Math.min(1,progress))*100)+'%'):'';loupe.querySelector('span').textContent='Piece '+(index+1)+' · '+describe(view,index,historical).color+hint;
     }
-    return {render:render,open:open,scan:scan,hide:hide,dispose:function(){hide();listeners.forEach(function(remove){remove();});panel.remove();loupe.remove();sceneCanvas=null;}};
+    return {render:render,open:open,scan:scan,hide:hide,keep:keep,finishScan:finishScan,visible:function(){return !card.hidden;},dispose:function(){hide();listeners.forEach(function(remove){remove();});panel.remove();loupe.remove();card.remove();sceneCanvas=null;}};
   }
   var api={available:available,pieces:pieces,describe:describe,reading:reading,compare:compare,sketch:sketch,mount:mount};
   root.KitchenFoodLens=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;

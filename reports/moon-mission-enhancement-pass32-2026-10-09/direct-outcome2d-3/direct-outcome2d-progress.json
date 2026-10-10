@@ -1,0 +1,180 @@
+{
+  "schema": "moon-pass32-direct-browser-v1",
+  "runner": "direct-playwright-api",
+  "playwrightCliResult": false,
+  "mode": "outcome2d",
+  "status": "passed",
+  "startedAt": "2026-10-09T22:50:25.571Z",
+  "repo": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "specPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-outcome.spec.ts",
+  "output": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass32-2026-10-09\\direct-outcome2d-3",
+  "browserCache": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+  "timeouts": {
+    "action": 20000,
+    "navigation": 60000,
+    "expect": 15000,
+    "launch": 60000,
+    "workflow": 180000
+  },
+  "launchOptions": {
+    "headless": true,
+    "timeout": 60000
+  },
+  "workflowCompleted": true,
+  "cleanupCompleted": true,
+  "milestones": [
+    {
+      "name": "load:before",
+      "elapsedMs": 1
+    },
+    {
+      "name": "load:after",
+      "elapsedMs": 1699,
+      "workflow": "2D landing outcome stays readable across saved results, replay and retry",
+      "registered": [
+        "2D landing outcome stays readable across saved results, replay and retry",
+        "native landing outcome keeps success and impact readable on desktop and phone",
+        "live landing outcome displays earned points from an integrated practice flight"
+      ]
+    },
+    {
+      "name": "harness-start:before",
+      "elapsedMs": 1700
+    },
+    {
+      "name": "harness-start:after",
+      "elapsedMs": 1710
+    },
+    {
+      "name": "browser-launch:before",
+      "elapsedMs": 1711
+    },
+    {
+      "name": "browser-launch:after",
+      "elapsedMs": 2220
+    },
+    {
+      "name": "context-create:before",
+      "elapsedMs": 2220
+    },
+    {
+      "name": "context-create:after",
+      "elapsedMs": 2236
+    },
+    {
+      "name": "page-create:before",
+      "elapsedMs": 2237
+    },
+    {
+      "name": "page-create:after",
+      "elapsedMs": 2425
+    },
+    {
+      "name": "workflow:before",
+      "elapsedMs": 2426
+    },
+    {
+      "name": "workflow:after",
+      "elapsedMs": 9731
+    },
+    {
+      "name": "cleanup:before",
+      "elapsedMs": 9731
+    },
+    {
+      "name": "after-each:before",
+      "elapsedMs": 9732
+    },
+    {
+      "name": "after-each:after",
+      "elapsedMs": 9750
+    },
+    {
+      "name": "context-close:before",
+      "elapsedMs": 9750
+    },
+    {
+      "name": "context-close:after",
+      "elapsedMs": 9759
+    },
+    {
+      "name": "browser-close:before",
+      "elapsedMs": 9760
+    },
+    {
+      "name": "browser-close:after",
+      "elapsedMs": 13534
+    },
+    {
+      "name": "harness-stop:before",
+      "elapsedMs": 13534
+    },
+    {
+      "name": "harness-stop:after",
+      "elapsedMs": 13536
+    },
+    {
+      "name": "cleanup:after",
+      "elapsedMs": 13548,
+      "status": "passed"
+    }
+  ],
+  "errors": [],
+  "attachments": [
+    {
+      "name": "success-phone",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass32-2026-10-09\\direct-outcome2d-3\\fallback\\success-phone.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "success-desktop",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass32-2026-10-09\\direct-outcome2d-3\\fallback\\success-desktop.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "recorded-review",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass32-2026-10-09\\direct-outcome2d-3\\fallback\\recorded-review.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "legacy-percent",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass32-2026-10-09\\direct-outcome2d-3\\fallback\\legacy-percent.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "legacy-missing",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass32-2026-10-09\\direct-outcome2d-3\\fallback\\legacy-missing.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "impact-phone",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass32-2026-10-09\\direct-outcome2d-3\\fallback\\impact-phone.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "retry-live",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass32-2026-10-09\\direct-outcome2d-3\\fallback\\retry-live.png",
+      "contentType": "image/png"
+    }
+  ],
+  "inputHashes": {
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-outcome.spec.ts": "958bc2e703609c80cbb51471c0da31f3aea13274f6c8e44ef64bfb66fae23634",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_moonmission.js": "af1691011a2c4b8bbbf035d36ac658d570e1cc57c41b6e6e9594170f988043e1",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_moonmission.js": "af1691011a2c4b8bbbf035d36ac658d570e1cc57c41b6e6e9594170f988043e1"
+  },
+  "transform": {
+    "name": "Playwright bundled babelTransform",
+    "bundlePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\transform\\babelBundle.js",
+    "sha256": "9201df11ae9c9ee1febd587c5013c4f862aa7e9981b92b86ccbbbd37e71f9124"
+  },
+  "workflow": "2D landing outcome stays readable across saved results, replay and retry",
+  "suiteOptions": {
+    "timeout": 180000,
+    "retries": 0
+  },
+  "browserVersion": "148.0.7778.96",
+  "finishedAt": "2026-10-09T22:50:39.119Z",
+  "elapsedMs": 13548
+}

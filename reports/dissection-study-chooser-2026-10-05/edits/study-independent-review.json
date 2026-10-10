@@ -1,0 +1,67 @@
+{
+  "review": "Independent static review of Study chooser",
+  "reviewedAt": "2026-10-05",
+  "candidatePath": "C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-improving-interactivity-engagement-and/dissection-study-chooser-2026-10-05/renderer-next.js",
+  "beforeSha256": "e7fb104c826f70b0af9478fab307cc8015bf7e42813749d3ec74f6b1254110b1",
+  "afterSha256": "72c75cc596b0ee7307b7b7549fcd34e02cefdf9cdfb00f445bb21a26cc2dfeed",
+  "status": "static_review_passed",
+  "scope": "Study grouping, descriptions, native practical readiness, visible practical start/end name and timer, and CSS interaction with existing modes. No source edits, suites, or browser mutations performed.",
+  "integrity": {
+    "recordedEditCount": 5,
+    "eachAfterEditFoundExactlyOnceWhenReversedInReverseOrder": true,
+    "exactReversalToBaseline": true,
+    "nativeOnClickHandlerCount": 4,
+    "nativeOnClickHandlersRetainedExactly": true
+  },
+  "checks": [
+    {
+      "area": "Comparison purpose",
+      "result": "pass_after_copy_correction",
+      "evidence": "New help at 19974 calls the native pure dissectionComparisonGroup lookup. Mapped selections describe reference specimens; unmapped selections explicitly state that no reference comparison is mapped; the no-selection cue describes availability checking. Existing handlers remain unchanged."
+    },
+    {
+      "area": "Readiness and eligibility",
+      "result": "pass",
+      "evidence": "visibleQuizPool is initialized at candidate lines 7711–7713, before studyPracticalReady at 17710. Readiness requires two structures in that same native visible pool and no active incision transition. Both existing guards remain in the practical handler at 19982–19991."
+    },
+    {
+      "area": "Practical naming and timer",
+      "result": "pass",
+      "evidence": "Visible start/end text matches the exact aria-label at 19980 and 20003. The descriptive IDs resolve within the rendered practical section. The timer remains role=timer with aria-live=off and aria-atomic=true at 20004; it is now visibly rendered. Precise help at 19978 says structure labels are hidden."
+    },
+    {
+      "area": "Handlers and focus",
+      "result": "pass",
+      "evidence": "Four original button onClick blocks are byte-for-byte retained in the recorded grouping edit. Eye and flashcard focus targets, compare mode closure, practical state reset, timer ownership, and label restoration stay in native code. Existing descendant button focus-visible rules at 535 also apply to nested buttons."
+    },
+    {
+      "area": "Nested selected states and contrast",
+      "result": "pass",
+      "evidence": "New descendant pressed selectors at 595 restore border and underline cues after nesting. Existing high-contrast descendant button rules at 539 and focus rules at 540 remain applicable; new card and text rules at 602–603 cover wrappers. Forced-colors descendant button and focus rules at 548 and 551 remain applicable, while the new selected-border rule at 611 covers nested pressed buttons."
+    },
+    {
+      "area": "Essentials and responsive layout",
+      "result": "pass_by_static_review",
+      "evidence": "The practical section carries diss-advanced-only at 19976, so existing Essentials hiding at 383–391 covers its heading, help, readiness, button, and timer. Essentials specificity at 604–605 retains one outer column; 980px/520px queries at 606–607 reduce outer and inner grids. Native button min-width, wrapping, target height, and full width at 527 apply to descendants. Visual review remains pending."
+    },
+    {
+      "area": "Assessment and print",
+      "result": "pass_by_static_review",
+      "evidence": "Existing assessment hiding at 749 does not target the new Study section or its end control. Route=study preserves an active practical at 19299–19301. Existing print rule at 553 still hides the whole Study region and is not overridden by new display declarations."
+    }
+  ],
+  "findings": [],
+  "resolvedFindings": [
+    {
+      "priority": 2,
+      "title": "Describe comparison availability for unmapped structures",
+      "candidateLine": 19974,
+      "trigger": "Select a structure without a native cross-specimen comparison mapping, then open Study. For example, a sheep eye cornea selection.",
+      "observed": "The new purpose text promises 'Compare [name] across reference specimens.' The native panel at 21121–21131 renders its explicit unmapped explanation and no reference cards when dissectionComparisonGroup(specimen, sel.id) returns null.",
+      "impact": "The chooser now promises reference comparisons that the selected structure cannot provide, making the activity's prerequisite harder to understand.",
+      "recommendation": "Use the existing dissectionComparisonGroup lookup to describe mapped and unmapped selections accurately while retaining the native Compare handler. Make the no-selection cue acknowledge mapped comparison availability.",
+      "resolution": "Resolved in the fifth recorded exact edit. Updated mapped, unmapped and unselected descriptions use the existing pure mapping lookup; native handlers are retained."
+    }
+  ],
+  "visualReview": "passed; see study-visual-review.json for all six layouts, four interaction captures and saved metrics/audits"
+}

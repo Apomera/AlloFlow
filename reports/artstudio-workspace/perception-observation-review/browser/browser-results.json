@@ -1,0 +1,482 @@
+{
+  "sourceSHA256": "0c8c3558dd0f78c8937fa6ecb9e4194d90bea7ae9ee6c411590c95bc836edb32",
+  "loadedSourceSHA256": "0c8c3558dd0f78c8937fa6ecb9e4194d90bea7ae9ee6c411590c95bc836edb32",
+  "finalSourceSHA256": "0c8c3558dd0f78c8937fa6ecb9e4194d90bea7ae9ee6c411590c95bc836edb32",
+  "resumedFrom": null,
+  "checks": [
+    {
+      "experiment": "brightness",
+      "reveal": false,
+      "exactSavedScene": true,
+      "full500CharacterNote": true,
+      "savedImpressionDateSettings": true,
+      "ordinaryReviewOnly": true,
+      "noRestoreOrGuideToggles": true,
+      "nativeReport": {
+        "filename": "perception-observation-brightness.html",
+        "literalNotesSafe": true,
+        "exactScene": true
+      },
+      "stateAndPinUnchanged": true,
+      "axe": []
+    },
+    {
+      "experiment": "brightness",
+      "reveal": true,
+      "exactSavedScene": true,
+      "full500CharacterNote": true,
+      "savedImpressionDateSettings": true,
+      "ordinaryReviewOnly": true,
+      "noRestoreOrGuideToggles": true,
+      "nativeReport": {
+        "filename": "perception-observation-brightness.html",
+        "literalNotesSafe": true,
+        "exactScene": true
+      },
+      "stateAndPinUnchanged": true,
+      "axe": []
+    },
+    {
+      "experiment": "ebbinghaus",
+      "reveal": false,
+      "exactSavedScene": true,
+      "full500CharacterNote": true,
+      "savedImpressionDateSettings": true,
+      "ordinaryReviewOnly": true,
+      "noRestoreOrGuideToggles": true,
+      "nativeReport": {
+        "filename": "perception-observation-ebbinghaus.html",
+        "literalNotesSafe": true,
+        "exactScene": true
+      },
+      "stateAndPinUnchanged": true,
+      "axe": []
+    },
+    {
+      "experiment": "ebbinghaus",
+      "reveal": true,
+      "exactSavedScene": true,
+      "full500CharacterNote": true,
+      "savedImpressionDateSettings": true,
+      "ordinaryReviewOnly": true,
+      "noRestoreOrGuideToggles": true,
+      "nativeReport": {
+        "filename": "perception-observation-ebbinghaus.html",
+        "literalNotesSafe": true,
+        "exactScene": true
+      },
+      "stateAndPinUnchanged": true,
+      "axe": []
+    },
+    {
+      "experiment": "mullerLyer",
+      "reveal": false,
+      "exactSavedScene": true,
+      "full500CharacterNote": true,
+      "savedImpressionDateSettings": true,
+      "ordinaryReviewOnly": true,
+      "noRestoreOrGuideToggles": true,
+      "nativeReport": {
+        "filename": "perception-observation-mullerLyer.html",
+        "literalNotesSafe": true,
+        "exactScene": true
+      },
+      "stateAndPinUnchanged": true,
+      "axe": []
+    },
+    {
+      "experiment": "mullerLyer",
+      "reveal": true,
+      "exactSavedScene": true,
+      "full500CharacterNote": true,
+      "savedImpressionDateSettings": true,
+      "ordinaryReviewOnly": true,
+      "noRestoreOrGuideToggles": true,
+      "nativeReport": {
+        "filename": "perception-observation-mullerLyer.html",
+        "literalNotesSafe": true,
+        "exactScene": true
+      },
+      "stateAndPinUnchanged": true,
+      "axe": []
+    },
+    {
+      "experiment": "cafeWall",
+      "reveal": false,
+      "exactSavedScene": true,
+      "full500CharacterNote": true,
+      "savedImpressionDateSettings": true,
+      "ordinaryReviewOnly": true,
+      "noRestoreOrGuideToggles": true,
+      "nativeReport": {
+        "filename": "perception-observation-cafeWall.html",
+        "literalNotesSafe": true,
+        "exactScene": true
+      },
+      "stateAndPinUnchanged": true,
+      "axe": []
+    },
+    {
+      "experiment": "cafeWall",
+      "reveal": true,
+      "exactSavedScene": true,
+      "full500CharacterNote": true,
+      "savedImpressionDateSettings": true,
+      "ordinaryReviewOnly": true,
+      "noRestoreOrGuideToggles": true,
+      "nativeReport": {
+        "filename": "perception-observation-cafeWall.html",
+        "literalNotesSafe": true,
+        "exactScene": true
+      },
+      "stateAndPinUnchanged": true,
+      "axe": []
+    },
+    {
+      "experiment": "necker",
+      "reveal": false,
+      "exactSavedScene": true,
+      "full500CharacterNote": true,
+      "savedImpressionDateSettings": true,
+      "ordinaryReviewOnly": true,
+      "noRestoreOrGuideToggles": true,
+      "nativeReport": {
+        "filename": "perception-observation-necker.html",
+        "literalNotesSafe": true,
+        "exactScene": true
+      },
+      "stateAndPinUnchanged": true,
+      "axe": []
+    },
+    {
+      "experiment": "necker",
+      "reveal": true,
+      "exactSavedScene": true,
+      "full500CharacterNote": true,
+      "savedImpressionDateSettings": true,
+      "ordinaryReviewOnly": true,
+      "noRestoreOrGuideToggles": true,
+      "nativeReport": {
+        "filename": "perception-observation-necker.html",
+        "literalNotesSafe": true,
+        "exactScene": true
+      },
+      "stateAndPinUnchanged": true,
+      "axe": []
+    },
+    {
+      "experiment": "moire",
+      "reveal": false,
+      "exactSavedScene": true,
+      "full500CharacterNote": true,
+      "savedImpressionDateSettings": true,
+      "ordinaryReviewOnly": true,
+      "noRestoreOrGuideToggles": true,
+      "nativeReport": {
+        "filename": "perception-observation-moire.html",
+        "literalNotesSafe": true,
+        "exactScene": true
+      },
+      "stateAndPinUnchanged": true,
+      "axe": []
+    },
+    {
+      "experiment": "moire",
+      "reveal": true,
+      "exactSavedScene": true,
+      "full500CharacterNote": true,
+      "savedImpressionDateSettings": true,
+      "ordinaryReviewOnly": true,
+      "noRestoreOrGuideToggles": true,
+      "nativeReport": {
+        "filename": "perception-observation-moire.html",
+        "literalNotesSafe": true,
+        "exactScene": true
+      },
+      "stateAndPinUnchanged": true,
+      "axe": []
+    },
+    {
+      "experiment": "ponzo",
+      "reveal": false,
+      "exactSavedScene": true,
+      "full500CharacterNote": true,
+      "savedImpressionDateSettings": true,
+      "ordinaryReviewOnly": true,
+      "noRestoreOrGuideToggles": true,
+      "nativeReport": {
+        "filename": "perception-observation-ponzo.html",
+        "literalNotesSafe": true,
+        "exactScene": true
+      },
+      "stateAndPinUnchanged": true,
+      "axe": []
+    },
+    {
+      "experiment": "ponzo",
+      "reveal": true,
+      "exactSavedScene": true,
+      "full500CharacterNote": true,
+      "savedImpressionDateSettings": true,
+      "ordinaryReviewOnly": true,
+      "noRestoreOrGuideToggles": true,
+      "nativeReport": {
+        "filename": "perception-observation-ponzo.html",
+        "literalNotesSafe": true,
+        "exactScene": true
+      },
+      "stateAndPinUnchanged": true,
+      "axe": []
+    },
+    {
+      "experiment": "brightness",
+      "matching": true,
+      "reveal": false,
+      "exactSavedMatchingGeometry": true,
+      "hiddenValuesRespected": true,
+      "nativeReportExact": true,
+      "escapeKeepsExpandedState": true,
+      "stateUnchanged": true
+    },
+    {
+      "experiment": "brightness",
+      "matching": true,
+      "reveal": true,
+      "exactSavedMatchingGeometry": true,
+      "hiddenValuesRespected": true,
+      "nativeReportExact": true,
+      "escapeKeepsExpandedState": true,
+      "stateUnchanged": true
+    },
+    {
+      "experiment": "ebbinghaus",
+      "matching": true,
+      "reveal": false,
+      "exactSavedMatchingGeometry": true,
+      "hiddenValuesRespected": true,
+      "nativeReportExact": true,
+      "escapeKeepsExpandedState": true,
+      "stateUnchanged": true
+    },
+    {
+      "experiment": "ebbinghaus",
+      "matching": true,
+      "reveal": true,
+      "exactSavedMatchingGeometry": true,
+      "hiddenValuesRespected": true,
+      "nativeReportExact": true,
+      "escapeKeepsExpandedState": true,
+      "stateUnchanged": true
+    },
+    {
+      "experiment": "mullerLyer",
+      "matching": true,
+      "reveal": false,
+      "exactSavedMatchingGeometry": true,
+      "hiddenValuesRespected": true,
+      "nativeReportExact": true,
+      "escapeKeepsExpandedState": true,
+      "stateUnchanged": true
+    },
+    {
+      "experiment": "mullerLyer",
+      "matching": true,
+      "reveal": true,
+      "exactSavedMatchingGeometry": true,
+      "hiddenValuesRespected": true,
+      "nativeReportExact": true,
+      "escapeKeepsExpandedState": true,
+      "stateUnchanged": true
+    },
+    {
+      "focusTrapIncludesScientificLink": true,
+      "headingInitialFocus": true,
+      "closeReturnsToObservationRow": true
+    },
+    {
+      "fullWidthToggleExpandsDrawing": true,
+      "widthBefore": 924.5,
+      "widthAfter": 1364,
+      "savedSceneAndStateUnchanged": true,
+      "focusPreserved": true,
+      "reportUnchanged": true
+    },
+    {
+      "savedMoireAngleFixed": true,
+      "liveRotationContinuesBehindViewerAndExport": true,
+      "nativeReportUsesSavedAngle": true,
+      "modelNotebookAndPinUnchanged": true
+    },
+    {
+      "missingDateNoteImpressionExplicit": true,
+      "nativeReportHandlesMissingMetadata": true
+    },
+    {
+      "unrelatedRecordAndLiveEditsKeepReviewOpen": true,
+      "savedDrawingImmutable": true
+    },
+    {
+      "filteredRowKeepsReviewOpen": true,
+      "closeUsesNotebookFocusFallback": true
+    },
+    {
+      "identityInvalidation": "delete",
+      "viewerCloses": true,
+      "noStaleReportButton": true
+    },
+    {
+      "identityInvalidation": "replace",
+      "viewerCloses": true,
+      "noStaleReportButton": true
+    },
+    {
+      "identityInvalidation": "experiment",
+      "viewerCloses": true,
+      "noStaleReportButton": true
+    },
+    {
+      "identityInvalidation": "profile",
+      "viewerCloses": true,
+      "noStaleReportButton": true
+    },
+    {
+      "pendingAction": "study",
+      "viewerClosesImmediately": true,
+      "noStaleReportOrReopen": true
+    },
+    {
+      "pendingAction": "match-start",
+      "viewerClosesImmediately": true,
+      "noStaleReportOrReopen": true
+    },
+    {
+      "pendingAction": "inquiry",
+      "viewerClosesImmediately": true,
+      "noStaleReportOrReopen": true
+    },
+    {
+      "pendingAction": "import-commit",
+      "viewerClosesImmediately": true,
+      "notebookUnchangedBeforeCommit": true,
+      "modelAndPinPreserved": true,
+      "noStaleReportOrReopen": true
+    },
+    {
+      "nativeExportCancelsIfSavedIdentityChangesDuringURLCreation": true,
+      "unusedObjectURLRevoked": true,
+      "noStaleDownload": true
+    },
+    {
+      "width": 320,
+      "height": 844,
+      "font": 16,
+      "noOverflow": true,
+      "drawing": {
+        "width": 280,
+        "height": 168,
+        "top": 130.1875
+      },
+      "savedSceneExact": true,
+      "nativeViewerControlsReachable": true,
+      "standaloneReportReadable": true,
+      "axe": []
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "font": 32,
+      "noOverflow": true,
+      "drawing": {
+        "width": 350,
+        "height": 210,
+        "top": 241.390625
+      },
+      "savedSceneExact": true,
+      "nativeViewerControlsReachable": true,
+      "standaloneReportReadable": true,
+      "axe": []
+    },
+    {
+      "width": 760,
+      "height": 390,
+      "font": 32,
+      "noOverflow": true,
+      "drawing": {
+        "width": 701.625,
+        "height": 273,
+        "top": 208.578125
+      },
+      "savedSceneExact": true,
+      "nativeViewerControlsReachable": true,
+      "standaloneReportReadable": true,
+      "axe": []
+    },
+    {
+      "width": 1440,
+      "height": 1000,
+      "font": 16,
+      "noOverflow": true,
+      "drawing": {
+        "width": 924.5,
+        "height": 554.6875,
+        "top": 190.5
+      },
+      "savedSceneExact": true,
+      "nativeViewerControlsReachable": true,
+      "standaloneReportReadable": true,
+      "axe": []
+    },
+    {
+      "width": 1440,
+      "height": 1000,
+      "font": 32,
+      "noOverflow": true,
+      "drawing": {
+        "width": 1364,
+        "height": 700,
+        "top": 217.390625
+      },
+      "savedSceneExact": true,
+      "nativeViewerControlsReachable": true,
+      "standaloneReportReadable": true,
+      "axe": []
+    },
+    {
+      "theme": "dark",
+      "savedSceneExact": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "theme": "contrast",
+      "savedSceneExact": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-light",
+      "savedSceneExact": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-dark",
+      "savedSceneExact": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "printMediaDrawingAvoidsBreaks": true,
+      "printPreviewSaved": true,
+      "printPDFSaved": true
+    },
+    {
+      "visualPreviewsSaved": true,
+      "defaultPerspectiveRails": true,
+      "desktopPhone200DarkAndReport": true,
+      "axe": []
+    }
+  ],
+  "errors": [],
+  "externalResourceRequests": []
+}

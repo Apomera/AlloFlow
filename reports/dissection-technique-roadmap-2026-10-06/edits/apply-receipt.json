@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-07T00:19:00.135Z",
+  "source": "9b77f87c70bd2789cdd450bff5d371bfd81d2973abf12c491706da7fbbf78a3a",
+  "unit": "24bda465f604372660464162bdfed58663edd60c0e879d5ff61b9b2f2c34b7ae",
+  "exactReversal": true,
+  "syntax": true,
+  "mirrorEqual": true,
+  "polishAt": "2026-10-07T00:41:55.646Z",
+  "unitCorrectionAt": "2026-10-07T01:31:28.896Z",
+  "unitDeadlineCorrectionAt": "2026-10-09T21:58:33.080Z"
+}

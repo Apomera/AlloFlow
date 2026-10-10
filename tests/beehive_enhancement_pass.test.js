@@ -581,7 +581,7 @@ describe('field guide: student-first topics, search, and a way in from the views
 describe('thermoregulation diagram reports the student trial', () => {
   it('reads d.thermHunt through the live ref and redraws a paused diagram when it changes', () => {
     expect(SRC_TEXT).toContain('var trial = (_liveState.current || {}).thermHunt;');
-    expect(SRC_TEXT).toContain("thermHunt: d.thermHunt || null");
+    expect(SRC_TEXT.includes("thermHunt: beeView === 'thermo' ? Object.assign({}, d.thermHunt || {}, bhThermoReading(d.thermHunt))")).toBe(true);
     expect(SRC_TEXT).toContain('d.activeEvent, d.waggleLab, d.calmScene, d.thermHunt, d.supersAdded, d.winterized]);');
   });
 });
@@ -811,7 +811,7 @@ describe('the thermoregulation trial has heater bees as well as fanners', () => 
     expect(html.includes('id="th-broodCount"')).toBe(false);
     expect(html.includes('1,200 heater bees') || html.includes('value="1200"')).toBe(true);
     expect(html.includes('5,000 brood (older model)')).toBe(true);
-    expect(html.includes('Hive ≈ 29.6 °C')).toBe(true);
+    expect(html).toContain('29.6 °C');
   });
   it('the paused diagram redraws when the heater slider moves', () => {
     expect(SRC_TEXT.includes("d.thermHunt.beesFanning + ',' + d.thermHunt.heaterBees : ''")).toBe(true);

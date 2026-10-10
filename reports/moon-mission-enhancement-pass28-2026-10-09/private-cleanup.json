@@ -1,0 +1,14 @@
+{
+  "removed": {
+    "moon-pass28-audit.py": "f6cc00e2de8f0c082161afcad02c866d25080fcede1109b901c74c67730552df",
+    "moon-pass28-baseline.js": "db4ac387a5c8b2ac4f4019835837a86005076c3f3d58bd50adaea88c1167a52c",
+    "moon-pass28-lander.js": "8e74dcfece6181ab1d47f11dc10022c0923ccef6c58eab25074167c51e8b326c",
+    "moon-pass28-integrate.py": "080a8814d6f08d11bed59df7770a9a7e7a8998f7f6f88e540adf77d37963a5d4",
+    "moon-pass28-candidate.js": "a4e45616c42a6f15c63e18c66fd33dce9ae00efafe7236d98ee2eff773874f25",
+    "moon-pass28-hud.spec.ts": "0c1e0ad638b0248ec661d01aa49dc384556fd98c2c0e80b1b8c69d457d0c34f0",
+    "moon-pass28-run.py": "6507047173634a98637b6c7ee7ad98acd2275f162d4b04e857e1a5761d51ac54",
+    "moon-pass28-preserve.py": "fbb25df4fa921271561dc08e1d0caee37e68bf5dab62d7037f0e161482d6b64a",
+    "moon-pass28-finalize.py": "99b34113d3c637d8e15104ceb584394b8625c25adb282d02ef3f3c4506fa76e0"
+  },
+  "recursive": false
+}

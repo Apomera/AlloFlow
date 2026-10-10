@@ -7,21 +7,30 @@
       "kind": "term",
       "term": "Part",
       "title": "Part",
-      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A single puzzle piece with a small blank name tag on it. Constraints: no letters. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately."
+      "prompt": "Use case: illustration-story. Asset type: Square educational glossary illustration: one single large teal jigsaw puzzle piece centered, with a small cream blank rectangular name tag attached flat to its middle. Clean piece silhouette with one knob and several simple matching indentations. No other objects. Warm, simple flat educational illustration, clean rounded forms and subtle paper texture, muted coral, mustard, teal and navy, pale warm cream background. No readable text, words, letters, numerals, logos, watermark, labels or captions anywhere. Clear uncluttered composition. Any person has exactly two arms visibly attached at natural shoulders, coherent elbows and wrists, simple anatomically correct hands, and one coherent hairstyle attached to the head. Avoid overlapping limbs.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cb-94c1-7fe0-a744-652252eed0d8\\exec-0884a7cd-ebe9-4ff6-831f-86d5b718aa2f.png",
+      "alt": "A single teal puzzle piece has a small blank name tag.",
+      "status": "visual-review-passed"
     },
     {
       "id": "cteam-term-whole",
       "kind": "term",
       "term": "Whole",
       "title": "Whole",
-      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A finished poster made of four visibly different pieces fitted together. Constraints: no text on poster. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately."
+      "prompt": "Use case: illustration-story. Asset type: Square educational glossary illustration: a completed rectangular poster assembled from exactly FOUR distinct fitted puzzle-like sections in coral, mustard, teal and navy. Visible seams show four pieces fitting together into one whole rectangle. Simple abstract leaf, sun and geometric motif images within sections; no writing. Poster centered on cream background. Warm, simple flat educational illustration, clean rounded forms and subtle paper texture, muted coral, mustard, teal and navy, pale warm cream background. No readable text, words, letters, numerals, logos, watermark, labels or captions anywhere. Clear uncluttered composition. Any person has exactly two arms visibly attached at natural shoulders, coherent elbows and wrists, simple anatomically correct hands, and one coherent hairstyle attached to the head. Avoid overlapping limbs.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cb-94c1-7fe0-a744-652252eed0d8\\exec-ba6ac3ca-86ae-4d16-88cc-a5e642d605ff.png",
+      "alt": "A student holds a complete illustrated poster made from four differently colored fitted sections.",
+      "status": "visual-review-passed"
     },
     {
       "id": "cteam-term-loafing",
       "kind": "term",
       "term": "Social loafing",
       "title": "Social loafing",
-      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: Four students around a table, each glancing sideways at another, an empty page in the middle. Constraints: nobody villainous. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately."
+      "prompt": "Use case: illustration-story. Asset type: Square educational glossary illustration: exactly four diverse middle school students sitting around a round table with one large untouched blank sheet in the center. Each glances sideways toward a teammate with mild uncertainty, relaxed friendly expressions, nobody angry or villainous. Arms all in simple natural resting positions with hands in laps or resting on table, nobody pointing. Coherent short curls, bob, ponytail, and short straight hair hairstyles. Warm, simple flat educational illustration, clean rounded forms and subtle paper texture, muted coral, mustard, teal and navy, pale warm cream background. No readable text, words, letters, numerals, logos, watermark, labels or captions anywhere. Clear uncluttered composition. Any person has exactly two arms visibly attached at natural shoulders, coherent elbows and wrists, simple anatomically correct hands, and one coherent hairstyle attached to the head. Avoid overlapping limbs.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cb-94c1-7fe0-a744-652252eed0d8\\exec-9db0c331-6dee-4d79-ac79-0c73ef7f2cad.png",
+      "alt": "Four students glance toward one another around a table with an untouched blank page.",
+      "status": "visual-review-passed"
     },
     {
       "id": "cteam-term-expedition",

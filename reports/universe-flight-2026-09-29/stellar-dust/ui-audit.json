@@ -1,0 +1,26 @@
+{
+  "file": "stem_lab/stem_tool_universe.js",
+  "beforeSha256": "d0670ff3711b4b5d0c23f98813b9fc5b90945657fcc51589a0c9139b0d3b92d8",
+  "afterSha256": "0bcb80a32407030204eb5422b298e6fa00285d501726d871df8a6ec60330898f",
+  "mirrorMatches": true,
+  "syntax": true,
+  "reverseExact": true,
+  "forwardExact": true,
+  "previewHelp": true,
+  "sharedControls": [
+    "uf-dust",
+    "uf-inview-dust",
+    "uf-inspector-dust"
+  ],
+  "dustPersists": [
+    "settingsRef",
+    "React effect",
+    "saved views",
+    "capture metadata",
+    "notes export",
+    "inspection Back",
+    "scenic inspection",
+    "flyby return"
+  ],
+  "changes": 22
+}

@@ -50,6 +50,13 @@ describe('Beehive comb-pattern model', () => {
     expect(BH.bhCombCellRole(0, -0.1, HEALTHY)).toMatch(/brood/);
   });
 
+  it('never creates food from frame position when colony stores are zero', () => {
+    for (let frame = 0; frame < 6; frame++) {
+      const frameDepth = Math.abs(frame - 2.5) / 2.5;
+      expect(census({ ...HEALTHY, honeyFill: 0, frameDepth }).honey || 0).toBe(0);
+    }
+  });
+
   it('stores honey ABOVE the brood, never through it', () => {
     // Every honey cell must sit higher than every brood cell on the same face.
     let lowestHoney = 1;

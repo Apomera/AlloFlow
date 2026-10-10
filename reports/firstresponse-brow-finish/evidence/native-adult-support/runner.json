@@ -1,0 +1,13 @@
+{
+  "pid": 55832,
+  "args": [
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\@playwright\\test\\cli.js",
+    "test",
+    "firstresponse-face-preview.spec.ts",
+    "--config=C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-brow-finish-work\\playwright-face.config.cjs",
+    "--workers=1",
+    "--retries=0",
+    "--reporter=list,json"
+  ],
+  "startedAt": "2026-10-09T17:55:15.671Z"
+}

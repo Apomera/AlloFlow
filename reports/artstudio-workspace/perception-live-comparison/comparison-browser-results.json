@@ -1,0 +1,145 @@
+{
+  "sourceSHA256": "a6b6471d0f760011823fbb2fb48c884f3e1eed40c8bcec6cfc999b6eb80d571d",
+  "loadedSourceSHA256": "a6b6471d0f760011823fbb2fb48c884f3e1eed40c8bcec6cfc999b6eb80d571d",
+  "finalSourceSHA256": "a6b6471d0f760011823fbb2fb48c884f3e1eed40c8bcec6cfc999b6eb80d571d",
+  "checks": [
+    {
+      "experiment": "brightness",
+      "allLayouts": true,
+      "equalScale": true,
+      "stationarySwitch": true,
+      "colorsUnmodified": true,
+      "savedStateUnchanged": true
+    },
+    {
+      "experiment": "ebbinghaus",
+      "allLayouts": true,
+      "equalScale": true,
+      "stationarySwitch": true,
+      "colorsUnmodified": true,
+      "savedStateUnchanged": true
+    },
+    {
+      "experiment": "mullerLyer",
+      "allLayouts": true,
+      "equalScale": true,
+      "stationarySwitch": true,
+      "colorsUnmodified": true,
+      "savedStateUnchanged": true
+    },
+    {
+      "experiment": "cafeWall",
+      "allLayouts": true,
+      "equalScale": true,
+      "stationarySwitch": true,
+      "colorsUnmodified": true,
+      "savedStateUnchanged": true
+    },
+    {
+      "experiment": "necker",
+      "allLayouts": true,
+      "equalScale": true,
+      "stationarySwitch": true,
+      "colorsUnmodified": true,
+      "savedStateUnchanged": true
+    },
+    {
+      "experiment": "moire",
+      "allLayouts": true,
+      "equalScale": true,
+      "stationarySwitch": true,
+      "colorsUnmodified": true,
+      "savedStateUnchanged": true
+    },
+    {
+      "width": 320,
+      "threeLayoutsResponsive": true,
+      "focusedSwitch": true,
+      "axe": [],
+      "controls44px": true,
+      "noOverflow": true
+    },
+    {
+      "width": 390,
+      "threeLayoutsResponsive": true,
+      "focusedSwitch": true,
+      "axe": [],
+      "controls44px": true,
+      "noOverflow": true
+    },
+    {
+      "width": 768,
+      "threeLayoutsResponsive": true,
+      "focusedSwitch": true,
+      "axe": [],
+      "controls44px": true,
+      "noOverflow": true
+    },
+    {
+      "width": 1280,
+      "threeLayoutsResponsive": true,
+      "focusedSwitch": true,
+      "axe": [],
+      "controls44px": true,
+      "noOverflow": true
+    },
+    {
+      "width": 1600,
+      "threeLayoutsResponsive": true,
+      "focusedSwitch": true,
+      "axe": [],
+      "controls44px": true,
+      "noOverflow": true
+    },
+    {
+      "nativeKeyboardControls": true,
+      "inactiveDrawingInert": true,
+      "clearRestoresFocus": true
+    },
+    {
+      "notesKeepSelection": true,
+      "drawingEditShowsCurrent": true
+    },
+    {
+      "theme": "dark",
+      "colorsPreserved": true,
+      "axe": []
+    },
+    {
+      "theme": "contrast",
+      "colorsPreserved": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-light",
+      "colorsPreserved": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-dark",
+      "colorsPreserved": true,
+      "axe": []
+    },
+    {
+      "text200Percent": true,
+      "differentExperimentsSamePosition": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "studyMasksComparisonWhileCollecting": true,
+      "resultsRemainHiddenUntilRevealed": true
+    },
+    {
+      "exportUsesCurrentWhilePinnedVisible": true,
+      "currentPixel": [
+        117,
+        117,
+        117,
+        255
+      ],
+      "savedStateUnchanged": true
+    }
+  ],
+  "errors": []
+}

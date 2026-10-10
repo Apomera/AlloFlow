@@ -1,0 +1,11 @@
+{
+  "prior": {
+    "word_sounds_module.js": "5e8ea7f7be79f08bb5209ba937e62eaaa6d80b0ff415b2991ccacf767e74de07",
+    "word_sounds_setup_module.js": "ff1d4ea9c92ef80c69695bc625b3e2e04e05416ce6956c62d239ff7b4278d342"
+  },
+  "current": {
+    "word_sounds_module.js": "5e8ea7f7be79f08bb5209ba937e62eaaa6d80b0ff415b2991ccacf767e74de07",
+    "word_sounds_setup_module.js": "ef3cf8667a5964cc52f6dd1782b1e1e1fa1818b6e87e15dc061bdc1d390ffd7f"
+  },
+  "notes": "Concurrent Word Fluency presentation tools additions in setup source/build preserved. Recording editor block remains identical to validated runtime."
+}

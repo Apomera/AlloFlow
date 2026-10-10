@@ -1,0 +1,26 @@
+{
+  "sourceSHA256": "0af58d9afd30ed0de275caf53197320ddabed9308f08b191cce7bf4927d83f84",
+  "accepted": true,
+  "imageHashes": {
+    "adult-support-baseline-ear.png": "a815602ddf099a264746463f1ad11a403fb21f630fff63dec16a6f2c0fe3e8b3",
+    "adult-support-baseline-stage.png": "e36e8b32aae81a70fc098cd1ebc6d89c8f1c264e40c419ccd381b5cac90f4493",
+    "adult-support-candidate-ear.png": "e05fd270349324ef95206fbdc1e240981a006bca3368e4063dfd0645747068d3",
+    "adult-support-candidate-stage.png": "a1957b49b5bebb981166e06f7db9d557ca5f9d7329cc83dfffdcc442ba810af6",
+    "child-head-baseline-ear.png": "97e3c282e88e1578bc7378176fe3392e28b0371218fefb24dc29b0030cdfdb04",
+    "child-head-baseline-stage.png": "6fe12eacbc7c7d9a37ced6f7765bbd38bc72141f13e0f56e554db58f50a17e65",
+    "child-head-candidate-ear.png": "4cb79fdaacabd94fb4050cedf5b4e5d31ef8c3663ef4d3f4b37eb6693ca10e10",
+    "child-head-candidate-stage.png": "b5aeb9a4f538c4b5a66f813ac25c4e3d915f9843db6131843b641cac48eda7a7",
+    "infant-head-contrast-baseline-ear.png": "6b4f0971578b2347910ca955a87df0702b9939d5aa57151482ea5ad29b35c3c4",
+    "infant-head-contrast-baseline-stage.png": "e549da4934fc5f0882b099caab115ce446296619a53cb4ec7259a924cfbe13c7",
+    "infant-head-contrast-candidate-ear.png": "1e0ea5636939c6442540d62f27c5ce4853fcf0292dd803b88fbd4f2aad898cae",
+    "infant-head-contrast-candidate-stage.png": "7945940a67f69b52093e33e36b60abf4932e31bfbc77c06f24b30d3573a9c1e0"
+  },
+  "observations": [
+    "Viewed all twelve baseline and candidate stage images and ear crops at their captured sizes.",
+    "In the adult supporting-hand close-up, the lower/right end of the outer rim joins the base as a rounded lobe. The upper ridge stays visible; the complete stacked-ring appearance is reduced.",
+    "The child ear is small and partly occluded in the native head view. Its lower edge looks subtly smoother; this view provides limited evidence of the aesthetic change.",
+    "The infant high-contrast ear remains a readable white silhouette. The changed contour is too small here to judge surface realism.",
+    "No new detached edge, sharp point, hand displacement or framing change is visible. The overall ear still reads as a shallow oval relief in these views."
+  ],
+  "limitations": "Three matched raw-module views only. Full application loader, full-app build and deployment were not tested. The clearest visible benefit is in the adult supporting-hand view."
+}

@@ -1,0 +1,65 @@
+[
+  {
+    "action": "inspect",
+    "message": "Orientation recorded for Frog ventral midline access. Scenario checkpoint: 45%. Next: explain what changed in the learning checkpoint before another technique action.",
+    "history": [
+      "inspect"
+    ]
+  },
+  {
+    "action": "scalpel",
+    "message": "Shallow access incision complete through low-resistance material. Precision 100%, control 100%, calibration 100%. The stroke showed balanced alignment, coverage, and control. Scenario checkpoint: 89%. Next: explain what changed in the learning checkpoint before another technique action.",
+    "history": [
+      "inspect",
+      "scalpel"
+    ]
+  },
+  {
+    "action": "scissors",
+    "message": "Opening extended with material resistance 28/100. Precision 100%, control 100%, calibration 100%. The stroke showed balanced alignment, coverage, and control. Scenario checkpoint: 100%. Next: explain what changed in the learning checkpoint before another technique action.",
+    "history": [
+      "inspect",
+      "scalpel",
+      "scissors"
+    ]
+  },
+  {
+    "action": "forceps",
+    "message": "Layer lifted with 100% grip calibration. Equivalent action replayed with a controlled lift. Scenario checkpoint: 100%. Next: explain what changed in the learning checkpoint before another technique action.",
+    "history": [
+      "inspect",
+      "scalpel",
+      "scissors",
+      "forceps"
+    ]
+  },
+  {
+    "action": "first pin",
+    "message": "First stabilizer placed. Angle calibration 100%. Equivalent action replayed with a controlled anchor. Scenario checkpoint: 100%. Next: Place the opposing body-wall anchor."
+  },
+  {
+    "action": "pin",
+    "message": "Specimen secured with two well-spaced stabilizers. Angle calibration 100%. Equivalent action replayed with a controlled anchor. Scenario checkpoint: 100%. Next: explain what changed in the learning checkpoint before another technique action.",
+    "history": [
+      "inspect",
+      "scalpel",
+      "scissors",
+      "forceps",
+      "pin",
+      "pin"
+    ]
+  },
+  {
+    "action": "probe",
+    "message": "Probe trace complete: Ventral Skin. Pressure calibration 100%. Equivalent action replayed with calibrated contact. Scenario checkpoint: 100%. Objective complete. Next: explain what changed in the learning checkpoint before another technique action.",
+    "history": [
+      "inspect",
+      "scalpel",
+      "scissors",
+      "forceps",
+      "pin",
+      "pin",
+      "probe"
+    ]
+  }
+]

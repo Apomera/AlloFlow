@@ -86,8 +86,10 @@ function openSettings(view) {
 }
 function tab(view, id) { return view.container.querySelector('[data-gw-settings-tab="' + id + '"]'); }
 async function key(node, value) {
-  await React.act(async () => {
+  React.act(() => {
     node.dispatchEvent(new KeyboardEvent('keydown', { key: value, bubbles: true, cancelable: true }));
+  });
+  await React.act(async () => {
     await new Promise(resolve => setTimeout(resolve, 5));
   });
 }
@@ -98,6 +100,41 @@ function select(view, name, value) {
     Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set.call(node, value);
     node.dispatchEvent(new Event('change', { bubbles: true }));
   });
+}
+function selectPanel(view, value) {
+  const node = view.container.querySelector('[data-gw-workspace-panel="true"]'); expect(node).toBeTruthy();
+  React.act(() => {
+    Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set.call(node, value);
+    node.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+}
+function queueSettingsTimers() {
+  const callbacks = [], cancelled = new Set(); let nextId = 900000000;
+  const nativeSetTimeout = globalThis.setTimeout.bind(globalThis);
+  const nativeClearTimeout = globalThis.clearTimeout.bind(globalThis);
+  vi.spyOn(globalThis, 'setTimeout').mockImplementation((callback, delay, ...args) => {
+    if (Number(delay || 0) !== 0) return nativeSetTimeout(callback, delay, ...args);
+    const id = nextId++; callbacks.push({ id, callback: () => callback(...args) }); return id;
+  });
+  vi.spyOn(globalThis, 'clearTimeout').mockImplementation(id => {
+    if (typeof id === 'number' && id >= 900000000) cancelled.add(id);
+    else nativeClearTimeout(id);
+  });
+  return {
+    flush() {
+      expect(callbacks.length).toBeGreaterThan(0);
+      const queued = callbacks.shift();
+      if (!cancelled.has(queued.id)) React.act(() => queued.callback());
+    },
+    drain() {
+      let limit = 30;
+      while (callbacks.length && limit-- > 0) this.flush();
+      expect(callbacks).toHaveLength(0);
+    }
+  };
+}
+function press(node, value) {
+  React.act(() => node.dispatchEvent(new KeyboardEvent('keydown', { key: value, bubbles: true, cancelable: true })));
 }
 function learningEvidence(view) {
   return structuredClone(Object.fromEntries(['activeLesson', 'worldActive', 'score', 'totalQ', 'answeredNpcs',
@@ -272,6 +309,36 @@ describe('workspace settings category navigation', () => {
     expect(learningEvidence(view)).toEqual(before);
   });
 
+  it('labels the optional panel as session-only independently of saved appearance', () => {
+    const view = mountTool(); const before = learningEvidence(view); openSettings(view);
+    const panel = view.container.querySelector('[data-gw-workspace-panel="true"]');
+    expect(panel.labels[0].textContent).toMatch(/this session/i);
+    selectPanel(view, 'map'); select(view, 'uiTextSize', 'large');
+    const status = view.container.querySelector('#gw-settings-panel-workspace [role="status"]');
+    expect(status.textContent).toContain('Saved on this device');
+    const savedStatus = status.textContent;
+    selectPanel(view, 'history');
+    expect(view.bucket().hudPanel).toBe('history'); expect(status.textContent).toBe(savedStatus);
+    expect(JSON.parse(localStorage.getItem(KEY))).toMatchObject({ uiTextSize: 'large', preset: 'minimal' });
+    expect(JSON.parse(localStorage.getItem(KEY))).not.toHaveProperty('hudPanel');
+    expect(learningEvidence(view)).toEqual(before);
+    React.act(() => view.root.unmount()); view.container.remove(); mounted = null;
+    const reopened = mountTool(); openSettings(reopened);
+    expect(preference(reopened, 'uiTextSize').value).toBe('large');
+    expect(reopened.container.querySelector('[data-gw-workspace-panel="true"]').value).toBe('');
+  });
+
+  it('keeps denied appearance-save feedback when a session-only panel changes', () => {
+    const view = mountTool(); openSettings(view);
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw Error('Quota denied'); });
+    select(view, 'uiSurface', 'glass');
+    const status = view.container.querySelector('#gw-settings-panel-workspace [role="status"]');
+    expect(status.textContent).toMatch(/storage unavailable/i);
+    const deniedStatus = status.textContent;
+    selectPanel(view, 'map'); expect(status.textContent).toBe(deniedStatus);
+    expect(view.bucket()).toMatchObject({ uiSurface: 'glass', hudPanel: 'map', showGameSettings: true });
+  });
+
   it('renders native, labelled presentation controls with clear defaults', () => {
     const view = mountTool(); openSettings(view);
     for (const name of ['uiTextSize', 'uiSurface']) {
@@ -352,5 +419,66 @@ describe('workspace settings category navigation', () => {
     expect(view.engine.camera.position).toEqual(world.camera); expect(view.engine.sessionLog).toEqual(world.log);
     expect(view.engine.loadLesson).not.toHaveBeenCalled(); expect(view.engine.clearWorld).not.toHaveBeenCalled();
     expect(JSON.parse(localStorage.getItem(KEY))).toEqual(DEFAULTS);
+  });
+});
+
+describe('deferred Settings focus follows the latest dialog request', () => {
+  it('normally returns focus to the Settings trigger after closing', () => {
+    const view = mountTool(); openSettings(view); const timers = queueSettingsTimers();
+    click(view.container.querySelector('.gw-settings-close')); timers.drain();
+    expect(document.activeElement).toBe(view.container.querySelector('[data-geometry-settings-trigger="true"]'));
+  });
+
+  it('keeps focus inside Settings when reopened before its queued close return', () => {
+    const view = mountTool(); const before = learningEvidence(view); openSettings(view);
+    const timers = queueSettingsTimers();
+    const triggerFocus = vi.spyOn(view.container.querySelector('[data-geometry-settings-trigger="true"]'), 'focus');
+    click(view.container.querySelector('.gw-settings-close')); const reopened = openSettings(view);
+    expect(reopened.contains(document.activeElement)).toBe(true);
+    timers.drain(); expect(triggerFocus).not.toHaveBeenCalled();
+    expect(reopened.contains(document.activeElement)).toBe(true); expect(learningEvidence(view)).toEqual(before);
+  });
+
+  it('focuses only the latest category after consecutive arrow requests', () => {
+    const view = mountTool(); openSettings(view); tab(view, 'workspace').focus();
+    const timers = queueSettingsTimers(), obsoleteFocus = vi.spyOn(tab(view, 'view'), 'focus');
+    press(tab(view, 'workspace'), 'ArrowRight'); press(tab(view, 'view'), 'ArrowRight');
+    expect(tab(view, 'learning').getAttribute('aria-selected')).toBe('true');
+    timers.flush(); expect(obsoleteFocus).not.toHaveBeenCalled();
+    timers.drain(); expect(document.activeElement).toBe(tab(view, 'learning'));
+  });
+
+  it('preserves a newer pointer-selected category over queued keyboard focus', () => {
+    const view = mountTool(); openSettings(view); tab(view, 'workspace').focus();
+    const timers = queueSettingsTimers(), obsoleteFocus = vi.spyOn(tab(view, 'view'), 'focus');
+    press(tab(view, 'workspace'), 'ArrowRight'); tab(view, 'create').focus(); click(tab(view, 'create'));
+    timers.drain(); expect(obsoleteFocus).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(tab(view, 'create')); expect(tab(view, 'create').getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('does not deliver old category focus after closing and reopening on Workspace', () => {
+    const view = mountTool(); openSettings(view); const timers = queueSettingsTimers();
+    press(tab(view, 'workspace'), 'End'); click(view.container.querySelector('.gw-settings-close'));
+    const reopened = openSettings(view), obsoleteFocus = vi.spyOn(tab(view, 'create'), 'focus');
+    timers.drain(); expect(obsoleteFocus).not.toHaveBeenCalled();
+    expect(tab(view, 'workspace').getAttribute('aria-selected')).toBe('true');
+    expect(reopened.contains(document.activeElement)).toBe(true);
+  });
+
+  it.each(['close return', 'category selection'])('suppresses queued %s focus after unmount', request => {
+    const view = mountTool(); openSettings(view); const timers = queueSettingsTimers();
+    if (request === 'close return') click(view.container.querySelector('.gw-settings-close'));
+    else press(tab(view, 'workspace'), 'ArrowRight');
+    React.act(() => view.root.unmount()); view.container.remove(); mounted = null;
+    const workspace = document.createElement('section'); workspace.id = 'geoworld-fs-workspace';
+    const dialog = document.createElement('section'); dialog.id = 'gw-settings-dialog';
+    const replacement = document.createElement('button');
+    replacement.setAttribute(request === 'close return' ? 'data-geometry-settings-trigger' : 'data-gw-settings-tab',
+      request === 'close return' ? 'true' : 'view');
+    if (request === 'category selection') {
+      replacement.setAttribute('aria-selected', 'true'); dialog.appendChild(replacement); workspace.appendChild(dialog);
+    } else workspace.appendChild(replacement);
+    document.body.appendChild(workspace); replacement.focus(); const focus = vi.spyOn(replacement, 'focus');
+    timers.drain(); expect(focus).not.toHaveBeenCalled(); expect(document.activeElement).toBe(replacement);
   });
 });

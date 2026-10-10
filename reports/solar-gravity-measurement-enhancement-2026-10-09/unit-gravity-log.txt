@@ -1,0 +1,27 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/solar_system_gravity_drop_lab.test.js
+[deferred-jsdom] Initializing the official DOM environment.
+
+stdout | tests/solar_system_gravity_drop_lab.test.js
+[deferred-jsdom] DOM environment ready.
+
+stdout | tests/solar_system_gravity_drop_lab.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/solar_system_gravity_drop_lab.test.js
+[deferred-jsdom] Existing repository setup loaded.
+
+ ✓ tests/solar_system_gravity_drop_lab.test.js > Solar System mass, weight, and gravity-drop lab > keeps the canonical and desktop assets identical 97ms
+ ✓ tests/solar_system_gravity_drop_lab.test.js > Solar System mass, weight, and gravity-drop lab > uses reviewed gravity ratios and reports force in newtons 10ms
+ ✓ tests/solar_system_gravity_drop_lab.test.js > Solar System mass, weight, and gravity-drop lab > derives vacuum fall time from height and acceleration, independent of object mass 4ms
+ ✓ tests/solar_system_gravity_drop_lab.test.js > Solar System mass, weight, and gravity-drop lab > removes kilogram-as-weight language and discloses giant-planet boundaries 264ms
+ ✓ tests/solar_system_gravity_drop_lab.test.js > Solar System mass, weight, and gravity-drop lab > supports accessible comparison, prediction, animation, and evidence capture 70ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  22:01:09
+   Duration  20.60s (transform 254ms, setup 13.67s, import 500ms, tests 526ms, environment 0ms)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/solar-gravity-measurement-enhancement-2026-10-09/unit-gravity-results.json

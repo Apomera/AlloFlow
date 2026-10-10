@@ -1,0 +1,75 @@
+{
+  "row": {
+    "t": 13.999999999999845,
+    "alt": 15.615549246376109,
+    "v": -30.080618830809534,
+    "h": 3.5111742513263335,
+    "fuel": 108.9375999903311,
+    "throttle": 0.3199511771965808,
+    "tilt": -0.3447667389904533,
+    "x": 55.81279745094608
+  },
+  "measured": {
+    "vertices": 5610,
+    "shadowMeshes": 1,
+    "casters": 1,
+    "visible": true,
+    "maximumLightProjectionError": 4.510281037539698e-16,
+    "maximumResidual": 1.7763568394002505e-15,
+    "inspected": 81,
+    "plane": {
+      "x": 0,
+      "y": 1,
+      "z": 0,
+      "constant": 13.369853705069147
+    },
+    "sun": [
+      -700,
+      260,
+      360
+    ],
+    "shadowMap": true,
+    "shadowMapSize": [
+      256,
+      256
+    ],
+    "shadowType": 0,
+    "colorWrite": false,
+    "lander": [
+      0,
+      -5.418759419759319,
+      0
+    ],
+    "camera": [
+      14.580705996711695,
+      -0.1395195102731437,
+      19.067077072622983
+    ],
+    "target": false
+  },
+  "pixels": {
+    "width": 1014,
+    "height": 420,
+    "changed": 481,
+    "delta": 96986,
+    "glError": 0
+  },
+  "errors": [],
+  "shaderErrors": [],
+  "held": {
+    "alt": 0,
+    "vVel": -29.940068582576128,
+    "hVel": 3.1537236347410365,
+    "fuel": 108.2920365464846,
+    "thrust": 0,
+    "tilt": -0.3494551885018131,
+    "x": 57.54699778556155,
+    "elapsed": 14.520340505242164,
+    "contact": true
+  },
+  "disposed": {
+    "geometry": 1,
+    "material": 1,
+    "shadowMap": 1
+  }
+}

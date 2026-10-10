@@ -1,0 +1,1287 @@
+{
+  "reason": "The tool session ended before suite completion; no browser process or completed suite JSON remained when work resumed. These partial artifacts are excluded from successful validation totals.",
+  "status": "incomplete",
+  "sourceSha256": "862666ca23a82fa5d15b73917b011fa9eb157554ac3d76302a4cb4d4a051abe0",
+  "files": [
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/c88c94997bc2676f0549d7f0553c7399.zip",
+      "bytes": 9924940,
+      "sha256": "e35d0395f3c289bf7be08762a62d743be3dc68e07c332f42073b4d27183b9bae"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/bd24b5a7a1a567d94fb2-324c45b4c33b2d37a69c-pwnetcopy-1.network",
+      "bytes": 11487,
+      "sha256": "fc3987944e15c8dfd60e92222b75efcd16192e3085a7ab660b9d34a883230d2b"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/bd24b5a7a1a567d94fb2-324c45b4c33b2d37a69c.network",
+      "bytes": 11487,
+      "sha256": "fc3987944e15c8dfd60e92222b75efcd16192e3085a7ab660b9d34a883230d2b"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/bd24b5a7a1a567d94fb2-324c45b4c33b2d37a69c.trace",
+      "bytes": 19096450,
+      "sha256": "778b549fd26dbee3b747c17d688255609667991bf3364d4ab12b2f4873e6131b"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/2704817a8b28d02ffeeccb5478a7267cd32e6d89.css",
+      "bytes": 624950,
+      "sha256": "847d3803e02e1ab458a9c683d66f16a727af7a09e9d8a9a6b8840d2e090c8956"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/aa7317c0f15f3e2b9379e08743dbe813448f583f.html",
+      "bytes": 16749,
+      "sha256": "a29bb23c18f8e3fde43f37cc37784ff6746f4c45713d6c4a8cebfce56ab49d5d"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593202659.jpeg",
+      "bytes": 2459,
+      "sha256": "3a829f9747ec49e0f7fafe05977cf3faa6dc229918ee73b807ec6dbf9d83c73f"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593202844.jpeg",
+      "bytes": 2461,
+      "sha256": "05cab5da1418127c0cf972685c031b6e1feb9cd0c6279631fc8b3a8020c904ad"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593203473.jpeg",
+      "bytes": 2461,
+      "sha256": "05cab5da1418127c0cf972685c031b6e1feb9cd0c6279631fc8b3a8020c904ad"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593203490.jpeg",
+      "bytes": 12586,
+      "sha256": "d8eb0e75cef2ef8630bc1a3a168c3c2de1956a1528507ef04bb4e3343a5b24a6"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593203505.jpeg",
+      "bytes": 22107,
+      "sha256": "32de562b62d9cc14811113eadbacac09383c36e3c100db1900f3281fe45f362c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593203525.jpeg",
+      "bytes": 29217,
+      "sha256": "b3be806e4ff9741c44b2d2ad19f47a137c41fb985cbe86add9081e323d55d002"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593203538.jpeg",
+      "bytes": 33769,
+      "sha256": "2ef4c4d1159ba552b46998edd699394f0499450c51738581f4a72e84d5138c8b"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593203556.jpeg",
+      "bytes": 36540,
+      "sha256": "e1a1b54b8e723e38e95d16c59bb23ce02713f4c85468dbe63973c86b65947845"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593203572.jpeg",
+      "bytes": 38114,
+      "sha256": "8def6d5b24157de0576909bcdc3aeb2ed5509d29b84181295e2858a511d63329"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593203606.jpeg",
+      "bytes": 40169,
+      "sha256": "369744935d9d7e0b14de940d0ea3511761011500330c96437fab91c301167336"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593203612.jpeg",
+      "bytes": 39472,
+      "sha256": "ef9e76eaf500b6d0a6b90623f36f5e30fec81940f302f99fa5afcf0e82b73cee"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593203622.jpeg",
+      "bytes": 40672,
+      "sha256": "e09b37ac3456723e4f15b19beb50e8b8181d003503ca705b36bb62a2956daffa"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593203639.jpeg",
+      "bytes": 41107,
+      "sha256": "4104f0e27b079fe591cb4b6c59f026ba83b9c2f7fa80798a0ac7e592673e6994"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593203655.jpeg",
+      "bytes": 41406,
+      "sha256": "59bc18c199cc11a37787f5704ad60eea0fc27ac0f81dd041687fa35a31016b79"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593203687.jpeg",
+      "bytes": 41482,
+      "sha256": "704dba2081214430d80fa3032aefee2dccd3e16cea7b00177cc011c85f329846"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593203702.jpeg",
+      "bytes": 42306,
+      "sha256": "14bd78520da22271a687561804c7c3dc9c129ba77842e103637425b61fbc24db"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593204488.jpeg",
+      "bytes": 2461,
+      "sha256": "05cab5da1418127c0cf972685c031b6e1feb9cd0c6279631fc8b3a8020c904ad"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593204489.jpeg",
+      "bytes": 12403,
+      "sha256": "4a095299f56f8f65b3687dbbb8eff79c3588617c6996984add6f3cb46ff96458"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593204518.jpeg",
+      "bytes": 21839,
+      "sha256": "3e64b6b8e101c129c096e9125817c5790d02f957d0ed936e8958ceb6d563b47d"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593204534.jpeg",
+      "bytes": 28817,
+      "sha256": "e4e78476160058d9c01ead3c849fab60cd73f79e7d36464f281d157b575817ef"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593204549.jpeg",
+      "bytes": 33432,
+      "sha256": "196a05d52180a0233aa15aab98244de2905fd76b4eabd25e87d7b940bf93a00c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593204563.jpeg",
+      "bytes": 36201,
+      "sha256": "e74dc32e6d0ee53514736211a801d836b8469c67f55c7351bb4de22ab4710ea6"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593204592.jpeg",
+      "bytes": 37800,
+      "sha256": "296533ee1d74a65b8e812c1a3a765ee95b9a44b04d7ad6e39531bf9041aed4ff"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593204639.jpeg",
+      "bytes": 39829,
+      "sha256": "b0d73bb4d8d82d067ab69ae3530ae4f8692400c0557d65a230ba753295ddf8cf"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593204641.jpeg",
+      "bytes": 39109,
+      "sha256": "41a92296eaf336e4ae63232476b6dbc4667735ed9e7590591bafe271fe6cc47a"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593204691.jpeg",
+      "bytes": 40677,
+      "sha256": "687a29895498747469b9940b3febd1705f769e75d7b8b239ee40a868525787cd"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593204699.jpeg",
+      "bytes": 40973,
+      "sha256": "86da1e04adaa7d0ac4f0309199262646d83ee0de62ee4d01cddcd11fca0af132"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593204719.jpeg",
+      "bytes": 41898,
+      "sha256": "ba2635dc4f073af237715c309e562e994e9fe0b4b7b19f17c9ada5ef77ce4dd1"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593205606.jpeg",
+      "bytes": 42849,
+      "sha256": "620cc73f3db7cd7f326e684d45051a7352e25b47024a3ccc6c8a1c2bf9a747b1"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593205608.jpeg",
+      "bytes": 42849,
+      "sha256": "620cc73f3db7cd7f326e684d45051a7352e25b47024a3ccc6c8a1c2bf9a747b1"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593205613.jpeg",
+      "bytes": 42836,
+      "sha256": "72ee01151bfeac43fe447d60374e4c48bb58097f754a0f3b3c0d94cd1c1a65bc"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593205626.jpeg",
+      "bytes": 42841,
+      "sha256": "5382ba17d62ea8f53877a4ee3076e40c663af8b2ac34763f585a48cb4d3f02a5"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593205647.jpeg",
+      "bytes": 42843,
+      "sha256": "f1ef6379ec522ddc8112e06a466f64144fd1ae6387d653894adaec537ea60075"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593205659.jpeg",
+      "bytes": 42814,
+      "sha256": "38bf6b14c9689cdab40a5e2ceb3c2ec20e88e98189e7bd992f9bdaa9c091e1d4"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593205679.jpeg",
+      "bytes": 42836,
+      "sha256": "949ccc044cfb102f44e2cf019d429a5c954eeade07dadde9cc5638b34442296c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593205720.jpeg",
+      "bytes": 42834,
+      "sha256": "77e5f052e5efd3a38321d0e7c0a3eaf9c306275669534c27ad03943228eb5f4a"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593205735.jpeg",
+      "bytes": 42819,
+      "sha256": "fb888f4e1cff61a50e7c347e4849e16adc41dcd141cd392d9f5168a9be70d0ed"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593205737.jpeg",
+      "bytes": 42826,
+      "sha256": "5d8fd6c3331fae218ff2cc43cc1998c174fb808364e94a627b0b40e65437be2f"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593205751.jpeg",
+      "bytes": 42826,
+      "sha256": "5d8fd6c3331fae218ff2cc43cc1998c174fb808364e94a627b0b40e65437be2f"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593206082.jpeg",
+      "bytes": 48887,
+      "sha256": "f739f2918e0cd8c837007177f2efa8534f373d87054ae52df67375a7bc684aae"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593206219.jpeg",
+      "bytes": 48905,
+      "sha256": "69ae9b62e730567081871a428a955e3a9f3b934b851914e73a00f446a4ed75be"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593206306.jpeg",
+      "bytes": 48905,
+      "sha256": "69ae9b62e730567081871a428a955e3a9f3b934b851914e73a00f446a4ed75be"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593209747.jpeg",
+      "bytes": 49176,
+      "sha256": "0235739126b03d60267bda4ca433bf0504cd6a5e3ae284a3a67a486b82f791ed"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593210123.jpeg",
+      "bytes": 30120,
+      "sha256": "d31140d85ec2ee265ceec834a013f87de8c182c8569c329bfc07b371050df3ac"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593210170.jpeg",
+      "bytes": 42838,
+      "sha256": "afeb23122381d44997ef07ac01b50f7ead10f6cf5e05de58ba147b7cfed3f0a6"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593210591.jpeg",
+      "bytes": 45156,
+      "sha256": "30be6ffccf71622af38036321e436fd95c21dedc481c92aa3e8995f101f314fa"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593210598.jpeg",
+      "bytes": 45156,
+      "sha256": "30be6ffccf71622af38036321e436fd95c21dedc481c92aa3e8995f101f314fa"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593210660.jpeg",
+      "bytes": 43514,
+      "sha256": "835cce0fe0956d61f33647fa8106e8843e72b9b7923485d420bd91fe6fb04750"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593210759.jpeg",
+      "bytes": 43557,
+      "sha256": "f5c244b7eb6f8174ec60c98077a4f87cfab4d09ceab4a23486667727f1ab1b9d"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593210844.jpeg",
+      "bytes": 43580,
+      "sha256": "81a95edb6ddbe104a706b8e7dd107922d76995ba275aab6a9d1db6b3a51696ca"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593211093.jpeg",
+      "bytes": 44304,
+      "sha256": "8217ea8e1011951d1634c8d45b85ea071344cab8215ee48ef45e90e46ce5f3aa"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593211257.jpeg",
+      "bytes": 44639,
+      "sha256": "057773a0c4d7a078777ce5094e12a7ec568d24818f47a15e7ecedaf6ec2649da"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593211358.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593211364.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593211426.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593211460.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593211630.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593212226.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593212227.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593212246.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593213640.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593213798.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593213799.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593213884.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593213885.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593213886.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593213926.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593214020.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593214074.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593214075.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593214076.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593214103.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593214288.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593214389.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593214457.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593214499.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593214533.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593214567.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593214802.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593214878.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593214925.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593214964.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593215053.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593215100.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593215252.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593215327.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593215334.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593215393.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593215495.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593215559.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593215637.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593215638.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593215685.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593215735.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593215736.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593215767.jpeg",
+      "bytes": 46005,
+      "sha256": "93d3219a132bdb69d0ec99f7762028781ed35a57adf2c71f786879edd7ca612c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593216256.jpeg",
+      "bytes": 45993,
+      "sha256": "153c2e64b25802e9a68c03aa92f301f84a13b0e43b8bc81b0f796db069963210"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593217455.jpeg",
+      "bytes": 46005,
+      "sha256": "34ec67b3660d488e888ebe2757cd1d834eb49f039b2b0283c9a5903732e8b674"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593217601.jpeg",
+      "bytes": 45851,
+      "sha256": "760102a4c85c64eed2513f55de948cca94d5de9afb4fb44d9f39008a710b68a3"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593217825.jpeg",
+      "bytes": 45851,
+      "sha256": "760102a4c85c64eed2513f55de948cca94d5de9afb4fb44d9f39008a710b68a3"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593219123.jpeg",
+      "bytes": 45851,
+      "sha256": "760102a4c85c64eed2513f55de948cca94d5de9afb4fb44d9f39008a710b68a3"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593219268.jpeg",
+      "bytes": 25058,
+      "sha256": "9b46783f06701ec4802059e67aa3407fdaaee525a8e0779e3465a60b52484955"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593219316.jpeg",
+      "bytes": 45867,
+      "sha256": "d75d772501e1f48c4cf566f02a00bf881a0747f592b5e43914984be25789dc6d"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593219317.jpeg",
+      "bytes": 45851,
+      "sha256": "760102a4c85c64eed2513f55de948cca94d5de9afb4fb44d9f39008a710b68a3"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593220987.jpeg",
+      "bytes": 45851,
+      "sha256": "760102a4c85c64eed2513f55de948cca94d5de9afb4fb44d9f39008a710b68a3"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593221146.jpeg",
+      "bytes": 45932,
+      "sha256": "3f9cb40d4bb9b4bbfd2c1cfe9058dd2d3cce61259d7a45868fe62bd569541918"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593221523.jpeg",
+      "bytes": 45932,
+      "sha256": "3f9cb40d4bb9b4bbfd2c1cfe9058dd2d3cce61259d7a45868fe62bd569541918"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593222792.jpeg",
+      "bytes": 45932,
+      "sha256": "3f9cb40d4bb9b4bbfd2c1cfe9058dd2d3cce61259d7a45868fe62bd569541918"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593222955.jpeg",
+      "bytes": 25895,
+      "sha256": "4a8e304667df9a2c25894feb2f6139f48faec1e95db8d6f6e2b699a30f22ba7e"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593222997.jpeg",
+      "bytes": 45939,
+      "sha256": "4856ca267c49b65cb4464ea54f6e22984fce98f743bbefc431ba0edd2330afef"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593224891.jpeg",
+      "bytes": 43682,
+      "sha256": "2fc13145b0b2b21f4b8a75875e7b40632743e100e551da8adb46ddb9c8d45aa3"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593224958.jpeg",
+      "bytes": 44393,
+      "sha256": "40caca53a81b0811dd27c758515b56b489f4a5f97108416ab7d8da429d3b2a4d"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593224960.jpeg",
+      "bytes": 44458,
+      "sha256": "1a4ab377a7e391b6bf7e189cd84202a044b142b5b0bf5c5d222c59be21b5c968"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593224961.jpeg",
+      "bytes": 44393,
+      "sha256": "3744c26f86686537ada03b047ee3351d9f0d1a2bd6dfacf901c346a51278c2de"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593224969.jpeg",
+      "bytes": 44315,
+      "sha256": "1c69fb79dba9a29c156c07d941d36a6bf97a9f07403c87f09f811c5f5804d4cf"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593224984.jpeg",
+      "bytes": 44189,
+      "sha256": "776fc986105968e7f8719b7310547452d8b972ba0a22af2e5bfbabdcdc880376"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593225002.jpeg",
+      "bytes": 44102,
+      "sha256": "f798e1aba2a8213bf1052daa722b733fc911de18e3619b65d1eaf48f4e0cb407"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593225102.jpeg",
+      "bytes": 43997,
+      "sha256": "639b779b825b6fd164986713366ec6ad101c01c38e1fc5738fbb5404b5f54196"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593225118.jpeg",
+      "bytes": 43899,
+      "sha256": "c44fc753317ebc82fb3382f2a4f804c65189eda4099ba5c17d9634a5236325e9"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593225136.jpeg",
+      "bytes": 43899,
+      "sha256": "c44fc753317ebc82fb3382f2a4f804c65189eda4099ba5c17d9634a5236325e9"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593225222.jpeg",
+      "bytes": 43899,
+      "sha256": "c44fc753317ebc82fb3382f2a4f804c65189eda4099ba5c17d9634a5236325e9"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593225586.jpeg",
+      "bytes": 44130,
+      "sha256": "77c8a09d04dddae1295f57e315836c5f06f77e090c7dc3c982cea9b2b6fae848"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593225844.jpeg",
+      "bytes": 45922,
+      "sha256": "25fab04e08faf6ab875a267efc4b7071dd0d08afe7703772b22a185db8b4d904"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593226110.jpeg",
+      "bytes": 45922,
+      "sha256": "25fab04e08faf6ab875a267efc4b7071dd0d08afe7703772b22a185db8b4d904"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593228386.jpeg",
+      "bytes": 45922,
+      "sha256": "25fab04e08faf6ab875a267efc4b7071dd0d08afe7703772b22a185db8b4d904"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593228583.jpeg",
+      "bytes": 25996,
+      "sha256": "76be28d000ac35c5f64311fc61eb43615b6fd26a6bd89ef704fee1da89e1d58a"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593228760.jpeg",
+      "bytes": 45945,
+      "sha256": "13a2088f9df347149c4d7df0a5d6cf2363d1b49541a70467333e65a04ee2f713"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593228761.jpeg",
+      "bytes": 45922,
+      "sha256": "25fab04e08faf6ab875a267efc4b7071dd0d08afe7703772b22a185db8b4d904"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593230614.jpeg",
+      "bytes": 45922,
+      "sha256": "25fab04e08faf6ab875a267efc4b7071dd0d08afe7703772b22a185db8b4d904"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593230748.jpeg",
+      "bytes": 45770,
+      "sha256": "6bb4b5bdbadb0dec4ea8e030af684f2f6fedd02b1af2d75ff68852909d49aab6"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593231359.jpeg",
+      "bytes": 45770,
+      "sha256": "6bb4b5bdbadb0dec4ea8e030af684f2f6fedd02b1af2d75ff68852909d49aab6"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593232338.jpeg",
+      "bytes": 45770,
+      "sha256": "6bb4b5bdbadb0dec4ea8e030af684f2f6fedd02b1af2d75ff68852909d49aab6"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593232471.jpeg",
+      "bytes": 25070,
+      "sha256": "25026b15ab841a08a68cdbff61f3de2b996f02b3502c0705eaca1d8e29aecc05"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593232539.jpeg",
+      "bytes": 45758,
+      "sha256": "58c8d7b71ee523102e50ea0cc932d5887601667df39c0bdc82c6c159802cde12"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593232540.jpeg",
+      "bytes": 45770,
+      "sha256": "6bb4b5bdbadb0dec4ea8e030af684f2f6fedd02b1af2d75ff68852909d49aab6"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593233445.jpeg",
+      "bytes": 45770,
+      "sha256": "6bb4b5bdbadb0dec4ea8e030af684f2f6fedd02b1af2d75ff68852909d49aab6"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593234618.jpeg",
+      "bytes": 45866,
+      "sha256": "5c9e598c0b98be290de3bb8ae190f1b3688e6bd886eee21921cda95bd92585e0"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593235167.jpeg",
+      "bytes": 45866,
+      "sha256": "5c9e598c0b98be290de3bb8ae190f1b3688e6bd886eee21921cda95bd92585e0"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593242119.jpeg",
+      "bytes": 45866,
+      "sha256": "5c9e598c0b98be290de3bb8ae190f1b3688e6bd886eee21921cda95bd92585e0"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593242456.jpeg",
+      "bytes": 25920,
+      "sha256": "9e10aef6dee05fbc7ec699bfd30fa8a233a2ab46bea482df3e5e7b56052bddf2"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593244662.jpeg",
+      "bytes": 45366,
+      "sha256": "8c429b5a941c3485b7107ebf069d47989699b7473a53ca7e3c82b4e7046b6682"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593244734.jpeg",
+      "bytes": 51541,
+      "sha256": "2425c444a02047922f30ac6b113fe4329504dd73eaea6fd09cb3cc6d05993075"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593244752.jpeg",
+      "bytes": 51510,
+      "sha256": "37b57c3cbacbe313bb6014dd92d9d79c73d823f369119524f490867a1a2c6c0c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593244770.jpeg",
+      "bytes": 51413,
+      "sha256": "5a7e47d03eb9b255adef75460abc9a4226d5252c65266dfddd38be351081a470"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593244787.jpeg",
+      "bytes": 51401,
+      "sha256": "6c95029d73d222e0a0d991d185a72e1b653dd3e4db91acdf7fb0b881d55c13b0"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593244802.jpeg",
+      "bytes": 51396,
+      "sha256": "b84652568b037e95e591e9b9551ffa00f105daebbc693f25ce584c0b98c26045"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593244820.jpeg",
+      "bytes": 51296,
+      "sha256": "fea09215827620d4994d0c7d78b72d0084d249659312226a693db44a21f17b47"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593244841.jpeg",
+      "bytes": 51182,
+      "sha256": "7d4b940498c0f7e191ddcb14ab79577ba2d3922e441a6b0629573f894d41c206"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593244869.jpeg",
+      "bytes": 51130,
+      "sha256": "677d322c96080b50ca34c35a3138c5a3ee61dfa2eb62da103e50f3eadae787e1"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593244886.jpeg",
+      "bytes": 51122,
+      "sha256": "8cd79cda61c2c4ff06e3544fc482cc9c56071e73f87038bd392a08b9f44da4b5"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593244901.jpeg",
+      "bytes": 51061,
+      "sha256": "f3b021bf5622f6cebaf094f73d3bcbeea3e00a208c288aabb4124b69f90a7e0d"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593244925.jpeg",
+      "bytes": 50975,
+      "sha256": "1db547b2be9980a9af311652dff652f9362643703dc3bf9d6bb8646bff384630"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593244962.jpeg",
+      "bytes": 50975,
+      "sha256": "80abdd84b857b73db11d5a055bbcc78871c23f9a34fe302fa0aaae45441f5bec"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593244989.jpeg",
+      "bytes": 50975,
+      "sha256": "80abdd84b857b73db11d5a055bbcc78871c23f9a34fe302fa0aaae45441f5bec"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593244991.jpeg",
+      "bytes": 50975,
+      "sha256": "80abdd84b857b73db11d5a055bbcc78871c23f9a34fe302fa0aaae45441f5bec"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593245067.jpeg",
+      "bytes": 50975,
+      "sha256": "80abdd84b857b73db11d5a055bbcc78871c23f9a34fe302fa0aaae45441f5bec"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593245101.jpeg",
+      "bytes": 50980,
+      "sha256": "a8aea62ba791f98d14b81b6d1d6bc6ffb403506c92b17f501d6724da77abe73a"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593245306.jpeg",
+      "bytes": 50980,
+      "sha256": "a8aea62ba791f98d14b81b6d1d6bc6ffb403506c92b17f501d6724da77abe73a"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593247047.jpeg",
+      "bytes": 50980,
+      "sha256": "a8aea62ba791f98d14b81b6d1d6bc6ffb403506c92b17f501d6724da77abe73a"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593247158.jpeg",
+      "bytes": 27597,
+      "sha256": "082fe24a9ebf1c1fd5fb89ccbbed087b94b2e3858ca48c69912c189f65feac9a"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593247176.jpeg",
+      "bytes": 50980,
+      "sha256": "a8aea62ba791f98d14b81b6d1d6bc6ffb403506c92b17f501d6724da77abe73a"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593247195.jpeg",
+      "bytes": 50980,
+      "sha256": "a8aea62ba791f98d14b81b6d1d6bc6ffb403506c92b17f501d6724da77abe73a"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593250235.jpeg",
+      "bytes": 50980,
+      "sha256": "a8aea62ba791f98d14b81b6d1d6bc6ffb403506c92b17f501d6724da77abe73a"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593250353.jpeg",
+      "bytes": 50785,
+      "sha256": "7a5e3ed2dfbceccad2e6217cff2af6f1bf14dc7e278ab860813a8bb2576753a5"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593250581.jpeg",
+      "bytes": 50785,
+      "sha256": "7a5e3ed2dfbceccad2e6217cff2af6f1bf14dc7e278ab860813a8bb2576753a5"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593252715.jpeg",
+      "bytes": 50785,
+      "sha256": "7a5e3ed2dfbceccad2e6217cff2af6f1bf14dc7e278ab860813a8bb2576753a5"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593253015.jpeg",
+      "bytes": 26698,
+      "sha256": "cb6365dd06f5ce7256a193a1762b1e011a9a671044a2bc316c817259ab91855a"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593253064.jpeg",
+      "bytes": 50785,
+      "sha256": "7a5e3ed2dfbceccad2e6217cff2af6f1bf14dc7e278ab860813a8bb2576753a5"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593254984.jpeg",
+      "bytes": 50785,
+      "sha256": "7a5e3ed2dfbceccad2e6217cff2af6f1bf14dc7e278ab860813a8bb2576753a5"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593255098.jpeg",
+      "bytes": 50975,
+      "sha256": "80abdd84b857b73db11d5a055bbcc78871c23f9a34fe302fa0aaae45441f5bec"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593255403.jpeg",
+      "bytes": 50975,
+      "sha256": "80abdd84b857b73db11d5a055bbcc78871c23f9a34fe302fa0aaae45441f5bec"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593256930.jpeg",
+      "bytes": 50975,
+      "sha256": "80abdd84b857b73db11d5a055bbcc78871c23f9a34fe302fa0aaae45441f5bec"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593257129.jpeg",
+      "bytes": 27580,
+      "sha256": "5e9fdfaaf4dbfb5fa68163f68b477cc303b4c876fb04ff5abf2f2f136490e49f"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593257180.jpeg",
+      "bytes": 50975,
+      "sha256": "80abdd84b857b73db11d5a055bbcc78871c23f9a34fe302fa0aaae45441f5bec"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593258679.jpeg",
+      "bytes": 16906,
+      "sha256": "12062ab19c22352ec1a18528aa1524ec95cadd42f9cda8543bd218725241c512"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593258711.jpeg",
+      "bytes": 25902,
+      "sha256": "7ae09f7b845abcb78783bba739eb7db7c9c3f7ca1ef218e917359a82557681d2"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593258715.jpeg",
+      "bytes": 25919,
+      "sha256": "56667b5fb3a40c8b6df9593dfd5e2cb92e2c502a52747a5a37fd796e8d2e40bb"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593258759.jpeg",
+      "bytes": 25902,
+      "sha256": "3acaa72b1e0017c40c33fb32affca0acddc886891583a8b5e8ff6c264c084f26"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593258819.jpeg",
+      "bytes": 14348,
+      "sha256": "53dff7120ad14e9df6e7a1602476c440025e5815a2aedf28f4b2bca6699b1c0a"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593258820.jpeg",
+      "bytes": 22263,
+      "sha256": "8bdb4d9aa19b2a1d02f15a46b6644a132a9538ff0df32c76ea5505d1459072b5"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593258866.jpeg",
+      "bytes": 22277,
+      "sha256": "f9d2c8d67f546deaee50c19227fe63f4aa22c8e37405d55126ee9db817c797e3"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593258879.jpeg",
+      "bytes": 22281,
+      "sha256": "765894bf6afd3df0d3525895094abb65fbf5d9f3d2bedcab8a39553718ae5144"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593258903.jpeg",
+      "bytes": 22326,
+      "sha256": "3a8bc757e37635226109473c995796b8227a0c112c7758baa904eaacd2a76012"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593258914.jpeg",
+      "bytes": 22324,
+      "sha256": "a848e9460e25bb91f4ba8aa66b6ec7483e3ad81383217892b53957b5040b0cb3"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593258943.jpeg",
+      "bytes": 22347,
+      "sha256": "382cdff18c6141962f3b3d231cfd193f0a040336569033d6578f708ab7a3bfba"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593258955.jpeg",
+      "bytes": 22347,
+      "sha256": "382cdff18c6141962f3b3d231cfd193f0a040336569033d6578f708ab7a3bfba"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593258998.jpeg",
+      "bytes": 22338,
+      "sha256": "73a201712ba75b15dbb6419c5436e8f4f849b2f12530bd1551722d0f7827da7e"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593259011.jpeg",
+      "bytes": 22346,
+      "sha256": "e6db7e38a1eb17087f7651bec062d70d40009c99b662d29fa4e69be988c1d2a8"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593259043.jpeg",
+      "bytes": 22346,
+      "sha256": "e6db7e38a1eb17087f7651bec062d70d40009c99b662d29fa4e69be988c1d2a8"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593259061.jpeg",
+      "bytes": 22346,
+      "sha256": "e6db7e38a1eb17087f7651bec062d70d40009c99b662d29fa4e69be988c1d2a8"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593259158.jpeg",
+      "bytes": 22622,
+      "sha256": "1b657f79df4e7a568a59fc1635a3250e7c7c9a3c9b5e49899e02c4884931b808"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593259266.jpeg",
+      "bytes": 23081,
+      "sha256": "8ebfa9b7f8a3d80df17db258bc7134a5cb4e98e6e1c2049588e05a6e5fa2f466"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593259284.jpeg",
+      "bytes": 22528,
+      "sha256": "2639edd7412473bc39ba226edcd3f3ef7a280a5ae7d49578458112dea0677279"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593259393.jpeg",
+      "bytes": 22528,
+      "sha256": "2639edd7412473bc39ba226edcd3f3ef7a280a5ae7d49578458112dea0677279"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593260798.jpeg",
+      "bytes": 10136,
+      "sha256": "ceb666e045acfe08f24185975a3a3f4aa3fe94d789ece5a2e22a84006ddf1586"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593260834.jpeg",
+      "bytes": 22528,
+      "sha256": "2639edd7412473bc39ba226edcd3f3ef7a280a5ae7d49578458112dea0677279"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593262460.jpeg",
+      "bytes": 22528,
+      "sha256": "2639edd7412473bc39ba226edcd3f3ef7a280a5ae7d49578458112dea0677279"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593262605.jpeg",
+      "bytes": 21810,
+      "sha256": "feeaef86169712c366d626b34f579246fe2323e8a52341f280a97f7a0782e411"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593262907.jpeg",
+      "bytes": 21810,
+      "sha256": "feeaef86169712c366d626b34f579246fe2323e8a52341f280a97f7a0782e411"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593264744.jpeg",
+      "bytes": 27315,
+      "sha256": "536820a10b4c291ea85a2fc30b8f16d54f42409bcbca6c03577b9a5263d2f2bf"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593267987.jpeg",
+      "bytes": 21810,
+      "sha256": "feeaef86169712c366d626b34f579246fe2323e8a52341f280a97f7a0782e411"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593269962.jpeg",
+      "bytes": 22331,
+      "sha256": "e5238204d81f6fff224b3b496e3a6dfdb44cd11d77c6c059502a7bd281dc547b"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593272366.jpeg",
+      "bytes": 22331,
+      "sha256": "e5238204d81f6fff224b3b496e3a6dfdb44cd11d77c6c059502a7bd281dc547b"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593279924.jpeg",
+      "bytes": 29491,
+      "sha256": "906c49b07fa5b86f4479937b8510b29cb96d0ede884d05e5cbf4381a9794343b"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593282007.jpeg",
+      "bytes": 14551,
+      "sha256": "d560b5b4b8e666f4e4df5cff1816925f56384c4e5391645b5ccbe27a214b5e2b"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593282149.jpeg",
+      "bytes": 23145,
+      "sha256": "627c9d88996527eb314418ed27dab7390a0b5c6ec1cc9d0c10de17361f29c93a"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593282155.jpeg",
+      "bytes": 23148,
+      "sha256": "997ee1aa056a41c298d7da1d60de4bad645d2a417996f46ef88af516664c993c"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593282210.jpeg",
+      "bytes": 23119,
+      "sha256": "576a28fa163b3ab377404e6273792ea062b71f7b662e1f40d03ab2e5d56452ff"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593282223.jpeg",
+      "bytes": 23103,
+      "sha256": "101e6e6e2ab528523ebbe56ba906aed06fd71f0e411f026a85883a5dd4bb5fca"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593282233.jpeg",
+      "bytes": 23102,
+      "sha256": "54ad2874022e0a549905ab1403229d291bb03a41a106923a3ed0a94409c235c4"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593282260.jpeg",
+      "bytes": 23085,
+      "sha256": "8b10f8dede75778dcf94a04337a929595b1c7bc2553a44e62c498e31e5a96215"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593282278.jpeg",
+      "bytes": 23118,
+      "sha256": "75275a6300a16751f64c72f62239479c1e826d077484ee9efdd152e63860a25b"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593282295.jpeg",
+      "bytes": 23132,
+      "sha256": "8b5f20607250befd09b6d5b9a9103ed762367e6590e8bedc6c65522fe9edecf6"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593282309.jpeg",
+      "bytes": 23118,
+      "sha256": "37a66b5fd3061a18edbd1b693007b358c7e1f36e3348f9adab7676ee4a3a5aa0"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593282354.jpeg",
+      "bytes": 23121,
+      "sha256": "ef8d14958a7c74d09c150505f839f2db07248ff63eb128b38a4ff6f15aca3824"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593282371.jpeg",
+      "bytes": 23121,
+      "sha256": "ef8d14958a7c74d09c150505f839f2db07248ff63eb128b38a4ff6f15aca3824"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593282411.jpeg",
+      "bytes": 23121,
+      "sha256": "ef8d14958a7c74d09c150505f839f2db07248ff63eb128b38a4ff6f15aca3824"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593282567.jpeg",
+      "bytes": 23397,
+      "sha256": "d788281b2f5592d5c902cdf3d331e6ca31ed749bfe0b8d8fc3ecd790a402eb0e"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593282961.jpeg",
+      "bytes": 23722,
+      "sha256": "6791fd8907ecf81cb580b1c50a3179294b77f74b0321dbb0e62fea235baed4b9"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593283139.jpeg",
+      "bytes": 23722,
+      "sha256": "6791fd8907ecf81cb580b1c50a3179294b77f74b0321dbb0e62fea235baed4b9"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593284661.jpeg",
+      "bytes": 23722,
+      "sha256": "6791fd8907ecf81cb580b1c50a3179294b77f74b0321dbb0e62fea235baed4b9"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593284812.jpeg",
+      "bytes": 11356,
+      "sha256": "ebbf454ebc91f63b4f011209edd5706735ff0b9de4945f7dc6dcded5d45da4db"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593284813.jpeg",
+      "bytes": 23722,
+      "sha256": "6791fd8907ecf81cb580b1c50a3179294b77f74b0321dbb0e62fea235baed4b9"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593286556.jpeg",
+      "bytes": 23722,
+      "sha256": "6791fd8907ecf81cb580b1c50a3179294b77f74b0321dbb0e62fea235baed4b9"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593286761.jpeg",
+      "bytes": 23294,
+      "sha256": "f3bc68df6ebbd1cf5c4a19bada54ccdc69e35a8888f36c47c580f677fb1c4846"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593287265.jpeg",
+      "bytes": 23294,
+      "sha256": "f3bc68df6ebbd1cf5c4a19bada54ccdc69e35a8888f36c47c580f677fb1c4846"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593290636.jpeg",
+      "bytes": 10937,
+      "sha256": "f78148b610990c88858f6cab90d801606e8607e68fcf6822b6b82ede5ee6dd49"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593322799.jpeg",
+      "bytes": 23294,
+      "sha256": "f3bc68df6ebbd1cf5c4a19bada54ccdc69e35a8888f36c47c580f677fb1c4846"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593323763.jpeg",
+      "bytes": 23493,
+      "sha256": "a0af68d3bdbe638802c6cfea3c21d348caa04aa02ab70651e12c1a1b0393ede7"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593326286.jpeg",
+      "bytes": 23493,
+      "sha256": "a0af68d3bdbe638802c6cfea3c21d348caa04aa02ab70651e12c1a1b0393ede7"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593330628.jpeg",
+      "bytes": 23150,
+      "sha256": "61c73d9587bfcaf26127562051626f57d2d5a93b0d45f749b64c6166eacc5fa8"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593330629.jpeg",
+      "bytes": 23493,
+      "sha256": "a0af68d3bdbe638802c6cfea3c21d348caa04aa02ab70651e12c1a1b0393ede7"
+    },
+    {
+      "path": "callout-artifacts/.playwright-artifacts-0/traces/resources/page@aac26f6075775ad6f95f7ee831f8f175-1791593330950.jpeg",
+      "bytes": 1018,
+      "sha256": "a8c4a99eee80942507318e0da5b6b792e34b383182c1d00df1d51594f0bcd17f"
+    },
+    {
+      "path": "callout-artifacts/physics-canvas-callouts-or-43514-d-clearance-in-nine-layouts-chromium/error-context.md",
+      "bytes": 681,
+      "sha256": "e02092c25710495d8bc83988102762915fb15b81b1e853d70857af40cfd04c22"
+    },
+    {
+      "path": "callout-artifacts/physics-canvas-callouts-or-43514-d-clearance-in-nine-layouts-chromium/test-failed-1.png",
+      "bytes": 190636,
+      "sha256": "b9ed332c1aa1d1441dbd5f0287f4ac893e6345512a3cd1b57ed6c3966599c2d9"
+    },
+    {
+      "path": "callouts/callout-contrast-1100-apex.png",
+      "bytes": 102685,
+      "sha256": "dd68d37b8c2fd0e20f00367857b9a45e3b18b3e994f5b16dd85bdd55e5740247"
+    },
+    {
+      "path": "callouts/callout-contrast-1100-impact.png",
+      "bytes": 100901,
+      "sha256": "bab794c9aea19a807960b44e0464b1c367fef41b851aa8347b7f387b7ffc6e26"
+    },
+    {
+      "path": "callouts/callout-contrast-1100-launch.png",
+      "bytes": 100044,
+      "sha256": "725ba5f75ab379e3fa59f3378749e223b80f7e9b3838c73bd1e17698b4a22513"
+    },
+    {
+      "path": "callouts/callout-dark-1100-apex.png",
+      "bytes": 135751,
+      "sha256": "ffb8260d270f4327488a3bd3c029f025a2e967a8e17242d0d03335baa48bf0be"
+    },
+    {
+      "path": "callouts/callout-dark-1100-impact.png",
+      "bytes": 133139,
+      "sha256": "506397a5143b639bcdff2da9c7352b34da2b0de6934525e4fe67fcb7bd1f9efd"
+    },
+    {
+      "path": "callouts/callout-dark-1100-launch.png",
+      "bytes": 132161,
+      "sha256": "5ebd1ad4c2c3bded0abe2d492d9a7b9a5b775a53c2098ddbcff1122a8caa6966"
+    },
+    {
+      "path": "callouts/callout-dark-375-apex.png",
+      "bytes": 102203,
+      "sha256": "1bed623d762799357b40e52bc8f45b7a43accc782aa65046c8b8c2582ff87074"
+    },
+    {
+      "path": "callouts/callout-dark-375-launch.png",
+      "bytes": 106720,
+      "sha256": "471a4b0634d007cd3e7c9b756a17bf2e3bd3c92f66407ac5a3fc84a6fc5ced6f"
+    },
+    {
+      "path": "callouts/callout-default-1100-apex.png",
+      "bytes": 135744,
+      "sha256": "5ec84993605f884cd1ce4f9f737d1d2a44124f0ac6f5a46e0308681274e7c4c5"
+    },
+    {
+      "path": "callouts/callout-default-1100-impact.png",
+      "bytes": 133134,
+      "sha256": "038c46f06c426ab2d0706f82abed92015ee2c2a2f5404e3aad6a86a43893308a"
+    },
+    {
+      "path": "callouts/callout-default-1100-launch.png",
+      "bytes": 132156,
+      "sha256": "aac58776986f9823eb4a22fe8788f17e1e409bb8d16f9fdaa89de118f8caac2d"
+    },
+    {
+      "path": "callouts/callout-default-375-apex.png",
+      "bytes": 98008,
+      "sha256": "f091c98c659c3a2a10b95df67d1e353b02b7262d33e3c464ca70ef66e4e87954"
+    },
+    {
+      "path": "callouts/callout-default-375-impact.png",
+      "bytes": 107688,
+      "sha256": "547775b591464195da5d2e30fcac334a87678a67e5341152692131da146e1578"
+    },
+    {
+      "path": "callouts/callout-default-375-launch.png",
+      "bytes": 105101,
+      "sha256": "d7afb08713d7f4e2516d7e27eea1f903d40a9e3b5230703d93c5020a40016172"
+    },
+    {
+      "path": "callouts/visual-results.json",
+      "bytes": 70239714,
+      "sha256": "b24a603cfabe8dd31895404d003512397b6c3da2c286e2c70a42573a70df303b"
+    }
+  ]
+}

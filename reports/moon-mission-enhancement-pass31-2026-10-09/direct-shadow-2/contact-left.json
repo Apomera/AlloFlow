@@ -1,0 +1,140 @@
+{
+  "name": "contact-left",
+  "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass31-2026-10-09\\direct-shadow-2\\contact-left.png",
+  "sample": {
+    "t": 5,
+    "alt": 0,
+    "tilt": -0.35,
+    "fuel": 50,
+    "throttle": 0,
+    "v": 0,
+    "h": 0,
+    "x": 0
+  },
+  "measured": {
+    "imageId": 1,
+    "args": [
+      -32,
+      -28,
+      64,
+      64
+    ],
+    "matrix": [
+      3.7251181602478027,
+      0.11394757777452469,
+      -4.3723649978637695,
+      -0.31216078996658325,
+      509.4029846191406,
+      675.906005859375
+    ],
+    "alpha": 0.68,
+    "composite": "source-over",
+    "width": 310,
+    "height": 420,
+    "backingWidth": 620,
+    "backingHeight": 840,
+    "surface": 331.8,
+    "pivot": 294.7680166613426,
+    "clearance": 0,
+    "pixels": {
+      "changed": 801,
+      "aboveGround": 0,
+      "brighterChannels": 0,
+      "darkening": 169349,
+      "alphaChanges": 0,
+      "bounds": {
+        "minX": 146.75,
+        "minY": 332.25,
+        "maxX": 308.75,
+        "maxY": 341.75
+      }
+    },
+    "mask": {
+      "width": 256,
+      "height": 256,
+      "covered": 18541,
+      "opaque": 16780,
+      "partial": 1761,
+      "colored": 0,
+      "edgeCoverage": 0,
+      "checksum": 2535677112
+    }
+  },
+  "rays": {
+    "points": [
+      {
+        "name": "left-cabin-roof",
+        "u": -9,
+        "v": -16,
+        "worldHeight": 48.975866477116426,
+        "rotatedX": -13.94071933491363,
+        "expectedX": 272.9173827188614,
+        "expectedY": 339.9375285838901,
+        "actualX": 272.91738057136536,
+        "actualY": 339.9375251494348,
+        "error": 0.000004050582999894059
+      },
+      {
+        "name": "right-cabin-roof",
+        "u": 9,
+        "v": -16,
+        "worldHeight": 55.148027011314554,
+        "rotatedX": 2.9679894963391886,
+        "expectedX": 306.4434468344938,
+        "expectedY": 340.9630567957261,
+        "actualX": 306.4434440135956,
+        "actualY": 340.9630533494055,
+        "error": 0.000004453604415033359
+      },
+      {
+        "name": "stage-corner",
+        "u": 14,
+        "v": 13,
+        "worldHeight": 29.62070737601782,
+        "rotatedX": 17.60888947678417,
+        "expectedX": 252.35694779683215,
+        "expectedY": 336.721594456323,
+        "actualX": 252.35694694519043,
+        "actualY": 336.7215908393264,
+        "error": 0.00000371590607670061
+      },
+      {
+        "name": "mast",
+        "u": 2,
+        "v": -22,
+        "worldHeight": 58.383978636210664,
+        "rotatedX": -5.665006338325171,
+        "expectedX": 306.52262845147277,
+        "expectedY": 341.5007226041704,
+        "actualX": 306.5226254463196,
+        "actualY": 341.50071919709444,
+        "error": 0.00000454302897070535
+      },
+      {
+        "name": "lowest-pad",
+        "u": -24.857244518638627,
+        "v": 30.348431782118446,
+        "worldHeight": -1.4210854715202004e-14,
+        "rotatedX": -12.943806499584454,
+        "expectedX": 142.0561935004155,
+        "expectedY": 331.8,
+        "actualX": 142.05619539242434,
+        "actualY": 331.799996308487,
+        "error": 0.000004148127998881211
+      }
+    ],
+    "maximumError": 0.00000454302897070535
+  },
+  "stability": {
+    "bytes": 2083200,
+    "changedBytes": 0,
+    "callsBefore": 46,
+    "callsAfter": 48,
+    "imageBefore": 1,
+    "imageAfter": 1,
+    "imageIds": [
+      1
+    ]
+  },
+  "errors": []
+}

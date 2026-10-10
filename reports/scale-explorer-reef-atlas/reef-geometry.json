@@ -1,0 +1,123 @@
+{
+  "whole": {
+    "status": "ready",
+    "features": 4977,
+    "reefVertices": 119490,
+    "context": true,
+    "selection": "",
+    "selected": false,
+    "selectedGeometry": "0B15EE3E-9840-49C1-8C7D-733B73DA81C0",
+    "selectedBuffer": 1908,
+    "drawCount": 0,
+    "scale": 3,
+    "modelScale": [
+      1,
+      1,
+      1
+    ],
+    "extent": 1,
+    "reefBounds": [
+      0.5117295682430267,
+      0,
+      0.6953151822090149
+    ],
+    "cameraLocal": [
+      -0.5753944212909972,
+      1.160578946916932,
+      0.40283642221733523
+    ],
+    "geometries": 19
+  },
+  "ribbon": {
+    "status": "ready",
+    "features": 4977,
+    "reefVertices": 119490,
+    "context": true,
+    "selection": "reef-ribbon",
+    "selected": true,
+    "selectedGeometry": "0B15EE3E-9840-49C1-8C7D-733B73DA81C0",
+    "selectedBuffer": 1908,
+    "drawCount": 159,
+    "scale": 3,
+    "modelScale": [
+      1,
+      1,
+      1
+    ],
+    "extent": 1,
+    "reefBounds": [
+      0.5117295682430267,
+      0,
+      0.6953151822090149
+    ],
+    "cameraLocal": [
+      -0.08444296608602915,
+      0.10532450618907874,
+      -0.0767677344580103
+    ],
+    "geometries": 20
+  },
+  "hardy": {
+    "status": "ready",
+    "features": 4977,
+    "reefVertices": 119490,
+    "context": true,
+    "selection": "reef-hardy",
+    "selected": true,
+    "selectedGeometry": "0B15EE3E-9840-49C1-8C7D-733B73DA81C0",
+    "selectedBuffer": 1908,
+    "drawCount": 87,
+    "scale": 3,
+    "modelScale": [
+      1,
+      1,
+      1
+    ],
+    "extent": 1,
+    "reefBounds": [
+      0.5117295682430267,
+      0,
+      0.6953151822090149
+    ],
+    "cameraLocal": [
+      0.07877961955153741,
+      0.0772379712053244,
+      0.14916235528882868
+    ],
+    "geometries": 20
+  },
+  "compared": {
+    "status": "ready",
+    "features": 4977,
+    "reefVertices": 119490,
+    "context": false,
+    "selection": "reef-heron",
+    "selected": false,
+    "selectedGeometry": "0B15EE3E-9840-49C1-8C7D-733B73DA81C0",
+    "selectedBuffer": 1908,
+    "drawCount": 150,
+    "scale": 3,
+    "modelScale": [
+      1,
+      1,
+      1
+    ],
+    "extent": 1,
+    "reefBounds": [
+      0.5117295682430267,
+      0,
+      0.6953151822090149
+    ],
+    "comparisonBounds": [
+      2.5892504082867065,
+      0,
+      2.453945103514439
+    ],
+    "cameraLocal": [
+      -2.5719922506319324,
+      4.86184687711577,
+      1.576114905741694
+    ],
+    "geometries": 23
+  }
+}

@@ -16,9 +16,12 @@ const files = requested.length ? requested : [
   'tests/atctower_pathway.test.js', 'tests/atctower_radar_labels.test.js',
   'tests/atctower_decision_support.test.js', 'tests/atctower_review_continuity.test.js',
   'tests/atctower_operational_clarity.test.js', 'tests/atctower_practice_flow.test.js',
-  'tests/atctower_arrival_board.test.js'
+  'tests/atctower_arrival_board.test.js', 'tests/atctower_lesson_explorer.test.js',
+  'tests/atctower_ops_investigation.test.js', 'tests/atctower_flight_paths.test.js',
+  'tests/atctower_motion_exploration.test.js'
 ];
-const result = spawnSync(process.execPath, [path.join(root, 'node_modules/vitest/vitest.mjs'), 'run', ...files, '--pool=threads', '--maxWorkers=1', '--fileParallelism=false', '--no-isolate', '--testTimeout=30000'], {
+const pool = process.env.ATC_TEST_POOL === 'forks' ? 'forks' : 'threads';
+const result = spawnSync(process.execPath, [path.join(root, 'node_modules/vitest/vitest.mjs'), 'run', ...files, '--pool=' + pool, '--maxWorkers=1', '--fileParallelism=false', '--no-isolate', '--testTimeout=30000'], {
   cwd: root, stdio: 'inherit', env: { ...process.env, TEMP: temp, TMP: temp }
 });
 if (result.error) throw result.error;

@@ -1,0 +1,36 @@
+[
+  {
+    "name": "pre-microphone baseline",
+    "sourceSha256": "4d12855a1953b81a753c10d117873a5bc6cf21d85c830c6baf9d89e4e3aa2a33",
+    "unpatchedFixtureError": "wordSoundsLanguage is not defined",
+    "patchedResult": {
+      "preparedAudioTargets": [
+        "cat",
+        "dog",
+        "which word?"
+      ],
+      "preparedAudioCoverage": {
+        "ready": 2,
+        "total": 3,
+        "missing": 1
+      }
+    }
+  },
+  {
+    "name": "current runtime",
+    "sourceSha256": "00a2fa6cfb2cdd800ee9fffa9133fec99ab16256a9ae3dcf46a9589879758181",
+    "unpatchedFixtureError": "wordSoundsLanguage is not defined",
+    "patchedResult": {
+      "preparedAudioTargets": [
+        "cat",
+        "dog",
+        "which word?"
+      ],
+      "preparedAudioCoverage": {
+        "ready": 2,
+        "total": 3,
+        "missing": 1
+      }
+    }
+  }
+]

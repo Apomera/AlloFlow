@@ -1,0 +1,454 @@
+{
+  "passed": true,
+  "assertions": 43437,
+  "inputs": {
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-rescuer-wrists-work\\verify-wrists.cjs": "9ac55dce3811a94b881cc37815f7e72018d1207c9fb6640c14ef5a3739205652",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-rescuer-wrists-work\\candidate.js": "f6cfbcccc65323918d7ca7b209737dcd13cf57a31246da4110f2ab980907147f",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\vendor\\three-r128\\three.min.js": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-rescuer-wrists-work\\before.js": "f21eeaf8d3bd87810142d77f2cfe5e7ab9ee56e80a6548d927a4dcabec7af511"
+  },
+  "negative": [
+    {
+      "type": "exposed-boundary",
+      "rejected": true,
+      "error": "mutation boundary remains buried"
+    },
+    {
+      "type": "reversed-face",
+      "rejected": true,
+      "error": "all side faces point away from the ring centre"
+    }
+  ],
+  "results": [
+    {
+      "age": "adult",
+      "contrast": false,
+      "wrists": [
+        {
+          "side": "lower",
+          "vertices": 1202,
+          "triangles": 2400,
+          "normMin": 0.9999999615413355,
+          "normMax": 1.0000000454028501,
+          "radialDot": 0.1504566481528534,
+          "faceNormalDot": 0.2042463284169806,
+          "volume": 0.0004224283543550439,
+          "minimumRingDescent": 0.00038406261801719743,
+          "burial": [
+            {
+              "end": "root",
+              "samples": 145,
+              "outside": 0,
+              "minMargin": 0.0016570932333674904
+            },
+            {
+              "end": "bridge",
+              "samples": 145,
+              "outside": 0,
+              "minMargin": 0.019349118670041854
+            },
+            {
+              "end": "unchanged-forearm-cap",
+              "samples": 73,
+              "outside": 0,
+              "minMargin": 0.0032062105733223767
+            }
+          ],
+          "selfIntersections": {
+            "candidateTrianglePairs": 824,
+            "intersections": 0
+          }
+        },
+        {
+          "side": "upper",
+          "vertices": 1202,
+          "triangles": 2400,
+          "normMin": 0.9999999597303753,
+          "normMax": 1.0000000441112133,
+          "radialDot": 0.14075785004136165,
+          "faceNormalDot": 0.210263195027412,
+          "volume": 0.00043504562351196114,
+          "minimumRingDescent": 0.00032058000564575556,
+          "burial": [
+            {
+              "end": "root",
+              "samples": 145,
+              "outside": 0,
+              "minMargin": 0.0011455373351827447
+            },
+            {
+              "end": "bridge",
+              "samples": 145,
+              "outside": 0,
+              "minMargin": 0.01934911875143408
+            },
+            {
+              "end": "unchanged-forearm-cap",
+              "samples": 73,
+              "outside": 0,
+              "minMargin": 0.0025550906557862962
+            }
+          ],
+          "selfIntersections": {
+            "candidateTrianglePairs": 768,
+            "intersections": 0
+          }
+        }
+      ],
+      "oppositeHand": {
+        "applicable": true,
+        "tested": 224,
+        "inside": 0
+      },
+      "status": "passed",
+      "priorResources": 167,
+      "currentResources": 167
+    },
+    {
+      "age": "adult",
+      "contrast": true,
+      "wrists": [
+        {
+          "side": "lower",
+          "vertices": 1202,
+          "triangles": 2400,
+          "normMin": 0.9999999615413355,
+          "normMax": 1.0000000454028501,
+          "radialDot": 0.1504566481528534,
+          "faceNormalDot": 0.2042463284169806,
+          "volume": 0.0004224283543550439,
+          "minimumRingDescent": 0.00038406261801719743,
+          "burial": [
+            {
+              "end": "root",
+              "samples": 145,
+              "outside": 0,
+              "minMargin": 0.0016570932333674904
+            },
+            {
+              "end": "bridge",
+              "samples": 145,
+              "outside": 0,
+              "minMargin": 0.019349118670041854
+            },
+            {
+              "end": "unchanged-forearm-cap",
+              "samples": 73,
+              "outside": 0,
+              "minMargin": 0.0032062105733223767
+            }
+          ],
+          "selfIntersections": {
+            "candidateTrianglePairs": 824,
+            "intersections": 0
+          }
+        },
+        {
+          "side": "upper",
+          "vertices": 1202,
+          "triangles": 2400,
+          "normMin": 0.9999999597303753,
+          "normMax": 1.0000000441112133,
+          "radialDot": 0.14075785004136165,
+          "faceNormalDot": 0.210263195027412,
+          "volume": 0.00043504562351196114,
+          "minimumRingDescent": 0.00032058000564575556,
+          "burial": [
+            {
+              "end": "root",
+              "samples": 145,
+              "outside": 0,
+              "minMargin": 0.0011455373351827447
+            },
+            {
+              "end": "bridge",
+              "samples": 145,
+              "outside": 0,
+              "minMargin": 0.01934911875143408
+            },
+            {
+              "end": "unchanged-forearm-cap",
+              "samples": 73,
+              "outside": 0,
+              "minMargin": 0.0025550906557862962
+            }
+          ],
+          "selfIntersections": {
+            "candidateTrianglePairs": 768,
+            "intersections": 0
+          }
+        }
+      ],
+      "oppositeHand": {
+        "applicable": true,
+        "tested": 224,
+        "inside": 0
+      },
+      "status": "passed",
+      "priorResources": 168,
+      "currentResources": 168
+    },
+    {
+      "age": "child",
+      "contrast": false,
+      "wrists": [
+        {
+          "side": "lower",
+          "vertices": 1202,
+          "triangles": 2400,
+          "normMin": 0.9999999580883432,
+          "normMax": 1.0000000390852215,
+          "radialDot": 0.22777432752839147,
+          "faceNormalDot": 0.21153894329586903,
+          "volume": 0.0002962148565984724,
+          "minimumRingDescent": 0.0006619141864776593,
+          "burial": [
+            {
+              "end": "root",
+              "samples": 145,
+              "outside": 0,
+              "minMargin": 0.0014847187527686767
+            },
+            {
+              "end": "bridge",
+              "samples": 145,
+              "outside": 0,
+              "minMargin": 0.018062950946750256
+            },
+            {
+              "end": "unchanged-forearm-cap",
+              "samples": 73,
+              "outside": 0,
+              "minMargin": 0.002733019904452627
+            }
+          ],
+          "selfIntersections": {
+            "candidateTrianglePairs": 803,
+            "intersections": 0
+          }
+        },
+        {
+          "side": "upper",
+          "vertices": 1202,
+          "triangles": 2400,
+          "normMin": 0.9999999617272567,
+          "normMax": 1.0000000361796393,
+          "radialDot": 0.22156172809502,
+          "faceNormalDot": 0.21739910590772601,
+          "volume": 0.0003032819740306678,
+          "minimumRingDescent": 0.0006122321200370817,
+          "burial": [
+            {
+              "end": "root",
+              "samples": 145,
+              "outside": 0,
+              "minMargin": 0.0011623177171826704
+            },
+            {
+              "end": "bridge",
+              "samples": 145,
+              "outside": 0,
+              "minMargin": 0.018062951170326302
+            },
+            {
+              "end": "unchanged-forearm-cap",
+              "samples": 73,
+              "outside": 0,
+              "minMargin": 0.002234205110672516
+            }
+          ],
+          "selfIntersections": {
+            "candidateTrianglePairs": 802,
+            "intersections": 0
+          }
+        }
+      ],
+      "oppositeHand": {
+        "applicable": true,
+        "tested": 148,
+        "inside": 0
+      },
+      "status": "passed",
+      "priorResources": 166,
+      "currentResources": 166
+    },
+    {
+      "age": "child",
+      "contrast": true,
+      "wrists": [
+        {
+          "side": "lower",
+          "vertices": 1202,
+          "triangles": 2400,
+          "normMin": 0.9999999580883432,
+          "normMax": 1.0000000390852215,
+          "radialDot": 0.22777432752839147,
+          "faceNormalDot": 0.21153894329586903,
+          "volume": 0.0002962148565984724,
+          "minimumRingDescent": 0.0006619141864776593,
+          "burial": [
+            {
+              "end": "root",
+              "samples": 145,
+              "outside": 0,
+              "minMargin": 0.0014847187527686767
+            },
+            {
+              "end": "bridge",
+              "samples": 145,
+              "outside": 0,
+              "minMargin": 0.018062950946750256
+            },
+            {
+              "end": "unchanged-forearm-cap",
+              "samples": 73,
+              "outside": 0,
+              "minMargin": 0.002733019904452627
+            }
+          ],
+          "selfIntersections": {
+            "candidateTrianglePairs": 803,
+            "intersections": 0
+          }
+        },
+        {
+          "side": "upper",
+          "vertices": 1202,
+          "triangles": 2400,
+          "normMin": 0.9999999617272567,
+          "normMax": 1.0000000361796393,
+          "radialDot": 0.22156172809502,
+          "faceNormalDot": 0.21739910590772601,
+          "volume": 0.0003032819740306678,
+          "minimumRingDescent": 0.0006122321200370817,
+          "burial": [
+            {
+              "end": "root",
+              "samples": 145,
+              "outside": 0,
+              "minMargin": 0.0011623177171826704
+            },
+            {
+              "end": "bridge",
+              "samples": 145,
+              "outside": 0,
+              "minMargin": 0.018062951170326302
+            },
+            {
+              "end": "unchanged-forearm-cap",
+              "samples": 73,
+              "outside": 0,
+              "minMargin": 0.002234205110672516
+            }
+          ],
+          "selfIntersections": {
+            "candidateTrianglePairs": 802,
+            "intersections": 0
+          }
+        }
+      ],
+      "oppositeHand": {
+        "applicable": true,
+        "tested": 148,
+        "inside": 0
+      },
+      "status": "passed",
+      "priorResources": 167,
+      "currentResources": 167
+    },
+    {
+      "age": "infant",
+      "contrast": false,
+      "wrists": [
+        {
+          "side": "lower",
+          "vertices": 1202,
+          "triangles": 2400,
+          "normMin": 0.9999999617089396,
+          "normMax": 1.000000041303559,
+          "radialDot": 0.3168224069459241,
+          "faceNormalDot": 0.22135235058864117,
+          "volume": 0.000199000030185618,
+          "minimumRingDescent": 0.0008586201572418212,
+          "burial": [
+            {
+              "end": "root",
+              "samples": 145,
+              "outside": 0,
+              "minMargin": 0.001233747166179855
+            },
+            {
+              "end": "bridge",
+              "samples": 145,
+              "outside": 0,
+              "minMargin": 0.0164659368456479
+            },
+            {
+              "end": "unchanged-forearm-cap",
+              "samples": 73,
+              "outside": 0,
+              "minMargin": 0.002234830543417665
+            }
+          ],
+          "selfIntersections": {
+            "candidateTrianglePairs": 817,
+            "intersections": 0
+          }
+        }
+      ],
+      "oppositeHand": {
+        "applicable": false
+      },
+      "status": "passed",
+      "priorResources": 148,
+      "currentResources": 148
+    },
+    {
+      "age": "infant",
+      "contrast": true,
+      "wrists": [
+        {
+          "side": "lower",
+          "vertices": 1202,
+          "triangles": 2400,
+          "normMin": 0.9999999617089396,
+          "normMax": 1.000000041303559,
+          "radialDot": 0.3168224069459241,
+          "faceNormalDot": 0.22135235058864117,
+          "volume": 0.000199000030185618,
+          "minimumRingDescent": 0.0008586201572418212,
+          "burial": [
+            {
+              "end": "root",
+              "samples": 145,
+              "outside": 0,
+              "minMargin": 0.001233747166179855
+            },
+            {
+              "end": "bridge",
+              "samples": 145,
+              "outside": 0,
+              "minMargin": 0.0164659368456479
+            },
+            {
+              "end": "unchanged-forearm-cap",
+              "samples": 73,
+              "outside": 0,
+              "minMargin": 0.002234830543417665
+            }
+          ],
+          "selfIntersections": {
+            "candidateTrianglePairs": 817,
+            "intersections": 0
+          }
+        }
+      ],
+      "oppositeHand": {
+        "applicable": false
+      },
+      "status": "passed",
+      "priorResources": 149,
+      "currentResources": 149
+    }
+  ]
+}

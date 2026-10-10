@@ -276,7 +276,7 @@ function _searchTrace(event, detail) {
 const ALLO_SOURCE_SCHEME = 'allo-source:';
 
 // BEGIN PUBLIC SEARCH POLICY
-/* External search accepts only canonical public reference queries.
+/* Automatic contextual search accepts only canonical public reference queries.
  * This is an allowlist, not a PII detector or a claim of FERPA compliance.
  * Never add arbitrary user text, model output, school names or identifiers here.
  */
@@ -323,9 +323,20 @@ publicSearchQuery.topics = Object.freeze(['orbital period & seasons', 'weather f
     'phonemic awareness', 'phonics', 'executive function', 'cooperative learning',
     'common core reading standards grade 3',
     'udl', 'cell structure', 'ecosystems', 'food webs', 'natural selection', 'biodiversity', 'climate change', 'moon phases', 'energy transfer', 'forces and motion', 'magnetism', 'sound waves', 'states of matter', 'chemical reactions', 'area and perimeter', 'place value', 'ratios', 'proportional relationships', 'linear equations', 'probability', 'data analysis', 'argument and evidence', 'context clues', 'figurative language', 'central idea', 'perspective taking', 'student choice', 'accessible assessment', 'multiple means of representation', 'feedback', 'metacognition']);
+// Explicit research uses only the user's separate topic field. This normalizer
+// bounds transport input; it must never be used to extract a query from context.
+publicSearchQuery.userTopic = function (value) {
+  if (typeof value !== 'string' || value.length > 500 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value)) return '';
+  const query = value.trim().replace(/\s+/g, ' ');
+  return query;
+};
+publicSearchQuery.forIntent = function (value, intent) {
+  return intent === 'user-topic' ? publicSearchQuery.userTopic(value) : publicSearchQuery(value);
+};
 // END PUBLIC SEARCH POLICY
 const WebSearchProvider = {
     publicSearchQuery,
+    userTopicQuery: publicSearchQuery.userTopic,
 
     _trace: _searchTrace,
 
@@ -413,15 +424,15 @@ const WebSearchProvider = {
         } catch (_) { return ''; }
     },
 
-    async _fetchSerperDirect(query, maxResults) {
+    async _fetchSerperDirect(query, maxResults, intent = 'public-reference') {
         if (!managedExternalSearchAllowed()) throw managedAIError();
-        query = publicSearchQuery(query);
-        if (!query) throw new Error('External search requires an approved public topic.');
+        query = publicSearchQuery.forIntent(query, intent);
+        if (!query) throw new Error(intent === 'user-topic' ? 'Enter a research topic of 1 to 500 characters.' : 'External search requires an approved public topic.');
         const key = this._serperDirectKey();
         if (!key) throw new Error('No Serper key configured.');
-        const safeQuery = String(query || '').replace(/[\u0000-\u001F\u007F]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
+        const safeQuery = query;
         const num = Math.max(1, Math.min(Number(maxResults) || 5, 10));
-        if (safeQuery.length < 2) throw new Error('Query too short.');
+        if (!safeQuery) throw new Error('A research topic is required.');
         const timeoutMs = (typeof window !== 'undefined' && window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.webSearchMs) || 15000;
         const response = await fetch('https://google.serper.dev/search', {
             method: 'POST',
@@ -488,8 +499,17 @@ const WebSearchProvider = {
      * Search the web and return results with Gemini-compatible grounding metadata.
      */
     async search(query, maxResults = 10, searchQueryOverride = null) {
+        return this._search(query, maxResults, searchQueryOverride, 'public-reference');
+    },
+
+    // Explicit research only: never pass document text or a composed AI prompt.
+    async searchTopic(query, maxResults = 10) {
+        return this._search(query, maxResults, null, 'user-topic');
+    },
+
+    async _search(query, maxResults, searchQueryOverride, intent) {
         if (!managedExternalSearchAllowed()) return { results: [], contextPrompt: 'External search is disabled by the managed deployment.', groundingMetadata: null, privacyBlocked: true, policyBlocked: true };
-        if (!query || query.trim().length < 3) {
+        if (typeof query !== 'string' || !query.trim()) {
             return { results: [], contextPrompt: '', groundingMetadata: null };
         }
 
@@ -500,12 +520,13 @@ const WebSearchProvider = {
         }
 
         try {
-            const searchQuery = publicSearchQuery(searchQueryOverride || query);
+            const searchQuery = publicSearchQuery.forIntent(searchQueryOverride || query, intent);
             if (!searchQuery) {
+                if (intent === 'user-topic') return { results: [], contextPrompt: '', groundingMetadata: null, invalidQuery: true };
                 _searchTrace('search-blocked', 'Public query allowlist rejected request');
                 return { results: [], contextPrompt: 'External search was not performed: this query is outside the approved public topic list. Do not claim web verification.', groundingMetadata: null, privacyBlocked: true };
             }
-            console.log('[WebSearch] Searching approved public topic');
+            console.log('[WebSearch] Searching validated query');
 
             // Priority chain: Serper.dev proxy → SearXNG → DuckDuckGo
             let results = [];
@@ -536,7 +557,7 @@ const WebSearchProvider = {
             //    server that holds the API key). A personal key overrides this path.
             if (!this._serperDirectKey() && this._serperProxyUrl && this._serperAvailable) {
                 try {
-                    results = await this._fetchSerper(searchQuery, maxResults);
+                    results = await this._fetchSerper(searchQuery, maxResults, intent);
                     source = 'Serper';
                     _searchTrace('serper-proxy-ok', `${results.length} result(s)`);
                 } catch (err) {
@@ -551,7 +572,7 @@ const WebSearchProvider = {
             //     that works in Canvas, where there is no server to proxy through.
             if (results.length === 0 && this._serperDirectKey()) {
                 try {
-                    results = await this._fetchSerperDirect(searchQuery, maxResults);
+                    results = await this._fetchSerperDirect(searchQuery, maxResults, intent);
                     source = 'Serper (direct)';
                     _searchTrace('serper-direct-ok', `${results.length} result(s)`);
                 } catch (err) {
@@ -567,7 +588,7 @@ const WebSearchProvider = {
                 // 2️⃣ SearXNG (self-hosted, full SERP) — non-Canvas only
                 if (results.length === 0 && await this._isSearXNGAvailable()) {
                     try {
-                        results = await this._fetchSearXNG(searchQuery, maxResults);
+                        results = await this._fetchSearXNG(searchQuery, maxResults, intent);
                         source = 'SearXNG';
                     } catch (err) {
                         console.warn('[WebSearch] SearXNG failed, trying DuckDuckGo fallback:', 'provider-request-failed');
@@ -577,7 +598,7 @@ const WebSearchProvider = {
                 // 3️⃣ DuckDuckGo (free, no key) — non-Canvas only
                 if (results.length === 0) {
                     try {
-                        results = await this._fetchDuckDuckGo(searchQuery, maxResults);
+                        results = await this._fetchDuckDuckGo(searchQuery, maxResults, intent);
                         source = 'DuckDuckGo';
                     } catch (err) {
                         console.warn('[WebSearch] DuckDuckGo also failed:', 'provider-request-failed');
@@ -729,14 +750,16 @@ const WebSearchProvider = {
      * Fetch search results from SearXNG (self-hosted metasearch engine).
      * Returns full SERP results — titles, URLs, snippets, engines used.
      */
-    async _fetchSearXNG(query, maxResults) {
+    async _fetchSearXNG(query, maxResults, intent = 'public-reference') {
         if (!managedExternalSearchAllowed()) throw managedAIError();
-        query = publicSearchQuery(query);
-        if (!query) throw new Error('External search requires an approved public topic.');
+        query = publicSearchQuery.forIntent(query, intent);
+        if (!query) throw new Error(intent === 'user-topic' ? 'Enter a research topic of 1 to 500 characters.' : 'External search requires an approved public topic.');
         const url = `${this.searxngUrl}/search?q=${encodeURIComponent(query)}&format=json&categories=general&language=en`;
 
         const response = await fetch(url, {
             headers: { 'Accept': 'application/json' },
+            referrerPolicy: 'no-referrer',
+            credentials: 'omit',
         });
 
         if (!response.ok) {
@@ -770,14 +793,16 @@ const WebSearchProvider = {
      * Fetch search results from DuckDuckGo Instant Answers API.
      * Free, no API key required. Returns topic summaries.
      */
-    async _fetchDuckDuckGo(query, maxResults) {
+    async _fetchDuckDuckGo(query, maxResults, intent = 'public-reference') {
         if (!managedExternalSearchAllowed()) throw managedAIError();
-        query = publicSearchQuery(query);
-        if (!query) throw new Error('External search requires an approved public topic.');
+        query = publicSearchQuery.forIntent(query, intent);
+        if (!query) throw new Error(intent === 'user-topic' ? 'Enter a research topic of 1 to 500 characters.' : 'External search requires an approved public topic.');
         const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
 
         const response = await fetch(url, {
             headers: { 'Accept': 'application/json' },
+            referrerPolicy: 'no-referrer',
+            credentials: 'omit',
         });
 
         if (!response.ok) {
@@ -856,20 +881,16 @@ const WebSearchProvider = {
      * API key is stored server-side in Firebase Secret Manager.
      * Returns real Google SERP results.
      */
-    async _fetchSerper(query, maxResults) {
+    async _fetchSerper(query, maxResults, intent = 'public-reference') {
         if (!managedExternalSearchAllowed()) throw managedAIError();
-        query = publicSearchQuery(query);
-        if (!query) throw new Error('External search requires an approved public topic.');
+        query = publicSearchQuery.forIntent(query, intent);
+        if (!query) throw new Error(intent === 'user-topic' ? 'Enter a research topic of 1 to 500 characters.' : 'External search requires an approved public topic.');
         const url = this._serperProxyUrl;
         const isCanvasCompatibility = this._isCanvas
             && this._serperProxyMode === 'canvas-compat-get';
-        const safeQuery = String(query || '')
-            .replace(/[\u0000-\u001F\u007F]/g, ' ')
-            .replace(/\s+/g, ' ')
-            .trim()
-            .slice(0, 200);
+        const safeQuery = query;
         const safeResultCount = Math.max(1, Math.min(Number(maxResults) || 5, 10));
-        if (!url || safeQuery.length < 2) {
+        if (!url || !safeQuery) {
             throw new Error('Search proxy or query is not configured.');
         }
         const getSecurityHeaders = typeof window !== 'undefined'
@@ -880,7 +901,7 @@ const WebSearchProvider = {
         }
         const securityHeaders = isCanvasCompatibility ? {} : await getSecurityHeaders();
         const requestUrl = isCanvasCompatibility
-            ? `${url}?q=${encodeURIComponent(safeQuery)}&num=${safeResultCount}`
+            ? `${url}?q=${encodeURIComponent(safeQuery)}&num=${safeResultCount}${intent === 'user-topic' ? '&intent=user-topic' : ''}`
             : url;
 
         let response;
@@ -895,7 +916,7 @@ const WebSearchProvider = {
                     ? { Accept: 'application/json' }
                     : { 'Content-Type': 'application/json', ...securityHeaders },
                 ...(isCanvasCompatibility ? { referrerPolicy: 'no-referrer' } : {
-                    body: JSON.stringify({ query: safeQuery, num: safeResultCount }),
+                    body: JSON.stringify({ query: safeQuery, num: safeResultCount, ...(intent === 'user-topic' ? { intent } : {}) }),
                 }),
                 signal: AbortSignal.timeout ? AbortSignal.timeout((window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.webSearchMs) || 15000) : undefined,
             });
@@ -1677,7 +1698,7 @@ class AIProvider {
      * @param {number} [opts.maxTokens=8192] - Max output tokens
      * @returns {Promise<string|Object>} Generated text (or {text, groundingMetadata} if search=true)
      */
-    async generateText(prompt, { json = false, search = false, searchQuery = null, temperature = null, maxTokens = 8192, onProgress = null, signal = null, schema = null } = {}) {
+    async generateText(prompt, { json = false, search = false, searchQuery = null, searchIntent = 'public-reference', temperature = null, maxTokens = 8192, onProgress = null, signal = null, schema = null } = {}) {
         await assertManagedAIConnection({ backend: this.backend, baseUrl: this.baseUrl, apiKey: this.apiKey, canvasHost: this.isCanvasEnv && !this.apiKey, operation: 'text', search });
         if (signal && signal.aborted) {
             const error = new Error('Text generation cancelled.');
@@ -1705,7 +1726,7 @@ class AIProvider {
             case 'gemini':
                 return this._geminiGenerateText(prompt, { json, search, temperature, maxTokens: effectiveMaxTokens, signal });
             case 'claude':
-                return this._claudeGenerateText(prompt, { json, search, searchQuery, temperature, maxTokens: effectiveMaxTokens, signal });
+                return this._claudeGenerateText(prompt, { json, search, searchQuery, searchIntent, temperature, maxTokens: effectiveMaxTokens, signal });
             case 'openai':
             case 'localai':
             case 'lmstudio':
@@ -1713,7 +1734,7 @@ class AIProvider {
             case 'alloflow-local':
             case 'custom':
             default:
-                return this._openaiGenerateText(prompt, { json, search, searchQuery, temperature, maxTokens: effectiveMaxTokens, onProgress, localProfile: this.localModelProfile, localUsage, signal, schema });
+                return this._openaiGenerateText(prompt, { json, search, searchQuery, searchIntent, temperature, maxTokens: effectiveMaxTokens, onProgress, localProfile: this.localModelProfile, localUsage, signal, schema });
         }
     }
 
@@ -1817,7 +1838,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         return text || '';
     }
 
-    async _openaiGenerateText(prompt, { json, search, searchQuery = null, temperature, maxTokens, onProgress, localProfile = null, localUsage = null, signal = null, localRetryDepth = 0, schema = null } = {}) {
+    async _openaiGenerateText(prompt, { json, search, searchQuery = null, searchIntent = 'public-reference', temperature, maxTokens, onProgress, localProfile = null, localUsage = null, signal = null, localRetryDepth = 0, schema = null } = {}) {
         // ── Additive local-only streaming progress (opt-in; Phase 1) ──────────
         // Cloud is untouched: gemini/claude use their own methods, and hosted
         // 'openai' is excluded by isLocalTextBackend(). This branch engages ONLY
@@ -1870,7 +1891,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         let effectivePrompt = prompt;
         let requestSearchMetadata = null;
         if (search) {
-            const augmented = await this._webSearchAugment(prompt, searchQuery);
+            const augmented = await this._webSearchAugment(prompt, searchQuery, searchIntent);
             effectivePrompt = augmented.prompt;
             requestSearchMetadata = augmented.groundingMetadata;
         }
@@ -2199,10 +2220,12 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * Perform web search and augment prompt with results.
      * Uses DuckDuckGo Instant Answers API (free, no key required).
      */
-    async _webSearchAugment(prompt, searchQuery = null) {
+    async _webSearchAugment(prompt, searchQuery = null, searchIntent = 'public-reference') {
         try {
             if (typeof window !== 'undefined' && window.WebSearchProvider) {
-                const { contextPrompt, groundingMetadata } = await window.WebSearchProvider.search(searchQuery || prompt, 10, searchQuery);
+                const { contextPrompt, groundingMetadata } = searchIntent === 'user-topic'
+                    ? await window.WebSearchProvider.searchTopic(searchQuery, 10)
+                    : await window.WebSearchProvider.search(searchQuery || prompt, 10, searchQuery);
                 if (contextPrompt) {
                     return {
                         prompt: contextPrompt + prompt,
@@ -2216,7 +2239,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         return { prompt, groundingMetadata: null };
     }
 
-    async _claudeGenerateText(prompt, { json, search, searchQuery = null, temperature, maxTokens, signal }) {
+    async _claudeGenerateText(prompt, { json, search, searchQuery = null, searchIntent = 'public-reference', temperature, maxTokens, signal }) {
         const url = `${this.baseUrl}/v1/messages`;
         const payload = {
             model: this.models.default,
@@ -2229,7 +2252,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         // If search is requested, augment prompt with web search results
         let requestSearchMetadata = null;
         if (search) {
-            const augmented = await this._webSearchAugment(prompt, searchQuery);
+            const augmented = await this._webSearchAugment(prompt, searchQuery, searchIntent);
             payload.messages[0].content = augmented.prompt;
             requestSearchMetadata = augmented.groundingMetadata;
         }

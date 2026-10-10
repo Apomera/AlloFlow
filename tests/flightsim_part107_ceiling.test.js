@@ -39,20 +39,21 @@ describe('flightsim Part 107 ceiling', () => {
 
   it('keeps one banner at a time in the shared 28px band', () => {
     eachSource((source, path) => {
-      // Two banners now draw at fillRect(0, 32, W, 28) — the stall warning and the
-      // ceiling alert. The airport welcome used to be the third, and the first
+      // Three mutually exclusive banners share this band: stall, low airspeed,
+      // and ceiling. The airport welcome used to overlap them, and the first
       // screenshot of this feature had the ceiling text printed straight through
       // the green welcome text, both unreadable.
       //
       // The welcome has since left the band entirely: y=32..60 is also where the
       // heading tape (a primary instrument) and the approaching-city pill live, and
       // a full-width wash over them was unreadable in its own right. It is now a
-      // pill on its own row at y=62. That is why this expects 2, not 3 — the
-      // mutual-exclusion rule below is what the band actually needs.
+      // pill on its own row at y=62. The exclusion rules keep warnings legible.
       const bands = source.match(/fillRect\(0, 32, W, 28\)/g) || [];
-      expect(bands.length, `${path}: unexpected banner count in the warning band`).toBe(2);
+      expect(bands.length, `${path}: unexpected banner count in the warning band`).toBe(3);
+      expect(source, `${path}: low airspeed must defer to stall and ceiling warnings`)
+        .toContain('if (state.lowAirspeed && !state.stalling && !state.onGround && !state.hitCeiling) {');
       expect(source, `${path}: the airport welcome no longer defers to the ceiling banner`)
-        .toContain("&& !state.stalling && !state.hitCeiling) {");
+        .toContain("&& !state.stalling && !state.lowAirspeed && !state.hitCeiling) {");
     });
   });
 

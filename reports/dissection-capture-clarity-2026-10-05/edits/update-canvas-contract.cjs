@@ -1,0 +1,16 @@
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+const repo='C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated',file='tests/dissection_canvas_loop.test.js';
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+const before=fs.readFileSync(path.join(repo,file),'utf8');
+if(sha(before)!=='36750b0438d21f55d69df66dd27d7d60090dbeec015db089ce661557afbcf13a')throw Error('Canvas suite guard changed');
+const old="      expect(source).toMatch(/var nextHoveredOrgan = hit \\? hit\\.id : null;\\s*if \\(nextHoveredOrgan !== d\\.hoveredOrgan\\) upd\\('hoveredOrgan', nextHoveredOrgan\\);/);";
+const replacement="      expect(source).toMatch(/var nextHoveredOrgan = hit \\? hit\\.id : null;\\s*if \\(!d\\.annotateMode && !d\\.rulerMode && nextHoveredOrgan !== d\\.hoveredOrgan\\) upd\\('hoveredOrgan', nextHoveredOrgan\\);/);";
+if(before.split(old).length!==2)throw Error('Contract anchor changed');
+const previousSource=fs.readFileSync(path.join(__dirname,'renderer-capture-baseline.js'),'utf8');
+const stale=/var nextHoveredOrgan = hit \? hit\.id : null;\s*if \(nextHoveredOrgan !== d\.hoveredOrgan\) upd\('hoveredOrgan', nextHoveredOrgan\);/;
+const guarded=/var nextHoveredOrgan = hit \? hit\.id : null;\s*if \(!d\.annotateMode && !d\.rulerMode && nextHoveredOrgan !== d\.hoveredOrgan\) upd\('hoveredOrgan', nextHoveredOrgan\);/;
+if(stale.test(previousSource)||!guarded.test(previousSource)||!guarded.test(fs.readFileSync(path.join(repo,'stem_lab/stem_tool_dissection.js'),'utf8')))throw Error('Baseline stale-contract reproduction failed');
+const after=before.replace(old,replacement);
+fs.writeFileSync(path.join(__dirname,'canvas-contract-edits.json'),JSON.stringify({file,baselineSha256:sha(before),finalSha256:sha(after),edits:[{old,new:replacement}],baselineReproduction:{rendererSha256:sha(previousSource),staleAssertion:false,guardedAssertion:true},reason:'The earlier observation-point workflow suppresses hover changes in annotation/ruler modes. Retain the changed-hover guard and also require those mode safeguards.'},null,2));
+fs.writeFileSync(path.join(repo,file),after);
+console.log(JSON.stringify({file,sha256:sha(after),baselineReproduced:true}));

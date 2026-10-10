@@ -1,0 +1,105 @@
+{
+  "checks": [
+    {
+      "name": "native download contains the saved reviewed sequence and excludes unsaved edits and unrelated lesson data",
+      "passed": true,
+      "suggestedFilename": "syllables-sunset.json",
+      "bytes": 410170
+    },
+    {
+      "name": "fresh browser import natively decodes both clips into drafts without saving the lesson or local library",
+      "passed": true
+    },
+    {
+      "name": "native ordered preview and fresh confirmation are required before the imported clips can be saved",
+      "passed": true
+    },
+    {
+      "name": "explicit lesson save and reload preserve the imported audio bytes, order, labels, and review",
+      "passed": true
+    },
+    {
+      "name": "wrong word recording set is rejected while previous clips and saved lesson remain intact",
+      "passed": true,
+      "status": "This recording set is for a different word. Open the matching word to import it. Your previous recordings are kept."
+    },
+    {
+      "name": "wrong dialect recording set is rejected while previous clips and saved lesson remain intact",
+      "passed": true,
+      "status": "This recording set uses a different recording language. Select its matching language before importing. Your previous recordings are kept."
+    },
+    {
+      "name": "native failure on the second clip cannot partially replace the first clip even when stored metadata claims it was decoded",
+      "passed": true
+    },
+    {
+      "name": "oversized recording set is rejected without changing existing clips",
+      "passed": true
+    },
+    {
+      "name": "previous draft recordings still play correctly after all rejected imports",
+      "passed": true
+    },
+    {
+      "name": "editor controls fit 390 px and 1280 px viewports with local production CSS",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "preview": {
+    "events": [
+      {
+        "id": 0,
+        "type": "playing",
+        "at": 1359.3000000000466
+      },
+      {
+        "id": 0,
+        "type": "pause",
+        "at": 3361.399999999907
+      },
+      {
+        "id": 0,
+        "type": "ended",
+        "at": 3368.6999999999534
+      },
+      {
+        "id": 1,
+        "type": "playing",
+        "at": 3754
+      },
+      {
+        "id": 1,
+        "type": "pause",
+        "at": 5541.199999999953
+      },
+      {
+        "id": 1,
+        "type": "ended",
+        "at": 5541.300000000047
+      }
+    ],
+    "overlaps": []
+  },
+  "layouts": [
+    {
+      "viewport": 390,
+      "documentWidth": 390,
+      "overflow": []
+    },
+    {
+      "viewport": 1280,
+      "documentWidth": 1280,
+      "overflow": []
+    }
+  ],
+  "hashes": {
+    "core": "7b6498f2261942266cb461288f0b08db7200583d37535e03f7122ca12a11e0b0",
+    "runtime": "5e8ea7f7be79f08bb5209ba937e62eaaa6d80b0ff415b2991ccacf767e74de07",
+    "extractedEditor": "edb02684a0b8b55457b515ab50dd759b2231800c2ae10cc1213c53dedaec07ef",
+    "css": "847d3803e02e1ab458a9c683d66f16a727af7a09e9d8a9a6b8840d2e090c8956",
+    "wav": "312802de7e351c04d0b5b49a8d7fac92ed1a8fb764afcb455282ab0d72280565"
+  },
+  "limits": "Actual React, production core/library/editor source, local production CSS, Chromium download, native audio decoding and playback. Two clips use the same supplied Kokoro WAV fixture; this checks transport/review/rejection behavior, not pronunciation quality. Isolated editor only; no physical microphone, speech generation, full-host layout, or cloud delivery."
+}

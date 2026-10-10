@@ -1,0 +1,4 @@
+{
+  "error": "Browser failed {\"startTime\":\"2026-10-09T22:07:42.797Z\",\"duration\":46651.509000000005,\"expected\":0,\"skipped\":0,\"unexpected\":1,\"flaky\":0}",
+  "exitCode": 1
+}

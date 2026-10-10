@@ -1,0 +1,36 @@
+{
+  "passed": true,
+  "candidateSHA256": "8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940",
+  "fixtureSHA256": "ecf23f813a6a13bf795d5c53c5cdeeb701d289b02da1b7b083eaa119ff32716f",
+  "originalInputs": {
+    "firstresponse-arm-preview.spec.ts": "31752b029ccdb82c4b8a7707f7acdcb117aeb9c533cf7c0f340c55cbe3ce561c",
+    "run-arm-browser.cjs": "529b860973d7b966ae6de054e768083957f6f2121a275fbd0235eb108e4bfc64",
+    "playwright-arm.config.cjs": "147e1ee54eda19e93f63281fe157f124f841d4d343016d24970b1c761735c623",
+    "arm-capture-png.cjs": "49ee40fb07508c1891db570c11d8be475dd7b6cb1ac9be9666630e680df3a2f5",
+    "check-arm-fixture.cjs": "674d3b4b1061147f324a17c0afbd18419fea713ce608dc611da2e68a95827cac",
+    "prepare-arm-native-fixture.cjs": "addcec0752f2545ae50c42e5587913fc432394d4b13c83a123ac41b70d0d2123",
+    "browser-fixture-preparation.json": "e1b592fcd87e581b1e4129195b1bd70a15484aacec7d3fbce2ea246932e9b281",
+    "fixture-list-check.json": "4c1c547fab230f68fa1c4c1f23ca88c22b0a995e86e9c05ca87341efe7e33b7d",
+    "fixture-contract-check.json": "298030905c25dc747ee165308d13de14085cefc655c07477f7d6258a7f610ee2"
+  },
+  "updatedInputs": {
+    "firstresponse-arm-preview.spec.ts": "ecf23f813a6a13bf795d5c53c5cdeeb701d289b02da1b7b083eaa119ff32716f",
+    "run-arm-browser.cjs": "245218f7124ae1b4751bc3a48064edc57f4318169a0f284a15a36880c2cf5af2",
+    "playwright-arm.config.cjs": "147e1ee54eda19e93f63281fe157f124f841d4d343016d24970b1c761735c623",
+    "arm-capture-png.cjs": "49ee40fb07508c1891db570c11d8be475dd7b6cb1ac9be9666630e680df3a2f5",
+    "check-arm-fixture.cjs": "fd374087bc4217828f9c329f8a20491d36777a47dd0baad18536643f0949c202",
+    "prepare-arm-native-fixture.cjs": "76c7df43d4f1ea1b48df19f70f4dd95757cb6b7c3a154230b46b0f3b7b60c6d6",
+    "browser-fixture-preparation.json": "7a31d67ed7bf9bb0dd182bebb66e1582e450789b05571c5bdd66d11f54e9b9fd",
+    "arm-mount-window.cjs": "9e3d95fe4ce8ae16ca7d4a994d26250e064873d675b930fb23d63b33ba43b246"
+  },
+  "failedRun": "native-adult-side",
+  "originalDirectory": "native-mount-repair-before",
+  "conditionPreserved": true,
+  "fixtureRestoredByRemovingOnlyMountWrapper": true,
+  "mountWaitBeforeMs": 30000,
+  "mountWaitAfterMs": 120000,
+  "perWorkflowTimeoutMs": 450000,
+  "runnerTimeoutMs": 900000,
+  "sharedHarnessUnchanged": true,
+  "browserLaunched": false
+}

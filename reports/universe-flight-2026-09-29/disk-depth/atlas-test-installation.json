@@ -1,0 +1,26 @@
+{
+  "completed": true,
+  "targets": [
+    {
+      "path": "tests/universe_flight_cloud_surfaces.test.js",
+      "baselineHash": "68ecc0c20f0fe6096e6dca3f63a4be9923dddf6c0b0629dc8414ba9b1bcd7b59",
+      "candidateHash": "dd45b21d6c71af53bb18ed5eb6e00191914b0b49220a7b61445ac5b57166397a"
+    },
+    {
+      "path": "tests/universe_flight_spiral_detail.test.js",
+      "baselineHash": "7c4a18dcd248e45342c7795e1f1fad632166dec2ff42c88dd2f2c1cd6d5d8913",
+      "candidateHash": "6d1776be1b0a5e92b96c8402e6175a3db34c6ac5fa5b678554c7f4e5b83847f7"
+    },
+    {
+      "path": "tests/universe_flight_two_arm_detail.test.js",
+      "baselineHash": "585920a902a6f540f6f71f45690e9847639d6e06253609125d144911a49174ac",
+      "candidateHash": "e58958aa52265bc0a1b432f9001fea0593c07ff412eea193c174a594a4851a99"
+    },
+    {
+      "path": "tests/universe_flight_barred_detail.test.js",
+      "baselineHash": "00f04916ef6a550ffead04adbdcaafa06a00d8ba68cb9d49135c2a7840b3c291",
+      "candidateHash": "f1112671533f4d996646a8d9a7baa78d8a0639bb2de159e8be6cab7bdc77cbde"
+    }
+  ],
+  "committed": false
+}

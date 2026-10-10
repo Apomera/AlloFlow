@@ -1,0 +1,759 @@
+{
+  "checks": [
+    {
+      "name": "Spelling Bee requires typed spelling, keeps native Kokoro word playback, and has no speech-scoring controls",
+      "passed": true
+    },
+    {
+      "name": "entering Spelling Bee cancels inherited capture and cannot score its late spoken whole word",
+      "passed": true
+    },
+    {
+      "name": "Spelling Bee completes instruction before one word, then native normal / slow / normal replays finish at 1 / 0.5 / 1 rates",
+      "passed": true
+    }
+  ],
+  "errors": [
+    "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n2 !== 1\n\n    at spellingAudio (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\word_sounds_voice_modes_acceptance.cjs:126:148)\n    at async run (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\word_sounds_voice_modes_acceptance.cjs:172:751)"
+  ],
+  "externalRequests": [],
+  "runs": [
+    {
+      "name": "spelling construction",
+      "word": "cat",
+      "activity": "spelling_bee",
+      "score": {
+        "correct": 1,
+        "total": 1,
+        "streak": 1
+      },
+      "feedback": {
+        "isCorrect": true,
+        "streak": 1,
+        "message": "Correct!"
+      },
+      "recognitionEvents": [],
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "instruction:inst_spelling_bee",
+          "at": 5616.5
+        },
+        {
+          "id": 0,
+          "type": "loadedmetadata",
+          "label": "instruction:inst_spelling_bee",
+          "duration": 2.520097,
+          "playbackRate": 1,
+          "at": 6542.4000000003725,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "playing",
+          "label": "instruction:inst_spelling_bee",
+          "duration": 2.520097,
+          "playbackRate": 1,
+          "at": 11472,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "pause",
+          "label": "instruction:inst_spelling_bee",
+          "duration": 2.520097,
+          "playbackRate": 1,
+          "at": 22018.199999999255,
+          "active": []
+        },
+        {
+          "id": 0,
+          "type": "ended",
+          "label": "instruction:inst_spelling_bee",
+          "duration": 2.520097,
+          "playbackRate": 1,
+          "at": 22018.5,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "loadedmetadata",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 22508.900000000373,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "play-call",
+          "label": "kokoro-word:cat",
+          "at": 23179.599999999627
+        },
+        {
+          "id": 1,
+          "type": "playing",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 23181.900000000373,
+          "active": [
+            1
+          ]
+        },
+        {
+          "id": 1,
+          "type": "pause",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 25856.199999999255,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "ended",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 25856.300000000745,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "play-call",
+          "label": "kokoro-word:cat",
+          "at": 26079.599999999627
+        },
+        {
+          "id": 1,
+          "type": "playing",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 26479.800000000745,
+          "active": [
+            1
+          ]
+        },
+        {
+          "id": 1,
+          "type": "pause",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 27070.800000000745,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "ended",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 27070.900000000373,
+          "active": []
+        },
+        {
+          "id": 2,
+          "type": "play-call",
+          "label": "instruction:fb_you_got_it",
+          "at": 29301.300000000745
+        },
+        {
+          "id": 2,
+          "type": "pause",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 29491.099999999627,
+          "active": []
+        },
+        {
+          "id": 2,
+          "type": "loadedmetadata",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 29494.900000000373,
+          "active": []
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "spelling stale mic",
+      "word": "cat",
+      "activity": "spelling_bee",
+      "score": {
+        "correct": 0,
+        "total": 0,
+        "streak": 0
+      },
+      "feedback": null,
+      "recognitionEvents": [
+        {
+          "id": 0,
+          "type": "start",
+          "at": 1611.8999999985099
+        },
+        {
+          "id": 0,
+          "type": "abort",
+          "at": 1675
+        },
+        {
+          "id": 0,
+          "type": "emit:start",
+          "isFinal": true,
+          "at": 1693.7999999988824
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "cat",
+          "isFinal": true,
+          "at": 1693.7999999988824
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "cat",
+          "isFinal": true,
+          "at": 1694.0999999996275
+        },
+        {
+          "id": 0,
+          "type": "emit:end",
+          "isFinal": true,
+          "at": 1694.0999999996275
+        },
+        {
+          "id": 0,
+          "type": "emit:error",
+          "text": "network",
+          "isFinal": true,
+          "at": 1694.0999999996275
+        }
+      ],
+      "audioEvents": [],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "spelling automatic then replay rates",
+      "word": "cat",
+      "activity": "spelling_bee",
+      "score": {
+        "correct": 0,
+        "total": 0,
+        "streak": 0
+      },
+      "feedback": null,
+      "recognitionEvents": [],
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "instruction:inst_spelling_bee",
+          "at": 1880.199999999255
+        },
+        {
+          "id": 0,
+          "type": "loadedmetadata",
+          "label": "instruction:inst_spelling_bee",
+          "duration": 2.520097,
+          "playbackRate": 1,
+          "at": 1907.300000000745,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "playing",
+          "label": "instruction:inst_spelling_bee",
+          "duration": 2.520097,
+          "playbackRate": 1,
+          "at": 2118.5999999996275,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "pause",
+          "label": "instruction:inst_spelling_bee",
+          "duration": 2.520097,
+          "playbackRate": 1,
+          "at": 5209.5999999996275,
+          "active": []
+        },
+        {
+          "id": 0,
+          "type": "ended",
+          "label": "instruction:inst_spelling_bee",
+          "duration": 2.520097,
+          "playbackRate": 1,
+          "at": 5209.699999999255,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "loadedmetadata",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 5619.5,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "play-call",
+          "label": "kokoro-word:cat",
+          "at": 5961.0999999996275
+        },
+        {
+          "id": 1,
+          "type": "playing",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 5961.4000000003725,
+          "active": [
+            1
+          ]
+        },
+        {
+          "id": 1,
+          "type": "pause",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 7768.5999999996275,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "ended",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 7768.699999999255,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "play-call",
+          "label": "kokoro-word:cat",
+          "at": 8038.699999999255
+        },
+        {
+          "id": 1,
+          "type": "playing",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 8076,
+          "active": [
+            1
+          ]
+        },
+        {
+          "id": 1,
+          "type": "pause",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 8704.300000000745,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "ended",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 8704.300000000745,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "play-call",
+          "label": "kokoro-word:cat",
+          "at": 8907.800000000745
+        },
+        {
+          "id": 1,
+          "type": "playing",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 0.5,
+          "at": 9056.900000000373,
+          "active": [
+            1
+          ]
+        },
+        {
+          "id": 1,
+          "type": "pause",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 0.5,
+          "at": 10106.400000000373,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "ended",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 0.5,
+          "at": 10106.599999999627,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "play-call",
+          "label": "kokoro-word:cat",
+          "at": 10302.099999999627
+        },
+        {
+          "id": 1,
+          "type": "playing",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 10332.900000000373,
+          "active": [
+            1
+          ]
+        },
+        {
+          "id": 1,
+          "type": "pause",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 10905.900000000373,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "ended",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 10906,
+          "active": []
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "spelling early manual replay",
+      "word": "cat",
+      "activity": "spelling_bee",
+      "score": {
+        "correct": 0,
+        "total": 0,
+        "streak": 0
+      },
+      "feedback": null,
+      "recognitionEvents": [],
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "loadedmetadata",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 1506.4000000003725,
+          "active": []
+        },
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "kokoro-word:cat",
+          "at": 2408.199999999255
+        },
+        {
+          "id": 0,
+          "type": "playing",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 2408.5999999996275,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "pause",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 3399.699999999255,
+          "active": []
+        },
+        {
+          "id": 0,
+          "type": "ended",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 3399.800000000745,
+          "active": []
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "failure",
+      "word": "cat",
+      "activity": "spelling_bee",
+      "score": {
+        "correct": 0,
+        "total": 0,
+        "streak": 0
+      },
+      "feedback": null,
+      "recognitionEvents": [],
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "loadedmetadata",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 1814.699999999255,
+          "active": []
+        },
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "kokoro-word:cat",
+          "at": 2667.5
+        },
+        {
+          "id": 0,
+          "type": "playing",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 2667.9000000003725,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "playing",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 3931,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "pause",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 4290.0999999996275,
+          "active": []
+        },
+        {
+          "id": 0,
+          "type": "ended",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 4290.199999999255,
+          "active": []
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    }
+  ],
+  "consoleMessages": [
+    "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "[PureHelpers] 7 helpers registered",
+    "[MiscComponentsModule] 3 components registered.",
+    "[MiscComponentsModule] 3 components registered (incl. WordSoundsReviewPanel with Sound Swap)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] loadProbeBanks stub (CDN)",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] WordSoundsModal MOUNTED. initialShowReviewPanel: false, activity: spelling_bee",
+    "[WS-DBG] initialShowReviewPanel changed to: false",
+    "[WS-DBG] 🔄 Reset hasStartedFromReview for new word set: cat",
+    "[WS-DBG] 🚀 Initializing Session Queue for spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] Streak preserved across activity change to: spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] 🔄 Synced currentWordIndex to 1 to skip: cat",
+    "[WS-DBG] 🚀 Using preloaded data for: cat",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] ⚡ using prepared Word Sounds TTS for: cat",
+    "[WS-DBG] ⚡ audioInstances HIT: cat",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] TeacherCheck: checkAnswer called {answer: correct, expectedAnswer: correct, locked: false}",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] WordSoundsModal UNMOUNTED",
+    "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "[PureHelpers] 7 helpers registered",
+    "[MiscComponentsModule] 3 components registered.",
+    "[MiscComponentsModule] 3 components registered (incl. WordSoundsReviewPanel with Sound Swap)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] loadProbeBanks stub (CDN)",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [missing_letter]",
+    "[WS-DBG] WordSoundsModal MOUNTED. initialShowReviewPanel: false, activity: missing_letter",
+    "[WS-DBG] initialShowReviewPanel changed to: false",
+    "[WS-DBG] 🔄 Reset hasStartedFromReview for new word set: cat",
+    "[WS-DBG] 🚀 Initializing Session Queue for missing_letter",
+    "[WS-DBG] 🎲 Generating session queue for missing_letter (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [missing_letter]",
+    "[WS-DBG] Streak preserved across activity change to: missing_letter",
+    "[WS-DBG] 🎲 Generating session queue for missing_letter (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] 🔄 Synced currentWordIndex to 1 to skip: cat",
+    "[WS-DBG] 🚀 Using preloaded data for: cat",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [missing_letter]",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [missing_letter]",
+    "[WS-DBG] 🚀 Initializing Session Queue for spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] WordSoundsModal UNMOUNTED",
+    "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "[PureHelpers] 7 helpers registered",
+    "[MiscComponentsModule] 3 components registered.",
+    "[MiscComponentsModule] 3 components registered (incl. WordSoundsReviewPanel with Sound Swap)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] loadProbeBanks stub (CDN)",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] WordSoundsModal MOUNTED. initialShowReviewPanel: false, activity: spelling_bee",
+    "[WS-DBG] initialShowReviewPanel changed to: false",
+    "[WS-DBG] 🔄 Reset hasStartedFromReview for new word set: cat",
+    "[WS-DBG] 🚀 Initializing Session Queue for spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] Streak preserved across activity change to: spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] 🔄 Synced currentWordIndex to 1 to skip: cat",
+    "[WS-DBG] 🚀 Using preloaded data for: cat",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] ⚡ using prepared Word Sounds TTS for: cat",
+    "[WS-DBG] ⚡ audioInstances HIT: cat",
+    "[WS-DBG] ⚡ audioInstances HIT: cat",
+    "[WS-DBG] ⚡ audioInstances HIT: cat",
+    "[WS-DBG] WordSoundsModal UNMOUNTED",
+    "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "[PureHelpers] 7 helpers registered",
+    "[MiscComponentsModule] 3 components registered.",
+    "[MiscComponentsModule] 3 components registered (incl. WordSoundsReviewPanel with Sound Swap)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] loadProbeBanks stub (CDN)",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] WordSoundsModal MOUNTED. initialShowReviewPanel: false, activity: spelling_bee",
+    "[WS-DBG] initialShowReviewPanel changed to: false",
+    "[WS-DBG] 🔄 Reset hasStartedFromReview for new word set: cat",
+    "[WS-DBG] 🚀 Initializing Session Queue for spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] Streak preserved across activity change to: spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] 🔄 Synced currentWordIndex to 1 to skip: cat",
+    "[WS-DBG] 🚀 Using preloaded data for: cat",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] ⚡ using prepared Word Sounds TTS for: cat",
+    "[WS-DBG] WordSoundsModal UNMOUNTED",
+    "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "[PureHelpers] 7 helpers registered",
+    "[MiscComponentsModule] 3 components registered.",
+    "[MiscComponentsModule] 3 components registered (incl. WordSoundsReviewPanel with Sound Swap)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] loadProbeBanks stub (CDN)",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] WordSoundsModal MOUNTED. initialShowReviewPanel: false, activity: spelling_bee",
+    "[WS-DBG] initialShowReviewPanel changed to: false",
+    "[WS-DBG] 🔄 Reset hasStartedFromReview for new word set: cat",
+    "[WS-DBG] 🚀 Initializing Session Queue for spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] Streak preserved across activity change to: spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] 🔄 Synced currentWordIndex to 1 to skip: cat",
+    "[WS-DBG] 🚀 Using preloaded data for: cat",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] ⚡ using prepared Word Sounds TTS for: cat"
+  ],
+  "runtimeSha256": "68200204d6d7d1f049d4889cef8336bb06a67566042494922d2f9e3947ef5c75",
+  "voiceSha256": "ab8f03324c8eac75f229d2dc98b2a314e06fa5f847485d5f4ddd03fde0e4d6b9",
+  "limitations": [
+    "Controlled SpeechRecognition callbacks exercise browser UI lifetimes; no physical microphone or speech service was tested.",
+    "Native playback uses existing local Kokoro word-bank clips and standard instruction/phoneme bank clips. No live Kokoro synthesis, cloud calls, physical microphone, or pronunciation judgment was performed."
+  ]
+}

@@ -1,0 +1,159 @@
+{
+  "events": [
+    {
+      "type": "loadedmetadata",
+      "id": 0,
+      "label": "word:corn",
+      "at": 2000.4000000059605,
+      "position": 0,
+      "duration": 0.606
+    },
+    {
+      "type": "play",
+      "id": 1,
+      "label": "instruction:inst_counting",
+      "at": 2816.9000000059605,
+      "position": 0,
+      "duration": null
+    },
+    {
+      "type": "loadedmetadata",
+      "id": 1,
+      "label": "instruction:inst_counting",
+      "at": 2837,
+      "position": 0,
+      "duration": 2.330647
+    },
+    {
+      "type": "playing",
+      "id": 1,
+      "label": "instruction:inst_counting",
+      "at": 2886.4000000059605,
+      "position": 0,
+      "duration": 2.330647
+    },
+    {
+      "type": "pause",
+      "id": 1,
+      "label": "instruction:inst_counting",
+      "at": 5423.9000000059605,
+      "position": 2.330647,
+      "duration": 2.330647
+    },
+    {
+      "type": "ended",
+      "id": 1,
+      "label": "instruction:inst_counting",
+      "at": 5424.9000000059605,
+      "position": 2.330647,
+      "duration": 2.330647
+    },
+    {
+      "type": "play",
+      "id": 0,
+      "label": "word:corn",
+      "at": 5844.699999988079,
+      "position": 0,
+      "duration": 0.606
+    },
+    {
+      "type": "playing",
+      "id": 0,
+      "label": "word:corn",
+      "at": 5845.0999999940395,
+      "position": 0,
+      "duration": 0.606
+    },
+    {
+      "type": "pause",
+      "id": 0,
+      "label": "word:corn",
+      "at": 5917,
+      "position": 0.018252,
+      "duration": 0.606
+    },
+    {
+      "type": "loadedmetadata",
+      "id": 2,
+      "label": "word:tin",
+      "at": 5950.5,
+      "position": 0,
+      "duration": 0.58
+    },
+    {
+      "type": "play",
+      "id": 3,
+      "label": "instruction:inst_counting",
+      "at": 6730.5999999940395,
+      "position": 0,
+      "duration": null
+    },
+    {
+      "type": "loadedmetadata",
+      "id": 3,
+      "label": "instruction:inst_counting",
+      "at": 6737.699999988079,
+      "position": 0,
+      "duration": 2.330647
+    },
+    {
+      "type": "playing",
+      "id": 3,
+      "label": "instruction:inst_counting",
+      "at": 6770.9000000059605,
+      "position": 0,
+      "duration": 2.330647
+    },
+    {
+      "type": "pause",
+      "id": 3,
+      "label": "instruction:inst_counting",
+      "at": 9242.199999988079,
+      "position": 2.330647,
+      "duration": 2.330647
+    },
+    {
+      "type": "ended",
+      "id": 3,
+      "label": "instruction:inst_counting",
+      "at": 9242.299999982119,
+      "position": 2.330647,
+      "duration": 2.330647
+    },
+    {
+      "type": "play",
+      "id": 2,
+      "label": "word:tin",
+      "at": 9658.09999999404,
+      "position": 0,
+      "duration": 0.58
+    },
+    {
+      "type": "playing",
+      "id": 2,
+      "label": "word:tin",
+      "at": 9658.299999982119,
+      "position": 0,
+      "duration": 0.58
+    },
+    {
+      "type": "pause",
+      "id": 2,
+      "label": "word:tin",
+      "at": 10311.699999988079,
+      "position": 0.58,
+      "duration": 0.58
+    },
+    {
+      "type": "ended",
+      "id": 2,
+      "label": "word:tin",
+      "at": 10311.799999982119,
+      "position": 0.58,
+      "duration": 0.58
+    }
+  ],
+  "overlaps": [],
+  "synthesis": [],
+  "pageErrors": []
+}

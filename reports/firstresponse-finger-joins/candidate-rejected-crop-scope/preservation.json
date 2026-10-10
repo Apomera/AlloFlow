@@ -1,0 +1,22 @@
+{
+  "pins": {
+    "author-native.cjs": "b73de4cba811fa468f099dfdb9397bfe5c25acc0a3432d478b9f90eade0ad85d",
+    "firstresponse-face-preview.spec.ts": "2fa01eafd141bd358b3ac81ae67acbd5f464a24ee9aaca83ac12123fb90da200",
+    "run-face-browser.cjs": "335bc8991606afb6884e3f7fe7f2f59d6b75c43b76292023dc9c4801fa57d04b",
+    "patient-wrist-contract.cjs": "685b127a6aeaf7546e241a55b55d7c0618ffb059f2f819f39b742626d676ab76",
+    "audit-preview-fixture.cjs": "a216f047c31ad7ccf85b461904be4f9db560ffffb4ee0d6d4983c0278b01e8fa",
+    "fixture-audit.json": "56a3e0ea7cbafcc576308764686ab1259d896e810d97bb40aa2f93f71975bc86",
+    "playwright-face.config.cjs": "56b7e2efdc5abf1164be3a87bf1a5b70b57192e1b2b29e001e6fd19e24b721a7",
+    "face-capture-png.cjs": "6009565cd97b35c874ff22325427e40823b4ff197118ea3870d0b2996bd30829",
+    "face-mount-window.cjs": "9e3d95fe4ce8ae16ca7d4a994d26250e064873d675b930fb23d63b33ba43b246",
+    "candidate.js": "77394bfee2544c33c3274293a13e9666912c26f657117ac98d15416f220f060e",
+    "before.js": "dfe3e01f38a419187e468c749cc37827f486a47401b9916afaa9ec6f98a3f86a",
+    "delta.json": "b126c87c917a323d59de385e5e710a3b23437283563b095ef47461f92bd62332"
+  },
+  "archivedNative": [
+    "native-child",
+    "native-adult"
+  ],
+  "createdAt": "2026-10-10T04:11:32.465Z",
+  "candidateUnchanged": true
+}

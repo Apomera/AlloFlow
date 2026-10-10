@@ -1,0 +1,309 @@
+{
+  "completed": true,
+  "pins": {
+    "stem_lab/universe_flight_scene.js": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7",
+    "stem_lab/stem_tool_universe.js": "cd6416818c45fbce898a8d61de4370d3e10cfecea477b71d6d4f4e22fd814fe1"
+  },
+  "harnessSha256": "1c62af9e39d11dc67d6875eced7ae5880a8ee34be95e6a6377b5c6d65ff66169",
+  "workflows": [
+    {
+      "name": "desktop-paired-centers",
+      "markers": [
+        {
+          "id": "local-cluster-1",
+          "expected": [
+            0.1604218917149806,
+            0.4186099738461016
+          ],
+          "actual": [
+            0.160422,
+            0.41861
+          ],
+          "inView": true,
+          "coveredByControls": false
+        },
+        {
+          "id": "blue-star",
+          "expected": [
+            0.839578108285019,
+            0.5813900261538985
+          ],
+          "actual": [
+            0.839578,
+            0.5813900000000001
+          ],
+          "inView": true,
+          "coveredByControls": false
+        }
+      ]
+    },
+    {
+      "name": "manual-pan-reprojects-centers",
+      "markers": [
+        {
+          "id": "local-cluster-1",
+          "expected": [
+            0.2460835501290496,
+            0.4050365664417915
+          ],
+          "actual": [
+            0.246084,
+            0.40503700000000004
+          ],
+          "inView": true,
+          "coveredByControls": false
+        },
+        {
+          "id": "blue-star",
+          "expected": [
+            0.932211656867018,
+            0.6147849556477126
+          ],
+          "actual": [
+            0.9322119999999999,
+            0.6147849999999999
+          ],
+          "inView": true,
+          "coveredByControls": false
+        }
+      ]
+    },
+    {
+      "name": "zoom-reprojects-centers",
+      "markers": [
+        {
+          "id": "local-cluster-1",
+          "expected": [
+            0.20924326116007558,
+            0.39125848969430854
+          ],
+          "actual": [
+            0.20924299999999998,
+            0.391258
+          ],
+          "inView": true,
+          "coveredByControls": false
+        },
+        {
+          "id": "blue-star",
+          "expected": [
+            0.9949204823205581,
+            0.6314389020048776
+          ],
+          "actual": [
+            0.99492,
+            0.631439
+          ],
+          "inView": true,
+          "coveredByControls": false
+        }
+      ]
+    },
+    {
+      "name": "keyboard-frame-and-exact-back",
+      "widenedLens": true,
+      "positionAndCountersFixed": true,
+      "expandedRestored": true,
+      "pixelsExact": true,
+      "detourPreserved": true
+    },
+    {
+      "name": "narrow-view-unavailable-pair",
+      "disabled": true,
+      "noMutation": true
+    },
+    {
+      "name": "phone-paired-centers",
+      "markers": [
+        {
+          "id": "local-cluster-1",
+          "expected": [
+            0.48505871075795015,
+            0.5158929320515899
+          ],
+          "actual": [
+            0.48505899999999996,
+            0.515893
+          ],
+          "inView": true,
+          "coveredByControls": false
+        },
+        {
+          "id": "pale-star",
+          "expected": [
+            0.5149412892420514,
+            0.48410706794841013
+          ],
+          "actual": [
+            0.514941,
+            0.484107
+          ],
+          "inView": true,
+          "coveredByControls": false
+        }
+      ]
+    },
+    {
+      "name": "fullscreen-paired-centers",
+      "markers": [
+        {
+          "id": "local-cluster-1",
+          "expected": [
+            0.48482525311354313,
+            0.5158929320515899
+          ],
+          "actual": [
+            0.484825,
+            0.515893
+          ],
+          "inView": true,
+          "coveredByControls": false
+        },
+        {
+          "id": "pale-star",
+          "expected": [
+            0.5151747468864585,
+            0.48410706794841013
+          ],
+          "actual": [
+            0.5151749999999999,
+            0.484107
+          ],
+          "inView": true,
+          "coveredByControls": false
+        }
+      ]
+    },
+    {
+      "name": "end-pair-back-and-flyby-return",
+      "detailsCollapsedOnEnd": true,
+      "exactReturn": true
+    },
+    {
+      "name": "galaxy-paired-centers",
+      "markers": [
+        {
+          "id": "golden-elliptical",
+          "expected": [
+            0.8373175192000339,
+            0.25771404649862467
+          ],
+          "actual": [
+            0.8373180000000001,
+            0.257714
+          ],
+          "inView": true,
+          "coveredByControls": false
+        },
+        {
+          "id": "companion-galaxy",
+          "expected": [
+            0.162682480799966,
+            0.7422859535013754
+          ],
+          "actual": [
+            0.162682,
+            0.742286
+          ],
+          "inView": true,
+          "coveredByControls": false
+        }
+      ]
+    },
+    {
+      "name": "travel-clears-paired-view",
+      "cleared": true
+    }
+  ],
+  "accessibility": [
+    {
+      "name": "desktop-pair",
+      "violations": []
+    },
+    {
+      "name": "phone-pair",
+      "violations": []
+    },
+    {
+      "name": "phone-fullscreen-pair",
+      "violations": []
+    }
+  ],
+  "captures": [
+    {
+      "name": "desktop-paired-centers",
+      "file": "desktop-paired-centers.png",
+      "sha256": "754fcb420203da62c2f6206a031053ca49e1228148bad0b645644b7ef855d6f7"
+    },
+    {
+      "name": "phone-paired-centers",
+      "file": "phone-paired-centers.png",
+      "sha256": "e4cb1ced211dac06f4d24fe2358a9042a60a2cef43bfed2ac34e766719b6dde1"
+    },
+    {
+      "name": "phone-fullscreen-paired-centers",
+      "file": "phone-fullscreen-paired-centers.png",
+      "sha256": "116822c3a507b45d92daf6b26173003dce36867bb020181f51a135ca70dd2348"
+    },
+    {
+      "name": "galaxy-paired-centers",
+      "file": "galaxy-paired-centers.png",
+      "sha256": "ea8032b5979eac979d0d91b0c70a4c9070fca2d805c6f6edfe721700ad24acd0"
+    }
+  ],
+  "bounds": [
+    {
+      "name": "phone View together",
+      "left": 68,
+      "right": 249,
+      "top": 437.171875,
+      "bottom": 481.171875,
+      "width": 181,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "phone Back",
+      "left": 42,
+      "right": 98.6875,
+      "top": 212.21875,
+      "bottom": 256.21875,
+      "width": 56.6875,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "phone End paired view",
+      "left": 69,
+      "right": 267,
+      "top": 593.21875,
+      "bottom": 637.21875,
+      "width": 198,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    }
+  ],
+  "served": [
+    {
+      "file": "stem_lab/stem_tool_universe.js",
+      "sha256": "cd6416818c45fbce898a8d61de4370d3e10cfecea477b71d6d4f4e22fd814fe1"
+    },
+    {
+      "file": "stem_lab/universe_flight_scene.js",
+      "sha256": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7"
+    }
+  ],
+  "errors": []
+}

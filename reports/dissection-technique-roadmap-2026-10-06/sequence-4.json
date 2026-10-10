@@ -1,0 +1,17 @@
+{
+  "start": "2026-10-07T00:43:54.149Z",
+  "runnerPid": 5316,
+  "jobs": [
+    {
+      "mode": "unit-main",
+      "label": "unit-main-4",
+      "code": 1,
+      "start": "2026-10-07T00:43:54.158Z",
+      "end": "2026-10-07T00:57:35.778Z"
+    }
+  ],
+  "running": null,
+  "success": false,
+  "error": "unit-main-4 failed",
+  "end": "2026-10-07T00:57:36.518Z"
+}

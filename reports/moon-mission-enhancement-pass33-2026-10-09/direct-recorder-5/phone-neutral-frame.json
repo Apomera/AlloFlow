@@ -1,0 +1,352 @@
+{
+  "layout": {
+    "bounds": {
+      "left": 5,
+      "right": 315,
+      "top": -276.09375,
+      "bottom": 1126.6875,
+      "width": 310,
+      "height": 1402.78125
+    },
+    "plots": [
+      {
+        "label": "Altitude history",
+        "bounds": {
+          "left": 21,
+          "right": 299,
+          "top": 121.59375,
+          "bottom": 391.09375,
+          "width": 278,
+          "height": 269.5
+        },
+        "area": {
+          "left": 90,
+          "right": 286,
+          "top": 172.09375,
+          "bottom": 320.09375,
+          "width": 196,
+          "height": 148
+        },
+        "svg": {
+          "left": 90,
+          "right": 286,
+          "top": 172.09375,
+          "bottom": 320.09375,
+          "width": 196,
+          "height": 148
+        },
+        "viewBox": "0 0 100 100",
+        "svgText": 0,
+        "text": [
+          {
+            "text": "Altitude history",
+            "size": 13,
+            "left": 34,
+            "right": 130.078125,
+            "top": 135.59375,
+            "bottom": 152.59375
+          },
+          {
+            "text": "metres",
+            "size": 12,
+            "left": 249.78125,
+            "right": 286,
+            "top": 135.59375,
+            "bottom": 151.59375
+          },
+          {
+            "text": "0",
+            "size": 12,
+            "left": 75.53125,
+            "right": 82,
+            "top": 312.09375,
+            "bottom": 328.09375
+          },
+          {
+            "text": "150",
+            "size": 12,
+            "left": 62.59375,
+            "right": 82,
+            "top": 238.09375,
+            "bottom": 254.09375
+          },
+          {
+            "text": "300",
+            "size": 12,
+            "left": 62.59375,
+            "right": 82,
+            "top": 164.09375,
+            "bottom": 180.09375
+          },
+          {
+            "text": "0.0 s",
+            "size": 12,
+            "left": 90,
+            "right": 113.921875,
+            "top": 331.09375,
+            "bottom": 347.09375
+          },
+          {
+            "text": "40.0 s",
+            "size": 12,
+            "left": 255.609375,
+            "right": 286,
+            "top": 331.09375,
+            "bottom": 347.09375
+          },
+          {
+            "text": "Altitude",
+            "size": 12,
+            "left": 54,
+            "right": 95.828125,
+            "top": 361.09375,
+            "bottom": 377.09375
+          }
+        ],
+        "series": [
+          {
+            "label": "Altitude",
+            "data": "M0.0000,0.0000 L5.0000,16.6667 L42.5000,60.0000 L97.5000,98.6667 L100.0000,100.0000",
+            "effect": "non-scaling-stroke"
+          }
+        ],
+        "limits": []
+      },
+      {
+        "label": "Speed history",
+        "bounds": {
+          "left": 21,
+          "right": 299,
+          "top": 401.09375,
+          "bottom": 694.59375,
+          "width": 278,
+          "height": 293.5
+        },
+        "area": {
+          "left": 90,
+          "right": 286,
+          "top": 451.59375,
+          "bottom": 599.59375,
+          "width": 196,
+          "height": 148
+        },
+        "svg": {
+          "left": 90,
+          "right": 286,
+          "top": 451.59375,
+          "bottom": 599.59375,
+          "width": 196,
+          "height": 148
+        },
+        "viewBox": "0 0 100 100",
+        "svgText": 0,
+        "text": [
+          {
+            "text": "Speed history",
+            "size": 13,
+            "left": 34,
+            "right": 117.9375,
+            "top": 415.09375,
+            "bottom": 432.09375
+          },
+          {
+            "text": "m/s",
+            "size": 12,
+            "left": 265.890625,
+            "right": 286,
+            "top": 415.09375,
+            "bottom": 431.09375
+          },
+          {
+            "text": "0.0",
+            "size": 12,
+            "left": 66.453125,
+            "right": 82,
+            "top": 591.59375,
+            "bottom": 607.59375
+          },
+          {
+            "text": "4.0",
+            "size": 12,
+            "left": 66.453125,
+            "right": 82,
+            "top": 517.59375,
+            "bottom": 533.59375
+          },
+          {
+            "text": "8.0",
+            "size": 12,
+            "left": 66.453125,
+            "right": 82,
+            "top": 443.59375,
+            "bottom": 459.59375
+          },
+          {
+            "text": "0.0 s",
+            "size": 12,
+            "left": 90,
+            "right": 113.921875,
+            "top": 610.59375,
+            "bottom": 626.59375
+          },
+          {
+            "text": "40.0 s",
+            "size": 12,
+            "left": 255.609375,
+            "right": 286,
+            "top": 610.59375,
+            "bottom": 626.59375
+          },
+          {
+            "text": "Downward speed",
+            "size": 12,
+            "left": 54,
+            "right": 145.984375,
+            "top": 640.59375,
+            "bottom": 656.59375
+          },
+          {
+            "text": "Lateral drift",
+            "size": 12,
+            "left": 181.984375,
+            "right": 242.53125,
+            "top": 640.59375,
+            "bottom": 656.59375
+          },
+          {
+            "text": "Vertical limit 3 m/s",
+            "size": 12,
+            "left": 54,
+            "right": 152.234375,
+            "top": 664.59375,
+            "bottom": 680.59375
+          },
+          {
+            "text": "Drift limit 5 m/s",
+            "size": 12,
+            "left": 188.234375,
+            "right": 271.109375,
+            "top": 664.59375,
+            "bottom": 680.59375
+          }
+        ],
+        "series": [
+          {
+            "label": "Downward speed",
+            "data": "M0.0000,62.5000 L5.0000,100.0000 L42.5000,100.0000 L97.5000,85.0000 L100.0000,88.7500",
+            "effect": "non-scaling-stroke"
+          },
+          {
+            "label": "Lateral drift",
+            "data": "M0.0000,50.0000 L5.0000,81.2500 L42.5000,100.0000 L97.5000,71.2500 L100.0000,98.7500",
+            "effect": "non-scaling-stroke"
+          }
+        ],
+        "limits": [
+          {
+            "effect": "non-scaling-stroke",
+            "width": 1,
+            "y": 62.5
+          },
+          {
+            "effect": "non-scaling-stroke",
+            "width": 1,
+            "y": 37.5
+          }
+        ]
+      }
+    ],
+    "width": 320,
+    "scrollWidth": 320,
+    "controls": [
+      {
+        "left": 21,
+        "right": 299,
+        "top": 726.09375,
+        "bottom": 770.09375,
+        "width": 278,
+        "height": 44
+      },
+      {
+        "left": 21,
+        "right": 196.84375,
+        "top": 827.6875,
+        "bottom": 871.6875,
+        "width": 175.84375,
+        "height": 44
+      },
+      {
+        "left": 21,
+        "right": 192.796875,
+        "top": 879.6875,
+        "bottom": 923.6875,
+        "width": 171.796875,
+        "height": 44
+      }
+    ]
+  },
+  "selected": {
+    "index": 2,
+    "time": 17,
+    "text": "17.0 s · 120.0 m · vertical 0.0 m/s still · drift 0.0 m/s still · throttle 35% · fuel 90.0 s",
+    "marks": [
+      {
+        "label": "Altitude history",
+        "area": {
+          "width": 196,
+          "height": 148
+        },
+        "dots": [
+          {
+            "label": "Altitude",
+            "width": 10,
+            "height": 10,
+            "border": 2,
+            "radius": "50%",
+            "x": 83.296875,
+            "y": 88.796875
+          }
+        ],
+        "cursors": [
+          {
+            "x1": 42.5,
+            "x2": 42.5
+          }
+        ]
+      },
+      {
+        "label": "Speed history",
+        "area": {
+          "width": 196,
+          "height": 148
+        },
+        "dots": [
+          {
+            "label": "Downward speed",
+            "width": 10,
+            "height": 10,
+            "border": 2,
+            "radius": "50%",
+            "x": 83.296875,
+            "y": 148
+          },
+          {
+            "label": "Lateral drift",
+            "width": 10,
+            "height": 10,
+            "border": 2,
+            "radius": "50%",
+            "x": 83.296875,
+            "y": 148
+          }
+        ],
+        "cursors": [
+          {
+            "x1": 42.5,
+            "x2": 42.5
+          }
+        ]
+      }
+    ]
+  }
+}

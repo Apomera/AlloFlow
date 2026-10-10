@@ -1,0 +1,91 @@
+{
+  "status": "passed",
+  "generatedAt": "2026-10-05T14:48:21.747Z",
+  "sourcePath": "stem_lab/stem_tool_bridgelab.js",
+  "sourceSha256": "881533effeb1901421273557fb8954f813801f7309f136a4663a2733a2bb99b8",
+  "grid": {
+    "modes": [
+      "flexible",
+      "balanced",
+      "stiff"
+    ],
+    "dampingRatios": [
+      0,
+      0.05,
+      0.2,
+      0.4
+    ],
+    "frequenciesHz": [
+      0.2,
+      1.1,
+      3
+    ],
+    "intensitiesG": [
+      0,
+      0.000001,
+      0.12,
+      0.5
+    ],
+    "endTimesS": [
+      16,
+      16.003,
+      21.217,
+      24
+    ]
+  },
+  "counts": {
+    "sweep": {
+      "configurations": 144,
+      "before16Checks": 144,
+      "windows": 576,
+      "trialReadings": 1152,
+      "definedFractions": 864,
+      "undefinedFractions": 288,
+      "fractionBarWidths": 864,
+      "referenceWidths": 576,
+      "orderReversals": 576,
+      "purityChecks": 576
+    },
+    "extraPairs": {
+      "pairs": 4,
+      "windows": 16,
+      "trialReadings": 32,
+      "definedFractions": 20,
+      "undefinedFractions": 12,
+      "fractionBarWidths": 20,
+      "referenceWidths": 16,
+      "orderReversals": 16,
+      "purityChecks": 16
+    },
+    "synthetic": {
+      "cases": 5,
+      "windows": 5,
+      "trialReadings": 6,
+      "definedFractions": 4,
+      "undefinedFractions": 2,
+      "fractionBarWidths": 4,
+      "referenceWidths": 5,
+      "orderReversals": 5,
+      "purityChecks": 5
+    },
+    "amplitude": {
+      "configurations": 72,
+      "windows": 288,
+      "fractionReadings": 576,
+      "scaleChecks": 288
+    },
+    "invalidInputs": 24
+  },
+  "countScope": "Forward windows/readings are counted once; reversal and amplitude comparisons are reported separately. Undefined fractions have no fraction-bar width, while every window has one shared 100% reference position.",
+  "tolerances": {
+    "recordedRatios": "exact; no clamping, threshold or rounding",
+    "amplitudeInvariance": "1e-9 times the larger shared fraction scale; dimensionless, with no energy floor",
+    "geometry": "finite widths within 0..400; ratios above one extend beyond the 100% reference"
+  },
+  "diagnostics": {
+    "largestFraction": 1.5,
+    "smallestPositiveInitialJPerKg": 5e-324,
+    "maximumAmplitudeDifferenceOverFractionScale": 6.712597838687273e-11
+  },
+  "scope": "Existing relative modal energy history. Each fraction uses its own trial's stored energy at 16 s. Fractions do not equate the trials' initial energy or predict damage or safety. Unit and browser checks cover labels and rendering separately."
+}

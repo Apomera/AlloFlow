@@ -1,0 +1,9 @@
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const file=path.join(__dirname,'verify-patient-wrist-finish.cjs'),source=fs.readFileSync(file,'utf8');
+fs.mkdirSync(path.join(__dirname,'winding-diagnostics'),{recursive:true});fs.copyFileSync(path.join(__dirname,'geometry-contract/shading-verification.json'),path.join(__dirname,'winding-diagnostics/shading-verification.json'));fs.writeFileSync(path.join(__dirname,'winding-diagnostics/verify-patient-wrist-finish.cjs.saved'),source);
+const edits=[
+['minimumFaceDot=1;const changedRows','minimumFaceDot=1,minimumChangedFaceDot=1,minimumUnchangedFaceDot=1;const changedRows'],
+['minimumFaceDot=Math.min(minimumFaceDot,face.dot(average.normalize()));}check(minimumFaceDot>0,\'wrist normals agree with outward triangle winding\');',`const dot=face.dot(average.normalize());minimumFaceDot=Math.min(minimumFaceDot,dot);if(ids.some(id=>id<8*wrist.geometry.parameters.radialSegments))minimumChangedFaceDot=Math.min(minimumChangedFaceDot,dot);else{const oldAverage=new THREE.Vector3();for(const id of ids)oldAverage.add(new THREE.Vector3().fromBufferAttribute(old,id).applyMatrix3(matrix).normalize());equal(dot,face.dot(oldAverage.normalize()),'unchanged face normal agreement is exact');minimumUnchangedFaceDot=Math.min(minimumUnchangedFaceDot,dot);}}check(minimumChangedFaceDot>0,'changed wrist normals agree with outward triangle winding');`],
+['minLength,maxLength,minimumFaceDot,SHA256:','minLength,maxLength,minimumFaceDot,minimumChangedFaceDot,minimumUnchangedFaceDot,unchangedFacesExact:true,SHA256:'],
+['visible emergence seam is inside fully fitted root rows','visible emergence seam is inside fitted root and first fade row']
+];let next=source;for(const [old,replacement]of edits){assert.equal(next.split(old).length,2);next=next.replace(old,replacement);}fs.writeFileSync(file,next);assert.equal(fs.readFileSync(file,'utf8'),next);

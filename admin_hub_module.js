@@ -426,19 +426,37 @@ function AdminHubPanel(props) {
       descCls: "text-emerald-700"
     }
   ];
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4", style: { zIndex: 260 }, role: "presentation", onClick: onClose }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "adminhub_panel", className: "allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "90vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "adminhub-title", "aria-describedby": "adminhub-subtitle", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "adminhub-title", className: "text-xl font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "🏛️"), " ", tt("adminhub.title", "Leadership Hub")), /* @__PURE__ */ React.createElement("p", { id: "adminhub-subtitle", className: "text-sm text-slate-600 mt-1" }, tt("adminhub.subtitle", "Tools for principals, coaches, and student-services leaders"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl", "aria-label": tt("adminhub.close_aria", "Close Leadership Hub") }, "✕")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4" }, TOOLS.map((tool) => /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      key: tool.id,
-      type: "button",
-      "data-hub-id": tool.id,
-      "data-help-key": "adminhub_tool_card",
-      onClick: () => openHubTool(tool.id),
-      className: "flex items-start gap-3 p-4 bg-gradient-to-br border rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left " + tool.accent
-    },
-    /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, tool.icon),
-    /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold " + tool.titleCls }, tool.title), /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-1 " + tool.descCls }, tool.desc))
-  ))), /* @__PURE__ */ React.createElement("div", { className: "mt-5 rounded-xl border border-slate-200 bg-slate-50 p-3", "data-help-key": "adminhub_backup_section" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-black uppercase tracking-wide text-slate-700" }, tt("adminhub.backup_title", "Back up this hub")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 mt-0.5" }, tt("adminhub.backup_desc", "Everything above lives only in this browser. Download one file with all of it, and restore on a new device or after a wipe."))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 shrink-0" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4", style: { zIndex: 260 }, role: "presentation", onClick: onClose }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "adminhub_panel", className: "allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "90vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "adminhub-title", "aria-describedby": "adminhub-subtitle", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "adminhub-title", className: "text-xl font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "🏛️"), " ", tt("adminhub.title", "Leadership Hub")), /* @__PURE__ */ React.createElement("p", { id: "adminhub-subtitle", className: "text-sm text-slate-600 mt-1" }, tt("adminhub.subtitle", "Tools for principals, coaches, and student-services leaders"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl", "aria-label": tt("adminhub.close_aria", "Close Leadership Hub") }, "✕")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4" }, TOOLS.map((tool) => {
+    const isMaineCase = tool.id === "maineSldPractice";
+    const Card = isMaineCase ? "a" : "button";
+    return /* @__PURE__ */ React.createElement(
+      Card,
+      {
+        key: tool.id,
+        type: isMaineCase ? void 0 : "button",
+        "data-hub-id": tool.id,
+        "data-help-key": "adminhub_tool_card",
+        href: isMaineCase ? "https://alloflow-cdn.pages.dev/app/?tool=maine-sld-practice" : void 0,
+        target: isMaineCase ? "_blank" : void 0,
+        rel: isMaineCase ? "noopener noreferrer" : void 0,
+        onClick: (event) => {
+          if (isMaineCase) {
+            if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || typeof window.__alloOpenMaineSldPractice !== "function") return;
+            try {
+              if (window.__alloOpenMaineSldPractice({ fromLeadership: true }) !== false) event.preventDefault();
+            } catch (error) {
+              console.warn("[AdminHub] Maine SLD launch failed; opening the hosted activity.", error);
+            }
+            return;
+          }
+          openHubTool(tool.id);
+        },
+        className: "flex items-start gap-3 p-4 bg-gradient-to-br border rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left " + tool.accent
+      },
+      /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, tool.icon),
+      /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold " + tool.titleCls }, tool.title), /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-1 " + tool.descCls }, tool.desc), isMaineCase && typeof window.__alloOpenMaineSldPractice !== "function" && /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-semibold mt-2" }, "Opens in a new tab ↗"))
+    );
+  })), /* @__PURE__ */ React.createElement("div", { className: "mt-5 rounded-xl border border-slate-200 bg-slate-50 p-3", "data-help-key": "adminhub_backup_section" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-black uppercase tracking-wide text-slate-700" }, tt("adminhub.backup_title", "Back up this hub")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 mt-0.5" }, tt("adminhub.backup_desc", "Everything above lives only in this browser. Download one file with all of it, and restore on a new device or after a wipe."))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 shrink-0" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

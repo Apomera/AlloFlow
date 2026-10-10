@@ -1,0 +1,13 @@
+{
+  "pid": 30108,
+  "args": [
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\@playwright\\test\\cli.js",
+    "test",
+    "firstresponse-arm-preview.spec.ts",
+    "--config=C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-arm-finish-work\\playwright-arm.config.cjs",
+    "--workers=1",
+    "--retries=0",
+    "--reporter=list,json"
+  ],
+  "startedAt": "2026-10-08T20:22:18.570Z"
+}

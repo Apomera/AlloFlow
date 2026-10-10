@@ -1,0 +1,10 @@
+{
+  "beforeSHA256": "2596a28e45d0dc4f8a348ca712d8e45584fc25b8dd159bb3c79a64961ae9a00c",
+  "sourceSHA256": "67f0099c534e98ea6f1a916d8966b61ac19980bcdcaa21d7f30b37f30ec4c5f8",
+  "legacySceneCases": 72,
+  "legacyMetadataUnchanged": true,
+  "matchingUnchanged": true,
+  "englishKeys": 504,
+  "addedKeys": 17,
+  "railStrokeClearanceCorrection": true
+}

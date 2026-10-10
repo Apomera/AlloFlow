@@ -1,0 +1,84 @@
+{
+  "status": "passed",
+  "generatedAt": "2026-10-05T13:50:58.822Z",
+  "sourcePath": "stem_lab/stem_tool_bridgelab.js",
+  "sourceSha256": "f5f77fdf27349308c681874b142e7b54a0966be003c5a261292c0472af8be46b",
+  "grid": {
+    "modes": [
+      "flexible",
+      "balanced",
+      "stiff"
+    ],
+    "dampingRatios": [
+      0,
+      0.05,
+      0.2,
+      0.4
+    ],
+    "frequenciesHz": [
+      0.2,
+      1.1,
+      3
+    ],
+    "intensitiesG": [
+      0,
+      0.000001,
+      0.12,
+      0.5
+    ],
+    "endTimesS": [
+      16,
+      16.003,
+      21.217,
+      24
+    ]
+  },
+  "counts": {
+    "sweep": {
+      "cases": 144,
+      "beforeShakingEndChecks": 144,
+      "pairedWindows": 576,
+      "trialReadings": 1152,
+      "energyReadings": 5760,
+      "barRows": 2304,
+      "barSegments": 3456,
+      "swappedPairs": 576,
+      "zeroEnergyWindows": 144,
+      "boundaryWindows": 144,
+      "undampedTrialReadings": 144
+    },
+    "extraPairs": {
+      "pairs": 4,
+      "pairedWindows": 16,
+      "trialReadings": 32,
+      "energyReadings": 160,
+      "barRows": 64,
+      "barSegments": 96,
+      "swappedPairs": 16,
+      "zeroEnergyWindows": 4,
+      "boundaryWindows": 4,
+      "undampedTrialReadings": 4
+    },
+    "amplitude": {
+      "cases": 72,
+      "pairedWindows": 288,
+      "energyReadings": 2880,
+      "scaleChecks": 288
+    },
+    "invalidInputChecks": 14,
+    "samplerCompatibilityChecks": 2
+  },
+  "countScope": "Window/readout/bar counts describe forward budgets; swapped-pair and amplitude checks are counted separately. Each bar pair has an initial row and an accounted row with two segments.",
+  "tolerances": {
+    "energyBalance": "1e-5 * max(1, event energy in J/kg)",
+    "amplitude": "1e-9 * scaled event energy; no one-J/kg floor and no residual-relative division",
+    "stackedWidthRoundoff": "8 * Number.EPSILON * 400; individual SVG widths retain exact 0..400 bounds"
+  },
+  "diagnostics": {
+    "maximumAbsoluteBalanceResidualJPerKg": 0.0000016354405545371264,
+    "maximumBalanceResidualOverToleranceScale": 1.520852348885903e-8,
+    "maximumAmplitudeErrorOverEventScale": 6.249940417331523e-15,
+    "positiveEnergyAt16Windows": 111
+  },
+  "scope": "Numerical helper and SVG width arithmetic only. Unit interactions and browser checks verify labels, rendering, printing and layout separately."
+}

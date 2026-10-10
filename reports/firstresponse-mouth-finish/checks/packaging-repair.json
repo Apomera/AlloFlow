@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-09",
+  "reason": "Accepted native runner schema uses privateCandidate:true; retain failed browser launch and recovery separately from accepted visual evidence.",
+  "sourceCandidateChanged": false,
+  "fixtureChanged": false,
+  "acceptedEvidenceAssertionsRelaxed": false,
+  "negativeSchemaMutationRejected": true,
+  "originalsReread": true,
+  "files": {
+    "merge-browser.cjs": {
+      "beforeSHA256": "538e229651df9ec975d07f949b96b7ca0ad595f09885cde7a62b43a415e55be9",
+      "afterSHA256": "7fe7d3f12aa1560a482dfcbf1fb5d82d51d70fba8ebec2a4002855785ab86236"
+    },
+    "finish-report.cjs": {
+      "beforeSHA256": "9950ef76aa0dc30bbf3b0d52113ca7757b96ff2a5271f525585eea33f833e44d",
+      "afterSHA256": "b1f3206990fb7ddb53e7e013157c02168528f19dac68297e3d23507d56b1765b"
+    },
+    "integrate-final.cjs": {
+      "beforeSHA256": "aa21fd6ffd38d5716c1577b4d75c44ac0fe10ca70f4ac074df27591e4e911c61",
+      "afterSHA256": "c6c251783349be83b720614d7dfa50dc490e190c2faa9afc31324cff57103684"
+    },
+    "post-check.cjs": {
+      "beforeSHA256": "430369e4f30814a275d7a14ac2a1c28378f1c2a7fcf8ef381b4615fe4988c3b6",
+      "afterSHA256": "4a1bbf28879b0706d58ecef51ba0159214b77f82c2fc90195389aa9d9824fccb"
+    }
+  }
+}

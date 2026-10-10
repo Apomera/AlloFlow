@@ -25,11 +25,15 @@ const hostHandlersSource = fs.readFileSync(path.join(ROOT, 'host_handlers_source
 function loadStudentPackSerializer(win) {
     const start = liveAacSource.indexOf('const _alloSerializeResourceForStudentPack = (item, deps = {}) => {');
     const end = liveAacSource.indexOf('const LiveAacBoardDialog =', start);
+    const audioStart = liveAacSource.indexOf('function sanitizeWordSoundsAudioProvenance(');
+    const audioEnd = liveAacSource.indexOf('const ALLO_AAC_BOARD_FORMAT', audioStart);
     expect(start).toBeGreaterThan(-1);
     expect(end).toBeGreaterThan(start);
+    expect(audioStart).toBeGreaterThan(-1);
+    expect(audioEnd).toBeGreaterThan(audioStart);
     const raw = new Function(
         'window',
-        liveAacSource.slice(start, end) + '\nreturn _alloSerializeResourceForStudentPack;'
+        liveAacSource.slice(audioStart, audioEnd) + liveAacSource.slice(start, end) + '\nreturn _alloSerializeResourceForStudentPack;'
     )(win);
     return item => raw(item, {
         sanitizeHistoryForCloud: win.sanitizeHistoryForCloud,

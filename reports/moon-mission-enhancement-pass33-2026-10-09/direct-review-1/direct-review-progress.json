@@ -1,0 +1,149 @@
+{
+  "schema": "moon-pass33-direct-browser-v1",
+  "runner": "direct-playwright-api",
+  "playwrightCliResult": false,
+  "mode": "review",
+  "status": "failed",
+  "startedAt": "2026-10-09T23:05:38.908Z",
+  "repo": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "specPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-flight-review.spec.ts",
+  "output": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\direct-review-1",
+  "browserCache": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+  "timeouts": {
+    "action": 20000,
+    "navigation": 60000,
+    "expect": 15000,
+    "launch": 60000,
+    "workflow": 180000
+  },
+  "launchOptions": {
+    "headless": true,
+    "timeout": 60000
+  },
+  "workflowCompleted": false,
+  "cleanupCompleted": true,
+  "milestones": [
+    {
+      "name": "load:before",
+      "elapsedMs": 6
+    },
+    {
+      "name": "load:after",
+      "elapsedMs": 1801,
+      "workflow": "a saved touchdown can be inspected and exported, then retried without losing earlier attempts",
+      "registered": [
+        "camera views change the rendered perspective while a paused flight remains unchanged",
+        "a saved touchdown can be inspected and exported, then retried without losing earlier attempts",
+        "phone recorder fits the viewport and supports keyboard inspection"
+      ]
+    },
+    {
+      "name": "harness-start:before",
+      "elapsedMs": 1802
+    },
+    {
+      "name": "harness-start:after",
+      "elapsedMs": 1810
+    },
+    {
+      "name": "browser-launch:before",
+      "elapsedMs": 1811
+    },
+    {
+      "name": "browser-launch:after",
+      "elapsedMs": 2126
+    },
+    {
+      "name": "context-create:before",
+      "elapsedMs": 2127
+    },
+    {
+      "name": "context-create:after",
+      "elapsedMs": 2136
+    },
+    {
+      "name": "page-create:before",
+      "elapsedMs": 2136
+    },
+    {
+      "name": "page-create:failed",
+      "elapsedMs": 2255,
+      "error": {
+        "name": "Error",
+        "message": "browserContext.newPage: Target page, context or browser has been closed",
+        "stack": "browserContext.newPage: Target page, context or browser has been closed\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\run-workflow.cjs:147:53\n    at async bounded (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\run-workflow.cjs:54:12)\n    at async phase (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\run-workflow.cjs:62:29)\n    at async run (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\run-workflow.cjs:147:12)"
+      }
+    },
+    {
+      "name": "execution-failed",
+      "elapsedMs": 2255,
+      "error": {
+        "name": "Error",
+        "message": "browserContext.newPage: Target page, context or browser has been closed",
+        "stack": "browserContext.newPage: Target page, context or browser has been closed\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\run-workflow.cjs:147:53\n    at async bounded (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\run-workflow.cjs:54:12)\n    at async phase (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\run-workflow.cjs:62:29)\n    at async run (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\run-workflow.cjs:147:12)"
+      }
+    },
+    {
+      "name": "cleanup:before",
+      "elapsedMs": 2256
+    },
+    {
+      "name": "context-close:before",
+      "elapsedMs": 2256
+    },
+    {
+      "name": "context-close:after",
+      "elapsedMs": 2257
+    },
+    {
+      "name": "browser-close:before",
+      "elapsedMs": 2257
+    },
+    {
+      "name": "browser-close:after",
+      "elapsedMs": 2258
+    },
+    {
+      "name": "harness-stop:before",
+      "elapsedMs": 2258
+    },
+    {
+      "name": "harness-stop:after",
+      "elapsedMs": 2259
+    },
+    {
+      "name": "cleanup:after",
+      "elapsedMs": 2271,
+      "status": "failed"
+    }
+  ],
+  "errors": [
+    {
+      "phase": "execution",
+      "name": "Error",
+      "message": "browserContext.newPage: Target page, context or browser has been closed",
+      "stack": "browserContext.newPage: Target page, context or browser has been closed\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\run-workflow.cjs:147:53\n    at async bounded (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\run-workflow.cjs:54:12)\n    at async phase (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\run-workflow.cjs:62:29)\n    at async run (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\run-workflow.cjs:147:12)"
+    }
+  ],
+  "attachments": [],
+  "inputHashes": {
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-flight-review.spec.ts": "01f889b41e6ae7b1cae5347c40fac086dbb57b70a09155204934e45cb9c791c9",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_moonmission.js": "c4d9746f4495fcdaf83f9443e4911daa30868d4b1126dfb2728fc7f7ffcf505f",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_moonmission.js": "c4d9746f4495fcdaf83f9443e4911daa30868d4b1126dfb2728fc7f7ffcf505f"
+  },
+  "transform": {
+    "name": "Playwright bundled babelTransform",
+    "bundlePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\transform\\babelBundle.js",
+    "sha256": "9201df11ae9c9ee1febd587c5013c4f862aa7e9981b92b86ccbbbd37e71f9124"
+  },
+  "workflow": "a saved touchdown can be inspected and exported, then retried without losing earlier attempts",
+  "suiteOptions": {
+    "timeout": 180000,
+    "retries": 0
+  },
+  "browserVersion": "148.0.7778.96",
+  "finishedAt": "2026-10-09T23:05:41.179Z",
+  "elapsedMs": 2271
+}

@@ -1,0 +1,27 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start threads worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/atctower_command_safety.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/atctower_lesson_requests.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/atctower_recovery.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/stem_atctower_dialog_a11y.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/atctower_simulation.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/atctower_decision_support.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/atctower_flight_paths.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/atctower_operational_clarity.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/atctower_ops_investigation.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/atctower_practice.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/atctower_math_learning.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/atctower_inquiry_pedagogy.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/atctower_review_continuity.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/atctower_lesson_explorer.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/atctower_pathway.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/atctower_sequencing.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/atctower_a11y.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/atctower_priority.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/atctower_radar_labels.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/atctower_form_controls_a11y.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/atctower_practice_flow.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/atctower_tabs_a11y.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/atctower_arrival_board.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/atctower_math_integrity.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  no tests
+      Tests  no tests
+     Errors  1 error
+   Start at  20:58:45
+   Duration  60.15s (transform 0ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+

@@ -1,0 +1,15 @@
+[
+  {
+    "name": "cancel",
+    "code": 0
+  },
+  {
+    "name": "vitest",
+    "code": 0,
+    "child": {
+      "status": "finished",
+      "code": 0,
+      "finished": "2026-10-09T21:00:14.980Z"
+    }
+  }
+]

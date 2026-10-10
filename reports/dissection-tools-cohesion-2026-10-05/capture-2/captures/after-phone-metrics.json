@@ -1,0 +1,67 @@
+{
+  "options": {
+    "width": 263.21875,
+    "client": 261,
+    "scroll": 261,
+    "text": [
+      {
+        "text": "Frame contents",
+        "font": 14,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Specimen captures keep anatomy and your marks. Choose full canvas to include lens windows and guide panels.",
+        "font": 14,
+        "clipped": false,
+        "textOverflow": "clip"
+      }
+    ],
+    "controls": [
+      {
+        "font": 16,
+        "height": 48,
+        "width": 237.21875,
+        "clipped": false
+      }
+    ]
+  },
+  "reference": {
+    "width": 300.40625,
+    "client": 298,
+    "scroll": 298,
+    "text": [
+      {
+        "text": "Skin",
+        "font": 14,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "View: dorsal · Condition: standard",
+        "font": 14,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Focused on Nictitating Membrane",
+        "font": 14,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Technique 71/100 · Optical quality 85%",
+        "font": 14,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Specimen and marks · Zoom 1.5× · 1 observation mark · Approximate model distance: 1.8 cm",
+        "font": 14,
+        "clipped": false,
+        "textOverflow": "clip"
+      }
+    ],
+    "controls": []
+  }
+}

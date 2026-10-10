@@ -1,0 +1,64 @@
+{
+  "date": "2026-10-05",
+  "sourceSHA256": "9b4703b4ff3a83a8ef93390fa5c11732ade08495d414dcc830178824d5c9715b",
+  "baselineSHA256": "9d8fe81a9e1b3675a52691c543566ff35c9c4f0f4cb7b92551469290d230218d",
+  "desktopMirrorSHA256": "9b4703b4ff3a83a8ef93390fa5c11732ade08495d414dcc830178824d5c9715b",
+  "tests": {
+    "passed": 161,
+    "files": 6,
+    "newPNGTests": 22,
+    "scope": "Experiments, matching, repeated studies, notebook observations, focused workspace, and PNG export.",
+    "runs": [
+      {
+        "file": "perception-tests-results.json",
+        "selectedFiles": [
+          "perception_lab_focus_workspace.test.js",
+          "perception_lab_matching.test.js",
+          "perception_lab_notebook.test.js",
+          "perception_lab_png_export.test.js",
+          "perception_lab_repeat_study.test.js"
+        ]
+      },
+      {
+        "file": "experiments-recheck-results.json",
+        "selectedFiles": [
+          "perception_lab_experiments.test.js"
+        ]
+      }
+    ],
+    "uniqueTests": true,
+    "fullSuiteRerun": false
+  },
+  "browser": {
+    "result": "png-browser-results.json",
+    "passedGroups": 19,
+    "errors": [],
+    "widths": [
+      320,
+      390,
+      768,
+      1280,
+      1600
+    ],
+    "textScalePercent": 200,
+    "actualDownloadsAndDecodedPixels": true,
+    "allPixelsOpaque": true,
+    "themePixelsIdentical": true,
+    "reviewedImages": [
+      "drawing-ebbinghaus.png",
+      "drawing-moire.png",
+      "workspace-1600.png"
+    ]
+  },
+  "checks": {
+    "syntax": true,
+    "scopedWhitespace": true,
+    "engineUnchanged": true,
+    "studyReportBuilderUnchanged": true,
+    "candidateMirrorMatches": true,
+    "addedEnglishStrings": 4,
+    "dependencyAdapterOnly": true,
+    "gitWriteOperations": false
+  },
+  "application": "prepared"
+}

@@ -1,0 +1,10 @@
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),crypto=require('node:crypto');
+const p=name=>path.join(__dirname,name),sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+const metadata=JSON.parse(fs.readFileSync(p('baseline-metadata.json'),'utf8')),changes=JSON.parse(fs.readFileSync(p('changes.json'),'utf8'));
+const before=fs.readFileSync(p('before.js'),'utf8'),candidate=fs.readFileSync(p('candidate.js'),'utf8');
+assert.equal(sha(before),metadata.baselineSHA256);assert.equal(sha(candidate),metadata.candidateSHA256);
+const delta={beforeSHA256:metadata.baselineSHA256,afterSHA256:metadata.candidateSHA256,edits:changes.map(row=>({old:row.before,new:row.after}))};
+let recovered=before;for(const edit of delta.edits){assert.equal(recovered.split(edit.old).length,2);recovered=recovered.replace(edit.old,edit.new);}assert.equal(recovered,candidate);
+const baseline={sourceSHA256:metadata.baselineSHA256,runtimeCopies:metadata.runtimeBefore.map(row=>({path:row.relative,bytes:row.bytes,sha256:row.SHA256}))};
+for(const[name,value]of [['delta.json',delta],['baseline.json',baseline]])fs.writeFileSync(p(name),JSON.stringify(value,null,2)+'\n');
+console.log(JSON.stringify({canonicalInputsPrepared:true,candidateSHA256:metadata.candidateSHA256,sourceSpans:delta.edits.length,sharedFilesWritten:0}));

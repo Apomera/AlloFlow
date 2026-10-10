@@ -1,0 +1,16 @@
+{
+  "uiSha256": "63d163e9c11f6b00853e0910de5518ba02c6ff792c7cf2638334c8683c080a8e",
+  "rendererSha256": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7",
+  "rendererUnchanged": true,
+  "previewAssets": 18,
+  "previewAssetBytesVerified": true,
+  "mirrorExact": true,
+  "syntax": true,
+  "patchReversible": true,
+  "unitTests": 30,
+  "browserWorkflows": 22,
+  "accessibilityChecks": 5,
+  "captures": 8,
+  "touchBounds": 6,
+  "indexEmpty": true
+}

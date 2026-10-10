@@ -8,7 +8,11 @@
       "kind": "term",
       "scene": "A returned page with three small plain marks in the margin, no legible words",
       "constraints": "marks only",
-      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A returned page with three small plain marks in the margin, no legible words. marks only."
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A returned page with three small plain marks in the margin, no legible words. marks only.",
+      "file": "cf-term-feedback.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-89d458d8-a26d-46f7-845f-9366d581ab4a.png",
+      "alt": "A student writes on a page with three green dots in the margin and gray abstract lines, resting her other hand against her cheek."
     },
     {
       "id": "cf-term-verdict",
@@ -16,7 +20,11 @@
       "kind": "term",
       "scene": "A gavel on a block",
       "constraints": "plain symbol",
-      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A gavel on a block. plain symbol."
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A gavel on a block. plain symbol.",
+      "file": "cf-term-verdict.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-0c11d667-70f8-4517-8909-f3c8b9c12dff.png",
+      "alt": "A wooden gavel touches a round block on a desk, with a faint courthouse silhouette in the background."
     },
     {
       "id": "cf-term-rubric",
@@ -24,7 +32,11 @@
       "kind": "term",
       "scene": "A three-row grid with shaded cells stepping up from left to right",
       "constraints": "no words in cells",
-      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A three-row grid with shaded cells stepping up from left to right. no words in cells."
+      "prompt": "Square educational illustration: a single sheet of paper centered on a pale cream desktop. On that paper, a clearly ruled rubric table with EXACTLY THREE ROWS and THREE COLUMNS, all nine cells EMPTY of content. Shade just the bottom-left cell pale coral, middle-center cell muted mustard, and top-right cell muted teal to form a rising diagonal. Thin dark grid lines. Warm simple flat storybook style. No people, hands, plants, landscapes, puzzle pieces, symbols, text, letters, numbers, words, labels, or watermark. The paper table is the ONLY subject.",
+      "file": "cf-term-rubric.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-7c02201f-af9b-4f6a-9b90-42b9e12c8037.png",
+      "alt": "A blank three-by-three grid on a paper, with coral, mustard and teal cells forming a rising diagonal."
     },
     {
       "id": "cf-term-revise",
@@ -32,7 +44,12 @@
       "kind": "term",
       "scene": "A page with one paragraph highlighted and a pencil touching only that paragraph",
       "constraints": "the rest untouched",
-      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A page with one paragraph highlighted and a pencil touching only that paragraph. the rest untouched."
+      "prompt": "Warm simple flat educational storybook illustration, muted earth colors, pale cream background. Square glossary illustration. Top-down view of a single paper sheet with three groups of abstract gray bars representing paragraphs. Only the middle group is highlighted pale yellow, a pencil tip touches that group. Other two groups unchanged. No people or hands. No text, letters, numerals, labels, logos or watermarks.",
+      "file": "cf-term-revise.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-b9108d86-8064-4050-b2a1-878dafa27573.png",
+      "alt": "A paper with three groups of gray bars; only the middle group is highlighted yellow and touched by a pencil tip.",
+      "generationMethod": "built-in-imagegen"
     },
     {
       "id": "cf-term-gap",
@@ -40,7 +57,12 @@
       "kind": "term",
       "scene": "Two platforms with a small space between them and a plank almost across",
       "constraints": "gap is small",
-      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Two platforms with a small space between them and a plank almost across. gap is small."
+      "prompt": "Warm simple flat educational storybook illustration, muted earth colors, pale cream background. Square glossary illustration. Two low wooden platforms separated by a small gap. A wooden plank extends from the left platform almost to the right platform, stopping just short, making the small remaining gap obvious. No people. No text, letters, numerals, labels, logos or watermarks.",
+      "file": "cf-term-gap.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-f9540470-e67b-447f-bd2b-3c1e15be6a37.png",
+      "alt": "A wooden plank extends from one platform toward another, leaving a small gap before reaching the other side.",
+      "generationMethod": "built-in-imagegen"
     },
     {
       "id": "cf-term-yet",
@@ -48,7 +70,12 @@
       "kind": "term",
       "scene": "A house frame under construction with scaffolding, clearly in progress",
       "constraints": "not ruined, being built",
-      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A house frame under construction with scaffolding, clearly in progress. not ruined, being built."
+      "prompt": "Warm simple flat educational storybook illustration, muted earth colors, pale cream background. Square glossary illustration. A small house under construction, fresh clean wooden wall studs and roof trusses, scaffolding beside it, stack of unused boards nearby. Clearly being built, not ruined. No people. No text, letters, numerals, labels, logos or watermarks.",
+      "file": "cf-term-yet.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-b0c948b8-623a-4071-b8a8-96ea3571874e.png",
+      "alt": "A fresh wooden house frame under construction, with scaffolding beside it and a stack of unused boards.",
+      "generationMethod": "built-in-imagegen"
     },
     {
       "id": "cf-img-sinking",
@@ -59,7 +86,12 @@
       "plannedLabels": [
         "Three comments"
       ],
-      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. A student holding a returned page, shoulders dropped, three margin marks visible. All labels and captions will be editable native fields outside the artwork."
+      "prompt": "Use case: illustration-story. Wide landscape lesson panel for a middle-school Crew SEL pack, approximately 3:2 composition. Warm simple flat educational storybook illustration, muted earth colors, pale cream classroom background, clean uncluttered shapes and gentle paper texture. A fictional 13-year-old girl with medium brown skin, a coherent rounded curly dark brown hairstyle, mustard sweater and teal trousers sits at a simple school desk. She holds a returned paper in both hands below her face, with shoulders slightly dropped and a quietly disappointed expression, not crying. The paper is visible to the viewer and shows gray abstract horizontal bars representing paragraphs and exactly three small coral marks in its margin. Her two arms connect naturally at her shoulders, elbows bend comfortably, and each hand clearly grips a different lower paper edge; anatomically coherent hands and no extra fingers or limbs. Calm empathetic mood. No other people. No text, letters, numerals, labels, captions, logos or watermarks anywhere. All labels and captions will be native editable fields outside the artwork.",
+      "file": "cf-img-sinking.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cc-fcba-7dd2-a1f9-f3076c91798a\\exec-14eba3ba-6c4c-497c-ad2f-74c316aede24.png",
+      "alt": "A curly-haired student in a mustard sweater sits with dropped shoulders, holding a returned page with abstract paragraphs and three coral margin marks.",
+      "generationMethod": "built-in-imagegen"
     },
     {
       "id": "cf-img-map",
@@ -72,7 +104,15 @@
         "Evidence",
         "Reasoning"
       ],
-      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. The same student with the page beside a three-row rubric grid; two rows marked lower, a small route line drawn from the low rows to the page. All labels and captions will be editable native fields outside the artwork."
+      "prompt": "Use case: illustration-story. Create a NEW wide landscape lesson panel for a middle-school Crew SEL pack, approximately 3:2 composition. Input image is a character and style reference only: keep the same fictional 13-year-old girl with medium brown skin, coherent shoulder-length curly dark brown hair, mustard sweater and teal trousers. Warm simple flat educational storybook illustration, muted earth colors, pale cream classroom, gentle paper texture. Scene: the girl sits calmly at her school desk with an attentive, hopeful expression, looking down at two sheets arranged side by side and clearly visible to viewer from an elevated three-quarter view. Left sheet: a rubric with exactly three rows and three columns; one pale teal cell is marked in the rightmost column of the top row, two pale coral cells in the leftmost column of the middle and bottom rows represent lower ratings. No content or symbols in the cells. Right sheet: the returned paper with three groups of gray abstract bars and three coral margin marks. Two short simple curved teal route lines lead from the lower marked rubric rows toward the middle and bottom paper paragraphs, creating a visual map for revision. Both forearms rest naturally on the desk outside the sheets, hands relaxed, two arms properly attached at shoulders with clear elbows and wrists, no pointing. Maintain plausible anatomy. No other people. No text, letters, numerals, labels, captions, logos or watermarks anywhere. All labels and captions will be native editable fields outside the artwork.",
+      "file": "cf-img-map.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cc-fcba-7dd2-a1f9-f3076c91798a\\exec-8cad7971-dd94-4d20-a401-6b29788d4b03.png",
+      "alt": "The same student studies a three-row rubric beside her returned page. Two arrows lead from the lower rubric rows toward paragraphs on the page.",
+      "generationMethod": "built-in-imagegen",
+      "referenceImages": [
+        "cf-img-sinking.png"
+      ]
     },
     {
       "id": "cf-img-revision",
@@ -84,7 +124,12 @@
         "One piece of evidence",
         "One connecting sentence"
       ],
-      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. The page with one new abstract line of marks inserted and one small evidence note added, everything else unchanged; a clock showing a short span. All labels and captions will be editable native fields outside the artwork."
+      "prompt": "Use case: illustration-story. Wide landscape lesson panel, approximately 3:2 composition. Warm simple flat educational storybook illustration, muted earth colors, gentle paper texture. Top-down view of a pale cream school desktop. ONLY these objects: one returned paper, one sticky note, one pencil, one small analog timer. The paper contains exactly three groups of gray abstract horizontal bars representing paragraphs. Middle paragraph contains exactly one additional teal horizontal bar among the gray bars. A small pale mustard sticky note beside the middle paragraph contains one short teal abstract bar representing a piece of evidence; a thin teal connector line links note and middle paragraph. Upper and lower paragraph groups remain all gray. The left paper margin has exactly THREE CORAL DASHES TOTAL: one SINGLE small coral dash beside the top paragraph, one SINGLE small coral dash beside the middle paragraph, one SINGLE small coral dash beside the bottom paragraph. Never groups of dashes. A yellow pencil rests alongside the paper. A small teal analog timer at the side has a plain blank cream circular dial, TWO DARK HANDS at different visible angles attached to the same center, and a small pale teal sector representing a short span. No tick marks. No numbers. Keep paper and changes prominent. No plants, books, cups, people or hands. No text, letters, numerals, labels, captions, logos or watermarks anywhere.",
+      "file": "cf-img-revision.png",
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cc-fcba-7dd2-a1f9-f3076c91798a\\exec-99b62308-2c73-4b8d-8e89-ccf94636c925.png",
+      "alt": "A paper keeps its gray paragraph bars and three coral margin marks while adding one teal bar and a connected evidence note. A pencil and a timer sit beside it.",
+      "generationMethod": "built-in-imagegen"
     }
   ]
 }

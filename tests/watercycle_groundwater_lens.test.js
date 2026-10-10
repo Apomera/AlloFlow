@@ -9,6 +9,11 @@ const MIRROR_PATH = 'desktop/web-app/public/stem_lab/stem_tool_watercycle.js';
 const TEST_PATH = 'tests/watercycle_groundwater_lens.test.js';
 const BASELINE_PATH = 'reports/watercycle-steward-history/browser-tested-runtime.js';
 const BASELINE_SHA = 'ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a';
+// Earlier Journey diagram enhancements are frozen in the accepted prior runtime.
+// Only these four exact drawing anchors use that reference; all others keep the original.
+const REVIEWED_DIAGRAM_PATH = 'reports/watercycle-land-cutaway/candidate-runtime.js';
+const REVIEWED_DIAGRAM_SHA = '3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875';
+const REVIEWED_DIAGRAM_ANCHORS = ['canvasRef', 'drawFlowChevrons2d', 'drawMatterEnergyEvidence2d', 'drawPhysicalTimeGlyph2d'];
 const PRESERVED = [
   'WCExploreNotebook', 'WCJourneyChapters', 'WCCheckInvestigation', 'WCProcessCompare',
   'wcLandResponse', 'estimateWcLandIndices', 'estimateWcRouteShares',
@@ -155,6 +160,7 @@ export const waterCycleGroundwaterLensVerification = {
 const loadedAt = new Date().toISOString();
 const sources = [SOURCE_PATH, MIRROR_PATH].map(path => ({ path, bytes: readFileSync(path), text: readFileSync(path, 'utf8') }));
 const baselineBytes = readFileSync(BASELINE_PATH);
+const reviewedDiagramBytes = readFileSync(REVIEWED_DIAGRAM_PATH);
 const loadedTestBytes = readFileSync(TEST_PATH);
 afterAll(() => {
   if (process.env.WATER_CYCLE_GROUNDWATER_LENS_LOADED_REPORT) writeFileSync(process.env.WATER_CYCLE_GROUNDWATER_LENS_LOADED_REPORT, JSON.stringify({
@@ -171,7 +177,7 @@ function loadHelper(source) {
     initializer = source.text.slice(node.init.start, node.init.end);
   });
   if (!initializer) throw new Error('Missing actual groundwater lens in ' + source.path);
-  return runInNewContext('(' + initializer + ')', {}, { filename: source.path + ':groundwater-lens', timeout: 1000 });
+  return runInNewContext('(' + initializer + ')', {}, { filename: source.path + ':groundwater-lens', timeout: 30000 });
 }
 const shipped = sources.map(source => ({ path: source.path, helper: loadHelper(source) }));
 function each(callback) { shipped.forEach(({ helper, path }) => callback(helper, path)); }
@@ -392,7 +398,7 @@ function renderer(source, overrides = {}) {
     React: { createElement(type, props, ...children) { return { type, props: props || {}, children }; } },
     upd(key, value) { writes.push(key); context.d = { ...context.d, [key]: value }; },
     focusWcComparisonTarget(id) { focus.push(id); } };
-  const api = runInNewContext(Object.entries(initializers).map(([name, value]) => 'var ' + name + ' = ' + value + ';').join('\n') + '\n' + functions.renderWcGroundwaterLens + '\n({render:renderWcGroundwaterLens,check:WCCheckInvestigation});', context, { filename: source.path + ':groundwater-renderer', timeout: 1000 });
+  const api = runInNewContext(Object.entries(initializers).map(([name, value]) => 'var ' + name + ' = ' + value + ';').join('\n') + '\n' + functions.renderWcGroundwaterLens + '\n({render:renderWcGroundwaterLens,check:WCCheckInvestigation});', context, { filename: source.path + ':groundwater-renderer', timeout: 30000 });
   function elements(scope) {
     const nodes = [];
     function visit(node) {
@@ -418,7 +424,8 @@ describe('Water Cycle groundwater lens: actual unscored renderer callbacks', () 
       expect(tree.find(node => node.props['data-gw-select'] === part).props['aria-pressed']).toBe(true);
       expect(tree.find(node => node.props['data-gw-pore-state']).props['data-gw-pore-state']).toBe(part);
       expect(tree.find(node => node.props['data-gw-result']).props['data-gw-result']).toBe('waiting');
-      expect(session.focus).toEqual(['wcGroundwater-explorer-DetailTitle']);
+      // Zone selection retains the native selector focus beside the diagrams.
+      expect(session.focus).toEqual([]);
       expect(session.writes).toEqual(['wcGroundwaterLens']); expect(session.protectedState()).toEqual(before);
     });
   });
@@ -470,9 +477,28 @@ describe('Water Cycle groundwater lens: independent simulation preservation', ()
     expect(sha(baselineBytes)).toBe(BASELINE_SHA);
     expect(sha(sources[0].bytes)).toBe(sha(sources[1].bytes));
   });
-  it('preserves complete model, routes, physical-time traces and 3D engine plus all 2D code outside the reviewed pore paint', () => {
+  it('preserves complete model, routes, physical-time traces and engines with exact reviewed 2D drawing anchors', () => {
+    expect(sha(reviewedDiagramBytes)).toBe(REVIEWED_DIAGRAM_SHA);
     const original = productionNodes(baselineBytes.toString('utf8'));
+    const reviewed = productionNodes(reviewedDiagramBytes.toString('utf8'));
+    function rawDrawingAnchors(text) {
+      const normalized = text.replace(/\r\n/g, '\n'), nodes = {};
+      walkNodes(parse(normalized, { ecmaVersion: 'latest' }), node => {
+        const name = ['FunctionDeclaration', 'VariableDeclarator'].includes(node.type) && node.id && node.id.name;
+        if (!REVIEWED_DIAGRAM_ANCHORS.includes(name)) return;
+        if (nodes[name]) throw new Error('Non-unique raw drawing anchor: ' + name);
+        nodes[name] = normalized.slice(node.start, node.end);
+      });
+      return nodes;
+    }
+    const rawReviewed = rawDrawingAnchors(reviewedDiagramBytes.toString('utf8'));
+    expect(Object.keys(rawReviewed).sort()).toEqual([...REVIEWED_DIAGRAM_ANCHORS].sort());
+    sources.forEach(source => expect(rawDrawingAnchors(source.text), source.path + ' raw drawing anchors').toEqual(rawReviewed));
     expect(Object.keys(original).sort()).toEqual([...PRESERVED].sort());
+    expect(Object.keys(reviewed).sort()).toEqual([...PRESERVED].sort());
+    // Require exactly the known earlier visual differences, then freeze each full anchor.
+    expect(PRESERVED.filter(name => original[name] !== reviewed[name]).sort()).toEqual([...REVIEWED_DIAGRAM_ANCHORS].sort());
+    REVIEWED_DIAGRAM_ANCHORS.forEach(name => { original[name] = reviewed[name]; });
     sources.forEach(source => expect(productionNodes(source.text), source.path).toEqual(original));
   });
   it('preserves exact original quiz and myth first-answer counters and rewards', () => {

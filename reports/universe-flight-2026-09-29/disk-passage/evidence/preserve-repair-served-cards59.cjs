@@ -1,0 +1,12 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const stage=path.resolve(__dirname),report=path.join(stage,'browser-report','manifest-served-check.json'),attempt=path.join(stage,'attempts','served-cards-01-manifest404'),driver=path.join(stage,'check-served-cards59.cjs');
+for(const p of [report,attempt,driver])assert.ok(p.startsWith(stage+path.sep),'Preservation paths remain inside the stage');
+assert.ok(!fs.existsSync(attempt));
+const prior=JSON.parse(fs.readFileSync(report,'utf8'));assert.match(prior.errors.join(' '),/404 !== 200/);
+const sha=s=>crypto.createHash('sha256').update(s).digest('hex'),before=fs.readFileSync(driver,'utf8');
+fs.mkdirSync(attempt);fs.renameSync(report,path.join(attempt,'manifest-served-check.json'));fs.copyFileSync(driver,path.join(attempt,'check-served-cards-executed.cjs'));
+const needle="result.manifest=await check('manifest.json');",replacement="const manifestBytes=fs.readFileSync(path.join(repo,relative,'manifest.json'));assert.deepEqual(manifestBytes,fs.readFileSync(path.join(repo,'desktop/web-app/public',relative,'manifest.json')));result.manifest={file:'manifest.json',bytes:manifestBytes.length,hash:hash(manifestBytes),mirrorVerified:true,served:false};";
+assert.equal(before.split(needle).length,2);const after=before.replace(needle,replacement);fs.writeFileSync(driver,after);
+const provenance={previousDriverSha256:sha(before),driverSha256:sha(after),preservedAttempt:'attempts/served-cards-01-manifest404',change:'Check manifest locally and in desktop mirror; verify all fifteen WEBPs through the preview server. The browser UI loads individual WEBPs and does not request manifest.json.',priorFailure:prior.errors};
+fs.writeFileSync(path.join(stage,'served-cards-driver-provenance-v2.json'),JSON.stringify(provenance,null,2)+'\n');console.log(JSON.stringify(provenance));

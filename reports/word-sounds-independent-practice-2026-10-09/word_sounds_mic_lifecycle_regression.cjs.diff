@@ -1,0 +1,45 @@
+diff --git "a/C:\\Users\\cabba\\Documents\\Codex\\2026-10-07\\please-keep-enhancing-thanks-x20\\work\\learning-baseline\\word_sounds_mic_lifecycle_regression.cjs" "b/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\word_sounds_mic_lifecycle_regression.cjs"
+index c3e0d7e..32ead76 100644
+--- "a/C:\\Users\\cabba\\Documents\\Codex\\2026-10-07\\please-keep-enhancing-thanks-x20\\work\\learning-baseline\\word_sounds_mic_lifecycle_regression.cjs"
++++ "b/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\word_sounds_mic_lifecycle_regression.cjs"
+@@ -18,6 +18,7 @@ const targets = between(source, '// BEGIN WORD SOUNDS MICROPHONE ANSWERS', '// E
+ const lifecycle = between(source, '// BEGIN WORD SOUNDS MICROPHONE LIFECYCLE', '// END WORD SOUNDS MICROPHONE LIFECYCLE');
+ const productionCore = new Function(fs.readFileSync(path.join(repo, 'word_sounds_core.js'), 'utf8') + '\nreturn createWordSoundsCore();')();
+ const handler = between(source, '      const handleMicInput = React.useCallback(', '      // BEGIN WORD SOUNDS MICROPHONE CONTROLS');
++const controls = between(source, '// BEGIN WORD SOUNDS MICROPHONE CONTROLS', '// END WORD SOUNDS MICROPHONE CONTROLS');
+ const shutdown = between(source, '      const stopAllWordSoundsAudio = React.useCallback(', '      // Ref-mirror of wordSoundsAudioLibrary');
+ const answerBody = between(source, '        (answer, expectedAnswer, opts) => {', '          try {').replace('        (answer, expectedAnswer, opts) => {', '');
+ const replayBody = between(source, '        async (input, playImmediately = true) => {', '          const voiceForTts =').replace('        async (input, playImmediately = true) => {', '');
+@@ -61,6 +62,7 @@ const Harness = new Function('React', 'window', 'hooks', 'WS_CORE', `${homophone
+       historyLearnerId, configuredSessionId, historyResourceId, isolationState, manipulationState } = props;
+     const [isListening, setIsListening] = React.useState(false);
+     const recognitionRef = React.useRef(null), isMountedRef = React.useRef(true);
++    const activityRegionRef = React.useRef(null);
+     const audioRunIdRef = React.useRef(0), advanceEpochRef = React.useRef(0), submissionLockRef = React.useRef(false);
+     const audioCancelledRef = React.useRef(false), currentActiveAudio = React.useRef(null), audioInstances = React.useRef(new Map());
+     const feedbackAudioRef = React.useRef(null), anchorReplayTimeoutRef = React.useRef(null);
+@@ -76,8 +78,9 @@ const Harness = new Function('React', 'window', 'hooks', 'WS_CORE', `${homophone
+     const checkAnswer = (answer, expectedAnswer, opts) => { ${answerBody} hooks.score(answer, expectedAnswer); };
+     const replay = async (input, playImmediately = true) => { ${replayBody} };
+     ${handler}
++    ${controls}
+     hooks.expose({ handleMicInput, cancelMicInput, stopAllWordSoundsAudio, checkAnswer, replay, isListening,
+-      recognitionRef, micAttemptRef, audioRunIdRef, advanceEpochRef, submissionLockRef, isMountedRef });
++      recognitionRef, micAttemptRef, pendingMicAnswerRef, confirmMicAnswer, audioRunIdRef, advanceEpochRef, submissionLockRef, isMountedRef });
+     return React.createElement('button', { onClick: handleMicInput, 'aria-pressed': isListening }, isListening ? 'Cancel microphone' : 'Use Microphone');
+   };`)(React, dom.window, hooks, productionCore);
+ const defaults = { currentWordSoundsWord: 'blue', wordSoundsActivity: 'blending', wordSoundsLanguage: 'en-US', wordSoundsPhonemes: { word: 'blue', rhymeWord: 'cat' }, isolationState: null, manipulationState: null,
+@@ -216,7 +219,12 @@ async function run() {
+         { word: 'hat', activity: 'rhyming', text: 'hat', expected: ['hat', 'cat'] },
+       ]) {
+         await mount(route, { currentWordSoundsWord: example.word, wordSoundsActivity: example.activity || 'blending', wordSoundsPhonemes: { word: example.word, rhymeWord: 'cat' } });
+-        await click(); await settle(() => last().result(example.text)); assert.deepEqual(scores, [example.expected]);
++        await click(); await settle(() => last().result(example.text));
++        if (api.pendingMicAnswerRef.current) {
++          assert.deepEqual(scores, [], 'A suspected mismatch waits for student confirmation');
++          await settle(() => api.confirmMicAnswer(api.pendingMicAnswerRef.current));
++        }
++        assert.deepEqual(scores, [example.expected]);
+       }
+       await mount(route, { wordSoundsActivity: 'rhyming', wordSoundsPhonemes: {} }); await click(); inactive();
+       assert.equal(instances.length, 0, 'An unresolved rhyme answer cannot start recognition');

@@ -1,0 +1,14 @@
+{
+  "input": {
+    "research_read_video": "Read video",
+    "research_video_link_only": "No readable video transcript was returned.",
+    "research_video_snippet": "Search snippet only; the video has not been transcribed.",
+    "research_video_ai_note": "AI-linked notes, not a video transcript.",
+    "research_video_transcript_note": "AI-generated transcript, not verified captions. It may contain transcription errors.",
+    "research_add_link": "Add a link or your own text"
+  },
+  "simplified": {
+    "sources_video_transcript": "AI video transcript",
+    "sources_video_transcript_limit": "AI-generated transcript, not verified captions. It may contain transcription errors."
+  }
+}

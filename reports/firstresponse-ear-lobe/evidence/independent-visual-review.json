@@ -1,0 +1,26 @@
+{
+  "sourceSHA256": "0af58d9afd30ed0de275caf53197320ddabed9308f08b191cce7bf4927d83f84",
+  "accepted": true,
+  "imageHashes": {
+    "adult-support-baseline-stage.png": "e36e8b32aae81a70fc098cd1ebc6d89c8f1c264e40c419ccd381b5cac90f4493",
+    "adult-support-baseline-ear.png": "a815602ddf099a264746463f1ad11a403fb21f630fff63dec16a6f2c0fe3e8b3",
+    "adult-support-candidate-stage.png": "a1957b49b5bebb981166e06f7db9d557ca5f9d7329cc83dfffdcc442ba810af6",
+    "adult-support-candidate-ear.png": "e05fd270349324ef95206fbdc1e240981a006bca3368e4063dfd0645747068d3",
+    "child-head-baseline-stage.png": "6fe12eacbc7c7d9a37ced6f7765bbd38bc72141f13e0f56e554db58f50a17e65",
+    "child-head-baseline-ear.png": "97e3c282e88e1578bc7378176fe3392e28b0371218fefb24dc29b0030cdfdb04",
+    "child-head-candidate-stage.png": "b5aeb9a4f538c4b5a66f813ac25c4e3d915f9843db6131843b641cac48eda7a7",
+    "child-head-candidate-ear.png": "4cb79fdaacabd94fb4050cedf5b4e5d31ef8c3663ef4d3f4b37eb6693ca10e10",
+    "infant-head-contrast-baseline-stage.png": "e549da4934fc5f0882b099caab115ce446296619a53cb4ec7259a924cfbe13c7",
+    "infant-head-contrast-baseline-ear.png": "6b4f0971578b2347910ca955a87df0702b9939d5aa57151482ea5ad29b35c3c4",
+    "infant-head-contrast-candidate-stage.png": "7945940a67f69b52093e33e36b60abf4932e31bfbc77c06f24b30d3573a9c1e0",
+    "infant-head-contrast-candidate-ear.png": "1e0ea5636939c6442540d62f27c5ce4853fcf0292dd803b88fbd4f2aad898cae"
+  },
+  "observations": [
+    "Independently viewed all 12 baseline and candidate PNGs at their native dimensions: paired full stage images and same-frame ear detail crops for adult support, child recovery head view, and infant contrast head view.",
+    "The adult supporting-hand view shows a clear localized improvement: the lower/right end of the raised outer ridge now blends into a rounded lobe, reducing the previous stacked-disc appearance. The upper helix remains visible.",
+    "The child ear is small and partly hidden by the skull in the native head view. Its lower outline looks slightly less layered, without a visible gap, spike, or new shading defect. This pair mainly verifies the child recovery pose.",
+    "The infant contrast pair retains its continuous white ear and head silhouette. Surface relief is not appreciably distinguishable at this size and contrast setting.",
+    "Across the three pairs, framing, supporting hands, face, clothing, and surrounding stage appear unchanged. The adult ear still reads as a shallow oval relief, so this improves the lobe transition rather than completing anatomical realism."
+  ],
+  "limitations": "Three matched raw-module browser views were visually reviewed. Small child and high-contrast infant ear crops reveal limited surface detail. Full application loading, production builds, and deployment were not tested."
+}

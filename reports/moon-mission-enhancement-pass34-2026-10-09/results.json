@@ -1,0 +1,141 @@
+{
+  "schema": "moon-mission-pass34-summary-v1",
+  "date": "2026-10-09",
+  "status": "passed",
+  "change": "Readable, interactive re-entry load and heating charts",
+  "verification": {
+    "sourceSha256": "ffe2ac5862f814ccc4d3e5add421630ae1da9bb445b007346ce3aa3517690152",
+    "sourceBytes": 1431505,
+    "mirrorsIdentical": true,
+    "reversesToAcceptedPass33": true,
+    "priorTestsUnchanged": 127,
+    "ownedTests": {
+      "tests/e2e/moon-mission-entry-recorder.spec.ts": "530b8b8157ae2bbe3c849e494d2441ee2bff8f7831a1654b3f5ee75c36cdcefe"
+    },
+    "indexUnchanged": true,
+    "stagedOwnedPaths": [],
+    "syntaxChecksPassed": true,
+    "diffCheckPassed": true
+  },
+  "browserRunner": "direct-playwright-api",
+  "playwrightCliResult": false,
+  "browserRuns": [
+    {
+      "mode": "recorder",
+      "status": "passed",
+      "workflow": "entry recorder charts preserve measured units, touch and keyboard inspection, live playback and completed evidence",
+      "result": "direct-recorder-2/direct-recorder-result.json",
+      "browserVersion": "148.0.7778.96",
+      "workflowCompleted": true,
+      "cleanupCompleted": true,
+      "attachments": [
+        {
+          "name": "phone-load-inspection",
+          "path": "direct-recorder-2/phone-load-inspection.png",
+          "contentType": "image/png",
+          "sha256": "72f5d9dc880823342487db4adaa039f31ca684c21a84770fc119e9635b707263"
+        },
+        {
+          "name": "phone-heat-inspection",
+          "path": "direct-recorder-2/phone-heat-inspection.png",
+          "contentType": "image/png",
+          "sha256": "3bacb9019dec7e5276d724903bb26ac82da8095aac7e4383718793a44b68a406"
+        },
+        {
+          "name": "phone-peak-load",
+          "path": "direct-recorder-2/phone-peak-load.png",
+          "contentType": "image/png",
+          "sha256": "32184a8caea8197637192777fa2ec861612144cb068af00b0cc0aa89b90b5681"
+        },
+        {
+          "name": "desktop-heat-inspection",
+          "path": "direct-recorder-2/desktop-heat-inspection.png",
+          "contentType": "image/png",
+          "sha256": "fe6a600eae4b093fdfc9d8330c6c96b22eb18172ac36fdfecdc807d3ece6f189"
+        },
+        {
+          "name": "desktop-paused-after-playback",
+          "path": "direct-recorder-2/desktop-paused-after-playback.png",
+          "contentType": "image/png",
+          "sha256": "a52b70da00075f652531046c710c520acd6bf9be4436a39a7678fe80b95dfb76"
+        },
+        {
+          "name": "desktop-peak-heat",
+          "path": "direct-recorder-2/desktop-peak-heat.png",
+          "contentType": "image/png",
+          "sha256": "94e87a9352ef4ec070b0732a4a196939ee7197ebf462451b6ed3ad708a06a057"
+        }
+      ]
+    },
+    {
+      "mode": "phone",
+      "status": "passed",
+      "workflow": "320 px bank flight exposes measured geometry, readable labels, keyboard controls and accessible layout",
+      "result": "direct-phone-1/direct-phone-result.json",
+      "browserVersion": "148.0.7778.96",
+      "workflowCompleted": true,
+      "cleanupCompleted": true,
+      "attachments": [
+        {
+          "name": "guidance-planner-phone-320",
+          "path": "direct-phone-1/guidance-planner-phone-320-chromium.png",
+          "contentType": "image/png",
+          "sha256": "2ef73f945dde8d26e637ed4a556f434f1c9cb8e871d3f49928937ccd5a88a5eb"
+        },
+        {
+          "name": "guidance-flight-phone-320",
+          "path": "direct-phone-1/guidance-flight-phone-320-chromium.png",
+          "contentType": "image/png",
+          "sha256": "b060a111e3f5a0b0f0ddc4fe06838c534e32f575522ad83427ccd0688022c24e"
+        }
+      ]
+    },
+    {
+      "mode": "review",
+      "status": "passed",
+      "workflow": "guided results retain the flown plan through scrub, reload, report and archive with rewards paid once",
+      "result": "direct-review-1/direct-review-result.json",
+      "browserVersion": "148.0.7778.96",
+      "workflowCompleted": true,
+      "cleanupCompleted": true,
+      "attachments": [
+        {
+          "name": "guidance-flown-plan-debrief",
+          "path": "direct-review-1/guidance-flown-plan-debrief-chromium.png",
+          "contentType": "image/png",
+          "sha256": "181991dc9306a8639980268094d43e6c7983918c66d8fc732e653418dd2ef58e"
+        }
+      ]
+    }
+  ],
+  "unit": {
+    "files": [
+      "tests/moonmission_entry_physics.test.js",
+      "tests/moonmission_entry_guidance_evidence.test.js",
+      "tests/moonmission_entry_saved_state.test.js"
+    ],
+    "passed": 30,
+    "log": "unit.log"
+  },
+  "axe": {
+    "scans": 2,
+    "violations": 0,
+    "result": "direct-phone-1/guidance-phone-axe.json"
+  },
+  "acceptedScreenshotCount": 9,
+  "acceptedScreenshots": [
+    "direct-recorder-2/phone-load-inspection.png",
+    "direct-recorder-2/phone-heat-inspection.png",
+    "direct-recorder-2/phone-peak-load.png",
+    "direct-recorder-2/desktop-heat-inspection.png",
+    "direct-recorder-2/desktop-paused-after-playback.png",
+    "direct-recorder-2/desktop-peak-heat.png",
+    "direct-phone-1/guidance-planner-phone-320-chromium.png",
+    "direct-phone-1/guidance-flight-phone-320-chromium.png",
+    "direct-review-1/guidance-flown-plan-debrief-chromium.png"
+  ],
+  "committed": false,
+  "staged": false,
+  "pushed": false,
+  "deployed": false
+}

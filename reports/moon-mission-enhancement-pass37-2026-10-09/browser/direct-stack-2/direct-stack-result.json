@@ -1,0 +1,225 @@
+{
+  "schema": "moon-pass37-direct-browser-v1",
+  "runner": "direct-playwright-api",
+  "playwrightCliResult": false,
+  "mode": "stack",
+  "status": "passed",
+  "startedAt": "2026-10-10T02:17:12.764Z",
+  "repo": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "specPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-tli-stack.spec.ts",
+  "output": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass37-2026-10-09\\browser\\direct-stack-2",
+  "browserCache": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+  "timeouts": {
+    "action": 20000,
+    "navigation": 60000,
+    "expect": 15000,
+    "launch": 60000,
+    "workflow": 180000
+  },
+  "launchOptions": {
+    "headless": true,
+    "timeout": 60000,
+    "downloadsPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass37-2026-10-09\\browser\\direct-stack-2\\downloads"
+  },
+  "workflowCompleted": true,
+  "cleanupCompleted": true,
+  "milestones": [
+    {
+      "name": "load:before",
+      "elapsedMs": 2
+    },
+    {
+      "name": "load:after",
+      "elapsedMs": 1293,
+      "workflow": "retained injection stack and nozzle-rooted plume remain accurate through both cameras, cutoff, resize and reload",
+      "registered": [
+        "retained injection stack and nozzle-rooted plume remain accurate through both cameras, cutoff, resize and reload"
+      ]
+    },
+    {
+      "name": "harness-start:before",
+      "elapsedMs": 1294
+    },
+    {
+      "name": "harness-start:after",
+      "elapsedMs": 1310
+    },
+    {
+      "name": "browser-launch:before",
+      "elapsedMs": 1311
+    },
+    {
+      "name": "browser-launch:after",
+      "elapsedMs": 1914
+    },
+    {
+      "name": "context-create:before",
+      "elapsedMs": 1914
+    },
+    {
+      "name": "context-create:after",
+      "elapsedMs": 1926
+    },
+    {
+      "name": "page-create:before",
+      "elapsedMs": 1931
+    },
+    {
+      "name": "page-create:after",
+      "elapsedMs": 2334
+    },
+    {
+      "name": "workflow:before",
+      "elapsedMs": 2335
+    },
+    {
+      "name": "workflow:after",
+      "elapsedMs": 15840
+    },
+    {
+      "name": "cleanup:before",
+      "elapsedMs": 15841
+    },
+    {
+      "name": "after-each:before",
+      "elapsedMs": 15842
+    },
+    {
+      "name": "after-each:after",
+      "elapsedMs": 15854
+    },
+    {
+      "name": "context-close:before",
+      "elapsedMs": 15855
+    },
+    {
+      "name": "page-close",
+      "elapsedMs": 15863
+    },
+    {
+      "name": "context-close:after",
+      "elapsedMs": 15875
+    },
+    {
+      "name": "browser-close:before",
+      "elapsedMs": 15876
+    },
+    {
+      "name": "browser-close:after",
+      "elapsedMs": 16959
+    },
+    {
+      "name": "harness-stop:before",
+      "elapsedMs": 16960
+    },
+    {
+      "name": "harness-stop:after",
+      "elapsedMs": 16964
+    },
+    {
+      "name": "cleanup:after",
+      "elapsedMs": 16981,
+      "status": "passed"
+    }
+  ],
+  "errors": [],
+  "attachments": [
+    {
+      "name": "stack-1100-burn-0",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass37-2026-10-09\\browser\\direct-stack-2\\stack-1100-burn-0-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "stack-1100-orbit-0",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass37-2026-10-09\\browser\\direct-stack-2\\stack-1100-orbit-0-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "stack-1100-burn-150_5",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass37-2026-10-09\\browser\\direct-stack-2\\stack-1100-burn-150_5-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "stack-1100-orbit-150_5",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass37-2026-10-09\\browser\\direct-stack-2\\stack-1100-orbit-150_5-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "stack-1100-burn-342",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass37-2026-10-09\\browser\\direct-stack-2\\stack-1100-burn-342-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "stack-1100-orbit-342",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass37-2026-10-09\\browser\\direct-stack-2\\stack-1100-orbit-342-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "stack-workspace-1100",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass37-2026-10-09\\browser\\direct-stack-2\\stack-workspace-1100-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "stack-320-burn-0",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass37-2026-10-09\\browser\\direct-stack-2\\stack-320-burn-0-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "stack-320-orbit-0",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass37-2026-10-09\\browser\\direct-stack-2\\stack-320-orbit-0-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "stack-320-burn-150_5",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass37-2026-10-09\\browser\\direct-stack-2\\stack-320-burn-150_5-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "stack-320-orbit-150_5",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass37-2026-10-09\\browser\\direct-stack-2\\stack-320-orbit-150_5-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "stack-320-burn-342",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass37-2026-10-09\\browser\\direct-stack-2\\stack-320-burn-342-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "stack-320-orbit-342",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass37-2026-10-09\\browser\\direct-stack-2\\stack-320-orbit-342-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "stack-workspace-320",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass37-2026-10-09\\browser\\direct-stack-2\\stack-workspace-320-chromium.png",
+      "contentType": "image/png"
+    }
+  ],
+  "inputHashes": {
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-tli-stack.spec.ts": "b5baef691a2324d677bf7e9bcdd58dac3ff724f7041c51e0c8ed60b93b4c6100",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_moonmission.js": "1eaa073cb06ed0547b0d0be0825639de349324e1dccc774566d73dc38ca2fa42",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_moonmission.js": "1eaa073cb06ed0547b0d0be0825639de349324e1dccc774566d73dc38ca2fa42"
+  },
+  "transform": {
+    "name": "Playwright bundled babelTransform",
+    "bundlePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\transform\\babelBundle.js",
+    "sha256": "9201df11ae9c9ee1febd587c5013c4f862aa7e9981b92b86ccbbbd37e71f9124"
+  },
+  "workflow": "retained injection stack and nozzle-rooted plume remain accurate through both cameras, cutoff, resize and reload",
+  "suiteOptions": {
+    "timeout": 180000,
+    "retries": 0
+  },
+  "browserVersion": "148.0.7778.96",
+  "pageEvents": [
+    {
+      "event": "close",
+      "elapsedMs": 15863,
+      "message": null
+    }
+  ],
+  "finishedAt": "2026-10-10T02:17:29.745Z",
+  "elapsedMs": 16981
+}

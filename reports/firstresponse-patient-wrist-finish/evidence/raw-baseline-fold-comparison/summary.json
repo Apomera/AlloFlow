@@ -1,0 +1,85 @@
+{
+  "verified": true,
+  "baselineSHA256": "69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242",
+  "candidateSHA256": "147670787861ae0251c9b4c65c90847a613c6b879d41737533749c19a5f6f891",
+  "fixture": "tests/firstresponse_hand_surface.test.js",
+  "fixtureSHA256": "b878923ea925659f00b6d6870faf995c26f1fceef099efb421cd0c1fd0b338e9",
+  "vendorSHA256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+  "runnerSHA256": "d4bcb1d86203121c04db6376c15ea0e8593454b29de74b1a3a7632e82b21a87b",
+  "configSHA256": "600fef282527c5b8da560b4061e7a94e52e24cc1180ab0ba1a4809cff66c871e",
+  "candidateResultSHA256": "00f1c8dfb0571dec88e7a8f89977fa7f2e42c44e17e706f3486b299cff6803b5",
+  "baselineResultSHA256": "485c696f6c395a7e445369ea9383f0008527ef5922f7edc41ce1add8999fc3de",
+  "baselineExitCode": 1,
+  "candidatePassedTests": 53,
+  "candidateFailedTests": 3,
+  "baselineFailedTests": 3,
+  "baselineSkippedTests": 20,
+  "comparisons": [
+    {
+      "test": "First Response hand skin surfaces mirrors patient fingers, thumbs and nails between the two hands for adult",
+      "assertion": "AssertionError: primary palm crease mirrored skin path: expected 0.000011475498720469535 to be less than 0.00001",
+      "actual": 0.000011475498720469535,
+      "expected": 0.00001
+    },
+    {
+      "test": "First Response hand skin surfaces mirrors patient fingers, thumbs and nails between the two hands for child",
+      "assertion": "AssertionError: primary palm crease mirrored skin path: expected 0.000011475498720422001 to be less than 0.00001",
+      "actual": 0.000011475498720422001,
+      "expected": 0.00001
+    },
+    {
+      "test": "First Response hand skin surfaces mirrors patient fingers, thumbs and nails between the two hands for infant",
+      "assertion": "AssertionError: primary palm crease mirrored skin path: expected 0.000011475498720463702 to be less than 0.00001",
+      "actual": 0.000011475498720463702,
+      "expected": 0.00001
+    }
+  ],
+  "selftest": {
+    "ran": true,
+    "changedFailureRejected": true,
+    "restoredAndReread": true,
+    "restoredSHA256": "485c696f6c395a7e445369ea9383f0008527ef5922f7edc41ce1add8999fc3de"
+  },
+  "inputsUnchanged": true,
+  "sharedFilesWritten": 0,
+  "pins": {
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\run-baseline-crease-comparison.cjs": "d4bcb1d86203121c04db6376c15ea0e8593454b29de74b1a3a7632e82b21a87b",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\before.js": "69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\candidate.js": "147670787861ae0251c9b4c65c90847a613c6b879d41737533749c19a5f6f891",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\raw-wrist-fold-tests\\candidate-results.json": "00f1c8dfb0571dec88e7a8f89977fa7f2e42c44e17e706f3486b299cff6803b5",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\raw-wrist-fold-tests\\summary.json": "29cf9884e8ac06d17dd292007c688fcfa7479a342e4596b891cabb95b1b6c172",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\firstresponse_hand_surface.test.js": "b878923ea925659f00b6d6870faf995c26f1fceef099efb421cd0c1fd0b338e9",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\vendor\\three-r128\\three.min.js": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\raw-baseline-fold-comparison\\stem_lab\\stem_tool_firstresponse.js": "69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\raw-baseline-fold-comparison\\tests\\firstresponse_hand_surface.test.js": "b878923ea925659f00b6d6870faf995c26f1fceef099efb421cd0c1fd0b338e9",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\raw-baseline-fold-comparison\\vendor\\three-r128\\three.min.js": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\raw-baseline-fold-comparison\\vitest.config.cjs": "600fef282527c5b8da560b4061e7a94e52e24cc1180ab0ba1a4809cff66c871e"
+  },
+  "provenance": {
+    "kind": "reuse-verified-baseline-run",
+    "baselineExecutedThisComparison": false,
+    "archive": "candidate-rejected-recovery-fold/raw-baseline-comparison",
+    "originalBaselineExitCode": 1,
+    "originalSummarySHA256": "f1fac86e6d141636310ca426699ea14d934f46c3e773082af3a15bb476fe0e2f",
+    "originalRunnerSHA256": "f2377111862d4d2a9fe4ed5e2eb9a48e580f948cd4ba20a89a17f989cb36474c",
+    "originalConfigSHA256": "600fef282527c5b8da560b4061e7a94e52e24cc1180ab0ba1a4809cff66c871e",
+    "originalResultSHA256": "485c696f6c395a7e445369ea9383f0008527ef5922f7edc41ce1add8999fc3de",
+    "archivePins": {
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\candidate-rejected-recovery-fold\\run-baseline-crease-comparison.cjs": "f2377111862d4d2a9fe4ed5e2eb9a48e580f948cd4ba20a89a17f989cb36474c",
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\candidate-rejected-recovery-fold\\before.js": "69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242",
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\candidate-rejected-recovery-fold\\candidate.js": "38660be59270be0b42e34649f7c7ef62f91a804671d3469631b48b5292a35be4",
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\candidate-rejected-recovery-fold\\raw-wrist-tests\\candidate-results.json": "6dfeb0b340b41615284c886371ade49bc35117d25ed8f4638dade18ddb3a464f",
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\candidate-rejected-recovery-fold\\raw-wrist-tests\\summary.json": "14e5caa167dabace38a64fd24d5c8e708dc50348e188283d74be3495b7870348",
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\candidate-rejected-recovery-fold\\raw-baseline-comparison\\summary.json": "f1fac86e6d141636310ca426699ea14d934f46c3e773082af3a15bb476fe0e2f",
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\candidate-rejected-recovery-fold\\raw-baseline-comparison\\baseline-results.json": "485c696f6c395a7e445369ea9383f0008527ef5922f7edc41ce1add8999fc3de",
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\candidate-rejected-recovery-fold\\raw-baseline-comparison\\baseline.log": "8724161142bb996d952b9169ef928eda48db2e284f9376d083963c7d3e1ef7a6",
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\candidate-rejected-recovery-fold\\raw-baseline-comparison\\comparison-selftest.json": "485c696f6c395a7e445369ea9383f0008527ef5922f7edc41ce1add8999fc3de",
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\candidate-rejected-recovery-fold\\raw-baseline-comparison\\stem_lab\\stem_tool_firstresponse.js": "69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242",
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\candidate-rejected-recovery-fold\\raw-baseline-comparison\\tests\\firstresponse_hand_surface.test.js": "b878923ea925659f00b6d6870faf995c26f1fceef099efb421cd0c1fd0b338e9",
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\candidate-rejected-recovery-fold\\raw-baseline-comparison\\vendor\\three-r128\\three.min.js": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\candidate-rejected-recovery-fold\\raw-baseline-comparison\\vitest.config.cjs": "600fef282527c5b8da560b4061e7a94e52e24cc1180ab0ba1a4809cff66c871e",
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\candidate-rejected-recovery-fold\\rejection.json": "37eff7f5a81841b28b06adc31356e1f603332f25e44a19f5617e6d41237b171e"
+    }
+  },
+  "limitation": "This comparison reuses the preserved, hash-verified baseline run of the three failing mirroring tests; it does not execute another baseline run. That run deliberately skipped 20 unrelated hand tests. The final candidate full two-file run has 53 passes and exactly the same three failures."
+}

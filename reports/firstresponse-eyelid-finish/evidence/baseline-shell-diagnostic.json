@@ -1,0 +1,151 @@
+{
+  "beforeSHA256": "af6ecb094af6d67ebb0955170a55e0a9726308c59f4ddd9b196d56cfe434e4c7",
+  "candidateSHA256": "9c05c086f710ce14387153275b36e780bf2d0069239b725a42e560680da9bc2e",
+  "checkerSHA256": "80a979e6a85bfa656cf10a8479c55c3560016493af1d3efe09de3ee861951462",
+  "diagnostics": [
+    {
+      "age": "adult",
+      "name": "fr-manikin-upper-lid-left",
+      "status": "passed",
+      "vertices": 561,
+      "faces": 960,
+      "volume": 0.000002234424503265357,
+      "minAgreement": 0.34308447835539746,
+      "minNormal": 0.9999999664868112,
+      "maxNormal": 1.0000000327110103,
+      "seamNormal": 0.9999999498513736
+    },
+    {
+      "age": "adult",
+      "name": "fr-manikin-lower-lid-left",
+      "status": "passed",
+      "vertices": 561,
+      "faces": 960,
+      "volume": 8.467718722831629e-7,
+      "minAgreement": 0.43024063466486834,
+      "minNormal": 0.9999999664769015,
+      "maxNormal": 1.000000036507913,
+      "seamNormal": 0.999999962882482
+    },
+    {
+      "age": "adult",
+      "name": "fr-manikin-upper-lid-right",
+      "status": "passed",
+      "vertices": 561,
+      "faces": 960,
+      "volume": 0.000002234424503265357,
+      "minAgreement": 0.34308447835539746,
+      "minNormal": 0.9999999664868112,
+      "maxNormal": 1.0000000327110103,
+      "seamNormal": 0.9999999498513736
+    },
+    {
+      "age": "adult",
+      "name": "fr-manikin-lower-lid-right",
+      "status": "passed",
+      "vertices": 561,
+      "faces": 960,
+      "volume": 8.467718722831629e-7,
+      "minAgreement": 0.43024063466486834,
+      "minNormal": 0.9999999664769015,
+      "maxNormal": 1.000000036507913,
+      "seamNormal": 0.999999962882482
+    },
+    {
+      "age": "child",
+      "name": "fr-manikin-upper-lid-left",
+      "status": "passed",
+      "vertices": 561,
+      "faces": 960,
+      "volume": 0.0000031528557279021442,
+      "minAgreement": 0.3534470711038177,
+      "minNormal": 0.9999999659785412,
+      "maxNormal": 1.000000039369741,
+      "seamNormal": 0.9999999432320354
+    },
+    {
+      "age": "child",
+      "name": "fr-manikin-lower-lid-left",
+      "status": "passed",
+      "vertices": 561,
+      "faces": 960,
+      "volume": 0.0000011948281528544612,
+      "minAgreement": 0.4379999854098623,
+      "minNormal": 0.9999999640443809,
+      "maxNormal": 1.0000000339925899,
+      "seamNormal": 0.9999999439954776
+    },
+    {
+      "age": "child",
+      "name": "fr-manikin-upper-lid-right",
+      "status": "passed",
+      "vertices": 561,
+      "faces": 960,
+      "volume": 0.0000031528557279021442,
+      "minAgreement": 0.3534470711038177,
+      "minNormal": 0.9999999659785412,
+      "maxNormal": 1.000000039369741,
+      "seamNormal": 0.9999999432320354
+    },
+    {
+      "age": "child",
+      "name": "fr-manikin-lower-lid-right",
+      "status": "passed",
+      "vertices": 561,
+      "faces": 960,
+      "volume": 0.0000011948281528544612,
+      "minAgreement": 0.4379999854098623,
+      "minNormal": 0.9999999640443809,
+      "maxNormal": 1.0000000339925899,
+      "seamNormal": 0.9999999439954776
+    },
+    {
+      "age": "infant",
+      "name": "fr-manikin-upper-lid-left",
+      "status": "passed",
+      "vertices": 561,
+      "faces": 960,
+      "volume": 0.000008831347887886801,
+      "minAgreement": 0.3615071606419517,
+      "minNormal": 0.9999999656429485,
+      "maxNormal": 1.0000000345347821,
+      "seamNormal": 0.999999951951037
+    },
+    {
+      "age": "infant",
+      "name": "fr-manikin-lower-lid-left",
+      "status": "passed",
+      "vertices": 561,
+      "faces": 960,
+      "volume": 0.000003346789267367968,
+      "minAgreement": 0.44668396895413653,
+      "minNormal": 0.9999999642853095,
+      "maxNormal": 1.0000000353618799,
+      "seamNormal": 0.9999999434648317
+    },
+    {
+      "age": "infant",
+      "name": "fr-manikin-upper-lid-right",
+      "status": "passed",
+      "vertices": 561,
+      "faces": 960,
+      "volume": 0.000008831347887886801,
+      "minAgreement": 0.3615071606419517,
+      "minNormal": 0.9999999656429485,
+      "maxNormal": 1.0000000345347821,
+      "seamNormal": 0.999999951951037
+    },
+    {
+      "age": "infant",
+      "name": "fr-manikin-lower-lid-right",
+      "status": "passed",
+      "vertices": 561,
+      "faces": 960,
+      "volume": 0.000003346789267367968,
+      "minAgreement": 0.44668396895413653,
+      "minNormal": 0.9999999642853095,
+      "maxNormal": 1.0000000353618799,
+      "seamNormal": 0.9999999434648317
+    }
+  ]
+}

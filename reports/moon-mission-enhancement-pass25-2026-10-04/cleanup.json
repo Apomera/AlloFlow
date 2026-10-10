@@ -1,0 +1,61 @@
+{
+  "removedPrivateFiles": [
+    {
+      "name": "moon-pass25-init.py",
+      "sha256": "367c5cca5d1d34fb0bd52d57cdf91221053d0c2ea34cb417b75320f6195f476a"
+    },
+    {
+      "name": "moon-pass25-baseline.js",
+      "sha256": "c261c4bbb7fd7ee719164628a0bdf92c1e797d7ff58453943b9dcc5169e75a54"
+    },
+    {
+      "name": "moon-pass25-surface.js",
+      "sha256": "5cea384c2c71cfcf763f783776d90f875e8397b8e2c333fed2c4cd5993615244"
+    },
+    {
+      "name": "moon-pass25-probe.cjs",
+      "sha256": "ec4e9065e2f5f89d8e7cbc42ef63d6e2d7b8d49ed84dea0091fb86fc4756d0d9"
+    },
+    {
+      "name": "moon-pass25-integrate.py",
+      "sha256": "10d32eb73adf00786d9f24c2610923f0b3fea577fa062ce93cfa6eb7b6452ac3"
+    },
+    {
+      "name": "moon-pass25-candidate.js",
+      "sha256": "8a17b3ded263d9c526aa7edd97af69c5829bbd5927d0e21bd9b66e6377f0617a"
+    },
+    {
+      "name": "moon-pass25-surface.test.js",
+      "sha256": "24a494e682741c0da87cab0fd5b71f45e55e096d54de664e68d239e7dc9259ec"
+    },
+    {
+      "name": "moon-pass25-playwright.config.ts",
+      "sha256": "c23381f13f6aa9ba0425799a38b948006063d9ff00cef2597a39a6bd744fad22"
+    },
+    {
+      "name": "moon-pass25-surface.spec.ts",
+      "sha256": "018fd4246aceafcccf46b3307fd205098275a863d04835f0524209f117adc4e6"
+    },
+    {
+      "name": "moon-pass25-run.py",
+      "sha256": "f44ad34f223ac487fc6c58268e4d6a3d28a6cad518970362e5b8241b9fd117d3"
+    },
+    {
+      "name": "moon-pass25-preserve.py",
+      "sha256": "9fe8c758ff02ab6ff87d9308ab6235da4ebb2bba515b8853f822fb803886ac76"
+    },
+    {
+      "name": "moon-pass25-status.py",
+      "sha256": "96428e897be12b73befe2c488ed1676f544a7d7b6dc8bab1af7a1523486f9acf"
+    },
+    {
+      "name": "moon-pass25-evidence-audit.py",
+      "sha256": "45b4f0f43fd4833853ae3cffdfc44e353478a04fcfa2f63061f9b597fe063af6"
+    },
+    {
+      "name": "moon-pass25-finalize.py",
+      "sha256": "8958ea635d5e598801a4d87f98fc4cf8be13948870a4d4f16afab27cbcb28c56"
+    }
+  ],
+  "retainedFilesVerified": 123
+}

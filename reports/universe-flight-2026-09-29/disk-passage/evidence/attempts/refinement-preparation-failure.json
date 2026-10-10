@@ -1,0 +1,7 @@
+{
+  "driver": "build-route-v2.cjs",
+  "driverHash": "e4f2c50b679ae557f0d71d8d6045d8499445cb314b8eb23298b275e0a6961061",
+  "exitCode": 1,
+  "error": "Expected unique step/256 occurrence, but the new route has two: curve sampling and parameter storage. The guard stopped before any refined candidate write.",
+  "sourceCandidateUnchanged": true
+}

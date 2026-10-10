@@ -1,0 +1,22 @@
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const repo='C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated',stage=__dirname;
+const sha=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+const report=path.join(repo,'reports/universe-flight-2026-09-29/close-disk');
+const proof=JSON.parse(fs.readFileSync(path.join(stage,'audit-handoff.json')));
+const native=JSON.parse(fs.readFileSync(path.join(stage,'native-report/analysis.json')));
+assert.equal(proof.completed,true);assert.equal(native.completed,true);
+assert.equal(sha(path.join(stage,'candidate-renderer.js')),proof.candidateHash);
+assert.equal(proof.candidateHash,'6f1267255407b7de52bb685922281301fef58de9c91cc8a036577a7c317e56e8');
+const targets=['stem_lab','desktop/web-app/public/stem_lab'].map(prefix=>({target:path.join(repo,prefix,'universe_flight_scene.js'),baseline:path.join(stage,'baseline-renderer.js'),candidate:path.join(stage,'candidate-renderer.js')}));
+for(const t of targets)assert.equal(sha(t.target),sha(t.baseline),'Source changed during review: '+t.target);
+const testSource=path.join(stage,'candidate-close-disk.test.js');
+assert.ok(fs.existsSync(testSource),'The focused test must be prepared before installation');
+const testTarget=path.join(repo,'tests/universe_flight_close_disk.test.js');
+assert.equal(fs.existsSync(testTarget),false,'Do not overwrite an existing test');
+for(const prefix of ['stem_lab','desktop/web-app/public/stem_lab'])assert.equal(sha(path.join(repo,prefix,'stem_tool_universe.js')),'a744f3d2e32b5bec28864c8ee29468ec68178cd20d9bb08bcd8fa3d9eefc19a9');
+fs.mkdirSync(path.join(report,'preimages'),{recursive:true});
+for(const [source,name] of [[path.join(repo,'stem_lab/assets/universe-flight/highlights/manifest.json'),'preview-manifest.json'],[path.join(repo,'reports/universe-flight-2026-09-29/README.md'),'main-README.md'],[path.join(stage,'baseline-renderer.js'),'baseline-renderer.js']])fs.copyFileSync(source,path.join(report,'preimages',name));
+for(const t of targets){fs.copyFileSync(t.candidate,t.target);assert.equal(sha(t.target),sha(t.candidate));}
+fs.copyFileSync(testSource,testTarget);assert.equal(sha(testTarget),sha(testSource));
+const result={completed:true,installedAt:new Date().toISOString(),targets:targets.map(t=>({target:path.relative(repo,t.target).replaceAll('\\','/'),baselineHash:sha(t.baseline),candidateHash:sha(t.candidate)})),test:{target:'tests/universe_flight_close_disk.test.js',candidateHash:sha(testSource)},uiHash:'a744f3d2e32b5bec28864c8ee29468ec68178cd20d9bb08bcd8fa3d9eefc19a9',committed:false};
+fs.writeFileSync(path.join(report,'installation.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result));

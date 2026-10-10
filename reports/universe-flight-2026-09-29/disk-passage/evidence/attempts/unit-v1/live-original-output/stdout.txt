@@ -1,0 +1,224 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+ ❯ tests/universe_flight_navigation.test.js (146 tests | 1 failed | 141 skipped) 247123ms
+     ↓ reuses uploaded visual textures across scenes and releases each resource once on disposal
+     ↓ releases allocated visual textures when a later upload fails and remains safe to dispose
+     ↓ returns independent landmark catalogs for every generated scene
+     ↓ clips even the fastest approach at its viewing distance and pauses without adding physical clock time
+     ↓ centers the apparent destination at relativistic speeds without moving or starting travel
+     ↓ cancels a guided approach immediately and rejects a missing destination
+     ↓ starts a fresh galaxy approach after a physical journey and retains it across the UI settings echo
+     ↓ emits one structured boundary event in every scale and motion mode while stopping at the finite edge
+     ↓ reports genuine arrival metadata using the chosen viewing radius and emits it once
+     ↓ keeps generic pause callbacks message-only, including already-within and canceled approaches
+     ↓ looks toward the geometric center in free and both displayed relativistic skies without changing the journey or lens
+     ↓ clears routes, orbits, and framing while keeping the selected destination and precision history
+     ↓ rejects an origin sightline atomically while an orbit is running
+     ↓ rejects lost or disposed graphics without mutating the camera or emitting a pause
+     ↓ rejects unavailable graphics even after restoring a non-origin camera
+     ↓ points toward all eight screen-plane directions without reversing targets behind the camera
+     ↓ uses viewport aspect for both visible projection and the inset bearing position
+     ↓ provides finite guides at the exact antipode and on both sides of a perpendicular sightline
+     ↓ aberrates in the travel frame before rotating into the camera view
+     ↓ bounds invalid helper inputs and treats a coincident landmark as having no sightline
+     ↓ keeps the live guide consistent after centering and looking, without moving or advancing clocks
+     ↓ solves known framing angles and puts varied rays at exact anchors after aberration
+     ↓ rejects undefined sightlines and unreachable pole placements without inventing a gaze
+     ↓ matches renderer clamps and defaults while keeping boundary anchors finite
+     ↓ uses the displayed sky in every mode and preserves position, path, clocks, and lens
+     ↓ has one level of orientation undo and leaves precision-camera history independent
+     ↓ rejects invalid framing atomically, including while running and at a landmark center
+     ↓ ends active orbits, pauses matching approaches, and clears a route when framing another destination
+     ↓ retains undo across unchanged paused controls and clears it when the view or journey changes
+     ↓ restores the complete viewpoint and accumulated clocks in a paused state
+     ↓ copies snapshots so editing a downloaded observation cannot change the live scene
+     ↓ rejects invalid or out-of-bounds saved views atomically
+     ↓ plans without movement and bounds invalid distance choices
+     ↓ stops at each chosen survey radius with monotonic progress and a useful time estimate
+     ↓ keeps a paused route intact, updates its estimate with pace, and clears completion on free travel
+     ↓ moves along the camera basis and pauses without changing clocks or gaze
+     ↓ undoes position and path while preserving a later look direction, with a 12-step limit
+     ↓ clips steps at the model boundary and can undo the actual clipped displacement
+     ↓ hands off routes and orbits, clears undo for new journeys, and rejects steps in relativity
+     ↓ steps closer and farther around all eighteen landmarks, preserving settings and clocks, with paused Back restores
+     ↓ clips native steps exactly at the minimum landmark range and the world boundary
+     ↓ ends every travel mode, clears stale undo and updates the chart while reusing GPU resources
+     ↓ rejects invalid, cross-region, coincident and polar steps without changing active motion
+     ↓ rejects physical mode and lost, disposed or unavailable graphics without emitting a pause
+     ↓ glides closer and farther to exact native planner endpoints across five scenic landmarks without changing the lens or physical clocks
+     ↓ uses smoothstep progress along the straight sightline and counts only the camera path, independently of travel settings and frame subdivision
+     ↓ retains the route on pause and same-target focus or settings changes, then resumes without counting the paused gap
+     ↓ freezes hidden and offscreen glides and excludes suspended wall time when visibility returns
+     ↓ cancels immediately at the current pose and permits ordinary travel or a fresh glide afterward
+     ↓ hands off every active travel mode, clears stale precision undo and framing, and yields to successful camera actions
+     ↓ clears completed glide metadata on target, view and framing handoffs while preserving it for same-target focus, lens changes and rejected cancel
+     ↓ rejects invalid, cross-region, coincident and polar launches atomically while preserving active modes
+     ↓ finishes clipped routes exactly at the minimum range and world boundary, then rejects an exhausted range without state changes
+     ↓ rejects physical mode and unavailable, lost or disposed graphics without changing the camera or emitting a pause
+     ↓ moves above and below the landmark over a complete circle with fixed range and clocks
+     ↓ anchors tilted motion for all eighteen landmarks and reuses uploaded resources
+     ↓ changes paths without a position jump, holds a pause and retraces when reversed
+     ↓ ends tilted motion on manual look, viewpoint steps, restore and scene changes
+     ↓ declines a near-polar tilted path without moving and safely stops a running level orbit
+     ↓ steps around all eighteen landmarks at fixed distance, centered and paused
+     ↓ ends travel, navigation, orbit and scenic flight before changing the viewpoint
+     ↓ updates the chart, clears stale move and framing undo, and retains GPU resources
+     ↓ leaves invalid, coincident, physical-mode and unavailable views unchanged
+     ↓ fits landmarks and path with equal scales for both coordinate axes
+     ↓ projects gaze without a false heading when looking perpendicular to the chart
+     ↓ bounds and copies history, then clears it on a restored view or scene change
+     ↓ holds radius and altitude, centers its target, and records camera arc length without advancing physical clocks
+     ↓ hands control back immediately on manual look and target changes
+     ↓ clears orbit state when switching motion, restoring a view, resetting, or entering relativity
+     ↓ stops an orbit at the generated model boundary
+     ↓ integrates a continuous response and gives the same distance when an interval is split
+     ↓ decelerates without reversing, bounds malformed inputs, and treats zero pace as an immediate stop
+     ↓ keeps immediate travel as the default and makes an eased journey independent of frame subdivision
+     ↓ stops on pause, visibility suspension, or a zero setting and resumes from rest
+     ↓ retains the current response across view controls and target selection while travel continues
+     ↓ keeps the preference while clearing momentum on restore, reset, mode and scale changes, and model boundaries
+     ↓ preserves guided stopping distances and orbit geometry when the preference changes
+     ↓ leaves relativistic distance and both physical clocks identical with smooth travel enabled
+     × adds six distinct generated destinations while preserving existing catalog IDs and independent metadata 223819ms
+     ↓ starts a fresh camera journey and survives the UI settings echo without creating resources
+     ↓ follows a continuous curved path outside the star cluster and pauses once at a repeatable endpoint
+     ↓ freezes route progress on pause and resumes at the same point without a time jump
+     ↓ freezes hidden and offscreen routes and excludes suspended wall time when visibility returns
+     ↓ uses the chosen route rate independently of travel pace, clock scale, beta, and frame subdivision
+     ↓ keeps flight moving during manual free look and lets Follow view resume camera guidance without moving the observer
+     ↓ keeps the route when framing its selected target and returns to automatic gaze on request
+     ↓ cancels at the current observation and does not restart when free travel resumes
+     ↓ hands off to restore, reset, different targets, precision moves, approaches, orbits, scales and physical travel
+     ↓ rejects invalid launches and controls atomically, including unavailable, lost and disposed graphics
+     ↓ resumes ordinary travel after completion without resetting position and restarts only when explicitly launched
+     ↓ keeps saved observations detached and paused without persisting an active route
+     ✓ returns independent region-specific route catalogs and preserves the original Halo metadata  2141ms
+     ↓ rejects cross-region and physical-mode launches without altering the current route or observation
+     ↓ starts a fresh local journey after Halo travel and accepts the matching UI settings echo
+     ↓ follows a continuous local course through its phases and pauses exactly once at the violet reveal
+     ↓ samples the local route independently of frame subdivision and completes at the same endpoint at different rates
+     ↓ uses the local route gaze for Follow view and preserves it when framing the selected nebula
+     ↓ saves paused local observations without persisting a route or restarting it on restore
+     ↓ ends the local route in place and hands off to ordinary travel or other navigation
+     ✓ preserves the Halo launch, duration, completion target and endpoint after a completed local route  9555ms
+     ✓ adds one detached cosmic route while retaining every existing generated galaxy  1776ms
+     ↓ starts a fresh group journey and retains view preferences across the UI settings echo
+     ↓ skims the spiral and elliptical on a continuous curved course with one final panorama pause
+     ↓ uses route pacing independently of physical settings and frame subdivision
+     ↓ freezes paused, hidden and offscreen group travel and excludes suspended wall time on resume
+     ↓ keeps moving during manual look and restores its authored gaze without moving a paused observer
+     ↓ ends the group route in place and hands control to free travel or another navigation action
+     ↓ rejects invalid and cross-region controls atomically, including lost, disposed and unavailable graphics
+     ↓ jumps backward through the group highlights, clears framing, and resumes from the selected moment
+     ↓ restores a detached version-one group highlight as an ordinary paused observation
+     ↓ launches beside the existing model stars with fresh clocks and retained view preferences
+     ↓ passes all three viewing radii on a finite curved course and pauses exactly once beyond the stars
+     ↓ keeps camera pacing independent of physical settings and frame subdivision
+     ↓ freezes the blue pass while paused, hidden or offscreen and excludes suspended wall time
+     ↓ allows free gaze during a close pass and restores the paused route view without moving
+     ↓ rejects invalid and incompatible Stellar controls atomically, including unavailable graphics
+     ↓ restores a detached version-one star observation and supports native orbit without new graphics resources
+     ✓ exports named ordered highlights as detached route metadata  1213ms
+     ↓ jumps to every halo highlight with the naturally sampled pose and one pause event
+     ↓ jumps to every nebula highlight with the naturally sampled pose and one pause event
+     ↓ jumps to every group highlight with the naturally sampled pose and one pause event
+     ↓ jumps to every stellar highlight with the naturally sampled pose and one pause event
+     ↓ moves backward through route distance, preserves view preferences, and clears previous framing
+     ↓ resumes from the paused highlight with its retained rate and without counting a hidden frame gap
+     ↓ revisits completed routes and produces one new completion only after each resumed leg
+     ↓ rejects inactive, invalid, cross-route, physical, lost, and disposed jumps atomically
+     ↓ restores a saved highlight as an ordinary paused observation without retaining its route
+     ↓ reuses all scene graphics resources through repeated jumps, resumes, and completed revisits
+     ↓ eases away from rest, cruises, and slows to an exact finite highlight
+     ↓ integrates eased route progress consistently across frame subdivisions and pace changes
+     ↓ can disable easing during travel and continues at the ordinary route rate
+     ↓ stops at every halo highlight exactly, across all supported engine paces
+     ↓ stops at every nebula highlight exactly, across all supported engine paces
+     ↓ stops at every group highlight exactly, across all supported engine paces
+     ↓ stops at every stellar highlight exactly, across all supported engine paces
+     ↓ preserves manual gaze and display settings at an automatic stop
+     ↓ keeps continuous playback by default and applies the setting immediately
+     ↓ honors forward seeks, revisits backward seeks, and completes once after the last stop
+     ↓ does not trigger a stop while hidden or after a route is canceled
+     ↓ seeks forward and backward to arbitrary halo moments on the authored route
+     ↓ seeks forward and backward to arbitrary nebula moments on the authored route
+     ↓ seeks forward and backward to arbitrary group moments on the authored route
+     ↓ seeks forward and backward to arbitrary stellar moments on the authored route
+     ↓ retains the lens and pace, reuses graphics, and resumes without counting a paused gap
+     ↓ allows completed-route revisits and exact endpoints without accumulating false travel
+     ↓ rejects invalid or unavailable seeks without changing state, events or scheduled frames
+ ❯ tests/universe_flight_disk_passage.test.js (9 tests | 3 failed) 524322ms
+     ✓ keeps finite monotone authored poses, exact Hermite joins and a slower safe disk crossing  45887ms
+     ✓ appends detached disk metadata and keeps the original route order and regional catalogs  2037ms
+     × starts a fresh route, survives the settings echo and freezes travel during pause and free look 409804ms
+     × uses all supported authored playback rates without adding physical clock time 9492ms
+     ✓ seeks arbitrary moments and named highlights exactly while retaining the lens and allocated graphics  13051ms
+     ✓ stops at every disk highlight exactly across all playback rates and resumes beyond each stop  21345ms
+     × completes once at the exact endpoint and restores a saved paused pose as free exploration 2061ms
+     ✓ rejects unavailable seeks atomically and cancels on region, mode or explicit takeover  15018ms
+     ✓ reuses existing GPU objects throughout the passage and releases each once on disposal  4514ms
+ ✓ tests/universe_flight_physics.test.js (22 tests) 4879ms
+     ✓ preserves unit directions and finite positive frequencies through the speed limit  330ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/universe_flight_disk_passage.test.js > Universe spiral disk passage > starts a fresh route, survives the settings echo and freezes travel during pause and free look
+Error: Test timed out in 180000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/universe_flight_disk_passage.test.js:127:3
+    125|   });
+    126|
+    127|   it('starts a fresh route, survives the settings echo and freezes tra…
+       |   ^
+    128|     createScene(); scene.set({ mode: 'relativity', beta: 0.9 }); scene…
+    129|     expect(scene.snapshot().state.universeYears).toBeGreaterThan(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/universe_flight_disk_passage.test.js > Universe spiral disk passage > uses all supported authored playback rates without adding physical clock time
+AssertionError: expected -0.9951416118756065 to be close to -0.9951413463266722, received difference is 2.655489342862083e-7, but expected 5e-12
+ ❯ expectPose tests/universe_flight_disk_passage.test.js:21:32
+     19|   actual.position.forEach((value, axis) => expect(value).toBeCloseTo(e…
+     20|   expect(actual.distanceLy).toBeCloseTo(expected.distance, 6);
+     21|   expect(Math.sin(actual.yaw)).toBeCloseTo(Math.sin(expected.yaw), 11);
+       |                                ^
+     22|   expect(Math.cos(actual.yaw)).toBeCloseTo(Math.cos(expected.yaw), 11);
+     23|   expect(actual.pitch).toBeCloseTo(expected.pitch, 11);
+ ❯ tests/universe_flight_disk_passage.test.js:149:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/universe_flight_disk_passage.test.js > Universe spiral disk passage > completes once at the exact endpoint and restores a saved paused pose as free exploration
+AssertionError: expected 0.9840520929256917 to be close to 0.9840636567739336, received difference is 0.000011563848241857855, but expected 5e-12
+ ❯ expectPose tests/universe_flight_disk_passage.test.js:21:32
+     19|   actual.position.forEach((value, axis) => expect(value).toBeCloseTo(e…
+     20|   expect(actual.distanceLy).toBeCloseTo(expected.distance, 6);
+     21|   expect(Math.sin(actual.yaw)).toBeCloseTo(Math.sin(expected.yaw), 11);
+       |                                ^
+     22|   expect(Math.cos(actual.yaw)).toBeCloseTo(Math.cos(expected.yaw), 11);
+     23|   expect(actual.pitch).toBeCloseTo(expected.pitch, 11);
+ ❯ tests/universe_flight_disk_passage.test.js:195:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  tests/universe_flight_navigation.test.js > Universe flight Halo flyby > adds six distinct generated destinations while preserving existing catalog IDs and independent metadata
+Error: Hook timed out in 180000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".
+ ❯ tests/universe_flight_navigation.test.js:68:1
+     66| });
+     67|
+     68| beforeEach(() => {
+       | ^
+     69|   frames = new Map();
+     70|   time = 100;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  2 failed | 1 passed (3)
+      Tests  4 failed | 32 passed | 141 skipped (177)
+   Start at  16:11:43
+   Duration  864.11s (transform 35.96s, setup 13.27s, import 42.82s, tests 776.32s, environment 0ms)
+
+JSON report written to C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-3/universe-disk-crossing59/focused-unit/results.json

@@ -1,0 +1,35 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const root = path.resolve(__dirname, '../..');
+const delta = {
+  input: {
+    research_share_excerpts: 'Share source name and excerpts with students',
+    research_student_reading_notice: 'This controls source details, not information included in the reading.'
+  },
+  simplified: {
+    sources_title: 'Sources',
+    sources_synthesis: 'AI-written reading. Source passages and AI notes are labeled separately.',
+    sources_quotes: 'This reading uses selected source quotations.',
+    sources_snippet: 'Search snippet',
+    sources_ai_note: 'AI-linked note',
+    sources_document_passage: 'Document passage',
+    sources_page_excerpt: 'Page excerpt',
+    sources_pasted_text: 'Pasted text',
+    sources_excerpt: 'Source excerpt',
+    sources_teacher_source: 'Teacher-provided source',
+    sources_open_source: 'Open source',
+    sources_not_shared: 'The source text has not been shared with students.',
+    sources_link_only: 'Only a source link is available; no page passage was saved.',
+    sources_snippet_limit: 'This is a search preview, not a passage from a page that was read.',
+    sources_ai_note_limit: "This is an AI note linked to the source, not the source's exact wording.",
+    sources_back: 'Back to reading'
+  }
+};
+for (const name of ['ui_strings.js', 'desktop/web-app/public/ui_strings.js']) {
+  const filename = path.join(root, name), original = fs.readFileSync(filename, 'utf8');
+  const catalog = JSON.parse(original);
+  for (const [group, values] of Object.entries(delta)) catalog[group] = { ...catalog[group], ...values };
+  fs.writeFileSync(filename, JSON.stringify(catalog, null, 2) + '\n');
+}
+fs.writeFileSync(path.join(__dirname, 'ui-strings.delta.json'), JSON.stringify(delta, null, 2) + '\n');
+console.log('Registered 18 student source strings in both English catalogs.');

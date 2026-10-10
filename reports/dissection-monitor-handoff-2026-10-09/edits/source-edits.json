@@ -1,0 +1,46 @@
+{
+  "before": "c7708b29982ee76b498aff5427cdf265672359430f1e559d483265de4f51e39c",
+  "after": "16c960aa8e0cdb992d1166950150e34e09407abfd448b8b78734937cc2497745",
+  "edits": [
+    {
+      "name": "Derive Simple steps after the learning gate is available",
+      "before": "          var activeInstrumentState = procedureInstrumentStatus(activeInstrument);\n          if (simplifiedInstructions) {\n            activeInstrumentState = Object.assign({}, activeInstrumentState, { instruction: procedureNext.action === 'complete' ? 'Done. Complete this layer.' : 'Next: ' + procedureNext.label + '.' });\n          }\n",
+      "after": "          var activeInstrumentState = procedureInstrumentStatus(activeInstrument);\n"
+    },
+    {
+      "name": "Use the learning phase for technique status and concise guidance",
+      "before": "          var studyRoute = d.practicalMode ? 'study' : (d.guidedMode ? 'guided' : (d.quizMode ? 'quiz' : ((d.eyeStudyMode || d.flashcardMode || d.compareMode || d.toolbarStudyOpen) ? 'study' : 'explore')));",
+      "after": "          var studyRoute = d.practicalMode ? 'study' : (d.guidedMode ? 'guided' : (d.quizMode ? 'quiz' : ((d.eyeStudyMode || d.flashcardMode || d.compareMode || d.toolbarStudyOpen) ? 'study' : 'explore')));\n          var currentLearningStep = PROCEDURE_STEPS.find(function (step) { return step.id === currentLearningGate.action; });\n          var currentLearningActionLabel = currentLearningStep ? currentLearningStep.label : procedureActionLabel(currentLearningGate.action);\n          var techniquePracticePhase = currentLayerDone ? 'Layer revealed'\n            : currentLearningGate.required ? (currentLearningGate.phase === 'reflect' ? 'Explanation needed' : 'Plan needed')\n            : layerTechniqueComplete ? 'Technique complete' : 'Step ' + (procedureStageIdx + 1) + ' of ' + PROCEDURE_STEPS.length;\n          var techniquePracticeSummary = currentLayerDone || layerTechniqueComplete ? techniquePracticePhase\n            : currentLearningGate.required ? techniquePracticePhase + ': ' + currentLearningActionLabel : procedureNext.label;\n          if (simplifiedInstructions) {\n            var simplifiedTechniqueCue = d._incisionAnim && d._incisionAnim.active ? 'Wait for the current technique to finish.'\n              : currentLayerDone || layerTechniqueComplete ? techniquePracticePhase + '. Review specimen evidence.'\n              : currentLearningGate.required ? (currentLearningGate.phase === 'reflect' ? 'Next: explain the observed result.' : 'Next: choose a safe plan.')\n              : 'Next: ' + procedureNext.label + '.';\n            activeInstrumentState = Object.assign({}, activeInstrumentState, { instruction: simplifiedTechniqueCue });\n          }"
+    },
+    {
+      "name": "Give the monitor an honest checkpoint or preparation action",
+      "before": "          var nextActionModel;",
+      "after": "          var monitorTechniqueActionDisabled = !!(d._incisionAnim && d._incisionAnim.active) || currentLayerDone || layerTechniqueComplete || (currentLearningGate.required && !equivalentProcedureCheckpointAvailable);\n          var monitorTechniqueActionLabel = currentLayerDone ? 'Layer revealed'\n            : d._incisionAnim && d._incisionAnim.active ? 'Technique in progress...'\n            : currentLearningGate.required ? (currentLearningGate.phase === 'reflect' ? 'Explain result' : 'Review plan')\n            : layerTechniqueComplete ? 'Technique complete' : 'Prepare next';\n          var monitorTechniqueActionDescription = monitorTechniqueActionDisabled ? monitorTechniqueActionLabel\n            : equivalentProcedureCheckpointAvailable ? monitorTechniqueActionLabel + ': ' + currentLearningActionLabel\n            : 'Prepare next technique step: ' + procedureNext.label;\n          var nextActionModel;"
+    },
+    {
+      "name": "Route monitor checkpoints through focus only and retain native preparation",
+      "before": "                      React.createElement(\"button\", {\n                        type: \"button\",\n                        className: \"diss-stage__telemetry-prepare\",\n                        disabled: currentLayerDone || procedureNext.action === 'complete',\n                        onClick: prepareNextProcedureStep,\n                        \"aria-label\": procedureNext.action === 'complete' ? 'Current layer protocol complete' : 'Prepare next technique step: ' + procedureNext.label\n                      }, procedureNext.action === 'complete' ? 'Protocol complete' : 'Prepare next')",
+      "after": "                      studyRoute === 'explore' && React.createElement(\"button\", {\n                        type: \"button\",\n                        className: \"diss-stage__telemetry-prepare\",\n                        disabled: monitorTechniqueActionDisabled,\n                        onClick: equivalentProcedureCheckpointAvailable ? function () { focusDissectionTarget('diss-learning-check-title'); } : prepareNextProcedureStep,\n                        \"aria-controls\": equivalentProcedureCheckpointAvailable ? 'diss-learning-checkpoint' : undefined,\n                        \"aria-label\": monitorTechniqueActionDescription\n                      }, monitorTechniqueActionLabel)"
+    },
+    {
+      "name": "Technique summary describes the current learning decision",
+      "before": "                      React.createElement(\"span\", null, layerTechniqueComplete ? 'Protocol complete' : procedureNext.label)",
+      "after": "                      React.createElement(\"span\", null, techniquePracticeSummary)"
+    },
+    {
+      "name": "Technique heading waits for the explanation before claiming completion",
+      "before": "                        React.createElement(\"h4\", { id: \"diss-procedure-title\" }, 'Technique practice \\u00B7 ' + (procedureStageIdx >= PROCEDURE_STEPS.length ? 'ready to complete' : 'step ' + (procedureStageIdx + 1) + ' of ' + PROCEDURE_STEPS.length)),",
+      "after": "                        React.createElement(\"h4\", { id: \"diss-procedure-title\" }, 'Technique practice \\u00B7 ' + techniquePracticePhase),"
+    },
+    {
+      "name": "Name the physical action strip separately from verified learning",
+      "before": "                    React.createElement(\"div\", { className: \"diss-procedure__steps\", \"aria-label\": procedureStageIdx + ' of ' + PROCEDURE_STEPS.length + ' technique steps complete' },",
+      "after": "                    React.createElement(\"div\", { className: \"diss-procedure__steps\", role: \"group\", \"aria-label\": procedureStageIdx + ' of ' + PROCEDURE_STEPS.length + ' actions performed' },"
+    },
+    {
+      "name": "Readable responsive monitor action and technique status",
+      "before": ".diss-stage__telemetry-prepare { min-height: 2.75rem; font-size: .75rem; }",
+      "after": "[data-dissection-root] .diss-stage__telemetry-prepare { min-height: 3rem !important; min-width: 0; max-width: 100%; padding: .65rem .85rem; font-size: 1rem; line-height: 1.45; white-space: normal; overflow-wrap: anywhere; }\n[data-dissection-root] .diss-stage__telemetry-prepare:focus-visible { outline: 3px solid #1766d2; outline-offset: -4px; }\n.diss-procedure__summary { min-height: 3rem; flex-wrap: wrap; }\n.diss-procedure__summary span { min-width: 0; overflow-wrap: anywhere; }\n[data-dissection-root] .diss-procedure__summary :is(strong, span), [data-dissection-root] #diss-procedure-title, [data-dissection-root] #diss-active-tool-help { font-size: 1rem; line-height: 1.5; }\n[data-dissection-root][data-text-size=\"large\"] :is(.diss-stage__telemetry-prepare, #diss-procedure-title, #diss-active-tool-help), [data-dissection-root][data-text-size=\"large\"] .diss-procedure__summary :is(strong, span) { font-size: 1.125rem !important; }\n[data-dissection-root][data-text-size=\"large\"] .diss-instrument-preparation #diss-active-tool-help { font-size: 1.125rem !important; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-stage__telemetry-prepare { color: #000; background: #fff; border-color: #111827; }\n[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-procedure__summary, .diss-procedure__summary span, #diss-procedure-title) { color: #000; }\n@container dissection (max-width: 640px) {\n  .diss-procedure__summary { align-items: flex-start; flex-direction: column; gap: .3rem; }\n  .diss-procedure__summary span { text-align: start; }\n}\n@media (forced-colors: active) {\n  [data-dissection-root] .diss-stage__telemetry-prepare { color: ButtonText; background: ButtonFace; border-color: ButtonText; }\n  [data-dissection-root] .diss-stage__telemetry-prepare:disabled { color: GrayText; border-color: GrayText; }\n  [data-dissection-root] .diss-stage__telemetry-prepare:focus-visible { outline-color: Highlight; }\n}"
+    }
+  ]
+}

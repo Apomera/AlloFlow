@@ -1,0 +1,48 @@
+{
+  "sourceSha256": "f10958f2a1a1482ada71a61c44613b061cc91c1c885d4ef045c50c57e12cbada",
+  "baselineSha256": "21e49dc28ca39121c7b0a158faa673e999124c3f7924027749de648c0efdc1b9",
+  "verifiedAt": "2026-10-09T23:45:07.583Z",
+  "desktopMirrorMatches": true,
+  "units": {
+    "passed": 77,
+    "total": 77,
+    "suites": [
+      "tests\\solar_system_investigation_discovery.test.js",
+      "tests\\solar_system_activity_shortcuts.test.js",
+      "tests\\solar_system_activity_navigation.test.js",
+      "tests\\solar_system_mission_dashboard.test.js",
+      "tests\\solar_system_investigation_hub.test.js",
+      "tests\\solar_system_scale_walk_navigation.test.js"
+    ]
+  },
+  "browser": {
+    "passed": 4,
+    "cases": [
+      "investigation-discovery-1060-dark",
+      "investigation-discovery-1060-light",
+      "investigation-discovery-320-dark",
+      "investigation-discovery-320-light"
+    ]
+  },
+  "validatedBehavior": [
+    "124 searchable catalog entries including the existing seasons, Moon/eclipses, scale-walk and visual-comparison labs",
+    "Six-item Investigations collection with descriptions included in normalized search and topic filtering",
+    "The four new lab entries support bookmarks, recent shortcuts and committed destination focus",
+    "Seasons routes use the actual supported model world; Moon/eclipses consistently records Earth",
+    "Finder and resume launches preserve phases, angles, walk settings, comparison pairs, drafts and evidence",
+    "Existing dashboard, Investigation Hub, guide and scale-walk launchers record explicit openings atomically",
+    "Close and evidence-only actions do not create false recent activity",
+    "External launchers clear superseded finder focus and return ownership",
+    "Closing newly connected labs returns keyboard focus to the launch control or visible results",
+    "Existing navigation, saved shortcuts, mission dashboard, investigation hub and scale walk regressions pass",
+    "Desktop and 320px finder layouts in both themes have readable controls and no horizontal overflow or browser errors"
+  ],
+  "visualReview": [
+    "investigation-discovery-1060-light-collection.png",
+    "investigation-discovery-320-dark-collection.png",
+    "investigation-discovery-320-light-resume.png"
+  ],
+  "syntax": "passed",
+  "whitespace": "passed",
+  "committed": false
+}

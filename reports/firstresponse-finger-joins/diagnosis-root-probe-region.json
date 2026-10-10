@@ -1,0 +1,4550 @@
+{
+  "checkerSHA256": "55e6118ce8eb27d2b1dbb2f246ee2ec35c4acc191a4dcc7b7d8f28eead98c106",
+  "diagnosisSHA256": "1c04f5a12bb4a935be8720bda383ee1ddda34194cf891a670e6832a1843ae202",
+  "beforeSHA256": "dfe3e01f38a419187e468c749cc37827f486a47401b9916afaa9ec6f98a3f86a",
+  "candidateSHA256": "77394bfee2544c33c3274293a13e9666912c26f657117ac98d15416f220f060e",
+  "age": "adult",
+  "phase": 0,
+  "contrast": false,
+  "probeSelection": {
+    "source": "Baseline geometry and baseline normal attributes only. Candidate scene is never built.",
+    "maximumGap": 0.006,
+    "minimumBaselineAlignment": 0.25,
+    "deadlines": [
+      0.18,
+      0.25,
+      0.34,
+      0.36
+    ]
+  },
+  "records": [
+    {
+      "name": "fr-patient-left-finger-0-surface",
+      "ringCount": 48,
+      "counts": [
+        {
+          "maximumT": 0.18,
+          "count": 26,
+          "upper": 15,
+          "lower": 11,
+          "firstEligibleT": 0.020833333333333332,
+          "lastEligibleT": 0.16666666666666666,
+          "maximumGap": 0.005995690560288121,
+          "selectionSHA256": "b85f0f59cd0e8f9336716e75838e818ad4aeaf1048b59a19f24dfb96c61360ab"
+        },
+        {
+          "maximumT": 0.25,
+          "count": 26,
+          "upper": 15,
+          "lower": 11,
+          "firstEligibleT": 0.020833333333333332,
+          "lastEligibleT": 0.16666666666666666,
+          "maximumGap": 0.005995690560288121,
+          "selectionSHA256": "b85f0f59cd0e8f9336716e75838e818ad4aeaf1048b59a19f24dfb96c61360ab"
+        },
+        {
+          "maximumT": 0.34,
+          "count": 26,
+          "upper": 15,
+          "lower": 11,
+          "firstEligibleT": 0.020833333333333332,
+          "lastEligibleT": 0.16666666666666666,
+          "maximumGap": 0.005995690560288121,
+          "selectionSHA256": "b85f0f59cd0e8f9336716e75838e818ad4aeaf1048b59a19f24dfb96c61360ab"
+        },
+        {
+          "maximumT": 0.36,
+          "count": 26,
+          "upper": 15,
+          "lower": 11,
+          "firstEligibleT": 0.020833333333333332,
+          "lastEligibleT": 0.16666666666666666,
+          "maximumGap": 0.005995690560288121,
+          "selectionSHA256": "b85f0f59cd0e8f9336716e75838e818ad4aeaf1048b59a19f24dfb96c61360ab"
+        }
+      ],
+      "rings": [
+        {
+          "t": 0,
+          "vertices": 16,
+          "actualPalmHits": 12,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.020833333333333332,
+          "vertices": 16,
+          "actualPalmHits": 12,
+          "alignedHits": 9,
+          "nearSurfaceAlignedHits": 5,
+          "minAlignedGap": 0.0012581824731453545,
+          "maxAlignedGap": 0.015035038471304106,
+          "upper": 3,
+          "lower": 2
+        },
+        {
+          "t": 0.041666666666666664,
+          "vertices": 16,
+          "actualPalmHits": 12,
+          "alignedHits": 9,
+          "nearSurfaceAlignedHits": 4,
+          "minAlignedGap": 0.0003108665617963229,
+          "maxAlignedGap": 0.013557989166969165,
+          "upper": 2,
+          "lower": 2
+        },
+        {
+          "t": 0.0625,
+          "vertices": 16,
+          "actualPalmHits": 10,
+          "alignedHits": 7,
+          "nearSurfaceAlignedHits": 4,
+          "minAlignedGap": 0.0016682420642063732,
+          "maxAlignedGap": 0.012053729281113644,
+          "upper": 2,
+          "lower": 2
+        },
+        {
+          "t": 0.08333333333333333,
+          "vertices": 16,
+          "actualPalmHits": 10,
+          "alignedHits": 7,
+          "nearSurfaceAlignedHits": 4,
+          "minAlignedGap": 0.0003120141180951476,
+          "maxAlignedGap": 0.010568957712421128,
+          "upper": 2,
+          "lower": 2
+        },
+        {
+          "t": 0.10416666666666667,
+          "vertices": 16,
+          "actualPalmHits": 10,
+          "alignedHits": 6,
+          "nearSurfaceAlignedHits": 3,
+          "minAlignedGap": 0.0016741451373270006,
+          "maxAlignedGap": 0.010699096174388776,
+          "upper": 2,
+          "lower": 1
+        },
+        {
+          "t": 0.125,
+          "vertices": 16,
+          "actualPalmHits": 8,
+          "alignedHits": 4,
+          "nearSurfaceAlignedHits": 3,
+          "minAlignedGap": 0.0004957551916529006,
+          "maxAlignedGap": 0.008080925585460226,
+          "upper": 2,
+          "lower": 1
+        },
+        {
+          "t": 0.14583333333333334,
+          "vertices": 16,
+          "actualPalmHits": 8,
+          "alignedHits": 4,
+          "nearSurfaceAlignedHits": 2,
+          "minAlignedGap": 0.0009151098468150078,
+          "maxAlignedGap": 0.008362346602486529,
+          "upper": 1,
+          "lower": 1
+        },
+        {
+          "t": 0.16666666666666666,
+          "vertices": 16,
+          "actualPalmHits": 7,
+          "alignedHits": 1,
+          "nearSurfaceAlignedHits": 1,
+          "minAlignedGap": 0.003416619566920357,
+          "maxAlignedGap": 0.003416619566920357,
+          "upper": 1,
+          "lower": 0
+        },
+        {
+          "t": 0.1875,
+          "vertices": 16,
+          "actualPalmHits": 6,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.20833333333333334,
+          "vertices": 16,
+          "actualPalmHits": 6,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.22916666666666666,
+          "vertices": 16,
+          "actualPalmHits": 5,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.25,
+          "vertices": 16,
+          "actualPalmHits": 3,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.2708333333333333,
+          "vertices": 16,
+          "actualPalmHits": 1,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.2916666666666667,
+          "vertices": 16,
+          "actualPalmHits": 0,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.3125,
+          "vertices": 16,
+          "actualPalmHits": 0,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.3333333333333333,
+          "vertices": 16,
+          "actualPalmHits": 0,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.3541666666666667,
+          "vertices": 16,
+          "actualPalmHits": 0,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        }
+      ],
+      "samples": [
+        {
+          "vertex": 16,
+          "t": 0.020833333333333332,
+          "face": 1789,
+          "gap": 0.0012581824731453545,
+          "signedGap": -0.0012581824731453545,
+          "alignment": 0.729936549075503,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 17,
+          "t": 0.020833333333333332,
+          "face": 1690,
+          "gap": 0.004307274718820557,
+          "signedGap": 0.004307274718820557,
+          "alignment": 0.7070741326396506,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 22,
+          "t": 0.020833333333333332,
+          "face": 1306,
+          "gap": 0.0032945522891642837,
+          "signedGap": 0.0032945522891642837,
+          "alignment": 0.6181778273948138,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 23,
+          "t": 0.020833333333333332,
+          "face": 1114,
+          "gap": 0.0013602276118396244,
+          "signedGap": -0.0013602276118396244,
+          "alignment": 0.653037088277556,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 24,
+          "t": 0.020833333333333332,
+          "face": 922,
+          "gap": 0.005522853834597078,
+          "signedGap": -0.005522853834597078,
+          "alignment": 0.6211416703703247,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 32,
+          "t": 0.041666666666666664,
+          "face": 1788,
+          "gap": 0.0003108665617963229,
+          "signedGap": 0.0003108665617963229,
+          "alignment": 0.6711588910491105,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 39,
+          "t": 0.041666666666666664,
+          "face": 1115,
+          "gap": 0.0009151210969362018,
+          "signedGap": 0.0009151210969362018,
+          "alignment": 0.5937074502144972,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 40,
+          "t": 0.041666666666666664,
+          "face": 1021,
+          "gap": 0.0036748296946513253,
+          "signedGap": -0.0036748296946513253,
+          "alignment": 0.579224077187045,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 47,
+          "t": 0.041666666666666664,
+          "face": 1884,
+          "gap": 0.005995690560288121,
+          "signedGap": -0.005995690560288121,
+          "alignment": 0.6032384071968035,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 48,
+          "t": 0.0625,
+          "face": 1693,
+          "gap": 0.0022337963210857497,
+          "signedGap": 0.0022337963210857497,
+          "alignment": 0.6006296095357762,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 55,
+          "t": 0.0625,
+          "face": 1210,
+          "gap": 0.0034059988741289033,
+          "signedGap": 0.0034059988741289033,
+          "alignment": 0.5288905610978495,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 56,
+          "t": 0.0625,
+          "face": 1021,
+          "gap": 0.0016682420642063732,
+          "signedGap": -0.0016682420642063732,
+          "alignment": 0.535562457681235,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 63,
+          "t": 0.0625,
+          "face": 1884,
+          "gap": 0.0048637188282349714,
+          "signedGap": -0.0048637188282349714,
+          "alignment": 0.5677106072453701,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 64,
+          "t": 0.08333333333333333,
+          "face": 1692,
+          "gap": 0.0047421872541775194,
+          "signedGap": 0.0047421872541775194,
+          "alignment": 0.5056351119500259,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 72,
+          "t": 0.08333333333333333,
+          "face": 1116,
+          "gap": 0.0003120141180951476,
+          "signedGap": 0.0003120141180951476,
+          "alignment": 0.496663174882627,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 73,
+          "t": 0.08333333333333333,
+          "face": 925,
+          "gap": 0.004915716477320973,
+          "signedGap": -0.004915716477320973,
+          "alignment": 0.42334172649353885,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 79,
+          "t": 0.08333333333333333,
+          "face": 1791,
+          "gap": 0.003461414366124684,
+          "signedGap": -0.003461414366124684,
+          "alignment": 0.5279533001174359,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 88,
+          "t": 0.10416666666666667,
+          "face": 1117,
+          "gap": 0.002769091893707141,
+          "signedGap": 0.002769091893707141,
+          "alignment": 0.4407557253268747,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 89,
+          "t": 0.10416666666666667,
+          "face": 1020,
+          "gap": 0.003076950436639577,
+          "signedGap": -0.003076950436639577,
+          "alignment": 0.3943300711025116,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 95,
+          "t": 0.10416666666666667,
+          "face": 1791,
+          "gap": 0.0016741451373270006,
+          "signedGap": -0.0016741451373270006,
+          "alignment": 0.476489532029384,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 104,
+          "t": 0.125,
+          "face": 1117,
+          "gap": 0.005148577319581103,
+          "signedGap": 0.005148577319581103,
+          "alignment": 0.38565470039675853,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 105,
+          "t": 0.125,
+          "face": 1020,
+          "gap": 0.0011674642521626553,
+          "signedGap": -0.0011674642521626553,
+          "alignment": 0.36222703846109844,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 111,
+          "t": 0.125,
+          "face": 1695,
+          "gap": 0.0004957551916529006,
+          "signedGap": 0.0004957551916529006,
+          "alignment": 0.4084684898615252,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 121,
+          "t": 0.14583333333333334,
+          "face": 1119,
+          "gap": 0.0009151098468150078,
+          "signedGap": 0.0009151098468150078,
+          "alignment": 0.3198091298378448,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 127,
+          "t": 0.14583333333333334,
+          "face": 1599,
+          "gap": 0.003474593015530795,
+          "signedGap": 0.003474593015530795,
+          "alignment": 0.2978647445708207,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 137,
+          "t": 0.16666666666666666,
+          "face": 1119,
+          "gap": 0.003416619566920357,
+          "signedGap": 0.003416619566920357,
+          "alignment": 0.2522525069569727,
+          "hemisphere": "upper"
+        }
+      ]
+    },
+    {
+      "name": "fr-patient-left-finger-1-surface",
+      "ringCount": 48,
+      "counts": [
+        {
+          "maximumT": 0.18,
+          "count": 5,
+          "upper": 4,
+          "lower": 1,
+          "firstEligibleT": 0.14583333333333334,
+          "lastEligibleT": 0.16666666666666666,
+          "maximumGap": 0.005914308992157948,
+          "selectionSHA256": "7bb3303b7eff3562bce93ba99c22ecfc23b7f6bf4e888491b87ebba5724563a2"
+        },
+        {
+          "maximumT": 0.25,
+          "count": 37,
+          "upper": 23,
+          "lower": 14,
+          "firstEligibleT": 0.14583333333333334,
+          "lastEligibleT": 0.25,
+          "maximumGap": 0.005914308992157948,
+          "selectionSHA256": "34a9fcc7c301853f93ffa21613336335c22e4d74251da7787c5c481c66f58b48"
+        },
+        {
+          "maximumT": 0.34,
+          "count": 38,
+          "upper": 24,
+          "lower": 14,
+          "firstEligibleT": 0.14583333333333334,
+          "lastEligibleT": 0.2708333333333333,
+          "maximumGap": 0.005914308992157948,
+          "selectionSHA256": "161dc84cd439ce5630a2a55c8e08b9d5cbf7c3e6ec0f4f5ff08cc673f2131a59"
+        },
+        {
+          "maximumT": 0.36,
+          "count": 38,
+          "upper": 24,
+          "lower": 14,
+          "firstEligibleT": 0.14583333333333334,
+          "lastEligibleT": 0.2708333333333333,
+          "maximumGap": 0.005914308992157948,
+          "selectionSHA256": "161dc84cd439ce5630a2a55c8e08b9d5cbf7c3e6ec0f4f5ff08cc673f2131a59"
+        }
+      ],
+      "rings": [
+        {
+          "t": 0,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.020833333333333332,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 14,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.015157870925410268,
+          "maxAlignedGap": 0.026209072300862987,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.041666666666666664,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 14,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.014271666923976052,
+          "maxAlignedGap": 0.02551302546381745,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.0625,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.013232264512234746,
+          "maxAlignedGap": 0.024681362345327834,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.08333333333333333,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.01148207955231295,
+          "maxAlignedGap": 0.023755274180318933,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.10416666666666667,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.009554752179879455,
+          "maxAlignedGap": 0.02282009388085796,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.125,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.007622752825407388,
+          "maxAlignedGap": 0.021652381368999,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.14583333333333334,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 1,
+          "minAlignedGap": 0.005569458222183073,
+          "maxAlignedGap": 0.020497746929402375,
+          "upper": 1,
+          "lower": 0
+        },
+        {
+          "t": 0.16666666666666666,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 4,
+          "minAlignedGap": 0.0033744449424723787,
+          "maxAlignedGap": 0.019079364375483274,
+          "upper": 3,
+          "lower": 1
+        },
+        {
+          "t": 0.1875,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 8,
+          "minAlignedGap": 0.0009828807460526244,
+          "maxAlignedGap": 0.017613266381447865,
+          "upper": 5,
+          "lower": 3
+        },
+        {
+          "t": 0.20833333333333334,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 12,
+          "minAlignedGap": 0.0004731914296148849,
+          "maxAlignedGap": 0.015734300346567618,
+          "upper": 7,
+          "lower": 5
+        },
+        {
+          "t": 0.22916666666666666,
+          "vertices": 16,
+          "actualPalmHits": 13,
+          "alignedHits": 12,
+          "nearSurfaceAlignedHits": 8,
+          "minAlignedGap": 0.0009292268847788422,
+          "maxAlignedGap": 0.013589563679772683,
+          "upper": 5,
+          "lower": 3
+        },
+        {
+          "t": 0.25,
+          "vertices": 16,
+          "actualPalmHits": 10,
+          "alignedHits": 8,
+          "nearSurfaceAlignedHits": 4,
+          "minAlignedGap": 0.0005069152682495876,
+          "maxAlignedGap": 0.012514207243358612,
+          "upper": 2,
+          "lower": 2
+        },
+        {
+          "t": 0.2708333333333333,
+          "vertices": 16,
+          "actualPalmHits": 8,
+          "alignedHits": 3,
+          "nearSurfaceAlignedHits": 1,
+          "minAlignedGap": 0.003907485558830002,
+          "maxAlignedGap": 0.010375882680699281,
+          "upper": 1,
+          "lower": 0
+        },
+        {
+          "t": 0.2916666666666667,
+          "vertices": 16,
+          "actualPalmHits": 4,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.3125,
+          "vertices": 16,
+          "actualPalmHits": 0,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.3333333333333333,
+          "vertices": 16,
+          "actualPalmHits": 0,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.3541666666666667,
+          "vertices": 16,
+          "actualPalmHits": 0,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        }
+      ],
+      "samples": [
+        {
+          "vertex": 119,
+          "t": 0.14583333333333334,
+          "face": 930,
+          "gap": 0.005569458222183073,
+          "signedGap": -0.005569458222183073,
+          "alignment": 0.7369792650779928,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 129,
+          "t": 0.16666666666666666,
+          "face": 1890,
+          "gap": 0.005914308992157948,
+          "signedGap": -0.005914308992157948,
+          "alignment": 0.8351176894600388,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 134,
+          "t": 0.16666666666666666,
+          "face": 1024,
+          "gap": 0.004324516439671409,
+          "signedGap": -0.004324516439671409,
+          "alignment": 0.6563635854564984,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 135,
+          "t": 0.16666666666666666,
+          "face": 931,
+          "gap": 0.0033744449424723787,
+          "signedGap": -0.0033744449424723787,
+          "alignment": 0.7110532159558887,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 136,
+          "t": 0.16666666666666666,
+          "face": 933,
+          "gap": 0.004056909125035934,
+          "signedGap": -0.004056909125035934,
+          "alignment": 0.7147284361595952,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 144,
+          "t": 0.1875,
+          "face": 1892,
+          "gap": 0.004739219537324009,
+          "signedGap": -0.004739219537324009,
+          "alignment": 0.8020975255392107,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 145,
+          "t": 0.1875,
+          "face": 1794,
+          "gap": 0.0035558280764845813,
+          "signedGap": -0.0035558280764845813,
+          "alignment": 0.7875395604406279,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 146,
+          "t": 0.1875,
+          "face": 1699,
+          "gap": 0.004934571705393217,
+          "signedGap": -0.004934571705393217,
+          "alignment": 0.737362357294834,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 149,
+          "t": 0.1875,
+          "face": 1121,
+          "gap": 0.0034679480855167293,
+          "signedGap": -0.0034679480855167293,
+          "alignment": 0.5379473873742981,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 150,
+          "t": 0.1875,
+          "face": 1025,
+          "gap": 0.0017626993466734724,
+          "signedGap": -0.0017626993466734724,
+          "alignment": 0.6286383558110468,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 151,
+          "t": 0.1875,
+          "face": 1026,
+          "gap": 0.0009828807460526244,
+          "signedGap": -0.0009828807460526244,
+          "alignment": 0.6748064423477174,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 152,
+          "t": 0.1875,
+          "face": 933,
+          "gap": 0.0018528480109526145,
+          "signedGap": -0.0018528480109526145,
+          "alignment": 0.68096916406465,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 153,
+          "t": 0.1875,
+          "face": 932,
+          "gap": 0.0038942024131320384,
+          "signedGap": -0.0038942024131320384,
+          "alignment": 0.6258905061231814,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 160,
+          "t": 0.20833333333333334,
+          "face": 1797,
+          "gap": 0.002197180776091075,
+          "signedGap": -0.002197180776091075,
+          "alignment": 0.7360276722439592,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 161,
+          "t": 0.20833333333333334,
+          "face": 1698,
+          "gap": 0.0004731914296148849,
+          "signedGap": -0.0004731914296148849,
+          "alignment": 0.7043173035526196,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 162,
+          "t": 0.20833333333333334,
+          "face": 1603,
+          "gap": 0.0007759442095469108,
+          "signedGap": -0.0007759442095469108,
+          "alignment": 0.6449662476231597,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 163,
+          "t": 0.20833333333333334,
+          "face": 1600,
+          "gap": 0.002891096163141235,
+          "signedGap": -0.002891096163141235,
+          "alignment": 0.570958337298106,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 164,
+          "t": 0.20833333333333334,
+          "face": 1313,
+          "gap": 0.001194571832951877,
+          "signedGap": -0.001194571832951877,
+          "alignment": 0.4624985921481488,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 165,
+          "t": 0.20833333333333334,
+          "face": 1217,
+          "gap": 0.0006199449437461219,
+          "signedGap": 0.0006199449437461219,
+          "alignment": 0.5093765688844446,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 166,
+          "t": 0.20833333333333334,
+          "face": 1123,
+          "gap": 0.0014125469094246074,
+          "signedGap": 0.0014125469094246074,
+          "alignment": 0.5801454942593922,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 167,
+          "t": 0.20833333333333334,
+          "face": 1027,
+          "gap": 0.0016252731432253066,
+          "signedGap": 0.0016252731432253066,
+          "alignment": 0.6274043747840135,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 168,
+          "t": 0.20833333333333334,
+          "face": 1029,
+          "gap": 0.0005573106140374963,
+          "signedGap": 0.0005573106140374963,
+          "alignment": 0.6355326019706168,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 169,
+          "t": 0.20833333333333334,
+          "face": 933,
+          "gap": 0.001696616184713947,
+          "signedGap": -0.001696616184713947,
+          "alignment": 0.5900062521649981,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 170,
+          "t": 0.20833333333333334,
+          "face": 935,
+          "gap": 0.005030391842652802,
+          "signedGap": -0.005030391842652802,
+          "alignment": 0.47187647231523416,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 175,
+          "t": 0.20833333333333334,
+          "face": 1796,
+          "gap": 0.005323262911156619,
+          "signedGap": -0.005323262911156619,
+          "alignment": 0.7012013511767305,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 176,
+          "t": 0.22916666666666666,
+          "face": 1701,
+          "gap": 0.0012559809641438918,
+          "signedGap": 0.0012559809641438918,
+          "alignment": 0.6184638273832423,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 177,
+          "t": 0.22916666666666666,
+          "face": 1602,
+          "gap": 0.004790018963373692,
+          "signedGap": 0.004790018963373692,
+          "alignment": 0.5021144157261309,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 182,
+          "t": 0.22916666666666666,
+          "face": 1219,
+          "gap": 0.005436708826634608,
+          "signedGap": 0.005436708826634608,
+          "alignment": 0.49620946114082526,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 183,
+          "t": 0.22916666666666666,
+          "face": 1123,
+          "gap": 0.004770781363481278,
+          "signedGap": 0.004770781363481278,
+          "alignment": 0.5514508006297889,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 184,
+          "t": 0.22916666666666666,
+          "face": 1029,
+          "gap": 0.003191224560994275,
+          "signedGap": 0.003191224560994275,
+          "alignment": 0.5764823496262941,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 185,
+          "t": 0.22916666666666666,
+          "face": 1028,
+          "gap": 0.0009292268847788422,
+          "signedGap": 0.0009292268847788422,
+          "alignment": 0.5345512671229763,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 186,
+          "t": 0.22916666666666666,
+          "face": 1031,
+          "gap": 0.00238432657689072,
+          "signedGap": -0.00238432657689072,
+          "alignment": 0.42874387273585796,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 191,
+          "t": 0.22916666666666666,
+          "face": 1701,
+          "gap": 0.0027195666327168595,
+          "signedGap": -0.0027195666327168595,
+          "alignment": 0.6307649318459886,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 201,
+          "t": 0.25,
+          "face": 1124,
+          "gap": 0.003798432767561425,
+          "signedGap": 0.003798432767561425,
+          "alignment": 0.46216582097397657,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 202,
+          "t": 0.25,
+          "face": 1126,
+          "gap": 0.0005069152682495876,
+          "signedGap": 0.0005069152682495876,
+          "alignment": 0.3713337978564296,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 206,
+          "t": 0.25,
+          "face": 1703,
+          "gap": 0.004133317021044916,
+          "signedGap": -0.004133317021044916,
+          "alignment": 0.444658389379986,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 207,
+          "t": 0.25,
+          "face": 1604,
+          "gap": 0.0015238795732914739,
+          "signedGap": 0.0015238795732914739,
+          "alignment": 0.47266749617618775,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 218,
+          "t": 0.2708333333333333,
+          "face": 1222,
+          "gap": 0.003907485558830002,
+          "signedGap": 0.003907485558830002,
+          "alignment": 0.2871932149746697,
+          "hemisphere": "upper"
+        }
+      ]
+    },
+    {
+      "name": "fr-patient-left-finger-2-surface",
+      "ringCount": 48,
+      "counts": [
+        {
+          "maximumT": 0.18,
+          "count": 1,
+          "upper": 1,
+          "lower": 0,
+          "firstEligibleT": 0.16666666666666666,
+          "lastEligibleT": 0.16666666666666666,
+          "maximumGap": 0.005812739416364964,
+          "selectionSHA256": "89965b13cbbb081457bd5bdf863ca40a337c7ed308d93df77cea36aefaa4376b"
+        },
+        {
+          "maximumT": 0.25,
+          "count": 31,
+          "upper": 22,
+          "lower": 9,
+          "firstEligibleT": 0.16666666666666666,
+          "lastEligibleT": 0.25,
+          "maximumGap": 0.005890483903478157,
+          "selectionSHA256": "1a222a97eaa7596b145a9dba85c654429860803a7038ed30f9b564ca9d6ba618"
+        },
+        {
+          "maximumT": 0.34,
+          "count": 43,
+          "upper": 30,
+          "lower": 13,
+          "firstEligibleT": 0.16666666666666666,
+          "lastEligibleT": 0.3125,
+          "maximumGap": 0.005987414882486278,
+          "selectionSHA256": "96c8222cca249fbb075942a1813130221311180d3fbec0a5959af1db9fbf2cfe"
+        },
+        {
+          "maximumT": 0.36,
+          "count": 43,
+          "upper": 30,
+          "lower": 13,
+          "firstEligibleT": 0.16666666666666666,
+          "lastEligibleT": 0.3125,
+          "maximumGap": 0.005987414882486278,
+          "selectionSHA256": "96c8222cca249fbb075942a1813130221311180d3fbec0a5959af1db9fbf2cfe"
+        }
+      ],
+      "rings": [
+        {
+          "t": 0,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.020833333333333332,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 14,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.015203815967212849,
+          "maxAlignedGap": 0.026452532753599822,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.041666666666666664,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 14,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.014498882437329193,
+          "maxAlignedGap": 0.025787612538926502,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.0625,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.01376328183072613,
+          "maxAlignedGap": 0.025190282630937588,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.08333333333333333,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.012441161934672705,
+          "maxAlignedGap": 0.02445099614924741,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.10416666666666667,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.010902639297414567,
+          "maxAlignedGap": 0.023714026042253592,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.125,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.009197721978623893,
+          "maxAlignedGap": 0.022923983337207413,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.14583333333333334,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.007522774055765884,
+          "maxAlignedGap": 0.02199196162805162,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.16666666666666666,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 1,
+          "minAlignedGap": 0.005812739416364964,
+          "maxAlignedGap": 0.021068530647935558,
+          "upper": 1,
+          "lower": 0
+        },
+        {
+          "t": 0.1875,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 3,
+          "minAlignedGap": 0.00390639889542704,
+          "maxAlignedGap": 0.01995518635275462,
+          "upper": 3,
+          "lower": 0
+        },
+        {
+          "t": 0.20833333333333334,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 7,
+          "minAlignedGap": 0.002028198011084111,
+          "maxAlignedGap": 0.018768335320886762,
+          "upper": 5,
+          "lower": 2
+        },
+        {
+          "t": 0.22916666666666666,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 9,
+          "minAlignedGap": 0.00018729317490790223,
+          "maxAlignedGap": 0.017395599444033936,
+          "upper": 6,
+          "lower": 3
+        },
+        {
+          "t": 0.25,
+          "vertices": 16,
+          "actualPalmHits": 15,
+          "alignedHits": 14,
+          "nearSurfaceAlignedHits": 11,
+          "minAlignedGap": 0.0004411304147423339,
+          "maxAlignedGap": 0.015830434800959862,
+          "upper": 7,
+          "lower": 4
+        },
+        {
+          "t": 0.2708333333333333,
+          "vertices": 16,
+          "actualPalmHits": 12,
+          "alignedHits": 10,
+          "nearSurfaceAlignedHits": 7,
+          "minAlignedGap": 0.0014284489888137554,
+          "maxAlignedGap": 0.013868746223556829,
+          "upper": 5,
+          "lower": 2
+        },
+        {
+          "t": 0.2916666666666667,
+          "vertices": 16,
+          "actualPalmHits": 10,
+          "alignedHits": 7,
+          "nearSurfaceAlignedHits": 4,
+          "minAlignedGap": 0.0007349849154934009,
+          "maxAlignedGap": 0.011115397142567682,
+          "upper": 2,
+          "lower": 2
+        },
+        {
+          "t": 0.3125,
+          "vertices": 16,
+          "actualPalmHits": 7,
+          "alignedHits": 4,
+          "nearSurfaceAlignedHits": 1,
+          "minAlignedGap": 0.0037035187811950455,
+          "maxAlignedGap": 0.012521738698847599,
+          "upper": 1,
+          "lower": 0
+        },
+        {
+          "t": 0.3333333333333333,
+          "vertices": 16,
+          "actualPalmHits": 5,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.3541666666666667,
+          "vertices": 16,
+          "actualPalmHits": 2,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        }
+      ],
+      "samples": [
+        {
+          "vertex": 137,
+          "t": 0.16666666666666666,
+          "face": 940,
+          "gap": 0.005812739416364964,
+          "signedGap": -0.005812739416364964,
+          "alignment": 0.7362241810105145,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 152,
+          "t": 0.1875,
+          "face": 843,
+          "gap": 0.004645490960555939,
+          "signedGap": -0.004645490960555939,
+          "alignment": 0.7178194353573784,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 153,
+          "t": 0.1875,
+          "face": 940,
+          "gap": 0.00390639889542704,
+          "signedGap": -0.00390639889542704,
+          "alignment": 0.7136163586666046,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 154,
+          "t": 0.1875,
+          "face": 1038,
+          "gap": 0.004923337801881698,
+          "signedGap": -0.004923337801881698,
+          "alignment": 0.6618497972740871,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 160,
+          "t": 0.20833333333333334,
+          "face": 1898,
+          "gap": 0.005890483903478157,
+          "signedGap": -0.005890483903478157,
+          "alignment": 0.834808946991033,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 167,
+          "t": 0.20833333333333334,
+          "face": 938,
+          "gap": 0.0047211502958916345,
+          "signedGap": -0.0047211502958916345,
+          "alignment": 0.6315327485417409,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 168,
+          "t": 0.20833333333333334,
+          "face": 938,
+          "gap": 0.002734036900074229,
+          "signedGap": -0.002734036900074229,
+          "alignment": 0.6880689280191467,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 169,
+          "t": 0.20833333333333334,
+          "face": 941,
+          "gap": 0.002028198011084111,
+          "signedGap": -0.002028198011084111,
+          "alignment": 0.6876121236599847,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 170,
+          "t": 0.20833333333333334,
+          "face": 1039,
+          "gap": 0.0027057055351185338,
+          "signedGap": -0.0027057055351185338,
+          "alignment": 0.6377348684847133,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 171,
+          "t": 0.20833333333333334,
+          "face": 1135,
+          "gap": 0.004564315397988487,
+          "signedGap": -0.004564315397988487,
+          "alignment": 0.5473431346472074,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 175,
+          "t": 0.20833333333333334,
+          "face": 1805,
+          "gap": 0.004923370680017082,
+          "signedGap": -0.004923370680017082,
+          "alignment": 0.8254204938863644,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 176,
+          "t": 0.22916666666666666,
+          "face": 1802,
+          "gap": 0.003960427266195278,
+          "signedGap": -0.003960427266195278,
+          "alignment": 0.7890680921773483,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 183,
+          "t": 0.22916666666666666,
+          "face": 939,
+          "gap": 0.002810035327207163,
+          "signedGap": -0.002810035327207163,
+          "alignment": 0.5998422668925882,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 184,
+          "t": 0.22916666666666666,
+          "face": 938,
+          "gap": 0.000830612959940951,
+          "signedGap": -0.000830612959940951,
+          "alignment": 0.6548020869282642,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 185,
+          "t": 0.22916666666666666,
+          "face": 1036,
+          "gap": 0.00018729317490790223,
+          "signedGap": 0.00018729317490790223,
+          "alignment": 0.6482091755008327,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 186,
+          "t": 0.22916666666666666,
+          "face": 1135,
+          "gap": 0.000357411169645409,
+          "signedGap": -0.000357411169645409,
+          "alignment": 0.6061569154758414,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 187,
+          "t": 0.22916666666666666,
+          "face": 1230,
+          "gap": 0.0017031279004892912,
+          "signedGap": -0.0017031279004892912,
+          "alignment": 0.5312909314448221,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 188,
+          "t": 0.22916666666666666,
+          "face": 1231,
+          "gap": 0.004259433181263425,
+          "signedGap": -0.004259433181263425,
+          "alignment": 0.44723021489816434,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 190,
+          "t": 0.22916666666666666,
+          "face": 1708,
+          "gap": 0.0035574060030451075,
+          "signedGap": -0.0035574060030451075,
+          "alignment": 0.7187936603477715,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 191,
+          "t": 0.22916666666666666,
+          "face": 1709,
+          "gap": 0.002751561378395386,
+          "signedGap": -0.002751561378395386,
+          "alignment": 0.7750605494481118,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 192,
+          "t": 0.25,
+          "face": 1707,
+          "gap": 0.0015775766615931126,
+          "signedGap": -0.0015775766615931126,
+          "alignment": 0.7189161119909873,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 193,
+          "t": 0.25,
+          "face": 1803,
+          "gap": 0.004944079386880658,
+          "signedGap": -0.004944079386880658,
+          "alignment": 0.6956150905149743,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 198,
+          "t": 0.25,
+          "face": 1032,
+          "gap": 0.004063465465394251,
+          "signedGap": -0.004063465465394251,
+          "alignment": 0.4502074251447999,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 199,
+          "t": 0.25,
+          "face": 1034,
+          "gap": 0.0008674362117973948,
+          "signedGap": -0.0008674362117973948,
+          "alignment": 0.5635610392810283,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 200,
+          "t": 0.25,
+          "face": 1034,
+          "gap": 0.0013222163337149075,
+          "signedGap": 0.0013222163337149075,
+          "alignment": 0.6082921966886864,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 201,
+          "t": 0.25,
+          "face": 1037,
+          "gap": 0.002426986756845887,
+          "signedGap": 0.002426986756845887,
+          "alignment": 0.6019816033697576,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 202,
+          "t": 0.25,
+          "face": 1132,
+          "gap": 0.0024490526232725258,
+          "signedGap": 0.0024490526232725258,
+          "alignment": 0.5572986644603484,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 203,
+          "t": 0.25,
+          "face": 1231,
+          "gap": 0.002135694524235539,
+          "signedGap": 0.002135694524235539,
+          "alignment": 0.4972098524886118,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 204,
+          "t": 0.25,
+          "face": 1423,
+          "gap": 0.0025757774543170046,
+          "signedGap": 0.0025757774543170046,
+          "alignment": 0.4841334146565884,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 206,
+          "t": 0.25,
+          "face": 1612,
+          "gap": 0.0012308078331778024,
+          "signedGap": 0.0012308078331778024,
+          "alignment": 0.5867842655139647,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 207,
+          "t": 0.25,
+          "face": 1708,
+          "gap": 0.0004411304147423339,
+          "signedGap": 0.0004411304147423339,
+          "alignment": 0.675083606249899,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 208,
+          "t": 0.2708333333333333,
+          "face": 1610,
+          "gap": 0.0021752963840337685,
+          "signedGap": 0.0021752963840337685,
+          "alignment": 0.5728811390530748,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 209,
+          "t": 0.2708333333333333,
+          "face": 1707,
+          "gap": 0.002296145915880012,
+          "signedGap": -0.002296145915880012,
+          "alignment": 0.6129090391083762,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 214,
+          "t": 0.2708333333333333,
+          "face": 1032,
+          "gap": 0.0017084127564819217,
+          "signedGap": -0.0017084127564819217,
+          "alignment": 0.404250534354348,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 215,
+          "t": 0.2708333333333333,
+          "face": 1035,
+          "gap": 0.0014284489888137554,
+          "signedGap": 0.0014284489888137554,
+          "alignment": 0.5092518895946394,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 216,
+          "t": 0.2708333333333333,
+          "face": 1035,
+          "gap": 0.003605996358107464,
+          "signedGap": 0.003605996358107464,
+          "alignment": 0.5518471355486687,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 217,
+          "t": 0.2708333333333333,
+          "face": 1133,
+          "gap": 0.005193430357345461,
+          "signedGap": 0.005193430357345461,
+          "alignment": 0.5307110503848633,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 218,
+          "t": 0.2708333333333333,
+          "face": 1228,
+          "gap": 0.005987414882486278,
+          "signedGap": 0.005987414882486278,
+          "alignment": 0.47792586782362495,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 225,
+          "t": 0.2916666666666667,
+          "face": 1611,
+          "gap": 0.0020820897129443213,
+          "signedGap": 0.0020820897129443213,
+          "alignment": 0.43390678051779036,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 226,
+          "t": 0.2916666666666667,
+          "face": 1704,
+          "gap": 0.004471831955869812,
+          "signedGap": -0.004471831955869812,
+          "alignment": 0.4514199586196371,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 230,
+          "t": 0.2916666666666667,
+          "face": 1128,
+          "gap": 0.0007349849154934009,
+          "signedGap": 0.0007349849154934009,
+          "alignment": 0.3531634053802267,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 231,
+          "t": 0.2916666666666667,
+          "face": 1130,
+          "gap": 0.003806173781754605,
+          "signedGap": 0.003806173781754605,
+          "alignment": 0.4468209932423456,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 246,
+          "t": 0.3125,
+          "face": 1129,
+          "gap": 0.0037035187811950455,
+          "signedGap": 0.0037035187811950455,
+          "alignment": 0.2741929349691183,
+          "hemisphere": "upper"
+        }
+      ]
+    },
+    {
+      "name": "fr-patient-left-finger-3-surface",
+      "ringCount": 48,
+      "counts": [
+        {
+          "maximumT": 0.18,
+          "count": 30,
+          "upper": 18,
+          "lower": 12,
+          "firstEligibleT": 0.020833333333333332,
+          "lastEligibleT": 0.16666666666666666,
+          "maximumGap": 0.005669620402112411,
+          "selectionSHA256": "326e206bdd3b96d663194c377a4a3bb69fdc0fc3858141240737711ad9e9a197"
+        },
+        {
+          "maximumT": 0.25,
+          "count": 34,
+          "upper": 20,
+          "lower": 14,
+          "firstEligibleT": 0.020833333333333332,
+          "lastEligibleT": 0.20833333333333334,
+          "maximumGap": 0.005669620402112411,
+          "selectionSHA256": "b2cce400068556a1951f18df58791bf674293a2979a931e94169ffc7caa8c6f3"
+        },
+        {
+          "maximumT": 0.34,
+          "count": 34,
+          "upper": 20,
+          "lower": 14,
+          "firstEligibleT": 0.020833333333333332,
+          "lastEligibleT": 0.20833333333333334,
+          "maximumGap": 0.005669620402112411,
+          "selectionSHA256": "b2cce400068556a1951f18df58791bf674293a2979a931e94169ffc7caa8c6f3"
+        },
+        {
+          "maximumT": 0.36,
+          "count": 34,
+          "upper": 20,
+          "lower": 14,
+          "firstEligibleT": 0.020833333333333332,
+          "lastEligibleT": 0.20833333333333334,
+          "maximumGap": 0.005669620402112411,
+          "selectionSHA256": "b2cce400068556a1951f18df58791bf674293a2979a931e94169ffc7caa8c6f3"
+        }
+      ],
+      "rings": [
+        {
+          "t": 0,
+          "vertices": 16,
+          "actualPalmHits": 12,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.020833333333333332,
+          "vertices": 16,
+          "actualPalmHits": 12,
+          "alignedHits": 9,
+          "nearSurfaceAlignedHits": 4,
+          "minAlignedGap": 0.0007236594169703365,
+          "maxAlignedGap": 0.01572655366268641,
+          "upper": 2,
+          "lower": 2
+        },
+        {
+          "t": 0.041666666666666664,
+          "vertices": 16,
+          "actualPalmHits": 12,
+          "alignedHits": 9,
+          "nearSurfaceAlignedHits": 4,
+          "minAlignedGap": 0.0003293929357583141,
+          "maxAlignedGap": 0.014540483408374742,
+          "upper": 3,
+          "lower": 1
+        },
+        {
+          "t": 0.0625,
+          "vertices": 16,
+          "actualPalmHits": 10,
+          "alignedHits": 7,
+          "nearSurfaceAlignedHits": 4,
+          "minAlignedGap": 0.001211015982042431,
+          "maxAlignedGap": 0.013328724416671154,
+          "upper": 2,
+          "lower": 2
+        },
+        {
+          "t": 0.08333333333333333,
+          "vertices": 16,
+          "actualPalmHits": 10,
+          "alignedHits": 6,
+          "nearSurfaceAlignedHits": 4,
+          "minAlignedGap": 0.0019962352270747295,
+          "maxAlignedGap": 0.011596599752435226,
+          "upper": 2,
+          "lower": 2
+        },
+        {
+          "t": 0.10416666666666667,
+          "vertices": 16,
+          "actualPalmHits": 10,
+          "alignedHits": 6,
+          "nearSurfaceAlignedHits": 5,
+          "minAlignedGap": 0.00044269397270121566,
+          "maxAlignedGap": 0.010871130200307015,
+          "upper": 3,
+          "lower": 2
+        },
+        {
+          "t": 0.125,
+          "vertices": 16,
+          "actualPalmHits": 10,
+          "alignedHits": 6,
+          "nearSurfaceAlignedHits": 3,
+          "minAlignedGap": 0.0011328941863836019,
+          "maxAlignedGap": 0.010517263137921088,
+          "upper": 2,
+          "lower": 1
+        },
+        {
+          "t": 0.14583333333333334,
+          "vertices": 16,
+          "actualPalmHits": 9,
+          "alignedHits": 5,
+          "nearSurfaceAlignedHits": 3,
+          "minAlignedGap": 0.0008159677045947462,
+          "maxAlignedGap": 0.010930120126563529,
+          "upper": 2,
+          "lower": 1
+        },
+        {
+          "t": 0.16666666666666666,
+          "vertices": 16,
+          "actualPalmHits": 8,
+          "alignedHits": 4,
+          "nearSurfaceAlignedHits": 3,
+          "minAlignedGap": 0.0011050667309083755,
+          "maxAlignedGap": 0.008213504915033785,
+          "upper": 2,
+          "lower": 1
+        },
+        {
+          "t": 0.1875,
+          "vertices": 16,
+          "actualPalmHits": 8,
+          "alignedHits": 4,
+          "nearSurfaceAlignedHits": 2,
+          "minAlignedGap": 0.00015149281126134242,
+          "maxAlignedGap": 0.0069905826151288345,
+          "upper": 1,
+          "lower": 1
+        },
+        {
+          "t": 0.20833333333333334,
+          "vertices": 16,
+          "actualPalmHits": 7,
+          "alignedHits": 3,
+          "nearSurfaceAlignedHits": 2,
+          "minAlignedGap": 0.0017568496265437973,
+          "maxAlignedGap": 0.00904841874099713,
+          "upper": 1,
+          "lower": 1
+        },
+        {
+          "t": 0.22916666666666666,
+          "vertices": 16,
+          "actualPalmHits": 7,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.25,
+          "vertices": 16,
+          "actualPalmHits": 7,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.2708333333333333,
+          "vertices": 16,
+          "actualPalmHits": 5,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.2916666666666667,
+          "vertices": 16,
+          "actualPalmHits": 5,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.3125,
+          "vertices": 16,
+          "actualPalmHits": 5,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.3333333333333333,
+          "vertices": 16,
+          "actualPalmHits": 3,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.3541666666666667,
+          "vertices": 16,
+          "actualPalmHits": 2,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        }
+      ],
+      "samples": [
+        {
+          "vertex": 16,
+          "t": 0.020833333333333332,
+          "face": 1810,
+          "gap": 0.0007236594169703365,
+          "signedGap": -0.0007236594169703365,
+          "alignment": 0.7384480623937602,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 25,
+          "t": 0.020833333333333332,
+          "face": 1140,
+          "gap": 0.002390075294532999,
+          "signedGap": -0.002390075294532999,
+          "alignment": 0.6430853557847601,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 26,
+          "t": 0.020833333333333332,
+          "face": 1237,
+          "gap": 0.001972084196416592,
+          "signedGap": 0.001972084196416592,
+          "alignment": 0.6323966103963925,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 31,
+          "t": 0.020833333333333332,
+          "face": 1621,
+          "gap": 0.005476597576782009,
+          "signedGap": 0.005476597576782009,
+          "alignment": 0.6988761112446449,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 32,
+          "t": 0.041666666666666664,
+          "face": 1810,
+          "gap": 0.0003293929357583141,
+          "signedGap": 0.0003293929357583141,
+          "alignment": 0.6932930205360635,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 40,
+          "t": 0.041666666666666664,
+          "face": 949,
+          "gap": 0.005070449720314186,
+          "signedGap": -0.005070449720314186,
+          "alignment": 0.5643240248887744,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 41,
+          "t": 0.041666666666666664,
+          "face": 1140,
+          "gap": 0.0006145772148317113,
+          "signedGap": -0.0006145772148317113,
+          "alignment": 0.5968797286545569,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 42,
+          "t": 0.041666666666666664,
+          "face": 1332,
+          "gap": 0.005458427727980693,
+          "signedGap": 0.005458427727980693,
+          "alignment": 0.5365240938215824,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 48,
+          "t": 0.0625,
+          "face": 1715,
+          "gap": 0.001614270929293891,
+          "signedGap": 0.001614270929293891,
+          "alignment": 0.6440848708036803,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 49,
+          "t": 0.0625,
+          "face": 1907,
+          "gap": 0.00538971001141997,
+          "signedGap": -0.00538971001141997,
+          "alignment": 0.5969710767954907,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 56,
+          "t": 0.0625,
+          "face": 1042,
+          "gap": 0.003593170323101049,
+          "signedGap": -0.003593170323101049,
+          "alignment": 0.5347462194230141,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 57,
+          "t": 0.0625,
+          "face": 1141,
+          "gap": 0.001211015982042431,
+          "signedGap": 0.001211015982042431,
+          "alignment": 0.5537684677070982,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 64,
+          "t": 0.08333333333333333,
+          "face": 1714,
+          "gap": 0.0033872010920502054,
+          "signedGap": 0.0033872010920502054,
+          "alignment": 0.5796402188892736,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 65,
+          "t": 0.08333333333333333,
+          "face": 1904,
+          "gap": 0.004598145453108606,
+          "signedGap": -0.004598145453108606,
+          "alignment": 0.5757498558764531,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 72,
+          "t": 0.08333333333333333,
+          "face": 1042,
+          "gap": 0.0019962352270747295,
+          "signedGap": -0.0019962352270747295,
+          "alignment": 0.5083653117323812,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 73,
+          "t": 0.08333333333333333,
+          "face": 1236,
+          "gap": 0.003082100580699328,
+          "signedGap": 0.003082100580699328,
+          "alignment": 0.5146418991091306,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 80,
+          "t": 0.10416666666666667,
+          "face": 1619,
+          "gap": 0.005669620402112411,
+          "signedGap": 0.005669620402112411,
+          "alignment": 0.4963866556160168,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 81,
+          "t": 0.10416666666666667,
+          "face": 1808,
+          "gap": 0.0034608478314474295,
+          "signedGap": -0.0034608478314474295,
+          "alignment": 0.5482946150991441,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 87,
+          "t": 0.10416666666666667,
+          "face": 947,
+          "gap": 0.005451747920744123,
+          "signedGap": -0.005451747920744123,
+          "alignment": 0.4074947552229965,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 88,
+          "t": 0.10416666666666667,
+          "face": 1042,
+          "gap": 0.00044269397270121566,
+          "signedGap": -0.00044269397270121566,
+          "alignment": 0.4897195765894192,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 89,
+          "t": 0.10416666666666667,
+          "face": 1237,
+          "gap": 0.005371869953321593,
+          "signedGap": 0.005371869953321593,
+          "alignment": 0.46416931196944833,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 97,
+          "t": 0.125,
+          "face": 1808,
+          "gap": 0.0022339947722102866,
+          "signedGap": -0.0022339947722102866,
+          "alignment": 0.5181669764468758,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 103,
+          "t": 0.125,
+          "face": 947,
+          "gap": 0.004165761508907514,
+          "signedGap": -0.004165761508907514,
+          "alignment": 0.4009562019032279,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 104,
+          "t": 0.125,
+          "face": 1138,
+          "gap": 0.0011328941863836019,
+          "signedGap": 0.0011328941863836019,
+          "alignment": 0.4708561530769916,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 113,
+          "t": 0.14583333333333334,
+          "face": 1713,
+          "gap": 0.0008159677045947462,
+          "signedGap": -0.0008159677045947462,
+          "alignment": 0.47679942975542133,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 119,
+          "t": 0.14583333333333334,
+          "face": 1043,
+          "gap": 0.0027580967105023495,
+          "signedGap": -0.0027580967105023495,
+          "alignment": 0.3831311259351533,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 120,
+          "t": 0.14583333333333334,
+          "face": 1138,
+          "gap": 0.0029446101861733444,
+          "signedGap": 0.0029446101861733444,
+          "alignment": 0.4342327600576915,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 129,
+          "t": 0.16666666666666666,
+          "face": 1712,
+          "gap": 0.0011050667309083755,
+          "signedGap": 0.0011050667309083755,
+          "alignment": 0.4102115546834309,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 135,
+          "t": 0.16666666666666666,
+          "face": 1043,
+          "gap": 0.0012915653425057926,
+          "signedGap": -0.0012915653425057926,
+          "alignment": 0.3577991877978439,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 136,
+          "t": 0.16666666666666666,
+          "face": 1139,
+          "gap": 0.004733484771347222,
+          "signedGap": 0.004733484771347222,
+          "alignment": 0.39228612488115344,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 145,
+          "t": 0.1875,
+          "face": 1616,
+          "gap": 0.00402877989730238,
+          "signedGap": 0.00402877989730238,
+          "alignment": 0.2948759141700228,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 151,
+          "t": 0.1875,
+          "face": 1043,
+          "gap": 0.00015149281126134242,
+          "signedGap": 0.00015149281126134242,
+          "alignment": 0.32927413943561495,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 162,
+          "t": 0.20833333333333334,
+          "face": 1713,
+          "gap": 0.0056551610015482005,
+          "signedGap": -0.0056551610015482005,
+          "alignment": 0.26179851620042294,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 167,
+          "t": 0.20833333333333334,
+          "face": 1136,
+          "gap": 0.0017568496265437973,
+          "signedGap": 0.0017568496265437973,
+          "alignment": 0.2909817811577785,
+          "hemisphere": "upper"
+        }
+      ]
+    },
+    {
+      "name": "fr-patient-right-finger-0-surface",
+      "ringCount": 48,
+      "counts": [
+        {
+          "maximumT": 0.18,
+          "count": 30,
+          "upper": 18,
+          "lower": 12,
+          "firstEligibleT": 0.020833333333333332,
+          "lastEligibleT": 0.16666666666666666,
+          "maximumGap": 0.005669620402112411,
+          "selectionSHA256": "49916d4665a49f05c2da89ec15716325a26a0bd9e5fe38ff55a85e9c7a8958b9"
+        },
+        {
+          "maximumT": 0.25,
+          "count": 34,
+          "upper": 20,
+          "lower": 14,
+          "firstEligibleT": 0.020833333333333332,
+          "lastEligibleT": 0.20833333333333334,
+          "maximumGap": 0.005669620402112411,
+          "selectionSHA256": "339b544526f3c27396ebfa29b05a012de619ca4ef4ef5013ac4401131222dffe"
+        },
+        {
+          "maximumT": 0.34,
+          "count": 34,
+          "upper": 20,
+          "lower": 14,
+          "firstEligibleT": 0.020833333333333332,
+          "lastEligibleT": 0.20833333333333334,
+          "maximumGap": 0.005669620402112411,
+          "selectionSHA256": "339b544526f3c27396ebfa29b05a012de619ca4ef4ef5013ac4401131222dffe"
+        },
+        {
+          "maximumT": 0.36,
+          "count": 34,
+          "upper": 20,
+          "lower": 14,
+          "firstEligibleT": 0.020833333333333332,
+          "lastEligibleT": 0.20833333333333334,
+          "maximumGap": 0.005669620402112411,
+          "selectionSHA256": "339b544526f3c27396ebfa29b05a012de619ca4ef4ef5013ac4401131222dffe"
+        }
+      ],
+      "rings": [
+        {
+          "t": 0,
+          "vertices": 16,
+          "actualPalmHits": 12,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.020833333333333332,
+          "vertices": 16,
+          "actualPalmHits": 12,
+          "alignedHits": 9,
+          "nearSurfaceAlignedHits": 4,
+          "minAlignedGap": 0.0007236594169703365,
+          "maxAlignedGap": 0.01572655366268641,
+          "upper": 2,
+          "lower": 2
+        },
+        {
+          "t": 0.041666666666666664,
+          "vertices": 16,
+          "actualPalmHits": 12,
+          "alignedHits": 9,
+          "nearSurfaceAlignedHits": 4,
+          "minAlignedGap": 0.0003293929357583419,
+          "maxAlignedGap": 0.014540483408374742,
+          "upper": 3,
+          "lower": 1
+        },
+        {
+          "t": 0.0625,
+          "vertices": 16,
+          "actualPalmHits": 10,
+          "alignedHits": 7,
+          "nearSurfaceAlignedHits": 4,
+          "minAlignedGap": 0.001211015982042431,
+          "maxAlignedGap": 0.013328724416671127,
+          "upper": 2,
+          "lower": 2
+        },
+        {
+          "t": 0.08333333333333333,
+          "vertices": 16,
+          "actualPalmHits": 10,
+          "alignedHits": 6,
+          "nearSurfaceAlignedHits": 4,
+          "minAlignedGap": 0.0019962352270747018,
+          "maxAlignedGap": 0.01159659975243524,
+          "upper": 2,
+          "lower": 2
+        },
+        {
+          "t": 0.10416666666666667,
+          "vertices": 16,
+          "actualPalmHits": 10,
+          "alignedHits": 6,
+          "nearSurfaceAlignedHits": 5,
+          "minAlignedGap": 0.00044269397270121566,
+          "maxAlignedGap": 0.010871130200307015,
+          "upper": 3,
+          "lower": 2
+        },
+        {
+          "t": 0.125,
+          "vertices": 16,
+          "actualPalmHits": 10,
+          "alignedHits": 6,
+          "nearSurfaceAlignedHits": 3,
+          "minAlignedGap": 0.0011328941863836296,
+          "maxAlignedGap": 0.010517263137921088,
+          "upper": 2,
+          "lower": 1
+        },
+        {
+          "t": 0.14583333333333334,
+          "vertices": 16,
+          "actualPalmHits": 9,
+          "alignedHits": 5,
+          "nearSurfaceAlignedHits": 3,
+          "minAlignedGap": 0.0008159677045947462,
+          "maxAlignedGap": 0.010930120126563529,
+          "upper": 2,
+          "lower": 1
+        },
+        {
+          "t": 0.16666666666666666,
+          "vertices": 16,
+          "actualPalmHits": 8,
+          "alignedHits": 4,
+          "nearSurfaceAlignedHits": 3,
+          "minAlignedGap": 0.0011050667309083755,
+          "maxAlignedGap": 0.008213504915033785,
+          "upper": 2,
+          "lower": 1
+        },
+        {
+          "t": 0.1875,
+          "vertices": 16,
+          "actualPalmHits": 8,
+          "alignedHits": 4,
+          "nearSurfaceAlignedHits": 2,
+          "minAlignedGap": 0.00015149281126134242,
+          "maxAlignedGap": 0.0069905826151288345,
+          "upper": 1,
+          "lower": 1
+        },
+        {
+          "t": 0.20833333333333334,
+          "vertices": 16,
+          "actualPalmHits": 7,
+          "alignedHits": 3,
+          "nearSurfaceAlignedHits": 2,
+          "minAlignedGap": 0.0017568496265437696,
+          "maxAlignedGap": 0.00904841874099713,
+          "upper": 1,
+          "lower": 1
+        },
+        {
+          "t": 0.22916666666666666,
+          "vertices": 16,
+          "actualPalmHits": 7,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.25,
+          "vertices": 16,
+          "actualPalmHits": 7,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.2708333333333333,
+          "vertices": 16,
+          "actualPalmHits": 5,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.2916666666666667,
+          "vertices": 16,
+          "actualPalmHits": 5,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.3125,
+          "vertices": 16,
+          "actualPalmHits": 5,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.3333333333333333,
+          "vertices": 16,
+          "actualPalmHits": 3,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.3541666666666667,
+          "vertices": 16,
+          "actualPalmHits": 2,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        }
+      ],
+      "samples": [
+        {
+          "vertex": 16,
+          "t": 0.020833333333333332,
+          "face": 1788,
+          "gap": 0.0007236594169703365,
+          "signedGap": -0.0007236594169703365,
+          "alignment": 0.7378675789727758,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 17,
+          "t": 0.020833333333333332,
+          "face": 1595,
+          "gap": 0.005476597576782009,
+          "signedGap": 0.005476597576782009,
+          "alignment": 0.6983306656530666,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 22,
+          "t": 0.020833333333333332,
+          "face": 1211,
+          "gap": 0.001972084196416592,
+          "signedGap": 0.001972084196416592,
+          "alignment": 0.6320145389606022,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 23,
+          "t": 0.020833333333333332,
+          "face": 1114,
+          "gap": 0.0023900752945330266,
+          "signedGap": -0.0023900752945330266,
+          "alignment": 0.6427606355088541,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 32,
+          "t": 0.041666666666666664,
+          "face": 1788,
+          "gap": 0.0003293929357583419,
+          "signedGap": 0.0003293929357583419,
+          "alignment": 0.6925624568766457,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 38,
+          "t": 0.041666666666666664,
+          "face": 1306,
+          "gap": 0.005458427727980693,
+          "signedGap": 0.005458427727980693,
+          "alignment": 0.5362899570665378,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 39,
+          "t": 0.041666666666666664,
+          "face": 1114,
+          "gap": 0.0006145772148317113,
+          "signedGap": -0.0006145772148317113,
+          "alignment": 0.5966618541700239,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 40,
+          "t": 0.041666666666666664,
+          "face": 923,
+          "gap": 0.005070449720314186,
+          "signedGap": -0.005070449720314186,
+          "alignment": 0.5641418502404004,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 48,
+          "t": 0.0625,
+          "face": 1693,
+          "gap": 0.001614270929293891,
+          "signedGap": 0.001614270929293891,
+          "alignment": 0.6432877199383781,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 55,
+          "t": 0.0625,
+          "face": 1115,
+          "gap": 0.001211015982042431,
+          "signedGap": 0.001211015982042431,
+          "alignment": 0.5536020797355834,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 56,
+          "t": 0.0625,
+          "face": 1020,
+          "gap": 0.0035931703231010213,
+          "signedGap": -0.0035931703231010213,
+          "alignment": 0.5345871474631878,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 63,
+          "t": 0.0625,
+          "face": 1885,
+          "gap": 0.00538971001141997,
+          "signedGap": -0.00538971001141997,
+          "alignment": 0.5960181118933049,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 64,
+          "t": 0.08333333333333333,
+          "face": 1692,
+          "gap": 0.0033872010920502054,
+          "signedGap": 0.0033872010920502054,
+          "alignment": 0.5788532386210474,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 71,
+          "t": 0.08333333333333333,
+          "face": 1210,
+          "gap": 0.003082100580699328,
+          "signedGap": 0.003082100580699328,
+          "alignment": 0.5144548103852266,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 72,
+          "t": 0.08333333333333333,
+          "face": 1020,
+          "gap": 0.0019962352270747018,
+          "signedGap": -0.0019962352270747018,
+          "alignment": 0.5081590113964604,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 79,
+          "t": 0.08333333333333333,
+          "face": 1886,
+          "gap": 0.004598145453108606,
+          "signedGap": -0.004598145453108606,
+          "alignment": 0.5748322839953822,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 80,
+          "t": 0.10416666666666667,
+          "face": 1597,
+          "gap": 0.005669620402112411,
+          "signedGap": 0.005669620402112411,
+          "alignment": 0.49569841038470397,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 87,
+          "t": 0.10416666666666667,
+          "face": 1211,
+          "gap": 0.005371869953321593,
+          "signedGap": 0.005371869953321593,
+          "alignment": 0.4638680767403008,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 88,
+          "t": 0.10416666666666667,
+          "face": 1020,
+          "gap": 0.00044269397270121566,
+          "signedGap": -0.00044269397270121566,
+          "alignment": 0.48939519424511846,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 89,
+          "t": 0.10416666666666667,
+          "face": 925,
+          "gap": 0.005451747920744123,
+          "signedGap": -0.005451747920744123,
+          "alignment": 0.4071403939061585,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 95,
+          "t": 0.10416666666666667,
+          "face": 1790,
+          "gap": 0.0034608478314474573,
+          "signedGap": -0.0034608478314474573,
+          "alignment": 0.5475165842707859,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 104,
+          "t": 0.125,
+          "face": 1116,
+          "gap": 0.0011328941863836296,
+          "signedGap": 0.0011328941863836296,
+          "alignment": 0.4703876228939148,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 105,
+          "t": 0.125,
+          "face": 925,
+          "gap": 0.004165761508907514,
+          "signedGap": -0.004165761508907514,
+          "alignment": 0.4004287842671164,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 111,
+          "t": 0.125,
+          "face": 1790,
+          "gap": 0.0022339947722103144,
+          "signedGap": -0.0022339947722103144,
+          "alignment": 0.5175677774737292,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 120,
+          "t": 0.14583333333333334,
+          "face": 1116,
+          "gap": 0.002944610186173372,
+          "signedGap": 0.002944610186173372,
+          "alignment": 0.43364307437930594,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 121,
+          "t": 0.14583333333333334,
+          "face": 1021,
+          "gap": 0.0027580967105023495,
+          "signedGap": -0.0027580967105023495,
+          "alignment": 0.3824700038628966,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 127,
+          "t": 0.14583333333333334,
+          "face": 1695,
+          "gap": 0.0008159677045947462,
+          "signedGap": -0.0008159677045947462,
+          "alignment": 0.476333580492126,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 136,
+          "t": 0.16666666666666666,
+          "face": 1117,
+          "gap": 0.004733484771347222,
+          "signedGap": 0.004733484771347222,
+          "alignment": 0.3916057616520306,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 137,
+          "t": 0.16666666666666666,
+          "face": 1021,
+          "gap": 0.0012915653425057926,
+          "signedGap": -0.0012915653425057926,
+          "alignment": 0.3570415091143183,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 143,
+          "t": 0.16666666666666666,
+          "face": 1694,
+          "gap": 0.0011050667309083755,
+          "signedGap": 0.0011050667309083755,
+          "alignment": 0.40983386749527206,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 153,
+          "t": 0.1875,
+          "face": 1021,
+          "gap": 0.00015149281126134242,
+          "signedGap": 0.00015149281126134242,
+          "alignment": 0.32844602469500167,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 159,
+          "t": 0.1875,
+          "face": 1598,
+          "gap": 0.00402877989730238,
+          "signedGap": 0.00402877989730238,
+          "alignment": 0.29455782897422145,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 169,
+          "t": 0.20833333333333334,
+          "face": 1118,
+          "gap": 0.0017568496265437696,
+          "signedGap": 0.0017568496265437696,
+          "alignment": 0.29010628760022084,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 174,
+          "t": 0.20833333333333334,
+          "face": 1695,
+          "gap": 0.0056551610015482005,
+          "signedGap": -0.0056551610015482005,
+          "alignment": 0.26155499328876874,
+          "hemisphere": "lower"
+        }
+      ]
+    },
+    {
+      "name": "fr-patient-right-finger-1-surface",
+      "ringCount": 48,
+      "counts": [
+        {
+          "maximumT": 0.18,
+          "count": 1,
+          "upper": 1,
+          "lower": 0,
+          "firstEligibleT": 0.16666666666666666,
+          "lastEligibleT": 0.16666666666666666,
+          "maximumGap": 0.00581273941636495,
+          "selectionSHA256": "75053a2f37d1ada228f292309a3b56c5d961a698928bff072120ff81705cc56c"
+        },
+        {
+          "maximumT": 0.25,
+          "count": 31,
+          "upper": 22,
+          "lower": 9,
+          "firstEligibleT": 0.16666666666666666,
+          "lastEligibleT": 0.25,
+          "maximumGap": 0.005890483903478157,
+          "selectionSHA256": "11d5668e2abc6790b60c15d71a0b163eb2dc412581356bb06a9a9d56d3db0212"
+        },
+        {
+          "maximumT": 0.34,
+          "count": 43,
+          "upper": 30,
+          "lower": 13,
+          "firstEligibleT": 0.16666666666666666,
+          "lastEligibleT": 0.3125,
+          "maximumGap": 0.005987414882486278,
+          "selectionSHA256": "ff3ba49fb49d109ab7283200587f7112a1a5142f5385254b1414f651d2d8765d"
+        },
+        {
+          "maximumT": 0.36,
+          "count": 43,
+          "upper": 30,
+          "lower": 13,
+          "firstEligibleT": 0.16666666666666666,
+          "lastEligibleT": 0.3125,
+          "maximumGap": 0.005987414882486278,
+          "selectionSHA256": "ff3ba49fb49d109ab7283200587f7112a1a5142f5385254b1414f651d2d8765d"
+        }
+      ],
+      "rings": [
+        {
+          "t": 0,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.020833333333333332,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 14,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.015203815967212849,
+          "maxAlignedGap": 0.02645253275359981,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.041666666666666664,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 14,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.014498882437329193,
+          "maxAlignedGap": 0.025787612538926474,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.0625,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.01376328183072613,
+          "maxAlignedGap": 0.025190282630937588,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.08333333333333333,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.012441161934672705,
+          "maxAlignedGap": 0.02445099614924741,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.10416666666666667,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.010902639297414567,
+          "maxAlignedGap": 0.023714026042253606,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.125,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.009197721978623893,
+          "maxAlignedGap": 0.022923983337207413,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.14583333333333334,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.007522774055765884,
+          "maxAlignedGap": 0.02199196162805159,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.16666666666666666,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 1,
+          "minAlignedGap": 0.00581273941636495,
+          "maxAlignedGap": 0.021068530647935572,
+          "upper": 1,
+          "lower": 0
+        },
+        {
+          "t": 0.1875,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 3,
+          "minAlignedGap": 0.003906398895427012,
+          "maxAlignedGap": 0.019955186352754607,
+          "upper": 3,
+          "lower": 0
+        },
+        {
+          "t": 0.20833333333333334,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 7,
+          "minAlignedGap": 0.002028198011084111,
+          "maxAlignedGap": 0.018768335320886762,
+          "upper": 5,
+          "lower": 2
+        },
+        {
+          "t": 0.22916666666666666,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 9,
+          "minAlignedGap": 0.00018729317490790223,
+          "maxAlignedGap": 0.017395599444033964,
+          "upper": 6,
+          "lower": 3
+        },
+        {
+          "t": 0.25,
+          "vertices": 16,
+          "actualPalmHits": 15,
+          "alignedHits": 14,
+          "nearSurfaceAlignedHits": 11,
+          "minAlignedGap": 0.0004411304147423894,
+          "maxAlignedGap": 0.015830434800959862,
+          "upper": 7,
+          "lower": 4
+        },
+        {
+          "t": 0.2708333333333333,
+          "vertices": 16,
+          "actualPalmHits": 12,
+          "alignedHits": 10,
+          "nearSurfaceAlignedHits": 7,
+          "minAlignedGap": 0.0014284489888137554,
+          "maxAlignedGap": 0.013868746223556829,
+          "upper": 5,
+          "lower": 2
+        },
+        {
+          "t": 0.2916666666666667,
+          "vertices": 16,
+          "actualPalmHits": 10,
+          "alignedHits": 7,
+          "nearSurfaceAlignedHits": 4,
+          "minAlignedGap": 0.0007349849154934009,
+          "maxAlignedGap": 0.01111539714256771,
+          "upper": 2,
+          "lower": 2
+        },
+        {
+          "t": 0.3125,
+          "vertices": 16,
+          "actualPalmHits": 7,
+          "alignedHits": 4,
+          "nearSurfaceAlignedHits": 1,
+          "minAlignedGap": 0.0037035187811950733,
+          "maxAlignedGap": 0.012521738698847599,
+          "upper": 1,
+          "lower": 0
+        },
+        {
+          "t": 0.3333333333333333,
+          "vertices": 16,
+          "actualPalmHits": 5,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.3541666666666667,
+          "vertices": 16,
+          "actualPalmHits": 2,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        }
+      ],
+      "samples": [
+        {
+          "vertex": 135,
+          "t": 0.16666666666666666,
+          "face": 930,
+          "gap": 0.00581273941636495,
+          "signedGap": -0.00581273941636495,
+          "alignment": 0.7362983130608819,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 150,
+          "t": 0.1875,
+          "face": 1024,
+          "gap": 0.00492333780188167,
+          "signedGap": -0.00492333780188167,
+          "alignment": 0.6621330597748856,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 151,
+          "t": 0.1875,
+          "face": 930,
+          "gap": 0.003906398895427012,
+          "signedGap": -0.003906398895427012,
+          "alignment": 0.7136933350428932,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 152,
+          "t": 0.1875,
+          "face": 837,
+          "gap": 0.004645490960555939,
+          "signedGap": -0.004645490960555939,
+          "alignment": 0.7176841223233837,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 160,
+          "t": 0.20833333333333334,
+          "face": 1892,
+          "gap": 0.005890483903478157,
+          "signedGap": -0.005890483903478157,
+          "alignment": 0.8348305968960472,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 161,
+          "t": 0.20833333333333334,
+          "face": 1795,
+          "gap": 0.004923370680017082,
+          "signedGap": -0.004923370680017082,
+          "alignment": 0.8254928356096378,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 165,
+          "t": 0.20833333333333334,
+          "face": 1121,
+          "gap": 0.004564315397988487,
+          "signedGap": -0.004564315397988487,
+          "alignment": 0.5478132554523321,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 166,
+          "t": 0.20833333333333334,
+          "face": 1025,
+          "gap": 0.0027057055351185338,
+          "signedGap": -0.0027057055351185338,
+          "alignment": 0.6380312681078449,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 167,
+          "t": 0.20833333333333334,
+          "face": 931,
+          "gap": 0.002028198011084111,
+          "signedGap": -0.002028198011084111,
+          "alignment": 0.6876905514785956,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 168,
+          "t": 0.20833333333333334,
+          "face": 932,
+          "gap": 0.002734036900074229,
+          "signedGap": -0.002734036900074229,
+          "alignment": 0.687916315775705,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 169,
+          "t": 0.20833333333333334,
+          "face": 932,
+          "gap": 0.0047211502958916345,
+          "signedGap": -0.0047211502958916345,
+          "alignment": 0.6311454271107538,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 176,
+          "t": 0.22916666666666666,
+          "face": 1796,
+          "gap": 0.003960427266195306,
+          "signedGap": -0.003960427266195306,
+          "alignment": 0.7891002047615135,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 177,
+          "t": 0.22916666666666666,
+          "face": 1699,
+          "gap": 0.002751561378395386,
+          "signedGap": -0.002751561378395386,
+          "alignment": 0.7751690907436772,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 178,
+          "t": 0.22916666666666666,
+          "face": 1698,
+          "gap": 0.003557406003045052,
+          "signedGap": -0.003557406003045052,
+          "alignment": 0.7189651662885594,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 180,
+          "t": 0.22916666666666666,
+          "face": 1217,
+          "gap": 0.004259433181263425,
+          "signedGap": -0.004259433181263425,
+          "alignment": 0.44778402185147514,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 181,
+          "t": 0.22916666666666666,
+          "face": 1216,
+          "gap": 0.0017031279004892912,
+          "signedGap": -0.0017031279004892912,
+          "alignment": 0.5317619848350831,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 182,
+          "t": 0.22916666666666666,
+          "face": 1121,
+          "gap": 0.000357411169645409,
+          "signedGap": -0.000357411169645409,
+          "alignment": 0.6064531742751917,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 183,
+          "t": 0.22916666666666666,
+          "face": 1026,
+          "gap": 0.00018729317490790223,
+          "signedGap": 0.00018729317490790223,
+          "alignment": 0.6482798390949848,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 184,
+          "t": 0.22916666666666666,
+          "face": 932,
+          "gap": 0.000830612959940951,
+          "signedGap": -0.000830612959940951,
+          "alignment": 0.6546380152937744,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 185,
+          "t": 0.22916666666666666,
+          "face": 933,
+          "gap": 0.002810035327207163,
+          "signedGap": -0.002810035327207163,
+          "alignment": 0.599432228610051,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 192,
+          "t": 0.25,
+          "face": 1701,
+          "gap": 0.0015775766615931126,
+          "signedGap": -0.0015775766615931126,
+          "alignment": 0.7189527869174014,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 193,
+          "t": 0.25,
+          "face": 1698,
+          "gap": 0.0004411304147423894,
+          "signedGap": 0.0004411304147423894,
+          "alignment": 0.6752460778210869,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 194,
+          "t": 0.25,
+          "face": 1602,
+          "gap": 0.0012308078331778024,
+          "signedGap": 0.0012308078331778024,
+          "alignment": 0.5870947214820391,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 196,
+          "t": 0.25,
+          "face": 1409,
+          "gap": 0.0025757774543170046,
+          "signedGap": 0.0025757774543170046,
+          "alignment": 0.48454655127336493,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 197,
+          "t": 0.25,
+          "face": 1217,
+          "gap": 0.002135694524235539,
+          "signedGap": 0.002135694524235539,
+          "alignment": 0.4976309963520949,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 198,
+          "t": 0.25,
+          "face": 1122,
+          "gap": 0.002449052623272498,
+          "signedGap": 0.002449052623272498,
+          "alignment": 0.5575769164916985,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 199,
+          "t": 0.25,
+          "face": 1027,
+          "gap": 0.002426986756845887,
+          "signedGap": 0.002426986756845887,
+          "alignment": 0.6020479804911171,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 200,
+          "t": 0.25,
+          "face": 1028,
+          "gap": 0.0013222163337149075,
+          "signedGap": 0.0013222163337149075,
+          "alignment": 0.6081212590562823,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 201,
+          "t": 0.25,
+          "face": 1028,
+          "gap": 0.0008674362117973948,
+          "signedGap": -0.0008674362117973948,
+          "alignment": 0.5631419316942425,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 202,
+          "t": 0.25,
+          "face": 1030,
+          "gap": 0.004063465465394265,
+          "signedGap": -0.004063465465394265,
+          "alignment": 0.44954589684439616,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 207,
+          "t": 0.25,
+          "face": 1797,
+          "gap": 0.004944079386880658,
+          "signedGap": -0.004944079386880658,
+          "alignment": 0.6955749702551246,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 208,
+          "t": 0.2708333333333333,
+          "face": 1604,
+          "gap": 0.0021752963840337407,
+          "signedGap": 0.0021752963840337407,
+          "alignment": 0.5729156671651664,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 214,
+          "t": 0.2708333333333333,
+          "face": 1218,
+          "gap": 0.005987414882486278,
+          "signedGap": 0.005987414882486278,
+          "alignment": 0.47816696940713577,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 215,
+          "t": 0.2708333333333333,
+          "face": 1123,
+          "gap": 0.005193430357345461,
+          "signedGap": 0.005193430357345461,
+          "alignment": 0.5307657713205491,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 216,
+          "t": 0.2708333333333333,
+          "face": 1029,
+          "gap": 0.003605996358107464,
+          "signedGap": 0.003605996358107464,
+          "alignment": 0.5516758750195578,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 217,
+          "t": 0.2708333333333333,
+          "face": 1029,
+          "gap": 0.0014284489888137554,
+          "signedGap": 0.0014284489888137554,
+          "alignment": 0.5088343772307196,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 218,
+          "t": 0.2708333333333333,
+          "face": 1030,
+          "gap": 0.0017084127564819217,
+          "signedGap": -0.0017084127564819217,
+          "alignment": 0.40359057544845,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 223,
+          "t": 0.2708333333333333,
+          "face": 1701,
+          "gap": 0.002296145915880012,
+          "signedGap": -0.002296145915880012,
+          "alignment": 0.6128131274460645,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 233,
+          "t": 0.2916666666666667,
+          "face": 1124,
+          "gap": 0.0038061737817546328,
+          "signedGap": 0.0038061737817546328,
+          "alignment": 0.4464164445226947,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 234,
+          "t": 0.2916666666666667,
+          "face": 1126,
+          "gap": 0.0007349849154934009,
+          "signedGap": 0.0007349849154934009,
+          "alignment": 0.3525199823518416,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 238,
+          "t": 0.2916666666666667,
+          "face": 1702,
+          "gap": 0.00447183195586984,
+          "signedGap": -0.00447183195586984,
+          "alignment": 0.4511443802313885,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 239,
+          "t": 0.2916666666666667,
+          "face": 1605,
+          "gap": 0.0020820897129443213,
+          "signedGap": 0.0020820897129443213,
+          "alignment": 0.433720028584725,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 250,
+          "t": 0.3125,
+          "face": 1127,
+          "gap": 0.0037035187811950733,
+          "signedGap": 0.0037035187811950733,
+          "alignment": 0.27357797346137835,
+          "hemisphere": "upper"
+        }
+      ]
+    },
+    {
+      "name": "fr-patient-right-finger-2-surface",
+      "ringCount": 48,
+      "counts": [
+        {
+          "maximumT": 0.18,
+          "count": 5,
+          "upper": 4,
+          "lower": 1,
+          "firstEligibleT": 0.14583333333333334,
+          "lastEligibleT": 0.16666666666666666,
+          "maximumGap": 0.005914308992157948,
+          "selectionSHA256": "e8efad3c8e846da01444e5233cc3e0c748dff98acb8689d269121bc0c804e82b"
+        },
+        {
+          "maximumT": 0.25,
+          "count": 37,
+          "upper": 23,
+          "lower": 14,
+          "firstEligibleT": 0.14583333333333334,
+          "lastEligibleT": 0.25,
+          "maximumGap": 0.005914308992157948,
+          "selectionSHA256": "e3facf7837745b93648eb0b88bd406fd357e5fbc779a20c6bf6f034f37078174"
+        },
+        {
+          "maximumT": 0.34,
+          "count": 38,
+          "upper": 24,
+          "lower": 14,
+          "firstEligibleT": 0.14583333333333334,
+          "lastEligibleT": 0.2708333333333333,
+          "maximumGap": 0.005914308992157948,
+          "selectionSHA256": "0b2c456c9826d64fc66c1e601c06a264321ed97b6d8550600e54fa6ac9833469"
+        },
+        {
+          "maximumT": 0.36,
+          "count": 38,
+          "upper": 24,
+          "lower": 14,
+          "firstEligibleT": 0.14583333333333334,
+          "lastEligibleT": 0.2708333333333333,
+          "maximumGap": 0.005914308992157948,
+          "selectionSHA256": "0b2c456c9826d64fc66c1e601c06a264321ed97b6d8550600e54fa6ac9833469"
+        }
+      ],
+      "rings": [
+        {
+          "t": 0,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.020833333333333332,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 14,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.015157870925410268,
+          "maxAlignedGap": 0.026209072300862973,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.041666666666666664,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 14,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.014271666923976052,
+          "maxAlignedGap": 0.02551302546381748,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.0625,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.013232264512234746,
+          "maxAlignedGap": 0.024681362345327834,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.08333333333333333,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.01148207955231295,
+          "maxAlignedGap": 0.023755274180318933,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.10416666666666667,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.009554752179879455,
+          "maxAlignedGap": 0.02282009388085796,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.125,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": 0.007622752825407388,
+          "maxAlignedGap": 0.021652381368999028,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.14583333333333334,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 1,
+          "minAlignedGap": 0.005569458222183046,
+          "maxAlignedGap": 0.020497746929402375,
+          "upper": 1,
+          "lower": 0
+        },
+        {
+          "t": 0.16666666666666666,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 4,
+          "minAlignedGap": 0.0033744449424723787,
+          "maxAlignedGap": 0.019079364375483302,
+          "upper": 3,
+          "lower": 1
+        },
+        {
+          "t": 0.1875,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 8,
+          "minAlignedGap": 0.0009828807460526522,
+          "maxAlignedGap": 0.017613266381447865,
+          "upper": 5,
+          "lower": 3
+        },
+        {
+          "t": 0.20833333333333334,
+          "vertices": 16,
+          "actualPalmHits": 16,
+          "alignedHits": 15,
+          "nearSurfaceAlignedHits": 12,
+          "minAlignedGap": 0.0004731914296148849,
+          "maxAlignedGap": 0.01573430034656759,
+          "upper": 7,
+          "lower": 5
+        },
+        {
+          "t": 0.22916666666666666,
+          "vertices": 16,
+          "actualPalmHits": 13,
+          "alignedHits": 12,
+          "nearSurfaceAlignedHits": 8,
+          "minAlignedGap": 0.0009292268847788422,
+          "maxAlignedGap": 0.013589563679772683,
+          "upper": 5,
+          "lower": 3
+        },
+        {
+          "t": 0.25,
+          "vertices": 16,
+          "actualPalmHits": 10,
+          "alignedHits": 8,
+          "nearSurfaceAlignedHits": 4,
+          "minAlignedGap": 0.0005069152682495599,
+          "maxAlignedGap": 0.012514207243358612,
+          "upper": 2,
+          "lower": 2
+        },
+        {
+          "t": 0.2708333333333333,
+          "vertices": 16,
+          "actualPalmHits": 8,
+          "alignedHits": 3,
+          "nearSurfaceAlignedHits": 1,
+          "minAlignedGap": 0.003907485558830002,
+          "maxAlignedGap": 0.010375882680699281,
+          "upper": 1,
+          "lower": 0
+        },
+        {
+          "t": 0.2916666666666667,
+          "vertices": 16,
+          "actualPalmHits": 4,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.3125,
+          "vertices": 16,
+          "actualPalmHits": 0,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.3333333333333333,
+          "vertices": 16,
+          "actualPalmHits": 0,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.3541666666666667,
+          "vertices": 16,
+          "actualPalmHits": 0,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        }
+      ],
+      "samples": [
+        {
+          "vertex": 121,
+          "t": 0.14583333333333334,
+          "face": 940,
+          "gap": 0.005569458222183046,
+          "signedGap": -0.005569458222183046,
+          "alignment": 0.7369310302962565,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 136,
+          "t": 0.16666666666666666,
+          "face": 939,
+          "gap": 0.004056909125035934,
+          "signedGap": -0.004056909125035934,
+          "alignment": 0.7148327218103616,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 137,
+          "t": 0.16666666666666666,
+          "face": 941,
+          "gap": 0.0033744449424723787,
+          "signedGap": -0.0033744449424723787,
+          "alignment": 0.710998617599276,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 138,
+          "t": 0.16666666666666666,
+          "face": 1038,
+          "gap": 0.004324516439671409,
+          "signedGap": -0.004324516439671409,
+          "alignment": 0.6561597896578338,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 143,
+          "t": 0.16666666666666666,
+          "face": 1900,
+          "gap": 0.005914308992157948,
+          "signedGap": -0.005914308992157948,
+          "alignment": 0.8350843469415729,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 144,
+          "t": 0.1875,
+          "face": 1898,
+          "gap": 0.004739219537324009,
+          "signedGap": -0.004739219537324009,
+          "alignment": 0.8020704279039563,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 151,
+          "t": 0.1875,
+          "face": 938,
+          "gap": 0.0038942024131320384,
+          "signedGap": -0.0038942024131320384,
+          "alignment": 0.6262019158585822,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 152,
+          "t": 0.1875,
+          "face": 939,
+          "gap": 0.0018528480109526145,
+          "signedGap": -0.0018528480109526145,
+          "alignment": 0.6810962223828889,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 153,
+          "t": 0.1875,
+          "face": 1036,
+          "gap": 0.0009828807460526522,
+          "signedGap": -0.0009828807460526522,
+          "alignment": 0.6747543111723646,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 154,
+          "t": 0.1875,
+          "face": 1039,
+          "gap": 0.0017626993466734724,
+          "signedGap": -0.0017626993466734724,
+          "alignment": 0.6284169561268254,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 155,
+          "t": 0.1875,
+          "face": 1135,
+          "gap": 0.0034679480855167293,
+          "signedGap": -0.0034679480855167293,
+          "alignment": 0.5375965117383842,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 158,
+          "t": 0.1875,
+          "face": 1709,
+          "gap": 0.004934571705393217,
+          "signedGap": -0.004934571705393217,
+          "alignment": 0.7372981506388049,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 159,
+          "t": 0.1875,
+          "face": 1804,
+          "gap": 0.0035558280764845813,
+          "signedGap": -0.0035558280764845813,
+          "alignment": 0.7874829819181651,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 160,
+          "t": 0.20833333333333334,
+          "face": 1803,
+          "gap": 0.002197180776091075,
+          "signedGap": -0.002197180776091075,
+          "alignment": 0.7359819939510123,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 161,
+          "t": 0.20833333333333334,
+          "face": 1802,
+          "gap": 0.005323262911156619,
+          "signedGap": -0.005323262911156619,
+          "alignment": 0.7011742897146771,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 166,
+          "t": 0.20833333333333334,
+          "face": 937,
+          "gap": 0.005030391842652802,
+          "signedGap": -0.005030391842652802,
+          "alignment": 0.47241939389440896,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 167,
+          "t": 0.20833333333333334,
+          "face": 939,
+          "gap": 0.001696616184713947,
+          "signedGap": -0.001696616184713947,
+          "alignment": 0.5903529048521865,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 168,
+          "t": 0.20833333333333334,
+          "face": 1035,
+          "gap": 0.0005573106140374963,
+          "signedGap": 0.0005573106140374963,
+          "alignment": 0.6356788509471023,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 169,
+          "t": 0.20833333333333334,
+          "face": 1037,
+          "gap": 0.0016252731432253066,
+          "signedGap": 0.0016252731432253066,
+          "alignment": 0.6273631939741353,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 170,
+          "t": 0.20833333333333334,
+          "face": 1133,
+          "gap": 0.0014125469094246074,
+          "signedGap": 0.0014125469094246074,
+          "alignment": 0.5799388861976342,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 171,
+          "t": 0.20833333333333334,
+          "face": 1231,
+          "gap": 0.0006199449437461219,
+          "signedGap": 0.0006199449437461219,
+          "alignment": 0.5090580387619448,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 172,
+          "t": 0.20833333333333334,
+          "face": 1327,
+          "gap": 0.001194571832951877,
+          "signedGap": -0.001194571832951877,
+          "alignment": 0.4621388622644284,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 173,
+          "t": 0.20833333333333334,
+          "face": 1614,
+          "gap": 0.002891096163141235,
+          "signedGap": -0.002891096163141235,
+          "alignment": 0.5707967544071735,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 174,
+          "t": 0.20833333333333334,
+          "face": 1613,
+          "gap": 0.0007759442095469108,
+          "signedGap": -0.0007759442095469108,
+          "alignment": 0.6448138993989396,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 175,
+          "t": 0.20833333333333334,
+          "face": 1708,
+          "gap": 0.0004731914296148849,
+          "signedGap": -0.0004731914296148849,
+          "alignment": 0.7042185885505291,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 176,
+          "t": 0.22916666666666666,
+          "face": 1707,
+          "gap": 0.0012559809641438918,
+          "signedGap": 0.0012559809641438918,
+          "alignment": 0.6184035038972178,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 177,
+          "t": 0.22916666666666666,
+          "face": 1707,
+          "gap": 0.0027195666327168595,
+          "signedGap": -0.0027195666327168595,
+          "alignment": 0.630753876773509,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 182,
+          "t": 0.22916666666666666,
+          "face": 1033,
+          "gap": 0.00238432657689072,
+          "signedGap": -0.00238432657689072,
+          "alignment": 0.42931422620084514,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 183,
+          "t": 0.22916666666666666,
+          "face": 1034,
+          "gap": 0.0009292268847788422,
+          "signedGap": 0.0009292268847788422,
+          "alignment": 0.5349172860811097,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 184,
+          "t": 0.22916666666666666,
+          "face": 1035,
+          "gap": 0.003191224560994275,
+          "signedGap": 0.003191224560994275,
+          "alignment": 0.5766446958617718,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 185,
+          "t": 0.22916666666666666,
+          "face": 1133,
+          "gap": 0.004770781363481278,
+          "signedGap": 0.004770781363481278,
+          "alignment": 0.5514309846577233,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 186,
+          "t": 0.22916666666666666,
+          "face": 1229,
+          "gap": 0.005436708826634608,
+          "signedGap": 0.005436708826634608,
+          "alignment": 0.49605421516936965,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 191,
+          "t": 0.22916666666666666,
+          "face": 1612,
+          "gap": 0.004790018963373719,
+          "signedGap": 0.004790018963373719,
+          "alignment": 0.5019418378734242,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 193,
+          "t": 0.25,
+          "face": 1610,
+          "gap": 0.0015238795732915016,
+          "signedGap": 0.0015238795732915016,
+          "alignment": 0.47270812667815887,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 194,
+          "t": 0.25,
+          "face": 1705,
+          "gap": 0.004133317021044916,
+          "signedGap": -0.004133317021044916,
+          "alignment": 0.4447146415160269,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 198,
+          "t": 0.25,
+          "face": 1128,
+          "gap": 0.0005069152682495599,
+          "signedGap": 0.0005069152682495599,
+          "alignment": 0.3719101947129139,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 199,
+          "t": 0.25,
+          "face": 1130,
+          "gap": 0.003798432767561425,
+          "signedGap": 0.003798432767561425,
+          "alignment": 0.4625393842625843,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 214,
+          "t": 0.2708333333333333,
+          "face": 1224,
+          "gap": 0.003907485558830002,
+          "signedGap": 0.003907485558830002,
+          "alignment": 0.2877535108032002,
+          "hemisphere": "upper"
+        }
+      ]
+    },
+    {
+      "name": "fr-patient-right-finger-3-surface",
+      "ringCount": 48,
+      "counts": [
+        {
+          "maximumT": 0.18,
+          "count": 26,
+          "upper": 15,
+          "lower": 11,
+          "firstEligibleT": 0.020833333333333332,
+          "lastEligibleT": 0.16666666666666666,
+          "maximumGap": 0.005995690560288121,
+          "selectionSHA256": "48e21a01c2e8d25bd0c7a84381b0c91001f02e283adcd2da21c29701aac3bdae"
+        },
+        {
+          "maximumT": 0.25,
+          "count": 26,
+          "upper": 15,
+          "lower": 11,
+          "firstEligibleT": 0.020833333333333332,
+          "lastEligibleT": 0.16666666666666666,
+          "maximumGap": 0.005995690560288121,
+          "selectionSHA256": "48e21a01c2e8d25bd0c7a84381b0c91001f02e283adcd2da21c29701aac3bdae"
+        },
+        {
+          "maximumT": 0.34,
+          "count": 26,
+          "upper": 15,
+          "lower": 11,
+          "firstEligibleT": 0.020833333333333332,
+          "lastEligibleT": 0.16666666666666666,
+          "maximumGap": 0.005995690560288121,
+          "selectionSHA256": "48e21a01c2e8d25bd0c7a84381b0c91001f02e283adcd2da21c29701aac3bdae"
+        },
+        {
+          "maximumT": 0.36,
+          "count": 26,
+          "upper": 15,
+          "lower": 11,
+          "firstEligibleT": 0.020833333333333332,
+          "lastEligibleT": 0.16666666666666666,
+          "maximumGap": 0.005995690560288121,
+          "selectionSHA256": "48e21a01c2e8d25bd0c7a84381b0c91001f02e283adcd2da21c29701aac3bdae"
+        }
+      ],
+      "rings": [
+        {
+          "t": 0,
+          "vertices": 16,
+          "actualPalmHits": 12,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.020833333333333332,
+          "vertices": 16,
+          "actualPalmHits": 12,
+          "alignedHits": 9,
+          "nearSurfaceAlignedHits": 5,
+          "minAlignedGap": 0.0012581824731453545,
+          "maxAlignedGap": 0.015035038471304078,
+          "upper": 3,
+          "lower": 2
+        },
+        {
+          "t": 0.041666666666666664,
+          "vertices": 16,
+          "actualPalmHits": 12,
+          "alignedHits": 9,
+          "nearSurfaceAlignedHits": 4,
+          "minAlignedGap": 0.0003108665617963507,
+          "maxAlignedGap": 0.013557989166969165,
+          "upper": 2,
+          "lower": 2
+        },
+        {
+          "t": 0.0625,
+          "vertices": 16,
+          "actualPalmHits": 10,
+          "alignedHits": 7,
+          "nearSurfaceAlignedHits": 4,
+          "minAlignedGap": 0.0016682420642063732,
+          "maxAlignedGap": 0.012053729281113644,
+          "upper": 2,
+          "lower": 2
+        },
+        {
+          "t": 0.08333333333333333,
+          "vertices": 16,
+          "actualPalmHits": 10,
+          "alignedHits": 7,
+          "nearSurfaceAlignedHits": 4,
+          "minAlignedGap": 0.00031201411809511984,
+          "maxAlignedGap": 0.010568957712421128,
+          "upper": 2,
+          "lower": 2
+        },
+        {
+          "t": 0.10416666666666667,
+          "vertices": 16,
+          "actualPalmHits": 10,
+          "alignedHits": 6,
+          "nearSurfaceAlignedHits": 3,
+          "minAlignedGap": 0.0016741451373270006,
+          "maxAlignedGap": 0.010699096174388804,
+          "upper": 2,
+          "lower": 1
+        },
+        {
+          "t": 0.125,
+          "vertices": 16,
+          "actualPalmHits": 8,
+          "alignedHits": 4,
+          "nearSurfaceAlignedHits": 3,
+          "minAlignedGap": 0.0004957551916529006,
+          "maxAlignedGap": 0.008080925585460226,
+          "upper": 2,
+          "lower": 1
+        },
+        {
+          "t": 0.14583333333333334,
+          "vertices": 16,
+          "actualPalmHits": 8,
+          "alignedHits": 4,
+          "nearSurfaceAlignedHits": 2,
+          "minAlignedGap": 0.0009151098468150078,
+          "maxAlignedGap": 0.008362346602486529,
+          "upper": 1,
+          "lower": 1
+        },
+        {
+          "t": 0.16666666666666666,
+          "vertices": 16,
+          "actualPalmHits": 7,
+          "alignedHits": 1,
+          "nearSurfaceAlignedHits": 1,
+          "minAlignedGap": 0.003416619566920357,
+          "maxAlignedGap": 0.003416619566920357,
+          "upper": 1,
+          "lower": 0
+        },
+        {
+          "t": 0.1875,
+          "vertices": 16,
+          "actualPalmHits": 6,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.20833333333333334,
+          "vertices": 16,
+          "actualPalmHits": 6,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.22916666666666666,
+          "vertices": 16,
+          "actualPalmHits": 5,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.25,
+          "vertices": 16,
+          "actualPalmHits": 3,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.2708333333333333,
+          "vertices": 16,
+          "actualPalmHits": 1,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.2916666666666667,
+          "vertices": 16,
+          "actualPalmHits": 0,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.3125,
+          "vertices": 16,
+          "actualPalmHits": 0,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.3333333333333333,
+          "vertices": 16,
+          "actualPalmHits": 0,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        },
+        {
+          "t": 0.3541666666666667,
+          "vertices": 16,
+          "actualPalmHits": 0,
+          "alignedHits": 0,
+          "nearSurfaceAlignedHits": 0,
+          "minAlignedGap": null,
+          "maxAlignedGap": null,
+          "upper": 0,
+          "lower": 0
+        }
+      ],
+      "samples": [
+        {
+          "vertex": 16,
+          "t": 0.020833333333333332,
+          "face": 1811,
+          "gap": 0.0012581824731453545,
+          "signedGap": -0.0012581824731453545,
+          "alignment": 0.7303220087875157,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 24,
+          "t": 0.020833333333333332,
+          "face": 948,
+          "gap": 0.005522853834597051,
+          "signedGap": -0.005522853834597051,
+          "alignment": 0.6212628518714861,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 25,
+          "t": 0.020833333333333332,
+          "face": 1140,
+          "gap": 0.0013602276118396244,
+          "signedGap": -0.0013602276118396244,
+          "alignment": 0.653217436893239,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 26,
+          "t": 0.020833333333333332,
+          "face": 1332,
+          "gap": 0.0032945522891642837,
+          "signedGap": 0.0032945522891642837,
+          "alignment": 0.6184146612930955,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 31,
+          "t": 0.020833333333333332,
+          "face": 1716,
+          "gap": 0.004307274718820557,
+          "signedGap": 0.004307274718820557,
+          "alignment": 0.7074486924940053,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 32,
+          "t": 0.041666666666666664,
+          "face": 1810,
+          "gap": 0.0003108665617963507,
+          "signedGap": 0.0003108665617963507,
+          "alignment": 0.6716864709791317,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 33,
+          "t": 0.041666666666666664,
+          "face": 1906,
+          "gap": 0.005995690560288121,
+          "signedGap": -0.005995690560288121,
+          "alignment": 0.60386666043483,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 40,
+          "t": 0.041666666666666664,
+          "face": 1043,
+          "gap": 0.0036748296946513253,
+          "signedGap": -0.0036748296946513253,
+          "alignment": 0.57925117567207,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 41,
+          "t": 0.041666666666666664,
+          "face": 1141,
+          "gap": 0.0009151210969362018,
+          "signedGap": 0.0009151210969362018,
+          "alignment": 0.5937838844259069,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 48,
+          "t": 0.0625,
+          "face": 1715,
+          "gap": 0.0022337963210857497,
+          "signedGap": 0.0022337963210857497,
+          "alignment": 0.601223697266988,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 49,
+          "t": 0.0625,
+          "face": 1906,
+          "gap": 0.0048637188282349714,
+          "signedGap": -0.0048637188282349714,
+          "alignment": 0.568407825604349,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 56,
+          "t": 0.0625,
+          "face": 1043,
+          "gap": 0.0016682420642063732,
+          "signedGap": -0.0016682420642063732,
+          "alignment": 0.535559202692178,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 57,
+          "t": 0.0625,
+          "face": 1236,
+          "gap": 0.0034059988741288755,
+          "signedGap": 0.0034059988741288755,
+          "alignment": 0.5289135109945884,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 64,
+          "t": 0.08333333333333333,
+          "face": 1714,
+          "gap": 0.0047421872541775194,
+          "signedGap": 0.0047421872541775194,
+          "alignment": 0.506216581250369,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 65,
+          "t": 0.08333333333333333,
+          "face": 1809,
+          "gap": 0.003461414366124684,
+          "signedGap": -0.003461414366124684,
+          "alignment": 0.5286167610271745,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 71,
+          "t": 0.08333333333333333,
+          "face": 947,
+          "gap": 0.004915716477320973,
+          "signedGap": -0.004915716477320973,
+          "alignment": 0.42334221135666605,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 72,
+          "t": 0.08333333333333333,
+          "face": 1138,
+          "gap": 0.00031201411809511984,
+          "signedGap": 0.00031201411809511984,
+          "alignment": 0.49669961786108263,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 81,
+          "t": 0.10416666666666667,
+          "face": 1809,
+          "gap": 0.0016741451373270006,
+          "signedGap": -0.0016741451373270006,
+          "alignment": 0.4770168455992662,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 87,
+          "t": 0.10416666666666667,
+          "face": 1042,
+          "gap": 0.003076950436639577,
+          "signedGap": -0.003076950436639577,
+          "alignment": 0.3944823574023527,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 88,
+          "t": 0.10416666666666667,
+          "face": 1139,
+          "gap": 0.002769091893707141,
+          "signedGap": 0.002769091893707141,
+          "alignment": 0.44090855015518404,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 97,
+          "t": 0.125,
+          "face": 1713,
+          "gap": 0.0004957551916529006,
+          "signedGap": 0.0004957551916529006,
+          "alignment": 0.40882411273813235,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 103,
+          "t": 0.125,
+          "face": 1042,
+          "gap": 0.0011674642521626553,
+          "signedGap": -0.0011674642521626553,
+          "alignment": 0.3625551852809664,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 104,
+          "t": 0.125,
+          "face": 1139,
+          "gap": 0.005148577319581103,
+          "signedGap": 0.005148577319581103,
+          "alignment": 0.3859552863607171,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 113,
+          "t": 0.14583333333333334,
+          "face": 1617,
+          "gap": 0.003474593015530795,
+          "signedGap": 0.003474593015530795,
+          "alignment": 0.29809461629466827,
+          "hemisphere": "lower"
+        },
+        {
+          "vertex": 119,
+          "t": 0.14583333333333334,
+          "face": 1137,
+          "gap": 0.0009151098468150078,
+          "signedGap": 0.0009151098468150078,
+          "alignment": 0.3202743654343331,
+          "hemisphere": "upper"
+        },
+        {
+          "vertex": 135,
+          "t": 0.16666666666666666,
+          "face": 1137,
+          "gap": 0.003416619566920357,
+          "signedGap": 0.003416619566920357,
+          "alignment": 0.2528179037265432,
+          "hemisphere": "upper"
+        }
+      ]
+    }
+  ],
+  "assertions": 30,
+  "baselineBuffersReadOnly": {
+    "beforeSHA256": "dfe3e01f38a419187e468c749cc37827f486a47401b9916afaa9ec6f98a3f86a",
+    "candidateSHA256": "77394bfee2544c33c3274293a13e9666912c26f657117ac98d15416f220f060e"
+  },
+  "explanation": "A finger root starts inside the palm. Longer inner fingers emerge from the palm farther along their length, so a fixed early t deadline omits their near-surface vertices. The 0.34 deadline covers the proximal overlap before the first fold relief begins at t=0.36; 0.36 is the unchanged distal-normal boundary. Count and angular-improvement requirements stay unchanged."
+}

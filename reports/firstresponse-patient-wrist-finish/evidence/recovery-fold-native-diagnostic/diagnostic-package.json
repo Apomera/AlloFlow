@@ -1,0 +1,62 @@
+{
+  "originalWork": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-fold-diagnostic-work",
+  "sourceSHA256": "147670787861ae0251c9b4c65c90847a613c6b879d41737533749c19a5f6f891",
+  "beforeSHA256": "69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242",
+  "files": {
+    "audit-preview-fixture.cjs": "89b8fc6c406af3220961bef2978738c56f2b244ee283983711e267b6b7b0b683",
+    "before.js": "69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242",
+    "candidate.js": "147670787861ae0251c9b4c65c90847a613c6b879d41737533749c19a5f6f891",
+    "delta.json": "c693910ffcd72b0e15255d523c0882a1aa4cd91b928afe6bec2aae756838b72c",
+    "derivation-selftest.saved": "21c4924e107d6075e9f683692e0945b4bae4143048d21127eff3100a959f2d92",
+    "diagnostic-derivation.json": "36f28de4af7815712c7f4ec7d34dbc9a3b178ba88adcb227585a1c3649dc62a3",
+    "face-capture-png.cjs": "6009565cd97b35c874ff22325427e40823b4ff197118ea3870d0b2996bd30829",
+    "face-mount-window.cjs": "9e3d95fe4ce8ae16ca7d4a994d26250e064873d675b930fb23d63b33ba43b246",
+    "firstresponse-face-preview.spec.ts": "21c4924e107d6075e9f683692e0945b4bae4143048d21127eff3100a959f2d92",
+    "fixture-audit.json": "3eb89ece4848927de6a7c348d2d5301790a2924f5d2f87c71170e58238f32057",
+    "fixture-selftest/firstresponse-face-preview.spec.ts.saved": "21c4924e107d6075e9f683692e0945b4bae4143048d21127eff3100a959f2d92",
+    "fixture-selftest/native-evidence.json.saved": "0e3bb4fe70de03045cdaa04f8b480d4c3eb379e183ba56288c35f7e9cb11f511",
+    "fixture-selftest/run-face-browser.cjs.saved": "d7e162f49f95d390487c859ba25b26bb5544ffe4e3410aad346cd67dad54d8ea",
+    "native-adult-recovery-fold/adult-wide-baseline-stage.png": "0807e2357e8ea8f4483538fd135aea4851595920486b41c06a6eeea0ec395a7c",
+    "native-adult-recovery-fold/adult-wide-baseline-wrist.png": "5b63b89f7a49098a6016c45a7f9453ff471ec45fc75bd35034580933afa8a31d",
+    "native-adult-recovery-fold/adult-wide-candidate-stage.png": "0bb16ad958616588cb48dfba3765315a7f057ed0de94e0af85cdb4b4ff0f00fc",
+    "native-adult-recovery-fold/adult-wide-candidate-wrist.png": "6affae4fc9aa9036c96300a2334dfa12cc2bfedd6c23523ce85219af1bfe7464",
+    "native-adult-recovery-fold/adult-wide-evidence.json": "a7a88ea2faa6c92ea84c970f0551af28fb6bc9db68c2f0a5e2953f5651dd6766",
+    "native-adult-recovery-fold/artifacts/.last-run.json": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "native-adult-recovery-fold/browser-run.json": "87ea7905be2741e14351ec6ce18b757b4dc845bfb13eb422bebefc83a0336a42",
+    "native-adult-recovery-fold/browser-run.log": "1d3b3100434151b0698202aec1f7829be08e231d6d807486662e4d9d2ea1de6f",
+    "native-adult-recovery-fold/face-preview-metrics.json": "2ffb03c35b6b9b2c90269be1e49255508215d7844213073eacc15638fada95a7",
+    "native-adult-recovery-fold/inputs.json": "6f13ff4cf77277fc9c5624832cd0408d400f2b7e0581e7a49388328596546916",
+    "native-adult-recovery-fold/runner.json": "c398fa3f0591a251ac66dcd24b9c6a2acd322925b43b56cc520b1201fe579038",
+    "native-adult-recovery-fold/summary.json": "e64e0dd1f30f6d3b16ebac6135c70f2fcff94d349ae5168e3c416d4471531500",
+    "patient-wrist-contract.cjs": "dfcb06b31b735eb58acd705a06ddc3acc4c5f196e8fa426b8f0c378af628b1d1",
+    "playwright-face.config.cjs": "56b7e2efdc5abf1164be3a87bf1a5b70b57192e1b2b29e001e6fd19e24b721a7",
+    "recovery-root-visual-review.json": "d27a6827a76fa9bc399567ae5ac523ae026c30addc8212e6a2214f93bce76405",
+    "recovery-visual-review.json": "8cb4cd6310ffa976525c17d7304b066284891fce455a1d245df1d5b98a0757e9",
+    "run-face-browser.cjs": "d7e162f49f95d390487c859ba25b26bb5544ffe4e3410aad346cd67dad54d8ea",
+    "write-recovery-independent-visual-review.cjs": "f44de831b53018f7f3e873f7c3fac6f152397bce1c87cbd8bbcb870a50c36313",
+    "write-root-recovery-review.cjs": "3c990bee14551d9324223494222aaf0322f6bd4cf0538f611b809a465cb4a853"
+  },
+  "packagerSHA256": "ddfd95cbe67863ec7abe39faa88b04769f3061af86ed7addff10abb9000eb105",
+  "verifierSHA256": "b65872e36eb1f43c5d30b820a9714821ab7ed949f7d2842407cf73e52d0b9fd6",
+  "sharedWrites": 0,
+  "selftest": {
+    "ran": true,
+    "negative": [
+      {
+        "kind": "recovery-image-pin",
+        "rejected": true,
+        "error": "Pinned recovery file C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\recovery-fold-native-diagnostic\\native-adult-recovery-fold\\adult-wide-candidate-wrist.png\n+ actual - expected\n\n+ '039ff06a8c815841cea699438ac518ca669e7c694e6a1bc324969f97239c2659'\n- '6affae4fc9aa9036c96300a2334dfa12cc2bfedd6c23523ce85219af1bfe7464'\n",
+        "restoredAndReread": true,
+        "restoredSHA256": "6affae4fc9aa9036c96300a2334dfa12cc2bfedd6c23523ce85219af1bfe7464"
+      },
+      {
+        "kind": "recovery-unaccepted-review",
+        "rejected": true,
+        "error": "Recovery visual review accepted\n\nfalse !== true\n",
+        "restoredAndReread": true,
+        "restoredSHA256": "8cb4cd6310ffa976525c17d7304b066284891fce455a1d245df1d5b98a0757e9"
+      }
+    ],
+    "restoredInventory": true
+  }
+}

@@ -1,0 +1,388 @@
+{
+  "top": -187.15625,
+  "left": 0,
+  "width": 520,
+  "height": 1374.5625,
+  "client": 518,
+  "scroll": 518,
+  "columns": 1,
+  "containerWidth": 520,
+  "subgroupColumns": null,
+  "groups": [
+    {
+      "name": "accessibility",
+      "top": -174.15625,
+      "left": 13,
+      "width": 494,
+      "height": 284.578125
+    },
+    {
+      "name": "specimen",
+      "top": 122.421875,
+      "left": 13,
+      "width": 494,
+      "height": 676.578125
+    },
+    {
+      "name": "lighting",
+      "top": 811,
+      "left": 13,
+      "width": 494,
+      "height": 234.828125
+    },
+    {
+      "name": "workspace",
+      "top": 1057.828125,
+      "left": 13,
+      "width": 494,
+      "height": 116.578125
+    }
+  ],
+  "subgroups": [],
+  "text": [
+    {
+      "text": "Accessibility",
+      "font": 16,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Specimen display",
+      "font": 16,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Lighting and motion",
+      "font": 16,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Illumination intensity · Balanced illumination",
+      "font": 14,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "68%",
+      "font": 14,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Workspace actions",
+      "font": 16,
+      "clipped": false,
+      "textOverflow": "clip"
+    }
+  ],
+  "buttons": [
+    {
+      "name": "Toggle organ name labels",
+      "top": -118.578125,
+      "left": 26,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Toggle high contrast mode",
+      "top": -118.578125,
+      "left": 264,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Toggle additional reduced motion; operating system reduced motion settings are always honored",
+      "top": -62.578125,
+      "left": 26,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Toggle larger interface text",
+      "top": -62.578125,
+      "left": 264,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Toggle simplified step instructions",
+      "top": -6.578125,
+      "left": 26,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Toggle dissection sound effects",
+      "top": -6.578125,
+      "left": 264,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Toggle tactile instrument feedback",
+      "top": 49.421875,
+      "left": 26,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Visual presentation: cycle guided, realistic, and accessible",
+      "top": 178,
+      "left": 26,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Anatomical view: cycle dorsal, ventral, lateral, and internal",
+      "top": 178,
+      "left": 264,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Toggle schematic layer map",
+      "top": 234,
+      "left": 26,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Specimen condition: cycle standard, preserved, dehydrated, cloudy, and swollen",
+      "top": 234,
+      "left": 264,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Toggle curated anatomical relationships",
+      "top": 290,
+      "left": 26,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Rendering quality: cycle auto, high, and balanced",
+      "top": 290,
+      "left": 264,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Toggle movable inspection lens",
+      "top": 346,
+      "left": 26,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Pin inspection lens to selected structure or current pointer",
+      "top": 346,
+      "left": 264,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Cycle inspection magnification: 2, 4, or 6 times",
+      "top": 402,
+      "left": 26,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Cycle inspection focus depth: surface, structure, or deep",
+      "top": 402,
+      "left": 264,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Toggle detailed pointer-following instrument visuals and contact response",
+      "top": 458,
+      "left": 26,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Toggle docked macro inspection view",
+      "top": 458,
+      "left": 264,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Toggle specimen-specific surface and tray depth details",
+      "top": 514,
+      "left": 26,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Toggle anatomical depth atlas with shape-coded landmarks",
+      "top": 514,
+      "left": 264,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Toggle responsive tissue relief lighting around visible structures",
+      "top": 570,
+      "left": 26,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Toggle animated direction markers for curated anatomical relationships",
+      "top": 570,
+      "left": 264,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Toggle selected-structure focus isolation",
+      "top": 626,
+      "left": 26,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Toggle subtle pointer-responsive specimen depth",
+      "top": 626,
+      "left": 264,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Toggle live and reference split comparison",
+      "top": 682,
+      "left": 26,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Generate another deterministic specimen variation",
+      "top": 682,
+      "left": 264,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Tissue: after technique. Activate to show the tissue before the technique.",
+      "top": 738,
+      "left": 26,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Lab light: cycle neutral, warm, and cool",
+      "top": 866.578125,
+      "left": 26,
+      "width": 230,
+      "height": 110.25,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Laboratory light direction: cycle overhead, left, right, and raking",
+      "top": 984.828125,
+      "left": 26,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Animation speed: cycle normal, slow, and fast",
+      "top": 984.828125,
+      "left": 264,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Enter fullscreen specimen mode with view and tool controls",
+      "top": 1113.40625,
+      "left": 26,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "name": "Print clean dissection report",
+      "top": 1113.40625,
+      "left": 264,
+      "width": 230,
+      "height": 48,
+      "font": 14,
+      "clipped": false
+    }
+  ],
+  "ranges": [
+    {
+      "id": "diss-light-intensity-range",
+      "top": 921.4375,
+      "left": 276.1875,
+      "width": 205.625,
+      "height": 44
+    }
+  ]
+}

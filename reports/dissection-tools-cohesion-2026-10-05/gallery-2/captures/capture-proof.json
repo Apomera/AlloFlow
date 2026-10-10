@@ -1,0 +1,376 @@
+{
+  "paintedColours": 284,
+  "captured": {
+    "id": 1791249910208,
+    "capturedAt": "2026-10-06T01:25:10.208Z",
+    "imageLength": 14655,
+    "width": 220,
+    "height": 264
+  },
+  "preserved": {
+    "specimen": "frog",
+    "layer": "skin",
+    "view": "dorsal",
+    "instrument": "probe",
+    "selected": "nictitating",
+    "hovered": "tympanum",
+    "camera": [
+      1.5,
+      15,
+      -8
+    ],
+    "lens": [
+      true,
+      true,
+      true,
+      {
+        "x": 0.65,
+        "y": 0.24
+      },
+      "tympanum",
+      "structure",
+      4
+    ],
+    "notes": {
+      "frog|nictitating": "A transparent protective membrane supports this identification."
+    },
+    "confidence": {
+      "frog|nictitating": 3
+    },
+    "explored": {
+      "frog|nictitating": true
+    },
+    "verified": {
+      "frog|nictitating": {
+        "status": "verified",
+        "at": 88
+      }
+    },
+    "revealed": {
+      "skin": true
+    },
+    "procedures": {
+      "skin": {
+        "tissueState": {
+          "moisture": 67,
+          "tension": 52,
+          "exposure": 87,
+          "trauma": 0,
+          "clarity": 91,
+          "stability": 84,
+          "risk": 16,
+          "salineDrops": 0,
+          "variantId": "firm",
+          "variantLabel": "Firm preservation",
+          "lastAction": "probe",
+          "lastUpdatedAt": 100,
+          "consequences": []
+        },
+        "inspected": true,
+        "incisionStarted": true,
+        "incisionExtended": true,
+        "retracted": true,
+        "pins": [
+          {
+            "x": 0.45,
+            "y": 0.3
+          },
+          {
+            "x": 0.55,
+            "y": 0.8
+          }
+        ],
+        "probed": true,
+        "history": [
+          "inspect",
+          "scalpel",
+          "scissors",
+          "forceps",
+          "pin",
+          "probe"
+        ],
+        "actionLog": [
+          {
+            "action": "inspect",
+            "at": 100,
+            "label": "inspect",
+            "inputType": "motor-neutral",
+            "assistance": "motor-neutral",
+            "tissueBefore": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            },
+            "tissueAfter": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            }
+          },
+          {
+            "action": "scalpel",
+            "at": 101,
+            "label": "scalpel",
+            "inputType": "motor-neutral",
+            "assistance": "motor-neutral",
+            "tissueBefore": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            },
+            "tissueAfter": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            }
+          },
+          {
+            "action": "scissors",
+            "at": 102,
+            "label": "scissors",
+            "inputType": "motor-neutral",
+            "assistance": "motor-neutral",
+            "tissueBefore": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            },
+            "tissueAfter": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            }
+          },
+          {
+            "action": "forceps",
+            "at": 103,
+            "label": "forceps",
+            "inputType": "motor-neutral",
+            "assistance": "motor-neutral",
+            "tissueBefore": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            },
+            "tissueAfter": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            }
+          },
+          {
+            "action": "pin",
+            "at": 104,
+            "label": "pin",
+            "inputType": "motor-neutral",
+            "assistance": "motor-neutral",
+            "tissueBefore": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            },
+            "tissueAfter": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            }
+          },
+          {
+            "action": "probe",
+            "at": 105,
+            "label": "probe",
+            "inputType": "motor-neutral",
+            "assistance": "motor-neutral",
+            "tissueBefore": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            },
+            "tissueAfter": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            }
+          }
+        ],
+        "learningChecks": {
+          "inspect": {
+            "predictionCorrect": true,
+            "reflectionCorrect": true
+          },
+          "scalpel": {
+            "predictionCorrect": true,
+            "reflectionCorrect": true
+          },
+          "scissors": {
+            "predictionCorrect": true,
+            "reflectionCorrect": true
+          },
+          "forceps": {
+            "predictionCorrect": true,
+            "reflectionCorrect": true
+          },
+          "pin": {
+            "predictionCorrect": true,
+            "reflectionCorrect": true
+          },
+          "probe": {
+            "predictionCorrect": true,
+            "reflectionCorrect": true
+          }
+        }
+      }
+    },
+    "scores": [
+      1,
+      2,
+      null,
+      null
+    ],
+    "points": [
+      [
+        {
+          "x": 0.5,
+          "y": 0.38,
+          "type": "dot"
+        }
+      ],
+      {
+        "x": 0.5,
+        "y": 0.38
+      },
+      {
+        "x": 0.6,
+        "y": 0.18
+      },
+      false,
+      false
+    ],
+    "guided": [
+      null,
+      null,
+      null,
+      null
+    ]
+  }
+}

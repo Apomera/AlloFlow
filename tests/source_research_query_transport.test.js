@@ -11,6 +11,7 @@ let AIProvider, searchProvider, searchFetch;
 
 beforeAll(() => {
   loadAlloModule('ai_backend_module.js');
+  loadAlloModule('gemini_api_module.js');
   AIProvider = window.AIProvider;
   searchProvider = window.WebSearchProvider;
 });
@@ -54,6 +55,65 @@ function provider(backend, apiKey = 'synthetic-provider-key') {
 }
 
 describe('source research query transport', () => {
+  it.each(['callGemini', 'callGeminiSingleAttempt'])('Canvas %s carries explicit topic intent without searching private context', async method => {
+    const topic = 'How clouds form over mountains';
+    const transport = vi.fn(async () => new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: 'A research brief.' }] } }] })));
+    const api = window.AlloModules.createGeminiAPI({
+      apiKey: 'synthetic-provider-key', _isCanvasEnv: true,
+      GEMINI_MODELS: { default: 'fixture', fallback: 'fixture' },
+      fetchWithExponentialBackoff: transport, canvasAuthBackoffMs: [],
+      optimizeImage: async value => value, warnLog: () => {}, debugLog: () => {}, getAbortSignal: () => null,
+    });
+    const topicSearch = vi.spyOn(searchProvider, 'searchTopic');
+    const controller = new AbortController();
+    const result = await api[method](PROMPT, false, true, null, topic, controller.signal, false, null, { intent: 'user-topic' });
+    expect(topicSearch).toHaveBeenCalledWith(topic, 10);
+    expect(JSON.stringify(searchFetch.mock.calls)).not.toContain(PRIVATE_MARKER);
+    expect(JSON.parse(searchFetch.mock.calls[0][1].body).q).toBe(topic);
+    expect(transport.mock.calls[0][1].signal).toBe(controller.signal);
+    expect(JSON.parse(transport.mock.calls[0][1].body).contents[0].parts[0].text).toContain(PRIVATE_MARKER);
+    expect(result.groundingMetadata.groundingChunks).toHaveLength(1);
+  });
+
+  it('preserves native Gemini grounding for arbitrary research topics', async () => {
+    const metadata = { groundingChunks: [{ web: { uri: SOURCE.link, title: SOURCE.title } }] };
+    const transport = vi.fn(async () => new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: 'A research brief.' }] }, groundingMetadata: metadata }] })));
+    const api = window.AlloModules.createGeminiAPI({
+      apiKey: 'synthetic-provider-key', _isCanvasEnv: false,
+      GEMINI_MODELS: { default: 'fixture', fallback: 'fixture' },
+      fetchWithExponentialBackoff: transport, canvasAuthBackoffMs: [],
+      optimizeImage: async value => value, warnLog: () => {}, debugLog: () => {}, getAbortSignal: () => null,
+    });
+    const result = await api.callGemini('Research history of jazz', false, true, null, 'history of jazz', null, false, null, { intent: 'user-topic' });
+    expect(searchFetch).not.toHaveBeenCalled();
+    expect(JSON.parse(transport.mock.calls[0][1].body).tools).toEqual([{ google_search: {} }]);
+    expect(result.groundingMetadata).toEqual(metadata);
+  });
+
+  it.each(BACKENDS)('%s searches arbitrary user topics without sending private writing context', async backend => {
+    const topic = 'History of jazz in New Orleans';
+    const { ai, transport } = provider(backend);
+    const search = vi.spyOn(searchProvider, 'searchTopic');
+    const result = await ai.generateText(PROMPT, { search: true, searchQuery: topic, searchIntent: 'user-topic' });
+
+    expect(search).toHaveBeenCalledWith(topic, 10);
+    expect(searchFetch).toHaveBeenCalledOnce();
+    expect(JSON.parse(searchFetch.mock.calls[0][1].body)).toEqual({ q: topic, num: 10 });
+    expect(JSON.stringify(searchFetch.mock.calls)).not.toContain(PRIVATE_MARKER);
+    expect(JSON.stringify(search.mock.calls)).not.toContain(PRIVATE_MARKER);
+    expect(JSON.stringify(window.__alloSearchTrace)).not.toContain(topic);
+    expect(JSON.stringify(window.__alloSearchTrace)).not.toContain(PRIVATE_MARKER);
+    expect(result.groundingMetadata.groundingChunks).toHaveLength(1);
+    expect(JSON.parse(transport.mock.calls[0][1].body).messages[0].content).toContain(PRIVATE_MARKER);
+  });
+
+  it.each(BACKENDS)('%s never uses the prompt as a missing explicit research topic', async backend => {
+    const { ai } = provider(backend);
+    const result = await ai.generateText(PROMPT, { search: true, searchIntent: 'user-topic' });
+    expect(searchFetch).not.toHaveBeenCalled();
+    expect(result.groundingMetadata).toBeNull();
+  });
+
   it.each(BACKENDS)('%s sends the explicit public topic, never the contextual prompt, to search', async backend => {
     const { ai, transport } = provider(backend);
     const search = vi.spyOn(searchProvider, 'search');
@@ -113,7 +173,7 @@ describe('source research query transport', () => {
       connections: [{ backend: 'custom', baseUrl: 'https://provider.example.test', keyless: true }],
     };
     const { ai, transport } = provider('custom', '');
-    await expect(ai.generateText(PROMPT, { search: true, searchQuery: TOPIC }))
+    await expect(ai.generateText(PROMPT, { search: true, searchQuery: TOPIC, searchIntent: 'user-topic' }))
       .rejects.toMatchObject({ code: 'managed-ai-blocked' });
     expect(searchFetch).not.toHaveBeenCalled();
     expect(transport).not.toHaveBeenCalled();

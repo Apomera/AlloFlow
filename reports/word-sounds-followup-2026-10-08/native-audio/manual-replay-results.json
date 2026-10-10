@@ -1,0 +1,16 @@
+{
+  "checkedAt": "2026-10-08T21:41:50.324Z",
+  "moduleSha": "ed8a9115334281bdf7558f8b6e3ea194c1d69e0f67de52e22c0a67a6874bbb14",
+  "limits": "Native browser audio and bank recordings; unrelated host services stubbed; no subjective pronunciation judgment or live TTS synthesis.",
+  "results": [
+    {
+      "name": "manual-replay",
+      "passed": true,
+      "clips": [
+        "instruction:inst_counting",
+        "word:corn",
+        "word:corn"
+      ]
+    }
+  ]
+}

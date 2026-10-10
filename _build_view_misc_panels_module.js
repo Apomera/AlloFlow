@@ -52,6 +52,8 @@ var _lazyIcon = function (name) {
 };
 // Icons across all 6 components (de-duplicated):
 var ArrowRight = _lazyIcon('ArrowRight');
+var ChevronLeft = _lazyIcon('ChevronLeft');
+var ChevronRight = _lazyIcon('ChevronRight');
 var Brain = _lazyIcon('Brain');
 var Check = _lazyIcon('Check');
 var CheckCircle = _lazyIcon('CheckCircle');
@@ -73,6 +75,7 @@ var Settings = _lazyIcon('Settings');
 var Sparkles = _lazyIcon('Sparkles');
 var StopCircle = _lazyIcon('StopCircle');
 var Upload = _lazyIcon('Upload');
+var Undo2 = _lazyIcon('Undo2');
 var UserCheck = _lazyIcon('UserCheck');
 var Users = _lazyIcon('Users');
 var X = _lazyIcon('X');

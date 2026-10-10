@@ -1,0 +1,128 @@
+{
+  "beforeSHA256": "0af58d9afd30ed0de275caf53197320ddabed9308f08b191cce7bf4927d83f84",
+  "candidateSHA256": "164407bb58546fc91584761e51e9a907d2eacd33442a0a5fae31da0c22ef37c0",
+  "checkerSHA256": "a2981baf14da24926367432d1cdfec050b2b41e1004b628589e0bb17bec1a6bd",
+  "evidenceSHA256": "74c444410e10b3f94c52a1fecd0846a4a3178cc88ca9e6d6778c7e9012ed3f47",
+  "passed": 12,
+  "failed": 0,
+  "checks": 230424,
+  "negativeTests": [
+    {
+      "kind": "unchanged-profile",
+      "error": "narrow bridge receives visibly fuller relief"
+    },
+    {
+      "kind": "raised-nostril",
+      "error": "fr-manikin-nostril-left shallow central detail remains visible"
+    },
+    {
+      "kind": "invalid-normal",
+      "error": "fr-manikin-nose unit normals"
+    }
+  ],
+  "firstCase": {
+    "shells": [
+      {
+        "name": "fr-manikin-nose",
+        "vertices": 1617,
+        "faces": 2976,
+        "volume": 0.00008031955036494703,
+        "minAgreement": 0.8151752432866635,
+        "minNormal": 0.9999999599528737,
+        "maxNormal": 1.0000000361278165,
+        "seamNormal": 0.9999999406139288
+      },
+      {
+        "name": "fr-manikin-nostril-left",
+        "vertices": 825,
+        "faces": 1472,
+        "volume": 2.7204638163142e-8,
+        "minAgreement": 0.5886995580616073,
+        "minNormal": 0.9999999598724695,
+        "maxNormal": 1.000000040175597,
+        "seamNormal": 0.9999999318733872
+      },
+      {
+        "name": "fr-manikin-nostril-right",
+        "vertices": 825,
+        "faces": 1472,
+        "volume": 2.7204638163142e-8,
+        "minAgreement": 0.5886995580616073,
+        "minNormal": 0.9999999598724695,
+        "maxNormal": 1.000000040175597,
+        "seamNormal": 0.9999999318733872
+      }
+    ],
+    "relief": {
+      "middle": [
+        0.015866226593157305,
+        0.03268718147299235,
+        0.04678547540371513
+      ],
+      "beforeMiddle": [
+        0.013196723838688128,
+        0.035107049504055944,
+        0.05509611477868008
+      ],
+      "bridgeGain": 0.002669502754469177,
+      "tipReduction": 0.00831063937496495,
+      "tipRatio": 0.8491610632011238,
+      "boundaryCount": 49,
+      "boundaryRange": [
+        -0.0014154980568886306,
+        -0.0011293135013651968
+      ],
+      "maxChangedDepth": 0.008310639374964946,
+      "nostrils": [
+        {
+          "name": "fr-manikin-nostril-left",
+          "middle": [
+            0.0005743458577572182,
+            0.0007200321338110024,
+            0.0005561267069349392
+          ],
+          "edges": [
+            -0.0003290321396114689,
+            -0.0004743395248585358,
+            -0.00040416923277034733,
+            -0.00044200816726871063
+          ]
+        },
+        {
+          "name": "fr-manikin-nostril-right",
+          "middle": [
+            0.0005541518423313335,
+            0.0007243157411520626,
+            0.0005636653576014184
+          ],
+          "edges": [
+            -0.00047749341243452496,
+            -0.000322558185591902,
+            -0.000411131903168504,
+            -0.0004204862487720277
+          ]
+        }
+      ]
+    },
+    "triangleCounts": [
+      {
+        "name": "fr-manikin-nose",
+        "triangles": 2976
+      },
+      {
+        "name": "fr-manikin-nostril-left",
+        "triangles": 1472
+      },
+      {
+        "name": "fr-manikin-nostril-right",
+        "triangles": 1472
+      }
+    ],
+    "resources": {
+      "geometries": 142,
+      "materials": 25,
+      "allocatedGeometries": 138,
+      "allocatedMaterials": 23
+    }
+  }
+}

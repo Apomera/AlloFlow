@@ -50,7 +50,7 @@ function bounded(live){
   values.slice(3).forEach(value=>{expect(value).toBeGreaterThanOrEqual(0);expect(value).toBeLessThanOrEqual(1);});
 }
 function section(from,to){const start=source.indexOf(from),end=source.indexOf(to,start);if(start<0||end<=start)throw new Error('Missing lighting frame section '+from);return source.slice(start,end);}
-const actualGuard=source.match(/if \(!gameState\.gameOver && !gameState\.paused\) \{/);
+const actualGuard=source.match(/if \(!gameState\.gameOver && !gameState\.paused && dt>0\) \{/);
 if(!actualGuard)throw new Error('Active render guard missing');
 const dayFrame=section('            gameState.dayTime = ((','            // ─── Pressure strain');
 const groundLine=source.match(/            var groundX=Math\.round[^\n]+/);
@@ -66,7 +66,7 @@ if(rayShimmerStart<0||rayStart<rayShimmerStart)throw new Error('Actual light-ray
 const rayFrame=braced(rayStart)+');';
 if(!rayFrame.includes('r.mesh.material.opacity')||rayFrame.includes('recyclePos'))throw new Error('Light-ray test selected a recycling block');
 const frame=new Function('live','dt','Math',helper('updateCLHuntWaterLighting')+String.raw`
-  const {gameState,scene,sun,ambient,fillLight,octopus,sandTex,causticsTex,caustics,backdrop,camera,backdropMat,surfaceSheet,surfaceMat,shaftGroup,shafts,sandDownwelling,lightRays,updateGround}=live;
+  const {gameState,scene,sun,ambient,fillLight,octopus,sandTex,causticsTex,caustics,backdrop,camera,backdropMat,surfaceSheet,surfaceMat,surfaceFlow,shaftGroup,shafts,sandDownwelling,lightRays,updateGround}=live;
   const DEPTH_ZONES=live.zones,depthZoneFor=live.zoneFor,now=live.now;
   var causticPhase=live.phase;
 `+actualGuard[0]+dayFrame+groundLine[0]+'\n'+finishFrame+rayFrame+'\n}\nlive.phase=causticPhase;');
@@ -76,12 +76,12 @@ function world(reducedMotion=false){
   const floorGeo=new THREE.PlaneGeometry(200,200,80,80),causticsGeo=floorGeo.clone(),shaftGeo=new THREE.PlaneGeometry(3,46,1,1);
   const shaft=new THREE.Mesh(shaftGeo,new THREE.MeshBasicMaterial({transparent:true,opacity:.06}));shaft.rotation.z=.04;
   const ray=new THREE.Mesh(shaftGeo,new THREE.MeshBasicMaterial({transparent:true,opacity:.08}));
-  return {...illumination,gameState:{paused:false,gameOver:false,dayTime:0,dayPeriodMs:Infinity,verticalY:0,currentDepthZone:'reef',a11y:{reducedMotion}},scene:{background:new THREE.Color(0x0e3d5c),fog:new THREE.Fog(0x0a4a6b,5,42)},octopus:{position:new THREE.Vector3(42,.55,0)},camera:{position:new THREE.Vector3(40,4,-7)},sandTex,causticsTex,sandPixels,causticPixels,floorGeo,causticsGeo,shaftGeo,caustics:new THREE.Mesh(causticsGeo,new THREE.MeshBasicMaterial({map:causticsTex,transparent:true,opacity:.065})),backdrop:{position:new THREE.Vector3()},backdropMat:{uniforms:{bottomColor:{value:new THREE.Color()},topColor:{value:new THREE.Color()}}},surfaceSheet:{position:new THREE.Vector3()},surfaceMat:{opacity:.165},shaftGroup:{position:new THREE.Vector3()},shafts:[{mesh:shaft,baseZ:.04,phase:.6,baseOpacity:.085}],lightRays:[{mesh:ray,basePhase:.3}],sandDownwelling:{value:1},zones:depth.zones,zoneFor:depth.zoneFor,updateGround:()=>{},phase:0,now:1000};
+  return {...illumination,gameState:{paused:false,gameOver:false,dayTime:0,dayPeriodMs:Infinity,verticalY:0,currentDepthZone:'reef',a11y:{reducedMotion}},scene:{background:new THREE.Color(0x0e3d5c),fog:new THREE.Fog(0x0a4a6b,5,42)},octopus:{position:new THREE.Vector3(42,.55,0)},camera:{position:new THREE.Vector3(40,4,-7)},sandTex,causticsTex,sandPixels,causticPixels,floorGeo,causticsGeo,shaftGeo,caustics:new THREE.Mesh(causticsGeo,new THREE.MeshBasicMaterial({map:causticsTex,transparent:true,opacity:.065})),backdrop:{position:new THREE.Vector3()},backdropMat:{uniforms:{bottomColor:{value:new THREE.Color()},topColor:{value:new THREE.Color()}}},surfaceSheet:{position:new THREE.Vector3()},surfaceMat:{opacity:.165},surfaceFlow:{value:0},shaftGroup:{position:new THREE.Vector3()},shafts:[{mesh:shaft,baseZ:.04,phase:.6,baseOpacity:.085}],lightRays:[{mesh:ray,basePhase:.3}],sandDownwelling:{value:1},zones:depth.zones,zoneFor:depth.zoneFor,updateGround:()=>{},phase:0,now:1000};
 }
 function resources(live){
   return [live.sun.color,live.ambient.color,live.fillLight.color,live.fillLight.groundColor,live.sandDownwelling,live.sandTex,live.causticsTex,live.floorGeo.attributes.position.array,live.floorGeo.attributes.normal.array,live.causticsGeo.attributes.position.array,live.shaftGeo.attributes.position.array];
 }
-function state(live){return JSON.stringify({radiance:radiance(live),day:live.gameState.dayTime,phase:live.phase,sand:live.sandDownwelling.value,caustic:live.caustics.material.opacity,offset:live.causticsTex.offset.toArray(),surface:live.surfaceMat.opacity,top:live.backdropMat.uniforms.topColor.value.toArray(),bottom:live.backdropMat.uniforms.bottomColor.value.toArray(),shafts:live.shafts.map(s=>[s.mesh.rotation.z,s.mesh.material.opacity]),rays:live.lightRays.map(r=>[r.mesh.rotation.y,r.mesh.material.opacity])});}
+function state(live){return JSON.stringify({radiance:radiance(live),day:live.gameState.dayTime,phase:live.phase,sand:live.sandDownwelling.value,caustic:live.caustics.material.opacity,offset:live.causticsTex.offset.toArray(),surface:live.surfaceMat.opacity,surfaceFlow:live.surfaceFlow.value,top:live.backdropMat.uniforms.topColor.value.toArray(),bottom:live.backdropMat.uniforms.bottomColor.value.toArray(),shafts:live.shafts.map(s=>[s.mesh.rotation.z,s.mesh.material.opacity]),rays:live.lightRays.map(r=>[r.mesh.rotation.y,r.mesh.material.opacity])});}
 function dispose(live){live.sandTex.dispose();live.causticsTex.dispose();live.floorGeo.dispose();live.causticsGeo.dispose();live.shaftGeo.dispose();live.caustics.material.dispose();live.shafts[0].mesh.material.dispose();live.lightRays[0].mesh.material.dispose();}
 
 describe('Cephalopod Hunter underwater lighting finish',()=>{
@@ -152,13 +152,14 @@ describe('Cephalopod Hunter underwater lighting finish',()=>{
       expect(live.backdropMat.uniforms.bottomColor.value.toArray()).toEqual(live.scene.fog.color.toArray());
     }finally{dispose(live);}
   });
-  it('uses the actual active gate to freeze paused and finished presentation, and freezes decorative motion under reduced motion',()=>{
+  it('uses the actual active gate to freeze render-only, paused and finished presentation, and freezes decorative motion under reduced motion',()=>{
     const live=world(true);
     try{
       for(let tick=0;tick<100;tick++)frame(live,.05,visualMath);
       const phase=live.phase,shaftZ=live.shafts[0].mesh.rotation.z,rayY=live.lightRays[0].mesh.rotation.y;
       for(let tick=0;tick<50;tick++){live.now+=50;frame(live,.05,visualMath);}
       expect(live.phase).toBe(phase);expect(live.shafts[0].mesh.rotation.z).toBe(shaftZ);expect(live.lightRays[0].mesh.rotation.y).toBe(rayY);
+      const renderOnly=state(live);for(let tick=0;tick<20;tick++)frame(live,0,visualMath);expect(state(live)).toBe(renderOnly);
       live.gameState.paused=true;const paused=state(live);for(let tick=0;tick<20;tick++){live.now+=50;frame(live,.05,visualMath);}expect(state(live)).toBe(paused);
       live.gameState.paused=false;live.gameState.gameOver=true;const finished=state(live);frame(live,.05,visualMath);expect(state(live)).toBe(finished);
     }finally{dispose(live);}

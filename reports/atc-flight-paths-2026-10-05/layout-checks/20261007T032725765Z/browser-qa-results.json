@@ -1,0 +1,18 @@
+{
+  "started": "2026-10-07T03:27:38.754Z",
+  "fixture": "Installed Chrome, actual React host and canonical ATC source. All aircraft, command, exercise, airport-choice, and debrief checks use real product controls. Completion is a real six-second separation exercise.",
+  "checks": [
+    {
+      "name": "Playing radar, flight controls, and operations have clear responsive geometry at 1440px",
+      "pass": false,
+      "error": "page.goto: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:56862/\", waiting until \"load\"\u001b[22m\n\n    at makePage (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-visual-design-2026-10-04\\browser-qa.cjs:10:385)\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-visual-design-2026-10-04\\browser-qa.cjs:56:20\n    at async check (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-visual-design-2026-10-04\\browser-qa.cjs:9:120)\n    at async checks (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-visual-design-2026-10-04\\browser-qa.cjs:55:5)\n    at async main (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-visual-design-2026-10-04\\browser-qa.cjs:148:81)"
+    }
+  ],
+  "errors": [],
+  "screenshots": [],
+  "sourceHash": "244459653852bd197bcdb5395ec1ec21522e056340e6e5e4ee3f2414ac468507",
+  "completed": "2026-10-07T03:31:14.183Z",
+  "passed": 0,
+  "failed": 1,
+  "sourceStable": true
+}

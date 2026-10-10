@@ -1,0 +1,28 @@
+{
+  "sourceCheckerSHA256": "d27c597cd84d61e97ce421f0f87af9b2917ced53f494471d913c84c053727a55",
+  "portableCheckerSHA256": "ef44ffbb90960ba0674ee8e989b1bc995fc97e9ade68746b73d79e4b08d2bd04",
+  "edits": [
+    {
+      "before": "const repo='C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated',work=__dirname;",
+      "after": "const repo=path.resolve(__dirname,'..'),work=process.argv[4]?path.resolve(process.argv[4]):path.join(repo,'reports/firstresponse-neck-transition');"
+    },
+    {
+      "before": "const before=fs.readFileSync(path.join(work,'before.js'),'utf8'),candidate=fs.readFileSync(path.join(work,'candidate.js'),'utf8');",
+      "after": "const candidate=fs.readFileSync(path.join(repo,'stem_lab/stem_tool_firstresponse.js'),'utf8');\nconst before=require(path.join(repo,'tests/helpers/firstresponse_neck_refinement_delta.cjs')).revertNeckRefinement(candidate);"
+    },
+    {
+      "before": "require('./firstresponse_neck_mesh_checks.cjs').createNeckMeshChecks(THREE,check,equal)",
+      "after": "require(path.join(repo,'tests/helpers/firstresponse_neck_mesh_checks.cjs')).createNeckMeshChecks(THREE,check,equal)"
+    },
+    {
+      "before": "const meshHelperSHA256=sha(fs.readFileSync(path.join(work,'firstresponse_neck_mesh_checks.cjs')));",
+      "after": "const meshHelperSHA256=sha(fs.readFileSync(path.join(repo,'tests/helpers/firstresponse_neck_mesh_checks.cjs')));"
+    }
+  ],
+  "assertionsChanged": false,
+  "exactReverse": true,
+  "syntaxPassed": true,
+  "rawTestSyntaxPassed": true,
+  "rawTestFrameworkExecuted": false,
+  "command": "node dev-tools/firstresponse_neck_refinement_check.cjs full 38f468c92a949621adcf6eea4765c8a3aaf2626d35132996df1d17239b97a542"
+}

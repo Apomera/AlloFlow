@@ -1,0 +1,232 @@
+{
+  "date": "2026-10-09",
+  "feature": "Explore every resident in a displayed cohort through inherited-trait bands",
+  "sourceSha256": "5f3db74e78e5bd78f812aeb42c3e1f4944b33d2eebadfcdefc630eb263130acf",
+  "sourceBytes": 2334066,
+  "sourceMirrorsIdentical": true,
+  "sourceLineEndings": "LF",
+  "committed": false,
+  "deployed": false,
+  "commitsCreated": 0,
+  "deploymentsPerformed": 0,
+  "changes": [
+    "An optional Explore variation in this cohort panel shows the current island, generation, species, resident count and lowest, mean and highest trait indices.",
+    "Five native trait-band buttons cover a fixed 0–100 domain. Each displays a count and a bar proportional to its share of the full displayed cohort.",
+    "Selecting a band reveals all its actual residents, ordered by raw trait mean and then ID. Native resident buttons use the existing island and organism selection path.",
+    "Unrounded indices remain available in a details view to explain values that round onto a displayed band boundary. Empty bands and empty cohorts have explicit messages.",
+    "Band choices are keyed to the founding frame, displayed frame, island and species, so changed contexts immediately suppress stale contents. Selecting bands does not automatically select an organism.",
+    "Exploration preserves the existing pinned comparison and captured observation. Native controls, visible selection states and responsive layouts support keyboard and phone use."
+  ],
+  "scientificCorrectness": [
+    "Raw trait means, rather than rounded labels, determine contiguous half-open bands [0,.2), [.2,.4), [.4,.6), [.6,.8), with the last band [.8,1] including the upper endpoint.",
+    "Every actual resident of the displayed island and species is counted once. Counts and bar shares use the complete current cohort, including six-founder and empty cohorts, rather than a selected or random sample.",
+    "Sorting presentation records does not reorder or mutate the model population. Means and endpoints use actual inherited trait values; empty-cohort mean and range are described as undefined.",
+    "The panel explains that trait spread does not establish an evolutionary cause, measure genome-wide genetic diversity, or rank breeding success.",
+    "Only presentation state and the existing organism selection change. The evolutionary model, recorded history, world RNG, existing pin and captured evidence remain unchanged."
+  ],
+  "validation": {
+    "scope": "Only the logged 40 focused checks, two selected EvoLab render checks and eight listed browser journeys are claimed; this is not a full repository test run.",
+    "focused": {
+      "passed": 40,
+      "base": {
+        "passed": 36,
+        "skipped": 0,
+        "total": 36,
+        "files": 5,
+        "log": "cohort-variation-base-units.log",
+        "logSha256": "d12b8cb7ae822d75e30b9f8f98fd8925444387b220f29efc72ffb9d9040e0a69",
+        "logBytes": 1741,
+        "scopes": [
+          "tests/evolab_archipelago.test.js",
+          "tests/evolab_live_region_churn.test.js",
+          "tests/evolab_accessible_names_i18n.test.js",
+          "tests/evolab_resident_comparison.test.js",
+          "tests/evolab_comparison_observation.test.js"
+        ]
+      },
+      "cohortVariation": {
+        "passed": 4,
+        "skipped": 0,
+        "total": 4,
+        "files": 1,
+        "log": "cohort-variation-units.log",
+        "logSha256": "d7d349a6d9fa1239b4589f4be30a75d77049fd1b17ad75181225cf03a037c165",
+        "logBytes": 235,
+        "scope": "tests/evolab_cohort_variation.test.js"
+      },
+      "execution": "Existing checks and new cohort-variation checks ran in separate completed suites."
+    },
+    "render": {
+      "passed": 2,
+      "skipped": 46,
+      "total": 48,
+      "files": 2,
+      "log": "cohort-variation-goldens.log",
+      "logSha256": "5605bcf3352236b803e9b1df270982d413fae55ddebd10e2f1be81f8153e9e76",
+      "logBytes": 250,
+      "scopes": [
+        "tests/stem_tool_golden.test.js",
+        "tests/stem_longtail_tools_golden.test.js"
+      ],
+      "scope": "Two selected EvoLab golden checks; skipped tests belong to the filtered render run."
+    },
+    "browser": {
+      "passed": 8,
+      "runs": 1,
+      "retries": 0,
+      "log": "cohort-variation-browser.log",
+      "logSha256": "06df3d0f8477ec8e6f1f1d17f2c81745531e03042238e69f546bb89e47a2d94d",
+      "logBytes": 1893,
+      "scopes": [
+        {
+          "spec": "tests/e2e/evolab-cohort-variation.spec.ts",
+          "passed": 2,
+          "retries": 0
+        },
+        {
+          "spec": "tests/e2e/evolab-comparison-observation.spec.ts",
+          "passed": 2,
+          "retries": 0
+        },
+        {
+          "spec": "tests/e2e/evolab-resident-comparison.spec.ts",
+          "passed": 2,
+          "retries": 0
+        },
+        {
+          "spec": "tests/e2e/evolab-field-card.spec.ts",
+          "passed": 2,
+          "retries": 0
+        }
+      ],
+      "scope": "Two new cohort-variation journeys and six existing captured-observation, resident-comparison and field-card journeys."
+    },
+    "completedMarkers": {
+      "focusedAndRender": {
+        "state": "complete",
+        "wrapperPid": 16896,
+        "sourceSha256": "5f3db74e78e5bd78f812aeb42c3e1f4944b33d2eebadfcdefc630eb263130acf",
+        "startedAt": "2026-10-09T23:29:02.291Z",
+        "finishedAt": "2026-10-09T23:30:04.130Z"
+      },
+      "browser": {
+        "state": "complete",
+        "wrapperPid": 36812,
+        "sourceSha256": "5f3db74e78e5bd78f812aeb42c3e1f4944b33d2eebadfcdefc630eb263130acf",
+        "startedAt": "2026-10-09T23:30:37.012Z",
+        "exitCode": 0,
+        "error": null,
+        "finishedAt": "2026-10-09T23:31:50.075Z"
+      }
+    },
+    "focusedCommandManifest": {
+      "file": "run_cohort_variation_checks.cjs",
+      "sha256": "c6dd6e05102034f8a1de84205d3a46a974ce5ca49bd056a05a92ee6ca008442d",
+      "jobs": [
+        {
+          "file": "cohort-variation-units.log",
+          "tests": [
+            "tests/evolab_cohort_variation.test.js"
+          ],
+          "count": 4
+        },
+        {
+          "file": "cohort-variation-base-units.log",
+          "tests": [
+            "tests/evolab_archipelago.test.js",
+            "tests/evolab_live_region_churn.test.js",
+            "tests/evolab_accessible_names_i18n.test.js",
+            "tests/evolab_resident_comparison.test.js",
+            "tests/evolab_comparison_observation.test.js"
+          ],
+          "count": 36
+        },
+        {
+          "file": "cohort-variation-goldens.log",
+          "tests": [
+            "tests/stem_tool_golden.test.js",
+            "tests/stem_longtail_tools_golden.test.js",
+            "--testNamePattern=evoLab"
+          ],
+          "count": 2
+        }
+      ],
+      "scope": "Scopes come from the unchanged executed runner; the Vitest dot reporter logs completed file/test counts without filenames."
+    },
+    "modelSourceUnchanged": true,
+    "modelBeforeFile": "cohort-variation-before.js",
+    "modelBlockBytes": 83566,
+    "modelBlockSha256": "b550e4d66c455e0135beff397a90d1972b5fbea500a3068982b31f003905c833",
+    "preview": {
+      "url": "http://127.0.0.1:56559/?preview=archipelago",
+      "sourceSha256": "5f3db74e78e5bd78f812aeb42c3e1f4944b33d2eebadfcdefc630eb263130acf",
+      "sourceBytes": 2334066,
+      "sourceMirrorsIdentical": true,
+      "sourceLineEndings": "LF",
+      "servedSourceMatches": true,
+      "assets": [
+        {
+          "path": "/",
+          "status": 200,
+          "bytes": 1129
+        },
+        {
+          "path": "/evolab.js",
+          "status": 200,
+          "bytes": 2334066
+        },
+        {
+          "path": "/app.css",
+          "status": 200,
+          "bytes": 624950
+        },
+        {
+          "path": "/react.js",
+          "status": 200,
+          "bytes": 10751
+        },
+        {
+          "path": "/react-dom.js",
+          "status": 200,
+          "bytes": 131835
+        },
+        {
+          "path": "/three.js",
+          "status": 200,
+          "bytes": 603445
+        }
+      ]
+    },
+    "screenshots": [
+      {
+        "name": "cohort-variation-desktop.png",
+        "bytes": 39854,
+        "sha256": "2594eeef100737476de26af25f616fb35934112c51593353f08c4a0609fe1b91",
+        "width": 697,
+        "height": 630
+      },
+      {
+        "name": "cohort-variation-phone.png",
+        "bytes": 35085,
+        "sha256": "4226ca37e9190fd8cb8de1a3004e256625f1b23fc98d723b52da3743682ec881",
+        "width": 302,
+        "height": 738
+      }
+    ],
+    "translationDelta": {
+      "file": "ui-strings.delta.json",
+      "keys": 2030,
+      "sha256": "c5fb6345d5d349b818c6a2979b00c737250a9052503ff0fee026d2ae06a8d74c",
+      "mode": "dry-run",
+      "sharedCatalogsModified": false,
+      "sharedCatalogHashes": {
+        "ui_strings.js": "7934aaa5058e645e25479fff9576dbd37c078cc240203455f7180565a893a94b",
+        "desktop/web-app/public/ui_strings.js": "7934aaa5058e645e25479fff9576dbd37c078cc240203455f7180565a893a94b"
+      },
+      "baselineScope": "The finalizer verifies its narrow artifact writes leave current shared catalogs unchanged; unrelated collaborator edits are outside this claim."
+    },
+    "priorValidationReportsModified": false,
+    "priorValidationReportCount": 27,
+    "priorValidationReportScope": "All older validation reports are excluded from outputs and checked for unchanged bytes across finalization."
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "sourceSha256": "0c05c04e99ae5aa18dbfbfc48d89abc7c05b24a80ceb140616a1651ddee21600",
+  "sourceFiles": [
+    "stem_lab/stem_tool_scaleexplorer.js",
+    "desktop/web-app/public/stem_lab/stem_tool_scaleexplorer.js"
+  ],
+  "englishKeys": 32,
+  "unitTests": 54,
+  "browserTests": 2,
+  "webgl": "WebGL 1 on desktop and phone",
+  "screenshots": [
+    "hydrogen-desktop-99-percent.png",
+    "hydrogen-desktop-center.png",
+    "hydrogen-desktop-cloud.png",
+    "hydrogen-desktop-section.png",
+    "hydrogen-phone-cloud.png",
+    "hydrogen-phone-restored.png",
+    "hydrogen-water-comparison.png"
+  ],
+  "scientificScope": {
+    "state": "Hydrogen 1s, nonrelativistic, fixed proton",
+    "bohrRadiusPM": 52.9177210544,
+    "catalogueReferencePM": 106,
+    "displayCutoffBohrRadii": 5,
+    "displayedProbability": 0.9972306042844884,
+    "samples": 14000,
+    "sources": [
+      "https://physics.nist.gov/cuu/Constants/Table/allascii.txt",
+      "https://openstax.org/books/university-physics-volume-3/pages/8-1-the-hydrogen-atom"
+    ]
+  },
+  "notes": [
+    "Stationary equal-weight samples represent possible positions of one electron.",
+    "Probability sphere and radial graph update together; cloud and section settings persist in saved observations.",
+    "Reference dimensions stay fixed in orthographic comparisons.",
+    "Vitest temporary cache moved into the writable workspace after sandbox cache rename errors.",
+    "No staging or commit performed."
+  ]
+}

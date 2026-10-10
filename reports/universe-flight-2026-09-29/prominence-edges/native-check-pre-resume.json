@@ -1,0 +1,5130 @@
+{
+  "completed": false,
+  "baselineHash": "604a7f50df297c5c1d9c9c3db3007e2425ba828eadc408d6006330dee8f91889",
+  "rendererHash": "c0cc2486b3d5edd620e5975daec3d23b8f2e995a24db151be27ac30820d058c7",
+  "referenceHash": "25907d9e48c36a566d2731d6f433cb7e457e9224f733a33e37c044e07ed2afea",
+  "reference": "Candidate occultation and emission with 32 curve segments; QA only.",
+  "zeroLoopDiagnostic": "Native u_stellarLoops is set to zero by the draw probe; all other uniforms, camera and source frames remain unchanged.",
+  "harnessHash": "ab334d73f7e54c992b7215292e342b107eff1034345ef65c073062a241426408",
+  "checks": [],
+  "captures": [
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "amber-vista",
+      "file": "dpr2-refined-amber-vista.png",
+      "pixelHash": "6f23ed42468739b19d7d5642f20980662ab9e6a2ee147b9ee575ae3c61928a5d",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1010.200242348007,
+      "diskPixels": 353.5700848218024,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 18,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -2.8705938420238812,
+            1.5515762513665616,
+            8.443995950047807
+          ],
+          "yaw": 4.951831751638936,
+          "pitch": -1.166282251957214,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.23716134652265872,
+          3.4653498407872205e-8,
+          0.9714702752609357
+        ],
+        "u_stellarUp": [
+          -0.8930666120786671,
+          0.39357196839539194,
+          0.21802094414002587
+        ],
+        "u_stellarToward": [
+          0.38234346091687116,
+          0.9192938081448038,
+          -0.09334008892610683
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.324890527624717,
+        "maximum": 255,
+        "clippedWhiteFraction": 0.0000015625,
+        "visiblePixels": 278402
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "amber-vista-zero-loops",
+      "file": "dpr2-refined-amber-vista-zero-loops.png",
+      "pixelHash": "359b772f879386c980149de551420987a63211dba6761a80f9a679d37e1adfa6",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1010.200242348007,
+      "diskPixels": 353.5700848218024,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 18,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -2.8705938420238812,
+            1.5515762513665616,
+            8.443995950047807
+          ],
+          "yaw": 4.951831751638936,
+          "pitch": -1.166282251957214,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.23716134652265872,
+          3.4653498407872205e-8,
+          0.9714702752609357
+        ],
+        "u_stellarUp": [
+          -0.8930666120786671,
+          0.39357196839539194,
+          0.21802094414002587
+        ],
+        "u_stellarToward": [
+          0.38234346091687116,
+          0.9192938081448038,
+          -0.09334008892610683
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.31367858189573,
+        "maximum": 255,
+        "clippedWhiteFraction": 0.0000015625,
+        "visiblePixels": 278402
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "amber-A-limb",
+      "file": "dpr2-refined-amber-A-limb.png",
+      "pixelHash": "1b9870bcc413ce35e5043b19c815680dda217f486b1779bea84d1cea4ecb658e",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.043735072269211,
+            1.13528145100791,
+            8.486264257895293
+          ],
+          "yaw": 4.951831751638938,
+          "pitch": -1.1662822519572142,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.2371613908741946,
+          1.412910156818013e-7,
+          0.971470264433553
+        ],
+        "u_stellarUp": [
+          -0.8930667790911704,
+          0.39357156683589034,
+          0.2180209849121527
+        ],
+        "u_stellarToward": [
+          0.38234304330318386,
+          0.9192939800620488,
+          -0.09334010638164811
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.542548336895624,
+        "maximum": 226,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 285284
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "amber-A-limb-zero-loops",
+      "file": "dpr2-refined-amber-A-limb-zero-loops.png",
+      "pixelHash": "d0af3a55cfe347f0d07d4f6f3c7273db71e00d0325e2909190bf35ab79aa5cda",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.043735072269211,
+            1.13528145100791,
+            8.486264257895293
+          ],
+          "yaw": 4.951831751638938,
+          "pitch": -1.1662822519572142,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.2371613908741946,
+          1.412910156818013e-7,
+          0.971470264433553
+        ],
+        "u_stellarUp": [
+          -0.8930667790911704,
+          0.39357156683589034,
+          0.2180209849121527
+        ],
+        "u_stellarToward": [
+          0.38234304330318386,
+          0.9192939800620488,
+          -0.09334010638164811
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.531029995437484,
+        "maximum": 226,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 285284
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "amber-A-near",
+      "file": "dpr2-refined-amber-A-near.png",
+      "pixelHash": "7c777d0d8a6c619e62c6bf63774834f8811148c466e6b5a309d5da62ef905283",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -2.9934653591562808,
+            1.0981297272527715,
+            8.473992104658011
+          ],
+          "yaw": 4.951831751638938,
+          "pitch": -0.7299499389586317,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.2371614433770733,
+          1.0248895895810413e-7,
+          0.9714702516162258
+        ],
+        "u_stellarUp": [
+          -0.6478080934138987,
+          0.745207505650278,
+          0.15814691786418322
+        ],
+        "u_stellarToward": [
+          0.7239469068120624,
+          0.6668326428141326,
+          -0.17673455404862548
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.492951032730122,
+        "maximum": 225,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 285284
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "amber-A-near-zero-loops",
+      "file": null,
+      "pixelHash": "562dde21b8cdc685ce627a73d98503f9ac529d58f1e3d0d839b8cd0ffe40c32f",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -2.9934653591562808,
+            1.0981297272527715,
+            8.473992104658011
+          ],
+          "yaw": 4.951831751638938,
+          "pitch": -0.7299499389586317,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.2371614433770733,
+          1.0248895895810413e-7,
+          0.9714702516162258
+        ],
+        "u_stellarUp": [
+          -0.6478080934138987,
+          0.745207505650278,
+          0.15814691786418322
+        ],
+        "u_stellarToward": [
+          0.7239469068120624,
+          0.6668326428141326,
+          -0.17673455404862548
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.48324914523029,
+        "maximum": 225,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 285284
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "amber-A-far",
+      "file": "dpr2-refined-amber-A-far.png",
+      "pixelHash": "8003001ac21934bad06263540a27e676c4839b955f1c722588ec278541ef90bc",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1045479565647827,
+            1.1470835377274,
+            8.501110275281542
+          ],
+          "yaw": 1.810239098049145,
+          "pitch": -1.5389780886339965,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.2371613273598416,
+          -1.5361730199077468e-7,
+          -0.9714702799390696
+        ],
+        "u_stellarUp": [
+          0.9709785424276894,
+          0.03181349856898258,
+          -0.23704128639079103
+        ],
+        "u_stellarToward": [
+          -0.030905904774293568,
+          0.9994938225465816,
+          0.00754478238947635
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.554149423874433,
+        "maximum": 228,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 285284
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "amber-A-far-zero-loops",
+      "file": null,
+      "pixelHash": "7d1ca9a570e03ff84cb62129031623bee08969d9c2517001c19f700fe856256f",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1045479565647827,
+            1.1470835377274,
+            8.501110275281542
+          ],
+          "yaw": 1.810239098049145,
+          "pitch": -1.5389780886339965,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.2371613273598416,
+          -1.5361730199077468e-7,
+          -0.9714702799390696
+        ],
+        "u_stellarUp": [
+          0.9709785424276894,
+          0.03181349856898258,
+          -0.23704128639079103
+        ],
+        "u_stellarToward": [
+          -0.030905904774293568,
+          0.9994938225465816,
+          0.00754478238947635
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.543490469082824,
+        "maximum": 228,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 285284
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "amber-B-limb",
+      "file": "dpr2-refined-amber-B-limb.png",
+      "pixelHash": "f4f64819eb2c3fcbf92b3cad821b3229280f6b135eff8ded1a1c0a47e0723f8c",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.104357753680881,
+            1.138896329577771,
+            8.548418005981281
+          ],
+          "yaw": 3.0518317516389377,
+          "pitch": -1.2341215074081695,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.9959741752154803,
+          -6.09215630245003e-7,
+          -0.0896406286427787
+        ],
+        "u_stellarUp": [
+          0.08460785434624275,
+          0.33035047648087834,
+          -0.9400585480020816
+        ],
+        "u_stellarToward": [
+          -0.0296133970825482,
+          0.9438583382523489,
+          0.3290204918006564
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.559843352416154,
+        "maximum": 225,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 285284
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "amber-B-limb-zero-loops",
+      "file": "dpr2-refined-amber-B-limb-zero-loops.png",
+      "pixelHash": "5e3bcbacf8d3ce4f77e8343ba95d64369bbbb1401716a632a0c2c7f454b8190a",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.104357753680881,
+            1.138896329577771,
+            8.548418005981281
+          ],
+          "yaw": 3.0518317516389377,
+          "pitch": -1.2341215074081695,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.9959741752154803,
+          -6.09215630245003e-7,
+          -0.0896406286427787
+        ],
+        "u_stellarUp": [
+          0.08460785434624275,
+          0.33035047648087834,
+          -0.9400585480020816
+        ],
+        "u_stellarToward": [
+          -0.0296133970825482,
+          0.9438583382523489,
+          0.3290204918006564
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.548408155541358,
+        "maximum": 225,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 285284
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "amber-B-near",
+      "file": "dpr2-refined-amber-B-near.png",
+      "pixelHash": "a6eb200d9ab1abe3bdc327271a58ac845c22df5fdf6dc051b96512623e29a24a",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.109211369768422,
+            1.1053377812082306,
+            8.602345425924366
+          ],
+          "yaw": 3.0518317516389377,
+          "pitch": -0.7977891944095871,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.9959741539269513,
+          -4.6202387187738014e-7,
+          -0.08964086517476282
+        ],
+        "u_stellarUp": [
+          0.0641658673502471,
+          0.6982909700447838,
+          -0.7129322987641291
+        ],
+        "u_stellarToward": [
+          -0.06259573609027987,
+          0.7158140269327652,
+          0.6954797284390212
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.535900380021145,
+        "maximum": 227,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 285284
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "amber-B-near-zero-loops",
+      "file": null,
+      "pixelHash": "c1517884bdbbd6ba3ccefaa50a9359b1ea01c117eaf00348f1e15cb758bf60d1",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.109211369768422,
+            1.1053377812082306,
+            8.602345425924366
+          ],
+          "yaw": 3.0518317516389377,
+          "pitch": -0.7977891944095871,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.9959741539269513,
+          -4.6202387187738014e-7,
+          -0.08964086517476282
+        ],
+        "u_stellarUp": [
+          0.0641658673502471,
+          0.6982909700447838,
+          -0.7129322987641291
+        ],
+        "u_stellarToward": [
+          -0.06259573609027987,
+          0.7158140269327652,
+          0.6954797284390212
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.525514144292156,
+        "maximum": 227,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 285284
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "amber-B-far",
+      "file": "dpr2-refined-amber-B-far.png",
+      "pixelHash": "d946d0924520324141f9f6acdfb5077465e6704d26370378d942c456183d220a",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.0986875624215187,
+            1.1464278689660552,
+            8.48541780578288
+          ],
+          "yaw": 6.193424405228731,
+          "pitch": -1.4711388331830413,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.995974200085606,
+          6.422498801905533e-7,
+          0.08964035231649115
+        ],
+        "u_stellarUp": [
+          -0.08919564798243287,
+          0.09949255799743999,
+          0.9910324753932739
+        ],
+        "u_stellarToward": [
+          0.008917911461270862,
+          0.995038306248917,
+          -0.09909207815186528
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.54917698054161,
+        "maximum": 227,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 285284
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "amber-B-far-zero-loops",
+      "file": null,
+      "pixelHash": "aba2538406bd5d0d413564aa131c486cad36be09ad2729a40cf590ce845c743c",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.0986875624215187,
+            1.1464278689660552,
+            8.48541780578288
+          ],
+          "yaw": 6.193424405228731,
+          "pitch": -1.4711388331830413,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.995974200085606,
+          6.422498801905533e-7,
+          0.08964035231649115
+        ],
+        "u_stellarUp": [
+          -0.08919564798243287,
+          0.09949255799743999,
+          0.9910324753932739
+        ],
+        "u_stellarToward": [
+          0.008917911461270862,
+          0.995038306248917,
+          -0.09909207815186528
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.538935096791665,
+        "maximum": 227,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 285284
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "blue-A-limb",
+      "file": "dpr2-refined-blue-A-limb.png",
+      "pixelHash": "045bd4b0560bec629d8624767b5de684f50bdd1cf95a497a7d239642dc86fa7d",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.377286121634301,
+            -2.044716194460353,
+            16.06124123126045
+          ],
+          "yaw": 4.042301712235243,
+          "pitch": -1.0050233043708507,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.6210546579037547,
+          -5.436235790365168e-7,
+          0.7837672562028569
+        ],
+        "u_stellarUp": [
+          -0.6616368276420307,
+          0.5360678454466329,
+          -0.5242785265352711
+        ],
+        "u_stellarToward": [
+          0.4201521393541155,
+          0.8441749019474042,
+          0.3329277920484416
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.234582952846864,
+        "maximum": 210,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 274362
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "blue-A-limb-zero-loops",
+      "file": "dpr2-refined-blue-A-limb-zero-loops.png",
+      "pixelHash": "e4bd32ce90f5b7cb6f69d55e562fd1830371584b4791728a26d25e3b271c0a46",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.377286121634301,
+            -2.044716194460353,
+            16.06124123126045
+          ],
+          "yaw": 4.042301712235243,
+          "pitch": -1.0050233043708507,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.6210546579037547,
+          -5.436235790365168e-7,
+          0.7837672562028569
+        ],
+        "u_stellarUp": [
+          -0.6616368276420307,
+          0.5360678454466329,
+          -0.5242785265352711
+        ],
+        "u_stellarToward": [
+          0.4201521393541155,
+          0.8441749019474042,
+          0.3329277920484416
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.22345590836772,
+        "maximum": 210,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 274362
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "blue-A-near",
+      "file": "dpr2-refined-blue-A-near.png",
+      "pixelHash": "343b9c94a4d326803ef16be4b830818dc4fd06841676b7a37467618c00268bec",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.421480359172874,
+            -2.100938823697099,
+            16.096260578385742
+          ],
+          "yaw": 4.042301712235243,
+          "pitch": -0.5686909913722682,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.6210548126208909,
+          -3.46797503254808e-7,
+          0.7837671336055817
+        ],
+        "u_stellarUp": [
+          -0.42208236169601204,
+          0.8426062833490581,
+          -0.3344564713169771
+        ],
+        "u_stellarToward": [
+          0.6604069954698747,
+          0.5385300838955673,
+          0.5233048337956437
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.189193912639375,
+        "maximum": 210,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 274362
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "blue-A-near-zero-loops",
+      "file": null,
+      "pixelHash": "5172d5785eaa09809cf357d62c7fd7c4e90cfe4ef600f8dc6057c9411012be9c",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.421480359172874,
+            -2.100938823697099,
+            16.096260578385742
+          ],
+          "yaw": 4.042301712235243,
+          "pitch": -0.5686909913722682,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.6210548126208909,
+          -3.46797503254808e-7,
+          0.7837671336055817
+        ],
+        "u_stellarUp": [
+          -0.42208236169601204,
+          0.8426062833490581,
+          -0.3344564713169771
+        ],
+        "u_stellarToward": [
+          0.6604069954698747,
+          0.5385300838955673,
+          0.5233048337956437
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.179116206493807,
+        "maximum": 210,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 274362
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "blue-A-far",
+      "file": "dpr2-refined-blue-A-far.png",
+      "pixelHash": "7848eee90680a261142b24e8f820e1433c5e4d4d735ba5d25a2a5f24e457f0f0",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.318609668561182,
+            -2.017591331980367,
+            16.014746231172374
+          ],
+          "yaw": 4.042301712235243,
+          "pitch": -1.441355617369433,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.6210544524869637,
+          -6.385828539654897e-7,
+          0.7837674189743474
+        ],
+        "u_stellarUp": [
+          -0.7772107463553272,
+          0.12907871882515376,
+          -0.615858863779886
+        ],
+        "u_stellarToward": [
+          0.1011673010211954,
+          0.9916343501241014,
+          0.08016540936113112
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.235136958469871,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 274362
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "blue-A-far-zero-loops",
+      "file": null,
+      "pixelHash": "7757d937c33be0c225348076b90da168ec9db19af4df1bcc7a6d7b703774c90c",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.318609668561182,
+            -2.017591331980367,
+            16.014746231172374
+          ],
+          "yaw": 4.042301712235243,
+          "pitch": -1.441355617369433,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.6210544524869637,
+          -6.385828539654897e-7,
+          0.7837674189743474
+        ],
+        "u_stellarUp": [
+          -0.7772107463553272,
+          0.12907871882515376,
+          -0.615858863779886
+        ],
+        "u_stellarToward": [
+          0.1011673010211954,
+          0.9916343501241014,
+          0.08016540936113112
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.22497040784494,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 274362
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "blue-B-limb",
+      "file": "dpr2-refined-blue-B-limb.png",
+      "pixelHash": "7184a02e21ae65c90896811f38aab1af05c03046d1ea5a528ddc64d3f806f6b5",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.2488895044452395,
+            -2.0263795880277864,
+            16.032868876725384
+          ],
+          "yaw": 2.142301712235243,
+          "pitch": -1.2341215074081695,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.5408986664359953,
+          -5.293691611453339e-7,
+          -0.8410877675055568
+        ],
+        "u_stellarUp": [
+          0.7938674182821911,
+          0.3303511208467607,
+          -0.5105317415648687
+        ],
+        "u_stellarToward": [
+          -0.27785455698572015,
+          0.9438581127240516,
+          0.17868606047271993
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.234910493469695,
+        "maximum": 214,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 274362
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "blue-B-limb-zero-loops",
+      "file": "dpr2-refined-blue-B-limb-zero-loops.png",
+      "pixelHash": "14be878014fbf009b3e70af0d7526d6ca6f1f827a8f689d7446b27761ae33499",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.2488895044452395,
+            -2.0263795880277864,
+            16.032868876725384
+          ],
+          "yaw": 2.142301712235243,
+          "pitch": -1.2341215074081695,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.5408986664359953,
+          -5.293691611453339e-7,
+          -0.8410877675055568
+        ],
+        "u_stellarUp": [
+          0.7938674182821911,
+          0.3303511208467607,
+          -0.5105317415648687
+        ],
+        "u_stellarToward": [
+          -0.27785455698572015,
+          0.9438581127240516,
+          0.17868606047271993
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.227522367011202,
+        "maximum": 214,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 274362
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "blue-B-near",
+      "file": "dpr2-refined-blue-B-near.png",
+      "pixelHash": "e099eeba232a1be1de09a2456f25ce5762ec4b7fbb2aad339a25b5b8055df310",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.191963220484965,
+            -2.068327773489712,
+            16.06947785477608
+          ],
+          "yaw": 2.142301712235243,
+          "pitch": -0.7977891944095872,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.5408984928677986,
+          -4.0146884776916135e-7,
+          -0.8410878791263032
+        ],
+        "u_stellarUp": [
+          0.6020621142091306,
+          0.698291257572525,
+          -0.38718281241787256
+        ],
+        "u_stellarToward": [
+          -0.5873244682859516,
+          0.7158137464435985,
+          0.37770444709455514
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.218021322949957,
+        "maximum": 214,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 274362
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "blue-B-near-zero-loops",
+      "file": null,
+      "pixelHash": "d6d548db72c91a2b3501d8742ea1b9bfaa614699b1cce9fd4b30c9990868d405",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.191963220484965,
+            -2.068327773489712,
+            16.06947785477608
+          ],
+          "yaw": 2.142301712235243,
+          "pitch": -0.7977891944095872,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.5408984928677986,
+          -4.0146884776916135e-7,
+          -0.8410878791263032
+        ],
+        "u_stellarUp": [
+          0.6020621142091306,
+          0.698291257572525,
+          -0.38718281241787256
+        ],
+        "u_stellarToward": [
+          -0.5873244682859516,
+          0.7158137464435985,
+          0.37770444709455514
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.210159855970986,
+        "maximum": 214,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 274362
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "blue-B-far",
+      "file": "dpr2-refined-blue-B-far.png",
+      "pixelHash": "a6d17964e6ece04aeca849c9079be5c7b585a810d0b04cb6dfcb9596bc81a75c",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.315393099273872,
+            -2.016965163792431,
+            15.990100783078645
+          ],
+          "yaw": 5.283894365825036,
+          "pitch": -1.4711388331830413,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.5408988692056359,
+          5.580741731531498e-7,
+          0.8410876371055237
+        ],
+        "u_stellarUp": [
+          -0.8369145178049787,
+          0.0994917263626958,
+          0.5382150929439183
+        ],
+        "u_stellarToward": [
+          0.08368096067400616,
+          0.9950383894026696,
+          -0.05381542934527622
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.232116975136897,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 274362
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "blue-B-far-zero-loops",
+      "file": null,
+      "pixelHash": "326c53818baa0a279f4ee9c0712951009add81dd292d1347ac1d606e6e15f5d0",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.315393099273872,
+            -2.016965163792431,
+            15.990100783078645
+          ],
+          "yaw": 5.283894365825036,
+          "pitch": -1.4711388331830413,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.5408988692056359,
+          5.580741731531498e-7,
+          0.8410876371055237
+        ],
+        "u_stellarUp": [
+          -0.8369145178049787,
+          0.0994917263626958,
+          0.5382150929439183
+        ],
+        "u_stellarToward": [
+          0.08368096067400616,
+          0.9950383894026696,
+          -0.05381542934527622
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.22395990597033,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 274362
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "pale-A-limb",
+      "file": "dpr2-refined-pale-A-limb.png",
+      "pixelHash": "995d75c3a56aae0cc385edf484137a0349b6d9e3107eb6312ff88acdf4f81890",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.6480043763305455,
+            2.5693695376101955,
+            23.92825970112746
+          ],
+          "yaw": 0.027810159689670044,
+          "pitch": -1.169996387356206,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.9996133238371078,
+          -1.1929429925863636e-7,
+          -0.027806524545788074
+        ],
+        "u_stellarUp": [
+          0.025602879270453165,
+          0.3901551938392615,
+          0.9203930775996257
+        ],
+        "u_stellarToward": [
+          -0.010848750176510895,
+          0.9207491106269037,
+          -0.3900043331802528
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 12.933339031040319,
+        "maximum": 213,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 303836
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "pale-A-limb-zero-loops",
+      "file": "dpr2-refined-pale-A-limb-zero-loops.png",
+      "pixelHash": "e08c24a7a2631222097cd45ca93a554e18d29088e36dd398a94d1d26393e6cc5",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.6480043763305455,
+            2.5693695376101955,
+            23.92825970112746
+          ],
+          "yaw": 0.027810159689670044,
+          "pitch": -1.169996387356206,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.9996133238371078,
+          -1.1929429925863636e-7,
+          -0.027806524545788074
+        ],
+        "u_stellarUp": [
+          0.025602879270453165,
+          0.3901551938392615,
+          0.9203930775996257
+        ],
+        "u_stellarToward": [
+          -0.010848750176510895,
+          0.9207491106269037,
+          -0.3900043331802528
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 12.91760500395721,
+        "maximum": 213,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 303836
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "pale-A-near",
+      "file": "dpr2-refined-pale-A-near.png",
+      "pixelHash": "297febb2ebba9674489062b4d55e0580433d5d69eae62b340b2e84a44a8099e6",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.6501817080997087,
+            2.5838314193487424,
+            24.006532190202087
+          ],
+          "yaw": 3.169402813279463,
+          "pitch": -1.5352639532350048,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.9996133223035176,
+          1.294804442240481e-7,
+          0.027806579676522683
+        ],
+        "u_stellarUp": [
+          -0.027789023310928657,
+          0.03552491914047522,
+          -0.9989823573534657
+        ],
+        "u_stellarToward": [
+          0.0009879558432610521,
+          0.9993687908475258,
+          0.03551117884843918
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 12.881478691773873,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 303836
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "pale-A-near-zero-loops",
+      "file": null,
+      "pixelHash": "8c0e34ff5246f9f1b1468f28a0d2cb9748dd260e7d90c5c9634471bce4654fcd",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.6501817080997087,
+            2.5838314193487424,
+            24.006532190202087
+          ],
+          "yaw": 3.169402813279463,
+          "pitch": -1.5352639532350048,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.9996133223035176,
+          1.294804442240481e-7,
+          0.027806579676522683
+        ],
+        "u_stellarUp": [
+          -0.027789023310928657,
+          0.03552491914047522,
+          -0.9989823573534657
+        ],
+        "u_stellarToward": [
+          0.0009879558432610521,
+          0.9993687908475258,
+          0.03551117884843918
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 12.867067899169944,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 303836
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "pale-A-far",
+      "file": "dpr2-refined-pale-A-far.png",
+      "pixelHash": "ab551175173abaa96c3d01784eba6a70078d116eeb87b220dcbc42de5afe5e3f",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.6462009933570488,
+            2.5231704422970918,
+            23.863430226772874
+          ],
+          "yaw": 0.027810159689670044,
+          "pitch": -0.7336640743576235,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.9996133251073085,
+          -8.675423527334718e-8,
+          -0.02780647888358116
+        ],
+        "u_stellarUp": [
+          0.018619150383728623,
+          0.7427262019632666,
+          0.6693363251432041
+        ],
+        "u_stellarToward": [
+          -0.020652542383412978,
+          0.6695952426034802,
+          -0.7424390100041134
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 12.938403267811466,
+        "maximum": 215,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 303836
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "pale-A-far-zero-loops",
+      "file": null,
+      "pixelHash": "e95471d7c7acfc7e9e429f8703c39486897be673bb3a5488715c002693e31319",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.6462009933570488,
+            2.5231704422970918,
+            23.863430226772874
+          ],
+          "yaw": 0.027810159689670044,
+          "pitch": -0.7336640743576235,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.9996133251073085,
+          -8.675423527334718e-8,
+          -0.02780647888358116
+        ],
+        "u_stellarUp": [
+          0.018619150383728623,
+          0.7427262019632666,
+          0.6693363251432041
+        ],
+        "u_stellarToward": [
+          -0.020652542383412978,
+          0.6695952426034802,
+          -0.7424390100041134
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 12.925443286353278,
+        "maximum": 215,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 303836
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "pale-B-limb",
+      "file": "dpr2-refined-pale-B-limb.png",
+      "pixelHash": "a7fb89888942149fd9d92bc4775f6fea322d2f75dd0cfa133c7bf2429f3fa847",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.5919720107758593,
+            2.5736204119722137,
+            23.981961200714995
+          ],
+          "yaw": 1.2694028132794628,
+          "pitch": -1.2341215074081695,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.29685120574501916,
+          -3.631550180089355e-8,
+          -0.9549237465094933
+        ],
+        "u_stellarUp": [
+          0.9013127442202441,
+          0.3303504761199796,
+          0.2801854743441845
+        ],
+        "u_stellarToward": [
+          -0.3154595041426097,
+          0.9438583383788595,
+          -0.09806496988628167
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 12.891077189582195,
+        "maximum": 211,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 303836
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "pale-B-limb-zero-loops",
+      "file": "dpr2-refined-pale-B-limb-zero-loops.png",
+      "pixelHash": "352239929f81165c54b9454982afa90c0fb786c33fc587da34df5434b3130a4b",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.5919720107758593,
+            2.5736204119722137,
+            23.981961200714995
+          ],
+          "yaw": 1.2694028132794628,
+          "pitch": -1.2341215074081695,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.29685120574501916,
+          -3.631550180089355e-8,
+          -0.9549237465094933
+        ],
+        "u_stellarUp": [
+          0.9013127442202441,
+          0.3303504761199796,
+          0.2801854743441845
+        ],
+        "u_stellarToward": [
+          -0.3154595041426097,
+          0.9438583383788595,
+          -0.09806496988628167
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 12.874941772707498,
+        "maximum": 211,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 303836
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "pale-B-near",
+      "file": "dpr2-refined-pale-B-near.png",
+      "pixelHash": "dca78214d20c731d81328ef534abeb99643211d9cf721f574735c422e999b8cc",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.5273411016766127,
+            2.5316722265102882,
+            23.96186979288859
+          ],
+          "yaw": 1.2694028132794637,
+          "pitch": -0.7977891944095872,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.29685121926360925,
+          -2.7541347807851347e-8,
+          -0.9549237423070536
+        ],
+        "u_stellarUp": [
+          0.6835476605034617,
+          0.6982911360054055,
+          0.21249020023644496
+        ],
+        "u_stellarToward": [
+          -0.666814778961859,
+          0.7158138650349541,
+          -0.2072885939499993
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 12.863428989060282,
+        "maximum": 213,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 303836
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "pale-B-near-zero-loops",
+      "file": null,
+      "pixelHash": "31bbbb37b1c478195bdaeff8174985ce5924b762680160a7d00f19f1016ec32a",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.5273411016766127,
+            2.5316722265102882,
+            23.96186979288859
+          ],
+          "yaw": 1.2694028132794637,
+          "pitch": -0.7977891944095872,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.29685121926360925,
+          -2.7541347807851347e-8,
+          -0.9549237423070536
+        ],
+        "u_stellarUp": [
+          0.6835476605034617,
+          0.6982911360054055,
+          0.21249020023644496
+        ],
+        "u_stellarToward": [
+          -0.666814778961859,
+          0.7158138650349541,
+          -0.2072885939499993
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 12.8484084455188,
+        "maximum": 213,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 303836
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "pale-B-far",
+      "file": "dpr2-refined-pale-B-far.png",
+      "pixelHash": "9332de470aa36904e86ad3bb0ff22f4fad68fa3483557af8f42903c8284146f4",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.6674764613235522,
+            2.583034836207569,
+            24.005432798589833
+          ],
+          "yaw": 4.410995466869257,
+          "pitch": -1.4711388331830413,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.2968511899520408,
+          3.8284666358251924e-8,
+          0.954923751418958
+        ],
+        "u_stellarUp": [
+          -0.9501856889849345,
+          0.09949278938557557,
+          -0.29537830202725235
+        ],
+        "u_stellarToward": [
+          0.09500803898766985,
+          0.9950382831129041,
+          0.0295345165432138
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 12.882787767396431,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 303836
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "pale-B-far-zero-loops",
+      "file": null,
+      "pixelHash": "7e9f09cf899621b92bc35b771444fe6833b9c2570305bf7be9cfc8f9cbd70f55",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.6674764613235522,
+            2.583034836207569,
+            24.005432798589833
+          ],
+          "yaw": 4.410995466869257,
+          "pitch": -1.4711388331830413,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.2968511899520408,
+          3.8284666358251924e-8,
+          0.954923751418958
+        ],
+        "u_stellarUp": [
+          -0.9501856889849345,
+          0.09949278938557557,
+          -0.29537830202725235
+        ],
+        "u_stellarToward": [
+          0.09500803898766985,
+          0.9950382831129041,
+          0.0295345165432138
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 12.869359229896615,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 303836
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "unresolved",
+      "file": "dpr2-refined-unresolved.png",
+      "pixelHash": "d092475593bbb9573a24a15e223989fc59ff6d4544dfd547f1a08318415cd94f",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 12.000000000000002,
+      "diskPixels": 4.2,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            -4.057484616939922
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.1606756343490251,
+          9.004835369367675e-9,
+          0.9870072646776914
+        ],
+        "u_stellarUp": [
+          -0.2621041492543467,
+          0.9640958700813842,
+          0.04266811732047527
+        ],
+        "u_stellarToward": [
+          0.9515696272318666,
+          0.2655544262331521,
+          -0.1549067178588064
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 2.7925878696724444,
+        "maximum": 255,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 52
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "granule-medium",
+      "file": "dpr2-refined-granule-medium.png",
+      "pixelHash": "bfd1754f8fddb1e9dbad331be193dc90d21c1d04c0ddc6cf68743c367f6c5f1e",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 384.00000000000006,
+      "diskPixels": 134.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.107578605720628
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.9999999999999705,
+          0,
+          -2.4302301841766073e-7
+        ],
+        "u_stellarUp": [
+          0,
+          1,
+          0
+        ],
+        "u_stellarToward": [
+          -2.4302301841766073e-7,
+          0,
+          -0.9999999999999705
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 4.018003667707879,
+        "maximum": 220,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 40112
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "relativity",
+      "file": "dpr2-refined-relativity.png",
+      "pixelHash": "39056dca802859df780263c3768270233fd3aec37ed683fc841f75c5d41f3292",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.043735072269211,
+            1.13528145100791,
+            8.486264257895293
+          ],
+          "yaw": 4.951831751638938,
+          "pitch": -1.1662822519572142,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.2371613908741946,
+          1.412910156818013e-7,
+          0.971470264433553
+        ],
+        "u_stellarUp": [
+          -0.8930667790911704,
+          0.39357156683589034,
+          0.2180209849121527
+        ],
+        "u_stellarToward": [
+          0.38234304330318386,
+          0.9192939800620488,
+          -0.09334010638164811
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 13.30550673425295,
+        "maximum": 255,
+        "clippedWhiteFraction": 0.00000625,
+        "visiblePixels": 237019
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "galaxy",
+      "file": "dpr2-refined-galaxy.png",
+      "pixelHash": "de0f462d7caf9109a6784ee5c898e2ea38a930591a4defdb17a8b1c1100a605f",
+      "frame": {
+        "u_stellarRight": [
+          0.2371613908741946,
+          1.412910156818013e-7,
+          0.971470264433553
+        ],
+        "u_stellarUp": [
+          -0.8930667790911704,
+          0.39357156683589034,
+          0.2180209849121527
+        ],
+        "u_stellarToward": [
+          0.38234304330318386,
+          0.9192939800620488,
+          -0.09334010638164811
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 3.7354716521862805,
+        "maximum": 255,
+        "clippedWhiteFraction": 0.000024479166666666668,
+        "visiblePixels": 56329
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "name": "cloud",
+      "file": "dpr2-refined-cloud.png",
+      "pixelHash": "5544f589135bcbf77d2e13d8f2807f2ab8f457c6467186cee21ce581f95f39f4",
+      "frame": {
+        "u_stellarRight": [
+          0.2371613908741946,
+          1.412910156818013e-7,
+          0.971470264433553
+        ],
+        "u_stellarUp": [
+          -0.8930667790911704,
+          0.39357156683589034,
+          0.2180209849121527
+        ],
+        "u_stellarToward": [
+          0.38234304330318386,
+          0.9192939800620488,
+          -0.09334010638164811
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 22.83251602908064,
+        "maximum": 255,
+        "clippedWhiteFraction": 0.000015104166666666667,
+        "visiblePixels": 1186786
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "amber-vista",
+      "file": "dpr2-baseline-amber-vista.png",
+      "pixelHash": "0786d77b9708a0c9ea95220790021f985707def1cd5aeba0d2c72dfda8eb3257",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1010.200242348007,
+      "diskPixels": 353.5700848218024,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 18,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -2.8705938420238812,
+            1.5515762513665616,
+            8.443995950047807
+          ],
+          "yaw": 4.951831751638936,
+          "pitch": -1.166282251957214,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.23716134652265872,
+          3.4653498407872205e-8,
+          0.9714702752609357
+        ],
+        "u_stellarUp": [
+          -0.8930666120786671,
+          0.39357196839539194,
+          0.21802094414002587
+        ],
+        "u_stellarToward": [
+          0.38234346091687116,
+          0.9192938081448038,
+          -0.09334008892610683
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.324802600333047,
+        "maximum": 255,
+        "clippedWhiteFraction": 0.0000015625,
+        "visiblePixels": 278402
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "amber-vista-zero-loops",
+      "file": "dpr2-baseline-amber-vista-zero-loops.png",
+      "pixelHash": "359b772f879386c980149de551420987a63211dba6761a80f9a679d37e1adfa6",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1010.200242348007,
+      "diskPixels": 353.5700848218024,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 18,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -2.8705938420238812,
+            1.5515762513665616,
+            8.443995950047807
+          ],
+          "yaw": 4.951831751638936,
+          "pitch": -1.166282251957214,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.23716134652265872,
+          3.4653498407872205e-8,
+          0.9714702752609357
+        ],
+        "u_stellarUp": [
+          -0.8930666120786671,
+          0.39357196839539194,
+          0.21802094414002587
+        ],
+        "u_stellarToward": [
+          0.38234346091687116,
+          0.9192938081448038,
+          -0.09334008892610683
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.31367858189573,
+        "maximum": 255,
+        "clippedWhiteFraction": 0.0000015625,
+        "visiblePixels": 278402
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "amber-A-limb",
+      "file": "dpr2-baseline-amber-A-limb.png",
+      "pixelHash": "e122d6e9e8b296658514c419b72f40626664785734e9878199f591606c3b80fb",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.043735072269211,
+            1.13528145100791,
+            8.486264257895293
+          ],
+          "yaw": 4.951831751638938,
+          "pitch": -1.1662822519572142,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.2371613908741946,
+          1.412910156818013e-7,
+          0.971470264433553
+        ],
+        "u_stellarUp": [
+          -0.8930667790911704,
+          0.39357156683589034,
+          0.2180209849121527
+        ],
+        "u_stellarToward": [
+          0.38234304330318386,
+          0.9192939800620488,
+          -0.09334010638164811
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.542469848562282,
+        "maximum": 226,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 285284
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "amber-A-limb-zero-loops",
+      "file": "dpr2-baseline-amber-A-limb-zero-loops.png",
+      "pixelHash": "d0af3a55cfe347f0d07d4f6f3c7273db71e00d0325e2909190bf35ab79aa5cda",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.043735072269211,
+            1.13528145100791,
+            8.486264257895293
+          ],
+          "yaw": 4.951831751638938,
+          "pitch": -1.1662822519572142,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.2371613908741946,
+          1.412910156818013e-7,
+          0.971470264433553
+        ],
+        "u_stellarUp": [
+          -0.8930667790911704,
+          0.39357156683589034,
+          0.2180209849121527
+        ],
+        "u_stellarToward": [
+          0.38234304330318386,
+          0.9192939800620488,
+          -0.09334010638164811
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.531029995437484,
+        "maximum": 226,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 285284
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "amber-A-near",
+      "file": "dpr2-baseline-amber-A-near.png",
+      "pixelHash": "f790a614c1ef5879885191da9ca2f3fd49f948c35be5f7195704c20e8a7a0126",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -2.9934653591562808,
+            1.0981297272527715,
+            8.473992104658011
+          ],
+          "yaw": 4.951831751638938,
+          "pitch": -0.7299499389586317,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.2371614433770733,
+          1.0248895895810413e-7,
+          0.9714702516162258
+        ],
+        "u_stellarUp": [
+          -0.6478080934138987,
+          0.745207505650278,
+          0.15814691786418322
+        ],
+        "u_stellarToward": [
+          0.7239469068120624,
+          0.6668326428141326,
+          -0.17673455404862548
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.49286916325096,
+        "maximum": 225,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 285284
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "amber-A-near-zero-loops",
+      "file": null,
+      "pixelHash": "562dde21b8cdc685ce627a73d98503f9ac529d58f1e3d0d839b8cd0ffe40c32f",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -2.9934653591562808,
+            1.0981297272527715,
+            8.473992104658011
+          ],
+          "yaw": 4.951831751638938,
+          "pitch": -0.7299499389586317,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.2371614433770733,
+          1.0248895895810413e-7,
+          0.9714702516162258
+        ],
+        "u_stellarUp": [
+          -0.6478080934138987,
+          0.745207505650278,
+          0.15814691786418322
+        ],
+        "u_stellarToward": [
+          0.7239469068120624,
+          0.6668326428141326,
+          -0.17673455404862548
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.48324914523029,
+        "maximum": 225,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 285284
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "amber-A-far",
+      "file": "dpr2-baseline-amber-A-far.png",
+      "pixelHash": "786b68ad03156f6b0ac6943ccfdd8da00b4e229069b9dc9c9df434cee4ec1d0d",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1045479565647827,
+            1.1470835377274,
+            8.501110275281542
+          ],
+          "yaw": 1.810239098049145,
+          "pitch": -1.5389780886339965,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.2371613273598416,
+          -1.5361730199077468e-7,
+          -0.9714702799390696
+        ],
+        "u_stellarUp": [
+          0.9709785424276894,
+          0.03181349856898258,
+          -0.23704128639079103
+        ],
+        "u_stellarToward": [
+          -0.030905904774293568,
+          0.9994938225465816,
+          0.00754478238947635
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.553979966582776,
+        "maximum": 228,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 285284
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "amber-A-far-zero-loops",
+      "file": null,
+      "pixelHash": "7d1ca9a570e03ff84cb62129031623bee08969d9c2517001c19f700fe856256f",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1045479565647827,
+            1.1470835377274,
+            8.501110275281542
+          ],
+          "yaw": 1.810239098049145,
+          "pitch": -1.5389780886339965,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.2371613273598416,
+          -1.5361730199077468e-7,
+          -0.9714702799390696
+        ],
+        "u_stellarUp": [
+          0.9709785424276894,
+          0.03181349856898258,
+          -0.23704128639079103
+        ],
+        "u_stellarToward": [
+          -0.030905904774293568,
+          0.9994938225465816,
+          0.00754478238947635
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.543490469082824,
+        "maximum": 228,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 285284
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "amber-B-limb",
+      "file": "dpr2-baseline-amber-B-limb.png",
+      "pixelHash": "d9ee4375c9eed961d63438777658d06b294853d10b03ffcc4cd545cad7f9e13c",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.104357753680881,
+            1.138896329577771,
+            8.548418005981281
+          ],
+          "yaw": 3.0518317516389377,
+          "pitch": -1.2341215074081695,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.9959741752154803,
+          -6.09215630245003e-7,
+          -0.0896406286427787
+        ],
+        "u_stellarUp": [
+          0.08460785434624275,
+          0.33035047648087834,
+          -0.9400585480020816
+        ],
+        "u_stellarToward": [
+          -0.0296133970825482,
+          0.9438583382523489,
+          0.3290204918006564
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.559743551478654,
+        "maximum": 225,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 285284
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "amber-B-limb-zero-loops",
+      "file": "dpr2-baseline-amber-B-limb-zero-loops.png",
+      "pixelHash": "5e3bcbacf8d3ce4f77e8343ba95d64369bbbb1401716a632a0c2c7f454b8190a",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.104357753680881,
+            1.138896329577771,
+            8.548418005981281
+          ],
+          "yaw": 3.0518317516389377,
+          "pitch": -1.2341215074081695,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.9959741752154803,
+          -6.09215630245003e-7,
+          -0.0896406286427787
+        ],
+        "u_stellarUp": [
+          0.08460785434624275,
+          0.33035047648087834,
+          -0.9400585480020816
+        ],
+        "u_stellarToward": [
+          -0.0296133970825482,
+          0.9438583382523489,
+          0.3290204918006564
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.548408155541358,
+        "maximum": 225,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 285284
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "amber-B-near",
+      "file": "dpr2-baseline-amber-B-near.png",
+      "pixelHash": "cd2c11535c3cb170b4fde4e32a93ebfdd6222c339d0631d3999ed739d795e478",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.109211369768422,
+            1.1053377812082306,
+            8.602345425924366
+          ],
+          "yaw": 3.0518317516389377,
+          "pitch": -0.7977891944095871,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.9959741539269513,
+          -4.6202387187738014e-7,
+          -0.08964086517476282
+        ],
+        "u_stellarUp": [
+          0.0641658673502471,
+          0.6982909700447838,
+          -0.7129322987641291
+        ],
+        "u_stellarToward": [
+          -0.06259573609027987,
+          0.7158140269327652,
+          0.6954797284390212
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.535806355021155,
+        "maximum": 227,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 285284
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "amber-B-near-zero-loops",
+      "file": null,
+      "pixelHash": "c1517884bdbbd6ba3ccefaa50a9359b1ea01c117eaf00348f1e15cb758bf60d1",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.109211369768422,
+            1.1053377812082306,
+            8.602345425924366
+          ],
+          "yaw": 3.0518317516389377,
+          "pitch": -0.7977891944095871,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.9959741539269513,
+          -4.6202387187738014e-7,
+          -0.08964086517476282
+        ],
+        "u_stellarUp": [
+          0.0641658673502471,
+          0.6982909700447838,
+          -0.7129322987641291
+        ],
+        "u_stellarToward": [
+          -0.06259573609027987,
+          0.7158140269327652,
+          0.6954797284390212
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.525514144292156,
+        "maximum": 227,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 285284
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "amber-B-far",
+      "file": "dpr2-baseline-amber-B-far.png",
+      "pixelHash": "78ea3075ef5945c97aed2e07de63d2bb7503b66d75546a8bd959c1bf2aa993f3",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.0986875624215187,
+            1.1464278689660552,
+            8.48541780578288
+          ],
+          "yaw": 6.193424405228731,
+          "pitch": -1.4711388331830413,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.995974200085606,
+          6.422498801905533e-7,
+          0.08964035231649115
+        ],
+        "u_stellarUp": [
+          -0.08919564798243287,
+          0.09949255799743999,
+          0.9910324753932739
+        ],
+        "u_stellarToward": [
+          0.008917911461270862,
+          0.995038306248917,
+          -0.09909207815186528
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.549064583562444,
+        "maximum": 227,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 285284
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "amber-B-far-zero-loops",
+      "file": null,
+      "pixelHash": "aba2538406bd5d0d413564aa131c486cad36be09ad2729a40cf590ce845c743c",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.0986875624215187,
+            1.1464278689660552,
+            8.48541780578288
+          ],
+          "yaw": 6.193424405228731,
+          "pitch": -1.4711388331830413,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.995974200085606,
+          6.422498801905533e-7,
+          0.08964035231649115
+        ],
+        "u_stellarUp": [
+          -0.08919564798243287,
+          0.09949255799743999,
+          0.9910324753932739
+        ],
+        "u_stellarToward": [
+          0.008917911461270862,
+          0.995038306248917,
+          -0.09909207815186528
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.538935096791665,
+        "maximum": 227,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 285284
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "blue-A-limb",
+      "file": "dpr2-baseline-blue-A-limb.png",
+      "pixelHash": "619aa14aba93b8731382b6b47656c856f53752d4ff1206a34aefc15d7eb1bc2c",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.377286121634301,
+            -2.044716194460353,
+            16.06124123126045
+          ],
+          "yaw": 4.042301712235243,
+          "pitch": -1.0050233043708507,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.6210546579037547,
+          -5.436235790365168e-7,
+          0.7837672562028569
+        ],
+        "u_stellarUp": [
+          -0.6616368276420307,
+          0.5360678454466329,
+          -0.5242785265352711
+        ],
+        "u_stellarToward": [
+          0.4201521393541155,
+          0.8441749019474042,
+          0.3329277920484416
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.234475711909363,
+        "maximum": 210,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 274362
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "blue-A-limb-zero-loops",
+      "file": "dpr2-baseline-blue-A-limb-zero-loops.png",
+      "pixelHash": "e4bd32ce90f5b7cb6f69d55e562fd1830371584b4791728a26d25e3b271c0a46",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.377286121634301,
+            -2.044716194460353,
+            16.06124123126045
+          ],
+          "yaw": 4.042301712235243,
+          "pitch": -1.0050233043708507,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.6210546579037547,
+          -5.436235790365168e-7,
+          0.7837672562028569
+        ],
+        "u_stellarUp": [
+          -0.6616368276420307,
+          0.5360678454466329,
+          -0.5242785265352711
+        ],
+        "u_stellarToward": [
+          0.4201521393541155,
+          0.8441749019474042,
+          0.3329277920484416
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.22345590836772,
+        "maximum": 210,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 274362
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "blue-A-near",
+      "file": "dpr2-baseline-blue-A-near.png",
+      "pixelHash": "f76dea6cd3aa72c51292319fbb0de93190ea07e4022cd1812d80e57446917964",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.421480359172874,
+            -2.100938823697099,
+            16.096260578385742
+          ],
+          "yaw": 4.042301712235243,
+          "pitch": -0.5686909913722682,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.6210548126208909,
+          -3.46797503254808e-7,
+          0.7837671336055817
+        ],
+        "u_stellarUp": [
+          -0.42208236169601204,
+          0.8426062833490581,
+          -0.3344564713169771
+        ],
+        "u_stellarToward": [
+          0.6604069954698747,
+          0.5385300838955673,
+          0.5233048337956437
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.189119693785194,
+        "maximum": 210,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 274362
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "blue-A-near-zero-loops",
+      "file": null,
+      "pixelHash": "5172d5785eaa09809cf357d62c7fd7c4e90cfe4ef600f8dc6057c9411012be9c",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.421480359172874,
+            -2.100938823697099,
+            16.096260578385742
+          ],
+          "yaw": 4.042301712235243,
+          "pitch": -0.5686909913722682,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.6210548126208909,
+          -3.46797503254808e-7,
+          0.7837671336055817
+        ],
+        "u_stellarUp": [
+          -0.42208236169601204,
+          0.8426062833490581,
+          -0.3344564713169771
+        ],
+        "u_stellarToward": [
+          0.6604069954698747,
+          0.5385300838955673,
+          0.5233048337956437
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.179116206493807,
+        "maximum": 210,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 274362
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "blue-A-far",
+      "file": "dpr2-baseline-blue-A-far.png",
+      "pixelHash": "fb9ea4fdff5eece68fbfe64ed767f9c4eebfa16ad2c5daa4d4b9bf1d671f60d2",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.318609668561182,
+            -2.017591331980367,
+            16.014746231172374
+          ],
+          "yaw": 4.042301712235243,
+          "pitch": -1.441355617369433,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.6210544524869637,
+          -6.385828539654897e-7,
+          0.7837674189743474
+        ],
+        "u_stellarUp": [
+          -0.7772107463553272,
+          0.12907871882515376,
+          -0.615858863779886
+        ],
+        "u_stellarToward": [
+          0.1011673010211954,
+          0.9916343501241014,
+          0.08016540936113112
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.235052327844874,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 274362
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "blue-A-far-zero-loops",
+      "file": null,
+      "pixelHash": "7757d937c33be0c225348076b90da168ec9db19af4df1bcc7a6d7b703774c90c",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.318609668561182,
+            -2.017591331980367,
+            16.014746231172374
+          ],
+          "yaw": 4.042301712235243,
+          "pitch": -1.441355617369433,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.6210544524869637,
+          -6.385828539654897e-7,
+          0.7837674189743474
+        ],
+        "u_stellarUp": [
+          -0.7772107463553272,
+          0.12907871882515376,
+          -0.615858863779886
+        ],
+        "u_stellarToward": [
+          0.1011673010211954,
+          0.9916343501241014,
+          0.08016540936113112
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.22497040784494,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 274362
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "blue-B-limb",
+      "file": "dpr2-baseline-blue-B-limb.png",
+      "pixelHash": "bbc2a073e8df7f2efefa88d6a872926b914cb8a8c33068cb976168c474f436bb",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.2488895044452395,
+            -2.0263795880277864,
+            16.032868876725384
+          ],
+          "yaw": 2.142301712235243,
+          "pitch": -1.2341215074081695,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.5408986664359953,
+          -5.293691611453339e-7,
+          -0.8410877675055568
+        ],
+        "u_stellarUp": [
+          0.7938674182821911,
+          0.3303511208467607,
+          -0.5105317415648687
+        ],
+        "u_stellarToward": [
+          -0.27785455698572015,
+          0.9438581127240516,
+          0.17868606047271993
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.234844023157192,
+        "maximum": 214,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 274362
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "blue-B-limb-zero-loops",
+      "file": "dpr2-baseline-blue-B-limb-zero-loops.png",
+      "pixelHash": "14be878014fbf009b3e70af0d7526d6ca6f1f827a8f689d7446b27761ae33499",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.2488895044452395,
+            -2.0263795880277864,
+            16.032868876725384
+          ],
+          "yaw": 2.142301712235243,
+          "pitch": -1.2341215074081695,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.5408986664359953,
+          -5.293691611453339e-7,
+          -0.8410877675055568
+        ],
+        "u_stellarUp": [
+          0.7938674182821911,
+          0.3303511208467607,
+          -0.5105317415648687
+        ],
+        "u_stellarToward": [
+          -0.27785455698572015,
+          0.9438581127240516,
+          0.17868606047271993
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.227522367011202,
+        "maximum": 214,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 274362
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "blue-B-near",
+      "file": "dpr2-baseline-blue-B-near.png",
+      "pixelHash": "42578be11bc55b4456dfda45ae6a5d688ebdabdf9f362cf6717ca25548932417",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.191963220484965,
+            -2.068327773489712,
+            16.06947785477608
+          ],
+          "yaw": 2.142301712235243,
+          "pitch": -0.7977891944095872,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.5408984928677986,
+          -4.0146884776916135e-7,
+          -0.8410878791263032
+        ],
+        "u_stellarUp": [
+          0.6020621142091306,
+          0.698291257572525,
+          -0.38718281241787256
+        ],
+        "u_stellarToward": [
+          -0.5873244682859516,
+          0.7158137464435985,
+          0.37770444709455514
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.217925570762473,
+        "maximum": 214,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 274362
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "blue-B-near-zero-loops",
+      "file": null,
+      "pixelHash": "d6d548db72c91a2b3501d8742ea1b9bfaa614699b1cce9fd4b30c9990868d405",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.191963220484965,
+            -2.068327773489712,
+            16.06947785477608
+          ],
+          "yaw": 2.142301712235243,
+          "pitch": -0.7977891944095872,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.5408984928677986,
+          -4.0146884776916135e-7,
+          -0.8410878791263032
+        ],
+        "u_stellarUp": [
+          0.6020621142091306,
+          0.698291257572525,
+          -0.38718281241787256
+        ],
+        "u_stellarToward": [
+          -0.5873244682859516,
+          0.7158137464435985,
+          0.37770444709455514
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.210159855970986,
+        "maximum": 214,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 274362
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "blue-B-far",
+      "file": "dpr2-baseline-blue-B-far.png",
+      "pixelHash": "d2221a0cea0b4c60b3d9638533d833ab77a234a66fbb119bb6a4f854cee287eb",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.315393099273872,
+            -2.016965163792431,
+            15.990100783078645
+          ],
+          "yaw": 5.283894365825036,
+          "pitch": -1.4711388331830413,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.5408988692056359,
+          5.580741731531498e-7,
+          0.8410876371055237
+        ],
+        "u_stellarUp": [
+          -0.8369145178049787,
+          0.0994917263626958,
+          0.5382150929439183
+        ],
+        "u_stellarToward": [
+          0.08368096067400616,
+          0.9950383894026696,
+          -0.05381542934527622
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.232007587116073,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 274362
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "blue-B-far-zero-loops",
+      "file": null,
+      "pixelHash": "326c53818baa0a279f4ee9c0712951009add81dd292d1347ac1d606e6e15f5d0",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            4.315393099273872,
+            -2.016965163792431,
+            15.990100783078645
+          ],
+          "yaw": 5.283894365825036,
+          "pitch": -1.4711388331830413,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "blue-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.5408988692056359,
+          5.580741731531498e-7,
+          0.8410876371055237
+        ],
+        "u_stellarUp": [
+          -0.8369145178049787,
+          0.0994917263626958,
+          0.5382150929439183
+        ],
+        "u_stellarToward": [
+          0.08368096067400616,
+          0.9950383894026696,
+          -0.05381542934527622
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 11.22395990597033,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 274362
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "pale-A-limb",
+      "file": "dpr2-baseline-pale-A-limb.png",
+      "pixelHash": "e2706464004eb73312b67ec86ef7b7e68ceb87f251a590c380a4afe6315e8506",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.6480043763305455,
+            2.5693695376101955,
+            23.92825970112746
+          ],
+          "yaw": 0.027810159689670044,
+          "pitch": -1.169996387356206,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.9996133238371078,
+          -1.1929429925863636e-7,
+          -0.027806524545788074
+        ],
+        "u_stellarUp": [
+          0.025602879270453165,
+          0.3901551938392615,
+          0.9203930775996257
+        ],
+        "u_stellarToward": [
+          -0.010848750176510895,
+          0.9207491106269037,
+          -0.3900043331802528
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 12.933245842186139,
+        "maximum": 213,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 303836
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "pale-A-limb-zero-loops",
+      "file": "dpr2-baseline-pale-A-limb-zero-loops.png",
+      "pixelHash": "e08c24a7a2631222097cd45ca93a554e18d29088e36dd398a94d1d26393e6cc5",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.6480043763305455,
+            2.5693695376101955,
+            23.92825970112746
+          ],
+          "yaw": 0.027810159689670044,
+          "pitch": -1.169996387356206,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.9996133238371078,
+          -1.1929429925863636e-7,
+          -0.027806524545788074
+        ],
+        "u_stellarUp": [
+          0.025602879270453165,
+          0.3901551938392615,
+          0.9203930775996257
+        ],
+        "u_stellarToward": [
+          -0.010848750176510895,
+          0.9207491106269037,
+          -0.3900043331802528
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 12.91760500395721,
+        "maximum": 213,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 303836
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "pale-A-near",
+      "file": "dpr2-baseline-pale-A-near.png",
+      "pixelHash": "ebbd8e122b1e0772848a4d02d0aac39a9f28716114cab4e4854f0f6d06273602",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.6501817080997087,
+            2.5838314193487424,
+            24.006532190202087
+          ],
+          "yaw": 3.169402813279463,
+          "pitch": -1.5352639532350048,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.9996133223035176,
+          1.294804442240481e-7,
+          0.027806579676522683
+        ],
+        "u_stellarUp": [
+          -0.027789023310928657,
+          0.03552491914047522,
+          -0.9989823573534657
+        ],
+        "u_stellarToward": [
+          0.0009879558432610521,
+          0.9993687908475258,
+          0.03551117884843918
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 12.881380271773876,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 303836
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "pale-A-near-zero-loops",
+      "file": null,
+      "pixelHash": "8c0e34ff5246f9f1b1468f28a0d2cb9748dd260e7d90c5c9634471bce4654fcd",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.6501817080997087,
+            2.5838314193487424,
+            24.006532190202087
+          ],
+          "yaw": 3.169402813279463,
+          "pitch": -1.5352639532350048,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.9996133223035176,
+          1.294804442240481e-7,
+          0.027806579676522683
+        ],
+        "u_stellarUp": [
+          -0.027789023310928657,
+          0.03552491914047522,
+          -0.9989823573534657
+        ],
+        "u_stellarToward": [
+          0.0009879558432610521,
+          0.9993687908475258,
+          0.03551117884843918
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 12.867067899169944,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 303836
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "pale-A-far",
+      "file": "dpr2-baseline-pale-A-far.png",
+      "pixelHash": "ffec3f08f3884a29249fa6fa903f8fa161feb7298ec040e3bc43b8dbc1823e6a",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.6462009933570488,
+            2.5231704422970918,
+            23.863430226772874
+          ],
+          "yaw": 0.027810159689670044,
+          "pitch": -0.7336640743576235,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.9996133251073085,
+          -8.675423527334718e-8,
+          -0.02780647888358116
+        ],
+        "u_stellarUp": [
+          0.018619150383728623,
+          0.7427262019632666,
+          0.6693363251432041
+        ],
+        "u_stellarToward": [
+          -0.020652542383412978,
+          0.6695952426034802,
+          -0.7424390100041134
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 12.93830363135314,
+        "maximum": 215,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 303836
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "pale-A-far-zero-loops",
+      "file": null,
+      "pixelHash": "e95471d7c7acfc7e9e429f8703c39486897be673bb3a5488715c002693e31319",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.6462009933570488,
+            2.5231704422970918,
+            23.863430226772874
+          ],
+          "yaw": 0.027810159689670044,
+          "pitch": -0.7336640743576235,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.9996133251073085,
+          -8.675423527334718e-8,
+          -0.02780647888358116
+        ],
+        "u_stellarUp": [
+          0.018619150383728623,
+          0.7427262019632666,
+          0.6693363251432041
+        ],
+        "u_stellarToward": [
+          -0.020652542383412978,
+          0.6695952426034802,
+          -0.7424390100041134
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 12.925443286353278,
+        "maximum": 215,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 303836
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "pale-B-limb",
+      "file": "dpr2-baseline-pale-B-limb.png",
+      "pixelHash": "903bf46a2849f5df75ed87ada6aba194515a7c49908dc62b8c23a1363f34e855",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.5919720107758593,
+            2.5736204119722137,
+            23.981961200714995
+          ],
+          "yaw": 1.2694028132794628,
+          "pitch": -1.2341215074081695,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.29685120574501916,
+          -3.631550180089355e-8,
+          -0.9549237465094933
+        ],
+        "u_stellarUp": [
+          0.9013127442202441,
+          0.3303504761199796,
+          0.2801854743441845
+        ],
+        "u_stellarToward": [
+          -0.3154595041426097,
+          0.9438583383788595,
+          -0.09806496988628167
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 12.890991677186365,
+        "maximum": 211,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 303836
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "pale-B-limb-zero-loops",
+      "file": "dpr2-baseline-pale-B-limb-zero-loops.png",
+      "pixelHash": "352239929f81165c54b9454982afa90c0fb786c33fc587da34df5434b3130a4b",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.5919720107758593,
+            2.5736204119722137,
+            23.981961200714995
+          ],
+          "yaw": 1.2694028132794628,
+          "pitch": -1.2341215074081695,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.29685120574501916,
+          -3.631550180089355e-8,
+          -0.9549237465094933
+        ],
+        "u_stellarUp": [
+          0.9013127442202441,
+          0.3303504761199796,
+          0.2801854743441845
+        ],
+        "u_stellarToward": [
+          -0.3154595041426097,
+          0.9438583383788595,
+          -0.09806496988628167
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 12.874941772707498,
+        "maximum": 211,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 303836
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "pale-B-near",
+      "file": "dpr2-baseline-pale-B-near.png",
+      "pixelHash": "35e5ce30bfe014e28a1888902a83f74aab2a00509b6e508eb8c8851101996f79",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.5273411016766127,
+            2.5316722265102882,
+            23.96186979288859
+          ],
+          "yaw": 1.2694028132794637,
+          "pitch": -0.7977891944095872,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.29685121926360925,
+          -2.7541347807851347e-8,
+          -0.9549237423070536
+        ],
+        "u_stellarUp": [
+          0.6835476605034617,
+          0.6982911360054055,
+          0.21249020023644496
+        ],
+        "u_stellarToward": [
+          -0.666814778961859,
+          0.7158138650349541,
+          -0.2072885939499993
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 12.863355444789459,
+        "maximum": 213,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 303836
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "pale-B-near-zero-loops",
+      "file": null,
+      "pixelHash": "31bbbb37b1c478195bdaeff8174985ce5924b762680160a7d00f19f1016ec32a",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.5273411016766127,
+            2.5316722265102882,
+            23.96186979288859
+          ],
+          "yaw": 1.2694028132794637,
+          "pitch": -0.7977891944095872,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.29685121926360925,
+          -2.7541347807851347e-8,
+          -0.9549237423070536
+        ],
+        "u_stellarUp": [
+          0.6835476605034617,
+          0.6982911360054055,
+          0.21249020023644496
+        ],
+        "u_stellarToward": [
+          -0.666814778961859,
+          0.7158138650349541,
+          -0.2072885939499993
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 12.8484084455188,
+        "maximum": 213,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 303836
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "pale-B-far",
+      "file": "dpr2-baseline-pale-B-far.png",
+      "pixelHash": "bf7fb884b45f4bc85b36b6f440fa62991a30cd695ec58a5696b592ce377dc7bf",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.6674764613235522,
+            2.583034836207569,
+            24.005432798589833
+          ],
+          "yaw": 4.410995466869257,
+          "pitch": -1.4711388331830413,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.2968511899520408,
+          3.8284666358251924e-8,
+          0.954923751418958
+        ],
+        "u_stellarUp": [
+          -0.9501856889849345,
+          0.09949278938557557,
+          -0.29537830202725235
+        ],
+        "u_stellarToward": [
+          0.09500803898766985,
+          0.9950382831129041,
+          0.0295345165432138
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 12.882709598438097,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 303836
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "pale-B-far-zero-loops",
+      "file": null,
+      "pixelHash": "7e9f09cf899621b92bc35b771444fe6833b9c2570305bf7be9cfc8f9cbd70f55",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024,
+      "diskPixels": 358.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            0.6674764613235522,
+            2.583034836207569,
+            24.005432798589833
+          ],
+          "yaw": 4.410995466869257,
+          "pitch": -1.4711388331830413,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "pale-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          -0.2968511899520408,
+          3.8284666358251924e-8,
+          0.954923751418958
+        ],
+        "u_stellarUp": [
+          -0.9501856889849345,
+          0.09949278938557557,
+          -0.29537830202725235
+        ],
+        "u_stellarToward": [
+          0.09500803898766985,
+          0.9950382831129041,
+          0.0295345165432138
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 12.869359229896615,
+        "maximum": 212,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 303836
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "unresolved",
+      "file": "dpr2-baseline-unresolved.png",
+      "pixelHash": "d092475593bbb9573a24a15e223989fc59ff6d4544dfd547f1a08318415cd94f",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 12.000000000000002,
+      "diskPixels": 4.2,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            -4.057484616939922
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.1606756343490251,
+          9.004835369367675e-9,
+          0.9870072646776914
+        ],
+        "u_stellarUp": [
+          -0.2621041492543467,
+          0.9640958700813842,
+          0.04266811732047527
+        ],
+        "u_stellarToward": [
+          0.9515696272318666,
+          0.2655544262331521,
+          -0.1549067178588064
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 2.7925878696724444,
+        "maximum": 255,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 52
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "granule-medium",
+      "file": "dpr2-baseline-granule-medium.png",
+      "pixelHash": "bfd1754f8fddb1e9dbad331be193dc90d21c1d04c0ddc6cf68743c367f6c5f1e",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 384.00000000000006,
+      "diskPixels": 134.4,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.1,
+            1,
+            8.107578605720628
+          ],
+          "yaw": 0,
+          "pitch": 0,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.9999999999999705,
+          0,
+          -2.4302301841766073e-7
+        ],
+        "u_stellarUp": [
+          0,
+          1,
+          0
+        ],
+        "u_stellarToward": [
+          -2.4302301841766073e-7,
+          0,
+          -0.9999999999999705
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 4.018003667707879,
+        "maximum": 220,
+        "clippedWhiteFraction": 0,
+        "visiblePixels": 40112
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "relativity",
+      "file": "dpr2-baseline-relativity.png",
+      "pixelHash": "f2341d4f78200f360a666ed48181175a43eb8e3969996564504ca75d2f2a0ed6",
+      "width": 1600,
+      "height": 1200,
+      "spritePixels": 1024.0000000000002,
+      "diskPixels": 358.40000000000003,
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "relativity",
+          "region": "neighborhood",
+          "beta": 0.6,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 0.8,
+          "quality": "high"
+        },
+        "state": {
+          "position": [
+            -3.043735072269211,
+            1.13528145100791,
+            8.486264257895293
+          ],
+          "yaw": 4.951831751638938,
+          "pitch": -1.1662822519572142,
+          "distanceLy": 17,
+          "universeYears": 9,
+          "travelerYears": 4
+        },
+        "targetId": "amber-star"
+      },
+      "frame": {
+        "u_stellarRight": [
+          0.2371613908741946,
+          1.412910156818013e-7,
+          0.971470264433553
+        ],
+        "u_stellarUp": [
+          -0.8930667790911704,
+          0.39357156683589034,
+          0.2180209849121527
+        ],
+        "u_stellarToward": [
+          0.38234304330318386,
+          0.9192939800620488,
+          -0.09334010638164811
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 13.305441931752954,
+        "maximum": 255,
+        "clippedWhiteFraction": 0.00000625,
+        "visiblePixels": 237019
+      }
+    },
+    {
+      "configuration": "dpr2",
+      "phase": "baseline",
+      "name": "galaxy",
+      "file": "dpr2-baseline-galaxy.png",
+      "pixelHash": "de0f462d7caf9109a6784ee5c898e2ea38a930591a4defdb17a8b1c1100a605f",
+      "frame": {
+        "u_stellarRight": [
+          0.2371613908741946,
+          1.412910156818013e-7,
+          0.971470264433553
+        ],
+        "u_stellarUp": [
+          -0.8930667790911704,
+          0.39357156683589034,
+          0.2180209849121527
+        ],
+        "u_stellarToward": [
+          0.38234304330318386,
+          0.9192939800620488,
+          -0.09334010638164811
+        ]
+      },
+      "statistics": {
+        "meanLuminance": 3.7354716521862805,
+        "maximum": 255,
+        "clippedWhiteFraction": 0.000024479166666666668,
+        "visiblePixels": 56329
+      }
+    }
+  ],
+  "comparisons": [],
+  "curveReference": [],
+  "resources": [
+    {
+      "configuration": "dpr2",
+      "phase": "refined",
+      "created": {
+        "textures": 2,
+        "buffers": 2,
+        "programs": 2
+      },
+      "deleted": {
+        "textures": 2,
+        "buffers": 2,
+        "programs": 2
+      },
+      "error": 0,
+      "pointRange": [
+        1,
+        1023
+      ]
+    }
+  ],
+  "errors": [],
+  "pause": [
+    {
+      "phase": "refined",
+      "identicalPixels": true,
+      "uploads": 0
+    },
+    {
+      "phase": "baseline",
+      "identicalPixels": true,
+      "uploads": 0
+    }
+  ],
+  "sweeps": [
+    {
+      "phase": "refined",
+      "samples": [
+        {
+          "angle": -35,
+          "addedChannelSum": 37584,
+          "minimum": 0,
+          "peak": 25,
+          "error": 0
+        },
+        {
+          "angle": -34.5,
+          "addedChannelSum": 37759,
+          "minimum": 0,
+          "peak": 25,
+          "error": 0
+        },
+        {
+          "angle": -34,
+          "addedChannelSum": 38286,
+          "minimum": 0,
+          "peak": 25,
+          "error": 0
+        },
+        {
+          "angle": -33.5,
+          "addedChannelSum": 39332,
+          "minimum": 0,
+          "peak": 25,
+          "error": 0
+        },
+        {
+          "angle": -33,
+          "addedChannelSum": 41028,
+          "minimum": 0,
+          "peak": 25,
+          "error": 0
+        },
+        {
+          "angle": -32.5,
+          "addedChannelSum": 43046,
+          "minimum": 0,
+          "peak": 25,
+          "error": 0
+        },
+        {
+          "angle": -32,
+          "addedChannelSum": 45256,
+          "minimum": 0,
+          "peak": 25,
+          "error": 0
+        },
+        {
+          "angle": -31.5,
+          "addedChannelSum": 47202,
+          "minimum": 0,
+          "peak": 25,
+          "error": 0
+        },
+        {
+          "angle": -31,
+          "addedChannelSum": 48805,
+          "minimum": 0,
+          "peak": 25,
+          "error": 0
+        },
+        {
+          "angle": -30.5,
+          "addedChannelSum": 50158,
+          "minimum": 0,
+          "peak": 25,
+          "error": 0
+        },
+        {
+          "angle": -30,
+          "addedChannelSum": 51386,
+          "minimum": 0,
+          "peak": 25,
+          "error": 0
+        },
+        {
+          "angle": -29.5,
+          "addedChannelSum": 52546,
+          "minimum": 0,
+          "peak": 25,
+          "error": 0
+        },
+        {
+          "angle": -29,
+          "addedChannelSum": 53516,
+          "minimum": 0,
+          "peak": 25,
+          "error": 0
+        },
+        {
+          "angle": -28.5,
+          "addedChannelSum": 54395,
+          "minimum": 0,
+          "peak": 25,
+          "error": 0
+        },
+        {
+          "angle": -28,
+          "addedChannelSum": 55194,
+          "minimum": 0,
+          "peak": 25,
+          "error": 0
+        },
+        {
+          "angle": -27.5,
+          "addedChannelSum": 55898,
+          "minimum": 0,
+          "peak": 25,
+          "error": 0
+        },
+        {
+          "angle": -27,
+          "addedChannelSum": 56643,
+          "minimum": 0,
+          "peak": 25,
+          "error": 0
+        },
+        {
+          "angle": -26.5,
+          "addedChannelSum": 57231,
+          "minimum": 0,
+          "peak": 25,
+          "error": 0
+        },
+        {
+          "angle": -26,
+          "addedChannelSum": 57842,
+          "minimum": 0,
+          "peak": 25,
+          "error": 0
+        },
+        {
+          "angle": -25.5,
+          "addedChannelSum": 58389,
+          "minimum": 0,
+          "peak": 25,
+          "error": 0
+        },
+        {
+          "angle": -25,
+          "addedChannelSum": 58905,
+          "minimum": 0,
+          "peak": 25,
+          "error": 0
+        }
+      ]
+    }
+  ]
+}

@@ -183,7 +183,7 @@ describe('fitted manikin outer ear rims', () => {
     }
   });
 
-  it.each(poses)('keeps a continuous loop of shallow relief and buried joins on the actual $age ear in pose $phase', ({ age, phase }) => {
+  it.each(poses)('keeps upper rim relief and a seated lower lobe with buried joins on the actual $age ear in pose $phase', ({ age, phase }) => {
     const fixture = model(age, phase);
     for (const side of sides) {
       const ear = earModel(fixture, side), path = ear.rim.geometry.parameters.path;
@@ -192,7 +192,13 @@ describe('fitted manikin outer ear rims', () => {
       expect(path.getPoint(0).distanceTo(path.getPoint(1)), ear.rim.name + ' centreline wraps continuously').toBeLessThan(1e-8);
       const samples = Array.from({ length: 64 }, (_, i) => rimSample(ear.rim, i / 64));
       const front = samples.map(i => surfaceGap(ear.rim, i, ear.base, ear));
-      expect(Math.min(...front), ear.rim.name + ' entire front rim remains visibly above ear skin').toBeGreaterThan(.001);
+      const upper = samples.filter(i => point(ear.rim, i).z <= .010).map(i => surfaceGap(ear.rim, i, ear.base, ear));
+      const lower = samples.filter(i => point(ear.rim, i).z >= .052).map(i => surfaceGap(ear.rim, i, ear.base, ear));
+      expect(upper.length, ear.rim.name + ' samples the raised upper rim').toBeGreaterThan(16);
+      expect(lower.length, ear.rim.name + ' samples the lower lobe arc').toBeGreaterThan(4);
+      expect(Math.min(...upper), ear.rim.name + ' upper rim remains visibly above ear skin').toBeGreaterThan(.001);
+      expect(Math.max(...lower), ear.rim.name + ' lower rim blends beneath the ear lobe surface').toBeLessThan(-.0001);
+      expect(Math.min(...front), ear.rim.name + ' faded rim remains close beneath the lobe').toBeGreaterThan(-.003);
       expect(Math.max(...front), ear.rim.name + ' front rim stays close to actual ear skin').toBeLessThan(.010);
       const boundary = rimJoins(ear.rim).map(i => surfaceGap(ear.rim, i, ear.base, ear));
       expect(boundary.length, ear.rim.name + ' both full front/rear boundaries are sampled').toBeGreaterThan(120);

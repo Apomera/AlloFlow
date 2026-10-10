@@ -1,0 +1,385 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/universe_guided_navigation.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/universe_guided_navigation.test.js (39 tests) 471791ms
+     ✓ reaches every early milestone at its physical age and exposes readable slider values  31922ms
+     ✓ pauses playback on a milestone and stops at the future instead of looping  13080ms
+     ✓ lets keyboard users move through early epochs without skipping recombination  4298ms
+     ✓ opens the investigation disclosure and transfers focus to a selected topic  8400ms
+     ✓ keeps each learner explanation with its epoch and pauses time while writing  12294ms
+     ✓ provides bounded previous and next controls and an explicit still-scene preference  5254ms
+     ✓ toggles illustrative structure guides without moving time or changing scene motion  2489ms
+     ✓ saves mission-specific evidence even when a different thread is selected  1719ms
+     ✓ does not mark an evidence thread mastered just for copying a worked example  1495ms
+     ✓ stops running playback when choosing an evidence thread  2405ms
+     ✓ does not promote legacy click-only completion to reviewed learning  4533ms
+     ✓ records a response and explicit self-review, then reopens review when revised  5988ms
+     ✓ accepts supported response routes without treating choices as demonstrated mastery  7206ms
+     ✓ shows every notebook example, searches learner work, and preserves revisions  2955ms
+     ✓ keeps stable epoch visits and pins a before-state across navigation  3194ms
+     ✓ opens the actual local mission destination even under a conflicting topic filter  3133ms
+     ✓ offers a targeted retry for missed concepts and preserves per-question results  4637ms
+     ✓ reveals a closed investigation from quiz review and returns to the same results  12573ms
+     ✓ opens the reflection disclosure and focuses the editable field when revisiting a note  13713ms
+     ✓ inspects a real sample and appends its value and source without replacing the learner text  23549ms
+     ✓ keeps self-review when changing reading controls, but saves earlier work when the explanation changes  39554ms
+     ✓ does not create empty notebook responses and clears stale filters when reviewing current work  16734ms
+     ✓ preserves a self-reviewed response created before revision history existed  15097ms
+     ✓ reveals saved examples despite a stale notebook filter without marking a mission started  9315ms
+     ✓ resumes a CMB draft at its next unanswered field while preserving recorded observations  6223ms
+     ✓ recovers hidden notebook entries without changing their contents  17837ms
+     ✓ moves to the timeline when an investigation requests it and keeps the draft intact  10981ms
+     ✓ saves a notebook version for its own epoch without changing the selected epoch  2691ms
+     ✓ saves a partial evidence draft without recording a self-review  9230ms
+     ✓ keeps reflections separate for each revision and preserves their writing context after later edits  8370ms
+     ✓ clears comparison reflections and selected revisions with an explicit progress reset  11237ms
+     ✓ guides unanswered prompts through review without recording a review automatically  12383ms
+     ✓ lets learners jump to a supported prompt without changing their recorded answers  49795ms
+     ✓ reopens a saved investigation question at its own revision despite hidden notebook entries  29741ms
+     ✓ omits empty or unlinked investigation questions from the notebook index  23500ms
+     ✓ compares two FIRAS values with consistent units and synchronizes measurement A with the inspector  20438ms
+     ✓ appends a comparison only once while retaining the original observation and source  7608ms
+     ✓ keeps a self-review while inspecting samples and preserves it as a revision when adding the comparison  7241ms
+     ✓ resets the sample comparison controls with explicit progress reset  8954ms
+[vitest-pool]: Timeout terminating forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_galactic_band.test.js.
+stdout | tests/universe_accessibility.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/universe_accessibility.test.js (3 tests) 2826ms
+     ✓ renders Universe without tiny utility or SVG text  2684ms
+stdout | tests/universe_content_invariants.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/universe_content_invariants.test.js (6 tests) 1412ms
+     ✓ renders  583ms
+stdout | tests/universe_flight_detail_lens.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/universe_flight_detail_lens.test.js (5 tests) 1008ms
+     ✓ solves left, center and right framing at the detail lens in all displayed skies  868ms
+stdout | tests/universe_flight_discovery.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/universe_flight_discovery.test.js (5 tests) 26ms
+stdout | tests/universe_flight_preview_urls.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/universe_flight_preview_urls.test.js (3 tests) 22ms
+
+ Test Files  6 passed (6)
+      Tests  61 passed (61)
+     Errors  25 errors
+   Start at  19:23:23
+   Duration  2191.31s (transform 1.56s, setup 1.81s, import 2.79s, tests 477.08s, environment 163.80s)
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 25 unhandled errors during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_navigation.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_elliptical_projection.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_physics.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_texture_filtering.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_cloud_surfaces.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_blue_shell.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_stellar_surfaces.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_violet_ridges.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_barred_detail.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_two_arm_detail.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_spiral_detail.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_viewpoint_glide.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_galactic_band.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_bulges.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_stellar_structure.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_tutorial_dialog_a11y.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_evidence_svg_a11y.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_tilted_orbit.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_cinematic.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_playback_a11y.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_form_controls_a11y.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_inspector.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_distance.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_perspective.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_web_geometry.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/universe-flight-2026-09-29/prominence-edges/unit-tests.json
+node:assert:152
+  throw new AssertionError(obj);
+  ^
+
+AssertionError [ERR_ASSERTION]: The explicit Universe unit suite succeeds
+
+1 !== 0
+
+    at Object.<anonymous> (C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\reports\universe-flight-2026-09-29\prominence-edges\run-unit-suite.cjs:21:8)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 1,
+  expected: 0,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.11.1

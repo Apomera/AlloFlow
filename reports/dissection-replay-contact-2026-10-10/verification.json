@@ -1,0 +1,297 @@
+{
+  "at": "2026-10-10T06:08:44.053Z",
+  "sourceSha256": "feb4ed7cac726ab812edd71be1804d06410ef39de437c54f0668d7dab59ba92f",
+  "existingUnitSha256": "7c26ad56c4e9bb87a0ca214e30ea4d09e2943f003d5295b95957726736976238",
+  "sourceRuntimeParity": true,
+  "sourceSyntax": true,
+  "sourceReversalEdits": 18,
+  "sourceReversalMatchesBaseline": true,
+  "protectedFilesUnchanged": 1794,
+  "runs": {
+    "unit-4": {
+      "passed": 44,
+      "failed": 0,
+      "excluded": 239,
+      "inputs": {
+        "stem_lab/stem_tool_dissection.js": "feb4ed7cac726ab812edd71be1804d06410ef39de437c54f0668d7dab59ba92f",
+        "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "feb4ed7cac726ab812edd71be1804d06410ef39de437c54f0668d7dab59ba92f",
+        "tests/dissection_lab_improvements.test.js": "7c26ad56c4e9bb87a0ca214e30ea4d09e2943f003d5295b95957726736976238",
+        "tests/dissection_replay_contact.test.js": "c389c50f17e5ce6c3af110408136a5bbfe47980a1b577b873a8e5a4ee0a5e6a6",
+        "tests/dissection_replay_review.test.js": "67b253aabc1c974da69b1b11bb26b142e8565ae62b202c085e2b743172eeb7ff"
+      }
+    },
+    "browser-2": {
+      "startTime": "2026-10-10T06:07:21.877Z",
+      "duration": 38546.691999999995,
+      "expected": 4,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "inputs": {
+        "stem_lab/stem_tool_dissection.js": "feb4ed7cac726ab812edd71be1804d06410ef39de437c54f0668d7dab59ba92f",
+        "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "feb4ed7cac726ab812edd71be1804d06410ef39de437c54f0668d7dab59ba92f",
+        "tests/e2e/dissection-replay-contact.spec.ts": "0f4b72df0b02d8e274625c8888c1e5b2487137efd5dde5a4d7a9e4c98dfeab0e",
+        "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6"
+      }
+    },
+    "regression-2": {
+      "startTime": "2026-10-10T05:56:37.571Z",
+      "duration": 129099.20000000001,
+      "expected": 4,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "inputs": {
+        "stem_lab/stem_tool_dissection.js": "feb4ed7cac726ab812edd71be1804d06410ef39de437c54f0668d7dab59ba92f",
+        "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "feb4ed7cac726ab812edd71be1804d06410ef39de437c54f0668d7dab59ba92f",
+        "tests/e2e/dissection-replay-review.spec.ts": "0abfd753c24b83469204bd38afa754431244daa6b55b1ffb0b872ab415262973",
+        "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6"
+      }
+    }
+  },
+  "audits": {
+    "desktop-motion-axe.json": {
+      "violations": 0,
+      "incomplete": []
+    },
+    "embedded-large-contrast-axe.json": {
+      "violations": 0,
+      "incomplete": []
+    },
+    "phone-forced-colors-axe.json": {
+      "violations": 0,
+      "incomplete": []
+    },
+    "phone-reduced-axe.json": {
+      "violations": 0,
+      "incomplete": []
+    }
+  },
+  "metrics": {
+    "desktop-motion-metrics.json": {
+      "width": 797.21875,
+      "client": 793,
+      "scroll": 793,
+      "paragraphs": [
+        {
+          "text": "Paused · Action 2 of 3 · Hydrated",
+          "font": 16,
+          "client": 766,
+          "scroll": 766
+        },
+        {
+          "text": "Supported action position.",
+          "font": 16,
+          "client": 766,
+          "scroll": 766
+        },
+        {
+          "text": "Previous and Next hold the full action on the specimen. Resume continues from that action. Escape ends the review.",
+          "font": 16,
+          "client": 766,
+          "scroll": 766
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Resume replay",
+          "height": 44,
+          "width": 185.5,
+          "font": 16
+        },
+        {
+          "text": "Previous action",
+          "height": 44,
+          "width": 185.515625,
+          "font": 16
+        },
+        {
+          "text": "Next action",
+          "height": 44,
+          "width": 185.5,
+          "font": 16
+        },
+        {
+          "text": "Stop replay",
+          "height": 44,
+          "width": 185.515625,
+          "font": 16
+        }
+      ]
+    },
+    "embedded-large-contrast-metrics.json": {
+      "width": 300.40625,
+      "client": 296,
+      "scroll": 296,
+      "paragraphs": [
+        {
+          "text": "Paused · Action 2 of 3 · Hydrated",
+          "font": 18,
+          "client": 269,
+          "scroll": 269
+        },
+        {
+          "text": "Supported action position.",
+          "font": 18,
+          "client": 269,
+          "scroll": 269
+        },
+        {
+          "text": "Previous and Next hold the full action on the specimen. Resume continues from that action. Escape ends the review.",
+          "font": 18,
+          "client": 269,
+          "scroll": 269
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Resume replay",
+          "height": 73.59375,
+          "width": 130.609375,
+          "font": 18
+        },
+        {
+          "text": "Previous action",
+          "height": 73.59375,
+          "width": 130.609375,
+          "font": 18
+        },
+        {
+          "text": "Next action",
+          "height": 46.59375,
+          "width": 130.609375,
+          "font": 18
+        },
+        {
+          "text": "Stop replay",
+          "height": 46.59375,
+          "width": 130.609375,
+          "font": 18
+        }
+      ]
+    },
+    "phone-forced-colors-metrics.json": {
+      "width": 370.40625,
+      "client": 366,
+      "scroll": 366,
+      "paragraphs": [
+        {
+          "text": "Paused · Action 2 of 3 · Hydrated",
+          "font": 16,
+          "client": 339,
+          "scroll": 339
+        },
+        {
+          "text": "Supported action position.",
+          "font": 16,
+          "client": 339,
+          "scroll": 339
+        },
+        {
+          "text": "Previous and Next hold the full action on the specimen. Resume continues from that action. Escape ends the review.",
+          "font": 16,
+          "client": 339,
+          "scroll": 339
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Resume replay",
+          "height": 44,
+          "width": 165.609375,
+          "font": 16
+        },
+        {
+          "text": "Previous action",
+          "height": 44,
+          "width": 165.609375,
+          "font": 16
+        },
+        {
+          "text": "Next action",
+          "height": 44,
+          "width": 165.609375,
+          "font": 16
+        },
+        {
+          "text": "Stop replay",
+          "height": 44,
+          "width": 165.609375,
+          "font": 16
+        }
+      ]
+    },
+    "phone-reduced-metrics.json": {
+      "width": 300.40625,
+      "client": 296,
+      "scroll": 296,
+      "paragraphs": [
+        {
+          "text": "Paused · Action 2 of 3 · Hydrated",
+          "font": 16,
+          "client": 269,
+          "scroll": 269
+        },
+        {
+          "text": "Supported action position.",
+          "font": 16,
+          "client": 269,
+          "scroll": 269
+        },
+        {
+          "text": "Previous and Next hold the full action on the specimen. Resume continues from that action. Escape ends the review.",
+          "font": 16,
+          "client": 269,
+          "scroll": 269
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Resume replay",
+          "height": 67.59375,
+          "width": 130.609375,
+          "font": 16
+        },
+        {
+          "text": "Previous action",
+          "height": 67.59375,
+          "width": 130.609375,
+          "font": 16
+        },
+        {
+          "text": "Next action",
+          "height": 44,
+          "width": 130.609375,
+          "font": 16
+        },
+        {
+          "text": "Stop replay",
+          "height": 44,
+          "width": 130.609375,
+          "font": 16
+        }
+      ]
+    }
+  },
+  "scopedWhitespace": true,
+  "baselineHead": "21b719454f295c4e4f677b0c804e1b44254a5383",
+  "finalHead": "2d91f012e40567acb51a2c7147d4af7cb4f6c76e",
+  "concurrentOwnedCommits": "",
+  "stagedNamesUnchanged": true,
+  "stagedNames": "",
+  "scopedStatus": "M desktop/web-app/public/stem_lab/stem_tool_dissection.js\n M stem_lab/stem_tool_dissection.js\n?? tests/dissection_replay_contact.test.js\n?? tests/e2e/dissection-replay-contact.spec.ts",
+  "archived": {
+    "stem_lab/stem_tool_dissection.js": {
+      "sha256": "feb4ed7cac726ab812edd71be1804d06410ef39de437c54f0668d7dab59ba92f",
+      "archive": "edits/source-after.js.gz"
+    },
+    "tests/dissection_replay_contact.test.js": {
+      "sha256": "c389c50f17e5ce6c3af110408136a5bbfe47980a1b577b873a8e5a4ee0a5e6a6",
+      "archive": "edits/contact-unit-after.js.gz"
+    },
+    "tests/e2e/dissection-replay-contact.spec.ts": {
+      "sha256": "0f4b72df0b02d8e274625c8888c1e5b2487137efd5dde5a4d7a9e4c98dfeab0e",
+      "archive": "edits/browser-after.ts.gz"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "sha": "fe7edad35915260e8bf8389c99804c6375ce6657d30b1f89a7d3da6ec4670fcb",
+  "bytes": 2401918,
+  "unit": {
+    "passed": 36,
+    "files": 4
+  },
+  "browser": {
+    "startTime": "2026-10-10T03:38:35.197Z",
+    "duration": 64666.64,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "english": {
+    "keys": 29,
+    "copies": 4
+  },
+  "staged": [],
+  "diffCheck": "passed",
+  "feature": "Great Barrier Reef: official geographic outlines, six regional approaches, highlighted reef footprints, camera-aware scale bar and notebook restoration",
+  "source": "https://www.arcgis.com/home/item.html?id=816f4d747cd94d84acfd924b27f581d8",
+  "asset": {
+    "features": 4977,
+    "bytes": 1928774,
+    "sha": "66792a9290278c14131d4cf0371eac4967e5a382d8906aeee3e6412c5f154bed"
+  }
+}

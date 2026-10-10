@@ -1,0 +1,18 @@
+{
+  "beforeSha256": "b0251862f75ab2de31ca16daeb1bdd30ec3773dae0f1ae2715a2dcb2cb96eed1",
+  "afterSha256": "b6a59c6f698eadcce977e4e8ba598c0a5badb76350928b3802cc88f4c1eeb5c2",
+  "changes": [
+    {
+      "from": "  function UniverseFlightPairView(props) {",
+      "to": "  function UniverseFlightPairGuidance(props) {\n    var h=props.React.createElement,label=props.label;\n    var directions={right:'Look right',left:'Look left',up:'Look up',down:'Look down','upper-right':'Look upper right','upper-left':'Look upper left','lower-right':'Look lower right','lower-left':'Look lower left',behind:'Turn around'};\n    return h('ul',{className:'uf-pair-guidance','aria-label':label('pair_directions','Paired landmark directions')},props.targets.map(function(item,index){\n      var guide=item.projection,direction=guide.inView?label('pair_center_in_view','Center in view'):(guide.behind?label('target_behind','Behind you')+' · ':'')+label('target_look_'+guide.sector,directions[guide.sector]);\n      return h('li',{key:item.target.id,'data-pair-guide':item.target.id,'data-in-view':guide.inView?'true':'false'},\n        h('span',{className:'uf-pair-guide-name'},(index+1)+' · '+item.target.name),\n        h('span',{className:'uf-pair-guide-status'},\n          !guide.inView&&guide.sector!=='behind'&&h('svg',{className:'uf-pair-guide-arrow',viewBox:'0 0 24 24','aria-hidden':'true',focusable:'false',style:{transform:'rotate('+guide.arrowDeg+'deg)'}},h('path',{d:'M5 12h14M13 6l6 6-6 6',fill:'none',stroke:'currentColor',strokeWidth:1.8,strokeLinecap:'round',strokeLinejoin:'round'})),\n          h('span',null,direction)),\n        !guide.inView&&h('span',{className:'uf-pair-guide-angle'},Math.round(guide.angleDeg)+'° '+label('target_from_view','from view center')));\n    }));\n  }\n\n  function UniverseFlightPairView(props) {"
+    },
+    {
+      "from": "          h('p',{className:'uf-pair-names'},props.targets.map(function(target,index){return (index+1)+' · '+target.name;}).join(' / ')),",
+      "to": "          h(UniverseFlightPairGuidance,{React:React,label:label,targets:targets}),"
+    },
+    {
+      "from": "  [data-universe-tool] .uf-pair-view .uf-pair-names{font-size:10px;color:#c5d9e6;}",
+      "to": "  [data-universe-tool] .uf-pair-view .uf-pair-names{font-size:10px;color:#c5d9e6;}\n  [data-universe-tool] .uf-pair-guidance{display:grid;gap:6px;list-style:none;margin:6px 0;padding:0;}\n  [data-universe-tool] .uf-pair-guidance li{padding:6px 7px;border:1px solid #466975;border-radius:6px;background:#102b38;min-width:0;}\n  [data-universe-tool] .uf-pair-guide-name{display:block;font-size:10px;line-height:1.4;color:#e5fff8;overflow-wrap:anywhere;}\n  [data-universe-tool] .uf-pair-guide-status{display:flex;align-items:center;gap:5px;margin-top:3px;font-size:10px;line-height:1.4;color:#bde6dd;}\n  [data-universe-tool] .uf-pair-guide-arrow{width:16px;height:16px;flex:0 0 16px;}\n  [data-universe-tool] .uf-pair-guide-angle{display:block;margin-top:2px;font-size:10px;line-height:1.4;color:#c5d9e6;font-variant-numeric:tabular-nums;}\n  [data-universe-tool] .uf-pair-guidance li[data-in-view=false]{border-color:#97815f;}\n  [data-universe-tool] .uf-pair-guidance li[data-in-view=false] .uf-pair-guide-status{color:#ffe3af;}\n  @media(forced-colors:active){[data-universe-tool] .uf-pair-guidance li{background:Canvas;border-color:CanvasText;}[data-universe-tool] .uf-pair-guidance span{color:CanvasText!important;}}"
+    }
+  ]
+}

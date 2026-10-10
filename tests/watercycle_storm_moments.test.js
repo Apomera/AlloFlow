@@ -128,11 +128,16 @@ afterAll(() => {
   }, null, 2) + '\n');
 });
 const sourceTrees = new WeakMap();
+const sourceInitializers = new WeakMap();
+const sourceRenderers = new WeakMap();
 function sourceTree(source) {
   if (!sourceTrees.has(source)) sourceTrees.set(source, parse(source.text, { ecmaVersion: 'latest' }));
   return sourceTrees.get(source);
 }
 function initializer(source, name) {
+  if (!sourceInitializers.has(source)) sourceInitializers.set(source, new Map());
+  const cached = sourceInitializers.get(source);
+  if (cached.has(name)) return cached.get(name);
   let result;
   walkNodes(sourceTree(source), node => {
     if (node.type !== 'VariableDeclarator' || !node.id || node.id.name !== name) return;
@@ -140,6 +145,7 @@ function initializer(source, name) {
     result = source.text.slice(node.init.start, node.init.end);
   });
   if (!result) throw new Error('Missing actual ' + name + ' in ' + source.path);
+  cached.set(name, result);
   return result;
 }
 function loadKernel(source) {
@@ -188,6 +194,7 @@ function withReadings(context, matureActivity, weakeningActivity, matureGround, 
   return freeze(resign(changed));
 }
 function rendererSource(source) {
+  if (sourceRenderers.has(source)) return sourceRenderers.get(source);
   let result;
   walkNodes(sourceTree(source), node => {
     if (node.type !== 'FunctionDeclaration' || node.id.name !== 'renderStormMoments') return;
@@ -195,6 +202,7 @@ function rendererSource(source) {
     result = source.text.slice(node.start, node.end);
   });
   if (!result) throw new Error('Missing actual Storm moments renderer');
+  sourceRenderers.set(source, result);
   return result;
 }
 function renderedNodes(tree, predicate) {
@@ -213,7 +221,7 @@ function renderedNode(tree, predicate) {
 }
 function renderedText(tree) {
   if (typeof tree === 'string' || typeof tree === 'number') return String(tree);
-  return tree && typeof tree === 'object' ? tree.children.map(renderedText).join(' ') : '';
+  return tree && typeof tree === 'object' ? tree.children.map(renderedText).join(' ').replace(/\s+/g, ' ').trim() : '';
 }
 // Execute the shipped renderer and its real callbacks. This small h adapter
 // records the HTML tree; native focus, layout and input behavior have separate
@@ -645,8 +653,8 @@ describe('Storm moments: actual renderer and isolated learner callbacks', () => 
       expect(selector.children.map(node => node.props.value)).toEqual(METRICS);
       const context = runtime.helper.build(harness.state().precipHunt);
       context.rows.forEach(row => {
-        const card = renderedNode(tree, node => node.props['data-sm-card'] === row.id);
-        const readout = renderedNode(card, node => node.props['data-sm-readout'] === 'ground');
+        const lane = renderedNode(tree, node => node.props['data-sm-lane'] === 'ground');
+        const readout = renderedNode(lane, node => node.props['data-sm-readout'] === 'ground' && node.props['data-sm-stage'] === row.id);
         expect(readout.props['data-sm-value']).toBe(String(row.accumulation[metric]));
         expect(renderedText(readout)).toContain(row.accumulation[metric] + ' / 100');
       });
@@ -692,7 +700,7 @@ describe('Storm moments: actual renderer and isolated learner callbacks', () => 
       harness.click('data-sm-answer', 'split');
       const feedback = renderedNode(harness.render(), node => node.props['data-sm-result']);
       expect(feedback.props['data-sm-result']).toBe('supported');
-      expect(renderedText(feedback)).toContain('Both runoff readings are zero; this setup shows no modeled response on that track.');
+      expect(renderedText(feedback)).toContain('Both runoff readings are 0. These rounded readings show no displayed change on this track.');
     });
   });
   it('disables native answer buttons and labels missing model values as unavailable', () => {
@@ -711,18 +719,110 @@ describe('Storm moments: actual renderer and isolated learner callbacks', () => 
   it.each(['rain', 'snow', 'sleet', 'freezing-rain', 'hail', 'mix', 'virga', 'clear'])('shows actual %s phase, arrival and lightning evidence alongside hidden schematic icons', phase => {
     shipped.forEach(runtime => {
       const harness = rendererHarness(runtime, { precipHunt: { ...configFor(runtime.kernel, phase), stormTime: 91 } });
-      const tree = harness.render(), context = runtime.helper.build(harness.state().precipHunt);
+      const context = runtime.helper.build(harness.state().precipHunt);
       context.rows.forEach(row => {
-        const card = renderedNode(tree, node => node.props['data-sm-card'] === row.id);
-        const picture = renderedNode(card, node => node.tag === 'svg');
+        harness.click('data-sm-select', row.id);
+        const tree = harness.render(), detail = renderedNode(tree, node => node.props.id === 'wcStormMomentDetail');
+        const picture = renderedNode(tree, node => node.props['data-sm-picture']);
+        expect(picture.props['data-sm-picture']).toBe(row.id);
         expect(picture.props['data-sm-phase']).toBe(phase); expect(picture.props['aria-hidden']).toBe(true);
-        expect(picture.props.focusable).toBe('false'); expect(renderedText(card)).toContain(row.phaseLabel);
-        expect(renderedText(card)).toContain(row.reachesGround ? 'Reaches the surface' : phase === 'virga' ? 'Evaporates aloft' : 'No surface precipitation');
+        expect(picture.props.focusable).toBe('false'); expect(renderedText(detail)).toContain(row.phaseLabel);
+        expect(renderedText(detail)).toContain(row.reachesGround ? 'Reaches the surface' : phase === 'virga' ? 'Evaporates aloft' : 'No surface precipitation');
         expect(renderedNodes(picture, node => node.props['data-sm-cue'] === 'lightning-available')).toHaveLength(row.lightningEligible ? 1 : 0);
       });
+      const tree = harness.render();
       expect(renderedText(tree)).toContain('The icons are schematic.');
       expect(renderedText(tree)).toContain('do not record earlier weather edits');
       expect(renderedText(tree)).toContain('do not measure water depth, discharge or hazard');
+    });
+  });
+});
+
+describe('Storm moments: aligned comparison signals', () => {
+  it.each(METRICS)('aligns all three actual activity and %s readings without changing their scales', metric => {
+    shipped.forEach(runtime => {
+      const harness = rendererHarness(runtime); harness.metric(metric);
+      const context = runtime.helper.build(harness.state().precipHunt), tree = harness.render();
+      expect(renderedNodes(tree, node => node.props['data-sm-lane']).map(node => node.props['data-sm-lane'])).toEqual(['activity', 'ground']);
+      ['activity', 'ground'].forEach(kind => {
+        const lane = renderedNode(tree, node => node.props['data-sm-lane'] === kind);
+        const columns = renderedNodes(lane, node => node.props['data-sm-readout'] === kind);
+        expect(columns.map(node => node.props['data-sm-stage'])).toEqual(STAGES);
+        columns.forEach((column, index) => {
+          const row = context.rows[index], value = kind === 'activity' ? row.intensity : row.accumulation[metric];
+          expect(column.props['data-sm-value']).toBe(String(value));
+          expect(renderedText(column)).toContain(row.label); expect(renderedText(column)).toContain(value + ' / 100');
+          const bar = renderedNode(lane, node => node.props['data-sm-bar'] === kind && node.props['data-sm-stage'] === row.id);
+          expect(bar.props.style.height).toBe(value + '%');
+        });
+      });
+      const scaleNote = renderedNode(tree, node => node.props.id === 'wcStormMomentScale');
+      expect(renderedText(scaleNote)).toContain('Each track has its own qualitative 0–100 scale.');
+      expect(renderedText(scaleNote)).toContain('equal numbers across tracks do not mean equal water amounts.');
+    });
+  });
+  it.each(STAGES)('keeps the selected %s columns, native button and single scene in agreement', stage => {
+    shipped.forEach(runtime => {
+      const harness = rendererHarness(runtime), before = withoutStormChoices(harness.state());
+      harness.click('data-sm-select', stage);
+      const tree = harness.render(), context = runtime.helper.build(harness.state().precipHunt), row = context.rows[STAGES.indexOf(stage)];
+      ['activity', 'ground'].forEach(kind => {
+        const lane = renderedNode(tree, node => node.props['data-sm-lane'] === kind);
+        const selected = renderedNodes(lane, node => node.props['data-sm-readout'] === kind && node.props['data-selected'] === 'true');
+        expect(selected.map(node => node.props['data-sm-stage'])).toEqual([stage]);
+      });
+      const buttons = renderedNodes(tree, node => node.props['data-sm-select']);
+      expect(buttons).toHaveLength(3);
+      buttons.forEach(button => { expect(button.tag).toBe('button'); expect(button.props.type).toBe('button'); expect(button.props['aria-controls']).toBe('wcStormMomentDetail'); });
+      expect(buttons.filter(button => button.props['aria-pressed']).map(button => button.props['data-sm-select'])).toEqual([stage]);
+      expect(renderedNodes(tree, node => node.props['data-sm-picture']).map(node => node.props['data-sm-picture'])).toEqual([stage]);
+      const detail = renderedNode(tree, node => node.props.id === 'wcStormMomentDetail');
+      expect(renderedText(detail)).toContain(row.intensity + ' / 100');
+      expect(renderedText(detail)).toContain(row.accumulation.puddling + ' / 100');
+      expect(withoutStormChoices(harness.state())).toEqual(before); expect(harness.focusCalls.at(-1)).toBe('wcStormMomentDetailTitle');
+    });
+  });
+  it.each(['clear', 'virga'])('renders zero %s ground readings as actual zero-height bars', phase => {
+    shipped.forEach(runtime => {
+      const harness = rendererHarness(runtime, { precipHunt: configFor(runtime.kernel, phase) }), tree = harness.render();
+      const ground = renderedNode(tree, node => node.props['data-sm-lane'] === 'ground');
+      const readouts = renderedNodes(ground, node => node.props['data-sm-readout'] === 'ground');
+      expect(readouts).toHaveLength(3);
+      readouts.forEach(node => { expect(node.props['data-sm-value']).toBe('0'); expect(renderedText(node)).toContain('0 / 100'); });
+      const bars = renderedNodes(ground, node => node.props['data-sm-bar'] === 'ground');
+      expect(bars).toHaveLength(3); bars.forEach(node => expect(node.props.style.height).toBe('0%'));
+      if (phase === 'clear') renderedNodes(tree, node => node.props['data-sm-bar'] === 'activity').forEach(node => expect(node.props.style.height).toBe('0%'));
+      else expect(renderedNodes(tree, node => node.props['data-sm-bar'] === 'activity').some(node => parseFloat(node.props.style.height) > 0)).toBe(true);
+    });
+  });
+  it('keeps an inactive response track at zero when falling activity is positive', () => {
+    shipped.forEach(runtime => {
+      const harness = rendererHarness(runtime); harness.metric('snow');
+      const tree = harness.render(), activity = renderedNodes(tree, node => node.props['data-sm-bar'] === 'activity');
+      expect(activity).toHaveLength(3); activity.forEach(node => expect(parseFloat(node.props.style.height)).toBeGreaterThan(0));
+      const ground = renderedNodes(tree, node => node.props['data-sm-bar'] === 'ground');
+      expect(ground).toHaveLength(3); ground.forEach(node => expect(node.props.style.height).toBe('0%'));
+    });
+  });
+  it('keeps missing evidence distinct from a measured zero and disables interpretation', () => {
+    shipped.forEach(runtime => {
+      const helper = loadHelper(runtime.source, runtime.kernel, config => {
+        const actual = runtime.kernel.compute(config);
+        if (config.stormTime !== 52) return actual;
+        return { ...actual, relativeIntensity: null,
+          lifecycle: { ...actual.lifecycle, accumulation: { ...actual.lifecycle.accumulation, puddling: null } } };
+      });
+      const harness = rendererHarness(runtime, {}, helper), tree = harness.render();
+      ['activity', 'ground'].forEach(kind => {
+        const lane = renderedNode(tree, node => node.props['data-sm-lane'] === kind);
+        const middle = renderedNode(lane, node => node.props['data-sm-readout'] === kind && node.props['data-sm-stage'] === 'mature');
+        expect(middle.props['data-sm-value']).toBe('unavailable'); expect(renderedText(middle)).toContain('Unavailable');
+        expect(renderedNodes(lane, node => node.props['data-sm-bar'] === kind && node.props['data-sm-stage'] === 'mature')).toHaveLength(0);
+        expect(renderedNodes(lane, node => node.props['data-sm-bar'] === kind)).toHaveLength(2);
+      });
+      expect(renderedNode(tree, node => node.props['data-sm-result']).props['data-sm-result']).toBe('unavailable');
+      renderedNodes(tree, node => node.props['data-sm-answer']).forEach(button => expect(button.props.disabled).toBe(true));
+      expect(harness.calls).toEqual([]);
     });
   });
 });

@@ -1,0 +1,2161 @@
+{
+  "expectedHash": "f29310e7d0bd78fdbb444e52ea36d6abae393ff268960aa956ae200dd139850a",
+  "startHash": "f29310e7d0bd78fdbb444e52ea36d6abae393ff268960aa956ae200dd139850a",
+  "mirrorHash": "f29310e7d0bd78fdbb444e52ea36d6abae393ff268960aa956ae200dd139850a",
+  "phase": "candidate",
+  "screenshots": [
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\watercycle-next-visual\\candidate-f29310e7d0\\cloud-end-inspector-1280.png",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\watercycle-next-visual\\candidate-f29310e7d0\\cloud-end-main-profile-1280.png",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\watercycle-next-visual\\candidate-f29310e7d0\\cloud-end-inspector-390.png",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\watercycle-next-visual\\candidate-f29310e7d0\\cloud-end-main-profile-390.png",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\watercycle-next-visual\\candidate-f29310e7d0\\cloud-end-inspector-320.png",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\watercycle-next-visual\\candidate-f29310e7d0\\close-crossings-inspector-1280.png",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\watercycle-next-visual\\candidate-f29310e7d0\\close-crossings-inspector-390.png",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\watercycle-next-visual\\candidate-f29310e7d0\\close-crossings-inspector-320.png"
+  ],
+  "layouts": [
+    {
+      "name": "cloud-end-inspector-1280",
+      "width": 1280,
+      "bounds": {
+        "x": 790.4375,
+        "y": -2469.546875,
+        "width": 336.5625,
+        "height": 1713.015625,
+        "top": -2469.546875,
+        "right": 1127,
+        "bottom": -756.53125,
+        "left": 790.4375
+      },
+      "documentOverflow": false,
+      "text": "Inspect the falling particle\n\nChoose a level to compare its air temperature with the modeled particle cue. Below-freezing air alone does not establish that a particle is solid.\n\nAir temperature through the column\n\nSelected: B · Middle air\n\nBelow 0°C\nAbove 0°C\nA\nCloud\nB\nMiddle\nC\nSurface\n−40°C\n0°C\n+40°C\n\nAir crosses 0°C once (warming).\n\nDashed line: air passes through 0°C.\nA\nCloud base\n-1 °C\nIce and liquid: mixed cue\nInspect level\nB\nMiddle air\n25 °C\nLiquid raindrop\nSelected level\nC\nNear surface\n35 °C\nLiquid raindrop\nInspect level\nMiddle air: read the two cues\nAir temperature\n25 °C\nModeled particle cue\nLiquid raindrop\n\nThe model shows a liquid drop at this level.\n\nIllustrated path: Snow → melting layer → rain\n\nAt the surface\n\nLiquid raindrops reach the ground in this setup.\n\nCheck the particle cue\n\nA, B, and C identify the three air levels. Their positions are schematic, not measured altitudes or fall times. This graph follows the air temperature; particle shapes show the model’s separate state cues. Crossing 0°C does not guarantee an instantaneous change of state.",
+      "attrs": {
+        "id": "wcThermalLayerPanel",
+        "class": "wc-thermal-layer-inspector",
+        "data-tl-inspector": "three-level",
+        "open": ""
+      },
+      "elements": [
+        {
+          "tag": "SUMMARY",
+          "text": "Inspect the falling particle",
+          "attrs": {
+            "id": "wcThermalLayerSummary"
+          },
+          "bounds": {
+            "x": 791.4375,
+            "y": -2468.546875,
+            "width": 334.5625,
+            "height": 48,
+            "top": -2468.546875,
+            "right": 1126,
+            "bottom": -2420.546875,
+            "left": 791.4375
+          },
+          "font": "15px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "A\nCloud base\n-1 °C\nIce and liquid: mixed cue\nInspect level",
+          "attrs": {
+            "type": "button",
+            "class": "wc-tl-node",
+            "data-tl-select": "cloud",
+            "data-tl-temperature": "-1",
+            "data-tl-phase": "mix",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerDetail"
+          },
+          "bounds": {
+            "x": 803.4375,
+            "y": -1858.203125,
+            "width": 310.5625,
+            "height": 123,
+            "top": -1858.203125,
+            "right": 1114,
+            "bottom": -1735.203125,
+            "left": 803.4375
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "B\nMiddle air\n25 °C\nLiquid raindrop\nSelected level",
+          "attrs": {
+            "type": "button",
+            "class": "wc-tl-node",
+            "data-tl-select": "middle",
+            "data-tl-temperature": "25",
+            "data-tl-phase": "rain",
+            "aria-pressed": "true",
+            "aria-controls": "wcThermalLayerDetail"
+          },
+          "bounds": {
+            "x": 803.4375,
+            "y": -1727.203125,
+            "width": 310.5625,
+            "height": 123,
+            "top": -1727.203125,
+            "right": 1114,
+            "bottom": -1604.203125,
+            "left": 803.4375
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "C\nNear surface\n35 °C\nLiquid raindrop\nInspect level",
+          "attrs": {
+            "type": "button",
+            "class": "wc-tl-node",
+            "data-tl-select": "surface",
+            "data-tl-temperature": "35",
+            "data-tl-phase": "rain",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerDetail"
+          },
+          "bounds": {
+            "x": 803.4375,
+            "y": -1596.203125,
+            "width": 310.5625,
+            "height": 123,
+            "top": -1596.203125,
+            "right": 1114,
+            "bottom": -1473.203125,
+            "left": 803.4375
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "DT",
+          "text": "Air temperature",
+          "attrs": {},
+          "bounds": {
+            "x": 827.4375,
+            "y": -1371.203125,
+            "width": 262.5625,
+            "height": 18.1875,
+            "top": -1371.203125,
+            "right": 1090,
+            "bottom": -1353.015625,
+            "left": 827.4375
+          },
+          "font": "13px"
+        },
+        {
+          "tag": "DD",
+          "text": "25 °C",
+          "attrs": {
+            "data-tl-air-reading": "1"
+          },
+          "bounds": {
+            "x": 827.4375,
+            "y": -1349.015625,
+            "width": 262.5625,
+            "height": 22.5,
+            "top": -1349.015625,
+            "right": 1090,
+            "bottom": -1326.515625,
+            "left": 827.4375
+          },
+          "font": "15px"
+        },
+        {
+          "tag": "DT",
+          "text": "Modeled particle cue",
+          "attrs": {},
+          "bounds": {
+            "x": 827.4375,
+            "y": -1294.515625,
+            "width": 262.5625,
+            "height": 18.1875,
+            "top": -1294.515625,
+            "right": 1090,
+            "bottom": -1276.328125,
+            "left": 827.4375
+          },
+          "font": "13px"
+        },
+        {
+          "tag": "DD",
+          "text": "Liquid raindrop",
+          "attrs": {
+            "data-tl-particle-reading": "1"
+          },
+          "bounds": {
+            "x": 827.4375,
+            "y": -1272.328125,
+            "width": 262.5625,
+            "height": 22.5,
+            "top": -1272.328125,
+            "right": 1090,
+            "bottom": -1249.828125,
+            "left": 827.4375
+          },
+          "font": "15px"
+        },
+        {
+          "tag": "SUMMARY",
+          "text": "Check the particle cue",
+          "attrs": {},
+          "bounds": {
+            "x": 816.4375,
+            "y": -978.875,
+            "width": 284.5625,
+            "height": 44,
+            "top": -978.875,
+            "right": 1101,
+            "bottom": -934.875,
+            "left": 816.4375
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "solid",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 816.4375,
+            "y": -880.5,
+            "width": 284.5625,
+            "height": 44,
+            "top": -880.5,
+            "right": 1101,
+            "bottom": -836.5,
+            "left": 816.4375
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "liquid",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 816.4375,
+            "y": -828.5,
+            "width": 284.5625,
+            "height": 44,
+            "top": -828.5,
+            "right": 1101,
+            "bottom": -784.5,
+            "left": 816.4375
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "mixed",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 816.4375,
+            "y": -776.5,
+            "width": 284.5625,
+            "height": 44,
+            "top": -776.5,
+            "right": 1101,
+            "bottom": -732.5,
+            "left": 816.4375
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "virga",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 816.4375,
+            "y": -724.5,
+            "width": 284.5625,
+            "height": 44,
+            "top": -724.5,
+            "right": 1101,
+            "bottom": -680.5,
+            "left": 816.4375
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "none",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 816.4375,
+            "y": -672.5,
+            "width": 284.5625,
+            "height": 44,
+            "top": -672.5,
+            "right": 1101,
+            "bottom": -628.5,
+            "left": 816.4375
+          },
+          "font": "14px"
+        }
+      ],
+      "svg": {
+        "viewBox": "0 0 240 228",
+        "ariaLabel": null,
+        "markup": "<svg class=\"wc-tl-plot\" viewBox=\"0 0 240 228\" preserveAspectRatio=\"none\" aria-hidden=\"true\" focusable=\"false\" data-tl-extent=\"40\"><rect class=\"wc-tl-cold\" x=\"16\" y=\"10\" width=\"104\" height=\"206\" rx=\"8\"></rect><rect class=\"wc-tl-warm\" x=\"120\" y=\"10\" width=\"104\" height=\"206\" rx=\"8\"></rect><path class=\"wc-tl-hatch\" d=\"M28 14v198\"></path><path class=\"wc-tl-hatch\" d=\"M52 14v198\"></path><path class=\"wc-tl-hatch\" d=\"M76 14v198\"></path><path class=\"wc-tl-hatch\" d=\"M100 14v198\"></path><line class=\"wc-tl-zero\" data-tl-boundary=\"zero\" x1=\"120\" y1=\"10\" x2=\"120\" y2=\"216\"></line><line class=\"wc-tl-guide\" data-selected=\"false\" x1=\"16\" y1=\"22\" x2=\"224\" y2=\"22\"></line><line class=\"wc-tl-guide\" data-selected=\"true\" x1=\"16\" y1=\"122.10000000000001\" x2=\"224\" y2=\"122.10000000000001\"></line><line class=\"wc-tl-guide\" data-selected=\"false\" x1=\"16\" y1=\"204\" x2=\"224\" y2=\"204\"></line><g data-tl-crossing=\"warming\" data-tl-progress=\"0.021153846153846155\"><line class=\"wc-tl-cross\" x1=\"16\" y1=\"25.85\" x2=\"224\" y2=\"25.85\"></line><rect class=\"wc-tl-cross\" x=\"116\" y=\"21.85\" width=\"8\" height=\"8\"></rect></g><path class=\"wc-tl-path\" d=\"M117.39999999999999 22 L185 122.10000000000001 L211 204\"></path><circle class=\"wc-tl-point\" data-tl-point=\"cloud\" data-tl-marker=\"cloud\" data-tl-temperature=\"-1\" data-tl-progress=\"0\" data-selected=\"false\" cx=\"117.39999999999999\" cy=\"22\" r=\"5\"></circle><circle class=\"wc-tl-point\" data-tl-point=\"middle\" data-tl-marker=\"middle\" data-tl-temperature=\"25\" data-tl-progress=\"0.55\" data-selected=\"true\" cx=\"185\" cy=\"122.10000000000001\" r=\"5\"></circle><circle class=\"wc-tl-point\" data-tl-point=\"surface\" data-tl-marker=\"surface\" data-tl-temperature=\"35\" data-tl-progress=\"1\" data-selected=\"false\" cx=\"211\" cy=\"204\" r=\"5\"></circle><circle class=\"wc-tl-selected-ring\" cx=\"185\" cy=\"122.10000000000001\" r=\"11\"></circle></svg>"
+      }
+    },
+    {
+      "name": "cloud-end-main-profile-1280",
+      "width": 1280,
+      "bounds": {
+        "x": 790.4375,
+        "y": 219.015625,
+        "width": 336.5625,
+        "height": 562.4375,
+        "top": 219.015625,
+        "right": 1127,
+        "bottom": 781.453125,
+        "left": 790.4375
+      },
+      "documentOverflow": false,
+      "text": "Read the air column\nCloud ↓ surface\nCloud\n-1°C\nMiddle\n+25°C\nSurface\n+35°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n1\n\nAir crosses 0°C once (warming).\n\n1\nInto warmer air: below 0°C to above 0°C.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nCompare air with particle state",
+      "attrs": {
+        "class": "wc-precip-profile-editor wc-air-profile",
+        "data-temperature-profile-editor": "three-point",
+        "data-air-crossings": "1",
+        "data-air-touches": "0"
+      },
+      "elements": [
+        {
+          "tag": "DT",
+          "text": "Cloud",
+          "attrs": {},
+          "bounds": {
+            "x": 809.4375,
+            "y": 273.015625,
+            "width": 88.1875,
+            "height": 16.5,
+            "top": 273.015625,
+            "right": 897.625,
+            "bottom": 289.515625,
+            "left": 809.4375
+          },
+          "font": "11px"
+        },
+        {
+          "tag": "DD",
+          "text": "-1°C",
+          "attrs": {},
+          "bounds": {
+            "x": 809.4375,
+            "y": 292.515625,
+            "width": 88.1875,
+            "height": 19.5,
+            "top": 292.515625,
+            "right": 897.625,
+            "bottom": 312.015625,
+            "left": 809.4375
+          },
+          "font": "13px"
+        },
+        {
+          "tag": "DT",
+          "text": "Middle",
+          "attrs": {},
+          "bounds": {
+            "x": 914.625,
+            "y": 273.015625,
+            "width": 88.1875,
+            "height": 16.5,
+            "top": 273.015625,
+            "right": 1002.8125,
+            "bottom": 289.515625,
+            "left": 914.625
+          },
+          "font": "11px"
+        },
+        {
+          "tag": "DD",
+          "text": "+25°C",
+          "attrs": {},
+          "bounds": {
+            "x": 914.625,
+            "y": 292.515625,
+            "width": 88.1875,
+            "height": 19.5,
+            "top": 292.515625,
+            "right": 1002.8125,
+            "bottom": 312.015625,
+            "left": 914.625
+          },
+          "font": "13px"
+        },
+        {
+          "tag": "DT",
+          "text": "Surface",
+          "attrs": {},
+          "bounds": {
+            "x": 1019.8125,
+            "y": 273.015625,
+            "width": 88.1875,
+            "height": 16.5,
+            "top": 273.015625,
+            "right": 1108,
+            "bottom": 289.515625,
+            "left": 1019.8125
+          },
+          "font": "11px"
+        },
+        {
+          "tag": "DD",
+          "text": "+35°C",
+          "attrs": {},
+          "bounds": {
+            "x": 1019.8125,
+            "y": 292.515625,
+            "width": 88.1875,
+            "height": 19.5,
+            "top": 292.515625,
+            "right": 1108,
+            "bottom": 312.015625,
+            "left": 1019.8125
+          },
+          "font": "13px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Compare air with particle state",
+          "attrs": {
+            "type": "button",
+            "class": "wc-air-inspect-link",
+            "aria-controls": "wcThermalLayerPanel"
+          },
+          "bounds": {
+            "x": 803.4375,
+            "y": 726.453125,
+            "width": 310.5625,
+            "height": 42,
+            "top": 726.453125,
+            "right": 1114,
+            "bottom": 768.453125,
+            "left": 803.4375
+          },
+          "font": "12px"
+        }
+      ],
+      "svg": {
+        "viewBox": "0 0 260 208",
+        "ariaLabel": "Cloud base: -1°C, Middle atmosphere: +25°C, Surface: +35°C. Air crosses 0°C once (warming). Horizontal axis: air temperature. Vertical positions are schematic.",
+        "markup": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 208\" role=\"img\" aria-label=\"Cloud base: -1°C, Middle atmosphere: +25°C, Surface: +35°C. Air crosses 0°C once (warming). Horizontal axis: air temperature. Vertical positions are schematic.\" preserveAspectRatio=\"xMidYMid meet\"><rect class=\"wc-profile-cold-zone\" x=\"58\" y=\"30\" width=\"85\" height=\"154\" rx=\"4\"></rect><rect class=\"wc-profile-warm-zone\" x=\"143\" y=\"30\" width=\"85\" height=\"154\" rx=\"4\"></rect><g><line class=\"wc-profile-grid-line\" x1=\"70.14285714285714\" x2=\"70.14285714285714\" y1=\"30\" y2=\"184\"></line><text class=\"wc-profile-tick-label\" x=\"70.14285714285714\" y=\"201\" text-anchor=\"middle\">-30°C</text></g><g><line class=\"wc-profile-freezing-line\" x1=\"143\" x2=\"143\" y1=\"30\" y2=\"184\"></line><text class=\"wc-profile-tick-label\" x=\"143\" y=\"201\" text-anchor=\"middle\">0°C</text></g><g><line class=\"wc-profile-grid-line\" x1=\"215.85714285714286\" x2=\"215.85714285714286\" y1=\"30\" y2=\"184\"></line><text class=\"wc-profile-tick-label\" x=\"215.85714285714286\" y=\"201\" text-anchor=\"middle\">+30°C</text></g><text class=\"wc-profile-zone-label\" x=\"64\" y=\"19\">COLDER</text><text class=\"wc-profile-zone-label\" x=\"221\" y=\"19\" text-anchor=\"end\">WARMER</text><g><line class=\"wc-profile-level-line\" x1=\"58\" x2=\"228\" y1=\"38\" y2=\"38\"></line><text class=\"wc-profile-level-label\" x=\"1\" y=\"42\">Cloud</text></g><g><line class=\"wc-profile-level-line\" x1=\"58\" x2=\"228\" y1=\"115\" y2=\"115\"></line><text class=\"wc-profile-level-label\" x=\"1\" y=\"119\">Middle</text></g><g><line class=\"wc-profile-level-line\" x1=\"58\" x2=\"228\" y1=\"178\" y2=\"178\"></line><text class=\"wc-profile-level-label\" x=\"1\" y=\"182\">Surface</text></g><path class=\"wc-profile-temperature-line\" data-air-temperature-path=\"true\" d=\"M140.57142857142856 38 L203.7142857142857 115 L228 178\"></path><circle class=\"wc-profile-temperature-point\" data-air-point=\"0\" cx=\"140.57142857142856\" cy=\"38\" r=\"4\"></circle><circle class=\"wc-profile-temperature-point\" data-air-point=\"1\" cx=\"203.7142857142857\" cy=\"115\" r=\"4\"></circle><circle class=\"wc-profile-temperature-point\" data-air-point=\"2\" cx=\"228\" cy=\"178\" r=\"4\"></circle><g data-air-crossing=\"warming\" data-air-crossing-progress=\"0.021153846153846155\"><path class=\"wc-air-crossing-leader\" d=\"M147 40.96153846153846H230L238 46\"></path><circle class=\"wc-profile-crossing-point\" cx=\"143\" cy=\"40.96153846153846\" r=\"3.5\"></circle><circle class=\"wc-air-crossing-badge\" data-air-badge=\"0\" cx=\"246\" cy=\"46\" r=\"8\"></circle><text class=\"wc-air-crossing-number\" x=\"246\" y=\"49.5\" text-anchor=\"middle\">1</text></g></svg>"
+      }
+    },
+    {
+      "name": "cloud-end-inspector-390",
+      "width": 390,
+      "bounds": {
+        "x": 44,
+        "y": -391.578125,
+        "width": 302,
+        "height": 1782.5625,
+        "top": -391.578125,
+        "right": 346,
+        "bottom": 1390.984375,
+        "left": 44
+      },
+      "documentOverflow": false,
+      "text": "Inspect the falling particle\n\nChoose a level to compare its air temperature with the modeled particle cue. Below-freezing air alone does not establish that a particle is solid.\n\nAir temperature through the column\n\nSelected: B · Middle air\n\nBelow 0°C\nAbove 0°C\nA\nCloud\nB\nMiddle\nC\nSurface\n−40°C\n0°C\n+40°C\n\nAir crosses 0°C once (warming).\n\nDashed line: air passes through 0°C.\nA\nCloud base\n-1 °C\nIce and liquid: mixed cue\nInspect level\nB\nMiddle air\n25 °C\nLiquid raindrop\nSelected level\nC\nNear surface\n35 °C\nLiquid raindrop\nInspect level\nMiddle air: read the two cues\nAir temperature\n25 °C\nModeled particle cue\nLiquid raindrop\n\nThe model shows a liquid drop at this level.\n\nIllustrated path: Snow → melting layer → rain\n\nAt the surface\n\nLiquid raindrops reach the ground in this setup.\n\nCheck the particle cue\n\nA, B, and C identify the three air levels. Their positions are schematic, not measured altitudes or fall times. This graph follows the air temperature; particle shapes show the model’s separate state cues. Crossing 0°C does not guarantee an instantaneous change of state.",
+      "attrs": {
+        "id": "wcThermalLayerPanel",
+        "class": "wc-thermal-layer-inspector",
+        "data-tl-inspector": "three-level",
+        "open": ""
+      },
+      "elements": [
+        {
+          "tag": "SUMMARY",
+          "text": "Inspect the falling particle",
+          "attrs": {
+            "id": "wcThermalLayerSummary"
+          },
+          "bounds": {
+            "x": 45,
+            "y": -390.578125,
+            "width": 300,
+            "height": 48,
+            "top": -390.578125,
+            "right": 345,
+            "bottom": -342.578125,
+            "left": 45
+          },
+          "font": "15px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "A\nCloud base\n-1 °C\nIce and liquid: mixed cue\nInspect level",
+          "attrs": {
+            "type": "button",
+            "class": "wc-tl-node",
+            "data-tl-select": "cloud",
+            "data-tl-temperature": "-1",
+            "data-tl-phase": "mix",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerDetail"
+          },
+          "bounds": {
+            "x": 57,
+            "y": 242.15625,
+            "width": 276,
+            "height": 123,
+            "top": 242.15625,
+            "right": 333,
+            "bottom": 365.15625,
+            "left": 57
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "B\nMiddle air\n25 °C\nLiquid raindrop\nSelected level",
+          "attrs": {
+            "type": "button",
+            "class": "wc-tl-node",
+            "data-tl-select": "middle",
+            "data-tl-temperature": "25",
+            "data-tl-phase": "rain",
+            "aria-pressed": "true",
+            "aria-controls": "wcThermalLayerDetail"
+          },
+          "bounds": {
+            "x": 57,
+            "y": 373.15625,
+            "width": 276,
+            "height": 123,
+            "top": 373.15625,
+            "right": 333,
+            "bottom": 496.15625,
+            "left": 57
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "C\nNear surface\n35 °C\nLiquid raindrop\nInspect level",
+          "attrs": {
+            "type": "button",
+            "class": "wc-tl-node",
+            "data-tl-select": "surface",
+            "data-tl-temperature": "35",
+            "data-tl-phase": "rain",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerDetail"
+          },
+          "bounds": {
+            "x": 57,
+            "y": 504.15625,
+            "width": 276,
+            "height": 123,
+            "top": 504.15625,
+            "right": 333,
+            "bottom": 627.15625,
+            "left": 57
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "DT",
+          "text": "Air temperature",
+          "attrs": {},
+          "bounds": {
+            "x": 81,
+            "y": 731.53125,
+            "width": 228,
+            "height": 18.1875,
+            "top": 731.53125,
+            "right": 309,
+            "bottom": 749.71875,
+            "left": 81
+          },
+          "font": "13px"
+        },
+        {
+          "tag": "DD",
+          "text": "25 °C",
+          "attrs": {
+            "data-tl-air-reading": "1"
+          },
+          "bounds": {
+            "x": 81,
+            "y": 753.71875,
+            "width": 228,
+            "height": 22.5,
+            "top": 753.71875,
+            "right": 309,
+            "bottom": 776.21875,
+            "left": 81
+          },
+          "font": "15px"
+        },
+        {
+          "tag": "DT",
+          "text": "Modeled particle cue",
+          "attrs": {},
+          "bounds": {
+            "x": 81,
+            "y": 808.21875,
+            "width": 228,
+            "height": 18.1875,
+            "top": 808.21875,
+            "right": 309,
+            "bottom": 826.40625,
+            "left": 81
+          },
+          "font": "13px"
+        },
+        {
+          "tag": "DD",
+          "text": "Liquid raindrop",
+          "attrs": {
+            "data-tl-particle-reading": "1"
+          },
+          "bounds": {
+            "x": 81,
+            "y": 830.40625,
+            "width": 228,
+            "height": 22.5,
+            "top": 830.40625,
+            "right": 309,
+            "bottom": 852.90625,
+            "left": 81
+          },
+          "font": "15px"
+        },
+        {
+          "tag": "SUMMARY",
+          "text": "Check the particle cue",
+          "attrs": {},
+          "bounds": {
+            "x": 70,
+            "y": 1146.25,
+            "width": 250,
+            "height": 44,
+            "top": 1146.25,
+            "right": 320,
+            "bottom": 1190.25,
+            "left": 70
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "solid",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 70,
+            "y": 1244.625,
+            "width": 250,
+            "height": 44,
+            "top": 1244.625,
+            "right": 320,
+            "bottom": 1288.625,
+            "left": 70
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "liquid",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 70,
+            "y": 1296.625,
+            "width": 250,
+            "height": 44,
+            "top": 1296.625,
+            "right": 320,
+            "bottom": 1340.625,
+            "left": 70
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "mixed",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 70,
+            "y": 1348.625,
+            "width": 250,
+            "height": 44,
+            "top": 1348.625,
+            "right": 320,
+            "bottom": 1392.625,
+            "left": 70
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "virga",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 70,
+            "y": 1400.625,
+            "width": 250,
+            "height": 44,
+            "top": 1400.625,
+            "right": 320,
+            "bottom": 1444.625,
+            "left": 70
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "none",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 70,
+            "y": 1452.625,
+            "width": 250,
+            "height": 44,
+            "top": 1452.625,
+            "right": 320,
+            "bottom": 1496.625,
+            "left": 70
+          },
+          "font": "14px"
+        }
+      ],
+      "svg": {
+        "viewBox": "0 0 240 228",
+        "ariaLabel": null,
+        "markup": "<svg class=\"wc-tl-plot\" viewBox=\"0 0 240 228\" preserveAspectRatio=\"none\" aria-hidden=\"true\" focusable=\"false\" data-tl-extent=\"40\"><rect class=\"wc-tl-cold\" x=\"16\" y=\"10\" width=\"104\" height=\"206\" rx=\"8\"></rect><rect class=\"wc-tl-warm\" x=\"120\" y=\"10\" width=\"104\" height=\"206\" rx=\"8\"></rect><path class=\"wc-tl-hatch\" d=\"M28 14v198\"></path><path class=\"wc-tl-hatch\" d=\"M52 14v198\"></path><path class=\"wc-tl-hatch\" d=\"M76 14v198\"></path><path class=\"wc-tl-hatch\" d=\"M100 14v198\"></path><line class=\"wc-tl-zero\" data-tl-boundary=\"zero\" x1=\"120\" y1=\"10\" x2=\"120\" y2=\"216\"></line><line class=\"wc-tl-guide\" data-selected=\"false\" x1=\"16\" y1=\"22\" x2=\"224\" y2=\"22\"></line><line class=\"wc-tl-guide\" data-selected=\"true\" x1=\"16\" y1=\"122.10000000000001\" x2=\"224\" y2=\"122.10000000000001\"></line><line class=\"wc-tl-guide\" data-selected=\"false\" x1=\"16\" y1=\"204\" x2=\"224\" y2=\"204\"></line><g data-tl-crossing=\"warming\" data-tl-progress=\"0.021153846153846155\"><line class=\"wc-tl-cross\" x1=\"16\" y1=\"25.85\" x2=\"224\" y2=\"25.85\"></line><rect class=\"wc-tl-cross\" x=\"116\" y=\"21.85\" width=\"8\" height=\"8\"></rect></g><path class=\"wc-tl-path\" d=\"M117.39999999999999 22 L185 122.10000000000001 L211 204\"></path><circle class=\"wc-tl-point\" data-tl-point=\"cloud\" data-tl-marker=\"cloud\" data-tl-temperature=\"-1\" data-tl-progress=\"0\" data-selected=\"false\" cx=\"117.39999999999999\" cy=\"22\" r=\"5\"></circle><circle class=\"wc-tl-point\" data-tl-point=\"middle\" data-tl-marker=\"middle\" data-tl-temperature=\"25\" data-tl-progress=\"0.55\" data-selected=\"true\" cx=\"185\" cy=\"122.10000000000001\" r=\"5\"></circle><circle class=\"wc-tl-point\" data-tl-point=\"surface\" data-tl-marker=\"surface\" data-tl-temperature=\"35\" data-tl-progress=\"1\" data-selected=\"false\" cx=\"211\" cy=\"204\" r=\"5\"></circle><circle class=\"wc-tl-selected-ring\" cx=\"185\" cy=\"122.10000000000001\" r=\"11\"></circle></svg>"
+      }
+    },
+    {
+      "name": "cloud-end-main-profile-390",
+      "width": 390,
+      "bounds": {
+        "x": 44,
+        "y": 223.625,
+        "width": 302,
+        "height": 552.796875,
+        "top": 223.625,
+        "right": 346,
+        "bottom": 776.421875,
+        "left": 44
+      },
+      "documentOverflow": false,
+      "text": "Read the air column\nCloud ↓ surface\nCloud\n-1°C\nMiddle\n+25°C\nSurface\n+35°C\n-30°C\n0°C\n+30°C\nCOLDER\nWARMER\nCloud\nMiddle\nSurface\n1\n\nAir crosses 0°C once (warming).\n\n1\nInto warmer air: below 0°C to above 0°C.\n\nThese markers describe air temperature. A particle does not necessarily melt or freeze as soon as it crosses 0°C. The chamber uses schematic transition bands. Positions do not measure altitude or fall time.\n\nCompare air with particle state",
+      "attrs": {
+        "class": "wc-precip-profile-editor wc-air-profile",
+        "data-temperature-profile-editor": "three-point",
+        "data-air-crossings": "1",
+        "data-air-touches": "0"
+      },
+      "elements": [
+        {
+          "tag": "DT",
+          "text": "Cloud",
+          "attrs": {},
+          "bounds": {
+            "x": 63,
+            "y": 277.625,
+            "width": 76.65625,
+            "height": 16.5,
+            "top": 277.625,
+            "right": 139.65625,
+            "bottom": 294.125,
+            "left": 63
+          },
+          "font": "11px"
+        },
+        {
+          "tag": "DD",
+          "text": "-1°C",
+          "attrs": {},
+          "bounds": {
+            "x": 63,
+            "y": 297.125,
+            "width": 76.65625,
+            "height": 19.5,
+            "top": 297.125,
+            "right": 139.65625,
+            "bottom": 316.625,
+            "left": 63
+          },
+          "font": "13px"
+        },
+        {
+          "tag": "DT",
+          "text": "Middle",
+          "attrs": {},
+          "bounds": {
+            "x": 156.65625,
+            "y": 277.625,
+            "width": 76.671875,
+            "height": 16.5,
+            "top": 277.625,
+            "right": 233.328125,
+            "bottom": 294.125,
+            "left": 156.65625
+          },
+          "font": "11px"
+        },
+        {
+          "tag": "DD",
+          "text": "+25°C",
+          "attrs": {},
+          "bounds": {
+            "x": 156.65625,
+            "y": 297.125,
+            "width": 76.671875,
+            "height": 19.5,
+            "top": 297.125,
+            "right": 233.328125,
+            "bottom": 316.625,
+            "left": 156.65625
+          },
+          "font": "13px"
+        },
+        {
+          "tag": "DT",
+          "text": "Surface",
+          "attrs": {},
+          "bounds": {
+            "x": 250.328125,
+            "y": 277.625,
+            "width": 76.65625,
+            "height": 16.5,
+            "top": 277.625,
+            "right": 326.984375,
+            "bottom": 294.125,
+            "left": 250.328125
+          },
+          "font": "11px"
+        },
+        {
+          "tag": "DD",
+          "text": "+35°C",
+          "attrs": {},
+          "bounds": {
+            "x": 250.328125,
+            "y": 297.125,
+            "width": 76.65625,
+            "height": 19.5,
+            "top": 297.125,
+            "right": 326.984375,
+            "bottom": 316.625,
+            "left": 250.328125
+          },
+          "font": "13px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Compare air with particle state",
+          "attrs": {
+            "type": "button",
+            "class": "wc-air-inspect-link",
+            "aria-controls": "wcThermalLayerPanel"
+          },
+          "bounds": {
+            "x": 57,
+            "y": 721.421875,
+            "width": 276,
+            "height": 42,
+            "top": 721.421875,
+            "right": 333,
+            "bottom": 763.421875,
+            "left": 57
+          },
+          "font": "12px"
+        }
+      ],
+      "svg": {
+        "viewBox": "0 0 260 208",
+        "ariaLabel": "Cloud base: -1°C, Middle atmosphere: +25°C, Surface: +35°C. Air crosses 0°C once (warming). Horizontal axis: air temperature. Vertical positions are schematic.",
+        "markup": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 208\" role=\"img\" aria-label=\"Cloud base: -1°C, Middle atmosphere: +25°C, Surface: +35°C. Air crosses 0°C once (warming). Horizontal axis: air temperature. Vertical positions are schematic.\" preserveAspectRatio=\"xMidYMid meet\"><rect class=\"wc-profile-cold-zone\" x=\"58\" y=\"30\" width=\"85\" height=\"154\" rx=\"4\"></rect><rect class=\"wc-profile-warm-zone\" x=\"143\" y=\"30\" width=\"85\" height=\"154\" rx=\"4\"></rect><g><line class=\"wc-profile-grid-line\" x1=\"70.14285714285714\" x2=\"70.14285714285714\" y1=\"30\" y2=\"184\"></line><text class=\"wc-profile-tick-label\" x=\"70.14285714285714\" y=\"201\" text-anchor=\"middle\">-30°C</text></g><g><line class=\"wc-profile-freezing-line\" x1=\"143\" x2=\"143\" y1=\"30\" y2=\"184\"></line><text class=\"wc-profile-tick-label\" x=\"143\" y=\"201\" text-anchor=\"middle\">0°C</text></g><g><line class=\"wc-profile-grid-line\" x1=\"215.85714285714286\" x2=\"215.85714285714286\" y1=\"30\" y2=\"184\"></line><text class=\"wc-profile-tick-label\" x=\"215.85714285714286\" y=\"201\" text-anchor=\"middle\">+30°C</text></g><text class=\"wc-profile-zone-label\" x=\"64\" y=\"19\">COLDER</text><text class=\"wc-profile-zone-label\" x=\"221\" y=\"19\" text-anchor=\"end\">WARMER</text><g><line class=\"wc-profile-level-line\" x1=\"58\" x2=\"228\" y1=\"38\" y2=\"38\"></line><text class=\"wc-profile-level-label\" x=\"1\" y=\"42\">Cloud</text></g><g><line class=\"wc-profile-level-line\" x1=\"58\" x2=\"228\" y1=\"115\" y2=\"115\"></line><text class=\"wc-profile-level-label\" x=\"1\" y=\"119\">Middle</text></g><g><line class=\"wc-profile-level-line\" x1=\"58\" x2=\"228\" y1=\"178\" y2=\"178\"></line><text class=\"wc-profile-level-label\" x=\"1\" y=\"182\">Surface</text></g><path class=\"wc-profile-temperature-line\" data-air-temperature-path=\"true\" d=\"M140.57142857142856 38 L203.7142857142857 115 L228 178\"></path><circle class=\"wc-profile-temperature-point\" data-air-point=\"0\" cx=\"140.57142857142856\" cy=\"38\" r=\"4\"></circle><circle class=\"wc-profile-temperature-point\" data-air-point=\"1\" cx=\"203.7142857142857\" cy=\"115\" r=\"4\"></circle><circle class=\"wc-profile-temperature-point\" data-air-point=\"2\" cx=\"228\" cy=\"178\" r=\"4\"></circle><g data-air-crossing=\"warming\" data-air-crossing-progress=\"0.021153846153846155\"><path class=\"wc-air-crossing-leader\" d=\"M147 40.96153846153846H230L238 46\"></path><circle class=\"wc-profile-crossing-point\" cx=\"143\" cy=\"40.96153846153846\" r=\"3.5\"></circle><circle class=\"wc-air-crossing-badge\" data-air-badge=\"0\" cx=\"246\" cy=\"46\" r=\"8\"></circle><text class=\"wc-air-crossing-number\" x=\"246\" y=\"49.5\" text-anchor=\"middle\">1</text></g></svg>"
+      }
+    },
+    {
+      "name": "cloud-end-inspector-320",
+      "width": 320,
+      "bounds": {
+        "x": 44,
+        "y": 0.359375,
+        "width": 232,
+        "height": 1911.21875,
+        "top": 0.359375,
+        "right": 276,
+        "bottom": 1911.578125,
+        "left": 44
+      },
+      "documentOverflow": false,
+      "text": "Inspect the falling particle\n\nChoose a level to compare its air temperature with the modeled particle cue. Below-freezing air alone does not establish that a particle is solid.\n\nAir temperature through the column\n\nSelected: B · Middle air\n\nBelow 0°C\nAbove 0°C\nA\nCloud\nB\nMiddle\nC\nSurface\n−40°C\n0°C\n+40°C\n\nAir crosses 0°C once (warming).\n\nDashed line: air passes through 0°C.\nA\nCloud base\n-1 °C\nIce and liquid: mixed cue\nInspect level\nB\nMiddle air\n25 °C\nLiquid raindrop\nSelected level\nC\nNear surface\n35 °C\nLiquid raindrop\nInspect level\nMiddle air: read the two cues\nAir temperature\n25 °C\nModeled particle cue\nLiquid raindrop\n\nThe model shows a liquid drop at this level.\n\nIllustrated path: Snow → melting layer → rain\n\nAt the surface\n\nLiquid raindrops reach the ground in this setup.\n\nCheck the particle cue\n\nA, B, and C identify the three air levels. Their positions are schematic, not measured altitudes or fall times. This graph follows the air temperature; particle shapes show the model’s separate state cues. Crossing 0°C does not guarantee an instantaneous change of state.",
+      "attrs": {
+        "id": "wcThermalLayerPanel",
+        "class": "wc-thermal-layer-inspector",
+        "data-tl-inspector": "three-level",
+        "open": ""
+      },
+      "elements": [
+        {
+          "tag": "SUMMARY",
+          "text": "Inspect the falling particle",
+          "attrs": {
+            "id": "wcThermalLayerSummary"
+          },
+          "bounds": {
+            "x": 45,
+            "y": 1.359375,
+            "width": 230,
+            "height": 48,
+            "top": 1.359375,
+            "right": 275,
+            "bottom": 49.359375,
+            "left": 45
+          },
+          "font": "15px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "A\nCloud base\n-1 °C\nIce and liquid: mixed cue\nInspect level",
+          "attrs": {
+            "type": "button",
+            "class": "wc-tl-node",
+            "data-tl-select": "cloud",
+            "data-tl-temperature": "-1",
+            "data-tl-phase": "mix",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerDetail"
+          },
+          "bounds": {
+            "x": 57,
+            "y": 717.96875,
+            "width": 206,
+            "height": 123,
+            "top": 717.96875,
+            "right": 263,
+            "bottom": 840.96875,
+            "left": 57
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "B\nMiddle air\n25 °C\nLiquid raindrop\nSelected level",
+          "attrs": {
+            "type": "button",
+            "class": "wc-tl-node",
+            "data-tl-select": "middle",
+            "data-tl-temperature": "25",
+            "data-tl-phase": "rain",
+            "aria-pressed": "true",
+            "aria-controls": "wcThermalLayerDetail"
+          },
+          "bounds": {
+            "x": 57,
+            "y": 848.96875,
+            "width": 206,
+            "height": 123,
+            "top": 848.96875,
+            "right": 263,
+            "bottom": 971.96875,
+            "left": 57
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "C\nNear surface\n35 °C\nLiquid raindrop\nInspect level",
+          "attrs": {
+            "type": "button",
+            "class": "wc-tl-node",
+            "data-tl-select": "surface",
+            "data-tl-temperature": "35",
+            "data-tl-phase": "rain",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerDetail"
+          },
+          "bounds": {
+            "x": 57,
+            "y": 979.96875,
+            "width": 206,
+            "height": 123,
+            "top": 979.96875,
+            "right": 263,
+            "bottom": 1102.96875,
+            "left": 57
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "DT",
+          "text": "Air temperature",
+          "attrs": {},
+          "bounds": {
+            "x": 81,
+            "y": 1207.34375,
+            "width": 158,
+            "height": 18.1875,
+            "top": 1207.34375,
+            "right": 239,
+            "bottom": 1225.53125,
+            "left": 81
+          },
+          "font": "13px"
+        },
+        {
+          "tag": "DD",
+          "text": "25 °C",
+          "attrs": {
+            "data-tl-air-reading": "1"
+          },
+          "bounds": {
+            "x": 81,
+            "y": 1229.53125,
+            "width": 158,
+            "height": 22.5,
+            "top": 1229.53125,
+            "right": 239,
+            "bottom": 1252.03125,
+            "left": 81
+          },
+          "font": "15px"
+        },
+        {
+          "tag": "DT",
+          "text": "Modeled particle cue",
+          "attrs": {},
+          "bounds": {
+            "x": 81,
+            "y": 1284.03125,
+            "width": 158,
+            "height": 18.1875,
+            "top": 1284.03125,
+            "right": 239,
+            "bottom": 1302.21875,
+            "left": 81
+          },
+          "font": "13px"
+        },
+        {
+          "tag": "DD",
+          "text": "Liquid raindrop",
+          "attrs": {
+            "data-tl-particle-reading": "1"
+          },
+          "bounds": {
+            "x": 81,
+            "y": 1306.21875,
+            "width": 158,
+            "height": 22.5,
+            "top": 1306.21875,
+            "right": 239,
+            "bottom": 1328.71875,
+            "left": 81
+          },
+          "font": "15px"
+        },
+        {
+          "tag": "SUMMARY",
+          "text": "Check the particle cue",
+          "attrs": {},
+          "bounds": {
+            "x": 70,
+            "y": 1622.0625,
+            "width": 180,
+            "height": 44,
+            "top": 1622.0625,
+            "right": 250,
+            "bottom": 1666.0625,
+            "left": 70
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "solid",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 70,
+            "y": 1743.625,
+            "width": 180,
+            "height": 44,
+            "top": 1743.625,
+            "right": 250,
+            "bottom": 1787.625,
+            "left": 70
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "liquid",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 70,
+            "y": 1795.625,
+            "width": 180,
+            "height": 44,
+            "top": 1795.625,
+            "right": 250,
+            "bottom": 1839.625,
+            "left": 70
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "mixed",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 70,
+            "y": 1847.625,
+            "width": 180,
+            "height": 44,
+            "top": 1847.625,
+            "right": 250,
+            "bottom": 1891.625,
+            "left": 70
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "virga",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 70,
+            "y": 1899.625,
+            "width": 180,
+            "height": 44,
+            "top": 1899.625,
+            "right": 250,
+            "bottom": 1943.625,
+            "left": 70
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "none",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 70,
+            "y": 1951.625,
+            "width": 180,
+            "height": 64,
+            "top": 1951.625,
+            "right": 250,
+            "bottom": 2015.625,
+            "left": 70
+          },
+          "font": "14px"
+        }
+      ],
+      "svg": {
+        "viewBox": "0 0 240 228",
+        "ariaLabel": null,
+        "markup": "<svg class=\"wc-tl-plot\" viewBox=\"0 0 240 228\" preserveAspectRatio=\"none\" aria-hidden=\"true\" focusable=\"false\" data-tl-extent=\"40\"><rect class=\"wc-tl-cold\" x=\"16\" y=\"10\" width=\"104\" height=\"206\" rx=\"8\"></rect><rect class=\"wc-tl-warm\" x=\"120\" y=\"10\" width=\"104\" height=\"206\" rx=\"8\"></rect><path class=\"wc-tl-hatch\" d=\"M28 14v198\"></path><path class=\"wc-tl-hatch\" d=\"M52 14v198\"></path><path class=\"wc-tl-hatch\" d=\"M76 14v198\"></path><path class=\"wc-tl-hatch\" d=\"M100 14v198\"></path><line class=\"wc-tl-zero\" data-tl-boundary=\"zero\" x1=\"120\" y1=\"10\" x2=\"120\" y2=\"216\"></line><line class=\"wc-tl-guide\" data-selected=\"false\" x1=\"16\" y1=\"22\" x2=\"224\" y2=\"22\"></line><line class=\"wc-tl-guide\" data-selected=\"true\" x1=\"16\" y1=\"122.10000000000001\" x2=\"224\" y2=\"122.10000000000001\"></line><line class=\"wc-tl-guide\" data-selected=\"false\" x1=\"16\" y1=\"204\" x2=\"224\" y2=\"204\"></line><g data-tl-crossing=\"warming\" data-tl-progress=\"0.021153846153846155\"><line class=\"wc-tl-cross\" x1=\"16\" y1=\"25.85\" x2=\"224\" y2=\"25.85\"></line><rect class=\"wc-tl-cross\" x=\"116\" y=\"21.85\" width=\"8\" height=\"8\"></rect></g><path class=\"wc-tl-path\" d=\"M117.39999999999999 22 L185 122.10000000000001 L211 204\"></path><circle class=\"wc-tl-point\" data-tl-point=\"cloud\" data-tl-marker=\"cloud\" data-tl-temperature=\"-1\" data-tl-progress=\"0\" data-selected=\"false\" cx=\"117.39999999999999\" cy=\"22\" r=\"5\"></circle><circle class=\"wc-tl-point\" data-tl-point=\"middle\" data-tl-marker=\"middle\" data-tl-temperature=\"25\" data-tl-progress=\"0.55\" data-selected=\"true\" cx=\"185\" cy=\"122.10000000000001\" r=\"5\"></circle><circle class=\"wc-tl-point\" data-tl-point=\"surface\" data-tl-marker=\"surface\" data-tl-temperature=\"35\" data-tl-progress=\"1\" data-selected=\"false\" cx=\"211\" cy=\"204\" r=\"5\"></circle><circle class=\"wc-tl-selected-ring\" cx=\"185\" cy=\"122.10000000000001\" r=\"11\"></circle></svg>"
+      }
+    },
+    {
+      "name": "close-crossings-inspector-1280",
+      "width": 1280,
+      "bounds": {
+        "x": 790.4375,
+        "y": -2558.546875,
+        "width": 336.5625,
+        "height": 1757.796875,
+        "top": -2558.546875,
+        "right": 1127,
+        "bottom": -800.75,
+        "left": 790.4375
+      },
+      "documentOverflow": false,
+      "text": "Inspect the falling particle\n\nChoose a level to compare its air temperature with the modeled particle cue. Below-freezing air alone does not establish that a particle is solid.\n\nAir temperature through the column\n\nSelected: B · Middle air\n\nBelow 0°C\nAbove 0°C\nA\nCloud\nB\nMiddle\nC\nSurface\n−40°C\n0°C\n+40°C\n\nAir crosses 0°C twice (warming, then cooling).\n\nDashed line: air passes through 0°C.\nA\nCloud base\n-35 °C\nSnow or ice crystals\nInspect level\nB\nMiddle air\n0.01 °C\nIce and liquid: mixed cue\nSelected level\nC\nNear surface\n-15 °C\nIce pellets\nInspect level\nMiddle air: read the two cues\nAir temperature\n0.01 °C\nModeled particle cue\nIce and liquid: mixed cue\n\nThe model uses a mixed or partly melted particle cue around this part of the path.\n\nIllustrated path: Snow → melting layer → liquid drops → refreezing layer → ice pellets\n\nAt the surface\n\nIce pellets have already frozen in the air before reaching the ground.\n\nCheck the particle cue\n\nA, B, and C identify the three air levels. Their positions are schematic, not measured altitudes or fall times. This graph follows the air temperature; particle shapes show the model’s separate state cues. Crossing 0°C does not guarantee an instantaneous change of state.",
+      "attrs": {
+        "id": "wcThermalLayerPanel",
+        "class": "wc-thermal-layer-inspector",
+        "data-tl-inspector": "three-level",
+        "open": ""
+      },
+      "elements": [
+        {
+          "tag": "SUMMARY",
+          "text": "Inspect the falling particle",
+          "attrs": {
+            "id": "wcThermalLayerSummary"
+          },
+          "bounds": {
+            "x": 791.4375,
+            "y": -2557.546875,
+            "width": 334.5625,
+            "height": 48,
+            "top": -2557.546875,
+            "right": 1126,
+            "bottom": -2509.546875,
+            "left": 791.4375
+          },
+          "font": "15px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "A\nCloud base\n-35 °C\nSnow or ice crystals\nInspect level",
+          "attrs": {
+            "type": "button",
+            "class": "wc-tl-node",
+            "data-tl-select": "cloud",
+            "data-tl-temperature": "-35",
+            "data-tl-phase": "snow",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerDetail"
+          },
+          "bounds": {
+            "x": 803.4375,
+            "y": -1924.8125,
+            "width": 310.5625,
+            "height": 123,
+            "top": -1924.8125,
+            "right": 1114,
+            "bottom": -1801.8125,
+            "left": 803.4375
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "B\nMiddle air\n0.01 °C\nIce and liquid: mixed cue\nSelected level",
+          "attrs": {
+            "type": "button",
+            "class": "wc-tl-node",
+            "data-tl-select": "middle",
+            "data-tl-temperature": "0.01",
+            "data-tl-phase": "mix",
+            "aria-pressed": "true",
+            "aria-controls": "wcThermalLayerDetail"
+          },
+          "bounds": {
+            "x": 803.4375,
+            "y": -1793.8125,
+            "width": 310.5625,
+            "height": 123,
+            "top": -1793.8125,
+            "right": 1114,
+            "bottom": -1670.8125,
+            "left": 803.4375
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "C\nNear surface\n-15 °C\nIce pellets\nInspect level",
+          "attrs": {
+            "type": "button",
+            "class": "wc-tl-node",
+            "data-tl-select": "surface",
+            "data-tl-temperature": "-15",
+            "data-tl-phase": "sleet",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerDetail"
+          },
+          "bounds": {
+            "x": 803.4375,
+            "y": -1662.8125,
+            "width": 310.5625,
+            "height": 123,
+            "top": -1662.8125,
+            "right": 1114,
+            "bottom": -1539.8125,
+            "left": 803.4375
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "DT",
+          "text": "Air temperature",
+          "attrs": {},
+          "bounds": {
+            "x": 827.4375,
+            "y": -1437.8125,
+            "width": 262.5625,
+            "height": 18.1875,
+            "top": -1437.8125,
+            "right": 1090,
+            "bottom": -1419.625,
+            "left": 827.4375
+          },
+          "font": "13px"
+        },
+        {
+          "tag": "DD",
+          "text": "0.01 °C",
+          "attrs": {
+            "data-tl-air-reading": "1"
+          },
+          "bounds": {
+            "x": 827.4375,
+            "y": -1415.625,
+            "width": 262.5625,
+            "height": 22.5,
+            "top": -1415.625,
+            "right": 1090,
+            "bottom": -1393.125,
+            "left": 827.4375
+          },
+          "font": "15px"
+        },
+        {
+          "tag": "DT",
+          "text": "Modeled particle cue",
+          "attrs": {},
+          "bounds": {
+            "x": 827.4375,
+            "y": -1361.125,
+            "width": 262.5625,
+            "height": 18.1875,
+            "top": -1361.125,
+            "right": 1090,
+            "bottom": -1342.9375,
+            "left": 827.4375
+          },
+          "font": "13px"
+        },
+        {
+          "tag": "DD",
+          "text": "Ice and liquid: mixed cue",
+          "attrs": {
+            "data-tl-particle-reading": "1"
+          },
+          "bounds": {
+            "x": 827.4375,
+            "y": -1338.9375,
+            "width": 262.5625,
+            "height": 22.5,
+            "top": -1338.9375,
+            "right": 1090,
+            "bottom": -1316.4375,
+            "left": 827.4375
+          },
+          "font": "15px"
+        },
+        {
+          "tag": "SUMMARY",
+          "text": "Check the particle cue",
+          "attrs": {},
+          "bounds": {
+            "x": 816.4375,
+            "y": -1023.09375,
+            "width": 284.5625,
+            "height": 44,
+            "top": -1023.09375,
+            "right": 1101,
+            "bottom": -979.09375,
+            "left": 816.4375
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "solid",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 816.4375,
+            "y": -924.71875,
+            "width": 284.5625,
+            "height": 44,
+            "top": -924.71875,
+            "right": 1101,
+            "bottom": -880.71875,
+            "left": 816.4375
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "liquid",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 816.4375,
+            "y": -872.71875,
+            "width": 284.5625,
+            "height": 44,
+            "top": -872.71875,
+            "right": 1101,
+            "bottom": -828.71875,
+            "left": 816.4375
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "mixed",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 816.4375,
+            "y": -820.71875,
+            "width": 284.5625,
+            "height": 44,
+            "top": -820.71875,
+            "right": 1101,
+            "bottom": -776.71875,
+            "left": 816.4375
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "virga",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 816.4375,
+            "y": -768.71875,
+            "width": 284.5625,
+            "height": 44,
+            "top": -768.71875,
+            "right": 1101,
+            "bottom": -724.71875,
+            "left": 816.4375
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "none",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 816.4375,
+            "y": -716.71875,
+            "width": 284.5625,
+            "height": 44,
+            "top": -716.71875,
+            "right": 1101,
+            "bottom": -672.71875,
+            "left": 816.4375
+          },
+          "font": "14px"
+        }
+      ],
+      "svg": {
+        "viewBox": "0 0 240 228",
+        "ariaLabel": null,
+        "markup": "<svg class=\"wc-tl-plot\" viewBox=\"0 0 240 228\" preserveAspectRatio=\"none\" aria-hidden=\"true\" focusable=\"false\" data-tl-extent=\"40\"><rect class=\"wc-tl-cold\" x=\"16\" y=\"10\" width=\"104\" height=\"206\" rx=\"8\"></rect><rect class=\"wc-tl-warm\" x=\"120\" y=\"10\" width=\"104\" height=\"206\" rx=\"8\"></rect><path class=\"wc-tl-hatch\" d=\"M28 14v198\"></path><path class=\"wc-tl-hatch\" d=\"M52 14v198\"></path><path class=\"wc-tl-hatch\" d=\"M76 14v198\"></path><path class=\"wc-tl-hatch\" d=\"M100 14v198\"></path><line class=\"wc-tl-zero\" data-tl-boundary=\"zero\" x1=\"120\" y1=\"10\" x2=\"120\" y2=\"216\"></line><line class=\"wc-tl-guide\" data-selected=\"false\" x1=\"16\" y1=\"22\" x2=\"224\" y2=\"22\"></line><line class=\"wc-tl-guide\" data-selected=\"true\" x1=\"16\" y1=\"122.10000000000001\" x2=\"224\" y2=\"122.10000000000001\"></line><line class=\"wc-tl-guide\" data-selected=\"false\" x1=\"16\" y1=\"204\" x2=\"224\" y2=\"204\"></line><g data-tl-crossing=\"warming\" data-tl-progress=\"0.549842902027992\"><line class=\"wc-tl-cross\" x1=\"16\" y1=\"122.07140816909455\" x2=\"224\" y2=\"122.07140816909455\"></line><rect class=\"wc-tl-cross\" x=\"116\" y=\"118.07140816909455\" width=\"8\" height=\"8\"></rect></g><g data-tl-crossing=\"cooling\" data-tl-progress=\"0.5502998001332445\"><line class=\"wc-tl-cross\" x1=\"16\" y1=\"122.1545636242505\" x2=\"224\" y2=\"122.1545636242505\"></line><rect class=\"wc-tl-cross\" x=\"116\" y=\"118.1545636242505\" width=\"8\" height=\"8\"></rect></g><path class=\"wc-tl-path\" d=\"M29 22 L120.02599999999998 122.10000000000001 L81 204\"></path><circle class=\"wc-tl-point\" data-tl-point=\"cloud\" data-tl-marker=\"cloud\" data-tl-temperature=\"-35\" data-tl-progress=\"0\" data-selected=\"false\" cx=\"29\" cy=\"22\" r=\"5\"></circle><circle class=\"wc-tl-point\" data-tl-point=\"middle\" data-tl-marker=\"middle\" data-tl-temperature=\"0.01\" data-tl-progress=\"0.55\" data-selected=\"true\" cx=\"120.02599999999998\" cy=\"122.10000000000001\" r=\"5\"></circle><circle class=\"wc-tl-point\" data-tl-point=\"surface\" data-tl-marker=\"surface\" data-tl-temperature=\"-15\" data-tl-progress=\"1\" data-selected=\"false\" cx=\"81\" cy=\"204\" r=\"5\"></circle><circle class=\"wc-tl-selected-ring\" cx=\"120.02599999999998\" cy=\"122.10000000000001\" r=\"11\"></circle></svg>"
+      }
+    },
+    {
+      "name": "close-crossings-inspector-390",
+      "width": 390,
+      "bounds": {
+        "x": 44,
+        "y": -424.796875,
+        "width": 302,
+        "height": 1849.734375,
+        "top": -424.796875,
+        "right": 346,
+        "bottom": 1424.9375,
+        "left": 44
+      },
+      "documentOverflow": false,
+      "text": "Inspect the falling particle\n\nChoose a level to compare its air temperature with the modeled particle cue. Below-freezing air alone does not establish that a particle is solid.\n\nAir temperature through the column\n\nSelected: B · Middle air\n\nBelow 0°C\nAbove 0°C\nA\nCloud\nB\nMiddle\nC\nSurface\n−40°C\n0°C\n+40°C\n\nAir crosses 0°C twice (warming, then cooling).\n\nDashed line: air passes through 0°C.\nA\nCloud base\n-35 °C\nSnow or ice crystals\nInspect level\nB\nMiddle air\n0.01 °C\nIce and liquid: mixed cue\nSelected level\nC\nNear surface\n-15 °C\nIce pellets\nInspect level\nMiddle air: read the two cues\nAir temperature\n0.01 °C\nModeled particle cue\nIce and liquid: mixed cue\n\nThe model uses a mixed or partly melted particle cue around this part of the path.\n\nIllustrated path: Snow → melting layer → liquid drops → refreezing layer → ice pellets\n\nAt the surface\n\nIce pellets have already frozen in the air before reaching the ground.\n\nCheck the particle cue\n\nA, B, and C identify the three air levels. Their positions are schematic, not measured altitudes or fall times. This graph follows the air temperature; particle shapes show the model’s separate state cues. Crossing 0°C does not guarantee an instantaneous change of state.",
+      "attrs": {
+        "id": "wcThermalLayerPanel",
+        "class": "wc-thermal-layer-inspector",
+        "data-tl-inspector": "three-level",
+        "open": ""
+      },
+      "elements": [
+        {
+          "tag": "SUMMARY",
+          "text": "Inspect the falling particle",
+          "attrs": {
+            "id": "wcThermalLayerSummary"
+          },
+          "bounds": {
+            "x": 45,
+            "y": -423.796875,
+            "width": 300,
+            "height": 48,
+            "top": -423.796875,
+            "right": 345,
+            "bottom": -375.796875,
+            "left": 45
+          },
+          "font": "15px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "A\nCloud base\n-35 °C\nSnow or ice crystals\nInspect level",
+          "attrs": {
+            "type": "button",
+            "class": "wc-tl-node",
+            "data-tl-select": "cloud",
+            "data-tl-temperature": "-35",
+            "data-tl-phase": "snow",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerDetail"
+          },
+          "bounds": {
+            "x": 57,
+            "y": 231.328125,
+            "width": 276,
+            "height": 123,
+            "top": 231.328125,
+            "right": 333,
+            "bottom": 354.328125,
+            "left": 57
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "B\nMiddle air\n0.01 °C\nIce and liquid: mixed cue\nSelected level",
+          "attrs": {
+            "type": "button",
+            "class": "wc-tl-node",
+            "data-tl-select": "middle",
+            "data-tl-temperature": "0.01",
+            "data-tl-phase": "mix",
+            "aria-pressed": "true",
+            "aria-controls": "wcThermalLayerDetail"
+          },
+          "bounds": {
+            "x": 57,
+            "y": 362.328125,
+            "width": 276,
+            "height": 123,
+            "top": 362.328125,
+            "right": 333,
+            "bottom": 485.328125,
+            "left": 57
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "C\nNear surface\n-15 °C\nIce pellets\nInspect level",
+          "attrs": {
+            "type": "button",
+            "class": "wc-tl-node",
+            "data-tl-select": "surface",
+            "data-tl-temperature": "-15",
+            "data-tl-phase": "sleet",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerDetail"
+          },
+          "bounds": {
+            "x": 57,
+            "y": 493.328125,
+            "width": 276,
+            "height": 123,
+            "top": 493.328125,
+            "right": 333,
+            "bottom": 616.328125,
+            "left": 57
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "DT",
+          "text": "Air temperature",
+          "attrs": {},
+          "bounds": {
+            "x": 81,
+            "y": 720.703125,
+            "width": 228,
+            "height": 18.1875,
+            "top": 720.703125,
+            "right": 309,
+            "bottom": 738.890625,
+            "left": 81
+          },
+          "font": "13px"
+        },
+        {
+          "tag": "DD",
+          "text": "0.01 °C",
+          "attrs": {
+            "data-tl-air-reading": "1"
+          },
+          "bounds": {
+            "x": 81,
+            "y": 742.890625,
+            "width": 228,
+            "height": 22.5,
+            "top": 742.890625,
+            "right": 309,
+            "bottom": 765.390625,
+            "left": 81
+          },
+          "font": "15px"
+        },
+        {
+          "tag": "DT",
+          "text": "Modeled particle cue",
+          "attrs": {},
+          "bounds": {
+            "x": 81,
+            "y": 797.390625,
+            "width": 228,
+            "height": 18.1875,
+            "top": 797.390625,
+            "right": 309,
+            "bottom": 815.578125,
+            "left": 81
+          },
+          "font": "13px"
+        },
+        {
+          "tag": "DD",
+          "text": "Ice and liquid: mixed cue",
+          "attrs": {
+            "data-tl-particle-reading": "1"
+          },
+          "bounds": {
+            "x": 81,
+            "y": 819.578125,
+            "width": 228,
+            "height": 22.5,
+            "top": 819.578125,
+            "right": 309,
+            "bottom": 842.078125,
+            "left": 81
+          },
+          "font": "15px"
+        },
+        {
+          "tag": "SUMMARY",
+          "text": "Check the particle cue",
+          "attrs": {},
+          "bounds": {
+            "x": 70,
+            "y": 1180.203125,
+            "width": 250,
+            "height": 44,
+            "top": 1180.203125,
+            "right": 320,
+            "bottom": 1224.203125,
+            "left": 70
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "solid",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 70,
+            "y": 1278.578125,
+            "width": 250,
+            "height": 44,
+            "top": 1278.578125,
+            "right": 320,
+            "bottom": 1322.578125,
+            "left": 70
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "liquid",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 70,
+            "y": 1330.578125,
+            "width": 250,
+            "height": 44,
+            "top": 1330.578125,
+            "right": 320,
+            "bottom": 1374.578125,
+            "left": 70
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "mixed",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 70,
+            "y": 1382.578125,
+            "width": 250,
+            "height": 44,
+            "top": 1382.578125,
+            "right": 320,
+            "bottom": 1426.578125,
+            "left": 70
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "virga",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 70,
+            "y": 1434.578125,
+            "width": 250,
+            "height": 44,
+            "top": 1434.578125,
+            "right": 320,
+            "bottom": 1478.578125,
+            "left": 70
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "none",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 70,
+            "y": 1486.578125,
+            "width": 250,
+            "height": 44,
+            "top": 1486.578125,
+            "right": 320,
+            "bottom": 1530.578125,
+            "left": 70
+          },
+          "font": "14px"
+        }
+      ],
+      "svg": {
+        "viewBox": "0 0 240 228",
+        "ariaLabel": null,
+        "markup": "<svg class=\"wc-tl-plot\" viewBox=\"0 0 240 228\" preserveAspectRatio=\"none\" aria-hidden=\"true\" focusable=\"false\" data-tl-extent=\"40\"><rect class=\"wc-tl-cold\" x=\"16\" y=\"10\" width=\"104\" height=\"206\" rx=\"8\"></rect><rect class=\"wc-tl-warm\" x=\"120\" y=\"10\" width=\"104\" height=\"206\" rx=\"8\"></rect><path class=\"wc-tl-hatch\" d=\"M28 14v198\"></path><path class=\"wc-tl-hatch\" d=\"M52 14v198\"></path><path class=\"wc-tl-hatch\" d=\"M76 14v198\"></path><path class=\"wc-tl-hatch\" d=\"M100 14v198\"></path><line class=\"wc-tl-zero\" data-tl-boundary=\"zero\" x1=\"120\" y1=\"10\" x2=\"120\" y2=\"216\"></line><line class=\"wc-tl-guide\" data-selected=\"false\" x1=\"16\" y1=\"22\" x2=\"224\" y2=\"22\"></line><line class=\"wc-tl-guide\" data-selected=\"true\" x1=\"16\" y1=\"122.10000000000001\" x2=\"224\" y2=\"122.10000000000001\"></line><line class=\"wc-tl-guide\" data-selected=\"false\" x1=\"16\" y1=\"204\" x2=\"224\" y2=\"204\"></line><g data-tl-crossing=\"warming\" data-tl-progress=\"0.549842902027992\"><line class=\"wc-tl-cross\" x1=\"16\" y1=\"122.07140816909455\" x2=\"224\" y2=\"122.07140816909455\"></line><rect class=\"wc-tl-cross\" x=\"116\" y=\"118.07140816909455\" width=\"8\" height=\"8\"></rect></g><g data-tl-crossing=\"cooling\" data-tl-progress=\"0.5502998001332445\"><line class=\"wc-tl-cross\" x1=\"16\" y1=\"122.1545636242505\" x2=\"224\" y2=\"122.1545636242505\"></line><rect class=\"wc-tl-cross\" x=\"116\" y=\"118.1545636242505\" width=\"8\" height=\"8\"></rect></g><path class=\"wc-tl-path\" d=\"M29 22 L120.02599999999998 122.10000000000001 L81 204\"></path><circle class=\"wc-tl-point\" data-tl-point=\"cloud\" data-tl-marker=\"cloud\" data-tl-temperature=\"-35\" data-tl-progress=\"0\" data-selected=\"false\" cx=\"29\" cy=\"22\" r=\"5\"></circle><circle class=\"wc-tl-point\" data-tl-point=\"middle\" data-tl-marker=\"middle\" data-tl-temperature=\"0.01\" data-tl-progress=\"0.55\" data-selected=\"true\" cx=\"120.02599999999998\" cy=\"122.10000000000001\" r=\"5\"></circle><circle class=\"wc-tl-point\" data-tl-point=\"surface\" data-tl-marker=\"surface\" data-tl-temperature=\"-15\" data-tl-progress=\"1\" data-selected=\"false\" cx=\"81\" cy=\"204\" r=\"5\"></circle><circle class=\"wc-tl-selected-ring\" cx=\"120.02599999999998\" cy=\"122.10000000000001\" r=\"11\"></circle></svg>"
+      }
+    },
+    {
+      "name": "close-crossings-inspector-320",
+      "width": 320,
+      "bounds": {
+        "x": 44,
+        "y": -467.078125,
+        "width": 232,
+        "height": 2023.28125,
+        "top": -467.078125,
+        "right": 276,
+        "bottom": 1556.203125,
+        "left": 44
+      },
+      "documentOverflow": false,
+      "text": "Inspect the falling particle\n\nChoose a level to compare its air temperature with the modeled particle cue. Below-freezing air alone does not establish that a particle is solid.\n\nAir temperature through the column\n\nSelected: B · Middle air\n\nBelow 0°C\nAbove 0°C\nA\nCloud\nB\nMiddle\nC\nSurface\n−40°C\n0°C\n+40°C\n\nAir crosses 0°C twice (warming, then cooling).\n\nDashed line: air passes through 0°C.\nA\nCloud base\n-35 °C\nSnow or ice crystals\nInspect level\nB\nMiddle air\n0.01 °C\nIce and liquid: mixed cue\nSelected level\nC\nNear surface\n-15 °C\nIce pellets\nInspect level\nMiddle air: read the two cues\nAir temperature\n0.01 °C\nModeled particle cue\nIce and liquid: mixed cue\n\nThe model uses a mixed or partly melted particle cue around this part of the path.\n\nIllustrated path: Snow → melting layer → liquid drops → refreezing layer → ice pellets\n\nAt the surface\n\nIce pellets have already frozen in the air before reaching the ground.\n\nCheck the particle cue\n\nA, B, and C identify the three air levels. Their positions are schematic, not measured altitudes or fall times. This graph follows the air temperature; particle shapes show the model’s separate state cues. Crossing 0°C does not guarantee an instantaneous change of state.",
+      "attrs": {
+        "id": "wcThermalLayerPanel",
+        "class": "wc-thermal-layer-inspector",
+        "data-tl-inspector": "three-level",
+        "open": ""
+      },
+      "elements": [
+        {
+          "tag": "SUMMARY",
+          "text": "Inspect the falling particle",
+          "attrs": {
+            "id": "wcThermalLayerSummary"
+          },
+          "bounds": {
+            "x": 45,
+            "y": -466.078125,
+            "width": 230,
+            "height": 48,
+            "top": -466.078125,
+            "right": 275,
+            "bottom": -418.078125,
+            "left": 45
+          },
+          "font": "15px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "A\nCloud base\n-35 °C\nSnow or ice crystals\nInspect level",
+          "attrs": {
+            "type": "button",
+            "class": "wc-tl-node",
+            "data-tl-select": "cloud",
+            "data-tl-temperature": "-35",
+            "data-tl-phase": "snow",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerDetail"
+          },
+          "bounds": {
+            "x": 57,
+            "y": 250.53125,
+            "width": 206,
+            "height": 123,
+            "top": 250.53125,
+            "right": 263,
+            "bottom": 373.53125,
+            "left": 57
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "B\nMiddle air\n0.01 °C\nIce and liquid: mixed cue\nSelected level",
+          "attrs": {
+            "type": "button",
+            "class": "wc-tl-node",
+            "data-tl-select": "middle",
+            "data-tl-temperature": "0.01",
+            "data-tl-phase": "mix",
+            "aria-pressed": "true",
+            "aria-controls": "wcThermalLayerDetail"
+          },
+          "bounds": {
+            "x": 57,
+            "y": 381.53125,
+            "width": 206,
+            "height": 123,
+            "top": 381.53125,
+            "right": 263,
+            "bottom": 504.53125,
+            "left": 57
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "C\nNear surface\n-15 °C\nIce pellets\nInspect level",
+          "attrs": {
+            "type": "button",
+            "class": "wc-tl-node",
+            "data-tl-select": "surface",
+            "data-tl-temperature": "-15",
+            "data-tl-phase": "sleet",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerDetail"
+          },
+          "bounds": {
+            "x": 57,
+            "y": 512.53125,
+            "width": 206,
+            "height": 123,
+            "top": 512.53125,
+            "right": 263,
+            "bottom": 635.53125,
+            "left": 57
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "DT",
+          "text": "Air temperature",
+          "attrs": {},
+          "bounds": {
+            "x": 81,
+            "y": 739.90625,
+            "width": 158,
+            "height": 18.1875,
+            "top": 739.90625,
+            "right": 239,
+            "bottom": 758.09375,
+            "left": 81
+          },
+          "font": "13px"
+        },
+        {
+          "tag": "DD",
+          "text": "0.01 °C",
+          "attrs": {
+            "data-tl-air-reading": "1"
+          },
+          "bounds": {
+            "x": 81,
+            "y": 762.09375,
+            "width": 158,
+            "height": 22.5,
+            "top": 762.09375,
+            "right": 239,
+            "bottom": 784.59375,
+            "left": 81
+          },
+          "font": "15px"
+        },
+        {
+          "tag": "DT",
+          "text": "Modeled particle cue",
+          "attrs": {},
+          "bounds": {
+            "x": 81,
+            "y": 816.59375,
+            "width": 158,
+            "height": 18.1875,
+            "top": 816.59375,
+            "right": 239,
+            "bottom": 834.78125,
+            "left": 81
+          },
+          "font": "13px"
+        },
+        {
+          "tag": "DD",
+          "text": "Ice and liquid: mixed cue",
+          "attrs": {
+            "data-tl-particle-reading": "1"
+          },
+          "bounds": {
+            "x": 81,
+            "y": 838.78125,
+            "width": 158,
+            "height": 45,
+            "top": 838.78125,
+            "right": 239,
+            "bottom": 883.78125,
+            "left": 81
+          },
+          "font": "15px"
+        },
+        {
+          "tag": "SUMMARY",
+          "text": "Check the particle cue",
+          "attrs": {},
+          "bounds": {
+            "x": 70,
+            "y": 1266.6875,
+            "width": 180,
+            "height": 44,
+            "top": 1266.6875,
+            "right": 250,
+            "bottom": 1310.6875,
+            "left": 70
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "solid",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 70,
+            "y": 1388.25,
+            "width": 180,
+            "height": 44,
+            "top": 1388.25,
+            "right": 250,
+            "bottom": 1432.25,
+            "left": 70
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "liquid",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 70,
+            "y": 1440.25,
+            "width": 180,
+            "height": 44,
+            "top": 1440.25,
+            "right": 250,
+            "bottom": 1484.25,
+            "left": 70
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "mixed",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 70,
+            "y": 1492.25,
+            "width": 180,
+            "height": 44,
+            "top": 1492.25,
+            "right": 250,
+            "bottom": 1536.25,
+            "left": 70
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "virga",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 70,
+            "y": 1544.25,
+            "width": 180,
+            "height": 44,
+            "top": 1544.25,
+            "right": 250,
+            "bottom": 1588.25,
+            "left": 70
+          },
+          "font": "14px"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "attrs": {
+            "type": "button",
+            "data-tl-answer": "none",
+            "aria-pressed": "false",
+            "aria-controls": "wcThermalLayerFeedback"
+          },
+          "bounds": {
+            "x": 70,
+            "y": 1596.25,
+            "width": 180,
+            "height": 64,
+            "top": 1596.25,
+            "right": 250,
+            "bottom": 1660.25,
+            "left": 70
+          },
+          "font": "14px"
+        }
+      ],
+      "svg": {
+        "viewBox": "0 0 240 228",
+        "ariaLabel": null,
+        "markup": "<svg class=\"wc-tl-plot\" viewBox=\"0 0 240 228\" preserveAspectRatio=\"none\" aria-hidden=\"true\" focusable=\"false\" data-tl-extent=\"40\"><rect class=\"wc-tl-cold\" x=\"16\" y=\"10\" width=\"104\" height=\"206\" rx=\"8\"></rect><rect class=\"wc-tl-warm\" x=\"120\" y=\"10\" width=\"104\" height=\"206\" rx=\"8\"></rect><path class=\"wc-tl-hatch\" d=\"M28 14v198\"></path><path class=\"wc-tl-hatch\" d=\"M52 14v198\"></path><path class=\"wc-tl-hatch\" d=\"M76 14v198\"></path><path class=\"wc-tl-hatch\" d=\"M100 14v198\"></path><line class=\"wc-tl-zero\" data-tl-boundary=\"zero\" x1=\"120\" y1=\"10\" x2=\"120\" y2=\"216\"></line><line class=\"wc-tl-guide\" data-selected=\"false\" x1=\"16\" y1=\"22\" x2=\"224\" y2=\"22\"></line><line class=\"wc-tl-guide\" data-selected=\"true\" x1=\"16\" y1=\"122.10000000000001\" x2=\"224\" y2=\"122.10000000000001\"></line><line class=\"wc-tl-guide\" data-selected=\"false\" x1=\"16\" y1=\"204\" x2=\"224\" y2=\"204\"></line><g data-tl-crossing=\"warming\" data-tl-progress=\"0.549842902027992\"><line class=\"wc-tl-cross\" x1=\"16\" y1=\"122.07140816909455\" x2=\"224\" y2=\"122.07140816909455\"></line><rect class=\"wc-tl-cross\" x=\"116\" y=\"118.07140816909455\" width=\"8\" height=\"8\"></rect></g><g data-tl-crossing=\"cooling\" data-tl-progress=\"0.5502998001332445\"><line class=\"wc-tl-cross\" x1=\"16\" y1=\"122.1545636242505\" x2=\"224\" y2=\"122.1545636242505\"></line><rect class=\"wc-tl-cross\" x=\"116\" y=\"118.1545636242505\" width=\"8\" height=\"8\"></rect></g><path class=\"wc-tl-path\" d=\"M29 22 L120.02599999999998 122.10000000000001 L81 204\"></path><circle class=\"wc-tl-point\" data-tl-point=\"cloud\" data-tl-marker=\"cloud\" data-tl-temperature=\"-35\" data-tl-progress=\"0\" data-selected=\"false\" cx=\"29\" cy=\"22\" r=\"5\"></circle><circle class=\"wc-tl-point\" data-tl-point=\"middle\" data-tl-marker=\"middle\" data-tl-temperature=\"0.01\" data-tl-progress=\"0.55\" data-selected=\"true\" cx=\"120.02599999999998\" cy=\"122.10000000000001\" r=\"5\"></circle><circle class=\"wc-tl-point\" data-tl-point=\"surface\" data-tl-marker=\"surface\" data-tl-temperature=\"-15\" data-tl-progress=\"1\" data-selected=\"false\" cx=\"81\" cy=\"204\" r=\"5\"></circle><circle class=\"wc-tl-selected-ring\" cx=\"120.02599999999998\" cy=\"122.10000000000001\" r=\"11\"></circle></svg>"
+      }
+    }
+  ],
+  "errors": [],
+  "failedRequests": [],
+  "currentDiskHash": "f29310e7d0bd78fdbb444e52ea36d6abae393ff268960aa956ae200dd139850a",
+  "loadedRuntimeHash": "f29310e7d0bd78fdbb444e52ea36d6abae393ff268960aa956ae200dd139850a",
+  "passed": true
+}

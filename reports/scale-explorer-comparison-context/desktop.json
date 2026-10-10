@@ -1,0 +1,130 @@
+{
+  "moonEarth": {
+    "roots": {
+      "moon": {
+        "scale": 0.8181604143776487,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "modelVisible": true,
+        "axis": "x",
+        "anchor": [
+          0,
+          -0.66,
+          0
+        ],
+        "geometry": [
+          "7F8484FB-444E-4F8D-BA3B-3AF03BA8AA84"
+        ]
+      },
+      "earth": {
+        "scale": 3,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "modelVisible": true,
+        "axis": "x",
+        "anchor": [
+          0,
+          -0.7301669321106776,
+          0
+        ],
+        "geometry": [
+          "7F8484FB-444E-4F8D-BA3B-3AF03BA8AA84",
+          "7F8484FB-444E-4F8D-BA3B-3AF03BA8AA84"
+        ]
+      }
+    },
+    "stats": {
+      "active": true,
+      "bigId": "earth",
+      "width": 1280,
+      "height": 912,
+      "maskPasses": 1
+    },
+    "mask": {
+      "coverage": 0.11540827165570175,
+      "width": 1280,
+      "height": 912
+    },
+    "identity": [
+      "7DEA656E-00C3-47CD-A587-4532F16DB36F",
+      "275F657B-E74E-4730-A052-88A579EF16B6",
+      "07A71BF1-209F-4B81-BDF9-56D32E0895BA"
+    ],
+    "quadVisible": true,
+    "renderTarget": true,
+    "projection": "OrthographicCamera",
+    "canvasHeight": 747,
+    "theme": "101f2a",
+    "type": "webgl"
+  },
+  "moonJupiter": {
+    "roots": {
+      "moon": {
+        "scale": 0.0729020979020979,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "modelVisible": true,
+        "axis": "x",
+        "anchor": [
+          0,
+          -0.66,
+          0
+        ],
+        "geometry": [
+          "7F8484FB-444E-4F8D-BA3B-3AF03BA8AA84"
+        ]
+      },
+      "jupiter": {
+        "scale": 3,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "modelVisible": true,
+        "axis": "x",
+        "anchor": [
+          0,
+          -0.6275000000000001,
+          0
+        ],
+        "geometry": [
+          "7F8484FB-444E-4F8D-BA3B-3AF03BA8AA84"
+        ]
+      }
+    },
+    "stats": {
+      "active": true,
+      "bigId": "jupiter",
+      "width": 1280,
+      "height": 912,
+      "maskPasses": 3
+    },
+    "mask": {
+      "coverage": 0.15121984649122808,
+      "width": 1280,
+      "height": 912
+    },
+    "identity": [
+      "7DEA656E-00C3-47CD-A587-4532F16DB36F",
+      "275F657B-E74E-4730-A052-88A579EF16B6",
+      "07A71BF1-209F-4B81-BDF9-56D32E0895BA"
+    ],
+    "quadVisible": true,
+    "renderTarget": true,
+    "projection": "OrthographicCamera",
+    "canvasHeight": 747,
+    "theme": "101f2a",
+    "type": "webgl"
+  },
+  "errors": []
+}

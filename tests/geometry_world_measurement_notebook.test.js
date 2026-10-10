@@ -15,9 +15,12 @@ function helper(name) {
   return result;
 }
 
-const measurementNotebookEntry = new Function(helper('formatVolume') + '\n' + helper('parseVolumePrediction') + '\n' + helper('measurementNotebookEntry') + '\nreturn measurementNotebookEntry;')();
+const formatMeasurementQuantity = new Function(helper('formatVolume') + '\n' + helper('formatMeasurementQuantity') + '\nreturn formatMeasurementQuantity;')();
+const measurementNotebookEntry = new Function(helper('formatVolume') + '\n' + helper('formatMeasurementQuantity') + '\n' + helper('parseVolumePrediction') + '\n' + helper('measurementNotebookEntry') + '\nreturn measurementNotebookEntry;')();
 const compareMeasurementRecords = new Function(helper('parseVolumePrediction') + '\n' + helper('compareMeasurementRecords') + '\nreturn compareMeasurementRecords;')();
 const formatMeasurementChange = new Function(helper('formatVolume') + '\n' + helper('formatMeasurementChange') + '\nreturn formatMeasurementChange;')();
+const buildRetrievalCheckpoint = new Function(helper('formatVolume') + '\n' + helper('formatMeasurementQuantity') + '\n' + helper('parseVolumePrediction') + '\n' + helper('completeMeasurementRecords') + '\n' + helper('buildRetrievalCheckpoint') + '\nreturn buildRetrievalCheckpoint;')();
+const checkRetrievalAnswer = new Function(helper('formatVolume') + '\n' + helper('formatMeasurementQuantity') + '\n' + helper('parseRetrievalAnswer') + '\n' + helper('checkRetrievalAnswer') + '\nreturn checkRetrievalAnswer;')();
 
 function makeThreeStub() {
   function vec() {
@@ -108,6 +111,119 @@ beforeEach(() => {
 afterEach(() => {
   if (mounted) { React.act(() => mounted.root.unmount()); mounted.container.remove(); mounted = null; }
   vi.restoreAllMocks(); delete window[ENGINE_KEY]; delete window[ENGINE_KEY + '_failed']; document.body.innerHTML = '';
+});
+
+describe('Geometry World learner-controlled notebook support', () => {
+  function retainedHistory() {
+    return Array.from({ length: 10 }, (_, index) => record({ t: 1000 + index, isComplete: index < 2 }));
+  }
+
+  it('reveals older complete evidence without changing retained records or learner work', () => {
+    const history = retainedHistory();
+    const view = mountTool({ measureHistory: history, retrievalAnswer: '5', retrievalAttemptCount: 1, score: 4 });
+    const before = JSON.stringify(view.bucket());
+    const control = view.container.querySelector('.gw-notebook-record-scope input');
+    expect(control.getAttribute('aria-controls')).toBe('gw-notebook-records');
+    expect(control.closest('label').textContent).toBe('Show all 10 retained scans');
+    expect(panel(view, 'records').querySelectorAll('.gw-history-row')).toHaveLength(5);
+    expect(panel(view, 'records').textContent).not.toContain('Solid rectangular prism');
+    control.focus(); click(control);
+    expect(document.activeElement).toBe(control);
+    expect(panel(view, 'records').querySelectorAll('.gw-history-row')).toHaveLength(10);
+    expect(panel(view, 'records').textContent).toContain('Record 1');
+    expect(panel(view, 'records').textContent).toContain('Solid rectangular prism');
+    expect(panel(view, 'records').textContent).not.toContain('latest 5 shown');
+    expect(view.bucket().measureHistory).toBe(history);
+    expect(JSON.stringify(view.bucket())).toBe(before);
+    expect(window[ENGINE_KEY].logEvent).not.toHaveBeenCalled();
+    click(control);
+    expect(panel(view, 'records').querySelectorAll('.gw-history-row')).toHaveLength(5);
+  });
+
+  it('keeps the chosen record scope across notebook views and reopening', () => {
+    const view = mountTool({ measureHistory: retainedHistory() });
+    click(view.container.querySelector('.gw-notebook-record-scope input'));
+    click(tab(view, 'practice')); click(tab(view, 'records'));
+    view.patch({ hudPanel: null }); view.patch({ hudPanel: 'history' });
+    expect(view.container.querySelector('.gw-notebook-record-scope input').checked).toBe(true);
+    expect(panel(view, 'records').querySelectorAll('.gw-history-row')).toHaveLength(10);
+    expect(view.bucket()).not.toHaveProperty('showAllNotebookRecords');
+  });
+
+  it('starts a different lesson with the recent-record view', () => {
+    const view = mountTool({ measureHistory: retainedHistory() });
+    click(view.container.querySelector('.gw-notebook-record-scope input'));
+    view.patch({ activeLesson: 'areaSurface' });
+    expect(view.container.querySelector('.gw-notebook-record-scope input').checked).toBe(false);
+    expect(panel(view, 'records').querySelectorAll('.gw-history-row')).toHaveLength(5);
+  });
+
+  it.each([1, 5])('shows every retained record without an unnecessary scope control at %s scans', count => {
+    const view = mountTool({ measureHistory: retainedHistory().slice(0, count) });
+    expect(view.container.querySelector('.gw-notebook-record-scope')).toBeNull();
+    expect(panel(view, 'records').querySelectorAll('.gw-history-row')).toHaveLength(count);
+  });
+
+  it('offers a native optional hint without submitting an answer or consuming an attempt', () => {
+    const view = mountTool({ retrievalAnswer: '5', retrievalAttemptCount: 1, score: 4 });
+    click(tab(view, 'practice'));
+    const before = JSON.stringify(view.bucket());
+    const hint = panel(view, 'practice').querySelector('details[data-geometry-retrieval-hint]');
+    expect(hint.open).toBe(false);
+    click(hint.querySelector('summary'));
+    expect(hint.open).toBe(true);
+    expect(hint.querySelector('p').textContent).toBe(buildRetrievalCheckpoint(view.bucket().measureHistory).hint);
+    click(tab(view, 'compare')); click(tab(view, 'practice'));
+    expect(hint.open).toBe(true);
+    expect(JSON.stringify(view.bucket())).toBe(before);
+    expect(retrievalEvents()).toHaveLength(0);
+    click(hint.querySelector('summary'));
+    expect(hint.open).toBe(false);
+  });
+
+  it('keeps a hint open for the same question and closes it when the question changes', () => {
+    const view = mountTool(); click(tab(view, 'practice'));
+    const hint = panel(view, 'practice').querySelector('[data-geometry-retrieval-hint]');
+    click(hint.querySelector('summary'));
+    view.patch({ measureHistory: view.bucket().measureHistory.concat(record({ t: 3000, isComplete: false })) });
+    expect(panel(view, 'practice').querySelector('[data-geometry-retrieval-hint]')).toBe(hint);
+    expect(hint.open).toBe(true);
+    view.patch({ measureHistory: view.bucket().measureHistory.concat(record({ t: 4000 })) });
+    const nextHint = panel(view, 'practice').querySelector('[data-geometry-retrieval-hint]');
+    expect(nextHint).not.toBe(hint); expect(nextHint.open).toBe(false);
+    expect(nextHint.querySelector('p').textContent).toBe('Multiply the two dimensions of the base.');
+  });
+
+  it('marks a solved question as complete while guarding against repeat submission', () => {
+    const view = mountTool(); click(tab(view, 'practice'));
+    write(view.container.querySelector('#gw-retrieval-answer'), '6'); submit(view);
+    const button = panel(view, 'practice').querySelector('.gw-retrieval-button');
+    expect(button.textContent).toBe('Correct'); expect(button.disabled).toBe(true);
+    expect(button.getAttribute('aria-label')).toBe('Answer correct');
+    expect(panel(view, 'practice').querySelector('[data-geometry-practice-state]').dataset.geometryPracticeState).toBe('complete');
+    const result = view.bucket().retrievalResult;
+    submit(view);
+    expect(view.bucket().retrievalResult).toBe(result);
+    expect(retrievalEvents()).toHaveLength(1);
+  });
+
+  it('does not mark a new question invalid because an older checkpoint had a parse error', () => {
+    const view = mountTool({ retrievalResult: { checkpointId: 'older-question', correct: false, valid: false, feedback: 'Old feedback.' } });
+    click(tab(view, 'practice'));
+    const input = view.container.querySelector('#gw-retrieval-answer');
+    expect(input.getAttribute('aria-invalid')).toBe('false');
+    expect(input.getAttribute('aria-describedby')).toBe('gw-retrieval-prompt');
+    expect(panel(view, 'practice').querySelector('[data-geometry-practice-state]').dataset.geometryPracticeState).toBe('ready');
+    expect(panel(view, 'practice').textContent).not.toContain('Old feedback.');
+  });
+
+  it('identifies the complete record behind Practice when newer scans are partial', () => {
+    const view = mountTool({ measureHistory: retainedHistory() }); click(tab(view, 'practice'));
+    expect(panel(view, 'practice').querySelector('[data-geometry-practice-source]').textContent)
+      .toBe('Based on Record 2, the latest complete measurement.');
+    view.patch({ measureHistory: [record(), record({ t: 2000 })] });
+    expect(panel(view, 'practice').querySelector('[data-geometry-practice-source]')).toBeNull();
+  });
 });
 
 describe('Geometry World measurement notebook record model', () => {
@@ -204,7 +320,8 @@ describe('Geometry World measurement notebook navigation', () => {
       volumeRepresentationReason: 'These views keep the same pieces.', volumeRepresentationInvariantChecked: true,
       volumeRepresentationEvidenceChecked: true, predictionReason: 'Equal layers.', volumePrediction: '10' });
     const trigger = view.container.querySelector('.gw-notebook-trigger');
-    expect(trigger.textContent).toBe('Compare measurements'); expect(trigger.getAttribute('aria-controls')).toBe('gw-history-panel');
+    expect(trigger.textContent).toBe('Compare measurements'); expect(trigger.hasAttribute('aria-controls')).toBe(false);
+    expect(view.container.querySelector('#gw-history-panel')).toBeNull();
     click(trigger); await settleFocus();
     expect(view.bucket().hudPanel).toBe('history'); expect(view.container.querySelector('.gw-measure-card')).toBeNull();
     expect(view.bucket().measureResult).toBe(measured); expect(view.bucket().measureHistory).toBe(history);
@@ -292,6 +409,162 @@ describe('Geometry World measurement notebook quantities', () => {
     expect(compare.textContent).toContain('Occupied volume changeNo change (same occupied volume)');
     expect(compare.textContent).toContain('4 fewer square units'); expect(compare.textContent).not.toContain('900');
     expect(compare.querySelector('[data-geometry-reflect-trigger="notebook"]')).toBeTruthy();
+  });
+});
+
+describe('Geometry World retained quantity readability', () => {
+  it.each([
+    [0, 'volume', '0 cubic units'],
+    [1, 'volume', '1 cubic unit'],
+    [2, 'volume', '2 cubic units'],
+    [0.5, 'volume', '1/2 cubic units'],
+    [1.5, 'volume', '1 1/2 cubic units'],
+    [1, 'length', '1 unit'],
+    [2, 'length', '2 units'],
+    [0, 'surface', '0 square units'],
+    [1, 'surface', '1 square unit'],
+    [2, 'surface', '2 square units'],
+    [0.25, 'surface', '1/4 square units']
+  ])('formats %s %s quantity with its own unit', (value, kind, expected) => {
+    expect(formatMeasurementQuantity(value, kind)).toBe(expected);
+  });
+
+  it.each([null, undefined, NaN, Infinity, -1])('does not fabricate a quantity from %s', value => {
+    expect(formatMeasurementQuantity(value, 'volume')).toBeNull();
+    expect(formatMeasurementQuantity(value, 'surface')).toBeNull();
+  });
+
+  it('keeps formatted legacy fields while adding full unit labels without mutating evidence', () => {
+    const input = record({ occupiedVolume: 1, surfaceArea: 1, prediction: 1, surfaceAreaExact: undefined });
+    const before = JSON.stringify(input);
+    expect(measurementNotebookEntry(input)).toMatchObject({ volume: '1', volumeQuantity: '1 cubic unit',
+      surfaceArea: '1', surfaceAreaQuantity: '1 square unit', surfaceAreaState: 'exact', surfaceAreaUnavailable: null,
+      estimate: '1', estimateQuantity: '1 cubic unit' });
+    expect(JSON.stringify(input)).toBe(before);
+    expect(measurementNotebookEntry({ vol: '1/2', prediction: 1.5 })).toMatchObject({ volume: '1/2',
+      volumeQuantity: '1/2 cubic units', estimate: '1 1/2', estimateQuantity: '1 1/2 cubic units' });
+  });
+
+  it.each([
+    [{ isComplete: false, hasFractions: true }, 'incomplete', 'Unavailable until the full structure is measured.'],
+    [{ surfaceArea: null, hasFractions: true }, 'unsupported', 'Exact exposed surface area is unavailable for these block shapes.'],
+    [{ surfaceAreaExact: false }, 'unavailable', 'Exact exposed surface area is unavailable in this record.'],
+    [{ surfaceArea: undefined, surfaceAreaExact: undefined }, 'unavailable', 'Exact exposed surface area is unavailable in this record.'],
+    [{ surfaceArea: NaN }, 'unavailable', 'Exact exposed surface area is unavailable in this record.'],
+    [{ surfaceArea: -1 }, 'unavailable', 'Exact exposed surface area is unavailable in this record.']
+  ])('keeps unavailable surface explicit for %j', (overrides, state, message) => {
+    const input = record(overrides), before = JSON.stringify(input);
+    expect(measurementNotebookEntry(input)).toMatchObject({ surfaceArea: null, surfaceAreaQuantity: null,
+      surfaceAreaState: state, surfaceAreaUnavailable: message });
+    const view = mountTool({ measureHistory: [input] });
+    const row = panel(view, 'records').querySelector('.gw-history-row');
+    const surface = row.querySelector('[data-geometry-record-surface]');
+    expect(surface.previousElementSibling.textContent).toBe('Exposed surface area');
+    expect(surface.getAttribute('data-geometry-record-surface')).toBe(state); expect(surface.textContent).toBe(message);
+    expect(surface.textContent).not.toContain('square units'); expect(JSON.stringify(input)).toBe(before);
+    expect(window[ENGINE_KEY].logEvent).not.toHaveBeenCalled();
+  });
+
+  it('uses singular occupied, surface, and committed-estimate quantities in Records', () => {
+    const view = mountTool({ measureHistory: [record({ occupiedVolume: 1, surfaceArea: 1, prediction: 1 })] });
+    const row = panel(view, 'records').querySelector('.gw-history-row');
+    expect(row.textContent).toContain('Occupied volume1 cubic unit');
+    expect(row.querySelector('[data-geometry-record-surface="exact"]').textContent).toBe('1 square unit');
+    expect(row.querySelector('.gw-notebook-estimate p').textContent).toBe('Committed estimate: 1 cubic unit. Descriptive, ungraded.');
+    expect(row.textContent).not.toContain('1 cubic units'); expect(row.textContent).not.toContain('1 square units');
+  });
+
+  it('uses singular Compare quantities and the equal-volume covering insight without changing comparisons', () => {
+    const history = [record({ occupiedVolume: 1, surfaceArea: 2 }), record({ occupiedVolume: 1, surfaceArea: 1, t: 2000 })];
+    const view = mountTool({ measureHistory: history }); click(tab(view, 'compare'));
+    const compare = panel(view, 'compare');
+    expect(compare.textContent).toContain('Previous occupied volume1 cubic unit');
+    expect(compare.textContent).toContain('Latest occupied volume1 cubic unit');
+    expect(compare.textContent).toContain('Latest exposed surface1 square unit');
+    expect(compare.querySelector('.gw-notebook-insight').textContent).toBe('Latest measurement has 1 fewer square unit of exposed surface for the same occupied volume.');
+    expect(compare.querySelector('[data-geometry-quantity-change="surface"]').textContent).toBe('Latest has 1 fewer square unit');
+    expect(view.bucket().measureHistory).toBe(history); expect(window[ENGINE_KEY].logEvent).not.toHaveBeenCalled();
+  });
+
+  it('preserves learner data while reading explicit fractional surface availability', () => {
+    const history = [record({ occupiedVolume: 1.5, hasFractions: true, surfaceArea: null })];
+    const protectedState = { measureHistory: history, score: 2, npcAnswerDrafts: { guide: '2' },
+      volumePrediction: '1', predictionReason: 'I counted pieces.', retrievalAnswer: '3/2',
+      retrievalAttemptCount: 1, reflectionText: 'Same occupied volume.' };
+    const view = mountTool(protectedState);
+    const before = Object.fromEntries(Object.keys(protectedState).map(key => [key, JSON.stringify(view.bucket()[key])]));
+    for (const name of ['compare', 'practice', 'records']) click(tab(view, name));
+    expect(panel(view, 'records').querySelector('[data-geometry-record-surface]').textContent).toContain('these block shapes');
+    for (const key of Object.keys(protectedState)) expect(JSON.stringify(view.bucket()[key])).toBe(before[key]);
+    expect(window[ENGINE_KEY].logEvent).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['iPhone', true, 'tap Measure.'],
+    ['iPhone', false, 'press M.'],
+    ['Desktop browser', true, 'press M.']
+  ])('matches the estimate cue to active touch controls (%s, %s)', (userAgent, touchMode, expected) => {
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(userAgent);
+    const view = mountTool({ hudPanel: '', showPredictionPanel: true, volumePrediction: '', touchMode });
+    const status = view.container.querySelector('#gw-volume-estimate-status');
+    expect(status.textContent).toContain('Aim at an unmeasured structure, commit, then ' + expected);
+    expect(status.textContent).toContain('not scored');
+    if (expected === 'tap Measure.') expect(status.textContent).not.toContain('press M');
+    expect(view.bucket()).toMatchObject({ volumePrediction: '', touchMode });
+    expect(window[ENGINE_KEY].logEvent).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['scale_height', '1 unit'],
+    ['layer_area', '1 square unit'],
+    ['empty_space', '1 cubic unit'],
+    ['fractional_volume', '1 cubic unit'],
+    ['volume_difference', '1 cubic unit']
+  ])('uses a singular quantity in correct %s feedback only after answering', (concept, expected) => {
+    const checkpoint = { concept, expected: 1, hint: 'Keep the original hint.' };
+    const result = checkRetrievalAnswer(checkpoint, '1', 1);
+    expect(result).toMatchObject({ correct: true, valid: true, answer: 1, expected: 1 });
+    expect(result.feedback).toContain(expected); expect(result.feedback).not.toContain(expected + 's');
+    expect(checkRetrievalAnswer(checkpoint, '2', 1).feedback).not.toContain(expected);
+    expect(checkRetrievalAnswer(checkpoint, '2', 2).feedback).toBe(checkpoint.hint);
+    expect(checkpoint).toEqual({ concept, expected: 1, hint: 'Keep the original hint.' });
+  });
+
+  it('keeps zero and fractional practice feedback valid and plural without changing accepted answers', () => {
+    expect(checkRetrievalAnswer({ concept: 'volume_difference', expected: 0 }, '0'))
+      .toMatchObject({ correct: true, valid: true, expected: 0, feedback: expect.stringContaining('difference is 0 cubic units') });
+    expect(checkRetrievalAnswer({ concept: 'fractional_volume', expected: 0.5 }, '1/2'))
+      .toMatchObject({ correct: true, valid: true, answer: 0.5, feedback: expect.stringContaining('1/2 cubic units less') });
+  });
+
+  it.each([
+    [1, 'Estimate of 1 cubic unit locked'],
+    [1.5, 'Estimate of 1 1/2 cubic units locked'],
+    [undefined, 'Estimate locked'],
+    [0, 'Estimate locked']
+  ])('confirms only a valid committed estimate amount (%s)', (prediction, expected) => {
+    const commitment = { prediction, targetKey: 'student:0,1,0', input: '1', reason: 'Fixed reasoning.' };
+    const view = mountTool({ hudPanel: '', showPredictionPanel: true, volumePrediction: '2', volumeEstimateCommitment: commitment });
+    const status = view.container.querySelector('#gw-volume-estimate-status');
+    expect(status.textContent).toBe(expected + ' for the aimed structure. Measure that same structure; the original stays fixed.');
+    expect(view.container.querySelector('#gw-volume-prediction').disabled).toBe(true);
+    expect(view.bucket().volumeEstimateCommitment).toBe(commitment); expect(view.bucket().volumePrediction).toBe('2');
+    expect(window[ENGINE_KEY].logEvent).not.toHaveBeenCalled();
+  });
+
+  it('keeps fractional and empty-space prompt quantities and unchanged checkpoint evidence', () => {
+    const fractional = record({ occupiedVolume: 1, blocks: 2, hasFractions: true, t: 3000 });
+    const fractionalQuestion = buildRetrievalCheckpoint([record(), fractional]);
+    expect(fractionalQuestion).toMatchObject({ id: 'retrieval-3000-fractional_volume', concept: 'fractional_volume', expected: 1,
+      hint: 'Subtract the occupied volume from the number of whole-cube spaces.' });
+    expect(fractionalQuestion.prompt).toContain('occupies 1 cubic unit.');
+    expect(fractionalQuestion.prompt).not.toContain('1 cubic units');
+    const empty = record({ occupiedVolume: 0.5, boundingVolume: 1, isSolidPrism: false, t: 4000 });
+    const emptyQuestion = buildRetrievalCheckpoint([record(), empty]);
+    expect(emptyQuestion).toMatchObject({ id: 'retrieval-4000-empty_space', concept: 'empty_space', expected: 0.5,
+      hint: 'Subtract occupied volume from bounding-box volume.' });
+    expect(emptyQuestion.prompt).toContain('A bounding box is 1 cubic unit and the structure occupies 1/2.');
+    expect(emptyQuestion.prompt).not.toContain('1 cubic units');
   });
 });
 

@@ -1,0 +1,59 @@
+{
+  "reason": "The viewer adds _baseOpacity to all material userData; the candidate preserves it and adds only frNoseContourStrength.",
+  "sourceReference": "stem_lab_module.js:1671-1674",
+  "failedRun": "native-infant-contrast",
+  "backupDirectory": "fixture-before-opacity-repair",
+  "allowedChangedInputs": [
+    "firstresponse-face-preview.spec.ts",
+    "check-face-fixture.cjs",
+    "prepare-native.cjs"
+  ],
+  "before": {
+    "firstresponse-face-preview.spec.ts": "49c4aada13b9e2ffdc008a0f799f1f14d05e6035decff8ca1d489e083221c72a",
+    "check-face-fixture.cjs": "70d2706b7ad32bea7997c5ed165e7b65cad6271d701699bcddb3735105dda5bd",
+    "prepare-native.cjs": "104ca66cf3b1cba7d2b2703f81072babef2034b94a7655fb6457fd006e19bb4b",
+    "fixture-contract-check.json": "23390782eafdb312051467f419b8f175750a2da38b15e87e546dc7bc1cdb28c4",
+    "browser-fixture-preparation.json": "1f976644cbbbc00026533ef95ca73020b621cd51781906a623ef47de4c2a9279"
+  },
+  "after": {
+    "firstresponse-face-preview.spec.ts": "9d28f722366e653c262a83669ceb197d32cd3beca69b91fb9b0bfc2d30b343a5",
+    "check-face-fixture.cjs": "14851ba07b6f3a25af85df8b722c2c228d9013545dd6586bb57e3f8ce26e8410",
+    "prepare-native.cjs": "f480183cf7295a7c9690677b3dfd305312e4115581184fc09ca7f85875280dcb"
+  },
+  "unchanged": {
+    "before.js": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76",
+    "candidate.js": "af6ecb094af6d67ebb0955170a55e0a9726308c59f4ddd9b196d56cfe434e4c7",
+    "delta.json": "237030750e60f0e1e6476c081c27629ee4b5e79e889da06e726253a4fd3c93a0",
+    "run-face-browser.cjs": "f321aa44fec96cd81e95c90efbbd6ec5764033de6ed84b1cbf409f44e8eaa849",
+    "playwright-face.config.cjs": "dda618a55a673d8c544dfc13f4273c04d406d7bdd06c8734acddb93ebcdfe7be",
+    "face-capture-png.cjs": "6009565cd97b35c874ff22325427e40823b4ff197118ea3870d0b2996bd30829",
+    "face-mount-window.cjs": "9e3d95fe4ce8ae16ca7d4a994d26250e064873d675b930fb23d63b33ba43b246",
+    "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "vendor/three-r128/three.min.js": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+    "stem_lab/stem_lab_module.js": "cf56996d420aa6112626c4979d4a8e3963c9b199bf31deebb3e29d3910227de1",
+    "stem_lab/stem_tool_firstresponse.js": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76"
+  },
+  "validationPending": false,
+  "browserLaunched": false,
+  "backupFiles": {
+    "firstresponse-face-preview.spec.ts": "firstresponse-face-preview.spec.ts.saved",
+    "check-face-fixture.cjs": "check-face-fixture.cjs",
+    "prepare-native.cjs": "prepare-native.cjs",
+    "fixture-contract-check.json": "fixture-contract-check.json",
+    "browser-fixture-preparation.json": "browser-fixture-preparation.json"
+  },
+  "listDiscoveryRepair": {
+    "reason": "Playwright discovered the archived spec under testDir; saved fixture extension changed to .spec.ts.saved without changing its bytes.",
+    "activeConfigUnchanged": true
+  },
+  "validation": {
+    "passed": true,
+    "contractFile": "fixture-contract-check.json",
+    "contractSHA256": "f7d7d47088d3f2bf289f1c1e8a9dd3c7520d7343ea4755c35b9bccf60888124d",
+    "negativeChecks": 12,
+    "listedWorkflows": 3,
+    "mutationRejected": true,
+    "restoreVerified": true,
+    "browserLaunched": false
+  }
+}

@@ -17,7 +17,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 // - Print Lab's "Start in Geometry World" landed on the Home chooser.
 // - If the host ignored the tool switch, the fallback STL waited 20 s.
 
-let THREE, builder, makeShape;
+let THREE, builder, makeShape, math, coreMath, nativeMeasurement;
 const volumes = { cube: 1, halfA: 0.5, halfB: 0.5, quarter: 0.25 };
 beforeAll(() => {
   const exports = {};
@@ -29,6 +29,10 @@ beforeAll(() => {
   builder = window.StemLab.geometryWorldBuilderPure;
   const core = readFileSync('stem_lab/stem_tool_geometryworld.js', 'utf8');
   makeShape = new Function(core.slice(core.indexOf('  function createShapeGeometry('), core.indexOf('  // Format fractional volume for display')) + '\nreturn createShapeGeometry;')();
+  coreMath = core.slice(core.indexOf('  function formatVolume(vol)'), core.indexOf('  var ACHIEVEMENTS = ['));
+  math = new Function(coreMath + '\nreturn { retrievalMeasurementCount, buildRetrievalCheckpoint, checkRetrievalAnswer };')();
+  const start = core.indexOf('engine.performMeasurement = function(inputMode) {');
+  nativeMeasurement = core.slice(start, core.indexOf('\n        };', start) + '\n        };'.length);
 });
 afterEach(() => {
   ['__alloGeometryWorldReturnProject', '__alloPrintLabPendingHandoff', '__alloGeometryWorldPendingBuild', '__geoWorldEngine',
@@ -73,7 +77,89 @@ const HOUSE = [
 ];
 const VOLUME_EXPLORER = { title: 'Volume Explorer', ground: { xMin: 0, xMax: 1, zMin: 0, zMax: 1, y: 0, type: 'grass' } };
 
+function oddPracticeState(status) {
+  const records = Array.from({ length: 10 }, (_, index) => ({ L: 2, W: 3, H: 4, occupiedVolume: 24,
+    vol: '24', boundingVolume: 24, blocks: 24, isSolidPrism: true, isComplete: true, t: index + 1002 }));
+  const checkpoint = math.buildRetrievalCheckpoint(records, 11);
+  const result = status === 'correct' ? { ...math.checkRetrievalAnswer(checkpoint, '6', 1), checkpointId: checkpoint.id, attempt: 1 } : null;
+  return { activeLesson: 'builderSandbox', worldActive: true, measureHistory: records,
+    retrievalAnswer: status === 'correct' ? '6' : '3/2', retrievalResult: result, retrievalAttemptCount: status === 'correct' ? 1 : 0,
+    score: 4, answeredNpcs: { 'Layer Counter': true }, npcAnswerDrafts: { 'Layer Counter': 'kept' } };
+}
+
+function nextNativeScan(engine, ctx) {
+  const noop = () => {};
+  engine.blockUnderCrosshair = () => ({ object: { userData: { gridPos: { x: 0, y: 1, z: 0 } } } });
+  engine.measureStructure = () => ({ L: 2, W: 3, H: 4, count: 24, occupiedVolume: 24, formattedOccupiedVolume: '24',
+    boundingVolume: 24, fillPercent: 100, hasFractions: false, isSolidPrism: true, isComplete: true,
+    minX: 0, minY: 1, minZ: 0, materialCounts: { stone: 24 }, blocks: [{ x: 0, y: 1, z: 0 }] });
+  engine.logEvent = noop;
+  new Function('engine', 'upd', 'setLayerFocus', 'sfxMeasure', 'showDimLines', 'showSelectionGlow',
+    'spawnPlaceParticles', 'announceToSR', 'runAchievementCheck', 'awardXP', coreMath + '\n' + nativeMeasurement)
+  (engine, (key, value) => ctx.updateMulti('geometryWorld', typeof key === 'object' ? key : { [key]: value }), noop, noop, noop, noop, noop, noop, noop, noop);
+  engine.performMeasurement('key');
+}
+
 describe('coming back to Geometry World through the app', () => {
+  it.each(['draft', 'correct'])('preserves odd-scan practice %s through a complete project return and the next native scan', status => {
+    vi.useFakeTimers();
+    const initial = oddPracticeState(status), records = initial.measureHistory;
+    const before = engineFor(HOUSE), ctxA = stateCtx(initial);
+    before._retrievalMeasurementProgress = { history: records, completeCount: 11 };
+    before._predictionState = { history: records };
+    const expected = math.buildRetrievalCheckpoint(records, 11);
+    const saved = builder.captureProject(ctxA, before, 'gw-practice');
+    expect(saved.retrievalMeasurementCount).toBe(11);
+    expect(saved.state.measureHistory).not.toBe(records);
+    expect(saved.state).not.toHaveProperty('retrievalMeasurementCount');
+    window.__alloGeometryWorldReturnProject = saved;
+    const after = engineFor([], VOLUME_EXPLORER), ctx = stateCtx({});
+    const publish = ctx.updateMulti;
+    ctx.updateMulti = (tool, patch) => {
+      if (patch.measureHistory) {
+        expect(after._retrievalMeasurementProgress.history).toBe(patch.measureHistory);
+        expect(after._predictionState.history).toBe(patch.measureHistory);
+      }
+      publish(tool, patch);
+    };
+    expect(builder.restoreProject(ctx, after, { projectId: saved.id })).toBe(true);
+    const restored = ctx.toolData.geometryWorld;
+    expect(restored).toMatchObject({ retrievalAnswer: initial.retrievalAnswer, retrievalResult: initial.retrievalResult,
+      retrievalAttemptCount: initial.retrievalAttemptCount, score: 4, answeredNpcs: initial.answeredNpcs, npcAnswerDrafts: initial.npcAnswerDrafts });
+    expect(math.buildRetrievalCheckpoint(restored.measureHistory,
+      math.retrievalMeasurementCount(restored.measureHistory, after._retrievalMeasurementProgress))).toEqual(expected);
+    nextNativeScan(after, ctx);
+    expect(after._retrievalMeasurementProgress.completeCount).toBe(12);
+    expect(math.buildRetrievalCheckpoint(ctx.toolData.geometryWorld.measureHistory, 12)).toMatchObject({ concept: 'scale_height', expected: 8 });
+    expect(ctx.toolData.geometryWorld).toMatchObject({ score: 4, answeredNpcs: initial.answeredNpcs, npcAnswerDrafts: initial.npcAnswerDrafts });
+  });
+
+  it('does not capture stale or invalid cadence and keeps it outside editable model metadata', () => {
+    const state = oddPracticeState('draft'), engine = engineFor(HOUSE), ctx = stateCtx(state);
+    for (const count of [undefined, null, 9, 10.5, '11', Infinity, Number.MAX_SAFE_INTEGER + 1]) {
+      engine._retrievalMeasurementProgress = { history: state.measureHistory, completeCount: count };
+      expect(builder.captureProject(ctx, engine, 'invalid-count').retrievalMeasurementCount).toBeNull();
+    }
+    engine._retrievalMeasurementProgress = { history: state.measureHistory.slice(), completeCount: 11 };
+    expect(builder.captureProject(ctx, engine, 'stale-history').retrievalMeasurementCount).toBeNull();
+    engine._retrievalMeasurementProgress = { history: state.measureHistory, completeCount: 11 };
+    expect(builder.captureProject(ctx, engine, 'native-count').retrievalMeasurementCount).toBe(11);
+    expect(JSON.stringify(builder.editableWorld(engine))).not.toContain('retrievalMeasurementCount');
+    expect(JSON.stringify(builder.buildGeometryWorldStl(engine, HOUSE).sourceModel)).not.toContain('retrievalMeasurementCount');
+  });
+
+  it.each([undefined, 9, '11'])('uses legacy fallback for return snapshots without valid cadence (%s)', count => {
+    vi.useFakeTimers();
+    const state = oddPracticeState('draft'), saved = builder.captureProject(stateCtx(state), engineFor(HOUSE), 'legacy-practice');
+    saved.retrievalMeasurementCount = count; window.__alloGeometryWorldReturnProject = saved;
+    const after = engineFor([], VOLUME_EXPLORER), ctx = stateCtx({});
+    after._retrievalMeasurementProgress = { history: saved.state.measureHistory, completeCount: 13 };
+    expect(builder.restoreProject(ctx, after, { projectId: saved.id })).toBe(true);
+    expect(after._retrievalMeasurementProgress).toBeUndefined();
+    expect(math.buildRetrievalCheckpoint(ctx.toolData.geometryWorld.measureHistory,
+      math.retrievalMeasurementCount(ctx.toolData.geometryWorld.measureHistory, after._retrievalMeasurementProgress))).toMatchObject({ concept: 'scale_height' });
+  });
+
   it('reopens the Print Lab project behind Home instead of an empty sandbox', () => {
     const ctxA = stateCtx({ activeLesson: 'builderSandbox', worldActive: true });
     const before = engineFor(HOUSE);

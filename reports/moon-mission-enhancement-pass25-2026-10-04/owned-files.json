@@ -1,4 +1,5 @@
 {
-  "tests/moonmission_descent_surface.test.js": "383a92f90dfeb7730bb36f7735dbaef215499fd4f024831937f7a47a63bada14",
+  "tests/moonmission_descent_surface.test.js": "24a494e682741c0da87cab0fd5b71f45e55e096d54de664e68d239e7dc9259ec",
+  "tests/e2e/moon-mission-descent-surface.spec.ts": "018fd4246aceafcccf46b3307fd205098275a863d04835f0524209f117adc4e6",
   "reports/moon-mission-enhancement-pass25-2026-10-04/playwright.config.ts": "c23381f13f6aa9ba0425799a38b948006063d9ff00cef2597a39a6bd744fad22"
 }

@@ -1,0 +1,190 @@
+{
+  "accepted": true,
+  "beforeSHA256": "38f468c92a949621adcf6eea4765c8a3aaf2626d35132996df1d17239b97a542",
+  "candidateSHA256": "0cc79f45f9a57ce3c4f1d5fa674b56f462a2418c4b253dbc648557b37a6b2639",
+  "inputs": {
+    "before.js": {
+      "SHA256": "38f468c92a949621adcf6eea4765c8a3aaf2626d35132996df1d17239b97a542",
+      "bytes": 780288
+    },
+    "candidate.js": {
+      "SHA256": "0cc79f45f9a57ce3c4f1d5fa674b56f462a2418c4b253dbc648557b37a6b2639",
+      "bytes": 780435
+    },
+    "delta.json": {
+      "SHA256": "eed676c225276ddbdb18d9ca89be8f20c00e2cea9d68f3a834a197d2a2e23e19",
+      "bytes": 1389
+    },
+    "verify-collar.cjs": {
+      "SHA256": "f6e8b3af9ac57e4262677ac9a0e4543c2314e30459d4e3d91ce98e710d6945f5",
+      "bytes": 9645
+    },
+    "firstresponse_collar_refinement_check.cjs": {
+      "SHA256": "f6e8b3af9ac57e4262677ac9a0e4543c2314e30459d4e3d91ce98e710d6945f5",
+      "bytes": 9645
+    },
+    "firstresponse_collar_mesh_checks.cjs": {
+      "SHA256": "0ceb950379b96bfdf0042f76726f97816f041bc56fea60ecdaa9751beb741ae9",
+      "bytes": 11818
+    },
+    "firstresponse_collar_surface.test.js": {
+      "SHA256": "1cc67b67085b9f01af89fe604b2841b8b8afaabf4de8e7e7a954bb1d0160f27f",
+      "bytes": 2508
+    },
+    "verification-early.json": {
+      "SHA256": "73828c0d50870c926f3ae6b5314b1136d65fa94dab8c8586c49bee9cd648f5da",
+      "bytes": 4538
+    },
+    "verification-full.json": {
+      "SHA256": "23e14ad990dfc48985d3e136f6454561e9531f37478dc883179ba8490ddc8c6c",
+      "bytes": 36391
+    },
+    "check-cpr-preservation.cjs": {
+      "SHA256": "260ea4a4b3ec19236915824d4ea86b2a50614182aa0a875d2f3fc0b5602cee2f",
+      "bytes": 4896
+    },
+    "cpr-preservation.json": {
+      "SHA256": "ff9657bb80fffcf06e159c266f00f18445740b3ec43d7d34d3e04688188caa9a",
+      "bytes": 534299
+    },
+    "run-vitest-wrapper.cjs": {
+      "SHA256": "aea2e3dbaa93be78634688b1c218e56b4283e0058d63c7b7e3213346f7ca14f4",
+      "bytes": 3859
+    },
+    "vitest-wrapper-summary.json": {
+      "SHA256": "00e30c6a0c3ccd015c5d38b3c44501e46abe9183786af8ec214c7f28815c8e4c",
+      "bytes": 1606
+    },
+    "vitest-wrapper/run.log": {
+      "SHA256": "ceac03174fdbe63325df628f10947aeace0f8ac5d4d85946b85db79af9a0702f",
+      "bytes": 616
+    },
+    "vitest-wrapper/launch.json": {
+      "SHA256": "5d5e8b41b5202b0d5b4308c5aed2d55ea43e2e47dbac74b37f19daf70e94abbd",
+      "bytes": 1388
+    },
+    "vitest-wrapper/vitest-results.json": {
+      "SHA256": "8f8924ab465715c0064641df076d0babd3545d15824107f56c8ba89a284baf2f",
+      "bytes": 5254
+    },
+    "vitest-wrapper/vitest.config.cjs": {
+      "SHA256": "795f2600e5f314d9d86ac82bf743cef001b7177a463b071b1f4028195206f395",
+      "bytes": 753
+    },
+    "vitest-wrapper/initial-worker-timeout/run.log": {
+      "SHA256": "b7e57a0938009bc5cc261728a889c6988692c3e855b8ca322745eb642427f6ce",
+      "bytes": 1551
+    },
+    "vitest-wrapper/initial-worker-timeout/launch.json": {
+      "SHA256": "c0f89ef0a27d1b55bc88587b6b97300391b085eca298ff766c1c7b089df826ee",
+      "bytes": 1388
+    },
+    "vitest-wrapper/initial-worker-timeout/vitest-results.json": {
+      "SHA256": "29c06c785c092b7c0f366b936d028940ae2ebfb2e94047b2a468cace439e36cf",
+      "bytes": 483
+    },
+    "vitest-wrapper/initial-worker-timeout/vitest.config.cjs": {
+      "SHA256": "567f4916d810c1fb906a636459fc7c23f461de5755e47fb515f0d99a4047dc66",
+      "bytes": 751
+    },
+    "vitest-wrapper/initial-worker-timeout/run-vitest-wrapper.cjs": {
+      "SHA256": "812b444b0e462100baf1039a278d858700a4c1abcc22819e422a8ecaf926ddce",
+      "bytes": 3857
+    },
+    "vitest-wrapper/initial-worker-timeout/summary.json": {
+      "SHA256": "d71769f3bf29e0321e1760adf2b5f0ebd0abe6b07f377f54df3e82bac67a9b27",
+      "bytes": 1606
+    }
+  },
+  "geometry": {
+    "cases": 12,
+    "assertions": 182316,
+    "neckCapSamples": 2352,
+    "coveredNeckSideSamples": 12236,
+    "sleeveRootSamples": 1152,
+    "maximumCollarChordError": 0.0003918981721116044,
+    "maximumBoundaryNormalDifference": 0.20454273864979633,
+    "preservesAllGeometryOutsideTorso": true,
+    "preservesAllAcceptedTorsoSectionWidthsAndLengths": true,
+    "preservesAllAcceptedTorsoSectionPositionsFromNegativePoint75": true,
+    "preservesChestTrianglesAtAndPastBoundary": true,
+    "preservesChestNormalsStrictlyPastBoundary": true,
+    "closedOutwardShell": true,
+    "resourcesStableAndDisposedOnce": true
+  },
+  "cpr": {
+    "cases": 2,
+    "passed": true,
+    "scope": "Two maximum-compression regression checks. Complete cap and covered-side burial is claimed only for the12 recovery cases.",
+    "results": [
+      {
+        "age": "adult",
+        "tab": "depth",
+        "baselineCapOutside": 64,
+        "candidateCapOutside": 64,
+        "baselineSideOutside": 506,
+        "candidateSideOutside": 498
+      },
+      {
+        "age": "infant",
+        "tab": "coach",
+        "baselineCapOutside": 0,
+        "candidateCapOutside": 0,
+        "baselineSideOutside": 230,
+        "candidateSideOutside": 109
+      }
+    ]
+  },
+  "mutations": {
+    "sparseBaselineRejected": true,
+    "missingTriangleRejected": true,
+    "baselinePenetrationRejected": true,
+    "restoreReadback": true,
+    "scope": "Private in-memory geometries only; source/helper/checker files re-read unchanged after execution.",
+    "evidence": {
+      "sparseBaselineRejected": "collar longitudinal chord error stays below 0.00045 local width units",
+      "missingTriangleRejected": "torso forms one closed shell with opposing edge winding",
+      "baselinePenetrationRejected": "covered neck sides stay beneath actual collar triangles behind the shirt opening",
+      "baselineCoveredSideOutside": 100,
+      "restoredTopology": {
+        "vertices": 2913,
+        "triangles": 5680,
+        "volume": 0.5786500422321418,
+        "minimumNormalLength": 0.9999999589871917,
+        "maximumNormalLength": 1.0000000399509903,
+        "minimumFaceNormalDot": 0.5227664018965952,
+        "minimumSeamDot": 0.9999999349059165,
+        "maximumSeamGap": 6.123234262925839e-17
+      },
+      "restoreReadback": true,
+      "mutationScope": "private in-memory geometry only"
+    }
+  },
+  "rawVitestTest": {
+    "file": "tests/firstresponse_collar_surface.test.js",
+    "frameworkExecuted": true,
+    "passed": 1,
+    "filteredCases": 12,
+    "selectedCase": "adult.*pose5.*contrast=false",
+    "note": "One actual Vitest adult recovery pose5 case passed using byte-identical candidate source, raw test and shared helpers. The focused standalone run exercised all12 recovery cases and mutation checks through the same helper assertions."
+  },
+  "retainedDiagnostics": [
+    {
+      "path": "vitest-wrapper/initial-worker-timeout/",
+      "reason": "The initial forks worker timed out during startup before any test was loaded. The same source, test and helper bytes were retried with one thread worker."
+    },
+    {
+      "path": "verification-early.json",
+      "reason": "Density-only intermediate candidate5d passed the early adult5 checks before the age-specific opening refinement."
+    }
+  ],
+  "checker": {
+    "file": "dev-tools/firstresponse_collar_refinement_check.cjs",
+    "portable": true,
+    "byteIdenticalToExecutedPrivateChecker": true,
+    "supportsSelftest": true,
+    "command": "node dev-tools/firstresponse_collar_refinement_check.cjs",
+    "selftestCommand": "node dev-tools/firstresponse_collar_refinement_check.cjs --selftest"
+  },
+  "scope": "Collar density and age-specific opening depth, with recovery attachment checks. The first section half-depth is .19 for infant and .15 otherwise; only the first interval changes contour. All accepted section widths/lengths and all section positions from z=-.75 onward remain exact. Boundary shading normals at z=-.55 may change because the adjoining collar triangles are smaller. Positions and topology at that boundary and all geometry farther into the chest remain exact. The density-only initial check is retained as an intermediate diagnostic. No full application suite or build was run."
+}

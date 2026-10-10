@@ -1,0 +1,50 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/stem_position_bias_fixes.test.js
+[deferred-jsdom] Initializing the official DOM environment.
+
+stdout | tests/stem_position_bias_fixes.test.js
+[deferred-jsdom] DOM environment ready.
+
+stdout | tests/stem_position_bias_fixes.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/stem_position_bias_fixes.test.js
+[deferred-jsdom] Existing repository setup loaded.
+
+ ✓ tests/stem_position_bias_fixes.test.js > solarsystem quiz shuffle > bank integrity: every answer is among its options, feedback keyed by text 8ms
+ ✓ tests/stem_position_bias_fixes.test.js > solarsystem quiz shuffle > shuffle is a permutation, leaves the source untouched, and moves the answer to every slot 13ms
+ ✓ tests/stem_position_bias_fixes.test.js > solarsystem quiz shuffle > the draw site stores shuffled options into quiz state (regression pin) 0ms
+ ✓ tests/stem_position_bias_fixes.test.js > behaviorlab rotation > rotation preserves the correct answer TEXT for every question 1ms
+ ✓ tests/stem_position_bias_fixes.test.js > behaviorlab rotation > the authored slot-2 pile-up is gone after rotation 1ms
+ ✓ tests/stem_position_bias_fixes.test.js > behaviorlab rotation > rotation is applied in the tool itself (regression pins) 0ms
+ ✓ tests/stem_position_bias_fixes.test.js > companionplanting rotation > quizzes grade by text and the answer survives rotation in every question 1ms
+ ✓ tests/stem_position_bias_fixes.test.js > companionplanting rotation > both banks spread their answers across slots after rotation 0ms
+ ✓ tests/stem_position_bias_fixes.test.js > companionplanting rotation > rotation is applied in the tool itself (regression pins) 0ms
+ ✓ tests/stem_position_bias_fixes.test.js > galaxy quiz answer position > the authored bank really is biased (calibration — if this passes, the measurement is broken) 2ms
+ ✓ tests/stem_position_bias_fixes.test.js > galaxy quiz answer position > rotation spreads correct answers evenly across all four slots 6ms
+ ✓ tests/stem_position_bias_fixes.test.js > galaxy quiz answer position > rotation preserves each question option set exactly 4ms
+ ✓ tests/stem_position_bias_fixes.test.js > galaxy quiz answer position > rotation is applied to the bank the tool actually renders 1ms
+ ✓ tests/stem_position_bias_fixes.test.js > galaxy quiz answer position > the quiz still grades by option text, which is what makes rotation safe 1ms
+ ✓ tests/stem_position_bias_fixes.test.js > economicslab scenario answer position > the authored bank really is biased (calibration) 1ms
+ ✓ tests/stem_position_bias_fixes.test.js > economicslab scenario answer position > rotation leaves no dead slot and spreads answers evenly 1ms
+ ✓ tests/stem_position_bias_fixes.test.js > economicslab scenario answer position > rotation moves the index with the options, so the ANSWER never changes 1ms
+ ✓ tests/stem_position_bias_fixes.test.js > economicslab scenario answer position > rotation is applied to the bank the tool renders 0ms
+ ✓ tests/stem_position_bias_fixes.test.js > semiconductor render-time answer placement > extraction finds the full 42-question catalogue (practice + boss) 2ms
+ ✓ tests/stem_position_bias_fixes.test.js > semiconductor render-time answer placement > orderOptions is a permutation that keeps the answer present, for every question 4ms
+ ✓ tests/stem_position_bias_fixes.test.js > semiconductor render-time answer placement > rendered answer positions have no dead slot and no exploitable pile-up 1ms
+ ✓ tests/stem_position_bias_fixes.test.js > semiconductor render-time answer placement > orderOptions is applied at both render sites, not merely defined 0ms
+ ✓ tests/stem_position_bias_fixes.test.js > deployment copies > solarsystem public mirror is byte-identical to the root copy 350ms
+ ✓ tests/stem_position_bias_fixes.test.js > deployment copies > behaviorlab public mirror is byte-identical to the root copy 127ms
+ ✓ tests/stem_position_bias_fixes.test.js > deployment copies > companionplanting public mirror is byte-identical to the root copy 209ms
+ ✓ tests/stem_position_bias_fixes.test.js > deployment copies > galaxy public mirror is byte-identical to the root copy 204ms
+ ✓ tests/stem_position_bias_fixes.test.js > deployment copies > economicslab public mirror is byte-identical to the root copy 162ms
+ ✓ tests/stem_position_bias_fixes.test.js > deployment copies > semiconductor public mirror is byte-identical to the root copy 203ms
+
+ Test Files  1 passed (1)
+      Tests  28 passed (28)
+   Start at  18:11:02
+   Duration  5.21s (transform 147ms, setup 2.47s, import 1.02s, tests 1.32s, environment 0ms)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/solar-quiz-enhancement-2026-10-09/unit-shuffle-results.json

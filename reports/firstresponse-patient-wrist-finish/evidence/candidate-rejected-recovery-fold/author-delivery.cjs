@@ -1,0 +1,67 @@
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const previous=path.join(__dirname,'../firstresponse-support-fit-work/finish-pass.cjs');
+const replace=(s,old,value)=>{assert.equal(s.split(old).length,2,'Unique replacement: '+old.slice(0,100));return s.replace(old,value);};
+let code=fs.readFileSync(previous,'utf8');
+code=code.replaceAll('164407bb58546fc91584761e51e9a907d2eacd33442a0a5fae31da0c22ef37c0','BASELINE_PLACEHOLDER')
+ .replaceAll('69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242','38660be59270be0b42e34649f7c7ef62f91a804671d3469631b48b5292a35be4')
+ .replaceAll('BASELINE_PLACEHOLDER','69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242')
+ .replaceAll('firstresponse-support-frame','firstresponse-patient-wrist-finish')
+ .replaceAll('firstresponse_support_frame_delta','firstresponse_patient_wrist_finish_delta')
+ .replaceAll('firstresponse_nose_contour_delta','firstresponse_support_frame_delta')
+ .replaceAll("rows.length===18,'Expected 18 history reversals'","rows.length===19,'Expected 19 history reversals'")
+ .replaceAll("size===18,'Duplicate history reversal'","size===19,'Duplicate history reversal'");
+code=replace(code,"const nativeDirectory=id=>'native-'+id;","const nativeDirectory=id=>id==='adult-wide'?'native-adult-palm-prototype':'native-'+id;");
+code=replace(code,"function sharedSnapshot(history,integration,after,rawEdit){","function sharedSnapshot(history,integration,after){");
+code=replace(code,"integration.edits.find(e=>e.file===file)||(rawEdit&&rawEdit.file===file?rawEdit:null)","integration.edits.find(e=>e.file===file)");
+code=replace(code,"  const out={};for(const [file,h]of Object.entries(history.sourceHashes))",`  for(const [folder,pattern,kind] of [['tests',/^firstresponse.*\\.test\\.js$/,'fixtureHashes'],['dev-tools',/^firstresponse.*\\.cjs$/,'checkerHashes'],['tests/helpers',/^firstresponse_.*_delta\\.(cjs|json)$/,'helperHashes']]){const expected=Object.keys(history[kind]);if(after&&kind==='helperHashes')expected.push(...integration.additions.map(item=>path.basename(item.file)));same(fs.readdirSync(path.join(root,folder)).filter(name=>pattern.test(name)).sort(),expected.sort(),'Shared file inventory changed '+folder);}
+  const out={};for(const [file,h]of Object.entries(history.sourceHashes))`);
+const rawStart=code.indexOf("  const rawEdit=json(local('raw-test-edit.json'))");
+const rawEnd=code.indexOf("  const audit=json(local('fixture-audit.json'))",rawStart);
+assert.ok(rawStart>0&&rawEnd>rawStart);
+code=code.slice(0,rawStart)+fs.readFileSync(path.join(__dirname,'delivery-raw-cpu.txt'),'utf8')+code.slice(rawEnd);
+const auditStart=code.indexOf("  const audit=json(local('fixture-audit.json'))");
+const auditEnd=code.indexOf("  const visual=json(local('visual-review.json'))",auditStart);
+assert.ok(auditStart>0&&auditEnd>auditStart);
+code=code.slice(0,auditStart)+fs.readFileSync(path.join(__dirname,'delivery-native.txt'),'utf8')+code.slice(auditEnd);
+code=replace(code,"  const audit=json(local('fixture-audit.json'));",`  const cpuAudit=json(local('delivery-cpu-schema-review.json'));
+  must(cpuAudit.accepted===true&&cpuAudit.sourceSHA256===sourceSHA&&cpuAudit.checkerSHA256===cpu.checkerSHA256&&cpuAudit.reportSHA256===hash(read(local('geometry-contract-palm/shading-verification.json')))&&cpuAudit.gateFragmentSHA256===hash(read(local('delivery-raw-cpu.txt')))&&cpuAudit.auditorSHA256===hash(read(local('audit-cpu-delivery.cjs')))&&cpuAudit.cases===30&&cpuAudit.assertions===cpu.assertions&&cpuAudit.sharedWrites===0,'CPU delivery schema audit stale or incomplete');
+  same(cpuAudit.negative.map(row=>row.type).sort(),['failed-report','newly-reversed-face'],'CPU delivery schema selftests incomplete');
+  must(cpuAudit.negative.every(row=>row.rejected===true&&typeof row.error==='string'&&row.error.length>0&&row.restoredAndReread===true&&row.restoredSHA256===cpuAudit.reportSHA256),'CPU delivery schema mutation not rejected/restored');
+  guardFile(local('cpu-delivery-palm-selftest/report.json'),cpuAudit.reportSHA256);
+  const audit=json(local('fixture-audit.json'));`);
+const requiredStart=code.indexOf("  const required=['baseline.json'");
+const requiredEnd=code.indexOf("  for(const name of required)include(local(name));",requiredStart);
+code=code.slice(0,requiredStart)+`  const required=['baseline.json','before.js','candidate.js','delta.json','history-integration.json','history-preservation.json','history-input-snapshot.json','prepare-history.cjs','snapshot-history.cjs','author-history.cjs','author-delivery.cjs','author-candidate.cjs','prepare-browser-fixture.cjs','delivery-raw-cpu.txt','delivery-native.txt','delivery-readme.txt','verify-patient-wrist-finish.cjs','geometry-contract/shading-verification.json','audit-preview-fixture.cjs','fixture-audit.json','firstresponse-face-preview.spec.ts','run-face-browser.cjs','playwright-face.config.cjs','face-capture-png.cjs','face-mount-window.cjs','patient-wrist-contract.cjs','visual-review.json','independent-visual-review.json','finish-pass.cjs','finish-selftest.json','run-raw-wrist.cjs','firstresponse_patient_wrist_finish_delta.cjs','firstresponse_patient_wrist_finish_delta.json'];\n`+code.slice(requiredEnd);
+code=code.replace('candidate-rejected-|candidate-history$', 'geometry-contract(?!$)|winding-diagnostics$|palm-prototype-diagnostics$|palm-early-|palm-query-diagnostic$|candidate-rejected-|candidate-history$');
+code=replace(code,"'verify-patient-wrist-finish.cjs','geometry-contract/shading-verification.json'","'verify-patient-wrist-palm.cjs','geometry-contract-palm/shading-verification.json'");
+code=code.replace('cpu|check-nose-contour|fixture-audit','cpu|winding-diagnosis|check-nose-contour|fixture-audit');
+code=replace(code,"const failureFile=local(entry.name+'/failure.json');",`if(entry.name==='native-adult-wide'){const archived=local('candidate-rejected-root-only/native-adult-wide'),original=local(entry.name);const originalFiles=walk(original),archivedFiles=walk(archived);same(originalFiles.map(file=>path.relative(original,file)),archivedFiles.map(file=>path.relative(archived,file)),'Superseded adult evidence inventory drift');for(const file of originalFiles)guardFile(path.join(archived,path.relative(original,file)),hash(read(file)));must(json(path.join(archived,'summary.json')).finalSHA==='dc9deade4909e37e9aa4918309541168696e808b7eb066575fea3fa91d574c7e','Superseded adult source drift');continue;}const failureFile=local(entry.name+'/failure.json');`);
+code=code.replace("  for(const name of required)include(local(name));", "  required.push('reclaimed-archived-copies.json','accept-final-cpu.cjs','summarize-cpu.cjs','correct-winding-check.cjs','adjust-probe.cjs','diagnose-winding.cjs','checker-before-probe-adjustment.cjs.saved','archive-root-only.cjs','author-palm-prototype.cjs','guard-palm-prototype.cjs','check-palm-prototype.cjs','palm-prototype-scope.json','diagnose-palm-boundary.cjs','palm-boundary-diagnosis.json','diagnose-caps.cjs','cap-diagnosis.json','write-root-visual-review.cjs','write-independent-visual-review.cjs');\n  for(const name of required)include(local(name));\n  for(const name of ['early-check','early-diagnostic','early-corrected'])for(const file of walk(local(name)))include(file);");
+code=replace(code,"'write-root-visual-review.cjs','write-independent-visual-review.cjs');","'write-root-visual-review.cjs','write-independent-visual-review.cjs','author-palm-checker.cjs','palm-check-functions.txt','palm-check-mutations.txt');");
+code=code.replaceAll('raw-dependency-diagnostics','raw-dependency-diagnostics').replaceAll('sharedSnapshot(history,integration,false,rawEdit)','sharedSnapshot(history,integration,false)');
+const readmeStart=code.indexOf('  const images=views.map(id=>');
+const readmeEnd=code.indexOf("  packageFiles.set('README.md',Buffer.from(readme));",readmeStart);
+code=code.slice(0,readmeStart)+fs.readFileSync(path.join(__dirname,'delivery-readme.txt'),'utf8')+code.slice(readmeEnd);
+code=code.replaceAll('imageHashes,cpu,native,rawEdit,rawAfter,raw','imageHashes,cpu,native,raw,rawBaseline')
+ .replaceAll('data.cpu.cases.length','data.cpu.results.length')
+ .replaceAll('nose-contour compatibility helper; two new support-frame compatibility helper files; one focused Supporting hand test fixture;','support-frame compatibility helper; two new patient-wrist-finish compatibility helper files;')
+ .replaceAll('  guardedWrite(safeShared(data.rawEdit.file),data.rawAfter,data.rawEdit.beforeSHA256);\n','')
+ .replaceAll('sharedSnapshot(data.history,data.integration,true,data.rawEdit)','sharedSnapshot(data.history,data.integration,true)')
+ .replaceAll('rawFixtureFilesPreserved:38,rawFixtureFilesStrengthened:1','rawFixtureFilesPreserved:39,rawFixtureFilesStrengthened:0')
+ .replaceAll('The raw Supporting hand fixture updates the narrow target contract and checks complete head visibility.','Both selected raw fixtures remain unchanged; current wrist normals are checked by the CPU and native browser validators.')
+ .replaceAll('syntax, 18 compatibility reversals, 38 unchanged raw test files and one updated Supporting hand fixture, 8 unchanged checkers','syntax, 19 compatibility reversals, 39 unchanged raw test files, 8 unchanged checkers');
+code=replace(code,"'author-palm-checker.cjs','palm-check-functions.txt','palm-check-mutations.txt');","'author-palm-checker.cjs','palm-check-functions.txt','palm-check-mutations.txt','run-baseline-crease-comparison.cjs','prepare-baseline-retry.cjs','prepare-baseline-noopt.cjs','inspect-raw-failures.cjs','summarize-palm-cpu.cjs','audit-cpu-delivery.cjs','delivery-cpu-schema-review.json');");
+code=replace(code,"  const unsuccessfulNative=[];",`  const rejectedDirectory=local('candidate-rejected-root-only'),rejection=json(path.join(rejectedDirectory,'rejection.json'));
+  must(rejection.accepted===false&&rejection.candidateSHA256==='dc9deade4909e37e9aa4918309541168696e808b7eb066575fea3fa91d574c7e'&&rejection.sharedWrites===0&&rejection.artifacts.length===111,'Rejected candidate archive incomplete');
+  const rejectedFiles=walk(rejectedDirectory).map(file=>path.relative(rejectedDirectory,file).split(path.sep).join('/')).filter(file=>file!=='rejection.json').sort();
+  same(rejectedFiles,rejection.artifacts.map(item=>item.path).sort(),'Rejected candidate archive inventory changed');
+  for(const item of rejection.artifacts){const file=path.resolve(rejectedDirectory,item.path);must(file.startsWith(path.resolve(rejectedDirectory)+path.sep),'Rejected archive path escapes scope');guardFile(file,item.sha256);must(read(file).length===item.bytes,'Rejected archive size mismatch');}
+  guardFile(path.join(rejectedDirectory,'candidate.js'),rejection.candidateSHA256);
+  const unsuccessfulNative=[];`);
+code=replace(code,'focusedRawTestsPassed:data.raw.numPassedTests,rawFixtureSelftest:data.raw.selftest,','focusedRawTestsPassed:data.raw.numPassedTests,focusedRawTestsFailed:data.raw.numFailedTests,rawFailuresMatchedBaseline:true,rawFailureComparisons:data.rawBaseline.comparisons,rawBaselineSelftest:data.rawBaseline.selftest,rawFixtureSelftest:data.raw.selftest,');
+code=replace(code,'Both selected raw fixtures remain unchanged; current wrist normals are checked by the CPU and native browser validators.','Both selected raw fixtures remain unchanged. The full two-file raw run remains red: 53 passed and three palm-crease mirroring failures exactly match a separate three-test baseline run. Current wrist normals are checked by the CPU and native browser validators.');
+code=replace(code,'Evidence: ${reportRelative}/README.md. No commit or deployment.','Raw test run: 53 passes and three palm-crease mirroring failures exactly reproduced on the baseline; fixtures and tolerances unchanged. Evidence: ${reportRelative}/README.md. No commit or deployment.');
+assert.ok(!code.includes('rawEdit'));
+new Function(code);
+fs.writeFileSync(path.join(__dirname,'finish-pass.cjs'),code);
+console.log(JSON.stringify({authored:true,sharedWrites:0,bytes:Buffer.byteLength(code)}));

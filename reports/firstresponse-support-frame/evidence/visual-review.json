@@ -1,0 +1,25 @@
+{
+  "sourceSHA256": "69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242",
+  "accepted": true,
+  "imageHashes": {
+    "adult-wide-baseline-stage.png": "2a54c9d70c8193f8071eb98b3a786a4a8cc48df96f20a4d1c1a30b96d9c8d9e8",
+    "adult-wide-baseline-face.png": "0063540226e477abbeb8928eb23ec12c76a228fa2b546012e54d744872c82c3e",
+    "adult-wide-candidate-stage.png": "2a54c9d70c8193f8071eb98b3a786a4a8cc48df96f20a4d1c1a30b96d9c8d9e8",
+    "adult-wide-candidate-face.png": "0063540226e477abbeb8928eb23ec12c76a228fa2b546012e54d744872c82c3e",
+    "child-narrow-baseline-stage.png": "467483f088402db6fabfb682a0aa29d3f0c0a0c886435544253c91c758d7e03a",
+    "child-narrow-baseline-face.png": "24847c4ccc52284eee9cef6eeaa92f412ab0ab8ab98b2bf00e8a1c3fb1dab8d8",
+    "child-narrow-candidate-stage.png": "9b4d28dd9d6452cc466ce1d1836c28bf71f1ad7d2eaaa8161caeeb20e677d81b",
+    "child-narrow-candidate-face.png": "bfa6158b28f8a883b0e0d82adddb2446a9fea9b5c6e72a81adabc473d23805a8",
+    "infant-narrow-contrast-baseline-stage.png": "67256f976d20cc70e2a3116e9aba9a332b8dfd48cedfa55c09aa73f1e5c12c44",
+    "infant-narrow-contrast-baseline-face.png": "dda4f87bbc4d84b731c57018d89fad001b2984f20404f11ca5aed6038670a192",
+    "infant-narrow-contrast-candidate-stage.png": "7bd6901ebc5ec55fe5a5eb5cec4c3e1550ffc6abbac5b3ae339a9934691ee730",
+    "infant-narrow-contrast-candidate-face.png": "c57ddd67321eae4835718ab026acdb6e5ca5f0fa1de7ab72c4fba599b799494b"
+  },
+  "observations": [
+    "Root opened all twelve final stage and detail PNGs. The adult desktop pair has identical composition, fingertip contours, face and neck appearance; the native pixel comparison also reports zero changed pixels.",
+    "The child narrow candidate preserves a close view of the palm, thumb and fingers beside the cheek. The entire head has a balanced margin. The rejected box-based candidate showed most of the upper body; this tighter candidate restores useful hand and facial detail.",
+    "The infant high-contrast candidate places the complete left head edge and nose within the image. Finger outlines and cheek contact remain legible, and the head still fills most of the stage width.",
+    "The wider framing changes the view only; paired scene data confirms unchanged anatomy, hand placement, materials and learner state. The child resize comparison returns to the same narrow camera and uses the original camera at wide size."
+  ],
+  "limitations": "Reviewed raw-module browser captures at the three recorded views. The full application loader/build and deployment were not tested. The result does not change anatomical proportions or validate clinical technique."
+}

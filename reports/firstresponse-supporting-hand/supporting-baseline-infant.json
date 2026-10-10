@@ -1,0 +1,204 @@
+{
+  "sourceSHA256": "642b337db93a4c13cdbb1f95040662f3db45cf50529e5fd333938cd3de86be99",
+  "age": "infant",
+  "cases": {
+    "infant:0:false": {
+      "geometry": "b6aa676608735ff253ee35ebdb3b057327e1807a1c67ff3be1a08c53f9e221a9",
+      "materials": "2a1d909ab1c652aa96a65d28814060e3a943853b1a59153aeaf87276dc80eab2",
+      "resources": {
+        "nodes": 181,
+        "meshes": 125,
+        "geometries": 123,
+        "materials": 25,
+        "picks": []
+      }
+    },
+    "infant:0:true": {
+      "geometry": "626daa08472111ac28d890ff8b1d5ee4ca94c18a573f7493212dbd38179ca835",
+      "materials": "3d1af108f9190c0efbbe9f735cc4e3b24d7165afdb8d33290d2b5dc8c5fac74d",
+      "resources": {
+        "nodes": 180,
+        "meshes": 125,
+        "geometries": 123,
+        "materials": 26,
+        "picks": []
+      }
+    },
+    "infant:1:false": {
+      "geometry": "b6aa676608735ff253ee35ebdb3b057327e1807a1c67ff3be1a08c53f9e221a9",
+      "materials": "2a1d909ab1c652aa96a65d28814060e3a943853b1a59153aeaf87276dc80eab2",
+      "resources": {
+        "nodes": 181,
+        "meshes": 125,
+        "geometries": 123,
+        "materials": 25,
+        "picks": []
+      }
+    },
+    "infant:1:true": {
+      "geometry": "626daa08472111ac28d890ff8b1d5ee4ca94c18a573f7493212dbd38179ca835",
+      "materials": "3d1af108f9190c0efbbe9f735cc4e3b24d7165afdb8d33290d2b5dc8c5fac74d",
+      "resources": {
+        "nodes": 180,
+        "meshes": 125,
+        "geometries": 123,
+        "materials": 26,
+        "picks": []
+      }
+    },
+    "infant:2:false": {
+      "geometry": "cd42ad02703f790c0632398db5cf1f528f150dc3708d9b681b6e59042ef5dacf",
+      "materials": "08ccf313de0c8cce7a843380307b35b84b3bd1afacb79ca5b437943a321a669a",
+      "resources": {
+        "nodes": 187,
+        "meshes": 129,
+        "geometries": 127,
+        "materials": 28,
+        "picks": []
+      }
+    },
+    "infant:2:true": {
+      "geometry": "c874010a204a2933132bd0429edd17ede110d188194a80754291e82ff9cc581a",
+      "materials": "60a439e4d9b581f3bdbfcc1b4a871d3ac665d1dad18dab253e76605ab52a99d4",
+      "resources": {
+        "nodes": 186,
+        "meshes": 129,
+        "geometries": 127,
+        "materials": 29,
+        "picks": []
+      }
+    },
+    "infant:3:false": {
+      "geometry": "9d5acd85d92911e666388e6aa3ff1da111b5175389254a553cc0ae8e6a56f770",
+      "materials": "08ccf313de0c8cce7a843380307b35b84b3bd1afacb79ca5b437943a321a669a",
+      "resources": {
+        "nodes": 187,
+        "meshes": 129,
+        "geometries": 127,
+        "materials": 28,
+        "picks": []
+      }
+    },
+    "infant:3:true": {
+      "geometry": "731bfccb919008e903f19ce5d499341652e6ce679e110538fb53b72b650633ae",
+      "materials": "60a439e4d9b581f3bdbfcc1b4a871d3ac665d1dad18dab253e76605ab52a99d4",
+      "resources": {
+        "nodes": 186,
+        "meshes": 129,
+        "geometries": 127,
+        "materials": 29,
+        "picks": []
+      }
+    },
+    "infant:4:false": {
+      "geometry": "dd0dc65313d848b7c1a2a5f9ae96a444d2983e24a8b62a8f26186c23c9d018d1",
+      "materials": "08ccf313de0c8cce7a843380307b35b84b3bd1afacb79ca5b437943a321a669a",
+      "resources": {
+        "nodes": 187,
+        "meshes": 129,
+        "geometries": 127,
+        "materials": 28,
+        "picks": []
+      }
+    },
+    "infant:4:true": {
+      "geometry": "bf817a5e916687230da0290fc5988806d7bd4b9891463eac775edeec4247ec9e",
+      "materials": "60a439e4d9b581f3bdbfcc1b4a871d3ac665d1dad18dab253e76605ab52a99d4",
+      "resources": {
+        "nodes": 186,
+        "meshes": 129,
+        "geometries": 127,
+        "materials": 29,
+        "picks": []
+      }
+    },
+    "infant:5:false": {
+      "geometry": "ee4e64376dc10848ffa1ed219857d70331eed4ef9782b15b90794f8b22117918",
+      "materials": "08ccf313de0c8cce7a843380307b35b84b3bd1afacb79ca5b437943a321a669a",
+      "resources": {
+        "nodes": 187,
+        "meshes": 129,
+        "geometries": 127,
+        "materials": 28,
+        "picks": []
+      }
+    },
+    "infant:5:true": {
+      "geometry": "30b13e02c68c4fb566eaf2b73822b8fe9495f40b9ba74101328f247036eb6c6e",
+      "materials": "60a439e4d9b581f3bdbfcc1b4a871d3ac665d1dad18dab253e76605ab52a99d4",
+      "resources": {
+        "nodes": 186,
+        "meshes": 129,
+        "geometries": 127,
+        "materials": 29,
+        "picks": []
+      }
+    },
+    "infant:6:false": {
+      "geometry": "d2157aed1344874213ecff087898fdc55e86c8db15be06af7dbba24c15280582",
+      "materials": "08ccf313de0c8cce7a843380307b35b84b3bd1afacb79ca5b437943a321a669a",
+      "resources": {
+        "nodes": 187,
+        "meshes": 129,
+        "geometries": 127,
+        "materials": 28,
+        "picks": []
+      }
+    },
+    "infant:6:true": {
+      "geometry": "3df94b4560d50cde69dbd2423d9e5cfc6de0e8eb783d4b44666006a3070eb0ee",
+      "materials": "60a439e4d9b581f3bdbfcc1b4a871d3ac665d1dad18dab253e76605ab52a99d4",
+      "resources": {
+        "nodes": 186,
+        "meshes": 129,
+        "geometries": 127,
+        "materials": 29,
+        "picks": []
+      }
+    },
+    "infant:7:false": {
+      "geometry": "b6d66db6f51730854b2d4b8ce6451503ac008b722f0065fa7c917597a34fb7a7",
+      "materials": "08ccf313de0c8cce7a843380307b35b84b3bd1afacb79ca5b437943a321a669a",
+      "resources": {
+        "nodes": 187,
+        "meshes": 129,
+        "geometries": 127,
+        "materials": 28,
+        "picks": []
+      }
+    },
+    "infant:7:true": {
+      "geometry": "c083c0da7981296683fc34c4f2a450cdc0e8d52a89df815ff0a4d945cf4b83a0",
+      "materials": "60a439e4d9b581f3bdbfcc1b4a871d3ac665d1dad18dab253e76605ab52a99d4",
+      "resources": {
+        "nodes": 186,
+        "meshes": 129,
+        "geometries": 127,
+        "materials": 29,
+        "picks": []
+      }
+    },
+    "infant:8:false": {
+      "geometry": "b6d66db6f51730854b2d4b8ce6451503ac008b722f0065fa7c917597a34fb7a7",
+      "materials": "08ccf313de0c8cce7a843380307b35b84b3bd1afacb79ca5b437943a321a669a",
+      "resources": {
+        "nodes": 187,
+        "meshes": 129,
+        "geometries": 127,
+        "materials": 28,
+        "picks": []
+      }
+    },
+    "infant:8:true": {
+      "geometry": "c083c0da7981296683fc34c4f2a450cdc0e8d52a89df815ff0a4d945cf4b83a0",
+      "materials": "60a439e4d9b581f3bdbfcc1b4a871d3ac665d1dad18dab253e76605ab52a99d4",
+      "resources": {
+        "nodes": 186,
+        "meshes": 129,
+        "geometries": 127,
+        "materials": 29,
+        "picks": []
+      }
+    }
+  }
+}

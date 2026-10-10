@@ -1,0 +1,327 @@
+{
+  "checks": [
+    {
+      "heading": 0,
+      "changed": 878,
+      "aheadOfNozzle": 0,
+      "deterministic": true,
+      "cutoffMatchesCoast": true,
+      "on": {
+        "length": 78,
+        "k": 2.4074074074074074,
+        "nose": {
+          "x": 219,
+          "y": 180
+        },
+        "nozzle": {
+          "x": 141,
+          "y": 180
+        },
+        "sections": [
+          "cm",
+          "sm",
+          "sla",
+          "iu",
+          "s4b"
+        ],
+        "plume": true,
+        "plumeLength": 49.92,
+        "plumeHalfWidth": 14.009377777777779,
+        "plumeTip": {
+          "x": 91.08,
+          "y": 180
+        },
+        "thrustFraction": 1
+      },
+      "off": {
+        "length": 78,
+        "k": 2.4074074074074074,
+        "nose": {
+          "x": 219,
+          "y": 180
+        },
+        "nozzle": {
+          "x": 141,
+          "y": 180
+        },
+        "sections": [
+          "cm",
+          "sm",
+          "sla",
+          "iu",
+          "s4b"
+        ],
+        "plume": false,
+        "plumeLength": 0,
+        "plumeHalfWidth": 0,
+        "plumeTip": {
+          "x": 141,
+          "y": 180
+        },
+        "thrustFraction": 0
+      }
+    },
+    {
+      "heading": 1.5707963267948966,
+      "changed": 882,
+      "aheadOfNozzle": 0,
+      "deterministic": true,
+      "cutoffMatchesCoast": true,
+      "on": {
+        "length": 78,
+        "k": 2.4074074074074074,
+        "nose": {
+          "x": 180,
+          "y": 219
+        },
+        "nozzle": {
+          "x": 180,
+          "y": 141
+        },
+        "sections": [
+          "cm",
+          "sm",
+          "sla",
+          "iu",
+          "s4b"
+        ],
+        "plume": true,
+        "plumeLength": 49.92,
+        "plumeHalfWidth": 14.009377777777779,
+        "plumeTip": {
+          "x": 180,
+          "y": 91.08
+        },
+        "thrustFraction": 1
+      },
+      "off": {
+        "length": 78,
+        "k": 2.4074074074074074,
+        "nose": {
+          "x": 180,
+          "y": 219
+        },
+        "nozzle": {
+          "x": 180,
+          "y": 141
+        },
+        "sections": [
+          "cm",
+          "sm",
+          "sla",
+          "iu",
+          "s4b"
+        ],
+        "plume": false,
+        "plumeLength": 0,
+        "plumeHalfWidth": 0,
+        "plumeTip": {
+          "x": 180,
+          "y": 141
+        },
+        "thrustFraction": 0
+      }
+    },
+    {
+      "heading": 3.141592653589793,
+      "changed": 878,
+      "aheadOfNozzle": 0,
+      "deterministic": true,
+      "cutoffMatchesCoast": true,
+      "on": {
+        "length": 78,
+        "k": 2.4074074074074074,
+        "nose": {
+          "x": 141,
+          "y": 180
+        },
+        "nozzle": {
+          "x": 219,
+          "y": 180
+        },
+        "sections": [
+          "cm",
+          "sm",
+          "sla",
+          "iu",
+          "s4b"
+        ],
+        "plume": true,
+        "plumeLength": 49.92,
+        "plumeHalfWidth": 14.009377777777779,
+        "plumeTip": {
+          "x": 268.92,
+          "y": 180
+        },
+        "thrustFraction": 1
+      },
+      "off": {
+        "length": 78,
+        "k": 2.4074074074074074,
+        "nose": {
+          "x": 141,
+          "y": 180
+        },
+        "nozzle": {
+          "x": 219,
+          "y": 180
+        },
+        "sections": [
+          "cm",
+          "sm",
+          "sla",
+          "iu",
+          "s4b"
+        ],
+        "plume": false,
+        "plumeLength": 0,
+        "plumeHalfWidth": 0,
+        "plumeTip": {
+          "x": 219,
+          "y": 180
+        },
+        "thrustFraction": 0
+      }
+    },
+    {
+      "heading": -1.5707963267948966,
+      "changed": 882,
+      "aheadOfNozzle": 0,
+      "deterministic": true,
+      "cutoffMatchesCoast": true,
+      "on": {
+        "length": 78,
+        "k": 2.4074074074074074,
+        "nose": {
+          "x": 180,
+          "y": 141
+        },
+        "nozzle": {
+          "x": 180,
+          "y": 219
+        },
+        "sections": [
+          "cm",
+          "sm",
+          "sla",
+          "iu",
+          "s4b"
+        ],
+        "plume": true,
+        "plumeLength": 49.92,
+        "plumeHalfWidth": 14.009377777777779,
+        "plumeTip": {
+          "x": 180,
+          "y": 268.92
+        },
+        "thrustFraction": 1
+      },
+      "off": {
+        "length": 78,
+        "k": 2.4074074074074074,
+        "nose": {
+          "x": 180,
+          "y": 141
+        },
+        "nozzle": {
+          "x": 180,
+          "y": 219
+        },
+        "sections": [
+          "cm",
+          "sm",
+          "sla",
+          "iu",
+          "s4b"
+        ],
+        "plume": false,
+        "plumeLength": 0,
+        "plumeHalfWidth": 0,
+        "plumeTip": {
+          "x": 180,
+          "y": 219
+        },
+        "thrustFraction": 0
+      }
+    }
+  ],
+  "scenes": [
+    {
+      "view": "burn",
+      "geometry": {
+        "scaleX": 0.00004785895727882336,
+        "scaleY": 0.00004785895727882336,
+        "craftX": 128.7941950248482,
+        "craftY": 279.00042605893026,
+        "heading": -0.06919715896511118,
+        "plume": true,
+        "stack": {
+          "length": 54,
+          "k": 1.6666666666666667,
+          "nose": {
+            "x": 155.7295794820333,
+            "y": 277.13359340878964
+          },
+          "nozzle": {
+            "x": 101.85881056766308,
+            "y": 280.8672587090709
+          },
+          "sections": [
+            "cm",
+            "sm",
+            "sla",
+            "iu",
+            "s4b"
+          ],
+          "plume": true,
+          "plumeLength": 34.56,
+          "plumeHalfWidth": 9.698800000000002,
+          "plumeTip": {
+            "x": 67.38151846246615,
+            "y": 283.25680450125094
+          },
+          "thrustFraction": 1
+        }
+      }
+    },
+    {
+      "view": "orbit",
+      "geometry": {
+        "scaleX": 3.27783558792924e-7,
+        "scaleY": 3.27783558792924e-7,
+        "craftX": 141.88694615774773,
+        "craftY": 173.20868492824147,
+        "heading": 1.4030492316389327,
+        "plume": true,
+        "stack": {
+          "length": 54,
+          "k": 1.6666666666666667,
+          "nose": {
+            "x": 146.3949064660648,
+            "y": 199.82969719033696
+          },
+          "nozzle": {
+            "x": 137.37898584943065,
+            "y": 146.58767266614598
+          },
+          "sections": [
+            "cm",
+            "sm",
+            "sla",
+            "iu",
+            "s4b"
+          ],
+          "plume": true,
+          "plumeLength": 34.56,
+          "plumeHalfWidth": 9.698800000000002,
+          "plumeTip": {
+            "x": 131.6087966547848,
+            "y": 112.51277697066377
+          },
+          "thrustFraction": 1
+        }
+      }
+    }
+  ],
+  "stateUnchanged": true
+}

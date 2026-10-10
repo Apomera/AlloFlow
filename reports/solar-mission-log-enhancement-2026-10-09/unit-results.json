@@ -1,0 +1,349 @@
+{
+  "success": true,
+  "numPassedTests": 27,
+  "numTotalTests": 27,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Solar System Mission Log workspace"
+          ],
+          "fullName": "Solar System Mission Log workspace provides labeled native controls and a persistent disclosure target without render writes",
+          "status": "passed",
+          "title": "provides labeled native controls and a persistent disclosure target without render writes",
+          "duration": 685.5821000000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System Mission Log workspace"
+          ],
+          "fullName": "Solar System Mission Log workspace projects readable legacy entries without changing raw records or inventing calendar dates",
+          "status": "passed",
+          "title": "projects readable legacy entries without changing raw records or inventing calendar dates",
+          "duration": 92.99440000000004,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System Mission Log workspace"
+          ],
+          "fullName": "Solar System Mission Log workspace safely displays malformed saved collections and preferences without repairing them during render",
+          "status": "passed",
+          "title": "safely displays malformed saved collections and preferences without repairing them during render",
+          "duration": 54.46950000000015,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System Mission Log workspace"
+          ],
+          "fullName": "Solar System Mission Log workspace matches every normalized search word across details, activity label, and world",
+          "status": "passed",
+          "title": "matches every normalized search word across details, activity label, and world",
+          "duration": 47.135299999999916,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System Mission Log workspace"
+          ],
+          "fullName": "Solar System Mission Log workspace filters validated activity kinds and treats untyped or unknown legacy activity as Other",
+          "status": "passed",
+          "title": "filters validated activity kinds and treats untyped or unknown legacy activity as Other",
+          "duration": 84.26049999999987,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System Mission Log workspace"
+          ],
+          "fullName": "Solar System Mission Log workspace orders by saved position instead of sorting ambiguous clock strings or timestamps",
+          "status": "passed",
+          "title": "orders by saved position instead of sorting ambiguous clock strings or timestamps",
+          "duration": 32.426200000000335,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System Mission Log workspace"
+          ],
+          "fullName": "Solar System Mission Log workspace reveals five more rows, focuses the first new committed entry once, and restores the saved limit",
+          "status": "passed",
+          "title": "reveals five more rows, focuses the first new committed entry once, and restores the saved limit",
+          "duration": 73.44079999999985,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System Mission Log workspace"
+          ],
+          "fullName": "Solar System Mission Log workspace resets paging for search, kind, and order changes while clear preserves the selected order",
+          "status": "passed",
+          "title": "resets paging for search, kind, and order changes while clear preserves the selected order",
+          "duration": 98.26690000000008,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System Mission Log workspace"
+          ],
+          "fullName": "Solar System Mission Log workspace does not re-arm stale Show more focus after a filter change",
+          "status": "passed",
+          "title": "does not re-arm stale Show more focus after a filter change",
+          "duration": 32.65090000000009,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System Mission Log workspace"
+          ],
+          "fullName": "Solar System Mission Log workspace focuses search only after an opening request commits to a connected input",
+          "status": "passed",
+          "title": "focuses search only after an opening request commits to a connected input",
+          "duration": 39.80600000000004,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System Mission Log workspace"
+          ],
+          "fullName": "Solar System Mission Log workspace does not focus on restore or let a disconnected or collapsed result consume clear focus",
+          "status": "passed",
+          "title": "does not focus on restore or let a disconnected or collapsed result consume clear focus",
+          "duration": 172.46609999999964,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System Mission Log workspace"
+          ],
+          "fullName": "Solar System Mission Log workspace appends rapid real deployments against current state with unique metadata and preserved concurrent work",
+          "status": "passed",
+          "title": "appends rapid real deployments against current state with unique metadata and preserved concurrent work",
+          "duration": 24.946600000000217,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System Mission Log workspace"
+          ],
+          "fullName": "Solar System Mission Log workspace caps real appends at twenty while keeping legacy values verbatim within the retained window",
+          "status": "passed",
+          "title": "caps real appends at twenty while keeping legacy values verbatim within the retained window",
+          "duration": 14.567000000000007,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System Mission Log workspace"
+          ],
+          "fullName": "Solar System Mission Log workspace recognizes deployment evidence without mistaking arbitrary logs or malformed records for a quest completion",
+          "status": "passed",
+          "title": "recognizes deployment evidence without mistaking arbitrary logs or malformed records for a quest completion",
+          "duration": 14.220900000000256,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System Mission Log workspace"
+          ],
+          "fullName": "Solar System Mission Log workspace retains the earned deployment quest when newer non-deployment history replaces its visible evidence",
+          "status": "passed",
+          "title": "retains the earned deployment quest when newer non-deployment history replaces its visible evidence",
+          "duration": 59.51999999999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System Mission Log workspace"
+          ],
+          "fullName": "Solar System Mission Log workspace exports all filtered matches in selected order even when only five are displayed without changing saved work",
+          "status": "passed",
+          "title": "exports all filtered matches in selected order even when only five are displayed without changing saved work",
+          "duration": 19.322200000000066,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System Mission Log workspace"
+          ],
+          "fullName": "Solar System Mission Log workspace escapes CSV quotes and line breaks, guards formula cells, and uses ISO time only when a timestamp is available",
+          "status": "passed",
+          "title": "escapes CSV quotes and line breaks, guards formula cells, and uses ISO time only when a timestamp is available",
+          "duration": 77.37739999999985,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1791585183115,
+      "endTime": 1791585184739.3774,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/solar_system_mission_log_workspace.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Solar System saved evidence and guided learning journey"
+          ],
+          "fullName": "Solar System saved evidence and guided learning journey keeps incomplete saved pairs visible without NaN, grading, or recording",
+          "status": "passed",
+          "title": "keeps incomplete saved pairs visible without NaN, grading, or recording",
+          "duration": 862.9735000000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System saved evidence and guided learning journey"
+          ],
+          "fullName": "Solar System saved evidence and guided learning journey rejects nonfinite and nonphysical readings in either saved slot",
+          "status": "passed",
+          "title": "rejects nonfinite and nonphysical readings in either saved slot",
+          "duration": 552.7529999999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System saved evidence and guided learning journey"
+          ],
+          "fullName": "Solar System saved evidence and guided learning journey withholds comparison results when a saved reading belongs to another world",
+          "status": "passed",
+          "title": "withholds comparison results when a saved reading belongs to another world",
+          "duration": 98.26510000000007,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System saved evidence and guided learning journey"
+          ],
+          "fullName": "Solar System saved evidence and guided learning journey recomputes a complete legacy pair and records the measured result only once",
+          "status": "passed",
+          "title": "recomputes a complete legacy pair and records the measured result only once",
+          "duration": 208.1185999999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System saved evidence and guided learning journey"
+          ],
+          "fullName": "Solar System saved evidence and guided learning journey does not grade a valid pair using an unrecognized restored prediction",
+          "status": "passed",
+          "title": "does not grade a valid pair using an unrecognized restored prediction",
+          "duration": 92.17589999999973,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System saved evidence and guided learning journey"
+          ],
+          "fullName": "Solar System saved evidence and guided learning journey exports incomplete evidence honestly without inventing values or a result",
+          "status": "passed",
+          "title": "exports incomplete evidence honestly without inventing values or a result",
+          "duration": 177.5608000000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System saved evidence and guided learning journey"
+          ],
+          "fullName": "Solar System saved evidence and guided learning journey repairs an incomplete A only through explicit recapture and restores the prediction gate",
+          "status": "passed",
+          "title": "repairs an incomplete A only through explicit recapture and restores the prediction gate",
+          "duration": 351.9756999999995,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System saved evidence and guided learning journey"
+          ],
+          "fullName": "Solar System saved evidence and guided learning journey continues to an unfinished mission instead of declaring out-of-order completion",
+          "status": "passed",
+          "title": "continues to an unfinished mission instead of declaring out-of-order completion",
+          "duration": 178.95850000000064,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System saved evidence and guided learning journey"
+          ],
+          "fullName": "Solar System saved evidence and guided learning journey allows repeated roadmap review without restarting the clock or awarding progress",
+          "status": "passed",
+          "title": "allows repeated roadmap review without restarting the clock or awarding progress",
+          "duration": 430.3717999999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Solar System saved evidence and guided learning journey"
+          ],
+          "fullName": "Solar System saved evidence and guided learning journey refocuses a started mission without erasing attempts, evidence, or simulation time",
+          "status": "passed",
+          "title": "refocuses a started mission without erasing attempts, evidence, or simulation time",
+          "duration": 165.89519999999993,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1791585212041,
+      "endTime": 1791585215160.8953,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/solar_system_learning_journey.test.js"
+    }
+  ]
+}

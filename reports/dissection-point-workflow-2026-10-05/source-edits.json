@@ -1,0 +1,147 @@
+{
+  "before": "abdf003d684c638c448f180148b0d3b7917421e2a0b694bdf3d3d82963b56bd9",
+  "after": "0b5a0a00068a13bdb7263e99d1049de28862868109b5a312aeb3f72ef7587a84",
+  "newline": "\n",
+  "preparedAt": "2026-10-05T13:19:24.953Z",
+  "edits": [
+    {
+      "id": "readable-mode-panel",
+      "offset": 63377,
+      "old": ".diss-pointer-guide { display: flex; min-width: 0; align-items: center; gap: .5rem; margin: 0 0 .5rem; padding: .48rem .58rem; border: 1px solid #89a8c8; border-radius: .7rem; background: #eff6ff; color: #174d86; }",
+      "new": ".diss-pointer-guide { display: grid; grid-template-columns: auto minmax(0, 1fr); min-width: 0; align-items: start; gap: .65rem; margin: 0 0 .75rem; padding: .85rem; border: 1px solid #89a8c8; border-radius: .8rem; background: #eff6ff; color: #174d86; }"
+    },
+    {
+      "id": "mode-panel-typography",
+      "offset": 64211,
+      "old": ".diss-pointer-guide__body { display: grid; min-width: 0; gap: .08rem; }\n.diss-pointer-guide__body strong { color: currentColor; font-size: .72rem; font-weight: 900; }\n.diss-pointer-guide__body span { color: currentColor; font-size: .68rem; line-height: 1.35; opacity: .9; }",
+      "new": ".diss-pointer-guide__body { display: grid; min-width: 0; gap: .35rem; }\n.diss-pointer-guide__body strong { color: currentColor; font-size: 1rem; font-weight: 800; line-height: 1.45; }\n.diss-pointer-guide__body span { color: currentColor; font-size: .875rem; line-height: 1.5; }\n.diss-point-mode { display: grid; grid-column: 1 / -1; min-width: 0; gap: .65rem; padding-top: .7rem; border-top: 1px solid currentColor; }\n.diss-point-mode p { margin: 0; color: currentColor; font-size: .875rem; line-height: 1.5; overflow-wrap: anywhere; }\n.diss-point-mode__status { padding: .65rem .75rem; border: 1px solid currentColor; border-radius: .55rem; background: #fff; font-weight: 750; }\n.diss-point-mode__actions { display: flex; flex-wrap: wrap; gap: .5rem; min-width: 0; }\n[data-dissection-root] .diss-point-mode__actions button { flex: 1 1 10rem; min-width: 0; min-height: 3rem !important; padding: .65rem .75rem; border: 1px solid #408773; border-radius: .6rem; background: #fff; color: #065f46; font-size: 1rem !important; font-weight: 750; line-height: 1.5 !important; white-space: normal; text-align: start; overflow-wrap: anywhere; box-shadow: none; }\n[data-dissection-root] .diss-point-mode__actions button:hover:not(:disabled) { background: #d1fae5; }\n[data-dissection-root] .diss-point-mode__actions button:disabled { opacity: 1; border-style: dashed; color: #475569; cursor: not-allowed; }\n[data-dissection-root] .diss-point-mode__actions button:focus-visible { outline: 3px solid #065f46 !important; outline-offset: -5px; box-shadow: none !important; }\n[data-dissection-root][data-text-size=\"large\"] .diss-pointer-guide :is(strong, span, p) { font-size: 1rem !important; }\n[data-dissection-root][data-text-size=\"large\"] .diss-point-mode__actions button { font-size: 1.125rem !important; }\n[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-pointer-guide, .diss-point-mode__status, .diss-point-mode__actions button) { color: #000; background: #fff; border-color: #111827; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-point-mode__actions button:focus-visible { outline-color: #111827 !important; }\n@container dissection (max-width: 640px) { .diss-point-mode__actions { display: grid; grid-template-columns: minmax(0, 1fr); } }\n@media (forced-colors: active) { [data-dissection-root] :is(.diss-pointer-guide, .diss-point-mode__status, .diss-point-mode__actions button) { color: CanvasText; background: Canvas; border-color: CanvasText; forced-color-adjust: auto; } [data-dissection-root] .diss-point-mode__actions button:disabled { color: GrayText; border-color: GrayText; } [data-dissection-root] .diss-point-mode__actions button:focus-visible { outline-color: Highlight !important; } }\n@media print { .diss-point-mode__actions, #diss-point-mode-help { display: none !important; } }"
+    },
+    {
+      "id": "essentials-exit-modes",
+      "offset": 411003,
+      "old": "              toolbarToolsOpen: false,\n              compareTechniqueAttempts: false,",
+      "new": "              toolbarToolsOpen: false,\n              rulerMode: false,\n              annotateMode: false,\n              compareTechniqueAttempts: false,"
+    },
+    {
+      "id": "reload-clear-transient-points",
+      "offset": 1375145,
+      "old": "                annotations: Array.isArray(data.annotations) ? data.annotations : [],\n                dissInquiry:",
+      "new": "                annotations: Array.isArray(data.annotations) ? data.annotations : [],\n                rulerMode: false,\n                annotateMode: false,\n                rulerStart: null,\n                rulerEnd: null,\n                dissInquiry:"
+    },
+    {
+      "id": "shared-point-workflow",
+      "offset": 1389463,
+      "old": "          // Keyboard shortcuts stay inside the active lab and never intercept form controls.",
+      "new": "          function modelMeasurementText(start, end) {\n            var dx = end.x - start.x, dy = end.y - start.y;\n            var scale = spec.bodyShape === 'worm' ? 15 : spec.bodyShape === 'pig' ? 25 : spec.bodyShape === 'fish' ? 20 : spec.bodyShape === 'crayfish' ? 12 : spec.bodyShape === 'frog' ? 8 : 3;\n            return (Math.sqrt(dx * dx + dy * dy) * scale).toFixed(1) + ' cm';\n          }\n          function pointModeInstruction() {\n            return 'Pointer: select any point on the specimen. Keyboard: focus the specimen canvas, use Arrow keys, Home, or End to choose an exposed structure anchor, then Enter or Space to place a point. Escape returns to instruments.';\n          }\n          function setObservationPointMode(mode, returnFocus) {\n            cancelActiveCanvasGesture('Instrument gesture canceled before changing observation mode; no action was recorded.');\n            var pointCanvas = queryDissectionNode('[data-diss-canvas]');\n            if (pointCanvas) { pointCanvas._keyboardPreviewOrganId = null; pointCanvas._keyboardFocusAnnounced = false; }\n            updMany({ rulerMode: mode === 'measure', annotateMode: mode === 'annotate' });\n            setProcedureFeedback(mode === 'measure'\n              ? 'Ruler active. Select two points for an approximate model distance. ' + pointModeInstruction()\n              : mode === 'annotate'\n                ? 'Annotation active. Select points to draw a connected observation line. ' + pointModeInstruction()\n                : 'Returned to instruments. Observation marks and measurement points were kept.', 'working');\n            if (returnFocus) setTimeout(function () { focusDissectionTarget('diss-canvas'); }, 0);\n          }\n          function placeObservationPoint(point, inputType) {\n            if (d.quizMode || (!d.annotateMode && !d.rulerMode)) return false;\n            // Both inputs use specimen coordinates before zoom, pan, and body scaling.\n            // Observation points must never select a structure or record a technique.\n            if (!point || !isFinite(point.x) || !isFinite(point.y) || point.x < 0 || point.x > 1 || point.y < 0 || point.y > 1) {\n              setProcedureFeedback('Choose a point within the specimen canvas to continue.', 'caution');\n              return true;\n            }\n            var pointAt = Date.now();\n            function pointPatch(current) {\n              if ((current.specimen || 'frog') !== specimen || current.quizMode || (!current.annotateMode && !current.rulerMode)) return {};\n              function withPointFeedback(patch, message) { return Object.assign(patch, { procedureFeedback: { message: message, tone: 'working', at: pointAt } }); }\n              if (current.annotateMode) {\n                var previous = Array.isArray(current.annotations) ? current.annotations : [];\n                var annotation = { x: point.x, y: point.y, type: 'dot' };\n                if (previous.length) { annotation.prevX = previous[previous.length - 1].x; annotation.prevY = previous[previous.length - 1].y; }\n                var annotations = previous.concat([annotation]);\n                return withPointFeedback({ annotations: annotations }, 'Annotation point ' + annotations.length + ' added' + (inputType === 'keyboard' ? ' at the keyboard anchor' : '') + '. Select another point to continue the line, or undo the last point.');\n              }\n              if (!current.rulerStart || current.rulerEnd) {\n                return withPointFeedback({ rulerStart: { x: point.x, y: point.y }, rulerEnd: null }, 'Ruler start point set. Select a second point to complete the approximate model measurement.');\n              }\n              return withPointFeedback({ rulerEnd: { x: point.x, y: point.y } }, 'Measurement complete. Approximate model distance: ' + modelMeasurementText(current.rulerStart, point) + '. Select another point to start a new measurement.');\n            }\n            var pointFeedback = pointPatch(d).procedureFeedback;\n            updMany(pointPatch);\n            if (pointFeedback && typeof announceToSR === 'function') announceToSR(pointFeedback.message);\n            return true;\n          }\n          function undoObservationPoint() {\n            updMany(function (current) { return { annotations: (current.annotations || []).slice(0, -1) }; });\n            setProcedureFeedback('Last annotation point removed. The remaining observation line was kept.', 'working');\n            if ((d.annotations || []).length === 1) setTimeout(function () { focusDissectionTarget('diss-canvas'); }, 0);\n          }\n          function clearModelMeasurement() {\n            updMany({ rulerStart: null, rulerEnd: null });\n            setProcedureFeedback(d.rulerMode ? 'Measurement cleared. Select the first endpoint for a new measurement.' : 'Measurement cleared.', 'working');\n            if (!d.rulerMode) setTimeout(function () { focusDissectionTarget('diss-canvas'); }, 0);\n          }\n\n          // Keyboard shortcuts stay inside the active lab and never intercept form controls."
+    },
+    {
+      "id": "keyboard-anchor-keeps-selection",
+      "offset": 1397257,
+      "old": "              } else {\n                upd('selectedOrgan', organ.id);\n                keyboardMessage = 'Previewing ' + organ.name + '. Press Enter to inspect this structure.';\n              }",
+      "new": "              } else if (d.annotateMode || d.rulerMode) {\n                keyboardMessage = 'Point anchor ' + previewPosition + ' of ' + keyboardOrgans.length + ': ' + organ.name + '. Press Enter or Space to place ' + (d.annotateMode ? 'an annotation point' : 'a measurement endpoint') + '.';\n              } else {\n                upd('selectedOrgan', organ.id);\n                keyboardMessage = 'Previewing ' + organ.name + '. Press Enter to inspect this structure.';\n              }"
+    },
+    {
+      "id": "keyboard-point-activation",
+      "offset": 1401136,
+      "old": "              } else if (activeInstrument === 'probe' && procedureToolReadinessData('probe', currentProcedure).safeToAct) {",
+      "new": "              } else if (placeObservationPoint(variedOrganPoint(keyboardSelected), 'keyboard')) {\n                // Point placement is complete; keep the selected structure and procedure unchanged.\n              } else if (activeInstrument === 'probe' && procedureToolReadinessData('probe', currentProcedure).safeToAct) {"
+    },
+    {
+      "id": "escape-exits-point-mode",
+      "offset": 1402222,
+      "old": "              if (d.resetConfirmPending) cancelSpecimenReset();\n              else upd('selectedOrgan', null);",
+      "new": "              if (d.resetConfirmPending) cancelSpecimenReset();\n              else if (d.annotateMode || d.rulerMode) setObservationPointMode(null, !isCanvas);\n              else upd('selectedOrgan', null);"
+    },
+    {
+      "id": "ruler-guide-complete",
+      "offset": 1408074,
+      "old": "instruction: d.rulerStart ? 'Select the second endpoint to complete the measurement.' : 'Select the first measurement endpoint.'",
+      "new": "instruction: d.rulerEnd ? 'Measurement complete. Select another point to start a new measurement.' : (d.rulerStart ? 'Select the second endpoint to complete the measurement.' : 'Select the first measurement endpoint.')"
+    },
+    {
+      "id": "pointer-point-before-selection",
+      "offset": 1414911,
+      "old": "            mx = mappedPoint.x; my = mappedPoint.y;\n            var techniqueContactActive =",
+      "new": "            mx = mappedPoint.x; my = mappedPoint.y;\n            if (placeObservationPoint({ x: mx, y: my }, 'pointer')) return;\n            var techniqueContactActive ="
+    },
+    {
+      "id": "remove-duplicate-point-branches",
+      "offset": 1418448,
+      "old": "            if (!d.quizMode && d.annotateMode) {\n\n              var annots = d.annotations || [];\n\n              annots.push({ x: mx, y: my, type: 'dot' });\n\n              upd('annotations', annots);\n\n              if (annots.length > 1) {\n\n                // Connect to previous dot\n\n                annots[annots.length - 1].prevX = annots[annots.length - 2].x;\n\n                annots[annots.length - 1].prevY = annots[annots.length - 2].y;\n\n                upd('annotations', annots.slice());\n\n              }\n              setProcedureFeedback('Annotation point ' + annots.length + ' added. Select another point to continue the line.', 'working');\n\n            }\n\n            // Ruler mode: set start/end points\n\n            if (!d.quizMode && d.rulerMode) {\n\n              if (!d.rulerStart || d.rulerEnd) {\n\n                upd('rulerStart', { x: mx, y: my });\n\n                upd('rulerEnd', null);\n                setProcedureFeedback('Ruler start point set. Select a second point to complete the measurement.', 'working');\n\n              } else {\n\n                upd('rulerEnd', { x: mx, y: my });\n                var measureDx = mx - d.rulerStart.x, measureDy = my - d.rulerStart.y;\n                var measureScale = spec.bodyShape === 'worm' ? 15 : spec.bodyShape === 'pig' ? 25 : spec.bodyShape === 'fish' ? 20 : spec.bodyShape === 'crayfish' ? 12 : spec.bodyShape === 'frog' ? 8 : 3;\n                setProcedureFeedback('Measurement complete: ' + (Math.sqrt(measureDx * measureDx + measureDy * measureDy) * measureScale).toFixed(1) + ' cm. Select again to start a new measurement.');\n\n              }\n\n            }\n\n            // Track explored organs for progress\n\n",
+      "new": ""
+    },
+    {
+      "id": "hover-keeps-inspection-target",
+      "offset": 1421002,
+      "old": "            if (nextHoveredOrgan !== d.hoveredOrgan) upd('hoveredOrgan', nextHoveredOrgan);",
+      "new": "            if (!d.annotateMode && !d.rulerMode && nextHoveredOrgan !== d.hoveredOrgan) upd('hoveredOrgan', nextHoveredOrgan);"
+    },
+    {
+      "id": "switch-clear-points",
+      "offset": 1551202,
+      "old": "organConfidence: {}, annotations: [], dissInquiry: defaultDissectionInquiry(), timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, compareReplayProgress: 0, compareReplayPlaying: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: null,",
+      "new": "organConfidence: {}, annotations: [], rulerMode: false, annotateMode: false, rulerStart: null, rulerEnd: null, dissInquiry: defaultDissectionInquiry(), timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, compareReplayProgress: 0, compareReplayPlaying: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: null,"
+    },
+    {
+      "id": "reset-clear-endpoints",
+      "offset": 1558187,
+      "old": "showEndocrine: false, rulerMode: false, annotateMode: false, labelMode: 'show', resetConfirmPending: false,",
+      "new": "showEndocrine: false, rulerMode: false, annotateMode: false, rulerStart: null, rulerEnd: null, labelMode: 'show', resetConfirmPending: false,"
+    },
+    {
+      "id": "ruler-toggle-workflow",
+      "offset": 1650093,
+      "old": "onClick: function () { var enabled = !d.rulerMode; upd('rulerMode', enabled); if (enabled) upd('annotateMode', false); setProcedureFeedback(enabled ? 'Ruler active. Select two points on the specimen to measure their distance.' : 'Ruler off.'); },",
+      "new": "onClick: function () { setObservationPointMode(d.rulerMode ? null : 'measure'); },"
+    },
+    {
+      "id": "annotation-toggle-workflow",
+      "offset": 1650714,
+      "old": "onClick: function () { var enabled = !d.annotateMode; upd('annotateMode', enabled); if (enabled) upd('rulerMode', false); setProcedureFeedback(enabled ? 'Annotation active. Select points on the specimen to draw a connected evidence line.' : 'Annotation off.'); },",
+      "new": "onClick: function () { setObservationPointMode(d.annotateMode ? null : 'annotate'); },"
+    },
+    {
+      "id": "mode-label-render",
+      "offset": 1689299,
+      "old": "React.createElement(\"strong\", { \"data-pointer-guide-label\": true }, 'Pointer mode ? ' + pointerGuideData.label),",
+      "new": "React.createElement(\"strong\", { \"data-pointer-guide-label\": true }, 'Mode: ' + pointerGuideData.label),"
+    },
+    {
+      "id": "mode-label-hover",
+      "offset": 1412995,
+      "old": "pointerGuideLabel.textContent = 'Pointer mode ? ' + pointerMode.label;",
+      "new": "pointerGuideLabel.textContent = 'Mode: ' + pointerMode.label;"
+    },
+    {
+      "id": "point-panel-render",
+      "offset": 1689394,
+      "old": "                      React.createElement(\"span\", { \"data-pointer-guide-instruction\": true }, pointerGuideData.instruction)\n                    )\n                  ),",
+      "new": "                      React.createElement(\"span\", { \"data-pointer-guide-instruction\": true }, pointerGuideData.instruction)\n                    ),\n                    !d.quizMode && (d.annotateMode || d.rulerMode || (d.annotations || []).length || d.rulerStart) ? React.createElement(\"div\", { className: \"diss-point-mode\" },\n                      React.createElement(\"p\", { className: \"diss-point-mode__status\", \"data-diss-point-status\": true },\n                        d.annotateMode ? (d.annotations || []).length + ' annotation point' + ((d.annotations || []).length === 1 ? '' : 's') + '. Add another point to extend the line.'\n                          : d.rulerStart && d.rulerEnd ? 'Approximate model distance: ' + modelMeasurementText(d.rulerStart, d.rulerEnd) + '. '\n                          + ((d.annotations || []).length ? (d.annotations || []).length + ' annotation points on this specimen.' : 'Measurement points remain until cleared.')\n                          : d.rulerMode ? (d.rulerStart ? 'Step 2 of 2: place the second endpoint.' : 'Step 1 of 2: place the first endpoint.')\n                            : d.rulerStart ? 'Incomplete measurement: the first endpoint was kept. Enable the ruler to finish it, or clear the measurement.'\n                            : (d.annotations || []).length + ' annotation point' + ((d.annotations || []).length === 1 ? '' : 's') + '. ' + (d.annotateMode ? 'Add another point to extend the line.' : 'Observation marks remain on this specimen.')\n                      ),\n                      (d.annotateMode || d.rulerMode) && React.createElement(\"p\", { id: \"diss-point-mode-help\" }, pointModeInstruction()),\n                      React.createElement(\"div\", { className: \"diss-point-mode__actions\" },\n                        (d.annotateMode || d.rulerMode) && React.createElement(\"button\", { type: \"button\", \"data-diss-point-canvas\": true, onClick: function () { focusDissectionTarget('diss-canvas', pointModeInstruction()); } }, 'Place points on specimen'),\n                        d.annotateMode && React.createElement(\"button\", { type: \"button\", \"data-diss-point-undo\": true, disabled: !(d.annotations || []).length, onClick: undoObservationPoint }, 'Undo last point'),\n                        (d.rulerMode || d.rulerStart) && React.createElement(\"button\", { type: \"button\", \"data-diss-measurement-clear\": true, disabled: !d.rulerStart, onClick: clearModelMeasurement }, d.rulerMode && d.rulerEnd ? 'New measurement' : 'Clear measurement'),\n                        !d.annotateMode && !d.rulerMode && (d.annotations || []).length > 0 && React.createElement(\"button\", { type: \"button\", onClick: function () { upd('annotations', []); setProcedureFeedback('Observation marks cleared.', 'working'); setTimeout(function () { focusDissectionTarget('diss-canvas'); }, 0); } }, 'Clear observation marks'),\n                        (d.annotateMode || d.rulerMode) && React.createElement(\"button\", { type: \"button\", \"data-diss-point-exit\": true, onClick: function () { setObservationPointMode(null, true); } }, 'Return to instruments')\n                      )\n                    ) : null\n                  ),"
+    },
+    {
+      "id": "canvas-mode-announcement",
+      "offset": 1709419,
+      "old": "                            : 'Specimen canvas ready. Arrow keys preview visible structures; Enter inspects; plus and minus zoom.';",
+      "new": "                            : (d.annotateMode || d.rulerMode ? pointModeInstruction() : 'Specimen canvas ready. Arrow keys preview visible structures; Enter inspects; plus and minus zoom.');"
+    },
+    {
+      "id": "canvas-escape-shortcut",
+      "offset": 1710765,
+      "old": "Home End Enter Space 0 R V' + (advancedWorkspace",
+      "new": "Home End Enter Space Escape 0 R V' + (advancedWorkspace"
+    },
+    {
+      "id": "canvas-mode-description",
+      "offset": 1710917,
+      "old": "'aria-describedby': 'diss-canvas-status diss-canvas-equivalent',",
+      "new": "'aria-describedby': 'diss-canvas-status diss-canvas-equivalent' + (!d.quizMode && (d.annotateMode || d.rulerMode) ? ' diss-point-mode-help' : ''),"
+    },
+    {
+      "id": "visible-measurement-and-anchor",
+      "offset": 1164389,
+      "old": "              // Ruler tool overlay\n\n              if (!d.quizMode && d.rulerMode && d.rulerStart && d.rulerEnd) {\n\n                ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5; ctx.setLineDash([]);\n\n                ctx.beginPath(); ctx.moveTo(d.rulerStart.x * W, d.rulerStart.y * H);\n\n                ctx.lineTo(d.rulerEnd.x * W, d.rulerEnd.y * H); ctx.stroke();\n\n                // Endpoints\n\n                ctx.beginPath(); ctx.arc(d.rulerStart.x * W, d.rulerStart.y * H, 3, 0, Math.PI * 2); ctx.fillStyle = '#fbbf24'; ctx.fill();\n\n                ctx.beginPath(); ctx.arc(d.rulerEnd.x * W, d.rulerEnd.y * H, 3, 0, Math.PI * 2); ctx.fill();\n\n                // Distance\n\n                var rdx = d.rulerEnd.x - d.rulerStart.x;\n\n                var rdy = d.rulerEnd.y - d.rulerStart.y;\n\n                var rDist = Math.sqrt(rdx * rdx + rdy * rdy);\n\n                var rCm = (rDist * (spec.bodyShape === 'worm' ? 15 : spec.bodyShape === 'pig' ? 25 : spec.bodyShape === 'fish' ? 20 : spec.bodyShape === 'crayfish' ? 12 : spec.bodyShape === 'frog' ? 8 : 3)).toFixed(1);\n\n                ctx.font = 'bold 10px Inter, system-ui'; ctx.fillStyle = '#fbbf24';\n\n                ctx.fillText(rCm + ' cm', (d.rulerStart.x + d.rulerEnd.x) / 2 * W + 5, (d.rulerStart.y + d.rulerEnd.y) / 2 * H - 5);\n\n              }\n\n",
+      "new": "              // Observation points share the same specimen transform as structure landmarks.\n              if (!d.quizMode && d.rulerStart) {\n                ctx.save(); ctx.setLineDash([]);\n                if (d.rulerEnd) {\n                  ctx.strokeStyle = '#071923'; ctx.lineWidth = 5;\n                  ctx.beginPath(); ctx.moveTo(d.rulerStart.x * W, d.rulerStart.y * H); ctx.lineTo(d.rulerEnd.x * W, d.rulerEnd.y * H); ctx.stroke();\n                  ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2.5; ctx.stroke();\n                }\n                [d.rulerStart, d.rulerEnd].filter(Boolean).forEach(function (endpoint, endpointIndex) {\n                  ctx.beginPath(); ctx.arc(endpoint.x * W, endpoint.y * H, 6, 0, Math.PI * 2); ctx.fillStyle = '#fbbf24'; ctx.fill(); ctx.strokeStyle = '#071923'; ctx.lineWidth = 2; ctx.stroke();\n                  ctx.font = 'bold 12px Inter, system-ui'; ctx.fillStyle = '#071923'; ctx.textAlign = 'center'; ctx.fillText(String(endpointIndex + 1), endpoint.x * W, endpoint.y * H + 4);\n                });\n                ctx.restore();\n              }\n              if (!d.quizMode && (d.annotateMode || d.rulerMode) && canvas._keyboardFocus && canvas._keyboardPreviewOrganId) {\n                var pointAnchorOrgan = organs.find(function (organ) { return organ.id === canvas._keyboardPreviewOrganId && structureExposureState(organ, currentProcedure) === 'visible'; });\n                if (pointAnchorOrgan) {\n                  var pointAnchor = variedOrganPoint(pointAnchorOrgan);\n                  ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 5; ctx.strokeStyle = '#071923';\n                  ctx.beginPath(); ctx.arc(pointAnchor.x * W, pointAnchor.y * H, 11, 0, Math.PI * 2); ctx.stroke();\n                  ctx.lineWidth = 2.5; ctx.strokeStyle = '#fff'; ctx.stroke();\n                  ctx.beginPath(); ctx.moveTo(pointAnchor.x * W - 16, pointAnchor.y * H); ctx.lineTo(pointAnchor.x * W + 16, pointAnchor.y * H); ctx.moveTo(pointAnchor.x * W, pointAnchor.y * H - 16); ctx.lineTo(pointAnchor.x * W, pointAnchor.y * H + 16); ctx.stroke();\n                  ctx.restore();\n                }\n              }\n\n"
+    }
+  ],
+  "appliedAt": "2026-10-05T13:20:21.203Z"
+}

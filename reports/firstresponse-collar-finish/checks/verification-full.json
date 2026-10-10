@@ -1,0 +1,1212 @@
+{
+  "mode": "full",
+  "beforeSHA256": "38f468c92a949621adcf6eea4765c8a3aaf2626d35132996df1d17239b97a542",
+  "candidateSHA256": "0cc79f45f9a57ce3c4f1d5fa674b56f462a2418c4b253dbc648557b37a6b2639",
+  "inputHashes": {
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-collar-work\\verify-collar.cjs": "f6e8b3af9ac57e4262677ac9a0e4543c2314e30459d4e3d91ce98e710d6945f5",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-collar-work\\firstresponse_collar_mesh_checks.cjs": "0ceb950379b96bfdf0042f76726f97816f041bc56fea60ecdaa9751beb741ae9",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-collar-work\\candidate.js": "0cc79f45f9a57ce3c4f1d5fa674b56f462a2418c4b253dbc648557b37a6b2639",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-collar-work\\before.js": "38f468c92a949621adcf6eea4765c8a3aaf2626d35132996df1d17239b97a542",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\helpers\\firstresponse_neck_mesh_checks.cjs": "199157f91711eef18270c8aa22f540fd9ab7eff51c7d248459d6e633cfc3efbf"
+  },
+  "assertions": 182316,
+  "passed": 12,
+  "failed": 0,
+  "mutation": {
+    "sparseBaselineRejected": "collar longitudinal chord error stays below 0.00045 local width units",
+    "missingTriangleRejected": "torso forms one closed shell with opposing edge winding",
+    "baselinePenetrationRejected": "covered neck sides stay beneath actual collar triangles behind the shirt opening",
+    "baselineCoveredSideOutside": 100,
+    "restoredTopology": {
+      "vertices": 2913,
+      "triangles": 5680,
+      "volume": 0.5786500422321418,
+      "minimumNormalLength": 0.9999999589871917,
+      "maximumNormalLength": 1.0000000399509903,
+      "minimumFaceNormalDot": 0.5227664018965952,
+      "minimumSeamDot": 0.9999999349059165,
+      "maximumSeamGap": 6.123234262925839e-17
+    },
+    "restoreReadback": true,
+    "mutationScope": "private in-memory geometry only"
+  },
+  "results": [
+    {
+      "age": "adult",
+      "phase": 0,
+      "contrast": false,
+      "density": {
+        "intervals": 40,
+        "maximumChordError": 0.0003918775415181208,
+        "maximumLongitudinalSpan": 0.010000050093265416
+      },
+      "topology": {
+        "vertices": 2913,
+        "triangles": 5680,
+        "volume": 0.5786500422321418,
+        "minimumNormalLength": 0.9999999589871917,
+        "maximumNormalLength": 1.0000000399509903,
+        "minimumFaceNormalDot": 0.5227664018965952,
+        "minimumSeamDot": 0.9999999349059165,
+        "maximumSeamGap": 6.123234262925839e-17
+      },
+      "preservation": {
+        "retainedRings": 41,
+        "openingDepth": 0.15,
+        "maximumOpeningDepthChange": 0.02000001072883606,
+        "boundaryNormalizedZ": -0.5500000133159313,
+        "boundaryMaximumNormalDifference": 0.20093409850290317,
+        "chestTriangles": 2440
+      },
+      "coveredSide": {
+        "cut": -0.91,
+        "samples": 1023,
+        "outside": 0,
+        "failures": []
+      },
+      "caps": [
+        {
+          "age": "adult",
+          "phase": 0,
+          "contrast": false,
+          "end": "head",
+          "target": "fr-manikin-head",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.061240663965360875,
+          "failures": []
+        },
+        {
+          "age": "adult",
+          "phase": 0,
+          "contrast": false,
+          "end": "torso",
+          "target": "fr-manikin-torso",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.02291491522580813,
+          "failures": []
+        }
+      ],
+      "neckShell": {
+        "vertices": 523,
+        "triangles": 816,
+        "euler": 2,
+        "volume": 0.021283358222107945,
+        "minimumFaceNormalDot": 0.9983357444080151,
+        "minimumNormalLength": 0.9999999667142725,
+        "maximumNormalLength": 1.0000000354650527,
+        "seamMinimumNormalDot": 0.9999999446490655,
+        "seamMaximumPositionGap": 3.918870060621435e-17
+      },
+      "sleeves": {
+        "samples": 96
+      },
+      "outsideTorso": {
+        "SHA256": "6a1ef3e20933d3dcbf0e3c14385576cfed65f09eb2d0202e77420ee124000f81",
+        "nodes": 210,
+        "meshes": 143,
+        "geometries": 141,
+        "materials": 25,
+        "allocatedGeometries": 140,
+        "allocatedMaterials": 23
+      },
+      "status": "passed",
+      "resources": {
+        "geometries": 142,
+        "materials": 25,
+        "allocatedGeometries": 140,
+        "allocatedMaterials": 23
+      },
+      "assertions": 31097,
+      "durationMs": 17295
+    },
+    {
+      "age": "adult",
+      "phase": 5,
+      "contrast": false,
+      "density": {
+        "intervals": 40,
+        "maximumChordError": 0.0003918775415181208,
+        "maximumLongitudinalSpan": 0.010000050093265416
+      },
+      "topology": {
+        "vertices": 2913,
+        "triangles": 5680,
+        "volume": 0.5786500422321418,
+        "minimumNormalLength": 0.9999999589871917,
+        "maximumNormalLength": 1.0000000399509903,
+        "minimumFaceNormalDot": 0.5227664018965952,
+        "minimumSeamDot": 0.9999999349059165,
+        "maximumSeamGap": 6.123234262925839e-17
+      },
+      "preservation": {
+        "retainedRings": 41,
+        "openingDepth": 0.15,
+        "maximumOpeningDepthChange": 0.02000001072883606,
+        "boundaryNormalizedZ": -0.5500000133159313,
+        "boundaryMaximumNormalDifference": 0.20093409850290317,
+        "chestTriangles": 2440
+      },
+      "coveredSide": {
+        "cut": -0.91,
+        "samples": 1023,
+        "outside": 0,
+        "failures": []
+      },
+      "caps": [
+        {
+          "age": "adult",
+          "phase": 5,
+          "contrast": false,
+          "end": "head",
+          "target": "fr-manikin-head",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.040276910425445234,
+          "failures": []
+        },
+        {
+          "age": "adult",
+          "phase": 5,
+          "contrast": false,
+          "end": "torso",
+          "target": "fr-manikin-torso",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.06172881502177452,
+          "failures": []
+        }
+      ],
+      "neckShell": {
+        "vertices": 523,
+        "triangles": 816,
+        "euler": 2,
+        "volume": 0.021283358222107945,
+        "minimumFaceNormalDot": 0.9983357444080151,
+        "minimumNormalLength": 0.9999999667142725,
+        "maximumNormalLength": 1.0000000354650527,
+        "seamMinimumNormalDot": 0.9999999446490655,
+        "seamMaximumPositionGap": 3.918870060621435e-17
+      },
+      "sleeves": {
+        "samples": 96
+      },
+      "outsideTorso": {
+        "SHA256": "8b8a724c00f3a725d2ff460b3e99d04fee0dae4f047be604e289cdb11c3f94ad",
+        "nodes": 216,
+        "meshes": 147,
+        "geometries": 145,
+        "materials": 28,
+        "allocatedGeometries": 144,
+        "allocatedMaterials": 26
+      },
+      "status": "passed",
+      "resources": {
+        "geometries": 146,
+        "materials": 28,
+        "allocatedGeometries": 144,
+        "allocatedMaterials": 26
+      },
+      "assertions": 13747,
+      "durationMs": 6964
+    },
+    {
+      "age": "adult",
+      "phase": 8,
+      "contrast": false,
+      "density": {
+        "intervals": 40,
+        "maximumChordError": 0.0003918775415181208,
+        "maximumLongitudinalSpan": 0.010000050093265416
+      },
+      "topology": {
+        "vertices": 2913,
+        "triangles": 5680,
+        "volume": 0.5786500422321418,
+        "minimumNormalLength": 0.9999999589871917,
+        "maximumNormalLength": 1.0000000399509903,
+        "minimumFaceNormalDot": 0.5227664018965952,
+        "minimumSeamDot": 0.9999999349059165,
+        "maximumSeamGap": 6.123234262925839e-17
+      },
+      "preservation": {
+        "retainedRings": 41,
+        "openingDepth": 0.15,
+        "maximumOpeningDepthChange": 0.02000001072883606,
+        "boundaryNormalizedZ": -0.5500000133159313,
+        "boundaryMaximumNormalDifference": 0.20093409850290317,
+        "chestTriangles": 2440
+      },
+      "coveredSide": {
+        "cut": -0.91,
+        "samples": 1023,
+        "outside": 0,
+        "failures": []
+      },
+      "caps": [
+        {
+          "age": "adult",
+          "phase": 8,
+          "contrast": false,
+          "end": "head",
+          "target": "fr-manikin-head",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.03884416308328431,
+          "failures": []
+        },
+        {
+          "age": "adult",
+          "phase": 8,
+          "contrast": false,
+          "end": "torso",
+          "target": "fr-manikin-torso",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.04332364391994492,
+          "failures": []
+        }
+      ],
+      "neckShell": {
+        "vertices": 523,
+        "triangles": 816,
+        "euler": 2,
+        "volume": 0.021283358222107945,
+        "minimumFaceNormalDot": 0.9983357444080151,
+        "minimumNormalLength": 0.9999999667142725,
+        "maximumNormalLength": 1.0000000354650527,
+        "seamMinimumNormalDot": 0.9999999446490655,
+        "seamMaximumPositionGap": 3.918870060621435e-17
+      },
+      "sleeves": {
+        "samples": 96
+      },
+      "outsideTorso": {
+        "SHA256": "901cbc717a2ce9228eb1e58dd96f8532587d0e64bb3048578a23bc0de4bccb61",
+        "nodes": 216,
+        "meshes": 147,
+        "geometries": 145,
+        "materials": 28,
+        "allocatedGeometries": 144,
+        "allocatedMaterials": 26
+      },
+      "status": "passed",
+      "resources": {
+        "geometries": 146,
+        "materials": 28,
+        "allocatedGeometries": 144,
+        "allocatedMaterials": 26
+      },
+      "assertions": 13747,
+      "durationMs": 10869
+    },
+    {
+      "age": "child",
+      "phase": 0,
+      "contrast": false,
+      "density": {
+        "intervals": 40,
+        "maximumChordError": 0.0003918981721116044,
+        "maximumLongitudinalSpan": 0.010000010793054777
+      },
+      "topology": {
+        "vertices": 2913,
+        "triangles": 5680,
+        "volume": 0.5112951797993184,
+        "minimumNormalLength": 0.9999999548687065,
+        "maximumNormalLength": 1.0000000407987097,
+        "minimumFaceNormalDot": 0.5208880987244704,
+        "minimumSeamDot": 0.999999943094997,
+        "maximumSeamGap": 6.123234262925839e-17
+      },
+      "preservation": {
+        "retainedRings": 41,
+        "openingDepth": 0.15,
+        "maximumOpeningDepthChange": 0.02000001072883606,
+        "boundaryNormalizedZ": -0.5500000229352414,
+        "boundaryMaximumNormalDifference": 0.20055310071669877,
+        "chestTriangles": 2440
+      },
+      "coveredSide": {
+        "cut": -0.8553999999999999,
+        "samples": 1019,
+        "outside": 0,
+        "failures": []
+      },
+      "caps": [
+        {
+          "age": "child",
+          "phase": 0,
+          "contrast": false,
+          "end": "head",
+          "target": "fr-manikin-head",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.09678411706414394,
+          "failures": []
+        },
+        {
+          "age": "child",
+          "phase": 0,
+          "contrast": false,
+          "end": "torso",
+          "target": "fr-manikin-torso",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.035556811128587926,
+          "failures": []
+        }
+      ],
+      "neckShell": {
+        "vertices": 523,
+        "triangles": 816,
+        "euler": 2,
+        "volume": 0.01741883146490792,
+        "minimumFaceNormalDot": 0.998314876207774,
+        "minimumNormalLength": 0.9999999635724913,
+        "maximumNormalLength": 1.00000003099486,
+        "seamMinimumNormalDot": 0.9999999502679258,
+        "seamMaximumPositionGap": 3.6837376849305816e-17
+      },
+      "sleeves": {
+        "samples": 96
+      },
+      "outsideTorso": {
+        "SHA256": "a6362d5dbc2e02a472f1649eacf40cfa1e2be260c1e32964e27cf925fb15b709",
+        "nodes": 209,
+        "meshes": 142,
+        "geometries": 140,
+        "materials": 25,
+        "allocatedGeometries": 139,
+        "allocatedMaterials": 23
+      },
+      "status": "passed",
+      "resources": {
+        "geometries": 141,
+        "materials": 25,
+        "allocatedGeometries": 139,
+        "allocatedMaterials": 23
+      },
+      "assertions": 13747,
+      "durationMs": 14878
+    },
+    {
+      "age": "child",
+      "phase": 5,
+      "contrast": false,
+      "density": {
+        "intervals": 40,
+        "maximumChordError": 0.0003918981721116044,
+        "maximumLongitudinalSpan": 0.010000010793054777
+      },
+      "topology": {
+        "vertices": 2913,
+        "triangles": 5680,
+        "volume": 0.5112951797993184,
+        "minimumNormalLength": 0.9999999548687065,
+        "maximumNormalLength": 1.0000000407987097,
+        "minimumFaceNormalDot": 0.5208880987244704,
+        "minimumSeamDot": 0.999999943094997,
+        "maximumSeamGap": 6.123234262925839e-17
+      },
+      "preservation": {
+        "retainedRings": 41,
+        "openingDepth": 0.15,
+        "maximumOpeningDepthChange": 0.02000001072883606,
+        "boundaryNormalizedZ": -0.5500000229352414,
+        "boundaryMaximumNormalDifference": 0.20055310071669877,
+        "chestTriangles": 2440
+      },
+      "coveredSide": {
+        "cut": -0.8553999999999999,
+        "samples": 1019,
+        "outside": 0,
+        "failures": []
+      },
+      "caps": [
+        {
+          "age": "child",
+          "phase": 5,
+          "contrast": false,
+          "end": "head",
+          "target": "fr-manikin-head",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.07525342415349147,
+          "failures": []
+        },
+        {
+          "age": "child",
+          "phase": 5,
+          "contrast": false,
+          "end": "torso",
+          "target": "fr-manikin-torso",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.08589370439456907,
+          "failures": []
+        }
+      ],
+      "neckShell": {
+        "vertices": 523,
+        "triangles": 816,
+        "euler": 2,
+        "volume": 0.01741883146490792,
+        "minimumFaceNormalDot": 0.998314876207774,
+        "minimumNormalLength": 0.9999999635724913,
+        "maximumNormalLength": 1.00000003099486,
+        "seamMinimumNormalDot": 0.9999999502679258,
+        "seamMaximumPositionGap": 3.6837376849305816e-17
+      },
+      "sleeves": {
+        "samples": 96
+      },
+      "outsideTorso": {
+        "SHA256": "c1064b4bfec23f461236be8701188f8c83f4bb3b7fbc8748591e23630f707bde",
+        "nodes": 215,
+        "meshes": 146,
+        "geometries": 144,
+        "materials": 28,
+        "allocatedGeometries": 143,
+        "allocatedMaterials": 26
+      },
+      "status": "passed",
+      "resources": {
+        "geometries": 145,
+        "materials": 28,
+        "allocatedGeometries": 143,
+        "allocatedMaterials": 26
+      },
+      "assertions": 13747,
+      "durationMs": 12625
+    },
+    {
+      "age": "child",
+      "phase": 8,
+      "contrast": false,
+      "density": {
+        "intervals": 40,
+        "maximumChordError": 0.0003918981721116044,
+        "maximumLongitudinalSpan": 0.010000010793054777
+      },
+      "topology": {
+        "vertices": 2913,
+        "triangles": 5680,
+        "volume": 0.5112951797993184,
+        "minimumNormalLength": 0.9999999548687065,
+        "maximumNormalLength": 1.0000000407987097,
+        "minimumFaceNormalDot": 0.5208880987244704,
+        "minimumSeamDot": 0.999999943094997,
+        "maximumSeamGap": 6.123234262925839e-17
+      },
+      "preservation": {
+        "retainedRings": 41,
+        "openingDepth": 0.15,
+        "maximumOpeningDepthChange": 0.02000001072883606,
+        "boundaryNormalizedZ": -0.5500000229352414,
+        "boundaryMaximumNormalDifference": 0.20055310071669877,
+        "chestTriangles": 2440
+      },
+      "coveredSide": {
+        "cut": -0.8553999999999999,
+        "samples": 1019,
+        "outside": 0,
+        "failures": []
+      },
+      "caps": [
+        {
+          "age": "child",
+          "phase": 8,
+          "contrast": false,
+          "end": "head",
+          "target": "fr-manikin-head",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.07494845555492588,
+          "failures": []
+        },
+        {
+          "age": "child",
+          "phase": 8,
+          "contrast": false,
+          "end": "torso",
+          "target": "fr-manikin-torso",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.07099793169051281,
+          "failures": []
+        }
+      ],
+      "neckShell": {
+        "vertices": 523,
+        "triangles": 816,
+        "euler": 2,
+        "volume": 0.01741883146490792,
+        "minimumFaceNormalDot": 0.998314876207774,
+        "minimumNormalLength": 0.9999999635724913,
+        "maximumNormalLength": 1.00000003099486,
+        "seamMinimumNormalDot": 0.9999999502679258,
+        "seamMaximumPositionGap": 3.6837376849305816e-17
+      },
+      "sleeves": {
+        "samples": 96
+      },
+      "outsideTorso": {
+        "SHA256": "a1a079653a2b76c57e17ac40e1a4a0704b9cc539e88480edd358b0b03f91aa4e",
+        "nodes": 215,
+        "meshes": 146,
+        "geometries": 144,
+        "materials": 28,
+        "allocatedGeometries": 143,
+        "allocatedMaterials": 26
+      },
+      "status": "passed",
+      "resources": {
+        "geometries": 145,
+        "materials": 28,
+        "allocatedGeometries": 143,
+        "allocatedMaterials": 26
+      },
+      "assertions": 13747,
+      "durationMs": 8342
+    },
+    {
+      "age": "infant",
+      "phase": 0,
+      "contrast": false,
+      "density": {
+        "intervals": 40,
+        "maximumChordError": 0.0003918789058439953,
+        "maximumLongitudinalSpan": 0.01000006562114729
+      },
+      "topology": {
+        "vertices": 2913,
+        "triangles": 5680,
+        "volume": 0.4395649581215629,
+        "minimumNormalLength": 0.9999999602705503,
+        "maximumNormalLength": 1.0000000400367302,
+        "minimumFaceNormalDot": 0.4878462444954271,
+        "minimumSeamDot": 0.9999999325082753,
+        "maximumSeamGap": 6.123234262925839e-17
+      },
+      "preservation": {
+        "retainedRings": 41,
+        "openingDepth": 0.19,
+        "maximumOpeningDepthChange": 0.06000000238418579,
+        "boundaryNormalizedZ": -0.5500000051612138,
+        "boundaryMaximumNormalDifference": 0.20454273864979633,
+        "chestTriangles": 2440
+      },
+      "coveredSide": {
+        "cut": -0.7826,
+        "samples": 1017,
+        "outside": 0,
+        "failures": []
+      },
+      "caps": [
+        {
+          "age": "infant",
+          "phase": 0,
+          "contrast": false,
+          "end": "head",
+          "target": "fr-manikin-head",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.1917355851989363,
+          "failures": []
+        },
+        {
+          "age": "infant",
+          "phase": 0,
+          "contrast": false,
+          "end": "torso",
+          "target": "fr-manikin-torso",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.07212526235000277,
+          "failures": []
+        }
+      ],
+      "neckShell": {
+        "vertices": 523,
+        "triangles": 816,
+        "euler": 2,
+        "volume": 0.014304864923089858,
+        "minimumFaceNormalDot": 0.9983161998375316,
+        "minimumNormalLength": 0.9999999583774257,
+        "maximumNormalLength": 1.0000000393145836,
+        "seamMinimumNormalDot": 0.9999999526068439,
+        "seamMaximumPositionGap": 3.448605640111973e-17
+      },
+      "sleeves": {
+        "samples": 96
+      },
+      "outsideTorso": {
+        "SHA256": "de91a187c89d7dd3f61e7410f7db27ae65990405e7ed59571d8a7d11cd6b3823",
+        "nodes": 180,
+        "meshes": 124,
+        "geometries": 122,
+        "materials": 25,
+        "allocatedGeometries": 121,
+        "allocatedMaterials": 23
+      },
+      "status": "passed",
+      "resources": {
+        "geometries": 123,
+        "materials": 25,
+        "allocatedGeometries": 121,
+        "allocatedMaterials": 23
+      },
+      "assertions": 13747,
+      "durationMs": 8112
+    },
+    {
+      "age": "infant",
+      "phase": 5,
+      "contrast": false,
+      "density": {
+        "intervals": 40,
+        "maximumChordError": 0.0003918789058439953,
+        "maximumLongitudinalSpan": 0.01000006562114729
+      },
+      "topology": {
+        "vertices": 2913,
+        "triangles": 5680,
+        "volume": 0.4395649581215629,
+        "minimumNormalLength": 0.9999999602705503,
+        "maximumNormalLength": 1.0000000400367302,
+        "minimumFaceNormalDot": 0.4878462444954271,
+        "minimumSeamDot": 0.9999999325082753,
+        "maximumSeamGap": 6.123234262925839e-17
+      },
+      "preservation": {
+        "retainedRings": 41,
+        "openingDepth": 0.19,
+        "maximumOpeningDepthChange": 0.06000000238418579,
+        "boundaryNormalizedZ": -0.5500000051612138,
+        "boundaryMaximumNormalDifference": 0.20454273864979633,
+        "chestTriangles": 2440
+      },
+      "coveredSide": {
+        "cut": -0.7826,
+        "samples": 1017,
+        "outside": 0,
+        "failures": []
+      },
+      "caps": [
+        {
+          "age": "infant",
+          "phase": 5,
+          "contrast": false,
+          "end": "head",
+          "target": "fr-manikin-head",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.1781977641058981,
+          "failures": []
+        },
+        {
+          "age": "infant",
+          "phase": 5,
+          "contrast": false,
+          "end": "torso",
+          "target": "fr-manikin-torso",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.10111485160742102,
+          "failures": []
+        }
+      ],
+      "neckShell": {
+        "vertices": 523,
+        "triangles": 816,
+        "euler": 2,
+        "volume": 0.014304864923089858,
+        "minimumFaceNormalDot": 0.9983161998375316,
+        "minimumNormalLength": 0.9999999583774257,
+        "maximumNormalLength": 1.0000000393145836,
+        "seamMinimumNormalDot": 0.9999999526068439,
+        "seamMaximumPositionGap": 3.448605640111973e-17
+      },
+      "sleeves": {
+        "samples": 96
+      },
+      "outsideTorso": {
+        "SHA256": "2626448069a1f5c9f37769e5e2096e40ef3ec8948bd7e7ca8da74ee94ee9fc81",
+        "nodes": 186,
+        "meshes": 128,
+        "geometries": 126,
+        "materials": 28,
+        "allocatedGeometries": 125,
+        "allocatedMaterials": 26
+      },
+      "status": "passed",
+      "resources": {
+        "geometries": 127,
+        "materials": 28,
+        "allocatedGeometries": 125,
+        "allocatedMaterials": 26
+      },
+      "assertions": 13747,
+      "durationMs": 11476
+    },
+    {
+      "age": "infant",
+      "phase": 8,
+      "contrast": false,
+      "density": {
+        "intervals": 40,
+        "maximumChordError": 0.0003918789058439953,
+        "maximumLongitudinalSpan": 0.01000006562114729
+      },
+      "topology": {
+        "vertices": 2913,
+        "triangles": 5680,
+        "volume": 0.4395649581215629,
+        "minimumNormalLength": 0.9999999602705503,
+        "maximumNormalLength": 1.0000000400367302,
+        "minimumFaceNormalDot": 0.4878462444954271,
+        "minimumSeamDot": 0.9999999325082753,
+        "maximumSeamGap": 6.123234262925839e-17
+      },
+      "preservation": {
+        "retainedRings": 41,
+        "openingDepth": 0.19,
+        "maximumOpeningDepthChange": 0.06000000238418579,
+        "boundaryNormalizedZ": -0.5500000051612138,
+        "boundaryMaximumNormalDifference": 0.20454273864979633,
+        "chestTriangles": 2440
+      },
+      "coveredSide": {
+        "cut": -0.7826,
+        "samples": 1017,
+        "outside": 0,
+        "failures": []
+      },
+      "caps": [
+        {
+          "age": "infant",
+          "phase": 8,
+          "contrast": false,
+          "end": "head",
+          "target": "fr-manikin-head",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.18057989873118901,
+          "failures": []
+        },
+        {
+          "age": "infant",
+          "phase": 8,
+          "contrast": false,
+          "end": "torso",
+          "target": "fr-manikin-torso",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.10322023459210226,
+          "failures": []
+        }
+      ],
+      "neckShell": {
+        "vertices": 523,
+        "triangles": 816,
+        "euler": 2,
+        "volume": 0.014304864923089858,
+        "minimumFaceNormalDot": 0.9983161998375316,
+        "minimumNormalLength": 0.9999999583774257,
+        "maximumNormalLength": 1.0000000393145836,
+        "seamMinimumNormalDot": 0.9999999526068439,
+        "seamMaximumPositionGap": 3.448605640111973e-17
+      },
+      "sleeves": {
+        "samples": 96
+      },
+      "outsideTorso": {
+        "SHA256": "d60285e32b937dc14a3ba65a4c244e85c0acb74f9df4c34f2f2a759963507fc1",
+        "nodes": 186,
+        "meshes": 128,
+        "geometries": 126,
+        "materials": 28,
+        "allocatedGeometries": 125,
+        "allocatedMaterials": 26
+      },
+      "status": "passed",
+      "resources": {
+        "geometries": 127,
+        "materials": 28,
+        "allocatedGeometries": 125,
+        "allocatedMaterials": 26
+      },
+      "assertions": 13747,
+      "durationMs": 23861
+    },
+    {
+      "age": "adult",
+      "phase": 8,
+      "contrast": true,
+      "density": {
+        "intervals": 40,
+        "maximumChordError": 0.0003918775415181208,
+        "maximumLongitudinalSpan": 0.010000050093265416
+      },
+      "topology": {
+        "vertices": 2913,
+        "triangles": 5680,
+        "volume": 0.5786500422321418,
+        "minimumNormalLength": 0.9999999589871917,
+        "maximumNormalLength": 1.0000000399509903,
+        "minimumFaceNormalDot": 0.5227664018965952,
+        "minimumSeamDot": 0.9999999349059165,
+        "maximumSeamGap": 6.123234262925839e-17
+      },
+      "preservation": {
+        "retainedRings": 41,
+        "openingDepth": 0.15,
+        "maximumOpeningDepthChange": 0.02000001072883606,
+        "boundaryNormalizedZ": -0.5500000133159313,
+        "boundaryMaximumNormalDifference": 0.20093409850290317,
+        "chestTriangles": 2440
+      },
+      "coveredSide": {
+        "cut": -0.91,
+        "samples": 1023,
+        "outside": 0,
+        "failures": []
+      },
+      "caps": [
+        {
+          "age": "adult",
+          "phase": 8,
+          "contrast": true,
+          "end": "head",
+          "target": "fr-manikin-head",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.03884416308328431,
+          "failures": []
+        },
+        {
+          "age": "adult",
+          "phase": 8,
+          "contrast": true,
+          "end": "torso",
+          "target": "fr-manikin-torso",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.04332364391994492,
+          "failures": []
+        }
+      ],
+      "neckShell": {
+        "vertices": 523,
+        "triangles": 816,
+        "euler": 2,
+        "volume": 0.021283358222107945,
+        "minimumFaceNormalDot": 0.9983357444080151,
+        "minimumNormalLength": 0.9999999667142725,
+        "maximumNormalLength": 1.0000000354650527,
+        "seamMinimumNormalDot": 0.9999999446490655,
+        "seamMaximumPositionGap": 3.918870060621435e-17
+      },
+      "sleeves": {
+        "samples": 96
+      },
+      "outsideTorso": {
+        "SHA256": "1db3fd135005936e758b6871583897b7a3ec3e13d8f00e70b0ac95805b920399",
+        "nodes": 215,
+        "meshes": 147,
+        "geometries": 145,
+        "materials": 29,
+        "allocatedGeometries": 144,
+        "allocatedMaterials": 26
+      },
+      "status": "passed",
+      "resources": {
+        "geometries": 146,
+        "materials": 29,
+        "allocatedGeometries": 144,
+        "allocatedMaterials": 26
+      },
+      "assertions": 13747,
+      "durationMs": 20967
+    },
+    {
+      "age": "child",
+      "phase": 8,
+      "contrast": true,
+      "density": {
+        "intervals": 40,
+        "maximumChordError": 0.0003918981721116044,
+        "maximumLongitudinalSpan": 0.010000010793054777
+      },
+      "topology": {
+        "vertices": 2913,
+        "triangles": 5680,
+        "volume": 0.5112951797993184,
+        "minimumNormalLength": 0.9999999548687065,
+        "maximumNormalLength": 1.0000000407987097,
+        "minimumFaceNormalDot": 0.5208880987244704,
+        "minimumSeamDot": 0.999999943094997,
+        "maximumSeamGap": 6.123234262925839e-17
+      },
+      "preservation": {
+        "retainedRings": 41,
+        "openingDepth": 0.15,
+        "maximumOpeningDepthChange": 0.02000001072883606,
+        "boundaryNormalizedZ": -0.5500000229352414,
+        "boundaryMaximumNormalDifference": 0.20055310071669877,
+        "chestTriangles": 2440
+      },
+      "coveredSide": {
+        "cut": -0.8553999999999999,
+        "samples": 1019,
+        "outside": 0,
+        "failures": []
+      },
+      "caps": [
+        {
+          "age": "child",
+          "phase": 8,
+          "contrast": true,
+          "end": "head",
+          "target": "fr-manikin-head",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.07494845555492588,
+          "failures": []
+        },
+        {
+          "age": "child",
+          "phase": 8,
+          "contrast": true,
+          "end": "torso",
+          "target": "fr-manikin-torso",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.07099793169051281,
+          "failures": []
+        }
+      ],
+      "neckShell": {
+        "vertices": 523,
+        "triangles": 816,
+        "euler": 2,
+        "volume": 0.01741883146490792,
+        "minimumFaceNormalDot": 0.998314876207774,
+        "minimumNormalLength": 0.9999999635724913,
+        "maximumNormalLength": 1.00000003099486,
+        "seamMinimumNormalDot": 0.9999999502679258,
+        "seamMaximumPositionGap": 3.6837376849305816e-17
+      },
+      "sleeves": {
+        "samples": 96
+      },
+      "outsideTorso": {
+        "SHA256": "0c8448b898959a7070b7f0000e4cb7194dadb110be8b716aad7dcedbe9a7d8f6",
+        "nodes": 214,
+        "meshes": 146,
+        "geometries": 144,
+        "materials": 29,
+        "allocatedGeometries": 143,
+        "allocatedMaterials": 26
+      },
+      "status": "passed",
+      "resources": {
+        "geometries": 145,
+        "materials": 29,
+        "allocatedGeometries": 143,
+        "allocatedMaterials": 26
+      },
+      "assertions": 13747,
+      "durationMs": 12695
+    },
+    {
+      "age": "infant",
+      "phase": 8,
+      "contrast": true,
+      "density": {
+        "intervals": 40,
+        "maximumChordError": 0.0003918789058439953,
+        "maximumLongitudinalSpan": 0.01000006562114729
+      },
+      "topology": {
+        "vertices": 2913,
+        "triangles": 5680,
+        "volume": 0.4395649581215629,
+        "minimumNormalLength": 0.9999999602705503,
+        "maximumNormalLength": 1.0000000400367302,
+        "minimumFaceNormalDot": 0.4878462444954271,
+        "minimumSeamDot": 0.9999999325082753,
+        "maximumSeamGap": 6.123234262925839e-17
+      },
+      "preservation": {
+        "retainedRings": 41,
+        "openingDepth": 0.19,
+        "maximumOpeningDepthChange": 0.06000000238418579,
+        "boundaryNormalizedZ": -0.5500000051612138,
+        "boundaryMaximumNormalDifference": 0.20454273864979633,
+        "chestTriangles": 2440
+      },
+      "coveredSide": {
+        "cut": -0.7826,
+        "samples": 1017,
+        "outside": 0,
+        "failures": []
+      },
+      "caps": [
+        {
+          "age": "infant",
+          "phase": 8,
+          "contrast": true,
+          "end": "head",
+          "target": "fr-manikin-head",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.18057989873118901,
+          "failures": []
+        },
+        {
+          "age": "infant",
+          "phase": 8,
+          "contrast": true,
+          "end": "torso",
+          "target": "fr-manikin-torso",
+          "samples": 98,
+          "capVertices": 49,
+          "perimeterVertices": 25,
+          "triangleCentroids": 24,
+          "inside": 98,
+          "outside": 0,
+          "minimumRayIntervalMargin": 0.10322023459210226,
+          "failures": []
+        }
+      ],
+      "neckShell": {
+        "vertices": 523,
+        "triangles": 816,
+        "euler": 2,
+        "volume": 0.014304864923089858,
+        "minimumFaceNormalDot": 0.9983161998375316,
+        "minimumNormalLength": 0.9999999583774257,
+        "maximumNormalLength": 1.0000000393145836,
+        "seamMinimumNormalDot": 0.9999999526068439,
+        "seamMaximumPositionGap": 3.448605640111973e-17
+      },
+      "sleeves": {
+        "samples": 96
+      },
+      "outsideTorso": {
+        "SHA256": "db1da6dd3d9132f22f0c38319a4717472be1964ca0c4675e72d387222c7095a9",
+        "nodes": 185,
+        "meshes": 128,
+        "geometries": 126,
+        "materials": 29,
+        "allocatedGeometries": 125,
+        "allocatedMaterials": 26
+      },
+      "status": "passed",
+      "resources": {
+        "geometries": 127,
+        "materials": 29,
+        "allocatedGeometries": 125,
+        "allocatedMaterials": 26
+      },
+      "assertions": 13747,
+      "durationMs": 12066
+    }
+  ],
+  "inputReadbackUnchanged": true
+}

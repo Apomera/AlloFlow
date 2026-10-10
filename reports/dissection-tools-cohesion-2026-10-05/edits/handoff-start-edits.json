@@ -1,0 +1,13 @@
+{
+  "file": "AGENT_HANDOFF.md",
+  "baselineSha256": "614a5652aa7899ca20a5939a3880d55d3c446d0d294ea41faeafd928c71b957f",
+  "finalSha256": "d41a32569d6a6f5e79a1db815289f4fe3b5e030b313474f4f6789ed22d734b84",
+  "edits": [
+    {
+      "offset": 19897,
+      "old": "## Work Log",
+      "new": "## Work Log\n\n- 2026-10-05 | Codex Dissection tools cohesion IN PROGRESS: root owns canonical/public stem_lab/stem_tool_dissection.js, focused lab unit/new tools browser fixture, and reports/dissection-tools-cohesion-2026-10-05. Group observation, evidence/export and report/reset actions; preserve native modes/focus and prior work; refresh full-canvas PNG downloads through the native capture helper. No staging, commit, push or deployment."
+    }
+  ],
+  "exactReversal": true
+}

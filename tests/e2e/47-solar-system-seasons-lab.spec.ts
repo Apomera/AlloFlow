@@ -9,6 +9,7 @@ const desktopHarness = new GlHarness({
   width: 1180,
   height: 900,
   appStyles: true,
+  layout: 'document',
 });
 
 const mobileHarness = new GlHarness({
@@ -17,6 +18,7 @@ const mobileHarness = new GlHarness({
   width: 340,
   height: 820,
   appStyles: true,
+  layout: 'document',
 });
 
 const initialState = {
@@ -32,6 +34,10 @@ const initialState = {
 test.beforeAll(async () => {
   await desktopHarness.start();
   await mobileHarness.start();
+});
+
+test.beforeEach(async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
 });
 
 test.afterAll(async () => {

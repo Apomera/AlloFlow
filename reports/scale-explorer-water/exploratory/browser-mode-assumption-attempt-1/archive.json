@@ -1,0 +1,54 @@
+{
+  "sourceSha256": "e7e0acd6ee8a59fdffb59a63849660e0f154fda0820c4bdf129cee2fcadf87ca",
+  "reason": "Scratch browser test treated two explicit mode selectors as a single toggle. The first case clicked the active Geometry guides selector and incorrectly expected structure. Original raw failure and serial skip are preserved; app source remains unchanged.",
+  "originalStatus": "1 failed, 1 serially skipped",
+  "automaticRetries": 0,
+  "unitGateRetained": true,
+  "records": [
+    {
+      "file": "browser-cases.fragment.txt",
+      "sha256": "8b2da54247ea975bf10fb3c6fabac809cbf2994c9b9448f39ba888def0a23cc2",
+      "bytes": 9847
+    },
+    {
+      "file": "scale-explorer-water.spec.ts",
+      "sha256": "2250b5ff9f0f5d5c78332e71501009782d8565eeeae43a18e978e7d4ecf20d6f",
+      "bytes": 22812
+    },
+    {
+      "file": "adapted-water.spec.ts",
+      "sha256": "eb8c071c6b4ef19594eda39b9840141c99c529a7826ce66bee327cc33b0d6d31",
+      "bytes": 22988
+    },
+    {
+      "file": "browser.config.cjs",
+      "sha256": "5b6f0206f8e2d08257f8c5563405ba9eb9ebcc59947d93559dc1c6fcc6adf837",
+      "bytes": 644
+    },
+    {
+      "file": "test-preparation-proof.json",
+      "sha256": "56bd51be9991fd535198e08e4adf56fb3a658aef02c1c9a741321f0ff8392654",
+      "bytes": 742
+    },
+    {
+      "file": "candidate-source.js",
+      "sha256": "e7e0acd6ee8a59fdffb59a63849660e0f154fda0820c4bdf129cee2fcadf87ca",
+      "bytes": 2206583
+    },
+    {
+      "file": "candidate-proof.json",
+      "sha256": "e55fef08504a70cda5a0b1f8254609d9161253a9d6bf0abeea7c9dde04c818b8",
+      "bytes": 384
+    },
+    {
+      "file": "candidate-units.json",
+      "sha256": "98d50077cd1831e0f9d724d159e23f5e93c5b09349389ce63a61c741eb2b7881",
+      "bytes": 3753
+    },
+    {
+      "file": "candidate-units-proof.json",
+      "sha256": "ae3faac54ffaaca5feb484c1fd8aaa28185ad05aa2eba7ea12d8104ecdc2226d",
+      "bytes": 2754
+    }
+  ]
+}

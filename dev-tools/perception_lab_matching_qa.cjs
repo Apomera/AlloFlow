@@ -29,7 +29,7 @@ const shell = read('dev-tools/pixel_contrast_probe.cjs').match(/const SHELL = `(
     await mount(); await stage.waitFor();
     for (const [id, reference, adjusted] of [['brightness', 128, 146], ['ebbinghaus', 48, 60], ['mullerLyer', 400, 455]]) {
       await choose(id); await button('Match by eye').click();
-      assert.equal((await state()).models[id].matchValue, reference);
+      assert.notEqual((await state()).models[id].matchValue, reference);
       assert.equal(await page.locator('[data-perception-result]').count(), 0);
       assert((await page.locator('#perception-match-value').getAttribute('aria-valuetext')).includes('hidden until reveal'));
       if (id === 'brightness') assert.equal(await page.locator('#perception-target').count(), 0);
@@ -48,7 +48,7 @@ const shell = read('dev-tools/pixel_contrast_probe.cjs').match(/const SHELL = `(
       assert(!result.includes('Both squares:') && !result.includes('Both shafts:'));
       assert.deepEqual(await axe(), []);
       await page.screenshot({ path: path.join(out, 'match-' + id + '.png'), fullPage: true });
-      await button('Reset comparison').click();
+      await button('Equalize drawing values').click();
       assert.equal((await state()).models[id].matchValue, reference); assert.equal((await state()).models[id].reveal, false);
       await button('Increase comparison').click(); await button('Decrease comparison').click();
       assert.equal((await state()).models[id].matchValue, reference);

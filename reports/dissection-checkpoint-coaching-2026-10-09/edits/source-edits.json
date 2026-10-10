@@ -1,0 +1,46 @@
+{
+  "before": "16c960aa8e0cdb992d1166950150e34e09407abfd448b8b78734937cc2497745",
+  "after": "1665a57757125b1cfaceff6dbcca13aeb930987984fce2bd3f06019b30b9285a",
+  "edits": [
+    {
+      "name": "Keep each choice stable and place its coaching beside the selected answer",
+      "before": "          function renderLearningChoice(optionId, index, label, selected, correct, feedbackId, onClick) {\n            return React.createElement(\"button\", {\n              type: \"button\", key: optionId, className: \"diss-learning-check__option\",\n              \"aria-pressed\": selected,\n              \"aria-describedby\": selected && feedbackId ? feedbackId : undefined,\n              \"data-result\": selected ? (correct ? \"correct\" : \"incorrect\") : undefined,\n              onClick: onClick\n            },\n              React.createElement(\"span\", { className: \"diss-learning-check__number\", \"aria-hidden\": true }, index + 1),\n              React.createElement(\"span\", { className: \"diss-learning-check__answer\" }, label),\n              selected && React.createElement(\"span\", { className: \"diss-learning-check__marker\", \"aria-hidden\": true }, correct ? 'Confirmed' : 'Review choice')\n            );\n          }\n",
+      "after": "          function renderLearningChoice(optionId, index, label, selected, correct, feedbackId, onClick, feedbackText) {\n            var inlineFeedback = selected && feedbackId && typeof feedbackText === 'string' ? feedbackText.trim() : '';\n            return React.createElement(\"div\", { key: optionId, className: \"diss-learning-check__choice\" },\n              React.createElement(\"button\", {\n                type: \"button\", className: \"diss-learning-check__option\",\n                \"aria-pressed\": selected,\n                \"aria-describedby\": inlineFeedback ? feedbackId : undefined,\n                \"data-result\": selected ? (correct ? \"correct\" : \"incorrect\") : undefined,\n                onClick: onClick\n              },\n                React.createElement(\"span\", { className: \"diss-learning-check__number\", \"aria-hidden\": true }, index + 1),\n                React.createElement(\"span\", { className: \"diss-learning-check__answer\" }, label),\n                selected && React.createElement(\"span\", { className: \"diss-learning-check__marker\", \"aria-hidden\": true }, correct ? 'Confirmed' : 'Review choice')\n              ),\n              inlineFeedback && React.createElement(\"p\", { id: feedbackId, className: \"diss-learning-check__feedback\", \"data-result\": correct ? \"correct\" : \"incorrect\" },\n                React.createElement(\"strong\", { className: \"diss-learning-check__feedback-title\" }, correct ? 'Choice confirmed.' : 'Try another choice.'),\n                ' ', React.createElement(\"span\", null, inlineFeedback)\n              )\n            );\n          }\n"
+    },
+    {
+      "name": "Find a matching saved response before moving procedure feedback inline",
+      "before": "            var feedback = typeof feedbackValue === 'string' ? feedbackValue : '';",
+      "after": "            var feedback = typeof feedbackValue === 'string' ? feedbackValue.trim() : '';\n            var inlineLearningFeedback = !!feedback && options.some(function (option) { return option.id === selectedChoice; });"
+    },
+    {
+      "name": "Pass the procedure coaching text to the selected choice",
+      "before": "                  return renderLearningChoice(option.id, index, option.label, selectedChoice === option.id, responseCorrect, feedback ? 'diss-learning-check-feedback' : null, function () { recordProcedureLearningChoice(learningAction, responseKey, option.id); });",
+      "after": "                  return renderLearningChoice(option.id, index, option.label, selectedChoice === option.id, responseCorrect, feedback ? 'diss-learning-check-feedback' : null, function () { recordProcedureLearningChoice(learningAction, responseKey, option.id); }, feedback);"
+    },
+    {
+      "name": "Retain procedure feedback when there is no matching choice or during performance",
+      "before": "              feedback && React.createElement(\"p\", { id: \"diss-learning-check-feedback\", className: \"diss-learning-check__feedback\", \"data-result\": responseCorrect ? \"correct\" : \"incorrect\" }, feedback)",
+      "after": "              feedback && !inlineLearningFeedback && React.createElement(\"p\", { id: \"diss-learning-check-feedback\", className: \"diss-learning-check__feedback\", \"data-result\": responseCorrect ? \"correct\" : \"incorrect\" }, feedback)"
+    },
+    {
+      "name": "Use the same feedback matching rule for Guided observations",
+      "before": "            var guidedFeedback = d.guidedObservationFeedback;",
+      "after": "            var guidedFeedback = d.guidedObservationFeedback;\n            var guidedFeedbackText = guidedFeedback && typeof guidedFeedback.message === 'string' ? guidedFeedback.message.trim() : '';\n            var inlineGuidedFeedback = !!guidedFeedbackText && guidedObservationOptions.some(function (option) { return option.id === guidedFeedback.choiceId; });"
+    },
+    {
+      "name": "Pass Guided coaching to the chosen observation",
+      "before": "                  return renderLearningChoice(option.id, index, String(option.fn || 'No observation available.').split('.')[0] + '.', !!(guidedFeedback && guidedFeedback.choiceId === option.id), !!(guidedFeedback && guidedFeedback.correct), guidedFeedback ? 'diss-guided-observation-feedback' : null, function () { recordGuidedObservationChoice(option.id); });",
+      "after": "                  return renderLearningChoice(option.id, index, String(option.fn || 'No observation available.').split('.')[0] + '.', !!(guidedFeedback && guidedFeedback.choiceId === option.id), !!(guidedFeedback && guidedFeedback.correct), guidedFeedbackText ? 'diss-guided-observation-feedback' : null, function () { recordGuidedObservationChoice(option.id); }, guidedFeedbackText);"
+    },
+    {
+      "name": "Preserve unmatched Guided feedback without a duplicate ID",
+      "before": "              guidedFeedback && React.createElement(\"p\", { id: \"diss-guided-observation-feedback\", className: \"diss-learning-check__feedback\", \"data-result\": guidedFeedback.correct ? \"correct\" : \"incorrect\" }, guidedFeedback.message)",
+      "after": "              guidedFeedbackText && !inlineGuidedFeedback && React.createElement(\"p\", { id: \"diss-guided-observation-feedback\", className: \"diss-learning-check__feedback\", \"data-result\": guidedFeedback.correct ? \"correct\" : \"incorrect\" }, guidedFeedbackText)"
+    },
+    {
+      "name": "Keep answer and coaching readable in each responsive choice card",
+      "before": "[data-dissection-root][data-high-contrast=\"true\"] .diss-learning-check { border-color: #111827; background: #fff; color: #000; box-shadow: none; }",
+      "after": ".diss-learning-check .diss-learning-check__choice { display: grid; align-content: start; min-width: 0; gap: .45rem; }\n.diss-learning-check__choice > .diss-learning-check__option { width: 100%; }\n.diss-learning-check__choice > .diss-learning-check__feedback { display: grid; grid-column: auto; min-width: 0; gap: .25rem; font-weight: 500; overflow-wrap: anywhere; }\n.diss-learning-check__feedback-title { font-weight: 850; }\n[data-dissection-root] .diss-learning-check :is(.diss-learning-check__answer, .diss-learning-check__feedback) { font-size: 1rem; }\n[data-dissection-root][data-text-size=\"large\"] .diss-learning-check :is(.diss-learning-check__answer, .diss-learning-check__feedback) { font-size: 1.125rem !important; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-learning-check { border-color: #111827; background: #fff; color: #000; box-shadow: none; }"
+    }
+  ]
+}

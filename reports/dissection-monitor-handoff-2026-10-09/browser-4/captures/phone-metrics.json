@@ -1,0 +1,48 @@
+{
+  "width": 256.75,
+  "client": 257,
+  "scroll": 257,
+  "controls": [
+    {
+      "text": "Review plan",
+      "font": 16,
+      "client": 111,
+      "scroll": 111,
+      "height": 48
+    }
+  ],
+  "focus": {
+    "width": 3,
+    "style": "solid"
+  },
+  "cues": [
+    {
+      "id": "diss-procedure-summary",
+      "width": 274.40625,
+      "client": 274,
+      "scroll": 274,
+      "fonts": [
+        16,
+        16
+      ]
+    },
+    {
+      "id": "diss-procedure-title",
+      "width": 274.40625,
+      "client": 274,
+      "scroll": 274,
+      "fonts": [
+        16
+      ]
+    },
+    {
+      "id": "diss-active-tool-help",
+      "width": 184.828125,
+      "client": 185,
+      "scroll": 185,
+      "fonts": [
+        16
+      ]
+    }
+  ]
+}

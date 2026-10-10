@@ -1,12 +1,37 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
+import { parse } from 'acorn';
 const files = ['stem_lab/stem_tool_watercycle.js', 'desktop/web-app/public/stem_lab/stem_tool_watercycle.js'];
 function kernel(file) {
   const source = readFileSync(file, 'utf8');
-  const start = source.indexOf('  function wcLandResponse(');
-  const end = source.indexOf('  if(!window.StemLab', start);
+  const names = ['wcLandResponse', 'wcInvestigationInputs', 'wcInvestigationSnapshot', 'wcInvestigationChanged', 'wcInvestigationFair'];
+  const declarations = new Map();
+  let exported = null;
+  const pending = [parse(source, { ecmaVersion: 'latest' })];
+  while (pending.length) {
+    const node = pending.pop();
+    if (!node || typeof node !== 'object') continue;
+    const declaration = node.type === 'FunctionDeclaration' && names.includes(node.id?.name)
+      || node.type === 'VariableDeclarator' && node.id?.name === 'WC_INVESTIGATION_INPUTS';
+    if (declaration) {
+      if (declarations.has(node.id.name)) throw Error('Duplicate investigation dependency: ' + node.id.name);
+      declarations.set(node.id.name, (node.type === 'VariableDeclarator' ? 'var ' : '') + source.slice(node.start, node.end) + ';');
+    }
+    if (node.type === 'AssignmentExpression' && node.left.type === 'MemberExpression' && !node.left.computed &&
+        node.left.object.type === 'Identifier' && node.left.object.name === 'window' && node.left.property.name === 'WaterCycleInvestigationKernel') {
+      if (exported) throw Error('Duplicate investigation kernel export');
+      exported = source.slice(node.start, node.end) + ';';
+    }
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) pending.push(...value);
+      else if (value && typeof value === 'object') pending.push(value);
+    }
+  }
+  const required = ['WC_INVESTIGATION_INPUTS', ...names];
+  if (!exported || declarations.size !== required.length || required.some(name => !declarations.has(name))) throw Error('Missing actual investigation kernel dependencies');
   const host = {};
-  new Function('window', source.slice(start, end))(host);
+  runInNewContext(required.map(name => declarations.get(name)).join('\n') + '\n' + exported, { window: host }, { filename: file + ':investigation-kernel', timeout: 30000 });
   return host.WaterCycleInvestigationKernel;
 }
 describe.each(files)('Storm-to-stream evidence (%s)', file => {

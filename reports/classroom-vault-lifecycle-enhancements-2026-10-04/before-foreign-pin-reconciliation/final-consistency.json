@@ -1,0 +1,81 @@
+{
+  "label": "final",
+  "completedAt": "2026-10-04T18:07:07.503Z",
+  "passed": true,
+  "files": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "beforeSha256": "d6e6bcf5b3f35bf587781a7f1f99f8bcf79b42b87f03579bfbb300d39c9cfea0",
+      "candidateSha256": "349a91c643a85fe9025c3f58f96623c72771988d0021225b71e698e296d5ace2",
+      "changed": true,
+      "bytes": 2859625
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "beforeSha256": "d6e6bcf5b3f35bf587781a7f1f99f8bcf79b42b87f03579bfbb300d39c9cfea0",
+      "candidateSha256": "349a91c643a85fe9025c3f58f96623c72771988d0021225b71e698e296d5ace2",
+      "changed": true,
+      "bytes": 2859625
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "beforeSha256": "d6e6bcf5b3f35bf587781a7f1f99f8bcf79b42b87f03579bfbb300d39c9cfea0",
+      "candidateSha256": "349a91c643a85fe9025c3f58f96623c72771988d0021225b71e698e296d5ace2",
+      "changed": true,
+      "bytes": 2859625
+    },
+    {
+      "file": "host_handlers_source.jsx",
+      "beforeSha256": "ef290e2068207169ca205c0329a0b2c5260deb6a9943f2d4173cd65ec0907bba",
+      "candidateSha256": "24643cd4ecc40fd7e12377ae315559433b2999b78b3da13dc14ff8d4f5c5bdef",
+      "changed": true,
+      "bytes": 666418
+    },
+    {
+      "file": "host_handlers_module.js",
+      "beforeSha256": "b6aa6e66b3e151019db7c4830e36de5305deea23bf80e9113d334a0cea4271eb",
+      "candidateSha256": "1518acf28ff055e3bd5abbd3849b472d1f42075ee7b20a0766f1064c603b719d",
+      "changed": true,
+      "bytes": 538384
+    },
+    {
+      "file": "desktop/web-app/public/host_handlers_module.js",
+      "beforeSha256": "b6aa6e66b3e151019db7c4830e36de5305deea23bf80e9113d334a0cea4271eb",
+      "candidateSha256": "1518acf28ff055e3bd5abbd3849b472d1f42075ee7b20a0766f1064c603b719d",
+      "changed": true,
+      "bytes": 538384
+    },
+    {
+      "file": "dev-tools/host_handlers_wave3_manifest.json",
+      "beforeSha256": "82e4c3d7794b533a4bc4f9792409f264370b7cab09326b93e31320e61984abe0",
+      "candidateSha256": "82e4c3d7794b533a4bc4f9792409f264370b7cab09326b93e31320e61984abe0",
+      "changed": false,
+      "bytes": 44346
+    },
+    {
+      "file": "allo_device_vault_module.js",
+      "beforeSha256": "f22f9699c9b7e9c2c1e331e0d93aaa501203b034853d9d8254f6a8c6e9383a53",
+      "candidateSha256": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+      "changed": true,
+      "bytes": 43286
+    },
+    {
+      "file": "desktop/web-app/public/allo_device_vault_module.js",
+      "beforeSha256": "f22f9699c9b7e9c2c1e331e0d93aaa501203b034853d9d8254f6a8c6e9383a53",
+      "candidateSha256": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+      "changed": true,
+      "bytes": 43286
+    }
+  ],
+  "operations": 27,
+  "handlerPin": "1518acf2",
+  "vaultPin": "808069fd",
+  "mirrorParity": true,
+  "generatedParity": true,
+  "manifestAndGettersExact": true,
+  "reversedRawPreimages": {
+    "AlloFlowANTI.txt": "d6e6bcf5b3f35bf587781a7f1f99f8bcf79b42b87f03579bfbb300d39c9cfea0",
+    "host_handlers_source.jsx": "ef290e2068207169ca205c0329a0b2c5260deb6a9943f2d4173cd65ec0907bba",
+    "allo_device_vault_module.js": "f22f9699c9b7e9c2c1e331e0d93aaa501203b034853d9d8254f6a8c6e9383a53"
+  }
+}

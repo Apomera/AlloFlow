@@ -1,0 +1,196 @@
+{
+  "personal": {
+    "roots": {
+      "human": {
+        "scale": 2.0625,
+        "position": [
+          0,
+          1.0312499999999998,
+          0
+        ],
+        "modelVisible": true,
+        "geometry": [
+          "52CEE924-32EC-4D23-AFA0-2A26FA648880",
+          "A8FE49B8-6438-4475-9074-DD45E34FB7C6",
+          "323CAF4F-D255-436E-9533-48EA06C8E487",
+          "C6B7F8E4-F9EB-457B-ADE2-382D89A93A4F",
+          "52CEE924-32EC-4D23-AFA0-2A26FA648880",
+          "3F7DA0DF-8407-47DF-B5BD-28E6FA857601",
+          "52CEE924-32EC-4D23-AFA0-2A26FA648880",
+          "86077C8B-A109-42EF-AD05-AAEE5E526E2F",
+          "52CEE924-32EC-4D23-AFA0-2A26FA648880",
+          "B38ADEB7-D0A4-4C44-9970-06762EA364C9",
+          "52CEE924-32EC-4D23-AFA0-2A26FA648880"
+        ]
+      },
+      "elephant": {
+        "scale": 3.0000000000000004,
+        "position": [
+          0,
+          1.5000000000000002,
+          0
+        ],
+        "modelVisible": true,
+        "geometry": [
+          "E1F704EF-1B71-464E-868C-A582FB36BDB3",
+          "C10D4798-B413-4AD2-8279-D47B58204275",
+          "050D94D6-AEA5-43E6-B2E1-138BE39788B6",
+          "4BA3CF14-7F0D-40FF-B281-12511FD87BA1",
+          "3E1EEB41-51A1-4481-AACD-386948B0F7F4",
+          "5A74223A-A612-456E-A74A-7540AD48BEF8",
+          "E923B576-A172-4BE1-8C66-0B629B5BD3AE",
+          "6BEA5423-A029-4337-ADC1-37ABEC3ED0FB",
+          "B2C13F61-9B25-41B0-900B-83069DE6CA0B",
+          "20E19650-D04A-44E5-A6B5-E31FCF42B192",
+          "B76A4DE5-05AF-430F-AF1D-8092A73F4DE6",
+          "9118987C-5F77-45F7-A395-8ED8E1C3A4F1",
+          "0DEE5D14-CE6E-48C0-94E2-B5E1018DFE9B",
+          "41E8E69E-431A-4269-A94D-4B367BE50A82"
+        ]
+      }
+    },
+    "stats": {
+      "active": true,
+      "bigId": "elephant",
+      "width": 495,
+      "height": 876,
+      "maskPasses": 3
+    },
+    "mask": {
+      "coverage": 0.07668234860015682,
+      "width": 495,
+      "height": 876
+    },
+    "identity": [
+      "D12909D0-0CD0-4677-AC4D-57C20F2F7BC2",
+      "D02736F5-36D3-489F-A2F0-9236C41314B6",
+      "826551C2-220C-4AF2-BDD7-E2349B1F9ED0"
+    ],
+    "quadVisible": true,
+    "renderTarget": true,
+    "projection": "OrthographicCamera",
+    "canvasHeight": 584,
+    "theme": "101f2a",
+    "type": "webgl"
+  },
+  "extreme": {
+    "roots": {
+      "human": {
+        "scale": 5.179720609009575e-7,
+        "position": [
+          0,
+          2.589860304504787e-7,
+          0
+        ],
+        "modelVisible": true,
+        "geometry": [
+          "52CEE924-32EC-4D23-AFA0-2A26FA648880",
+          "A8FE49B8-6438-4475-9074-DD45E34FB7C6",
+          "323CAF4F-D255-436E-9533-48EA06C8E487",
+          "C6B7F8E4-F9EB-457B-ADE2-382D89A93A4F",
+          "52CEE924-32EC-4D23-AFA0-2A26FA648880",
+          "3F7DA0DF-8407-47DF-B5BD-28E6FA857601",
+          "52CEE924-32EC-4D23-AFA0-2A26FA648880",
+          "86077C8B-A109-42EF-AD05-AAEE5E526E2F",
+          "52CEE924-32EC-4D23-AFA0-2A26FA648880",
+          "B38ADEB7-D0A4-4C44-9970-06762EA364C9",
+          "52CEE924-32EC-4D23-AFA0-2A26FA648880"
+        ]
+      },
+      "earth": {
+        "scale": 3,
+        "position": [
+          0,
+          1.710500796332033,
+          0
+        ],
+        "modelVisible": true,
+        "geometry": [
+          "52CEE924-32EC-4D23-AFA0-2A26FA648880",
+          "52CEE924-32EC-4D23-AFA0-2A26FA648880"
+        ]
+      }
+    },
+    "stats": {
+      "active": true,
+      "bigId": "earth",
+      "width": 495,
+      "height": 876,
+      "maskPasses": 5
+    },
+    "mask": {
+      "coverage": 0.1312485586458189,
+      "width": 495,
+      "height": 876
+    },
+    "identity": [
+      "D12909D0-0CD0-4677-AC4D-57C20F2F7BC2",
+      "D02736F5-36D3-489F-A2F0-9236C41314B6",
+      "826551C2-220C-4AF2-BDD7-E2349B1F9ED0"
+    ],
+    "quadVisible": true,
+    "renderTarget": true,
+    "projection": "OrthographicCamera",
+    "canvasHeight": 584,
+    "theme": "101f2a",
+    "type": "webgl"
+  },
+  "fresh": {
+    "roots": {
+      "proton": {
+        "scale": 0.36,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "modelVisible": true,
+        "geometry": [
+          "52CEE924-32EC-4D23-AFA0-2A26FA648880",
+          "092703FB-A033-477D-896B-9C893786CAAF",
+          "69B34F3F-3F31-44D0-B9FE-53D48BD312CE"
+        ]
+      },
+      "nucleus": {
+        "scale": 2.9999999999999996,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "modelVisible": true,
+        "geometry": [
+          "4DA7F03A-341F-4F52-8693-D19A88731D0C",
+          "275771C5-FB8F-4CBB-973A-83A97E26A0AE",
+          "4DA7F03A-341F-4F52-8693-D19A88731D0C",
+          "275771C5-FB8F-4CBB-973A-83A97E26A0AE",
+          "D5D453BD-1CBB-42A0-A141-64740D07F04A"
+        ]
+      }
+    },
+    "stats": {
+      "active": true,
+      "bigId": "nucleus",
+      "width": 495,
+      "height": 876,
+      "maskPasses": 9
+    },
+    "mask": {
+      "coverage": 0.2316521378165214,
+      "width": 495,
+      "height": 876
+    },
+    "identity": [
+      "D12909D0-0CD0-4677-AC4D-57C20F2F7BC2",
+      "D02736F5-36D3-489F-A2F0-9236C41314B6",
+      "826551C2-220C-4AF2-BDD7-E2349B1F9ED0"
+    ],
+    "quadVisible": true,
+    "renderTarget": true,
+    "projection": "OrthographicCamera",
+    "canvasHeight": 584,
+    "theme": "101f2a",
+    "type": "webgl"
+  },
+  "errors": []
+}

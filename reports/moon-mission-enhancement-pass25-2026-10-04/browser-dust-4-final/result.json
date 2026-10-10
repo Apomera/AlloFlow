@@ -1,0 +1,122 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass25-2026-10-04\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass25-2026-10-04/browser-dust-4-final/test-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "moon-mission-descent-dust.spec.ts",
+      "file": "moon-mission-descent-dust.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "real WebGL consumes the same ballistic samples, draws dust pixels and retains grains on context loss",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 66110,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T23:54:16.179Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "webgl-ballistic-dust",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass25-2026-10-04\\browser-dust-4-final\\test-artifacts\\moon-mission-descent-dust--7aa75-ains-grains-on-context-loss-chromium\\attachments\\webgl-ballistic-dust-b72ce6a3b8a5fbc0c31292d8bbf65df21e37a6de.png"
+                    },
+                    {
+                      "name": "webgl-landing-view-dust",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass25-2026-10-04\\browser-dust-4-final\\test-artifacts\\moon-mission-descent-dust--7aa75-ains-grains-on-context-loss-chromium\\attachments\\webgl-landing-view-dust-1d94af7f58dd35e911f0895edbc96e63643a4219.png"
+                    },
+                    {
+                      "name": "context-loss-keeps-ballistic-dust",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass25-2026-10-04\\browser-dust-4-final\\test-artifacts\\moon-mission-descent-dust--7aa75-ains-grains-on-context-loss-chromium\\attachments\\context-loss-keeps-ballistic-dust-c7d5aa49008cfb8362817c627e79ab2d715d91a9.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "98b8a24adc3328688567-2c256ae8b643d50cf2ee",
+          "file": "moon-mission-descent-dust.spec.ts",
+          "line": 171,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-07T23:53:38.056Z",
+    "duration": 127701.83799999999,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

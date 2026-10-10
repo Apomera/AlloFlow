@@ -1,0 +1,42 @@
+{
+  "completed": true,
+  "driverHash": "a229036ee9589e42fb07f1dd2d32439bc8b5b9bd4c074dcc107529273b073acb",
+  "target": "tests/universe_flight_navigation.test.js",
+  "baselineSha256": "8eecef1702ceb0802e81acdb4416383c2f9e74e95c81583d801ee8f735a0ca2e",
+  "candidateSha256": "e35154d951bd6875c27fb06e284734f31362d53408e56636b4f332a74f57d81d",
+  "inverseExact": true,
+  "replacements": [
+    {
+      "before": "import { readFileSync } from 'node:fs';\n",
+      "after": "import { readFileSync } from 'node:fs';\n\nconst DISK_METADATA = {\n  \"id\": \"disk\",\n  \"name\": \"Spiral disk passage\",\n  \"region\": \"galaxy\",\n  \"durationSeconds\": 44,\n  \"position\": [\n    63127.46206453789,\n    25688.2137830559,\n    -12650.660296061507\n  ],\n  \"aim\": [\n    -20170,\n    10020,\n    -4410\n  ],\n  \"fov\": 64,\n  \"targetId\": \"inner-arm\",\n  \"highlights\": [\n    {\n      \"id\": \"arms\",\n      \"name\": \"Above the spiral arms\",\n      \"seconds\": 10,\n      \"description\": \"Look toward the inner arm from above the generated disk.\",\n      \"targetId\": \"inner-arm\"\n    },\n    {\n      \"id\": \"crossing\",\n      \"name\": \"Inside the stellar disk\",\n      \"seconds\": 17,\n      \"description\": \"Pause among the existing three-dimensional stars and emission records as the camera crosses the disk.\",\n      \"targetId\": \"inner-arm\"\n    },\n    {\n      \"id\": \"panorama\",\n      \"name\": \"Beyond the disk\",\n      \"seconds\": 40,\n      \"description\": \"Look back at the spiral after emerging on the other side of the tilted disk.\",\n      \"targetId\": \"galactic-center\"\n    }\n  ]\n};\n"
+    },
+    {
+      "before": "    expect(routes).toHaveLength(1);\n    expect(routes).toEqual(flight.flybys().filter(item => item.region === 'galaxy'));",
+      "after": "    expect(routes).toHaveLength(2);\n    expect(routes[1]).toEqual(DISK_METADATA);\n    expect(routes).toEqual(flight.flybys().filter(item => item.region === 'galaxy'));"
+    },
+    {
+      "before": "    expect(catalog).toHaveLength(4);\n    expect(new Set(catalog.map(item => item.id)).size).toBe(4);",
+      "after": "    expect(catalog).toHaveLength(5);\n    expect(new Set(catalog.map(item => item.id)).size).toBe(5);"
+    },
+    {
+      "before": "    expect(galaxy).toMatchObject([haloMetadata]);",
+      "after": "    expect(galaxy).toMatchObject([haloMetadata, DISK_METADATA]);"
+    },
+    {
+      "before": "    expect(flight.flybys('galaxy')).toMatchObject([haloMetadata]);",
+      "after": "    expect(flight.flybys('galaxy')).toMatchObject([haloMetadata, DISK_METADATA]);"
+    },
+    {
+      "before": "    expect(flight.flybys().map(route => route.id)).toEqual(['halo', 'nebula', 'group', 'stellar']);",
+      "after": "    expect(flight.flybys().map(route => route.id)).toEqual(['halo', 'nebula', 'group', 'stellar', 'disk']);"
+    },
+    {
+      "before": "      ['amber', 'blue', 'pale'],\n    ]);",
+      "after": "      ['amber', 'blue', 'pale'], ['arms', 'crossing', 'panorama'],\n    ]);"
+    },
+    {
+      "before": "      ['amber-star', 'blue-star', 'pale-star'],\n    ]);",
+      "after": "      ['amber-star', 'blue-star', 'pale-star'],\n      ['inner-arm', 'inner-arm', 'galactic-center'],\n    ]);"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "previousDriverSha256": "6045d7fe62c67f051b048d0224b98bae6063dc1626c58ebec69762e391bf4359",
+  "driverSha256": "3f029418740c21eac51f952402e94593d51c6dd309ba8842ebd851c8eb870cae",
+  "preservedAttempt": "attempts/browser-04-navigation-timeout",
+  "sourcePins": {
+    "stem_lab/universe_flight_scene.js": "255f57893385f5e0ae1a932d00f3ba8e7e98cacc8851bc6ce8985003bd025a75",
+    "stem_lab/stem_tool_universe.js": "a679c684270d23bb8558017543b8f283b57ef0db675b6dbe9590895ceb7c7b12"
+  },
+  "classification": "Full-load navigation timed out before workflows. DOMContentLoaded is followed by explicit source/API and scene-ready gates.",
+  "edits": [
+    {
+      "before": "await page.goto('http://127.0.0.1:3187/reports/universe-flight-2026-09-29/preview.html?enhanced=59#universe-flight');",
+      "after": "await page.goto('http://127.0.0.1:3187/reports/universe-flight-2026-09-29/preview.html?enhanced=59#universe-flight',{waitUntil:'domcontentloaded'});",
+      "reason": "Readiness is asserted explicitly by the existing API and scene-ready waits; full page load can be held by unrelated resources."
+    },
+    {
+      "before": "stageWidth:stage.getBoundingClientRect().width,chip:a,phase:p,lens:b,",
+      "after": "stageWidth:stage.getBoundingClientRect().width,chipVisible:true,phaseVisible:true,lensVisible:true,chip:a,phase:p,lens:b,",
+      "reason": "Make visible nonzero-size HUD/lens preconditions explicit in recorded evidence."
+    },
+    {
+      "before": "await capture(name+'-completion');result.workflows.push",
+      "after": "if(fullscreen&&await page.evaluate(()=>innerWidth<=480)&&await panel.isVisible()){await stage.getByRole('button',{name:'Flight controls',exact:true}).click();await panel.waitFor({state:'hidden'});await frames();}await capture(name+'-completion');result.workflows.push",
+      "reason": "Phone fullscreen completion screenshot shows the scene with the controls panel closed; preserve eight total captures."
+    }
+  ]
+}

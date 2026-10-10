@@ -14,7 +14,14 @@ const THREE = require(resolve(repo, 'vendor/three-r128/three.min.js'));
 const { restorePass37ReefSource, restorePass37RockSource, restorePass37CoralSource } = require('./helpers/cephalopod_reef_form_reference.cjs');
 const {restorePass38CoralSource}=require('./helpers/cephalopod_coral_organic_reference.cjs');
 // This suite retains the accepted pass37 contracts; pass38 current geometry has its own exhaustive suite.
-const source = restorePass38CoralSource(readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE || resolve(repo, 'stem_lab/stem_tool_cephalopodlab.js'), 'utf8').replace(/\r\n/g, '\n'));
+const {restorePass44Source}=require('./helpers/cephalopod_pass44_reference.cjs');
+const {restorePass45Source}=require('./helpers/cephalopod_pass45_reference.cjs');
+const {restorePass46Source}=require('./helpers/cephalopod_pass46_reference.cjs');
+const {restorePass47Source:restorePass47Only}=require('./helpers/cephalopod_pass47_reference.cjs');
+const {restorePass48Source:restorePass48Only}=require('./helpers/cephalopod_pass48_reference.cjs');
+// These historical hashes predate the current oral tissue surface and motion.
+const restorePass47Source=source=>restorePass47Only(restorePass48Source(source));
+const source = restorePass38CoralSource(restorePass44Source(restorePass45Source(restorePass46Source(restorePass47Source(readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE || resolve(repo, 'stem_lab/stem_tool_cephalopodlab.js'), 'utf8').replace(/\r\n/g, '\n'))))));
 const restored = restorePass37ReefSource(source);
 
 function region(value, start, end) {
@@ -228,3 +235,6 @@ describe('Cephalopod Hunter pass37 static reef form and finish', () => {
     assert.ok(basalRings > 500, 'The exhaustive fixture did not inspect the real branch anchors');
   }, 90000);
 });
+
+// Historical references predate the ink surface. Keep live fixtures on current visuals.
+function restorePass48Source(source){return restorePass48Only(require('./helpers/cephalopod_pass49_reference.cjs').restorePass49Source(require('./helpers/cephalopod_pass50_reference.cjs').restorePass50Source(require('./helpers/cephalopod_pass51_reference.cjs').restorePass51Source(require('./helpers/cephalopod_pass52_reference.cjs').restorePass52Source(require('./helpers/cephalopod_pass53_reference.cjs').restorePass53Source(require('./helpers/cephalopod_pass54_reference.cjs').restorePass54Source(source)))))));}

@@ -1,0 +1,85 @@
+{
+  "beforeSha256": "4df2924590a118f81de03b90fbd665f5d1e1083c2a507f198a0e92723ee7f51e",
+  "afterSha256": "4e499f53af25c029d8447fed342edacfb1593cd22e22dec24b1a66bae56ff487",
+  "edits": [
+    {
+      "name": "Open the native technique details in the initial fixture state",
+      "old": "  revealedLayers: {}, procedureByLayer: { skin: partial, muscle: complete }, workspaceMode: 'advanced', toolbarViewOpen: false, toolbarStudyOpen: false, toolbarToolsOpen: false,",
+      "new": "  revealedLayers: {}, procedureByLayer: { skin: partial, muscle: complete }, workspaceMode: 'advanced', techniquePanelOpen: true, toolbarViewOpen: false, toolbarStudyOpen: false, toolbarToolsOpen: false,",
+      "before": "  revealedLayers: {}, procedureByLayer: { skin: partial, muscle: complete }, workspaceMode: 'advanced', toolbarViewOpen: false, toolbarStudyOpen: false, toolbarToolsOpen: false,",
+      "after": "  revealedLayers: {}, procedureByLayer: { skin: partial, muscle: complete }, workspaceMode: 'advanced', techniquePanelOpen: true, toolbarViewOpen: false, toolbarStudyOpen: false, toolbarToolsOpen: false,"
+    },
+    {
+      "name": "Explicitly reopen native technique details after timed identification if closed",
+      "old": "  expect(await proof(page)).toEqual({ ...before, selected: null, scores: [0, 0], comparingAttempts: false }); await study.getByRole('button', { name: 'End timed practical', exact: true }).click(); expect((await state(page)).scenarioStartedAt).toBe(challenge.scenarioStartedAt); await expect(consolePanel(page)).toBeVisible();",
+      "new": "  expect(await proof(page)).toEqual({ ...before, selected: null, scores: [0, 0], comparingAttempts: false }); await study.getByRole('button', { name: 'End timed practical', exact: true }).click(); expect((await state(page)).scenarioStartedAt).toBe(challenge.scenarioStartedAt);\n  const technique = page.locator('#diss-procedure-panel'); if (!(await technique.evaluate(node => (node as HTMLDetailsElement).open))) await technique.locator(':scope > summary').click();\n  await expect(consolePanel(page)).toBeVisible();",
+      "before": "  expect(await proof(page)).toEqual({ ...before, selected: null, scores: [0, 0], comparingAttempts: false }); await study.getByRole('button', { name: 'End timed practical', exact: true }).click(); expect((await state(page)).scenarioStartedAt).toBe(challenge.scenarioStartedAt); await expect(consolePanel(page)).toBeVisible();",
+      "after": "  expect(await proof(page)).toEqual({ ...before, selected: null, scores: [0, 0], comparingAttempts: false }); await study.getByRole('button', { name: 'End timed practical', exact: true }).click(); expect((await state(page)).scenarioStartedAt).toBe(challenge.scenarioStartedAt);\n  const technique = page.locator('#diss-procedure-panel'); if (!(await technique.evaluate(node => (node as HTMLDetailsElement).open))) await technique.locator(':scope > summary').click();\n  await expect(consolePanel(page)).toBeVisible();"
+    },
+    {
+      "name": "Record computed control styles for manual native dropdown contrast review",
+      "old": "      controls: Array.from(el.querySelectorAll('button,select')).filter(visible).map(node => ({ name: node.getAttribute('aria-label') || node.textContent, ...box(node), font: parseFloat(getComputedStyle(node).fontSize), clipped: node.scrollWidth > node.clientWidth + 1 })),",
+      "new": "      controls: Array.from(el.querySelectorAll('button,select')).filter(visible).map(node => { const style = getComputedStyle(node); return { name: node.getAttribute('aria-label') || node.textContent, ...box(node), font: parseFloat(style.fontSize), clipped: node.scrollWidth > node.clientWidth + 1, color: style.color, backgroundColor: style.backgroundColor, backgroundImage: style.backgroundImage, backgroundPosition: style.backgroundPosition, backgroundSize: style.backgroundSize }; }),",
+      "before": "      controls: Array.from(el.querySelectorAll('button,select')).filter(visible).map(node => ({ name: node.getAttribute('aria-label') || node.textContent, ...box(node), font: parseFloat(getComputedStyle(node).fontSize), clipped: node.scrollWidth > node.clientWidth + 1 })),",
+      "after": "      controls: Array.from(el.querySelectorAll('button,select')).filter(visible).map(node => { const style = getComputedStyle(node); return { name: node.getAttribute('aria-label') || node.textContent, ...box(node), font: parseFloat(style.fontSize), clipped: node.scrollWidth > node.clientWidth + 1, color: style.color, backgroundColor: style.backgroundColor, backgroundImage: style.backgroundImage, backgroundPosition: style.backgroundPosition, backgroundSize: style.backgroundSize }; }),"
+    },
+    {
+      "name": "Flush native render-dependent focus timer before first Keep focus assertion",
+      "old": "  await restart(page).focus(); await page.keyboard.press('Enter'); await expect(review(page)).toBeVisible(); await expect(keep(page)).toBeFocused();",
+      "new": "  await restart(page).focus(); await page.keyboard.press('Enter'); await expect(review(page)).toBeVisible(); await page.clock.runFor(1); await expect(keep(page)).toBeFocused();",
+      "before": "  await restart(page).focus(); await page.keyboard.press('Enter'); await expect(review(page)).toBeVisible(); await expect(keep(page)).toBeFocused();",
+      "after": "  await restart(page).focus(); await page.keyboard.press('Enter'); await expect(review(page)).toBeVisible(); await page.clock.runFor(1); await expect(keep(page)).toBeFocused();"
+    },
+    {
+      "name": "Use the imported native STEM module layer name in restart scope disclosure",
+      "old": "toContainText('resets the technique attempt for External Anatomy')",
+      "new": "toContainText('resets the technique attempt for Skin')",
+      "before": "toContainText('resets the technique attempt for External Anatomy')",
+      "after": "toContainText('resets the technique attempt for Skin')"
+    },
+    {
+      "name": "Flush native return-focus timer after Escape before reopening review",
+      "old": "  await page.keyboard.press('Escape'); await expect(review(page)).toHaveCount(0); await expect(restart(page)).toBeFocused(); expect(await proof(page)).toEqual(before);",
+      "new": "  await page.keyboard.press('Escape'); await expect(review(page)).toHaveCount(0); await page.clock.runFor(1); await expect(restart(page)).toBeFocused(); expect(await proof(page)).toEqual(before);",
+      "before": "  await page.keyboard.press('Escape'); await expect(review(page)).toHaveCount(0); await expect(restart(page)).toBeFocused(); expect(await proof(page)).toEqual(before);",
+      "after": "  await page.keyboard.press('Escape'); await expect(review(page)).toHaveCount(0); await page.clock.runFor(1); await expect(restart(page)).toBeFocused(); expect(await proof(page)).toEqual(before);"
+    },
+    {
+      "name": "Flush Keep focus and cancellation return-focus callbacks under the paused clock",
+      "old": "  await page.keyboard.press('Space'); await expect(keep(page)).toBeFocused(); await page.keyboard.press('Enter'); await expect(review(page)).toHaveCount(0); await expect(restart(page)).toBeFocused(); expect(await proof(page)).toEqual(before);",
+      "new": "  await page.keyboard.press('Space'); await expect(review(page)).toBeVisible(); await page.clock.runFor(1); await expect(keep(page)).toBeFocused(); await page.keyboard.press('Enter'); await expect(review(page)).toHaveCount(0); await page.clock.runFor(1); await expect(restart(page)).toBeFocused(); expect(await proof(page)).toEqual(before);",
+      "before": "  await page.keyboard.press('Space'); await expect(keep(page)).toBeFocused(); await page.keyboard.press('Enter'); await expect(review(page)).toHaveCount(0); await expect(restart(page)).toBeFocused(); expect(await proof(page)).toEqual(before);",
+      "after": "  await page.keyboard.press('Space'); await expect(review(page)).toBeVisible(); await page.clock.runFor(1); await expect(keep(page)).toBeFocused(); await page.keyboard.press('Enter'); await expect(review(page)).toHaveCount(0); await page.clock.runFor(1); await expect(restart(page)).toBeFocused(); expect(await proof(page)).toEqual(before);"
+    },
+    {
+      "name": "Flush the final review request and retain Keep-first focus before confirmation",
+      "old": "  await page.keyboard.press('Enter'); await expect(review(page)).toBeVisible(); await confirm(page).focus(); await consolePanel(page).screenshot",
+      "new": "  await page.keyboard.press('Enter'); await expect(review(page)).toBeVisible(); await page.clock.runFor(1); await expect(keep(page)).toBeFocused(); await confirm(page).focus(); await consolePanel(page).screenshot",
+      "before": "  await page.keyboard.press('Enter'); await expect(review(page)).toBeVisible(); await confirm(page).focus(); await consolePanel(page).screenshot",
+      "after": "  await page.keyboard.press('Enter'); await expect(review(page)).toBeVisible(); await page.clock.runFor(1); await expect(keep(page)).toBeFocused(); await confirm(page).focus(); await consolePanel(page).screenshot"
+    },
+    {
+      "name": "Assert native hidden challenge display pauses while its absolute deadline stays fixed",
+      "old": "  await page.clock.runFor(2200); const running = await state(page); expect(running.practicalTimer).toBeLessThan(120); expect(running.scenarioTimeRemaining).toBeLessThan(240); expect(running.practicalEndsAt).toBe(active.practicalEndsAt); expect(running.scenarioStartedAt).toBe(challenge.scenarioStartedAt);",
+      "new": "  await page.clock.runFor(2200); const running = await state(page); expect(running.practicalTimer).toBeLessThan(120); expect(running.scenarioTimeRemaining).toBe(240); expect(running.practicalEndsAt).toBe(active.practicalEndsAt); expect(running.scenarioStartedAt).toBe(challenge.scenarioStartedAt);\n  // Native scenario display writes pause while the specimen is hidden in quiz.\n  // Its four-minute absolute deadline continues independently of the two-minute identification clock.\n  expect(await page.evaluate(() => Date.now())).toBeGreaterThan(challenge.scenarioStartedAt + 2000); expect(challenge.scenarioStartedAt + 240000).toBeGreaterThan(active.practicalEndsAt);",
+      "before": "  await page.clock.runFor(2200); const running = await state(page); expect(running.practicalTimer).toBeLessThan(120); expect(running.scenarioTimeRemaining).toBeLessThan(240); expect(running.practicalEndsAt).toBe(active.practicalEndsAt); expect(running.scenarioStartedAt).toBe(challenge.scenarioStartedAt);",
+      "after": "  await page.clock.runFor(2200); const running = await state(page); expect(running.practicalTimer).toBeLessThan(120); expect(running.scenarioTimeRemaining).toBe(240); expect(running.practicalEndsAt).toBe(active.practicalEndsAt); expect(running.scenarioStartedAt).toBe(challenge.scenarioStartedAt);\n  // Native scenario display writes pause while the specimen is hidden in quiz.\n  // Its four-minute absolute deadline continues independently of the two-minute identification clock.\n  expect(await page.evaluate(() => Date.now())).toBeGreaterThan(challenge.scenarioStartedAt + 2000); expect(challenge.scenarioStartedAt + 240000).toBeGreaterThan(active.practicalEndsAt);"
+    },
+    {
+      "name": "Verify resumed native challenge counter catches up to elapsed deadline after End and panel reopening",
+      "old": "  await expect(consolePanel(page)).toBeVisible();\n  const afterTimed = await proof(page); await harness.unmount(page);",
+      "new": "  await expect(consolePanel(page)).toBeVisible(); await page.clock.runFor(2200); const resumed = await state(page);\n  expect(resumed.scenarioStartedAt).toBe(challenge.scenarioStartedAt); expect(resumed.scenarioTimeRemaining).toBeLessThan(240);\n  const expectedRemaining = Math.max(0, 240 - Math.round(((await page.evaluate(() => Date.now())) - challenge.scenarioStartedAt) / 1000)); expect(Math.abs(resumed.scenarioTimeRemaining - expectedRemaining)).toBeLessThanOrEqual(1);\n  await expect(time(page)).toHaveAttribute('aria-live', 'off'); expect(await proof(page)).toEqual({ ...before, selected: null, scores: [0, 0], comparingAttempts: false });\n  const afterTimed = await proof(page); await harness.unmount(page);",
+      "before": "  await expect(consolePanel(page)).toBeVisible();\n  const afterTimed = await proof(page); await harness.unmount(page);",
+      "after": "  await expect(consolePanel(page)).toBeVisible(); await page.clock.runFor(2200); const resumed = await state(page);\n  expect(resumed.scenarioStartedAt).toBe(challenge.scenarioStartedAt); expect(resumed.scenarioTimeRemaining).toBeLessThan(240);\n  const expectedRemaining = Math.max(0, 240 - Math.round(((await page.evaluate(() => Date.now())) - challenge.scenarioStartedAt) / 1000)); expect(Math.abs(resumed.scenarioTimeRemaining - expectedRemaining)).toBeLessThanOrEqual(1);\n  await expect(time(page)).toHaveAttribute('aria-live', 'off'); expect(await proof(page)).toEqual({ ...before, selected: null, scores: [0, 0], comparingAttempts: false });\n  const afterTimed = await proof(page); await harness.unmount(page);"
+    },
+    {
+      "name": "Record hidden and resumed challenge display values alongside unchanged deadlines and saved work",
+      "old": "runningSeconds: { technique: running.scenarioTimeRemaining, identification: running.practicalTimer }, before, afterTimed",
+      "new": "runningSeconds: { hiddenTechniqueDisplay: running.scenarioTimeRemaining, identification: running.practicalTimer, resumedTechniqueDisplay: resumed.scenarioTimeRemaining }, challengeDeadline: challenge.scenarioStartedAt + 240000, before, afterTimed",
+      "before": "runningSeconds: { technique: running.scenarioTimeRemaining, identification: running.practicalTimer }, before, afterTimed",
+      "after": "runningSeconds: { hiddenTechniqueDisplay: running.scenarioTimeRemaining, identification: running.practicalTimer, resumedTechniqueDisplay: resumed.scenarioTimeRemaining }, challengeDeadline: challenge.scenarioStartedAt + 240000, before, afterTimed"
+    }
+  ],
+  "syntax": true,
+  "exactReversal": true
+}

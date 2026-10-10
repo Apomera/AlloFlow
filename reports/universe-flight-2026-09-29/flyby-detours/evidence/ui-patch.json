@@ -1,0 +1,94 @@
+[
+  {
+    "before": "  function UniverseFlightJourneyCheckpoint(props) {",
+    "after": "  function UniverseFlightDetourControls(props) {\r\n    var h=props.React.createElement,label=props.label,detour=props.detour;\r\n    if(!detour||!detour.active)return null;\r\n    var title=(props.compact?'uf-inview':'uf')+'-detour-title';\r\n    return h('section',{className:'uf-flyby-detour','aria-labelledby':title},\r\n      h('div',{className:'uf-detour-heading'},h('span',{'aria-hidden':'true'},'↶'),h('div',null,\r\n        h('h4',{id:title},label('detour_title','Your flyby is waiting')),\r\n        h('p',null,label('flyby_'+detour.id,detour.name)+' · '+detour.elapsedSeconds.toFixed(1)+' / '+detour.durationSeconds+' s'))),\r\n      h('p',{className:'uf-note'},label('detour_help','Explore freely. Return restores this route moment, camera and lens, paused and ready to continue.')),\r\n      h('div',{className:'uf-detour-actions'},\r\n        h('button',{type:'button',className:'uf-primary',disabled:!props.ready,onClick:props.onReturn},label('detour_return','Return to flyby')),\r\n        h('button',{type:'button',disabled:!props.ready,onClick:props.onKeep,'aria-describedby':title+'-keep'},label('detour_keep','Keep exploring'))),\r\n      h('p',{id:title+'-keep',className:'uf-note'},label('detour_keep_help','Keep exploring releases the return point. Your current view stays in place.')));\r\n  }\r\n\r\n  function UniverseFlightJourneyCheckpoint(props) {"
+  },
+  {
+    "before": "onClick:props.onPlayback},props.running?label('flyby_pause','Pause flyby'):label('flyby_continue','Continue flyby'))),",
+    "after": "onClick:props.onPlayback},props.running?label('flyby_pause','Pause flyby'):label('flyby_continue','Continue flyby')),\r\n        !completed&&!props.running&&h('button',{type:'button',className:'uf-flyby-explore',disabled:!props.ready,onClick:props.onDetour},label('detour_begin','Explore this stop'))),"
+  },
+  {
+    "before": "button(label('flyby_continue','Continue flyby'),props.onContinue,{className:'uf-primary'}),",
+    "after": "button(label('flyby_continue','Continue flyby'),props.onContinue,{className:'uf-primary'}),\r\n        button(label('detour_begin','Explore this stop'),props.onDetour),"
+  },
+  {
+    "before": "onPlayback:props.onFlybyPlayback}),",
+    "after": "onPlayback:props.onFlybyPlayback,onDetour:props.onBeginDetour}),\r\n      h(UniverseFlightDetourControls,{React:props.React,label:label,ready:props.ready,compact:true,detour:props.detour,onReturn:props.onReturnDetour,onKeep:props.onKeepDetour}),"
+  },
+  {
+    "before": "      h('div',{id:'uf-inspection-body'",
+    "after": "      props.detour&&props.detour.active&&button(label('detour_return','Return to flyby')+' · '+props.detour.elapsedSeconds.toFixed(1)+' s',props.onReturnDetour,{className:'uf-inspector-return','aria-label':label('detour_return','Return to flyby'),title:label('flyby_'+props.detour.id,props.detour.name)}),\r\n      h('div',{id:'uf-inspection-body'"
+  },
+  {
+    "before": "    var pointers=React.useRef({}), pinch=React.useRef(null);",
+    "after": "    var pointers=React.useRef({}), pinch=React.useRef(null), detourContext=React.useRef(null);"
+  },
+  {
+    "before": "    function launchScenicFlight(launchRegion) {",
+    "after": "    function beginFlybyDetour() {\r\n      if(!scene.current||!ready||!scene.current.beginFlybyDetour)return false;\r\n      var origin={settings:Object.assign({},settingsRef.current),speedLevel:speedLevel,journey:journey,returns:returnViews};\r\n      if(!scene.current.beginFlybyDetour())return false;\r\n      detourContext.current=origin;\r\n      setRunning(false);setJourney(null);setTour(null);setReturnViews([]);\r\n      var destination=scene.current.snapshot().targetId;\r\n      setTargetId(destination||'');setInspection(destination?{id:destination,region:flightRegion}:null);\r\n      inspectScene();return true;\r\n    }\r\n    function returnToFlyby() {\r\n      var origin=detourContext.current;\r\n      if(!origin||!scene.current||!ready||!scene.current.returnToFlyby||!scene.current.returnToFlyby())return false;\r\n      // Synchronize React controls before its settings effect can reapply the detour lens or pace.\r\n      var s=origin.settings;\r\n      settingsRef.current=Object.assign({},s,{running:false});\r\n      setMode(s.mode);setRegion(s.region);setBeta(s.beta);setTimeScale(s.timeScale);setCompareRest(s.compareRest);\r\n      setFov(s.fov);setExposure(s.exposure);setQuality(s.quality);setSpeedLevel(origin.speedLevel);setSmoothTravel(s.smoothTravel);\r\n      setFlybyRate(s.flybyRate);setPauseAtHighlights(s.pauseAtHighlights);setOrbitRate(s.orbitRate);setOrbitDirection(s.orbitDirection);setOrbitTilt(s.orbitTilt);\r\n      setRunning(false);setTargetId(scene.current.snapshot().targetId||'');setInspection(null);setTour(null);\r\n      setReturnViews(origin.returns);setJourney(origin.journey);detourContext.current=null;\r\n      inspectScene();return true;\r\n    }\r\n    function keepExploring() {\r\n      if(!scene.current||!ready||!scene.current.cancelFlybyDetour||!scene.current.cancelFlybyDetour())return false;\r\n      detourContext.current=null;inspectScene();return true;\r\n    }\r\n    function launchScenicFlight(launchRegion) {"
+  },
+  {
+    "before": "      if(!launchFlyby(view.routeId,true)||!visitFlybyHighlight(view.highlightId))return false;\r\n      scene.current.cancelFlyby();",
+    "after": "      if(!scene.current.inspectFlybyHighlight||!scene.current.inspectFlybyHighlight(view.routeId,view.highlightId))return false;"
+  },
+  {
+    "before": "      var saved=scene.current.snapshot();\r\n      setReturnViews(function(previous){return universeFlightRememberView(previous,origin,saved);});",
+    "after": "      var saved=scene.current.snapshot();\r\n      setRunning(false);setFov(saved.settings.fov);setExposure(saved.settings.exposure);setTargetId(saved.targetId||'');\r\n      settingsRef.current=Object.assign({},settingsRef.current,saved.settings,{running:false});\r\n      setReturnViews(function(previous){return universeFlightRememberView(previous,origin,saved);});"
+  },
+  {
+    "before": "if(!previous||!restoreView(previous,true))return false;",
+    "after": "if(!previous||!restoreView(previous,true,true))return false;"
+  },
+  {
+    "before": "function restoreView(saved,keepReturns) {",
+    "after": "function restoreView(saved,keepReturns,inspectionBack) {"
+  },
+  {
+    "before": "      var savedSettings=saved.snapshot&&saved.snapshot.settings;",
+    "after": "      var savedSettings=saved.snapshot&&saved.snapshot.settings;\r\n      var restore=inspectionBack&&detourContext.current?scene.current.restoreInspectionView:scene.current.restore;"
+  },
+  {
+    "before": "||!scene.current.restore(saved.snapshot))",
+    "after": "||!restore(saved.snapshot))"
+  },
+  {
+    "before": "      setNotice('');setJourney(null);setOverlayFocus(false);",
+    "after": "      detourContext.current=null;setNotice('');setJourney(null);setOverlayFocus(false);"
+  },
+  {
+    "before": "onTelemetry:function(value) { if (!gone){setInfo(value);",
+    "after": "onTelemetry:function(value) { if (!gone){if(!value.flybyDetour||!value.flybyDetour.active)detourContext.current=null;setInfo(value);"
+  },
+  {
+    "before": "    var checkpoint=journey&&journey.region===flightRegion&&journey.mode===mode?journey:null;",
+    "after": "    var checkpoint=journey&&journey.region===flightRegion&&journey.mode===mode?journey:null;\r\n    var flybyDetour=info.flybyDetour;"
+  },
+  {
+    "before": "var journeyActions={onContinue:toggleFlybyPlayback,",
+    "after": "var journeyActions={onContinue:toggleFlybyPlayback,onDetour:beginFlybyDetour,"
+  },
+  {
+    "before": "expanded:!!inspection.expanded,onExpanded:",
+    "after": "detour:flybyDetour,onReturnDetour:returnToFlyby,expanded:!!inspection.expanded,onExpanded:"
+  },
+  {
+    "before": "checkpoint:checkpoint,journeyActions:journeyActions,onResetJourney:",
+    "after": "detour:flybyDetour,onBeginDetour:beginFlybyDetour,onReturnDetour:returnToFlyby,onKeepDetour:keepExploring,checkpoint:checkpoint,journeyActions:journeyActions,onResetJourney:"
+  },
+  {
+    "before": "            h('div',{className:'uf-transport'},",
+    "after": "            h(UniverseFlightDetourControls,{React:React,label:label,ready:ready,detour:flybyDetour,onReturn:returnToFlyby,onKeep:keepExploring}),\r\n            h('div',{className:'uf-transport'},"
+  },
+  {
+    "before": "onPlayback:toggleFlybyPlayback}),",
+    "after": "onPlayback:toggleFlybyPlayback,onDetour:beginFlybyDetour}),"
+  },
+  {
+    "before": "  [data-universe-tool] .uf-journey-announcement{",
+    "after": "  [data-universe-tool] .uf-flyby-detour{margin:12px 16px;padding:14px;border:1px solid #638e9c;border-radius:12px;background:linear-gradient(115deg,#14343b,#15273d);color:#e6f8f5;}\r\n  [data-universe-tool] .uf-detour-heading{display:flex;gap:10px;align-items:center;}\r\n  [data-universe-tool] .uf-detour-heading>span{display:grid;place-items:center;width:36px;height:36px;flex-shrink:0;border:1px solid #709a9f;border-radius:50%;font-size:22px;color:#c8f7e6;}\r\n  [data-universe-tool] .uf-detour-heading h4{margin:0;font-size:14px;line-height:1.5;color:#e6fff5;}\r\n  [data-universe-tool] .uf-detour-heading p{margin:3px 0 0;font-size:11px;font-variant-numeric:tabular-nums;color:#c7dfe8;overflow-wrap:anywhere;}\r\n  [data-universe-tool] .uf-flyby-detour .uf-note{margin:10px 0 0;font-size:11px;line-height:1.6;color:#c7dfe8;}\r\n  [data-universe-tool] .uf-detour-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}\r\n  [data-universe-tool] .uf-detour-actions>button{flex:1;min-height:44px;min-width:0;margin:0;}\r\n  [data-universe-tool] .uf-inview-destinations .uf-flyby-detour{margin:12px 0;padding:10px;}\r\n  [data-universe-tool] .uf-inview-destinations .uf-detour-actions{display:grid;grid-template-columns:minmax(0,1fr);}\r\n  [data-universe-tool] .uf-inspector>button.uf-inspector-return{width:100%;min-height:44px;flex-shrink:0;margin:0 0 8px;border-color:#719eaa;background:#183f4a;color:#e4fff3;font-size:11px;}\r\n  [data-universe-tool] .uf-flyby-timeline>button.uf-flyby-explore{width:100%;min-height:44px;margin-top:8px;border-color:#719eaa;}\r\n  @media(max-width:480px){[data-universe-tool] .uf-detour-actions{display:grid;grid-template-columns:minmax(0,1fr);}}\r\n  [data-universe-tool] .uf-journey-announcement{"
+  },
+  {
+    "before": "      detourContext.current=null;inspectScene();return true;",
+    "after": "      detourContext.current=null;setNotice(label('detour_released','Flyby return point released. Continue exploring from this view.'));inspectScene();return true;"
+  }
+]

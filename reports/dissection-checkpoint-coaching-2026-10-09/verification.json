@@ -1,0 +1,358 @@
+{
+  "at": "2026-10-10T00:16:10.557Z",
+  "sourceSha256": "1665a57757125b1cfaceff6dbcca13aeb930987984fce2bd3f06019b30b9285a",
+  "unitSha256": "46fc37513940c40c277cd6a862ae6f1264160dac379668e765e668f9f8d5f550",
+  "browserSha256": "558f93c2290d19e6aeb49ed54d7726d56555c67d8b1bbf997785a204c261efa4",
+  "sourceMirrorIdentical": true,
+  "syntaxPassed": true,
+  "sourceEditsReversible": true,
+  "unitEditsReversible": true,
+  "protectedFilesUnchanged": 507,
+  "headUnchanged": "2f9789e0bba98c9795492beb226202cf34f0d675",
+  "indexUnchanged": true,
+  "scopedDiffCheckPassed": true,
+  "runs": {
+    "before-1": {
+      "start": "2026-10-10T00:06:44.553Z",
+      "end": "2026-10-10T00:06:57.659Z",
+      "inputHashes": {
+        "stem_lab/stem_tool_dissection.js": "16c960aa8e0cdb992d1166950150e34e09407abfd448b8b78734937cc2497745",
+        "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "16c960aa8e0cdb992d1166950150e34e09407abfd448b8b78734937cc2497745",
+        "tests/e2e/dissection-checkpoint-coaching.spec.ts": "558f93c2290d19e6aeb49ed54d7726d56555c67d8b1bbf997785a204c261efa4",
+        "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6"
+      },
+      "counts": {
+        "startTime": "2026-10-10T00:06:51.355Z",
+        "duration": 6181.2080000000005,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    "unit-3": {
+      "start": "2026-10-10T00:11:26.781Z",
+      "end": "2026-10-10T00:11:45.438Z",
+      "inputHashes": {
+        "stem_lab/stem_tool_dissection.js": "1665a57757125b1cfaceff6dbcca13aeb930987984fce2bd3f06019b30b9285a",
+        "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "1665a57757125b1cfaceff6dbcca13aeb930987984fce2bd3f06019b30b9285a",
+        "tests/dissection_lab_improvements.test.js": "46fc37513940c40c277cd6a862ae6f1264160dac379668e765e668f9f8d5f550"
+      },
+      "counts": {
+        "passed": 30,
+        "failed": 0,
+        "skipped": 202
+      }
+    },
+    "browser-4": {
+      "start": "2026-10-10T00:12:10.236Z",
+      "end": "2026-10-10T00:12:47.375Z",
+      "inputHashes": {
+        "stem_lab/stem_tool_dissection.js": "1665a57757125b1cfaceff6dbcca13aeb930987984fce2bd3f06019b30b9285a",
+        "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "1665a57757125b1cfaceff6dbcca13aeb930987984fce2bd3f06019b30b9285a",
+        "tests/e2e/dissection-checkpoint-coaching.spec.ts": "558f93c2290d19e6aeb49ed54d7726d56555c67d8b1bbf997785a204c261efa4",
+        "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6"
+      },
+      "counts": {
+        "startTime": "2026-10-10T00:12:11.659Z",
+        "duration": 35678.233,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    "adjacent-5": {
+      "start": "2026-10-10T00:13:37.560Z",
+      "end": "2026-10-10T00:15:46.567Z",
+      "inputHashes": {
+        "stem_lab/stem_tool_dissection.js": "1665a57757125b1cfaceff6dbcca13aeb930987984fce2bd3f06019b30b9285a",
+        "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "1665a57757125b1cfaceff6dbcca13aeb930987984fce2bd3f06019b30b9285a",
+        "tests/e2e/dissection-checkpoint-clarity.spec.ts": "54ba3de648e23133b6d0edf35331250eb16e50f6d23c68fde8b405cb5dd09816",
+        "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6"
+      },
+      "counts": {
+        "startTime": "2026-10-10T00:13:50.770Z",
+        "duration": 114827.32199999999,
+        "expected": 2,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    }
+  },
+  "audits": {
+    "phone": {
+      "auditFile": "browser-4/captures/phone-axe.json",
+      "auditSha256": "45f879f89b5d10a64569a0db3c431f970a60ef26c32b24011bdb0dffcec9d6f6",
+      "metricsFile": "browser-4/captures/phone-metrics.json",
+      "metricsSha256": "1cd360fc2e4fe798e9233b44012daaa5c19620a618d6677e6c76e0c87fc1a21b",
+      "violations": 0,
+      "incomplete": [],
+      "metrics": {
+        "width": 295.625,
+        "client": 296,
+        "scroll": 296,
+        "choices": [
+          {
+            "height": 147.59375,
+            "client": 294,
+            "scroll": 294
+          },
+          {
+            "height": 181.15625,
+            "client": 294,
+            "scroll": 294
+          },
+          {
+            "height": 147.59375,
+            "client": 294,
+            "scroll": 294
+          }
+        ],
+        "text": [
+          {
+            "text": "Confirm the ventral view, center the shallow ventral midline corridor, and account for Heart (3-chamber), Liver (3 lobes), Lungs.",
+            "font": 16,
+            "client": 228,
+            "scroll": 228
+          },
+          {
+            "text": "Open at the deepest-looking region first; the shallow ventral midline corridor can be re-established once the first opening is made.",
+            "font": 16,
+            "client": 228,
+            "scroll": 228
+          },
+          {
+            "text": "Try another choice. Look for the recommended view, planned route, and protected landmarks before contact.",
+            "font": 16,
+            "client": 292,
+            "scroll": 292
+          },
+          {
+            "text": "Try another choice.",
+            "font": 16,
+            "client": 266,
+            "scroll": 266
+          },
+          {
+            "text": "Look for the recommended view, planned route, and protected landmarks before contact.",
+            "font": 16,
+            "client": 266,
+            "scroll": 266
+          },
+          {
+            "text": "Select a cutting instrument first and let the opening incision reveal where Heart (3-chamber), Liver (3 lobes), Lungs sit.",
+            "font": 16,
+            "client": 228,
+            "scroll": 228
+          }
+        ]
+      }
+    },
+    "desktop": {
+      "auditFile": "browser-4/captures/desktop-axe.json",
+      "auditSha256": "1b398b66aa1ba897b15d5b17ebf594ebe15762e9c3df124def9e36961870371d",
+      "metricsFile": "browser-4/captures/desktop-metrics.json",
+      "metricsSha256": "c658cbfbeaa466e131d79f369adc4259e726bdf9a7d9fad9a3cbbc3b94428e85",
+      "violations": 0,
+      "incomplete": [],
+      "metrics": {
+        "width": 794,
+        "client": 794,
+        "scroll": 794,
+        "choices": [
+          {
+            "height": 157.15625,
+            "client": 256,
+            "scroll": 256
+          },
+          {
+            "height": 123.59375,
+            "client": 256,
+            "scroll": 256
+          },
+          {
+            "height": 123.59375,
+            "client": 256,
+            "scroll": 256
+          }
+        ],
+        "text": [
+          {
+            "text": "The largest possible surface area is visible, even if the access route is off-center.",
+            "font": 16,
+            "client": 190,
+            "scroll": 190
+          },
+          {
+            "text": "Try another choice. Base the conclusion on view alignment and identifiable landmarks, not tool selection.",
+            "font": 16,
+            "client": 254,
+            "scroll": 254
+          },
+          {
+            "text": "Try another choice.",
+            "font": 16,
+            "client": 228,
+            "scroll": 228
+          },
+          {
+            "text": "Base the conclusion on view alignment and identifiable landmarks, not tool selection.",
+            "font": 16,
+            "client": 228,
+            "scroll": 228
+          },
+          {
+            "text": "The recommended view and access route are centered, with protected landmarks accounted for.",
+            "font": 16,
+            "client": 190,
+            "scroll": 190
+          },
+          {
+            "text": "A cutting instrument is selected and staged above the tray, ready for first contact.",
+            "font": 16,
+            "client": 190,
+            "scroll": 190
+          }
+        ]
+      }
+    },
+    "embedded-large": {
+      "auditFile": "browser-4/captures/embedded-large-axe.json",
+      "auditSha256": "803e4c7f2e9f092c6c77cf111115b9ba5542b0e350b944beac3fabcb6d93c820",
+      "metricsFile": "browser-4/captures/embedded-large-metrics.json",
+      "metricsSha256": "cb149b507685a9b90b60ef224d627a9a4fd40ea4824676cb4d13287cbfac95d2",
+      "violations": 0,
+      "incomplete": [],
+      "metrics": {
+        "width": 295.625,
+        "client": 296,
+        "scroll": 296,
+        "choices": [
+          {
+            "height": 189.59375,
+            "client": 294,
+            "scroll": 294
+          },
+          {
+            "height": 227.5625,
+            "client": 294,
+            "scroll": 294
+          },
+          {
+            "height": 162.59375,
+            "client": 294,
+            "scroll": 294
+          }
+        ],
+        "text": [
+          {
+            "text": "Confirm the ventral view, center the shallow ventral midline corridor, and account for Heart (3-chamber), Liver (3 lobes), Lungs.",
+            "font": 18,
+            "client": 228,
+            "scroll": 228
+          },
+          {
+            "text": "Open at the deepest-looking region first; the shallow ventral midline corridor can be re-established once the first opening is made.",
+            "font": 18,
+            "client": 228,
+            "scroll": 228
+          },
+          {
+            "text": "Try another choice. Look for the recommended view, planned route, and protected landmarks before contact.",
+            "font": 18,
+            "client": 292,
+            "scroll": 292
+          },
+          {
+            "text": "Try another choice.",
+            "font": 18,
+            "client": 266,
+            "scroll": 266
+          },
+          {
+            "text": "Look for the recommended view, planned route, and protected landmarks before contact.",
+            "font": 18,
+            "client": 266,
+            "scroll": 266
+          },
+          {
+            "text": "Select a cutting instrument first and let the opening incision reveal where Heart (3-chamber), Liver (3 lobes), Lungs sit.",
+            "font": 18,
+            "client": 228,
+            "scroll": 228
+          }
+        ]
+      }
+    },
+    "forced-colors-guided": {
+      "auditFile": "browser-4/captures/forced-colors-guided-axe.json",
+      "auditSha256": "ac9a45d23ee11e61fdd08b7cb1e8bb4aabcb5720b57cfb4ac94f9beeed3b29e6",
+      "metricsFile": "browser-4/captures/forced-colors-guided-metrics.json",
+      "metricsSha256": "0884d4545e13ecbdf6e71054f43f18947483102fa2a3fd5c48164ef0029a2a3b",
+      "violations": 0,
+      "incomplete": [],
+      "metrics": {
+        "width": 365.625,
+        "client": 366,
+        "scroll": 366,
+        "choices": [
+          {
+            "height": 64,
+            "client": 364,
+            "scroll": 364
+          },
+          {
+            "height": 109.15625,
+            "client": 364,
+            "scroll": 364
+          },
+          {
+            "height": 64,
+            "client": 364,
+            "scroll": 364
+          }
+        ],
+        "text": [
+          {
+            "text": "Lighter, thinner ventral surface.",
+            "font": 16,
+            "client": 298,
+            "scroll": 298
+          },
+          {
+            "text": "Transparent third eyelid protecting eye underwater.",
+            "font": 16,
+            "client": 298,
+            "scroll": 298
+          },
+          {
+            "text": "Try another choice. That observation belongs to a different structure. Compare position, tissue appearance, and function, then try again.",
+            "font": 16,
+            "client": 362,
+            "scroll": 362
+          },
+          {
+            "text": "Try another choice.",
+            "font": 16,
+            "client": 336,
+            "scroll": 336
+          },
+          {
+            "text": "That observation belongs to a different structure. Compare position, tissue appearance, and function, then try again.",
+            "font": 16,
+            "client": 336,
+            "scroll": 336
+          },
+          {
+            "text": "External eardrum behind eye.",
+            "font": 16,
+            "client": 298,
+            "scroll": 298
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "status": "review_only_no_deletion_authorized_or_performed",
+  "workspace": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated",
+  "candidateCount": 14,
+  "candidateBytes": 6573387,
+  "rules": [
+    "Only the named files are candidates; never delete the parent directories recursively.",
+    "Retain all final counterparts, report prose, receipts, source snapshots, backups, and differing images.",
+    "Recheck both SHA-256 hashes and active ownership before any future cleanup.",
+    "Inspect OneDrive Offline, RecallOnOpen, and RecallOnDataAccess attributes before reading; skip online-only files under low-disk conditions.",
+    "Check historical pathname references; identical content alone does not mean an unused pathname."
+  ],
+  "groups": [
+    {
+      "candidateDirectory": "reports/machinelab-visual-upgrade/pass5-light",
+      "retainedDirectory": "reports/machinelab-visual-upgrade/pass5-final",
+      "reason": "Non-final screenshots are byte-identical to same-named final captures; pass5-review.md links to final evidence.",
+      "candidateBytes": 2897950,
+      "files": [
+        { "name": "05-build-trebuchet-detail.png", "bytes": 78914, "sha256": "1ef4aacc50b37e9dac490888b0f7cc1871412f6a5a4bfaa136bf7fb459298e6b" },
+        { "name": "05-build-trebuchet.png", "bytes": 288860, "sha256": "617f5ab9e1b8ab2215709e634961b038e8dd3d36cbb4b0ad3d2856e0a1abfea0" },
+        { "name": "mobile.png", "bytes": 189367, "sha256": "55df67221890e80ace075a4a4600555d31762f2c898c39e30b58bb43d6f1476d" },
+        { "name": "trebuchet-field-detail.png", "bytes": 714812, "sha256": "89ab26872a610371babc7b01be9d74ba42f35c2876ac4e5efd6a03479db8affe" },
+        { "name": "trebuchet-field.png", "bytes": 952747, "sha256": "a2c375ae5e2ba65e86b180f8b4f0bca8525ebcaef45a0afe1f3f673ff54b2a93" },
+        { "name": "trebuchet-long-detail.png", "bytes": 49450, "sha256": "8fa832b4eabd59555e7af503c1df20e582738f2c9f6dc16e91c7cec0d17e2a81" },
+        { "name": "trebuchet-long.png", "bytes": 256026, "sha256": "d804e77b245ee972ac7a43b275c4b142e1fc6ad1132dc5aea410979cb8efa731" },
+        { "name": "trebuchet-ready-detail.png", "bytes": 78914, "sha256": "1ef4aacc50b37e9dac490888b0f7cc1871412f6a5a4bfaa136bf7fb459298e6b" },
+        { "name": "trebuchet-ready.png", "bytes": 288860, "sha256": "617f5ab9e1b8ab2215709e634961b038e8dd3d36cbb4b0ad3d2856e0a1abfea0" }
+      ],
+      "differingFilesMustKeep": ["trebuchet-release-detail.png", "trebuchet-release.png"]
+    },
+    {
+      "candidateDirectory": "reports/machinelab-visual-upgrade/pass6-light",
+      "retainedDirectory": "reports/machinelab-visual-upgrade/pass6-final",
+      "reason": "Non-final screenshots are byte-identical to same-named final captures; pass6-review.md links to final evidence.",
+      "candidateBytes": 3675437,
+      "files": [
+        { "name": "damage-breach-field-detail.png", "bytes": 755173, "sha256": "cc441aca977837296cf50a630bc2cf38cca9aa3d930fab5c4d78f04ef8be1828" },
+        { "name": "damage-breach-field.png", "bytes": 982414, "sha256": "85ae1e18feafd0d427863a80e27562d2ea0320540120a3247232441f0f1e0867" },
+        { "name": "damage-cracked-field-detail.png", "bytes": 755252, "sha256": "1bdb4bad80d7d4702a313ca55fb6a596aea5f379ed0451eb357024a40f93a482" },
+        { "name": "damage-cracked-field.png", "bytes": 993231, "sha256": "ddf9bcf376661af4ec81f06992f23deb73cc4d2f0551a2468c9429fa1136a78b" },
+        { "name": "mobile.png", "bytes": 189367, "sha256": "55df67221890e80ace075a4a4600555d31762f2c898c39e30b58bb43d6f1476d" }
+      ],
+      "differingFilesMustKeep": ["damage-breach-wall-detail.png", "damage-breach-wall.png", "damage-cracked-rear-detail.png", "damage-cracked-rear.png", "damage-cracked-wall-detail.png", "damage-cracked-wall.png"]
+    }
+  ]
+}

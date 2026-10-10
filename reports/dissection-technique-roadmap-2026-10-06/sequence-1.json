@@ -1,0 +1,16 @@
+{
+  "start": "2026-10-06T23:55:13.304Z",
+  "runnerPid": 32532,
+  "jobs": [
+    {
+      "mode": "baseline",
+      "label": "baseline-1",
+      "code": 0,
+      "start": "2026-10-06T23:55:13.522Z",
+      "end": "2026-10-07T00:04:28.293Z"
+    }
+  ],
+  "running": null,
+  "success": true,
+  "end": "2026-10-07T00:04:37.132Z"
+}

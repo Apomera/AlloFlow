@@ -1,0 +1,18 @@
+/* Completed observations share a small, pointer-transparent space over the kitchen. */
+.scene-lens-observation{position:absolute;left:14px;bottom:12px;box-sizing:border-box;width:min(350px,calc(100% - 28px));padding:10px 12px;border:2px solid #466b50;border-radius:12px;background:#fffef6;color:#274a36;box-shadow:0 4px 16px #183d3326;pointer-events:none;z-index:4}
+.scene-lens-heading{display:flex;align-items:baseline;justify-content:space-between;gap:10px;font-size:11px;line-height:1.4;margin-bottom:7px}
+.scene-lens-heading>strong{font-weight:750}.scene-lens-heading>span{font-weight:650;text-align:right}
+.scene-lens-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.scene-lens-pair figure{min-width:0;margin:0;padding:5px;border:1px solid #c1ceb5;border-radius:8px;background:#f5f6eb}
+.scene-lens-pair figcaption{font-size:10px;line-height:1.4;font-weight:650}
+.scene-lens-pair svg{display:block;width:100%;height:65px;max-width:100%}
+.scene-lens-observation>p{font-size:12px;line-height:1.4;margin:7px 0 0}
+.scene-lens-observation[data-mode="scan"] .scene-lens-pair,.scene-lens-observation[data-mode="scan"] #sceneLensDifference{display:none}
+.scene-lens-observation[data-mode="scan"] .scene-lens-heading{margin-bottom:0}
+#sceneLensPrompt{font-size:11px;color:#3e5a43}
+.scene-lens-observation[hidden]{display:none!important}
+@media(max-width:650px){.scene-lens-observation{left:10px;bottom:10px;width:min(350px,calc(100% - 20px));padding:8px 10px}.scene-lens-heading{font-size:10px;margin-bottom:5px}.scene-lens-pair{gap:6px}.scene-lens-pair figure{padding:4px}.scene-lens-pair figcaption{font-size:10px;line-height:1.35}.scene-lens-pair svg{height:45px}.scene-lens-observation>p{font-size:12px;line-height:1.35;margin-top:5px}#sceneLensPrompt{font-size:12px;line-height:1.4}}
+@media(max-width:360px){.scene-lens-observation{padding:7px 9px}.scene-lens-pair svg{height:41px}.scene-lens-pair figcaption{font-size:10px;line-height:1.4}}
+@media(forced-colors:active){.scene-lens-observation,.scene-lens-pair figure{background:Canvas;color:CanvasText;border-color:CanvasText;box-shadow:none}#sceneLensPrompt{color:CanvasText}.scene-lens-pair svg{forced-color-adjust:none}}
+@media(prefers-reduced-motion:reduce){.scene-lens-observation{animation:none;transition:none}}
+@media print{.scene-lens-observation{display:none}}

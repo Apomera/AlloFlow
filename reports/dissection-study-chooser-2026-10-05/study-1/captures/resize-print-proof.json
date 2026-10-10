@@ -1,0 +1,628 @@
+{
+  "wide": {
+    "top": 348.71875,
+    "left": 0,
+    "width": 1180,
+    "height": 309,
+    "client": 1178,
+    "scroll": 1178,
+    "columns": 3,
+    "containerWidth": 1180,
+    "groups": [
+      {
+        "name": "practice",
+        "top": 363.3125,
+        "left": 14.59375,
+        "width": 763.734375,
+        "height": 255.203125,
+        "span": "auto"
+      },
+      {
+        "name": "practical",
+        "top": 363.3125,
+        "left": 788.71875,
+        "width": 376.6875,
+        "height": 279.8125,
+        "span": "auto"
+      }
+    ],
+    "activityColumns": 2,
+    "activities": [
+      {
+        "name": "flashcards",
+        "top": 463.078125,
+        "left": 28.390625,
+        "width": 362.875,
+        "height": 137.640625
+      },
+      {
+        "name": "compare",
+        "top": 463.078125,
+        "left": 401.65625,
+        "width": 362.875,
+        "height": 141.640625
+      }
+    ],
+    "text": [
+      {
+        "text": "Review and compare",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Untimed activities for recall and reference study.",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Recall functions, reveal the reference answer, and mark cards to review.",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Choose a structure to see whether reference comparisons are available.",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Timed identification",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Two-minute identification check with structure labels hidden.",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "3 visible structures available. Starts a new timed identification attempt.",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      }
+    ],
+    "buttons": [
+      {
+        "name": "Flashcard",
+        "top": 474.46875,
+        "left": 39.78125,
+        "width": 340.09375,
+        "height": 50.46875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Compare",
+        "top": 474.46875,
+        "left": 413.046875,
+        "width": 340.09375,
+        "height": 54.46875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Start 2-minute timed practical",
+        "top": 578.859375,
+        "left": 802.515625,
+        "width": 349.09375,
+        "height": 50.46875,
+        "font": 18,
+        "clipped": false
+      }
+    ]
+  },
+  "narrow": {
+    "top": 1367.984375,
+    "left": 0,
+    "width": 320,
+    "height": 995.34375,
+    "client": 318,
+    "scroll": 318,
+    "columns": 1,
+    "containerWidth": 320,
+    "groups": [
+      {
+        "name": "practice",
+        "top": 1382.578125,
+        "left": 14.59375,
+        "width": 290.8125,
+        "height": 567.046875,
+        "span": "auto"
+      },
+      {
+        "name": "practical",
+        "top": 1960.015625,
+        "left": 14.59375,
+        "width": 290.8125,
+        "height": 388.71875,
+        "span": "auto"
+      }
+    ],
+    "activityColumns": 1,
+    "activities": [
+      {
+        "name": "flashcards",
+        "top": 1538.15625,
+        "left": 28.390625,
+        "width": 263.21875,
+        "height": 191.640625
+      },
+      {
+        "name": "compare",
+        "top": 1740.1875,
+        "left": 28.390625,
+        "width": 263.21875,
+        "height": 195.640625
+      }
+    ],
+    "text": [
+      {
+        "text": "Review and compare",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Untimed activities for recall and reference study.",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Recall functions, reveal the reference answer, and mark cards to review.",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Choose a structure to see whether reference comparisons are available.",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Timed identification",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Two-minute identification check with structure labels hidden.",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "3 visible structures available. Starts a new timed identification attempt.",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      }
+    ],
+    "buttons": [
+      {
+        "name": "Flashcard",
+        "top": 1549.546875,
+        "left": 39.78125,
+        "width": 240.4375,
+        "height": 50.46875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Compare",
+        "top": 1751.578125,
+        "left": 39.78125,
+        "width": 240.4375,
+        "height": 54.46875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Start 2-minute timed practical",
+        "top": 2258.375,
+        "left": 28.390625,
+        "width": 263.21875,
+        "height": 76.5625,
+        "font": 18,
+        "clipped": false
+      }
+    ]
+  },
+  "learnerWork": {
+    "specimen": "frog",
+    "layer": "skin",
+    "view": "dorsal",
+    "instrument": "probe",
+    "camera": [
+      1.5,
+      15,
+      -8
+    ],
+    "notes": {
+      "frog|nictitating": "A transparent protective membrane supports this identification."
+    },
+    "confidence": {
+      "frog|nictitating": 3
+    },
+    "explored": {
+      "frog|nictitating": true
+    },
+    "verified": {
+      "frog|nictitating": {
+        "status": "verified",
+        "at": 88
+      }
+    },
+    "revealed": {
+      "skin": true
+    },
+    "procedures": {
+      "skin": {
+        "tissueState": {
+          "moisture": 67,
+          "tension": 52,
+          "exposure": 87,
+          "trauma": 0,
+          "clarity": 91,
+          "stability": 84,
+          "risk": 16,
+          "salineDrops": 0,
+          "variantId": "firm",
+          "variantLabel": "Firm preservation",
+          "lastAction": "probe",
+          "lastUpdatedAt": 100,
+          "consequences": []
+        },
+        "inspected": true,
+        "incisionStarted": true,
+        "incisionExtended": true,
+        "retracted": true,
+        "pins": [
+          {
+            "x": 0.45,
+            "y": 0.3
+          },
+          {
+            "x": 0.55,
+            "y": 0.8
+          }
+        ],
+        "probed": true,
+        "history": [
+          "inspect",
+          "scalpel",
+          "scissors",
+          "forceps",
+          "pin",
+          "probe"
+        ],
+        "actionLog": [
+          {
+            "action": "inspect",
+            "at": 100,
+            "label": "inspect",
+            "inputType": "motor-neutral",
+            "assistance": "motor-neutral",
+            "tissueBefore": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            },
+            "tissueAfter": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            }
+          },
+          {
+            "action": "scalpel",
+            "at": 101,
+            "label": "scalpel",
+            "inputType": "motor-neutral",
+            "assistance": "motor-neutral",
+            "tissueBefore": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            },
+            "tissueAfter": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            }
+          },
+          {
+            "action": "scissors",
+            "at": 102,
+            "label": "scissors",
+            "inputType": "motor-neutral",
+            "assistance": "motor-neutral",
+            "tissueBefore": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            },
+            "tissueAfter": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            }
+          },
+          {
+            "action": "forceps",
+            "at": 103,
+            "label": "forceps",
+            "inputType": "motor-neutral",
+            "assistance": "motor-neutral",
+            "tissueBefore": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            },
+            "tissueAfter": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            }
+          },
+          {
+            "action": "pin",
+            "at": 104,
+            "label": "pin",
+            "inputType": "motor-neutral",
+            "assistance": "motor-neutral",
+            "tissueBefore": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            },
+            "tissueAfter": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            }
+          },
+          {
+            "action": "probe",
+            "at": 105,
+            "label": "probe",
+            "inputType": "motor-neutral",
+            "assistance": "motor-neutral",
+            "tissueBefore": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            },
+            "tissueAfter": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            }
+          }
+        ],
+        "learningChecks": {
+          "inspect": {
+            "predictionCorrect": true,
+            "reflectionCorrect": true
+          },
+          "scalpel": {
+            "predictionCorrect": true,
+            "reflectionCorrect": true
+          },
+          "scissors": {
+            "predictionCorrect": true,
+            "reflectionCorrect": true
+          },
+          "forceps": {
+            "predictionCorrect": true,
+            "reflectionCorrect": true
+          },
+          "pin": {
+            "predictionCorrect": true,
+            "reflectionCorrect": true
+          },
+          "probe": {
+            "predictionCorrect": true,
+            "reflectionCorrect": true
+          }
+        }
+      }
+    },
+    "objectives": {
+      "frog|skin": true
+    },
+    "annotations": [
+      {
+        "x": 0.5,
+        "y": 0.38,
+        "type": "dot"
+      }
+    ],
+    "frames": [
+      {
+        "id": 101,
+        "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGPgF9f6DwAB2QFQiLRdVgAAAABJRU5ErkJggg==",
+        "specimen": "frog",
+        "layer": "skin",
+        "layerName": "External Anatomy",
+        "view": "dorsal",
+        "condition": "preserved",
+        "selectedOrganName": "Nictitating Membrane",
+        "techniqueScore": 84,
+        "opticalQuality": 91,
+        "capturedAt": "2026-10-04T14:30:00.000Z"
+      },
+      {
+        "id": 102,
+        "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGPgF9f6DwAB2QFQiLRdVgAAAABJRU5ErkJggg==",
+        "specimen": "frog",
+        "layer": "skin",
+        "layerName": "External Anatomy",
+        "view": "lateral",
+        "condition": "dehydrated",
+        "selectedOrganName": "Tympanic Membrane",
+        "techniqueScore": 0,
+        "opticalQuality": 0,
+        "capturedAt": "2026-10-05T14:30:00.000Z"
+      },
+      {
+        "id": "legacy/frame 103",
+        "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGPgF9f6DwAB2QFQiLRdVgAAAABJRU5ErkJggg==",
+        "specimen": "frog",
+        "layer": "unmapped",
+        "techniqueScore": null,
+        "opticalQuality": null
+      }
+    ],
+    "reference": 102,
+    "notebook": true,
+    "scores": [
+      1,
+      2
+    ],
+    "firstAttempt": [
+      1,
+      2
+    ],
+    "supported": 0,
+    "assessment": {
+      "frog|nictitating": {
+        "attempts": 1,
+        "correct": true,
+        "firstAttemptCorrect": true
+      }
+    },
+    "recordedAssessment": [
+      null,
+      null,
+      null
+    ]
+  }
+}

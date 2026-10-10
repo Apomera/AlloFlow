@@ -136,8 +136,14 @@ describe('fitted manikin lip surfaces', () => {
   it.each(poses)('keeps the thin mouth seam visible between both lips for $age in pose $phase', ({ age, phase }) => {
     const fixture = model(age, phase), seam = object(fixture.scene, 'fr-manikin-mouth');
     const lips = lipNames.map(name => object(fixture.scene, name));
-    for (const fraction of [.25, .5, .75]) {
-      const local = seam.geometry.parameters.path.getPoint(fraction), world = local.clone().applyMatrix4(seam.matrixWorld);
+    const headScale = fixture.head.scale.x / .28;
+    // Probe the closed-mouth curve independently of the mesh topology.
+    for (const fraction of [.125, .25, .375, .5, .625, .75, .875]) {
+      const u = fraction * 2 - 1;
+      const local = new THREE.Vector3(.058 * u, 0, .125 + .008 * (1 - u * u)).multiplyScalar(headScale);
+      const world = local.clone().applyMatrix4(seam.matrixWorld);
+      // Cast from above the face, not from an assumed tube centre.
+      world.addScaledVector(fixture.up, .30 * fixture.unit);
       const ray = frontRay(world, fixture.up, fixture.unit), seamHit = ray.intersectObject(seam, false)[0];
       expect(seamHit, 'mouth seam visible from the face front').toBeTruthy();
       const skinHit = ray.intersectObject(fixture.head, false)[0]; expect(skinHit).toBeTruthy();
@@ -151,7 +157,11 @@ describe('fitted manikin lip surfaces', () => {
       const lower = point(lips[1], frontSample(lips[1], (fraction - .5) * 2));
       expect(upper.z, 'upper lip stays above the seam along the face').toBeLessThan(local.z);
       expect(lower.z, 'lower lip stays below the seam along the face').toBeGreaterThan(local.z);
-      expect(lower.z - upper.z, 'seam stays thinner than the lip surface').toBeGreaterThan(seam.geometry.parameters.radius * 4);
+      if ([.25, .5, .75].includes(fraction)) {
+        expect(lower.z - upper.z, 'seam stays thinner than the lip surface').toBeGreaterThan(.0018 * headScale * 4);
+      } else {
+        expect(lower.z - upper.z, 'lip corners retain room for the tapered seam').toBeGreaterThan(.0018 * headScale * 2);
+      }
     }
   });
 

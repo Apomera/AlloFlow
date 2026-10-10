@@ -1,0 +1,15 @@
+{
+  "ok": true,
+  "results": [
+    {
+      "tab": "interior",
+      "viewport": 390,
+      "width": 390,
+      "scrollWidth": 390,
+      "selected": "iss-tab-interior",
+      "canvases": 1,
+      "heading": "🛰️ Space Station — a permanent home off Earth",
+      "screenshot": "interior-390.png"
+    }
+  ]
+}

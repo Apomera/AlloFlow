@@ -1,0 +1,13 @@
+const fs=require('fs'),path=require('path'),crypto=require('crypto'),assert=require('assert/strict'),{execFileSync}=require('child_process');
+const repo='C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated',report=path.join(repo,'reports/dissection-monitor-handoff-2026-10-09'),hash=b=>crypto.createHash('sha256').update(b).digest('hex');
+const baseline=JSON.parse(fs.readFileSync(path.join(report,'baseline.json'))),git=args=>execFileSync('git',args,{cwd:repo,encoding:'utf8',windowsHide:true}).trim();
+for(const file of ['stem_lab/stem_tool_dissection.js','desktop/web-app/public/stem_lab/stem_tool_dissection.js'])assert.equal(hash(fs.readFileSync(path.join(repo,file))),baseline.source);
+assert.equal(hash(fs.readFileSync(path.join(repo,'tests/dissection_lab_improvements.test.js'))),baseline.unit);
+for(const [file,pin] of Object.entries(baseline.protected))assert.equal(hash(fs.readFileSync(path.join(repo,file))),pin,file);
+const d=fs.statfsSync(repo);assert(d.bavail*d.bsize>512*1048576);
+const resume={at:new Date().toISOString(),source:baseline.source,unit:baseline.unit,head:git(['rev-parse','HEAD']),staged:git(['diff','--cached','--name-status']),freeMiB:d.bavail*d.bsize/1048576};
+fs.writeFileSync(path.join(report,'resume.json'),JSON.stringify(resume,null,2),{flag:'wx'});
+const file=path.join(repo,'AGENT_HANDOFF.md'),before=fs.readFileSync(file,'utf8'),prefix='- 2026-10-09 | Codex Dissection monitor handoff BLOCKED:',rows=before.split('\n').filter(s=>s.startsWith(prefix));assert.equal(rows.length,1);
+const row='- 2026-10-09 | Codex Dissection monitor handoff IN PROGRESS after storage recovery: owns canonical/public stem_lab/stem_tool_dissection.js, focused unit changes, tests/e2e/dissection-monitor-handoff.spec.ts and reports/dissection-monitor-handoff-2026-10-09. Align monitor navigation, Simple steps and technique status with the learning phase; preserve saved work and action gates. No staging, commit, push or deployment.';
+assert.equal(fs.readFileSync(file,'utf8'),before);fs.writeFileSync(file,before.replace(rows[0],row));fs.writeFileSync(path.join(report,'edits/handoff-resume.json'),JSON.stringify({before:rows[0],row},null,2));
+console.log(JSON.stringify(resume));

@@ -1,0 +1,161 @@
+--- accepted-pass31
++++ pass32
+@@ -8434,7 +8434,7 @@
+       // Physics and review own the visual clock. An identical frame needs no
+       // GPU draw; dimensions and bloom readiness also invalidate this key.
+       var visualFrame = JSON.stringify([alt, tilt, thrust, s.fuel, simTime,
+-        s.groundX, s.groundZ, s.hVel, s.vVel, s.done, s.cameraMode, s.review, W, H, !!composer]);
++        s.groundX, s.groundZ, s.hVel, s.vVel, s.done, s.cameraMode, s.review, s.outcomeBounds, W, H, !!composer]);
+       if (visualFrame === previousVisualFrame) return;
+       var burning = thrust > 0.1 && s.fuel > 0 && !s.done;   // the plume stayed lit on a crashed lander
+       // The flight loop supplies held or replay-filtered dust samples.
+@@ -8597,7 +8597,10 @@
+       // Look progressively further ahead of the vehicle as height grows, so high
+       // up you read the approach and low down you read the touchdown point.
+       camera.lookAt(lm.position.x, lookY, lm.position.z);
+-      frameDescentCamera(W < 620 ? 168 : null, W < 620 ? H - 64 : null);
++      // Completed results reserve the measured card and earned-point strip.
++      // Review and active piloting retain their existing camera composition.
++      frameDescentCamera(s.outcomeBounds ? s.outcomeBounds.top : W < 620 ? 168 : null,
++        s.outcomeBounds ? s.outcomeBounds.bottom : W < 620 ? H - 64 : null);
+ 
+       // Stars ride the camera so they never parallax — at this range they are
+       // effectively at infinity, and drifting them would read as tumbling.
+@@ -11854,11 +11857,6 @@
+                       // loop's frame clear, and with the 3D scene behind the HUD the
+                       // canvas has to end up TRANSPARENT rather than black.
+                       ctx.clearRect(0, 0, W, H);
+-                      d3.update({
+-                        alt: viewAlt, tilt: viewTilt, thrust: viewThrust, fuel: viewFuel,
+-                        groundX: viewGroundX, groundZ: groundZ, tick: tick, time: viewTime + (review ? 0 : dustSettlingTime), hVel: viewHVel, vVel: viewVVel, done: viewDone,
+-                        cameraMode: cameraMode, review: !!review, dust: lastDescentDust, dustPool: review ? null : descentDust, dustTime: dustTime
+-                      });
+                     }
+                     if (!d3) {
+                     // Background: black space + Moon surface below
+@@ -11933,29 +11931,71 @@
+                     // Outcome, on its own backing panel and fitted to the canvas width. At
+                     // phone width the old centred lines, and a 1202 banner that blinked on
+                     // from 500 m through touchdown, printed straight over both HUD boxes.
++                    var outcomeBounds = null;
+                     function outcomePanel(lines) {
+                       if (review) return;
+-                      var maxW = W - 24, y0 = Math.max(H * 0.34, hudBottom + 16);
+-                      ctx.save();
+-                      ctx.textAlign = 'center';
+-                      var fitted = lines.map(function (ln) {
+-                        var size = ln.size;
+-                        ctx.font = (ln.bold ? 'bold ' : '') + size + 'px system-ui';
+-                        while (size > 8 && ctx.measureText(ln.text).width > maxW - 16) {
+-                          size -= 1;
+-                          ctx.font = (ln.bold ? 'bold ' : '') + size + 'px system-ui';
++                      // Keep completion text readable at phone widths. Wrap at its
++                      // intended size instead of shrinking measurements to fit.
++                      var compact = W < 620, boxW = Math.min(560, W - 24), innerW = boxW - 28;
++                      var boxX = (W - boxW) / 2, boxY = Math.max(H * 0.34 - 8, hudBottom + 8);
++                      var accent = lines[0].color, main = [], detail = [];
++                      ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
++                      lines.forEach(function(ln, index) {
++                        var size = Math.max(12, index === 0 && compact ? 16 : ln.size);
++                        var font = (ln.bold ? 'bold ' : '') + size + 'px system-ui';
++                        ctx.font = font;
++                        var wrapped = [], current = '';
++                        ln.text.split(/\s+/).forEach(function(word) {
++                          var next = current ? current + ' ' + word : word;
++                          if (ctx.measureText(next).width <= innerW) { current = next; return; }
++                          if (current) wrapped.push(current);
++                          current = '';
++                          // A restored grade can contain a long unbroken word.
++                          // Split that word as well, without clipping its value.
++                          Array.from(word).forEach(function(letter) {
++                            if (ctx.measureText(current + letter).width > innerW && current) {
++                              wrapped.push(current); current = '';
++                            }
++                            current += letter;
++                          });
++                        });
++                        if (current) wrapped.push(current);
++                        var target = ln.detail ? detail : main;
++                        wrapped.forEach(function(text) { target.push({ text: text, font: font, size: size,
++                          color: ln.color, gap: 0 }); });
++                        if (index === 0 && target.length) target[target.length - 1].gap = 4;
++                      });
++                      function paint(rows, top, isMain) {
++                        if (!rows.length) return top;
++                        var height = rows.reduce(function(total, row) { return total + row.size + 4 + row.gap; }, 12);
++                        ctx.fillStyle = 'rgba(8,19,34,0.96)';
++                        ctx.beginPath(); ctx.moveTo(boxX + 8, top); ctx.lineTo(boxX + boxW - 8, top);
++                        ctx.quadraticCurveTo(boxX + boxW, top, boxX + boxW, top + 8);
++                        ctx.lineTo(boxX + boxW, top + height - 8);
++                        ctx.quadraticCurveTo(boxX + boxW, top + height, boxX + boxW - 8, top + height);
++                        ctx.lineTo(boxX + 8, top + height); ctx.quadraticCurveTo(boxX, top + height, boxX, top + height - 8);
++                        ctx.lineTo(boxX, top + 8); ctx.quadraticCurveTo(boxX, top, boxX + 8, top); ctx.closePath(); ctx.fill();
++                        ctx.strokeStyle = '#3b4d64'; ctx.lineWidth = 1; ctx.stroke();
++                        if (isMain) {
++                          ctx.fillStyle = accent; ctx.fillRect(boxX + 12, top, boxW - 24, 2);
+                         }
+-                        return { text: ln.text, color: ln.color, font: ctx.font, size: size, w: ctx.measureText(ln.text).width };
+-                      });
+-                      var boxW = Math.min(maxW, Math.max.apply(null, fitted.map(function (f) { return f.w; })) + 24);
+-                      var boxH = fitted.reduce(function (a, f) { return a + f.size + 6; }, 14);
+-                      ctx.fillStyle = 'rgba(2,6,23,0.84)';
+-                      ctx.fillRect(W * 0.5 - boxW / 2, y0 - 8, boxW, boxH);
+-                      var y = y0;
+-                      fitted.forEach(function (f) { ctx.font = f.font; ctx.fillStyle = f.color; y += f.size; ctx.fillText(f.text, W * 0.5, y); y += 6; });
++                        var y = top + 6;
++                        rows.forEach(function(row) {
++                          y += row.size; ctx.font = row.font; ctx.fillStyle = row.color;
++                          ctx.fillText(row.text, W / 2, y); y += 4 + row.gap;
++                        });
++                        return top + height;
++                      }
++                      outcomeBounds = { top: paint(main, boxY, true) + 8, bottom: H - 16 };
++                      // Earned point details use the space freed by flight controls
++                      // after contact, leaving the landed craft visible on phones.
++                      if (detail.length) {
++                        var detailH = detail.reduce(function(total, row) { return total + row.size + 4 + row.gap; }, 12);
++                        paint(detail, H - detailH - 12, false);
++                        outcomeBounds.bottom = H - detailH - 20;
++                      }
+                       ctx.restore();
+                     }
+-
+                     if (landed) {
+                       // A completed result is authoritative. Older records rounded fuel
+                       // and used different scoring, so recomputing changes their grade.
+@@ -11976,10 +12016,11 @@
+                       }
+                       outcomePanel([
+                         { text: '\uD83C\uDF15 "The Eagle has landed!"', size: 18, bold: true, color: '#22c55e' },
+-                        { text: 'Touchdown at ' + Math.abs(vVel).toFixed(1) + ' m/s, drift ' + Math.abs(hVel).toFixed(1) + ' m/s, ' + (legacyFuel ? (savedFuelPercent == null ? 'fuel not recorded' : savedFuelPercent.toFixed(0) + '% fuel left') : Math.round(fuel) + ' s of fuel left'), size: 12, color: '#e2e8f0' },
++                        { text: 'Touchdown at ' + Math.abs(vVel).toFixed(1) + ' m/s, drift ' + Math.abs(hVel).toFixed(1) + ' m/s', size: 12, color: '#e2e8f0' },
++                        { text: (legacyFuel ? (savedFuelPercent == null ? 'fuel not recorded' : savedFuelPercent.toFixed(0) + '% fuel left') : Math.round(fuel) + ' s of fuel left'), size: 12, color: '#e2e8f0' },
+                         { text: _score.total == null ? 'Landing score not recorded' : 'Landing score ' + _score.total + '/100 (grade ' + _score.grade + ')', size: 14, bold: true, color: _score.total >= 80 ? '#22c55e' : _score.total >= 50 ? '#fbbf24' : '#f97316' },
+-                        _score.parts ? { text: _score.parts.map(function (p) { return p.label + ' ' + (p.pts < 0 ? String(p.pts) : '+' + p.pts); }).join('  |  '), size: 10, color: '#cbd5e1' } : null,
+-                        { text: 'Begin EVA below to walk on the Moon.', size: 10, color: '#cbd5e1' }
++                        _score.parts ? { text: _score.parts.map(function (p) { return p.label + ' ' + (p.pts < 0 ? String(p.pts) : '+' + p.pts); }).join('  |  '), size: 12, color: '#cbd5e1', detail: true } : null,
++                        { text: 'Begin EVA below to walk on the Moon.', size: 12, color: '#cbd5e1' }
+                       ].filter(Boolean));
+                     }
+ 
+@@ -11995,11 +12036,19 @@
+                       }
+                       outcomePanel([
+                         { text: '\u26A0 HARD LANDING', size: 18, bold: true, color: '#f87171' },
+-                        { text: 'Impact at ' + Math.abs(vVel).toFixed(1) + ' m/s down, ' + Math.abs(hVel).toFixed(1) + ' m/s across (limits 3 and 5)', size: 12, color: '#fecaca' },
++                        { text: 'Impact at ' + Math.abs(vVel).toFixed(1) + ' m/s down, ' + Math.abs(hVel).toFixed(1) + ' m/s across', size: 12, color: '#fecaca' },
++                        { text: 'Landing limits: below 3 m/s down and 5 m/s across.', size: 12, color: '#fecaca' },
+                         { text: 'Use Retry Landing below to fly it again.', size: 11, color: '#e2e8f0' }
+                       ]);
+                     }
+ 
++                    if (d3) {
++                      d3.update({
++                        alt: viewAlt, tilt: viewTilt, thrust: viewThrust, fuel: viewFuel,
++                        groundX: viewGroundX, groundZ: groundZ, tick: tick, time: viewTime + (review ? 0 : dustSettlingTime), hVel: viewHVel, vVel: viewVVel, done: viewDone,
++                        cameraMode: cameraMode, review: !!review, outcomeBounds: outcomeBounds, dust: lastDescentDust, dustPool: review ? null : descentDust, dustTime: dustTime
++                      });
++                    }
+                     if (!d3) drawVignette(ctx, W, H, 0.2);
+                     if (!landed && !crashed && document.contains(cvEl)) requestAnimationFrame(drawDescent);
+                     else {

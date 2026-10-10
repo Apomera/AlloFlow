@@ -884,7 +884,9 @@
       'measureResult','measureHistory','volumePrediction','volumeEstimateCommitment','volumeEstimateObservedTargets',
       'volumeEstimateCommitError','predictionStrategy','predictionReason','predictionResult','predictionRevision',
       'predictionRevisionResult','predictionReflection','viewPreset','layerFocus','placementPreview'].forEach(function(key){state[key]=saved.state[key];});
-    patchGeometryState(ctx,Object.assign(state,saved.state));
+    var restoredState=Object.assign(state,saved.state);
+    restoreRetrievalCadence(engine,restoredState.measureHistory,saved.retrievalMeasurementCount);
+    patchGeometryState(ctx,restoredState);
   }
   function restoreEditableWorld(engine, candidate, ctx) {
     if (!engine || typeof engine.loadLesson !== 'function' || typeof engine.placeBlock !== 'function') return { ok: false, error: 'The Geometry World engine is not ready.' };
@@ -1439,6 +1441,16 @@
     return measurement;
   }
   function copyLocal(value) { return JSON.parse(JSON.stringify(value)); }
+  function validRetrievalCadenceCount(history, count) {
+    return Array.isArray(history) && Number.isSafeInteger(count) && count >= history.filter(function(record) { return record && record.isComplete !== false; }).length
+      ? count : null;
+  }
+  function restoreRetrievalCadence(engine, history, count) {
+    if (Array.isArray(history)) engine._predictionState=Object.assign({},engine._predictionState || {},{history:history});
+    var restoredCount=validRetrievalCadenceCount(history,count);
+    if (restoredCount === null) delete engine._retrievalMeasurementProgress;
+    else engine._retrievalMeasurementProgress={history:history,completeCount:restoredCount};
+  }
   // The complete project stays in this browser only, outside exported model metadata.
   // A matching handoff ID prevents a stale or unrelated source from replacing it.
   function captureProject(ctx, engine, id) {
@@ -1450,9 +1462,12 @@
       if (!p || !u || u._lessonBlock) return;
       blocks.push(Object.assign({}, p, { type:u.blockType, shape:u.shape || 'cube', rotation:u.rotation || 0 }));
     });
+    var state=ctx.toolData && ctx.toolData.geometryWorld || {}, progress=engine._retrievalMeasurementProgress;
+    var retrievalCount=progress && progress.history===state.measureHistory ? validRetrievalCadenceCount(state.measureHistory,progress.completeCount) : null;
     return { id:id, blocks:blocks, lesson:copyLocal(engine._currentLesson || FREE_BUILD_LESSON),
       workshopDraft:{id:engine._workshopProjectId||null,version:engine._workshopProjectVersion||null,signature:engine._workshopSavedSignature||null},
-      state:Object.assign(copyLocal(ctx.toolData && ctx.toolData.geometryWorld || {}), { actionFeedback:'' }),
+      state:Object.assign(copyLocal(state), { actionFeedback:'' }),
+      retrievalMeasurementCount:retrievalCount,
       selection:engine._builderSelection && copyLocal(engine._builderSelection),
       undo:copyLocal(engine._undoStack || []), redo:copyLocal(engine._redoStack || []),
       blocksPlaced:engine.blocksPlaced || 0, sessionXP:engine._sessionXP || 0, milestones:copyLocal(engine._blockMilestones || {}),
@@ -1488,6 +1503,7 @@
       showGameSettings:false, builderPanel:'build', measureResult:selected ? selected.measurement : null,
       builderPrintContext:{unitMm:printUnit(context.unitMm), aiUse:context.aiUse || 'NONE', aiDisclosure:String(context.aiDisclosure || '').slice(0,500)} });
     if (resuming) ['showGeometryHome','_geometryHomeInitial','geometryHomePage','geometryHomeLesson'].forEach(function(key){delete patch[key];});
+    restoreRetrievalCadence(engine,patch.measureHistory,saved.retrievalMeasurementCount);
     patchGeometryState(ctx, patch);
     delete window.__alloGeometryWorldReturnProject;
     if (resuming) return true;

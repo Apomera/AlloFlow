@@ -1,0 +1,95 @@
+--- pass28/hud.spec.ts
++++ pass29/hud.spec.ts
+@@ -5,7 +5,7 @@
+ 
+ // Run each workflow in a fresh process, with one worker and zero retries.
+ const REPORT = resolve(process.env.MM_DESCENT_HUD_REPORT_DIR ||
+-  'reports/moon-mission-enhancement-pass28-2026-10-09/browser');
++  'reports/moon-mission-enhancement-pass29-2026-10-09/browser');
+ const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_moonmission.js', toolId: 'moonMission',
+   width: 1100, height: 1000, layout: 'document', appStyles: true });
+ const seed = (extra: Record<string, unknown> = {}) => ({ moonMission: {
+@@ -116,6 +116,33 @@
+ }
+ async function dust(page: Page) {
+   return page.locator('[data-descent-canvas]').evaluate((canvas: any) => canvas._descentDustState());
++}
++async function inspectPausedPixels(page: Page) {
++  const canvas = page.locator('[data-descent-canvas]');
++  await expect(canvas).toHaveAttribute('data-descent-paused', 'true');
++  const stability = await canvas.evaluate(async (canvas: HTMLCanvasElement) => {
++    const ctx = canvas.getContext('2d');
++    if (!ctx) throw Error('2D fallback canvas context unavailable');
++    const frame = () => new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
++    // Start after a presented frame, then compare every rendered RGBA byte
++    // across two more animation frames. This observes the actual artwork.
++    await frame();
++    const before = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
++    await frame(); await frame();
++    const after = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
++    let changedBytes = 0, beforeChecksum = 2166136261, afterChecksum = 2166136261;
++    for (let i = 0; i < before.length; i++) {
++      if (before[i] !== after[i]) changedBytes++;
++      beforeChecksum = Math.imul(beforeChecksum ^ before[i], 16777619) >>> 0;
++      afterChecksum = Math.imul(afterChecksum ^ after[i], 16777619) >>> 0;
++    }
++    return { width: canvas.width, height: canvas.height, bytes: before.length,
++      comparedAnimationFrames: 2, changedBytes, beforeChecksum, afterChecksum };
++  });
++  expect(stability.bytes).toBeGreaterThan(0);
++  expect(stability.changedBytes, 'paused fallback canvas RGBA bytes').toBe(0);
++  expect(stability.afterChecksum).toBe(stability.beforeChecksum);
++  return stability;
+ }
+ async function receipts(page: Page) {
+   return page.evaluate(() => {
+@@ -386,6 +413,33 @@
+   expect(await flight(page)).toEqual(held); expect(await receipts(page)).toEqual(saved);
+   expect((await dust(page)).grains).toEqual([]);
+   await save('recorded-touchdown', { hud: contactHud, held, saved });
++  for (const [name, offset] of [['far-east', 5000], ['far-west', -5000]] as const) {
++    // Translate saved presentation samples together; this is a recording
++    // fixture at a distant world position, not a newly integrated flight.
++    const distant = JSON.parse(JSON.stringify(result)) as typeof result;
++    distant.recording.samples.forEach(row => { row.x += offset; });
++    await mount(page, seed({ landingResult: distant, landingAttempts: [distant] }));
++    await inspectFlightControls(page, false);
++    await expect(page.locator('[data-descent-gl]')).toHaveCount(0);
++    const distantHeld = await flight(page), distantSaved = await receipts(page);
++    expect(distantSaved.landingResult.recording.samples.map((row: any) => row.x))
++      .toEqual(rows.map(row => row.x + offset));
++    const index = 1, row = distant.recording.samples[index];
++    await page.locator('[data-landing-scrub]').fill(String(index));
++    await expect(page.locator('[data-descent-canvas]')).toHaveAttribute('data-descent-review-time', row.t.toFixed(3));
++    const hud = await inspectHud(page, { alt: row.alt, vVel: row.v, hVel: row.h,
++      fuel: row.fuel, thrust: row.throttle }, 'compact');
++    expect(hud.rows.filter((paint: any) => /RECORDED FRAME/.test(paint.text)).map((paint: any) => paint.text))
++      .toEqual(['RECORDED FRAME  ' + row.t.toFixed(1) + ' s']);
++    const stability = await inspectPausedPixels(page);
++    await inspectFlightControls(page, false);
++    expect(await flight(page)).toEqual(distantHeld);
++    expect(await receipts(page)).toEqual(distantSaved);
++    expect((await dust(page)).grains).toEqual([]);
++    expect(errors).toEqual([]);
++    await save(name, { hud, offsetMetres: offset, selectedSample: row, stability,
++      held: distantHeld, saved: distantSaved, errors });
++  }
+   for (const fuel of [70, null]) {
+     const legacy = { crashed: false, score: 84, grade: 'B', vVel: 1, hVel: 2, ...(fuel == null ? {} : { fuel }) };
+     await mount(page, seed({ landingResult: legacy, landingAttempts: [legacy] }));
+@@ -418,5 +472,14 @@
+   const retryHud = await inspectHud(page, retryState, 'compact');
+   expect(await flight(page)).toEqual(retryState);
+   expect(errors).toEqual([]);
+-  await save('retry-live', { hud: retryHud, state: retryState, receipt: retryReceipt, errors, completed: true });
++  await save('retry-live', { hud: retryHud, state: retryState, receipt: retryReceipt, errors });
++  await page.setViewportSize({ width: 1100, height: 1000 });
++  const desktopHud = await inspectHud(page, retryState, 'corners');
++  await inspectFlightControls(page, true);
++  const desktopStability = await inspectPausedPixels(page);
++  expect(await flight(page)).toEqual(retryState);
++  expect(await receipts(page)).toEqual(retryReceipt);
++  expect(errors).toEqual([]);
++  await save('retry-desktop', { hud: desktopHud, state: retryState, receipt: retryReceipt,
++    stability: desktopStability, errors, completed: true });
+ });

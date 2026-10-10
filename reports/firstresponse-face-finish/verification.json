@@ -1,0 +1,155 @@
+{
+  "date": "2026-10-07",
+  "sourceSHA256": "f21eeaf8d3bd87810142d77f2cfe5e7ab9ee56e80a6548d927a4dcabec7af511",
+  "sourceBytes": 784376,
+  "sourceCopies": [
+    "stem_lab/stem_tool_firstresponse.js",
+    "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js",
+    "desktop/app-build/stem_lab/stem_tool_firstresponse.js",
+    "desktop/web-app/build/stem_lab/stem_tool_firstresponse.js"
+  ],
+  "sourceEdits": 2,
+  "geometry": {
+    "passed": 6,
+    "assertions": 147431,
+    "negativeTests": [
+      {
+        "type": "eye",
+        "rejected": true,
+        "error": "eye ribbon vertex clears actual lid/skin surface"
+      },
+      {
+        "type": "lid",
+        "rejected": true,
+        "error": "lid back stays beneath actual skull"
+      }
+    ],
+    "checkerSHA256": "944fbef50a345bd0697bc99fd90a05205754b7781ad75749e013ea40765c27f4"
+  },
+  "browser": {
+    "workflows": 3,
+    "evidenceCount": 6,
+    "workers": 1,
+    "retries": 0,
+    "stats": {
+      "startTime": "2026-10-08T01:26:33.141Z",
+      "duration": 279282.468,
+      "expected": 3,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    }
+  },
+  "visualReview": {
+    "accepted": true,
+    "sourceSHA256": "f21eeaf8d3bd87810142d77f2cfe5e7ab9ee56e80a6548d927a4dcabec7af511",
+    "rootImagesInspected": [
+      "adult-pose5-baseline-face.png",
+      "adult-pose5-baseline-stage.png",
+      "adult-pose5-candidate-face.png",
+      "adult-pose5-candidate-stage.png",
+      "adult-pose8-baseline-face.png",
+      "adult-pose8-baseline-stage.png",
+      "adult-pose8-candidate-face.png",
+      "adult-pose8-candidate-stage.png",
+      "infant-pose8-contrast-baseline-face.png",
+      "infant-pose8-contrast-baseline-stage.png",
+      "infant-pose8-contrast-candidate-face.png",
+      "infant-pose8-contrast-candidate-stage.png"
+    ],
+    "independent": {
+      "accepted": true,
+      "reviewer": "jaw_visual_audit",
+      "sourceSHA256": "f21eeaf8d3bd87810142d77f2cfe5e7ab9ee56e80a6548d927a4dcabec7af511",
+      "reviewMethod": "Direct inspection of every original-resolution baseline and candidate stage image and face crop using view_image; candidate source SHA256 independently checked with certutil.",
+      "imagesInspected": [
+        "native-final/adult-pose5-baseline-stage.png",
+        "native-final/adult-pose5-candidate-stage.png",
+        "native-final/adult-pose5-baseline-face.png",
+        "native-final/adult-pose5-candidate-face.png",
+        "native-final/adult-pose8-baseline-stage.png",
+        "native-final/adult-pose8-candidate-stage.png",
+        "native-final/adult-pose8-baseline-face.png",
+        "native-final/adult-pose8-candidate-face.png",
+        "native-final/infant-pose8-contrast-baseline-stage.png",
+        "native-final/infant-pose8-contrast-candidate-stage.png",
+        "native-final/infant-pose8-contrast-baseline-face.png",
+        "native-final/infant-pose8-contrast-candidate-face.png"
+      ],
+      "observations": [
+        "Adult poses 5 and 8 show a small, useful improvement: the eye crease reads as a fine continuous curve, with fewer dark interrupted segments than the baseline. The result remains subtle at full stage size.",
+        "The candidate does not introduce a raised cord, thick new outline or obvious bright gap around the closed eye.",
+        "The infant contrast eye crease is finer and lighter than baseline but remains discernible in the stage and face crop. The existing broader brow and mouth cues are retained; no new heavy dark patch is visible.",
+        "The supporting hand has the same position, cheek contact and framing in the matched pairs. The head silhouette, visible jaw edge, collar edge, ear and nose look unchanged.",
+        "The previously useful jaw definition remains intact. These images do not support further neck or jaw reshaping as part of this refinement."
+      ],
+      "limits": [
+        "The narrow crease approaches a single antialiased pixel in parts of these captures; individual pixel variation remains visible. This is a modest surface refinement, not a dramatic visual redesign.",
+        "The supporting hand obscures portions of the upper face, so these views cannot establish visibility from every possible camera angle.",
+        "This independent review covers the 12 provided static images. Geometry assertions, dynamic disposal checks and other ages or modes are covered by the separate numerical and browser evidence, not independently rerun here."
+      ]
+    },
+    "imageHashes": {
+      "adult-pose5-baseline-face.png": "e8ac8c3ead848d9132b03ec50cc27aba61ad128aca12381b6c8633e275cc2d93",
+      "adult-pose5-baseline-stage.png": "7f9d954749dc710bc573f4a19c235d08b1362530f262189bc63f9f43498e22a1",
+      "adult-pose5-candidate-face.png": "550b5ce0d41ff364e1542b7d1194ac97a2c8c2aceb3067ca54fcd3d650652dad",
+      "adult-pose5-candidate-stage.png": "acafb933e4afac4991a327e7e45187cfd73164a1d0b7dd50e37d191940f4dbd0",
+      "adult-pose8-baseline-face.png": "dc997e9b16e801f5811f225ed02db82b090d148f9e35f2f86a7f321e51d15651",
+      "adult-pose8-baseline-stage.png": "0c397a8871bcb7927487edf2e8035c3076bb574e683c5d2bbe43f4929cdd2558",
+      "adult-pose8-candidate-face.png": "b89dcdd5bf9ac335a908a0b0043840260de5f0aebd6987237f753b0a46b54917",
+      "adult-pose8-candidate-stage.png": "8af8e1296c7ed77ac0d9e01226a561189d76b0e014eda7423d1f0909bf0f8f92",
+      "infant-pose8-contrast-baseline-face.png": "594db17fd05ad9ebad3df523202b7e63c26ec3693456ef00e99d236e60b1f179",
+      "infant-pose8-contrast-baseline-stage.png": "bea9559b3d8a196dc8218bf81aef40c3fce4558a616a415ecc1298edd6ffd16d",
+      "infant-pose8-contrast-candidate-face.png": "b5ff91575497821f318fa9298385fdfab746b97296bfeb38c7d89f99bbd2f07f",
+      "infant-pose8-contrast-candidate-stage.png": "82983ed84035bb9ff558c3c236d63344dea8eba562a0c5ca297bcf5bdfab08ea"
+    },
+    "rootObservation": "All 12 actual baseline/candidate stage and face images inspected. Adult closed-eye creases look finer and more continuous. Infant contrast remains visible, with a finer crease. Head silhouette, original eyelids, collar, supporting hand and framing are retained. Improvement is subtle at native stage size."
+  },
+  "uncommitted": true,
+  "postCheck": {
+    "passed": true,
+    "sourceSHA256": "f21eeaf8d3bd87810142d77f2cfe5e7ab9ee56e80a6548d927a4dcabec7af511",
+    "beforeSHA256": "0cc79f45f9a57ce3c4f1d5fa674b56f462a2418c4b253dbc648557b37a6b2639",
+    "sourceCopies": [
+      "stem_lab/stem_tool_firstresponse.js",
+      "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js",
+      "desktop/app-build/stem_lab/stem_tool_firstresponse.js",
+      "desktop/web-app/build/stem_lab/stem_tool_firstresponse.js"
+    ],
+    "sourceCopiesIdentical": 4,
+    "rawTestsUnchanged": 39,
+    "historicalHelperChains": 7,
+    "preparedAdditionsVerified": 2,
+    "preparedEditsVerified": 2,
+    "portableCheckerSHA256": "944fbef50a345bd0697bc99fd90a05205754b7781ad75749e013ea40765c27f4",
+    "portableCheckerMatchesPrivate": true,
+    "portableCheckerMatchesCurrentVerifier": true,
+    "portableCheckerScopeTightening": {
+      "beforeSHA256": "6c53a99c74c4586060281291643a40e0db7441d42ff34600db73dd9e230d74d6",
+      "afterSHA256": "944fbef50a345bd0697bc99fd90a05205754b7781ad75749e013ea40765c27f4",
+      "description": "Tighten exact preservation fingerprint to include original eyelid shells. All lid burial, ribbon clearance, normals, symmetry, selftest and resource assertions unchanged."
+    },
+    "exactCheckerScopeEdits": 2,
+    "syntaxFiles": [
+      "stem_lab/stem_tool_firstresponse.js",
+      "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js",
+      "desktop/app-build/stem_lab/stem_tool_firstresponse.js",
+      "desktop/web-app/build/stem_lab/stem_tool_firstresponse.js",
+      "tests/helpers/firstresponse_face_refinement_delta.cjs",
+      "tests/helpers/firstresponse_collar_refinement_delta.cjs",
+      "dev-tools/firstresponse_collar_refinement_check.cjs",
+      "dev-tools/firstresponse_eye_surface_check.cjs"
+    ],
+    "reportPresent": true,
+    "reportLinksVerified": 14,
+    "reportExternalLinks": 0,
+    "stagedNames": [],
+    "indexEmpty": true,
+    "sharedFilesWritten": 0,
+    "limitations": "Source, compatibility, syntax and report-link checks only; geometry and browser acceptance are verified separately."
+  },
+  "scopedGitDiffCheck": {
+    "exitCode": 0,
+    "notes": "Only informational CRLF-to-LF warnings; no whitespace errors."
+  }
+}

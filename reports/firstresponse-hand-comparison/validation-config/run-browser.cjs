@@ -1,0 +1,45 @@
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),{spawn}=require('node:child_process');
+const root='C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated',work=__dirname;
+const run=process.argv[2]||'final-browser';if(!/^[a-z0-9-]+$/.test(run))throw Error('Unsafe run name');
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+const delta=JSON.parse(fs.readFileSync(path.join(root,'tests/helpers/firstresponse_hand_comparison_delta.json'),'utf8'));
+const source=fs.readFileSync(path.join(root,'stem_lab/stem_tool_firstresponse.js'));
+if(sha(source)!==delta.afterSHA256||!source.equals(fs.readFileSync(path.join(root,'desktop/web-app/public/stem_lab/stem_tool_firstresponse.js'))))throw Error('Source drift');
+const spec=fs.readFileSync(path.join(work,'firstresponse-hand-comparison.spec.ts'));
+if(sha(spec)!=='6e55bc5bea16da9dfb570e6a1f95e11f4d3cdf97893b60da26bc7fc305bbbddd')throw Error('Spec drift');
+const sharedSpec=path.join(root,'tests/e2e/firstresponse-hand-comparison.spec.ts');
+if(fs.existsSync(sharedSpec)&&!fs.readFileSync(sharedSpec).equals(spec))throw Error('Shared spec conflict');
+if(!fs.existsSync(sharedSpec))fs.writeFileSync(sharedSpec,spec);
+const reports=path.join(root,'reports/firstresponse-hand-comparison');fs.mkdirSync(reports,{recursive:true});
+const configPath=path.join(reports,'playwright.config.ts');
+const config=fs.readFileSync(path.join(root,'reports/firstresponse-hand-study/playwright.config.ts'),'utf8').replaceAll('firstresponse-hand-study','firstresponse-hand-comparison');
+if(fs.existsSync(configPath)&&fs.readFileSync(configPath,'utf8')!==config)throw Error('Config conflict');
+if(!fs.existsSync(configPath))fs.writeFileSync(configPath,config);
+const out=path.join(reports,run);fs.mkdirSync(out,{recursive:true});
+const result=path.join(out,'browser-run.json'),log=path.join(out,'browser-run.log');
+if(fs.existsSync(result)||fs.existsSync(log))throw Error('Evidence already exists');
+const guardFiles=['stem_lab/stem_tool_firstresponse.js','desktop/web-app/public/stem_lab/stem_tool_firstresponse.js','tests/e2e/firstresponse-hand-comparison.spec.ts','tests/e2e/helpers/stem_gl_harness.ts','reports/firstresponse-hand-comparison/playwright.config.ts','tests/helpers/firstresponse_hand_comparison_delta.json'];
+const before=Object.fromEntries(guardFiles.map(p=>[p,sha(fs.readFileSync(path.join(root,p)))]));
+fs.writeFileSync(path.join(out,'baseline.json'),JSON.stringify({sourceSHA256:delta.afterSHA256,files:before,workers:1,retries:0,startedAt:new Date().toISOString(),browserCache:'C:/Users/cabba/AppData/Local/ms-playwright'},null,2));
+const args=[path.join(root,'node_modules/@playwright/test/cli.js'),'test','tests/e2e/firstresponse-hand-comparison.spec.ts','--config='+configPath,'--project=chromium','--workers=1','--retries=0','--reporter=list,json'];
+const stream=fs.createWriteStream(log);
+const child=spawn(process.execPath,args,{cwd:root,env:{...process.env,PLAYWRIGHT_BROWSERS_PATH:'C:/Users/cabba/AppData/Local/ms-playwright',PLAYWRIGHT_JSON_OUTPUT_NAME:result,FIRST_RESPONSE_HAND_COMPARISON_SOURCE_SHA:delta.afterSHA256,FIRST_RESPONSE_HAND_COMPARISON_REPORT:out},stdio:['ignore','pipe','pipe'],windowsHide:true});
+fs.writeFileSync(path.join(out,'runner.json'),JSON.stringify({pid:child.pid,args,startedAt:new Date().toISOString()},null,2));
+console.log('START browser pid='+child.pid+' source='+delta.afterSHA256);
+child.stdout.pipe(stream,{end:false});child.stderr.pipe(stream,{end:false});
+child.on('error',e=>{console.error(e);process.exitCode=1;});
+child.on('close',code=>{
+ stream.end();
+ try{
+  for(const[p,h]of Object.entries(before))if(sha(fs.readFileSync(path.join(root,p)))!==h)throw Error('Input drift '+p);
+  if(!fs.existsSync(result))throw Error('Missing browser JSON, exit='+code);
+  const r=JSON.parse(fs.readFileSync(result,'utf8'));
+  if(code!==0||r.stats.expected!==2||r.stats.unexpected||r.stats.skipped||r.stats.flaky)throw Error('Browser failed '+JSON.stringify(r.stats));
+  const scans=fs.readdirSync(out).filter(p=>p.endsWith('-axe.json'));
+  const images=fs.readdirSync(out).filter(p=>p.endsWith('.png'));
+  if(scans.length!==3||images.length!==6)throw Error('Missing scans or captures');
+  for(const p of scans)if(JSON.parse(fs.readFileSync(path.join(out,p),'utf8')).violations.length)throw Error('Axe violations '+p);
+  const summary={sourceSHA256:delta.afterSHA256,workflows:2,workers:1,retries:0,axeScans:3,axeViolations:0,images,stats:r.stats,inputsUnchanged:true};
+  fs.writeFileSync(path.join(out,'summary.json'),JSON.stringify(summary,null,2));console.log(JSON.stringify(summary));
+ }catch(e){fs.writeFileSync(path.join(out,'failure.json'),JSON.stringify({error:e.message,exitCode:code},null,2));console.error(e);process.exitCode=1;}
+});

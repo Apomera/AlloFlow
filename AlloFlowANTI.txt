@@ -2436,12 +2436,13 @@ function _installLocalTextBridge(aiInstance, aiConfig) {
     // opts (7th, optional) carries a JSON schema for constrained decoding. The
     // cloud callGemini ignores extra positional args, so a caller can always
     // pass it and let the active backend decide whether it means anything.
-    const localCallGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null, _searchQuery = null, signal = null, opts = null) => {
+    const localCallGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null, _searchQuery = null, signal = null, opts = null, _telemetry = null, searchOptions = null) => {
         try {
             return await aiInstance.generateText(prompt, {
                 json: Boolean(jsonMode),
                 search: Boolean(useSearch),
                 searchQuery: _searchQuery || null,
+                searchIntent: searchOptions?.intent === 'user-topic' ? 'user-topic' : undefined,
                 temperature: temperature == null ? null : Number(temperature),
                 signal,
                 schema: (opts && opts.schema) || null,
@@ -5310,6 +5311,13 @@ const CDNModuleGate = (function () {
     var size = props.size || 'modal';
     var t = props.t;
     var children = props.children;
+    var accessibleModal = props.accessibleModal === true && size !== 'inline';
+    var hostedUrl = typeof props.hostedUrl === 'string' && /^https:\/\//i.test(props.hostedUrl) ? props.hostedUrl : '';
+    var loadingTitleId = 'allo-module-loading-' + String(moduleKey).replace(/[^a-zA-Z0-9_-]/g, '-');
+    var loadingDialogRef = React.useRef(null);
+    var lastLoadingFocusRef = React.useRef(null);
+    var closeRef = React.useRef(onClose);
+    closeRef.current = onClose;
 
     var _tickState = React.useState(0);
     var setTick = _tickState[1];
@@ -5376,16 +5384,60 @@ const CDNModuleGate = (function () {
       };
     }, [isOpen, moduleKey, props.loaderName, !!Mod]);
 
+    React.useEffect(function () {
+      if (!isOpen || Mod || !accessibleModal || !loadingDialogRef.current) return undefined;
+      var root = loadingDialogRef.current;
+      var previousFocus = document.activeElement;
+      var stack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+      var trap = { root: root };
+      stack.push(trap);
+      var isTop = function () { return stack[stack.length - 1] === trap; };
+      var handleKey = function (event) {
+        if (!isTop()) return;
+        if (event.key === 'Escape' && typeof closeRef.current === 'function') {
+          event.preventDefault(); event.stopPropagation(); closeRef.current(); return;
+        }
+        if (event.key !== 'Tab') return;
+        var controls = Array.from(root.querySelectorAll('button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(function (element) {
+          return !element.closest('[hidden], [inert], [aria-hidden="true"]');
+        });
+        var first = controls[0], last = controls[controls.length - 1];
+        if (!first) { event.preventDefault(); root.focus(); return; }
+        var active = document.activeElement;
+        if (active === root || !root.contains(active) || (event.shiftKey ? active === first : active === last)) {
+          event.preventDefault(); (event.shiftKey ? last : first).focus();
+        }
+      };
+      document.addEventListener('keydown', handleKey);
+      root.focus();
+      return function () {
+        document.removeEventListener('keydown', handleKey);
+        var wasTop = isTop(), index = stack.indexOf(trap);
+        if (index !== -1) stack.splice(index, 1);
+        // The loaded panel owns focus after a successful handoff.
+        if (wasTop && !resolve() && previousFocus && previousFocus !== document.body && previousFocus.isConnected) previousFocus.focus();
+      };
+    }, [isOpen, !!Mod, accessibleModal]);
+
+    React.useLayoutEffect(function () {
+      var lastFocus = lastLoadingFocusRef.current;
+      // Retry disappears when the loader becomes pending again. Keep focus in
+      // the popup without disturbing a loaded panel or another focused control.
+      if (isOpen && !Mod && accessibleModal && lastFocus && !lastFocus.isConnected && document.activeElement === document.body && loadingDialogRef.current) loadingDialogRef.current.focus();
+    });
+
     if (!isOpen) return null;
     if (Mod) return typeof children === 'function' ? children(Mod) : (children || null);
 
     var failed = !!props.loaderName && (loaderUnavailable || window.__alloModuleRegistry?.[String(moduleKey).split('.')[0]]?.status === 'failed');
     var retryButton = failed ? <button type="button" onClick={() => { if (!requestLoad()) setLoaderUnavailable(true); }} className="mt-4 min-h-11 px-4 py-2 bg-indigo-700 text-white font-bold rounded-lg text-sm">{tr(t, 'common.retry', null, 'Retry loading')}</button> : null;
+    var hostedLink = hostedUrl ? <a href={hostedUrl} target="_blank" rel="noopener noreferrer" aria-label={'Open ' + displayName + ' in a new tab'} className="mt-4 min-h-11 inline-flex items-center px-4 py-2 text-indigo-800 underline font-bold rounded-lg text-sm">Open in a new tab ↗</a> : null;
     var loadingLabel = tr(t, 'common.loading_module', { name: displayName }, 'Loading ' + displayName + '...');
     if (failed) loadingLabel = displayName + ' could not load. Your work is preserved.';
     var hintLabel = (hintVariant === 'short')
       ? tr(t, 'common.cdn_loading_hint_short', null, 'Module loading from CDN.')
       : tr(t, 'common.cdn_loading_hint_long', null, 'Module loading from CDN. If this persists, check your connection.');
+    if (hostedUrl) hintLabel = failed ? 'Try loading again, or open the activity in a new tab.' : 'This may take a moment. You can also open the activity in a new tab.';
 
     if (size === 'inline') {
       return (
@@ -5396,21 +5448,21 @@ const CDNModuleGate = (function () {
             <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center text-xl">{icon}</div>
           </div>
           <p className="text-sm font-bold text-slate-700">{loadingLabel}</p>
-          <p className="text-xs text-slate-600 mt-1">{hintLabel}</p>{retryButton}
+          <p className="text-xs text-slate-600 mt-1">{hintLabel}</p>{retryButton}{hostedLink}
         </div>
       );
     }
 
     return (
       <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" style={props.modalZIndex ? { zIndex: props.modalZIndex } : undefined} onClick={onClose}>
-        <div role="status" aria-live="polite" aria-label={loadingLabel} className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={function (e) { e.stopPropagation(); }}>
+        <div ref={loadingDialogRef} tabIndex={accessibleModal ? -1 : undefined} role={accessibleModal ? 'dialog' : 'status'} aria-modal={accessibleModal ? true : undefined} aria-live={accessibleModal ? undefined : 'polite'} aria-label={accessibleModal ? undefined : loadingLabel} aria-labelledby={accessibleModal ? loadingTitleId : undefined} onFocusCapture={accessibleModal ? function (event) { lastLoadingFocusRef.current = event.target; } : undefined} className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={function (e) { e.stopPropagation(); }}>
           <div className="relative w-14 h-14 mx-auto mb-4">
             <div aria-hidden="true" className="absolute inset-0 rounded-full border-4 border-slate-200" />
-            <div aria-hidden="true" className="absolute inset-0 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin" />
+            <div aria-hidden="true" className={'absolute inset-0 rounded-full border-4 border-indigo-500 border-t-transparent' + (accessibleModal && failed ? '' : ' animate-spin')} />
             <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center text-2xl">{icon}</div>
           </div>
-          <p className="text-lg font-bold text-slate-700">{loadingLabel}</p>
-          <p className="text-sm text-slate-600 mt-2">{hintLabel}</p>{retryButton}
+          <p id={accessibleModal ? loadingTitleId : undefined} role={accessibleModal ? 'status' : undefined} aria-live={accessibleModal ? 'polite' : undefined} className="text-lg font-bold text-slate-700">{loadingLabel}</p>
+          <p className="text-sm text-slate-600 mt-2">{hintLabel}</p>{retryButton}{hostedLink}
           {onClose && <button onClick={onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>}
         </div>
       </div>
@@ -14400,7 +14452,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         existing.addEventListener('load', () => _upgradeAIBackend(), { once: true });
         return;
       }
-      const url = pluginCdnBase + 'ai_backend_module.js?v=cd1a5a87';
+      const url = pluginCdnBase + 'ai_backend_module.js?v=357c0a18';
       const s = document.createElement('script');
       s.src = url;
       s.crossOrigin = 'anonymous';
@@ -14426,17 +14478,17 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // has not landed yet, so load order is not load-bearing.
     loadModule('AlloQuestContract', 'https://alloflow-cdn.pages.dev/allo_quest_contract_module.js?v=6a0c48749');
     loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=6a0c48749');
-    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=d9a1ae9c');
+    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=8326f81b');
     loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=6a0c48749');
     loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=6a0c48749');
     loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=6a0c48749');
     loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=6a0c48749');
     loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=6a0c48749');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=6a0c48749');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=3be70c0e');
+    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=704c22ea');
+    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=d9261fbd');
     loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=f31f5130');
     loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=2c8db82e');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=6a0c48749');
+    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=24ccb785');
     loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=6a0c48749');
     loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=6a0c48749');
     // Word Sounds is the largest CDN module in the app (~744KB) and was loaded
@@ -14451,7 +14503,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // The render site already has a "Loading Word Sounds..." fallback with a
     // Close escape, and the module registry re-renders the app when the load
     // lands, so the fallback resolves on its own.
-    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=6a0c48749'); }; })();
+    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=c0c8127a'); }; })();
     loadModule('AlloSheetTransferAdapter', 'https://alloflow-cdn.pages.dev/allo_sheet/transfer_adapter.js?v=6a0c48749');
     loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=6a0c48749');
     loadModule('AlloSheetHostBridge', 'https://alloflow-cdn.pages.dev/allo_sheet/host_bridge.js?v=6a0c48749');
@@ -14498,7 +14550,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyDisproAnalyzer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DisproAnalyzer', 'https://alloflow-cdn.pages.dev/dispro_analyzer_module.js?v=da080303'); }; })();
     // Leadership Hub (Aug 3 2026) — container shell for the admin suite;
     // Meeting Documentation is its third tool (needs callGemini).
-    window.__alloLazyAdminHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AdminHub', 'https://alloflow-cdn.pages.dev/admin_hub_module.js?v=9e9f9641'); }; })();
+    window.__alloLazyAdminHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AdminHub', 'https://alloflow-cdn.pages.dev/admin_hub_module.js?v=48927624'); }; })();
     // Educator Growth & Evaluation (Aug 13 2026) — Act 13 workflow prototype.
     window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', 'https://alloflow-cdn.pages.dev/educator_evaluation_module.js?v=6a0c48749'); }; })();
     window.__alloLazySchoolRewards = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SchoolRewards', 'https://alloflow-cdn.pages.dev/school_rewards_module.js?v=6a0c48749'); }; })();
@@ -14540,7 +14592,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
     window.__alloLazyVisualPanel = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=6a0c48749'); }; })();
     if (window.__alloVisualPanelRequested) window.__alloLazyVisualPanel();
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=6a0c48749');
+    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=dd3fc3cb');
     loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=6a0c48749');
     loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=3a2c2b4c');
     window.__alloLazyMathFluency = () => { loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=6a0c48749'); };
@@ -14570,7 +14622,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (window.AlloModules && typeof window.AlloModules.createDocPipeline === 'function') return true;
       var entry = window.__alloModuleRegistry && window.__alloModuleRegistry.DocPipelineModule;
       if (entry && entry.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('DocPipelineModule');
-      loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=6a0c48749');
+      loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=9fbe4362');
       return true;
     };
     var __alloLazyEnsurePromises = window.__alloLazyEnsurePromises || (window.__alloLazyEnsurePromises = {});
@@ -14619,6 +14671,20 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       __alloLazyEnsurePromises[moduleName] = pending;
       pending.then(function() { delete __alloLazyEnsurePromises[moduleName]; }, function() { delete __alloLazyEnsurePromises[moduleName]; });
       return pending;
+    };
+    // Shared word presentation loads on demand from Word Sounds or Glossary.
+    window.__alloLazyWordPractice = function() {
+      if (window.AlloModules?.WordPractice) return true;
+      if (window.__alloModuleRegistry?.WordPractice?.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('WordPractice');
+      loadModule('WordPractice', 'https://alloflow-cdn.pages.dev/word_practice_module.js');
+      return true;
+    };
+    window.__alloOpenWordPractice = async function(options) {
+      const presenter = await window.__alloEnsureLazyModule('WordPractice', '__alloLazyWordPractice', 'WordPractice');
+      if (options?.signal?.aborted) return null;
+      if (!presenter || typeof presenter.open !== 'function') throw new Error('Word practice is unavailable. Please retry.');
+      const useEnglishBank = /^(en(?:[-_].*)?|english)$/i.test(String(options?.language || 'en'));
+      return presenter.open({ ...options, ensurePptx: window.__alloEnsurePptxGen, phonemeBank: options?.phonemeBank || (useEnglishBank ? window.__ALLO_PHONEME_AUDIO_BANK : null) || {} });
     };
     // Teaching-script research and editor load only when a teacher opens a plan.
     window.__alloLazyLessonTeachingScript = function() {
@@ -14719,14 +14785,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     };
     loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=6a0c48749');
     loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=6a0c48749');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=6a0c48749');
+    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=1da258f3');
     // The teacher's own imported documents, shared by the source generator,
     // its toggle, the Quick Start toggle and the import control. No
     // dependencies of its own: it reaches Lumen lazily, loading those STEM
     // plugins on demand when a teacher first imports outside STEM Lab.
     loadModule('OwnSources', 'https://alloflow-cdn.pages.dev/own_sources_module.js?v=6a0c48749');
     loadModule('AppStyles', 'https://alloflow-cdn.pages.dev/app_styles_module.js?v=6a0c48749');
-    loadModule('LiveAac', 'https://alloflow-cdn.pages.dev/live_aac_module.js?v=6a0c48749');
+    loadModule('LiveAac', 'https://alloflow-cdn.pages.dev/live_aac_module.js?v=870b0ab1');
     window.__alloLazySharedActivity = function() {
       if (window.AlloModules?.SharedActivity?.SharedAssignmentActivityPanel) return true;
       const entry = window.__alloModuleRegistry?.SharedActivity;
@@ -14739,7 +14805,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=6a0c48749');
     window.__alloEnsureSidebarPanels = () => { loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=6a0c48749'); };
     window.__alloEnsureSidebarPanels();
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=6a0c48749');
+    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=6fa553c9');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // Current module builds invoke _upgradeModuleScopeExtras after registration.
     // Keep this short poll only for stale cached module copies that predate the
@@ -14763,7 +14829,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=eb2801b0');
     loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=6a0c48749');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=6a0c48749');
+    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=7e035311');
     loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=6a0c48749');
     loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=6a0c48749');
     // Capability index (dev-tools/build_tool_index.cjs): what each STEM tool
@@ -14790,7 +14856,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           .catch(function () {});
       } catch (_) {}
     })();
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=6a0c48749');
+    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=118830a0');
     loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=6a0c48749');
     loadModule('StandardsContext', 'https://alloflow-cdn.pages.dev/standards_context_module.js?v=6a0c48749');
     loadModule('InstructionalContext', 'https://alloflow-cdn.pages.dev/instructional_context_module.js?v=6a0c48749');
@@ -14849,7 +14915,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=6a0c48749');
     loadModule('MathManipulativeGraderModule', 'https://alloflow-cdn.pages.dev/math_manipulative_grader_module.js?v=6a0c48749');
     loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=6a0c48749');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=6a0c48749');
+    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=11c9d071');
     loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=617a14f1');
     loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=6a0c48749');
     loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=6a0c48749');
@@ -14863,12 +14929,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=6a0c48749');
     loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=6a0c48749');
     loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=6a0c48749');
-    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=6ba838c8'); }; })();
+    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=0af9108e'); }; })();
     if (window.__alloSimplifiedViewRequested) window.__alloLazySimplifiedView();
     loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=6a0c48749');
     loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=6a0c48749');
     loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=6a0c48749');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=6a0c48749');
+    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=64ca9e3b');
     loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=6a0c48749');
     loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=6a0c48749');
     window.__alloLazyPersonaChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=3e93b1d3'); }; })();
@@ -14879,7 +14945,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js?v=a012c2fd');
     loadModule('AlloCommandContext', 'https://alloflow-cdn.pages.dev/allo_command_context_module.js?v=d9950c8d');
-    loadModule('HostHandlers', 'https://alloflow-cdn.pages.dev/host_handlers_module.js?v=1518acf2');
+    loadModule('HostHandlers', 'https://alloflow-cdn.pages.dev/host_handlers_module.js?v=343e702c');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
     loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=6a0c48749');
     loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=6a0c48749');
@@ -16880,7 +16946,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, [isChunkReaderActive]);
   useEffect(() => {
       // Reset typewriter on chunk change. Tick advance happens in the renderer's
-      // own RAF loop (see view_simplified_module.js?v=4bf8b03e typewriter logic) so the char
+      // own RAF loop (see view_simplified_module.js?v=0af9108e typewriter logic) so the char
       // count doesn't depend on prop drilling another timer through the chain.
       setChunkTypewriterCharIdx(0);
   }, [chunkReaderIdx, chunkReaderMood, isChunkReaderActive]);
@@ -17117,11 +17183,15 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isMaineSldPracticeOpen, setIsMaineSldPracticeOpen] = useState(false);
   const [maineSldPracticeFromLeadership, setMaineSldPracticeFromLeadership] = useState(false);
   useEffect(() => {
-    window.__alloOpenMaineSldPractice = () => {
-      if (typeof window.__alloLazyMaineSldPractice === 'function') window.__alloLazyMaineSldPractice();
+    window.__alloOpenMaineSldPractice = (options) => {
+      if (typeof window.__alloLazyMaineSldPractice === 'function') {
+        try { window.__alloLazyMaineSldPractice(); }
+        catch (error) { console.warn('[MaineSLD] Initial load failed; showing loading recovery.', error); }
+      }
       setIsAdminHubOpen(false);
-      setMaineSldPracticeFromLeadership(false);
+      setMaineSldPracticeFromLeadership(!!(options && options.fromLeadership === true));
       setIsMaineSldPracticeOpen(true);
+      return true;
     };
     return () => { try { delete window.__alloOpenMaineSldPractice; } catch (_) {} };
   }, []);
@@ -20831,17 +20901,44 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const handleToggleShowSocraticChat = React.useCallback(() => setShowSocraticChat(prev => !prev), []);
   const handleToggleReadingRuler = React.useCallback(() => setReadingRuler(prev => !prev), []);
   const handleToggleIsFabExpanded = React.useCallback(() => setIsFabExpanded(prev => !prev), []);
+  const wordSoundsPersistenceRef = React.useRef({ resourceId: null, words: null, bound: false });
   React.useEffect(() => {
-      if (!generatedContent || wsPreloadedWords.length === 0) return;
+      const resourceId = generatedContent?.id ?? null;
+      const previous = wordSoundsPersistenceRef.current;
+      const sourceWords = Array.isArray(generatedContent?.wsPreloadedWords) && generatedContent.wsPreloadedWords.length
+          ? generatedContent.wsPreloadedWords : generatedContent?.data;
+      const bound = previous.bound && previous.resourceId === resourceId && (previous.sourceWords === sourceWords || sourceWords === wsPreloadedWords);
+      wordSoundsPersistenceRef.current = { resourceId, words: wsPreloadedWords, sourceWords, bound };
+      // Navigation can change the displayed resource before its words hydrate.
+      // Only a new word-array reference represents a pack edit or load; the
+      // generatedContent update below must never trigger another write.
+      if (previous.words === wsPreloadedWords || !generatedContent || wsPreloadedWords.length === 0) return;
       if (generatedContent.type !== 'glossary' && generatedContent.type !== 'word-sounds') return;
+      if (!bound && generatedContent.type === 'word-sounds') {
+          const wordKey = word => String(word?.targetWord || word?.word || word?.term || word?.singleWord || word?.displayWord || '').trim().toLowerCase();
+          if (!Array.isArray(sourceWords) || sourceWords.length !== wsPreloadedWords.length || sourceWords.some((word, index) => wordKey(word) !== wordKey(wsPreloadedWords[index]))) return;
+      }
+      wordSoundsPersistenceRef.current.bound = true;
+      const serializedWords = JSON.stringify(wsPreloadedWords);
+      const updateResource = resource => {
+          if (!resource || resource.id !== resourceId || !['word-sounds', 'glossary'].includes(resource.type)) return resource;
+          const sameWords = JSON.stringify(resource.wsPreloadedWords) === serializedWords;
+          const sameData = resource.type !== 'word-sounds' || JSON.stringify(resource.data) === serializedWords;
+          if (sameWords && sameData) return resource;
+          return { ...resource, wsPreloadedWords, ...(resource.type === 'word-sounds' ? { data: wsPreloadedWords } : {}) };
+      };
       setHistory(prev => {
-          const idx = prev.findIndex(h => h.id === generatedContent.id);
+          const idx = prev.findIndex(h => h.id === resourceId);
           if (idx === -1) return prev;
-          if (JSON.stringify(prev[idx].wsPreloadedWords) === JSON.stringify(wsPreloadedWords)) return prev;
+          const resource = updateResource(prev[idx]);
+          if (resource === prev[idx]) return prev;
           const updated = [...prev];
-          updated[idx] = { ...updated[idx], wsPreloadedWords };
+          updated[idx] = resource;
           return updated;
       });
+      // Preview/readiness/recovery use the open resource; keep them on the same
+      // repaired pack as History and the player. Glossary data stays untouched.
+      setGeneratedContent(updateResource);
   }, [wsPreloadedWords, generatedContent]);
   const prevWsPreloadedWordsLengthRef = useRef(0);
   useEffect(() => {
@@ -23764,6 +23861,27 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                     });
                 });
                 if (pictureOmissions.length) serializedItem.offlineMediaOmissions = pictureOmissions;
+                // Word Sounds keeps edited recordings and activity boards in
+                // wsPreloadedWords. Preserve that envelope on browser reload,
+                // using the same words as data for legacy readers.
+                if (item.type === 'word-sounds') {
+                    const words = Array.isArray(item.wsPreloadedWords) && item.wsPreloadedWords.length
+                        ? item.wsPreloadedWords : (Array.isArray(parsedData) ? parsedData : []);
+                    serializedItem.data = JSON.stringify(words);
+                    serializedItem.wsPreloadedWords = words;
+                    ['lessonPlanSequence', 'lessonPlanConfig', 'configSummary', 'isProbeMode', 'probeActivity', 'probeGradeLevel', 'probeForm', '_fingerprint'].forEach(key => {
+                        if (Object.prototype.hasOwnProperty.call(item, key)) serializedItem[key] = item[key];
+                    });
+                    if (item.sessionConfig && typeof item.sessionConfig === 'object' && !Array.isArray(item.sessionConfig)) {
+                        const sessionConfig = {};
+                        // Persist lesson settings, not live learner/run identity
+                        // or arbitrary provider/credential fields from imports.
+                        ['schema', 'version', 'schemaVersion', 'resourceId', 'preparedActivities', 'instructionalProfile', 'studentLocked', 'mode', 'language', 'wordSoundsLanguage', 'difficulty', 'wordSoundsDifficulty', 'sessionGoal', 'wordSoundsSessionGoal', 'orthoGoal', 'orthoSessionGoal', 'imageVisibilityMode', 'fixedForm', 'probeItemCount', 'itemCount', 'probeGrade', 'grade', 'probeForm', 'form', 'formId', 'probeActivity', 'initialActivity', 'runtimeActivity', 'ttsSpeed', 'wordSoundsTtsSpeed', 'aacMode', 'showText', 'showImages'].forEach(key => {
+                            if (Object.prototype.hasOwnProperty.call(item.sessionConfig, key)) sessionConfig[key] = item.sessionConfig[key];
+                        });
+                        serializedItem.sessionConfig = sessionConfig;
+                    }
+                }
                 if (item.gameData) serializedItem.gameData = JSON.stringify(item.gameData);
                 if (item.levelCheck) serializedItem.levelCheck = item.levelCheck;
                 if (item.alignmentCheck) serializedItem.alignmentCheck = item.alignmentCheck;
@@ -39331,7 +39449,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
     if (type) setAlloGenerationType(type);
     console.log('[VisualDebug] handleGenerate shim called with type=', type, 'module loaded?', !!_m);
     if (_m && typeof _m.handleGenerate === "function") return _m.handleGenerate(type, langOverride, keepLoading, textOverride, configOverride, switchView, Object.assign({
-        selectedReadingSourceId, activeUnitId,
+        selectedReadingSourceId, activeUnitId, sourceProvenance,
         gradeLevel,
         outlineType,
         visualStyle,
@@ -42574,6 +42692,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 })}
                 {activeView === 'word-sounds' && !isWordSoundsMode && window.AlloModules && window.AlloModules.WordSoundsPreviewView && React.createElement(window.AlloModules.WordSoundsPreviewView, { t,
                     generatedContent, wsActivitySequence, isTeacherMode,
+                    callTTS, selectedVoice, ttsSpeed: wordSoundsTtsSpeed || 1, wordSoundsLanguage,
                     setWordSoundsActivity, setIsWordSoundsMode, setWordSoundsAutoReview,
                     prepareWordSoundsSession,
                     wordSoundsAudioCoverage: getWordSoundsPortableAudioCoverage(generatedContent),
@@ -43506,7 +43625,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           )}
         </div>
       {(activeView === 'word-sounds-generator' || wsGeneratorMinimized) && (
-          <WordSoundsGenerator isProbeMode={isProbeMode}
+          <WordSoundsGenerator isTeacherMode={isTeacherMode} isProbeMode={isProbeMode}
                probeActivity={probeActivity}
                onMinimize={() => { setWsGeneratorMinimized(true); setActiveView('output'); }}
                onExpand={() => { setWsGeneratorMinimized(false); setActiveView('word-sounds-generator'); }}
@@ -44326,7 +44445,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           addToast,
         })}
       </CDNModuleGate>
-      <CDNModuleGate moduleKey="MaineSldPractice.MaineSldPracticePanel" loaderName="__alloLazyMaineSldPractice" modalZIndex={270} isOpen={isMaineSldPracticeOpen} onClose={() => setIsMaineSldPracticeOpen(false)} icon="📚" displayName="Maine SLD Case Lab" t={t}>
+      <CDNModuleGate moduleKey="MaineSldPractice.MaineSldPracticePanel" loaderName="__alloLazyMaineSldPractice" modalZIndex={270} accessibleModal={true} hostedUrl="https://alloflow-cdn.pages.dev/app/?tool=maine-sld-practice" isOpen={isMaineSldPracticeOpen} onClose={() => setIsMaineSldPracticeOpen(false)} icon="📚" displayName="Maine SLD Case Lab" t={t}>
         {(MaineSldPracticePanel) => React.createElement(MaineSldPracticePanel, {
           isOpen: true,
           onClose: () => setIsMaineSldPracticeOpen(false),

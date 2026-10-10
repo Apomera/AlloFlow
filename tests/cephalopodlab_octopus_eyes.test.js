@@ -4,13 +4,18 @@ import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 
 const require=createRequire(import.meta.url),THREE=require('../vendor/three-r128/three.min.js');
-const source=readFileSync('stem_lab/stem_tool_cephalopodlab.js','utf8');
+const source=readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE||'stem_lab/stem_tool_cephalopodlab.js','utf8');
 const begin=source.indexOf('function createCLHuntAnimal('),end=source.indexOf('// Compact, individually owned prey rig.',begin);
 if(begin<0||end<=begin)throw Error('Cannot find actual animal factory');
 const build=new Function('T','species','Math',source.slice(begin,end)+';return createCLHuntAnimal(T,species);');
-const {restorePass42AnimalSource}=require('./helpers/cephalopod_pass42_reference.cjs');
+const {restorePass42AnimalSource:restorePass42AnimalOnly}=require('./helpers/cephalopod_pass42_reference.cjs');
 // Historical fingerprints retain the exact previously accepted cuttle funnel.
-const priorBuild=new Function('T','species','Math',restorePass42AnimalSource(source.slice(begin,end))+';return createCLHuntAnimal(T,species);');
+// Restore the full tool first: camera/environment markers drive the later-pass inverse chain.
+// Slicing early would skip the accepted Pass66 arm caps in these older body fingerprints.
+const priorSource=require('./helpers/cephalopod_pass54_reference.cjs').restorePass54Source(source);
+const priorBegin=priorSource.indexOf('function createCLHuntAnimal('),priorEnd=priorSource.indexOf('// Compact, individually owned prey rig.',priorBegin);
+if(priorBegin<0||priorEnd<=priorBegin)throw Error('Cannot find historical animal factory');
+const priorBuild=new Function('T','species','Math',restorePass42AnimalSource(priorSource.slice(priorBegin,priorEnd))+';return createCLHuntAnimal(T,species);');
 const noRandom=Object.assign(Object.create(Math),{random(){throw Error('Octopus eye rig consumed dive RNG');}});
 const ids=['commonOcto','blueRinged','mimicOcto','giantPacific','caribReef','coconutOcto'];
 const eyeNames=new Set(['cl-eye-rim','cl-iris','cl-pupil','cl-eye-highlight','cl-eye-lid']);
@@ -110,3 +115,6 @@ describe('Benthic octopus curved eye surfaces',()=>{
     for(const [id,expected]of Object.entries(baseline))expect(fingerprint(rig(id,true),ids.includes(id)),id).toBe(expected);
   });
 });
+
+// Historical body fingerprints predate both the Pass36 squid oral finish and Pass50 octopus cups.
+function restorePass42AnimalSource(source){return require('./helpers/cephalopod_pass36_animal_reference.cjs').restorePass36AnimalSource(restorePass42AnimalOnly(require('./helpers/cephalopod_pass50_reference.cjs').restorePass50Source(require('./helpers/cephalopod_pass51_reference.cjs').restorePass51Source(require('./helpers/cephalopod_pass52_reference.cjs').restorePass52Source(require('./helpers/cephalopod_pass53_reference.cjs').restorePass53Source(require('./helpers/cephalopod_pass54_reference.cjs').restorePass54Source(source)))))));}

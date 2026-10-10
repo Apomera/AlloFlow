@@ -1,0 +1,70 @@
+{
+  "sourceSha256": "670f4883a159174eeda12b21af126ddb1311418429485dc310ca35521c675155",
+  "completed": true,
+  "results": [
+    {
+      "name": "walk-1060-dark-100m",
+      "length": 100,
+      "dark": true,
+      "width": 1060,
+      "scrollWidth": 1060,
+      "errors": [],
+      "minimumText": 13,
+      "minimumControlHeight": 44,
+      "linearMap": true,
+      "innerZoom": true,
+      "exactGap": true,
+      "keyboardStops": true,
+      "preservedJournal": true,
+      "openCloseFocus": true
+    },
+    {
+      "name": "walk-1060-light-1000m",
+      "length": 1000,
+      "dark": false,
+      "width": 1060,
+      "scrollWidth": 1060,
+      "errors": [],
+      "minimumText": 13,
+      "minimumControlHeight": 44,
+      "linearMap": true,
+      "innerZoom": true,
+      "exactGap": true,
+      "keyboardStops": true,
+      "preservedJournal": true,
+      "openCloseFocus": true
+    },
+    {
+      "name": "walk-320-dark-10m",
+      "length": 10,
+      "dark": true,
+      "width": 320,
+      "scrollWidth": 320,
+      "errors": [],
+      "minimumText": 13,
+      "minimumControlHeight": 44,
+      "linearMap": true,
+      "innerZoom": true,
+      "exactGap": true,
+      "keyboardStops": true,
+      "preservedJournal": true,
+      "openCloseFocus": true
+    },
+    {
+      "name": "walk-320-light-100m",
+      "length": 100,
+      "dark": false,
+      "width": 320,
+      "scrollWidth": 320,
+      "errors": [],
+      "minimumText": 13,
+      "minimumControlHeight": 44,
+      "linearMap": true,
+      "innerZoom": true,
+      "exactGap": true,
+      "keyboardStops": true,
+      "preservedJournal": true,
+      "openCloseFocus": true
+    }
+  ]
+}

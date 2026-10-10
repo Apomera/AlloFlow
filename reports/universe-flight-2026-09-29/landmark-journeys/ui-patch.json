@@ -1,0 +1,58 @@
+[
+  {
+    "from": "label('landmark_browser_help','Numbers mark landmark centers. Inspect one to pause and look closer.')",
+    "to": "label('landmark_browser_help','Numbers mark landmark centers. Inspect to look closer, or fly to a paused viewing distance.')"
+  },
+  {
+    "from": "h('ol',{className:'uf-landmark-list'},items.map(function(item){return h('li',{key:item.id},h('button',{type:'button','data-landmark-inspect':item.id,onClick:function(){props.onInspect(item.id);}},\n          h('span',{className:'uf-landmark-number','aria-hidden':'true'},String(item.index+1)),h('span',{className:'uf-landmark-copy'},h('strong',null,item.target.name),h('small',null,item.target.kind+' · '+props.number(item.range)+' ly'),h('small',{className:'uf-landmark-state'},item.range<1e-9?label('at_landmark','At landmark center'):item.projection.inView?label('pair_center_in_view','Center in view'):label('landmark_outside_view','Outside view')))));})),",
+    "to": "h('ol',{className:'uf-landmark-list'},items.map(function(item){\n          var preview=universeFlightLandmarkViews(props.flybys||[],item.id)[0],inRange=item.range<=item.target.arrivalRadiusLy*(1+1e-7);\n          return h('li',{key:item.id},h('article',{className:'uf-landmark-card','data-landmark-card':item.id,'data-preview':preview?'available':'none','aria-labelledby':'uf-landmark-name-'+item.id},\n            h('div',{className:'uf-landmark-heading'},\n              h('span',{className:'uf-landmark-art','aria-hidden':'true'},preview&&h('img',{src:universeFlightResource('assets/universe-flight/highlights/'+encodeURIComponent(preview.routeId)+'-'+encodeURIComponent(preview.highlightId)+'.webp'),alt:'',width:480,height:300,loading:'lazy',decoding:'async',onError:function(event){event.currentTarget.style.visibility='hidden';event.currentTarget.closest('.uf-landmark-card').setAttribute('data-preview','unavailable');},onLoad:function(event){event.currentTarget.style.visibility='';event.currentTarget.closest('.uf-landmark-card').setAttribute('data-preview','available');}}),h('span',{className:'uf-landmark-number'},String(item.index+1))),\n              h('div',{className:'uf-landmark-copy'},h('strong',{id:'uf-landmark-name-'+item.id},item.target.name),h('small',null,item.target.kind+' · '+props.number(item.range)+' ly'),h('small',{className:'uf-landmark-state',id:'uf-landmark-state-'+item.id},item.range<1e-9?label('at_landmark','At landmark center'):item.projection.inView?label('pair_center_in_view','Center in view'):label('landmark_outside_view','Outside view')),preview&&h('small',{className:'uf-landmark-preview-note'},label('neighbor_preview','Scenic preview')))),\n            h('div',{className:'uf-landmark-actions'},\n              h('button',{type:'button','data-landmark-inspect':item.id,'aria-label':label('discovery_inspect','Inspect ')+item.target.name,'aria-describedby':'uf-landmark-state-'+item.id,onClick:function(){props.onInspect(item.id);}},label('discovery_inspect_action','Inspect')),\n              h('button',{type:'button',className:'uf-primary','data-landmark-fly':item.id,'aria-label':label('discovery_fly','Fly here: ')+item.target.name,disabled:inRange,title:inRange?label('inspector_near_help','Already at the viewing distance'):label('discovery_fly_help','Guided camera approach; pauses on arrival'),onClick:function(){props.onFly(item.id);}},inRange?label('inspector_nearby','In range'):label('discovery_fly_action','Fly here')))));})),"
+  },
+  {
+    "from": "targets:browse,number:props.number,onInspect:props.onBrowseInspect,",
+    "to": "targets:browse,number:props.number,flybys:props.flybys,onFly:props.onBrowseFly,onInspect:props.onBrowseInspect,"
+  },
+  {
+    "from": "    function flyToDiscovery(id) {",
+    "to": "    function flyToBrowsedLandmark(id) {\n      if(!scene.current||!ready||mode!=='explore')return false;\n      var target=destinations.filter(function(item){return item.id===id;})[0];if(!target)return false;\n      var saved=scene.current.snapshot(),range=Math.hypot.apply(Math,target.position.map(function(value,index){return value-saved.state.position[index];}));\n      if(range<=target.arrivalRadiusLy*(1+1e-7))return false;\n      stop();clearGesture();\n      var origin={title:label('landmark_overview','Landmark overview'),snapshot:scene.current.snapshot(),speedLevel:speedLevel,arrivalScale:arrivalScale};\n      flyToDiscovery(id);var destination=scene.current.snapshot();\n      if(destination.targetId!==id||!destination.navigation||!destination.navigation.active)return false;\n      setReturnViews(function(history){return universeFlightRememberView(history,origin,destination);});return true;\n    }\n    function flyToDiscovery(id) {"
+  },
+  {
+    "from": "onBrowseInspect:inspectBrowsedLandmark,onFly:flyToDiscovery",
+    "to": "onBrowseInspect:inspectBrowsedLandmark,onBrowseFly:flyToBrowsedLandmark,flybys:api.flybys?api.flybys(flightRegion):[],onFly:flyToDiscovery"
+  },
+  {
+    "from": "  var UNIVERSE_FLIGHT_CSS = `",
+    "to": "  var UNIVERSE_FLIGHT_CSS = `\n  [data-universe-tool] .uf-landmark-card{padding:8px;border:1px solid #4c7185;border-radius:9px;background:linear-gradient(125deg,#153344,#102234);}\n  [data-universe-tool] .uf-landmark-heading{display:flex;align-items:center;gap:9px;min-width:0;}\n  [data-universe-tool] .uf-landmark-art{position:relative;display:block;flex:0 0 66px;aspect-ratio:8/5;overflow:hidden;border-radius:6px;background:radial-gradient(ellipse at 30% 40%,#315269,#111e30 70%);box-shadow:0 0 0 1px #ffffff1c;}\n  [data-universe-tool] .uf-landmark-art img{display:block;width:100%;height:100%;object-fit:contain;}\n  [data-universe-tool] .uf-landmark-art .uf-landmark-number{position:absolute;left:3px;top:3px;width:22px;height:22px;font-size:10px;background:#061626ed;}\n  [data-universe-tool] .uf-landmark-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px;}\n  [data-universe-tool] .uf-landmark-list .uf-landmark-actions button{display:block;text-align:center;min-height:44px;padding:7px 4px;font-size:11px;}\n  [data-universe-tool] .uf-landmark-card[data-preview=\"unavailable\"] .uf-landmark-preview-note{display:none;}\n  @media(forced-colors:active){[data-universe-tool] .uf-landmark-card{background:Canvas;color:CanvasText;border-color:CanvasText;}[data-universe-tool] .uf-landmark-art .uf-landmark-number{background:Canvas;color:CanvasText;border-color:CanvasText;}}\n"
+  },
+  {
+    "from": "      flyToDiscovery(id);var destination=scene.current.snapshot();\n      if(destination.targetId!==id||!destination.navigation||!destination.navigation.active)return false;",
+    "to": "      if(!flyToDiscovery(id))return false;var destination=scene.current.snapshot();\n      // Record the planned arrival so Back is available even when launch has\n      // not yet changed a previously selected landmark's camera view.\n      destination.state.position=target.position.map(function(value,index){return value+(saved.state.position[index]-value)*target.arrivalRadiusLy/range;});"
+  },
+  {
+    "from": "      if(scene.current.navigateTo(id,1)){\r\n        setRunning(true);setNotice(label('discovery_flight_active'",
+    "to": "      var started=scene.current.navigateTo(id,1);if(started){\r\n        setRunning(true);setNotice(label('discovery_flight_active'"
+  },
+  {
+    "from": "      inspectScene();\r\n    }\r\n    function visitInspectionNeighbor",
+    "to": "      inspectScene();return started;\r\n    }\r\n    function visitInspectionNeighbor"
+  },
+  {
+    "from": "  [data-universe-tool] .uf-landmark-card[data-preview=\"unavailable\"]",
+    "to": "  [data-universe-tool] .uf-landmark-list .uf-landmark-actions .uf-primary{background:#a4e7d8;color:#073542;border-color:#b8f4e6;}\n  [data-universe-tool] .uf-landmark-card[data-preview=\"unavailable\"]"
+  },
+  {
+    "from": "label('landmark_browser_help','Numbers mark landmark centers. Inspect to look closer, or fly to a paused viewing distance.')",
+    "to": "label('landmark_browser_journeys_help','Numbers mark centers. Inspect or fly here.')"
+  },
+  {
+    "from": "        h('ol',{className:'uf-landmark-list'},items.map(function(item){",
+    "to": "        h('div',{className:'uf-landmark-scroll'},h('ol',{className:'uf-landmark-list'},items.map(function(item){"
+  },
+  {
+    "from": "label('landmark_browser_note','This list keeps its order while you look around. Reopen to browse the new view.'))));",
+    "to": "label('landmark_browser_note','This list keeps its order while you look around. Reopen to browse the new view.')))));"
+  },
+  {
+    "from": "  var UNIVERSE_FLIGHT_CSS = `",
+    "to": "  var UNIVERSE_FLIGHT_CSS = `\n  [data-universe-tool] .uf-landmark-scroll{flex:1 1 auto;min-height:48px;overflow:auto;overscroll-behavior:contain;}\n  [data-universe-tool] .uf-landmark-scroll .uf-landmark-list{overflow:visible;min-height:0;}\n"
+  }
+]

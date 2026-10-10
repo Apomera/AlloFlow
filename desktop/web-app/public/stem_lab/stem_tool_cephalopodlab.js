@@ -2020,7 +2020,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           specialAbility: 'mimicry'
         },
         { id: 'cuttlefish', name: __alloT('stem.cephalopodlab.common_cuttlefish', 'Common Cuttlefish'), scientific: 'Sepia officinalis', emoji: '🦑',
-          tagline: 'Hold H for hypnotic display', accent: '#34d399',
+          tagline: 'Hold H for passing-cloud display', accent: '#34d399',
           description: __alloT('stem.cephalopodlab.flatter_wider_body_with_2_long_tentacl', 'Flatter, wider body with 2 long tentacles. Hold H to ripple a passing-cloud display — nearby prey (crabs + fish) freeze for 2 seconds, easy to walk up and catch. Best camo of any species: continuous chromatophore patterning. Can\'t squeeze through tight gaps (more rigid body).'),
           bodyColor: 0x8a7a52, armColor: 0x6e5e3a,
           maxHealth: 85, maxHunger: 85,
@@ -2088,7 +2088,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         },
         { id: 'caribReef', name: __alloT('stem.cephalopodlab.caribbean_reef_octopus', 'Caribbean Reef Octopus'), scientific: 'Octopus briareus', emoji: '🐙',
           tagline: 'Showy + sociable', accent: '#22d3ee',
-          description: __alloT('stem.cephalopodlab.common_in_caribbean_reefs_at_3_20_m_di', 'Common in Caribbean reefs at 3-20 m. Distinctive blue-green iridescence. Diurnal forager (most octopuses are nocturnal), so encounters more visual predators. Strong chromatophore range with prominent leucophores. Mid-size, balanced. Best for daytime reef hunts.'),
+          description: __alloT('stem.cephalopodlab.common_in_caribbean_reefs_at_3_20_m_di', 'Common in Caribbean reefs at 3-20 m. Distinctive blue-green iridescence. Typically a nocturnal forager that shelters in dark reef crevices. Strong chromatophore range with prominent leucophores. In this simulation: mid-size and balanced; the day/night cycle and predator responses are simplified.'),
           bodyColor: 0x4a8a8a, armColor: 0x2a6a6a,
           maxHealth: 90, maxHunger: 90,
           camoQualityMul: 1.0,
@@ -2097,7 +2097,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         },
         { id: 'coconutOcto', name: __alloT('stem.cephalopodlab.coconut_octopus', 'Coconut Octopus'), scientific: 'Amphioctopus marginatus', emoji: '🥥',
           tagline: 'Tool user + bipedal walker', accent: '#a07840',
-          description: 'Famous for carrying coconut halves across the sea floor — the only documented invertebrate tool use. Walks BIPEDALLY on two back arms while carrying coconuts. In this simulation, carrying a shelter imposes a smaller movement penalty. Bipedal transport is natural history, not a separately simulated gait. Indo-Pacific sand-flat habitat — best on sand substrate.',
+          description: 'Carries coconut halves or shells beneath its body with a cumbersome arm-tip stilt-walk, then deploys them as shelter. The carried shells provide no protection during transport in the documented behavior. In this simulation, shelter carrying has a smaller movement penalty and placing creates a shelter spot; assembly and the transport gait are not yet simulated. Indo-Pacific sand-flat habitat.',
           bodyColor: 0xa67844, armColor: 0x7e5a32,
           maxHealth: 75, maxHunger: 75,
           camoQualityMul: 0.85,
@@ -11260,7 +11260,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   border: '1px solid rgba(167,139,250,0.4)', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' } },
                 __alloT('stem.cephalopodlab.end_run_surface', '◀ End run + surface'))),
             h('div', { id: 'cl-hunt-canvas-instructions', style: { textAlign: 'center', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 8, fontStyle: 'italic' } },
-              __alloT('stem.cephalopodlab.tip_tab_to_or_click_the_canvas_for_keyboard', 'Tip: Tab to or click the canvas so keyboard input is captured.'))
+              __alloT('stem.cephalopodlab.tip_tab_to_or_click_the_canvas_for_keyboard', 'Tip: Focus the canvas for keyboard controls. Reef octopuses fold automatically through narrow gaps near the sand; use the rock to break sight, then peek out to hunt.'))
           ) : null
         );
       }
@@ -11314,6 +11314,56 @@ function findCLReefSite(desired,footprint,blockers,options){
   return null;
 }
 
+// Three weathered slabs provide two real, open-ended reef passages.
+// Their flat inward faces preserve gameplay clearances; bevels soften the mouths.
+function createCLHuntRefugeGeometry(T,width,height,depth,index){
+  var positions=[],colors=[],indices=[],levels=[0,0.10,0.34,0.60,0.79,1],phase=index*1.73;
+  var halfX=width/2,halfZ=depth/2,bevel=Math.min(width*0.22,0.18);
+  var rim=[[-halfX+bevel,-halfZ],[halfX-bevel,-halfZ],[halfX,-halfZ+bevel],[halfX,halfZ-bevel],[halfX-bevel,halfZ],[-halfX+bevel,halfZ],[-halfX,halfZ-bevel],[-halfX,-halfZ+bevel]];
+  for(var ring=0;ring<levels.length;ring++)for(var side=0;side<8;side++){
+    var level=levels[ring],top=ring===levels.length-1,shoulder=ring===levels.length-2,bottom=ring===0;
+    var erosion=0.5+0.5*Math.sin(side*1.47+phase),lean=Math.sin(phase+0.73);
+    // Keep the lower split faces planar; shoulders and crowns recede inside that envelope.
+    var xScale=top?0.48+0.18*erosion:shoulder?0.72+0.15*erosion:bottom?0.85+0.08*erosion:1;
+    var zScale=top?0.62+0.18*(0.5+0.5*Math.cos(side*1.23-phase)):shoulder?0.83+0.09*erosion:bottom?0.86+0.08*erosion:1;
+    var x=rim[side][0]*xScale+(top?width*0.065*lean:shoulder?width*0.03*lean:0),z=rim[side][1]*zScale+(top?depth*0.04*Math.cos(phase):0);
+    var shoulderY=height*(0.79+0.065*Math.sin(side*1.31+phase));
+    var crownY=height*(0.90+0.095*Math.sin(side*1.61+phase)+0.055*Math.cos(side*0.93-phase));
+    var y=top?Math.max(shoulderY+height*0.075,crownY):shoulder?shoulderY:level*height+(ring===3?height*0.035*Math.sin(side*1.83+phase):ring===2?height*0.018*Math.cos(side*1.49-phase):ring===1?0.018*Math.sin(side*1.91+phase):0);
+    var layer=0.5+0.5*Math.sin(level*12.4+z*0.18+phase),mottle=Math.sin(x*4.7+z*2.6+phase)*Math.cos(y*3.8-z*1.3);
+    var seam=Math.exp(-Math.pow((level-0.43+0.06*Math.sin(z*1.3+phase))/0.10,2));
+    var stone=0.77+0.13*layer+0.09*mottle;
+    positions.push(x,y,z);colors.push(stone+seam*0.28,stone+seam*0.25,stone*0.97+seam*0.18);
+  }
+  for(var band=0;band<levels.length-1;band++)for(var edge=0;edge<8;edge++){
+    var next=(edge+1)%8,a=band*8+edge,b=band*8+next,c=(band+1)*8+next,d=(band+1)*8+edge;
+    indices.push(a,b,c,a,c,d);
+  }
+  var bottomCenter=positions.length/3;positions.push(0,0,0);colors.push(0.79,0.79,0.76);
+  var topCenter=positions.length/3;positions.push(width*0.055*Math.sin(phase+0.8),height*(1.035+0.025*Math.cos(phase)),depth*0.025*Math.sin(phase));colors.push(0.86,0.86,0.82);
+  for(var cap=0;cap<8;cap++){var following=(cap+1)%8;indices.push(bottomCenter,following,cap,topCenter,(levels.length-1)*8+cap,(levels.length-1)*8+following);}
+  // Orient the closed solid once so rock raycasts agree with visible inward faces.
+  var volume=0;
+  for(var face=0;face<indices.length;face+=3){var ai=indices[face]*3,bi=indices[face+1]*3,ci=indices[face+2]*3;volume+=positions[ai]*(positions[bi+1]*positions[ci+2]-positions[bi+2]*positions[ci+1])+positions[ai+1]*(positions[bi+2]*positions[ci]-positions[bi]*positions[ci+2])+positions[ai+2]*(positions[bi]*positions[ci+1]-positions[bi+1]*positions[ci]);}
+  if(volume<0)for(var reverse=0;reverse<indices.length;reverse+=3){var saved=indices[reverse+1];indices[reverse+1]=indices[reverse+2];indices[reverse+2]=saved;}
+  var geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));geometry.setIndex(indices);
+  geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();return geometry;
+}
+function findCLHuntRefugeSite(blockers,terrainHeight){
+  // Leave the opening mission route intact. Both approach lanes need clear sand.
+  var rows=[-12,14,-18,20,-24,26],halfX=2.9,halfZ=4.0;
+  for(var column=0;column<5;column++)for(var row=0;row<rows.length;row++){
+    var x=-8-column*4,z=rows[row],left=x-halfX,right=x+halfX,back=z-halfZ,front=z+halfZ;
+    var floor=terrainHeight(x,z),clear=Number.isFinite(floor);
+    if(clear&&Math.abs(terrainHeight(left,back)-floor)>0.16)clear=false;
+    if(clear&&Math.abs(terrainHeight(right,front)-floor)>0.16)clear=false;
+    for(var i=0;clear&&i<blockers.length;i++){var b=blockers[i];if(left<b.maxX&&right>b.minX&&back<b.maxZ&&front>b.minZ)clear=false;}
+    if(clear)return{x:x,z:z};
+  }
+  // Fully occupied starts keep ordinary reef play, never an obstructed passage.
+  return null;
+}
+
 function createCLHuntRockCollisionFootprint(THREE,rock){
   var attribute=rock.geometry.attributes.position;
   var transform=new THREE.Matrix4().compose(new THREE.Vector3(),rock.quaternion,rock.scale),point=new THREE.Vector3();
@@ -11348,6 +11398,38 @@ function createCLHuntRockCollisionFootprint(THREE,rock){
   }
   return{minY:minY,maxY:maxY,hull:hull,edges:edges};
 }
+// A squeeze is a real narrow passage between opposing rock outlines, never a den flag.
+// The collision envelope is illustrative; these dimensions are gameplay clearances.
+function findCLHuntCrevice(position,height,rocks,footprints,bodyScale,speciesId,floorHeight,floorRestY){
+  if(['commonOcto','blueRinged','mimicOcto','giantPacific','caribReef','coconutOcto'].indexOf(speciesId)<0)return null;
+  if(!Number.isFinite(height+floorHeight+floorRestY+bodyScale+position.x+position.z)||bodyScale<=0||Math.abs(height-floorHeight-floorRestY)>0.4)return null;
+  var ordinary=bodyScale*0.22,compressed=ordinary*0.55,near=[];
+  for(var i=0;i<rocks.length;i++){
+    var rock=rocks[i],footprint=footprints[i];
+    if(!footprint||height<rock.position.y+footprint.minY||height>rock.position.y+footprint.maxY)continue;
+    var x=position.x-rock.position.x,z=position.z-rock.position.z,inside=true,surfaces=[];
+    for(var side=0;side<footprint.edges.length;side++){
+      var edge=footprint.edges[side];
+      var signed=edge.nx*x+edge.nz*z-edge.constant;
+      if(signed>0)inside=false;
+      // A small mouth allowance permits slow entry before the ordinary envelope hits a corner.
+      // Beyond that allowance the edge plane no longer describes a nearby physical surface.
+      var along=((x-edge.x)*edge.dx+(z-edge.z)*edge.dz)/edge.lengthSq,allowance=ordinary/Math.sqrt(edge.lengthSq);
+      if(signed>0&&signed<ordinary*2&&along>=-allowance&&along<=1+allowance)surfaces.push({index:i,distance:signed,nx:edge.nx,nz:edge.nz});
+    }
+    // An overlapped rock is not a hidden chamber; keep ordinary collision to push out.
+    if(inside)return null;
+    for(var surface=0;surface<surfaces.length;surface++)near.push(surfaces[surface]);
+  }
+  var best=null;
+  for(var a=0;a<near.length;a++)for(var b=a+1;b<near.length;b++){
+    var first=near[a],second=near[b],opposition=first.nx*second.nx+first.nz*second.nz,width=first.distance+second.distance;
+    if(first.index===second.index||opposition>=-0.75||width<compressed*2+bodyScale*0.008||width>=ordinary*2)continue;
+    if(!best||width<best.width)best={width:width,first:first.index,second:second.index,margin:compressed};
+  }
+  return best;
+}
+
 function resolveCLHuntRockCollision(position,height,rockPosition,footprint,margin){
   if(!footprint||height-margin>=rockPosition.y+footprint.maxY||height+margin<=rockPosition.y+footprint.minY)return false;
   var x=position.x-rockPosition.x,z=position.z-rockPosition.z,inside=true,insideGap=Infinity,insideEdge=0;
@@ -11376,6 +11458,104 @@ function resolveCLHuntRockCollision(position,height,rockPosition,footprint,margi
   position.x+=pushX*(penetration+0.000000001);position.z+=pushZ*(penetration+0.000000001);
   return true;
 }
+// A fixed, visual-only wake pool. Its local sequence never consumes the dive RNG.
+function createCLHuntSedimentState(count){
+  count=Number.isFinite(count)?Math.max(1,Math.min(128,Math.floor(count))):64;
+  return{count:count,positions:new Float32Array(count*3),origins:new Float32Array(count*3),velocities:new Float32Array(count*3),ages:new Float32Array(count),lifetimes:new Float32Array(count),alphas:new Float32Array(count),scales:new Float32Array(count),sizes:new Float32Array(count),cursor:0,carry:0,seed:1831565813,activeCount:0,emitted:0};
+}
+function updateCLHuntSedimentWake(state,dt,input,terrainHeight){
+  // Render-only and paused frames are strict no-ops, including the local sequence.
+  if(!(dt>0)||!Number.isFinite(dt))return false;
+  var dirty=false,i,at;
+  if(input.reducedMotion){
+    dirty=state.activeCount>0;state.carry=0;state.activeCount=0;
+    for(i=0;i<state.count;i++){state.lifetimes[i]=0;state.alphas[i]=0;}
+    return dirty;
+  }
+  state.activeCount=0;
+  // Analytic trajectories settle back onto the local bed, independent of camera or player motion.
+  for(i=0;i<state.count;i++){
+    if(!(state.lifetimes[i]>0))continue;
+    dirty=true;var age=state.ages[i]+dt,life=state.lifetimes[i];state.ages[i]=age;
+    if(age>=life){state.lifetimes[i]=0;state.alphas[i]=0;continue;}
+    at=i*3;var drift=(1-Math.exp(-1.8*age))/1.8;
+    var px=state.origins[at]+state.velocities[at]*drift,pz=state.origins[at+2]+state.velocities[at+2]*drift;
+    var bed=terrainHeight(px,pz),py=state.origins[at+1]+state.velocities[at+1]*age-0.22*age*age;
+    if(!Number.isFinite(bed)){state.lifetimes[i]=0;state.alphas[i]=0;continue;}
+    state.positions[at]=px;state.positions[at+1]=Math.max(bed+0.025,py);state.positions[at+2]=pz;
+    var progress=age/life,fadeIn=Math.min(1,age/0.10),fadeOut=1-progress;
+    state.alphas[i]=0.42*fadeIn*fadeOut*fadeOut;
+    state.scales[i]=state.sizes[i]*(0.65+progress*1.7);
+    state.activeCount++;
+  }
+  var dx=input.x-input.fromX,dz=input.z-input.fromZ,distance=Math.hypot(dx,dz),floor=terrainHeight(input.x,input.z);
+  var clearance=input.height-floor-input.floorRestY,scale=Math.max(0.45,Math.min(1.65,input.bodyScale));
+  var finite=Number.isFinite(distance+floor+clearance+scale+input.x+input.z+input.fromX+input.fromZ)&&input.bodyScale>0;
+  var slopeX=(terrainHeight(input.x+0.25,input.z)-terrainHeight(input.x-0.25,input.z))*2;
+  var slopeZ=(terrainHeight(input.x,input.z+0.25)-terrainHeight(input.x,input.z-0.25))*2;
+  if(!finite||!input.jetting||input.substrate!=='sand'||clearance< -0.08||clearance>0.65||!(distance>0.002)||distance>1.5||distance/dt<0.08||!Number.isFinite(slopeX+slopeZ)||Math.hypot(slopeX,slopeZ)>0.48){state.carry=0;return dirty;}
+  var spacing=0.23*scale,previousCarry=state.carry,total=previousCarry+distance,births=Math.floor(total/spacing);
+  state.carry=total-births*spacing;
+  var forwardX=dx/distance,forwardZ=dz/distance;
+  function sample(){state.seed=(Math.imul(state.seed,1664525)+1013904223)>>>0;return state.seed/4294967296;}
+  for(var birth=0;birth<births;birth++){
+    var fraction=Math.max(0,Math.min(1,(spacing-previousCarry+birth*spacing)/distance));
+    var side=(sample()-0.5)*0.30*scale,behind=(0.20+sample()*0.12)*scale;
+    var x=input.fromX+dx*fraction-forwardX*behind+forwardZ*side,z=input.fromZ+dz*fraction-forwardZ*behind-forwardX*side;
+    var floorY=terrainHeight(x,z),localSlopeX=(terrainHeight(x+0.25,z)-terrainHeight(x-0.25,z))*2,localSlopeZ=(terrainHeight(x,z+0.25)-terrainHeight(x,z-0.25))*2;
+    if(!Number.isFinite(floorY+localSlopeX+localSlopeZ)||Math.hypot(localSlopeX,localSlopeZ)>0.48||(input.substrateAt&&input.substrateAt(x,z)!=='sand'))continue;
+    i=state.cursor;state.cursor=(state.cursor+1)%state.count;at=i*3;
+    if(!(state.lifetimes[i]>0))state.activeCount++;
+    state.origins[at]=state.positions[at]=x;state.origins[at+1]=state.positions[at+1]=floorY+0.035;state.origins[at+2]=state.positions[at+2]=z;
+    var spread=(sample()-0.5)*0.34*scale;
+    state.velocities[at]=-forwardX*(0.12+sample()*0.12)*scale+forwardZ*spread;
+    state.velocities[at+1]=(0.29+sample()*0.16)*scale;
+    state.velocities[at+2]=-forwardZ*(0.12+sample()*0.12)*scale-forwardX*spread;
+    state.ages[i]=0;state.lifetimes[i]=1.25+sample()*0.65;state.sizes[i]=(0.40+sample()*0.25)*scale;
+    state.scales[i]=state.sizes[i]*0.65;state.alphas[i]=0;state.emitted++;dirty=true;
+  }
+  return dirty;
+}
+function shadeCLHuntSedimentWake(shader,pixelRatio){
+  shader.uniforms.clSedimentPixelRatio={value:pixelRatio};
+  shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nattribute float clSedimentAlpha;\nattribute float clSedimentScale;\nattribute float clSedimentVariant;\nuniform float clSedimentPixelRatio;\nvarying float vClSedimentAlpha;\nvarying float vClSedimentVariant;\nvarying float vClSedimentDetail;')
+    .replace('gl_PointSize = size;','gl_PointSize = size * clSedimentScale;\nvClSedimentAlpha=clSedimentAlpha*smoothstep(0.30,0.85,-mvPosition.z);\nvClSedimentVariant=clSedimentVariant;')
+    .replace('#include <logdepthbuf_vertex>','gl_PointSize=min(gl_PointSize,48.0*clSedimentPixelRatio);\nvClSedimentDetail=smoothstep(5.0,18.0,gl_PointSize/max(clSedimentPixelRatio,0.001));\n#include <logdepthbuf_vertex>');
+  // Stable broad lobes suggest dispersed sediment, rather than a row of round stamps.
+  // Small projected points use the original smooth mask; no frame-varying grain noise.
+  var density=[
+    'float clSedimentDensity(float x,float y,float phase,float detail){',
+    'float radius=x*x+y*y;',
+    'float envelope=pow(1.0-smoothstep(0.04,1.0,radius),1.5);',
+    'float c=cos(phase),s=sin(phase),u=c*x-s*y,v=s*x+c*y;',
+    'float lobes=0.5+0.5*sin(u*5.2+phase)*cos(v*4.4-phase*0.7);',
+    'float ridge=1.0-smoothstep(0.08,0.92,(v+0.16*sin(u*4.0+phase))*(v+0.16*sin(u*4.0+phase)));',
+    'float density=clamp(0.18+0.52*lobes+0.30*ridge,0.0,1.0);',
+    'return envelope*mix(1.0,density,clamp(detail,0.0,1.0));',
+    '}'
+  ].join('\n');
+  shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying float vClSedimentAlpha;\nvarying float vClSedimentVariant;\nvarying float vClSedimentDetail;\n'+density)
+    .replace('#include <color_fragment>','#include <color_fragment>\nvec2 clSedimentPoint=gl_PointCoord*2.0-1.0;\nfloat clSedimentRadius=dot(clSedimentPoint,clSedimentPoint);\nif(clSedimentRadius>1.0||vClSedimentAlpha<=0.001)discard;\ndiffuseColor.a*=vClSedimentAlpha*clSedimentDensity(clSedimentPoint.x,clSedimentPoint.y,vClSedimentVariant,vClSedimentDetail);')
+    .replace('#include <fog_fragment>','#include <fog_fragment>\n#ifdef USE_FOG\ngl_FragColor.a*=1.0-fogFactor;\n#endif');
+}
+
+function createCLHuntSedimentWake(T,pixelRatio){
+  var state=createCLHuntSedimentState(64),geometry=new T.BufferGeometry();
+  geometry.setAttribute('position',new T.BufferAttribute(state.positions,3).setUsage(T.DynamicDrawUsage));
+  geometry.setAttribute('clSedimentAlpha',new T.BufferAttribute(state.alphas,1).setUsage(T.DynamicDrawUsage));
+  geometry.setAttribute('clSedimentScale',new T.BufferAttribute(state.scales,1).setUsage(T.DynamicDrawUsage));
+  // One immutable scalar per pooled point; no extra simulation randomness or texture.
+  var variants=new Float32Array(state.count);
+  for(var i=0;i<state.count;i++)variants[i]=(i*2.399963229728653)%(Math.PI*2);
+  geometry.setAttribute('clSedimentVariant',new T.BufferAttribute(variants,1));
+  var material=new T.PointsMaterial({color:new T.Color(0xb9b29c).convertSRGBToLinear(),size:1,transparent:true,opacity:0.68,blending:T.NormalBlending,depthWrite:false,sizeAttenuation:true});
+  material.userData.clSedimentBaseColor=material.color.clone();
+  material.onBeforeCompile=function(shader){shadeCLHuntSedimentWake(shader,pixelRatio);};
+  material.customProgramCacheKey=function(){return 'cl-sediment-wake-v65';};
+  var points=new T.Points(geometry,material);points.name='cl-sediment-wake';points.frustumCulled=false;points.visible=false;points.userData.clSediment=state;
+  return points;
+}
+
 // Small rock-rooted fragments soften the edge between large cover and bare sand.
 // One pooled draw owns its geometry/material; only recycled roots rebuild instances.
 function createCLHuntReefRubble(T,rocks,footprints,terrainHeight,quality){
@@ -11505,7 +11685,30 @@ function createCLHuntAnimal(T, species) {
     };
     skin.customProgramCacheKey=function(){return 'cl-cuttle-surface-v14';};
   }
+  // Reef-octopus pigment shares one animal frame across mantle, head, arms and web.
+  var octoSurfaceFrame=!swimming&&id!=='blueRinged'?{value:new T.Matrix4()}:null;
+  var octoBodyScale={value:scale};
+  if(octoSurfaceFrame){
+    var octoBaseCompiler=skin.onBeforeCompile;
+    skin.onBeforeCompile=function(shader,renderer){
+      octoBaseCompiler(shader);shader.uniforms.clOctoSurfaceFrame=octoSurfaceFrame;shader.uniforms.clOctoBodyScale=octoBodyScale;
+      shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nuniform mat4 clOctoSurfaceFrame; uniform float clOctoBodyScale; varying vec3 clOctoPos;').replace('clSkinPos = position;','clSkinPos = position;\nclOctoPos=(clOctoSurfaceFrame*modelMatrix*vec4(position,1.0)).xyz/clOctoBodyScale;');
+      var octoDerivatives=!!(renderer&&renderer.capabilities&&(renderer.capabilities.isWebGL2||(renderer.extensions&&renderer.extensions.has('OES_standard_derivatives'))));
+      var octoFunctions=[
+        'varying vec3 clOctoPos;',
+        'float clOctoHash(vec3 p){float h=mod(p.x*7.0+19.0,127.0);h=mod(h*mod(h,13.0)+p.y*5.0+23.0,127.0);h=mod(h*mod(h,11.0)+p.z*3.0+31.0,127.0);return mod(h*mod(h,7.0)+17.0,127.0)/126.0;}',
+        'float clOctoDetailFilter(float footprint){return 1.0-smoothstep(0.30,1.05,footprint);}',
+        'float clOctoTone(float macro,float medium,float fine,float mediumAA,float fineAA,float strength,float belly){float pigmentPatch=(macro-0.5)*(0.22+strength*0.30);float mottle=(smoothstep(0.24,0.78,medium)-0.5)*(0.22+strength*0.28)*mediumAA;float pigment=smoothstep(0.56,0.81,fine)*fineAA*0.095;return clamp(1.0+(pigmentPatch+mottle-pigment)*(1.0-belly*0.75),0.58,1.28);}',
+        'float clOctoRoughness(float base,float macro,float medium,float mediumAA,float belly){return clamp(base+(macro-0.5)*0.07+(medium-0.5)*mediumAA*0.06-belly*0.035,0.33,0.58);}'
+      ].join('\n');
+      shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\n'+octoFunctions).replace('float clHash(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}','float clHash(vec3 p){return clOctoHash(p);}');
+      shader.fragmentShader=shader.fragmentShader.replace("float mottling=clNoise(clSkinPos*13.0+vec3(0.0,clNoise(clSkinPos*5.0),0.0)); float grain=clNoise(clSkinPos*105.0); float cells=smoothstep(0.56,0.78,grain); float belly=1.0-smoothstep(-0.18,0.10,clSkinPos.y); float bands=0.5+0.5*sin(clSkinPos.z*15.0-clPhase*4.0); diffuseColor.rgb *= 0.87 + mottling*0.25 - cells*0.20 - smoothstep(0.38,0.74,mottling)*clPattern*0.26 - bands*clDisplay*0.32; diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*0.65+vec3(0.36,0.27,0.18),belly*0.30);",'float clOctoMacro=clNoise(clOctoPos*vec3(5.0,6.0,4.5)); vec3 clOctoMediumPos=clOctoPos*vec3(23.0,26.0,22.0)+vec3(clOctoMacro*0.7,0.0,clOctoMacro*0.5); vec3 clOctoFinePos=clOctoPos*72.0; float clOctoMedium=clNoise(clOctoMediumPos); float clOctoFine=clNoise(clOctoFinePos); '+(octoDerivatives?'float clOctoMediumAA=clOctoDetailFilter(length(fwidth(clOctoMediumPos))); float clOctoFineAA=clOctoDetailFilter(length(fwidth(clOctoFinePos)));':'float clOctoMediumAA=0.35; float clOctoFineAA=0.0;')+' float clOctoBelly=1.0-smoothstep(-0.10,0.26,clOctoPos.y); float clOctoStrength=clamp((clPattern-0.22)/0.68,0.0,1.0); diffuseColor.rgb*=clOctoTone(clOctoMacro,clOctoMedium,clOctoFine,clOctoMediumAA,clOctoFineAA,clOctoStrength,clOctoBelly); vec3 clOctoPale=diffuseColor.rgb*0.70+vec3(0.20,0.17,0.13); diffuseColor.rgb=mix(diffuseColor.rgb,clOctoPale,clOctoBelly*0.30);');
+      shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor=clOctoRoughness(roughnessFactor,clOctoMacro,clOctoMedium,clOctoMediumAA,clOctoBelly);');
+    };
+    skin.customProgramCacheKey=function(){return 'cl-octopus-surface-v70';};
+  }
   var armMat = skin.clone(); armMat.onBeforeCompile = skin.onBeforeCompile;
+  if(octoSurfaceFrame)armMat.customProgramCacheKey=skin.customProgramCacheKey;
   if(squid||cuttle)armMat.customProgramCacheKey=skin.customProgramCacheKey;
   if(cuttle)armMat.name='cl-cuttle-arm-material';
   if(squid){
@@ -11530,7 +11733,41 @@ function createCLHuntAnimal(T, species) {
     var taper = squid ? 0.30 + 0.70 * Math.pow((z+1)/2,0.7) : 1;
     mp.setXYZ(i,x*dims[0]*taper*scale,y*dims[1]*taper*scale,z*dims[2]*scale);
   }
+  // A lower posterior sac tapers toward the head in the larger reef octopuses.
+  // Contract within the original body envelope; the compact blue-ringed form
+  // and its warning-ring attachments retain their accepted ellipsoid.
+  var reefMantle=id==='commonOcto'||id==='giantPacific'||id==='mimicOcto'||id==='caribReef'||id==='coconutOcto';
+  if(reefMantle){
+    for(var mantleVertex=0;mantleVertex<mp.count;mantleVertex++){
+      var mantleX=mp.getX(mantleVertex),mantleY=mp.getY(mantleVertex),mantleZ=mp.getZ(mantleVertex);
+      var mantleFront=T.MathUtils.smoothstep(mantleZ/(dims[2]*scale),-0.38,0.86);
+      var mantleBelly=T.MathUtils.smoothstep(-mantleY/(dims[1]*scale),0,1);
+      mp.setXYZ(mantleVertex,mantleX*(1-0.25*mantleFront),mantleY*(0.89-0.10*mantleFront)*(1-0.16*mantleBelly),mantleZ);
+    }
+  }
   mantleGeo.computeVertexNormals();
+  if(reefMantle){
+    // Sphere seams and poles have duplicate vertices. Accumulate actual face
+    // area across those copies so the shaped surface has no lighting seam.
+    var mantleNormals=mantleGeo.attributes.normal,mantleIndices=mantleGeo.index.array,mantleAreas=new Float64Array(mp.array.length);
+    var mantleColumns=mantleGeo.parameters.widthSegments,mantleRows=mantleGeo.parameters.heightSegments,mantleStride=mantleColumns+1;
+    function mantleNormalSlot(vertex){var row=Math.floor(vertex/mantleStride),column=vertex%mantleStride;return (row*mantleStride+(row===0||row===mantleRows||column===mantleColumns?0:column))*3;}
+    for(var mantleFace=0;mantleFace<mantleIndices.length;mantleFace+=3){
+      var ma=mantleIndices[mantleFace],mb=mantleIndices[mantleFace+1],mc=mantleIndices[mantleFace+2];
+      var max=mp.getX(ma),may=mp.getY(ma),maz=mp.getZ(ma);
+      var mbx=mp.getX(mb)-max,mby=mp.getY(mb)-may,mbz=mp.getZ(mb)-maz;
+      var mcx=mp.getX(mc)-max,mcy=mp.getY(mc)-may,mcz=mp.getZ(mc)-maz;
+      var mnx=mby*mcz-mbz*mcy,mny=mbz*mcx-mbx*mcz,mnz=mbx*mcy-mby*mcx;
+      for(var mantleCorner=0;mantleCorner<3;mantleCorner++){var mantleSlot=mantleNormalSlot(mantleIndices[mantleFace+mantleCorner]);mantleAreas[mantleSlot]+=mnx;mantleAreas[mantleSlot+1]+=mny;mantleAreas[mantleSlot+2]+=mnz;}
+    }
+    for(var mantleVertex=0;mantleVertex<mp.count;mantleVertex++){
+      var mantleSlot=mantleNormalSlot(mantleVertex),mnx=mantleAreas[mantleSlot],mny=mantleAreas[mantleSlot+1],mnz=mantleAreas[mantleSlot+2],mnLength=Math.sqrt(mnx*mnx+mny*mny+mnz*mnz);
+      if(mnLength>0)mantleNormals.setXYZ(mantleVertex,mnx/mnLength,mny/mnLength,mnz/mnLength);
+    }
+    // Papillae can expand authored positions by up to 3.5% between bounds updates.
+    mantleGeo.computeBoundingBox();mantleGeo.boundingBox.min.multiplyScalar(1.035);mantleGeo.boundingBox.max.multiplyScalar(1.035);
+    mantleGeo.boundingSphere=new T.Sphere(new T.Vector3(),Math.max(dims[0],dims[1],dims[2])*scale*1.035);
+  }
   var mantle = new T.Mesh(mantleGeo,skin); mantle.name='cl-mantle';
   mantle.position.set(0,swimming ? 0.1 : 0.16,(squid ? -0.76 : cuttle ? -0.3 : -0.25)*scale); root.add(mantle);
   var basePositions = new Float32Array(mp.array);
@@ -11812,8 +12049,14 @@ function createCLHuntAnimal(T, species) {
   var limbs=[],arms=[],tentacles=[],fins=[],dumboFins=[],cuttleFins=[];
   var rings=20, sides=8;
   function limb(kind,index,angle,length,radius) {
-    var positions=new Float32Array((rings+1)*(sides+1)*3), normals=new Float32Array(positions.length), indices=[];
+    var positions=new Float32Array(((rings+1)*(sides+1)+(!swimming&&kind==='arm'?sides+2:0))*3), normals=new Float32Array(positions.length), indices=[];
     for(var r=0;r<rings;r++)for(var j=0;j<sides;j++){var a=r*(sides+1)+j,b=a+sides+1;indices.push(a,a+1,b,b,a+1,b+1);}
+    if(!swimming&&kind==='arm'){
+      // Close the exposed tip with a rounded ring and pole. Existing strips keep
+      // their vertex and face indices, including every sucker attachment.
+      var tipRing=(rings+1)*(sides+1),tipPole=tipRing+sides+1;
+      for(var tipSide=0;tipSide<sides;tipSide++){var a=rings*(sides+1)+tipSide,b=tipRing+tipSide;indices.push(a,a+1,b,b,a+1,b+1,b,b+1,tipPole);}
+    }
     var g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(positions,3).setUsage(T.DynamicDrawUsage));g.setAttribute('normal',new T.BufferAttribute(normals,3).setUsage(T.DynamicDrawUsage));g.setIndex(indices);
     if(squid){
       // The oral face is theta=0 in the same frame transported with each feeding club.
@@ -11852,6 +12095,24 @@ function createCLHuntAnimal(T, species) {
       // replace interlocking torus rings without adding meshes, textures or transparent layers.
       sg=new T.LatheGeometry([new T.Vector2(0,-0.06),new T.Vector2(0.57,-0.06),new T.Vector2(1,0.26),new T.Vector2(0.90,0.34),new T.Vector2(0.79,0.25),new T.Vector2(0.48,0.06),new T.Vector2(0,0.025)],10);
       sg.computeVertexNormals();sg.computeBoundingBox();sg.computeBoundingSphere();
+    }else if(!swimming){
+      // One closed, recessed cup replaces each ring. Shared angular vertices keep
+      // the rolled lip smooth; vertex tones give the cavity depth without a texture.
+      var cupProfile=[[0,-0.12,0.68],[0.46,-0.12,0.80],[0.82,0.04,0.93],[1,0.20,1],[0.83,0.25,1],[0.42,0.015,0.72],[0,-0.03,0.62]];
+      var cupSegments=12,cupPositions=[0,-0.12,0],cupColors=[0.68,0.68,0.68],cupIndices=[];
+      for(var cupRing=1;cupRing<cupProfile.length-1;cupRing++)for(var cupSide=0;cupSide<cupSegments;cupSide++){
+        var cp=cupProfile[cupRing],ca=cupSide/cupSegments*Math.PI*2;
+        cupPositions.push(Math.sin(ca)*cp[0],cp[1],Math.cos(ca)*cp[0]);cupColors.push(cp[2],cp[2],cp[2]);
+      }
+      var cupPole=cupPositions.length/3;cupPositions.push(0,-0.03,0);cupColors.push(0.62,0.62,0.62);
+      for(var cupSide=0;cupSide<cupSegments;cupSide++){
+        var nextCupSide=(cupSide+1)%cupSegments;cupIndices.push(0,1+nextCupSide,1+cupSide);
+        for(var cupRing=0;cupRing<4;cupRing++){var a=1+cupRing*cupSegments+cupSide,b=1+cupRing*cupSegments+nextCupSide;cupIndices.push(a,b,a+cupSegments,b,b+cupSegments,a+cupSegments);}
+        cupIndices.push(1+4*cupSegments+cupSide,1+4*cupSegments+nextCupSide,cupPole);
+      }
+      sg=new T.BufferGeometry();sg.setAttribute('position',new T.Float32BufferAttribute(cupPositions,3));sg.setAttribute('color',new T.Float32BufferAttribute(cupColors,3));sg.setIndex(cupIndices);
+      sg.computeVertexNormals();sg.computeBoundingBox();sg.computeBoundingSphere();sg.userData.clOctopusCup={segments:cupSegments,base:-0.12,floor:-0.03,lip:0.25};
+      underside.vertexColors=true;
     }else{sg=new T.TorusGeometry(0.038,0.012,5,10);sg.rotateX(Math.PI/2);}
     suckers=new T.InstancedMesh(sg,underside,suckerCount);suckers.name='cl-suckers';suckers.frustumCulled=false;root.add(suckers);
   }
@@ -11864,12 +12125,32 @@ function createCLHuntAnimal(T, species) {
   }
   if(swimming&&!nautilus){makeFin(-1,dumbo);makeFin(1,dumbo);}
   // A continuous scalloped web joins the proximal arms on octopuses and vampires.
-  var web=null;
+  var web=null,octopusWebSamples=null;
   if(!squid&&!cuttle&&!bobtail&&!nautilus){
-    var wg=new T.BufferGeometry(),wp=new Float32Array(8*9*3),wi=[];
-    for(var w=0;w<8;w++)for(var s=0;s<8;s++)wi.push(w*9+s,w*9+s+1,((w+1)%8)*9+s, w*9+s+1,((w+1)%8)*9+s+1,((w+1)%8)*9+s);
+    var wg=new T.BufferGeometry(),wp,wi=[];
+    if(!swimming){
+      // Shared angular columns close the collar without a duplicated seam. The
+      // fractional arm samples avoid the old repeated (and collapsed) rows.
+      var webSpan=6,webRows=8,webColumns=8*webSpan,webStride=webRows+1;
+      wp=new Float32Array(webColumns*webStride*3);octopusWebSamples=[];
+      for(var wc=0;wc<webColumns;wc++){
+        var webArm=Math.floor(wc/webSpan),webAcross=(wc%webSpan)/webSpan,webScallop=Math.pow(Math.sin(webAcross*Math.PI),2);
+        for(var wr=0;wr<=webRows;wr++){
+          var webAlong=wr/webRows,webRing=webAlong*(5-2.2*webScallop);
+          octopusWebSamples.push({arm:webArm,next:(webArm+1)%8,ring:Math.floor(webRing),blend:webRing-Math.floor(webRing),across:webAcross,arch:0.018*scale*Math.sin(webAlong*Math.PI)*webScallop});
+          if(wr<webRows){var a=wc*webStride+wr,b=((wc+1)%webColumns)*webStride+wr;wi.push(a,a+1,b,a+1,b+1,b);}
+        }
+      }
+      wg.setAttribute('normal',new T.BufferAttribute(new Float32Array(wp.length),3).setUsage(T.DynamicDrawUsage));
+      wg.userData.clOctopusWeb={span:webSpan,rows:webRows,columns:webColumns,outerArmRing:5,scallopDepth:2.2};
+    }else{
+      wp=new Float32Array(8*9*3);
+      for(var w=0;w<8;w++)for(var s=0;s<8;s++)wi.push(w*9+s,w*9+s+1,((w+1)%8)*9+s,w*9+s+1,((w+1)%8)*9+s+1,((w+1)%8)*9+s);
+    }
     wg.setAttribute('position',new T.BufferAttribute(wp,3).setUsage(T.DynamicDrawUsage));wg.setIndex(wi);
-    var wm=skin.clone();wm.side=T.DoubleSide;web=new T.Mesh(wg,wm);web.name='cl-webbing';web.frustumCulled=false;root.add(web);
+    var wm=skin.clone();wm.side=T.DoubleSide;
+    if(!swimming){wm.onBeforeCompile=skin.onBeforeCompile;wm.customProgramCacheKey=skin.customProgramCacheKey;wm.name='cl-octopus-web-material';}
+    web=new T.Mesh(wg,wm);web.name='cl-webbing';web.frustumCulled=false;root.add(web);
   }
   var warningRings=[],vampirePhotophores=[],mimicSpikes=[],nautilusShell=null,bobtailGlow=null;
   if(id==='blueRinged')for(var br=0;br<22;br++){
@@ -11925,6 +12206,7 @@ function createCLHuntAnimal(T, species) {
   var passingCloudOverlay=cuttle?{material:{opacity:0}}:null;
   var tangent=new T.Vector3(),normal=new T.Vector3(),binormal=new T.Vector3(),up=new T.Vector3(0,1,0);
   var squidJetBlend=0,squidMantlePhase=0,squidFinPhase=0;
+  var octopusJetBlend=0,octopusMantlePhase=0,octopusMoveBlend=0,octopusGaitPhase=0,octopusTubeSide=new T.Vector3();
   var membraneSwimmer=cuttle||bobtail||vampire||dumbo;
   var membraneJetBlend=0,membraneFinPhase=0,membraneMantlePhase=0;
   // Normalized attachment ranges distinguish a long skirt from rounded lateral paddles and ears.
@@ -11933,12 +12215,17 @@ function createCLHuntAnimal(T, species) {
     dumbo?{start:-0.42,end:0.34,elevation:0.64,width:0.46,camber:0.042,sweep:0.055,rate:2.4,boost:1.8}:
     vampire?{start:-0.42,end:0.18,elevation:0.48,width:0.34,camber:0.030,sweep:0.025,rate:1.9,boost:1.3}:null;
   var strikeTubeSide=new T.Vector3(-1,0,0);
+  var grabPreviousBase=new T.Vector3(),grabPreviousTarget=new T.Vector3(),grabCurvePoint=new T.Vector3(),grabFrom=new T.Vector3(),grabTo=new T.Vector3(),grabRotation=new T.Quaternion(),grabIdentity=new T.Quaternion(),grabPreviousFrom=new T.Vector3(),grabPreviousTo=new T.Vector3(),grabDirection=new T.Vector3(),grabTargetBend=new T.Quaternion();
   var suckerOral=new T.Vector3(),suckerAcross=new T.Vector3(),suckerSurface=new T.Vector3();
   function update(time,dt,state){
     if(squidSurfaceFrame){root.updateWorldMatrix(true,false);squidSurfaceFrame.value.copy(root.matrixWorld).invert();}
     if(cuttleSurfaceFrame){root.updateWorldMatrix(true,false);cuttleSurfaceFrame.value.copy(root.matrixWorld).invert();}
+    if(octoSurfaceFrame){root.updateWorldMatrix(true,false);octoSurfaceFrame.value.copy(root.matrixWorld).invert();}
     var motion=state.reducedMotion?0:1,jet=state.jet?1:0,strike=state.reducedMotion?0:(state.strike||0);
     var directedAim=squid&&strike>0&&state.strikeAim&&Number.isFinite(state.strikeAim.x)&&Number.isFinite(state.strikeAim.y)&&Number.isFinite(state.strikeAim.z)?state.strikeAim:null;
+    var octopusGrabAim=!swimming&&motion&&state.strikeAim&&Number.isFinite(state.strikeAim.x)&&Number.isFinite(state.strikeAim.y)&&Number.isFinite(state.strikeAim.z)?state.strikeAim:null;
+    var octopusGrabBrace=octopusGrabAim&&Number.isFinite(state.strikeBrace)?Math.max(0,Math.min(1,state.strikeBrace)):0;
+    var octopusGrabRadius=octopusGrabAim&&Number.isFinite(state.strikeRadius)&&state.strikeRadius>0?Math.max(0.08,Math.min(0.65,state.strikeRadius)):0.13;
     var squidStrikePreparation=0,squidStrikeBrace=0,squidStrikeEnvelope=false;
     if(squid&&motion&&state.strikeAim&&Number.isFinite(state.strikeAim.x)&&Number.isFinite(state.strikeAim.y)&&Number.isFinite(state.strikeAim.z)){
       // These envelopes come only from the accepted strike clock; a reach alone retains its original pose.
@@ -11955,6 +12242,20 @@ function createCLHuntAnimal(T, species) {
       squidMantlePhase=(squidMantlePhase+poseStep*(2.2+8.8*jet)*motion)%(Math.PI*2);
       squidFinPhase=(squidFinPhase+poseStep*(3.6+1.8*jet)*motion)%(Math.PI*2);
     }
+    if(!swimming){
+      // Visual inertia stays separate from the simulation's speed and stamina.
+      var octopusStep=Math.max(0,Math.min(0.05,dt||0));
+      if(state.reducedMotion){octopusJetBlend=0;octopusMoveBlend=0;}
+      else{
+        octopusJetBlend+=(jet-octopusJetBlend)*(1-Math.exp(-octopusStep*7));
+        var moveTarget=state.moving?1:0,moveDecay=Math.exp(-octopusStep*6);
+        // Integrate the easing curve so gait phase stays continuous across input and frame rates.
+        octopusGaitPhase=(octopusGaitPhase+0.8*octopusStep+3.2*(moveTarget*octopusStep+(octopusMoveBlend-moveTarget)*(1-moveDecay)/6))%(Math.PI*2);
+        octopusMoveBlend=moveTarget+(octopusMoveBlend-moveTarget)*moveDecay;
+      }
+      jet=octopusJetBlend*octopusJetBlend*(3-2*octopusJetBlend);
+      octopusMantlePhase=(octopusMantlePhase+octopusStep*(2.2+8.8*jet)*motion)%(Math.PI*2);
+    }
     if(membraneSwimmer){
       // Accumulate phases: changing propulsion must not multiply all elapsed time by a new rate.
       var membraneStep=Math.max(0,Math.min(0.05,dt||0));
@@ -11965,9 +12266,11 @@ function createCLHuntAnimal(T, species) {
     }
     phase.value=time;pattern.value=state.substrate==='sand'?0.22:state.substrate==='grass'?0.72:0.9;
     display.value=cuttle&&state.display?0.9:0;
-    var pulse=Math.sin(squid?squidMantlePhase:membraneSwimmer?membraneMantlePhase:time*(jet?11:2.2))*motion;
+    var pulse=Math.sin(squid?squidMantlePhase:membraneSwimmer?membraneMantlePhase:!swimming?octopusMantlePhase:time*(jet?11:2.2))*motion;
     if(membraneSwimmer)mantle.scale.set(1+pulse*(0.018+membraneJetBlend*0.037),1+pulse*(0.024+membraneJetBlend*0.021),1+membraneJetBlend*0.04-pulse*0.008);
-    else mantle.scale.set(1+pulse*(squid?0.018+jet*0.037:jet?0.055:0.018),1+pulse*(squid?0.024+jet*0.021:jet?0.045:0.024),1+jet*0.04-pulse*0.008);
+    else mantle.scale.set(1+pulse*(squid||!swimming?0.018+jet*0.037:jet?0.055:0.018),1+pulse*(squid||!swimming?0.024+jet*0.021:jet?0.045:0.024),1+jet*0.04-pulse*0.008);
+    // Local mantle compression retains the existing breath pose and restores with the arm fold.
+    if(!swimming){var squeeze=Math.max(0,Math.min(1,state.squeezeBlend||0));mantle.scale.x*=1-0.28*squeeze;mantle.scale.y*=1+0.08*squeeze;mantle.scale.z*=1-0.10*squeeze;}
     // A small cross-section brace keeps the axial mantle/head attachment unchanged.
     if(squidStrikeEnvelope){mantle.scale.x*=1-0.018*squidStrikeBrace;mantle.scale.y*=1-0.012*squidStrikeBrace;}
     var pp=mantleGeo.attributes.position.array,rough=!swimming&&state.substrate!=='sand'?(state.camo||0)*0.035:0;
@@ -11975,8 +12278,12 @@ function createCLHuntAnimal(T, species) {
     var si=0;
     limbs.forEach(function(l){
       var isTent=l.kind==='tentacle',fil=l.kind==='filament',compress=l.compressCurrent||1;
+      var grabbing=octopusGrabAim&&l.index>=1&&l.index<=3,armJet=grabbing?jet*(1-octopusGrabBrace*0.15):jet;
+      var streamX=Math.cos(l.angle)*0.24*compress,streamZ=0.20+Math.sin(l.angle)*0.24*compress;
+      var streamYaw=-Math.PI/2+Math.cos(l.angle)*0.32-l.angle;
+      streamYaw=Math.atan2(Math.sin(streamYaw),Math.cos(streamYaw));
       for(var j=0;j<=rings;j++){
-        var t=j/rings,ang=l.angle,reach=l.length*t,walk=Math.sin(time*(state.moving?4:0.8)-t*4+l.phase)*motion;
+        var t=j/rings,ang=l.angle,reach=l.length*t,walk=Math.sin((swimming?time*(state.moving?4:0.8):octopusGaitPhase)-t*4+l.phase)*motion;
         var x,y,z;
         if(swimming){
           if(fil){x=l.angle*(0.32+reach*0.55);y=-0.10+Math.sin(t*5+time*0.6)*0.12*motion;z=0.45+reach*0.7;}
@@ -12019,13 +12326,68 @@ function createCLHuntAnimal(T, species) {
         }else{
           x=Math.cos(ang)*(0.24+reach)*compress;
           z=0.20+Math.sin(ang)*(0.24+reach)*compress;
-          y=-0.22-Math.sin(t*Math.PI/2)*0.24+Math.max(0,walk)*Math.sin(t*Math.PI)*0.13*(state.moving?1:0.3);
-          x+=Math.cos(ang+Math.PI/2)*Math.sin(t*5+time*1.4+l.phase)*0.12*t*t*motion;
-          z+=Math.sin(ang+Math.PI/2)*Math.sin(t*5+time*1.4+l.phase)*0.12*t*t*motion;
-          y+=Math.pow(t,7)*0.12;
-          if(strike>0&&Math.sin(ang)>0){z+=strike*t*0.55;y+=strike*t*0.15;}
+          if(armJet>0){
+            // Integrate directions at fixed segment lengths. Blending endpoint
+            // positions or subtracting forward reach collapses the front arm.
+            if(j>0){
+              var sweep=Math.min(1,(t-0.5/rings)/0.72);sweep=sweep*sweep*(3-2*sweep);
+              var heading=ang+streamYaw*armJet*(0.30+0.70*sweep),segment=l.length*compress/rings;
+              streamX+=Math.cos(heading)*segment;streamZ+=Math.sin(heading)*segment;
+            }
+            x=streamX;z=streamZ;
+          }
+          y=-0.22-Math.sin(t*Math.PI/2)*0.24+Math.max(0,walk)*Math.sin(t*Math.PI)*0.13*(0.3+octopusMoveBlend*0.7)*(1-armJet*0.85);
+          var armDrift=Math.sin(t*5+time*1.4+l.phase)*0.12*t*t*motion*(1-armJet*0.78);
+          x+=Math.cos(ang+Math.PI/2)*armDrift;
+          z+=Math.sin(ang+Math.PI/2)*armDrift;
+          y+=Math.pow(t,7)*(0.12-armJet*0.04)+armJet*t*(0.025+Math.sin(ang)*0.10);
+          if(!grabbing&&strike>0&&Math.sin(ang)>0){z+=strike*t*0.55;y+=strike*t*0.15;}
+          if(grabbing&&strike>0){
+            // Reach with the sucker-bearing section, then curl the remaining tip
+            // around the prey. The three arms approach separate contact points.
+            var grabSide=2-l.index,approachX=octopusGrabAim.x,approachY=octopusGrabAim.y+0.22,approachZ=octopusGrabAim.z-0.20;
+            var approachLength=Math.hypot(approachX,approachY,approachZ);
+            if(approachLength<0.0001){approachX=0;approachY=0;approachZ=1;approachLength=1;}
+            approachX/=approachLength;approachY/=approachLength;approachZ/=approachLength;
+            var grabHorizontal=Math.hypot(approachX,approachZ),acrossX=grabHorizontal>0.0001?approachZ/grabHorizontal:1,acrossZ=grabHorizontal>0.0001?-approachX/grabHorizontal:0;
+            var grabUpX=approachY*acrossZ,grabUpY=approachZ*acrossX-approachX*acrossZ,grabUpZ=-approachY*acrossX;
+            var lift=octopusGrabRadius*(grabSide?0.32:0.60),offsetX=acrossX*grabSide*octopusGrabRadius+grabUpX*lift,offsetY=grabUpY*lift,offsetZ=acrossZ*grabSide*octopusGrabRadius+grabUpZ*lift;
+            var contactX=octopusGrabAim.x+offsetX,contactY=octopusGrabAim.y+offsetY,contactZ=octopusGrabAim.z+offsetZ;
+            var anchorX=Math.cos(ang)*0.24*compress,anchorY=-0.22,anchorZ=0.20+Math.sin(ang)*0.24*compress;
+            var grabU=Math.min(1,t/0.70),grabV=1-grabU,grabUU=grabU*grabU,grabVV=grabV*grabV;
+            var control1X=anchorX+Math.cos(ang)*0.34,control1Y=anchorY-0.015,control1Z=anchorZ+Math.sin(ang)*0.34;
+            // An outward shoulder gives rearward reaches room to turn beneath the head.
+            var shoulderRoom=Math.max(0,1-approachLength/0.8);
+            control1X+=(grabSide||1)*shoulderRoom*0.30;
+            if(approachZ<0){control1X+=(grabSide||1)*(-approachZ)*0.32;control1Z+=0.10*(-approachZ);}
+            var grabX=anchorX*grabVV*grabV+3*control1X*grabVV*grabU+3*(contactX-approachX*0.32)*grabV*grabUU+contactX*grabUU*grabU;
+            var grabY=anchorY*grabVV*grabV+3*control1Y*grabVV*grabU+3*(contactY-approachY*0.32)*grabV*grabUU+contactY*grabUU*grabU;
+            var grabZ=anchorZ*grabVV*grabV+3*control1Z*grabVV*grabU+3*(contactZ-approachZ*0.32)*grabV*grabUU+contactZ*grabUU*grabU;
+            if(t>0.70){var wrapAngle=(t-0.70)/0.30*2.30,wrapCos=Math.cos(wrapAngle),wrapSin=Math.sin(wrapAngle)*octopusGrabRadius*0.88;grabX=octopusGrabAim.x+offsetX*wrapCos+approachX*wrapSin;grabY=octopusGrabAim.y+offsetY*wrapCos+approachY*wrapSin;grabZ=octopusGrabAim.z+offsetZ*wrapCos+approachZ*wrapSin;}
+            if(j===0)grabCurvePoint.set(x,y,z);
+            else{
+              // Interpolate directions and lengths, not opposite endpoints.
+              // This keeps a recovering/boosting arm from pinching to zero.
+              grabFrom.set(x,y,z).sub(grabPreviousBase);grabTo.set(grabX,grabY,grabZ).sub(grabPreviousTarget);
+              var fromLength=grabFrom.length(),toLength=grabTo.length();
+              if(fromLength>0.000001&&toLength>0.000001){
+                grabFrom.multiplyScalar(1/fromLength);grabTo.multiplyScalar(1/toLength);
+                if(j===1){grabRotation.setFromUnitVectors(grabFrom,grabTo).slerp(grabIdentity,1-strike);grabDirection.copy(grabFrom).applyQuaternion(grabRotation);}
+                else{
+                  // Blend successive bends so adjacent sections take the same
+                  // route around a turn, including during boost recovery.
+                  grabRotation.setFromUnitVectors(grabPreviousFrom,grabFrom);grabTargetBend.setFromUnitVectors(grabPreviousTo,grabTo);
+                  grabRotation.slerp(grabTargetBend,strike);grabDirection.applyQuaternion(grabRotation).normalize();
+                }
+                grabPreviousFrom.copy(grabFrom);grabPreviousTo.copy(grabTo);
+                grabCurvePoint.addScaledVector(grabDirection,fromLength+(toLength-fromLength)*strike);
+              }else grabCurvePoint.set(grabX,grabY,grabZ);
+            }
+            grabPreviousBase.set(x,y,z);grabPreviousTarget.set(grabX,grabY,grabZ);
+            x=grabCurvePoint.x;y=grabCurvePoint.y;z=grabCurvePoint.z;
+          }
         }
-        if(jet){x*=1-t*0.35*jet;z+=(swimming?0.16:-1.3)*t*jet;y+=(squid?0.06:0.16)*t*jet;}
+        if(jet&&swimming){x*=1-t*0.35*jet;z+=0.16*t*jet;y+=(squid?0.06:0.16)*t*jet;}
         if(directedAim&&isTent){
           // Ring 18 (t=.90), the broad feeding club, contacts the prey. Its short tip extends beyond it.
           var aimX=directedAim.x+l.angle*0.035,aimY=directedAim.y,aimZ=directedAim.z;
@@ -12051,6 +12413,13 @@ function createCLHuntAnimal(T, species) {
           if(j2===0)strikeTubeSide.set(-1,0,0);strikeTubeSide.addScaledVector(tangent,-strikeTubeSide.dot(tangent));
           if(strikeTubeSide.lengthSq()<0.000001){strikeTubeSide.set(0,1,0);strikeTubeSide.addScaledVector(tangent,-strikeTubeSide.dot(tangent));if(strikeTubeSide.lengthSq()<0.000001)strikeTubeSide.set(0,0,1);}
           binormal.copy(strikeTubeSide.normalize());
+        }else if(!swimming){
+          // Transport the oral frame along each bent arm instead of resetting
+          // it against world-up at every ring (which can flip a sucker row).
+          if(j2===0)octopusTubeSide.crossVectors(tangent,up);
+          octopusTubeSide.addScaledVector(tangent,-octopusTubeSide.dot(tangent));
+          if(octopusTubeSide.lengthSq()<0.000001){octopusTubeSide.set(Math.sin(l.angle),0,-Math.cos(l.angle));octopusTubeSide.addScaledVector(tangent,-octopusTubeSide.dot(tangent));}
+          binormal.copy(octopusTubeSide.normalize());
         }else{binormal.crossVectors(tangent,up).normalize();if(binormal.lengthSq()<0.1)binormal.set(1,0,0);}
         normal.crossVectors(binormal,tangent).normalize();
         var radius=l.radius*scale*Math.pow(1-t2,squid&&!isTent?0.95:0.8)+(squid?0.006:0.007)*scale;
@@ -12090,14 +12459,56 @@ function createCLHuntAnimal(T, species) {
             var cupFacetScale=Math.cos(cupRingStep/2)/Math.cos(cupRingAngle-cupRingStep/2);
             suckerDummy.position.multiplyScalar(cupFacetScale).add(center).addScaledVector(suckerSurface,cupRadius*0.06);
             suckerDummy.quaternion.setFromUnitVectors(up,suckerSurface);suckerDummy.scale.setScalar(cupRadius);
+          }else if(!swimming){
+            // Mount inside the current strip's oral triangle, using its actual skin
+            // normal even when a jet folds the centerline back on itself. Both rings
+            // have already been written; no following-frame vertices are sampled.
+            var octoSide=row<0?sides/2:sides/2-1,octoB=(j2*(sides+1)+octoSide)*3;
+            suckerOral.fromArray(pos,octoB);suckerAcross.fromArray(pos,octoB-(sides+1)*3+3);suckerSurface.fromArray(pos,octoB+3);
+            suckerDummy.position.copy(suckerOral).multiplyScalar(0.5).addScaledVector(suckerAcross,0.25).addScaledVector(suckerSurface,0.25);
+            suckerAcross.sub(suckerOral);suckerSurface.sub(suckerOral);
+            var octoEdgeA=suckerAcross.length(),octoEdgeB=suckerSurface.length(),octoEdgeC=suckerAcross.distanceTo(suckerSurface);
+            suckerOral.crossVectors(suckerAcross,suckerSurface);
+            var octoArea=suckerOral.length(),octoClearance=octoArea*Math.min(0.25/Math.max(0.000001,octoEdgeA),0.25/Math.max(0.000001,octoEdgeB),0.5/Math.max(0.000001,octoEdgeC));
+            var octoSpacing=Math.min(center.distanceTo(l.points[j2-1]),center.distanceTo(l.points[j2+1]));
+            // The basal disc fits inside its mounting triangle; the rolled rim can
+            // overhang above the skin. Spacing also contracts with a squeezed arm.
+            var octoCupRadius=Math.min(radius*0.34,octoSpacing*0.42,octoClearance*1.8);
+            suckerSurface.copy(suckerOral).normalize();
+            suckerDummy.position.addScaledVector(suckerSurface,octoCupRadius*0.08);
+            suckerDummy.quaternion.setFromUnitVectors(up,suckerSurface);suckerDummy.scale.setScalar(octoCupRadius);
           }else{suckerDummy.position.copy(center).addScaledVector(normal,-radius*0.88).addScaledVector(binormal,row*radius*0.45);suckerDummy.quaternion.setFromUnitVectors(up,normal);var sz=(l.kind==='arm'?1-t2*0.65:0.70)*scale;suckerDummy.scale.setScalar(sz);}
           suckerDummy.updateMatrix();suckers.setMatrixAt(si++,suckerDummy.matrix);
         }
       }
+      if(!swimming&&l.kind==='arm'){
+        // Continue the transported terminal frame into a small hemisphere. The
+        // centerline, final tube ring and animation contact points stay fixed.
+        var tipRing=(rings+1)*(sides+1),tipRadius=radius,tipDiagonal=Math.SQRT1_2;
+        for(var tipSide=0;tipSide<=sides;tipSide++){
+          var base=(rings*(sides+1)+tipSide)*3,tip=(tipRing+tipSide)*3;
+          pos[tip]=center.x+(pos[base]-center.x)*tipDiagonal+tangent.x*tipRadius*tipDiagonal;pos[tip+1]=center.y+(pos[base+1]-center.y)*tipDiagonal+tangent.y*tipRadius*tipDiagonal;pos[tip+2]=center.z+(pos[base+2]-center.z)*tipDiagonal+tangent.z*tipRadius*tipDiagonal;
+          norm[tip]=(norm[base]+tangent.x)*tipDiagonal;norm[tip+1]=(norm[base+1]+tangent.y)*tipDiagonal;norm[tip+2]=(norm[base+2]+tangent.z)*tipDiagonal;
+        }
+        var tipPole=(tipRing+sides+1)*3;pos[tipPole]=center.x+tangent.x*tipRadius;pos[tipPole+1]=center.y+tangent.y*tipRadius;pos[tipPole+2]=center.z+tangent.z*tipRadius;norm[tipPole]=tangent.x;norm[tipPole+1]=tangent.y;norm[tipPole+2]=tangent.z;
+      }
       l.mesh.geometry.attributes.position.needsUpdate=true;l.mesh.geometry.attributes.normal.needsUpdate=true;
     });
     if(suckers){suckers.count=si;suckers.instanceMatrix.needsUpdate=true;}
-    if(web){var arr=web.geometry.attributes.position.array;for(var wa=0;wa<8;wa++)for(var ws=0;ws<=8;ws++){var at=(wa*9+ws)*3,step=Math.round(ws/8*(vampire?13:5)),pt=arms[wa].points[step];arr[at]=pt.x;arr[at+1]=pt.y+0.012;arr[at+2]=pt.z;}web.geometry.attributes.position.needsUpdate=true;web.geometry.computeVertexNormals();}
+    if(web){
+      var arr=web.geometry.attributes.position.array;
+      if(octopusWebSamples){
+        // Interpolate the already-posed arms. No extra oscillation, time source or
+        // random draw can separate this membrane from a paused or squeezed arm.
+        for(var wi=0;wi<octopusWebSamples.length;wi++){
+          var sample=octopusWebSamples[wi],pa=arms[sample.arm].points[sample.ring],qa=arms[sample.arm].points[sample.ring+1],pb=arms[sample.next].points[sample.ring],qb=arms[sample.next].points[sample.ring+1];
+          var ax=pa.x+(qa.x-pa.x)*sample.blend,ay=pa.y+(qa.y-pa.y)*sample.blend,az=pa.z+(qa.z-pa.z)*sample.blend;
+          var bx=pb.x+(qb.x-pb.x)*sample.blend,by=pb.y+(qb.y-pb.y)*sample.blend,bz=pb.z+(qb.z-pb.z)*sample.blend,at=wi*3;
+          arr[at]=ax+(bx-ax)*sample.across;arr[at+1]=ay+(by-ay)*sample.across+0.012*scale+sample.arch;arr[at+2]=az+(bz-az)*sample.across;
+        }
+      }else{for(var wa=0;wa<8;wa++)for(var ws=0;ws<=8;ws++){var at=(wa*9+ws)*3,step=Math.round(ws/8*(vampire?13:5)),pt=arms[wa].points[step];arr[at]=pt.x;arr[at+1]=pt.y+0.012;arr[at+2]=pt.z;}}
+      web.geometry.attributes.position.needsUpdate=true;web.geometry.computeVertexNormals();
+    }
     fins.forEach(function(f){var p=f.mesh.geometry.attributes.position.array;
       if(squid){
         for(var k=0;k<=f.seg;k++){
@@ -12159,6 +12570,47 @@ function createCLHuntAnimal(T, species) {
   root.traverse(function(o){if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
   return {root:root,mantle:mantle,mantleGeo:mantleGeo,mantleMat:skin,basePositions:basePositions,arms:arms,scale:scale,update:update,tint:function(){siphonMat.color.copy(skin.color).lerp(siphonTint,0.28);armMat.color.copy(skin.color);fins.forEach(function(f){f.mesh.material.color.copy(skin.color).multiplyScalar(0.9);});if(web)web.material.color.copy(skin.color);},warningRings:warningRings,dumboFins:dumboFins,vampirePhotophores:vampirePhotophores,bobtailGlow:bobtailGlow,cuttleFins:cuttleFins,cuttleTentacles:tentacles,passingCloudOverlay:passingCloudOverlay,mimicSpikes:mimicSpikes,nautilusShell:nautilusShell};
 }
+
+// Soft ink billows share one draw and one material. Fixed local lobes never consume
+// the hunt RNG; the defensive radius and lifetime remain owned by the simulation.
+function createCLHuntInkCloud(T){
+  var positions=[],corners=[],radii=[],seeds=[],indices=[],quad=[[-1,-1],[1,-1],[1,1],[-1,1]];
+  for(var lobe=0;lobe<13;lobe++){
+    var y=lobe?1-2*(lobe-0.5)/12:0,ring=Math.sqrt(Math.max(0,1-y*y)),angle=lobe*2.3999632297;
+    var x=lobe?Math.cos(angle)*ring*1.22:0,z=lobe?Math.sin(angle)*ring*1.22:0;
+    y*=1.08;var radius=lobe?1.12+(lobe%3)*0.025:1.65;
+    for(var corner=0;corner<4;corner++){positions.push(x,y,z);corners.push(quad[corner][0],quad[corner][1]);radii.push(radius);seeds.push(lobe*1.713);}
+    var base=lobe*4;indices.push(base,base+1,base+2,base,base+2,base+3);
+  }
+  var geometry=new T.BufferGeometry();
+  geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));
+  geometry.setAttribute('clInkCorner',new T.Float32BufferAttribute(corners,2));
+  geometry.setAttribute('clInkRadius',new T.Float32BufferAttribute(radii,1));
+  geometry.setAttribute('clInkSeed',new T.Float32BufferAttribute(seeds,1));geometry.setIndex(indices);
+  // Vertices hold lobe centres; the shader expands their camera-facing corners.
+  geometry.boundingSphere=new T.Sphere(new T.Vector3(),2.6);
+  geometry.boundingBox=new T.Box3(new T.Vector3(-2.6,-2.6,-2.6),new T.Vector3(2.6,2.6,2.6));
+  var flow={value:0},material=new T.MeshBasicMaterial({color:0x080812,transparent:true,opacity:0.72,depthWrite:false});
+  material.name='cl-ink-billows';material.userData.clInkFlow=flow;
+  material.customProgramCacheKey=function(){return 'cl-ink-billows-v49';};
+  // Feather into the same shelf height as terrainHeight(), before the depth test
+  // clips a billboard against the seabed. World-space height also covers the drop-off.
+  material.onBeforeCompile=function(shader){
+    shader.uniforms.clInkFlow=flow;
+    shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nattribute vec2 clInkCorner; attribute float clInkRadius; attribute float clInkSeed; uniform float clInkFlow; varying vec2 clInkUv; varying float clInkPhase; varying float clInkNear; varying vec3 clInkWorld;')
+      .replace('#include <begin_vertex>','#include <begin_vertex>\nclInkUv=clInkCorner; clInkPhase=clInkSeed; transformed+=vec3(sin(clInkFlow*0.7+clInkSeed)-sin(clInkSeed),sin(clInkFlow*0.5+clInkSeed*1.3)-sin(clInkSeed*1.3),cos(clInkFlow*0.6+clInkSeed)-cos(clInkSeed))*0.045;')
+      .replace('#include <project_vertex>','vec4 mvPosition=modelViewMatrix*vec4(transformed,1.0); float clInkSize=clInkRadius*length(modelMatrix[0].xyz); clInkNear=smoothstep(0.02,0.55,-mvPosition.z/max(clInkSize,0.01)); clInkWorld=(modelMatrix*vec4(transformed,1.0)).xyz+vec3(viewMatrix[0][0],viewMatrix[1][0],viewMatrix[2][0])*clInkCorner.x*clInkSize+vec3(viewMatrix[0][1],viewMatrix[1][1],viewMatrix[2][1])*clInkCorner.y*clInkSize; mvPosition.xy+=clInkCorner*clInkSize; gl_Position=projectionMatrix*mvPosition;');
+    shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nuniform float clInkFlow; varying vec2 clInkUv; varying float clInkPhase; varying float clInkNear; varying vec3 clInkWorld;')
+      .replace('#include <color_fragment>','#include <color_fragment>\nvec2 clInkP=clInkUv; float clInkR=dot(clInkP,clInkP); float clInkEddy=sin(clInkP.x*4.3+clInkPhase+clInkFlow*0.65)*sin(clInkP.y*4.7-clInkPhase*0.8-clInkFlow*0.45); float clInkFold=sin(clInkP.x*8.2+clInkP.y*3.1+clInkPhase-clInkFlow*0.35)*sin(clInkP.y*7.3-clInkPhase+clInkFlow*0.5); float clInkDensity=(1.0-smoothstep(0.10,1.0,clInkR))*(0.76+0.18*clInkEddy+0.06*clInkFold); float clInkShelf=smoothstep(24.0,47.0,clInkWorld.x); float clInkFloor=-55.0*clInkShelf+(1.0-clInkShelf)*sin(clInkWorld.x*0.18)*cos(clInkWorld.z*0.16)*0.10; float clInkGround=smoothstep(0.04,0.55,clInkWorld.y-clInkFloor); diffuseColor.a*=clInkDensity*0.62*clInkNear*clInkGround; if(diffuseColor.a<0.001)discard;');
+  };
+  var mesh=new T.Mesh(geometry,material);mesh.name='cl-ink-cloud';return mesh;
+}
+function advanceCLHuntInkCloud(mesh,remaining,dt,reducedMotion){
+  mesh.material.opacity=Math.max(0,Math.min(1,remaining))*0.72;
+  mesh.scale.setScalar(1+(1-Math.max(0,Math.min(1,remaining)))*0.7);
+  if(!reducedMotion&&dt>0)mesh.material.userData.clInkFlow.value+=dt;
+}
+
 
 // Compact, individually owned prey rig. Forward is +Z, matching school movement.
 // Eyes and static fins are merged into the body; only the forked tail adds a draw call.
@@ -12441,15 +12893,58 @@ function createCLHuntFish(T,index){
         ].join('\n'));
         shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ntransformed+=clPlantOffset;');
       }
-      function createCLHuntPlantFlex(THREE,mesh,height) {
-        var motion={value:new THREE.Vector4(0,0,height,0)};
-        mesh.material.onBeforeCompile=function(shader){shader.uniforms.clPlantMotion=motion;shadeCLHuntPlantFlex(shader);};
-        mesh.material.customProgramCacheKey=function(){return 'cl-plant-flex-v28-water-pulse';};
+      // Static ribbon tissue follows authored UVs while the existing shader bends its normals.
+      // A scalar mask excludes closed kelp floats. Backlight is an artistic thin-leaf approximation.
+      function shadeCLHuntPlantSurface(shader) {
+        shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nattribute float clPlantRibbon; varying vec3 clPlantTissue;').replace('#include <begin_vertex>','#include <begin_vertex>\nclPlantTissue=vec3(uv,clPlantRibbon);');
+        var fields=[
+          'varying vec3 clPlantTissue;',
+          'float clPlantTissueFilter(float footprint){return 1.0-smoothstep(0.35,1.20,max(0.0,footprint));}'
+        ].join('\n');
+        var sample=[
+          'float clPlantRibbonWeight=clamp(clPlantTissue.z,0.0,1.0);',
+          'float clPlantAcross=abs(clPlantTissue.x-0.5);',
+          'float clPlantVeinAA=clPlantTissueFilter(fwidth(clPlantTissue.x)/0.057);',
+          'float clPlantVein=(1.0-smoothstep(0.018,0.075,clPlantAcross))*clPlantVeinAA;',
+          'float clPlantEdge=smoothstep(0.29,0.49,clPlantAcross);',
+          'float clPlantGrainPhase=clPlantTissue.x*70.0+sin(clPlantTissue.y*11.0)*0.42;',
+          'float clPlantGrainAA=clPlantTissueFilter(fwidth(clPlantGrainPhase));',
+          'float clPlantGrain=sin(clPlantGrainPhase)*clPlantGrainAA;',
+          'float clPlantTissueTone=1.0-0.070*clPlantVein+0.035*clPlantEdge+0.018*clPlantGrain;',
+          'vec3 clPlantTissueTint=vec3(clPlantTissueTone)*(vec3(1.0)+clPlantEdge*vec3(0.020,0.015,-0.025));',
+          'diffuseColor.rgb*=mix(vec3(1.0),clPlantTissueTint,clPlantRibbonWeight);'
+        ].join('\n');
+        var backlight=[
+          '#if NUM_DIR_LIGHTS > 0',
+          // Three supplies the actual sun colour multiplied by its current intensity in view space.
+          // The double-sided normal faces the viewer, so an opposing light reveals the thin ribbon.
+          'float clPlantBacklight=max(0.0,-dot(geometry.normal,directionalLights[0].direction));',
+          'reflectedLight.directDiffuse+=diffuseColor.rgb*directionalLights[0].color*clPlantRibbonWeight*clPlantBacklight*(0.18+0.08*clPlantEdge);',
+          '#endif'
+        ].join('\n');
+        shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\n'+fields)
+          .replace('#include <color_fragment>','#include <color_fragment>\n'+sample)
+          .replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor=mix(roughnessFactor,clamp(roughnessFactor-0.022+0.012*clPlantVein+0.006*clPlantGrain,0.82,0.98),clPlantRibbonWeight);')
+          .replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n'+backlight);
+      }
+      function createCLHuntPlantFlex(THREE,mesh,height,surfaceSupported) {
+        var motion={value:new THREE.Vector4(0,0,height,0)},finish=surfaceSupported===true;
+        if(finish){
+          // One immutable scalar buffer distinguishes thin tissue from the independently closed floats.
+          var ribbon=new Float32Array(mesh.geometry.attributes.position.count);ribbon.fill(1);
+          var floats=mesh.geometry.userData.clKelpBladders;
+          if(floats)floats.parts.forEach(function(part){ribbon.fill(0,part.vertexStart,part.vertexStart+part.vertexCount);});
+          mesh.geometry.setAttribute('clPlantRibbon',new THREE.Float32BufferAttribute(ribbon,1));
+          mesh.material.extensions=Object.assign({},mesh.material.extensions,{derivatives:true});
+        }
+        mesh.material.onBeforeCompile=function(shader){shader.uniforms.clPlantMotion=motion;shadeCLHuntPlantFlex(shader);if(finish)shadeCLHuntPlantSurface(shader);};
+        mesh.material.customProgramCacheKey=function(){return finish?'cl-plant-flex-v57-tissue':'cl-plant-flex-v28-water-pulse';};
         // Grass already disables frustum culling for its distributed instances. Kelp needs
         // a conservative static box/sphere enclosing every possible shader bend.
         if(mesh.frustumCulled){var box=mesh.geometry.boundingBox;box.min.x-=height*0.12;box.max.x+=height*0.12;box.min.z-=height*0.035;box.max.z+=height*0.035;box.getBoundingSphere(mesh.geometry.boundingSphere);}
         return motion;
       }
+
       function updateCLHuntPlantFlex(motion,now,phase,rate,reducedMotion) {
         if(reducedMotion){motion.value.w=0;return;}
         var turn=Math.PI*2,clock=now*rate;
@@ -12620,6 +13115,79 @@ function createCLHuntFish(T,index){
         return nearest;
       }
 
+      // Interaction prompts and actions share the same reachable target.
+      function clHuntNearestReachablePickup(items,position,radius,maxY,blocks,eligible) {
+        var nearest=null,best=radius;
+        for(var i=0;i<items.length;i++){
+          var item=items[i];
+          if(eligible&&!eligible(item))continue;
+          if(!(Math.abs(position.y-item.position.y)<maxY))continue;
+          var dx=position.x-item.position.x,dz=position.z-item.position.z,distance=Math.sqrt(dx*dx+dz*dz);
+          if(distance<best&&!blocks(position,item.position)){best=distance;nearest=item;}
+        }
+        return nearest;
+      }
+
+      // Advice describes implemented game rules; natural-history evidence is in the pass71 report.
+      function clHuntSpeciesStrategy(id) {
+        var strategies={
+          commonOcto:'Crawl close to the floor. Follow REFUGE on the map if shown, or explore natural reef gaps. Your arms fold automatically in a fitting crevice. Rock blocks a predator’s view; the open mouths remain exposed. Peek out to strike, then retreat.',
+          blueRinged:'Your small body fits passages larger octopuses cannot use. Crawl near the floor, settle for camouflage and keep rock between you and predators. Warning rings are a defensive display, not camouflage.',
+          mimicOcto:'Use rock cover and a fitting passage while crawling near the floor. Your Mimic control adds a defensive disguise when retreating. Sand burrow digging is not simulated yet.',
+          giantPacific:'Choose a wide passage for your larger body. At a marked REFUGE, use the wider crevice; the small one cannot fit this body. Crawl near the floor to fold automatically. Rock cover breaks sight; return to HOME for den recovery.',
+          caribReef:'Move between meals using rock cover. Look for REFUGE if shown, or natural crevices, and crawl near the floor to enter a fitting gap. Settle to blend, then peek out through an open mouth before striking.',
+          coconutOcto:'Use Interact to carry a nearby shelter and place it again. Carrying affects movement; placing creates a shelter spot in this game. You can also crawl through fitting reef gaps. Shell assembly and a distinct transport gait are not simulated yet.',
+          cuttlefish:'Approach quietly, settle to blend and align a selected target before a tentacle strike. Display distracts nearby prey under simplified game rules. Your rigid cuttlebone excludes the octopus squeeze mechanic; use wider routes.',
+          bobtailSquid:'Stay near cover and approach prey carefully. Night counter-illumination improves camouflage in this game, but does not make you invisible. This squid cannot use the octopus squeeze mechanic; sand burial is not simulated yet.',
+          humboldtSquid:'Pursue visible prey in the water column, align your strike and save stamina for short jet bursts. Group coordination is not simulated. Reef squeezing is for the benthic octopuses.',
+          vampireSquid:'Stay still near marine snow and Gather to feed with your filaments. This species has no ink: use cover or Flash when threatened. Reef squeezing is not part of this species’ game behavior.',
+          dumboOcto:'Explore deep water with fin propulsion and align nearby prey before striking. This species has no ink, so use cover to break pursuit. Reef squeezing is not part of this species’ game behavior.',
+          nautilus:'Take wide routes around rock: your shell cannot fold through octopus crevices. Its damage reduction is a simplified game rule. This dive uses prey interactions; scavenging and shell withdrawal are future realism work.'
+        };
+        return strategies[id]||'Use cover, watch your target and choose a route that fits your body.';
+      }
+      function clHuntRefugeAdvice(refuge,speciesId,bodyScale,position) {
+        if(!refuge||['commonOcto','blueRinged','mimicOcto','giantPacific','caribReef','coconutOcto'].indexOf(speciesId)<0)return '';
+        // Same illustrative clearance as findCLHuntCrevice, including wide ordinary routes.
+        var minimum=bodyScale*0.22*0.55*2+bodyScale*0.008;
+        var usable=refuge.gaps.filter(function(gap){return gap.width>=minimum;}).sort(function(a,b){return a.width-b.width;})[0];
+        if(!usable)return '';
+        var dx=usable.x-position.x,dz=usable.z-position.z,distance=Math.sqrt(dx*dx+dz*dz);
+        return usable.label+' '+Math.round(distance)+' metres away at REFUGE on the map. Crawl near the floor to enter. Rock blocks sight; the mouths remain exposed. ';
+      }
+
+      // Controls describe the same species capabilities and input mode as the live dive.
+      function clHuntControlGuide(capabilities,species,touch) {
+        function row(key,button,action){return {input:touch?button:key,action:action};}
+        var move={title:'Move',rows:[
+          row('W / S or ↑ / ↓','Forward / Back','Hold to move forward or backward.'),
+          row('A / D or ← / →','Left / Right','Hold to turn toward your next destination.'),
+          row('Space + forward','Jet + Forward','Hold together for a burst of speed. Watch stamina.'),
+          row('Q / Z','Rise / Dive','Hold to change depth. Reach the drop-off to explore deeper water.')
+        ]};
+        var food={title:'Feed & interact',rows:[]};
+        if(capabilities.diet==='detritus')food.rows.push(row('Hold E','Gather / hold','Gather nearby marine snow while staying still.'));
+        else{
+          food.rows.push(row('T','Target','Select prey, or select visible prey directly in the scene.'));
+          food.rows.push(row('E','Strike / hold','Tap to strike selected prey in reach. Hold to open a nearby clam.'));
+        }
+        food.rows.push(row('R','Forage','Tap once for one nearby '+(capabilities.diet==='detritus'?'marine-snow meal':'clam')+'. Stay still; tap again to stop. Moving, pausing, damage or leaving reach cancels it.'));
+        food.rows.push(row('G','Interact','Pick up a nearby pearl or carriable shelter. Press again to drop a carried shelter.'));
+        var defense={title:'Defense',rows:[]};
+        if(capabilities.ink)defense.rows.push(row('I','Ink','Release ink to break pursuit. Charges and cooldown appear in status.'));
+        else defense.rows.push({input:'No ink',action:'This species has no ink. Use cover to break a predator’s view.'});
+        if(species.specialAbility==='mimicry')defense.rows.push(row('Hold M','Mimic','Hold for a defensive disguise.'));
+        if(species.specialAbility==='passingCloud')defense.rows.push(row('Hold H','Display','Hold a passing-cloud display to distract nearby fish.'));
+        if(species.specialAbility==='burglarAlarm')defense.rows.push(row('Hold B','Flash','Hold for a defensive flash display.'));
+        var views={title:'Camera & pause',rows:[
+          row('V','Tools → View','Cycle Follow, Side, Tactical and Hunt views.'),
+          row('F','Tools → Inspect','Pause to inspect. Drag or use orbit controls; '+(touch?'Closer / Farther zoom.':'arrow keys orbit, scroll or + / − zoom.')+' Return to dive closes inspection.'),
+          row('Escape','Pause / Resume','Pause or resume the dive. In inspection or help, Escape returns.'),
+          row('?','Tools → Help / settings','Open this guide and accessibility settings.')
+        ]};
+        return [move,food,defense,views];
+      }
+
       function initHuntSim3D(canvasEl) {
         var gameNow=0, disposed=false, pendingTasks=[], lastHudAt=-1000;
         function scheduleTask(fn,ms){ pendingTasks.push({fn:fn,at:gameNow+ms}); }
@@ -12763,25 +13331,54 @@ function createCLHuntFish(T,index){
         var fillLight=new THREE.HemisphereLight(0xffffff,0xffffff,0.42);fillLight.color.setRGB(0.36,0.65,0.81);fillLight.groundColor.setRGB(0.19,0.16,0.115);scene.add(fillLight);
 
         // ─── Water column backdrop ───
-        // A flat clear colour reads as a wall. This inverted sphere paints a
-        // vertical gradient (bright toward the surface, dark toward the deep)
-        // and is re-tinted every frame from scene.background, so the existing
-        // day/night and depth-zone colour logic still drives the look.
-        var backdropMat = new THREE.ShaderMaterial({
-          side: THREE.BackSide, depthWrite: false, fog: false,
-          uniforms: { topColor: { value: new THREE.Color(0x1d6f96) }, bottomColor: { value: new THREE.Color(0x03101f) } },
-          vertexShader: 'varying float vY; void main(){ vY = normalize(position).y; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-          fragmentShader: 'uniform vec3 topColor; uniform vec3 bottomColor; varying float vY; void main(){ float t = smoothstep(0.0, 0.78, vY); gl_FragColor = vec4(mix(bottomColor, topColor, t), 1.0);}'
-        });
-        var backdrop = new THREE.Mesh(new THREE.SphereGeometry(150, 24, 16), backdropMat);
-        backdrop.renderOrder = -10;
-        backdrop.frustumCulled = false;
+        // Keep the horizon in fog's output colour space. Shade the upper water
+        // per fragment so the low-poly dome stays smooth, with a broad sunward glow.
+        function createCLHuntWaterBackdrop(THREE,fogColor){
+          var material=new THREE.ShaderMaterial({
+            side:THREE.BackSide,depthWrite:false,fog:false,
+            uniforms:{topColor:{value:new THREE.Color(0x1d6f96)},bottomColor:{value:fogColor.clone()}},
+            vertexShader:'varying vec3 clWaterDirection; void main(){ clWaterDirection=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+            fragmentShader:'uniform vec3 topColor; uniform vec3 bottomColor; varying vec3 clWaterDirection; void main(){ vec3 direction=normalize(clWaterDirection); float up=smoothstep(0.0,0.78,direction.y); float sunward=pow(max(0.0,dot(direction,normalize(vec3(12.0,34.0,8.0)))),6.0); vec3 column=mix(bottomColor,topColor,up); vec3 scatter=max(topColor-bottomColor,vec3(0.0))*0.48*sunward*up; gl_FragColor=vec4(min(column+scatter,vec3(1.0)),1.0); }'
+          });
+          var mesh=new THREE.Mesh(new THREE.SphereGeometry(150,24,16),material);
+          mesh.name='cl-water-backdrop';mesh.renderOrder=-10;mesh.frustumCulled=false;
+          // Rendering may move the view during pause or inspection. Follow the
+          // actual camera here without advancing the world or its light palette.
+          mesh.onBeforeRender=function(_renderer,_scene,viewCamera){
+            this.position.setFromMatrixPosition(viewCamera.matrixWorld);
+            this.updateMatrixWorld();
+          };
+          return mesh;
+        }
+        var backdrop=createCLHuntWaterBackdrop(THREE,scene.fog.color),backdropMat=backdrop.material;
         scene.add(backdrop);
 
         // Surface sheet: a faint bright plane at the top of the water column so
         // "up" exists. Fog fades it with depth, exactly as it should.
         var surfaceMat = new THREE.MeshBasicMaterial({ color: 0x9fdcff, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false });
-        var surfaceSheet = new THREE.Mesh(new THREE.PlaneGeometry(400, 400, 1, 1), surfaceMat);
+        function shadeCLHuntWaterSurface(shader,flow,derivatives){
+          shader.uniforms.clSurfaceFlow=flow;
+          shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 clSurfaceWorld;').replace('#include <begin_vertex>','#include <begin_vertex>\nclSurfaceWorld=(modelMatrix*vec4(position,1.0)).xyz;');
+          shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 clSurfaceWorld; uniform float clSurfaceFlow;\nfloat clSurfaceFilter(float footprint){return 1.0-smoothstep(0.55,1.75,footprint);}');
+          var waves=[
+            'vec2 clSea=clSurfaceWorld.xz;',
+            'float clSeaA=dot(clSea,vec2(0.51,0.19))+sin(dot(clSea,vec2(0.11,-0.14)))*0.70-clSurfaceFlow*0.23;',
+            'float clSeaB=dot(clSea,vec2(-0.23,0.67))+sin(dot(clSea,vec2(0.15,0.08)))*0.55+clSurfaceFlow*0.17;',
+            derivatives?'float clSeaAA=clSurfaceFilter(fwidth(clSeaA)); float clSeaBA=clSurfaceFilter(fwidth(clSeaB));':'float clSeaAA=0.0; float clSeaBA=0.0;',
+            'float clSeaSwell=sin(clSeaA)*clSeaAA*0.5+sin(clSeaB)*clSeaBA*0.5;',
+            'float clSeaCrest=smoothstep(0.35,0.94,sin(clSeaA))*clSeaAA*0.55+smoothstep(0.45,0.97,sin(clSeaB))*clSeaBA*0.45;',
+            'vec3 clSeaView=cameraPosition-clSurfaceWorld;',
+            'float clSeaUp=abs(clSeaView.y)/max(length(clSeaView),0.001); float clSeaAngle=smoothstep(0.035,0.18,clSeaUp);',
+            'diffuseColor.rgb*=1.0+clSeaAngle*(clSeaSwell*0.12+clSeaCrest*0.20);',
+            'diffuseColor.a*=1.0+clSeaAngle*(clSeaSwell*0.28+clSeaCrest*0.42-(clSeaAA*0.55+clSeaBA*0.45)*0.28);'
+          ].join('\n');
+          shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n'+waves);
+        }
+        var surfaceFlow={value:0},surfaceDerivatives=renderer.capabilities.isWebGL2||renderer.extensions.has('OES_standard_derivatives');
+        surfaceMat.name='cl-water-surface-material';surfaceMat.extensions={derivatives:surfaceDerivatives};surfaceMat.userData.clSurfaceFlow=surfaceFlow;
+        surfaceMat.onBeforeCompile=function(shader){shadeCLHuntWaterSurface(shader,surfaceFlow,surfaceDerivatives);};
+        surfaceMat.customProgramCacheKey=function(){return 'cl-water-surface-v55-'+(surfaceDerivatives?'filtered':'plain');};
+        var surfaceSheet = new THREE.Mesh(new THREE.PlaneGeometry(400, 400, 1, 1), surfaceMat);surfaceSheet.name='cl-water-surface';
         surfaceSheet.rotation.x = -Math.PI / 2;
         surfaceSheet.position.y = 21;
         surfaceSheet.visible = !((!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4));
@@ -12854,10 +13451,24 @@ function createCLHuntFish(T,index){
         function shadeCLHuntSandLight(shader,downwelling){
           shader.uniforms.clSandDownwelling=downwelling;
           shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 clSandWorld;').replace('#include <begin_vertex>','#include <begin_vertex>\nclSandWorld=(modelMatrix*vec4(position,1.0)).xyz;');
+          // Stable world-space geology follows the exact shelf slope; floor
+          // retiling does not slide the strata or change navigation geometry.
+          var geology=[
+            'float clShelfSlope(float x,float z){float u=clamp((x-24.0)/23.0,0.0,1.0),s=u*u*(3.0-2.0*u),ds=6.0*u*(1.0-u)/23.0;float a=0.1*sin(x*0.18)*cos(z*0.16);float hx=(-55.0-a)*ds+(1.0-s)*0.018*cos(x*0.18)*cos(z*0.16),hz=-(1.0-s)*0.016*sin(x*0.18)*sin(z*0.16);return sqrt(hx*hx+hz*hz);}',
+            'float clShelfExposure(float slope){return smoothstep(0.35,1.35,slope);}',
+            'float clShelfSilt(float y){return smoothstep(34.0,54.0,-y);}',
+            'float clShelfDetailFilter(float footprint){return 1.0-smoothstep(0.4,1.8,footprint);}'
+          ].join('\n');
           // Static world fields: irregular ridge spacing and broad relief patches.
           // Differentiate the actual phase and amplitude analytically; never the AA weight.
           var sample=[
             'float clSandX=clSandWorld.x,clSandZ=clSandWorld.z;',
+            'float clShelfRock=clShelfExposure(clShelfSlope(clSandX,clSandZ));',
+            'float clShelfDeep=clShelfSilt(clSandWorld.y)*(1.0-clShelfRock);',
+            'float clSandShare=(1.0-clShelfRock)*(1.0-0.82*clShelfDeep);',
+            'float clShelfBed=clSandWorld.y*0.95+sin(clSandZ*0.19)*0.9+sin(clSandZ*0.43+clSandX*0.07)*0.32;',
+            'float clShelfFineBed=clShelfBed*2.13+clSandZ*0.08;',
+            'float clShelfAA=0.0,clShelfFineAA=0.0;',
             'float clSandBend=clSandX*0.22+clSandZ*0.17;',
             'float clRipplePhase=clSandZ*7.6+sin(clSandX*0.55)*1.35+sin(clSandBend)*0.55;',
             'float clSandPatchU=clSandX*0.43+sin(clSandZ*0.3),clSandPatchV=clSandZ*0.52;',
@@ -12865,31 +13476,40 @@ function createCLHuntFish(T,index){
             'float clPatches=clSandPatchSinU*clSandPatchSinV;',
             'float clRippleAA=0.0,clRippleHarmonicAA=0.0;',
             '#if CL_SAND_DERIVATIVES',
+            'clShelfAA=clShelfDetailFilter(fwidth(clShelfBed));clShelfFineAA=clShelfDetailFilter(fwidth(clShelfFineBed));',
             'float clRippleFootprint=fwidth(clRipplePhase);',
             'clRippleAA=1.0-smoothstep(0.4,1.8,clRippleFootprint);',
             'clRippleHarmonicAA=1.0-smoothstep(0.4,1.8,clRippleFootprint*2.0);',
             '#endif',
-            'float clRippleWave=sin(clRipplePhase)*clRippleAA+0.22*sin(clRipplePhase*2.0)*clRippleHarmonicAA;',
-            'diffuseColor.rgb*=(0.87+0.038*clRippleWave+0.026*clPatches)*mix(vec3(0.80,0.91,1.0),vec3(1.02,1.0,0.95),clSandDownwelling);'
+            'float clRippleWave=(sin(clRipplePhase)*clRippleAA+0.22*sin(clRipplePhase*2.0)*clRippleHarmonicAA)*clSandShare;',
+            'diffuseColor.rgb*=(0.87+0.038*clRippleWave+0.026*clPatches)*mix(vec3(0.80,0.91,1.0),vec3(1.02,1.0,0.95),clSandDownwelling);',
+            'float clShelfStrata=sin(clShelfBed)*clShelfAA+0.24*sin(clShelfFineBed)*clShelfFineAA;',
+            'float clShelfWeather=sin(clSandZ*0.67+clSandWorld.y*0.38)*cos(clSandWorld.y*0.31+clSandX*0.21);',
+            'vec3 clShelfStone=vec3(0.78,0.82,0.86)*(1.0+0.32*clShelfStrata+0.10*clShelfWeather);',
+            'diffuseColor.rgb*=mix(vec3(1.0),clShelfStone,clShelfRock);',
+            'diffuseColor.rgb*=mix(vec3(1.0),vec3(0.72,0.84,0.90)*(0.96+0.04*clPatches),clShelfDeep);'
           ].join('\n');
           var relief=[
             '#if CL_SAND_DERIVATIVES',
             'vec2 clRipplePhaseGradient=vec2(0.7425*cos(clSandX*0.55)+0.121*cos(clSandBend),7.6+0.0935*cos(clSandBend));',
             'vec2 clSandPatchGradient=vec2(0.43*cos(clSandPatchU)*clSandPatchSinV,0.3*cos(clSandZ*0.3)*cos(clSandPatchU)*clSandPatchSinV+0.52*clSandPatchSinU*cos(clSandPatchV));',
-            'float clRippleSlope=cos(clRipplePhase)*clRippleAA+0.44*cos(clRipplePhase*2.0)*clRippleHarmonicAA;',
+            'float clRippleSlope=(cos(clRipplePhase)*clRippleAA+0.44*cos(clRipplePhase*2.0)*clRippleHarmonicAA)*clSandShare;',
             'vec2 clSandGradient=(0.019+0.008*clPatches)*clRippleSlope*clRipplePhaseGradient+0.008*clRippleWave*clSandPatchGradient;',
             'clSandGradient*=min(1.0,0.24/max(length(clSandGradient),0.000001));',
-            'vec3 clViewSlope=mat3(viewMatrix)*vec3(clSandGradient.x,0.0,clSandGradient.y);',
+            'vec3 clShelfBedGradient=vec3(0.0224*cos(clSandZ*0.43+clSandX*0.07),0.95,0.171*cos(clSandZ*0.19)+0.1376*cos(clSandZ*0.43+clSandX*0.07));',
+            'vec3 clShelfGradient=(clShelfBedGradient*(cos(clShelfBed)*clShelfAA+0.5112*cos(clShelfFineBed)*clShelfFineAA)+vec3(0.0,0.0,0.0192*cos(clShelfFineBed)*clShelfFineAA))*0.09*clShelfRock;',
+            'clShelfGradient*=min(1.0,0.12/max(length(clShelfGradient),0.000001));',
+            'vec3 clViewSlope=mat3(viewMatrix)*(vec3(clSandGradient.x,0.0,clSandGradient.y)+clShelfGradient);',
             'normal=normalize(normal-clViewSlope+normal*dot(normal,clViewSlope));',
             '#endif'
           ].join('\n');
-          shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 clSandWorld;\nuniform float clSandDownwelling;')
+          shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 clSandWorld;\nuniform float clSandDownwelling;\n'+geology)
             .replace('#include <color_fragment>','#include <color_fragment>\n'+sample)
-            .replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor=clamp(roughnessFactor+0.022*clPatches-0.012*clRippleWave,0.90,0.98);')
+            .replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor=clamp(roughnessFactor+0.022*clPatches-0.012*clRippleWave,0.90,0.98);roughnessFactor=mix(roughnessFactor,0.96,clShelfRock);roughnessFactor=mix(roughnessFactor,0.99,clShelfDeep);')
             .replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\n'+relief);
         }
         floor.material.onBeforeCompile=function(shader){shadeCLHuntSandLight(shader,sandDownwelling);};
-        floor.material.customProgramCacheKey=function(){return 'cl-sand-relief-v36';};
+        floor.material.customProgramCacheKey=function(){return 'cl-shelf-geology-v61';};
         // Fine rough mineral variation makes reef forms readable without new maps or draw calls.
         function reefSurface(shader){
           shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 clReefPos;').replace('#include <begin_vertex>','#include <begin_vertex>\nclReefPos=position;');
@@ -12951,6 +13571,30 @@ function createCLHuntFish(T,index){
           }
           geometry.attributes.normal.needsUpdate=true;
         }
+        // Bake broad mineral deposits into the existing vertices; the fine grain stays in the rock shader.
+        // Linear multipliers preserve each rock's camouflage tint and need no textures or frame updates.
+        function colorCLHuntReefRock(geometry,radius,index){
+          var position=geometry.attributes.position,colors=new Float32Array(position.count*3);
+          var phase=index*2.399963229728653+radius*0.71,cosPhase=Math.cos(phase),sinPhase=Math.sin(phase);
+          for(var vertex=0;vertex<position.count;vertex++){
+            var x=position.getX(vertex)/radius,y=position.getY(vertex)/radius,z=position.getZ(vertex)/radius;
+            var u=x*cosPhase+z*sinPhase,v=z*cosPhase-x*sinPhase,bed=y+0.18*u-0.08*v;
+            // One broken, gently wandering light seam and a softer secondary deposit avoid regular striping.
+            var wander=0.08*Math.sin(u*2.3+phase)+0.035*Math.cos(v*3.1-phase*0.7);
+            var seam=(bed+wander+0.12-0.16*Math.sin(phase*0.6))/0.20;
+            var interruption=0.45+0.55*Math.cos(u*1.7-v*2.1+phase)*Math.cos(u*1.7-v*2.1+phase);
+            var pale=Math.exp(-seam*seam)*interruption;
+            var secondary=(bed-0.48+0.045*Math.sin(u*3.2+v+phase))/0.19;
+            var deposit=Math.exp(-secondary*secondary)*(0.5+0.5*Math.sin(phase+u*2.1));
+            var mottle=Math.sin(u*4.4+y*3.1+phase)*Math.cos(v*3.8-y*1.5);
+            var strata=0.5+0.5*Math.sin(bed*4.6+0.35*Math.sin(u*2.1)+phase);
+            var matrixShade=0.82+0.13*mottle+0.06*strata,at=vertex*3;
+            colors[at]=matrixShade+pale*0.95+deposit*0.26;
+            colors[at+1]=matrixShade+pale*0.87+deposit*0.23;
+            colors[at+2]=matrixShade*0.97+pale*0.65+deposit*0.17;
+          }
+          geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
+        }
         for (var ri = 0; ri < 45; ri++) {
           var rx = (Math.random() - 0.5) * 110;
           var rz = (Math.random() - 0.5) * 110;
@@ -12958,9 +13602,10 @@ function createCLHuntFish(T,index){
           var rs = 0.6 + Math.random() * 1.4;
           var rockGeo = new THREE.SphereGeometry(rs, 24, 16);
           shapeCLHuntReefRock(rockGeo,rs,ri);
+          colorCLHuntReefRock(rockGeo,rs,ri);
           var ROCK_TINTS = [0x55483a, 0x3f4d3d, 0x5c4f3f, 0x46524a, 0x4a3f36];
           var rockTint = new THREE.Color(ROCK_TINTS[Math.floor(Math.random() * ROCK_TINTS.length)]).offsetHSL(0,0,(Math.random()-0.5)*0.05);
-          var rockMesh = new THREE.Mesh(rockGeo, new THREE.MeshStandardMaterial({ color: rockTint.clone().convertSRGBToLinear(), roughness: 0.92, flatShading: false, shadowSide: THREE.DoubleSide }));
+          var rockMesh = new THREE.Mesh(rockGeo, new THREE.MeshStandardMaterial({ color: rockTint.clone().convertSRGBToLinear(), roughness: 0.92, vertexColors: true, flatShading: false, shadowSide: THREE.DoubleSide }));
           if(renderer.capabilities.isWebGL2||renderer.extensions.has('OES_standard_derivatives')){
             rockMesh.material.extensions={derivatives:true};
             rockMesh.material.onBeforeCompile=shadeCLHuntRockSurface;
@@ -13023,6 +13668,26 @@ function createCLHuntFish(T,index){
                 colors.push(tissueShade*(1-tip*0.035),tissueShade,tissueShade*(0.95+tip*0.035));
                 surfaces.push(side/sides*surfacePeriod,surfaceDistance/0.055+surfaceBranch*7+index*11,surfaceFade,surfacePeriod);
                 if(row<last&&side<sides){var a=first+row*(sides+1)+side,b=a+sides+1;indices.push(a,a+1,b);if(row<last-1)indices.push(a+1,b+1,b);}
+              }
+            }
+            // Sculpt apical rings within their original convex cross-sections.
+            // Roots and terminal poles remain fixed; each limb tapers toward its own
+            // off-axis growth direction. The static triangle budget stays unchanged.
+            if(surfaceBranch>0){
+              var tipAmount=(form===1?0.22:form===2?0.46:0.42)+0.07*Math.sin(surfaceBranch*1.73+phase);
+              var pullSide=(surfaceBranch*3+index*5)%sides;
+              for(var ring=1;ring<last;ring++){
+                var progress=Math.min(1,ring/steps),amount=tipAmount*THREE.MathUtils.smoothstep(progress,0.30,1);
+                if(amount===0)continue;
+                var ringStart=(first+ring*(sides+1))*3,cx=0,cy=0,cz=0;
+                for(var corner=0;corner<sides;corner++){var p=ringStart+corner*3;cx+=positions[p];cy+=positions[p+1];cz+=positions[p+2];}
+                cx/=sides;cy/=sides;cz/=sides;
+                var pull=ringStart+pullSide*3;
+                cx=cx*0.65+positions[pull]*0.35;cy=cy*0.65+positions[pull+1]*0.35;cz=cz*0.65+positions[pull+2]*0.35;
+                for(var corner=0;corner<=sides;corner++){
+                  var p=ringStart+corner*3;
+                  positions[p]+=(cx-positions[p])*amount;positions[p+1]+=(cy-positions[p+1])*amount;positions[p+2]+=(cz-positions[p+2])*amount;
+                }
               }
             }
             // Shade the actual static shape, sharing normals at the closing seam and tip.
@@ -13141,7 +13806,7 @@ function createCLHuntFish(T,index){
           gmesh.userData.substrateRadius = 0.6;
           scene.add(gmesh);
           grass.push({ mesh: gmesh, phase: Math.random() * Math.PI * 2 });
-          grass[grass.length-1].flex=createCLHuntPlantFlex(THREE,gmesh,gH);
+          grass[grass.length-1].flex=createCLHuntPlantFlex(THREE,gmesh,gH,renderer.capabilities.isWebGL2||renderer.extensions.has('OES_standard_derivatives'));
         }
 
         // Terrain-conforming caustics: seamless cellular light, anchored to the same world tile.
@@ -13164,7 +13829,30 @@ function createCLHuntFish(T,index){
           }
           cx.putImageData(pixels,0,0);var texture=new THREE.CanvasTexture(cv);texture.wrapS=texture.wrapT=THREE.RepeatWrapping;texture.repeat.set(16,16);return texture;
         })();
+        // Additive light disappears in the distance; blending it toward fog's
+        // colour would add a second veil over the already-fogged seabed.
+        function fadeCLHuntCausticFog(shader){
+          shader.fragmentShader=shader.fragmentShader.replace('#include <fog_fragment>',
+            '#ifdef USE_FOG\n#ifdef FOG_EXP2\nfloat clWaterVisibility=exp(-fogDensity*fogDensity*fogDepth*fogDepth);\n#else\nfloat clWaterVisibility=1.0-smoothstep(fogNear,fogFar,fogDepth);\n#endif\ngl_FragColor.rgb*=clWaterVisibility;\n#endif');
+        }
         var causticsMat=new THREE.MeshBasicMaterial({map:causticsTex,color:0xdff4ef,transparent:true,opacity:0.065,blending:THREE.AdditiveBlending,depthWrite:false});
+        // Surface refraction gently deforms the light cells while grains stay fixed.
+        // The existing surface clock freezes on pause and reduced motion. Reuse
+        // one material, one map sample and the already world-anchored map UVs.
+        function shadeCLHuntCausticFlow(shader,flow){
+          shader.uniforms.clCausticFlow=flow;
+          var warp=[
+            'uniform float clCausticFlow;',
+            'vec2 clCausticWarp(vec2 uv,float time){',
+            'float a=uv.y*5.1+uv.x*1.7,b=uv.x*4.3-uv.y*1.9;',
+            'return vec2(0.014*(sin(a+time*0.64)-sin(a)),0.011*(sin(b+time*0.51)-sin(b)));',
+            '}'
+          ].join('\n');
+          shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\n'+warp)
+            .replace('#include <map_fragment>','#ifdef USE_MAP\nvec2 clCausticUv=vUv+clCausticWarp(vUv,clCausticFlow);\n#endif\n'+THREE.ShaderChunk.map_fragment.replace(/\bvUv\b/g,'clCausticUv'));
+        }
+        causticsMat.onBeforeCompile=function(shader){fadeCLHuntCausticFog(shader);shadeCLHuntCausticFlow(shader,surfaceFlow);};
+        causticsMat.customProgramCacheKey=function(){return 'cl-caustic-flow-v62';};
         var caustics=new THREE.Mesh(causticsGeo,causticsMat);caustics.name='cl-caustics';caustics.rotation.x=-Math.PI/2;caustics.position.y=0.025;scene.add(caustics);
         var causticPhase=0;
 
@@ -13174,6 +13862,7 @@ function createCLHuntFish(T,index){
         var floorRestY=FLOOR_REST_Y*(speciesId==='giantPacific'?bodyScale:1);
         // A visual-only snapshot survives prey disposal; it never feeds the capture decision.
         var squidStrikeVisual=null,squidStrikeAimLocal=new THREE.Vector3(),squidStrikeAimOffset=new THREE.Vector3();
+        var octopusStrikeVisual=null,octopusStrikeAimLocal=new THREE.Vector3(),octopusStrikeAimOffset=new THREE.Vector3();
         var isCuttlefish=species.id==='cuttlefish', warningRings=animal.warningRings, dumboFins=animal.dumboFins;
         var vampirePhotophores=animal.vampirePhotophores,bobtailGlow=animal.bobtailGlow;
         var cuttleTentacles=animal.cuttleTentacles,cuttleFins=animal.cuttleFins,passingCloudOverlay=animal.passingCloudOverlay;
@@ -14591,7 +15280,8 @@ function createCLHuntFish(T,index){
           var kGeo=createCLHuntPlantGeometry(THREE,'kelp',kH,kpi);
           var kMat = new THREE.MeshStandardMaterial({
             color:0xffffff,vertexColors:true,side:THREE.DoubleSide,roughness:0.95,
-            transparent:true,opacity:0.85,depthWrite:false,
+            // Tissue backlight carries leaf translucency; solid depth keeps blades and floats from showing through each other.
+            transparent:false,opacity:1,depthWrite:true,
           });
           var kmesh = new THREE.Mesh(kGeo, kMat);
           kmesh.name='cl-kelp';kmesh.position.set(kpx,0,kpz);
@@ -14600,7 +15290,7 @@ function createCLHuntFish(T,index){
           kmesh.userData.substrateRadius = 1.4;
           scene.add(kmesh);
           kelpStrands.push({ mesh: kmesh, phase: Math.random() * Math.PI * 2, baseHeight: kH });
-          kelpStrands[kelpStrands.length-1].flex=createCLHuntPlantFlex(THREE,kmesh,kH);
+          kelpStrands[kelpStrands.length-1].flex=createCLHuntPlantFlex(THREE,kmesh,kH,renderer.capabilities.isWebGL2||renderer.extensions.has('OES_standard_derivatives'));
         }
 
         // ─── Hydrothermal vent (deep zone only — visual landmark) ───
@@ -14638,10 +15328,60 @@ function createCLHuntFish(T,index){
         // read as biological history of human-ocean overlap. Marked on the
         // mini-map with distinctive symbols.
         var landmarks = [];
+        // One retained hull buffer: individual closed timbers reveal a genuinely
+        // open hold and broken starboard planking without extra scene objects.
+        function createCLHuntWreckGeometry(T) {
+          var geometry = new T.BoxGeometry(7,2.5,2.5);
+          var positions=[],colors=[],uvs=[],indices=[];
+          var palette=[0x84715b,0x786653,0x8d7a64,0x706454,0x7a715b].map(function(c){return new T.Color(c).convertSRGBToLinear();});
+          function timber(points,tint) {
+            var faces=[[0,1,2,3],[4,7,6,5],[0,4,5,1],[1,5,6,2],[2,6,7,3],[3,7,4,0]];
+            // Orient the closed solid as a whole. A warped plank face can lie
+            // across its centroid, so independent face flipping is unreliable.
+            var volume=0;
+            faces.forEach(function(face){for(var ti=1;ti<3;ti++){var a=points[face[0]],b=points[face[ti]],c=points[face[ti+1]];volume+=a[0]*(b[1]*c[2]-b[2]*c[1])+a[1]*(b[2]*c[0]-b[0]*c[2])+a[2]*(b[0]*c[1]-b[1]*c[0]);}});
+            faces.forEach(function(face){
+              if(volume<0)face=[face[0],face[3],face[2],face[1]];
+              var start=positions.length/3;
+              face.forEach(function(id,i){var p=points[id],grain=0.96+0.04*Math.sin(p[0]*8.1+p[1]*29+p[2]*17);positions.push(p[0],p[1],p[2]);colors.push(tint.r*grain,tint.g*grain,tint.b*grain);uvs.push(i===1||i===2?1:0,i>1?1:0);});
+              indices.push(start,start+1,start+2,start,start+2,start+3);
+            });
+          }
+          function section(x,angle,side,inset) {
+            var width=0.10+1.13*Math.pow(Math.max(0,Math.sin(Math.PI*(x+3.5)/7)),0.62);
+            return [x,-1.06+1.98*(1-Math.cos(angle))+inset*Math.cos(angle),side*(width*Math.sin(angle)-inset*Math.sin(angle))];
+          }
+          var stations=[-3.46,-3,-2.3,-1.45,-0.5,0.5,1.45,2.3,3,3.46];
+          for(var side=-1;side<=1;side+=2)for(var band=0;band<5;band++)for(var bay=0;bay<stations.length-1;bay++){
+            // Missing upper boards reveal the inner ribs; lower strakes stay continuous.
+            if(side===1&&((band===4&&bay>=3&&bay<=6)||(band===3&&bay>=4&&bay<=5)))continue;
+            var stagger=band%2===0?0:0.19;
+            var x0=stations[bay]+(bay>0?stagger:0)+0.012,x1=stations[bay+1]+(bay<stations.length-2?stagger:0)-0.012,a0=band*0.305+0.008,a1=(band+1)*0.305-0.008;
+            if(side===1&&band>=3&&bay===2)x1-=0.18+(band-3)*0.12;
+            var points=[section(x0,a0,side,0),section(x1,a0,side,0),section(x1,a1,side,0),section(x0,a1,side,0),section(x0,a0,side,0.095),section(x1,a0,side,0.095),section(x1,a1,side,0.095),section(x0,a1,side,0.095)];
+            timber(points,palette[(bay*3+band+(side+1))%palette.length]);
+          }
+          // Transverse frames nest against the inner hull, with exposed broken ends.
+          for(var rib=1;rib<stations.length-1;rib++)for(var rs=-1;rs<=1;rs+=2)for(var segment=0;segment<5;segment++){
+            if(rs===1&&segment===4&&rib===5)continue;
+            var rx=stations[rib],r0=segment*0.305,r1=(segment+1)*0.305;
+            timber([section(rx-0.065,r0,rs,0.085),section(rx+0.065,r0,rs,0.085),section(rx+0.065,r1,rs,0.085),section(rx-0.065,r1,rs,0.085),section(rx-0.065,r0,rs,0.21),section(rx+0.065,r0,rs,0.21),section(rx+0.065,r1,rs,0.21),section(rx-0.065,r1,rs,0.21)],palette[1]);
+          }
+          function beam(x0,x1,y0,y1,z0,z1,tint){timber([[x0,y0,z0],[x1,y0,z0],[x1,y1,z0],[x0,y1,z0],[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]],tint);}
+          beam(-3.42,3.42,-1.13,-0.87,-0.10,0.10,palette[1]);
+          // The remaining thwart supports the original broken mast.
+          beam(0.94,1.20,0.03,0.20,-0.95,0.95,palette[2]);
+          geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));
+          geometry.setAttribute('normal',new T.Float32BufferAttribute(new Float32Array(positions.length),3));
+          geometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));
+          geometry.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));
+          geometry.setIndex(indices);geometry.clearGroups();geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();
+          return geometry;
+        }
         function makeShipwreck() {
           var g = new THREE.Group();
-          var hullMat = new THREE.MeshStandardMaterial({ color: 0x3a3530, roughness: 0.95 });
-          var hull = new THREE.Mesh(new THREE.BoxGeometry(7, 2.5, 2.5), hullMat);
+          var hullMat = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.95 });
+          var hull = new THREE.Mesh(createCLHuntWreckGeometry(THREE), hullMat);
           hull.position.y = 1.2;
           hull.rotation.z = -0.15;  // listed to one side
           g.add(hull);
@@ -14658,37 +15398,89 @@ function createCLHuntFish(T,index){
               new THREE.SphereGeometry(0.18 + Math.random() * 0.12, 6, 5),
               new THREE.MeshStandardMaterial({ color: coralEncrustColors[ec % 3], roughness: 0.7 })
             );
-            ecc.position.set(
-              -3 + Math.random() * 6,
-              0.8 + Math.random() * 1.6,
-              -0.9 + Math.random() * 1.8
-            );
+            // Keep the existing seeded draws, but seat growth on surviving planks.
+            var encrustX = -3 + Math.random() * 6;
+            var encrustBand = Math.random(), encrustSide = Math.random() < 0.5 ? -1 : 1;
+            var encrustAngle = 0.40 + encrustBand * 0.40;
+            var encrustWidth = 0.10 + 1.13 * Math.pow(Math.max(0,Math.sin(Math.PI*(encrustX+3.5)/7)),0.62);
+            ecc.position.set(encrustX,-1.06+1.98*(1-Math.cos(encrustAngle)),encrustSide*encrustWidth*Math.sin(encrustAngle));
+            ecc.position.applyAxisAngle(new THREE.Vector3(0,0,1),hull.rotation.z);
+            ecc.position.y += hull.position.y;
             g.add(ecc);
           }
           return g;
         }
+        // Forged parts share one iron material and retain the original five meshes.
+        function createCLHuntAnchorGeometry(T,part,side) {
+          var geo=part==='shank'?new T.CylinderGeometry(0.15,0.15,2.4,8):part==='crown'?new T.CylinderGeometry(0.13,0.13,1.6,6):part==='fluke'?new T.ConeGeometry(0.35,0.7,4):new T.CylinderGeometry(0.08,0.08,1.3,6);
+          var positions=[],colors=[],uvs=[],indices=[];
+          var dark=new T.Color(0x454944).convertSRGBToLinear(),rust=new T.Color(0x79604b).convertSRGBToLinear();
+          function vertex(p,u,v){
+            var field=Math.sin(p[0]*11.7+p[1]*8.3+p[2]*17.1)*Math.sin(p[0]*23.1-p[1]*13.7+p[2]*9.3),wear=0.18+0.52*Math.max(0,field),shade=0.88+0.12*Math.sin(p[1]*19+p[0]*13);
+            colors.push((dark.r+(rust.r-dark.r)*wear)*shade,(dark.g+(rust.g-dark.g)*wear)*shade,(dark.b+(rust.b-dark.b)*wear)*shade);uvs.push(u,v);
+            if(part==='shank')positions.push(p[0],p[1]-1.2,p[2]);
+            else if(part==='crown')positions.push(p[0],p[2],0.3-p[1]);
+            else if(part==='fluke')positions.push(side*(p[1]-0.3),-side*(p[0]-side*0.75),p[2]);
+            else positions.push(p[0],p[2],2.3-p[1]);
+          }
+          function tube(path,radii,segments,closed){
+            var start=positions.length/3,count=path.length;
+            for(var i=0;i<count;i++){
+              var prev=path[closed?(i+count-1)%count:Math.max(0,i-1)],next=path[closed?(i+1)%count:Math.min(count-1,i+1)],dx=next[0]-prev[0],dy=next[1]-prev[1],length=Math.sqrt(dx*dx+dy*dy),nx=dy/length,ny=-dx/length;
+              for(var j=0;j<segments;j++){var a=j*Math.PI*2/segments,r=radii[i],c=Math.cos(a),s=Math.sin(a);vertex([path[i][0]+nx*r*c,path[i][1]+ny*r*c,path[i][2]+r*s],j/segments,i/Math.max(1,count-1));}
+            }
+            for(var ring=0;ring<(closed?count:count-1);ring++)for(var k=0;k<segments;k++){var a=start+ring*segments+k,b=start+ring*segments+(k+1)%segments,c=start+((ring+1)%count)*segments+(k+1)%segments,d=start+((ring+1)%count)*segments+k;indices.push(a,d,b,b,d,c);}
+            if(!closed)for(var end=0;end<2;end++){
+              var ri=end?count-1:0,cap=positions.length/3;vertex(path[ri],0.5,0.5);
+              for(var cj=0;cj<segments;cj++){var offset=start+ri*segments+cj,p=[positions[offset*3],positions[offset*3+1],positions[offset*3+2]];positions.push(p[0],p[1],p[2]);colors.push(colors[offset*3],colors[offset*3+1],colors[offset*3+2]);uvs.push(0.5+0.5*Math.cos(cj*Math.PI*2/segments),0.5+0.5*Math.sin(cj*Math.PI*2/segments));}
+              for(var ck=0;ck<segments;ck++){var ca=cap+1+ck,cb=cap+1+(ck+1)%segments;indices.push(cap,end?cb:ca,end?ca:cb);}
+            }
+          }
+          function solid(points,faces){
+            var volume=0;faces.forEach(function(f){for(var i=1;i<f.length-1;i++){var a=points[f[0]],b=points[f[i]],c=points[f[i+1]];volume+=a[0]*(b[1]*c[2]-b[2]*c[1])+a[1]*(b[2]*c[0]-b[0]*c[2])+a[2]*(b[0]*c[1]-b[1]*c[0]);}});
+            faces.forEach(function(f){if(volume<0)f=[f[0]].concat(f.slice(1).reverse());var first=positions.length/3;f.forEach(function(id,i){vertex(points[id],i%2,i>1?1:0);});for(var i=1;i<f.length-1;i++)indices.push(first,first+i,first+i+1);});
+          }
+          if(part==='shank'){
+            tube([[0,0.15,0],[0,0.36,0],[0,1.12,0],[0,1.85,0],[0,2.36,0]],[0.15,0.145,0.116,0.097,0.09],10,false);
+            var ring=[],radii=[];for(var q=0;q<24;q++){var a=q*Math.PI*2/24;ring.push([Math.cos(a)*0.20,2.56+Math.sin(a)*0.20,0]);radii.push(0.048);}tube(ring,radii,8,true);
+          }else if(part==='crown'){
+            tube([[-0.86,0.73,0],[-0.75,0.49,0],[-0.55,0.30,0],[-0.30,0.18,0],[0,0.14,0],[0.30,0.18,0],[0.55,0.30,0],[0.75,0.49,0],[0.86,0.73,0]],[0.08,0.11,0.125,0.14,0.145,0.14,0.125,0.11,0.08],10,false);
+          }else if(part==='fluke'){
+            // A convex spade tapers toward its upturned point. Separate front,
+            // back and bevel faces prevent folded or paper-thin arrow geometry.
+            var blade=[[0.82,0.59,0.085],[0.57,0.89,0.085],[0.67,1.17,0.025],[1.06,0.92,0.085]],points=[];
+            [-1,1].forEach(function(z){blade.forEach(function(p){points.push([side*p[0],p[1],z*p[2]]);});});
+            solid(points,[[0,1,2,3],[4,7,6,5],[0,4,5,1],[1,5,6,2],[2,6,7,3],[3,7,4,0]]);
+          }else{
+            // A chamfered transverse stock has flat forged faces instead of a pole.
+            var pts=[],profile=[[-0.08,-0.08],[0.08,-0.08],[0.12,-0.04],[0.12,0.04],[0.08,0.08],[-0.08,0.08],[-0.12,0.04],[-0.12,-0.04]];
+            [-0.78,0.78].forEach(function(z){profile.forEach(function(p){pts.push([p[0],2.29+p[1],z]);});});
+            var faces=[[7,6,5,4,3,2,1,0],[8,9,10,11,12,13,14,15]];for(var f=0;f<8;f++)faces.push([f,(f+1)%8,(f+1)%8+8,f+8]);solid(pts,faces);
+          }
+          geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setAttribute('normal',new T.Float32BufferAttribute(new Float32Array(positions.length),3));geo.setAttribute('color',new T.Float32BufferAttribute(colors,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geo.setIndex(indices);geo.clearGroups();geo.computeVertexNormals();geo.computeBoundingBox();geo.computeBoundingSphere();return geo;
+        }
         function makeAnchor() {
           var g = new THREE.Group();
-          var ironMat = new THREE.MeshStandardMaterial({ color: 0x5a5050, roughness: 0.85, metalness: 0.3 });
+          var ironMat = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.88, metalness: 0.22 });
           // Shank
-          var shank = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 2.4, 8), ironMat);
+          var shank = new THREE.Mesh(createCLHuntAnchorGeometry(THREE,'shank'), ironMat);
           shank.position.y = 1.2;
           g.add(shank);
           // Crown bar
-          var crown = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 1.6, 6), ironMat);
+          var crown = new THREE.Mesh(createCLHuntAnchorGeometry(THREE,'crown'), ironMat);
           crown.position.y = 0.3;
           crown.rotation.x = Math.PI / 2;
           g.add(crown);
           // Flukes (triangular tips)
           for (var afi = 0; afi < 2; afi++) {
             var flukeSide = afi === 0 ? -1 : 1;
-            var fluke = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.7, 4), ironMat);
+            var fluke = new THREE.Mesh(createCLHuntAnchorGeometry(THREE,'fluke',flukeSide), ironMat);
             fluke.position.set(flukeSide * 0.75, 0.3, 0);
             fluke.rotation.z = flukeSide * Math.PI / 2;
             g.add(fluke);
           }
           // Stock (top crossbar)
-          var stock = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1.3, 6), ironMat);
+          var stock = new THREE.Mesh(createCLHuntAnchorGeometry(THREE,'stock'), ironMat);
           stock.position.y = 2.3;
           stock.rotation.x = Math.PI / 2;
           g.add(stock);
@@ -14698,24 +15490,58 @@ function createCLHuntFish(T,index){
               new THREE.SphereGeometry(0.08, 5, 4),
               new THREE.MeshStandardMaterial({ color: 0xc8b890, roughness: 0.9 })
             );
-            bg.position.set(
-              (Math.random() - 0.5) * 1.2,
-              0.2 + Math.random() * 1.5,
-              (Math.random() - 0.5) * 0.3
-            );
+            var barnacleAngle=Math.random()*Math.PI*2,barnacleY=0.2+Math.random()*1.5,barnacleSeat=0.82+Math.random()*0.12;
+            var barnacleRadius=barnacleY<0.36?0.15:(barnacleY<1.12?0.145-(barnacleY-0.36)*0.029/0.76:0.116-(barnacleY-1.12)*0.019/0.73);
+            bg.position.set(Math.cos(barnacleAngle)*barnacleRadius*barnacleSeat,barnacleY,Math.sin(barnacleAngle)*barnacleRadius*barnacleSeat);
             g.add(bg);
           }
           return g;
         }
+        // A closed carved profile retains the two original stone allocations.
+        function createCLHuntStatueStone(T,pedestal) {
+          var geo=pedestal?new T.BoxGeometry(1.6,0.5,1.6):new T.BoxGeometry(0.9,1.6,0.7);
+          var positions=[],colors=[],uvs=[],indices=[],rings=[];
+          var warm=new T.Color(0x999580).convertSRGBToLinear(),cool=new T.Color(0x72796c).convertSRGBToLinear();
+          if(pedestal){
+            [[-0.25,0.77],[-0.19,0.80],[0.14,0.75],[0.25,0.67]].forEach(function(row,band){
+              var y=row[0],w=row[1],points=[[-w*0.76,y,w],[-w,y,w*0.73],[-w,y,-w*0.76],[-w*0.73,y,-w],[w*0.77,y,-w],[w,y,-w*0.68],[w,y,w*0.77],[w*0.72,y,w]];
+              // Clockwise viewed from above, matching the carved-head rings.
+              points.reverse();if(band===2){points[1][0]*=0.91;points[5][2]*=0.90;}rings.push(points);
+            });
+          }else{
+            // Jaw, lip, projecting nose, recessed eyes and brow are part of the
+            // same watertight surface, rather than floating facial decorations.
+            [[-0.8,0.29,0.20,0.20],[-0.68,0.34,0.29,0.29],[-0.45,0.36,0.31,0.33],[-0.34,0.35,0.29,0.32],[-0.29,0.36,0.37,0.37],[-0.24,0.37,0.31,0.34],[-0.12,0.40,0.34,0.56],[0.13,0.43,0.32,0.53],[0.35,0.44,0.27,0.49],[0.42,0.44,0.255,0.40],[0.50,0.44,0.41,0.43],[0.66,0.42,0.36,0.36],[0.8,0.37,0.28,0.28]].forEach(function(row){
+              var y=row[0],w=row[1],front=row[2],nose=row[3];
+              rings.push([[-w,y,front-0.10],[-w*0.72,y,front],[-w*0.28,y,front],[-w*0.18,y,nose],[w*0.18,y,nose],[w*0.28,y,front],[w*0.72,y,front],[w,y,front-0.10],[w,y,-0.22],[w*0.78,y,-0.35],[-w*0.78,y,-0.35],[-w,y,-0.22]]);
+            });
+          }
+          function vertex(p){var field=0.5+0.5*Math.sin(p[0]*9+p[1]*5+p[2]*7),shade=0.91+0.09*Math.cos(p[1]*17+p[0]*11);positions.push(p[0],p[1],p[2]);colors.push((warm.r+(cool.r-warm.r)*field)*shade,(warm.g+(cool.g-warm.g)*field)*shade,(warm.b+(cool.b-warm.b)*field)*shade);uvs.push((p[0]+0.8)/1.6,(p[1]+0.8)/1.6);}
+          var count=rings[0].length;
+          for(var band=0;band<rings.length-1;band++)for(var edge=0;edge<count;edge++){
+            var next=(edge+1)%count,start=positions.length/3;[rings[band][edge],rings[band][next],rings[band+1][next],rings[band+1][edge]].forEach(vertex);indices.push(start,start+1,start+2,start,start+2,start+3);
+          }
+          for(var end=0;end<2;end++){
+            var ring=rings[end?rings.length-1:0],center=[0,ring[0][1],0];
+            for(var e=0;e<count;e++){var first=positions.length/3;vertex(center);vertex(ring[e]);vertex(ring[(e+1)%count]);indices.push(first,end?first+1:first+2,end?first+2:first+1);}
+          }
+          geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setAttribute('normal',new T.Float32BufferAttribute(new Float32Array(positions.length),3));geo.setAttribute('color',new T.Float32BufferAttribute(colors,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geo.setIndex(indices);geo.clearGroups();geo.computeVertexNormals();geo.computeBoundingBox();geo.computeBoundingSphere();return geo;
+        }
+        function createCLHuntStatueAlga(T){
+          var geo=new T.PlaneGeometry(0.18,0.3),p=[],uv=[],index=[];
+          for(var row=0;row<6;row++){var t=row/5,width=0.028+0.040*Math.sin(t*Math.PI),bend=0.018*Math.sin(t*Math.PI*1.6);p.push(-width+bend,-0.15+t*0.3,0.032*Math.sin(t*Math.PI),width+bend,-0.15+t*0.3,0.032*Math.sin(t*Math.PI));uv.push(0,t,1,t);if(row<5){var a=row*2;index.push(a,a+1,a+3,a,a+3,a+2);}}
+          geo.setAttribute('position',new T.Float32BufferAttribute(p,3));geo.setAttribute('normal',new T.Float32BufferAttribute(new Float32Array(p.length),3));geo.setAttribute('uv',new T.Float32BufferAttribute(uv,2));geo.setIndex(index);geo.computeVertexNormals();geo.computeBoundingBox();geo.computeBoundingSphere();return geo;
+        }
         function makeStatue() {
           var g = new THREE.Group();
-          var stoneMat = new THREE.MeshStandardMaterial({ color: 0x6a6055, roughness: 0.95 });
+          var stoneMat = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.95 });
+          if(renderer.capabilities.isWebGL2||renderer.extensions.has('OES_standard_derivatives')){stoneMat.extensions={derivatives:true};stoneMat.onBeforeCompile=shadeCLHuntRockSurface;stoneMat.customProgramCacheKey=function(){return 'cl-rock-surface-v1';};}
           // Pedestal
-          var ped = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.5, 1.6), stoneMat);
+          var ped = new THREE.Mesh(createCLHuntStatueStone(THREE,true), stoneMat);
           ped.position.y = 0.25;
           g.add(ped);
-          // Body (Easter-island-ish stylized head)
-          var body = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.6, 0.7), stoneMat);
+          // Worn carved head
+          var body = new THREE.Mesh(createCLHuntStatueStone(THREE,false), stoneMat);
           body.position.y = 1.3;
           g.add(body);
           // Eyes (carved shadows)
@@ -14724,21 +15550,20 @@ function createCLHuntFish(T,index){
               new THREE.BoxGeometry(0.15, 0.1, 0.05),
               new THREE.MeshBasicMaterial({ color: 0x080608 })
             );
-            seye.position.set(sei === 0 ? -0.2 : 0.2, 1.7, 0.36);
+            seye.position.set(sei === 0 ? -0.2 : 0.2, 1.7, 0.267);
             g.add(seye);
           }
           // Algae growth
           for (var ali = 0; ali < 5; ali++) {
             var alga = new THREE.Mesh(
-              new THREE.PlaneGeometry(0.18, 0.3),
-              new THREE.MeshBasicMaterial({ color: 0x2a8c4a, side: THREE.DoubleSide, transparent: true, opacity: 0.7 })
+              createCLHuntStatueAlga(THREE),
+              new THREE.MeshStandardMaterial({ color: 0x45674a, side: THREE.DoubleSide, roughness: 0.86 })
             );
-            alga.position.set(
-              (Math.random() - 0.5) * 0.9,
-              0.6 + Math.random() * 1.4,
-              0.36 + (Math.random() - 0.5) * 0.1
-            );
-            alga.rotation.y = Math.random() * Math.PI;
+            // Retain four seeded draws; attach each small frond to the back
+            // of the stone so growth does not mask the carved face.
+            var growthX=(Math.random()-0.5)*0.40,growthY=0.72+Math.random()*1.05,growthLean=(Math.random()-0.5)*0.24;
+            alga.position.set(growthX,growthY,-0.358);alga.rotation.y=Math.PI+growthLean;
+            alga.rotation.z=(Math.random()-0.5)*0.5;
             g.add(alga);
           }
           return g;
@@ -14889,6 +15714,60 @@ function createCLHuntFish(T,index){
           var geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geometry.setIndex(indices);
           geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();return geometry;
         }
+        function createCLHuntDenWeatheredGeometry(T,radius,widthSegments,heightSegments,variant){
+          // Chamfer the accepted stones inward without changing their support
+          // heights, overall boxes, doorway or seeded dive randomness.
+          var original=createCLHuntDenRockGeometry(T,radius,widthSegments,heightSegments,variant);
+          var source=original.attributes.position,roof=radius===1,bands=roof?3:4,rings=[],positions=[],uvs=[],indices=[];
+          function point(index){return [source.getX(index),source.getY(index),source.getZ(index)];}
+          for(var row=0;row<=bands;row++){
+            var accepted=[],ring=[];
+            for(var corner=0;corner<8;corner++)accepted.push(point(row===bands?((bands-1)*8+corner)*4+1:(row*8+corner)*4));
+            for(var corner=0;corner<8;corner++){
+              var center=accepted[corner],before=accepted[(corner+7)%8],after=accepted[(corner+1)%8];
+              var cut=0.20+0.04*Math.sin(variant*1.37+corner*1.79);
+              ring.push([center[0]+(before[0]-center[0])*cut,center[1]+(before[1]-center[1])*cut,center[2]+(before[2]-center[2])*cut]);
+              ring.push([center[0]+(after[0]-center[0])*cut,center[1]+(after[1]-center[1])*cut,center[2]+(after[2]-center[2])*cut]);
+            }
+            rings.push(ring);
+          }
+          function vertex(value,u,v){var id=positions.length/3;positions.push(value[0],value[1],value[2]);uvs.push(u,v);return id;}
+          for(var band=0;band<bands;band++)for(var side=0;side<16;side++){
+            var next=(side+1)%16,start=positions.length/3;
+            vertex(rings[band][side],0,0);vertex(rings[band+1][side],0,1);vertex(rings[band+1][next],1,1);vertex(rings[band][next],1,0);
+            indices.push(start,start+1,start+2,start,start+2,start+3);
+          }
+          var sideCount=positions.length/3;
+          for(var cap=0;cap<2;cap++){
+            var capRing=rings[cap?bands:0],center=point(bands*32+cap*24);
+            for(var face=0;face<16;face++){
+              var first=cap?capRing[(face+1)%16]:capRing[face],second=cap?capRing[face]:capRing[(face+1)%16],start=positions.length/3;
+              vertex(center,0.5,0.5);vertex(first,first[0]/(2*radius)+0.5,first[2]/(2*radius)+0.5);vertex(second,second[0]/(2*radius)+0.5,second[2]/(2*radius)+0.5);indices.push(start,start+1,start+2);
+            }
+          }
+          // Reuse the original geometry so Three creates exactly the same UUID
+          // and consumes the same global random draws as the accepted factory.
+          var geometry=original;geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geometry.setIndex(indices);geometry.deleteAttribute('normal');geometry.computeVertexNormals();
+          // Only shallow side creases soften. Cap boundaries and pronounced
+          // fractures retain their own normals, including each flat sole.
+          var p=geometry.attributes.position,n=geometry.attributes.normal,acceptedNormals=n.array.slice(),coincident=Object.create(null),creaseCos=Math.cos(Math.PI/5);
+          for(var vertexIndex=0;vertexIndex<sideCount;vertexIndex++){
+            var key=p.getX(vertexIndex)+','+p.getY(vertexIndex)+','+p.getZ(vertexIndex);
+            if(!coincident[key])coincident[key]=[];coincident[key].push(vertexIndex);
+          }
+          Object.keys(coincident).forEach(function(key){
+            var peers=coincident[key];
+            for(var member=0;member<peers.length;member++){
+              var index=peers[member],nx=acceptedNormals[index*3],ny=acceptedNormals[index*3+1],nz=acceptedNormals[index*3+2],sx=0,sy=0,sz=0;
+              for(var other=0;other<peers.length;other++){
+                var at=peers[other]*3,ox=acceptedNormals[at],oy=acceptedNormals[at+1],oz=acceptedNormals[at+2];
+                if(nx*ox+ny*oy+nz*oz>=creaseCos){sx+=ox;sy+=oy;sz+=oz;}
+              }
+              var length=Math.hypot(sx,sy,sz);if(length>0)n.setXYZ(index,sx/length,sy/length,sz/length);
+            }
+          });
+          geometry.computeBoundingBox();geometry.computeBoundingSphere();return geometry;
+        }
         function createCLHuntDenShadowGeometry(T){
           // Two shallow reveals meet a dark inner wall: either approach sees depth.
           var rim=[[-0.84,-0.75],[0.82,-0.75],[0.82,0.23],[0.45,0.59],[-0.47,0.59],[-0.84,0.23]],positions=[],colors=[],uvs=[],indices=[];
@@ -14925,13 +15804,13 @@ function createCLHuntFish(T,index){
           var pmat = new THREE.MeshStandardMaterial({ color: new THREE.Color([0x55483a,0x3f4d3d,0x5c4f3f,0x46524a][denIndex]).convertSRGBToLinear(), roughness: 0.9 });
           pmat.name='cl-den-rock-material';
           if(renderer.capabilities.isWebGL2||renderer.extensions.has('OES_standard_derivatives')){pmat.extensions={derivatives:true};pmat.onBeforeCompile=shadeCLHuntRockSurface;pmat.customProgramCacheKey=function(){return 'cl-rock-surface-v1';};}else{pmat.onBeforeCompile=reefSurface;}
-          var p1 = new THREE.Mesh(createCLHuntDenRockGeometry(THREE,0.70,20,14,denIndex*3), pmat);p1.name='cl-den-rock';
+          var p1 = new THREE.Mesh(createCLHuntDenWeatheredGeometry(THREE,0.70,20,14,denIndex*3), pmat);p1.name='cl-den-rock';
           p1.scale.set(0.7,1.05,0.8);p1.position.set(-0.9, 0.7, 0);
           den.add(p1);
-          var p2 = new THREE.Mesh(createCLHuntDenRockGeometry(THREE,0.70,20,14,denIndex*3+1), pmat);p2.name='cl-den-rock';
+          var p2 = new THREE.Mesh(createCLHuntDenWeatheredGeometry(THREE,0.70,20,14,denIndex*3+1), pmat);p2.name='cl-den-rock';
           p2.scale.set(0.8,1.02,0.8);p2.position.set(0.9, 0.7, 0);
           den.add(p2);
-          var lintel = new THREE.Mesh(createCLHuntDenRockGeometry(THREE,1,24,16,denIndex*3+2), pmat);lintel.name='cl-den-rock';
+          var lintel = new THREE.Mesh(createCLHuntDenWeatheredGeometry(THREE,1,24,16,denIndex*3+2), pmat);lintel.name='cl-den-rock';
           lintel.scale.set(1.5,0.36,0.66);lintel.position.set(0, 1.6, 0);
           den.add(lintel);
           // Interior shadow patch (so the den looks like a hideable cavity)
@@ -15133,8 +16012,40 @@ function createCLHuntFish(T,index){
         // visual life — they don't interact with the player or predators.
         // Bell pulses via radial vertex displacement on a sphere geometry.
         // Translucent material reads as semi-gelatinous.
+        // Patrol decisions follow simulation time; rendering alone never consumes entropy.
+        function advanceCLHuntPatrolHeading(state,dt,random) {
+          if(!(dt>0))return;
+          state.patrolTurnIn=(state.patrolTurnIn===undefined?0:state.patrolTurnIn)-dt;
+          if(state.patrolTurnIn<=1e-9){
+            state.patrolTargetAngle=(state.patrolTargetAngle===undefined?state.patrolAngle:state.patrolTargetAngle)+(random()-.5)*.35;
+            state.patrolTurnIn+=1.5;
+          }
+          state.patrolAngle+=(state.patrolTargetAngle-state.patrolAngle)*(1-Math.exp(-2.4*dt));
+        }
+
         var jellyfish = [];
         // Static moon-jelly anatomy: eight independently owned visual slots, no dive RNG.
+        // Clearer face-on gel and a soft rim reflection use the existing PBR light and normals.
+        function shadeCLHuntJellyGel(shader) {
+          shader.fragmentShader=shader.fragmentShader.replace('gl_FragColor = vec4( outgoingLight, diffuseColor.a );',[
+            'vec3 clJellyView=isOrthographic?vec3(0.0,0.0,1.0):normalize(vViewPosition);',
+            'vec3 clJellyNormal=normalize(normal);',
+            'float clJellyFacing=clamp(abs(dot(clJellyNormal,clJellyView)),0.0,1.0);',
+            'float clJellyEdge=pow(1.0-clJellyFacing,2.5);',
+            'vec3 clJellyReflection=inverseTransformDirection(reflect(-clJellyView,clJellyNormal),viewMatrix);',
+            'float clJellySky=smoothstep(-0.08,0.78,clJellyReflection.y);',
+            'diffuseColor.a*=0.32+0.68*clJellyEdge;',
+            'outgoingLight+=reflectedLight.indirectDiffuse*vec3(0.14,0.24,0.28)*clJellyEdge*(0.35+0.65*clJellySky);',
+            'gl_FragColor = vec4( outgoingLight, diffuseColor.a );'
+          ].join('\n'));
+        }
+        function clHuntJellyGelProgramKey(){return 'cl-jelly-gel-v1';}
+        function finishCLHuntJellyGel(material){
+          material.onBeforeCompile=shadeCLHuntJellyGel;
+          material.customProgramCacheKey=clHuntJellyGelProgramKey;
+          return material;
+        }
+
         function createCLHuntMoonJellyVisual(THREE,index){
           var root=new THREE.Group();root.name='cl-moon-jelly';
           var positions=[],colors=[],indices=[],parts=[],phase=index*0.43;
@@ -15177,6 +16088,7 @@ function createCLHuntFish(T,index){
           // Composite the translucent inner surface before the outer crown, including views from beneath.
           var bellBackMaterial=new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:0.30,metalness:0,transparent:true,opacity:0.34,side:THREE.BackSide,depthWrite:false});
           var bellFrontMaterial=bellBackMaterial.clone();bellFrontMaterial.side=THREE.FrontSide;
+          finishCLHuntJellyGel(bellBackMaterial);finishCLHuntJellyGel(bellFrontMaterial);
           bellGeo.addGroup(0,bellGeo.index.count,0);bellGeo.addGroup(0,bellGeo.index.count,1);
           var bell=new THREE.Mesh(bellGeo,[bellBackMaterial,bellFrontMaterial]);bell.name='cl-jelly-bell';root.add(bell);
           reset();
@@ -15199,10 +16111,10 @@ function createCLHuntFish(T,index){
           var anatomy=new THREE.Mesh(anatomyGeo,new THREE.MeshBasicMaterial({color:0xffffff,vertexColors:true,transparent:true,opacity:0.62,side:THREE.DoubleSide,depthWrite:false}));anatomy.name='cl-jelly-anatomy';root.add(anatomy);
           var tentVisuals=[];
           for(var oral=0;oral<4;oral++){
-            reset();var sections=18,columns=5,length=0.66+oral*0.035,oralPhase=phase+oral*0.81;vertex(0,0,0,armTint,1);
+            reset();var sections=30,columns=5,length=0.66+oral*0.035,oralPhase=phase+oral*0.81;vertex(0,0,0,armTint,1);
             for(var row=1;row<=sections;row++){
               var t=row/sections,envelope=Math.pow(Math.sin(t*Math.PI*0.95),0.62),centerX=Math.sin(t*5.4+oralPhase)*0.048*t,centerZ=Math.sin(t*3.7+oralPhase*0.6)*0.060*t;
-              for(var column=0;column<columns;column++){var across=column/2-1,edgeWave=1+0.19*Math.sin(t*28+oralPhase+across*0.8)*Math.abs(across),x=centerX+across*0.082*envelope*edgeWave,z=centerZ+0.022*(1-Math.abs(across))*Math.sin(t*Math.PI)+Math.abs(across)*0.009*Math.sin(t*25+oralPhase);vertex(x,-length*t,z,armTint,0.90+0.10*(1-Math.abs(across)));}
+              for(var column=0;column<columns;column++){var across=column/2-1,edgeWave=1+0.19*Math.sin(t*28+oralPhase+across*0.8)*Math.abs(across),x=centerX+across*0.082*envelope*edgeWave,z=centerZ+0.022*(1-across*across)*Math.sin(t*Math.PI)+across*across*0.009*Math.sin(t*25+oralPhase);vertex(x,-length*t,z,armTint,0.90+0.10*(1-Math.abs(across)));}
             }
             for(var column=0;column<columns-1;column++)indices.push(0,1+column,2+column);
             for(var row=0;row<sections-1;row++)for(var column=0;column<columns-1;column++){var a=1+row*columns+column,b=a+1,c=a+columns,d=b+columns;indices.push(a,c,b,b,c,d);}
@@ -15210,6 +16122,9 @@ function createCLHuntFish(T,index){
             for(var column=0;column<columns-1;column++)indices.push(last+column,tip,last+column+1);
             parts.push({name:'frilled-oral-arm',vertexStart:0,vertexCount:positions.length/3,indexStart:0,indexCount:indices.length});
             var geometry=finish();geometry.userData.clJellyAttachment={kind:'oral',rootIndex:0,mouthCorner:mouthCorners[oral],anchor:anchors[oral].slice()};
+            geometry.userData.clJellyOral={base:new Float32Array(geometry.attributes.position.array),length:length,phase:oralPhase,maximumDisplacement:0.16};
+            geometry.attributes.position.setUsage(THREE.DynamicDrawUsage);geometry.attributes.normal.setUsage(THREE.DynamicDrawUsage);
+            geometry.boundingBox.expandByScalar(0.16);geometry.boundingBox.getBoundingSphere(geometry.boundingSphere);
             var mesh=new THREE.Mesh(geometry,new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:0.50,metalness:0,transparent:true,opacity:0.52,side:THREE.DoubleSide,depthWrite:false}));mesh.name='cl-jelly-oral-arm-'+oral;mesh.position.set(anchors[oral][0],anchors[oral][1],anchors[oral][2]);mesh.rotation.y=oral*Math.PI/2+Math.PI/4;root.add(mesh);tentVisuals.push({mesh:mesh,kind:'oral',anchor:anchors[oral].slice()});
           }
           for(var bundle=0;bundle<2;bundle++){
@@ -15224,7 +16139,25 @@ function createCLHuntFish(T,index){
           }
           return {root:root,bell:bell,bellGeo:bellGeo,bellBasePos:bellBasePos,anatomy:anatomy,tents:tentVisuals,rimRadius:0.438,rimY:-0.024,rimLength:Math.hypot(0.438,0.024)};
         }
-        // The original pulse phase/formula is retained. Reuse native typed arrays and transforms;
+        // A wave travels down the oral tissue. Subtract its spawn pose so motion starts continuously.
+        // The root stays exact; retained buffers and conservative bounds avoid frame allocations.
+        function deformCLHuntJellyOralArm(geometry,phase){
+          var oral=geometry.userData.clJellyOral,base=oral.base,p=geometry.attributes.position.array,n=geometry.attributes.normal.array,ix=geometry.index.array;
+          for(var vertex=0;vertex<p.length;vertex+=3){
+            var x=base[vertex],y=base[vertex+1],z=base[vertex+2],t=Math.min(1,Math.max(0,-y/oral.length)),bend=t*t;
+            var lag=oral.phase-t*3.8,twistLag=oral.phase-t*2.4;
+            var twist=0.12*bend*(Math.sin(phase*0.85+twistLag)-Math.sin(twistLag)),c=Math.cos(twist),s=Math.sin(twist);
+            p[vertex]=x*c-z*s+0.04*bend*(Math.sin(phase+lag)-Math.sin(lag));
+            p[vertex+1]=y;
+            p[vertex+2]=x*s+z*c+0.03*bend*(Math.cos(phase+lag*0.8)-Math.cos(lag*0.8));
+          }
+          n.fill(0);
+          for(var face=0;face<ix.length;face+=3){var a=ix[face]*3,b=ix[face+1]*3,c=ix[face+2]*3,ux=p[b]-p[a],uy=p[b+1]-p[a+1],uz=p[b+2]-p[a+2],vx=p[c]-p[a],vy=p[c+1]-p[a+1],vz=p[c+2]-p[a+2],nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;n[a]+=nx;n[a+1]+=ny;n[a+2]+=nz;n[b]+=nx;n[b+1]+=ny;n[b+2]+=nz;n[c]+=nx;n[c+1]+=ny;n[c+2]+=nz;}
+          for(var vertex=0;vertex<n.length;vertex+=3){var length=Math.hypot(n[vertex],n[vertex+1],n[vertex+2]);if(length>0){n[vertex]/=length;n[vertex+1]/=length;n[vertex+2]/=length;}}
+          geometry.attributes.position.needsUpdate=true;geometry.attributes.normal.needsUpdate=true;
+        }
+
+        // Retain the bell deformation formula. Reuse native typed arrays and transforms;
         // update normals numerically without allocating vectors or resources in the frame loop.
         function updateCLHuntMoonJellyVisual(ud,pulse,now){
           var geometry=ud.bellGeo,p=geometry.attributes.position.array,base=ud.bellBasePos,n=geometry.attributes.normal.array,ix=geometry.index.array;
@@ -15244,10 +16177,49 @@ function createCLHuntFish(T,index){
           var visual=ud.jellyVisual,scale=1+(pulse-0.5)*0.18/visual.rimLength;visual.anatomy.scale.set(scale,scale,scale);
           for(var strand=0;strand<ud.tents.length;strand++){
             var entry=ud.tents[strand],part=visual.tents[strand],wave=Math.sin(now*0.003+entry.basePhase)*0.18;
-            if(part.kind==='oral'){entry.mesh.position.set(part.anchor[0]*scale,part.anchor[1]*scale,part.anchor[2]*scale);entry.mesh.rotation.x=wave;}
+            if(part.kind==='oral'){entry.mesh.position.set(part.anchor[0]*scale,part.anchor[1]*scale,part.anchor[2]*scale);entry.mesh.rotation.x=wave;deformCLHuntJellyOralArm(entry.mesh.geometry,(now*0.003+0.55-ud.oralPhaseOrigin)*0.72);}
             else{entry.mesh.scale.set(scale,1,scale);entry.mesh.position.y=visual.rimY*(scale-1);entry.mesh.rotation.y=wave;}
           }
         }
+        // A brief bell contraction drives thrust, followed by a longer relaxed glide.
+        function sampleCLHuntJellyPulse(phase) {
+          var cycle=((phase/(Math.PI*2))%1+1)%1;
+          var u=cycle<.24?cycle/.24:(cycle-.24)/.76;
+          var eased=u*u*u*(10+u*(-15+6*u));
+          return cycle<.24?1-eased:eased;
+        }
+        function sampleCLHuntJellyThrust(phase) {
+          var cycle=((phase/(Math.PI*2))%1+1)%1;
+          if(cycle>=.24)return 0;
+          var u=cycle/.24;
+          return 16*u*u*(1-u)*(1-u);
+        }
+        function advanceCLHuntMoonJellyMotion(jf,dt,reducedMotion) {
+          if(!(dt>0))return;
+          var ud=jf.userData;
+          if(reducedMotion){
+            jf.position.x+=Math.sin(ud.swimHeading)*ud.driftSpeed*dt;
+            jf.position.z+=Math.cos(ud.swimHeading)*ud.driftSpeed*dt;
+            return;
+          }
+          // Midpoint integration keeps the same stroke readable at different refresh rates.
+          var midPulse=ud.pulsePhase+dt*.8,midVertical=ud.verticalPhase+dt*.3;
+          var midHeading=ud.driftAngle+.20*Math.sin(midVertical*.55);
+          var speed=ud.driftSpeed*(.88+.9375*sampleCLHuntJellyThrust(midPulse));
+          jf.position.x+=Math.sin(midHeading)*speed*dt;
+          jf.position.z+=Math.cos(midHeading)*speed*dt;
+          ud.pulsePhase+=dt*1.6;
+          ud.verticalPhase+=dt*.6;
+          var pulse=sampleCLHuntJellyPulse(ud.pulsePhase);
+          ud.swimHeading=ud.driftAngle+.20*Math.sin(ud.verticalPhase*.55);
+          ud.verticalOffset*=Math.exp(-.02*dt);
+          jf.position.y=4+Math.sin(ud.verticalPhase)*1.2+.08*(1-pulse)+ud.verticalOffset;
+          var bank=.035+.04*sampleCLHuntJellyThrust(ud.pulsePhase);
+          jf.rotation.set(Math.cos(ud.swimHeading)*bank,0,-Math.sin(ud.swimHeading)*bank);
+          // Trailing arms lag the stroke and resume from the retained phase after reduced motion.
+          updateCLHuntMoonJellyVisual(ud,pulse,(ud.pulsePhase-.55)/.003);
+        }
+
         function makeJellyfish() {
           var visual=createCLHuntMoonJellyVisual(THREE,jellyfish.length),g=visual.root,bellGeo=visual.bellGeo,bellBasePos=visual.bellBasePos;
           var tents = [];
@@ -15270,6 +16242,10 @@ function createCLHuntFish(T,index){
             verticalPhase: Math.random() * Math.PI * 2,
           };
           g.userData.jellyVisual=visual;
+          g.userData.oralPhaseOrigin=g.userData.pulsePhase;
+          g.userData.swimHeading=g.userData.driftAngle;
+          // Keep the seeded spawn height continuous when the first stroke begins.
+          g.userData.verticalOffset=jy-(4+Math.sin(g.userData.verticalPhase)*1.2+.08*(1-sampleCLHuntJellyPulse(g.userData.pulsePhase)));
           scene.add(g);
           jellyfish.push(g);
           return g;
@@ -15365,6 +16341,7 @@ function createCLHuntFish(T,index){
         function setPaused(value){
           if(!gameState || gameState.gameOver)return;
           clearInput();gameState.paused=value;pauseOverlay.style.display=value?'flex':'none';
+          if(typeof pauseButton!=='undefined'&&pauseButton){pauseButton.textContent=value?'Resume':'Pause';pauseButton.title=(value?'Resume':'Pause')+' dive (Escape)';}
           if(value)recordEvent('Pause','Dive paused');
           clAnnounce(value?'Paused':'Resumed');
         }
@@ -15374,10 +16351,11 @@ function createCLHuntFish(T,index){
           if(e.ctrlKey||e.metaKey||e.altKey)return;
           if(e.code==='KeyF'){if(!e.repeat)toggleInspection();e.preventDefault();return;}
           if(inspection.active)return;
+          if(e.key==='?'){e.preventDefault();if(!e.repeat)openSettings();return;}
           if(e.code==='Escape'){e.preventDefault();if(!e.repeat){if(settingsPanel&&!settingsPanel.hidden)closeSettings();else setPaused(!gameState.paused);}return;}
           if(e.code==='KeyV'){if(!e.repeat)cycleCamera();e.preventDefault();return;}
           if(e.code==='KeyT'){if(!e.repeat)cycleTarget();e.preventDefault();return;}
-          if(['Space','KeyW','KeyA','KeyS','KeyD','KeyE','KeyI','KeyM','KeyG','KeyH','KeyB','KeyQ','KeyZ'].indexOf(e.code)>=0)e.preventDefault();
+          if(['Space','KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowLeft','ArrowDown','ArrowRight','KeyE','KeyI','KeyM','KeyG','KeyH','KeyB','KeyQ','KeyZ'].indexOf(e.code)>=0)e.preventDefault();
           if(gameState.paused || gameState.gameOver)return;
           if(e.code==='KeyR'){e.preventDefault();if(!e.repeat)toggleForage();return;}
           keys[e.code]=true;
@@ -15387,12 +16365,17 @@ function createCLHuntFish(T,index){
         function onKeyUp(e){keys[e.code]=false;}
         var targetRay=new THREE.Raycaster(),pointerPoint=new THREE.Vector2();
         function onClick(e){
-          if(gameState.paused||gameState.gameOver)return;
+          if(gameState.paused||gameState.gameOver||inspection.active||capabilities.diet==='detritus')return;
           var rect=canvasEl.getBoundingClientRect();pointerPoint.set((e.clientX-rect.left)/rect.width*2-1,1-(e.clientY-rect.top)/rect.height*2);
           targetRay.setFromCamera(pointerPoint,camera);var candidates=preyCandidates();
           var hits=targetRay.intersectObjects(candidates,true);
-          if(hits.length){var obj=hits[0].object;while(obj.parent && candidates.indexOf(obj)<0)obj=obj.parent;selectedPrey=obj;explicitTarget=true;}
-          clickRequested=true;
+          if(!hits.length)return;
+          // Pointer selection follows the visible surface; water and visual effects remain click-through.
+          var rockHits=targetRay.intersectObjects(rocks,false);
+          if(rockHits.length&&rockHits[0].distance<hits[0].distance)return;
+          var obj=hits[0].object;while(obj.parent && candidates.indexOf(obj)<0)obj=obj.parent;
+          selectedPrey=obj;explicitTarget=true;gameState.observationUntil=0;
+          updateTrackedPrey();updateMission();clAnnounce(clHuntInputCue('Target selected. Move into range and press E.','Target selected. Move into range and tap Strike / hold.'));canvasEl.focus();
         }
         canvasEl.addEventListener('keydown',onKeyDown);canvasEl.addEventListener('keyup',onKeyUp);
         canvasEl.addEventListener('blur',clearInput);window.addEventListener('blur',onWindowBlur);
@@ -15571,6 +16554,10 @@ function createCLHuntFish(T,index){
           });
           // Dens (green)
           dens.forEach(function(d2,i) { plot(d2.x, d2.z, '#22c55e', 4, true);if(i===0){mmCtx.fillStyle='#b6fbd2';mmCtx.font='bold 8px system-ui';mmCtx.textAlign='center';mmCtx.fillText('HOME',(d2.x-octopus.position.x)*scale+cx,(d2.z-octopus.position.z)*scale+cy-7);} });
+          // Two amber bars denote real passages, distinct from the HOME den.
+          if(reefRefuge){var refugeX=(reefRefuge.x-octopus.position.x)*scale+cx,refugeZ=(reefRefuge.z-octopus.position.z)*scale+cy;
+            if(refugeX>20&&refugeX<W-20&&refugeZ>12&&refugeZ<H-5){mmCtx.fillStyle='#ffd49a';mmCtx.fillRect(refugeX-4,refugeZ-3,2,6);mmCtx.fillRect(refugeX+2,refugeZ-3,2,6);mmCtx.font='bold 8px system-ui';mmCtx.textAlign='center';mmCtx.fillText('REFUGE',refugeX,refugeZ-7);}
+          }
           // Shelters
           shelters.forEach(function(s2) {
             if (s2.userData.state === 'carried') return;
@@ -15829,11 +16816,12 @@ function createCLHuntFish(T,index){
         stage.appendChild(uiStyle);
         controlPanel=document.createElement('div');controlPanel.className='cl-hunt-controls';stage.appendChild(controlPanel);
         function uiButton(label,fn,parent){var b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=fn;(parent||controlPanel).appendChild(b);return b;}
-        var pauseButton=uiButton('Pause',function(){setPaused(!gameState.paused);canvasEl.focus();});
-        var viewButton=uiButton('View',function(){closeMobileTools(false);cycleCamera();});
+        var pauseButton=uiButton('Pause',function(){setPaused(!gameState.paused);canvasEl.focus();});pauseButton.title='Pause dive (Escape)';pauseButton.setAttribute('aria-keyshortcuts','Escape');
+        var viewButton=uiButton('View · Follow',function(){closeMobileTools(false);cycleCamera();});
+        viewButton.setAttribute('aria-label','View');viewButton.title='Follow view. V or View cycles Follow, Side, Tactical and Hunt.';
         var inspectButton=uiButton('Inspect [F]',function(){closeMobileTools(false);toggleInspection();});
         var forageButton=uiButton('Forage [R]',toggleForage);forageButton.setAttribute('aria-pressed','false');forageButton.onpointerdown=function(e){e.preventDefault();};
-        var helpButton=uiButton('Help / settings',function(){closeMobileTools(false);openSettings();});
+        var helpButton=uiButton('Help / settings',function(){closeMobileTools(false);openSettings();});helpButton.title='Controls and accessibility settings (?)';helpButton.setAttribute('aria-keyshortcuts','?');
         var targetButton=uiButton('Next target [T]',cycleTarget);targetButton.className='cl-hunt-desktop';
         var huntButton=uiButton('Strike [E]',function(){clickRequested=true;canvasEl.focus();});huntButton.className='cl-hunt-desktop';
         if(capabilities.diet==='detritus'){targetButton.hidden=true;targetButton.style.display='none';huntButton.hidden=true;huntButton.style.display='none';}
@@ -15950,25 +16938,39 @@ function createCLHuntFish(T,index){
         settingsPanel=document.createElement('div');settingsPanel.className='cl-hunt-dialog cl-hunt-settings';settingsPanel.hidden=true;
         settingsPanel.setAttribute('role','dialog');settingsPanel.setAttribute('aria-modal','true');settingsPanel.setAttribute('aria-label','Dive help and settings');stage.appendChild(settingsPanel);
         var settingsContent=document.createElement('div');settingsContent.className='cl-hunt-settings-content';settingsPanel.appendChild(settingsContent);
-        var help=document.createElement('p');settingsContent.appendChild(help);
+        var guideTitle=document.createElement('h2');guideTitle.className='cl-hunt-guide-title';guideTitle.id='cl-hunt-guide-title';guideTitle.tabIndex=-1;guideTitle.textContent='Dive controls';settingsContent.appendChild(guideTitle);settingsPanel.setAttribute('aria-labelledby',guideTitle.id);
+        var guideIntro=document.createElement('p');guideIntro.className='cl-hunt-guide-intro';settingsContent.appendChild(guideIntro);
+        var strategySection=document.createElement('section');strategySection.className='cl-hunt-guide-group';strategySection.setAttribute('aria-label','Species strategy');settingsContent.appendChild(strategySection);
+        var strategyTitle=document.createElement('h3');strategyTitle.textContent='Playing as '+species.name;strategySection.appendChild(strategyTitle);
+        var strategyText=document.createElement('p');strategyText.className='cl-hunt-guide-note';strategyText.textContent=clHuntSpeciesStrategy(speciesId);strategySection.appendChild(strategyText);strategySection.style.marginBottom='14px';
+        var help=document.createElement('div');help.className='cl-hunt-guide';settingsContent.appendChild(help);
+        var huntHelpTouch=null;
         function updateHuntHelp(){
-          var defense=(capabilities.ink?'Ink spends a finite charge; reserves/cooldown shown. ':'This species has no ink. ')+(species.specialAbility==='mimicry'?'Hold Mimic for a defensive disguise. ':species.specialAbility==='passingCloud'?'Hold Display to distract nearby fish. ':species.specialAbility==='burglarAlarm'?'Hold Flash for your defensive display. ':'');
-          if(capabilities.diet==='detritus'){help.textContent=clHuntInputCue('Move with W/S; turn with A/D. Space + forward jets. Q/Z changes depth. Hold E within reach of marine snow to gather. R / Forage gathers one nearby meal without holding a key; moving, pausing or taking damage cancels it. T reminds you how to feed. B flashes a defensive display; this species has no ink. G carries or drops a shelter. V changes the camera. F opens a paused inspection view; drag or use its orbit buttons. Escape pauses. Energy and cooldown values are simplified game rules.','Hold Forward/Back to move; Left/Right turns. Hold Jet together with Forward. Rise/Dive change depth. Hold Gather / hold within reach of marine snow. Forage: one nearby meal; again stops. Stay still. Movement, pause, damage, leaving reach cancel. Interact carries/drops shelters. '+defense+'Tools pauses the dive and opens View, Inspect, Observe and the minimap. Observe describes nearby marine snow. View: camera. Inspect pauses: drag/orbit; Closer/Farther zoom. Pause stops/resumes. Energy/cooldowns: game rules.');return;}
-          help.textContent=clHuntInputCue('Move with W/S; turn with A/D. Space + forward jets. Q/Z changes depth. T selects a target; E strikes or drills a clam while held. R / Forage gathers one nearby meal without holding a key; moving, pausing or taking damage cancels it. I inks; G carries a shelter. V changes the camera. F opens a paused inspection view; drag or use its orbit buttons. Escape pauses. Energy and cooldown values are simplified game rules.','Hold Forward/Back to move; Left/Right turns. Hold Jet together with Forward. Rise/Dive change depth. Target selects prey. Tap Strike / hold to hunt; hold to gather. Forage: one nearby meal; again stops. Stay still. Movement, pause, damage, leaving reach cancel. Interact carries/drops shelters. '+defense+'Tools pauses the dive and opens View, Inspect, Observe and the minimap. View: camera. Inspect pauses: drag/orbit; Closer/Farther zoom. Pause stops/resumes. Energy/cooldowns: game rules.');
+          var touch=stage.classList.contains('cl-hunt-touch-enabled');if(huntHelpTouch===touch)return;huntHelpTouch=touch;
+          help.textContent='';
+          clHuntControlGuide(capabilities,species,touch).forEach(function(group){
+            var section=document.createElement('section');section.className='cl-hunt-guide-group';
+            var title=document.createElement('h3');title.textContent=group.title;section.appendChild(title);
+            var list=document.createElement('dl');section.appendChild(list);
+            group.rows.forEach(function(row){var input=document.createElement('dt'),action=document.createElement('dd');input.textContent=row.input;action.textContent=row.action;list.appendChild(input);list.appendChild(action);});help.appendChild(section);
+          });
         }
         updateHuntHelp();
+        var accessTitle=document.createElement('h3');accessTitle.className='cl-hunt-access-title';accessTitle.textContent='Comfort & accessibility';settingsContent.appendChild(accessTitle);
+        var rulesNote=document.createElement('p');rulesNote.className='cl-hunt-guide-note';rulesNote.textContent='Energy, cooldowns and ability effects use simplified game rules.';settingsContent.appendChild(rulesNote);
+        uiStyle.textContent+='.cl-hunt-guide-title{font-size:22px;margin:0 0 6px}.cl-hunt-guide-title:focus{outline:3px solid #fde68a;outline-offset:4px;border-radius:3px}.cl-hunt-guide-intro{color:#c1dddd;font-size:13px;line-height:1.45;margin:0 0 14px}.cl-hunt-guide{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.cl-hunt-guide-group{min-width:0;border:1px solid #416773;border-radius:10px;background:#102f40;padding:12px}.cl-hunt-guide-group h3{font-size:15px;margin:0 0 10px;color:#c0f0df}.cl-hunt-guide-group dl{margin:0}.cl-hunt-guide-group dt{font:700 12px/1.35 system-ui;color:#fff0c2;margin:11px 0 3px;overflow-wrap:anywhere}.cl-hunt-guide-group dt:first-child{margin-top:0}.cl-hunt-guide-group dd{font-size:13px;line-height:1.45;margin:0;color:#d3e5e7;overflow-wrap:anywhere}.cl-hunt-access-title{font-size:16px;margin:18px 0 5px}.cl-hunt-guide-note{font-size:12px;color:#bad3d8;margin:0 0 10px}.cl-hunt-small .cl-hunt-guide{grid-template-columns:1fr}.cl-large-text .cl-hunt-guide-group dt,.cl-large-text .cl-hunt-guide-group dd,.cl-large-text .cl-hunt-guide-intro,.cl-large-text .cl-hunt-guide-note{font-size:15px}.cl-high-contrast .cl-hunt-guide-group{background:#000;border-color:#fff}.cl-high-contrast .cl-hunt-guide-group h3,.cl-high-contrast .cl-hunt-guide-group dt,.cl-high-contrast .cl-hunt-guide-group dd,.cl-high-contrast .cl-hunt-guide-intro,.cl-high-contrast .cl-hunt-guide-note{color:#fff}';
         function setting(label,key){var l=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.checked=!!gameState.a11y[key];input.onchange=function(){gameState.a11y[key]=input.checked;saveA11ySettings(gameState.a11y);applyLiveAccess();};l.appendChild(input);l.appendChild(document.createTextNode(label));settingsContent.appendChild(l);}
         function applyLiveAccess(){scheduleHuntLayout();stage.classList.toggle('cl-large-text',!!gameState.a11y.largeText);stage.classList.toggle('cl-high-contrast',!!gameState.a11y.highContrast);captions.style.display=gameState.a11y.captionMode?'flex':'none';gameState.runStats.captionsOn=!!gameState.a11y.captionMode;gameState.runStats.reducedMotionOn=!!gameState.a11y.reducedMotion;gameState.runStats.largeTextOn=!!gameState.a11y.largeText;gameState.runStats.highContrastOn=!!gameState.a11y.highContrast;}
         setting('Captions','captionMode');setting('Reduced motion','reducedMotion');setting('Larger text','largeText');setting('High contrast','highContrast');
         var audioLabel=document.createElement('label'),audioToggle=document.createElement('input');audioToggle.type='checkbox';audioToggle.checked=!!cachedAudio.muted;audioToggle.onchange=function(){cachedAudio.muted=audioToggle.checked;saveAudioSettings(cachedAudio);};audioLabel.appendChild(audioToggle);audioLabel.appendChild(document.createTextNode('Mute sounds'));settingsContent.appendChild(audioLabel);
         var settingsActions=document.createElement('div');settingsActions.className='cl-hunt-settings-actions';settingsPanel.appendChild(settingsActions);
-        uiButton('Resume dive',closeSettings,settingsActions);
+        uiButton('Return to dive',closeSettings,settingsActions);
         uiButton('End run',function(){finishRun('surfaced',false);setCL({hunt3DActive:false});},settingsActions);
         var settingsWasPaused=false;
-        function openSettings(){if(gameState.gameOver)return;updateHuntHelp();settingsWasPaused=gameState.paused;setPaused(true);settingsPanel.hidden=false;settingsPanel.querySelector('input').focus();}
-        function closeSettings(){settingsPanel.hidden=true;clearInput();setPaused(settingsWasPaused);canvasEl.focus();}
-        settingsPanel.onkeydown=function(e){if(e.key==='Escape'){e.preventDefault();closeSettings();}if(e.key==='Tab'){var nodes=settingsPanel.querySelectorAll('button,input,select'),first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}};
-        function cycleCamera(){gameState.cameraMode=((gameState.cameraMode||0)+1)%3;if(gameState.paused&&!inspection.active){updateDiveCamera(0,true);if(targetHalo.visible)targetHalo.quaternion.copy(camera.quaternion);}clAnnounce(['Follow view','Side view','Tactical view'][gameState.cameraMode]);canvasEl.focus();}
+        function openSettings(){if(gameState.gameOver)return;if(!settingsPanel.hidden){guideTitle.focus();return;}updateHuntHelp();settingsWasPaused=gameState.paused;setPaused(true);guideIntro.textContent=species.name+' · '+(settingsWasPaused?'The dive was already paused and will stay paused when you return.':'Dive paused while this guide is open. Return to dive when ready.');settingsPanel.hidden=false;settingsContent.scrollTop=0;guideTitle.focus();}
+        function closeSettings(){if(settingsPanel.hidden)return;settingsPanel.hidden=true;clearInput();setPaused(settingsWasPaused);canvasEl.focus();}
+        settingsPanel.onkeydown=function(e){if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closeSettings();return;}if(e.key==='Tab'){var nodes=settingsPanel.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled])'),first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&(document.activeElement===first||document.activeElement===guideTitle)){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}};
+        function cycleCamera(){gameState.cameraMode=((gameState.cameraMode||0)+1)%4;var names=['Follow','Side','Tactical','Hunt'];viewButton.textContent='View · '+names[gameState.cameraMode];viewButton.title=names[gameState.cameraMode]+' view. V or View cycles Follow, Side, Tactical and Hunt.';if(!inspection.active&&(gameState.paused||gameState.cameraMode===3)){updateDiveCamera(0,true);if(targetHalo.visible)targetHalo.quaternion.copy(camera.quaternion);}clAnnounce(names[gameState.cameraMode]+' view');canvasEl.focus();}
         // Inspection freezes the simulation, including hunger, cooldowns and predator movement.
         inspectionPanel=document.createElement('div');inspectionPanel.className='cl-inspection';inspectionPanel.hidden=true;inspectionPanel.setAttribute('role','region');inspectionPanel.setAttribute('aria-label','Specimen inspection');stage.appendChild(inspectionPanel);
         var inspectionTitle=document.createElement('div');inspectionTitle.className='cl-inspection-title';
@@ -16118,14 +17120,57 @@ function createCLHuntFish(T,index){
           }
           inspectionOcclusionPosition.copy(camera.position);inspectionOcclusionCenter.copy(inspection.center);
         }
+        // Hunt view measures the existing animal; no scene objects or materials are added.
+        var huntCameraFrame={ready:false,distance:0,hasPrey:false,boundsVersions:new WeakMap(),look:new THREE.Vector3(),desiredLook:new THREE.Vector3(),prey:new THREE.Vector3(),bounds:new THREE.Box3(),part:new THREE.Box3(),inverse:new THREE.Matrix4(),relative:new THREE.Matrix4(),point:new THREE.Vector3(),direction:new THREE.Vector3(),right:new THREE.Vector3(),up:new THREE.Vector3(),offset:new THREE.Vector3()};
+        function measureHuntCameraFrame(dt,snap){
+          var frame=huntCameraFrame;octopus.updateWorldMatrix(true,true);frame.inverse.copy(octopus.matrixWorld).invert();frame.bounds.makeEmpty();
+          octopus.traverse(function(obj){
+            if(!obj.isMesh||obj.isInstancedMesh||!obj.geometry)return;
+            for(var ancestor=obj;ancestor&&ancestor!==octopus.parent;ancestor=ancestor.parent)if(!ancestor.visible)return;
+            // Tubes, fins and mantle can deform. Refresh their retained bounds before fitting.
+            var geometry=obj.geometry,position=geometry.attributes.position;
+            if(!geometry.boundingBox||frame.boundsVersions.get(geometry)!==position.version){geometry.computeBoundingBox();frame.boundsVersions.set(geometry,position.version);}
+            if(!geometry.boundingBox||geometry.boundingBox.isEmpty())return;
+            frame.relative.multiplyMatrices(frame.inverse,obj.matrixWorld);frame.bounds.union(frame.part.copy(obj.geometry.boundingBox).applyMatrix4(frame.relative));
+          });
+          if(frame.bounds.isEmpty())frame.bounds.set(new THREE.Vector3(-1.7,-0.6,-1.5).multiplyScalar(bodyScale),new THREE.Vector3(1.7,0.8,2).multiplyScalar(bodyScale));
+          frame.bounds.expandByScalar(0.14*bodyScale);frame.bounds.getCenter(frame.desiredLook).applyMatrix4(octopus.matrixWorld);
+          // Keep the accepted catch in frame through recovery, including after prey disposal.
+          var visual=octopusStrikeVisual||squidStrikeVisual,tracked=gameState.pendingStrike?gameState.pendingStrike.target:selectedPrey;
+          var focus=visual?visual.aimWorld:tracked&&tracked.userData.alive?tracked.position:null,maxFocus=Math.max(4.5,Math.min(6,3.8*bodyScale));
+          frame.hasPrey=!!(focus&&Number.isFinite(focus.x)&&Number.isFinite(focus.y)&&Number.isFinite(focus.z)&&focus.distanceToSquared(octopus.position)<=maxFocus*maxFocus);
+          if(frame.hasPrey){frame.prey.copy(focus);frame.desiredLook.lerp(frame.prey,0.30);}
+          var step=Math.max(0,Math.min(0.05,dt||0)),immediate=!frame.ready||snap||gameState.a11y.reducedMotion;
+          frame.look.lerp(frame.desiredLook,immediate?1:1-Math.exp(-5*step));frame.ready=true;
+          return immediate;
+        }
+        function fitHuntCameraDistance(direction){
+          var frame=huntCameraFrame;frame.right.crossVectors(camera.up,direction).normalize();frame.up.crossVectors(direction,frame.right).normalize();
+          var tanV=Math.tan(camera.fov*Math.PI/360),tanH=tanV*Math.max(0.25,Math.min(4,camera.aspect||1)),distance=2.6*bodyScale;
+          for(var group=0;group<(frame.hasPrey?2:1);group++)for(var corner=0;corner<8;corner++){
+            if(group===0){frame.point.set(corner&1?frame.bounds.max.x:frame.bounds.min.x,corner&2?frame.bounds.max.y:frame.bounds.min.y,corner&4?frame.bounds.max.z:frame.bounds.min.z).applyMatrix4(octopus.matrixWorld);}
+            else frame.point.set(frame.prey.x+(corner&1?0.45:-0.45),frame.prey.y+(corner&2?0.45:-0.45),frame.prey.z+(corner&4?0.45:-0.45));
+            frame.point.sub(frame.look);var depth=frame.point.dot(direction);
+            distance=Math.max(distance,depth+Math.abs(frame.point.dot(frame.right))/(tanH*0.82),depth+Math.abs(frame.point.dot(frame.up))/(tanV*0.74),depth+camera.near+0.20);
+          }
+          return distance+0.12*bodyScale;
+        }
         function updateDiveCamera(dt,snap){
-          var view=gameState.cameraMode||0,camAngle=inspection.active?inspection.yaw:gameState.facingAngle+(view===1?Math.PI/2:0);
+          var view=gameState.cameraMode||0,camAngle=inspection.active?inspection.yaw:gameState.facingAngle+(view===1?Math.PI/2:view===3?-Math.PI*0.74:0);
           var camOff=inspection.active?new THREE.Vector3(-Math.sin(camAngle)*Math.cos(inspection.pitch)*inspection.distance,Math.sin(inspection.pitch)*inspection.distance,-Math.cos(camAngle)*Math.cos(inspection.pitch)*inspection.distance):new THREE.Vector3(-Math.sin(camAngle)*(view===2?3:4.6),view===2?9:2.2,-Math.cos(camAngle)*(view===2?3:4.6));
           var cameraLook=inspection.active&&inspection.center?inspection.center.clone():new THREE.Vector3(octopus.position.x,octopus.position.y+0.15,octopus.position.z);
           if(inspection.active){
             var inspectionUp=new THREE.Vector3(Math.sin(camAngle)*Math.sin(inspection.pitch),Math.cos(inspection.pitch),Math.cos(camAngle)*Math.sin(inspection.pitch));
             cameraLook.addScaledVector(inspectionUp,(inspection.frameOffset||0)*inspection.distance*Math.tan(camera.fov*Math.PI/360));
           }
+          var huntCameraSnap=false,hunting=!inspection.active&&view===3;
+          if(hunting){
+            huntCameraSnap=measureHuntCameraFrame(dt,snap);cameraLook.copy(huntCameraFrame.look);
+            huntCameraFrame.direction.set(-Math.sin(camAngle)*Math.cos(0.24),Math.sin(0.24),-Math.cos(camAngle)*Math.cos(0.24));
+            var needed=fitHuntCameraDistance(huntCameraFrame.direction),ease=huntCameraSnap?1:1-Math.exp(-3.5*Math.max(0,Math.min(0.05,dt||0)));
+            huntCameraFrame.distance=Math.max(needed,huntCameraFrame.distance+(needed-huntCameraFrame.distance)*ease);
+            camOff.copy(huntCameraFrame.direction).multiplyScalar(huntCameraFrame.distance);
+          }else huntCameraFrame.ready=false;
           var camTarget=cameraLook.clone().add(camOff),camDir=camOff.clone().normalize();
           if(!inspection.active){
             cameraRay.set(cameraLook,camDir);cameraRay.far=camOff.length();
@@ -16133,7 +17178,7 @@ function createCLHuntFish(T,index){
             if(cameraHits.length)camTarget.copy(cameraLook).addScaledVector(camDir,Math.max(1.5,cameraHits[0].distance-0.3));
           }
           camTarget.y=Math.max(camTarget.y,terrainHeight(camTarget.x,camTarget.z)+0.65);
-          if(snap&&!inspection.active)camera.position.copy(camTarget);
+          if((snap||huntCameraSnap)&&!inspection.active)camera.position.copy(camTarget);
           else if(inspection.active&&inspection.snapCamera){camera.position.copy(camTarget);inspection.snapCamera=false;}
           else camera.position.lerp(camTarget,gameState.a11y.reducedMotion?1:1-Math.exp(-7.7*dt));
           if(inspection.active){
@@ -16144,6 +17189,22 @@ function createCLHuntFish(T,index){
             camera.position.y=Math.max(camera.position.y,terrainHeight(camera.position.x,camera.position.z)+0.65);
             updateInspectionOcclusion();
           }
+          if(hunting&&(!cameraHits||!cameraHits.length)){
+            // A follow interpolation chord may move inward. Fit the actual viewing direction too.
+            huntCameraFrame.offset.subVectors(camera.position,cameraLook);var currentDistance=huntCameraFrame.offset.length();
+            if(currentDistance>0.0001){
+              huntCameraFrame.offset.multiplyScalar(1/currentDistance);var currentFit=fitHuntCameraDistance(huntCameraFrame.offset);
+              if(currentDistance<currentFit){
+                cameraRay.set(cameraLook,huntCameraFrame.offset);cameraRay.far=currentFit;
+                var huntHits=cameraRay.intersectObjects(rocks,false);
+                if(!huntHits.length)camera.position.copy(cameraLook).addScaledVector(huntCameraFrame.offset,currentFit);
+              }
+            }
+            camera.position.y=Math.max(camera.position.y,terrainHeight(camera.position.x,camera.position.z)+0.65);
+          }
+          // Smoothing follows a chord: its actual position also needs seabed clearance.
+          // Keep normal dive views above slopes, including a rock-shortened Hunt view.
+          if(!inspection.active)camera.position.y=Math.max(camera.position.y,terrainHeight(camera.position.x,camera.position.z)+0.65);
           camera.lookAt(cameraLook);camera.updateMatrixWorld();
           if(inspection.active){
             octopus.updateMatrixWorld(true);
@@ -16170,7 +17231,7 @@ function createCLHuntFish(T,index){
         }
         function preyCandidates(){var list=crabs.filter(function(c){return c.userData.alive;});fishSchools.forEach(function(s){s.fish.forEach(function(f){if(f.userData.alive)list.push(f);});});return list;}
         function cycleTarget(){gameState.observationUntil=0;if(capabilities.diet==='detritus'){var advice=clHuntInputCue('Find marine snow. Tap Forage [R] nearby, or hold E.','Find marine snow. Tap Forage nearby, or hold Gather / hold.');gameState.strikeMessage=advice;gameState.strikeMessageUntil=gameNow+3500;clAnnounce(advice);updateMission();canvasEl.focus();return;}var list=preyCandidates().filter(function(p){return p.position.distanceTo(octopus.position)<28;}).sort(function(a,b){return a.position.distanceToSquared(octopus.position)-b.position.distanceToSquared(octopus.position);});targetCycle=explicitTarget&&selectedPrey?list.indexOf(selectedPrey)+1:0;selectedPrey=list.length?list[targetCycle%list.length]:null;explicitTarget=!!selectedPrey;updateTrackedPrey();updateMission();clAnnounce(selectedPrey?clHuntInputCue('Target selected. Move into range and press E.','Target selected. Move into range and tap Strike / hold.'):'No prey nearby. Follow the reef toward the yellow map markers.');canvasEl.focus();}
-        var observeButton=uiButton('Observe',function(){closeMobileTools(false);var observationFood=capabilities.diet==='detritus'?marineSnow.slice():preyCandidates();var nearest=observationFood.sort(function(a,b){return a.position.distanceToSquared(octopus.position)-b.position.distanceToSquared(octopus.position);})[0];var foodText=capabilities.diet==='detritus'?(nearest?'Nearest marine snow '+nearest.position.distanceTo(octopus.position).toFixed(0)+' metres away. ':'No marine snow nearby. '):(nearest?'Nearest prey '+nearest.position.distanceTo(octopus.position).toFixed(0)+' metres away. ':'No prey nearby. ');var msg=species.name+'. '+(gameState.inDen?'Sheltered in a den. ':'In open water. ')+foodText+Math.round(gameState.camoEff*100)+' percent camouflage. '+(gameState.threatText||'No predator has detected you.');clAnnounce(msg);pushCaption(msg,'observation');missionBrief.textContent=msg;missionBrief.hidden=false;targetReadout.hidden=true;lastMissionText=msg;gameState.observationUntil=gameNow+6000;canvasEl.focus();});desktopControlOrder=Array.prototype.slice.call(controlPanel.children);mobileSecondaryButtons.push(observeButton);
+        var observeButton=uiButton('Observe',function(){closeMobileTools(false);var observationFood=capabilities.diet==='detritus'?marineSnow.slice():preyCandidates();var nearest=observationFood.sort(function(a,b){return a.position.distanceToSquared(octopus.position)-b.position.distanceToSquared(octopus.position);})[0];var foodText=capabilities.diet==='detritus'?(nearest?'Nearest marine snow '+nearest.position.distanceTo(octopus.position).toFixed(0)+' metres away. ':'No marine snow nearby. '):(nearest?'Nearest prey '+nearest.position.distanceTo(octopus.position).toFixed(0)+' metres away. ':'No prey nearby. ');var msg=species.name+'. '+(gameState.inDen?'Sheltered in a den. ':gameState.isSqueezing?'In a reef crevice. ':'In open water. ')+foodText+clHuntRefugeAdvice(reefRefuge,speciesId,bodyScale,octopus.position)+Math.round(gameState.camoEff*100)+' percent camouflage. '+(gameState.threatText||'No predator has detected you.');clAnnounce(msg);pushCaption(msg,'observation');missionBrief.textContent=msg;missionBrief.hidden=false;targetReadout.hidden=true;lastMissionText=msg;gameState.observationUntil=gameNow+6000;canvasEl.focus();});desktopControlOrder=Array.prototype.slice.call(controlPanel.children);mobileSecondaryButtons.push(observeButton);
         applyLiveAccess();
 
         // Spatial cover and readable prey intent. All thresholds are game rules.
@@ -16186,6 +17247,7 @@ function createCLHuntFish(T,index){
         var targetBracketGeometry=new THREE.BufferGeometry();targetBracketGeometry.setAttribute('position',new THREE.Float32BufferAttribute(targetBracketPositions,3));targetBracketGeometry.computeBoundingSphere();
         var targetHalo=new THREE.Mesh(targetBracketGeometry,new THREE.MeshBasicMaterial({color:0xffdf91,side:THREE.DoubleSide,transparent:true,opacity:0.9,depthWrite:false}));
         targetHalo.name='cl-target';scene.add(targetHalo);targetHalo.visible=false;
+        var reefRefuge=null;
         var grounded=rocks.concat(corals,grass.map(function(g){return g.mesh;}),kelpStrands.map(function(k){return k.mesh;}));
         grounded.forEach(function(o){if(o)o.userData.groundOffset=o.position.y;});
         rocks.concat(corals).forEach(function(o){o.userData.reefFootprint=createCLReefFootprint(THREE,o);});
@@ -16345,6 +17407,30 @@ function createCLHuntFish(T,index){
         rocks.slice(0,10).forEach(function(r,i){r.position.x=-6-(i%3)*1.7;r.position.z=2+Math.floor(i/3)*3.2;});
         // Keep the spawn and sand route clear of impassable rocks.
         rocks.slice(10).forEach(function(r){if(Math.hypot(r.position.x,r.position.z)<5 || (r.position.x>0&&r.position.x<7&&r.position.z>-5&&r.position.z<10))r.position.x-=16;});
+        // Choose actual free space after the fixed opening actors have settled.
+        // Append to the retained grounding/collision pools before coral and plant placement.
+        if(!isDeepSpecies(speciesId)&&speciesId!=='humboldtSquid'){
+          var refugeBlockers=[],refugeBounds=new THREE.Box3();
+          rocks.concat(clams,shelters,crabs,dens.map(function(den){return den.group;}),landmarks.map(function(landmark){return landmark.mesh;})).forEach(function(actor){
+            if(!actor)return;actor.updateWorldMatrix(true,true);refugeBounds.setFromObject(actor);
+            if(Number.isFinite(refugeBounds.min.x+refugeBounds.max.x+refugeBounds.min.z+refugeBounds.max.z))refugeBlockers.push({minX:refugeBounds.min.x-0.15,maxX:refugeBounds.max.x+0.15,minZ:refugeBounds.min.z-0.15,maxZ:refugeBounds.max.z+0.15});
+          });
+          var refugeSite=findCLHuntRefugeSite(refugeBlockers,terrainHeight);
+          if(refugeSite){
+            var refugeMaterial=new THREE.MeshStandardMaterial({color:new THREE.Color(0x4d5142).convertSRGBToLinear(),roughness:0.92,vertexColors:true,shadowSide:THREE.DoubleSide});
+            refugeMaterial.name='cl-refuge-rock-material';
+            if(renderer.capabilities.isWebGL2||renderer.extensions.has('OES_standard_derivatives')){refugeMaterial.extensions={derivatives:true};refugeMaterial.onBeforeCompile=shadeCLHuntRockSurface;refugeMaterial.customProgramCacheKey=function(){return 'cl-rock-surface-v1';};}else refugeMaterial.onBeforeCompile=reefSurface;
+            var refugeWidths=[0.82,0.72,0.94],refugeOffsets=[-1.21,-0.14,1.11];
+            reefRefuge={x:refugeSite.x,z:refugeSite.z,rocks:[],gaps:[{x:refugeSite.x-0.65,z:refugeSite.z,width:0.30,halfLength:1.70,label:'Small crevice'},{x:refugeSite.x+0.43,z:refugeSite.z,width:0.42,halfLength:1.70,label:'Wider crevice'}]};
+            for(var refugeIndex=0;refugeIndex<3;refugeIndex++){
+              var refugeRock=new THREE.Mesh(createCLHuntRefugeGeometry(THREE,refugeWidths[refugeIndex],(1.60+refugeIndex*0.09)*[1,0.81,1.12][refugeIndex],3.4,refugeIndex),refugeMaterial);
+              refugeRock.name='cl-refuge-rock-'+refugeIndex;refugeRock.position.set(refugeSite.x+refugeOffsets[refugeIndex],0,refugeSite.z);
+              refugeRock.userData.clRefuge=true;refugeRock.userData.groundOffset=0;refugeRock.userData.substrate='rock';refugeRock.userData.substrateRadius=1.9;
+              refugeRock.userData.reefFootprint=createCLReefFootprint(THREE,refugeRock);refugeRock.castShadow=true;refugeRock.receiveShadow=true;
+              scene.add(refugeRock);rocks.push(refugeRock);grounded.push(refugeRock);rockCollisionFootprints.push(createCLHuntRockCollisionFootprint(THREE,refugeRock));reefRefuge.rocks.push(refugeRock);
+            }
+          }
+        }
         corals.slice(0,10).forEach(function(r,i){r.position.x=-8+(i%3)*1.1;r.position.z=2+i*1.5;});
         settleReefCorals(null,[]);
         settleCLHuntHabitatPlants(null,true);
@@ -16354,6 +17440,7 @@ function createCLHuntFish(T,index){
         updateGround();
         var reefRubble=createCLHuntReefRubble(THREE,rocks,rockCollisionFootprints,terrainHeight,quality);scene.add(reefRubble.mesh);
         function rockBlocks(a,b){var delta=b.clone().sub(a),length=delta.length();if(length<0.1)return false;coverRay.set(a,delta.normalize());coverRay.far=length;var hits=coverRay.intersectObjects(rocks,false);return hits.length>0;}
+        function canPickUpShelter(shelter){return shelter.userData.state==='free'&&SHELTER_TYPES[shelter.userData.shelterType].carriable;}
         function inkBlocks(a,b){
           var segment=b.clone().sub(a),lengthSq=segment.lengthSq();
           return gameState.inkCloudsActive.some(function(ink){var t=lengthSq?Math.max(0,Math.min(1,ink.mesh.position.clone().sub(a).dot(segment)/lengthSq)):0;return a.clone().addScaledVector(segment,t).distanceTo(ink.mesh.position)<2.6*ink.mesh.scale.x;});
@@ -16425,7 +17512,7 @@ function createCLHuntFish(T,index){
         }
         function updateForaging(){
           if(!gameState.forageTarget)return;
-          if(keys.KeyW||keys.KeyS||keys.KeyA||keys.KeyD||keys.KeyQ||keys.KeyZ||keys.Space||gameState.tookHitAt>gameState.forageStartedAt||!forageReady(gameState.forageTarget))cancelForage('Foraging stopped. Stay still and within reach to gather food.');
+          if(keys.KeyW||keys.KeyS||keys.KeyA||keys.KeyD||keys.ArrowUp||keys.ArrowDown||keys.ArrowLeft||keys.ArrowRight||keys.KeyQ||keys.KeyZ||keys.Space||gameState.tookHitAt>gameState.forageStartedAt||!forageReady(gameState.forageTarget))cancelForage('Foraging stopped. Stay still and within reach to gather food.');
         }
         function updateThreatHud(){
           var threats=[{p:moray,name:'Moray'},{p:grouper,name:'Grouper'},{p:shark,name:'Shark'}];zonalPredators.forEach(function(p){threats.push({p:p,name:(p.userData.kind||'Predator').replace(/([A-Z])/g,' $1')});});
@@ -16482,10 +17569,17 @@ function createCLHuntFish(T,index){
         }
         function updateSnow(dt){
           gameState.forageProgress=0;
+          // Held and tap foraging both need settled feeding filaments after a hit.
+          var snowGatheringReady=!(keys.KeyW||keys.KeyS||keys.KeyA||keys.KeyD||keys.ArrowUp||keys.ArrowDown||keys.ArrowLeft||keys.ArrowRight||keys.KeyQ||keys.KeyZ||keys.Space)&&gameNow-gameState.tookHitAt>250;
           marineSnow.forEach(function(snow){snow.position.y-=dt*0.14;if(snow.position.distanceTo(octopus.position)>16){snow.position.copy(octopus.position).add(new THREE.Vector3((Math.random()-0.5)*10,3,(Math.random()-0.5)*10));}
-            if((keys.KeyE||gameState.forageTarget===snow)&&forageReady(snow)){snow.userData.gather=(snow.userData.gather||0)+dt;gameState.forageProgress=Math.max(gameState.forageProgress,Math.min(1,snow.userData.gather/0.65));if(snow.userData.gather>0.65){if(gameState.forageTarget===snow)cancelForage();snow.userData.gather=0;snow.position.copy(octopus.position).add(new THREE.Vector3((Math.random()-0.5)*10,3,(Math.random()-0.5)*10));gameState.hunger=Math.min(gameState.maxHunger,gameState.hunger+18);gameState.score+=2;gameState.runStats.marineSnow=(gameState.runStats.marineSnow||0)+1;recordEvent('Meal','Gathered marine snow with feeding filaments');clAnnounce(__alloT('stem.cephalopodlab.sr_marine_snow_gathered_energy_restored', 'Marine snow gathered. Energy restored.'));}}else snow.userData.gather=0;
+            if(snowGatheringReady&&(keys.KeyE||gameState.forageTarget===snow)&&forageReady(snow)){snow.userData.gather=(snow.userData.gather||0)+dt;gameState.forageProgress=Math.max(gameState.forageProgress,Math.min(1,snow.userData.gather/0.65));if(snow.userData.gather>0.65){if(gameState.forageTarget===snow)cancelForage();snow.userData.gather=0;snow.position.copy(octopus.position).add(new THREE.Vector3((Math.random()-0.5)*10,3,(Math.random()-0.5)*10));gameState.hunger=Math.min(gameState.maxHunger,gameState.hunger+18);gameState.score+=2;gameState.runStats.marineSnow=(gameState.runStats.marineSnow||0)+1;recordEvent('Meal','Gathered marine snow with feeding filaments');clAnnounce(__alloT('stem.cephalopodlab.sr_marine_snow_gathered_energy_restored', 'Marine snow gathered. Energy restored.'));}}else snow.userData.gather=0;
           });clickRequested=false;
         }
+
+        // Created after gameplay actors: one reusable, visual-only near-bed wake.
+        var sedimentWake=createCLHuntSedimentWake(THREE,renderer.getPixelRatio());scene.add(sedimentWake);
+        var sedimentBedProbe={x:0,z:0};
+        var sedimentInput={fromX:0,fromZ:0,x:0,z:0,height:0,floorRestY:floorRestY,bodyScale:bodyScale,jetting:false,substrate:'sand',reducedMotion:false,substrateAt:function(x,z){sedimentBedProbe.x=x;sedimentBedProbe.z=z;return detectSubstrate(sedimentBedProbe).substrate;}};
 
         var clock = new THREE.Clock();
         var animId;
@@ -16505,11 +17599,13 @@ function createCLHuntFish(T,index){
           var due=pendingTasks.filter(function(t){return t.at<=now;});pendingTasks=pendingTasks.filter(function(t){return t.at>now;});
           due.forEach(function(t){if(!disposed)t.fn();});
 
-          if (!gameState.gameOver && !gameState.paused) {
+          // Render-only frames preserve world state; camera and presentation still render below.
+          if (!gameState.gameOver && !gameState.paused && dt>0) {
             gameState.threatText="";updateTargets();updateForaging();if(capabilities.diet==="detritus")updateSnow(dt);
             // ─── Input → movement ───
-            var moveFwd = (keys.KeyW ? 1 : 0) - (keys.KeyS ? 1 : 0);
-            var turn = (keys.KeyA ? 1 : 0) - (keys.KeyD ? 1 : 0);
+            // Arrow alternatives retain independent key releases when bindings are combined.
+            var moveFwd = ((keys.KeyW||keys.ArrowUp) ? 1 : 0) - ((keys.KeyS||keys.ArrowDown) ? 1 : 0);
+            var turn = ((keys.KeyA||keys.ArrowLeft) ? 1 : 0) - ((keys.KeyD||keys.ArrowRight) ? 1 : 0);
             if(gameState.stamina<=1)gameState.jetExhausted=true;
             if(gameState.stamina>=24 || !keys.Space)gameState.jetExhausted=false;
             var isJetting = !!keys.Space && !gameState.jetExhausted && gameState.stamina > 0 && moveFwd > 0;
@@ -16525,6 +17621,7 @@ function createCLHuntFish(T,index){
               : 1.0;
             var moveSpeed = (isJetting ? 8.5 : 2.6) * species.jetSpeedMul * carryPenalty;
             var moveDir = new THREE.Vector3(Math.sin(gameState.facingAngle), 0, Math.cos(gameState.facingAngle));
+            var movementOrigin={x:octopus.position.x,y:gameState.verticalY,z:octopus.position.z};
             octopus.position.x += moveDir.x * moveFwd * moveSpeed * dt;
             octopus.position.z += moveDir.z * moveFwd * moveSpeed * dt;
             // No hard map clamp — world is procedurally recycled around the
@@ -16541,9 +17638,33 @@ function createCLHuntFish(T,index){
             var bottomY=terrainHeight(octopus.position.x,octopus.position.z)+floorRestY;
             gameState.verticalY = Math.max(bottomY, Math.max(-45, Math.min(18, gameState.verticalY)));
             if(vertInput===0 && !capabilities.swimming && gameState.verticalY-bottomY<0.45)gameState.verticalY=bottomY;
+            var proposedCrevice=findCLHuntCrevice(octopus.position,gameState.verticalY,rocks,rockCollisionFootprints,bodyScale,speciesId,terrainHeight(octopus.position.x,octopus.position.z),floorRestY);
+            var collisionMargin=proposedCrevice?proposedCrevice.margin:bodyScale*0.22;
             rocks.forEach(function(r,i){
-              resolveCLHuntRockCollision(octopus.position,gameState.verticalY,r.position,rockCollisionFootprints[i],bodyScale*0.22);
+              resolveCLHuntRockCollision(octopus.position,gameState.verticalY,r.position,rockCollisionFootprints[i],collisionMargin);
             });
+            // Sequential pushes must not squeeze a rigid body through the opposite wall.
+            var clearanceProbe={x:0,z:0};
+            function groundedHeight(point,height){var floor=terrainHeight(point.x,point.z)+floorRestY;return Math.max(floor,vertInput===0&&!capabilities.swimming&&height-floor<0.45?floor:height);}
+            function clearAt(point,margin,height){return rocks.every(function(r,i){clearanceProbe.x=point.x;clearanceProbe.z=point.z;return !resolveCLHuntRockCollision(clearanceProbe,height===undefined?gameState.verticalY:height,r.position,rockCollisionFootprints[i],margin);});}
+            gameState.verticalY=groundedHeight(octopus.position,gameState.verticalY);
+            var resolvedCrevice=findCLHuntCrevice(octopus.position,gameState.verticalY,rocks,rockCollisionFootprints,bodyScale,speciesId,terrainHeight(octopus.position.x,octopus.position.z),floorRestY);
+            if(!clearAt(octopus.position,resolvedCrevice?resolvedCrevice.margin:bodyScale*0.22)){
+              var restoreHeight=groundedHeight(movementOrigin,gameState.verticalY);
+              var originCrevice=findCLHuntCrevice(movementOrigin,restoreHeight,rocks,rockCollisionFootprints,bodyScale,speciesId,terrainHeight(movementOrigin.x,movementOrigin.z),floorRestY);
+              var canRestore=clearAt(movementOrigin,originCrevice?originCrevice.margin:bodyScale*0.22,restoreHeight);
+              if(!canRestore){
+                restoreHeight=groundedHeight(movementOrigin,movementOrigin.y);
+                var previousCrevice=findCLHuntCrevice(movementOrigin,restoreHeight,rocks,rockCollisionFootprints,bodyScale,speciesId,terrainHeight(movementOrigin.x,movementOrigin.z),floorRestY);
+                canRestore=clearAt(movementOrigin,previousCrevice?previousCrevice.margin:bodyScale*0.22,restoreHeight);
+              }
+              if(canRestore){
+                octopus.position.x=movementOrigin.x;octopus.position.z=movementOrigin.z;
+                gameState.verticalY=restoreHeight;
+              }
+            }
+            // Recheck the resolved position: UI and anatomy must describe the actual gap.
+            gameState.crevice=findCLHuntCrevice(octopus.position,gameState.verticalY,rocks,rockCollisionFootprints,bodyScale,speciesId,terrainHeight(octopus.position.x,octopus.position.z),floorRestY);
             // Deepest point of the run. The pressure-and-depth lesson plan asks
             // students to record how deep they went, and nothing tracked it.
             if (gameState.verticalY < gameState.runStats.deepestY) gameState.runStats.deepestY = gameState.verticalY;
@@ -16691,6 +17812,13 @@ function createCLHuntFish(T,index){
             // stationaryTime back, so you genuinely have to settle in.
             var substrateBelow = detectSubstrate(octopus.position);
             gameState.currentSubstrate = substrateBelow.substrate;
+            sedimentInput.fromX=movementOrigin.x;sedimentInput.fromZ=movementOrigin.z;sedimentInput.x=octopus.position.x;sedimentInput.z=octopus.position.z;
+            sedimentInput.height=gameState.verticalY;sedimentInput.jetting=isJetting;sedimentInput.substrate=substrateBelow.substrate;sedimentInput.reducedMotion=gameState.a11y.reducedMotion;
+            if(updateCLHuntSedimentWake(sedimentWake.userData.clSediment,dt,sedimentInput,terrainHeight)){
+              sedimentWake.geometry.attributes.position.needsUpdate=true;sedimentWake.geometry.attributes.clSedimentAlpha.needsUpdate=true;sedimentWake.geometry.attributes.clSedimentScale.needsUpdate=true;
+            }
+            sedimentWake.material.color.copy(sedimentWake.material.userData.clSedimentBaseColor).multiplyScalar((0.18+0.82*dayMix)*depthLight);
+            sedimentWake.visible=sedimentWake.userData.clSediment.activeCount>0;
             var target = substrateBelow.color;
             if(octopus.position.y-terrainHeight(octopus.position.x,octopus.position.z)>1.4 || speciesId==='nautilus')target=initRGB;
             // Color lerp speed: faster lerp when stationary, slower while moving
@@ -16756,39 +17884,19 @@ function createCLHuntFish(T,index){
 
             // The animal rig applies restrained substrate-dependent skin relief.
 
-            // ─── Squeeze-through-gap detection ───────────────────
-            // If the octopus is pinched between 2+ rocks within 2.5u, lerp
-            // arm scale.x down so the arms appear to fold inward — the real
-            // anatomical capability that lets octopuses squeeze through gaps
-            // smaller than their mantle. Updates runStats.longestSqueezeMs.
-            (function() {
-              // Cuttlefish can't squeeze — their cuttlebone is a rigid
-              // internal shell. Skip the squeeze detection entirely.
-              if (isCuttlefish) {
-                gameState.isSqueezing = false;
-                return;
-              }
-              var rocksNear = 0;
-              for (var rni = 0; rni < rocks.length && rocksNear < 2; rni++) {
-                var rdx2 = rocks[rni].position.x - octopus.position.x;
-                var rdz2 = rocks[rni].position.z - octopus.position.z;
-                if (rdx2 * rdx2 + rdz2 * rdz2 < 2.5 * 2.5) rocksNear++;
-              }
-              var wasSqueezing = gameState.isSqueezing;
-              gameState.isSqueezing = rocksNear >= 2;
-              if (gameState.isSqueezing && !wasSqueezing) {
-                gameState.runStats.currentSqueezeStart = now;
-              } else if (!gameState.isSqueezing && wasSqueezing) {
-                var sqDur = now - gameState.runStats.currentSqueezeStart;
-                if (sqDur > gameState.runStats.longestSqueezeMs) gameState.runStats.longestSqueezeMs = sqDur;
-              }
-              var compressTarget = gameState.isSqueezing ? 0.55 : 1.0;
-              arms.forEach(function(arm) {
-                arm.compressTarget = compressTarget;
-                arm.compressCurrent += (arm.compressTarget - arm.compressCurrent) * 4 * dt;
-                // Compression is applied to the curve by animal.update.
-              });
-            })();
+            // Fold the arms and mantle only inside a physically usable seabed crevice.
+            var wasSqueezing=gameState.isSqueezing;
+            gameState.isSqueezing=!!gameState.crevice;
+            if(gameState.isSqueezing&&!wasSqueezing){
+              gameState.runStats.currentSqueezeStart=now;
+              clAnnounce('Squeezing through a reef gap. Stay behind rock to hide; openings remain exposed.');
+            }
+            if(gameState.isSqueezing||wasSqueezing)gameState.runStats.longestSqueezeMs=Math.max(gameState.runStats.longestSqueezeMs,now-gameState.runStats.currentSqueezeStart);
+            gameState.squeezeBlend=(gameState.squeezeBlend||0)+((gameState.isSqueezing?1:0)-(gameState.squeezeBlend||0))*(gameState.a11y.reducedMotion?1:1-Math.exp(-10*dt));
+            arms.forEach(function(arm){
+              arm.compressTarget=gameState.isSqueezing?0.55:1;
+              arm.compressCurrent+=(arm.compressTarget-arm.compressCurrent)*(gameState.a11y.reducedMotion?1:1-Math.exp(-10*dt));
+            });
 
             // ─── Shelter tool use (G to grab/drop) ──────────────
             // Edge-triggered G (one event per press). Carry one shelter at
@@ -16800,13 +17908,7 @@ function createCLHuntFish(T,index){
             // Pearl collection (G near a pearl, takes priority over shelter
             // pickup so the player can grab pearls embedded in landmarks)
             if (gKeyNow && !gKeyDownPrev && !carriedShelter) {
-              var bestP = null, bestPd = PEARL_PICKUP_RANGE;
-              for (var pgi = 0; pgi < pearls.length; pgi++) {
-                var pgdx = pearls[pgi].position.x - octopus.position.x;
-                var pgdz = pearls[pgi].position.z - octopus.position.z;
-                var pgd = Math.sqrt(pgdx * pgdx + pgdz * pgdz);
-                if (Math.abs(octopus.position.y-pearls[pgi].position.y)<1.5 && pgd < bestPd) { bestP = pearls[pgi]; bestPd = pgd; }
-              }
+              var bestP = clHuntNearestReachablePickup(pearls,octopus.position,PEARL_PICKUP_RANGE,1.5,rockBlocks);
               if (bestP) {
                 var lmType = bestP.userData.landmarkType;
                 pearlState.byLandmark[lmType] = true;
@@ -16842,15 +17944,7 @@ function createCLHuntFish(T,index){
                 carriedShelter = null;
               } else {
                 // Pickup: nearest free CARRIABLE shelter in range
-                var bestS = null, bestSd = SHELTER_PICKUP_RANGE;
-                for (var soi = 0; soi < shelters.length; soi++) {
-                  if (shelters[soi].userData.state !== 'free') continue;
-                  if (!SHELTER_TYPES[shelters[soi].userData.shelterType].carriable) continue;
-                  var sdx = shelters[soi].position.x - octopus.position.x;
-                  var sdz = shelters[soi].position.z - octopus.position.z;
-                  var sd = Math.sqrt(sdx * sdx + sdz * sdz);
-                  if (Math.abs(octopus.position.y-shelters[soi].position.y)<1.2 && sd < bestSd) { bestS = shelters[soi]; bestSd = sd; }
-                }
+                var bestS = clHuntNearestReachablePickup(shelters,octopus.position,SHELTER_PICKUP_RANGE,1.2,rockBlocks,canPickUpShelter);
                 if (bestS) {
                   scene.remove(bestS);
                   octopus.add(bestS);
@@ -16863,7 +17957,7 @@ function createCLHuntFish(T,index){
                 }
               }
             }
-            gKeyDownPrev = gKeyNow;
+            gKeyDownPrev = !!keys.KeyG; // Preserve the held input after pearl collection consumes this frame.
             // Carrying wobble
             if (carriedShelter) {
               carriedShelter.userData.wobble += dt * 2;
@@ -16924,9 +18018,7 @@ function createCLHuntFish(T,index){
               gameState.inkCooldownUntil = now + gameState.inkCooldownMs;
               gameState.runStats.inkUsed++;
               unlockAchievement('firstInk');
-              var inkGeo = new THREE.SphereGeometry(2.6, 16, 12);
-              var inkMat = new THREE.MeshBasicMaterial({ color: 0x080812, transparent: true, opacity: 0.72 });
-              var inkCloud = new THREE.Mesh(inkGeo, inkMat);
+              var inkCloud = createCLHuntInkCloud(THREE);
               inkCloud.position.copy(octopus.position);
               scene.add(inkCloud);
               gameState.inkCloudsActive.push({ mesh: inkCloud, expiresAt: now + 3200 });
@@ -16952,8 +18044,7 @@ function createCLHuntFish(T,index){
                 ink.mesh.material.dispose();
                 return false;
               }
-              ink.mesh.material.opacity = t * 0.72;
-              ink.mesh.scale.setScalar(1 + (1 - t) * 0.7);
+              advanceCLHuntInkCloud(ink.mesh,t,dt,gameState.a11y.reducedMotion);
               return true;
             });
 
@@ -17184,7 +18275,7 @@ function createCLHuntFish(T,index){
                                     (inkBlocks(zp.position,octopus.position) ? INK_DETECTION_FACTOR * zpInkMod : 1) *
                                     (gameState.isMimicking ? 0.6 : 1);
               if (zpud.state === 'patrol') {
-                zpud.patrolAngle += (Math.random() - 0.5) * 0.05;
+                advanceCLHuntPatrolHeading(zpud,dt,Math.random);
                 zp.position.x += Math.sin(zpud.patrolAngle) * zpud.speed * 0.3 * dt;
                 zp.position.z += Math.cos(zpud.patrolAngle) * zpud.speed * 0.3 * dt;
                 zp.rotation.y = zpud.patrolAngle + Math.PI / 2;
@@ -17370,9 +18461,8 @@ function createCLHuntFish(T,index){
             causticsTex.offset.set(groundX*0.08+causticPhase*0.012,-groundZ*0.08+Math.sin(causticPhase*0.16)*0.05);
             sandDownwelling.value=dayMix*depthLight;
             caustics.material.opacity=0.065*dayMix*depthLight;caustics.visible=gameState.verticalY>-1;
-            // Backdrop rides on the camera; tints derive from the frame's
-            // background so zones and night still own the palette.
-            backdrop.position.copy(camera.position);
+            // Tints derive from the active frame; the dome follows the rendered
+            // camera separately so paused inspection keeps the same water palette.
             // Match fog exactly at and below the horizon so the finite floor fades away.
             // The upper column gains bounded cyan; deep/night surface glow fades.
             backdropMat.uniforms.bottomColor.value.copy(scene.fog.color);
@@ -17383,6 +18473,7 @@ function createCLHuntFish(T,index){
             surfaceSheet.position.x = octopus.position.x;
             surfaceSheet.position.z = octopus.position.z;
             surfaceMat.opacity = (0.035 + 0.13 * dayMix)*depthLight;
+            surfaceFlow.value=causticPhase;
             shaftGroup.position.x = octopus.position.x;
             shaftGroup.position.z = octopus.position.z;
             var shaftDepthMix = Math.max(0, Math.min(1, (gameState.verticalY + 30) / 40));
@@ -17412,6 +18503,7 @@ function createCLHuntFish(T,index){
               }
               // Rocks
               for (var rri = 0; rri < rocks.length; rri++) {
+                if(rocks[rri].userData.clRefuge)continue;
                 var rrx = rocks[rri].position.x - octopus.position.x;
                 var rrz = rocks[rri].position.z - octopus.position.z;
                 if (rrx * rrx + rrz * rrz > RECYCLE_DIST * RECYCLE_DIST) {
@@ -17526,11 +18618,11 @@ function createCLHuntFish(T,index){
                 var pmat2 = new THREE.MeshStandardMaterial({ color: new THREE.Color([0x55483a,0x3f4d3d,0x5c4f3f,0x46524a][newDenIndex%4]).convertSRGBToLinear(), roughness: 0.9 });
                 pmat2.name='cl-den-rock-material';
                 if(renderer.capabilities.isWebGL2||renderer.extensions.has('OES_standard_derivatives')){pmat2.extensions={derivatives:true};pmat2.onBeforeCompile=shadeCLHuntRockSurface;pmat2.customProgramCacheKey=function(){return 'cl-rock-surface-v1';};}else{pmat2.onBeforeCompile=reefSurface;}
-                var np1 = new THREE.Mesh(createCLHuntDenRockGeometry(THREE,0.70,20,14,newDenIndex*3), pmat2);np1.name='cl-den-rock';
+                var np1 = new THREE.Mesh(createCLHuntDenWeatheredGeometry(THREE,0.70,20,14,newDenIndex*3), pmat2);np1.name='cl-den-rock';
                 np1.scale.set(0.7,1.05,0.8);np1.position.set(-0.9, 0.7, 0);newDen.add(np1);
-                var np2 = new THREE.Mesh(createCLHuntDenRockGeometry(THREE,0.70,20,14,newDenIndex*3+1), pmat2);np2.name='cl-den-rock';
+                var np2 = new THREE.Mesh(createCLHuntDenWeatheredGeometry(THREE,0.70,20,14,newDenIndex*3+1), pmat2);np2.name='cl-den-rock';
                 np2.scale.set(0.8,1.02,0.8);np2.position.set(0.9, 0.7, 0);newDen.add(np2);
-                var nlintel = new THREE.Mesh(createCLHuntDenRockGeometry(THREE,1,24,16,newDenIndex*3+2), pmat2);nlintel.name='cl-den-rock';
+                var nlintel = new THREE.Mesh(createCLHuntDenWeatheredGeometry(THREE,1,24,16,newDenIndex*3+2), pmat2);nlintel.name='cl-den-rock';
                 nlintel.scale.set(1.5,0.36,0.66);nlintel.position.set(0, 1.6, 0);newDen.add(nlintel);
                 var nshadow = new THREE.Mesh(
                   createCLHuntDenShadowGeometry(THREE),
@@ -17765,6 +18857,11 @@ function createCLHuntFish(T,index){
             }
             var clamGatheringThisFrame = !!(heldE && capabilities.diet!=='detritus' && nearestClam && !isMoving && now-gameState.tookHitAt>250);
             if (clamGatheringThisFrame) {
+              // Work belongs to one shell; a new clam must not inherit unfinished drilling.
+              if(gameState.drillingClam!==nearestClam){
+                if(gameState.drillingClam&&gameState.drillingClam.userData.alive)gameState.drillingClam.children[1].rotation.x=0;
+                gameState.drillProgress=0;
+              }
               gameState.drillingClam = nearestClam;
               gameState.drillProgress = Math.min(1, gameState.drillProgress + dt / DRILL_DURATION);gameState.forageProgress=gameState.drillProgress;
               nearestClam.children[1].rotation.x = -gameState.drillProgress * Math.PI / 6;
@@ -17848,27 +18945,14 @@ function createCLHuntFish(T,index){
             // Each bell radially expands + contracts via vertex displacement
             // along the surface normal direction. Body drifts in a slow
             // wander + gentle vertical bob. Trailing tentacles wave with a
-            // sine offset. Wraps into a 70u radius around the player.
+            // Phase-linked thrust, recovery and trailing arms. Relocate beyond 90 world units.
             jellyfish.forEach(function(jf) {
-              var ud = jf.userData;
-              ud.pulsePhase += dt * 1.6;       // bell pulses ~0.25Hz
-              var pulse = (Math.sin(ud.pulsePhase) + 1) * 0.5;  // 0..1
-              updateCLHuntMoonJellyVisual(ud,pulse,now);
+              advanceCLHuntMoonJellyMotion(jf,dt,gameState.a11y.reducedMotion);
 
-              // Drift horizontally (slow curve) + vertical bob
-              ud.driftAngle += (Math.random() - 0.5) * 0.05 * dt;
-              jf.position.x += Math.sin(ud.driftAngle) * ud.driftSpeed * dt;
-              jf.position.z += Math.cos(ud.driftAngle) * ud.driftSpeed * dt;
-              ud.verticalPhase += dt * 0.6;
-              jf.position.y = 4 + Math.sin(ud.verticalPhase) * 1.2;
-              // Jet upward on each pulse contraction (subtle vertical thrust)
-              if (Math.sin(ud.pulsePhase) > 0.85) {
-                jf.position.y += 0.04;
-              }
-              // Wrap if too far from player (keep ambient density constant)
+              // Wrap distant jellies only when simulation time advances.
               var jdx = jf.position.x - octopus.position.x;
               var jdz = jf.position.z - octopus.position.z;
-              if (jdx * jdx + jdz * jdz > 90 * 90) {
+              if (dt>0 && jdx * jdx + jdz * jdz > 90 * 90) {
                 jf.position.x = octopus.position.x + (Math.random() - 0.5) * 100;
                 jf.position.z = octopus.position.z + (Math.random() - 0.5) * 100;
               }
@@ -17930,10 +19014,17 @@ function createCLHuntFish(T,index){
                   var visualPrey=selectedPrey&&selectedPrey.userData.alive?selectedPrey:null;
                   squidStrikeVisual={startedAt:now,aimWorld:visualPrey?visualPrey.position.clone():octopus.localToWorld(new THREE.Vector3(0,-0.10*bodyScale,2.60*bodyScale))};
                 }
+                if(!capabilities.swimming){
+                  octopus.updateWorldMatrix(true,false);
+                  var octopusVisualPrey=selectedPrey&&selectedPrey.userData.alive?selectedPrey:null;
+                  // Keep a visual grip width after the prey mesh has been captured/disposed.
+                  octopusStrikeVisual={startedAt:now,radiusWorld:octopusVisualPrey&&octopusVisualPrey.userData.cfg?0.30*octopusVisualPrey.userData.cfg.sizeMul:0.13*bodyScale,aimWorld:octopusVisualPrey?octopusVisualPrey.position.clone():octopus.localToWorld(new THREE.Vector3(0,-0.22*bodyScale,1.45*bodyScale))};
+                }
               }else clAnnounce(__alloT('stem.cephalopodlab.sr_recovering_wait_for_in_range_before_striking_agai', 'Recovering. Wait for IN RANGE before striking again.'));
             }
             // Follow only the committed living prey until contact, including its final moved position this frame.
             if(squidStrikeVisual&&gameState.pendingStrike){var visualTarget=gameState.pendingStrike.target;if(visualTarget&&visualTarget.userData.alive)squidStrikeVisual.aimWorld.copy(visualTarget.position);}
+            if(octopusStrikeVisual&&gameState.pendingStrike){var octopusVisualTarget=gameState.pendingStrike.target;if(octopusVisualTarget&&octopusVisualTarget.userData.alive)octopusStrikeVisual.aimWorld.copy(octopusVisualTarget.position);}
             if(gameState.pendingStrike&&now>=gameState.pendingStrike.at){
               var attemptedPrey=gameState.pendingStrike.target;gameState.pendingStrike=null;
               var readiness=preyReadiness(attemptedPrey),nearest=readiness.ready?attemptedPrey:null,prey=readiness.kind;
@@ -18019,10 +19110,26 @@ function createCLHuntFish(T,index){
                 directedStrikeAim=squidStrikeAimLocal;
               }
             }
+            if(octopusStrikeVisual){
+              var grabAge=now-octopusStrikeVisual.startedAt;
+              if(grabAge>=650||grabAge<0){octopusStrikeVisual=null;strikePhase=0;}
+              else{
+                // Preserve the existing 200 ms contact and 650 ms recovery.
+                strikePhase=grabAge<=40?0:grabAge<=200?(grabAge-40)/160:grabAge<=260?1:(650-grabAge)/390;
+                var grabLoad=Math.max(0,Math.min(1,grabAge/40)),grabRelease=Math.max(0,Math.min(1,(650-grabAge)/390));
+                strikePreparation=grabAge<=40?grabLoad*grabLoad*(3-2*grabLoad):0;
+                strikeBrace=grabAge<=40?grabLoad*grabLoad*(3-2*grabLoad):grabAge<=260?1:grabRelease*grabRelease*(3-2*grabRelease);
+                octopus.updateWorldMatrix(true,false);octopusStrikeAimLocal.copy(octopusStrikeVisual.aimWorld);octopus.worldToLocal(octopusStrikeAimLocal);octopusStrikeAimLocal.multiplyScalar(1/bodyScale);
+                octopusStrikeAimOffset.copy(octopusStrikeAimLocal);octopusStrikeAimOffset.y+=0.22;octopusStrikeAimOffset.z-=0.20;
+                var grabReach=octopusStrikeAimOffset.length();if(grabReach>3.2){octopusStrikeAimLocal.copy(octopusStrikeAimOffset).multiplyScalar(3.2/grabReach);octopusStrikeAimLocal.y-=0.22;octopusStrikeAimLocal.z+=0.20;}
+                directedStrikeAim=octopusStrikeAimLocal;
+              }
+            }
+            var directedStrikeRadius=octopusStrikeVisual?octopusStrikeVisual.radiusWorld/bodyScale:0;
             var strikePose=strikePhase*strikePhase*(3-2*strikePhase);
             animal.update(now / 1000, dt, { moving:isMoving, jet:isJetting, camo:gameState.camoEff,
-              substrate:gameState.currentSubstrate, display:gameState.isDisplaying,
-              strike:strikePose,strikeAim:directedStrikeAim,strikePreparation:strikePreparation,strikeBrace:strikeBrace, reducedMotion:gameState.a11y.reducedMotion });
+              substrate:gameState.currentSubstrate, display:gameState.isDisplaying, squeezeBlend:gameState.squeezeBlend||0,
+              strike:strikePose,strikeAim:directedStrikeAim,strikeRadius:directedStrikeRadius,strikePreparation:strikePreparation,strikeBrace:strikeBrace, reducedMotion:gameState.a11y.reducedMotion });
 
             // ─── Moray eel AI ───
             var me = moray.userData;
@@ -18128,6 +19235,7 @@ function createCLHuntFish(T,index){
             if(gameState.pressureStrain===-1)status.push('PRESSURE BUILDING — '+clHuntInputCue('Q to rise','hold Rise'));else if(gameState.pressureStrain>0)status.push('CRUSHING PRESSURE — '+clHuntInputCue('Q to rise','hold Rise'));
             if(gameState.inDen)status.push('IN DEN — safe, regenerating');
             if(gameState.isInked)status.push('INKED — harder to track');
+            if(gameState.isSqueezing)status.push('REEF GAP · stay behind rock to hide');
             if(carriedShelter){var carryInfo=SHELTER_TYPES[carriedShelter.userData.shelterType];status.push('Carrying '+carryInfo.label+' · '+clHuntShelterCarryText(carryInfo,capabilities.carryCost)+' · '+clHuntInputCue('G drops','Interact drops'));}
             else if(gameState.inShelterDen){var activeCover=clHuntNearestPlacedShelter(shelters,octopus.position,SHELTER_DEN_RADIUS,1.0);if(activeCover)status.push(clHuntPlacedShelterText(SHELTER_TYPES[activeCover.userData.shelterType],activeCover.userData,now));}
             if(gameState.isMimicking)status.push('Mimicking · predators wary');
@@ -18154,28 +19262,13 @@ function createCLHuntFish(T,index){
               pColor = 'rgba(160,120,64,0.7)';
             } else {
               // Pearl pickup hint takes priority over shelter/clam/crab
-              var pPearlD = PEARL_PICKUP_RANGE;
-              var pNearestPearl = null;
-              for (var ppi = 0; ppi < pearls.length; ppi++) {
-                var ppdx = pearls[ppi].position.x - octopus.position.x;
-                var ppdz = pearls[ppi].position.z - octopus.position.z;
-                var ppd = Math.sqrt(ppdx * ppdx + ppdz * ppdz);
-                if (Math.abs(octopus.position.y-pearls[ppi].position.y)<1.5 && ppd < pPearlD) { pNearestPearl = pearls[ppi]; pPearlD = ppd; }
-              }
+              var pNearestPearl = clHuntNearestReachablePickup(pearls,octopus.position,PEARL_PICKUP_RANGE,1.5,rockBlocks);
               if (pNearestPearl) {
                 prompt = '<span style="color:#fff0aa">'+clHuntInputCue('[G]','Interact')+'</span> collect pearl <span style="color:#94a3b8;font-weight:400">(treasure)</span>';
                 pColor = 'rgba(255,240,170,0.7)';
               } else {
               // Nearest carriable shelter
-              var pNearestSh = null, pNearestShD = SHELTER_PICKUP_RANGE;
-              for (var psi = 0; psi < shelters.length; psi++) {
-                if (shelters[psi].userData.state !== 'free') continue;
-                if (!SHELTER_TYPES[shelters[psi].userData.shelterType].carriable) continue;
-                var psdx = shelters[psi].position.x - octopus.position.x;
-                var psdz = shelters[psi].position.z - octopus.position.z;
-                var psd = Math.sqrt(psdx * psdx + psdz * psdz);
-                if (Math.abs(octopus.position.y-shelters[psi].position.y)<1.2 && psd < pNearestShD) { pNearestSh = shelters[psi]; pNearestShD = psd; }
-              }
+              var pNearestSh = clHuntNearestReachablePickup(shelters,octopus.position,SHELTER_PICKUP_RANGE,1.2,rockBlocks,canPickUpShelter);
               // Nearest clam
               var pNearestCl = null, pNearestClD = DRILL_RANGE;
               for (var pci = 0; pci < clams.length; pci++) {
@@ -18205,6 +19298,7 @@ function createCLHuntFish(T,index){
               }
               }   // close pearl-fallback else
             }
+            if(!prompt&&gameState.isSqueezing){prompt='Squeezing · wait behind rock, then peek out to strike';pColor='rgba(125,211,167,0.65)';}
             setActionPrompt(gameState.forageTarget||gameState.forageProgress>0?'':prompt, pColor);
           } else {
             setActionPrompt('', null);
@@ -18261,7 +19355,7 @@ function createCLHuntFish(T,index){
           var fine=!!(window.matchMedia&&(window.matchMedia('(pointer: fine)').matches||window.matchMedia('(any-pointer: fine)').matches));
           var touch=nW<600||coarse||(!fine&&!!navigator.maxTouchPoints);
           stage.classList.toggle('cl-hunt-small',nW<600);stage.classList.toggle('cl-hunt-touch-enabled',touch);stage.classList.toggle('cl-hunt-wide-touch',touch&&nW>=600);stage.classList.toggle('cl-hunt-compact-touch',touch&&nW<330);
-          moveMobileDetails(touch);updateTouchMovementOrder(touch&&nW<330);
+          moveMobileDetails(touch);updateTouchMovementOrder(touch&&nW<330);if(settingsPanel&&!settingsPanel.hidden)updateHuntHelp();
           if(touch){
             var rect=stage.getBoundingClientRect(),intersects=rect.top<viewHeight&&rect.bottom>0,available=intersects?viewHeight-Math.max(0,rect.top)-12:viewHeight-24;
             if(inspection.active)available=Math.max(available,inspectionTitle.offsetTop+inspectionTitle.offsetHeight+inspectionTools.offsetHeight+140);
@@ -18284,7 +19378,7 @@ function createCLHuntFish(T,index){
           }
           actionPrompt.style.boxSizing='border-box';actionPrompt.style.textAlign='center';bioPopup.style.display=touch?'none':'block';tutorial.style.display='none';
           if(mobileToolsPanel&&!mobileToolsPanel.hidden)pauseOverlay.style.display='none';
-          if(nW!==huntLayoutWidth||nH!==huntLayoutHeight){huntLayoutWidth=nW;huntLayoutHeight=nH;camera.aspect=nW/nH;camera.updateProjectionMatrix();if(inspection.active)frameInspection(false);renderer.setSize(nW,nH,false);try{if(renderer._alloComposer)renderer._alloComposer.setSize(nW,nH);}catch(e){}}
+          if(nW!==huntLayoutWidth||nH!==huntLayoutHeight){huntLayoutWidth=nW;huntLayoutHeight=nH;camera.aspect=nW/nH;camera.updateProjectionMatrix();if(inspection.active)frameInspection(false);else if(gameState.cameraMode===3){updateDiveCamera(0,true);if(targetHalo.visible)targetHalo.quaternion.copy(camera.quaternion);}renderer.setSize(nW,nH,false);try{if(renderer._alloComposer)renderer._alloComposer.setSize(nW,nH);}catch(e){}}
         }
         window.addEventListener('resize',scheduleHuntLayout);window.addEventListener('scroll',scheduleHuntLayout,{passive:true});
         if(huntViewport){huntViewport.addEventListener('resize',scheduleHuntLayout);huntViewport.addEventListener('scroll',scheduleHuntLayout);}

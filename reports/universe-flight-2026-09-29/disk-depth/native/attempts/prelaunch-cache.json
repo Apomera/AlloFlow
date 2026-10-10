@@ -1,0 +1,218 @@
+{
+  "completed": false,
+  "pins": {
+    "baseline": "c0cc2486b3d5edd620e5975daec3d23b8f2e995a24db151be27ac30820d058c7",
+    "candidate": "8121868ef2aa764c5e3e88284089ebf76fe0c9e1ec264ee4ae95fe434d7e9bc9"
+  },
+  "matrix": [
+    {
+      "name": "galaxy-0",
+      "region": "galaxy",
+      "index": 0,
+      "inclination": 0,
+      "range": 3,
+      "fov": 50,
+      "dpr": 1,
+      "layer": "target"
+    },
+    {
+      "name": "galaxy-45",
+      "region": "galaxy",
+      "index": 0,
+      "inclination": 45,
+      "range": 3,
+      "fov": 50,
+      "dpr": 1,
+      "layer": "target"
+    },
+    {
+      "name": "galaxy-85",
+      "region": "galaxy",
+      "index": 0,
+      "inclination": 85,
+      "range": 3,
+      "fov": 50,
+      "dpr": 1,
+      "layer": "target"
+    },
+    {
+      "name": "galaxy-90",
+      "region": "galaxy",
+      "index": 0,
+      "inclination": 90,
+      "range": 3,
+      "fov": 50,
+      "dpr": 1,
+      "layer": "target"
+    },
+    {
+      "name": "galaxy-95",
+      "region": "galaxy",
+      "index": 0,
+      "inclination": 95,
+      "range": 3,
+      "fov": 50,
+      "dpr": 1,
+      "layer": "target"
+    },
+    {
+      "name": "cosmic-spiral-0",
+      "region": "cosmic",
+      "index": 0,
+      "inclination": 0,
+      "range": 3,
+      "fov": 50,
+      "dpr": 1,
+      "layer": "target"
+    },
+    {
+      "name": "cosmic-spiral-90",
+      "region": "cosmic",
+      "index": 0,
+      "inclination": 90,
+      "range": 3,
+      "fov": 50,
+      "dpr": 1,
+      "layer": "target"
+    },
+    {
+      "name": "cosmic-twoarm-0",
+      "region": "cosmic",
+      "index": 1,
+      "inclination": 0,
+      "range": 3,
+      "fov": 50,
+      "dpr": 1,
+      "layer": "target"
+    },
+    {
+      "name": "cosmic-twoarm-90",
+      "region": "cosmic",
+      "index": 1,
+      "inclination": 90,
+      "range": 3,
+      "fov": 50,
+      "dpr": 1,
+      "layer": "target"
+    },
+    {
+      "name": "cosmic-barred-0",
+      "region": "cosmic",
+      "index": 2,
+      "inclination": 0,
+      "range": 3,
+      "fov": 50,
+      "dpr": 1,
+      "layer": "target"
+    },
+    {
+      "name": "cosmic-barred-90",
+      "region": "cosmic",
+      "index": 2,
+      "inclination": 90,
+      "range": 3,
+      "fov": 50,
+      "dpr": 1,
+      "layer": "target"
+    },
+    {
+      "name": "elliptical-0",
+      "region": "cosmic",
+      "index": 3,
+      "inclination": 0,
+      "range": 3,
+      "fov": 50,
+      "dpr": 1,
+      "layer": "target"
+    },
+    {
+      "name": "elliptical-90",
+      "region": "cosmic",
+      "index": 3,
+      "inclination": 90,
+      "range": 3,
+      "fov": 50,
+      "dpr": 1,
+      "layer": "target"
+    },
+    {
+      "name": "galaxy-90-range6",
+      "region": "galaxy",
+      "index": 0,
+      "inclination": 90,
+      "range": 6,
+      "fov": 50,
+      "dpr": 1,
+      "layer": "target"
+    },
+    {
+      "name": "galaxy-90-range12",
+      "region": "galaxy",
+      "index": 0,
+      "inclination": 90,
+      "range": 12,
+      "fov": 50,
+      "dpr": 1,
+      "layer": "target"
+    },
+    {
+      "name": "galaxy-0-dpr2",
+      "region": "galaxy",
+      "index": 0,
+      "inclination": 0,
+      "range": 3,
+      "fov": 50,
+      "dpr": 2,
+      "layer": "target"
+    },
+    {
+      "name": "galaxy-90-dpr2",
+      "region": "galaxy",
+      "index": 0,
+      "inclination": 90,
+      "range": 3,
+      "fov": 50,
+      "dpr": 2,
+      "layer": "target"
+    },
+    {
+      "name": "galaxy-near",
+      "region": "galaxy",
+      "index": 0,
+      "inclination": 90,
+      "range": 0.08,
+      "fov": 80,
+      "dpr": 1,
+      "layer": "target"
+    },
+    {
+      "name": "galaxy-90-full",
+      "region": "galaxy",
+      "index": 0,
+      "inclination": 90,
+      "range": 3,
+      "fov": 50,
+      "dpr": 1,
+      "layer": "full"
+    },
+    {
+      "name": "cosmic-disk-profile-full",
+      "region": "cosmic",
+      "index": 0,
+      "inclination": 90,
+      "range": 3,
+      "fov": 32,
+      "dpr": 1,
+      "layer": "full",
+      "axis": "z",
+      "distance": 450000
+    }
+  ],
+  "captures": [],
+  "proof": {},
+  "comparisons": [],
+  "resources": [],
+  "stability": [],
+  "nearObserver": [],
+  "errors": []
+}

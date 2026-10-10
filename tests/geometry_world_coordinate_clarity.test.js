@@ -91,7 +91,7 @@ function protectedState(view) {
 async function settleAnnouncement(view) {
   await React.act(async () => { await new Promise(resolve => setTimeout(resolve, 45)); });
   view.rerender();
-  return view.container.querySelector('#allo-live-geometryworld').textContent;
+  return document.getElementById('allo-live-geometryworld').textContent;
 }
 function coordinateHandler(engine, announce, update) {
   const marker = '_docH.keydown = ', start = source.indexOf(marker) + marker.length;
@@ -110,7 +110,14 @@ function pressC(handler, target = document.createElement('div')) {
 beforeAll(() => {
   source = readFileSync(FILE, 'utf8'); resetStemLab(); window.THREE = makeThreeStub(); cfg = loadTool(FILE, 'geometryWorld');
 }, 120000);
-beforeEach(() => { localStorage.clear(); sessionStorage.clear(); window.THREE = makeThreeStub(); });
+beforeEach(() => {
+  localStorage.clear(); sessionStorage.clear(); window.THREE = makeThreeStub();
+  if (!document.getElementById('allo-live-geometryworld')) {
+    const live = document.createElement('div'); live.id = 'allo-live-geometryworld';
+    live.setAttribute('aria-live', 'polite'); live.setAttribute('aria-atomic', 'true'); live.setAttribute('role', 'status');
+    document.body.appendChild(live);
+  }
+});
 afterEach(() => {
   if (mounted) { React.act(() => mounted.root.unmount()); mounted.container.remove(); mounted = null; }
   vi.restoreAllMocks(); delete window[ENGINE_KEY]; delete window[ENGINE_KEY + '_failed']; document.body.innerHTML = '';
@@ -172,12 +179,12 @@ describe('Geometry World coordinate inspection clarity', () => {
     expect(button.tagName).toBe('BUTTON'); expect(button.type).toBe('button');
     expect(button.getAttribute('aria-pressed')).toBe('false');
     expect(button.getAttribute('aria-label')).toMatch(/coordinate/i); expect(button.textContent).toContain('Spoken coordinates');
-    expect(button.textContent).toMatch(/\bOff\b/); expect(button.textContent).not.toMatch(/SR OFF/);
+    expect(button.querySelector('strong').textContent).toBe('Off'); expect(button.textContent).not.toMatch(/SR OFF/);
   });
 
   it('renders an already enabled announcement choice with visible On state', () => {
     const view = mountTool({}, { _coordAnnounce: true });
-    expect(toggle(view).getAttribute('aria-pressed')).toBe('true'); expect(toggle(view).textContent).toMatch(/\bOn\b/);
+    expect(toggle(view).getAttribute('aria-pressed')).toBe('true'); expect(toggle(view).querySelector('strong').textContent).toBe('On');
   });
 
   it('enables speech and immediately announces current position without changing student work', async () => {
@@ -185,7 +192,7 @@ describe('Geometry World coordinate inspection clarity', () => {
     expect(view.engine._coordAnnounce).toBe(true);
     const announcement = await settleAnnouncement(view);
     expect(announcement).toMatch(/announcements on/i); expect(announcement).toContain('X -1 Y 4 Z -3');
-    expect(toggle(view).getAttribute('aria-pressed')).toBe('true'); expect(toggle(view).textContent).toMatch(/\bOn\b/);
+    expect(toggle(view).getAttribute('aria-pressed')).toBe('true'); expect(toggle(view).querySelector('strong').textContent).toBe('On');
     expect(protectedState(view)).toEqual(before); expect(view.engine.loadLesson).not.toHaveBeenCalled();
   });
 
@@ -193,7 +200,7 @@ describe('Geometry World coordinate inspection clarity', () => {
     const view = mountTool({}, { _coordAnnounce: true }); const before = protectedState(view); click(toggle(view));
     expect(view.engine._coordAnnounce).toBe(false); const announcement = await settleAnnouncement(view);
     expect(announcement).toMatch(/announcements off/i); expect(toggle(view).getAttribute('aria-pressed')).toBe('false');
-    expect(toggle(view).textContent).toMatch(/\bOff\b/); expect(protectedState(view)).toEqual(before);
+    expect(toggle(view).querySelector('strong').textContent).toBe('Off'); expect(protectedState(view)).toEqual(before);
   });
 
   it('hides and restores coordinates through the saved preference without resetting speech or student work', () => {

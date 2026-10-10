@@ -1,0 +1,42 @@
+{
+  "width": 274.40625,
+  "client": 269,
+  "scroll": 269,
+  "text": [
+    {
+      "text": "Adaptive coaching",
+      "font": 18,
+      "client": 237,
+      "scroll": 237
+    },
+    {
+      "text": "Tissue preservation",
+      "font": 18,
+      "client": 237,
+      "scroll": 237
+    },
+    {
+      "text": "Reduce contact pressure, stabilize the field, and avoid widening the current corridor.",
+      "font": 18,
+      "client": 237,
+      "scroll": 237
+    },
+    {
+      "text": "Review tissue condition",
+      "font": 18,
+      "client": 233,
+      "scroll": 233
+    },
+    {
+      "text": "Opens controls for review.",
+      "font": 18,
+      "client": 237,
+      "scroll": 237
+    }
+  ],
+  "button": {
+    "height": 77.1875,
+    "outlineWidth": 3,
+    "outlineStyle": "solid"
+  }
+}

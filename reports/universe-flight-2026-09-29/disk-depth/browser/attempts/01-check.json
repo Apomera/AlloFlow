@@ -1,0 +1,17 @@
+{
+  "completed": false,
+  "pins": {
+    "stem_lab/stem_tool_universe.js": "a744f3d2e32b5bec28864c8ee29468ec68178cd20d9bb08bcd8fa3d9eefc19a9",
+    "stem_lab/universe_flight_scene.js": "8121868ef2aa764c5e3e88284089ebf76fe0c9e1ec264ee4ae95fe434d7e9bc9"
+  },
+  "harnessHash": "403eebcb11bdb0a9218571f6d0f23f4c6ad98877544bb0736c082e748e4b9ddc",
+  "checks": [],
+  "accessibility": [],
+  "captures": [],
+  "poses": [],
+  "served": [],
+  "errors": [],
+  "sourceReadErrors": [],
+  "loaderRetries": [],
+  "failure": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3187/reports/universe-flight-2026-09-29/preview.html?enhanced=57#universe-flight\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:3187/reports/universe-flight-2026-09-29/preview.html?enhanced=57#universe-flight\", waiting until \"load\"\u001b[22m\n"
+}

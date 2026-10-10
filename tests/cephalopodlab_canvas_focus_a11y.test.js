@@ -43,7 +43,7 @@ describe('Cephalopod Lab canvas and focus accessibility', () => {
     expect(canvas.getAttribute('aria-describedby')).toBe(
       'cl-hunt-canvas-instructions'
     );
-    expect(instructions.textContent).toContain('Tab to or click the canvas');
+    expect(instructions.textContent).toContain('Focus the canvas for keyboard controls');
     expect(canvas.textContent).toContain('Interactive 3D octopus hunt');
   });
 

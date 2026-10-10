@@ -1,0 +1,201 @@
+{
+  "schema": "moon-pass38-direct-browser-v1",
+  "runner": "direct-playwright-api",
+  "playwrightCliResult": false,
+  "mode": "crew",
+  "status": "failed",
+  "startedAt": "2026-10-10T04:00:55.098Z",
+  "repo": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "specPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-return-crew.spec.ts",
+  "output": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\browser\\direct-crew-3",
+  "browserCache": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+  "timeouts": {
+    "action": 20000,
+    "navigation": 60000,
+    "expect": 15000,
+    "launch": 60000,
+    "workflow": 180000
+  },
+  "launchOptions": {
+    "headless": true,
+    "timeout": 60000,
+    "downloadsPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\browser\\direct-crew-3\\downloads"
+  },
+  "workflowCompleted": false,
+  "cleanupCompleted": true,
+  "milestones": [
+    {
+      "name": "load:before",
+      "elapsedMs": 2
+    },
+    {
+      "name": "load:after",
+      "elapsedMs": 621,
+      "workflow": "crew Earth camera preserves measured coast, physical angular size, sunlight, receipts and accessible phone controls",
+      "registered": [
+        "crew Earth camera preserves measured coast, physical angular size, sunlight, receipts and accessible phone controls"
+      ]
+    },
+    {
+      "name": "harness-start:before",
+      "elapsedMs": 622
+    },
+    {
+      "name": "harness-start:after",
+      "elapsedMs": 629
+    },
+    {
+      "name": "browser-launch:before",
+      "elapsedMs": 630
+    },
+    {
+      "name": "browser-launch:after",
+      "elapsedMs": 785
+    },
+    {
+      "name": "context-create:before",
+      "elapsedMs": 785
+    },
+    {
+      "name": "context-create:after",
+      "elapsedMs": 792
+    },
+    {
+      "name": "page-create:before",
+      "elapsedMs": 792
+    },
+    {
+      "name": "page-create:after",
+      "elapsedMs": 1017
+    },
+    {
+      "name": "workflow:before",
+      "elapsedMs": 1017
+    },
+    {
+      "name": "workflow:failed",
+      "elapsedMs": 7227,
+      "error": {
+        "name": "Error",
+        "message": "expect(received).toEqual(expected) // deep equality\n\n- Expected  - 2\n+ Received  + 2\n\n  Object {\n-   \"angle\": -6.499999999999986,\n+   \"angle\": -6.5,\n    \"plan\": Object {\n      \"bank\": 0,\n      \"mode\": \"guided\",\n      \"version\": 2,\n    },\n    \"recorded\": false,\n    \"recovery\": 0,\n-   \"time\": 0,\n+   \"time\": 7.5,\n    \"version\": 2,\n  }",
+        "stack": "Error: expect(received).toEqual(expected) // deep equality\n\n- Expected  - 2\n+ Received  + 2\n\n  Object {\n-   \"angle\": -6.499999999999986,\n+   \"angle\": -6.5,\n    \"plan\": Object {\n      \"bank\": 0,\n      \"mode\": \"guided\",\n      \"version\": 2,\n    },\n    \"recorded\": false,\n    \"recovery\": 0,\n-   \"time\": 0,\n+   \"time\": 7.5,\n    \"version\": 2,\n  }\n    at captureRawStack (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright-core\\lib\\coreBundle.js:3130:17)\n    at callMatcherAsStep (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\matchers\\expect.js:12873:57)\n    at Object.toEqual (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\matchers\\expect.js:12863:23)\n    at Object.callback (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-return-crew.spec.ts:311:39)\n    at async bounded (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\run-workflow.cjs:58:12)\n    at async phase (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\run-workflow.cjs:66:29)\n    at async run (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\run-workflow.cjs:165:5)"
+      }
+    },
+    {
+      "name": "execution-failed",
+      "elapsedMs": 7227,
+      "error": {
+        "name": "Error",
+        "message": "expect(received).toEqual(expected) // deep equality\n\n- Expected  - 2\n+ Received  + 2\n\n  Object {\n-   \"angle\": -6.499999999999986,\n+   \"angle\": -6.5,\n    \"plan\": Object {\n      \"bank\": 0,\n      \"mode\": \"guided\",\n      \"version\": 2,\n    },\n    \"recorded\": false,\n    \"recovery\": 0,\n-   \"time\": 0,\n+   \"time\": 7.5,\n    \"version\": 2,\n  }",
+        "stack": "Error: expect(received).toEqual(expected) // deep equality\n\n- Expected  - 2\n+ Received  + 2\n\n  Object {\n-   \"angle\": -6.499999999999986,\n+   \"angle\": -6.5,\n    \"plan\": Object {\n      \"bank\": 0,\n      \"mode\": \"guided\",\n      \"version\": 2,\n    },\n    \"recorded\": false,\n    \"recovery\": 0,\n-   \"time\": 0,\n+   \"time\": 7.5,\n    \"version\": 2,\n  }\n    at captureRawStack (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright-core\\lib\\coreBundle.js:3130:17)\n    at callMatcherAsStep (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\matchers\\expect.js:12873:57)\n    at Object.toEqual (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\matchers\\expect.js:12863:23)\n    at Object.callback (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-return-crew.spec.ts:311:39)\n    at async bounded (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\run-workflow.cjs:58:12)\n    at async phase (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\run-workflow.cjs:66:29)\n    at async run (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\run-workflow.cjs:165:5)"
+      }
+    },
+    {
+      "name": "cleanup:before",
+      "elapsedMs": 7228
+    },
+    {
+      "name": "after-each:before",
+      "elapsedMs": 7229
+    },
+    {
+      "name": "after-each:after",
+      "elapsedMs": 7285
+    },
+    {
+      "name": "context-close:before",
+      "elapsedMs": 7286
+    },
+    {
+      "name": "page-close",
+      "elapsedMs": 7290
+    },
+    {
+      "name": "context-close:after",
+      "elapsedMs": 7293
+    },
+    {
+      "name": "browser-close:before",
+      "elapsedMs": 7294
+    },
+    {
+      "name": "browser-close:after",
+      "elapsedMs": 8040
+    },
+    {
+      "name": "harness-stop:before",
+      "elapsedMs": 8040
+    },
+    {
+      "name": "harness-stop:after",
+      "elapsedMs": 8041
+    },
+    {
+      "name": "cleanup:after",
+      "elapsedMs": 8052,
+      "status": "failed"
+    }
+  ],
+  "errors": [
+    {
+      "phase": "execution",
+      "name": "Error",
+      "message": "expect(received).toEqual(expected) // deep equality\n\n- Expected  - 2\n+ Received  + 2\n\n  Object {\n-   \"angle\": -6.499999999999986,\n+   \"angle\": -6.5,\n    \"plan\": Object {\n      \"bank\": 0,\n      \"mode\": \"guided\",\n      \"version\": 2,\n    },\n    \"recorded\": false,\n    \"recovery\": 0,\n-   \"time\": 0,\n+   \"time\": 7.5,\n    \"version\": 2,\n  }",
+      "stack": "Error: expect(received).toEqual(expected) // deep equality\n\n- Expected  - 2\n+ Received  + 2\n\n  Object {\n-   \"angle\": -6.499999999999986,\n+   \"angle\": -6.5,\n    \"plan\": Object {\n      \"bank\": 0,\n      \"mode\": \"guided\",\n      \"version\": 2,\n    },\n    \"recorded\": false,\n    \"recovery\": 0,\n-   \"time\": 0,\n+   \"time\": 7.5,\n    \"version\": 2,\n  }\n    at captureRawStack (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright-core\\lib\\coreBundle.js:3130:17)\n    at callMatcherAsStep (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\matchers\\expect.js:12873:57)\n    at Object.toEqual (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\matchers\\expect.js:12863:23)\n    at Object.callback (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-return-crew.spec.ts:311:39)\n    at async bounded (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\run-workflow.cjs:58:12)\n    at async phase (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\run-workflow.cjs:66:29)\n    at async run (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\run-workflow.cjs:165:5)"
+    }
+  ],
+  "attachments": [
+    {
+      "name": "crew-departure-1100",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\browser\\direct-crew-3\\crew-departure-1100-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "crew-day-one-1100",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\browser\\direct-crew-3\\crew-day-one-1100-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "crew-final-fifteen-minutes-1100",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\browser\\direct-crew-3\\crew-final-fifteen-minutes-1100-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "crew-entry-interface-1100",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\browser\\direct-crew-3\\crew-entry-interface-1100-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "crew-workspace-1100",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\browser\\direct-crew-3\\crew-workspace-1100-chromium.png",
+      "contentType": "image/png"
+    }
+  ],
+  "inputHashes": {
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-return-crew.spec.ts": "48bfc005397fd02654753018658bbcf632ac0518e346dbae91a56cd56c872b13",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_moonmission.js": "4865ec6682a6187ec9bb335125b0d972037bfd9aca3bb858bdcee21fb3c15b64",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_moonmission.js": "4865ec6682a6187ec9bb335125b0d972037bfd9aca3bb858bdcee21fb3c15b64"
+  },
+  "transform": {
+    "name": "Playwright bundled babelTransform",
+    "bundlePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\transform\\babelBundle.js",
+    "sha256": "9201df11ae9c9ee1febd587c5013c4f862aa7e9981b92b86ccbbbd37e71f9124"
+  },
+  "workflow": "crew Earth camera preserves measured coast, physical angular size, sunlight, receipts and accessible phone controls",
+  "suiteOptions": {
+    "timeout": 180000,
+    "retries": 0
+  },
+  "browserVersion": "148.0.7778.96",
+  "pageEvents": [
+    {
+      "event": "close",
+      "elapsedMs": 7290,
+      "message": null
+    }
+  ],
+  "finishedAt": "2026-10-10T04:01:03.150Z",
+  "elapsedMs": 8052
+}

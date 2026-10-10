@@ -1,0 +1,55 @@
+{
+  "completed": false,
+  "pins": {
+    "stem_lab/universe_flight_scene.js": "a8de9ef0c0dc7362dc1284917b106ff82072f3a6b4943d947a3c8de6354dadcf",
+    "stem_lab/stem_tool_universe.js": "98cce7fbc3bdebe424f8cdac77e871e001267d568e3ebe8c9904cb3a6f5e2959"
+  },
+  "harnessHash": "8d7e9b3c2815f58802ae60ba9a6cb4b76467eeff597036fd37e3acc1495509a0",
+  "checks": [],
+  "sampling": [
+    {
+      "name": "initial-auto",
+      "quality": "auto",
+      "queries": [
+        {
+          "name": "EXT_texture_filter_anisotropic",
+          "available": true
+        }
+      ],
+      "maximumQueries": 1,
+      "allocations": {
+        "Buffer": 2,
+        "Texture": 2,
+        "Program": 2
+      },
+      "deleted": {
+        "Buffer": 0,
+        "Texture": 0,
+        "Program": 0
+      },
+      "writes": [
+        {
+          "texture": 0,
+          "value": 4
+        }
+      ],
+      "galaxy": 4,
+      "cloud": 1,
+      "error": 0
+    }
+  ],
+  "accessibility": [],
+  "captures": [],
+  "served": [
+    {
+      "path": "/stem_lab/stem_tool_universe.js",
+      "hash": "98cce7fbc3bdebe424f8cdac77e871e001267d568e3ebe8c9904cb3a6f5e2959"
+    },
+    {
+      "path": "/stem_lab/universe_flight_scene.js",
+      "hash": "a8de9ef0c0dc7362dc1284917b106ff82072f3a6b4943d947a3c8de6354dadcf"
+    }
+  ],
+  "errors": [],
+  "failure": "TimeoutError: locator.selectOption: Timeout 60000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#uf-quality')\u001b[22m\n\u001b[2m    - locator resolved to <select id=\"uf-quality\">…</select>\u001b[22m\n\u001b[2m  - attempting select option action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible and enabled\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying select option action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible and enabled\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying select option action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    118 × waiting for element to be visible and enabled\u001b[22m\n\u001b[2m        - element is not visible\u001b[22m\n\u001b[2m      - retrying select option action\u001b[22m\n\u001b[2m        - waiting 500ms\u001b[22m\n"
+}

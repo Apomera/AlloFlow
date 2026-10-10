@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const THREE = require('../vendor/three-r128/three.min.js');
-const source = readFileSync('stem_lab/stem_tool_cephalopodlab.js', 'utf8').replace(/\r\n/g, '\n');
+const source = readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE||'stem_lab/stem_tool_cephalopodlab.js', 'utf8').replace(/\r\n/g, '\n');
 function region(start, end) {
   const a = source.indexOf(start), b = source.indexOf(end, a + start.length);
   if (a < 0 || b <= a || source.indexOf(start, a + start.length) >= 0) throw Error('Missing or duplicate live collision region: ' + start);
@@ -247,8 +247,12 @@ describe('Cephalopod Hunter cached rock outline collision', () => {
     const loop = source.slice(collisionStart, collisionEnd + 3), calls = [];
     const rocks = [{ position: { x: 3, y: 2, z: 1 } }, { position: { x: -4, y: 5, z: 6 } }], caches = [{ sentinel: 1 }, { sentinel: 2 }];
     const position = { x: 0, y: -300, z: 0 }, gameState = { verticalY: 8.2 };
-    new Function('rocks', 'rockCollisionFootprints', 'octopus', 'gameState', 'bodyScale', 'resolveCLHuntRockCollision', loop)(rocks, caches, { position }, gameState, 1.4, (...args) => { calls.push(args);return false; });
+    const clearance=source.match(/var collisionMargin=proposedCrevice[^;]+;/)[0];
+    const apply=new Function('rocks', 'rockCollisionFootprints', 'octopus', 'gameState', 'bodyScale', 'resolveCLHuntRockCollision', 'proposedCrevice', clearance+'\n'+loop);
+    apply(rocks, caches, { position }, gameState, 1.4, (...args) => { calls.push(args);return false; },null);
     expect(calls).toEqual(rocks.map((mesh, i) => [position, gameState.verticalY, mesh.position, caches[i], 1.4 * .22]));
+    calls.length=0;apply(rocks,caches,{position},gameState,1.4,(...args)=>{calls.push(args);return false;},{margin:1.4*.22*.55});
+    expect(calls).toEqual(rocks.map((mesh,i)=>[position,gameState.verticalY,mesh.position,caches[i],1.4*.22*.55]));
     expect(loop).not.toMatch(/substrateRadius|Math\.hypot|new\s|createCLHuntRockCollisionFootprint/);
   });
 });

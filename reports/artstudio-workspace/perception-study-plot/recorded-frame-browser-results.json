@@ -1,0 +1,244 @@
+{
+  "checks": [
+    {
+      "experiment": "brightness",
+      "wholeAndCroppedStatus": true,
+      "allZoomFitActions": true,
+      "inspectorFocus": true,
+      "fitRetainsDOMAndFocus": true,
+      "noOverlay": true,
+      "originalScenesAndStateUnchanged": true
+    },
+    {
+      "experiment": "ebbinghaus",
+      "wholeAndCroppedStatus": true,
+      "allZoomFitActions": true,
+      "inspectorFocus": true,
+      "fitRetainsDOMAndFocus": true,
+      "noOverlay": true,
+      "originalScenesAndStateUnchanged": true
+    },
+    {
+      "experiment": "mullerLyer",
+      "wholeAndCroppedStatus": true,
+      "allZoomFitActions": true,
+      "inspectorFocus": true,
+      "fitRetainsDOMAndFocus": true,
+      "noOverlay": true,
+      "originalScenesAndStateUnchanged": true
+    },
+    {
+      "sharedFitAcrossAllLayouts": true,
+      "ABStatusAligned": true,
+      "independentTrialsAndGuidesPreserved": true,
+      "stateUnchanged": true
+    },
+    {
+      "collapsedInspectorKeepsAdjacentControls": true,
+      "nativeTouchFit": true,
+      "fitPreservesPanelDisclosure": true,
+      "touchInspectFocusesZoom": true
+    },
+    {
+      "nativeEnterAndSpaceActions": true,
+      "arrowHomeEndAndModifiedKeysNotHijacked": true,
+      "focusStable": true
+    },
+    {
+      "inactiveActionGuarded": true,
+      "detachedActionCannotMutateReopenedViewer": true
+    },
+    {
+      "invalidated": "record",
+      "adjacentControlsRemoved": true,
+      "staleActionCannotReopen": true
+    },
+    {
+      "invalidated": "profile",
+      "adjacentControlsRemoved": true,
+      "staleActionCannotReopen": true
+    },
+    {
+      "viewport": {
+        "width": 320,
+        "height": 900,
+        "font": 16
+      },
+      "adjacentControlsWrap": true,
+      "actualProjectionAligned": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "fitFocusUncoveredWithInspectorOpenAndClosed": true,
+      "inspectFocusUncoveredWithInspectorAlreadyOpen": true,
+      "axe": []
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "font": 16
+      },
+      "adjacentControlsWrap": true,
+      "actualProjectionAligned": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "fitFocusUncoveredWithInspectorOpenAndClosed": true,
+      "inspectFocusUncoveredWithInspectorAlreadyOpen": true,
+      "axe": []
+    },
+    {
+      "viewport": {
+        "width": 768,
+        "height": 1000,
+        "font": 16
+      },
+      "adjacentControlsWrap": true,
+      "actualProjectionAligned": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "fitFocusUncoveredWithInspectorOpenAndClosed": true,
+      "inspectFocusUncoveredWithInspectorAlreadyOpen": true,
+      "axe": []
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 900,
+        "font": 16
+      },
+      "adjacentControlsWrap": true,
+      "actualProjectionAligned": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "fitFocusUncoveredWithInspectorOpenAndClosed": true,
+      "inspectFocusUncoveredWithInspectorAlreadyOpen": true,
+      "axe": []
+    },
+    {
+      "viewport": {
+        "width": 1600,
+        "height": 1100,
+        "font": 16
+      },
+      "adjacentControlsWrap": true,
+      "actualProjectionAligned": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "fitFocusUncoveredWithInspectorOpenAndClosed": true,
+      "inspectFocusUncoveredWithInspectorAlreadyOpen": true,
+      "axe": []
+    },
+    {
+      "viewport": {
+        "width": 320,
+        "height": 900,
+        "font": 32
+      },
+      "adjacentControlsWrap": true,
+      "actualProjectionAligned": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "fitFocusUncoveredWithInspectorOpenAndClosed": true,
+      "inspectFocusUncoveredWithInspectorAlreadyOpen": true,
+      "axe": []
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "font": 32
+      },
+      "adjacentControlsWrap": true,
+      "actualProjectionAligned": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "fitFocusUncoveredWithInspectorOpenAndClosed": true,
+      "inspectFocusUncoveredWithInspectorAlreadyOpen": true,
+      "axe": []
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 1000,
+        "font": 32
+      },
+      "adjacentControlsWrap": true,
+      "actualProjectionAligned": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "fitFocusUncoveredWithInspectorOpenAndClosed": true,
+      "inspectFocusUncoveredWithInspectorAlreadyOpen": true,
+      "axe": []
+    },
+    {
+      "width": 320,
+      "font": 32,
+      "longUnequalTranslatedLabels": true,
+      "switchProjectionStationary": true,
+      "noOverlay": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 390,
+      "font": 32,
+      "longUnequalTranslatedLabels": true,
+      "switchProjectionStationary": true,
+      "noOverlay": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 1600,
+      "font": 16,
+      "longUnequalTranslatedLabels": true,
+      "switchProjectionStationary": true,
+      "noOverlay": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "theme": "dark",
+      "scientificColorsPreserved": true,
+      "adjacentActionAccessible": true,
+      "axe": []
+    },
+    {
+      "theme": "contrast",
+      "scientificColorsPreserved": true,
+      "adjacentActionAccessible": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-light",
+      "scientificColorsPreserved": true,
+      "adjacentActionAccessible": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-dark",
+      "scientificColorsPreserved": true,
+      "adjacentActionAccessible": true,
+      "axe": []
+    },
+    {
+      "rtlStatusAndActionUsable": true,
+      "fitFocusPreserved": true,
+      "axe": []
+    },
+    {
+      "nativeReportDownload": true,
+      "allSixOriginalSVGs": true,
+      "completeNotes": true,
+      "localCameraExcluded": true,
+      "noSavedWrites": true
+    },
+    {
+      "inlineAndOrdinaryObservationRemainUnchanged": true
+    }
+  ],
+  "errors": [],
+  "sourceSHA256": "d1bb7ea05c30ee1b68c35556ac5e55dd4ed0194a7b4a9c647d0b575cc9f6b873",
+  "loadedSourceSHA256": "d1bb7ea05c30ee1b68c35556ac5e55dd4ed0194a7b4a9c647d0b575cc9f6b873",
+  "finalSourceSHA256": "d1bb7ea05c30ee1b68c35556ac5e55dd4ed0194a7b4a9c647d0b575cc9f6b873"
+}

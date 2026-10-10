@@ -1,0 +1,68 @@
+{
+  "startedAt": "2026-10-08T04:15:33.596Z",
+  "elapsedMs": 1276,
+  "passed": 15,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "explicit browser and Worker topic: R",
+      "passed": true
+    },
+    {
+      "name": "explicit browser and Worker topic: π",
+      "passed": true
+    },
+    {
+      "name": "explicit browser and Worker topic: AI",
+      "passed": true
+    },
+    {
+      "name": "explicit browser and Worker topic: How clouds form over mountains",
+      "passed": true
+    },
+    {
+      "name": "explicit browser and Worker topic: History of jazz",
+      "passed": true
+    },
+    {
+      "name": "explicit browser and Worker topic: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "passed": true
+    },
+    {
+      "name": "automatic search and unknown intent never send private context",
+      "passed": true
+    },
+    {
+      "name": "empty, control-character and oversized explicit queries never reach a provider",
+      "passed": true
+    },
+    {
+      "name": "automatic public references retain canonical queries",
+      "passed": true
+    },
+    {
+      "name": "openai explicit research separates topic from private writing prompt",
+      "passed": true
+    },
+    {
+      "name": "claude explicit research separates topic from private writing prompt",
+      "passed": true
+    },
+    {
+      "name": "localai explicit research separates topic from private writing prompt",
+      "passed": true
+    },
+    {
+      "name": "ollama explicit research separates topic from private writing prompt",
+      "passed": true
+    },
+    {
+      "name": "managed policy still disables explicit search",
+      "passed": true
+    },
+    {
+      "name": "Firebase explicit short topics and restrictive default policy",
+      "passed": true
+    }
+  ]
+}

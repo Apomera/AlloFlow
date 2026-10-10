@@ -154,7 +154,7 @@ describe('Slab-angle inquiry from actual model observations', () => {
     const app = mount(); app.play(); for (let i = 0; i < 8; i++) app.event();
     enter(app.host, 37);
     app.click('[data-pt-quake-lock]');
-    const reset = [...app.host.querySelectorAll('button')].find(node => node.textContent === '↻ Reset');
+    const reset = app.host.querySelector('[data-pt-model-reset]');
     act(() => { reset.focus(); reset.click(); });
     expect(document.activeElement).toBe(reset);
     expect(app.log().dataset.ptQuakeLog).toBe('0');

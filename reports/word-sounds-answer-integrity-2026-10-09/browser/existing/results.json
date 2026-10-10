@@ -1,0 +1,2596 @@
+{
+  "checks": [
+    {
+      "name": "Spelling Bee requires typed spelling, keeps native Kokoro word playback, and has no speech-scoring controls",
+      "passed": true
+    },
+    {
+      "name": "entering Spelling Bee cancels inherited capture and cannot score its late spoken whole word",
+      "passed": true
+    },
+    {
+      "name": "Spelling Bee completes instruction before one word, then native normal / slow / normal replays finish at 1 / 0.5 / 1 rates",
+      "passed": true
+    },
+    {
+      "name": "early manual replay claims startup playback, and turning instructions off still plays the word once",
+      "passed": true
+    },
+    {
+      "name": "native: exact isolated sound waits for confirmation and duplicate final/confirm events score once",
+      "passed": true
+    },
+    {
+      "name": "shared: exact isolated sound waits for confirmation and duplicate final/confirm events score once",
+      "passed": true
+    },
+    {
+      "name": "Missing Letter retries without consuming an attempt and confirms the replacement transcript in mobile and desktop layouts",
+      "passed": true
+    },
+    {
+      "name": "mismatched whole-word speech asks for confirmation before normal incorrect feedback",
+      "passed": true
+    },
+    {
+      "name": "matching whole-word speech retains immediate grading in Word Scramble",
+      "passed": true
+    },
+    {
+      "name": "editing the same word’s hidden letter invalidates pending confirmation and uses the new target",
+      "passed": true
+    },
+    {
+      "name": "returning to answer buttons discards pending speech without a wrong response",
+      "passed": true
+    },
+    {
+      "name": "speech errors and silence expose retry and button fallback without costing an attempt",
+      "passed": true
+    },
+    {
+      "name": "missing_letter: picture on/off and persisted full/compact anchors keep visible and accessible answer text hidden until explicit reveal",
+      "passed": true
+    },
+    {
+      "name": "word_scramble: picture on/off and persisted full/compact anchors keep visible and accessible answer text hidden until explicit reveal",
+      "passed": true
+    },
+    {
+      "name": "missing_letter: production portable serialization and fresh reopen preserve picture support, hide the answer, and keep correct voice behavior",
+      "passed": true
+    },
+    {
+      "name": "word_scramble: production portable serialization and fresh reopen preserve picture support, hide the answer, and keep correct voice behavior",
+      "passed": true
+    },
+    {
+      "name": "starting voice capture stops isolation sequence and prevents later option clips",
+      "passed": true
+    },
+    {
+      "name": "rapid isolation instruction repeats use one managed audio channel",
+      "passed": true
+    },
+    {
+      "name": "late isolation instruction TTS cannot interrupt capture and keeps strict Kokoro English options",
+      "passed": true
+    },
+    {
+      "name": "unmount cancels isolation sequence without delayed option playback",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "runs": [
+    {
+      "name": "spelling construction",
+      "word": "cat",
+      "activity": "spelling_bee",
+      "score": {
+        "correct": 1,
+        "total": 1,
+        "streak": 1
+      },
+      "feedback": {
+        "isCorrect": true,
+        "streak": 1,
+        "message": "Correct!"
+      },
+      "recognitionEvents": [],
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "instruction:inst_spelling_bee",
+          "at": 1581.199999999255
+        },
+        {
+          "id": 0,
+          "type": "waiting",
+          "label": "instruction:inst_spelling_bee",
+          "duration": null,
+          "playbackRate": 1,
+          "at": 1603,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "loadedmetadata",
+          "label": "instruction:inst_spelling_bee",
+          "duration": 2.520097,
+          "playbackRate": 1,
+          "at": 1638.5,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "playing",
+          "label": "instruction:inst_spelling_bee",
+          "duration": 2.520097,
+          "playbackRate": 1,
+          "at": 1739.199999999255,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "pause",
+          "label": "instruction:inst_spelling_bee",
+          "duration": 2.520097,
+          "playbackRate": 1,
+          "at": 4649.699999999255,
+          "active": []
+        },
+        {
+          "id": 0,
+          "type": "ended",
+          "label": "instruction:inst_spelling_bee",
+          "duration": 2.520097,
+          "playbackRate": 1,
+          "at": 4650,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "loadedmetadata",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 5090.900000002235,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "play-call",
+          "label": "kokoro-word:cat",
+          "at": 5569.300000000745
+        },
+        {
+          "id": 1,
+          "type": "waiting",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 5571.699999999255,
+          "active": [
+            1
+          ]
+        },
+        {
+          "id": 1,
+          "type": "playing",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 5571.800000000745,
+          "active": [
+            1
+          ]
+        },
+        {
+          "id": 1,
+          "type": "pause",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 6226.60000000149,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "ended",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 6226.699999999255,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "play-call",
+          "label": "kokoro-word:cat",
+          "at": 6441.400000002235
+        },
+        {
+          "id": 1,
+          "type": "waiting",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 6447.800000000745,
+          "active": [
+            1
+          ]
+        },
+        {
+          "id": 1,
+          "type": "playing",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 6448.400000002235,
+          "active": [
+            1
+          ]
+        },
+        {
+          "id": 1,
+          "type": "pause",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 7046.5,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "ended",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 7046.60000000149,
+          "active": []
+        },
+        {
+          "id": 2,
+          "type": "play-call",
+          "label": "instruction:fb_you_got_it",
+          "at": 7174.400000002235
+        },
+        {
+          "id": 2,
+          "type": "waiting",
+          "label": "instruction:fb_you_got_it",
+          "duration": null,
+          "playbackRate": 1,
+          "at": 7243.699999999255,
+          "active": [
+            2
+          ]
+        },
+        {
+          "id": 2,
+          "type": "loadedmetadata",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 7258.900000002235,
+          "active": [
+            2
+          ]
+        },
+        {
+          "id": 2,
+          "type": "playing",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 7264,
+          "active": [
+            2
+          ]
+        },
+        {
+          "id": 2,
+          "type": "pause",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 7280.10000000149,
+          "active": []
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "spelling stale mic",
+      "word": "cat",
+      "activity": "spelling_bee",
+      "score": {
+        "correct": 0,
+        "total": 0,
+        "streak": 0
+      },
+      "feedback": null,
+      "recognitionEvents": [
+        {
+          "id": 0,
+          "type": "start",
+          "at": 838.4000000022352
+        },
+        {
+          "id": 0,
+          "type": "abort",
+          "at": 898.4000000022352
+        },
+        {
+          "id": 0,
+          "type": "emit:start",
+          "isFinal": true,
+          "at": 928.9000000022352
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "cat",
+          "isFinal": true,
+          "at": 928.9000000022352
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "cat",
+          "isFinal": true,
+          "at": 929.1000000014901
+        },
+        {
+          "id": 0,
+          "type": "emit:end",
+          "isFinal": true,
+          "at": 929.1000000014901
+        },
+        {
+          "id": 0,
+          "type": "emit:error",
+          "text": "network",
+          "isFinal": true,
+          "at": 929.1000000014901
+        }
+      ],
+      "audioEvents": [],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "spelling automatic then replay rates",
+      "word": "cat",
+      "activity": "spelling_bee",
+      "score": {
+        "correct": 0,
+        "total": 0,
+        "streak": 0
+      },
+      "feedback": null,
+      "recognitionEvents": [],
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "instruction:inst_spelling_bee",
+          "at": 1177.699999999255
+        },
+        {
+          "id": 0,
+          "type": "waiting",
+          "label": "instruction:inst_spelling_bee",
+          "duration": null,
+          "playbackRate": 1,
+          "at": 1181.0999999977648,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "loadedmetadata",
+          "label": "instruction:inst_spelling_bee",
+          "duration": 2.520097,
+          "playbackRate": 1,
+          "at": 1182.5999999977648,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "playing",
+          "label": "instruction:inst_spelling_bee",
+          "duration": 2.520097,
+          "playbackRate": 1,
+          "at": 1207.699999999255,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "pause",
+          "label": "instruction:inst_spelling_bee",
+          "duration": 2.520097,
+          "playbackRate": 1,
+          "at": 3850.099999997765,
+          "active": []
+        },
+        {
+          "id": 0,
+          "type": "ended",
+          "label": "instruction:inst_spelling_bee",
+          "duration": 2.520097,
+          "playbackRate": 1,
+          "at": 3850.2999999970198,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "loadedmetadata",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 4259.39999999851,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "play-call",
+          "label": "kokoro-word:cat",
+          "at": 4280
+        },
+        {
+          "id": 1,
+          "type": "waiting",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 4281,
+          "active": [
+            1
+          ]
+        },
+        {
+          "id": 1,
+          "type": "playing",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 4281,
+          "active": [
+            1
+          ]
+        },
+        {
+          "id": 1,
+          "type": "pause",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 4880,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "ended",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 4880,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "play-call",
+          "label": "kokoro-word:cat",
+          "at": 5014.89999999851
+        },
+        {
+          "id": 1,
+          "type": "waiting",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 5019.199999999255,
+          "active": [
+            1
+          ]
+        },
+        {
+          "id": 1,
+          "type": "playing",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 5019.39999999851,
+          "active": [
+            1
+          ]
+        },
+        {
+          "id": 1,
+          "type": "pause",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 5600.199999999255,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "ended",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 5600.199999999255,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "play-call",
+          "label": "kokoro-word:cat",
+          "at": 5731.39999999851
+        },
+        {
+          "id": 1,
+          "type": "waiting",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 0.5,
+          "at": 5736.5,
+          "active": [
+            1
+          ]
+        },
+        {
+          "id": 1,
+          "type": "playing",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 0.5,
+          "at": 5737,
+          "active": [
+            1
+          ]
+        },
+        {
+          "id": 1,
+          "type": "pause",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 0.5,
+          "at": 6780.5,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "ended",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 0.5,
+          "at": 6780.599999997765,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "play-call",
+          "label": "kokoro-word:cat",
+          "at": 6905.699999999255
+        },
+        {
+          "id": 1,
+          "type": "waiting",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 6927.89999999851,
+          "active": [
+            1
+          ]
+        },
+        {
+          "id": 1,
+          "type": "playing",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 6928.099999997765,
+          "active": [
+            1
+          ]
+        },
+        {
+          "id": 1,
+          "type": "pause",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 7500.099999997765,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "ended",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 7500.199999999255,
+          "active": []
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "spelling early manual replay",
+      "word": "cat",
+      "activity": "spelling_bee",
+      "score": {
+        "correct": 0,
+        "total": 0,
+        "streak": 0
+      },
+      "feedback": null,
+      "startupReady": {
+        "at": 290,
+        "word": "cat",
+        "preparedItemInstalled": true
+      },
+      "startupAction": {
+        "name": "replay",
+        "at": 367.29999999701977,
+        "startedAt": 233.19999999925494,
+        "readyAt": 290,
+        "preparedItemInstalled": true,
+        "instructionRequestsBefore": 0
+      },
+      "recognitionEvents": [],
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "loadedmetadata",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 377.0999999977648,
+          "active": []
+        },
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "kokoro-word:cat",
+          "at": 396.79999999701977
+        },
+        {
+          "id": 0,
+          "type": "waiting",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 397.29999999701977,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "playing",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 397.3999999985099,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "pause",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 972.6999999992549,
+          "active": []
+        },
+        {
+          "id": 0,
+          "type": "ended",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 972.6999999992549,
+          "active": []
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "spelling instructions off startup",
+      "word": "cat",
+      "activity": "spelling_bee",
+      "score": {
+        "correct": 0,
+        "total": 0,
+        "streak": 0
+      },
+      "feedback": null,
+      "startupReady": {
+        "at": 322.1000000014901,
+        "word": "cat",
+        "preparedItemInstalled": true
+      },
+      "startupAction": {
+        "name": "instructions-off",
+        "at": 405.6000000014901,
+        "startedAt": 252.90000000223517,
+        "readyAt": 322.1000000014901,
+        "preparedItemInstalled": true,
+        "instructionRequestsBefore": 0
+      },
+      "recognitionEvents": [],
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "loadedmetadata",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 478.1000000014901,
+          "active": []
+        },
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "kokoro-word:cat",
+          "at": 495.30000000074506
+        },
+        {
+          "id": 0,
+          "type": "waiting",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 496,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "playing",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 496,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "pause",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 1065.5,
+          "active": []
+        },
+        {
+          "id": 0,
+          "type": "ended",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 1065.5,
+          "active": []
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "native isolated sound confirmation",
+      "word": "cat",
+      "activity": "isolation",
+      "score": {
+        "correct": 1,
+        "total": 1,
+        "streak": 1
+      },
+      "feedback": {
+        "isCorrect": true,
+        "streak": 1,
+        "message": "Correct!"
+      },
+      "recognitionEvents": [
+        {
+          "id": 0,
+          "type": "start",
+          "at": 620
+        },
+        {
+          "id": 0,
+          "type": "emit:start",
+          "isFinal": true,
+          "at": 636.2999999970198
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "a",
+          "isFinal": true,
+          "at": 636.3999999985099
+        },
+        {
+          "id": 0,
+          "type": "abort",
+          "at": 636.8999999985099
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "a",
+          "isFinal": true,
+          "at": 636.8999999985099
+        },
+        {
+          "id": 0,
+          "type": "emit:end",
+          "isFinal": true,
+          "at": 637
+        },
+        {
+          "id": 0,
+          "type": "emit:error",
+          "text": "network",
+          "isFinal": true,
+          "at": 637
+        }
+      ],
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "instruction:fb_you_got_it",
+          "at": 747
+        },
+        {
+          "id": 0,
+          "type": "waiting",
+          "label": "instruction:fb_you_got_it",
+          "duration": null,
+          "playbackRate": 1,
+          "at": 762.5999999977648,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "loadedmetadata",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 768.5999999977648,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "playing",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 795.1999999992549,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "pause",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 856.2999999970198,
+          "active": []
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "shared isolated sound confirmation",
+      "word": "cat",
+      "activity": "isolation",
+      "score": {
+        "correct": 1,
+        "total": 1,
+        "streak": 1
+      },
+      "feedback": {
+        "isCorrect": true,
+        "streak": 1,
+        "message": "Correct!"
+      },
+      "recognitionEvents": [
+        {
+          "id": 0,
+          "type": "start",
+          "at": 656.6000000014901
+        },
+        {
+          "id": 0,
+          "type": "emit:start",
+          "isFinal": true,
+          "at": 671.8999999985099
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "a",
+          "isFinal": true,
+          "at": 671.8999999985099
+        },
+        {
+          "id": 0,
+          "type": "stop",
+          "at": 672.6999999992549
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "a",
+          "isFinal": true,
+          "at": 672.6999999992549
+        },
+        {
+          "id": 0,
+          "type": "emit:end",
+          "isFinal": true,
+          "at": 672.6999999992549
+        },
+        {
+          "id": 0,
+          "type": "emit:error",
+          "text": "network",
+          "isFinal": true,
+          "at": 672.6999999992549
+        }
+      ],
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "instruction:fb_you_got_it",
+          "at": 757.8000000007451
+        },
+        {
+          "id": 0,
+          "type": "waiting",
+          "label": "instruction:fb_you_got_it",
+          "duration": null,
+          "playbackRate": 1,
+          "at": 776,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "loadedmetadata",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 782.5,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "playing",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 793,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "pause",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 845.5,
+          "active": []
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "missing letter retry",
+      "word": "cat",
+      "activity": "missing_letter",
+      "score": {
+        "correct": 1,
+        "total": 1,
+        "streak": 1
+      },
+      "feedback": {
+        "isCorrect": true,
+        "streak": 1,
+        "message": "Correct!"
+      },
+      "recognitionEvents": [
+        {
+          "id": 0,
+          "type": "start",
+          "at": 641.8000000007451
+        },
+        {
+          "id": 0,
+          "type": "emit:start",
+          "isFinal": true,
+          "at": 673.5
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "b",
+          "isFinal": true,
+          "at": 673.5
+        },
+        {
+          "id": 0,
+          "type": "abort",
+          "at": 673.8000000007451
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "b",
+          "isFinal": true,
+          "at": 673.9000000022352
+        },
+        {
+          "id": 0,
+          "type": "emit:end",
+          "isFinal": true,
+          "at": 673.9000000022352
+        },
+        {
+          "id": 0,
+          "type": "emit:error",
+          "text": "network",
+          "isFinal": true,
+          "at": 673.9000000022352
+        },
+        {
+          "id": 1,
+          "type": "start",
+          "at": 824.7000000029802
+        },
+        {
+          "id": 0,
+          "type": "emit:start",
+          "isFinal": true,
+          "at": 845.6000000014901
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "b",
+          "isFinal": true,
+          "at": 845.7000000029802
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "b",
+          "isFinal": true,
+          "at": 845.7000000029802
+        },
+        {
+          "id": 0,
+          "type": "emit:end",
+          "isFinal": true,
+          "at": 845.7000000029802
+        },
+        {
+          "id": 0,
+          "type": "emit:error",
+          "text": "network",
+          "isFinal": true,
+          "at": 845.9000000022352
+        },
+        {
+          "id": 1,
+          "type": "emit:start",
+          "isFinal": true,
+          "at": 907.5
+        },
+        {
+          "id": 1,
+          "type": "emit:result",
+          "text": "a",
+          "isFinal": true,
+          "at": 907.5
+        },
+        {
+          "id": 1,
+          "type": "abort",
+          "at": 907.8000000007451
+        },
+        {
+          "id": 1,
+          "type": "emit:result",
+          "text": "a",
+          "isFinal": true,
+          "at": 907.8000000007451
+        },
+        {
+          "id": 1,
+          "type": "emit:end",
+          "isFinal": true,
+          "at": 908.2000000029802
+        },
+        {
+          "id": 1,
+          "type": "emit:error",
+          "text": "network",
+          "isFinal": true,
+          "at": 908.2000000029802
+        }
+      ],
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "instruction:fb_you_got_it",
+          "at": 1360.1000000014901
+        },
+        {
+          "id": 0,
+          "type": "waiting",
+          "label": "instruction:fb_you_got_it",
+          "duration": null,
+          "playbackRate": 1,
+          "at": 1381.5,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "loadedmetadata",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 1388.2000000029802,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "playing",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 1417,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "pause",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 1482.300000000745,
+          "active": []
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "scramble mismatch confirmation",
+      "word": "see",
+      "activity": "word_scramble",
+      "score": {
+        "correct": 0,
+        "total": 0,
+        "streak": 0
+      },
+      "feedback": {
+        "isCorrect": false,
+        "message": "Try again! Listen closely..."
+      },
+      "recognitionEvents": [
+        {
+          "id": 0,
+          "type": "start",
+          "at": 675
+        },
+        {
+          "id": 0,
+          "type": "emit:start",
+          "isFinal": true,
+          "at": 712.5
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "sea",
+          "isFinal": true,
+          "at": 712.5
+        },
+        {
+          "id": 0,
+          "type": "abort",
+          "at": 712.6999999992549
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "sea",
+          "isFinal": true,
+          "at": 712.8000000007451
+        },
+        {
+          "id": 0,
+          "type": "emit:end",
+          "isFinal": true,
+          "at": 712.8000000007451
+        },
+        {
+          "id": 0,
+          "type": "emit:error",
+          "text": "network",
+          "isFinal": true,
+          "at": 712.8000000007451
+        }
+      ],
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "instruction:fb_try_again_listen",
+          "at": 838.1999999992549
+        },
+        {
+          "id": 0,
+          "type": "waiting",
+          "label": "instruction:fb_try_again_listen",
+          "duration": null,
+          "playbackRate": 1,
+          "at": 854.9000000022352,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "loadedmetadata",
+          "label": "instruction:fb_try_again_listen",
+          "duration": 2.640039,
+          "playbackRate": 1,
+          "at": 860,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "pause",
+          "label": "instruction:fb_try_again_listen",
+          "duration": 2.640039,
+          "playbackRate": 1,
+          "at": 872.1999999992549,
+          "active": []
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "scramble matching word",
+      "word": "see",
+      "activity": "word_scramble",
+      "score": {
+        "correct": 1,
+        "total": 1,
+        "streak": 1
+      },
+      "feedback": {
+        "isCorrect": true,
+        "streak": 1,
+        "message": "Correct!"
+      },
+      "recognitionEvents": [
+        {
+          "id": 0,
+          "type": "start",
+          "at": 656.3000000007451
+        },
+        {
+          "id": 0,
+          "type": "emit:start",
+          "isFinal": true,
+          "at": 678.3000000007451
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "see",
+          "isFinal": true,
+          "at": 678.3000000007451
+        },
+        {
+          "id": 0,
+          "type": "abort",
+          "at": 678.6000000014901
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "see",
+          "isFinal": true,
+          "at": 703
+        },
+        {
+          "id": 0,
+          "type": "emit:end",
+          "isFinal": true,
+          "at": 703
+        },
+        {
+          "id": 0,
+          "type": "emit:error",
+          "text": "network",
+          "isFinal": true,
+          "at": 703.1000000014901
+        }
+      ],
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "instruction:fb_you_got_it",
+          "at": 702.9000000022352
+        },
+        {
+          "id": 0,
+          "type": "waiting",
+          "label": "instruction:fb_you_got_it",
+          "duration": null,
+          "playbackRate": 1,
+          "at": 715.6000000014901,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "loadedmetadata",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 742.7000000029802,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "playing",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 745.2000000029802,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "pause",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 839.5,
+          "active": []
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "same-word pending invalidation",
+      "word": "cat",
+      "activity": "missing_letter",
+      "score": {
+        "correct": 1,
+        "total": 1,
+        "streak": 1
+      },
+      "feedback": {
+        "isCorrect": true,
+        "streak": 1,
+        "message": "Correct!"
+      },
+      "recognitionEvents": [
+        {
+          "id": 0,
+          "type": "start",
+          "at": 616.6999999992549
+        },
+        {
+          "id": 0,
+          "type": "emit:start",
+          "isFinal": true,
+          "at": 647
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "a",
+          "isFinal": true,
+          "at": 647
+        },
+        {
+          "id": 0,
+          "type": "abort",
+          "at": 647.1999999992549
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "a",
+          "isFinal": true,
+          "at": 647.1999999992549
+        },
+        {
+          "id": 0,
+          "type": "emit:end",
+          "isFinal": true,
+          "at": 647.3000000007451
+        },
+        {
+          "id": 0,
+          "type": "emit:error",
+          "text": "network",
+          "isFinal": true,
+          "at": 647.3000000007451
+        },
+        {
+          "id": 0,
+          "type": "emit:start",
+          "isFinal": true,
+          "at": 834
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "a",
+          "isFinal": true,
+          "at": 834
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "a",
+          "isFinal": true,
+          "at": 834.1000000014901
+        },
+        {
+          "id": 0,
+          "type": "emit:end",
+          "isFinal": true,
+          "at": 834.1000000014901
+        },
+        {
+          "id": 0,
+          "type": "emit:error",
+          "text": "network",
+          "isFinal": true,
+          "at": 834.1000000014901
+        },
+        {
+          "id": 1,
+          "type": "start",
+          "at": 997.6999999992549
+        },
+        {
+          "id": 1,
+          "type": "emit:start",
+          "isFinal": true,
+          "at": 1015.6999999992549
+        },
+        {
+          "id": 1,
+          "type": "emit:result",
+          "text": "t",
+          "isFinal": true,
+          "at": 1015.6999999992549
+        },
+        {
+          "id": 1,
+          "type": "abort",
+          "at": 1015.9000000022352
+        },
+        {
+          "id": 1,
+          "type": "emit:result",
+          "text": "t",
+          "isFinal": true,
+          "at": 1015.9000000022352
+        },
+        {
+          "id": 1,
+          "type": "emit:end",
+          "isFinal": true,
+          "at": 1015.9000000022352
+        },
+        {
+          "id": 1,
+          "type": "emit:error",
+          "text": "network",
+          "isFinal": true,
+          "at": 1015.9000000022352
+        }
+      ],
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "instruction:fb_you_got_it",
+          "at": 1135
+        },
+        {
+          "id": 0,
+          "type": "waiting",
+          "label": "instruction:fb_you_got_it",
+          "duration": null,
+          "playbackRate": 1,
+          "at": 1146.5,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "loadedmetadata",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 1159.5,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "playing",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 1167.6000000014901,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "pause",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 1264.9000000022352,
+          "active": []
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "pending pointer fallback",
+      "word": "cat",
+      "activity": "isolation",
+      "score": {
+        "correct": 0,
+        "total": 0,
+        "streak": 0
+      },
+      "feedback": null,
+      "recognitionEvents": [
+        {
+          "id": 0,
+          "type": "start",
+          "at": 604
+        },
+        {
+          "id": 0,
+          "type": "emit:start",
+          "isFinal": true,
+          "at": 626.5
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "a",
+          "isFinal": true,
+          "at": 626.6000000014901
+        },
+        {
+          "id": 0,
+          "type": "abort",
+          "at": 626.9000000022352
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "a",
+          "isFinal": true,
+          "at": 626.9000000022352
+        },
+        {
+          "id": 0,
+          "type": "emit:end",
+          "isFinal": true,
+          "at": 626.9000000022352
+        },
+        {
+          "id": 0,
+          "type": "emit:error",
+          "text": "network",
+          "isFinal": true,
+          "at": 626.9000000022352
+        },
+        {
+          "id": 0,
+          "type": "emit:start",
+          "isFinal": true,
+          "at": 726.9000000022352
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "a",
+          "isFinal": true,
+          "at": 726.9000000022352
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "a",
+          "isFinal": true,
+          "at": 726.9000000022352
+        },
+        {
+          "id": 0,
+          "type": "emit:end",
+          "isFinal": true,
+          "at": 726.9000000022352
+        },
+        {
+          "id": 0,
+          "type": "emit:error",
+          "text": "network",
+          "isFinal": true,
+          "at": 726.9000000022352
+        }
+      ],
+      "audioEvents": [],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "recognition failure recovery",
+      "word": "cat",
+      "activity": "missing_letter",
+      "score": {
+        "correct": 0,
+        "total": 0,
+        "streak": 0
+      },
+      "feedback": null,
+      "recognitionEvents": [
+        {
+          "id": 0,
+          "type": "start",
+          "at": 555.1000000014901
+        },
+        {
+          "id": 0,
+          "type": "emit:error",
+          "text": "network",
+          "isFinal": true,
+          "at": 577.3000000007451
+        },
+        {
+          "id": 0,
+          "type": "abort",
+          "at": 577.6999999992549
+        },
+        {
+          "id": 1,
+          "type": "start",
+          "at": 674.6999999992549
+        },
+        {
+          "id": 1,
+          "type": "emit:end",
+          "isFinal": true,
+          "at": 691
+        },
+        {
+          "id": 1,
+          "type": "abort",
+          "at": 691.1000000014901
+        }
+      ],
+      "audioEvents": [],
+      "toasts": [
+        [
+          "Microphone error",
+          "error"
+        ]
+      ],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "missing_letter alwaysOn",
+      "word": "cat",
+      "activity": "missing_letter",
+      "score": {
+        "correct": 0,
+        "total": 0,
+        "streak": 0
+      },
+      "feedback": null,
+      "recognitionEvents": [],
+      "audioEvents": [],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "missing_letter alwaysOff",
+      "word": "cat",
+      "activity": "missing_letter",
+      "score": {
+        "correct": 0,
+        "total": 0,
+        "streak": 0
+      },
+      "feedback": null,
+      "recognitionEvents": [],
+      "audioEvents": [],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "word_scramble alwaysOn",
+      "word": "cat",
+      "activity": "word_scramble",
+      "score": {
+        "correct": 0,
+        "total": 0,
+        "streak": 0
+      },
+      "feedback": null,
+      "recognitionEvents": [],
+      "audioEvents": [],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "word_scramble alwaysOff",
+      "word": "cat",
+      "activity": "word_scramble",
+      "score": {
+        "correct": 0,
+        "total": 0,
+        "streak": 0
+      },
+      "feedback": null,
+      "recognitionEvents": [],
+      "audioEvents": [],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "missing_letter before saved reopen",
+      "word": "cat",
+      "activity": "missing_letter",
+      "score": {
+        "correct": 0,
+        "total": 0,
+        "streak": 0
+      },
+      "feedback": null,
+      "recognitionEvents": [],
+      "audioEvents": [],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "missing_letter portable reopen",
+      "word": "cat",
+      "activity": "missing_letter",
+      "score": {
+        "correct": 1,
+        "total": 1,
+        "streak": 1
+      },
+      "feedback": {
+        "isCorrect": true,
+        "streak": 1,
+        "message": "Correct!"
+      },
+      "recognitionEvents": [
+        {
+          "id": 0,
+          "type": "start",
+          "at": 703.5
+        },
+        {
+          "id": 0,
+          "type": "emit:start",
+          "isFinal": true,
+          "at": 735.5
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "a",
+          "isFinal": true,
+          "at": 735.6000000014901
+        },
+        {
+          "id": 0,
+          "type": "abort",
+          "at": 736
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "a",
+          "isFinal": true,
+          "at": 736
+        },
+        {
+          "id": 0,
+          "type": "emit:end",
+          "isFinal": true,
+          "at": 736
+        },
+        {
+          "id": 0,
+          "type": "emit:error",
+          "text": "network",
+          "isFinal": true,
+          "at": 736
+        }
+      ],
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "instruction:fb_you_got_it",
+          "at": 823.8000000007451
+        },
+        {
+          "id": 0,
+          "type": "waiting",
+          "label": "instruction:fb_you_got_it",
+          "duration": null,
+          "playbackRate": 1,
+          "at": 841.4000000022352,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "loadedmetadata",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 856.5,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "pause",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 937.9000000022352,
+          "active": []
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "word_scramble before saved reopen",
+      "word": "cat",
+      "activity": "word_scramble",
+      "score": {
+        "correct": 0,
+        "total": 0,
+        "streak": 0
+      },
+      "feedback": null,
+      "recognitionEvents": [],
+      "audioEvents": [],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "word_scramble portable reopen",
+      "word": "cat",
+      "activity": "word_scramble",
+      "score": {
+        "correct": 1,
+        "total": 1,
+        "streak": 1
+      },
+      "feedback": {
+        "isCorrect": true,
+        "streak": 1,
+        "message": "Correct!"
+      },
+      "recognitionEvents": [
+        {
+          "id": 0,
+          "type": "start",
+          "at": 671.6000000014901
+        },
+        {
+          "id": 0,
+          "type": "emit:start",
+          "isFinal": true,
+          "at": 694.3000000007451
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "cat",
+          "isFinal": true,
+          "at": 694.3999999985099
+        },
+        {
+          "id": 0,
+          "type": "abort",
+          "at": 694.6000000014901
+        },
+        {
+          "id": 0,
+          "type": "emit:result",
+          "text": "cat",
+          "isFinal": true,
+          "at": 708.8999999985099
+        },
+        {
+          "id": 0,
+          "type": "emit:end",
+          "isFinal": true,
+          "at": 708.8999999985099
+        },
+        {
+          "id": 0,
+          "type": "emit:error",
+          "text": "network",
+          "isFinal": true,
+          "at": 708.8999999985099
+        }
+      ],
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "instruction:fb_you_got_it",
+          "at": 708.6999999992549
+        },
+        {
+          "id": 0,
+          "type": "waiting",
+          "label": "instruction:fb_you_got_it",
+          "duration": null,
+          "playbackRate": 1,
+          "at": 723.5,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "loadedmetadata",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 731,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "playing",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 740.6000000014901,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "pause",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 788.1000000014901,
+          "active": []
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "play-all interrupted",
+      "word": "cat",
+      "activity": "isolation",
+      "score": {
+        "correct": 0,
+        "total": 0,
+        "streak": 0
+      },
+      "feedback": null,
+      "recognitionEvents": [
+        {
+          "id": 0,
+          "type": "start",
+          "at": 1349.199999999255
+        },
+        {
+          "id": 0,
+          "type": "abort",
+          "at": 2542.699999999255
+        }
+      ],
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "loadedmetadata",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 0.1,
+          "at": 559.5999999977648,
+          "active": []
+        },
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "kokoro-word:cat",
+          "at": 581.8000000007451
+        },
+        {
+          "id": 0,
+          "type": "waiting",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 582.3999999985099,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "playing",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 582.5,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "pause",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 1163.199999999255,
+          "active": []
+        },
+        {
+          "id": 0,
+          "type": "ended",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 1163.300000000745,
+          "active": []
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "repeat exclusive",
+      "word": "cat",
+      "activity": "isolation",
+      "score": {
+        "correct": 0,
+        "total": 0,
+        "streak": 0
+      },
+      "feedback": null,
+      "recognitionEvents": [],
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "phoneme:a",
+          "at": 561.5
+        },
+        {
+          "id": 0,
+          "type": "waiting",
+          "label": "phoneme:a",
+          "duration": null,
+          "playbackRate": 0.9,
+          "at": 595.3000000007451,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "loadedmetadata",
+          "label": "phoneme:a",
+          "duration": 0.696,
+          "playbackRate": 0.9,
+          "at": 598.8999999985099,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "playing",
+          "label": "phoneme:a",
+          "duration": 0.696,
+          "playbackRate": 0.9,
+          "at": 636.3000000007451,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 1,
+          "type": "play-call",
+          "label": "phoneme:a",
+          "at": 657
+        },
+        {
+          "id": 0,
+          "type": "pause",
+          "label": "phoneme:a",
+          "duration": 0.696,
+          "playbackRate": 0.9,
+          "at": 695.5,
+          "active": [
+            1
+          ]
+        },
+        {
+          "id": 1,
+          "type": "waiting",
+          "label": "phoneme:a",
+          "duration": null,
+          "playbackRate": 0.9,
+          "at": 696.1999999992549,
+          "active": [
+            1
+          ]
+        },
+        {
+          "id": 1,
+          "type": "loadedmetadata",
+          "label": "phoneme:a",
+          "duration": 0.696,
+          "playbackRate": 0.9,
+          "at": 697.1999999992549,
+          "active": [
+            1
+          ]
+        },
+        {
+          "id": 1,
+          "type": "playing",
+          "label": "phoneme:a",
+          "duration": 0.696,
+          "playbackRate": 0.9,
+          "at": 716.8000000007451,
+          "active": [
+            1
+          ]
+        },
+        {
+          "id": 1,
+          "type": "pause",
+          "label": "phoneme:a",
+          "duration": 0.696,
+          "playbackRate": 0.9,
+          "at": 837,
+          "active": []
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "deferred instruction cancelled",
+      "word": "cat",
+      "activity": "isolation",
+      "score": {
+        "correct": 0,
+        "total": 0,
+        "streak": 0
+      },
+      "feedback": null,
+      "recognitionEvents": [
+        {
+          "id": 0,
+          "type": "start",
+          "at": 788.6999999992549
+        },
+        {
+          "id": 0,
+          "type": "abort",
+          "at": 1005.1000000014901
+        }
+      ],
+      "audioEvents": [],
+      "toasts": [],
+      "synthesis": [
+        {
+          "text": "What is the 2nd sound?",
+          "voice": "af_heart",
+          "speed": 1,
+          "options": {
+            "allowProviderFallback": false,
+            "language": "English"
+          },
+          "at": 533.6999999992549
+        }
+      ],
+      "gemini": []
+    },
+    {
+      "name": "isolation unmount",
+      "word": "cat",
+      "activity": "isolation",
+      "score": {
+        "correct": 0,
+        "total": 0,
+        "streak": 0
+      },
+      "feedback": null,
+      "recognitionEvents": [],
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "loadedmetadata",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 0.1,
+          "at": 703.1999999992549,
+          "active": []
+        },
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "kokoro-word:cat",
+          "at": 732
+        },
+        {
+          "id": 0,
+          "type": "waiting",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 733.1000000014901,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "playing",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 733.1999999992549,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "pause",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "playbackRate": 1,
+          "at": 762,
+          "active": []
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    }
+  ],
+  "consoleMessages": [
+    "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "[PureHelpers] 7 helpers registered",
+    "[MiscComponentsModule] 3 components registered.",
+    "[MiscComponentsModule] 3 components registered (incl. WordSoundsReviewPanel with Sound Swap)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] loadProbeBanks stub (CDN)",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] WordSoundsModal MOUNTED. initialShowReviewPanel: false, activity: spelling_bee",
+    "[WS-DBG] initialShowReviewPanel changed to: false",
+    "[WS-DBG] 🔄 Reset hasStartedFromReview for new word set: cat",
+    "[WS-DBG] 🚀 Initializing Session Queue for spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] Streak preserved across activity change to: spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] 🔄 Synced currentWordIndex to 1 to skip: cat",
+    "[WS-DBG] 🚀 Using preloaded data for: cat",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] ⚡ using prepared Word Sounds TTS for: cat",
+    "[WS-DBG] ⚡ audioInstances HIT: cat",
+    "[WS-DBG] TeacherCheck: checkAnswer called {answer: correct, expectedAnswer: correct, locked: false}",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] WordSoundsModal UNMOUNTED",
+    "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "[PureHelpers] 7 helpers registered",
+    "[MiscComponentsModule] 3 components registered.",
+    "[MiscComponentsModule] 3 components registered (incl. WordSoundsReviewPanel with Sound Swap)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] loadProbeBanks stub (CDN)",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [missing_letter]",
+    "[WS-DBG] WordSoundsModal MOUNTED. initialShowReviewPanel: false, activity: missing_letter",
+    "[WS-DBG] initialShowReviewPanel changed to: false",
+    "[WS-DBG] 🔄 Reset hasStartedFromReview for new word set: cat",
+    "[WS-DBG] 🚀 Initializing Session Queue for missing_letter",
+    "[WS-DBG] 🎲 Generating session queue for missing_letter (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [missing_letter]",
+    "[WS-DBG] Streak preserved across activity change to: missing_letter",
+    "[WS-DBG] 🎲 Generating session queue for missing_letter (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] 🔄 Synced currentWordIndex to 1 to skip: cat",
+    "[WS-DBG] 🚀 Using preloaded data for: cat",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [missing_letter]",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [missing_letter]",
+    "[WS-DBG] 🚀 Initializing Session Queue for spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] WordSoundsModal UNMOUNTED",
+    "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "[PureHelpers] 7 helpers registered",
+    "[MiscComponentsModule] 3 components registered.",
+    "[MiscComponentsModule] 3 components registered (incl. WordSoundsReviewPanel with Sound Swap)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] loadProbeBanks stub (CDN)",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] WordSoundsModal MOUNTED. initialShowReviewPanel: false, activity: spelling_bee",
+    "[WS-DBG] initialShowReviewPanel changed to: false",
+    "[WS-DBG] 🔄 Reset hasStartedFromReview for new word set: cat",
+    "[WS-DBG] 🚀 Initializing Session Queue for spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] Streak preserved across activity change to: spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] 🔄 Synced currentWordIndex to 1 to skip: cat",
+    "[WS-DBG] 🚀 Using preloaded data for: cat",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] ⚡ using prepared Word Sounds TTS for: cat",
+    "[WS-DBG] ⚡ audioInstances HIT: cat",
+    "[WS-DBG] ⚡ audioInstances HIT: cat",
+    "[WS-DBG] ⚡ audioInstances HIT: cat",
+    "[WS-DBG] WordSoundsModal UNMOUNTED",
+    "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "[PureHelpers] 7 helpers registered",
+    "[MiscComponentsModule] 3 components registered.",
+    "[MiscComponentsModule] 3 components registered (incl. WordSoundsReviewPanel with Sound Swap)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] loadProbeBanks stub (CDN)",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] WordSoundsModal MOUNTED. initialShowReviewPanel: false, activity: spelling_bee",
+    "[WS-DBG] initialShowReviewPanel changed to: false",
+    "[WS-DBG] 🔄 Reset hasStartedFromReview for new word set: cat",
+    "[WS-DBG] 🚀 Initializing Session Queue for spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] Streak preserved across activity change to: spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] 🔄 Synced currentWordIndex to 1 to skip: cat",
+    "[WS-DBG] 🚀 Using preloaded data for: cat",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] ⚡ using prepared Word Sounds TTS for: cat",
+    "[WS-DBG] WordSoundsModal UNMOUNTED",
+    "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "[PureHelpers] 7 helpers registered",
+    "[MiscComponentsModule] 3 components registered.",
+    "[MiscComponentsModule] 3 components registered (incl. WordSoundsReviewPanel with Sound Swap)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] loadProbeBanks stub (CDN)",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] WordSoundsModal MOUNTED. initialShowReviewPanel: false, activity: spelling_bee",
+    "[WS-DBG] initialShowReviewPanel changed to: false",
+    "[WS-DBG] 🔄 Reset hasStartedFromReview for new word set: cat",
+    "[WS-DBG] 🚀 Initializing Session Queue for spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] Streak preserved across activity change to: spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] 🔄 Synced currentWordIndex to 1 to skip: cat",
+    "[WS-DBG] 🚀 Using preloaded data for: cat",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] ⚡ using prepared Word Sounds TTS for: cat",
+    "[WS-DBG] WordSoundsModal UNMOUNTED",
+    "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "[PureHelpers] 7 helpers registered",
+    "[MiscComponentsModule] 3 components registered.",
+    "[MiscComponentsModule] 3 components registered (incl. WordSoundsReviewPanel with Sound Swap)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] loadProbeBanks stub (CDN)",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [isolation]",
+    "[WS-DBG] WordSoundsModal MOUNTED. initialShowReviewPanel: false, activity: isolation",
+    "[WS-DBG] initialShowReviewPanel changed to: false",
+    "[WS-DBG] 🔄 Reset hasStartedFromReview for new word set: cat",
+    "[WS-DBG] 🚀 Initializing Session Queue for isolation",
+    "[WS-DBG] 🎲 Generating session queue for isolation (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [isolation]",
+    "[WS-DBG] Streak preserved across activity change to: isolation",
+    "[WS-DBG] 🎲 Generating session queue for isolation (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] 🔄 Synced currentWordIndex to 1 to skip: cat",
+    "[WS-DBG] 🚀 Using preloaded data for: cat",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [isolation]",
+    "[WS-DBG] TeacherCheck: checkAnswer called {answer: correct, expectedAnswer: correct, locked: false}",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [isolation]",
+    "[WS-DBG] 🎤 Mic input received (useEffect) — skipping, handled by onresult",
+    "[WS-DBG] WordSoundsModal UNMOUNTED",
+    "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "[Voice] AlloFlowVoice loaded — phase 3v.9",
+    "[PureHelpers] 7 helpers registered",
+    "[MiscComponentsModule] 3 components registered.",
+    "[MiscComponentsModule] 3 components registered (incl. WordSoundsReviewPanel with Sound Swap)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] loadProbeBanks stub (CDN)",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [isolation]",
+    "[WS-DBG] WordSoundsModal MOUNTED. initialShowReviewPanel: false, activity: isolation",
+    "[WS-DBG] initialShowReviewPanel changed to: false",
+    "[WS-DBG] 🔄 Reset hasStartedFromReview for new word set: cat",
+    "[WS-DBG] 🚀 Initializing Session Queue for isolation",
+    "[WS-DBG] 🎲 Generating session queue for isolation (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)"
+  ],
+  "runtimeSha256": "54f1c117994a7d715c4b7ed729b2379dbf7bae222ea6fc6b2e8f4c14f643f80d",
+  "voiceSha256": "ab8f03324c8eac75f229d2dc98b2a314e06fa5f847485d5f4ddd03fde0e4d6b9",
+  "limitations": [
+    "Controlled SpeechRecognition callbacks exercise browser UI lifetimes; no physical microphone or speech service was tested.",
+    "Native playback uses existing local Kokoro word-bank clips and standard instruction/phoneme bank clips. No live Kokoro synthesis, cloud calls, physical microphone, or pronunciation judgment was performed."
+  ]
+}

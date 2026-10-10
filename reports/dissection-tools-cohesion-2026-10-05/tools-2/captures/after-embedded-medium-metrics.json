@@ -1,0 +1,129 @@
+{
+  "width": 520,
+  "client": 518,
+  "scroll": 518,
+  "columns": 1,
+  "containerWidth": 520,
+  "groups": [
+    {
+      "name": "observe",
+      "top": 82.4375,
+      "left": 14.59375,
+      "width": 490.8125
+    },
+    {
+      "name": "evidence",
+      "top": 305.03125,
+      "left": 14.59375,
+      "width": 490.8125
+    },
+    {
+      "name": "records",
+      "top": 714.71875,
+      "left": 14.59375,
+      "width": 490.8125
+    }
+  ],
+  "text": [
+    {
+      "text": "Observe and measure",
+      "font": 16,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Choose a tool, then use the specimen canvas.",
+      "font": 14,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Capture and download",
+      "font": 16,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Frame contents",
+      "font": 14,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Specimen captures keep anatomy and your marks. Choose full canvas to include lens windows and guide panels.",
+      "font": 14,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Frame contents applies to Capture evidence. PNG downloads always include guides and lens windows.",
+      "font": 14,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Report and reset",
+      "font": 16,
+      "clipped": false,
+      "textOverflow": "clip"
+    }
+  ],
+  "controls": [
+    {
+      "name": "Ruler",
+      "font": 16,
+      "height": 48,
+      "width": 227.203125,
+      "clipped": false
+    },
+    {
+      "name": "Annotate",
+      "font": 16,
+      "height": 51.5625,
+      "width": 227.21875,
+      "clipped": false
+    },
+    {
+      "name": "Clear annotations",
+      "font": 16,
+      "height": 48,
+      "width": 463.21875,
+      "clipped": false
+    },
+    {
+      "name": "Specimen and marksFull canvas with guides",
+      "font": 16,
+      "height": 48,
+      "width": 437.21875,
+      "clipped": false
+    },
+    {
+      "name": "Capture compressed visual evidence frame",
+      "font": 16,
+      "height": 48,
+      "width": 463.21875,
+      "clipped": false
+    },
+    {
+      "name": "Download full canvas PNG",
+      "font": 16,
+      "height": 48,
+      "width": 463.21875,
+      "clipped": false
+    },
+    {
+      "name": "Copy lab report to clipboard",
+      "font": 16,
+      "height": 48,
+      "width": 463.21875,
+      "clipped": false
+    },
+    {
+      "name": "Reset progress for this specimen",
+      "font": 16,
+      "height": 48,
+      "width": 440.4375,
+      "clipped": false
+    }
+  ]
+}

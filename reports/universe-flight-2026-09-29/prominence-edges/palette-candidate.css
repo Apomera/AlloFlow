@@ -1,0 +1,6 @@
+@media(forced-colors:active){
+  [data-universe-tool] .uf-vistas{background:Canvas;color:CanvasText;border-color:CanvasText;box-shadow:none;}
+  [data-universe-tool] .uf-vistas .uf-section-heading h3,[data-universe-tool] .uf-vistas .uf-section-heading p,[data-universe-tool] .uf-vistas .uf-section-heading span{color:CanvasText!important;}
+  [data-universe-tool] .uf-vista-list button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;}
+  [data-universe-tool] .uf-vista-list button span,[data-universe-tool] .uf-vista-list button strong,[data-universe-tool] .uf-vista-list button small{color:ButtonText!important;}
+}

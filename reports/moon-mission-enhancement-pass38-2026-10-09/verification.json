@@ -1,0 +1,27 @@
+{
+  "sourceSha256": "0d89fb6277c1c6cb9ff4f0785f2d8be953c27f4bd613836367cf777625820778",
+  "sourceBytes": 1458269,
+  "mirrorsMatch": true,
+  "reversedChanges": 19,
+  "baselineReproduced": true,
+  "protectedTests": 134,
+  "newTests": {
+    "tests/e2e/moon-mission-return-crew.spec.ts": "42216b5623422b87e96de0b0c44296666dc9107eb07bb7ee7d28b0be08c77cc7",
+    "tests/moonmission_return_crew.test.js": "ba50ea912289a7a926e395b98019a16bc611feb66db3a5f3b95119223be7817d"
+  },
+  "syntax": [
+    {
+      "path": "stem_lab/stem_tool_moonmission.js",
+      "exitCode": 0,
+      "stderr": ""
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_moonmission.js",
+      "exitCode": 0,
+      "stderr": ""
+    }
+  ],
+  "scopedIndexPreserved": true,
+  "newFilesUnstaged": true,
+  "diffCheckExitCode": 0
+}

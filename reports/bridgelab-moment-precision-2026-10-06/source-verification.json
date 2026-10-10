@@ -1,0 +1,27 @@
+{
+  "status": "source-passed",
+  "checkedAt": "2026-10-07T01:35:17.789Z",
+  "sourceSha256": "b0f0cf46dba121cee27a9fe047680c091869d6c2715feea46cc53099860907fc",
+  "sourceMirrorsIdentical": true,
+  "syntaxValid": true,
+  "english": [
+    {
+      "file": "ui_strings.js",
+      "sha256": "be85509311461c168d85955430a31b6c342169b494848b3998393284980df4ab",
+      "literalFallbacksMatched": 1355
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "sha256": "be85509311461c168d85955430a31b6c342169b494848b3998393284980df4ab",
+      "literalFallbacksMatched": 1355
+    }
+  ],
+  "model": {
+    "configurationsPreviouslyPassed": 144,
+    "modelCodeUnchanged": true,
+    "path": "reports/bridgelab-frame-energy-2026-10-06/model-invariants-before-rounding.json",
+    "sha256": "9d0b444ddbf45ef17965c4a5413f716338cb9d8f77c8f79fbdfa7a6c80b7ef81",
+    "sweepSourceSha256": "fd5362d52c5b2515606f211c273adf0d4afb58be699898a5d1fbe10697517d2d",
+    "proof": "Reversing exactly the three documented UI edits and the prior rounding sentence reproduces the checked source hash."
+  }
+}

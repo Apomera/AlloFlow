@@ -407,6 +407,109 @@ function createWordSoundsCore() {
   };
   const unique = values => [...new Set((values||[]).map(normalize).filter(Boolean))];
   const shuffled = (values, seed) => { const out=[...values]; let s=seed||1; for(let i=out.length-1;i>0;i--){ s=(Math.imul(s,1664525)+1013904223)>>>0; const j=s%(i+1); [out[i],out[j]]=[out[j],out[i]];} return out; };
+  // Generated Rhyme Time choices are stable per target, but do not reuse the
+  // first few model/filler words for every item. Saved boards remain intact.
+  const buildRhymeBoard = ({word, answer, phonemes, pool=[], distractors=[], prepared, isEnglish=true, count=4, exposure}) => {
+    if (prepared && Array.isArray(prepared.options) && prepared.options.length > 1 &&
+        prepared.answer && prepared.options.includes(prepared.answer)) {
+      return {...prepared, options: [...prepared.options]};
+    }
+    const target = normalize(word), correct = normalize(answer);
+    if (!correct) return {answer: answer || '', options: []};
+    const data = new Map(pool.filter(p => p && typeof p === 'object')
+      .map(p => [normalize(p.targetWord || p.word || p.term), p]));
+    if (Array.isArray(phonemes) && phonemes.length) data.set(target, {...data.get(target), phonemes});
+    const labels = w => ((data.get(w) || {}).phonemes || []).map(p => {
+      const raw = typeof p === 'string' ? p : p && (p.ipa || p.phoneme || p.grapheme);
+      return soundKey(String(raw || '').replace(/[ˈˌ]/g, ''));
+    }).filter(Boolean);
+    const vowels = new Set(['a','e','i','o','u','ay','ee','ie','oa','oo','oo_short','oy','ow','aw','ar','er','or','air','ear','ure','schwa']);
+    const rime = w => {
+      const sounds = labels(w);
+      for (let i = sounds.length - 1; i >= 0; i--) {
+        if (vowels.has(sounds[i])) return sounds.slice(i).join('|');
+      }
+      return null;
+    };
+    const finalSound = w => {
+      const sounds = labels(w);
+      if (!isEnglish) return sounds.length ? sounds[sounds.length - 1] : null;
+      return edgeSound(w, 'last', (data.get(w) || {}).phonemes);
+    };
+    const referenceRimes = [rime(target), rime(correct)].filter(Boolean);
+    const referenceEnds = [finalSound(target), finalSound(correct)].filter(Boolean).map(soundKey);
+    const spellingRime = w => isEnglish ? (w.match(/[aeiou][a-z]*$/) || [''])[0] : w.slice(-2);
+    const supplied = new Set(unique(distractors));
+    const safe = w => {
+      if (!w || w === target || w === correct) return false;
+      const candidateRime = rime(w);
+      if (candidateRime && referenceRimes.length) return referenceRimes.every(key => key !== candidateRime);
+      const end = finalSound(w);
+      if (end && referenceEnds.length) {
+        // EDGES contains validated SOUNDS, not final letters: one/sun,
+        // blue/shoe and other alternate spellings cannot slip through here.
+        return referenceEnds.every(key => key !== soundKey(end));
+      }
+      // Without pronunciation evidence, retain only the supplied distractors
+      // under the existing rime guard; never invent an unverified filler.
+      return supplied.has(w) && spellingRime(w) !== spellingRime(correct) && spellingRime(w) !== spellingRime(target);
+    };
+    const candidates = unique([...distractors, ...pool.map(p => typeof p === 'string' ? p : p && (p.targetWord || p.word || p.term))]).filter(safe);
+    const nearby = candidates.filter(w => w.length <= Math.max(4, target.length + 1));
+    const eligible = nearby.length >= count ? nearby : candidates;
+    const targetSounds = labels(target);
+    const score = w => {
+      const sounds = labels(w);
+      const lengthCost = Math.abs((sounds.length || w.length) - (targetSounds.length || target.length));
+      const onset = edgeSound(target, 'first', phonemes);
+      const sameOnset = onset && edgeSound(w, 'first', (data.get(w) || {}).phonemes) === onset;
+      const targetVowel = targetSounds.find(s => vowels.has(s));
+      const sameVowel = targetVowel && sounds.includes(targetVowel);
+      return lengthCost * 3 - (sameOnset ? 2 : 0) - (sameVowel ? 1 : 0);
+    };
+    const seed = [...target].reduce((hash, c) => Math.imul(hash ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261);
+    const ranked = shuffled(eligible, seed).sort((a,b) => score(a) - score(b));
+    // Exposure can change the choice among nearby contrasts, never admit a
+    // rhyme or replace beginner choices with arbitrarily difficult words.
+    const boundary = ranked.length ? score(ranked[Math.min(Math.max(0, count - 1), ranked.length - 1)]) + 3 : 0;
+    const challengePool = ranked.filter(w => score(w) <= boundary);
+    const repetitionCost = w => {
+      if (!exposure) return 0;
+      const uses = exposure.counts instanceof Map ? exposure.counts.get(w) || 0 : 0;
+      const recent = Array.isArray(exposure.recent) ? exposure.recent : [];
+      const last = recent[recent.length - 1] || [];
+      return Math.min(3, uses) * 2 + (last.includes(w) ? 4 : recent.some(board => board.includes(w)) ? 2 : 0);
+    };
+    const selected = challengePool.sort((a,b) => score(a) + repetitionCost(a) - score(b) - repetitionCost(b)).slice(0, count);
+    return {answer, options: shuffled([answer, ...selected], seed ^ 0x9e3779b9)};
+  };
+
+  // A lesson/runtime owns this ledger. It is intentionally absent from saved
+  // boards: their answer/order remain fixed on every learner device.
+  const createRhymeSession = () => ({ counts: new Map(), recent: [], occurrences: new Map() });
+  const buildSessionRhymeBoard = ({session, occurrenceId, ...args}) => {
+    if (!session || !(session.occurrences instanceof Map) || occurrenceId == null) return buildRhymeBoard(args);
+    const key = String(occurrenceId);
+    const prepared = args.prepared;
+    const hasPrepared = prepared && Array.isArray(prepared.options) && prepared.options.length > 1 &&
+      prepared.answer && prepared.options.includes(prepared.answer);
+    const previous = session.occurrences.get(key);
+    const inputKey = JSON.stringify([normalize(args.word), normalize(args.answer), args.phonemes || [], args.distractors || []]);
+    // Edits and saved boards are authoritative even if the same occurrence
+    // was generated before them. An already counted occurrence stays counted.
+    if (previous && !hasPrepared && previous.inputKey === inputKey) return {...previous.board, options: [...previous.board.options]};
+    const board = buildRhymeBoard({...args, exposure: session});
+    if (!board.answer || !Array.isArray(board.options) || board.options.length < 2 || !board.options.includes(board.answer)) return board;
+    if (!previous) {
+      const distractors = unique(board.options).filter(w => w !== normalize(board.answer));
+      distractors.forEach(w => session.counts.set(w, (session.counts.get(w) || 0) + 1));
+      session.recent.push(distractors);
+      session.recent = session.recent.slice(-3);
+    }
+    session.occurrences.set(key, {inputKey, board: {...board, options: [...board.options]}});
+    return board;
+  };
+
   const validSoundBoard = (board, word, pool=[]) => {
     if(!board || !['first','last'].includes(board.mode) || !board.targetChar) return false;
     const yes=unique(board.options), no=unique(board.distractors);
@@ -493,6 +596,122 @@ function createWordSoundsCore() {
     const unknown=unique(String(text||'').normalize('NFC').match(/[\p{L}\p{M}]+/gu)||[]).filter(w=>!canRead(w));
     return {status:unknown.length?'review':'within_taught_spellings',untaughtWords:unknown};
   };
+  // A bounded word inventory supplies two real spoken syllables per item.
+  // Each component is a familiar one-syllable word: text-to-speech can read it
+  // without guessing the pronunciation of fragments such as "ba" or "nana".
+  // This inventory deliberately excludes ambiguous syllable reductions.
+  const SYLLABLE_COMPOUNDS = {
+    sunset: ['sun', 'set'], sunrise: ['sun', 'rise'], sunlight: ['sun', 'light'], sunshine: ['sun', 'shine'],
+    raincoat: ['rain', 'coat'], raindrop: ['rain', 'drop'],
+    snowman: ['snow', 'man'], snowball: ['snow', 'ball'], snowflake: ['snow', 'flake'],
+    cupcake: ['cup', 'cake'], pancake: ['pan', 'cake'], backpack: ['back', 'pack'],
+    bookbag: ['book', 'bag'], handbag: ['hand', 'bag'], handball: ['hand', 'ball'],
+    handstand: ['hand', 'stand'], handshake: ['hand', 'shake'], handprint: ['hand', 'print'],
+    football: ['foot', 'ball'], baseball: ['base', 'ball'], softball: ['soft', 'ball'],
+    playground: ['play', 'ground'], toothbrush: ['tooth', 'brush'], toothpaste: ['tooth', 'paste'],
+    blackbird: ['black', 'bird'], bluebird: ['blue', 'bird'], blackboard: ['black', 'board'],
+    whiteboard: ['white', 'board'], doorbell: ['door', 'bell'], doorknob: ['door', 'knob'],
+    classroom: ['class', 'room'], classmate: ['class', 'mate'], bedtime: ['bed', 'time'],
+    bedroom: ['bed', 'room'], starfish: ['star', 'fish'], seashell: ['sea', 'shell'],
+    seahorse: ['sea', 'horse'], seashore: ['sea', 'shore'], sailboat: ['sail', 'boat'],
+    steamboat: ['steam', 'boat'], hotdog: ['hot', 'dog'],
+    goldfish: ['gold', 'fish'], goldmine: ['gold', 'mine'], mailbox: ['mail', 'box'],
+    mailman: ['mail', 'man'], homework: ['home', 'work'], housework: ['house', 'work'],
+    doghouse: ['dog', 'house'], birdhouse: ['bird', 'house'], treehouse: ['tree', 'house'],
+    paintbrush: ['paint', 'brush'], sandpit: ['sand', 'pit'], sandbox: ['sand', 'box'],
+    sandbag: ['sand', 'bag'], milkshake: ['milk', 'shake'], milkman: ['milk', 'man'],
+    popcorn: ['pop', 'corn'], cornflake: ['corn', 'flake'], teapot: ['tea', 'pot'],
+    teacup: ['tea', 'cup'], lunchbox: ['lunch', 'box'], bathrobe: ['bath', 'robe'],
+    bathmat: ['bath', 'mat'], headband: ['head', 'band'],
+  };
+  const syllableWords = () => Object.keys(SYLLABLE_COMPOUNDS);
+  const isSyllableLanguageSupported = language => !String(language || '').trim() || /^(?:en(?:[-_][a-z0-9]+)*|english(?:\s*\([^)]*\))?)$/i.test(String(language).trim());
+  const syllableLanguageKey = language => isSyllableLanguageSupported(language) ? 'en' : normalize(language).replace(/_/g, '-');
+  const syllableAssetSource = asset => {
+    if (!asset || !/^audio\/(?:wav|x-wav|wave|mpeg|mp3|ogg|webm|mp4|x-m4a|aac)$/i.test(asset.mime || '') ||
+        typeof asset.base64 !== 'string' || asset.base64.length < 16 || asset.base64.length > 512000 ||
+        asset.base64.length % 4 || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(asset.base64)) return null;
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+    const encoded = asset.base64;
+    if (encoded.endsWith('==') && (alphabet.indexOf(encoded[encoded.length - 3]) & 15) || encoded.endsWith('=') && !encoded.endsWith('==') && (alphabet.indexOf(encoded[encoded.length - 2]) & 3)) return null;
+    const byteCount = encoded.length / 4 * 3 - (encoded.endsWith('==') ? 2 : encoded.endsWith('=') ? 1 : 0);
+    const byteAt = index => { const offset = Math.floor(index / 3) * 4, shift = index % 3;
+      const value = (alphabet.indexOf(encoded[offset]) << 18) | (alphabet.indexOf(encoded[offset + 1]) << 12) | (Math.max(0, alphabet.indexOf(encoded[offset + 2])) << 6) | Math.max(0, alphabet.indexOf(encoded[offset + 3]));
+      return value >>> ((2 - shift) * 8) & 255; };
+    const header = (start, length) => Array.from({ length }, (_, index) => String.fromCharCode(byteAt(start + index))).join('');
+    const mime = asset.mime.toLowerCase();
+    const valid = /wav|wave/.test(mime) ? byteCount > 44 && header(0, 4) === 'RIFF' && header(8, 4) === 'WAVE'
+      : /mpeg|mp3/.test(mime) ? byteCount > 10 && (header(0, 3) === 'ID3' && byteAt(3) >= 2 && byteAt(3) <= 4 || byteAt(0) === 255 && (byteAt(1) & 224) === 224 && (byteAt(1) & 6) !== 0)
+      : mime === 'audio/aac' ? byteCount > 7 && byteAt(0) === 255 && (byteAt(1) & 246) === 240
+      : mime === 'audio/ogg' ? byteCount > 27 && header(0, 4) === 'OggS' && byteAt(4) === 0
+      : mime === 'audio/webm' ? byteCount > 8 && byteAt(0) === 26 && byteAt(1) === 69 && byteAt(2) === 223 && byteAt(3) === 163
+      : byteCount > 12 && header(4, 4) === 'ftyp';
+    if (!valid) return null;
+    return 'data:' + mime + ';base64,' + asset.base64;
+  };
+  // This checksum binds teacher review to these exact clips and their order;
+  // it is an edit/staleness guard, not a claim of independent linguistic review.
+  const syllableReviewSignature = task => {
+    const value = JSON.stringify([task.targetWord, task.language, task.revision, task.syllables,
+      (task.audioUnits || []).map(unit => [unit.key, unit.text, unit.asset?.mime, unit.asset?.base64, unit.asset?.durationSeconds])]);
+    let a = 2166136261, b = 5381;
+    for (let i = 0; i < value.length; i++) { a = Math.imul(a ^ value.charCodeAt(i), 16777619); b = Math.imul(b, 33) ^ value.charCodeAt(i); }
+    return (a >>> 0).toString(16) + '-' + (b >>> 0).toString(16);
+  };
+  const reviewedSyllableReady = task => {
+    if (!task || task.version !== 2 || task.supported !== true || task.contentStatus !== 'teacher_recorded' ||
+        !task.targetWord || task.targetWord !== normalize(task.targetWord) || task.targetWord.length > 80 ||
+        typeof task.language !== 'string' || !task.language || task.language !== syllableLanguageKey(task.language) ||
+        !Number.isSafeInteger(task.revision) || task.revision < 1 || !Array.isArray(task.syllables) ||
+        task.syllables.length < 2 || task.syllables.length > 4 || !Array.isArray(task.audioUnits) ||
+        task.audioUnits.length !== task.syllables.length || task.review?.confirmed !== true) return false;
+    if (!task.syllables.every((part, index) => {
+      const unit = task.audioUnits[index];
+      return typeof part === 'string' && part === part.trim() && part.length > 0 && part.length <= 40 &&
+        unit?.key === 'syllable:' + task.targetWord + ':' + task.revision + ':' + index && unit.text === part &&
+        unit.asset?.source === 'teacher_recording' && unit.asset?.decoded === true &&
+        Number.isFinite(unit.asset.durationSeconds) && unit.asset.durationSeconds >= 0.08 && unit.asset.durationSeconds <= 8 &&
+        !!syllableAssetSource(unit.asset);
+    })) return false;
+    return task.review.signature === syllableReviewSignature(task);
+  };
+  const createReviewedSyllableTask = input => {
+    if (input?.reviewed !== true || !Array.isArray(input.syllables) || !Array.isArray(input.assets)) return null;
+    const task = { version: 2, supported: true, contentStatus: 'teacher_recorded',
+      targetWord: normalize(input.targetWord), language: syllableLanguageKey(input.language),
+      revision: input.revision, syllables: input.syllables.map(part => String(part).trim()) };
+    task.audioUnits = task.syllables.map((text, index) => ({ key: 'syllable:' + task.targetWord + ':' + task.revision + ':' + index,
+      text, asset: input.assets[index] && { ...input.assets[index] } }));
+    task.review = { confirmed: true, signature: syllableReviewSignature(task) };
+    return reviewedSyllableReady(task) ? task : null;
+  };
+  const resolveSyllableTask = (word, prepared, language) => {
+    const targetWord = normalize(word);
+    const needsRecording = () => ({ version: 1, supported: false, contentStatus: 'syllable_audio_required', targetWord,
+      syllables: [], audioUnits: [], reason: 'Use a syllable bank word or add and review recordings for each syllable in Word Sounds Studio.' });
+    if (prepared?.contentStatus === 'teacher_recorded') {
+      if (reviewedSyllableReady(prepared) && prepared.targetWord === targetWord && prepared.language === syllableLanguageKey(language)) {
+        return { ...prepared, syllables: [...prepared.syllables], audioUnits: prepared.audioUnits.map(unit => ({ ...unit, asset: { ...unit.asset } })) };
+      }
+      return needsRecording();
+    }
+    const parts = isSyllableLanguageSupported(language) && Object.prototype.hasOwnProperty.call(SYLLABLE_COMPOUNDS, targetWord) && SYLLABLE_COMPOUNDS[targetWord];
+    if (!parts) return needsRecording();
+    return { version: 1, supported: true, contentStatus: 'curated_compound', targetWord,
+      syllables: [...parts], audioUnits: parts.map(text => ({ key: text, text })) };
+  };
+  const syllableReady = task => {
+    if (task?.contentStatus === 'teacher_recorded') return reviewedSyllableReady(task);
+    if (!task || task.supported !== true || task.version !== 1 || task.contentStatus !== 'curated_compound') return false;
+    const expected = resolveSyllableTask(task.targetWord, null, 'en');
+    return expected.supported && Array.isArray(task.syllables) && Array.isArray(task.audioUnits) &&
+      task.syllables.length === expected.syllables.length && task.audioUnits.length === expected.audioUnits.length &&
+      expected.syllables.every((part, i) => task.syllables[i] === part && task.audioUnits[i]?.key === part && task.audioUnits[i]?.text === part);
+  };
+  const validSyllableBoard = board => syllableReady(board) && Array.isArray(board.options) &&
+    board.options.length >= 2 && board.options.length <= 6 &&
+    board.options.every(value => typeof value === 'string' && value && value === normalize(value)) &&
+    new Set(board.options).size === board.options.length && board.options.includes(board.targetWord);
   const CURATED_MANIPULATIONS = {
     cat: { type: "deletion", instruction: "Say 'cat'. Now say it again, but leave out the /k/ sound.", targetPhoneme: "k", answer: "at", distractors: ["it", "on", "up", "an", "in"] },
     hat: { type: "substitution", instruction: "Say 'hat'. Now change the /t/ sound to /m/.", targetPhoneme: "t", answer: "ham", distractors: ["had", "hen", "jam", "ram", "map"] },
@@ -523,7 +742,250 @@ function createWordSoundsCore() {
   };
   const manipulationReady = task => !!task && task.contentStatus === 'curated' &&
     resolveManipulationTask(task.targetWord, task, 'en').contentStatus === 'curated';
-  return {resolveManipulationTask,manipulationReady,VERSION,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
+  // Portable clip provenance is recorded at resolution time, never inferred
+  // from the voice currently selected in Studio.
+  const packAudioKey = value => String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  const portablePackAsset = asset => {
+    const mime = typeof asset?.mime === 'string' ? asset.mime.trim().toLowerCase() : '';
+    const data = typeof asset?.base64 === 'string' ? asset.base64.replace(/\s+/g, '') : '';
+    if (!/^audio\/(?:mpeg|mp3|wav|x-wav|wave|ogg|webm|mp4|x-m4a|aac|flac)$/.test(mime) || !data || data.length > 512 * 1024 || data.length % 4 !== 0 || !/^(?:[a-z0-9+/]{4})*(?:[a-z0-9+/]{2}==|[a-z0-9+/]{3}=)?$/i.test(data)) return false;
+    let bytes;
+    try {
+      if (typeof atob === 'function') { bytes = atob(data); if (typeof btoa === 'function' && btoa(bytes) !== data) return false; }
+      else if (typeof Buffer !== 'undefined') { const buffer = Buffer.from(data, 'base64'); if (buffer.toString('base64') !== data) return false; bytes = buffer.toString('binary'); }
+      else return false;
+    } catch (_) { return false; }
+    const at = index => bytes.charCodeAt(index);
+    if (/wav|wave/.test(mime)) return bytes.length > 44 && bytes.slice(0, 4) === 'RIFF' && bytes.slice(8, 12) === 'WAVE';
+    if (/mpeg|mp3/.test(mime)) return bytes.length > 10 && ((bytes.slice(0, 3) === 'ID3' && at(3) >= 2 && at(3) <= 4) || (at(0) === 255 && (at(1) & 224) === 224 && (at(1) & 6) !== 0));
+    if (mime === 'audio/aac') return bytes.length > 7 && at(0) === 255 && (at(1) & 246) === 240;
+    if (/ogg/.test(mime)) return bytes.length > 27 && bytes.slice(0, 4) === 'OggS' && at(4) === 0;
+    if (/webm/.test(mime)) return bytes.length > 8 && at(0) === 26 && at(1) === 69 && at(2) === 223 && at(3) === 163;
+    if (/flac/.test(mime)) return bytes.length > 8 && bytes.slice(0, 4) === 'fLaC';
+    return bytes.length > 12 && bytes.slice(4, 8) === 'ftyp';
+  };
+
+  const packAudioProvenance = (profile, source) => {
+    const value = { version: 1, source: source || 'unknown' };
+    ['provider', 'engine', 'resolvedVoice', 'voice', 'language', 'model'].forEach(key => {
+      if (profile && typeof profile[key] === 'string' && profile[key]) value[key] = profile[key];
+    });
+    return value;
+  };
+  // Share the app's friendly-language aliases, but keep explicit locales and
+  // pronunciation dialects distinct. Missing metadata never implies English.
+  const PACK_LANGUAGE_ALIASES = {"english":"en-US","spanish":"es-ES","spanish (latin america)":"es-419","spanish (castilian)":"es-ES","french":"fr-FR","french (canadian)":"fr-CA","german":"de-DE","portuguese":"pt-BR","portuguese (brazil)":"pt-BR","portuguese (angola)":"pt-AO","portuguese (portugal)":"pt-PT","mandarin":"zh-CN","chinese":"zh-CN","chinese (mandarin)":"zh-CN","chinese (simplified)":"zh-CN","chinese (traditional)":"zh-TW","arabic":"ar-SA","vietnamese":"vi-VN","russian":"ru-RU","japanese":"ja-JP","italian":"it-IT","korean":"ko-KR","hindi":"hi-IN","dutch":"nl-NL","polish":"pl-PL","indonesian":"id-ID","turkish":"tr-TR","hebrew":"he-IL","swedish":"sv-SE","danish":"da-DK","norwegian":"no-NO","finnish":"fi-FI","greek":"el-GR","thai":"th-TH","czech":"cs-CZ","hungarian":"hu-HU","romanian":"ro-RO","ukrainian":"uk-UA","cantonese":"zh-HK","tagalog":"fil-PH","filipino":"fil-PH","bengali":"bn-IN","urdu":"ur-PK","malay":"ms-MY","swahili":"sw-KE","bulgarian":"bg-BG","croatian":"hr-HR","serbian":"sr-RS","slovak":"sk-SK","persian":"fa-IR","farsi":"fa-IR","tamil":"ta-IN","amharic":"am-ET","afrikaans":"af-ZA","kurdish":"ku-TR","somali":"so-SO","haitian creole":"ht-HT","haitian":"ht-HT","khmer":"km-KH","cambodian":"km-KH","lao":"lo-LA","burmese":"my-MM","myanmar":"my-MM","nepali":"ne-NP","marathi":"mr-IN","gujarati":"gu-IN","punjabi":"pa-IN","telugu":"te-IN","kannada":"kn-IN","malayalam":"ml-IN","sinhala":"si-LK","yoruba":"yo-NG","igbo":"ig-NG","hausa":"ha-NG","kinyarwanda":"rw-RW","kirundi":"rn-BI","lingala":"ln-CD","tigrinya":"ti-ET","oromo":"om-ET","mongolian":"mn-MN","hmong":"hmn","esperanto":"eo","latin":"la","pashto":"ps-AF","pushto":"ps-AF","dari":"prs-AF","georgian":"ka-GE","armenian":"hy-AM","albanian":"sq-AL","macedonian":"mk-MK","acholi":"ach-UG","karen":"kar-MM","chin (hakha)":"cnh-MM","chin (falam)":"cfm-MM","maay maay":"ymm-SO","marshallese":"mh-MH"};
+  const PACK_LANGUAGE_DEFAULTS = Object.create(null);
+  Object.values(PACK_LANGUAGE_ALIASES).forEach(value => { const key = value.split('-')[0]; if (!PACK_LANGUAGE_DEFAULTS[key]) PACK_LANGUAGE_DEFAULTS[key] = value.toLowerCase(); });
+  const packAudioLanguageKey = value => {
+    if (typeof value !== 'string') return '';
+    const raw = value.trim().replace(/_/g, '-').replace(/\s+/g, ' ').toLowerCase();
+    if (!raw || raw.length > 256 || /[\u0000-\u001f\u007f]/.test(raw)) return '';
+    const parts = raw.split('\u241f');
+    if (parts.length > 3) return '';
+    let base = parts[0].trim(), locale = (parts[1] || '').trim(), dialect = (parts[2] || '').trim();
+    const parenthetical = base.match(/^(.+?)\s*\(([^()]*)\)\s*$/);
+    if (parenthetical) { base = parenthetical[1].trim(); dialect = dialect || parenthetical[2].trim(); }
+    const tag = input => {
+      if (!/^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/.test(input)) return '';
+      try { if (typeof Intl !== 'undefined' && Intl.getCanonicalLocales) input = Intl.getCanonicalLocales(input)[0].toLowerCase(); } catch (_) { return ''; }
+      return PACK_LANGUAGE_DEFAULTS[input] || input;
+    };
+    const alias = input => Object.prototype.hasOwnProperty.call(PACK_LANGUAGE_ALIASES, input) ? tag(PACK_LANGUAGE_ALIASES[input].toLowerCase()) : '';
+    const dialectLocale = dialect ? alias(base + ' (' + dialect + ')') : '';
+    const baseKey = alias(base) || tag(base) || (base ? 'name:' + base : '');
+    if (!baseKey) return '';
+    if (locale && !tag(locale)) return '';
+    const key = locale ? tag(locale) : dialectLocale || baseKey;
+    return dialect && dialectLocale !== key ? key + '\u241f' + dialect : key;
+  };
+  const packAudioInventory = (words, selectedVoice, language, canonicalEntries = []) => {
+    const assets = Object.create(null), required = new Map(), recordings = [], fragmentKeys = new Set();
+    const list = value => Array.isArray(value) ? value : [];
+    const add = value => { const key = packAudioKey(value); if (key && !/^syllable:/.test(key) && !required.has(key)) required.set(key, String(value).trim()); };
+    list(words).forEach(item => {
+      Object.assign(assets, item && item._ttsAssets || {});
+      if (!item) return;
+      const syllableBoard = item.activityItems && item.activityItems.syllable_blending;
+      const legacyParts = new Set([...list(item.syllables), ...list(syllableBoard && syllableBoard.syllables), ...list(syllableBoard && syllableBoard.audioUnits).map(unit => unit && unit.text)].map(packAudioKey));
+      legacyParts.forEach(key => fragmentKeys.add(key));
+      list(item._ttsRequiredKeys).filter(value => !legacyParts.has(packAudioKey(value))).forEach(add);
+      add(item.targetWord || item.word || item.term);
+      add('as in');
+      const boards = item.activityItems || {};
+      Object.entries(boards).forEach(([id, board]) => {
+        if (!board) return;
+        if (id !== 'isolation' && id !== 'syllable_counting') {
+          list(board.options).forEach(add);
+          list(board.distractors).forEach(add);
+        }
+        if (id === 'syllable_blending') {
+          list(board.audioUnits).forEach((unit, index) => {
+            if (!unit) return;
+            if (board.contentStatus === 'teacher_recorded') recordings.push({ key: unit.key, text: (item.targetWord || item.word || item.term) + ' · syllable ' + (index + 1), asset: unit.asset, present: portablePackAsset(unit.asset), label: typeof reviewedSyllableReady === 'function' && reviewedSyllableReady(board) && (!language || resolveSyllableTask(item.targetWord || item.word || item.term, board, language).supported) ? 'Teacher-reviewed recording' : 'Syllable recording · needs review', mismatch: false, unknown: false, regeneratable: false });
+            else if (!unit.asset && syllableReady(board)) add(unit.text);
+          });
+          add('Listen to the syllables and blend them together');
+        }
+        if (id === 'decoding') list(board.choices).forEach(add);
+        if (id === 'blending') add('Which word did you hear?');
+        if (id === 'rhyming') add('Which word rhymes with');
+        if (id === 'sound_sort') { add('Find words that start with the sound'); add('Find words that end with the sound'); }
+        if (id === 'word_families' && board.rime) add(wordFamilyInstruction(board.rime));
+        if (id === 'syllable_counting') add('How many syllables do you hear? Clap for each one');
+        if (id === 'read_sentence') { add(board.sentence); add('Read the sentence. Which word finishes it?'); }
+        if (id === 'read_passage') {
+          add(board.story); String(board.story || '').split(/(?<=[.!?])\s+/).forEach(add);
+          add('Read the story. Which word finishes it?');
+        }
+        if (id === 'sentence_match') { add(board.sentence); add('Read the sentence. Match the pictures to it.'); list(board.sequence).forEach(add); list(board.extras).forEach(add); }
+        if (id === 'isolation') {
+          const ordinals = ['first','second','third','fourth','fifth','sixth','seventh','eighth','ninth','tenth','eleventh','twelfth'];
+          list(item.phonemes).forEach((_, index) => {
+            add('What is the ' + (ordinals[index] || ((index + 1) + 'th')) + ' sound in ' + (item.targetWord || item.word || item.term) + '?');
+            add('What is the ' + (index + 1) + (index === 0 ? 'st' : index === 1 ? 'nd' : index === 2 ? 'rd' : 'th') + ' sound?');
+          });
+        }
+        if (id === 'manipulation' && board.task) String(board.task.instruction || '').split(/(\/[^\s/]{1,4}\/)/g).map(s => s.trim()).filter(s => s && /[a-z0-9]/i.test(s) && !/^\/[^/]+\/$/.test(s)).forEach(add);
+      });
+    });
+    list(canonicalEntries).forEach(entry => { if (entry && entry.category === 'speech' && (!fragmentKeys.has(packAudioKey(entry.key)) || required.has(packAudioKey(entry.key)))) add(entry.label || entry.key); });
+    const speechKeys = new Set(required.keys());
+    Object.keys(assets).forEach(add);
+    return [...required].map(([key, text]) => {
+      const asset = assets[key], present = portablePackAsset(asset), p = asset && asset.provenance || {};
+      const actualVoice = p.resolvedVoice || '';
+      const known = !!p.provider && !!actualVoice;
+      const actualLanguage = typeof p.language === 'string' ? p.language.trim() : '';
+      const actualLanguageKey = packAudioLanguageKey(actualLanguage), selectedLanguageKey = packAudioLanguageKey(language);
+      const voiceMismatch = present && known && !!selectedVoice && actualVoice !== selectedVoice;
+      const languageMismatch = present && !!actualLanguageKey && !!selectedLanguageKey && actualLanguageKey !== selectedLanguageKey;
+      const unknownVoice = present && !known, unknownLanguage = present && !actualLanguageKey;
+      const voiceLabel = known ? [p.provider, actualVoice, p.source === 'recorded_bank' ? 'recording bank' : p.source === 'synthesized' ? 'generated speech' : p.source].filter(Boolean).join(' · ') : 'Saved audio · voice/source unknown';
+      const languageLabel = actualLanguageKey ? 'Language: ' + actualLanguage.split('\u241f').filter(Boolean).join(' · ') : 'language unknown';
+      return { key, text, asset, present, provenance: p, actualVoice, actualLanguage, voiceMismatch, languageMismatch, unknownVoice, unknownLanguage, regeneratable: !fragmentKeys.has(key) || speechKeys.has(key),
+        mismatch: voiceMismatch || languageMismatch,
+        unknown: unknownVoice || unknownLanguage,
+        label: !present ? 'Missing embedded clip' : [voiceLabel, languageLabel, voiceMismatch ? 'different voice' : '', languageMismatch ? 'different language' : ''].filter(Boolean).join(' · ') };
+    }).concat(recordings);
+  };
+  // A reviewed recording carries its own audio. Old generated syllable labels
+  // must not remain mandatory speech clips in the lesson-wide manifest. Keep
+  // labels which another word, response choice or activity still consumes.
+  const normalizeRecordedSyllableDependencies = (words, language, previousWords = []) => {
+    if (!Array.isArray(words)) return words;
+    const list = value => Array.isArray(value) ? value : [];
+    const targetOf = item => item && (item.targetWord || item.word || item.term || item.singleWord || item.displayWord);
+    const candidates = new Set(), protectedKeys = new Set(), previousByWord = new Map();
+    list(previousWords).forEach(item => {
+      const key = packAudioKey(targetOf(item));
+      if (!key) return;
+      if (!previousByWord.has(key)) previousByWord.set(key, []);
+      previousByWord.get(key).push(item);
+    });
+    const addParts = item => {
+      const board = item && item.activityItems && item.activityItems.syllable_blending;
+      [...list(item && item.syllables), ...list(board && board.syllables),
+        ...list(board && board.audioUnits).flatMap(unit => unit ? [unit.text, unit.key] : [])]
+        .forEach(value => { const key = packAudioKey(value); if (key) candidates.add(key); });
+    };
+    words.forEach(item => {
+      const target = targetOf(item), key = packAudioKey(target);
+      if (key) protectedKeys.add(key);
+      const board = item && item.activityItems && item.activityItems.syllable_blending;
+      if (!board || board.contentStatus !== 'teacher_recorded' || packAudioKey(board.targetWord) !== key ||
+          !validSyllableBoard(board) || !resolveSyllableTask(target, board, language || board.language).supported) return;
+      addParts(item);
+      list(previousByWord.get(key)).forEach(previous => {
+        const oldBoard = previous.activityItems && previous.activityItems.syllable_blending;
+        if (!oldBoard || !oldBoard.targetWord || packAudioKey(oldBoard.targetWord) === key) addParts(previous);
+      });
+    });
+    if (!candidates.size) return words;
+    // Ignore the manifest and stored spare clips while deriving actual current
+    // speech consumers. This inventory also covers computed prompt strings.
+    packAudioInventory(words.map(item => item && ({ ...item, _ttsRequiredKeys: [], _ttsAssets: {} })), undefined, language)
+      .forEach(row => { if (row.regeneratable) protectedKeys.add(row.key); });
+    // Be conservative about additional authored activity fields. In particular,
+    // syllable counting and a second item's curated syllables still need speech.
+    const seen = new Set();
+    const protect = value => {
+      if (typeof value === 'string') { protectedKeys.add(packAudioKey(value)); return; }
+      if (!value || typeof value !== 'object' || seen.has(value)) return;
+      seen.add(value);
+      Object.entries(value).forEach(([key, child]) => {
+        if (key !== 'asset' && key !== 'provenance' && key !== 'review' && key !== '_ttsAssets' && key !== '_ttsRequiredKeys') protect(child);
+      });
+    };
+    // Older lessons still supply these instructional fields directly on the
+    // word. Runtime fallbacks consume them even without an activityItems board.
+    words.forEach(item => {
+      if (!item) return;
+      ['manipulationTask', 'rhymeWord', 'rhymeWords', 'rhymes', 'rhymeDistractors',
+        'blendingDistractors', 'orthographyDistractors', 'syllableBlendingOptions']
+        .forEach(field => protect(item[field]));
+      String(item.manipulationTask?.instruction || '').split(/(\/[^\s/]{1,4}\/)/g)
+        .map(part => part.trim()).filter(part => part && /[a-z0-9]/i.test(part) && !/^\/[^/]+\/$/.test(part))
+        .forEach(protect);
+    });
+    words.forEach(item => Object.entries(item && item.activityItems || {}).forEach(([activity, board]) => {
+      if (activity !== 'syllable_blending') protect(board);
+      else if (board) {
+        const recorded = board.contentStatus === 'teacher_recorded' && packAudioKey(board.targetWord) === packAudioKey(targetOf(item)) &&
+          validSyllableBoard(board) && resolveSyllableTask(targetOf(item), board, language || board.language).supported;
+        if (!recorded) protect(board);
+        else Object.entries(board).forEach(([key, value]) => { if (key !== 'syllables' && key !== 'audioUnits' && key !== 'review') protect(value); });
+      }
+    }));
+    let changed = false;
+    const normalized = words.map(item => {
+      if (!item || !Array.isArray(item._ttsRequiredKeys)) return item;
+      const keys = item._ttsRequiredKeys.filter(value => !candidates.has(packAudioKey(value)) || protectedKeys.has(packAudioKey(value)));
+      if (keys.length === item._ttsRequiredKeys.length) return item;
+      changed = true;
+      return { ...item, _ttsRequiredKeys: keys };
+    });
+    return changed ? normalized : words;
+  };
+
+  const planPackRepair = (words, language, activities = []) => {
+    const issues = [], issueIndexes = [], upgraded = [];
+    const next = (words || []).map((item, index) => {
+      if (!item || typeof item !== 'object') return item;
+      const target = item.targetWord || item.word || item.term;
+      const old = item.activityItems && item.activityItems.syllable_blending || ((item._preparedActivities || activities).includes('syllable_blending') ? {} : null);
+      if (!old || (validSyllableBoard(old) && packAudioKey(old.targetWord) === packAudioKey(target) && resolveSyllableTask(target, old, language).supported)) return item;
+      // A teacher recording is never reconstructed or synthesized by repair.
+      if (old.contentStatus === 'teacher_recorded') { issues.push(String(target) + ': review the recorded syllables'); issueIndexes.push(index); return item; }
+      const task = resolveSyllableTask(target, null, language);
+      const authoredOptions = Array.isArray(old.options) && old.options.length ? old.options : item.syllableBlendingOptions;
+      const board = Object.assign({}, old, task, { options: authoredOptions, answer: target });
+      if (!task.supported || !validSyllableBoard(board, target)) { issues.push(String(target) + ': review syllable parts and answer choices'); issueIndexes.push(index); return item; }
+      upgraded.push(String(target));
+      return Object.assign({}, item, { activityItems: Object.assign({}, item.activityItems, { syllable_blending: board }) });
+    });
+    return { words: next, issues, issueIndexes, upgraded, missing: packAudioInventory(next, undefined, language).filter(row => row.regeneratable && !row.present) };
+  };
+  const replacePackAssets = (words, replacements) => {
+    if (!Array.isArray(words) || !words.length) return words;
+    const assets = Object.create(null);
+    words.forEach(item => Object.assign(assets, item && item._ttsAssets || {}));
+    Object.entries(replacements || {}).forEach(([key, asset]) => { if (portablePackAsset(asset)) assets[packAudioKey(key)] = asset; });
+    const next = words.map((item, index) => {
+      const copy = Object.assign({}, item);
+      if (index) { delete copy._ttsAssets; delete copy._ttsRequiredKeys; }
+      else copy._ttsAssets = assets;
+      copy.ttsReady = portablePackAsset(assets[packAudioKey(item.targetWord || item.word || item.term)]);
+      copy._ttsFailed = !copy.ttsReady;
+      return copy;
+    });
+    const inventory = packAudioInventory(next);
+    next[0]._ttsRequiredKeys = inventory.filter(row => row.regeneratable).map(row => row.key);
+    next[0]._studentPackVersion = 2;
+    next[0]._ttsCoverage = Object.assign({}, next[0]._ttsCoverage, { clips: Object.keys(assets).length, requiredClips: inventory.length, words: next.length, wordsWithAudio: next.filter(item => item.ttsReady).length });
+    return next;
+  };
+  return {normalizeRecordedSyllableDependencies,packAudioLanguageKey,packAudioKey,portablePackAsset,packAudioProvenance,packAudioInventory,planPackRepair,replacePackAssets,createReviewedSyllableTask,reviewedSyllableReady,syllableAssetSource,resolveSyllableTask,syllableReady,validSyllableBoard,syllableWords,isSyllableLanguageSupported,createRhymeSession,buildSessionRhymeBoard,buildRhymeBoard,resolveManipulationTask,manipulationReady,VERSION,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
 }
 const WS_CORE = createWordSoundsCore();
 // END GENERATED WORD SOUNDS CORE
@@ -1614,7 +2076,602 @@ const WS_CORE = createWordSoundsCore();
         }
     };
 
-    const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview , onMinimize, onExpand, isProbeMode, probeActivity, probeGradeLevel, probeForm, selectedVoice, setSelectedVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage, probeStudentNames = [], universalImageStyle = ''}) => {
+// BEGIN WORD SOUNDS REVIEWED RECORDING LIBRARY
+// Deliberately separate from student recordings and lesson/cloud persistence.
+function createWordSoundsReviewedLibrary(core, indexedDb) {
+  const databaseName = 'allo-word-sounds-reviewed-recordings-v1';
+  const maxEntries = 128, maxBytes = 64 * 1024 * 1024;
+  const fail = (code, message) => Object.assign(new Error(message), { code });
+  const cancelled = () => fail('cancelled', 'Library operation cancelled.');
+  const identity = (word, language) => {
+    if (typeof word !== 'string' || typeof language !== 'string') throw fail('invalid', 'Choose a word and recording language before using the local library.');
+    const targetWord = word.trim().toLowerCase().normalize('NFC');
+    const languageKey = core.packAudioLanguageKey(language);
+    if (!targetWord || targetWord.length > 80 || !languageKey || languageKey.length > 120) throw fail('invalid', 'Choose a word and recording language before using the local library.');
+    return { key: JSON.stringify([targetWord, languageKey]), targetWord, languageKey };
+  };
+  const cleanTask = (task, word, language) => {
+    const match = identity(word, language);
+    if (!core.reviewedSyllableReady(task) || task.targetWord !== match.targetWord) throw fail('invalid', 'This recording needs a fresh review for the selected word and language.');
+    // The existing syllable schema folds all English variants into `en`.
+    // The surrounding library record supplies the exact locale/dialect binding;
+    // load verifies that binding before this function can reconstruct aliases.
+    const legacyEnglish = task.language === 'en' && core.resolveSyllableTask(word, task, language).supported;
+    if (!legacyEnglish && core.packAudioLanguageKey(task.language) !== match.languageKey) throw fail('invalid', 'This recording needs a fresh review for the selected word and recording language.');
+    // Only instructional clips and their reviewed sequence enter the library.
+    // Answer choices, originals retained for Undo, and unrelated fields stay out.
+    const clean = core.createReviewedSyllableTask({ targetWord: task.targetWord, language: task.language, revision: task.revision,
+      syllables: task.syllables.slice(), reviewed: true, assets: task.audioUnits.map(unit => ({
+        mime: unit.asset.mime, base64: unit.asset.base64, durationSeconds: unit.asset.durationSeconds,
+        decoded: true, source: 'teacher_recording'
+      })) });
+    if (!clean || clean.review.signature !== task.review.signature) throw fail('invalid', 'This recording needs a fresh review before saving.');
+    if (core.resolveSyllableTask(word, clean, language).supported) return clean;
+    // Equivalent language aliases can use different schema spellings. Only
+    // after validating the original signature and proving language equivalence
+    // reconstruct the identical clips/order for the current schema spelling.
+    const adapted = core.createReviewedSyllableTask({ targetWord: clean.targetWord, language, revision: clean.revision,
+      syllables: clean.syllables, assets: clean.audioUnits.map(unit => unit.asset), reviewed: true });
+    if (!adapted || !core.resolveSyllableTask(word, adapted, language).supported) throw fail('invalid', 'This recording needs a fresh review for the selected language.');
+    return adapted;
+  };
+  const setFileLimit = 2 * 1024 * 1024;
+  const checkSetText = text => {
+    if (typeof text !== 'string' || !text.length || text.length > setFileLimit || new Blob([text]).size > setFileLimit) throw fail('invalid', 'Choose a recording set smaller than 2 MB.');
+  };
+  const exportSet = (task, word, language) => {
+    const match = identity(word, language);
+    const text = JSON.stringify({ format: 'alloflow.word-sounds-recordings', version: 1,
+      word: match.targetWord, language: match.languageKey, task: cleanTask(task, word, language) });
+    checkSetText(text);
+    return text;
+  };
+  const parseSet = (text, word, language) => {
+    checkSetText(text);
+    let data;
+    try { data = JSON.parse(text); } catch (_) { throw fail('invalid', 'This is not a valid recording set. Choose a Word Sounds recording set downloaded from a lesson.'); }
+    if (!data || data.format !== 'alloflow.word-sounds-recordings' || data.version !== 1) throw fail('invalid', 'This recording set format is not supported. Choose a Word Sounds recording set downloaded from a lesson.');
+    const match = identity(word, language);
+    if (data.word !== match.targetWord) throw fail('invalid', 'This recording set is for a different word. Open the matching word to import it.');
+    if (data.language !== match.languageKey) throw fail('invalid', 'This recording set uses a different recording language. Select its matching language before importing.');
+    // A valid envelope is only a draft candidate. The editor must decode every
+    // clip and require a new full preview and teacher review before saving.
+    return cleanTask(data.task, word, language);
+  };
+  const message = error => {
+    if (typeof error?.code === 'string') return error.message;
+    if (error?.name === 'QuotaExceededError') return 'Device storage is full. The lesson still keeps its recordings; free space and try the local library again.';
+    return 'The local recording library is unavailable. The lesson can still keep its recordings. Try again in this browser.';
+  };
+  const transact = (mode, signal, run) => new Promise((resolve, reject) => {
+    if (signal?.aborted) { reject(cancelled()); return; }
+    if (!indexedDb?.open) { reject(fail('unavailable', 'This browser cannot open the local library. The lesson can still keep its recordings.')); return; }
+    let request, database, transaction, settled = false, result;
+    const finish = (error, value) => {
+      if (settled) return;
+      settled = true; clearTimeout(timer); signal?.removeEventListener('abort', abort);
+      try { database?.close(); } catch (_) {}
+      error ? reject(error) : resolve(value);
+    };
+    const abort = () => { try { transaction?.abort(); } catch (_) {} finish(cancelled()); };
+    const timer = setTimeout(() => {
+      try { transaction?.abort(); } catch (_) {}
+      finish(fail('timeout', 'The local library did not respond. Close other Word Sounds tabs and try again.'));
+    }, 10000);
+    signal?.addEventListener('abort', abort, { once: true });
+    try { request = indexedDb.open(databaseName, 1); }
+    catch (error) { finish(error); return; }
+    request.onupgradeneeded = () => {
+      if (settled || signal?.aborted) { try { request.transaction.abort(); } catch (_) {} return; }
+      const db = request.result;
+      if (!db.objectStoreNames.contains('recordings')) db.createObjectStore('recordings', { keyPath: 'key' });
+      if (!db.objectStoreNames.contains('catalog')) db.createObjectStore('catalog', { keyPath: 'key' });
+    };
+    request.onblocked = () => finish(fail('blocked', 'Another tab is holding the local library open. Close it and try again.'));
+    request.onerror = () => finish(request.error);
+    request.onsuccess = () => {
+      database = request.result;
+      if (settled || signal?.aborted) { database.close(); if (!settled) finish(cancelled()); return; }
+      database.onversionchange = () => {
+        try { transaction?.abort(); } catch (_) {}
+        finish(fail('version', 'The local library changed in another tab. Check for the saved recording again.'));
+        database.close();
+      };
+      try {
+        transaction = database.transaction(['recordings', 'catalog'], mode);
+        transaction.oncomplete = () => finish(null, result);
+        transaction.onabort = () => finish(transaction.error || fail('aborted', 'The local library did not finish saving. The previous recording was kept.'));
+        transaction.onerror = () => {}; // onabort supplies the final transaction outcome.
+        const rejectTransaction = error => { try { transaction.abort(); } catch (_) {} finish(error); };
+        run(transaction.objectStore('recordings'), transaction.objectStore('catalog'), value => { result = value; }, rejectTransaction);
+      } catch (error) { try { transaction?.abort(); } catch (_) {} finish(error); }
+    };
+  });
+  const load = (word, language, { signal } = {}) => {
+    const match = identity(word, language);
+    return transact('readonly', signal, (recordings, catalog, setResult, reject) => {
+      const request = recordings.get(match.key);
+      request.onsuccess = () => {
+        const stored = request.result;
+        if (!stored) { setResult({ task: null, token: null, corrupt: false }); return; }
+        const token = typeof stored.token === 'string' ? stored.token : null;
+        try {
+          if (stored.version !== 1 || stored.key !== match.key || stored.languageKey !== match.languageKey || stored.targetWord !== match.targetWord || !token) throw fail('invalid', 'Saved recording needs review.');
+          setResult({ task: cleanTask(stored.task, word, language), token, corrupt: false });
+        } catch (_) { setResult({ task: null, token, corrupt: true }); }
+      };
+    });
+  };
+  const save = (word, language, task, { expectedToken = null, signal } = {}) => {
+    const match = identity(word, language), clean = cleanTask(task, word, language);
+    const bytes = JSON.stringify(clean).length * 2;
+    return transact('readwrite', signal, (recordings, catalog, setResult, reject) => {
+      const lookup = recordings.get(match.key), list = catalog.getAll();
+      let existing, entries, loaded = 0;
+      const prepare = () => {
+        if (++loaded !== 2) return;
+        try {
+          const actualToken = typeof existing?.token === 'string' ? existing.token : null;
+          if (actualToken !== expectedToken) throw fail('conflict', 'This word was changed in the local library in another tab. Find the saved recording again before replacing it.');
+          if (!Array.isArray(entries) || entries.some(entry => !entry || typeof entry.key !== 'string' || !Number.isSafeInteger(entry.bytes) || entry.bytes < 0)) throw fail('invalid', 'The local library needs attention. Remove an affected saved recording and try again.');
+          const others = entries.filter(entry => entry.key !== match.key);
+          if (others.length >= maxEntries || others.reduce((sum, entry) => sum + entry.bytes, 0) + bytes > maxBytes) throw fail('full', 'The local library is full. Remove a saved word before adding another. The lesson still keeps its recordings.');
+          const token = String(Date.now()) + ':' + Math.random().toString(36).slice(2) + ':' + clean.review.signature;
+          recordings.put({ version: 1, ...match, token, task: clean });
+          catalog.put({ key: match.key, bytes });
+          setResult({ task: clean, token, corrupt: false });
+        } catch (error) { reject(error); }
+      };
+      lookup.onsuccess = () => { existing = lookup.result; prepare(); };
+      list.onsuccess = () => { entries = list.result; prepare(); };
+    });
+  };
+  const remove = (word, language, { expectedToken = null, signal } = {}) => {
+    const match = identity(word, language);
+    return transact('readwrite', signal, (recordings, catalog, setResult, reject) => {
+      const request = recordings.get(match.key);
+      request.onsuccess = () => {
+        const token = typeof request.result?.token === 'string' ? request.result.token : null;
+        if (token !== expectedToken) { reject(fail('conflict', 'This word changed in another tab. Find the saved recording again before removing it.')); return; }
+        recordings.delete(match.key); catalog.delete(match.key); setResult({ task: null, token: null, corrupt: false });
+      };
+    });
+  };
+  return { identity, cleanTask, exportSet, parseSet, setFileLimit, load, save, remove, message, limits: { entries: maxEntries, bytes: maxBytes } };
+}
+// END WORD SOUNDS REVIEWED RECORDING LIBRARY
+
+// BEGIN WORD SOUNDS SYLLABLE RECORDING EDITOR
+let wordSoundsSyllableEditorPlayback = null;
+// Conservative, optional edits: retain quiet speech plus a 200 ms margin and never boost more than 6 dB.
+function processWordSoundsSyllablePcm(channels, sampleRate, options = {}) {
+  if (!Array.isArray(channels) || !channels.length || channels.length > 2 || !Number.isFinite(sampleRate) || sampleRate < 8000 || sampleRate > 192000) throw new Error('Cleanup supports mono or stereo recordings with a standard sample rate.');
+  const length = channels[0]?.length;
+  if (!Number.isInteger(length) || length < sampleRate * 0.08 || length > sampleRate * 8 || channels.some(channel => !channel || channel.length !== length)) throw new Error('Record one syllable per clip, between 0.08 and 8 seconds.');
+  let first = length, last = -1, peak = 0;
+  for (const channel of channels) for (let index = 0; index < length; index++) {
+    const value = Math.abs(channel[index]);
+    if (!Number.isFinite(value)) throw new Error('This recording contains invalid audio samples.');
+    peak = Math.max(peak, value);
+    // Use the same very quiet floor as the recording validator, not a speech/noise classifier.
+    if (value > 0.0001) { first = Math.min(first, index); last = Math.max(last, index); }
+  }
+  if (last < first) throw new Error('This recording is silent. Record the syllable again.');
+  let start = 0, end = length;
+  if (options.trimSilence) {
+    const margin = Math.ceil(sampleRate * 0.2);
+    start = Math.max(0, first - margin);
+    end = Math.min(length, last + margin + 1);
+    // Tiny edits offer no useful benefit and make comparisons harder.
+    if (length - (end - start) < sampleRate * 0.1) { start = 0; end = length; }
+  }
+  const gain = options.levelVolume ? Math.min(2, 0.8 / peak) : 1;
+  const output = channels.map(channel => {
+    const result = new Float32Array(end - start);
+    for (let index = 0; index < result.length; index++) result[index] = channel[start + index] * gain;
+    return result;
+  });
+  return { channels: output, sampleRate, startFrame: start, endFrame: end, removedSeconds: (length - (end - start)) / sampleRate, gain, durationSeconds: (end - start) / sampleRate };
+}
+function encodeWordSoundsSyllableWav(channels, sampleRate) {
+  if (!Array.isArray(channels) || !channels.length || channels.length > 2 || !Number.isInteger(sampleRate) || sampleRate < 8000 || sampleRate > 192000) throw new Error('This recording format cannot be cleaned up.');
+  const frames = channels[0]?.length;
+  if (!Number.isInteger(frames) || frames < sampleRate * 0.08 || frames > sampleRate * 8 || channels.some(channel => channel?.length !== frames)) throw new Error('This recording has an invalid duration.');
+  const size = 44 + frames * channels.length * 2;
+  if (size > 384000) throw new Error('The cleaned WAV would exceed 384 KB. Keep the original or record a shorter clip.');
+  const bytes = new ArrayBuffer(size), view = new DataView(bytes);
+  const text = (offset, value) => { for (let index = 0; index < value.length; index++) view.setUint8(offset + index, value.charCodeAt(index)); };
+  text(0, 'RIFF'); view.setUint32(4, size - 8, true); text(8, 'WAVE'); text(12, 'fmt ');
+  view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, channels.length, true);
+  view.setUint32(24, sampleRate, true); view.setUint32(28, sampleRate * channels.length * 2, true);
+  view.setUint16(32, channels.length * 2, true); view.setUint16(34, 16, true); text(36, 'data'); view.setUint32(40, size - 44, true);
+  let offset = 44;
+  for (let frame = 0; frame < frames; frame++) for (const channel of channels) {
+    if (!Number.isFinite(channel[frame])) throw new Error('This recording contains invalid audio samples.');
+    const value = Math.max(-1, Math.min(1, channel[frame]));
+    view.setInt16(offset, Math.round(value < 0 ? value * 32768 : value * 32767), true); offset += 2;
+  }
+  return bytes;
+}
+async function decodeWordSoundsSyllableBytes(bytes, AudioContextClass) {
+  if (!AudioContextClass) throw new Error('This browser cannot check recordings. Try a current browser.');
+  const offline = AudioContextClass === window.OfflineAudioContext || AudioContextClass === window.webkitOfflineAudioContext;
+  const context = offline ? new AudioContextClass(1, 1, 44100) : new AudioContextClass();
+  try { return await context.decodeAudioData(bytes.slice(0)); }
+  catch (_) { throw new Error('This recording could not be decoded. Export it as WAV or MP3 and try again.'); }
+  finally { try { await context.close?.(); } catch (_) {} }
+}
+async function cleanWordSoundsSyllableRecording(asset, options, AudioContextClass = window.OfflineAudioContext || window.webkitOfflineAudioContext || window.AudioContext || window.webkitAudioContext) {
+  if (!WS_CORE.syllableAssetSource(asset)) throw new Error('Choose a checked syllable recording first.');
+  const binary = atob(asset.base64), bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index++) bytes[index] = binary.charCodeAt(index);
+  const decoded = await decodeWordSoundsSyllableBytes(bytes.buffer, AudioContextClass);
+  const pcm = processWordSoundsSyllablePcm(Array.from({ length: decoded.numberOfChannels }, (_, index) => decoded.getChannelData(index)), decoded.sampleRate, options);
+  const wav = encodeWordSoundsSyllableWav(pcm.channels, pcm.sampleRate);
+  // Reuse the normal decoder/validator so a cleanup must meet the same delivery rules as an upload.
+  const cleaned = await readWordSoundsSyllableRecording(new Blob([wav], { type: 'audio/wav' }), AudioContextClass);
+  return { asset: cleaned, removedSeconds: pcm.removedSeconds, gain: pcm.gain };
+}
+
+async function readWordSoundsSyllableRecording(file, AudioContextClass = window.OfflineAudioContext || window.webkitOfflineAudioContext || window.AudioContext || window.webkitAudioContext) {
+  if (!file || file.size < 16 || file.size > 384000) throw new Error('Choose an audio file smaller than 384 KB. Short MP3 or WebM recordings work well.');
+  if (!AudioContextClass) throw new Error('This browser cannot check recordings. Try a current browser.');
+  const mime = String(file.type || '').split(';')[0].toLowerCase();
+  if (!/^audio\/(?:wav|x-wav|wave|mpeg|mp3|ogg|webm|mp4|x-m4a|aac)$/.test(mime)) throw new Error('Choose a WAV, MP3, OGG, WebM, M4A, or AAC audio file.');
+  const bytes = await file.arrayBuffer();
+  const decoded = await decodeWordSoundsSyllableBytes(bytes, AudioContextClass);
+  if (!Number.isFinite(decoded.duration) || decoded.duration < 0.08 || decoded.duration > 8) throw new Error('Record one syllable per clip, between 0.08 and 8 seconds.');
+  let audible = false;
+  for (let channel = 0; channel < decoded.numberOfChannels && !audible; channel++) {
+    const samples = decoded.getChannelData(channel);
+    for (let index = 0; index < samples.length; index++) if (Math.abs(samples[index]) > 0.0001) { audible = true; break; }
+  }
+  if (!audible) throw new Error('This recording is silent. Record the syllable again.');
+  let binary = '';
+  const view = new Uint8Array(bytes);
+  for (let offset = 0; offset < view.length; offset += 0x8000) binary += String.fromCharCode(...view.subarray(offset, offset + 0x8000));
+  return { mime, base64: btoa(binary), durationSeconds: decoded.duration, decoded: true, source: 'teacher_recording' };
+}
+function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBeforePreview, id }) {
+  const h = React.createElement;
+  const resolved = WS_CORE.resolveSyllableTask(word, board, language);
+  const savedTask = resolved.supported && resolved.contentStatus === 'teacher_recorded' ? resolved : null;
+  const initial = () => savedTask ? savedTask.audioUnits.map(unit => ({ label: unit.text, asset: unit.asset })) : [{ label: '', asset: null }, { label: '', asset: null }];
+  const readinessId = React.useId();
+  const [units, setUnits] = React.useState(initial);
+  // Only omitted slots live here, at most four in this editor session. Restored
+  // slots are consumed, so editing and hiding them again keeps the latest clip.
+  const omittedUnits = React.useRef([]);
+  const syllableLabels = React.useRef([]);
+  const movedLabel = React.useRef(null);
+  const [heard, setHeard] = React.useState(false);
+  const [confirmed, setConfirmed] = React.useState(false);
+  const [busy, setBusy] = React.useState(false);
+  const [recording, setRecording] = React.useState(null);
+  const [operation, setOperation] = React.useState(null);
+  const [status, setStatus] = React.useState('');
+  const [trimSilence, setTrimSilence] = React.useState(true);
+  const [levelVolume, setLevelVolume] = React.useState(true);
+  const library = React.useMemo(() => { let storage; try { storage = window.indexedDB; } catch (_) {} return createWordSoundsReviewedLibrary(WS_CORE, storage); }, []);
+  const [libraryResult, setLibraryResult] = React.useState(null);
+  const [libraryBusy, setLibraryBusy] = React.useState(false);
+  const [libraryStatus, setLibraryStatus] = React.useState('');
+  const [rememberRecording, setRememberRecording] = React.useState(false);
+  const libraryAbort = React.useRef(null);
+  const libraryContext = React.useRef('');
+  libraryContext.current = JSON.stringify([word, language, board?.review?.signature]);
+  const live = React.useRef(true);
+  const epoch = React.useRef(0);
+  const audio = React.useRef(null);
+  const recorder = React.useRef(null);
+  const buttonClass = 'px-3 py-2 rounded-lg border border-violet-300 text-violet-900 bg-white disabled:opacity-50';
+  const stop = () => {
+    epoch.current++;
+    if (live.current) setOperation(null);
+    if (libraryAbort.current) { libraryAbort.current.abort(); libraryAbort.current = null; if (live.current) { setLibraryBusy(false); setLibraryStatus('Local library action cancelled. Find the saved recording again to check its current state.'); } }
+    if (wordSoundsSyllableEditorPlayback?.owner === audio) wordSoundsSyllableEditorPlayback = null;
+    if (audio.current) { audio.current.pause(); audio.current = null; }
+    if (recorder.current) {
+      const active = recorder.current; recorder.current = null;
+      clearTimeout(active.timer);
+      try { if (active.recorder.state !== 'inactive') active.recorder.stop(); } catch (_) {}
+      active.stream.getTracks().forEach(track => track.stop());
+    }
+  };
+  const ownPlayback = () => {
+    wordSoundsSyllableEditorPlayback?.stop();
+    stop();
+    wordSoundsSyllableEditorPlayback = { owner: audio, stop: () => { stop(); if (live.current) { setBusy(false); setRecording(null); setHeard(false); setConfirmed(false); setStatus('Preview stopped. Preview the full sequence again before saving.'); } } };
+    if (onBeforePreview) onBeforePreview();
+  };
+  React.useEffect(() => { live.current = true; return () => { live.current = false; stop(); }; }, []);
+  React.useEffect(() => { stop(); omittedUnits.current = []; movedLabel.current = null; setUnits(initial()); setHeard(false); setConfirmed(false); setBusy(false); setRecording(null); setStatus(''); }, [word, language, board?.review?.signature]);
+  React.useEffect(() => {
+    if (movedLabel.current !== null) { syllableLabels.current[movedLabel.current]?.focus(); movedLabel.current = null; }
+  }, [units]);
+  React.useEffect(() => { setLibraryResult(null); setLibraryStatus(''); setRememberRecording(false); }, [word, language]);
+  const cancelOperation = () => {
+    const wasRecording = operation === 'microphone' || operation === 'recording';
+    stop(); setBusy(false); setRecording(null); setHeard(false); setConfirmed(false);
+    setStatus(operation === 'preview' ? 'Preview stopped. Preview the full sequence again before saving.' : wasRecording ? 'Recording cancelled. Any previous checked clip is kept. You can record again or upload a file.' : 'Audio check or cleanup cancelled. Any previous checked clip is kept.');
+  };
+  const change = next => { stop(); setUnits(next); setHeard(false); setConfirmed(false); setStatus(''); };
+  const changeCount = count => {
+    if (busy || libraryBusy || ![2, 3, 4].includes(count) || count === units.length) return;
+    const next = Array.from({ length: count }, (_, index) => units[index] || omittedUnits.current[index] || { label: '', asset: null });
+    for (let index = count; index < units.length; index++) omittedUnits.current[index] = units[index];
+    for (let index = 0; index < count; index++) delete omittedUnits.current[index];
+    change(next);
+    setStatus('Syllable count changed. Preview the full sequence again before saving.');
+  };
+  const moveUnit = (index, direction) => {
+    const destination = index + direction;
+    if (busy || libraryBusy || destination < 0 || destination >= units.length) return;
+    const next = units.slice();
+    [next[index], next[destination]] = [next[destination], next[index]];
+    movedLabel.current = destination;
+    change(next);
+    setStatus('Syllable ' + (index + 1) + ' moved to position ' + (destination + 1) + '. Preview the full sequence again before saving.');
+  };
+  const commit = task => {
+    // Current hosts apply the task through synchronous React setters. Preserve
+    // the draft and recovery slots if that callback rejects the update by throwing.
+    try { onSave(task); } catch (_) { return false; }
+    omittedUnits.current = [];
+    return true;
+  };
+  const saveFailed = () => setStatus('The recordings could not be applied to this lesson. Your draft is kept. Try Save reviewed syllables again.');
+  const libraryOperation = async (operation, success) => {
+    libraryAbort.current?.abort();
+    const controller = new AbortController(), context = libraryContext.current;
+    libraryAbort.current = controller; setLibraryBusy(true);
+    const current = () => live.current && libraryAbort.current === controller && libraryContext.current === context && !controller.signal.aborted;
+    try { const result = await operation(controller.signal); if (current()) { libraryAbort.current = null; setLibraryBusy(false); success(result); } }
+    catch (error) { if (current() && error?.code !== 'cancelled') setLibraryStatus(library.message(error)); }
+    finally { if (libraryAbort.current === controller) { libraryAbort.current = null; if (live.current) setLibraryBusy(false); } }
+  };
+  const findLibrary = () => {
+    setLibraryStatus('Looking for reviewed recordings on this device…');
+    return libraryOperation(signal => library.load(word, language, { signal }), result => {
+      setLibraryResult(result);
+      setLibraryStatus(result.task ? 'Reviewed recordings found for this word and recording language.' : result.corrupt ? 'The saved recording is invalid or stale. Review the current clips before replacing it.' : 'No reviewed recordings saved for this word and recording language.');
+    });
+  };
+  const useLibrary = () => {
+    try {
+      const task = library.cleanTask(libraryResult?.task, word, language);
+      if (!commit(task)) { setLibraryStatus('The saved recordings could not be applied to this lesson. Your current draft is kept; try again.'); return; }
+      movedLabel.current = null;
+      change(task.audioUnits.map(unit => ({ label: unit.text, asset: unit.asset })));
+      setLibraryStatus('Saved recordings applied to this lesson. Its answer choices are kept.');
+    } catch (error) { setLibraryStatus(library.message(error)); }
+  };
+  const removeLibrary = () => {
+    setLibraryStatus('Removing this word from the local library…');
+    return libraryOperation(signal => library.remove(word, language, { signal, expectedToken: libraryResult?.token || null }), result => {
+      setLibraryResult(result); setLibraryStatus('Removed from the local library. Recordings already saved in lessons are kept.');
+    });
+  };
+  const downloadSet = () => {
+    let url, link;
+    try {
+      const text = library.exportSet(board, word, language);
+      url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+      link = document.createElement('a'); link.href = url;
+      link.download = 'syllables-' + library.identity(word, language).targetWord.replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').slice(0, 60) + '.json';
+      link.hidden = true; document.body.appendChild(link); link.click();
+      setLibraryStatus('Download prepared from the recordings saved in this lesson. Import the file for the same word and recording language on another device.');
+    } catch (error) { setLibraryStatus(error?.message || 'The recording set could not be downloaded. Save reviewed syllables first and try again.'); }
+    finally { link?.remove(); if (url) setTimeout(() => URL.revokeObjectURL(url), 1000); }
+  };
+  const importSet = async file => {
+    if (!file) return;
+    stop(); const token = epoch.current, context = libraryContext.current;
+    const current = () => live.current && epoch.current === token && libraryContext.current === context;
+    setBusy(true); setHeard(false); setConfirmed(false); setOperation('checking'); setStatus('Checking recording set…');
+    try {
+      if (!Number.isFinite(file.size) || file.size < 1 || file.size > library.setFileLimit) throw new Error('Choose a recording set smaller than 2 MB.');
+      const text = await file.text();
+      if (!current()) return;
+      const task = library.parseSet(text, word, language), next = [];
+      for (let index = 0; index < task.audioUnits.length; index++) {
+        if (!current()) return;
+        setStatus('Checking syllable ' + (index + 1) + ' of ' + task.audioUnits.length + '…');
+        const unit = task.audioUnits[index], binary = atob(unit.asset.base64), bytes = new Uint8Array(binary.length);
+        for (let offset = 0; offset < binary.length; offset++) bytes[offset] = binary.charCodeAt(offset);
+        const asset = await readWordSoundsSyllableRecording(new Blob([bytes], { type: unit.asset.mime }));
+        if (!current()) return;
+        next.push({ label: unit.text, asset });
+      }
+      // Replace the draft atomically; a failed or cancelled clip keeps all
+      // previous recordings. File metadata cannot grant teacher approval.
+      omittedUnits.current = []; movedLabel.current = null;
+      setUnits(next);
+      setStatus('Recording set imported for review. Preview the full sequence, then confirm it before saving to this lesson.');
+    } catch (error) { if (current()) setStatus((error?.message || 'This recording set could not be read.') + ' Your previous recordings are kept.'); }
+    finally { if (current()) { setBusy(false); setOperation(null); } }
+  };
+  const install = async (index, file, token) => {
+    try {
+      const asset = await readWordSoundsSyllableRecording(file);
+      if (!live.current || epoch.current !== token) return;
+      setUnits(previous => previous.map((unit, i) => i === index ? { ...unit, asset, originalAsset: null, cleanupSummary: null } : unit));
+      setHeard(false); setConfirmed(false); setStatus('Clip checked. Preview the full sequence before saving.');
+    } catch (error) { if (live.current && epoch.current === token) setStatus(error.message); }
+    finally { if (live.current && epoch.current === token) { setBusy(false); setRecording(null); setOperation(null); } }
+  };
+  const upload = (index, file) => {
+    if (!file) return;
+    stop(); const token = epoch.current; setBusy(true); setHeard(false); setConfirmed(false); setStatus('Checking recording…'); setOperation('checking');
+    install(index, file, token);
+  };
+  const record = async index => {
+    ownPlayback(); const token = epoch.current; setBusy(true); setHeard(false); setConfirmed(false); setStatus('Allow the microphone, then say one syllable.'); setOperation('microphone');
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      if (!live.current || epoch.current !== token) { stream.getTracks().forEach(track => track.stop()); return; }
+      const capture = new MediaRecorder(stream); const chunks = [];
+      capture.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
+      capture.onerror = () => {
+        if (!live.current || epoch.current !== token) { stream.getTracks().forEach(track => track.stop()); return; }
+        // MediaRecorder can emit stop with partial chunks after an error. Cancel
+        // this epoch before stopping it so failed audio can never replace a clip.
+        stop(); setBusy(false); setRecording(null); setHeard(false); setConfirmed(false);
+        setStatus('Microphone recording failed. Any previous checked clip is kept. Record again or upload a recording.');
+      };
+      capture.onstop = () => {
+        stream.getTracks().forEach(track => track.stop());
+        if (!live.current || epoch.current !== token) return;
+        clearTimeout(recorder.current?.timer); recorder.current = null;
+        setRecording(null); setStatus('Checking recording…'); setOperation('checking');
+        install(index, new Blob(chunks, { type: capture.mimeType || chunks[0]?.type || 'audio/webm' }), token);
+      };
+      capture.start(); setRecording(index); setOperation('recording'); setStatus('Recording one syllable. Press Stop when finished.');
+      recorder.current = { recorder: capture, stream, timer: setTimeout(() => { if (capture.state !== 'inactive') capture.stop(); }, 7800) };
+    } catch (_) { stream?.getTracks().forEach(track => track.stop()); if (live.current && epoch.current === token) { setBusy(false); setRecording(null); setOperation(null); setStatus('Microphone unavailable. Upload a recording instead.'); } }
+  };
+  const cleanup = async index => {
+    stop(); const token = epoch.current; setBusy(true); setHeard(false); setConfirmed(false); setStatus('Cleaning up recording…'); setOperation('cleanup');
+    const originalAsset = units[index].originalAsset || units[index].asset;
+    try {
+      const result = await cleanWordSoundsSyllableRecording(originalAsset, { trimSilence, levelVolume });
+      if (!live.current || epoch.current !== token) return;
+      const cleanupSummary = result.removedSeconds.toFixed(2) + ' s outer silence removed; volume ×' + result.gain.toFixed(2) + '.';
+      setUnits(previous => previous.map((unit, i) => i === index ? { ...unit, asset: result.asset, originalAsset, cleanupSummary } : unit));
+      setStatus(cleanupSummary + ' Compare with the original, then preview the full sequence before saving.');
+    } catch (error) { if (live.current && epoch.current === token) setStatus(error.message || 'Cleanup failed. The original recording is still available.'); }
+    finally { if (live.current && epoch.current === token) { setBusy(false); setOperation(null); } }
+  };
+  const preview = async (indices, original = false) => {
+    ownPlayback(); const token = epoch.current; setBusy(true); setStatus('Playing recordings…'); setOperation('preview');
+    try {
+      for (const index of indices) {
+        if (!live.current || epoch.current !== token) return;
+        const source = WS_CORE.syllableAssetSource(original ? units[index].originalAsset : units[index].asset);
+        if (!source) throw new Error('Add a recording for every syllable first.');
+        await new Promise((resolve, reject) => {
+          const clip = new Audio(source); audio.current = clip;
+          const timer = setTimeout(() => { clip.pause(); reject(new Error('This recording did not finish playing. Try another file.')); }, 12000);
+          const finish = error => { clearTimeout(timer); clip.onended = null; clip.onerror = null; clip.onpause = null; error ? reject(error) : resolve(); };
+          clip.onended = () => finish(); clip.onerror = () => finish(new Error('This recording could not play. Try another file.'));
+          clip.onpause = () => { if (!clip.ended) finish(new Error('Preview stopped.')); };
+          Promise.resolve(clip.play()).catch(error => finish(error));
+        });
+        if (indices.length > 1 && index !== indices[indices.length - 1]) await new Promise(resolve => setTimeout(resolve, 350));
+      }
+      if (!live.current || epoch.current !== token) return;
+      if (!original && indices.length === units.length) setHeard(true);
+      setStatus('Preview complete. Check that each clip is one spoken syllable and the sequence blends into “' + word + '”.');
+    } catch (error) { if (live.current && epoch.current === token) { setHeard(false); setConfirmed(false); setStatus(error.message || 'Preview failed.'); } }
+    finally { if (live.current && epoch.current === token) { audio.current = null; setBusy(false); setOperation(null); } }
+  };
+  const missingLabels = [], missingClips = [];
+  units.forEach((unit, index) => {
+    if (!unit.label.trim()) missingLabels.push(index + 1);
+    if (!WS_CORE.syllableAssetSource(unit.asset)) missingClips.push(index + 1);
+  });
+  const complete = !missingLabels.length && !missingClips.length;
+  const matchesSaved = !!savedTask && units.length === savedTask.audioUnits.length && units.every((unit, index) => {
+    const saved = savedTask.audioUnits[index], asset = unit.asset;
+    return unit.label.trim() === saved.text && asset?.mime?.toLowerCase() === saved.asset.mime.toLowerCase() &&
+      asset?.base64 === saved.asset.base64 && asset?.durationSeconds === saved.asset.durationSeconds &&
+      asset?.decoded === true && asset?.source === 'teacher_recording';
+  });
+  const draftState = matchesSaved ? 'saved in lesson' : savedTask ? 'unsaved changes' : 'not saved';
+  const positions = list => (list.length === 1 ? 'syllable ' : 'syllables ') + list.join(', ');
+  const nextStep = busy ? (operation === 'microphone' ? 'Allow microphone access or cancel the request.' : operation === 'recording' ? 'Finish the recording or cancel it.' : operation === 'preview' ? 'Listen to the sequence, or stop the preview.' : operation === 'cleanup' ? 'Wait for cleanup to finish, or cancel it.' : 'Wait for the audio check to finish, or cancel it.')
+    : libraryBusy ? 'Wait for the local library action to finish.'
+    : !complete ? [missingLabels.length ? 'Add labels for ' + positions(missingLabels) + '.' : '', missingClips.length ? 'Add recordings for ' + positions(missingClips) + '.' : ''].filter(Boolean).join(' ')
+    : !heard ? (matchesSaved ? 'The lesson already has this reviewed set. Preview and confirm to save it again or copy it to your local library.' : 'Preview the full sequence before saving.')
+    : !confirmed ? 'Confirm that you listened and checked the spoken syllables before saving.'
+    : 'Ready to save reviewed syllables.';
+  const save = () => {
+    const task = WS_CORE.createReviewedSyllableTask({ targetWord: word, language, syllables: units.map(unit => unit.label), assets: units.map(unit => unit.asset), revision: Math.max(Date.now(), (board?.revision || 0) + 1), reviewed: heard && confirmed });
+    if (!task) { setStatus('Add labels and recordings, preview the sequence, and confirm your review.'); return; }
+    if (!rememberRecording) { if (commit(task)) setStatus('Reviewed syllable recordings saved with this lesson.'); else saveFailed(); return; }
+    if (!libraryResult) { if (commit(task)) setLibraryStatus('Lesson recordings saved. Find the saved recording first, then select Save reviewed syllables again to update the local library.'); else saveFailed(); return; }
+    setLibraryStatus('Saving reviewed recordings to this device…');
+    // Persist first: onSave updates the board and cancels work for the old editor revision.
+    // A failed library transaction still allows the reviewed lesson save.
+    const context = libraryContext.current;
+    libraryOperation(async signal => {
+      try { return { stored: await library.save(word, language, task, { signal, expectedToken: libraryResult.token }), error: null }; }
+      catch (error) { if (error?.code === 'cancelled' || signal.aborted) throw error; return { stored: null, error }; }
+    }, result => {
+      if (libraryContext.current !== context) return;
+      if (result.stored) setLibraryResult(result.stored);
+      if (!commit(task)) {
+        setLibraryStatus(result.stored ? 'The recordings were saved in the local library, but could not be applied to this lesson.' : library.message(result.error));
+        saveFailed(); return;
+      }
+      setLibraryStatus(result.stored ? 'Reviewed recordings saved with this lesson and in the local library.' : 'Lesson recordings saved. ' + library.message(result.error));
+    });
+  };
+  return h('details', { id, className: 'rounded-xl border border-violet-200 bg-violet-50 p-3' },
+    h('summary', { className: 'font-bold text-violet-900 cursor-pointer' }, 'Syllable recordings for “' + word + '” — ' + draftState),
+    h('p', { className: 'text-sm my-2' }, 'Add 2, 3, or 4 spoken syllables in order. Record or upload each syllable as it sounds in this word, including its natural vowel and stress. Labels appear only when written hints are enabled; they are never sent to a speech generator.'),
+    h('p', { className: 'text-sm my-2' }, 'Also review the answer choices before using the lesson. Choose familiar distractors with a similar syllable count.'),
+    h('details', { className: 'my-3 rounded-lg border border-violet-200 bg-white p-3', onToggle: event => { if (event.currentTarget.open && libraryResult === null && !libraryBusy) findLibrary(); } },
+      h('summary', { className: 'font-semibold cursor-pointer' }, 'Reuse reviewed recordings'),
+      h('p', { className: 'text-sm my-2' }, 'Your local library stays in this browser on this device. It stores only reviewed instructional syllables for the same word and recording language. It is not synced between devices; recordings used in a lesson travel with that lesson.'),
+      h('button', { type: 'button', className: buttonClass, disabled: busy || libraryBusy, onClick: findLibrary }, 'Find saved recording'),
+      libraryResult?.task ? h('button', { type: 'button', className: buttonClass, disabled: busy || libraryBusy, onClick: useLibrary }, 'Use saved recordings in this lesson') : null,
+      libraryResult?.task || libraryResult?.corrupt ? h('button', { type: 'button', className: buttonClass, disabled: busy || libraryBusy, onClick: removeLibrary }, 'Remove this word from local library') : null,
+      h('label', { className: 'block my-3' }, h('input', { type: 'checkbox', checked: rememberRecording, disabled: busy || libraryBusy, onChange: event => { setRememberRecording(event.target.checked); if (event.target.checked && libraryResult === null) findLibrary(); } }), ' Also save or replace this word in my local library when I save reviewed syllables.'),
+      h('p', { className: 'text-sm my-2' }, 'Move one word between devices: download the recordings already saved in this lesson, or import a set for “' + word + '” (' + language + '). Imported clips need a fresh listen and review before saving.'),
+      h('button', { type: 'button', className: buttonClass, disabled: busy || libraryBusy || !savedTask, onClick: downloadSet }, 'Download saved recording set'),
+      h('label', { className: 'block my-2' }, 'Import recording set', h('input', { type: 'file', accept: '.json,application/json', disabled: busy || libraryBusy, className: 'block text-xs max-w-full', onChange: event => { importSet(event.target.files?.[0]); event.target.value = ''; } })),
+      h('p', { role: 'status', className: 'text-sm mt-2', 'aria-live': 'polite' }, libraryStatus)),
+    h('label', { className: 'block my-2' }, 'Number of syllables ', h('select', { value: units.length, disabled: busy || libraryBusy, onChange: event => changeCount(Number(event.target.value)), className: 'border rounded p-1' }, [2, 3, 4].map(count => h('option', { key: count, value: count }, count)))),
+    omittedUnits.current.some(unit => unit && (unit.asset || unit.label.trim())) ? h('p', { className: 'text-sm my-2' }, 'Extra syllables are kept while you edit. Increase the count to restore them. Only the displayed syllables will be saved; saving or replacing this set clears the extras.') : null,
+    h('fieldset', { className: 'my-3 flex flex-wrap gap-3 text-sm', disabled: busy },
+      h('legend', { className: 'font-semibold' }, 'Optional recording cleanup'),
+      h('label', null, h('input', { type: 'checkbox', checked: trimSilence, onChange: event => setTrimSilence(event.target.checked) }), ' Trim outer silence'),
+      h('label', null, h('input', { type: 'checkbox', checked: levelVolume, onChange: event => setLevelVolume(event.target.checked) }), ' Level volume'),
+      h('p', { className: 'w-full' }, 'Cleanup keeps a short margin around speech and limits volume boosts. It does not remove background noise. Listen for quiet consonants; you can undo cleanup before saving.')),
+    ...units.map((unit, index) => h('div', { key: index, className: 'flex flex-wrap items-center gap-2 py-2 border-t border-violet-200' },
+      h('label', null, 'Syllable ' + (index + 1) + ' label ', h('input', { ref: node => { syllableLabels.current[index] = node; }, value: unit.label, maxLength: 40, disabled: busy, placeholder: 'Written hint', className: 'border rounded p-2 w-32', onChange: event => change(units.map((value, i) => i === index ? { ...value, label: event.target.value } : value)) })),
+      h('label', { className: buttonClass }, 'Upload syllable ' + (index + 1), h('input', { type: 'file', accept: 'audio/*', disabled: busy, className: 'block text-xs max-w-52', onChange: event => { upload(index, event.target.files?.[0]); event.target.value = ''; } })),
+      typeof MediaRecorder !== 'undefined' && navigator.mediaDevices?.getUserMedia ? h('button', { type: 'button', className: buttonClass, disabled: busy, onClick: () => record(index) }, 'Record syllable ' + (index + 1)) : null,
+      h('button', { type: 'button', className: buttonClass, disabled: busy || !unit.asset, onClick: () => preview([index]) }, 'Hear syllable ' + (index + 1)),
+      h('button', { type: 'button', className: buttonClass, disabled: busy || !unit.asset || (!trimSilence && !levelVolume), onClick: () => cleanup(index) }, 'Clean up syllable ' + (index + 1)),
+      unit.originalAsset ? h('button', { type: 'button', className: buttonClass, disabled: busy, onClick: () => preview([index], true) }, 'Hear original syllable ' + (index + 1)) : null,
+      unit.originalAsset ? h('button', { type: 'button', className: buttonClass, disabled: busy, onClick: () => change(units.map((value, i) => i === index ? { ...value, asset: value.originalAsset, originalAsset: null, cleanupSummary: null } : value)) }, 'Undo cleanup syllable ' + (index + 1)) : null,
+      h('button', { type: 'button', className: buttonClass, 'aria-label': 'Move syllable ' + (index + 1) + ' earlier', disabled: busy || libraryBusy || index === 0, onClick: () => moveUnit(index, -1) }, 'Move earlier'),
+      h('button', { type: 'button', className: buttonClass, 'aria-label': 'Move syllable ' + (index + 1) + ' later', disabled: busy || libraryBusy || index === units.length - 1, onClick: () => moveUnit(index, 1) }, 'Move later'),
+      unit.asset ? h('span', { className: 'text-xs' }, unit.cleanupSummary || 'Recording added') : null)),
+    busy ? h('button', { type: 'button', className: buttonClass, onClick: cancelOperation }, operation === 'preview' ? 'Stop preview' : operation === 'microphone' ? 'Cancel microphone request' : operation === 'recording' ? 'Cancel recording' : operation === 'cleanup' ? 'Cancel cleanup' : 'Cancel audio check') : null,
+    recording !== null ? h('button', { type: 'button', className: buttonClass, onClick: () => { if (recorder.current?.recorder.state === 'recording') recorder.current.recorder.stop(); } }, 'Stop recording') : null,
+    h('p', { id: readinessId, className: 'text-sm my-2' }, nextStep),
+    h('button', { type: 'button', className: buttonClass, 'aria-describedby': readinessId, disabled: busy || !complete, onClick: () => preview(units.map((_, index) => index)) }, 'Preview syllables in order'),
+    h('label', { className: 'block my-3' }, h('input', { type: 'checkbox', checked: confirmed, disabled: busy || !heard, onChange: event => setConfirmed(event.target.checked) }), ' I listened to the sequence and checked that it uses the correct spoken syllables for this word.'),
+    h('button', { type: 'button', className: buttonClass, 'aria-describedby': readinessId, disabled: busy || libraryBusy || !complete || !heard || !confirmed, onClick: save }, 'Save reviewed syllables'),
+    h('p', { role: 'status', className: 'text-sm mt-2', 'aria-live': 'polite' }, status));
+}
+// END WORD SOUNDS SYLLABLE RECORDING EDITOR
+
+    function buildWordPracticeSelection(selectedWords, glossaryTerms, preloadedWords) {
+        const records = new Map(), ttsAssets = {};
+        const wordKey = value => String(value || '').normalize('NFC').trim().replace(/\s+/g, ' ').toLowerCase();
+        [...(Array.isArray(glossaryTerms) ? glossaryTerms : []), ...(Array.isArray(preloadedWords) ? preloadedWords : [])].forEach(item => {
+            const record = typeof item === 'string' ? { word: item } : item;
+            if (!record) return;
+            const key = wordKey(record.targetWord || record.word || record.term);
+            if (key) records.set(key, { ...(records.get(key) || {}), ...record });
+            if (record._ttsAssets && typeof record._ttsAssets === 'object') Object.assign(ttsAssets, record._ttsAssets);
+        });
+        return {
+            words: selectedWords.map(word => ({ ...(records.get(wordKey(word)) || {}), word })),
+            ttsAssets,
+        };
+    }
+
+    const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview , onMinimize, onExpand, isTeacherMode = true, isProbeMode, probeActivity, probeGradeLevel, probeForm, selectedVoice, setSelectedVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage, probeStudentNames = [], universalImageStyle = ''}) => {
+        // A voice selected while preparation is running applies to missing
+        // clips and the next retry, including the Kokoro offer.
+        const generationVoiceRef = React.useRef(selectedVoice);
+        generationVoiceRef.current = selectedVoice;
         // t-with-fallback: the host's t(key, params) returns UNDEFINED on a
         // missing key and treats a string second argument as params — so every
         // `tf('word_sounds.x', 'English text')` call below rendered an EMPTY
@@ -1739,6 +2796,7 @@ const WS_CORE = createWordSoundsCore();
         const [includeAacImages, setIncludeAacImages] = React.useState(false);
         const [aacDefaultOn, setAacDefaultOn] = React.useState(false);
         const [syllableRange, setSyllableRange] = React.useState({ min: 1, max: 4 });
+        const [includeSyllableWords, setIncludeSyllableWords] = React.useState(false);
         const [aiTopic, setAiTopic] = React.useState('');
         const [aiTerms, setAiTerms] = React.useState([]);
         const [isAiGenerating, setIsAiGenerating] = React.useState(false);
@@ -1775,8 +2833,55 @@ const WS_CORE = createWordSoundsCore();
         const [prewarmCount, setPrewarmCount] = React.useState(0);
         const [prewarmTotal, setPrewarmTotal] = React.useState(0);
         const [selectedIndices, setSelectedIndices] = React.useState(new Set());
+        const [wordPracticeStatus, setWordPracticeStatus] = React.useState({ busy: false, notice: '' });
+        const wordPracticeControllerRef = React.useRef(null);
+        React.useEffect(() => {
+            setWordPracticeStatus({ busy: false, notice: '' });
+            return () => {
+                if (wordPracticeControllerRef.current) wordPracticeControllerRef.current.abort();
+                wordPracticeControllerRef.current = null;
+            };
+        }, [isTeacherMode, isProbeMode, sessionType]);
+        const openWordPractice = async () => {
+            if (!isTeacherMode || isProbeMode || sessionType === 'assessment' || wordPracticeControllerRef.current) return;
+            const controller = new AbortController();
+            wordPracticeControllerRef.current = controller;
+            setWordPracticeStatus({ busy: true, notice: '' });
+            try {
+                if (typeof window.__alloOpenWordPractice !== 'function') throw new Error('Presentation tools unavailable');
+                const selection = buildWordPracticeSelection(previewList.filter((_, index) => selectedIndices.has(index)), glossaryTerms, preloadedWords);
+                await window.__alloOpenWordPractice({
+                    ...selection, title: tf('word_sounds.practice_title', 'Word Fluency Pop-Up'),
+                    language: wordSoundsLanguage || 'English', source: 'word-sounds',
+                    callTTS, selectedVoice, ttsSpeed, t, signal: controller.signal,
+                });
+                if (!controller.signal.aborted) setWordPracticeStatus({ busy: false, notice: '' });
+            } catch (_) {
+                if (!controller.signal.aborted) setWordPracticeStatus({ busy: false, notice: tf('word_sounds.practice_open_failed', 'Presentation tools could not open. Please try again.') });
+            } finally {
+                if (wordPracticeControllerRef.current === controller) wordPracticeControllerRef.current = null;
+            }
+        };
         const startRunRef = React.useRef(false);
         const generationEpochRef = React.useRef(0);
+        // BEGIN WORD SOUNDS GENERATION OWNERSHIP
+        const generationControllerRef = React.useRef(null);
+        const generationMountedRef = React.useRef(true);
+        const cancelGeneration = React.useCallback(() => {
+            generationEpochRef.current += 1;
+            const controller = generationControllerRef.current;
+            generationControllerRef.current = null;
+            startRunRef.current = false;
+            if (controller) controller.abort();
+        }, []);
+        React.useEffect(() => {
+            generationMountedRef.current = true;
+            return () => {
+                generationMountedRef.current = false;
+                cancelGeneration();
+            };
+        }, [cancelGeneration]);
+        // END WORD SOUNDS GENERATION OWNERSHIP
         const setupDialogRef = React.useRef(null);
         const setupPreviouslyFocusedRef = React.useRef(null);
         const generatorCloseRef = React.useRef(onClose);
@@ -1784,11 +2889,11 @@ const WS_CORE = createWordSoundsCore();
             generatorCloseRef.current = onClose;
         }, [onClose]);
         const handleGeneratorClose = React.useCallback(() => {
-            generationEpochRef.current += 1;
-            startRunRef.current = false;
+            if (wordPracticeControllerRef.current) wordPracticeControllerRef.current.abort();
+            cancelGeneration();
             setIsProcessing(false);
             if (typeof generatorCloseRef.current === 'function') generatorCloseRef.current();
-        }, []);
+        }, [cancelGeneration]);
         React.useEffect(() => {
             if (isMinimized || typeof document === 'undefined') return undefined;
             const root = setupDialogRef.current;
@@ -1850,17 +2955,22 @@ const WS_CORE = createWordSoundsCore();
                 return () => clearTimeout(timer);
             }
         }, [preloadedWords.length, isProcessing, onShowReview]);
+        const [reviewedSyllableTasks, setReviewedSyllableTasks] = React.useState({});
+        const preparedSyllableFor = (word) => reviewedSyllableTasks[String(word).trim().toLowerCase()] ||
+            preloadedWords.find(item => String(item.targetWord || item.word || item.term || '').trim().toLowerCase() === String(word).trim().toLowerCase())?.activityItems?.syllable_blending;
         const countSyllables = React.useCallback((word) => {
             if (!word) return 1;
+            const curated = WS_CORE.resolveSyllableTask(word, preparedSyllableFor(word), wordSoundsLanguage);
+            if (curated.supported) return curated.syllables.length;
             const w = word.toLowerCase().trim();
             if (w.length <= 3) return 1;
             const cleaned = w.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '')
                              .replace(/^y/, '');
             const vowelGroups = cleaned.match(/[aeiouy]+/g);
             return vowelGroups ? vowelGroups.length : 1;
-        }, []);
+        }, [reviewedSyllableTasks, preloadedWords, wordSoundsLanguage]);
         const previewList = React.useMemo(() => {
-            let list = [];
+            let list = includeSyllableWords && WS_CORE.isSyllableLanguageSupported(wordSoundsLanguage) && syllableRange.min <= 2 && syllableRange.max >= 2 ? WS_CORE.syllableWords() : [];
             // Include already-generated words so they appear in the Lesson Preview grid
             if (preloadedWords && preloadedWords.length > 0) {
                 const preloadedWordStrings = preloadedWords.map(w => w.targetWord || w.word || w.term || (typeof w === 'string' ? w : ''));
@@ -1898,7 +3008,11 @@ const WS_CORE = createWordSoundsCore();
                 uniqueWords.push(word);
             });
             return uniqueWords;
-        }, [includeGlossary, includeFamily, includeCustom, includeAI, includeSightWords, selectedSightWordList, glossaryTerms, selectedFamily, customText, aiTerms, preloadedWords]);
+        }, [includeGlossary, includeFamily, includeCustom, includeAI, includeSightWords, selectedSightWordList, glossaryTerms, selectedFamily, customText, aiTerms, preloadedWords, includeSyllableWords, wordSoundsLanguage, syllableRange, countSyllables]);
+        const syllableBlendingSelected = sessionType === 'assessment' ? probeActivitySel === 'syllable_blending'
+            : includeLessonPlan && !!lessonPlan.syllable_blending?.enabled;
+        const unsupportedSyllableWords = syllableBlendingSelected
+            ? previewList.filter((word, i) => selectedIndices.has(i) && !WS_CORE.resolveSyllableTask(word, preparedSyllableFor(word), wordSoundsLanguage).supported) : [];
         React.useEffect(() => {
             const limit = Math.min(previewList.length, wordCount);
             const indices = new Set();
@@ -2004,16 +3118,26 @@ const WS_CORE = createWordSoundsCore();
         // distractors onto its boards.
         const packIsEnglish = !wordSoundsLanguage || String(wordSoundsLanguage).toLowerCase().startsWith('en');
         const makePackManipulationFallback = (word) => WS_CORE.resolveManipulationTask(word, null, wordSoundsLanguage);
-        const packTtsSource = async (src) => {
+        const packTtsSource = async (src, signal) => {
+            const checkAborted = () => {
+                if (!signal?.aborted) return;
+                const error = new Error('Generation canceled');
+                error.name = 'AbortError';
+                throw error;
+            };
+            checkAborted();
             if (!src || typeof src !== 'string') return null;
             if (/^data:audio\//i.test(src)) {
                 const match = src.match(/^data:([^;,]+);base64,(.+)$/i);
                 return match ? { mime: match[1], base64: match[2] } : null;
             }
-            const response = await fetch(src);
+            const response = await fetch(src, { signal });
+            checkAborted();
             if (!response.ok) throw new Error(`TTS asset fetch failed (${response.status})`);
             const blob = await response.blob();
+            checkAborted();
             const bytes = new Uint8Array(await blob.arrayBuffer());
+            checkAborted();
             let binary = '';
             for (let offset = 0; offset < bytes.length; offset += 0x8000) {
                 binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
@@ -2021,6 +3145,7 @@ const WS_CORE = createWordSoundsCore();
             return { mime: blob.type || 'audio/mpeg', base64: btoa(binary) };
         };
         const compileActivityItems = (items) => {
+            const rhymeSession = WS_CORE.createRhymeSession();
             // English filler words join the pool ONLY for English packs — for
             // any other language the pool is the pack's own words, so every
             // board stays same-language.
@@ -2047,7 +3172,7 @@ const WS_CORE = createWordSoundsCore();
             // Shared edge-sound data supplies both preparation and playback.
             const firstSound = (raw) => WS_CORE.edgeSound(raw, 'first', items.find(it => normalizePackKey(it.word || it.targetWord || it.term) === normalizePackKey(raw))?.phonemes);
             const lastSound = (raw) => WS_CORE.edgeSound(raw, 'last', items.find(it => normalizePackKey(it.word || it.targetWord || it.term) === normalizePackKey(raw))?.phonemes);
-            items.forEach((item) => {
+            items.forEach((item, itemIndex) => {
                 const word = normalizePackKey(item.targetWord || item.word || item.term);
                 const phonemes = (item.phonemes || []).map(flatPackPhoneme).filter(Boolean);
                 const seed = word.split('').reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
@@ -2085,28 +3210,37 @@ const WS_CORE = createWordSoundsCore();
                     ...[...new Set(pool)].filter((value) => value && !soundsLike(value, answer)).slice(0, distractorCount),
                 ]);
                 const blending = boardWithAnswer(word, [...(item.blendingDistractors || []), ...otherWords], 5);
-                const rhymeAnswer = item.rhymeWord || (item.rhymes || [])[0] || '';
-                const answerRime = rhymeAnswer ? packRimeOf(rhymeAnswer) : '';
-                const rhyming = rhymeAnswer
-                    ? boardWithAnswer(
-                        rhymeAnswer,
-                        [...(item.rhymeDistractors || []), ...otherWords].filter((value) => {
-                            const v = normalizePackKey(value);
-                            // A distractor that rhymes with the answer is a second
-                            // right answer that would be scored wrong.
-                            return v && v !== word && (!answerRime || packRimeOf(v) !== answerRime);
-                        }),
-                        4,
-                    )
-                    : [];
+                const rhymeBoard = WS_CORE.buildSessionRhymeBoard({
+                    session: rhymeSession, occurrenceId: itemIndex,
+                    word, answer: item.rhymeWord || (item.rhymes || [])[0] || '',
+                    phonemes: item.phonemes,
+                    pool: [...items, ...commonWords],
+                    distractors: item.rhymeDistractors || [],
+                    prepared: item.activityItems?.rhyming,
+                    isEnglish: packIsEnglish,
+                });
                 const task = WS_CORE.resolveManipulationTask(word, item.manipulationTask, wordSoundsLanguage);
                 if (!item.manipulationTask) item.manipulationTask = task;
                 const manipulationFill = packIsEnglish ? ['sit','map','bed','pin','mud','fan'] : otherWords;
                 const manipulation = WS_CORE.manipulationReady(task)
                     ? boardWithAnswer(task.answer, [...(task.distractors || []), ...manipulationFill], 5) : [];
-                const syllables = Array.isArray(item.syllables) && item.syllables.length ? item.syllables : estimatePackSyllables(word);
+                const itemSyllable = item.activityItems?.syllable_blending;
+                const storedSyllable = (typeof reviewedSyllableTasks === 'object' && reviewedSyllableTasks[word]) || itemSyllable;
+                const syllableTask = WS_CORE.resolveSyllableTask(word, storedSyllable, wordSoundsLanguage);
+                const syllables = syllableTask.contentStatus === 'teacher_recorded' ? [...syllableTask.syllables]
+                    : Array.isArray(item.syllables) && item.syllables.length ? item.syllables : estimatePackSyllables(word);
                 item.syllables = syllables;
-                const syllableOptions = boardWithAnswer(word, [...(item.syllableBlendingOptions || []), ...otherWords], 3);
+                const recordingChoices = [...(item.syllableBlendingOptions || []), ...wordPool].filter(value => value !== word);
+                recordingChoices.sort((a, b) => Math.abs(estimatePackSyllables(a).length - syllables.length) - Math.abs(estimatePackSyllables(b).length - syllables.length));
+                // Recordings and choices have separate lifetimes: a fresh reviewed
+                // task may omit options, while the existing matching board keeps
+                // the teacher's choices. Never reuse another word/language's board.
+                const choiceBoard = [storedSyllable, itemSyllable].find(board =>
+                    WS_CORE.validSyllableBoard(board) && WS_CORE.packAudioKey(board.targetWord) === word &&
+                    WS_CORE.resolveSyllableTask(word, board, wordSoundsLanguage).supported);
+                const syllableOptions = syllableTask.supported
+                    ? choiceBoard ? [...choiceBoard.options]
+                    : boardWithAnswer(word, syllableTask.contentStatus === 'teacher_recorded' ? recordingChoices : shuffleForPack(WS_CORE.syllableWords().filter(value => value !== word)), 3) : [];
                 const graphemes = Array.isArray(item.graphemes) && item.graphemes.length
                     ? item.graphemes
                     : ((item.phonemes || []).every((p) => p && typeof p === 'object' && p.grapheme) ? item.phonemes.map((p) => p.grapheme) : word.split(''));
@@ -2229,9 +3363,9 @@ const WS_CORE = createWordSoundsCore();
                     isolation: { position, correctSound, options: isolationOptions },
                     segmentation: { chips, slotCount: item.phonemeCount || phonemes.length },
                     blending: { options: blending, answer: word },
-                    rhyming: { options: rhyming, answer: rhymeAnswer },
+                    rhyming: rhymeBoard,
                     manipulation: { task, options: manipulation },
-                    syllable_blending: { syllables, options: syllableOptions, answer: word },
+                    syllable_blending: { ...syllableTask, options: syllableOptions, answer: word },
                     syllable_counting: { syllables, answer: syllables.length },
                     orthography: { options: shuffleForPack([...new Set([word, ...(item.orthographyDistractors || [])])]), answer: word },
                     mapping: { graphemes, chipOrder: shuffleForPack(graphemes.map((value, index) => ({ id: index, text: String(value) }))) },
@@ -2256,24 +3390,58 @@ const WS_CORE = createWordSoundsCore();
         };
 
         const handleStart = async () => {
+             if (!generationMountedRef.current) return;
              const wordsToProcess = previewList.filter((_, i) => selectedIndices.has(i));
              const preparedActivities = sessionType === 'assessment' ? [probeActivitySel]
                  : prepareScope === 'lesson' && includeLessonPlan ? lessonPlanOrder.filter(id => lessonPlan[id]?.enabled) : null;
              if (preparedActivities && !preparedActivities.length) { setLessonPlanReorderStatus(tf('word_sounds.choose_lesson_activity', 'Choose at least one lesson activity before preparing.')); return; }
-             if (wordsToProcess.length === 0 || startRunRef.current) return;
+             if (!generationMountedRef.current || wordsToProcess.length === 0 || unsupportedSyllableWords.length || startRunRef.current) return;
              const generationEpoch = ++generationEpochRef.current;
-             const isGenerationActive = () => generationEpochRef.current === generationEpoch;
-             const waitWhileActive = (milliseconds) => new Promise((resolve) => {
-                 const startedAt = Date.now();
-                 const poll = () => {
-                     if (!isGenerationActive() || Date.now() - startedAt >= milliseconds) {
-                         resolve();
-                         return;
-                     }
-                     setTimeout(poll, Math.min(250, milliseconds));
-                 };
-                 poll();
+             const controller = new AbortController();
+             generationControllerRef.current = controller;
+             const signal = controller.signal;
+             const isGenerationActive = () => generationMountedRef.current && !signal.aborted &&
+                 generationControllerRef.current === controller && generationEpochRef.current === generationEpoch;
+             const generationAbortError = () => {
+                 const error = new Error('Generation canceled');
+                 error.name = 'AbortError';
+                 return error;
+             };
+             // Some host adapters cannot stop their underlying work. Release this
+             // run immediately on cancel and ignore their eventual result.
+             const awaitGeneration = (promise) => new Promise((resolve, reject) => {
+                 const onAbort = () => reject(generationAbortError());
+                 signal.addEventListener('abort', onAbort, { once: true });
+                 Promise.resolve(promise).then(value => {
+                     signal.removeEventListener('abort', onAbort);
+                     if (isGenerationActive()) resolve(value); else reject(generationAbortError());
+                 }, error => {
+                     signal.removeEventListener('abort', onAbort);
+                     reject(error);
+                 });
+                 if (!isGenerationActive()) onAbort();
              });
+             const waitWhileActive = (milliseconds) => new Promise((resolve, reject) => {
+                 const timer = setTimeout(() => { signal.removeEventListener('abort', onAbort); resolve(); }, milliseconds);
+                 const onAbort = () => { clearTimeout(timer); reject(generationAbortError()); };
+                 signal.addEventListener('abort', onAbort, { once: true });
+                 if (!isGenerationActive()) onAbort();
+             });
+             // Limit outstanding provider requests, including work queued inside
+             // the provider. Cancelled runs never dispatch the remaining clips.
+             const runGenerationTasks = async (list, task) => {
+                 const results = new Array(list.length);
+                 let next = 0;
+                 const worker = async () => {
+                     while (isGenerationActive() && next < list.length) {
+                         const index = next++;
+                         try { results[index] = { status: 'fulfilled', value: await task(list[index]) }; }
+                         catch (reason) { results[index] = { status: 'rejected', reason }; }
+                     }
+                 };
+                 await Promise.all(Array.from({ length: Math.min(3, list.length) }, worker));
+                 return results;
+             };
              startRunRef.current = true;
              try {
              setIsProcessing(true);
@@ -2312,7 +3480,7 @@ const WS_CORE = createWordSoundsCore();
                  // ── Skip AI if this word was already generated ──
                  const existing = preloadedMap[rawWord.toLowerCase().trim()];
                  if (existing && existing.phonemes && existing.phonemes.length > 0) {
-                     processed.push(existing);
+                     processed.push(JSON.parse(JSON.stringify(existing)));
                      setGeneratedCount(prev => prev + 1);
                      continue;
                  }
@@ -2391,7 +3559,7 @@ const WS_CORE = createWordSoundsCore();
                              "syllables": ["corn"],
                              "syllableBlendingOptions": ["corn", "rabbit", "window", "pencil"],
                              "rhymeWord": "horn",
-                             "rhymeDistractors": ["dog", "sun", "bed", "leg", "cup"],
+                             "rhymeDistractors": ["cord", "core", "car", "cone", "card"],
                              "blendingDistractors": ["cord", "core", "born", "worn", "torn"],
                              "orthographyDistractors": ["korn", "cron", "cor"],
                              "sentence": "I can see the corn.",
@@ -2414,7 +3582,7 @@ const WS_CORE = createWordSoundsCore();
                          }
                       `;
                      const prompt = packIsEnglish ? _procPrompt_english : _procPrompt_nonEnglish;
-                     const result = await callGemini(prompt, true);
+                     const result = await awaitGeneration(callGemini(prompt + "\nRHYME CHOICES: Create a distinct distractor set for this target word; do not reuse the example distractors. Use familiar words of similar syllable count and difficulty, with a mix of similar beginning sounds and different vowel/end sounds. Every distractor must be a genuine non-rhyme of both the target and rhymeWord, including alternate spellings. Preserve one correct rhyme only.", true, false, null, null, signal));
                      if (!isGenerationActive()) return;
                      const data = JSON.parse(result.replace(/```json/g, '').replace(/```/g, ''));
                      let imageUrl = null;
@@ -2424,9 +3592,9 @@ const WS_CORE = createWordSoundsCore();
                             const finalPrompt = data.imagePrompt
                                 ? `${themePrefix}${data.imagePrompt}`
                                 : `${themePrefix}Icon of ${rawWord}, white background`;
-                            imageUrl = await callImagen(finalPrompt);
+                            imageUrl = await awaitGeneration(callImagen(finalPrompt, undefined, undefined, { signal }));
                             if (!isGenerationActive()) return;
-                        } catch(e) { warnLog('Caught error:', e?.message || e); }
+                        } catch(e) { if (!isGenerationActive()) return; warnLog('Caught error:', e?.message || e); }
                      }
                      // Cluster-aware estimate, and FLAG it: the old silent raw
                      // letter-split here shipped 'car' as [c,a,r] with no
@@ -2437,7 +3605,7 @@ const WS_CORE = createWordSoundsCore();
                      // the "estimated sounds" flag the teacher sees.
                      let _espeakPhonemes = null;
                      if (_phonemesMissing) {
-                         _espeakPhonemes = await espeakPackPhonemes(data.word, wordSoundsLanguage);
+                         _espeakPhonemes = await awaitGeneration(espeakPackPhonemes(data.word, wordSoundsLanguage));
                          if (!isGenerationActive()) return;
                      }
                      const validatedPhonemes = !_phonemesMissing
@@ -2514,11 +3682,12 @@ const WS_CORE = createWordSoundsCore();
                          _phonemeSource
                      });
                  } catch (e) {
+                     if (!isGenerationActive()) return;
                      warnLog("Word processing failed for:", rawWord, e.message);
                      // The word threw, so there is no Gemini answer at all —
                      // but a G2P engine does not need one. Try eSpeak before
                      // giving the child sounds derived from spelling.
-                     const _espeakRescue = await espeakPackPhonemes(rawWord, wordSoundsLanguage);
+                     const _espeakRescue = await awaitGeneration(espeakPackPhonemes(rawWord, wordSoundsLanguage));
                      if (!isGenerationActive()) return;
                      const fallbackPhonemes = _espeakRescue || estimatePackPhonemes(rawWord);
                      processed.push({
@@ -2595,10 +3764,11 @@ const WS_CORE = createWordSoundsCore();
                      if (decodingAssets[word]) continue;
                      try {
                          const themePrefix = effectiveImageTheme ? `${effectiveImageTheme} style, ` : '';
-                         const image = await callImagen(`${themePrefix}Simple flat vector icon of "${word}", minimal educational illustration, white background, no text or labels`);
+                         const image = await awaitGeneration(callImagen(`${themePrefix}Simple flat vector icon of "${word}", minimal educational illustration, white background, no text or labels`, undefined, undefined, { signal }));
                          if (!isGenerationActive()) return;
                          if (image) decodingAssets[word] = image;
                      } catch (e) {
+                         if (!isGenerationActive()) return;
                          warnLog('Decoding image preload failed for:', word, e?.message || e);
                      }
                  }
@@ -2637,13 +3807,14 @@ const WS_CORE = createWordSoundsCore();
                      try {
                          if (aacAssets[word] || decodingAssets[word]) continue;
                          const themePrefix = effectiveImageTheme ? `${effectiveImageTheme} style, ` : '';
-                         const image = await callImagen(`${themePrefix}Simple flat vector icon of "${word}", minimal educational illustration, white background, no text or labels`);
+                         const image = await awaitGeneration(callImagen(`${themePrefix}Simple flat vector icon of "${word}", minimal educational illustration, white background, no text or labels`, undefined, undefined, { signal }));
                          if (!isGenerationActive()) return;
                          if (image) aacAssets[word] = image;
                      } catch (e) {
+                         if (!isGenerationActive()) return;
                          warnLog('AAC image preload failed for:', word, e?.message || e);
                      } finally {
-                         setPrewarmCount((prev) => prev + 1);
+                         if (isGenerationActive()) setPrewarmCount((prev) => prev + 1);
                      }
                  }
              }
@@ -2676,14 +3847,17 @@ const WS_CORE = createWordSoundsCore();
              // the load is bounded so a failed fetch can never hang a build.
              let packRecordedWordBank = null;
              if (packIsEnglish && typeof window !== 'undefined' && typeof window.loadWordAudioBank === 'function') {
+                 let bankTimeout;
                  try {
-                     await Promise.race([
+                     await awaitGeneration(Promise.race([
                          window.loadWordAudioBank(),
-                         new Promise((resolve) => setTimeout(resolve, 6000)),
-                     ]);
+                         new Promise((resolve) => { bankTimeout = setTimeout(resolve, 6000); }),
+                     ]));
+                     if (!isGenerationActive()) return;
                      const bank = window._CACHE_WORD_AUDIO_BANK;
                      if (bank && Object.keys(bank).length > 0) packRecordedWordBank = bank;
-                 } catch (_) { packRecordedWordBank = null; }
+                 } catch (_) { if (!isGenerationActive()) return; packRecordedWordBank = null; }
+                 finally { clearTimeout(bankTimeout); }
              }
              const recordedBankAssetFor = (text) => {
                  if (!packRecordedWordBank) return null;
@@ -2694,7 +3868,7 @@ const WS_CORE = createWordSoundsCore();
                  const src = packRecordedWordBank[key];
                  if (typeof src !== 'string') return null;
                  const match = src.match(/^data:([^;,]+);base64,(.+)$/i);
-                 return match ? { mime: match[1], base64: match[2] } : null;
+                 return match ? { mime: match[1], base64: match[2], provenance: WS_CORE.packAudioProvenance({ provider: 'kokoro', engine: 'kokoro', resolvedVoice: 'af_heart', language: 'en' }, 'recorded_bank') } : null;
              };
              let packedFromRecordedBank = 0;
              const addInstructionParts = (tasks, sentence) => {
@@ -2703,7 +3877,7 @@ const WS_CORE = createWordSoundsCore();
                      .filter((part) => part && /[a-z0-9]/i.test(part) && !/^\/[^/]+\/$/.test(part))
                      .forEach((part) => tasks.add(part));
              };
-             const voiceForTts = selectedVoice || undefined;
+
              const speedForTts = (typeof ttsSpeed === 'number') ? ttsSpeed : undefined;
              for (const item of processed) {
                  if (!isGenerationActive()) return;
@@ -2714,7 +3888,7 @@ const WS_CORE = createWordSoundsCore();
                      ...(boards.blending?.options || []),
                      ...(boards.rhyming?.options || []),
                      ...(boards.manipulation?.options || []),
-                     ...(boards.syllable_blending?.syllables || []),
+                     ...(boards.syllable_blending?.contentStatus === 'teacher_recorded' ? [] : boards.syllable_blending?.audioUnits || []).map(unit => unit.text),
                      ...(boards.syllable_blending?.options || []),
                      ...(boards.orthography?.options || []),
                      ...(boards.sound_sort?.options || []),
@@ -2760,7 +3934,7 @@ const WS_CORE = createWordSoundsCore();
                  if (boards.sound_sort) tasks.add('Find words that start with the sound');
                  if (boards.sound_sort) tasks.add('Find words that end with the sound');
                  tasks.add('as in');
-                 if (boards.syllable_blending) tasks.add('Listen to the syllables and blend them together');
+                 if (WS_CORE.syllableReady(boards.syllable_blending)) tasks.add('Listen to the syllables and blend them together');
                  if (boards.syllable_counting) tasks.add('How many syllables do you hear? Clap for each one');
                  if (boards.word_families?.rime) tasks.add(WS_CORE.wordFamilyInstruction(boards.word_families.rime));
                  const ordinalNames = ['first','second','third','fourth','fifth','sixth','seventh','eighth','ninth','tenth','eleventh','twelfth'];
@@ -2775,7 +3949,7 @@ const WS_CORE = createWordSoundsCore();
                      if (key) requiredTtsKeys.add(key);
                  });
                  setPrewarmTotal((prev) => prev + taskList.length);
-                 const runTasks = async (list) => Promise.allSettled(list.map(async (text) => {
+                 const runTasks = async (list) => runGenerationTasks(list, async (text) => {
                      if (!isGenerationActive()) throw new Error('Generation canceled');
                      const key = normalizePackKey(text);
                      if (packedTtsAssets[key]) {
@@ -2793,15 +3967,25 @@ const WS_CORE = createWordSoundsCore();
                      }
                      try {
                          if (ttsGate.aborted || typeof callTTS !== 'function') throw new Error('TTS unavailable');
-                         const src = await callTTS(text, voiceForTts, speedForTts);
-                         const asset = await packTtsSource(src);
+                         const voiceForTts = generationVoiceRef.current || undefined;
+                          let resolvedProfile = null;
+                          const src = await awaitGeneration(callTTS(text, voiceForTts, speedForTts, {
+                              signal,
+                              language: wordSoundsLanguage || 'English',
+                              allowProviderFallback: !/^(af_|am_|bf_|bm_)/i.test(String(voiceForTts || '')),
+                              onResolvedProfile: profile => { if (isGenerationActive()) resolvedProfile = profile; },
+                          }));
+                         if (!isGenerationActive()) throw generationAbortError();
+                         const asset = await awaitGeneration(packTtsSource(src, signal));
+                         if (!isGenerationActive()) throw generationAbortError();
                          if (!asset) throw new Error('TTS returned no portable audio');
+                          asset.provenance = WS_CORE.packAudioProvenance(resolvedProfile, resolvedProfile ? 'synthesized' : 'unknown');
                          packedTtsAssets[key] = asset;
                          return asset;
                      } finally {
-                         setPrewarmCount((prev) => prev + 1);
+                         if (isGenerationActive()) setPrewarmCount((prev) => prev + 1);
                      }
-                 }));
+                 });
                  const was429 = (results) => results.some((r) => r.status === 'rejected' && /429|Rate Limit/i.test(r.reason?.message || ''));
                  let results = await runTasks(taskList);
                  if (!isGenerationActive()) return;
@@ -2921,10 +4105,13 @@ const WS_CORE = createWordSoundsCore();
              // choices to current hosts.
              if (!isGenerationActive()) return;
              onStartGame(processed, sequence, lessonPlanConfig, configSummary, probeOptions, sessionConfig);
+             } catch (error) {
+                 if (isGenerationActive()) throw error;
              } finally {
                  if (isGenerationActive()) {
                      setIsProcessing(false);
                      startRunRef.current = false;
+                     generationControllerRef.current = null;
                  }
              }
         };
@@ -3311,6 +4498,10 @@ const WS_CORE = createWordSoundsCore();
                             {showVoicePack ? <PhonemeVoicePackEditor onClose={() => setShowVoicePack(false)} t={t} /> : null}
                             <div className="space-y-3" role="group" aria-labelledby="word-sounds-active-sources-label">
                                 <div id="word-sounds-active-sources-label" className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{tf('word_sounds.sources', 'Active Sources')}</div>
+                                {WS_CORE.isSyllableLanguageSupported(wordSoundsLanguage) && <label className="block p-3 rounded-xl border-2 border-sky-200 bg-sky-50 cursor-pointer">
+                                    <span className="flex items-center gap-2 font-bold text-sky-800"><input type="checkbox" checked={includeSyllableWords} onChange={e => setIncludeSyllableWords(e.target.checked)} />Syllable blending word bank</span>
+                                    <span className="block text-xs text-slate-700 mt-1">{WS_CORE.syllableWords().length} two-syllable compound words, such as sun + set and rain + coat. Each part has a reliable whole-word pronunciation. Select this source for syllable blending.</span>
+                                </label>}
                                 <label className={`block min-h-11 p-3 rounded-xl border-2 transition-all cursor-pointer focus-within:ring-2 focus-within:ring-violet-600 focus-within:ring-offset-2 ${includeGlossary ? 'bg-violet-50 border-violet-500' : 'bg-white border-slate-200'}`} data-help-key="ws_gen_src_glossary"><input type="checkbox" checked={includeGlossary} onChange={(e) => setIncludeGlossary(e.target.checked)} className="sr-only" />
                                     <span className="flex items-center gap-3">
                                         <span aria-hidden="true" className={`w-5 h-5 rounded border flex items-center justify-center ${includeGlossary ? 'bg-violet-600 border-violet-600' : 'border-slate-300'}`}>
@@ -3570,9 +4761,9 @@ const WS_CORE = createWordSoundsCore();
                                 </div>
                                 <button type="button"
                                     onClick={handleStart}
-                                    disabled={selectedIndices.size === 0 || isProcessing}
+                                    disabled={selectedIndices.size === 0 || unsupportedSyllableWords.length > 0 || isProcessing}
                                     className={`px-8 py-4 rounded-2xl font-black text-xl shadow-xl transition-all flex items-center gap-3 ${
-                                        selectedIndices.size > 0 && !isProcessing
+                                        selectedIndices.size > 0 && unsupportedSyllableWords.length === 0 && !isProcessing
                                             ? 'bg-gradient-to-r from-violet-700 to-indigo-700 text-white hover:scale-105 active:scale-95 hover:shadow-2xl hover:brightness-110'
                                             : isProcessing
                                                 ? 'bg-violet-600 text-white cursor-wait'
@@ -3583,6 +4774,11 @@ const WS_CORE = createWordSoundsCore();
                                     {isProcessing ? tf('status.generating', 'Generating...') : tf('word_sounds.start', 'Start Activity')}
                                 </button>
                              </div>
+                             {isTeacherMode && !isProbeMode && sessionType !== 'assessment' && <div className="mb-5 rounded-xl border border-violet-200 bg-violet-50 p-4">
+                                 <button type="button" onClick={openWordPractice} disabled={wordPracticeStatus.busy} aria-busy={wordPracticeStatus.busy} aria-describedby="word-sounds-setup-presentation-help" className="min-h-11 rounded-lg border border-violet-300 bg-white px-4 py-2 text-sm font-bold text-violet-800 hover:bg-violet-100 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:ring-offset-2">{wordPracticeStatus.busy ? tf('word_sounds.practice_opening', 'Opening presentation tools…') : tf('word_sounds.practice_present_export', 'Present & Export')}</button>
+                                 <p id="word-sounds-setup-presentation-help" className="mt-2 text-sm text-slate-600">{tf('word_sounds.practice_setup_help', 'Use selected words now, or paste a list. Project word practice or download HTML and PowerPoint. Audio is optional.')}</p>
+                                 <p role="status" aria-live="polite" className="mt-1 text-sm text-amber-900">{wordPracticeStatus.notice}</p>
+                             </div>}
                              {isProcessing && (
                                  <div className="bg-gradient-to-r from-violet-50 to-indigo-50 rounded-2xl p-6 border border-violet-200 animate-in motion-reduce:animate-none fade-in slide-in-from-top-2" role="status" aria-live="polite" aria-busy="true">
                                      <div className="flex items-center justify-between mb-3">
@@ -3623,7 +4819,15 @@ const WS_CORE = createWordSoundsCore();
                                  </div>
                              )}
 
-                            <details className="bg-white border border-slate-300 rounded-xl p-4 mb-3">
+                            {unsupportedSyllableWords.length > 0 && <p role="alert" className="mb-3 p-3 rounded-xl border border-amber-300 bg-amber-50 text-amber-900">Add and review syllable recordings below, use a word from the syllable bank, or deselect: {unsupportedSyllableWords.join(', ')}.</p>}
+                            {syllableBlendingSelected && <details className="bg-white border border-violet-300 rounded-xl p-4 mb-3">
+                                <summary className="cursor-pointer font-bold text-violet-900">Word-specific syllable recordings</summary>
+                                <p className="text-sm my-2">Extend blending to words with two, three, or four syllables using your reviewed recordings. Recordings travel with the saved lesson.</p>
+                                <div className="space-y-2">{previewList.filter((word, index) => selectedIndices.has(index)).map(word => <WordSoundsSyllableRecordingEditor
+                                    key={word} word={word} language={wordSoundsLanguage} board={preparedSyllableFor(word)}
+                                    onSave={task => setReviewedSyllableTasks(previous => ({ ...previous, [task.targetWord]: task }))} />)}</div>
+                            </details>}
+                             <details className="bg-white border border-slate-300 rounded-xl p-4 mb-3">
                                 <summary className="cursor-pointer font-bold text-slate-700">{tf('word_sounds.preparation_options', 'Preparation and taught spellings')}</summary>
                                 <label className="block mt-3 text-sm font-semibold" htmlFor="ws-prepare-scope">{tf('word_sounds.prepare_scope', 'Activities to prepare')}</label>
                                 <select id="ws-prepare-scope" value={prepareScope} onChange={e => setPrepareScope(e.target.value)} className="w-full min-h-11 border border-slate-400 rounded-lg p-2">

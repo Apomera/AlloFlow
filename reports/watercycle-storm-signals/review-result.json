@@ -1,0 +1,45 @@
+{
+  "checkedAt": "2026-10-08T23:42:02.494Z",
+  "sourceSHA256": "03874d513249cf4aa85947ee51b05e8aca9317d9a1191642cc573ab2775710b8",
+  "baselineSHA256": "f29310e7d0bd78fdbb444e52ea36d6abae393ff268960aa956ae200dd139850a",
+  "runtimeBytes": 3347026,
+  "mirrorIdentical": true,
+  "syntaxValid": true,
+  "onlyChangedProductionAnchors": [
+    "WC_STORM_MOMENTS_STYLE",
+    "renderStormMoments"
+  ],
+  "adjacentWhitespaceChange": "One blank line after renderStormMoments removed",
+  "allOtherProductionBytesIdentical": true,
+  "modelAndHelpersUnchanged": true,
+  "reverseRestoresBaseline": true,
+  "reverseChain": [
+    {
+      "file": "feedback-changes.json",
+      "before": "8c4d1ed57b2282fe5d9be03df4642aa769858f58fdf4e5bb0ab5b1a8dff2f759",
+      "after": "03874d513249cf4aa85947ee51b05e8aca9317d9a1191642cc573ab2775710b8",
+      "replacements": 1
+    },
+    {
+      "file": "refine-changes.json",
+      "before": "1b1abb8400181464f5d75991cc40e3f239927ffa55c77ecc78e7f0b925d91fa1",
+      "after": "8c4d1ed57b2282fe5d9be03df4642aa769858f58fdf4e5bb0ab5b1a8dff2f759",
+      "replacements": 2
+    },
+    {
+      "file": "changes.json",
+      "before": "f29310e7d0bd78fdbb444e52ea36d6abae393ff268960aa956ae200dd139850a",
+      "after": "1b1abb8400181464f5d75991cc40e3f239927ffa55c77ecc78e7f0b925d91fa1",
+      "replacements": 2
+    }
+  ],
+  "review": {
+    "blockingIssues": [],
+    "notes": [
+      "Two qualitative index lanes retain explicit values and 0–100 scope.",
+      "Zero bars preserve actual zero height; missing values remain unavailable rather than becoming zero.",
+      "One selected snapshot diagram is paired with matching textual state and native controls.",
+      "Existing zero-feedback copy was refined to refer to rounded displayed readings."
+    ]
+  }
+}

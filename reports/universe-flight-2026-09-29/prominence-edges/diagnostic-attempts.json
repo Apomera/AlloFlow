@@ -1,0 +1,103 @@
+{
+  "completed": true,
+  "suiteValidationCompleted": false,
+  "source": "Actual captured exec tool output; fragments below are quoted from the returned chunks and are not a reconstructed stdout transcript.",
+  "repository": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated",
+  "vitestVersion": "4.1.5",
+  "attempts": [
+    {
+      "sessionId": 89360,
+      "command": "node node_modules/vitest/vitest.mjs run tests/universe_flight_physics.test.js --pool=forks --maxWorkers=1 --no-file-parallelism --isolate --testTimeout=60000 --hookTimeout=60000 --reporter=default --reporter=json --outputFile=reports/universe-flight-2026-09-29/prominence-edges/unit-diagnostic.json",
+      "pool": "forks",
+      "executionBoundary": "default sandbox; cmd.exe; login:false",
+      "report": "unit-diagnostic.json",
+      "exitCode": 1,
+      "executedTests": 0,
+      "unhandledErrorCount": 1,
+      "durationSeconds": 61.71,
+      "outputChunkIds": [
+        "3e184e",
+        "73eb3e"
+      ],
+      "observedOutputFragments": [
+        "Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_physics.test.js.",
+        "Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond",
+        " Test Files  no tests\n      Tests  no tests\n     Errors  1 error",
+        "   Start at  18:16:29\n   Duration  61.71s (transform 0ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)",
+        "JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/universe-flight-2026-09-29/prominence-edges/unit-diagnostic.json"
+      ]
+    },
+    {
+      "sessionId": 8624,
+      "command": "node node_modules/vitest/vitest.mjs run tests/universe_flight_physics.test.js --pool=threads --maxWorkers=1 --no-file-parallelism --isolate --testTimeout=60000 --hookTimeout=60000 --reporter=default --reporter=json --outputFile=reports/universe-flight-2026-09-29/prominence-edges/unit-diagnostic-threads.json",
+      "pool": "threads",
+      "executionBoundary": "default sandbox; cmd.exe; login:false",
+      "report": "unit-diagnostic-threads.json",
+      "exitCode": 1,
+      "executedTests": 0,
+      "unhandledErrorCount": 1,
+      "durationSeconds": 62.68,
+      "outputChunkIds": [
+        "f70f9b",
+        "e34571",
+        "284495"
+      ],
+      "observedOutputFragments": [
+        "Error: [vitest-pool]: Failed to start threads worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_physics.test.js.",
+        "Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond",
+        " Test Files  no tests\n      Tests  no tests\n     Errors  1 error",
+        "   Start at  18:20:34\n   Duration  62.68s (transform 0ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)",
+        "JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/universe-flight-2026-09-29/prominence-edges/unit-diagnostic-threads.json"
+      ]
+    },
+    {
+      "sessionId": 94538,
+      "command": "node node_modules/vitest/vitest.mjs run tests/universe_flight_physics.test.js --pool=forks --maxWorkers=1 --no-file-parallelism --isolate --testTimeout=60000 --hookTimeout=60000 --reporter=default --reporter=json --outputFile=reports/universe-flight-2026-09-29/prominence-edges/unit-diagnostic-unsandboxed.json",
+      "pool": "forks",
+      "executionBoundary": "require_escalated; cmd.exe; login:false",
+      "report": "unit-diagnostic-unsandboxed.json",
+      "exitCode": 1,
+      "executedTests": 0,
+      "unhandledErrorCount": 1,
+      "durationSeconds": 60.85,
+      "outputChunkIds": [
+        "87b69b"
+      ],
+      "observedOutputFragments": [
+        "Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/universe_flight_physics.test.js.",
+        "Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond",
+        " Test Files  no tests\n      Tests  no tests\n     Errors  1 error",
+        "   Start at  18:27:32\n   Duration  60.85s (transform 0ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)",
+        "JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/universe-flight-2026-09-29/prominence-edges/unit-diagnostic-unsandboxed.json"
+      ]
+    },
+    {
+      "sessionId": 69387,
+      "command": "node node_modules/vitest/vitest.mjs run tests/universe_flight_physics.test.js --config reports/universe-flight-2026-09-29/prominence-edges/node-physics.config.mjs --pool=forks --maxWorkers=1 --no-file-parallelism --isolate --reporter=default --reporter=json --outputFile=reports/universe-flight-2026-09-29/prominence-edges/unit-diagnostic-node.json",
+      "pool": "forks",
+      "executionBoundary": "default sandbox; cmd.exe; login:false",
+      "environment": "node",
+      "jsdomBypassed": true,
+      "repositoryBrowserSetupBypassed": true,
+      "browserGlobalAlias": "globalThis.window = globalThis",
+      "report": "unit-diagnostic-node-default-temp.json",
+      "metadata": "node-physics-default-temp-attempt.json",
+      "exitCode": 1,
+      "executedTests": 0,
+      "failedFileCount": 1,
+      "durationSeconds": 4.37,
+      "outputChunkIds": [
+        "83371f"
+      ],
+      "observedOutputFragments": [
+        " ❯ tests/universe_flight_physics.test.js (0 test)",
+        "Error: EPERM: operation not permitted, rename 'C:\\Users\\cabba\\AppData\\Local\\Packages\\sandbox.{0e14ed75-b1a9-4b51-a8f8-366082aa87a5}\\AC\\Temp\\wg_AkcmBVtHBbKBmS3OUV\\ssr\\.tmp-1791327835278-50oktr7id1b' -> 'C:\\Users\\cabba\\AppData\\Local\\Packages\\sandbox.{0e14ed75-b1a9-4b51-a8f8-366082aa87a5}\\AC\\Temp\\wg_AkcmBVtHBbKBmS3OUV\\ssr\\b741ef708d10641672e7a4c3a997f081aa7d2ad9'",
+        " Test Files  1 failed (1)\n      Tests  no tests",
+        "   Start at  19:03:50\n   Duration  4.37s (transform 0ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)",
+        "JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/universe-flight-2026-09-29/prominence-edges/unit-diagnostic-node.json"
+      ],
+      "causeBoundary": "Worker startup replied in Node; SSR transformation then failed before assertions. The prior jsdom setup/startup cause remains undetermined.",
+      "originalCapturedReport": "unit-diagnostic-node.json"
+    }
+  ]
+}

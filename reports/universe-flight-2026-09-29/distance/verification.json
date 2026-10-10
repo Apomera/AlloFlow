@@ -1,0 +1,49 @@
+{
+  "completed": true,
+  "enhancement": 50,
+  "commitCreated": false,
+  "stagedFiles": [],
+  "tests": {
+    "passed": 200,
+    "files": 11,
+    "focused": {
+      "passed": 141,
+      "files": 2
+    },
+    "remaining": {
+      "passed": 59,
+      "files": 9
+    }
+  },
+  "distance": {
+    "checks": 6,
+    "accessibility": 9,
+    "captures": 9,
+    "sceneViews": 5
+  },
+  "tiltedOrbitRegression": {
+    "checks": 6,
+    "accessibility": 9,
+    "captures": 8
+  },
+  "previews": {
+    "unchangedViews": 12,
+    "oldRendererHash": "0c108927ea47ff484cbb956f394bbfe5f3ec7698052a4d12333d2100abec7a22",
+    "rendererHash": "5db5e95273edd2e32e96efd54ef79eaa16cc1732d2b073e0ef735dee953bbd69"
+  },
+  "mirrorsEqual": true,
+  "syntaxChecksPassed": true,
+  "diffCheckPassed": true,
+  "files": {
+    "stem_lab/stem_tool_universe.js": "d2e525773ac73d3e44acda40e3069391eda9c048605ea82080f5a7248a66be70",
+    "stem_lab/universe_flight_scene.js": "5db5e95273edd2e32e96efd54ef79eaa16cc1732d2b073e0ef735dee953bbd69",
+    "desktop/web-app/public/stem_lab/stem_tool_universe.js": "d2e525773ac73d3e44acda40e3069391eda9c048605ea82080f5a7248a66be70",
+    "desktop/web-app/public/stem_lab/universe_flight_scene.js": "5db5e95273edd2e32e96efd54ef79eaa16cc1732d2b073e0ef735dee953bbd69",
+    "stem_lab/assets/universe-flight/highlights/manifest.json": "8db720f03e065a35260bd1895a794db74b2329683adfbc4191607f7b3b0e78ae",
+    "desktop/web-app/public/stem_lab/assets/universe-flight/highlights/manifest.json": "8db720f03e065a35260bd1895a794db74b2329683adfbc4191607f7b3b0e78ae",
+    "tests/universe_flight_distance.test.js": "53bfd6a21cadedcbb9b24116c6755f24d43270695a07fbfb03448e687dc3ae59",
+    "tests/universe_flight_navigation.test.js": "309714eea1d3e440818b76b940b03ffb27311f1948b2470e1ba8f8f49544fc79",
+    "dev-tools/universe_flight_distance_check.cjs": "7e9b09060f8f011d8ca8c2e24f2e2da2e8e2679b860f914f1853814c9201edbd",
+    "reports/universe-flight-2026-09-29/README.md": "e38b06a216454701cab2df3f593e2632def0b7d5f031829c6be8fe9e0e5d432d"
+  }
+}

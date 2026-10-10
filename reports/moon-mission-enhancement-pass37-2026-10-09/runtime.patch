@@ -1,0 +1,100 @@
+--- pass36/stem_tool_moonmission.js
++++ pass37/stem_tool_moonmission.js
+@@ -4763,12 +4763,52 @@
+       tliPaused:raw.tliPaused!==false,tliPlaybackRate:[1,10,60].indexOf(raw.tliPlaybackRate)>=0?raw.tliPlaybackRate:10,
+       tliView:raw.tliView==='orbit'?'orbit':'burn',tliAwarded:raw.tliAwarded===true};
+   }
++  // Retained TLI assembly: the LM stays inside the closed SLA until extraction.
++  // Reuse the launch renderer's proportions; its skipped LES still occupies y.
++  function mmTliStackGeometry(lengthPx) {
++    var length=Number.isFinite(lengthPx)?Math.max(24,Math.min(120,lengthPx)):72;
++    var retained=MM_SATURN_V.filter(function(p){return p.id!=='les'&&!(p.drop&&p.drop<=3);});
++    var metres=retained.reduce(function(sum,p){return sum+p.h;},0)+MM_SATURN_BELLS.s4b[0],k=length/metres;
++    return {length:length,k:k,topY:-length/2-MM_SATURN_V[0].h*k,fullHeight:MM_SATURN_V_H*k,
++      noseY:-length/2,nozzleY:length/2,sections:retained.map(function(p){return p.id;})};
++  }
++  function mmDrawTliStack(ctx,x,y,heading,lengthPx,thrust) {
++    var g=mmTliStackGeometry(lengthPx),fraction=Number.isFinite(thrust)?Math.max(0,Math.min(1,thrust/MM_TLI.thrust)):0;
++    var plume=fraction>0,plumeLength=plume?g.length*0.64*Math.sqrt(fraction):0;
++    var mouth=MM_SATURN_BELLS.s4b[1]*g.k/2,halfWidth=plume?mouth+plumeLength*0.23:0;
++    function world(localY){return {x:x-Math.cos(heading)*localY,y:y-Math.sin(heading)*localY};}
++    ctx.save();ctx.translate(x,y);ctx.rotate(heading+Math.PI/2);
++    var drawn=mmDrawSaturnV(ctx,0,g.topY,g.fullHeight,3,{les:false}),nozzle=drawn.nozzle;
++    if(plume){
++      // Illustrative vacuum expansion, not a measured plume boundary. Constant
++      // thrust keeps its appearance steady as falling mass raises acceleration.
++      var fade=ctx.createLinearGradient(0,nozzle,0,nozzle+plumeLength);
++      fade.addColorStop(0,'rgba(224,242,254,0.82)');fade.addColorStop(0.22,'rgba(147,197,253,0.40)');fade.addColorStop(1,'rgba(96,165,250,0)');
++      ctx.fillStyle=fade;ctx.beginPath();ctx.moveTo(-mouth,nozzle);ctx.lineTo(mouth,nozzle);
++      ctx.lineTo(halfWidth,nozzle+plumeLength);ctx.lineTo(-halfWidth,nozzle+plumeLength);ctx.closePath();ctx.fill();
++      var core=ctx.createLinearGradient(0,nozzle,0,nozzle+plumeLength*0.52);
++      core.addColorStop(0,'rgba(240,249,255,0.9)');core.addColorStop(1,'rgba(186,230,253,0)');
++      ctx.fillStyle=core;ctx.beginPath();ctx.moveTo(-mouth*0.7,nozzle);ctx.lineTo(mouth*0.7,nozzle);
++      ctx.lineTo(mouth*1.8,nozzle+plumeLength*0.52);ctx.lineTo(-mouth*1.8,nozzle+plumeLength*0.52);ctx.closePath();ctx.fill();
++    }
++    ctx.restore();
++    return {length:g.length,k:g.k,nose:world(g.noseY),nozzle:world(nozzle),sections:drawn.sections.map(function(p){return p.id;}),
++      plume:plume,plumeLength:plumeLength,plumeHalfWidth:halfWidth,plumeTip:world(nozzle+plumeLength),thrustFraction:fraction};
++  }
+   function mmDrawTliScene(ctx,W,H,s,profile,opts) {
+     opts=opts||{};var C=MM_TLI,whole=opts.view==='orbit',angle=mmOrbitSnapshot(opts.orbitTime||0).orbAng,co=Math.cos(angle),si=Math.sin(angle);
+     function rotate(x,y){return{x:x*co-y*si,y:x*si+y*co};}
+     var scale,ox,oy,anchor=0;
+     if(whole){scale=Math.min(W*0.44,H*0.35)/C.moonRadius;ox=W/2;oy=H*0.48;}
+-    else{anchor=Math.atan2(profile.samples[profile.samples.length-1].y,profile.samples[profile.samples.length-1].x)/2;scale=Math.min(W*0.88/4000000,H*0.65/900000);ox=W/2;oy=H*0.8;}
++    else{
++      anchor=Math.atan2(profile.samples[profile.samples.length-1].y,profile.samples[profile.samples.length-1].x)/2;
++      var minX=Infinity,maxX=-Infinity,stackLength=Math.min(78,Math.max(54,W*0.17)),margin=Math.max(stackLength*1.14+8,stackLength/2+33);
++      profile.samples.forEach(function(row){var x=row.y*Math.cos(anchor)-row.x*Math.sin(anchor);minX=Math.min(minX,x);maxX=Math.max(maxX,x);});
++      // Reserve room for the enlarged hardware, exhaust and velocity arrow at
++      // both ends of the measured path, especially on a narrow phone canvas.
++      scale=Math.min(W*0.88/4000000,H*0.65/900000,Math.max(1,W-2*margin)/Math.max(1,maxX-minX));
++      ox=W/2-(minX+maxX)*scale/2;oy=H*0.76;
++    }
+     function point(x,y){if(whole){var r=rotate(x,y);return{x:ox+r.x*scale,y:oy-r.y*scale};}return{x:ox+(y*Math.cos(anchor)-x*Math.sin(anchor))*scale,y:oy-(x*Math.cos(anchor)+y*Math.sin(anchor)-C.radius)*scale};}
+     ctx.fillStyle='#071224';ctx.fillRect(0,0,W,H);
+     for(var star=0;star<50;star++){ctx.fillStyle='rgba(203,213,225,0.5)';ctx.fillRect((star*157.31)%W,(star*97.53)%H,1,1);}
+@@ -4785,17 +4825,17 @@
+     ctx.strokeStyle='#67e8f9';ctx.lineWidth=2;ctx.beginPath();profile.samples.forEach(function(row,i){if(row.time>s.time)return;var p=point(row.x,row.y);if(i===0)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y);});var ship=point(s.x,s.y);ctx.lineTo(ship.x,ship.y);ctx.stroke();
+     ctx.restore();
+     var velocity=whole?rotate(s.vx,s.vy):{x:s.vy*Math.cos(anchor)-s.vx*Math.sin(anchor),y:s.vx*Math.cos(anchor)+s.vy*Math.sin(anchor)},heading=Math.atan2(-velocity.y,velocity.x);
+-    ctx.save();ctx.translate(ship.x,ship.y);ctx.rotate(heading);
+-    if(s.thrust>0){ctx.fillStyle='rgba(147,197,253,0.78)';ctx.beginPath();ctx.moveTo(-28,-4);ctx.lineTo(-28-20-2*s.properAcceleration,0);ctx.lineTo(-28,4);ctx.closePath();ctx.fill();}
+-    ctx.fillStyle='#f1f5f9';ctx.fillRect(-25,-5,29,10);ctx.fillStyle='#0f172a';ctx.fillRect(-18,-5,3,10);ctx.fillRect(-10,-5,3,10);ctx.fillStyle='#bba16a';ctx.beginPath();ctx.moveTo(4,-5);ctx.lineTo(16,-4);ctx.lineTo(16,4);ctx.lineTo(4,5);ctx.closePath();ctx.fill();ctx.fillStyle='#cbd5e1';ctx.fillRect(16,-4,9,8);ctx.beginPath();ctx.moveTo(25,-4);ctx.lineTo(32,0);ctx.lineTo(25,4);ctx.closePath();ctx.fill();ctx.restore();
+-    var len=55,ex=ship.x+Math.cos(heading)*len,ey=ship.y+Math.sin(heading)*len;ctx.strokeStyle='#67e8f9';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(ship.x,ship.y);ctx.lineTo(ex,ey);ctx.stroke();
++    var stack=mmDrawTliStack(ctx,ship.x,ship.y,heading,Math.min(78,Math.max(54,W*0.17)),s.thrust);
++    var len=stack.length/2+25;
++    ctx.save();ctx.translate(ship.x,ship.y);ctx.rotate(heading);ctx.strokeStyle='#67e8f9';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(stack.length/2+5,0);ctx.lineTo(len,0);ctx.moveTo(len-5,-3);ctx.lineTo(len,0);ctx.lineTo(len-5,3);ctx.stroke();ctx.restore();
+     ctx.fillStyle='#e2e8f0';ctx.font='12px system-ui';ctx.fillText(whole?'Orbit if thrust stops here':'Measured S-IVB departure',12,22);
+     if(whole){ctx.fillStyle='#c4b5fd';ctx.fillText('Purple ring: 384,400 km radius',12,42);ctx.fillStyle='#e2e8f0';ctx.fillText('Earth center',Math.max(12,ox-85),oy+28);ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(ox-20,oy+20);ctx.lineTo(ox-3,oy+3);ctx.stroke();}
+-    ctx.fillText('Equal axes · spacecraft enlarged',12,H-12);
++    if(!whole){ctx.fillStyle='#94a3b8';ctx.fillText('CSM · enclosed LM · S-IVB / J-2',12,42);}
++    ctx.fillStyle='#e2e8f0';ctx.fillText('Equal axes · spacecraft enlarged',12,H-12);
+     var ruler=whole?100000000:500000;ctx.strokeStyle='#e2e8f0';ctx.beginPath();ctx.moveTo(W-16-ruler*scale,H-37);ctx.lineTo(W-16,H-37);ctx.stroke();ctx.textAlign='right';ctx.fillText((ruler/1000).toLocaleString()+' km',W-16,H-45);ctx.textAlign='left';
+-    return {scaleX:scale,scaleY:scale,craftX:ship.x,craftY:ship.y,heading:heading,plume:s.thrust>0};
+-  }
+-  try {window.MoonMissionPure=Object.assign(window.MoonMissionPure||{},{tliPhysics:MM_TLI,tliPlan:mmTliPlan,tliInitialState:mmTliInitialState,tliStep:mmTliStep,tliElements:mmTliElements,tliProfile:mmTliProfile,tliSample:mmTliSample,cleanTliPlayback:mmCleanTliPlayback,drawTliScene:mmDrawTliScene});}catch(e){}
++    return {scaleX:scale,scaleY:scale,craftX:ship.x,craftY:ship.y,heading:heading,plume:stack.plume,stack:stack};
++  }
++  try {window.MoonMissionPure=Object.assign(window.MoonMissionPure||{},{tliPhysics:MM_TLI,tliPlan:mmTliPlan,tliInitialState:mmTliInitialState,tliStep:mmTliStep,tliElements:mmTliElements,tliProfile:mmTliProfile,tliSample:mmTliSample,cleanTliPlayback:mmCleanTliPlayback,drawTliScene:mmDrawTliScene,tliStackGeometry:mmTliStackGeometry,drawTliStack:mmDrawTliStack});}catch(e){}
+ 
+   function mmRenderTliCard(h, d, upd, announceToSR) {
+     var profile=mmTliProfile(d.tliPlan),run=d.tliRun||{time:0,recorded:false,orbitTime:d.orbitRun?d.orbitRun.time:0};
+@@ -4807,7 +4847,7 @@
+       h('div',{style:{display:'flex',flexWrap:'wrap',gap:'10px',margin:'12px 0'}},
+         h('label',{style:{fontSize:'13px'}},'Engine cutoff ',h('select',{'data-tli-plan':true,'aria-label':'TLI burn duration',value:profile.plan.duration,style:button,onChange:function(ev){action(ev,'plan',Number(ev.target.value));}},[300,342,350].map(function(n){return h('option',{key:n,value:n},n+' s'+(n===342?' · lunar distance':''));}))),
+         h('label',{style:{fontSize:'13px'}},'Trajectory view ',h('select',{'data-tli-view':true,'aria-label':'TLI trajectory view',value:d.tliView,style:button,onChange:function(ev){action(ev,'view',ev.target.value);}},h('option',{value:'burn'},'Departure close view'),h('option',{value:'orbit'},'Orbit forecast')))),
+-      h('canvas',{'data-tli-canvas':true,role:'img','aria-label':'Computed S-IVB departure with equal physical axes, measured trail, velocity arrow and an enlarged stack aligned with thrust. The forecast shows the current orbit if the engine stops, and a lunar-distance ring without a Moon position. Instruments and controls follow.',style:{display:'block',width:'100%',height:'360px',borderRadius:'8px'},ref:function(cv){
++      h('canvas',{'data-tli-canvas':true,role:'img','aria-label':'Computed S-IVB departure with equal physical axes, measured trail, velocity arrow and a proportioned, enlarged command and service module, closed lunar module adapter, instrument unit and S-IVB aligned with velocity. Exhaust expands from the single J-2 nozzle while thrust is active. The forecast shows the current orbit if the engine stops, and a lunar-distance ring without a Moon position. Instruments and controls follow.',style:{display:'block',width:'100%',height:'360px',borderRadius:'8px'},ref:function(cv){
+         if(!cv||cv._tliInit)return;cv._tliInit=true;var ctx=cv.getContext('2d');if(!ctx)return;
+         var p=profile,time=run.time,recorded=run.recorded,orbitTime=run.orbitTime,paused=d.tliPaused,rate=d.tliPlaybackRate,view=d.tliView;
+         var W=cv.offsetWidth||500,H=cv.offsetHeight||360,lastTs=null,lastSave=-Infinity,stamp='',observer;
+@@ -4853,7 +4893,7 @@
+       d.tliResult&&h('p',{'data-tli-result':true,role:'status',style:{fontSize:'13px',lineHeight:1.6,color:'#a5f3fc'}},'Computed cutoff: '+(d.tliResult.outcome==='insufficient'?'the orbit falls short of lunar distance. Choose a longer burn and review again.':d.tliResult.outcome==='escape'?'positive orbital energy; the craft escapes Earth. Lunar arrival still requires targeting.':'the bound orbit reaches lunar distance. Lunar arrival still requires targeting.')),
+       h('details',{'data-tli-model-note':true,style:{fontSize:'13px',lineHeight:1.6,color:'#cbd5e1',marginTop:'12px'}},h('summary',{style:{cursor:'pointer'}},'How this injection model works'),
+         h('p',null,'This starts from the circular 185 km timing preset using the launch model’s remaining S-IVB propellant and a 58,500 kg retained stack. One J-2 engine supplies '+(MM_TLI.thrust/1000).toFixed(1)+' kN with 425 s specific impulse. Position, velocity and changing mass are integrated under Earth’s inverse-square gravity. Thrust follows the current velocity instantly. Ideal engine Δv follows the rocket equation; it differs from the change in inertial speed because gravity also acts.'),
+-        h('p',null,'The Earth is spherical. Ignition and cutoff are instantaneous; restart transients, attitude dynamics, drag, Earth rotation effects, Moon and Sun gravity, venting and spacecraft extraction are omitted. The 342 s choice belongs to this educational mass and guidance model. Apollo 11’s measured TLI burn lasted 347.3 s. The forecast is the current two-body orbit if thrust stops, rather than a time-propagated lunar encounter.'),
++        h('p',null,'The enlarged spacecraft retains its stage proportions. The lunar module remains enclosed in the adapter. The fading exhaust illustrates vacuum expansion; its size and brightness are not measured plume data. It follows engine thrust, while acceleration rises as mass falls. The Earth is spherical. Ignition and cutoff are instantaneous; restart transients, attitude dynamics, drag, Earth rotation effects, Moon and Sun gravity, venting and spacecraft extraction are omitted. The 342 s choice belongs to this educational mass and guidance model. Apollo 11’s measured TLI burn lasted 347.3 s. The forecast is the current two-body orbit if thrust stops, rather than a time-propagated lunar encounter.'),
+         h('p',null,'The purple ring is 384,400 km from Earth’s center. It does not show a Moon position. Reaching that radius is necessary for this exercise; it does not guarantee meeting the moving Moon. The next navigation exercise uses its own departure preset with lunar gravity and targeting errors. Review and plan comparisons award no points.'),
+         h('a',{href:'https://www.nasa.gov/wp-content/uploads/static/apollo50th/pdf/A11_MissionReport.pdf',target:'_blank',rel:'noopener noreferrer',style:{color:'#7dd3fc',display:'inline-block',padding:'10px 0'}},'NASA Apollo 11 mission report')));
+   }

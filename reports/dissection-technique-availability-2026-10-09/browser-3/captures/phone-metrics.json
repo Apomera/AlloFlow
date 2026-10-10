@@ -1,0 +1,28 @@
+{
+  "width": 274.40625,
+  "client": 274,
+  "scroll": 274,
+  "text": [
+    {
+      "text": "Motor-neutral: Inspect ventral landmarks and confirm symmetry",
+      "font": 16,
+      "client": 272,
+      "scroll": 272,
+      "height": 87.5625
+    },
+    {
+      "text": "Choose a safe plan in the learning checkpoint before performing this technique.",
+      "font": 16,
+      "client": 274,
+      "scroll": 274,
+      "height": 74.390625
+    },
+    {
+      "text": "Review plan",
+      "font": 16,
+      "client": 272,
+      "scroll": 272,
+      "height": 48
+    }
+  ]
+}

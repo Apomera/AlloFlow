@@ -1,0 +1,37 @@
+{
+  "beforeSHA256": "0cc79f45f9a57ce3c4f1d5fa674b56f462a2418c4b253dbc648557b37a6b2639",
+  "candidateSHA256": "432026c45556c70a8267e70b3530b646d782bfe779a8966b94160e114f3c14af",
+  "checkerSHA256": "6c53a99c74c4586060281291643a40e0db7441d42ff34600db73dd9e230d74d6",
+  "meshHelperSHA256": "199157f91711eef18270c8aa22f540fd9ab7eff51c7d248459d6e633cfc3efbf",
+  "inputPinsHeld": true,
+  "assertions": 15650,
+  "negativeTests": [],
+  "passed": 0,
+  "failed": 1,
+  "results": [
+    {
+      "age": "adult",
+      "phase": 8,
+      "contrast": false,
+      "outsideEyes": {
+        "SHA256": "e2542835abef0e3bdd8de8ce29e537c64560c25d7ed9facbc15e6e667f9f23ad",
+        "nodes": 211,
+        "meshes": 142,
+        "geometries": 140,
+        "materials": 28,
+        "allocatedGeometries": 144,
+        "allocatedMaterials": 26
+      },
+      "resources": {
+        "geometries": 146,
+        "materials": 28,
+        "allocatedGeometries": 144,
+        "allocatedMaterials": 26
+      },
+      "status": "failed",
+      "checks": 15645,
+      "durationMs": 11891,
+      "error": "AssertionError [ERR_ASSERTION]: eye ribbon interior/edge clears actual lid/skin surface {\"side\":\"right\",\"triangle\":144,\"weights\":[0,0.5,0.5],\"gap\":-0.000023060177799726567}\n    at check (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-jaw-work\\firstresponse_eye_surface_check.cjs:11:58)\n    at inspectEyes (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-jaw-work\\firstresponse_eye_surface_check.cjs:32:1240)\n    at Object.<anonymous> (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-jaw-work\\firstresponse_eye_surface_check.cjs:50:419)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "pid": 28888,
+  "observed": null,
+  "reason": "Workflow and browser close finished; disk-full progress writes prevented harness shutdown.",
+  "alreadyExited": true
+}

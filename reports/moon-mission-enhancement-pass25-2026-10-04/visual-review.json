@@ -1,0 +1,95 @@
+{
+  "reviewedOn": "2026-10-07",
+  "reviewer": "terrain_review",
+  "method": "Direct pixel inspection of native PNG captures through view_image.",
+  "status": "accepted",
+  "inspectedCaptureCount": 11,
+  "inspectedCaptures": [
+    {
+      "file": "browser-surface-1-attempt1/left-bank-approach.png",
+      "observations": [
+        "The left bank, footpads, struts and exhaust remain readable above the cratered surface.",
+        "The amber drift cue and cyan nadir ring have coherent terrain positions without visible breaks.",
+        "The lighter shadow is visible beside the craft."
+      ]
+    },
+    {
+      "file": "browser-surface-1-attempt1/left-bank-contact.png",
+      "observations": [
+        "The visible lower struts and pads remain above the terrain beneath the result banner.",
+        "The cyan ring and terrain shadow remain readable at contact.",
+        "The hard-landing banner reflects the fixture's displayed impact speeds."
+      ]
+    },
+    {
+      "file": "browser-surface-1-attempt1/right-bank-approach.png",
+      "observations": [
+        "The opposite bank retains a clear craft silhouette, footpads and exhaust.",
+        "The amber cue runs across the terrain toward the right edge, and the cyan ring remains continuous."
+      ]
+    },
+    {
+      "file": "browser-surface-1-attempt1/right-bank-contact.png",
+      "observations": [
+        "The visible tilted feet, cyan ring and terrain shadow remain distinct below the result banner.",
+        "No visible pad intersects the terrain in this capture."
+      ]
+    },
+    {
+      "file": "browser-surface-1-attempt1/desktop-notes.png",
+      "observations": [
+        "The expanded notes remain legible and fit their capture width.",
+        "The new paragraph explains that visual feet, markers and exhaust follow cratered terrain while touchdown and grading use level ground."
+      ]
+    },
+    {
+      "file": "browser-surface-2-final/detailed-bank-approach.png",
+      "observations": [
+        "The detailed view retains terrain texture, scattered rocks, craft geometry and a smoother shadow.",
+        "The banked approach, exhaust and both ground cues remain readable."
+      ]
+    },
+    {
+      "file": "browser-surface-2-final/detailed-bank-contact.png",
+      "observations": [
+        "The visible tilted feet and cyan ring remain coherent with the detailed surface.",
+        "Nearby rocks and the lander shadow remain visible at contact."
+      ]
+    },
+    {
+      "file": "browser-surface-2-final/detailed-overhead-contact.png",
+      "observations": [
+        "The overhead view retains surface detail, nearby rock shadows and the cyan ground cue.",
+        "The controls and instruments fit within the capture."
+      ]
+    },
+    {
+      "file": "browser-surface-3-final/phone-bank-contact.png",
+      "observations": [
+        "The narrow 3D view retains cratered terrain, visible lower feet, the cyan ring and the lander shadow.",
+        "The instrument panels, result banner and three controls fit within the capture width."
+      ]
+    },
+    {
+      "file": "browser-surface-3-final/phone-context-loss-support.png",
+      "observations": [
+        "The fallback view shows the tilted craft above its level ground and cyan cue.",
+        "The result banner, instruments and controls remain readable after graphics loss."
+      ]
+    },
+    {
+      "file": "browser-surface-3-final/phone-forced-notes.png",
+      "observations": [
+        "The forced-color notes use readable black text on white and wrap within the narrow width.",
+        "The complete new terrain paragraph and source link remain visible."
+      ]
+    }
+  ],
+  "blockingIssues": [],
+  "limits": [
+    "The existing contact result banner obscures the upper craft in contact captures, especially overhead. Visible pixels cannot establish every pad clearance; the browser's actual triangle ray checks provide that measurement.",
+    "The lighter shadow has visible pixel steps, consistent with its smaller shadow map.",
+    "The screenshots support visual consistency with the terrain. They do not demonstrate physical collision with crater relief; the notes accurately retain level-ground touchdown and grading.",
+    "The nadir ring samples the mesh at its vertices. This review does not claim that every ring chord follows one terrain face."
+  ]
+}

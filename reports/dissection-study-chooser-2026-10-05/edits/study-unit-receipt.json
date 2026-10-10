@@ -1,0 +1,41 @@
+{
+  "task": "dissection study chooser focused unit additions",
+  "date": "2026-10-05",
+  "fragment": "study-unit-additions.jsfrag",
+  "fragmentSha256": "169c00fa45753e09da8d52f287ca6a62989660c2af5e460108a5a2f805587c5f",
+  "fragmentBytes": 17414,
+  "rendererCandidate": "renderer-next.js",
+  "rendererCandidateSha256": "72c75cc596b0ee7307b7b7549fcd34e02cefdf9cdfb00f445bb21a26cc2dfeed",
+  "target": "tests/dissection_lab_improvements.test.js",
+  "targetBaselineSha256": "c76e7143e72284ad3d71ad731eaa9498007441f2d4c31d3baa8f95163f3d006f",
+  "insertBefore": "  it('groups advanced lab controls by observation, evidence capture, and records with named headings', async () => {",
+  "testDefinitions": 6,
+  "expandedTestCases": 8,
+  "coverage": [
+    "Study region, named groups, exact owned heading and description IDs, native button names and order, no added tab stops",
+    "Empty, unmapped, and mapped comparison purpose with native control focus and learner work preservation",
+    "Native flashcard prompt focus and return to specimen with recorded work preservation",
+    "Insufficient visible pool and active layer transition readiness matching native guards while retaining enabled feedback controls",
+    "Native practical start, visible output timer with aria-live off, End teardown, restored labels and removal of timer description",
+    "Sheep-eye chooser description and native order, with companion entry removed during ordinary and timed assessments"
+  ],
+  "helpersReused": [
+    "mountMarkingFixture",
+    "evidenceWorkProof",
+    "clickEvidenceControl",
+    "renderTool"
+  ],
+  "syntaxValidation": {
+    "status": "passed",
+    "method": "Parsed wrapped fragment using node:vm Script without execution"
+  },
+  "runtimeSuitesRun": false,
+  "repositoryWrites": false,
+  "sourceWrites": false,
+  "commitCreated": false,
+  "notes": [
+    "Interaction cases use the real registered React component and native buttons.",
+    "Sheep-eye gating is checked through static renderTool markup with eyeStudyMode false, avoiding WebGL startup.",
+    "Root owns guarded insertion, runtime suites, and any follow-up corrections."
+  ]
+}

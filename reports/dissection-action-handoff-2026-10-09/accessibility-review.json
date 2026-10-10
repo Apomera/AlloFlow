@@ -1,0 +1,51 @@
+{
+  "at": "2026-10-09T23:17:00.157Z",
+  "reports": 4,
+  "violations": 0,
+  "reviewedGradientNodes": 0,
+  "unresolved": 0,
+  "method": "Accept the four complete outcome audits from browser-3. Exclude the interrupted checkpoint-3 run. Raw reports remain unchanged; normal feedback palette ratios are calculated from the existing source colors with WCAG sRGB relative luminance.",
+  "minimumGradientRatio": null,
+  "normalFeedbackPalettes": [
+    {
+      "surface": "specimen echo",
+      "foreground": "#294b70",
+      "background": "#f8fbff",
+      "ratio": 8.666765495325048
+    },
+    {
+      "surface": "live technique feedback",
+      "foreground": "#355754",
+      "background": "#ffffff",
+      "ratio": 7.946498240055245
+    }
+  ],
+  "audits": [
+    {
+      "file": "browser-3/captures/after-desktop-axe.json",
+      "sha256": "524af46a2dd1ddc479df3e36fd60b994bea9fa6334b8d76404bc089087138f22",
+      "violations": 0,
+      "incompleteNodes": 0
+    },
+    {
+      "file": "browser-3/captures/after-embedded-large-axe.json",
+      "sha256": "bd906b9e043ca9d1ebdfce20f37db6ace62b1d5daeee8ed455d2499725a8ca0c",
+      "violations": 0,
+      "incompleteNodes": 0
+    },
+    {
+      "file": "browser-3/captures/after-forced-colors-axe.json",
+      "sha256": "755ab4c3cc02d3b71fcaa30cc8bb27c94766eb80ba3c0d7eedd143c10a0eda1f",
+      "violations": 0,
+      "incompleteNodes": 0
+    },
+    {
+      "file": "browser-3/captures/after-phone-axe.json",
+      "sha256": "2a1c510d5fcd9dd388d9e08cfa93e90bd539e65257956c83221c82ddc9e431f6",
+      "violations": 0,
+      "incompleteNodes": 0
+    }
+  ],
+  "nodes": [],
+  "limits": "Scoped Chromium/axe checks plus source/contrast/visual review. The specimen echo is aria-hidden because the existing technique feedback supplies its accessible status; no extra live region was added. No assistive-technology user session or whole-app certification."
+}

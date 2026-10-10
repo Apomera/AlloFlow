@@ -1,0 +1,68 @@
+{
+  "width": 390,
+  "scrollWidth": 388,
+  "clientWidth": 388,
+  "choices": [],
+  "text": [
+    {
+      "text": "Plan confirmed",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Demonstrate your plan",
+      "size": 18.4,
+      "clipped": false
+    },
+    {
+      "text": "Use Probe to inspect ventral landmarks and confirm symmetry. Perform the action on the specimen, then explain the result.",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "✓ 1 PredictDone",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Done",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "2 PerformCurrent",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Current",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "3 ExplainUpcoming",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Upcoming",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Technique controls also offer a motor-neutral action once readiness checks pass.",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Prepare Probe",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Go to specimen",
+      "size": 15.2,
+      "clipped": false
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass25-2026-10-04\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass25-2026-10-04/browser-shadow-3-recovery/test-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "moon-mission-descent-shadow.spec.ts",
+      "file": "moon-mission-descent-shadow.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "reduced-motion WebGL casts one actual-hardware shadow and disposes it on context loss",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 72090,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T04:23:05.770Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "reduced-motion-landing-shadow",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass25-2026-10-04\\browser-shadow-3-recovery\\test-artifacts\\moon-mission-descent-shado-495d9-disposes-it-on-context-loss-chromium\\attachments\\reduced-motion-landing-shadow-f4bd703cc35f69ea0ee407d5a55be2f3b99e8144.png"
+                    },
+                    {
+                      "name": "reduced-motion-contact-shadow",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass25-2026-10-04\\browser-shadow-3-recovery\\test-artifacts\\moon-mission-descent-shado-495d9-disposes-it-on-context-loss-chromium\\attachments\\reduced-motion-contact-shadow-f55a63dffba26119210d3477b0d6001be225a50a.png"
+                    },
+                    {
+                      "name": "shadow-context-loss-support",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass25-2026-10-04\\browser-shadow-3-recovery\\test-artifacts\\moon-mission-descent-shado-495d9-disposes-it-on-context-loss-chromium\\attachments\\shadow-context-loss-support-16cf9eb30eaf4d710aa71aa9c45f8063a61b1507.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fbad14e040de78fc8ebe-198624b45eff1e51c899",
+          "file": "moon-mission-descent-shadow.spec.ts",
+          "line": 109,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-07T04:22:49.532Z",
+    "duration": 107017.40599999999,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

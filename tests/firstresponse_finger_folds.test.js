@@ -7,7 +7,7 @@ new Function('exports', 'module', readFileSync('vendor/three-r128/three.min.js',
 const ages = ['adult', 'child', 'infant'];
 const digits = ['finger-0', 'finger-1', 'finger-2', 'finger-3', 'thumb'];
 const scenes = [];
-let build, previousRegistry;
+let build, unfoldedBuild, previousRegistry;
 
 beforeAll(() => {
   previousRegistry = window.StemLab;
@@ -21,6 +21,14 @@ beforeAll(() => {
   };
   new Function(source)();
   expect(build).toBeTypeOf('function');
+  // Only patient wrist relief is removed from the control. This uses the
+  // actual connector, so the test does not assume a unit sphere underneath it.
+  const foldCall = 'sculptWristFold(patientWrist,.15,1)';
+  expect(source.split(foldCall)).toHaveLength(2);
+  const foldedBuild = build;
+  new Function(source.replace(foldCall, 'void 0'))();
+  unfoldedBuild = build;
+  build = foldedBuild;
 });
 
 afterEach(() => {
@@ -34,10 +42,10 @@ afterEach(() => {
 
 afterAll(() => { window.StemLab = previousRegistry; });
 
-function model(age, tab = 'depth', phase = 0) {
+function model(age, tab = 'depth', phase = 0, sceneBuilder = build) {
   const scene = new THREE.Scene();
   scenes.push(scene);
-  const content = build(THREE, {
+  const content = sceneBuilder(THREE, {
     scene, phase, dark: true, contrast: false, wantShadow: false,
     trim: color => new THREE.MeshPhongMaterial({ color }), sceneProps: { tab, age, childHands: 'two' },
   });
@@ -212,6 +220,30 @@ function assertWrist(mesh) {
   expect(closestUnderside, mesh.name + ' untouched underside pole').toBeLessThan(1e-7);
 }
 
+function assertPatientWrist(mesh, unfolded) {
+  const positions = mesh.geometry.attributes.position, control = unfolded.geometry.attributes.position;
+  expect(positions.count, mesh.name + ' matching unfolded connector').toBe(control.count);
+  let inward = 0, maximumInset = 0, underside = 0;
+  for (let i = 0; i < positions.count; i++) {
+    const vertex = point(positions, i), original = point(control, i);
+    expect(vertex.x, mesh.name + ' retained lateral skin').toBe(original.x);
+    expect(vertex.z, mesh.name + ' retained longitudinal skin').toBe(original.z);
+    if (original.y <= 0) {
+      underside++;
+      expect(vertex.y, mesh.name + ' untouched underside').toBe(original.y);
+    } else {
+      const inset = 1 - vertex.y / original.y;
+      expect(inset, mesh.name + ' inward upper-surface relief').toBeGreaterThanOrEqual(-1e-6);
+      expect(inset, mesh.name + ' shallow upper-surface relief').toBeLessThan(.15);
+      if (inset > .0001) inward++;
+      maximumInset = Math.max(maximumInset, inset);
+    }
+  }
+  expect(underside, mesh.name + ' retained lower surface samples').toBeGreaterThan(10);
+  expect(inward, mesh.name + ' shaped upper wrist surface').toBeGreaterThan(10);
+  expect(maximumInset, mesh.name + ' readable shallow groove').toBeGreaterThan(.002);
+}
+
 function minimumWorldY(mesh) {
   const positions = mesh.geometry.attributes.position;
   let minimum = Infinity;
@@ -277,18 +309,13 @@ describe('First Response finger and wrist folds', () => {
   });
 
   it.each(ages)('limits wrist grooves to the upper surface and preserves the contact-facing underside for %s', age => {
-    for (const phase of [2, 5, 8]) {
+    for (let phase = 0; phase <= 8; phase++) {
       const scene = model(age, 'recovery', phase)();
-      const left = object(scene, 'fr-patient-left-wrist'), right = object(scene, 'fr-patient-right-wrist');
-      assertWrist(left);
-      assertWrist(right);
-      const leftPositions = left.geometry.attributes.position, rightPositions = right.geometry.attributes.position;
-      expect(leftPositions.count, age + ' mirrored wrist sampling').toBe(rightPositions.count);
-      let mirrorError = 0;
-      for (let i = 0; i < leftPositions.count; i++) {
-        mirrorError = Math.max(mirrorError, Math.abs(point(leftPositions, i).length() - point(rightPositions, i).length()));
+      const control = model(age, 'recovery', phase, unfoldedBuild)();
+      for (const side of ['left', 'right']) {
+        const name = 'fr-patient-' + side + '-wrist';
+        assertPatientWrist(object(scene, name), object(control, name));
       }
-      expect(mirrorError, age + ' mirrored wrist inset').toBeLessThan(5e-8);
     }
     const sample = model(age);
     for (const motion of ['release', 'press']) {

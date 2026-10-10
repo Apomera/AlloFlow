@@ -1,0 +1,208 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "name": "first-person scene uses real WebGL in all three activities",
+      "detail": {
+        "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+        "lost": false
+      }
+    },
+    {
+      "name": "keyboard, step controls, and drag-look move the actual camera",
+      "detail": {
+        "before": {
+          "x": -15,
+          "z": 10,
+          "yaw": 15,
+          "pitch": 0
+        },
+        "walked": {
+          "x": -14.948236190979497,
+          "z": 9.806814834742188,
+          "yaw": 15,
+          "pitch": 0
+        },
+        "rotated": {
+          "x": -14.755051025721684,
+          "z": 9.85857864376269,
+          "yaw": 28.999993896484398,
+          "pitch": -3.4000000000000004
+        }
+      }
+    },
+    {
+      "name": "continuous movement stops on blur and bay crossings preserve viewpoint and focus",
+      "detail": {
+        "crossed": {
+          "x": -5.8500000000000005,
+          "z": 9,
+          "yaw": 0,
+          "pitch": 0
+        },
+        "held": {
+          "x": -5.8500000000000005,
+          "z": 8.600000000000001,
+          "yaw": 0,
+          "pitch": 0
+        },
+        "stopped": {
+          "x": -5.8500000000000005,
+          "z": 8.600000000000001,
+          "yaw": 0,
+          "pitch": 0
+        }
+      }
+    },
+    {
+      "name": "alignment and scale solves are based on actual geometry",
+      "detail": {
+        "aligned": {
+          "width": 1054,
+          "height": 621,
+          "colors": 124,
+          "colored": 6637,
+          "hash": "13cb19f5ab98b306b956ad03f168c50ef1719845491b5f70a0c9742c3906c7d2"
+        },
+        "projectedHeights": [
+          0.33285589647010355,
+          0.3328558964701036
+        ]
+      }
+    },
+    {
+      "name": "raycast selects the movable block and opaque walls block token picking",
+      "detail": {
+        "block": {
+          "x": 624.6883845920379,
+          "y": 495.59375,
+          "distance": 6.012192843722906
+        }
+      }
+    },
+    {
+      "name": "walking around the wall exposes tokens for direct collection",
+      "detail": [
+        {
+          "x": 75.6894951089547,
+          "y": 576.209884637612,
+          "distance": 2.5075838704232627
+        },
+        {
+          "x": 523,
+          "y": 576.209884637612,
+          "distance": 1.9003171250553512
+        },
+        {
+          "x": 922.3105048910453,
+          "y": 576.209884637612,
+          "distance": 2.4347202734832076
+        }
+      ]
+    },
+    {
+      "name": "reveals stay assisted and navigation preserves notebook and earned work"
+    },
+    {
+      "name": "mobile controls fit and touch activation moves the scene without horizontal overflow"
+    },
+    {
+      "name": "first-person workspace passes automated accessibility checks",
+      "detail": []
+    },
+    {
+      "name": "fallback preserves interactive state and all canvases are released on close"
+    }
+  ],
+  "screenshots": [
+    {
+      "name": "desktop-ring",
+      "width": 1054,
+      "height": 621,
+      "colors": 143,
+      "colored": 4692,
+      "hash": "3f8ab3fa353a1b32df007f85be609848e43345d36a19de3e40c1d78f730277a4"
+    },
+    {
+      "name": "desktop-scale",
+      "width": 1054,
+      "height": 621,
+      "colors": 145,
+      "colored": 7240,
+      "hash": "1e489ac55520add21d0843af877f3298c4c6490ec001941e9a4e952eda6a3e10"
+    },
+    {
+      "name": "desktop-occlusion",
+      "width": 1054,
+      "height": 621,
+      "colors": 122,
+      "colored": 2690,
+      "hash": "6e3ea88367ca3f180ac6f549d7a660e6159f216b4401d24f589d152a3f79f1fd"
+    },
+    {
+      "name": "ring-before-movement",
+      "width": 1054,
+      "height": 621,
+      "colors": 143,
+      "colored": 4692,
+      "hash": "3f8ab3fa353a1b32df007f85be609848e43345d36a19de3e40c1d78f730277a4"
+    },
+    {
+      "name": "ring-after-movement",
+      "width": 1054,
+      "height": 621,
+      "colors": 164,
+      "colored": 5479,
+      "hash": "da758b1690550ffa9cb8cb3119f8b0d192624b4d6a25ca46e01ad5c4c56305c6"
+    },
+    {
+      "name": "ring-aligned",
+      "width": 1054,
+      "height": 621,
+      "colors": 124,
+      "colored": 6637,
+      "hash": "13cb19f5ab98b306b956ad03f168c50ef1719845491b5f70a0c9742c3906c7d2"
+    },
+    {
+      "name": "scale-matched",
+      "width": 1054,
+      "height": 621,
+      "colors": 147,
+      "colored": 8005,
+      "hash": "ef708d029a1aa7987d275f217aa2ce0ac656a0b96d8d8c9ac9f89f5be0fae0c7"
+    },
+    {
+      "name": "occlusion-wall",
+      "width": 1054,
+      "height": 621,
+      "colors": 105,
+      "colored": 2539,
+      "hash": "baed32ef56b1bcac3f65dca1cab1610e1932b5440b3b3bd9f28b2feda7b0bc90"
+    },
+    {
+      "name": "occlusion-collected",
+      "width": 1054,
+      "height": 621,
+      "colors": 87,
+      "colored": 2399,
+      "hash": "2b1c27faefa278cdd4a91afbaebf6455b8da853f8b584c1d5dcc60a1805e9d17"
+    },
+    {
+      "name": "mobile-390",
+      "width": 350,
+      "height": 361,
+      "colors": 105,
+      "colored": 1756,
+      "hash": "188c2880ae661a5b3470fa5be9e3314f8868c9bdd790c476f5c565fee19e5e6e"
+    },
+    {
+      "name": "mobile-320",
+      "width": 280,
+      "height": 321,
+      "colors": 94,
+      "colored": 1286,
+      "hash": "d887cd5106f626524a99fd7b2a42d44da8b65ef609251a54ef6d8d4b8e9d5b9e"
+    }
+  ],
+  "errors": []
+}

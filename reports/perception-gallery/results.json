@@ -1,0 +1,284 @@
+{
+  "checks": [
+    {
+      "name": "2D experiments remain the initial experience"
+    },
+    {
+      "name": "gallery is a real WebGL scene",
+      "detail": {
+        "gl": {
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "lost": false
+        },
+        "pixels": {
+          "width": 1044,
+          "height": 571,
+          "colors": 162,
+          "opaque": 149031,
+          "colored": 7162,
+          "hash": "137fa6d6a0693da541894b1626c37ad89e4a7441288f4d03fe95b376beef6be8"
+        }
+      }
+    },
+    {
+      "name": "station views change real canvas pixels",
+      "detail": [
+        {
+          "station": "room",
+          "illusion": "fcc1177e5f53fc0dbb5c493644a54a448998fb87b590a6ed157ab17019bfd073",
+          "inspect": "f3bac2bbadec48827d13cd71fd6757b419af12bdfc68381d1a32d014f8fdf5a3"
+        },
+        {
+          "station": "triangle",
+          "illusion": "0f8f5aed31d0e6f7480e5bf51d5fd3baddd40bf089a8eb245c49020c3b0ecfc1",
+          "inspect": "b784ac3623253b3280d86c1d03d94bac2ca6795102f7f29f1533b53c88bbd9e8"
+        },
+        {
+          "station": "shape",
+          "illusion": "191d59e5bfd2e82f76155d6c267e0a25c567c7a13dcadedd7c3c8d7d221536a7",
+          "inspect": "b0996e1a9e16683f446ebd648c140c587a89f415e8478f28ec5962845dc55421"
+        }
+      ]
+    },
+    {
+      "name": "alignment puzzles distinguish independent and assisted solutions",
+      "detail": {
+        "independentTriangle": true,
+        "assistedShape": true
+      }
+    },
+    {
+      "name": "room prediction, reveal, and saved observation",
+      "detail": {
+        "station": "room",
+        "view": "inspect",
+        "models": {
+          "room": {
+            "angle": -24,
+            "shift": 58,
+            "prediction": "same",
+            "note": "The two objects keep their physical height.",
+            "hints": 0,
+            "reveal": true,
+            "solved": true,
+            "assisted": true
+          },
+          "triangle": {
+            "angle": 0,
+            "shift": 58,
+            "prediction": "",
+            "note": "",
+            "hints": 0,
+            "reveal": false,
+            "solved": true,
+            "assisted": false
+          },
+          "shape": {
+            "angle": -24,
+            "shift": 0,
+            "prediction": "",
+            "note": "",
+            "hints": 0,
+            "reveal": true,
+            "solved": false,
+            "assisted": true
+          }
+        },
+        "observations": [
+          {
+            "id": "gallery-1791599584884-dgxnhs",
+            "station": "room",
+            "model": {
+              "angle": -24,
+              "shift": 58,
+              "prediction": "same",
+              "note": "The two objects keep their physical height.",
+              "hints": 0,
+              "reveal": true,
+              "solved": true,
+              "assisted": true
+            },
+            "date": "2026-10-10T02:33:04.865Z",
+            "view": "inspect",
+            "camera": {
+              "y": 40,
+              "x": 12
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "gallery progress survives returning to 2D and reload"
+    },
+    {
+      "name": "phone scene and controls fit and remain interactive",
+      "detail": {
+        "before": {
+          "width": 350,
+          "height": 341,
+          "colors": 83,
+          "opaque": 29838,
+          "colored": 5194,
+          "hash": "00ee8951506e677bd698b337c41867480d1bb00e57d5cef246958f4d76b14f47"
+        },
+        "after": {
+          "width": 350,
+          "height": 341,
+          "colors": 107,
+          "opaque": 29838,
+          "colored": 5389,
+          "hash": "f99ca6a3cf5545e853085f3fc9265d944d4f997afeb4b849ad8d880b262c4d2c"
+        }
+      }
+    },
+    {
+      "name": "keyboard camera adjustment and diagram switching preserve the puzzle"
+    },
+    {
+      "name": "gallery satisfies automated accessibility checks",
+      "detail": []
+    },
+    {
+      "name": "closing the gallery removes its canvas"
+    },
+    {
+      "name": "WebGL failure leaves an interactive diagram and can recover"
+    }
+  ],
+  "screenshots": [
+    {
+      "name": "desktop-gallery",
+      "pixels": {
+        "width": 1044,
+        "height": 571,
+        "colors": 162,
+        "opaque": 149031,
+        "colored": 7162,
+        "hash": "137fa6d6a0693da541894b1626c37ad89e4a7441288f4d03fe95b376beef6be8"
+      }
+    },
+    {
+      "name": "desktop-room-illusion",
+      "pixels": {
+        "width": 1044,
+        "height": 571,
+        "colors": 140,
+        "opaque": 149031,
+        "colored": 15576,
+        "hash": "fcc1177e5f53fc0dbb5c493644a54a448998fb87b590a6ed157ab17019bfd073"
+      }
+    },
+    {
+      "name": "desktop-room-inspect",
+      "pixels": {
+        "width": 1044,
+        "height": 571,
+        "colors": 207,
+        "opaque": 149031,
+        "colored": 8457,
+        "hash": "f3bac2bbadec48827d13cd71fd6757b419af12bdfc68381d1a32d014f8fdf5a3"
+      }
+    },
+    {
+      "name": "desktop-triangle-illusion",
+      "pixels": {
+        "width": 1044,
+        "height": 571,
+        "colors": 113,
+        "opaque": 149031,
+        "colored": 23203,
+        "hash": "0f8f5aed31d0e6f7480e5bf51d5fd3baddd40bf089a8eb245c49020c3b0ecfc1"
+      }
+    },
+    {
+      "name": "desktop-triangle-inspect",
+      "pixels": {
+        "width": 1044,
+        "height": 571,
+        "colors": 208,
+        "opaque": 149031,
+        "colored": 12262,
+        "hash": "b784ac3623253b3280d86c1d03d94bac2ca6795102f7f29f1533b53c88bbd9e8"
+      }
+    },
+    {
+      "name": "desktop-shape-illusion",
+      "pixels": {
+        "width": 1044,
+        "height": 571,
+        "colors": 96,
+        "opaque": 149031,
+        "colored": 17335,
+        "hash": "191d59e5bfd2e82f76155d6c267e0a25c567c7a13dcadedd7c3c8d7d221536a7"
+      }
+    },
+    {
+      "name": "desktop-shape-inspect",
+      "pixels": {
+        "width": 1044,
+        "height": 571,
+        "colors": 206,
+        "opaque": 149031,
+        "colored": 9879,
+        "hash": "b0996e1a9e16683f446ebd648c140c587a89f415e8478f28ec5962845dc55421"
+      }
+    },
+    {
+      "name": "desktop-triangle-aligned",
+      "pixels": {
+        "width": 1044,
+        "height": 571,
+        "colors": 95,
+        "opaque": 149031,
+        "colored": 21711,
+        "hash": "244efcc8642a956d26d1907da9c38c44839d673ff325faee34b95c2bea30cff0"
+      }
+    },
+    {
+      "name": "desktop-shape-aligned",
+      "pixels": {
+        "width": 1044,
+        "height": 571,
+        "colors": 83,
+        "opaque": 149031,
+        "colored": 18781,
+        "hash": "305dd6d9905a8d868f3e5fa3f2681732b743eb8fb328e5c1f357f3d7ed9647cf"
+      }
+    },
+    {
+      "name": "phone-triangle-illusion",
+      "pixels": {
+        "width": 350,
+        "height": 341,
+        "colors": 83,
+        "opaque": 29838,
+        "colored": 5194,
+        "hash": "00ee8951506e677bd698b337c41867480d1bb00e57d5cef246958f4d76b14f47"
+      }
+    },
+    {
+      "name": "phone-triangle-adjusted",
+      "pixels": {
+        "width": 350,
+        "height": 341,
+        "colors": 107,
+        "opaque": 29838,
+        "colored": 5389,
+        "hash": "f99ca6a3cf5545e853085f3fc9265d944d4f997afeb4b849ad8d880b262c4d2c"
+      }
+    },
+    {
+      "name": "phone-recovered",
+      "pixels": {
+        "width": 350,
+        "height": 341,
+        "colors": 83,
+        "opaque": 29838,
+        "colored": 5194,
+        "hash": "00ee8951506e677bd698b337c41867480d1bb00e57d5cef246958f4d76b14f47"
+      }
+    }
+  ],
+  "errors": []
+}

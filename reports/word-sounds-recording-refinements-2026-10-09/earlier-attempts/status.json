@@ -1,0 +1,18 @@
+{
+  "pid": 23824,
+  "started": "2026-10-09T20:00:35.937Z",
+  "phase": "finished",
+  "runs": [
+    {
+      "name": "browser",
+      "code": 1,
+      "signal": null
+    },
+    {
+      "name": "regressions",
+      "code": 1,
+      "signal": null
+    }
+  ],
+  "finished": "2026-10-09T20:01:38.759Z"
+}

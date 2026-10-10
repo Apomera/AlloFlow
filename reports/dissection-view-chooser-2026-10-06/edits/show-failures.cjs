@@ -1,0 +1,4 @@
+const fs=require('fs'),path=require('path'),label=process.argv[2],root='C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-view-chooser-2026-10-06';
+if(!/^(view|unit-main|unit-axe|study|tools)-\d+$/.test(label))throw Error('Invalid label');const r=JSON.parse(fs.readFileSync(path.join(root,label,'results.json')));
+function walk(s){for(const spec of s.specs||[])for(const test of spec.tests||[])if(test.status!=='expected')console.log(JSON.stringify({title:spec.title,status:test.status,results:test.results.map(r=>({status:r.status,errors:r.errors}))}));for(const child of s.suites||[])walk(child);}walk(r);
+for(const suite of r.testResults||[])for(const t of suite.assertionResults||[])if(t.status==='failed')console.log(JSON.stringify({title:t.fullName,failures:t.failureMessages}));

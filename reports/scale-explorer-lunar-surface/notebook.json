@@ -1,0 +1,35 @@
+{
+  "saved": {
+    "itemId": "moon",
+    "detailId": "lunar-surface",
+    "size": 3475000,
+    "you": false,
+    "note": "Lunar terrain near the selected coordinates.",
+    "zoom": 4,
+    "yaw": 1.308996938995747,
+    "pitch": -0.08726646259971654,
+    "sunAngle": 45,
+    "nebulaReveal": false,
+    "nebulaInside": false,
+    "nebulaPose": null,
+    "nebulaSpeed": 0.8,
+    "terrainRelief": 8,
+    "riverKm": 0,
+    "terrainPoint": {
+      "east": 0,
+      "north": 900
+    },
+    "terrainFlight": null,
+    "terrainFlightSpeed": 180,
+    "terrainFlightWaypoint": null,
+    "pollenGrowth": 0,
+    "cutaway": true,
+    "view": "atlas",
+    "lunarPoint": {
+      "longitude": -15,
+      "latitude": -5
+    },
+    "lunarView": "relief"
+  },
+  "notes": "Scale Explorer field notebook\nObject dimensions are measured references. Colors and anatomical details in the 3D models are illustrative.\n\n1. The Moon · Selected surface · -5.0° latitude · -15.0° longitude\nRecorded size: 3475 km across\n3.5 × 10⁶ m\n-5.0° latitude · -15.0° longitude\nRelief study\nLighting model: 45° Sun–observer angle; approximately 85% of the disc illuminated.\nMy observation: Lunar terrain near the selected coordinates.\nExplore this location using the map or click the globe to move the inspection target. Relief shading is enhanced for visibility. The map resolution limits the detail available at close range.\nhttps://svs.gsfc.nasa.gov/4720/\nhttps://alloflow-cdn.pages.dev/app/?tool=scaleExplorer&focus=moon\n"
+}

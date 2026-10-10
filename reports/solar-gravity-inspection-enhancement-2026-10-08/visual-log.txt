@@ -1,0 +1,8 @@
+Starting gravity-1060-dark-Mars
+Checked gravity-1060-dark-Mars
+Starting gravity-1060-light-Jupiter
+Checked gravity-1060-light-Jupiter
+Starting gravity-320-dark-Pluto
+Checked gravity-320-dark-Pluto
+Starting gravity-320-light-Jupiter
+Checked gravity-320-light-Jupiter

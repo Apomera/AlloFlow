@@ -1,0 +1,57 @@
+{
+  "started": "2026-10-05T19:51:35.230Z",
+  "fixture": "Canonical ATC component in a local React fixture with installed Chrome. Product controls and native slider keyboard input drive investigations. Restored-state cases initialize a fresh fixture with captured tool data or explicitly marked malformed records.",
+  "checks": [
+    {
+      "name": "Visual investigation and recorded comparison fit accessibly at 1440px",
+      "pass": true,
+      "detail": {
+        "layout": {
+          "viewport": 1440,
+          "document": 1440,
+          "height": 2187
+        },
+        "controls": 17
+      }
+    },
+    {
+      "name": "Visual investigation and recorded comparison fit accessibly at 390px",
+      "pass": true,
+      "detail": {
+        "layout": {
+          "viewport": 390,
+          "document": 390,
+          "height": 4244
+        },
+        "controls": 17
+      }
+    },
+    {
+      "name": "Visual investigation and recorded comparison fit accessibly at 320px",
+      "pass": true,
+      "detail": {
+        "layout": {
+          "viewport": 320,
+          "document": 320,
+          "height": 4552
+        },
+        "controls": 17
+      }
+    }
+  ],
+  "errors": [],
+  "screenshots": [
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-ops-investigation-2026-10-05\\runs\\20261005T195135230Z\\after-initial-1440.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-ops-investigation-2026-10-05\\runs\\20261005T195135230Z\\after-comparison-1440.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-ops-investigation-2026-10-05\\runs\\20261005T195135230Z\\after-initial-390.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-ops-investigation-2026-10-05\\runs\\20261005T195135230Z\\after-comparison-390.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-ops-investigation-2026-10-05\\runs\\20261005T195135230Z\\after-comparison-detail-390.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-ops-investigation-2026-10-05\\runs\\20261005T195135230Z\\after-initial-320.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-ops-investigation-2026-10-05\\runs\\20261005T195135230Z\\after-comparison-320.png"
+  ],
+  "sourceHash": "b7f1484316d243a7c31ec23a9d1443f82c6a24e35dc77039bced71405d8d70b7",
+  "passed": 3,
+  "failed": 0,
+  "sourceStable": true,
+  "completed": "2026-10-05T19:51:43.292Z"
+}

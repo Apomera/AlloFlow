@@ -1,0 +1,86 @@
+{
+  "completed": true,
+  "startedAt": "2026-10-07T04:28:22.949Z",
+  "scope": "Only the four files with intentional atlas/layout changes or a timed-out hook; unchanged passing files retain primary coverage.",
+  "primaryResultsHash": "459190f8412bcc5814faff7678af37941c35bc37c43e8a93e69796dfe62deb11",
+  "primaryExecutionHash": "0e7b5ed525b8265370dfdefd59497addfa89513f25cd5c6e752505db91635747",
+  "inputs": [
+    {
+      "path": "stem_lab/universe_flight_scene.js",
+      "sha256": "8121868ef2aa764c5e3e88284089ebf76fe0c9e1ec264ee4ae95fe434d7e9bc9"
+    },
+    {
+      "path": "tests/universe_flight_physics.test.js",
+      "sha256": "c181ce38faaa0a0f66b1f202222149fcc7aef2e08019ce4c05d8281107dbccaf"
+    },
+    {
+      "path": "tests/universe_flight_bulges.test.js",
+      "sha256": "eaa8777628850c2748a67e085a20e46a1b848f87843fa805a852909c82851ff0"
+    },
+    {
+      "path": "tests/universe_flight_barred_detail.test.js",
+      "sha256": "f1112671533f4d996646a8d9a7baa78d8a0639bb2de159e8be6cab7bdc77cbde"
+    },
+    {
+      "path": "tests/universe_flight_cloud_surfaces.test.js",
+      "sha256": "dd45b21d6c71af53bb18ed5eb6e00191914b0b49220a7b61445ac5b57166397a"
+    },
+    {
+      "path": "tests/universe_flight_spiral_detail.test.js",
+      "sha256": "6d1776be1b0a5e92b96c8402e6175a3db34c6ac5fa5b678554c7f4e5b83847f7"
+    },
+    {
+      "path": "tests/universe_flight_stellar_surfaces.test.js",
+      "sha256": "93a10e16b57e6dee9a48e9ad5b6e395bf981b996f9a1eab2c65b1cc09423b654"
+    },
+    {
+      "path": "tests/universe_flight_two_arm_detail.test.js",
+      "sha256": "e58958aa52265bc0a1b432f9001fea0593c07ff412eea193c174a594a4851a99"
+    },
+    {
+      "path": "tests/helpers/universe_galaxy_surfaces.js",
+      "sha256": "2daf75f6bfc77487917d0fb9428fd4f90ddf45188e3b94a4ec48e86e09744371"
+    },
+    {
+      "path": "tests/fixtures/universe_flight_bulge_baseline.json",
+      "sha256": "56e61ae6e44d09166a8fcc3b7aafd840fe8c9eb62250a416f590d5c52ce545a5"
+    }
+  ],
+  "diagnostics": [
+    {
+      "path": "node-renderer.config.mjs",
+      "sha256": "cb0b8f7a9e5b19472f042974e6afde77076b55a48606f3e1107349d9ec2c03ff"
+    },
+    {
+      "path": "node-renderer-setup.js",
+      "sha256": "7633cd31a96261ce0d51dde61a92bba35ea55597a0a38e0fe7e2f2d730a29c1f"
+    },
+    {
+      "path": "run-unit-retry.cjs",
+      "sha256": "0356df448913c346e62914c9f3d527b0f948ffbf902a9e1ff79850c4c6dc4e16"
+    }
+  ],
+  "args": [
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\vitest\\vitest.mjs",
+    "run",
+    "tests/universe_flight_cloud_surfaces.test.js",
+    "tests/universe_flight_barred_detail.test.js",
+    "tests/universe_flight_two_arm_detail.test.js",
+    "tests/universe_flight_spiral_detail.test.js",
+    "--config",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\universe-flight-2026-09-29\\disk-depth\\unit\\affected-retry\\node-renderer.config.mjs",
+    "--pool=threads",
+    "--maxWorkers=1",
+    "--no-file-parallelism",
+    "--no-isolate",
+    "--testTimeout=180000",
+    "--hookTimeout=180000",
+    "--reporter=default",
+    "--reporter=json",
+    "--outputFile=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\universe-flight-2026-09-29\\disk-depth\\unit\\affected-retry\\results.json"
+  ],
+  "exitCode": 3221226505,
+  "finishedAt": "2026-10-07T04:28:48.693Z",
+  "inputsUnchanged": true,
+  "diagnosticsUnchanged": true
+}

@@ -1,0 +1,45 @@
+{
+  "sourceSha256": "d0ae641fe53e2aaa579a9c2102e5ae2f571df5fb402269b834aadf286493b1f7",
+  "sourceMirrorsEqual": true,
+  "englishKeys": 1698,
+  "englishCopiesEqual": true,
+  "catalogueDescriptionVerified": true,
+  "unitTests": 87,
+  "unitFailures": 0,
+  "browserTests": 22,
+  "browserUnresolvedFailures": 0,
+  "browserVerification": {
+    "method": "19 full-suite passes plus 3 focused passes",
+    "fullSuite": {
+      "passed": 19,
+      "timeouts": 1,
+      "serialSkipped": 2,
+      "deadlineMs": 270000
+    },
+    "focusedMegafauna": {
+      "passed": 3,
+      "deadlineMs": 480000
+    },
+    "workersPerRun": 1,
+    "retriesPerRun": 0,
+    "substitution": null,
+    "sourceAndTestHashesVerified": true,
+    "rawReportsRetained": true,
+    "evidence": {
+      "fullReportSha256": "1fb98c21dce72c6821d66611fc20622faed57b12ddd1a2ee7f20cfa7cf174fed",
+      "focusedReportSha256": "8b730f865188a53285d9cf2c7d0e66fcf0031705455b1bfaf4e7e86ada7277cc",
+      "originalSpecSha256": "3ff6af32c32d4196bac02824bd815e057fc531ca1d90e417368b72b64e86dc91",
+      "wrapperSha256": "ac0caef60bef619412d03abff053092588f553f6936fac4d7e72b052ed2bd00e",
+      "configSha256": "c787c2022be42c71b96d67880d02d625667b9e72d7a1e59b970d3fbdcab6ca39"
+    }
+  },
+  "visualCaptures": 10,
+  "visualApprovalVerified": true,
+  "triangles": 95774,
+  "meshes": 16,
+  "geometryReviewVerified": true,
+  "previewSourceVerified": true,
+  "gitDiffCheck": true,
+  "committed": false,
+  "checkedAt": "2026-10-07T00:43:17.307Z"
+}

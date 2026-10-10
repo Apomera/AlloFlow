@@ -1,0 +1,92 @@
+{
+  "state": {
+    "missionPhase": 7,
+    "animPaused": false,
+    "soundOff": true,
+    "missionXP": 0,
+    "missionLog": [],
+    "earnedBadges": {
+      "first_step": true,
+      "mission_complete": true
+    },
+    "difficulty": "pilot",
+    "lunarSamples": [],
+    "quizCorrect": 0,
+    "ascentRun": {
+      "version": 1,
+      "time": 436.17164546251297,
+      "recorded": true
+    },
+    "ascentResult": {
+      "version": 1,
+      "outcome": "orbit",
+      "cutoffReason": "insertion",
+      "duration": 436.17164546251297,
+      "cutoffAltitude": 20063.28754538795,
+      "cutoffSpeed": 1685.4415970467903,
+      "perilune": 19029.14188549202,
+      "apolune": 85000.0000492027,
+      "eccentricity": 0.018433642833266855,
+      "period": 6790.982229657983,
+      "peakG": 0.5960571154327584,
+      "propellantRemaining": 138.45833963834926,
+      "propellantUsed": 2226.541660361651,
+      "idealDeltaV": 1852.9989295081723
+    },
+    "ascentPaused": true,
+    "dockingRun": {
+      "version": 1,
+      "time": 2.416599999999996,
+      "x": 8.003101376553444,
+      "y": -118.5450682527541,
+      "vx": 0.002611646550397898,
+      "vy": 0.6167990275902459,
+      "propellant": 39.936113750704415,
+      "status": "flying",
+      "ax": 0,
+      "ay": 0
+    },
+    "dockingPaused": true,
+    "dockingGuided": false,
+    "dockingResult": null
+  },
+  "width": 282,
+  "height": 280,
+  "backingWidth": 564,
+  "backingHeight": 560,
+  "canvas": {
+    "left": 19,
+    "right": 301,
+    "top": 0.125,
+    "bottom": 280.125,
+    "width": 282,
+    "height": 280
+  },
+  "select": {
+    "left": 103.5,
+    "right": 243.5,
+    "top": -51.875,
+    "bottom": -7.875,
+    "width": 140,
+    "height": 44
+  },
+  "selected": "closeup",
+  "selectFontSize": 13,
+  "viewport": 320,
+  "documentWidth": 320,
+  "view": "closeup",
+  "scale": 34.5,
+  "portX": 223.5,
+  "portY": 145,
+  "eagleX": -3866.3048547200165,
+  "eagleY": -131.1069974910938,
+  "visible": "false",
+  "indicatorX": 42,
+  "indicatorY": 132.7467454255677,
+  "physical": {
+    "x": 8.003101376553444,
+    "vy": 0.6167990275902459,
+    "propellant": 39.936113750704415,
+    "status": "flying"
+  }
+}

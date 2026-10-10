@@ -1,0 +1,17 @@
+{
+  "accepted": true,
+  "reviewer": "/root/ear_surface_audit_next",
+  "sourceSHA256": "0af58d9afd30ed0de275caf53197320ddabed9308f08b191cce7bf4927d83f84",
+  "beforeTestSHA256": "2cc8e19ed7d491a6b77c115dafcf82160cbd68f1be406da70fe5908f8edf275c",
+  "afterTestSHA256": "507258592128375454208a3577f391925f3c5d2c267345ddf05c8ecbc0a9a1ea",
+  "unchangedOutsideListedEdits": true,
+  "observations": [
+    "Compared both complete rim fixture files. Their only differences are the fit-test title and replacement of the former all-around raised-rim assertion with upper-rim visibility, lower-lobe burial, nonempty regional sampling and bounded overall burial checks.",
+    "The revision checks actual mesh vertices against actual pinna triangles through the unchanged surfaceGap helper. It preserves the upper minimum relief threshold of 0.001 and requires lower samples beyond z 0.052 to remain below the actual skin by more than 0.0001, matching the deliberate lower-lobe fade.",
+    "All topology, winding, finite/unit/welded normals, bilateral symmetry, buried join loops, neighboring section continuity, full torus seam continuity, outline margin, width taper, inner-fold and concha clearance, head pivot, pose, and contrast assertions remain intact.",
+    "Read the actual candidate Vitest results: all 21 rim and 21 inner-fold cases passed with no skipped or pending tests. The inner-fold fixture is byte-identical to the shared source fixture, and the executed rim fixture is byte-identical to the reviewed candidate fixture.",
+    "Read the actual uniform-rim mutation results: exactly the six age/pose lobe-fit cases failed on lower-lobe burial, reporting a positive 0.005244924330968782 gap instead of less than -0.0001. The other 36 cases passed. The executed runtime has been restored and is byte-identical to the private candidate.",
+    "The raw fixture samples the rim front at 64 loop positions. The separate 12-case CPU evidence checks complete lower cross sections, closed outward torus geometry and preservation of every other buffer and material; these checks supplement the raw regional assertions."
+  ],
+  "limitations": "This review assesses the focused raw ear geometry tests and their saved results. It does not establish visual quality, full-application loading or deployment behavior."
+}

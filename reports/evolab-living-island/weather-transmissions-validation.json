@@ -1,0 +1,109 @@
+{
+  "date": "2026-10-05",
+  "feature": "Follow actual parental copies into a recorded weather newborn’s family",
+  "sourceSha256": "767c23e587cdd402a1397f5a29be9910fefd2dbf304b2f730335da25711714af",
+  "sourceBytes": 2263424,
+  "sourceMirrorsIdentical": true,
+  "sourceLineEndings": "LF",
+  "committed": false,
+  "deployed": false,
+  "preview": {
+    "url": "http://127.0.0.1:56559/?preview=archipelago",
+    "sourceSha256": "767c23e587cdd402a1397f5a29be9910fefd2dbf304b2f730335da25711714af",
+    "sourceBytes": 2263424,
+    "sourceMirrorsIdentical": true,
+    "sourceLineEndings": "LF",
+    "servedSourceMatches": true,
+    "assets": [
+      {
+        "path": "/",
+        "status": 200,
+        "bytes": 1129
+      },
+      {
+        "path": "/evolab.js",
+        "status": 200,
+        "bytes": 2263424
+      },
+      {
+        "path": "/app.css",
+        "status": 200,
+        "bytes": 624950
+      },
+      {
+        "path": "/react.js",
+        "status": 200,
+        "bytes": 10751
+      },
+      {
+        "path": "/react-dom.js",
+        "status": 200,
+        "bytes": 131835
+      },
+      {
+        "path": "/three.js",
+        "status": 200,
+        "bytes": 603445
+      }
+    ]
+  },
+  "changes": [
+    "Validated actual child-slot transmissions with separately recorded trait and neutral-marker draws.",
+    "Mutation draw and net copied-trait change are distinct under explained reflecting model bounds.",
+    "Zero-contributor explanation and helper choose the first actual contributor in recorded order.",
+    "Family bridge selects, opens and focuses the exact newborn, pauses playback and highlights only its followed parental slot.",
+    "Scoped saved child/slot resolves against authoritative rebuilt records; invalid choices fall back to an actual copy.",
+    "Canonical transmission is included in the weather journal, JSON export and reconstruction protocol; no inspection advances model randomness.",
+    "Expected-copy-share labels are explicit and family trait values match the rainfall lens’s 0–100 display."
+  ],
+  "validation": {
+    "modelAndComponent": {
+      "passed": 364,
+      "files": 31,
+      "newTransmissionChecks": 8,
+      "log": "weather-transmissions-units-final.log",
+      "sourceSha256": "caaf46cc9b6ad184b6e5c8cebc7304d90cccf3dced4a6af4ca0ef688b02e3e93",
+      "note": "Full suite preceded final display-only label/scale polish. Model and transmission mechanics were unchanged afterward."
+    },
+    "focused": {
+      "passed": 17,
+      "log": "weather-transmissions-focused.log"
+    },
+    "render": {
+      "passed": 2,
+      "log": "weather-transmissions-goldens-final.log",
+      "sourceSha256": "767c23e587cdd402a1397f5a29be9910fefd2dbf304b2f730335da25711714af"
+    },
+    "browser": {
+      "distinctJourneysPassed": 4,
+      "allJourneysLog": "weather-transmissions-browser.log",
+      "allJourneysSourceSha256": "caaf46cc9b6ad184b6e5c8cebc7304d90cccf3dced4a6af4ca0ef688b02e3e93",
+      "finalInheritanceJourneysPassed": 2,
+      "finalInheritanceLog": "weather-transmissions-browser-final.log",
+      "finalSourceSha256": "767c23e587cdd402a1397f5a29be9910fefd2dbf304b2f730335da25711714af",
+      "covers": [
+        "Independent recipe reconstruction and exact child slots",
+        "Mutation draw, net change and independent marker inheritance",
+        "Zero copies and contributor helper",
+        "Native keyboard copy selection and exact family focus/highlight",
+        "Journal, export, replay, invalid saved choice and context reset",
+        "Unchanged expedition and next random future",
+        "Phone no-WebGL, reduced motion, 44px controls, zero axe violations and no page overflow",
+        "Existing rainfall mathematics and repeated weather collection bridge"
+      ]
+    },
+    "screenshots": [
+      "weather-transmissions-desktop.png",
+      "weather-transmissions-phone.png",
+      "weather-transmission-family.png"
+    ],
+    "translationDelta": {
+      "keys": 1914,
+      "sharedCatalogsModified": false
+    },
+    "limits": [
+      "Illustrative fictional birds and plants; independently sampled trait and marker loci and reflecting trait bounds are model assumptions.",
+      "The same-pool steady calculation creates no alternative newborns; these are actual copies in the selected private future."
+    ]
+  }
+}

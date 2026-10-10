@@ -1,0 +1,84 @@
+--- pass29/stem_tool_moonmission.js
++++ pass30/stem_tool_moonmission.js
+@@ -1870,6 +1870,39 @@
+       }
+     }
+     }
++    ctx.restore();
++  }
++
++  // Faint exhaust is an illustrative cue. The fan follows measured output;
++  // its entire aperture starts at the existing bell exit in the vehicle frame.
++  function mmDrawDescentPlume2D(ctx,W,surfaceY,x,y,bank,thrust,fuel,done) {
++    if(!(thrust>0.1)||!(fuel>0)||done)return;
++    var output=Math.min(1,thrust),length=12+output*40,exitY=22;
++    ctx.save();
++    // Clip in the world frame before banking. Each side of a tilted fan can
++    // reach the level ground at a different distance from the nozzle.
++    ctx.beginPath();ctx.rect(0,0,W,surfaceY);ctx.clip();
++    ctx.translate(x,y);ctx.rotate(bank);
++    function fan(aperture,spread,reach,alpha) {
++      var end=exitY+reach,edge=aperture+reach*spread;
++      var fade=ctx.createLinearGradient(0,exitY,0,end);
++      fade.addColorStop(0,'rgba(209,218,243,'+alpha+')');
++      fade.addColorStop(0.18,'rgba(190,207,235,'+(alpha*0.64)+')');
++      fade.addColorStop(0.55,'rgba(165,188,224,'+(alpha*0.18)+')');
++      fade.addColorStop(1,'rgba(165,188,224,0)');
++      ctx.fillStyle=fade;ctx.beginPath();ctx.moveTo(-aperture,exitY);
++      ctx.quadraticCurveTo(-aperture-reach*spread*0.60,exitY+reach*0.42,-edge,end);
++      ctx.lineTo(edge,end);
++      ctx.quadraticCurveTo(aperture+reach*spread*0.60,exitY+reach*0.42,aperture,exitY);
++      ctx.closePath();ctx.fill();
++    }
++    // Nested translucent fans soften the expanding edge without smoke,
++    // flicker, extra particles or any changes to the ballistic dust model.
++    var strength=0.45+output*0.55;
++    fan(5.7,0.78,length,0.045*strength);
++    fan(5.4,0.58,length*0.94,0.070*strength);
++    fan(4.8,0.37,length*0.80,0.095*strength);
++    fan(3.2,0.16,length*0.52,0.13*strength);
+     ctx.restore();
+   }
+ 
+@@ -11835,38 +11868,14 @@
+                       ctx.beginPath(); ctx.moveTo(lmX, surfaceY + 15); ctx.lineTo(driftEnd, surfaceY + 15);
+                       ctx.moveTo(arrowBack, surfaceY + 11); ctx.lineTo(driftEnd, surfaceY + 15); ctx.lineTo(arrowBack, surfaceY + 19); ctx.stroke();
+                     }
+-                    // Everything from here to the end of the exhaust plume is drawn in the
+-                    // vehicle's own tilted frame, so the engine bell and flame point where
+-                    // the viewThrust actually goes.
++                    // Draw the exhaust behind the hardware, with a world-space ground clip.
++                    mmDrawDescentPlume2D(ctx,W,surfaceY,lmX,lmY,viewTilt,viewThrust,viewFuel,viewDone);
+                     ctx.save();
+                     ctx.translate(lmX, lmY);
+                     ctx.rotate(viewTilt);
+                     ctx.translate(-lmX, -lmY);
+                     mmDrawDescentLander2D(ctx,lmX,lmY);
+-                    if (viewThrust > 0.1 && viewFuel > 0 && !viewDone) {
+-                      var fLen = Math.min(10 + viewThrust * 28, visualClearance + 7);
+-                      var fW = 4;
+-                      var fOutGrad = ctx.createLinearGradient(lmX, lmY + 16, lmX, lmY + 16 + fLen);
+-                      fOutGrad.addColorStop(0, 'rgba(195,211,255,0.3)'); fOutGrad.addColorStop(0.5, 'rgba(165,185,225,0.09)'); fOutGrad.addColorStop(1, 'rgba(160,180,220,0)');
+-                      ctx.fillStyle = fOutGrad;
+-                      ctx.beginPath();
+-                      ctx.moveTo(lmX - fW, lmY + 22);
+-                      ctx.lineTo(lmX - fW - fLen * 0.65, lmY + 22 + fLen);
+-                      ctx.lineTo(lmX + fW + fLen * 0.65, lmY + 22 + fLen);
+-                      ctx.lineTo(lmX + fW, lmY + 22);
+-                      ctx.closePath();
+-                      ctx.fill();
+-                      // Inner core
+-                      var fInGrad = ctx.createLinearGradient(lmX, lmY + 16, lmX, lmY + 16 + fLen * 0.65);
+-                      fInGrad.addColorStop(0, 'rgba(225,230,255,0.3)'); fInGrad.addColorStop(0.4, 'rgba(180,195,235,0.12)'); fInGrad.addColorStop(1, 'rgba(180,195,235,0)');
+-                      ctx.fillStyle = fInGrad;
+-                      ctx.beginPath();
+-                      ctx.moveTo(lmX - fW * 0.3, lmY + 16);
+-                      ctx.quadraticCurveTo(lmX, lmY + 16 + fLen * 0.3, lmX, lmY + 16 + fLen * 0.65);
+-                      ctx.quadraticCurveTo(lmX, lmY + 16 + fLen * 0.3, lmX + fW * 0.3, lmY + 16);
+-                      ctx.fill();
+-                    }
+-                    ctx.restore();   // ── end of the vehicle's tilted frame ──
++                    ctx.restore();
+                     mmDrawDescentDust2D(ctx,lastDescentDust,viewGroundX,groundZ,lmX,surfaceY);
+                     }   // ── end of the 2D world fallback ──
+ 

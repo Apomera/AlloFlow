@@ -1,0 +1,14 @@
+{
+  "args": [
+    "node",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass27-direct.cjs",
+    "fallback"
+  ],
+  "cwd": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "browserCache": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+  "processTimeoutSeconds": 360,
+  "pid": 36820,
+  "startUtc": "2026-10-09T05:41:23.776623+00:00",
+  "sourceSha256": "cb9bc2190a58ed06c8bb2019e18dab89b0a0e102aa1c0787960b5946f4cf6900",
+  "specSha256": "752192b27324aab3b56c491ce5a23fe90112fe770bb5ae41d80d2d0600933029"
+}

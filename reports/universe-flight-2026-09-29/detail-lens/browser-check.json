@@ -1,0 +1,71 @@
+{
+  "completed": true,
+  "pins": {
+    "stem_lab/stem_tool_universe.js": "2bb53f1a04663471b0b90a231080c516277d1a5f0cc822a36fc4b54ca0705f35",
+    "stem_lab/universe_flight_scene.js": "1a205ad9a5f6362f09596d37984cb0f3e1317a2de4ccf41308ef32eeba06a9ea"
+  },
+  "harnessHash": "05369572fd76909eb3e5cccfce3c969eacd433965edd7380ddc34c89665ad368",
+  "checks": [
+    "10°, 65° and 90° lenses change projection without moving, changing counters or uploading GPU resources",
+    "Nested scenic detours return in order and restore a 10° lens, full pose and counters; identical jumps add no history",
+    "Back ends a moving orbit and remains available after closing the inspector or temporarily hiding the overlay",
+    "Fullscreen controls preserve return points; reset and ordinary vista selection clear them",
+    "Detail controls and Back remain reachable on phones, short landscape, system colors and enlarged text spacing",
+    "All three scales and the extreme relativistic sky render stably at 10° without WebGL errors"
+  ],
+  "accessibility": [
+    {
+      "name": "desktop-detail",
+      "violations": []
+    },
+    {
+      "name": "detail-320",
+      "violations": []
+    },
+    {
+      "name": "detail-568",
+      "violations": []
+    },
+    {
+      "name": "system-colors",
+      "violations": []
+    },
+    {
+      "name": "text-spacing",
+      "violations": []
+    }
+  ],
+  "captures": [
+    {
+      "name": "standard-lens",
+      "hash": "cfc56c94b4d05cb0b0d317af2de0fb1e490d7edc77a014f7ebd5fe9a205aa407"
+    },
+    {
+      "name": "detail-lens",
+      "hash": "04d725e513d2796e9e6867385460b8f00062c71cc8b007fb302b3423650fc846"
+    },
+    {
+      "name": "detail-320",
+      "hash": "37eae5618d31b27cdf75dd9282b28de9851077fa3fe39ffc5c4f4e138fa814da"
+    },
+    {
+      "name": "detail-568",
+      "hash": "d5df209066d3a6881e50a8a18d369cfddf8b8aef1f9c05db9b08085da64b0a66"
+    },
+    {
+      "name": "detail-system-colors",
+      "hash": "11555687a01ae54c0bcc1e1be408dd5a48e4a2320f4eb6401d4357c6444d0b39"
+    }
+  ],
+  "served": [
+    {
+      "path": "/stem_lab/stem_tool_universe.js",
+      "hash": "2bb53f1a04663471b0b90a231080c516277d1a5f0cc822a36fc4b54ca0705f35"
+    },
+    {
+      "path": "/stem_lab/universe_flight_scene.js",
+      "hash": "1a205ad9a5f6362f09596d37984cb0f3e1317a2de4ccf41308ef32eeba06a9ea"
+    }
+  ],
+  "errors": []
+}

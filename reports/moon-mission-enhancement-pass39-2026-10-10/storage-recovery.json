@@ -1,0 +1,86 @@
+{
+  "method": "gzip of eight old task-owned temporary index snapshots; exact original SHA verified after decompression",
+  "archives": [
+    {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass4-2026-09-28/commit-cached-11232.index",
+      "bytes": 8981150,
+      "sha": "22d6dce25ee73493cf0d7ead24656a2fb351ad08bd790474b4202234559defa2",
+      "archive": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass4-2026-09-28\\commit-cached-11232.index.gz",
+      "gzipBytes": 2915745,
+      "verified": true,
+      "restored": true,
+      "temporaryArchiveRemoved": true
+    },
+    {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass4-2026-09-28/commit-cached-30064.index",
+      "bytes": 8981150,
+      "sha": "faa0705f8d3ea9c5bce7a2df6a9e30cd8c5706703850fbea71d7fcff437fac07",
+      "archive": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass4-2026-09-28\\commit-cached-30064.index.gz",
+      "gzipBytes": 2915747,
+      "verified": true,
+      "restored": true,
+      "temporaryArchiveRemoved": true
+    },
+    {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass4-2026-09-28/preservation-check-11232.index",
+      "bytes": 8980884,
+      "sha": "9475eaff94fb4df8ff7840aae887c36963d7072e545e8d1b015e3e7a1682a8f0",
+      "archive": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass4-2026-09-28\\preservation-check-11232.index.gz",
+      "gzipBytes": 2915498,
+      "verified": true,
+      "restored": true,
+      "temporaryArchiveRemoved": true
+    },
+    {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass4-2026-09-28/preservation-check-30064.index",
+      "bytes": 8980884,
+      "sha": "c94394279a063ce77f87c494d353213e8456afb2d4e14b68638221d65886e374",
+      "archive": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass4-2026-09-28\\preservation-check-30064.index.gz",
+      "gzipBytes": 2915497,
+      "verified": true,
+      "restored": true,
+      "temporaryArchiveRemoved": true
+    },
+    {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass4-2026-09-28/commit.index",
+      "bytes": 8980534,
+      "sha": "78f6e0bae9818919ad0dc891e3a31e1ad202bdf1d851c937393889b402f33416",
+      "archive": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass4-2026-09-28\\commit.index.gz",
+      "gzipBytes": 2166390,
+      "verified": true,
+      "restored": true,
+      "temporaryArchiveRemoved": true
+    },
+    {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass4-2026-09-28/preservation-check-31392.index",
+      "bytes": 8980534,
+      "sha": "9abdac8a58cf23efb34b821c5488658b30dd422481976dfbbf19f2cec8d0f527",
+      "archive": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass4-2026-09-28\\preservation-check-31392.index.gz",
+      "gzipBytes": 2166392,
+      "verified": true,
+      "restored": true,
+      "temporaryArchiveRemoved": true
+    },
+    {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass4-2026-09-28/preservation-check-36168.index",
+      "bytes": 8980534,
+      "sha": "327b2ebc6778f3bf721f8d1dc66ecfd4e5d2f361e43da014eb4527947a0347f1",
+      "archive": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass4-2026-09-28\\preservation-check-36168.index.gz",
+      "gzipBytes": 2166383,
+      "verified": true,
+      "restored": true,
+      "temporaryArchiveRemoved": true
+    },
+    {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass4-2026-09-28/preservation-check.index",
+      "bytes": 8980534,
+      "sha": "37c242d8940c65d0caeff5b01bf5945c95f310500202d46116d45e376374226f",
+      "archive": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass4-2026-09-28\\preservation-check.index.gz",
+      "gzipBytes": 2166381,
+      "verified": true,
+      "restored": true,
+      "temporaryArchiveRemoved": true
+    }
+  ],
+  "finalState": "All eight original snapshot paths and exact bytes restored; only verified temporary gzip copies removed after broader free space recovered."
+}

@@ -1,0 +1,46 @@
+{
+  "completed": true,
+  "actualVerificationDriverHash": "a5e1d235eb186b60c80136a710ad48b6a1517cf891a60cf82552f7dd7c413b03",
+  "browserReportHash": "3359cc6ba0b4e3401ebf00cd2e360fc47203b063c2e98642eedcd13be27c96df",
+  "executionReportHash": "70d14ae739bb17ad5976ce833d7b063ce58cad454c230b547784954737493da2",
+  "driverHash": "555625e0254a4536c1010ab8462643ca11c404781c3d79a59397209e0563684d",
+  "wrapperHash": "972b3573b91cb31bcded9b957b7eb297f838b2d6d7336eb38d1feacd092d3b72",
+  "workflowGroups": 4,
+  "scopedAccessibilityAudits": 6,
+  "captures": [
+    {
+      "name": "desktop",
+      "file": "vista-desktop.png",
+      "hash": "6e16c332cdd6dcee2a91dcf0464ef6de4d368331ba5c41ec2f76963c79f1530f"
+    },
+    {
+      "name": "desktop-fullscreen",
+      "file": "vista-desktop-fullscreen.png",
+      "hash": "cb2c3862edf43084e1ce3694dca550963c2823127ae0123f2d709bb5608a52b1"
+    },
+    {
+      "name": "phone-reduced-motion",
+      "file": "vista-phone-reduced-motion.png",
+      "hash": "49d1131f8cf4b59388073418f2f8c072d46fb4744a8d217e1910da60f63328a9"
+    },
+    {
+      "name": "phone-fullscreen-reduced-motion",
+      "file": "vista-phone-fullscreen-reduced-motion.png",
+      "hash": "d1d1c93598c6bd9f533c446deec07ef09486047a7a2e92cbf7150f6c2b8fa227"
+    }
+  ],
+  "served": [
+    {
+      "path": "/stem_lab/stem_tool_universe.js",
+      "hash": "a744f3d2e32b5bec28864c8ee29468ec68178cd20d9bb08bcd8fa3d9eefc19a9"
+    },
+    {
+      "path": "/stem_lab/universe_flight_scene.js",
+      "hash": "6f1267255407b7de52bb685922281301fef58de9c91cc8a036577a7c317e56e8"
+    }
+  ],
+  "pageErrors": 0,
+  "sourceReadErrors": 0,
+  "loaderRetries": 0,
+  "exitCode": 0
+}

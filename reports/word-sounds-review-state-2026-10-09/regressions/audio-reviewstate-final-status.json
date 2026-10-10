@@ -1,0 +1,119 @@
+[
+  {
+    "file": "word_sounds_clip_language_regression.cjs",
+    "status": "finished",
+    "started": "2026-10-09T22:17:55.743Z",
+    "code": 0,
+    "finished": "2026-10-09T22:18:07.771Z"
+  },
+  {
+    "file": "word_sounds_syllable_cleanup_regression.cjs",
+    "status": "finished",
+    "started": "2026-10-09T22:18:07.771Z",
+    "code": 0,
+    "finished": "2026-10-09T22:18:08.787Z"
+  },
+  {
+    "file": "word_sounds_syllable_cleanup_dom_regression.cjs",
+    "status": "finished",
+    "started": "2026-10-09T22:18:08.788Z",
+    "code": 0,
+    "finished": "2026-10-09T22:18:16.911Z"
+  },
+  {
+    "file": "word_sounds_recording_library_dom_regression.cjs",
+    "status": "finished",
+    "started": "2026-10-09T22:18:16.912Z",
+    "code": 0,
+    "finished": "2026-10-09T22:18:18.984Z"
+  },
+  {
+    "file": "word_sounds_recorded_syllable_dom_regression.cjs",
+    "status": "finished",
+    "started": "2026-10-09T22:18:18.985Z",
+    "code": 0,
+    "finished": "2026-10-09T22:18:20.976Z"
+  },
+  {
+    "file": "word_sounds_pack_maintenance_regression.cjs",
+    "status": "finished",
+    "started": "2026-10-09T22:18:20.977Z",
+    "code": 0,
+    "finished": "2026-10-09T22:18:21.530Z"
+  },
+  {
+    "file": "word_sounds_recorded_syllable_transport_regression.cjs",
+    "status": "finished",
+    "started": "2026-10-09T22:18:21.531Z",
+    "code": 0,
+    "finished": "2026-10-09T22:18:26.261Z"
+  },
+  {
+    "file": "word_sounds_clip_selection_regression.cjs",
+    "status": "finished",
+    "started": "2026-10-09T22:18:26.262Z",
+    "code": 0,
+    "finished": "2026-10-09T22:18:26.369Z"
+  },
+  {
+    "file": "word_sounds_recording_cancel_regression.cjs",
+    "status": "finished",
+    "started": "2026-10-09T22:18:26.370Z",
+    "code": 0,
+    "finished": "2026-10-09T22:18:30.465Z"
+  },
+  {
+    "file": "word_sounds_recorded_dependencies_regression.cjs",
+    "status": "finished",
+    "started": "2026-10-09T22:18:30.466Z",
+    "code": 0,
+    "finished": "2026-10-09T22:18:33.199Z"
+  },
+  {
+    "file": "word_sounds_recorded_legacy_dependencies_regression.cjs",
+    "status": "finished",
+    "started": "2026-10-09T22:18:33.200Z",
+    "code": 0,
+    "finished": "2026-10-09T22:18:34.343Z"
+  },
+  {
+    "file": "word_sounds_pack_repair_race_regression.cjs",
+    "status": "finished",
+    "started": "2026-10-09T22:18:34.343Z",
+    "code": 0,
+    "finished": "2026-10-09T22:18:34.716Z"
+  },
+  {
+    "file": "word_sounds_portable_sets_regression.cjs",
+    "status": "finished",
+    "started": "2026-10-09T22:18:34.717Z",
+    "code": 0,
+    "finished": "2026-10-09T22:18:40.924Z"
+  },
+  {
+    "file": "word_sounds_draft_editing_regression.cjs",
+    "status": "finished",
+    "started": "2026-10-09T22:18:40.925Z",
+    "code": 0,
+    "finished": "2026-10-09T22:18:57.612Z"
+  },
+  {
+    "file": "word_sounds_review_state_regression.cjs",
+    "status": "finished",
+    "started": "2026-10-09T22:18:57.613Z",
+    "code": 0,
+    "finished": "2026-10-09T22:19:09.058Z"
+  },
+  {
+    "file": "vitest-focused.cjs",
+    "status": "finished",
+    "started": "2026-10-09T22:19:09.059Z",
+    "code": 0,
+    "finished": "2026-10-09T22:19:13.506Z",
+    "testStatus": {
+      "status": "finished",
+      "code": 0,
+      "finished": "2026-10-09T22:19:13.496Z"
+    }
+  }
+]

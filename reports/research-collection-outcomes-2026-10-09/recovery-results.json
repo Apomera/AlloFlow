@@ -1,0 +1,18 @@
+{
+  "base": "http://127.0.0.1:51494",
+  "moduleHash": "c022b4612f6861c59ca053aa5abaceb85a088b72a0bdd0291b079a4594c4f8ec",
+  "success": true,
+  "passed": 7,
+  "results": [
+    "Unsent drafts survive Escape/reopen without storage or provider calls",
+    "Modal locks background scrolling and restored drafts fit the phone viewport",
+    "Successful paste clears submitted fields; duplicate paste preserves the entire draft with visible feedback",
+    "Topic changes while review is closed clear the previous private draft",
+    "Actual 24-passage capacity preserves rejected pasted text with visible feedback at 320px",
+    "Removing an unwanted source allows the retained draft to be added without another search",
+    "Ordinary one-click research still works for an arbitrary public topic"
+  ],
+  "errors": [],
+  "unexpected": [],
+  "failure": null
+}

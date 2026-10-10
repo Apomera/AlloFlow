@@ -1,0 +1,40 @@
+{
+  "prepared": true,
+  "completed": true,
+  "preparedAt": "2026-10-06T23:03:18.656Z",
+  "scope": "Original physics assertions only; does not verify the full DOM suite.",
+  "environment": "node",
+  "jsdomBypassed": true,
+  "repositoryBrowserSetupBypassed": true,
+  "browserGlobalAlias": "globalThis.window = globalThis",
+  "nodeVersion": "v24.11.1",
+  "vitestVersion": "4.1.5",
+  "executionBoundary": "default sandbox; cmd.exe; login:false",
+  "command": "node node_modules/vitest/vitest.mjs run tests/universe_flight_physics.test.js --config reports/universe-flight-2026-09-29/prominence-edges/node-physics.config.mjs --pool=forks --maxWorkers=1 --no-file-parallelism --isolate --reporter=default --reporter=json --outputFile=reports/universe-flight-2026-09-29/prominence-edges/unit-diagnostic-node.json",
+  "commandHash": "66116a6b25e274868600259f07941a41d6e3fa931a5aa64e4e05c1a7cffd9136",
+  "pins": {
+    "stem_lab/universe_flight_scene.js": "c0cc2486b3d5edd620e5975daec3d23b8f2e995a24db151be27ac30820d058c7",
+    "stem_lab/stem_tool_universe.js": "166dd6c8a059c03fd21e79c646c14bd104ea0be93d8cc43105231fd6f5576742",
+    "tests/universe_flight_physics.test.js": "c181ce38faaa0a0f66b1f202222149fcc7aef2e08019ce4c05d8281107dbccaf",
+    "reports/universe-flight-2026-09-29/prominence-edges/node-physics.config.mjs": "614419ae2e0417af1543bf85d4f7bf57e7127bf3bf6c43fa7e8fb528165edddb",
+    "reports/universe-flight-2026-09-29/prominence-edges/node-physics-setup.js": "de6cb3829878754b7436c200942f29ba092c48e78b3f02e0e5394d54f12783df"
+  },
+  "report": "unit-diagnostic-node.json",
+  "finishedAt": "2026-10-06T23:05:55.966Z",
+  "exitCode": 1,
+  "reportHash": "dfae175eea898d4bfc4e806457cd0fe2ea8de72150f1c344d7da23a656ec0303",
+  "tests": {
+    "success": false,
+    "total": 0,
+    "passed": 0,
+    "failed": 0,
+    "files": 1
+  },
+  "reportDurationMs": 0,
+  "observedConsoleDurationSeconds": 4.37,
+  "execSessionId": 69387,
+  "outputChunkId": "83371f",
+  "observedFailure": "EPERM: operation not permitted, rename of the sandbox AC/Temp SSR transform cache",
+  "causeBoundary": "Node worker startup replied; transformation failed before assertions. This does not identify the prior jsdom startup failure.",
+  "outcome": "Diagnostic failed; full unit verification remains blocked"
+}

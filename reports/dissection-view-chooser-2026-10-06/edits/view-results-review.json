@@ -1,0 +1,54 @@
+{
+  "browserStats": {
+    "startTime": "2026-10-06T12:42:14.048Z",
+    "duration": 142148.09,
+    "expected": 17,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "scopedAudits": [
+    {
+      "file": "desktop-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "embedded-large-contrast-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "embedded-medium-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "forced-colors-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "forced-resize-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "phone-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "presentation-cycle-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "tablet-axe.json",
+      "violations": 0,
+      "incomplete": []
+    }
+  ],
+  "fullAuditOutputsRetained": true,
+  "manualVisualReview": "Root inspected desktop and narrow large-text/high-contrast captures; no clipped controls or text observed. Independent visual review saved separately."
+}

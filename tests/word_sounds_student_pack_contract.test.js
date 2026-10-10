@@ -61,6 +61,11 @@ describe('student pack contract: zero AI calls, board renders from pack', () => 
       await act(async () => { await new Promise((r) => setTimeout(r, 30)); });
       expect(calls).toEqual([]);
       expect(host.innerHTML.length).toBeGreaterThan(200);
+      if (activity === 'syllable_blending') {
+        for (const word of ['sunset', 'raincoat', 'bedtime', 'toothbrush']) {
+          expect(host.querySelector('button[aria-label="' + word + '"]')).not.toBeNull();
+        }
+      }
     });
   }
 

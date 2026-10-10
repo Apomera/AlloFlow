@@ -1,0 +1,47 @@
+{
+  "completed": true,
+  "allFocusedAssertionsPassed": true,
+  "distinctFiles": 3,
+  "distinctTests": 39,
+  "fullDomSuiteRun": false,
+  "environment": "Focused Node canvas/event diagnostic; real DOM and native WebGL validated separately.",
+  "currentInputsUnchanged": true,
+  "diagnosticsUnchanged": true,
+  "originalStartupFailurePreserved": true,
+  "primary": {
+    "path": "retry-01",
+    "executionHash": "9426827266df23a5cee4942b56d24d732f576d02e60c96b6fdc3626c1d69d29b",
+    "resultsHash": "9df4e3af5216ee249e7eca8656a50af166736f2d74df7c9fd8756ef81642c781",
+    "retainedPassingAssertions": 32
+  },
+  "retry": {
+    "path": "retry-02",
+    "executionHash": "de5fafb060fabe6e17061b84223ec9c8fc3e4be07d475aadfb200c0208a23e45",
+    "resultsHash": "3e9abab83ed0293b61834fdde79d4ad5bcf8db12f5cefaaac760ab4ea853f75f",
+    "passingNewAssertions": 7
+  },
+  "suites": [
+    {
+      "path": "tests/universe_flight_bulges.test.js",
+      "passed": 10
+    },
+    {
+      "path": "tests/universe_flight_physics.test.js",
+      "passed": 22
+    },
+    {
+      "path": "tests/universe_flight_close_disk.test.js",
+      "passed": 7
+    }
+  ],
+  "allPassed": true,
+  "installedTest": {
+    "path": "tests/universe_flight_close_disk.test.js",
+    "sha256": "ed7e3572a4a3ccc5760e2edf408e10e4e9d0bfc4e67a9a135af15e580cb07276"
+  },
+  "summaryDriver": {
+    "path": "finalize-unit-summary.cjs",
+    "sha256": "2d39ef4d5a458ef421efb835e6bd1c1fcab6c4c82d59c29cab66208db315dd2d"
+  },
+  "originalAggregateHash": "f9840a942b9bd0f91d619987dcc9b2073c5bad7e89353c264f2d2ecd7a8583a4"
+}

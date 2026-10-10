@@ -1,0 +1,193 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-2\\scale-water\\browser.config.cjs",
+    "rootDir": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water",
+        "testIgnore": [
+          "**/exploratory/**"
+        ],
+        "testMatch": [
+          "**/adapted-water.spec.ts"
+        ],
+        "timeout": 270000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-2\\scale-water/candidate-browser/report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "adapted-water.spec.ts",
+      "file": "adapted-water.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "water native geometry, reversible guides and saved whole viewpoints preserve the 275 pm reference",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 270000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 23989,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n    at expectGuides (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-2\\scale-water\\adapted-water.spec.ts:65:97)\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-2\\scale-water\\adapted-water.spec.ts:96:225",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-2\\scale-water\\adapted-water.spec.ts",
+                      "column": 97,
+                      "line": 65
+                    },
+                    "snippet": "  63 | }\n  64 | function expectGuides(view:any,part:string,mode:string){\n> 65 |   expect(view.pose.atoms).toBe(true);expect(view.pose.bonds).toBe(true);expect(view.pose.angle).toBe((!part&&mode==='guides')||part==='angle');expect(view.pose.polarity).toBe((!part&&mode==='guides')||part==='polarity');\n     |                                                                                                 ^\n  66 | }\n  67 | async function setRange(control:Locator,value:number){await control.evaluate((input:HTMLInputElement,value:number)=>{Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')!.set!.call(input,String(value));input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));},value);}\n  68 | async function capture(page:Page,name:string){await canvas(page).scrollIntoViewIfNeeded();await page.locator('.sx-stage').screenshot({path:path.join(out,name+'-stage.png')});const pixels=await harness.glPixels(page);expect(pixels).not.toBeNull();expect(looksBlank(pixels!)).toBe(false);writeFileSync(path.join(out,name+'-gl.png'),pixels!.png);}"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-2\\scale-water\\adapted-water.spec.ts",
+                        "column": 97,
+                        "line": 65
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mtrue\u001b[39m\n\n  63 | }\n  64 | function expectGuides(view:any,part:string,mode:string){\n> 65 |   expect(view.pose.atoms).toBe(true);expect(view.pose.bonds).toBe(true);expect(view.pose.angle).toBe((!part&&mode==='guides')||part==='angle');expect(view.pose.polarity).toBe((!part&&mode==='guides')||part==='polarity');\n     |                                                                                                 ^\n  66 | }\n  67 | async function setRange(control:Locator,value:number){await control.evaluate((input:HTMLInputElement,value:number)=>{Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value')!.set!.call(input,String(value));input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));},value);}\n  68 | async function capture(page:Page,name:string){await canvas(page).scrollIntoViewIfNeeded();await page.locator('.sx-stage').screenshot({path:path.join(out,name+'-stage.png')});const pixels=await harness.glPixels(page);expect(pixels).not.toBeNull();expect(looksBlank(pixels!)).toBe(false);writeFileSync(path.join(out,name+'-gl.png'),pixels!.png);}\n    at expectGuides (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-2\\scale-water\\adapted-water.spec.ts:65:97)\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-2\\scale-water\\adapted-water.spec.ts:96:225"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-source.js in place of stem_lab/stem_tool_scaleexplorer.js\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-07T21:53:21.246Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-2\\scale-water\\candidate-browser\\results\\adapted-water-water-native-6df22-eserve-the-275-pm-reference\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-2\\scale-water\\candidate-browser\\results\\adapted-water-water-native-6df22-eserve-the-275-pm-reference\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-2\\scale-water\\candidate-browser\\results\\adapted-water-water-native-6df22-eserve-the-275-pm-reference\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-2\\scale-water\\adapted-water.spec.ts",
+                    "column": 97,
+                    "line": 65
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "ad58ad5a9bc837174b88-6f03cda388b21735482a",
+          "file": "adapted-water.spec.ts",
+          "line": 91,
+          "column": 5
+        },
+        {
+          "title": "330 pixel WebGL 1 water inspection, notebook mode restoration and comparison remain usable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 270000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T21:53:59.627Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "ad58ad5a9bc837174b88-7cb139e5b11cb3aca330",
+          "file": "adapted-water.spec.ts",
+          "line": 110,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-07T21:53:14.567Z",
+    "duration": 45166.483,
+    "expected": 0,
+    "skipped": 1,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

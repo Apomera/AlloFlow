@@ -1,0 +1,57 @@
+{
+  "base": "http://127.0.0.1:57406",
+  "hashes": {
+    "content_engine_module.js": "c24d76261e0cd19042f38928d271b1405b0ebd31f695d55d53243b69cd69f080",
+    "gemini_api_module.js": "4bda330650b6261285b2a38ae583c7b7508a13330bd2199382c327c78690aa7f",
+    "view_misc_panels_module.js": "80da1b78b49b013f98312de4dbc956d0831e17753af92246a30906500518121d"
+  },
+  "success": true,
+  "passed": 10,
+  "results": [
+    "provider preflight disables video reading and explains recovery before any request",
+    "managed preflight disables video reading and explains recovery before any request",
+    "disabled preflight disables video reading and explains recovery before any request",
+    "old-module preflight disables video reading and explains recovery before any request",
+    "Video progress is explicit and cancellation aborts transport without retaining late evidence",
+    "Mixed configured video and webpage research switches back to ordinary collection progress while the webpage loads",
+    "Paged and filtered choices apply atomically, retain hidden selections, restore focus and send only chosen excerpts to writing at 320px",
+    "Applied excerpts survive close and reopen; changing topics clears the full transcript without another provider request",
+    "Changing transcript membership preserves an excluded source and never silently enables writing",
+    "Ordinary webpage research retains its existing reader and does not acquire video controls"
+  ],
+  "observations": [
+    {
+      "name": "video-preflight-390",
+      "geometry": {
+        "width": true,
+        "nonoverlap": true,
+        "visible": true,
+        "scrollHeight": 682,
+        "overflowing": 0
+      }
+    },
+    {
+      "name": "transcript-chooser-320",
+      "geometry": {
+        "width": true,
+        "nonoverlap": true,
+        "visible": true,
+        "scrollHeight": 454,
+        "overflowing": 0
+      }
+    },
+    {
+      "name": "transcript-excluded-desktop",
+      "geometry": {
+        "width": true,
+        "nonoverlap": true,
+        "visible": true,
+        "scrollHeight": 714,
+        "overflowing": 0
+      }
+    }
+  ],
+  "errors": [],
+  "unexpected": [],
+  "failure": null
+}

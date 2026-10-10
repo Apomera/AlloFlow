@@ -102,7 +102,8 @@ function loadRuntime(source) {
   const helper = runInNewContext('(' + initializer + ')', {
     wcPrecipSetupSnapshot: kernel.setupSnapshot, wcPrecipPhaseFromModel: phaseFromModel,
   }, { filename: source.path + ':thermal-inspector', timeout: 1000 });
-  return { source, kernel, helper };
+  if (typeof window.WaterCycleAirProfile !== 'function') throw new Error('Missing actual public air profile helper');
+  return { source, kernel, helper, airProfile: window.WaterCycleAirProfile };
 }
 const shipped = sources.map(loadRuntime);
 const eachRuntime = callback => shipped.forEach(({ helper, kernel, source }) => callback(helper, kernel, source));
@@ -142,6 +143,7 @@ function renderedText(tree) {
 }
 // Evaluate the shipped renderer and its own callbacks. The adapter records HTML;
 // native browser focus and layout are checked independently by browser QA.
+const rendererDeclarations = new WeakMap();
 function rendererHarness(runtime, initial = {}) {
   let state = freeze({
     precipHunt: { ...runtime.kernel.presets.summerStorm, stormTime: 27, stormAutoPlay: false,
@@ -153,7 +155,9 @@ function rendererHarness(runtime, initial = {}) {
     quizCorrectCount: 3, quizAttempts: 5, mythsDone: ['vapor'], reward: { xp: 120 },
     unrelated: { nested: ['Keep all state.'] }, ...initial,
   });
-  const declarations = exactDeclarations(runtime.source.text, ['renderThermalLayerInspector', 'WC_THERMAL_LAYER_INSPECTOR_STYLE']);
+  if (!rendererDeclarations.has(runtime.source)) rendererDeclarations.set(runtime.source,
+    exactDeclarations(runtime.source.text, ['renderThermalLayerInspector', 'WC_THERMAL_LAYER_INSPECTOR_STYLE']));
+  const declarations = rendererDeclarations.get(runtime.source);
   if (!declarations.renderThermalLayerInspector || !declarations.WC_THERMAL_LAYER_INSPECTOR_STYLE) throw new Error('Missing actual thermal renderer or styles');
   const style = runInNewContext('var ' + declarations.WC_THERMAL_LAYER_INSPECTOR_STYLE + '; WC_THERMAL_LAYER_INSPECTOR_STYLE;', {}, { timeout: 1000 });
   const calls = [], focus = [];
@@ -161,6 +165,7 @@ function rendererHarness(runtime, initial = {}) {
     return runInNewContext('(' + declarations.renderThermalLayerInspector + ')()', {
       h: (tag, props, ...children) => ({ tag, props: props || {}, children: children.flat(Infinity).filter(child => child !== null && child !== undefined && child !== false) }),
       d: state, precipModel: runtime.kernel.compute(state.precipHunt), WCThermalLayerInspector: runtime.helper,
+      wcPrecipAirProfile: runtime.airProfile,
       WC_THERMAL_LAYER_INSPECTOR_STYLE: style, isDark: false, isContrast: false,
       upd: (key, value) => { calls.push({ key, value }); state = freeze({ ...state, [key]: value }); },
       focusWcComparisonTarget: id => focus.push(id),
@@ -413,10 +418,96 @@ describe('Thermal layer inspector: shipped renderer and callbacks', () => {
         const surface = renderedNode(tree, node => node.props['data-tl-surface']);
         expect(surface.props['data-tl-surface']).toBe(phase); expect(surface.props['data-tl-reaches-ground']).toBe(String(model.reachesGround));
         expect(renderedText(tree)).toContain('not measured altitudes or fall times');
-        expect(renderedText(tree)).toContain('A crossing does not guarantee an instantaneous change of state.');
+        expect(renderedText(tree)).toContain('Crossing 0°C does not guarantee an instantaneous change of state.');
         if (phase === 'freezing-rain') expect(renderedText(surface)).toContain('particle arrives as liquid');
         if (phase === 'virga') expect(renderedText(surface)).toContain('No precipitation arrives at the surface');
       }
+    });
+  });
+});
+
+describe('Thermal layer inspector: exact air diagram', () => {
+  const cases = [
+    { name: 'warming near the cloud base', temperatures: [-0.1, 10, 10], crossings: [[0.55 * 0.1 / 10.1, 'warming']], touches: [], bands: [] },
+    { name: 'warming near the surface', temperatures: [-10, -10, 0.1], crossings: [[0.55 + 0.45 * 10 / 10.1, 'warming']], touches: [], bands: [] },
+    { name: 'two crossings close to the middle level', temperatures: [10, -0.000001, 10], crossings: [[0.55 * 10 / 10.000001, 'cooling'], [0.55 + 0.45 * 0.000001 / 10.000001, 'warming']], touches: [], bands: [] },
+    { name: 'a warm tangent at the middle level', temperatures: [5, 0, 5], crossings: [], touches: [0.55], bands: [] },
+    { name: 'a cold tangent at the middle level', temperatures: [-5, 0, -5], crossings: [], touches: [0.55], bands: [] },
+    { name: 'one full crossing through an exact zero middle level', temperatures: [5, 0, -5], crossings: [[0.55, 'cooling']], touches: [], bands: [] },
+    { name: 'a zero cloud endpoint', temperatures: [0, 5, 5], crossings: [], touches: [0], bands: [] },
+    { name: 'a zero surface endpoint', temperatures: [5, 5, 0], crossings: [], touches: [1], bands: [] },
+    { name: 'an upper zero span', temperatures: [0, 0, 5], crossings: [], touches: [], bands: [[0, 0.55]] },
+    { name: 'a lower zero span', temperatures: [5, 0, 0], crossings: [], touches: [], bands: [[0.55, 1]] },
+    { name: 'an entirely zero profile', temperatures: [0, 0, 0], crossings: [], touches: [], bands: [[0, 1]] },
+    { name: 'a profile entirely above zero', temperatures: [5, 10, 15], crossings: [], touches: [], bands: [] },
+  ];
+  it.each(cases)('distinguishes $name from particle transition bands', ({ temperatures, crossings, touches, bands }) => {
+    shipped.forEach(runtime => {
+      const [tempC, midLevelTempC, surfaceTempC] = temperatures;
+      const harness = rendererHarness(runtime, { precipHunt: { ...runtime.kernel.presets.gentleRain, tempC, midLevelTempC, surfaceTempC } });
+      const before = plain(harness.state()), tree = harness.render();
+      const cloud = renderedNode(tree, node => node.props['data-tl-point'] === 'cloud');
+      const surface = renderedNode(tree, node => node.props['data-tl-point'] === 'surface');
+      const plottedY = progress => cloud.props.cy + progress * (surface.props.cy - cloud.props.cy);
+      const zeroX = renderedNode(tree, node => node.props['data-tl-boundary'] === 'zero').props.x1;
+      const plottedCrossings = renderedNodes(tree, node => node.props['data-tl-crossing']);
+      expect(plottedCrossings).toHaveLength(crossings.length);
+      plottedCrossings.forEach((node, index) => {
+        const [progress, direction] = crossings[index];
+        expect(node.props['data-tl-progress']).toBeCloseTo(progress, 12);
+        expect(node.props['data-tl-crossing']).toBe(direction);
+        const line = renderedNode(node, child => child.tag === 'line');
+        const mark = renderedNode(node, child => child.tag === 'rect');
+        expect(line.props.y1).toBeCloseTo(plottedY(progress), 10);
+        expect(line.props.y2).toBeCloseTo(plottedY(progress), 10);
+        expect(mark.props.x + mark.props.width / 2).toBe(zeroX);
+        expect(mark.props.y + mark.props.height / 2).toBeCloseTo(plottedY(progress), 10);
+      });
+      expect(renderedNodes(tree, node => Object.hasOwn(node.props, 'data-tl-touch')).map(node => node.props['data-tl-touch'])).toEqual(touches);
+      const zeroBands = renderedNodes(tree, node => Object.hasOwn(node.props, 'data-tl-zero-band'));
+      expect(zeroBands.map(node => [node.props['data-tl-zero-band'], node.props['data-tl-zero-end']])).toEqual(bands);
+      zeroBands.forEach((node, index) => {
+        expect(node.props.x1).toBe(zeroX); expect(node.props.x2).toBe(zeroX);
+        expect(node.props.y1).toBeCloseTo(plottedY(bands[index][0]), 10);
+        expect(node.props.y2).toBeCloseTo(plottedY(bands[index][1]), 10);
+      });
+      const context = runtime.helper.build(runtime.kernel.compute(harness.state().precipHunt));
+      expect(renderedText(renderedNode(tree, node => node.props['data-tl-air-summary']))).toBe(runtime.airProfile(context.nodes).summary);
+      if (temperatures.every(value => value === 0)) expect(renderedText(tree)).toContain('Air stays at 0°C throughout the profile.');
+      expect(harness.state()).toEqual(before); expect(harness.calls).toEqual([]);
+    });
+  });
+  it('keeps a warm zero touch separate from model transition bands and particle answers', () => {
+    shipped.forEach(runtime => {
+      const harness = rendererHarness(runtime, { precipHunt: { ...runtime.kernel.presets.gentleRain, tempC: 5, midLevelTempC: 0, surfaceTempC: 5 } });
+      const model = runtime.kernel.compute(harness.state().precipHunt), context = runtime.helper.build(model);
+      expect(context.crossings).toHaveLength(2);
+      const middle = context.nodes[1];
+      harness.click('data-tl-answer', middle.category);
+      const tree = harness.render();
+      expect(renderedNodes(tree, node => node.props['data-tl-crossing'])).toHaveLength(0);
+      expect(renderedNodes(tree, node => Object.hasOwn(node.props, 'data-tl-touch'))).toHaveLength(1);
+      expect(renderedNode(tree, node => node.props['data-tl-detail']).props['data-tl-phase']).toBe(middle.particleCode);
+      expect(renderedNode(tree, node => node.props['data-tl-result']).props['data-tl-result']).toBe('supported');
+      expect(plain(runtime.helper.build(model).crossings)).toEqual(plain(context.crossings));
+    });
+  });
+  it('links each chosen level to its chart label, selected point, and readable selection', () => {
+    shipped.forEach(runtime => {
+      const harness = rendererHarness(runtime), before = withoutInspector(harness.state());
+      ['cloud', 'middle', 'surface'].forEach((id, index) => {
+        harness.click('data-tl-select', id);
+        const tree = harness.render(), letter = ['A', 'B', 'C'][index];
+        const labels = renderedNodes(tree, node => node.props['data-tl-level-label']);
+        expect(labels).toHaveLength(3);
+        expect(labels.filter(node => node.props['data-selected'] === 'true').map(node => node.props['data-tl-level-label'])).toEqual([id]);
+        expect(renderedText(labels[index])).toContain(letter);
+        expect(renderedText(renderedNode(tree, node => node.props['data-tl-chart-selection'] === id))).toContain('Selected: ' + letter);
+        expect(renderedNode(tree, node => node.props['data-tl-point'] === id).props['data-selected']).toBe('true');
+        expect(renderedNode(tree, node => node.props['data-tl-select'] === id).props['aria-pressed']).toBe(true);
+        expect(withoutInspector(harness.state())).toEqual(before);
+        expect(harness.focus.at(-1)).toBe('wcThermalLayerDetailTitle');
+      });
     });
   });
 });

@@ -89,6 +89,20 @@ function wireClientToWorker(env, serperOrganic) {
 }
 
 describe('Canvas -> Worker -> Serper', () => {
+  it.each(['How clouds form over mountains', 'R', '\u03c0'])('preserves explicit topic %s across the real client and Worker', async topic => {
+    forceCanvas(true);
+    window.ALLOFLOW_CANVAS_SEARCH_PROXY = WORKER_URL;
+    const serperCalls = wireClientToWorker({ SERPER_API_KEY: 'server-side-secret' }, [
+      { link: 'https://example.org/clouds', title: 'Cloud formation', snippet: 'Moist air cools as it rises.' },
+    ]);
+    const out = await WebSearchProvider.searchTopic(topic, 3);
+    expect(out.results).toHaveLength(1);
+    expect(out.groundingMetadata.groundingChunks[0].web.uri).toBe('https://example.org/clouds');
+    expect(JSON.parse(serperCalls[0].options.body)).toEqual({ q: topic, num: 3 });
+    const workerCall = fetch.mock.calls.find(([url]) => String(url).startsWith(WORKER_URL));
+    expect(new URL(workerCall[0]).searchParams.get('intent')).toBe('user-topic');
+  });
+
   it('returns grounded results through the real Worker handler', async () => {
     forceCanvas(true);
     window.ALLOFLOW_CANVAS_SEARCH_PROXY = WORKER_URL;

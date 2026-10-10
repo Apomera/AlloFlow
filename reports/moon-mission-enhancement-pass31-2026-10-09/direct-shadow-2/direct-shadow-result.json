@@ -1,0 +1,183 @@
+{
+  "schema": "moon-pass31-direct-browser-v1",
+  "runner": "direct-playwright-api",
+  "playwrightCliResult": false,
+  "mode": "shadow",
+  "status": "passed",
+  "startedAt": "2026-10-09T21:58:07.211Z",
+  "repo": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "specPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-shadow2d.spec.ts",
+  "output": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass31-2026-10-09\\direct-shadow-2",
+  "browserCache": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+  "timeouts": {
+    "action": 20000,
+    "navigation": 60000,
+    "expect": 15000,
+    "launch": 60000,
+    "workflow": 180000
+  },
+  "launchOptions": {
+    "headless": true,
+    "timeout": 60000
+  },
+  "workflowCompleted": true,
+  "cleanupCompleted": true,
+  "milestones": [
+    {
+      "name": "load:before",
+      "elapsedMs": 7
+    },
+    {
+      "name": "load:after",
+      "elapsedMs": 4419,
+      "workflow": "2D descent shadow projects the hardware silhouette and anchors banked contact",
+      "registered": [
+        "2D descent shadow projects the hardware silhouette and anchors banked contact"
+      ]
+    },
+    {
+      "name": "harness-start:before",
+      "elapsedMs": 4420
+    },
+    {
+      "name": "harness-start:after",
+      "elapsedMs": 4442
+    },
+    {
+      "name": "browser-launch:before",
+      "elapsedMs": 4443
+    },
+    {
+      "name": "browser-launch:after",
+      "elapsedMs": 6250
+    },
+    {
+      "name": "context-create:before",
+      "elapsedMs": 6251
+    },
+    {
+      "name": "context-create:after",
+      "elapsedMs": 6263
+    },
+    {
+      "name": "page-create:before",
+      "elapsedMs": 6264
+    },
+    {
+      "name": "page-create:after",
+      "elapsedMs": 8365
+    },
+    {
+      "name": "workflow:before",
+      "elapsedMs": 8366
+    },
+    {
+      "name": "workflow:after",
+      "elapsedMs": 18052
+    },
+    {
+      "name": "cleanup:before",
+      "elapsedMs": 18053
+    },
+    {
+      "name": "after-each:before",
+      "elapsedMs": 18054
+    },
+    {
+      "name": "after-each:after",
+      "elapsedMs": 18176
+    },
+    {
+      "name": "context-close:before",
+      "elapsedMs": 18179
+    },
+    {
+      "name": "context-close:after",
+      "elapsedMs": 18569
+    },
+    {
+      "name": "browser-close:before",
+      "elapsedMs": 18571
+    },
+    {
+      "name": "browser-close:after",
+      "elapsedMs": 39148
+    },
+    {
+      "name": "harness-stop:before",
+      "elapsedMs": 39148
+    },
+    {
+      "name": "harness-stop:after",
+      "elapsedMs": 39150
+    },
+    {
+      "name": "cleanup:after",
+      "elapsedMs": 39178,
+      "status": "passed"
+    }
+  ],
+  "errors": [],
+  "attachments": [
+    {
+      "name": "high-level",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass31-2026-10-09\\direct-shadow-2\\high-level.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "near-level",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass31-2026-10-09\\direct-shadow-2\\near-level.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "near-left",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass31-2026-10-09\\direct-shadow-2\\near-left.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "near-right",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass31-2026-10-09\\direct-shadow-2\\near-right.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "contact-level",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass31-2026-10-09\\direct-shadow-2\\contact-level.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "contact-left",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass31-2026-10-09\\direct-shadow-2\\contact-left.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "contact-right",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass31-2026-10-09\\direct-shadow-2\\contact-right.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "desktop-near-left",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass31-2026-10-09\\direct-shadow-2\\desktop-near-left.png",
+      "contentType": "image/png"
+    }
+  ],
+  "inputHashes": {
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-shadow2d.spec.ts": "9c872322afd433a7a68a6039af032071bfee7487888b0ab4ee3ec689c89e142e",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_moonmission.js": "3eb7f16aaf552228af9c6e6eceda61ce871516c8a7ed4611b983965c41e85a8a",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_moonmission.js": "3eb7f16aaf552228af9c6e6eceda61ce871516c8a7ed4611b983965c41e85a8a"
+  },
+  "transform": {
+    "name": "Playwright bundled babelTransform",
+    "bundlePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\transform\\babelBundle.js",
+    "sha256": "9201df11ae9c9ee1febd587c5013c4f862aa7e9981b92b86ccbbbd37e71f9124"
+  },
+  "workflow": "2D descent shadow projects the hardware silhouette and anchors banked contact",
+  "suiteOptions": {
+    "timeout": 180000,
+    "retries": 0
+  },
+  "browserVersion": "148.0.7778.96",
+  "finishedAt": "2026-10-09T21:58:46.389Z",
+  "elapsedMs": 39178
+}

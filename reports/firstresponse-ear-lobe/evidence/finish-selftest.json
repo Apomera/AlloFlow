@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "scriptSHA256": "8e0f94ff8ccd45cdecbcb50a5757a8f68b86bc1563a6d4b0732893e73dd0e7a6",
+  "sourceSHA256": "0af58d9afd30ed0de275caf53197320ddabed9308f08b191cce7bf4927d83f84",
+  "mutationRejected": true,
+  "reviewRejected": true,
+  "restoredAndReread": true,
+  "mutationScope": "private finish-selftest-sandbox only",
+  "reason": "Changed guarded file C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-ear-lobe-work\\finish-selftest-sandbox\\candidate.js"
+}

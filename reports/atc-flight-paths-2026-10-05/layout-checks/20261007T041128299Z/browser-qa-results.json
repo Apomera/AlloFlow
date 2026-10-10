@@ -1,0 +1,20 @@
+{
+  "started": "2026-10-07T04:11:33.303Z",
+  "fixture": "Installed Chrome, actual React host and canonical ATC source. All aircraft, command, exercise, airport-choice, and debrief checks use real product controls. Completion is a real six-second separation exercise.",
+  "checks": [
+    {
+      "name": "Playing radar, flight controls, and operations have clear responsive geometry at 1440px",
+      "pass": false,
+      "error": "AssertionError [ERR_ASSERTION]: The desktop console should avoid the previous 2539px document height: {\"dimensions\":{\"width\":1440,\"document\":1440,\"height\":2392,\"zoom\":\"1\"},\"scopePanel\":{\"x\":59,\"y\":538.6875,\"width\":737.03125,\"height\":859.4375},\"operations\":{\"x\":59,\"y\":1468.609375,\"width\":737.03125,\"height\":727.984375},\"controls\":{\"x\":831.90625,\"y\":914.140625,\"width\":67.78125,\"height\":26},\"motion\":{\"box\":{\"x\":814.03125,\"y\":1783.8125,\"width\":566.96875,\"height\":465.265625,\"top\":1539.8125,\"right\":1381,\"bottom\":2005.078125,\"left\":814.03125},\"row\":\"auto\",\"column\":\"auto\",\"readouts\":\"278.656px 242.297px\",\"draft\":\"false\"}}\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-visual-design-2026-10-04\\browser-qa.cjs:69:18\n    at async check (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-visual-design-2026-10-04\\browser-qa.cjs:9:120)\n    at async checks (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-visual-design-2026-10-04\\browser-qa.cjs:55:5)\n    at async main (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-visual-design-2026-10-04\\browser-qa.cjs:148:81)"
+    }
+  ],
+  "errors": [],
+  "screenshots": [
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-flight-paths-2026-10-05\\layout-checks\\20261007T041128299Z\\after-desktop-layout-probe.png"
+  ],
+  "sourceHash": "4ef847febd68a8156f3e0456528a166a94118e9bb16999e2bd477c593f5bdbe7",
+  "completed": "2026-10-07T04:12:12.230Z",
+  "passed": 0,
+  "failed": 1,
+  "sourceStable": true
+}

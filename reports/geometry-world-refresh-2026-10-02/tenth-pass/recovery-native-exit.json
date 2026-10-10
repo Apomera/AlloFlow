@@ -1,0 +1,22 @@
+{
+  "startedAt": "2026-10-06T21:01:53.053Z",
+  "sourceHash": "1016d09ef498fb7d5acc4475086457f7fdfc40da922437d03e06babebd2e54e8",
+  "builderHash": "5966a9ba35f26206776d607ea93cc52672c9b565ee41efb4995b6ae7690961a7",
+  "sourceHashes": {
+    "stem_tool_geometryworld.js": "1016d09ef498fb7d5acc4475086457f7fdfc40da922437d03e06babebd2e54e8",
+    "stem_tool_geometryworld_builder.js": "5966a9ba35f26206776d607ea93cc52672c9b565ee41efb4995b6ae7690961a7"
+  },
+  "wrapperPid": 24316,
+  "state": "finished",
+  "browserPids": [
+    11492
+  ],
+  "childPid": 2832,
+  "completedAt": "2026-10-06T21:16:00.211Z",
+  "exitCode": 0,
+  "signal": null,
+  "reportCompletedAt": "2026-10-06T21:15:58.024Z",
+  "resourcesClosed": true,
+  "checks": 24,
+  "failures": 0
+}

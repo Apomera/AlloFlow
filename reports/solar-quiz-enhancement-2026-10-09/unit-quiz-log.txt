@@ -1,0 +1,39 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/solar_system_quiz_workbench.test.js
+[deferred-jsdom] Initializing the official DOM environment.
+
+stdout | tests/solar_system_quiz_workbench.test.js
+[deferred-jsdom] DOM environment ready.
+
+stdout | tests/solar_system_quiz_workbench.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/solar_system_quiz_workbench.test.js
+[deferred-jsdom] Existing repository setup loaded.
+
+ ✓ tests/solar_system_quiz_workbench.test.js > Solar System quiz workbench > offers a named start action and honest zero progress without render-time writes 3117ms
+ ✓ tests/solar_system_quiz_workbench.test.js > Solar System quiz workbench > draws quiz and history atomically while retaining other current work 502ms
+ ✓ tests/solar_system_quiz_workbench.test.js > Solar System quiz workbench > keeps shuffled choices stable on rerender and grades their text 298ms
+ ✓ tests/solar_system_quiz_workbench.test.js > Solar System quiz workbench > locks the first answer even for rapid duplicate or conflicting callbacks 200ms
+ ✓ tests/solar_system_quiz_workbench.test.js > Solar System quiz workbench > ignores an old answer after drawing another question and an old draw after answering 207ms
+ ✓ tests/solar_system_quiz_workbench.test.js > Solar System quiz workbench > ignores stale callbacks after an external question replacement or Orrery switch 324ms
+ ✓ tests/solar_system_quiz_workbench.test.js > Solar System quiz workbench > keeps cumulative score, resets only the current streak for wrong answers, and shows fallback feedback 466ms
+ ✓ tests/solar_system_quiz_workbench.test.js > Solar System quiz workbench > reaches each bank question once before resetting only round history 1531ms
+ ✓ tests/solar_system_quiz_workbench.test.js > Solar System quiz workbench > normalizes duplicate and unknown history and maps legacy Pluto wording without render writes 1446ms
+ ✓ tests/solar_system_quiz_workbench.test.js > Solar System quiz workbench > recovers invalid restored questions without deleting their valid cumulative score 2893ms
+ ✓ tests/solar_system_quiz_workbench.test.js > Solar System quiz workbench > uses only nonnegative safe integer counters for display, scoring, and objectives 2366ms
+ ✓ tests/solar_system_quiz_workbench.test.js > Solar System quiz workbench > keeps an answered legacy question locked when the chosen answer is missing 185ms
+ ✓ tests/solar_system_quiz_workbench.test.js > Solar System quiz workbench > focuses the drawn question once after connection and never lets an old heading steal focus 358ms
+ ✓ tests/solar_system_quiz_workbench.test.js > Solar System quiz workbench > focuses committed feedback and avoids a duplicate screen-reader announcement 1132ms
+ ✓ tests/solar_system_quiz_workbench.test.js > Solar System quiz workbench > does not let a previous passive effect discard newly queued feedback 1092ms
+ ✓ tests/solar_system_quiz_workbench.test.js > Solar System quiz workbench > does not replay feedback on restore or against an externally replaced quiz 625ms
+ ✓ tests/solar_system_quiz_workbench.test.js > Solar System quiz workbench > preserves simultaneous journal and assignment work when an answer commits 299ms
+
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+   Start at  18:15:12
+   Duration  31.76s (transform 1.28s, setup 12.15s, import 1.63s, tests 17.05s, environment 0ms)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/solar-quiz-enhancement-2026-10-09/unit-quiz-results.json

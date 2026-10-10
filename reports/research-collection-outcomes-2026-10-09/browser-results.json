@@ -1,0 +1,72 @@
+{
+  "base": "http://127.0.0.1:57262",
+  "hashes": {
+    "content_engine_module.js": "280f9bebfbf7951fd43455d0c7bb6d6e055349a0eac067037d3599de1ee4e7da",
+    "view_misc_panels_module.js": "c022b4612f6861c59ca053aa5abaceb85a088b72a0bdd0291b079a4594c4f8ec"
+  },
+  "success": true,
+  "passed": 6,
+  "results": [
+    "23 existing passages plus three pasted paragraphs adds only one, names the collection limit and retains the whole draft at 320px",
+    "Typing and adding private text does not create web queries, page reads, model calls or storage writes",
+    "A source with three snippets accepts one of three pasted paragraphs and names the per-source limit without erasing the draft",
+    "Pasting a removed source reports the removed-source reason, keeps its draft and does not silently restore it",
+    "Link-only results are not reported as readable passages and keep Generate disabled until page text is read",
+    "A later unreadable configured URL preserves and reports earlier successful additions alongside the error at 320px"
+  ],
+  "observations": [
+    {
+      "name": "partial-collection-320",
+      "geometry": {
+        "width": true,
+        "nonoverlap": true,
+        "visible": true,
+        "scrollHeight": 438
+      },
+      "outcome": "Added 1 passage. Collection limit reached (24 passages). Your pasted text has been kept."
+    },
+    {
+      "name": "partial-source-390",
+      "geometry": {
+        "width": true,
+        "nonoverlap": true,
+        "visible": true,
+        "scrollHeight": 642
+      },
+      "outcome": "Added 1 passage. Source limit reached (4 passages per source). Your pasted text has been kept."
+    },
+    {
+      "name": "removed-source-390",
+      "geometry": {
+        "width": true,
+        "nonoverlap": true,
+        "visible": true,
+        "scrollHeight": 590
+      },
+      "outcome": "No new passages added. Passages from removed sources: 3. Your pasted text has been kept."
+    },
+    {
+      "name": "link-only-390",
+      "geometry": {
+        "width": true,
+        "nonoverlap": true,
+        "visible": true,
+        "scrollHeight": 566
+      },
+      "outcome": "1 source link needs readable text."
+    },
+    {
+      "name": "partial-url-error-320",
+      "geometry": {
+        "width": true,
+        "nonoverlap": true,
+        "visible": true,
+        "scrollHeight": 426
+      },
+      "outcome": "Added 2 passages."
+    }
+  ],
+  "errors": [],
+  "unexpected": [],
+  "failure": null
+}

@@ -20,10 +20,12 @@ async function mount(page: Page, quality: 'low' | 'balanced') {
     // existing ambient jelly above that approach for non-vacuous native draws.
     w.__mjPlayer.position.x = w.__mjMoray.userData.homeX; w.__mjPlayer.position.z = w.__mjMoray.userData.homeZ - 4;
     w.__mjJelly = [...w.__mjJellies].sort((a: any, b: any) => Math.sin(a.userData.verticalPhase) - Math.sin(b.userData.verticalPhase))[0]; w.__mjJelly.position.x = w.__mjPlayer.position.x; w.__mjJelly.position.z = w.__mjPlayer.position.z + 2;
+    // This diagnostic placement uses the settled bob height so all bell and arm draws stay in view.
+    w.__mjJelly.userData.verticalOffset = 0;
     w.__mjOwned = []; w.__mjResources = []; w.__mjPrograms = new Map(); w.__mjNative = new Map(); w.__mjNativeStable = true; w.__mjEpoch = 0; w.__mjDrawEpoch = {}; w.__mjKinds = [];
     w.__mjTrack = (owner: any, type: string) => owner.traverse((mesh: any) => {
       if (!mesh.isMesh) return;
-      w.__mjOwned.push({ mesh, type, dynamicBell: mesh.geometry === owner.userData.bellGeo, geometry: mesh.geometry, material: mesh.material, index: mesh.geometry.index, indexArray: mesh.geometry.index?.array, indices: mesh.geometry.index ? Array.from(mesh.geometry.index.array) : null,
+      w.__mjOwned.push({ mesh, type, dynamicSurface: mesh.geometry === owner.userData.bellGeo || !!mesh.geometry.userData.clJellyOral, geometry: mesh.geometry, material: mesh.material, index: mesh.geometry.index, indexArray: mesh.geometry.index?.array, indices: mesh.geometry.index ? Array.from(mesh.geometry.index.array) : null,
         attrs: Object.fromEntries(Object.entries(mesh.geometry.attributes).map(([name, attr]: [string, any]) => [name, { attr, array: attr.array, values: Array.from(attr.array), version: attr.version }])) });
       [mesh.geometry, ...(Array.isArray(mesh.material) ? mesh.material : [mesh.material])].forEach((resource: any) => { if (w.__mjResources.some((row: any) => row.resource === resource)) return; const row = { resource, disposed: 0 }; resource.addEventListener('dispose', () => row.disposed++); w.__mjResources.push(row); });
     });
@@ -63,10 +65,12 @@ async function state(page: Page) {
     const w = window as any, m = w.__mjMoray; w.__mjScene.updateMatrixWorld(true);
     const nose = w.__mjNose.clone().applyMatrix4(m.matrixWorld).sub(m.position).setY(0).normalize();
     return { moray: m.matrixWorld.toArray(), position: m.position.toArray(), state: m.userData.state, canBite: !!m.userData.canBite, nose: nose.toArray(), towardPlayer: w.__mjPlayer.position.clone().sub(m.position).setY(0).normalize().toArray(),
+      jellyPositions: w.__mjJellies.map((jelly: any) => jelly.position.toArray()), jellyRotations: w.__mjJellies.map((jelly: any) => jelly.quaternion.toArray()),
+      jellyBellVersions: w.__mjJellies.map((jelly: any) => [jelly.userData.bellGeo.attributes.position.version, jelly.userData.bellGeo.attributes.normal.version]),
       jellyWorld: w.__mjJellies.map((jelly: any) => jelly.matrixWorld.toArray()), phases: w.__mjJellies.map((jelly: any) => [jelly.userData.pulsePhase, jelly.userData.verticalPhase]),
       trails: w.__mjJellies.map((jelly: any) => jelly.children.map((mesh: any) => mesh.matrix.toArray())), bell: Array.from(w.__mjJelly.userData.bellGeo.attributes.position.array), normals: Array.from(w.__mjJelly.userData.bellGeo.attributes.normal.array),
       time: document.querySelector('[data-hud=time]')?.textContent, health: Number(document.querySelector('[data-hud=health]')?.textContent), camera: w.__mjCamera.position.toArray(),
-      stable: w.__mjOwned.every((row: any) => row.mesh.geometry === row.geometry && row.mesh.material === row.material && row.geometry.index === row.index && row.geometry.index?.array === row.indexArray && (!row.indices || row.indices.every((value: number, i: number) => value === row.indexArray[i])) && Object.entries(row.attrs).every(([name, prior]: [string, any]) => row.geometry.attributes[name] === prior.attr && prior.attr.array === prior.array && ((row.dynamicBell && (name === 'position' || name === 'normal')) || (prior.attr.version === prior.version && prior.values.every((value: number, i: number) => value === prior.array[i]))))),
+      stable: w.__mjOwned.every((row: any) => row.mesh.geometry === row.geometry && row.mesh.material === row.material && row.geometry.index === row.index && row.geometry.index?.array === row.indexArray && (!row.indices || row.indices.every((value: number, i: number) => value === row.indexArray[i])) && Object.entries(row.attrs).every(([name, prior]: [string, any]) => row.geometry.attributes[name] === prior.attr && prior.attr.array === prior.array && ((row.dynamicSurface && (name === 'position' || name === 'normal')) || (prior.attr.version === prior.version && prior.values.every((value: number, i: number) => value === prior.array[i]))))),
       finite: w.__mjOwned.every((row: any) => row.mesh.matrixWorld.elements.every(Number.isFinite) && Object.values(row.geometry.attributes).every((attr: any) => Array.from(attr.array).every(Number.isFinite))), nativeStable: w.__mjNativeStable, disposed: w.__mjResources.map((row: any) => row.disposed), textures: w.__mjRenderer.info.memory.textures };
   });
 }
@@ -112,7 +116,12 @@ for (const quality of ['low', 'balanced'] as const) test(`${quality} moray and m
   expect(orbited.camera).not.toEqual(inspected.camera); for (const key of ['moray', 'jellyWorld', 'phases', 'trails', 'bell', 'normals', 'time'] as const) expect(orbited[key]).toEqual(inspected[key]); stable(orbited, initial.textures);
   await page.getByRole('button', { name: 'Return to dive', exact: true }).click(); await expect(page.locator('[data-hud=burn]')).toHaveText('Paused'); await page.locator(canvas).focus(); await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Help / settings', exact: true }).click(); await page.getByLabel('Reduced motion', { exact: true }).check(); await page.getByRole('button', { name: 'Resume dive', exact: true }).click();
-  const reduced = await state(page); await advance(page, 7); const moving = await state(page); stable(moving, initial.textures); expect(moving.phases).not.toEqual(reduced.phases); expect(moving.bell).not.toEqual(reduced.bell);
+  const reduced = await state(page); await advance(page, 7); const moving = await state(page); stable(moving, initial.textures);
+  for (const key of ['phases', 'jellyRotations', 'jellyBellVersions', 'bell', 'normals', 'trails'] as const) expect(moving[key]).toEqual(reduced[key]);
+  moving.jellyPositions.forEach((position: number[], index: number) => {
+    const prior = reduced.jellyPositions[index]; expect(position[1]).toBe(prior[1]);
+    expect(Math.hypot(position[0] - prior[0], position[2] - prior[2])).toBeGreaterThan(.01);
+  });
 
   if (quality === 'low') {
     await page.evaluate(() => { const w = window as any; w.__mjPlayer.position.x = -220; w.__mjPlayer.position.z = 0; });

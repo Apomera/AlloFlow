@@ -1,0 +1,167 @@
+{
+  "startedAt": "2026-10-06T01:42:20.409Z",
+  "checks": [
+    {
+      "name": "desktop: native finder opens with search focus and fits the dock",
+      "status": "pass",
+      "evidence": {
+        "focused": "gwe-tool-query",
+        "open": "true",
+        "textSize": "standard",
+        "noOverflow": true,
+        "inputFont": "14px",
+        "inputHeight": 44,
+        "dockBounds": {
+          "x": 922,
+          "right": 1268,
+          "y": 118,
+          "bottom": 788
+        },
+        "viewport": {
+          "width": 1280,
+          "height": 800
+        }
+      }
+    },
+    {
+      "name": "desktop: Escape followed by reopen supersedes queued launcher focus",
+      "status": "pass",
+      "evidence": {
+        "during": {
+          "focused": "gwe-tool-query",
+          "open": "true"
+        },
+        "focusAfterBothFrames": "gwe-tool-query"
+      }
+    },
+    {
+      "name": "desktop: tool navigation followed by reopen supersedes queued handoff frames",
+      "status": "pass",
+      "evidence": {
+        "during": {
+          "focused": "gwe-tool-query",
+          "open": "true"
+        },
+        "focusAfterBothFrames": "gwe-tool-query"
+      }
+    },
+    {
+      "name": "desktop: finder search typing does not trigger world shortcuts",
+      "status": "pass",
+      "evidence": {
+        "query": "bmcx123",
+        "geometryRecipeHistoryAndFlyModeUnchanged": true
+      }
+    },
+    {
+      "name": "desktop: normal Escape still returns focus to the finder launcher",
+      "status": "pass",
+      "evidence": {
+        "launcherReturn": true,
+        "finderReopened": true
+      }
+    },
+    {
+      "name": "desktop: finder accessibility audit",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "desktop: healthy nonblank WebGL canvas and no browser errors",
+      "status": "pass",
+      "evidence": {
+        "lost": false,
+        "nonblack": 192,
+        "studentBlocks": 3,
+        "errors": []
+      }
+    },
+    {
+      "name": "narrow-touch-large: native finder opens with search focus and fits the dock",
+      "status": "pass",
+      "evidence": {
+        "focused": "gwe-tool-query",
+        "open": "true",
+        "textSize": "large",
+        "noOverflow": true,
+        "inputFont": "15px",
+        "inputHeight": 44,
+        "dockBounds": {
+          "x": 7,
+          "right": 313,
+          "y": 102,
+          "bottom": 552
+        },
+        "viewport": {
+          "width": 320,
+          "height": 568
+        }
+      }
+    },
+    {
+      "name": "narrow-touch-large: Escape followed by reopen supersedes queued launcher focus",
+      "status": "pass",
+      "evidence": {
+        "during": {
+          "focused": "gwe-tool-query",
+          "open": "true"
+        },
+        "focusAfterBothFrames": "gwe-tool-query"
+      }
+    },
+    {
+      "name": "narrow-touch-large: tool navigation followed by reopen supersedes queued handoff frames",
+      "status": "pass",
+      "evidence": {
+        "during": {
+          "focused": "gwe-tool-query",
+          "open": "true"
+        },
+        "focusAfterBothFrames": "gwe-tool-query"
+      }
+    },
+    {
+      "name": "narrow-touch-large: finder search typing does not trigger world shortcuts",
+      "status": "pass",
+      "evidence": {
+        "query": "bmcx123",
+        "geometryRecipeHistoryAndFlyModeUnchanged": true
+      }
+    },
+    {
+      "name": "narrow-touch-large: normal Escape still returns focus to the finder launcher",
+      "status": "pass",
+      "evidence": {
+        "launcherReturn": true,
+        "finderReopened": true
+      }
+    },
+    {
+      "name": "narrow-touch-large: finder accessibility audit",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "narrow-touch-large: healthy nonblank WebGL canvas and no browser errors",
+      "status": "pass",
+      "evidence": {
+        "lost": false,
+        "nonblack": 192,
+        "studentBlocks": 3,
+        "errors": []
+      }
+    }
+  ],
+  "failures": [],
+  "screenshots": [
+    "desktop-finder-race.png",
+    "narrow-touch-large-finder-race.png"
+  ],
+  "sourceHash": "4B63D4F570489FC6F17A921826912C732B75ADA8654A7D6C6D9BEA426CD33EA2",
+  "resourcesClosed": true,
+  "completedAt": "2026-10-06T01:43:35.876Z"
+}

@@ -1,0 +1,70 @@
+{
+  "sourceSha256": "41625d22c8059f90b749a9c115725b46cdea49a74cd54ce6124d6edbdfb8c3e6",
+  "completed": true,
+  "results": [
+    {
+      "name": "journal-1060-dark",
+      "dark": true,
+      "width": 1060,
+      "scrollWidth": 1060,
+      "errors": [],
+      "minimumText": 13,
+      "minimumControlHeight": 44,
+      "minimumTextareaFont": 16,
+      "restoredDrafts": true,
+      "worldIsolation": true,
+      "savedParagraphs": true,
+      "savedFocus": true,
+      "preservedEntries": true,
+      "synthesisRegression": true
+    },
+    {
+      "name": "journal-1060-light",
+      "dark": false,
+      "width": 1060,
+      "scrollWidth": 1060,
+      "errors": [],
+      "minimumText": 13,
+      "minimumControlHeight": 44,
+      "minimumTextareaFont": 16,
+      "restoredDrafts": true,
+      "worldIsolation": true,
+      "savedParagraphs": true,
+      "savedFocus": true,
+      "preservedEntries": true,
+      "synthesisRegression": true
+    },
+    {
+      "name": "journal-320-dark",
+      "dark": true,
+      "width": 320,
+      "scrollWidth": 320,
+      "errors": [],
+      "minimumText": 13,
+      "minimumControlHeight": 44,
+      "minimumTextareaFont": 16,
+      "restoredDrafts": true,
+      "worldIsolation": true,
+      "savedParagraphs": true,
+      "savedFocus": true,
+      "preservedEntries": true,
+      "synthesisRegression": true
+    },
+    {
+      "name": "journal-320-light",
+      "dark": false,
+      "width": 320,
+      "scrollWidth": 320,
+      "errors": [],
+      "minimumText": 13,
+      "minimumControlHeight": 44,
+      "minimumTextareaFont": 16,
+      "restoredDrafts": true,
+      "worldIsolation": true,
+      "savedParagraphs": true,
+      "savedFocus": true,
+      "preservedEntries": true,
+      "synthesisRegression": true
+    }
+  ]
+}

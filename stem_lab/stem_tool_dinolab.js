@@ -7708,6 +7708,19 @@ var CLASSIFY_CASES = [
   }
   // DINO_VOXEL_CHECKPOINT_MODEL_END
 
+  // DINO_VOXEL_CHECKPOINT_PROFILE_MODEL_START
+  function digVoxelCheckpointProfile(survey, supplied) {
+    if (!supplied || supplied.kind !== 'ready') return null;
+    var comparison = digVoxelCheckpoint(survey,supplied.baseline);
+    if (comparison.kind !== 'ready' || comparison.seed !== supplied.seed || comparison.key !== supplied.key || comparison.baselineKey !== supplied.baselineKey) return null;
+    var column = comparison.columns[survey.focus];
+    return { seed: comparison.seed, focus: column.index, coord: column.coord,
+      beforeRemoved: column.beforeRemoved, removed: column.removed, beforeRemaining: column.beforeRemaining, remaining: column.remaining,
+      delta: column.delta, beforeStatus: column.beforeStatus, status: column.status, changed: column.changed,
+      kind: column.delta > 0 ? 'removed' : column.changed ? 'status' : 'unchanged' };
+  }
+  // DINO_VOXEL_CHECKPOINT_PROFILE_MODEL_END
+
   // DINO_VOXEL_SPATIAL_MODEL_START
   // Compare two CURRENT public records. The reference stores a coordinate,
   // not a historical surface, a hidden find or an interpretation.
@@ -7731,6 +7744,50 @@ var CLASSIFY_CASES = [
     return result;
   }
   // DINO_VOXEL_SPATIAL_MODEL_END
+
+  // DINO_VOXEL_COVER_GUIDES_MODEL_START
+  function digVoxelCoverGuides(survey, reference, options) {
+    var result = { columns: [], seed: null }, p = options || {};
+    if (p.guides !== true || p.findMode || !survey || survey.seed !== p.seed || survey.focus !== p.focus) return result;
+    var pair = digVoxelSpatialComparison(survey, reference);
+    if (!pair.reference) return result;
+    result.seed = pair.seed;
+    [pair.reference, pair.kind === 'ready' ? pair.selected : null].forEach(function (column, slot) {
+      if (!column || !column.removed || (p.inspect && column.row !== Math.floor(p.focus / 6))) return;
+      result.columns.push({ slot: slot, role: slot === 0 ? 'reference' : 'selected', index: column.index, coord: column.coord,
+        row: column.row, col: column.col, removed: column.removed, remaining: column.remaining });
+    });
+    return result;
+  }
+  // DINO_VOXEL_COVER_GUIDES_MODEL_END
+
+  // DINO_VOXEL_PATTERN_MODEL_START
+  function digVoxelSurveyPattern(survey) {
+    var observed = digVoxelCheckpointSurvey(survey);
+    if (!observed) return null;
+    var bins = [0,0,0,0,0], removed = 0;
+    observed.columns.forEach(function (column) { bins[column.removed]++; removed += column.removed; });
+    var selected = observed.columns[survey.focus], selectedCount = selected.removed;
+    return { seed: observed.seed, coordinates: 24, removed: removed, remaining: 96 - removed, worked: 24 - bins[0], untouched: bins[0],
+      bins: bins.map(function (count, level) { return { removed: level, count: count, selected: level === selectedCount }; }),
+      selected: { index: selected.index, coord: String.fromCharCode(65 + selected.index % 6) + (Math.floor(selected.index / 6) + 1), removed: selectedCount, count: bins[selectedCount] } };
+  }
+  // DINO_VOXEL_PATTERN_MODEL_END
+
+  // DINO_VOXEL_PATTERN_LOCATOR_MODEL_START
+  function digVoxelPatternLocator(survey, options) {
+    var empty = { active: false, columns: [], total: 0, marked: 0 };
+    if (!options || options.enabled !== true || options.findMode) return empty;
+    var observed = digVoxelCheckpointSurvey(survey);
+    if (!observed || observed.seed !== options.seed || survey.focus !== options.focus) return empty;
+    var removed = observed.columns[survey.focus].removed, row = Math.floor(survey.focus / 6);
+    var matching = observed.columns.filter(function (column) { return column.removed === removed; });
+    var columns = matching.filter(function (column) { return !options.inspect || Math.floor(column.index / 6) === row; }).map(function (column) {
+      return { index: column.index, row: Math.floor(column.index / 6), col: column.index % 6, removed: removed, remaining: 4 - removed };
+    });
+    return { active: true, seed: observed.seed, focus: survey.focus, removed: removed, total: matching.length, marked: columns.length, columns: columns };
+  }
+  // DINO_VOXEL_PATTERN_LOCATOR_MODEL_END
 
   // DINO_VOXEL_CAMERA_MODEL_START
   // Summarize the actual viewing pose. Values describe display framing,
@@ -7834,6 +7891,20 @@ var CLASSIFY_CASES = [
   // Dino Lab planted-foot draft v1: soft surfaces only; fossil digit counts stay in the skeletal profile.
   // Sauropod pes padding is a biomechanical inference (Jannel et al. 2022,
   // https://pmc.ncbi.nlm.nih.gov/articles/PMC9365286/). Exact skin outlines are interpretive.
+  // Taper the existing lower-arm middle station; keep root and joint stations fixed.
+  // These bounded skin proportions are interpretive, not specimen measurements.
+  function dinoCeratopsianForelegRadii(radii, enabled) {
+    if (enabled !== true || !Array.isArray(radii) || radii.length !== 7) return radii;
+    for (var i = 0; i < radii.length; i++) {
+      if (typeof radii[i] !== 'number' || !(radii[i] > 0) || !isFinite(radii[i])) return radii;
+    }
+    var middle = Math.max(radii[3] * 0.86, radii[5] * 1.12, radii[4] * 0.84);
+    if (!(middle < radii[4])) return radii;
+    var tapered = radii.slice();
+    tapered[4] = middle;
+    return tapered;
+  }
+
   function dinoFootSurfaceProfileFor(dn, skeletal, front) {
     skeletal = skeletal || {};
     var group = String((dn && dn.group) || ''), clade = String((dn && dn.clade) || '');
@@ -7903,6 +7974,65 @@ var CLASSIFY_CASES = [
     return geometry;
   }
 
+  // Illustrative compact-foot contours; contact and represented digit counts stay exact.
+  // Columnar sauropod surfaces retain their separate reconstruction profile.
+  function dinoCompactFootGeometry(THREE, radiusX, radiusZ, height, soleY, mode, digitCount) {
+    if (![radiusX, radiusZ, height].every(function (value) { return isFinite(value) && value > 0; }) || !isFinite(soleY)) return null;
+    radiusX = Math.max(0.002, Number(radiusX)); radiusZ = Math.max(0.002, Number(radiusZ));
+    height = Math.max(0.002, Number(height)); soleY = Number(soleY);
+    var geometry = dinoPlantarGeometry(THREE, radiusX, radiusZ, height, soleY, mode);
+    if (mode !== 'bundled-manus' && mode !== 'broad-pes') return geometry;
+    var positions = geometry.attributes.position;
+    var count = Math.max(2, Math.min(8, Math.floor(Number(digitCount) || 4)));
+    for (var vertex = 0; vertex < positions.count; vertex++) {
+      var x = positions.getX(vertex) / radiusX, z = positions.getZ(vertex) / radiusZ;
+      var level = (positions.getY(vertex) - soleY) / height;
+      if (level <= 1e-6) continue;
+      // The unchanged leg endpoint lies +0.08 radiusX from the pad's center.
+      var cuff = Math.exp(-((x - 0.08) * (x - 0.08) / 0.18 + z * z / 0.40));
+      var fore = Math.max(0, Math.min(1, (-x - 0.18) / 0.54));
+      fore = fore * fore * (3 - 2 * fore);
+      var groove = 0;
+      for (var gap = 0; gap < count - 1; gap++) {
+        var gapZ = (gap - (count - 2) * 0.5) / Math.max(1, (count - 1) * 0.5) * 0.79;
+        var distance = (z - gapZ) / 0.10;
+        groove = Math.max(groove, Math.exp(-distance * distance));
+      }
+      var dorsal = level * (0.82 + 0.53 * cuff - 0.065 * fore * groove);
+      positions.setY(vertex, soleY + height * dorsal);
+    }
+    positions.needsUpdate = true; geometry.computeVertexNormals();
+    // Share the normals across the existing UV seam after sculpting the dorsal rings.
+    var ringLength = 41, normals = geometry.attributes.normal;
+    for (var first = 0; first < positions.count; first += ringLength) {
+      var last = first + ringLength - 1;
+      var normal = new THREE.Vector3(normals.getX(first) + normals.getX(last), normals.getY(first) + normals.getY(last), normals.getZ(first) + normals.getZ(last)).normalize();
+      normals.setXYZ(first, normal.x, normal.y, normal.z); normals.setXYZ(last, normal.x, normal.y, normal.z);
+    }
+    geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    geometry.userData.dinoCompactFoot = { contour: 'dorsal-cuff-and-toe-bases', digitCount: count, inferred: true };
+    return geometry;
+  }
+
+  // A low, rounded skin envelope with a planar underside and tapered toe crown.
+  function dinoCompactDigitGeometry(THREE, radiusX, radiusY, radiusZ) {
+    var geometry = dinoBluntTerminalGeometry(THREE, radiusX, radiusY, radiusZ);
+    if (!geometry) return null;
+    var positions = geometry.attributes.position;
+    for (var vertex = 0; vertex < positions.count; vertex++) {
+      var x = positions.getX(vertex) / radiusX;
+      var level = (positions.getY(vertex) + radiusY) / (2 * radiusY);
+      var fore = Math.max(0, -x), rear = Math.max(0, x);
+      positions.setY(vertex, -radiusY + 2 * radiusY * level * (1 - 0.30 * fore * fore - 0.08 * rear * rear));
+      positions.setZ(vertex, positions.getZ(vertex) * (1 - 0.16 * fore * fore * level));
+    }
+    positions.needsUpdate = true; geometry.computeVertexNormals();
+    geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    geometry.parameters.kind = 'compact-skin-digit';
+    geometry.userData.dinoCompactDigit = { contour: 'rounded-skin-toe', inferred: true };
+    return geometry;
+  }
+
   function dinoPlantLimbSurface(THREE, mesh, proximalPoint, footPoint, soleY) {
     // Change the pivot without changing the rest pose. Padding conceals the small
     // planar trim at the very bottom of shallow, weight-bearing lower-leg lofts.
@@ -7952,20 +8082,62 @@ var CLASSIFY_CASES = [
     return { metacarpal: metacarpal, plate: plate, base: base, tip: tip, radius: Math.max(0.009 * detailScale, span * 0.16), anchor: base.clone().lerp(tip, 0.60) };
   }
 
+  // Taper the anterior skin closure without enlarging it below the neck.
+  // These skin radii are interpretive; the shoulder and clade stations stay exact.
+  function dinoTorsoRadii(height, depth, profile) {
+    return [
+      [height * 0.045, depth * 0.05],
+      [height * 0.76 * profile.shoulderFullness, depth * 0.88 * profile.shoulderFullness],
+      [height * 0.96 * profile.shoulderFullness, depth * 0.96 * profile.ribcageFullness],
+      [height * 0.91 * profile.bellyFullness, depth * 0.94 * profile.bellyFullness],
+      [height * 0.88 * profile.pelvicFullness, depth * 0.94 * profile.pelvicFullness],
+      [height * 0.70, depth * 0.76],
+      [height * 0.12, depth * 0.16]
+    ];
+  }
+
   function dinoSurfaceGeometry(THREE, points, radii, options) {
     var curve = new THREE.CatmullRomCurve3(points, false, 'centripetal');
     options = options || {};
     var rings = options.rings || 48, sides = options.sides || 24, vertices = [], uv = [], indices = [];
+    var previousTangent = null, previousNormal = null;
+    var chestEnd = options.compactChest === true && points.length === 7 ? 1 / 6 : 0;
+    var chestSpan = chestEnd ? points[1].x - points[0].x : 0;
+    function surfaceCenter(t) {
+      var center = curve.getPoint(t);
+      // Shorten the anterior closure without changing the shoulder or the rest of the trunk.
+      // The monotonic mapping retains the original tangent at the shoulder.
+      if (chestEnd && chestSpan > 0 && t < chestEnd) {
+        var distance = points[1].x - center.x;
+        if (distance > 0) center.x = points[1].x - distance / (1 + 1.5 * distance / chestSpan);
+      }
+      return center;
+    }
     for (var i = 0; i <= rings; i++) {
-      var t = i / rings, center = curve.getPoint(t), tangent = curve.getTangent(t).normalize();
-      var normal = new THREE.Vector3().crossVectors(Math.abs(tangent.z) < 0.9 ? new THREE.Vector3(0, 0, 1) : new THREE.Vector3(0, 1, 0), tangent).normalize();
+      var t = i / rings, center = surfaceCenter(t), tangent = curve.getTangent(t).normalize();
+      var normal;
+      if (previousNormal) {
+        // Carry the section through bends without switching reference axes.
+        normal = previousNormal.clone().applyQuaternion(new THREE.Quaternion().setFromUnitVectors(previousTangent, tangent));
+        normal.addScaledVector(tangent, -normal.dot(tangent)).normalize();
+      } else {
+        normal = new THREE.Vector3().crossVectors(Math.abs(tangent.z) < 0.9 ? new THREE.Vector3(0, 0, 1) : new THREE.Vector3(0, 1, 0), tangent).normalize();
+      }
       var binormal = new THREE.Vector3().crossVectors(tangent, normal).normalize();
+      previousTangent = tangent.clone(); previousNormal = normal.clone();
       var rt = t * (radii.length - 1), ri = Math.min(radii.length - 2, Math.floor(rt)), mix = rt - ri;
       mix = mix * mix * (3 - 2 * mix);
       var a = Array.isArray(radii[ri]) ? radii[ri] : [radii[ri], radii[ri]];
       var b = Array.isArray(radii[ri + 1]) ? radii[ri + 1] : [radii[ri + 1], radii[ri + 1]];
       var ry = Math.max(0.001, options.smoothProfile ? dinoLoftRadius(radii, rt, 0) : a[0] + (b[0] - a[0]) * mix);
       var rz = Math.max(0.001, options.smoothProfile ? dinoLoftRadius(radii, rt, 1) : a[1] + (b[1] - a[1]) * mix);
+      // Contract only the proximal collar; keep its path, tip and distal profile exact.
+      // This seats the sauropod neck closure within the chest without adding a new loft station.
+      if (options.taperRoot === true && t < 0.10) {
+        var rootT = t / 0.10;
+        var rootScale = 0.75 + 0.25 * rootT * rootT * (3 - 2 * rootT);
+        ry *= rootScale; rz *= rootScale;
+      }
       for (var j = 0; j <= sides; j++) {
         var angle = j / sides * Math.PI * 2;
         var vertex = center.clone().addScaledVector(normal, Math.cos(angle) * ry).addScaledVector(binormal, Math.sin(angle) * rz);
@@ -7978,7 +8150,7 @@ var CLASSIFY_CASES = [
       }
     }
     [0, rings].forEach(function (ring) {
-      var center = curve.getPoint(ring / rings), ci = vertices.length / 3;
+      var center = surfaceCenter(ring / rings), ci = vertices.length / 3;
       vertices.push(center.x, center.y, center.z); uv.push(ring / rings, 0.5);
       for (var side = 0; side < sides; side++) {
         var start = ring * (sides + 1) + side;
@@ -7998,6 +8170,7 @@ var CLASSIFY_CASES = [
     }
     geometry.computeBoundingBox(); geometry.computeBoundingSphere();
     geometry.userData.dinoSmoothProfile = !!options.smoothProfile;
+    geometry.userData.dinoTransportedFrame = true;
     return geometry;
   }
   // Close the back of the cranial loft inside the existing neck volume.
@@ -8055,6 +8228,18 @@ var CLASSIFY_CASES = [
     return { points: points, radii: radii };
   }
 
+  // Redistribute the visible neck-skin taper without moving cervical evidence.
+  // These external proportions are interpretive; the skull junction uses the original envelope.
+  function dinoCervicalSkinEnvelope(envelope, enabled) {
+    if (enabled !== true || envelope.points.length !== 4 || envelope.radii.length !== 4) return envelope;
+    var base = envelope.radii[0], tip = envelope.radii[3];
+    if (!isFinite(base) || !isFinite(tip) || !(tip > 0) || base < tip * 2) return envelope;
+    var radii = envelope.radii.slice();
+    radii[1] = base * 0.70;
+    radii[2] = Math.min(radii[1], tip * 1.36);
+    return { points: envelope.points, radii: radii };
+  }
+
   // Cranial roots keep their specimen-space positions. A relative shoulder
   // transform follows the cervical mesh without stretching the skull during breath.
   function dinoConnectedCranialPose(THREE, rig, pivot, neck, restQuaternion) {
@@ -8073,6 +8258,20 @@ var CLASSIFY_CASES = [
     return { point: curve.getPoint(t), radius: radius, t: t, distance: distance };
   }
 
+  // Bulk cranial fill is an interpretive display volume; the anatomical frame
+  // and its landmarks are constructed separately. A fixed species profile keeps
+  // this volume independent of the selectable soft-tissue hypotheses.
+  function dinoCranialDisplayProfile(THREE, species, head, snout, length, height, depth, detailScale, isTheropod) {
+    var refined = !!species && species.id === 'triceratops';
+    return {
+      refined: refined,
+      vaultCenter: refined ? head.clone().add(new THREE.Vector3(-length * 0.08, height * 0.12, 0)) : head.clone(),
+      vaultScale: new THREE.Vector3(length * (refined ? 0.32 : 0.68), height * (refined ? 0.65 : 1), depth * (refined ? 0.72 : 1)),
+      rostrumCenter: head.clone().lerp(snout, refined ? 0.54 : 0.62),
+      rostrumScale: new THREE.Vector3(refined ? length * 0.38 : Math.max(0.09 * detailScale, length * 0.62),
+        height * (refined ? 0.3 : (isTheropod ? 0.58 : 0.48)), depth * (refined ? 0.5 : 0.72))
+    };
+  }
   // Taper both mandibular ends upward into the head; retain the three jaw stations.
   function dinoJawProfile(THREE, start, end, height, depth, length) {
     var rear = start.clone().add(new THREE.Vector3(length * 0.12, height * 0.28, 0));
@@ -8121,6 +8320,26 @@ var CLASSIFY_CASES = [
     return { point: hit.point, normal: normal };
   }
 
+  // Render the existing eye stack in a bounded local surface frame.
+  // The angle cap is a display safeguard, not a measured fossil gaze angle.
+  function dinoEyeSurfaceFrame(THREE, normal, side, maxTurn) {
+    if (!normal || !isFinite(normal.x) || !isFinite(normal.y) || !isFinite(normal.z)) return null;
+    side = side < 0 ? -1 : 1;
+    var outward = new THREE.Vector3(normal.x, normal.y, normal.z);
+    if (outward.lengthSq() < 0.000001) return null;
+    outward.normalize();
+    // The head's anterior direction is -X; retain the old frame on unsupported faces.
+    if (outward.z * side <= 0.05 || outward.x > 0.05) return null;
+    var lateral = new THREE.Vector3(0, 0, side);
+    var turn = Math.acos(Math.max(-1, Math.min(1, lateral.dot(outward))));
+    var limit = Number(maxTurn);
+    if (!isFinite(limit) || limit <= 0) return null;
+    limit = Math.min(Math.PI / 3, limit);
+    var target = new THREE.Quaternion().setFromUnitVectors(lateral, outward);
+    if (turn > limit) return new THREE.Quaternion().slerp(target, limit / turn);
+    return target;
+  }
+
   // Project each strip vertex onto the cranial mesh, then add only shallow relief.
   // World-space curve points are converted back into the surface's local frame.
   function dinoFacialStripGeometry(THREE, surface, points, options) {
@@ -8128,6 +8347,16 @@ var CLASSIFY_CASES = [
     surface.updateWorldMatrix(true, false);
     if (!surface.geometry.boundingBox) surface.geometry.computeBoundingBox();
     var bounds = surface.geometry.boundingBox.clone().applyMatrix4(surface.matrixWorld);
+    // A mouth line follows the visible skin of both overlapping jaw envelopes.
+    // The original surface remains the geometry owner and local coordinate frame.
+    var surfaces = [surface];
+    (options.occluders || []).forEach(function (mesh) {
+      if (!mesh || !mesh.geometry || surfaces.indexOf(mesh) >= 0) return;
+      mesh.updateWorldMatrix(true, false);
+      if (!mesh.geometry.boundingBox) mesh.geometry.computeBoundingBox();
+      bounds.union(mesh.geometry.boundingBox.clone().applyMatrix4(mesh.matrixWorld));
+      surfaces.push(mesh);
+    });
     var reach = Math.max(bounds.max.z - bounds.min.z, options.width * 4);
     var side = options.side < 0 ? -1 : 1, rings = options.rings || 32, columns = 4;
     var curve = new THREE.CatmullRomCurve3(points), positions = [], roots = [], uvs = [], indices = [], seated = [];
@@ -8141,7 +8370,13 @@ var CLASSIFY_CASES = [
         var v = column / columns * 2 - 1;
         var sample = center.clone().addScaledVector(across, v * options.width * taper);
         var origin = sample.clone(); origin.z = side > 0 ? bounds.max.z + reach : bounds.min.z - reach;
-        var anchor = dinoSurfaceAnchor(THREE, surface, origin, new THREE.Vector3(0, 0, -side), reach * 3);
+        var anchor = null, closest = Infinity;
+        surfaces.forEach(function (mesh) {
+          var hit = dinoSurfaceAnchor(THREE, mesh, origin, new THREE.Vector3(0, 0, -side), reach * 3);
+          if (!hit) return;
+          var distance = origin.distanceToSquared(hit.point);
+          if (distance < closest) { anchor = hit; closest = distance; }
+        });
         seated.push(!!anchor);
         var root = anchor ? anchor.point : sample;
         var point = root.clone();
@@ -8167,7 +8402,7 @@ var CLASSIFY_CASES = [
     geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
     geometry.setIndex(indices); geometry.computeVertexNormals();
     geometry.computeBoundingBox(); geometry.computeBoundingSphere();
-    geometry.parameters = { width: options.width, relief: options.relief || 0, offset: offset, projected: projected, samples: seated.length, rings: rings, columns: columns, side: side };
+    geometry.parameters = { width: options.width, relief: options.relief || 0, offset: offset, projected: projected, samples: seated.length, rings: rings, columns: columns, side: side, surfaceCount: surfaces.length };
     return geometry;
   }
 
@@ -8887,6 +9122,89 @@ var CLASSIFY_CASES = [
   }
   // Sweep a tapered sheath between the existing landmarks. Horns stay round;
   // claws have a deeper, narrower section and a more pronounced dorsal curve.
+  // Bow the existing keratin surface into a narrower descending beak tip.
+  // The root, longitudinal extent and bony jaw remain fixed; outline fractions are interpretive.
+  function dinoBeakSurfaceGeometry(THREE, geometry, height, enabled) {
+    if (enabled !== true || !geometry || !(height > 0) || !isFinite(height)) return geometry;
+    var positions = geometry.attributes.position, uv = geometry.attributes.uv;
+    // This sculpt belongs to the existing 48-ring, 24-side beak loft.
+    if (!positions || !uv || positions.count !== 1227 || uv.count !== 1227 ||
+      !geometry.index || geometry.index.count !== 7056) return geometry;
+    for (var vertex = 0; vertex < positions.count; vertex++) {
+      var t = Math.max(0, Math.min(1, uv.getX(vertex)));
+      var hook = Math.max(0, Math.min(1, (t - 0.45) / 0.55));
+      hook = hook * hook * (3 - 2 * hook);
+      var bow = Math.sin(Math.PI * t);
+      positions.setY(vertex, positions.getY(vertex) + height * (0.04 * bow * bow - 0.16 * hook));
+      // The existing beak is centered on local Z=0; retain its broad buried base.
+      positions.setZ(vertex, positions.getZ(vertex) * (1 - 0.55 * hook));
+    }
+    positions.needsUpdate = true;
+    geometry.computeVertexNormals();
+    // Match the duplicated UV seam after sculpting, including the terminal rings.
+    var normals = geometry.attributes.normal;
+    for (var ring = 0; ring <= 48; ring++) {
+      var first = ring * 25, last = first + 24;
+      var blend = new THREE.Vector3(normals.getX(first) + normals.getX(last),
+        normals.getY(first) + normals.getY(last), normals.getZ(first) + normals.getZ(last)).normalize();
+      normals.setXYZ(first, blend.x, blend.y, blend.z);
+      normals.setXYZ(last, blend.x, blend.y, blend.z);
+    }
+    geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    return geometry;
+  }
+
+  // Restrained directional grain is an interpretive surface treatment, not fossil detail.
+  // Local radial coordinates make the pattern continuous around the closed sheath.
+  function dinoKeratinShading(material) {
+    if (!material || material._dinoKeratinShadingApplied) return material;
+    var previousCompile = material.onBeforeCompile;
+    var previousCacheKey = material.customProgramCacheKey;
+    var previousKeyAtApply = typeof previousCacheKey === 'function' ? previousCacheKey.call(material) : '';
+    material._dinoKeratinShadingApplied = true;
+    material.extensions = Object.assign({}, material.extensions, { derivatives: true });
+    material.defaultAttributeValues = Object.assign({}, material.defaultAttributeValues, { dinoKeratin: [0, 0, 0, 0] });
+    material.userData = Object.assign({}, material.userData, {
+      dinoKeratinGrain: 'Interpretive directional sheath grain; surface detail and coloration are inferred.'
+    });
+    material.onBeforeCompile = function (shader, renderer) {
+      if (typeof previousCompile === 'function') previousCompile.call(this, shader, renderer);
+      // Retain a prior hook's shader when it no longer has the standard insertion points.
+      if (shader.vertexShader.indexOf('#include <begin_vertex>') < 0 ||
+        shader.fragmentShader.indexOf('#include <color_fragment>') < 0) return;
+      shader.vertexShader = 'attribute vec4 dinoKeratin;\nvarying vec4 vDinoKeratin;\n' + shader.vertexShader;
+      shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvDinoKeratin = dinoKeratin;');
+      shader.fragmentShader = 'varying vec4 vDinoKeratin;\n' + shader.fragmentShader;
+      shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', [
+        '#include <color_fragment>',
+        'float keratinRadialLength = length(vDinoKeratin.xy);',
+        'vec2 keratinRadial = vDinoKeratin.xy / max(keratinRadialLength, 0.001);',
+        'float keratinAlong = clamp(vDinoKeratin.z, 0.0, 1.0);',
+        // XY projections are periodic around the ring; there is no angular seam.
+        'float keratinPhaseA = dot(keratinRadial, vec2(57.0, 21.0)) + sin(keratinAlong * 13.0) * 0.24;',
+        'float keratinPhaseB = dot(keratinRadial, vec2(-31.0, 73.0)) - keratinAlong * 0.65;',
+        'float keratinResolvedA = 1.0 - smoothstep(0.8, 3.0, fwidth(keratinPhaseA));',
+        'float keratinResolvedB = 1.0 - smoothstep(0.8, 3.0, fwidth(keratinPhaseB));',
+        // Fade the buried root and convergence at the pointed tip; caps stay neutral.
+        'float keratinEnvelope = smoothstep(0.035, 0.14, keratinAlong) * (1.0 - smoothstep(0.82, 0.995, keratinAlong));',
+        // The radial guard also neutralizes the generic missing-attribute value (0,0,0,1).
+        'float keratinPresent = clamp(vDinoKeratin.w, 0.0, 1.0) * smoothstep(0.2, 0.55, keratinRadialLength);',
+        'float keratinGrain = (0.65 * sin(keratinPhaseA) * keratinResolvedA + 0.35 * sin(keratinPhaseB) * keratinResolvedB) * keratinEnvelope * keratinPresent;',
+        'diffuseColor.rgb *= 1.0 + 0.07 * keratinGrain;'
+      ].join('\n'));
+      // Phong has no roughness chunk; its diffuse grain uses the same filtered pattern.
+      shader.fragmentShader = shader.fragmentShader.replace('#include <roughnessmap_fragment>',
+        '#include <roughnessmap_fragment>\nroughnessFactor = clamp(roughnessFactor + 0.035 * keratinGrain, 0.04, 1.0);');
+    };
+    material.customProgramCacheKey = function () {
+      var previous = typeof previousCacheKey === 'function' ? previousCacheKey.call(this) : '';
+      return JSON.stringify([previousKeyAtApply, previous]) + '|dinolab-keratin-grain-v1';
+    };
+    material.needsUpdate = true;
+    return material;
+  }
+
+
   function dinoKeratinGeometry(THREE, direction, radius, kind, coverage) {
     var length = direction.length();
     coverage = coverage == null ? 1 : coverage;
@@ -8900,7 +9218,7 @@ var CLASSIFY_CASES = [
     }
     bend.normalize();
     var across = new THREE.Vector3().crossVectors(along, bend).normalize();
-    var positions = [], indices = [], rings = 12, sides = 12;
+    var positions = [], indices = [], keratin = [], rings = 12, sides = 12;
     for (var ring = 0; ring < rings; ring++) {
       var fraction = ring / rings, t = fraction * coverage, taper = radius * Math.pow(1 - fraction, 0.8);
       var center = along.clone().multiplyScalar(length * t).addScaledVector(bend, length * bow * 4 * t * (1 - t));
@@ -8910,6 +9228,8 @@ var CLASSIFY_CASES = [
         var angle = side / sides * Math.PI * 2;
         var point = center.clone().addScaledVector(across, Math.cos(angle) * taper * breadth).addScaledVector(normal, Math.sin(angle) * taper);
         positions.push(point.x, point.y, point.z);
+        // Radial Cartesian coordinates stay continuous across the wrapped seam.
+        keratin.push(Math.cos(angle), Math.sin(angle), fraction, 1);
         if (ring < rings - 1) {
           var n = ring * sides + side, next = ring * sides + (side + 1) % sides;
           indices.push(n, n + sides, next, next, n + sides, next + sides);
@@ -8919,7 +9239,9 @@ var CLASSIFY_CASES = [
     // A shorter bony core can follow the same curve as its keratin sheath.
     var endpoint = coverage === 1 ? direction : along.clone().multiplyScalar(length * coverage).addScaledVector(bend, length * bow * 4 * coverage * (1 - coverage));
     var tip = positions.length / 3; positions.push(endpoint.x, endpoint.y, endpoint.z);
+    keratin.push(0, 0, 1, 1);
     var base = positions.length / 3; positions.push(0, 0, 0);
+    keratin.push(0, 0, 0, 1);
     for (var cap = 0; cap < sides; cap++) {
       var last = (rings - 1) * sides;
       indices.push(last + cap, tip, last + (cap + 1) % sides);
@@ -8927,8 +9249,41 @@ var CLASSIFY_CASES = [
     }
     var geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute('dinoKeratin', new THREE.Float32BufferAttribute(keratin, 4));
     geometry.setIndex(indices); geometry.computeVertexNormals(); geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    geometry.userData.dinoKeratinCoordinates = { space: 'radial-longitudinal', interpretive: true };
     geometry.parameters = { length: length * coverage, radius: radius, kind: horn ? 'horn' : 'claw', coverage: coverage };
+    return geometry;
+  }
+
+  // Blunt keratin terminals retain the prior nail bounds and digit placement.
+  // The shallow crown and rounded, broad lower edge are an interpretive sheath.
+  function dinoBluntTerminalGeometry(THREE, radiusX, radiusY, radiusZ) {
+    if (![radiusX, radiusY, radiusZ].every(function (radius) { return isFinite(radius) && radius > 0; })) return null;
+    var sides = 24, rings = [[0.28, 0.95], [0.54, 0.82], [0.76, 0.62], [0.92, 0.35], [1, 0.06], [1, -0.38], [0.98, -0.76], [0.91, -1]];
+    var positions = [0, radiusY, 0], uv = [0.5, 0.5], indices = [];
+    rings.forEach(function (ring, ringIndex) {
+      for (var side = 0; side < sides; side++) {
+        var angle = side / sides * Math.PI * 2, cx = Math.cos(angle), sz = Math.sin(angle);
+        var px = (cx < 0 ? -1 : 1) * Math.pow(Math.abs(cx), 0.90) * ring[0];
+        var pz = (sz < 0 ? -1 : 1) * Math.pow(Math.abs(sz), 0.90) * ring[0];
+        positions.push(px * radiusX, ring[1] * radiusY, pz * radiusZ);
+        uv.push(px * 0.5 + 0.5, pz * 0.5 + 0.5);
+        var current = 1 + ringIndex * sides + side, next = 1 + ringIndex * sides + (side + 1) % sides;
+        if (ringIndex === 0) indices.push(0, next, current);
+        if (ringIndex < rings.length - 1) indices.push(current, next, current + sides, next, next + sides, current + sides);
+      }
+    });
+    var bottom = positions.length / 3; positions.push(0, -radiusY, 0); uv.push(0.5, 0.5);
+    for (var cap = 0; cap < sides; cap++) {
+      var last = 1 + (rings.length - 1) * sides;
+      indices.push(last + cap, last + (cap + 1) % sides, bottom);
+    }
+    var geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    geometry.setIndex(indices); geometry.computeVertexNormals(); geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    geometry.parameters = { radiusX: radiusX, radiusY: radiusY, radiusZ: radiusZ, kind: 'blunt-keratin-terminal' };
     return geometry;
   }
 
@@ -9099,6 +9454,135 @@ var CLASSIFY_CASES = [
     geometry.setIndex(indices); geometry.computeVertexNormals(); geometry.computeBoundingBox();
     return geometry;
   }
+  // DINO_DISPLAY_SHELL_START
+  // A bounded closed surface with a rounded perimeter. Thickness is a visual
+  // reconstruction choice, never a specimen measurement or an added fossil claim.
+  function dinoDisplayShellGeometry(THREE, sample, normal, thickness, thicknessAt) {
+    var sides = 64, radii = [1/6, 2/6, 3/6, 4/6, 5/6, 0.92, 0.96, 0.985, 1];
+    var axis = normal.clone().normalize(), positions = [], uv = [], indices = [], faces = [];
+    function vertex(r, side, face) {
+      var angle = side / sides * Math.PI * 2, point = sample(r, angle);
+      var edgeT = Math.max(0, (r - 0.92) / 0.08);
+      var bevel = Math.sqrt(Math.max(0, 1 - edgeT * edgeT));
+      if (thicknessAt && r < 1) point.addScaledVector(axis, face * 0.5 * thicknessAt(r, angle) * bevel);
+      else point.addScaledVector(axis, face * thickness * 0.5 * (1 + 0.12 * (1 - r*r)) * bevel);
+      var index = positions.length / 3;
+      positions.push(point.x, point.y, point.z);
+      uv.push(0.5 + Math.cos(angle)*r*0.5, 0.5 + Math.sin(angle)*r*0.5);
+      return index;
+    }
+    [1, -1].forEach(function (face, faceIndex) {
+      var center = vertex(0, 0, face), rings = [];
+      radii.forEach(function (r, ringIndex) {
+        var ring = [];
+        for (var side = 0; side < sides; side++) ring.push(faceIndex && ringIndex === radii.length - 1 ? faces[0].rings[ringIndex][side] : vertex(r, side, face));
+        rings.push(ring);
+      });
+      function triangle(a,b,c) { if (face > 0) indices.push(a,b,c); else indices.push(a,c,b); }
+      for (var side = 0; side < sides; side++) {
+        var next = (side + 1) % sides;
+        triangle(center, rings[0][next], rings[0][side]);
+        for (var ringIndex = 0; ringIndex < rings.length - 1; ringIndex++) {
+          var inner = rings[ringIndex], outer = rings[ringIndex + 1];
+          triangle(inner[side], inner[next], outer[side]);
+          triangle(inner[next], outer[next], outer[side]);
+        }
+      }
+      faces.push({center:center,rings:rings});
+    });
+    var geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+    geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+    geometry.setIndex(indices); geometry.computeVertexNormals();
+    geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    geometry.userData.dinoDisplayShell = {closed:true,roundedRim:true,thickness:thickness,thicknessIsInterpretive:true};
+    return geometry;
+  }
+  function dinoFrillGeometry(THREE, height, width, bow, solidCollar) {
+    var normal = new THREE.Vector3(1,-0.60,0).normalize();
+    var thickness = Math.min(height,width) * 0.045;
+    solidCollar = solidCollar === true;
+    // Triceratops has a solid sheet with a thicker caudal collar. This bounded
+    // depth profile is interpretive; it does not reproduce specimen measurements.
+    function collarThickness(r,angle) {
+      var margin = Math.max(0,Math.min(1,(Math.sin(angle)+0.55)/0.35));
+      margin = margin*margin*(3-2*margin);
+      var collar = Math.exp(-Math.pow((r-0.88)/0.12,2));
+      return thickness * (0.72 + 0.88 * collar * margin);
+    }
+    var geometry = dinoDisplayShellGeometry(THREE,function (r,angle) {
+      var edge = 1 + 0.025 * Math.cos(angle * 14) * (solidCollar ? 1 : r*r);
+      // Use radial rays from the established perimeter: clipping each interior
+      // ring separately flattens the lower sheet instead of spanning its face.
+      var y = solidCollar ? r * Math.max(-height * 0.48, Math.sin(angle) * height * edge) :
+        Math.max(-height * 0.48, Math.sin(angle) * height * r * edge);
+      var point = new THREE.Vector3(y * 0.60 + bow * r*r + height * 0.024 * (1-r*r),y,Math.cos(angle) * width * r * edge);
+      if (solidCollar) {
+        // A shallow upper-sheet dish lets light describe the existing frill volume.
+        // Keep the skull root, lower sheet and rim fixed; this camber is interpretive.
+        var crown = Math.max(0, Math.sin(angle));
+        crown = crown*crown*(3-2*crown);
+        var interior = 6.75 * r*r * Math.pow(1-r*r, 2);
+        point.addScaledVector(normal, -height * 0.06 * interior * crown);
+      }
+      return point;
+    },normal,thickness,solidCollar ? collarThickness : null);
+    geometry.userData.dinoDisplayShell.feature = 'frill';
+    if (solidCollar) {
+      geometry.userData.dinoDisplayShell.depthProfile = 'solid-caudal-collar';
+      geometry.userData.dinoDisplayShell.maxThickness = thickness * 1.60;
+    }
+    return geometry;
+  }
+  // Build the bony Triceratops frill between corresponding skin faces. A
+  // separately scaled curved sheet can cross the skin even when its outline is smaller.
+  // Reuse the inner seven rings and close at the 0.96 ring; each face remains
+  // inside its original triangular envelope. Layer thickness is interpretive.
+  function dinoBonyFrillGeometry(THREE, surface) {
+    var source = surface.attributes.position, sourceUV = surface.attributes.uv;
+    var sides = 64, rings = 7, backOffset = 577;
+    var positions = [], uv = [], indices = [], faces = [];
+    var front = new THREE.Vector3(), back = new THREE.Vector3();
+    function vertex(sourceIndex, face, weight) {
+      front.fromBufferAttribute(source, sourceIndex);
+      back.fromBufferAttribute(source, sourceIndex + backOffset);
+      front.lerp(back, (1-face*weight)*0.5);
+      var index = positions.length/3;
+      positions.push(front.x,front.y,front.z);
+      uv.push(sourceUV.getX(sourceIndex),sourceUV.getY(sourceIndex));
+      return index;
+    }
+    [1,-1].forEach(function (face, faceIndex) {
+      var center = vertex(0,face,0.58), rows = [];
+      for (var ring=0; ring<rings; ring++) {
+        var row = [], weight = ring===rings-1 ? 0 : (ring===rings-2 ? 0.40 : 0.58);
+        for (var side=0; side<sides; side++) {
+          row.push(faceIndex && ring===rings-1 ? faces[0].rows[ring][side] : vertex(1+ring*sides+side,face,weight));
+        }
+        rows.push(row);
+      }
+      function triangle(a,b,c) { if (face>0) indices.push(a,b,c); else indices.push(a,c,b); }
+      for (var side=0; side<sides; side++) {
+        var next = (side+1)%sides;
+        triangle(center,rows[0][next],rows[0][side]);
+        for (var ring=0; ring<rings-1; ring++) {
+          triangle(rows[ring][side],rows[ring][next],rows[ring+1][side]);
+          triangle(rows[ring][next],rows[ring+1][next],rows[ring+1][side]);
+        }
+      }
+      faces.push({center:center,rows:rows});
+    });
+    var geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+    geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+    geometry.setIndex(indices); geometry.computeVertexNormals();
+    geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    geometry.userData.dinoDisplayShell = Object.assign({},surface.userData.dinoDisplayShell,{
+      depthProfile:'nested-bony-frill',thickness:surface.userData.dinoDisplayShell.thickness*0.58,
+      maxThickness:surface.userData.dinoDisplayShell.maxThickness*0.58,radialExtent:0.96
+    });
+    return geometry;
+  }
   function dinoPlateGeometry(THREE, width, height, thickness) {
     var shape = new THREE.Shape();
     shape.moveTo(-width * 0.28, 0);
@@ -9106,11 +9590,19 @@ var CLASSIFY_CASES = [
     shape.quadraticCurveTo(-width * 0.10, height * 0.91, width * 0.06, height);
     shape.quadraticCurveTo(width * 0.40, height * 0.65, width * 0.48, height * 0.34);
     shape.lineTo(width * 0.28, 0); shape.closePath();
-    var geometry = new THREE.ExtrudeGeometry(shape, { depth: thickness, bevelEnabled: true,
-      bevelThickness: thickness * 0.28, bevelSize: thickness * 0.36, bevelSegments: 2, steps: 1, curveSegments: 6 });
-    geometry.translate(0, 0, -thickness * 0.5); geometry.computeVertexNormals(); geometry.computeBoundingBox();
+    var outline = shape.getSpacedPoints(64).slice(0,64), center = new THREE.Vector3(0,height*0.42,0);
+    // The outline runs clockwise. Keep the same silhouette; the softly domed
+    // faces and rounded edge let lighting describe a volume rather than a cutout.
+    var geometry = dinoDisplayShellGeometry(THREE,function (r,angle) {
+      var t = angle / (Math.PI*2)*64, index = Math.floor(t), blend = t-index;
+      var a=outline[index%64], b=outline[(index+1)%64];
+      var x=a.x+(b.x-a.x)*blend, y=a.y+(b.y-a.y)*blend;
+      return new THREE.Vector3(center.x+(x-center.x)*r,center.y+(y-center.y)*r,width*0.018*(1-r*r));
+    },new THREE.Vector3(0,0,1),thickness);
+    geometry.userData.dinoDisplayShell.feature = 'dorsal-plate';
     return geometry;
   }
+  // DINO_DISPLAY_SHELL_END
   function dinoMembraneGeometry(THREE, bottomPoints, topPoints) {
     var bottom = new THREE.CatmullRomCurve3(bottomPoints), top = new THREE.CatmullRomCurve3(topPoints);
     var positions = [], uv = [], indices = [], columns = 40, rows = 8;
@@ -9134,6 +9626,112 @@ var CLASSIFY_CASES = [
   }
 
   // Bake coordinates in specimen space so separate meshes share a texture scale and rotation cannot move the pattern.
+  // Soften an overlapping skin junction without moving its anatomical surfaces.
+  // Both passes read immutable world-space normals, so mesh order cannot bias the blend.
+  function dinoBlendSurfaceNormals(THREE, first, second, width, frontLimit, secondOnly) {
+    if (!first || !second || first === second || !isFinite(width) || !isFinite(width * width) || !(width > 0)) return null;
+    var limited = typeof frontLimit === 'number' && isFinite(frontLimit);
+    var summary = { changed: [0, 0], testedTriangles: 0 }, widthSquared = width * width;
+    function smooth(value) { value = Math.max(0, Math.min(1, value)); return value * value * (3 - 2 * value); }
+    function boundsDistanceSquared(point, bounds) {
+      var x = Math.max(bounds[0] - point.x, 0, point.x - bounds[3]);
+      var y = Math.max(bounds[1] - point.y, 0, point.y - bounds[4]);
+      var z = Math.max(bounds[2] - point.z, 0, point.z - bounds[5]);
+      return x * x + y * y + z * z;
+    }
+    function snapshot(mesh) {
+      if (!mesh.geometry || !mesh.geometry.attributes || !mesh.matrixWorld || !mesh.updateWorldMatrix) return null;
+      var geometry = mesh.geometry, positions = geometry.attributes.position, normals = geometry.attributes.normal;
+      if (!positions || !normals || !positions.count || positions.count !== normals.count || !normals.setXYZ) return null;
+      mesh.updateWorldMatrix(true, false);
+      if (!mesh.matrixWorld.elements.every(isFinite) || !isFinite(mesh.matrixWorld.determinant()) || mesh.matrixWorld.determinant() === 0) return null;
+      var normalMatrix = new THREE.Matrix3().getNormalMatrix(mesh.matrixWorld);
+      var worldPositions = new Float64Array(positions.count * 3), worldNormals = new Float64Array(normals.count * 3);
+      var localNormals = new Float64Array(normals.count * 3), bounds = [Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity];
+      var point = new THREE.Vector3(), normal = new THREE.Vector3();
+      for (var i = 0; i < positions.count; i++) {
+        point.fromBufferAttribute(positions, i).applyMatrix4(mesh.matrixWorld);
+        normal.fromBufferAttribute(normals, i);
+        if (!isFinite(point.x + point.y + point.z + normal.x + normal.y + normal.z) || normal.lengthSq() === 0) return null;
+        normal.toArray(localNormals, i * 3);
+        normal.applyMatrix3(normalMatrix).normalize();
+        if (!isFinite(normal.x + normal.y + normal.z) || normal.lengthSq() === 0) return null;
+        point.toArray(worldPositions, i * 3); normal.toArray(worldNormals, i * 3);
+        bounds[0] = Math.min(bounds[0], point.x); bounds[1] = Math.min(bounds[1], point.y); bounds[2] = Math.min(bounds[2], point.z);
+        bounds[3] = Math.max(bounds[3], point.x); bounds[4] = Math.max(bounds[4], point.y); bounds[5] = Math.max(bounds[5], point.z);
+      }
+      var index = geometry.index, count = index ? index.count : positions.count;
+      if (count % 3 !== 0) return null;
+      var triangles = [], a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3(), edge = new THREE.Vector3();
+      for (var offset = 0; offset < count; offset += 3) {
+        var ai = index ? index.getX(offset) : offset, bi = index ? index.getX(offset + 1) : offset + 1, ci = index ? index.getX(offset + 2) : offset + 2;
+        if (!isFinite(ai + bi + ci) || ai < 0 || bi < 0 || ci < 0 || ai >= positions.count || bi >= positions.count || ci >= positions.count || ai % 1 || bi % 1 || ci % 1) return null;
+        a.fromArray(worldPositions, ai * 3); b.fromArray(worldPositions, bi * 3); c.fromArray(worldPositions, ci * 3);
+        // Degenerate faces provide no stable closest point or interpolated normal.
+        if (edge.subVectors(b, a).cross(point.subVectors(c, a)).lengthSq() === 0) continue;
+        triangles.push({ a: ai, b: bi, c: ci, bounds: [
+          Math.min(a.x, b.x, c.x), Math.min(a.y, b.y, c.y), Math.min(a.z, b.z, c.z),
+          Math.max(a.x, b.x, c.x), Math.max(a.y, b.y, c.y), Math.max(a.z, b.z, c.z)
+        ] });
+      }
+      return { attribute: normals, positions: worldPositions, normals: worldNormals, localNormals: localNormals,
+        inverseNormalMatrix: normalMatrix.clone().invert(), bounds: bounds, triangles: triangles, changes: [] };
+    }
+    var surfaces = [snapshot(first), snapshot(second)];
+    if (!surfaces[0] || !surfaces[1] || surfaces[0].attribute === surfaces[1].attribute) return null;
+    var aBounds = surfaces[0].bounds, bBounds = surfaces[1].bounds;
+    var gapX = Math.max(0, aBounds[0] - bBounds[3], bBounds[0] - aBounds[3]);
+    var gapY = Math.max(0, aBounds[1] - bBounds[4], bBounds[1] - aBounds[4]);
+    var gapZ = Math.max(0, aBounds[2] - bBounds[5], bBounds[2] - aBounds[5]);
+    if (gapX * gapX + gapY * gapY + gapZ * gapZ >= widthSquared) return summary;
+    var triangle = new THREE.Triangle(), point = new THREE.Vector3(), closest = new THREE.Vector3(), nearestPoint = new THREE.Vector3();
+    var barycentric = new THREE.Vector3(), normal = new THREE.Vector3(), targetNormal = new THREE.Vector3(), scratch = new THREE.Vector3();
+    // A one-sided join reads the first surface without changing its established lighting.
+    for (var pass = secondOnly === true ? 1 : 0; pass < 2; pass++) {
+      var source = surfaces[pass], target = surfaces[1 - pass];
+      for (var vertex = 0; vertex < source.attribute.count; vertex++) {
+        point.fromArray(source.positions, vertex * 3);
+        if ((limited && point.x <= frontLimit) || boundsDistanceSquared(point, target.bounds) >= widthSquared) continue;
+        var nearest = null, nearestDistanceSquared = widthSquared;
+        for (var faceIndex = 0; faceIndex < target.triangles.length; faceIndex++) {
+          var face = target.triangles[faceIndex];
+          if (boundsDistanceSquared(point, face.bounds) >= nearestDistanceSquared) continue;
+          triangle.a.fromArray(target.positions, face.a * 3); triangle.b.fromArray(target.positions, face.b * 3); triangle.c.fromArray(target.positions, face.c * 3);
+          summary.testedTriangles++;
+          triangle.closestPointToPoint(point, closest);
+          var distanceSquared = closest.distanceToSquared(point);
+          if (distanceSquared < nearestDistanceSquared) {
+            nearest = face; nearestDistanceSquared = distanceSquared; nearestPoint.copy(closest);
+            if (distanceSquared === 0) break;
+          }
+        }
+        if (!nearest) continue;
+        triangle.a.fromArray(target.positions, nearest.a * 3); triangle.b.fromArray(target.positions, nearest.b * 3); triangle.c.fromArray(target.positions, nearest.c * 3);
+        THREE.Triangle.getBarycoord(nearestPoint, triangle.a, triangle.b, triangle.c, barycentric);
+        targetNormal.fromArray(target.normals, nearest.a * 3).multiplyScalar(barycentric.x)
+          .addScaledVector(scratch.fromArray(target.normals, nearest.b * 3), barycentric.y)
+          .addScaledVector(scratch.fromArray(target.normals, nearest.c * 3), barycentric.z);
+        if (targetNormal.lengthSq() < 1e-20) continue;
+        targetNormal.normalize(); normal.fromArray(source.normals, vertex * 3);
+        // A fixed reference needs a full match at contact; two moving surfaces meet halfway.
+        var weight = (secondOnly === true ? 1 : 0.5) * (1 - smooth(Math.sqrt(nearestDistanceSquared) / width)) * smooth(normal.dot(targetNormal) / 0.25);
+        if (limited) weight *= smooth((point.x - frontLimit) / width);
+        if (!(weight > 0)) continue;
+        normal.lerp(targetNormal, weight).normalize().applyMatrix3(source.inverseNormalMatrix).normalize();
+        scratch.fromArray(source.localNormals, vertex * 3);
+        if (normal.distanceToSquared(scratch) < 1e-24) continue;
+        source.changes.push([vertex, normal.x, normal.y, normal.z]);
+      }
+    }
+    // Sparse writes preserve untouched normals exactly, including their attribute version.
+    surfaces.forEach(function (surface, surfaceIndex) {
+      surface.changes.forEach(function (change) { surface.attribute.setXYZ(change[0], change[1], change[2], change[3]); });
+      summary.changed[surfaceIndex] = surface.changes.length;
+      if (surface.changes.length) surface.attribute.needsUpdate = true;
+    });
+    return summary;
+  }
+
   function dinoSkinCoordinates(THREE, geometry, matrix, tailRegion) {
     var positions = geometry.attributes.dinoCoatRoot || geometry.attributes.position, normals = geometry.attributes.dinoCoatNormal || geometry.attributes.normal;
     var skinPositions = [], skinNormals = [], regionCoordinates = [], p = new THREE.Vector3(), n = new THREE.Vector3();
@@ -9154,19 +9752,34 @@ var CLASSIFY_CASES = [
     var rng = mulberry32(seed), columns = 64, rows = 32;
     var cells = new Float32Array(columns * rows * 3);
     for (var cell = 0; cell < columns * rows; cell++) {
-      cells[cell * 3] = 0.27 + rng() * 0.46;
-      cells[cell * 3 + 1] = 0.27 + rng() * 0.46;
+      // Wider site spacing variation avoids a regular stamped grid of scales.
+      cells[cell * 3] = (scaled ? 0.12 : 0.27) + rng() * (scaled ? 0.76 : 0.46);
+      cells[cell * 3 + 1] = (scaled ? 0.12 : 0.27) + rng() * (scaled ? 0.76 : 0.46);
       cells[cell * 3 + 2] = rng() - 0.5;
     }
     var colorData = new Uint8ClampedArray(width * height * 4);
     var heightData = new Uint8ClampedArray(width * height * 4);
     var roughnessData = new Uint8ClampedArray(width * height * 4);
+    var phase = (seed >>> 0) / 4294967296 * Math.PI * 2;
+    var neighborRadius = scaled ? 2 : 1;
     for (var y = 0; y < height; y++) {
-      var v = y / (height - 1), py = v * rows, iy = Math.floor(py);
+      var v = y / (height - 1);
       for (var x = 0; x < width; x++) {
-        var u = x / (width - 1), px = u * columns, ix = Math.floor(px);
+        var u = x / (width - 1), px = u * columns, py = v * rows;
+        if (scaled) {
+          // A periodic low-frequency warp varies cell shapes without a seam or
+          // extra renderer samples. Wrap endpoints exactly in all three maps.
+          u = x === width - 1 ? 0 : u;
+          var wrappedV = y === height - 1 ? 0 : v;
+          px = u * columns + 0.32 * Math.sin(u * Math.PI * 8 + phase) * Math.cos(wrappedV * Math.PI * 6)
+            + 0.14 * Math.sin((u * 9 - wrappedV * 5) * Math.PI * 2 + phase);
+          py = wrappedV * rows + 0.32 * Math.cos(u * Math.PI * 6 + phase) * Math.sin(wrappedV * Math.PI * 8)
+            + 0.14 * Math.cos((u * 7 + wrappedV * 3) * Math.PI * 2 + phase);
+        }
+        var ix = Math.floor(px), iy = Math.floor(py);
         var first = Infinity, second = Infinity, tone = 0;
-        for (var cy = iy - 1; cy <= iy + 1; cy++) for (var cx = ix - 1; cx <= ix + 1; cx++) {
+        // Wider jitter requires a larger neighborhood for continuous F1/F2.
+        for (var cy = iy - neighborRadius; cy <= iy + neighborRadius; cy++) for (var cx = ix - neighborRadius; cx <= ix + neighborRadius; cx++) {
           var index = (((cy % rows + rows) % rows) * columns + (cx % columns + columns) % columns) * 3;
           var dx = px - cx - cells[index], dy = py - cy - cells[index + 1], distance = dx * dx + dy * dy;
           if (distance < first) { second = first; first = distance; tone = cells[index + 2]; }
@@ -9175,11 +9788,13 @@ var CLASSIFY_CASES = [
         var edge = Math.min(1, Math.max(0, (second - first) * 6));
         edge = edge * edge * (3 - 2 * edge);
         var relief = edge * (0.7 + 0.3 * (1 - Math.min(1, Math.sqrt(first) / 0.8)));
+        if (scaled) relief *= 0.88 + tone * 0.20;
         // Wrap the grain seed too, so all three maps meet at each tile boundary.
         var grainSeed = Math.imul(x === width - 1 ? 0 : x, 374761393) ^ Math.imul(y === height - 1 ? 0 : y, 668265263) ^ seed;
         grainSeed = Math.imul(grainSeed ^ (grainSeed >>> 13), 1274126177);
         var grain = ((grainSeed ^ (grainSeed >>> 16)) >>> 0) / 4294967295 - 0.5;
-        var broad = Math.sin(u * Math.PI * 4 + Math.sin(v * Math.PI * 2)) * Math.cos(v * Math.PI * 4);
+        var broadV = scaled && y === height - 1 ? 0 : v;
+        var broad = Math.sin(u * Math.PI * 4 + Math.sin(broadV * Math.PI * 2)) * Math.cos(broadV * Math.PI * 4);
         var pigment = 1 + broad * 0.016 + (relief - 0.6) * (scaled ? 0.024 : 0.008) + tone * 0.006;
         var bump = scaled ? 106 + relief * 53 + grain * 2 : 122 + relief * 9 + grain * 2;
         var roughness = 229 - relief * (scaled ? 18 : 4) - grain * 2;
@@ -9198,6 +9813,11 @@ var CLASSIFY_CASES = [
   function dinoSkinMapping(THREE, material, size, shadeStrength, profile) {
     material.userData.dinoSkinMapping = true;
     var pigmentProfile = profile.pattern !== 'subtle' && profile.pattern !== 'none';
+    // Low-frequency colour variation is an illustration choice, confined to scaled
+    // skin without direct pigment evidence. Neutral surfaces and plumage stay plain.
+    var illustratedPigment = profile.pattern === 'subtle' && !profile.directEvidence && !material.userData.dinoContourCoat &&
+      !!(material.map && material.map.userData && material.map.userData.dinoMicrotexture === 'fine-scales');
+    material.userData.dinoIllustratedPigment = illustratedPigment;
     function tintVector(overlay) {
       var values = (overlay.match(/[\d.]+/g) || []).map(Number);
       var tint = new THREE.Color(values[0] / 255, values[1] / 255, values[2] / 255).convertSRGBToLinear();
@@ -9226,6 +9846,16 @@ var CLASSIFY_CASES = [
         '       + texture2D(skinMap, p.xy * vec2(1.0, 2.0)) * weights.z;',
         '}'
       ].join('\n');
+      if (illustratedPigment) skinSampling += [
+        '\nfloat dinoPigmentCloud(vec3 p) {',
+        '  p *= dinoSkinScale;',
+        '  float warp = sin(dot(p, vec3(2.1, 3.4, 2.7)));',
+        '  float broad = sin(dot(p, vec3(6.7, 5.3, 4.1)) + 0.7 * warp);',
+        '  float middle = sin(dot(p, vec3(-11.3, 7.9, 5.7)) + 1.6);',
+        '  float fine = sin(dot(p, vec3(17.1, 12.3, -9.7)) + 2.8);',
+        '  return 0.5 * broad + 0.3 * middle + 0.2 * fine;',
+        '}'
+      ].join('\n');
       shader.fragmentShader = skinSampling + '\n' + shader.fragmentShader;
       shader.fragmentShader = shader.fragmentShader.replace('#include <map_fragment>', [
         '#ifdef USE_MAP', 'diffuseColor *= mapTexelToLinear(dinoSampleSkin(map, vDinoSkinPosition));', '#endif',
@@ -9238,6 +9868,11 @@ var CLASSIFY_CASES = [
         'float tailBand = smoothstep(-0.16, 0.16, tailBandWave) * smoothstep(0.12, 0.22, vDinoSkinRegion.x) * vDinoSkinRegion.y;',
         'diffuseColor.rgb = mix(diffuseColor.rgb, dinoTailBandTint.rgb, tailBand * dinoTailBandTint.a);'
       ].join('\n'));
+      if (illustratedPigment) shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', [
+        '#include <color_fragment>',
+        // Stored specimen coordinates keep patches continuous across meshes and attached during motion.
+        'diffuseColor.rgb *= vec3(1.0) + vec3(0.32, 0.27, 0.22) * dinoPigmentCloud(vDinoSkinPosition);'
+      ].join('\n'));
       // Screen derivatives reuse one height sample per projection instead of resampling neighboring pixels.
       var bumpChunk = THREE.ShaderChunk.bumpmap_pars_fragment.replace(
         /vec2 dHdxy_fwd\(\) \{[\s\S]*?\n\t\}/,
@@ -9247,7 +9882,7 @@ var CLASSIFY_CASES = [
       shader.fragmentShader = shader.fragmentShader.replace('#include <roughnessmap_fragment>',
         THREE.ShaderChunk.roughnessmap_fragment.replace('texture2D( roughnessMap, vUv )', 'dinoSampleSkin( roughnessMap, vDinoSkinPosition )'));
     };
-    material.customProgramCacheKey = function () { return 'dinolab-specimen-skin-v2'; };
+    material.customProgramCacheKey = function () { return illustratedPigment ? 'dinolab-specimen-skin-mottling-v1' : 'dinolab-specimen-skin-v2'; };
     return material;
   }
 
@@ -9277,6 +9912,99 @@ var CLASSIFY_CASES = [
   }
 
   // Iris detail uses the eye's own coordinates, so pigment stays seated during blinks.
+  // Reconstructed skin lids cover a fixed eye volume. Their shared closing edge
+  // follows the eye's local plane; the surrounding margin stays on the head.
+  function dinoEyelidGeometry(THREE, radius, faceSide, upper) {
+    var r = Number(radius);
+    if (!Number.isFinite(r) || r <= 0) r = 0.001;
+    var columns = 24, rows = 4, count = (columns + 1) * (rows + 1);
+    var side = faceSide < 0 ? -1 : 1;
+    var geometry = new THREE.BufferGeometry();
+    var positions = new THREE.Float32BufferAttribute(new Float32Array(count * 3), 3);
+    var normals = new THREE.Float32BufferAttribute(new Float32Array(count * 3), 3);
+    var uvs = new Float32Array(count * 2), indices = [];
+    if (THREE.DynamicDrawUsage !== undefined) {
+      positions.setUsage(THREE.DynamicDrawUsage); normals.setUsage(THREE.DynamicDrawUsage);
+    }
+    var cosines = new Float32Array(columns + 1), sines = new Float32Array(columns + 1);
+    for (var column = 0; column <= columns; column++) {
+      var theta = column * Math.PI / columns;
+      cosines[column] = Math.cos(theta);
+      // Exact zero endpoints keep the two sheets joined at the eye corners.
+      sines[column] = column === 0 || column === columns ? 0 : Math.sin(theta);
+    }
+    for (var row = 0; row <= rows; row++) {
+      for (var col = 0; col <= columns; col++) {
+        var vertex = row * (columns + 1) + col;
+        uvs[vertex * 2] = col / columns;
+        uvs[vertex * 2 + 1] = row / rows;
+        if (row === rows || col === columns) continue;
+        var a = vertex, b = vertex + 1, c = vertex + columns + 1, d = c + 1;
+        if (row === 0 && col === 0) {
+          // Both faces retain an off-axis vertex when the aperture is closed.
+          if ((upper ? 1 : -1) === side) indices.push(a, c, d, a, d, b);
+          else indices.push(a, d, c, a, b, d);
+        } else if ((upper ? 1 : -1) === side) indices.push(a, c, b, b, c, d);
+        else indices.push(a, b, c, b, d, c);
+      }
+    }
+    geometry.setAttribute('position', positions);
+    geometry.setAttribute('normal', normals);
+    geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+    geometry.setIndex(indices);
+    geometry.userData.dinoEyelid = {
+      radius: r, side: side, upper: !!upper, columns: columns, rows: rows,
+      lastBlink: null, interpretive: true
+    };
+    // Runtime samples stay outside serializable anatomy metadata.
+    geometry.dinoEyelidSamples = { cosines: cosines, sines: sines };
+    dinoUpdateEyelid(geometry, 0);
+    // Culling/raycast bounds cover the complete blink, including the closed dome.
+    geometry.boundingBox = new THREE.Box3(
+      new THREE.Vector3(-1.22 * r, -1.05 * r, side < 0 ? -0.72 * r : 0.12 * r),
+      new THREE.Vector3(1.22 * r, 1.05 * r, side < 0 ? -0.12 * r : 0.72 * r)
+    );
+    geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0, side * 0.12 * r), 1.62 * r);
+    return geometry;
+  }
+
+  function dinoUpdateEyelid(geometry, blink) {
+    var lid = geometry && geometry.userData && geometry.userData.dinoEyelid;
+    var samples = geometry && geometry.dinoEyelidSamples;
+    if (!lid || !samples) return false;
+    var amount = Number(blink);
+    amount = Number.isFinite(amount) ? Math.max(0, Math.min(1, amount)) : 0;
+    if (lid.lastBlink === amount) return false;
+    var positions = geometry.attributes.position.array, normals = geometry.attributes.normal.array;
+    // Meet on the corner axis: crossing it would fold the upper corner triangles.
+    var aperture = (lid.upper ? 0.72 : -0.68) * (1 - amount);
+    var boundary = lid.upper ? 1.05 : -1.05;
+    for (var row = 0; row <= lid.rows; row++) {
+      var across = row / lid.rows;
+      var xRadius = 1.06 + (1.22 - 1.06) * across;
+      var yRadius = row === lid.rows ? boundary : aperture + (boundary - aperture) * across;
+      for (var col = 0; col <= lid.columns; col++) {
+        var x = xRadius * samples.cosines[col], y = yRadius * samples.sines[col];
+        var dome = Math.sqrt(Math.max(0, 1 - x * x / (1.22 * 1.22) - y * y / (1.05 * 1.05)));
+        var z = lid.side * (0.12 + 0.60 * dome);
+        var offset = (row * (lid.columns + 1) + col) * 3;
+        positions[offset] = x * lid.radius;
+        positions[offset + 1] = y * lid.radius;
+        positions[offset + 2] = z * lid.radius;
+        var nx = x / (1.22 * 1.22), ny = y / (1.05 * 1.05), nz = lid.side * dome / 0.60;
+        var length = Math.sqrt(nx * nx + ny * ny + nz * nz);
+        normals[offset] = nx / length;
+        normals[offset + 1] = ny / length;
+        normals[offset + 2] = nz / length;
+      }
+    }
+    geometry.attributes.position.needsUpdate = true;
+    geometry.attributes.normal.needsUpdate = true;
+    lid.lastBlink = amount;
+    return true;
+  }
+
+
   function dinoEyeGeometry(THREE, radius) {
     var geometry = new THREE.SphereGeometry(radius, 32, 24);
     var position = geometry.attributes.position, iris = [];
@@ -9319,6 +10047,53 @@ var CLASSIFY_CASES = [
   }
 
   // Count only active visible time; a stalled frame cannot cause a large pose jump.
+  // Animated scenes keep ticking; paused study views draw only after a change.
+  // A cancelled callback cannot consume a newer request, even if its RAF id is 0.
+  function dinoRenderScheduler(options) {
+    var pending = null, generation = 0, dirty = false, disposed = false;
+    function cancelPending() {
+      if (pending !== null) {
+        options.cancelFrame(pending);
+        pending = null;
+        generation++;
+      }
+    }
+    function schedule() {
+      if (disposed) return;
+      if (!options.canRender()) {
+        cancelPending();
+        options.resetClock();
+        return;
+      }
+      if (pending !== null || (!dirty && !options.isAnimating())) return;
+      var ticket = ++generation;
+      pending = options.requestFrame(function () {
+        if (disposed || ticket !== generation) return;
+        pending = null;
+        if (!options.canRender()) { options.resetClock(); return; }
+        // Clear before drawing so changes requested during draw are retained.
+        dirty = false;
+        options.draw();
+        schedule();
+      });
+    }
+    return {
+      invalidate: function () {
+        if (disposed) return;
+        dirty = true;
+        schedule();
+      },
+      dispose: function () {
+        if (disposed) return;
+        disposed = true;
+        dirty = false;
+        cancelPending();
+        options.resetClock();
+      }
+    };
+  }
+
+
   function dinoMotionStep(clock, now, running) {
     var previous = clock.last;
     clock.last = running && Number.isFinite(now) ? now : null;
@@ -9768,6 +10543,77 @@ var CLASSIFY_CASES = [
   }
   // DINO_VOXEL_STROKE_UI_END
 
+  // DINO_VOXEL_PATTERN_UI_START
+  function surveyPatternText(props, key, fallback, values) {
+    var phrase = typeof props.translate === 'function' ? props.translate('stem.dinolab.pattern_' + key, fallback) : fallback;
+    return String(phrase == null ? fallback : phrase).replace(/\{([a-z_]+)\}/g, function (token, name) { return values && Object.prototype.hasOwnProperty.call(values,name) ? String(values[name]) : token; });
+  }
+  function renderDinoDigSurveyCellDepth(React, column) {
+    if (!column || !Number.isInteger(column.removed) || column.removed < 0 || column.removed > 4) return null;
+    var e = React.createElement, colors = typeof DIG_VOXEL_COVER_COLORS !== 'undefined' ? DIG_VOXEL_COVER_COLORS : ['#9c7244','#b0804f','#76543b','#514a40'];
+    return e('span', { className: 'dinolab-survey-cell-depth', 'aria-hidden': 'true', 'data-dig-map-removed': column.removed },
+      e('b', null, column.removed + '/4'),
+      e('span', { className: 'dinolab-survey-cell-blocks' }, [0,1,2,3].map(function (level) {
+        return e('i', { key: level, 'data-dig-map-layer': level + 1, 'data-dig-map-layer-removed': level < column.removed ? 'true' : 'false', style: level < column.removed ? undefined : { background: colors[level] } });
+      })));
+  }
+  function renderDinoDigSurveyPattern(React, props) {
+    var pattern = digVoxelSurveyPattern(props.survey), T = props.T;
+    if (!pattern || !T || props.findMode) return null;
+    var e = React.createElement, selected = pattern.selected;
+    var description = pattern.bins.map(function (bin) { return surveyPatternText(props,'bin','{removed} layers removed: {count} coordinates',{ removed: bin.removed,count: bin.count }); }).join('; ');
+    var css = '.dinolab-survey-map button{display:grid;grid-template-columns:1fr 1fr;align-content:center;justify-items:center;min-height:60px;gap:4px 1px}.dinolab-survey-map button>strong{justify-self:end}.dinolab-survey-map button>svg{width:13px;height:13px;justify-self:start}.dinolab-survey-cell-depth{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;gap:4px;width:100%;min-width:0}.dinolab-survey-cell-depth b{font-size:12px;line-height:1.25;font-variant-numeric:tabular-nums}.dinolab-survey-cell-blocks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px;width:calc(100% - 6px);max-width:44px}.dinolab-survey-cell-blocks i{display:block;height:7px;border:1px solid ' + T.text + ';border-radius:1px}.dinolab-survey-cell-blocks i[data-dig-map-layer-removed="true"]{border-style:dashed;background:transparent}.dinolab-survey-pattern{margin-top:12px;border-top:1px solid ' + T.border + ';padding-top:9px}.dinolab-survey-pattern details{margin-top:9px}.dinolab-survey-pattern summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-size:12px;font-weight:800;line-height:1.5}.dinolab-survey-pattern summary:before{content:"+";margin-right:8px;font-size:18px}.dinolab-survey-pattern details[open] summary:before{content:"−"}.dinolab-survey-pattern summary:focus-visible{outline:3px solid ' + T.text + ';outline-offset:3px}.dinolab-survey-pattern p{font-size:12px;line-height:1.6;margin:8px 0;color:' + T.soft + '}.dinolab-survey-pattern figure{margin:12px 0 8px;min-width:0}.dinolab-survey-pattern figcaption{font-size:12px;font-weight:800;line-height:1.5;color:' + T.text + ';margin-bottom:5px}.dinolab-survey-pattern svg{display:block;width:100%;height:auto;max-width:400px;margin:auto}.dinolab-survey-pattern .dinolab-pattern-selection{border-left:3px solid ' + T.text + ';padding-left:9px;color:' + T.text + '}.dinolab-survey-pattern .dinolab-pattern-axis{text-align:center;margin:0;font-size:11px}';
+    return e('div', { id: 'dino-survey-pattern', className: 'dinolab-survey-pattern', 'data-dig-pattern-worked': pattern.worked, 'data-dig-pattern-removed': pattern.removed },
+      e('style', null, css),
+      e('p', { id: 'dino-survey-depth-hint' }, surveyPatternText(props,'depth_hint','Each tile shows layers removed out of 4. Dashed blocks were removed; solid blocks remain. Read the strip from original top at left to bottom at right.')),
+      e('details', { id: 'dino-survey-pattern-details' },
+        e('summary', null, surveyPatternText(props,'title','Where has cover been removed?')),
+        e('p', { id: 'dino-survey-pattern-summary' }, surveyPatternText(props,'spread','{worked}/24 with cover removed · {untouched}/24 with all cover remaining.',{ worked: pattern.worked,untouched: pattern.untouched })),
+        e('figure', null,
+          e('figcaption', null, surveyPatternText(props,'chart_title','Coordinates by layers removed')),
+          e('svg', { viewBox: '0 0 300 186', role: 'img', 'aria-label': description, focusable: 'false' }, e('g', { 'aria-hidden': 'true' },
+            [0,6,12,18,24].map(function (tick) { var y = 152 - tick * 5; return e('g', { key: tick }, e('line', { x1: 28,y1: y,x2: 287,y2: y,stroke: T.border,strokeWidth: 1 }), e('text', { x: 22,y: y + 4,textAnchor: 'end',fill: T.soft,fontSize: 12 },tick)); }),
+            pattern.bins.map(function (bin) {
+              var x = 38 + bin.removed * 49, height = bin.count * 5, y = 152 - height;
+              return e('g', { key: bin.removed,'data-dig-pattern-bin': bin.removed,'data-dig-pattern-count': bin.count,'data-dig-pattern-selected': String(bin.selected) },
+                e('rect', { x: x,y: y,width: 32,height: height,rx: 2,fill: T.text,opacity: bin.selected ? 1 : .7 }),
+                e('text', { x: x + 16,y: y - 8,textAnchor: 'middle',fill: T.text,fontSize: 15,fontWeight: 800 },bin.count),
+                e('text', { x: x + 16,y: 172,textAnchor: 'middle',fill: T.text,fontSize: 14,fontWeight: bin.selected ? 800 : 500 },bin.removed),
+                bin.selected ? e('path', { d: 'M' + (x + 10) + ' 180h12',stroke: T.text,strokeWidth: 3 }) : null);
+            }))),
+          e('p', { className: 'dinolab-pattern-axis' },surveyPatternText(props,'axis','Model layers removed per coordinate'))),
+        e('p', { id: 'dino-survey-pattern-selection',className: 'dinolab-pattern-selection' },surveyPatternText(props,'selection','Selected {coord}: {removed}/4 layers removed. Coordinates with this count: {count}.',selected)),
+        typeof renderDinoDigPatternLocatorControl === 'function' ? renderDinoDigPatternLocatorControl(React,props) : null,
+        e('p', null,surveyPatternText(props,'limit','The chart counts coordinates, not fossils. Equal layer totals can describe different excavation patterns.'))));
+  }
+  // DINO_VOXEL_PATTERN_UI_END
+
+  // DINO_VOXEL_PATTERN_LOCATOR_UI_START
+  function digPatternLocatorText(props, key, fallback, values) {
+    var phrase = typeof props.translate === 'function' ? props.translate('stem.dinolab.locator_' + key, fallback) : fallback;
+    return String(phrase == null ? fallback : phrase).replace(/\{([a-z_]+)\}/g, function (token, name) { return values && Object.prototype.hasOwnProperty.call(values,name) ? String(values[name]) : token; });
+  }
+  function renderDinoDigPatternLocatorControl(React, props) {
+    if (typeof props.onPatternLocator !== 'function') return null;
+    var e = React.createElement, T = props.T;
+    return e('div', { className: 'dinolab-pattern-locator-control' },
+      e('style', null, '.dinolab-pattern-locator-control label{display:flex;align-items:center;gap:9px;min-height:44px;font-size:12px;font-weight:800;line-height:1.5;cursor:pointer}.dinolab-pattern-locator-control input{flex:none;width:18px;height:18px;accent-color:' + T.text + '}.dinolab-pattern-locator-control input:focus-visible{outline:3px solid ' + T.text + ';outline-offset:3px}.dinolab-survey-map button{position:relative}.dinolab-pattern-match{position:absolute;inset:3px;pointer-events:none;background:linear-gradient(currentColor,currentColor) left top/6px 2px no-repeat,linear-gradient(currentColor,currentColor) left top/2px 6px no-repeat,linear-gradient(currentColor,currentColor) right top/6px 2px no-repeat,linear-gradient(currentColor,currentColor) right top/2px 6px no-repeat,linear-gradient(currentColor,currentColor) left bottom/6px 2px no-repeat,linear-gradient(currentColor,currentColor) left bottom/2px 6px no-repeat,linear-gradient(currentColor,currentColor) right bottom/6px 2px no-repeat,linear-gradient(currentColor,currentColor) right bottom/2px 6px no-repeat}'),
+      e('label', { htmlFor: 'dino-pattern-locator' }, e('input', { id: 'dino-pattern-locator', type: 'checkbox', checked: props.patternLocator === true, 'aria-describedby': 'dino-pattern-locator-hint', onChange: function (event) { props.onPatternLocator(event.target.checked === true); } }), digPatternLocatorText(props,'control','Locate matching depths on the map and in 3D')),
+      e('p', { id: 'dino-pattern-locator-hint' }, digPatternLocatorText(props,'hint','Follows the selected coordinate. Corner marks locate coordinates with the same number of model layers removed. In row view, 3D marks stay in that row. Matching counts do not establish a fossil relationship.')));
+  }
+  function renderDinoDigPatternLocatorLegend(React, props) {
+    var located = digVoxelPatternLocator(props.survey,{ enabled: props.patternLocator, findMode: props.findMode, inspect: props.inspect, seed: props.site && props.site.seed, focus: props.focus });
+    if (!located.active || !props.T) return null;
+    var e = React.createElement, T = props.T;
+    return e('div', { id: 'dino-pattern-locator-legend', 'data-dig-locator-depth': located.removed, 'data-dig-locator-marked': located.marked, 'data-dig-locator-total': located.total, style: { display: 'flex', gap: 9, alignItems: 'center', padding: '9px 12px', marginBottom: 8, border: '1px solid ' + T.border, borderRadius: 9, background: T.panel, color: T.text, fontSize: 12, lineHeight: 1.6 } },
+      e('svg', { viewBox: '0 0 28 28', width: 28, height: 28, 'aria-hidden': 'true', focusable: 'false', style: { flex: 'none' } },
+        e('path', { d: 'M3 10V3h7 M18 3h7v7 M25 18v7h-7 M10 25H3v-7', fill: 'none', stroke: '#1c2731', strokeWidth: 5 }),
+        e('path', { d: 'M3 10V3h7 M18 3h7v7 M25 18v7h-7 M10 25H3v-7', fill: 'none', stroke: '#ffc857', strokeWidth: 2 })),
+      e('span', null, e('strong', { style: { display: 'block' } }, digPatternLocatorText(props,'legend','Depth match: {removed}/4 removed · {marked} of {total} matching coordinates marked in this view.',located)),
+        digPatternLocatorText(props,'surface','Gold corners follow the current exposed surfaces. Select another coordinate to change the matching count.')));
+  }
+  // DINO_VOXEL_PATTERN_LOCATOR_UI_END
+
   // DINO_VOXEL_SURVEY_UI_START
   // Selection and reasoning use the public record only; neither action excavates.
   function renderDinoDigSurvey(React, props) {
@@ -9861,6 +10707,7 @@ var CLASSIFY_CASES = [
       var isRemoved = level >= selected.remaining;
       layers.push(e('div', { key: level, className: 'dinolab-survey-layer', 'data-dig-survey-layer': level, 'data-dig-survey-layer-removed': isRemoved ? 'true' : 'false', 'aria-hidden': 'true', style: isRemoved ? undefined : { background: colors[3 - level], color: ink[3 - level] } }, isRemoved ? svt('layer_removed', 'Removed') : svt('layer_remaining', 'Remaining')));
     }
+    var surveyPattern = typeof renderDinoDigSurveyPattern === 'function' ? renderDinoDigSurveyPattern(React,props) : null;
     var shapePath = selected.shape === 'curved' ? 'M8 27Q19 6 40 8L45 14Q26 11 18 31Z' : selected.shape === 'elongate' ? 'M5 14L49 11L55 18L49 23L6 23L2 18Z' : 'M15 7Q31 1 44 9L50 19L39 30L19 28L8 18Z';
     return e('section', { id: 'dino-field-survey', className: 'dinolab-survey', 'aria-labelledby': 'dino-survey-heading', 'data-dig-survey-focus': selected.index },
       e('style', null, css),
@@ -9868,11 +10715,11 @@ var CLASSIFY_CASES = [
         e('p', { className: 'dinolab-survey-intro' }, svt('intro', 'Select a coordinate to review what is recorded, then separate observation from interpretation. Survey selection leaves the ground unchanged.'))),
       e('div', { className: 'dinolab-survey-layout' },
         e('div', { className: 'dinolab-survey-card' }, e('h4', { id: 'dino-survey-map-heading' }, svt('map_heading', 'Select a coordinate')),
-          e('div', { className: 'dinolab-survey-map', role: 'group', 'aria-labelledby': 'dino-survey-map-heading', 'aria-describedby': 'dino-survey-map-hint' }, columns.map(function (column) {
-            return e('button', { key: column.index, id: 'dino-survey-cell-' + column.index, type: 'button', 'data-dig-survey-cell': column.index, 'data-dig-survey-status': column.status, 'data-dig-survey-row-selected': props.inspect && column.row === selected.row ? 'true' : 'false', 'aria-pressed': selected.index === column.index, tabIndex: selected.index === column.index ? 0 : -1, disabled: typeof props.onSelect !== 'function', 'aria-label': svt('cell_label', '{coord}: {removed} of 4 layers removed; {remaining} remain. {status}. Select only.', { coord: column.coord, removed: column.removed, remaining: column.remaining, status: statusWords[column.status] }), onClick: function () { selectColumn(column.index); }, onKeyDown: function (event) { mapKey(event, column); } }, e('strong', null, column.coord), symbol(column.status, 'status'));
+          e('div', { className: 'dinolab-survey-map', role: 'group', 'aria-labelledby': 'dino-survey-map-heading', 'aria-describedby': 'dino-survey-map-hint' + (surveyPattern ? ' dino-survey-depth-hint' : '') }, columns.map(function (column) {
+            return e('button', { key: column.index, id: 'dino-survey-cell-' + column.index, type: 'button', 'data-dig-survey-cell': column.index, 'data-dig-survey-status': column.status, 'data-dig-pattern-match': props.patternLocator === true && column.removed === selected.removed ? 'true' : undefined, 'aria-describedby': props.patternLocator === true && column.removed === selected.removed ? 'dino-pattern-locator-hint' : undefined, 'data-dig-survey-row-selected': props.inspect && column.row === selected.row ? 'true' : 'false', 'aria-pressed': selected.index === column.index, tabIndex: selected.index === column.index ? 0 : -1, disabled: typeof props.onSelect !== 'function', 'aria-label': svt('cell_label', '{coord}: {removed} of 4 layers removed; {remaining} remain. {status}. Select only.', { coord: column.coord, removed: column.removed, remaining: column.remaining, status: statusWords[column.status] }), onClick: function () { selectColumn(column.index); }, onKeyDown: function (event) { mapKey(event, column); } }, e('strong', null, column.coord), symbol(column.status, 'status'), typeof renderDinoDigSurveyCellDepth === 'function' ? renderDinoDigSurveyCellDepth(React,column) : null, props.patternLocator === true && column.removed === selected.removed ? e('span', { className: 'dinolab-pattern-match', 'aria-hidden': 'true' }) : null);
           })),
           e('p', { id: 'dino-survey-map-hint', className: 'dinolab-survey-hint' }, svt('map_hint', 'Six columns by four rows. Arrows move within the map; Enter or Space selects without digging. In row inspection, selection moves the slice.')),
-          e('ul', { className: 'dinolab-survey-legend' }, statuses.map(function (status) { return e('li', { key: status }, symbol(status, 'symbol'), statusWords[status]); }))),
+          e('ul', { className: 'dinolab-survey-legend' }, statuses.map(function (status) { return e('li', { key: status }, symbol(status, 'symbol'), statusWords[status]); })), surveyPattern),
         e('article', { className: 'dinolab-survey-card', 'aria-labelledby': 'dino-survey-selected-heading' },
           e('h4', { id: 'dino-survey-selected-heading' }, svt('selected_heading', 'Recorded at {coord}', layerValues)),
           e('p', { className: 'dinolab-survey-status', 'data-dig-survey-selected-status': selected.status }, statusWords[selected.status]),
@@ -9909,6 +10756,58 @@ var CLASSIFY_CASES = [
       e('p', { className: 'dinolab-survey-limit' }, svt('limit', 'This survey records current simulation observations. A real fossil interpretation also needs diagnostic anatomy, geological context and evidence of association.')));
   }
   // DINO_VOXEL_SURVEY_UI_END
+
+  // DINO_VOXEL_CHECKPOINT_PROFILE_UI_START
+  function digCheckpointProfileText(props, key, fallback, values) {
+    var phrase = typeof props.translate === 'function' ? props.translate('stem.dinolab.change_profile_' + key,fallback) : fallback;
+    return String(phrase == null ? fallback : phrase).replace(/\{([a-z_]+)\}/g,function (token,name) { return values && Object.prototype.hasOwnProperty.call(values,name) ? String(values[name]) : token; });
+  }
+  function renderDinoDigCheckpointProfile(React, props) {
+    if (!props.T || props.findMode) return null;
+    var profile = digVoxelCheckpointProfile(props.survey,props.checkpoint);
+    if (!profile) return null;
+    var e = React.createElement, T = props.T, deep = T.deeper || T.deep || T.panel;
+    var colors = typeof DIG_VOXEL_COVER_COLORS !== 'undefined' ? DIG_VOXEL_COVER_COLORS : ['#9c7244','#b0804f','#76543b','#514a40'];
+    var words = props.statusWords || { covered: 'Covered', partial: 'Partly excavated', contact: 'Contact recorded', exposed: 'Fragment exposed', cleared: 'Cleared' };
+    var values = { coord: profile.coord, before_removed: profile.beforeRemoved, removed: profile.removed, before_remaining: profile.beforeRemaining, remaining: profile.remaining, delta: profile.delta, before_status: words[profile.beforeStatus], status: words[profile.status] };
+    var savedY = 60 + profile.beforeRemoved * 36, currentY = 60 + profile.removed * 36;
+    function stack(side) {
+      var saved = side === 'saved', x = saved ? 64 : 234, removed = saved ? profile.beforeRemoved : profile.removed;
+      return e('g', { 'data-dig-profile-side': side },
+        e('text', { x: x + 42, y: 28, fill: T.text, fontSize: 17, fontWeight: 800, textAnchor: 'middle' },saved ? digCheckpointProfileText(props,'saved','Saved') : digCheckpointProfileText(props,'current','Current')),
+        [1,2,3,4].map(function (level) {
+          var absent = level <= removed, added = !saved && level > profile.beforeRemoved && level <= profile.removed;
+          return e('rect', { key: level, x: x, y: 60 + (level - 1)*36, width: 84, height: 33, rx: 2, fill: added ? 'url(#dino-checkpoint-profile-hatch)' : absent ? deep : colors[level - 1], stroke: added ? T.text : absent ? T.border : '#4f4030', strokeWidth: 1, strokeDasharray: absent && !added ? '4 3' : undefined, 'data-dig-profile-level': level, 'data-dig-profile-additional': added ? 'true' : 'false' });
+        }));
+    }
+    var css = '.dinolab-checkpoint-profile{margin:12px 0;border:1px solid ' + T.border + ';border-radius:10px;background:' + deep + ';padding:0 11px}.dinolab-checkpoint .dinolab-checkpoint-profile>details{padding:3px 0 8px}.dinolab-checkpoint .dinolab-checkpoint-profile summary{font-size:13px}.dinolab-checkpoint-profile p{font-size:12px;line-height:1.6;margin:8px 0;color:' + T.soft + '}.dinolab-checkpoint-profile figure{margin:12px 0}.dinolab-checkpoint-profile svg{display:block;width:100%;height:auto;max-width:500px;margin:auto;color:' + T.text + '}.dinolab-checkpoint-profile .dinolab-profile-counts{font-weight:800;color:' + T.text + '}.dinolab-profile-legend{list-style:none;padding:0!important;margin:9px 0!important;display:flex;gap:8px 14px;flex-wrap:wrap;font-size:11px;line-height:1.6;color:' + T.text + '}.dinolab-profile-legend li{display:flex;align-items:center;gap:6px}.dinolab-profile-legend i{display:block;width:22px;flex:0 0 22px}.dinolab-profile-legend .dinolab-profile-saved{border-top:2px dashed #6d4c8d}.dinolab-profile-legend .dinolab-profile-current{border-top:2px solid #176b72}.dinolab-profile-legend .dinolab-profile-added{height:14px;border:1px solid ' + T.text + ';background:repeating-linear-gradient(135deg,transparent 0,transparent 3px,' + T.text + ' 3px,' + T.text + ' 4px)}.dinolab-checkpoint-map li[aria-current="true"]{outline:2px solid ' + T.text + ';outline-offset:2px}.theme-dark .dinolab-profile-saved{stroke:#c1a2df;border-color:#c1a2df}.theme-dark .dinolab-profile-current{stroke:#8de3df;border-color:#8de3df}.theme-contrast .dinolab-profile-saved,.theme-contrast .dinolab-profile-current{stroke:currentColor;border-color:currentColor}';
+    return e('div', { id: 'dino-checkpoint-profile', className: 'dinolab-checkpoint-profile', 'data-dig-profile-focus': profile.focus, 'data-dig-profile-delta': profile.delta, 'data-dig-profile-kind': profile.kind },
+      e('style', null,css),
+      e('p', { id: 'dino-checkpoint-profile-map-key' },digCheckpointProfileText(props,'map_key','Outer outlines mark selected {coord}. Thick dashed or solid cell borders mark changes since the baseline.',values)),
+      e('details', { id: 'dino-checkpoint-profile-details' },
+        e('summary', null,digCheckpointProfileText(props,'title','Inspect change at {coord}',values)),
+        e('p', null,digCheckpointProfileText(props,'intro','Compare the same coordinate at the original model top. Outer outlines mark this coordinate on both maps. Patterned bands mark only cover removed after your saved baseline.')),
+        e('figure', null,
+          e('svg', { viewBox: '0 0 380 244', role: 'img', focusable: 'false', 'aria-label': digCheckpointProfileText(props,'description','At {coord}: saved {before_removed}/4 removed, {before_remaining} remaining; current {removed}/4 removed, {remaining} remaining; {delta} additional model layers. Recorded status: {before_status} to {status}.',values) },
+            e('defs', null,e('pattern', { id: 'dino-checkpoint-profile-hatch', width: 7, height: 7, patternUnits: 'userSpaceOnUse' },e('path', { d: 'M-2 2L2-2M0 7L7 0M5 9L9 5', stroke: T.text, strokeWidth: 1, fill: 'none' }))),
+            e('g', { 'aria-hidden': 'true' },
+              e('text', { x: 191, y: 49, fill: T.soft, fontSize: 16, textAnchor: 'middle' },digCheckpointProfileText(props,'origin','Original top')),
+              [0,1,2,3,4].map(function (level) { return e('g', { key: level },e('line', { x1: 48, y1: 60 + level*36, x2: 334, y2: 60 + level*36, stroke: T.border, strokeDasharray: level === 0 ? '3 4' : undefined }),e('text', { x: 37, y: 64 + level*36, fill: T.soft, fontSize: 17, textAnchor: 'end' },level)); }),
+              stack('saved'),stack('current'),
+              e('line', { className: 'dinolab-profile-saved', x1: 59, x2: 153, y1: savedY, y2: savedY, stroke: '#6d4c8d', strokeWidth: 3, strokeDasharray: '6 4', 'data-dig-profile-surface': 'saved' }),
+              e('line', { className: 'dinolab-profile-current', x1: 229, x2: 323, y1: currentY, y2: currentY, stroke: '#176b72', strokeWidth: 3, 'data-dig-profile-surface': 'current' }),
+              profile.delta > 0 ? e('g', { 'data-dig-profile-bracket': profile.delta },e('path', { d: 'M190 ' + savedY + 'h8v' + (currentY - savedY) + 'h-8', fill: 'none', stroke: T.text, strokeWidth: 2 }),e('rect', { x: 183, y: (savedY + currentY)/2 - 12, width: 31, height: 24, rx: 4, fill: deep }),e('text', { x: 198, y: (savedY + currentY)/2 + 6, fill: T.text, fontSize: 18, fontWeight: 800, textAnchor: 'middle' },'+' + profile.delta)) : null,
+              e('text', { x: 191, y: 233, fill: T.soft, fontSize: 16, textAnchor: 'middle' },digCheckpointProfileText(props,'axis','Model layers removed from original top')))),
+          e('ul', { className: 'dinolab-profile-legend' },
+            e('li', null,e('i', { className: 'dinolab-profile-saved', 'aria-hidden': 'true' }),digCheckpointProfileText(props,'legend_saved','Saved surface · dashed')),
+            e('li', null,e('i', { className: 'dinolab-profile-current', 'aria-hidden': 'true' }),digCheckpointProfileText(props,'legend_current','Current surface · solid')),
+            e('li', null,e('i', { className: 'dinolab-profile-added', 'aria-hidden': 'true' }),digCheckpointProfileText(props,'legend_added','Removed since baseline · patterned')))),
+        e('p', { id: 'dino-checkpoint-profile-counts', className: 'dinolab-profile-counts' },digCheckpointProfileText(props,'counts','Saved {before_remaining} remain → current {remaining} remain · {delta} model layers removed since this baseline.',values)),
+        e('p', { id: 'dino-checkpoint-profile-status' },digCheckpointProfileText(props,'status','Recorded status: {before_status} → {status}.',values)),
+        e('p', { id: 'dino-checkpoint-profile-observation' },profile.kind === 'removed' ? digCheckpointProfileText(props,'removed','The patterned bands show {delta} additional model layers removed at {coord}.',values) : profile.kind === 'status' ? digCheckpointProfileText(props,'status_only','The recorded status changed at {coord}, with no additional model layers removed.',values) : digCheckpointProfileText(props,'unchanged','The removed count and recorded status at {coord} match the saved baseline.',values)),
+        e('p', null,digCheckpointProfileText(props,'limit','The four levels are model counts. This view does not determine measured depth, geological age, species, or association.'))));
+  }
+  // DINO_VOXEL_CHECKPOINT_PROFILE_UI_END
 
   // DINO_VOXEL_CHECKPOINT_UI_START
   // Compare the same public surface records at a manual checkpoint and now.
@@ -9949,7 +10848,7 @@ var CLASSIFY_CASES = [
         e('ol', { id: 'dino-checkpoint-' + name + '-map', className: 'dinolab-checkpoint-map', 'aria-labelledby': 'dino-checkpoint-' + name + '-heading' }, comparison.columns.map(function (column) {
           var removed = before ? column.beforeRemoved : column.removed, status = before ? column.beforeStatus : column.status;
           var levels = [1,2,3,4].map(function (level) { var isRemoved = level <= removed; return e('span', { key: level, className: 'dinolab-checkpoint-level', 'data-dig-checkpoint-level': level, 'data-dig-checkpoint-level-removed': isRemoved ? 'true' : 'false', style: isRemoved ? undefined : { background: coverColors[level - 1] } }); });
-          return e('li', { key: column.index, 'data-dig-checkpoint-cell': column.index, 'data-dig-checkpoint-changed': column.changed ? 'true' : 'false', 'aria-label': ct('map_cell', '{coord}: {removed} of 4 model layers removed. {status}.', { coord: column.coord, removed: removed, status: statusWords[status] }) },
+          return e('li', { key: column.index, 'data-dig-checkpoint-cell': column.index, 'data-dig-checkpoint-changed': column.changed ? 'true' : 'false', 'data-dig-checkpoint-selected': column.index === props.survey.focus ? 'true' : 'false', 'aria-current': column.index === props.survey.focus ? 'true' : undefined, 'aria-label': ct('map_cell', '{coord}: {removed} of 4 model layers removed. {status}.', { coord: column.coord, removed: removed, status: statusWords[status] }) },
             e('strong', { 'aria-hidden': 'true' }, column.coord), e('span', { className: 'dinolab-checkpoint-map-count', 'aria-hidden': 'true' }, ct('map_count', '{removed}/4', { removed: removed })),
             e('span', { className: 'dinolab-checkpoint-stack', 'aria-hidden': 'true' }, levels),
             e('span', { className: 'dinolab-checkpoint-map-status', 'aria-hidden': 'true' }, symbol(status), e('span', null, compactWords[status])));
@@ -9960,7 +10859,7 @@ var CLASSIFY_CASES = [
         e('textarea', { id: 'dino-checkpoint-note-' + field, 'data-dig-checkpoint-note': field, value: notes[field], rows: 2, maxLength: 400, disabled: typeof props.onNote !== 'function', 'aria-describedby': 'dino-checkpoint-reasoning-hint', onChange: function (event) { var value = event && event.target && event.target.value; if (typeof props.onNote === 'function' && typeof value === 'string') props.onNote(field, value.slice(0, 400)); } }));
     }
     var css = [
-      '.dinolab-checkpoint{container-type:inline-size;min-width:0;margin:0 0 18px;border:1px solid ' + T.border + ';border-radius:12px;background:' + T.panel + ';color:' + T.text + '}.dinolab-checkpoint *{box-sizing:border-box}.dinolab-checkpoint h3,.dinolab-checkpoint h4,.dinolab-checkpoint p,.dinolab-checkpoint label,.dinolab-checkpoint li,.dinolab-checkpoint button{overflow-wrap:anywhere}.dinolab-checkpoint details{padding:10px 13px}.dinolab-checkpoint summary{display:flex;align-items:center;min-height:44px;gap:10px;font-size:14px;font-weight:800;line-height:1.5;cursor:pointer}.dinolab-checkpoint summary:before{content:"+";font-size:19px}.dinolab-checkpoint details[open] summary:before{content:"−"}.dinolab-checkpoint h3{font-size:14px;line-height:1.5;margin:0}.dinolab-checkpoint-intro,.dinolab-checkpoint-status,.dinolab-checkpoint-hint{font-size:12px;line-height:1.6;margin:9px 0;color:' + T.soft + '}.dinolab-checkpoint-status{color:' + T.text + ';font-weight:700}.dinolab-checkpoint-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.dinolab-checkpoint button{min-height:44px;max-width:100%;border:1px solid ' + T.border + ';border-radius:8px;padding:8px 11px;background:' + deep + ';color:' + T.text + ';font:inherit;font-size:12px;line-height:1.5;cursor:pointer}.dinolab-checkpoint button:disabled,.dinolab-checkpoint textarea:disabled{cursor:default;opacity:.65}.dinolab-checkpoint button:focus-visible,.dinolab-checkpoint input:focus-visible,.dinolab-checkpoint textarea:focus-visible,.dinolab-checkpoint summary:focus-visible{outline:3px solid ' + T.text + ';outline-offset:3px}',
+      '.dinolab-checkpoint{container-type:inline-size;min-width:0;margin:0 0 18px;border:1px solid ' + T.border + ';border-radius:12px;background:' + T.panel + ';color:' + T.text + '}.dinolab-checkpoint *{box-sizing:border-box}.dinolab-checkpoint h3,.dinolab-checkpoint h4,.dinolab-checkpoint p,.dinolab-checkpoint label,.dinolab-checkpoint li,.dinolab-checkpoint button{overflow-wrap:anywhere}.dinolab-checkpoint details{padding:10px 13px}.dinolab-checkpoint summary{display:flex;align-items:center;min-height:44px;gap:10px;font-size:14px;font-weight:800;line-height:1.5;cursor:pointer}.dinolab-checkpoint summary:before{content:"+";font-size:19px}.dinolab-checkpoint details[open]>summary:before{content:"−"}.dinolab-checkpoint h3{font-size:14px;line-height:1.5;margin:0}.dinolab-checkpoint-intro,.dinolab-checkpoint-status,.dinolab-checkpoint-hint{font-size:12px;line-height:1.6;margin:9px 0;color:' + T.soft + '}.dinolab-checkpoint-status{color:' + T.text + ';font-weight:700}.dinolab-checkpoint-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.dinolab-checkpoint button{min-height:44px;max-width:100%;border:1px solid ' + T.border + ';border-radius:8px;padding:8px 11px;background:' + deep + ';color:' + T.text + ';font:inherit;font-size:12px;line-height:1.5;cursor:pointer}.dinolab-checkpoint button:disabled,.dinolab-checkpoint textarea:disabled{cursor:default;opacity:.65}.dinolab-checkpoint button:focus-visible,.dinolab-checkpoint input:focus-visible,.dinolab-checkpoint textarea:focus-visible,.dinolab-checkpoint summary:focus-visible{outline:3px solid ' + T.text + ';outline-offset:3px}',
       '.dinolab-checkpoint-maps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}.dinolab-checkpoint-map-card{min-width:0;background:' + deep + ';padding:11px;border:1px solid ' + T.border + ';border-radius:10px}.dinolab-checkpoint h4{font-size:13px;line-height:1.5;margin:0 0 8px}.dinolab-checkpoint-map{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;list-style:none;padding:0;margin:0}.dinolab-checkpoint-map li{min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;border:1px solid ' + T.border + ';border-radius:6px;background:' + T.panel + ';text-align:center}.dinolab-checkpoint-map strong{font-size:11px;line-height:1.2}.dinolab-checkpoint-map-count{font-size:12px;font-weight:800;line-height:1.35}.dinolab-checkpoint-stack{display:flex;flex-direction:column;gap:2px;width:28px;max-width:100%;margin:2px 0}.dinolab-checkpoint-level{display:block;height:6px;width:100%;border:1px solid ' + T.border + ';border-radius:1px}.dinolab-checkpoint-level[data-dig-checkpoint-level-removed="true"]{background:transparent;border-style:dashed}.dinolab-checkpoint-map-status{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:9px;line-height:1.35}.dinolab-checkpoint-map-status svg{display:block;width:17px;height:17px}.dinolab-checkpoint [data-dig-checkpoint-map="baseline"] [data-dig-checkpoint-changed="true"]{border:2px dashed #6d4c8d;padding:5px 1px}.dinolab-checkpoint [data-dig-checkpoint-map="current"] [data-dig-checkpoint-changed="true"]{border:2px solid #176b72;padding:5px 1px}.dinolab-checkpoint-changes{display:flex;flex-wrap:wrap;gap:7px;list-style:none;padding:0;margin:9px 0 13px}.dinolab-checkpoint-changes li{min-width:0;max-width:100%}.dinolab-checkpoint-changes button{text-align:left;display:flex;flex-direction:column;gap:2px}.dinolab-checkpoint-changes button strong{font-size:12px}.dinolab-checkpoint-changes button span{font-size:11px;color:' + T.soft + '}',
       '.dinolab-checkpoint-guides{display:flex;align-items:center;min-height:44px;gap:9px;padding:8px 10px;border:1px solid ' + T.border + ';border-radius:8px;background:' + deep + ';font-size:12px;font-weight:700;line-height:1.5;cursor:pointer}.dinolab-checkpoint-guides input{width:18px;height:18px;margin:0;flex:0 0 18px;accent-color:#176b72}.dinolab-checkpoint-reasoning{padding:12px;background:' + deep + ';border:1px solid ' + T.border + ';border-radius:10px;margin-top:13px}.dinolab-checkpoint-notes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.dinolab-checkpoint-note{min-width:0}.dinolab-checkpoint-note label{display:block;font-size:12px;font-weight:700;line-height:1.5;margin-bottom:5px}.dinolab-checkpoint-note textarea{display:block;min-width:0;width:100%;padding:9px;border:1px solid ' + T.border + ';border-radius:7px;background:' + T.panel + ';color:' + T.text + ';font:inherit;font-size:13px;line-height:1.5;resize:vertical}.dinolab-checkpoint-guide-footer{padding:0 13px 11px}.dinolab-checkpoint-legend{display:flex;flex-wrap:wrap;gap:6px 14px;list-style:none;padding:0;margin:6px 0 0;font-size:10px;line-height:1.5;color:' + T.soft + '}.dinolab-checkpoint-legend li{display:flex;align-items:center;gap:6px;min-width:0}.dinolab-checkpoint-key{width:22px;flex:0 0 22px;border-top:2px solid #176b72}.dinolab-checkpoint-key-before{border-top:2px dashed #6d4c8d}.dinolab-checkpoint-key-removed{width:8px;flex-basis:8px;height:17px;border-top:0;border-left:2px solid #176b72}',
       '@container(max-width:680px){.dinolab-checkpoint-maps,.dinolab-checkpoint-notes{grid-template-columns:minmax(0,1fr)}}@media(max-width:520px){.dinolab-checkpoint-maps,.dinolab-checkpoint-notes{grid-template-columns:minmax(0,1fr)}.dinolab-checkpoint details{padding:9px 11px}.dinolab-checkpoint-guide-footer{padding-left:11px;padding-right:11px}}'
@@ -9976,13 +10875,14 @@ var CLASSIFY_CASES = [
         e('p', { id: 'dino-checkpoint-status', className: 'dinolab-checkpoint-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, messages[kind]),
         ready ? e('div', null,
           e('div', { className: 'dinolab-checkpoint-maps' }, map(true), map(false)),
-          e('p', { className: 'dinolab-checkpoint-hint' }, ct('map_hint', 'Both maps use the same six columns and four rows. Miniature stacks show the original four model cover levels: solid bars remain, dashed empty bars were removed. Outlines mark changed coordinates; symbols describe recorded status. These are model counts.')),
+          e('p', { className: 'dinolab-checkpoint-hint' }, ct('map_hint', 'Both maps use the same six columns and four rows. Miniature stacks show the original four model cover levels: solid bars remain, dashed empty bars were removed. Thick dashed or solid borders mark changed coordinates; symbols describe recorded status. These are model counts.')),
           comparison.changedColumns.length ? e('div', null, e('h4', { id: 'dino-checkpoint-changes-heading' }, ct('changes_title', 'Select a changed coordinate')),
             e('ul', { className: 'dinolab-checkpoint-changes', 'aria-labelledby': 'dino-checkpoint-changes-heading' }, comparison.changedColumns.map(function (column) { return e('li', { key: column.index },
               e('button', { type: 'button', 'data-dig-checkpoint-select': column.index, disabled: typeof props.onSelect !== 'function', onClick: function () { if (typeof props.onSelect === 'function') props.onSelect(column.index); }, 'aria-label': ct('select_label', 'Select {coord}: {before} to {current} model layers removed. {status}. Selection leaves the ground unchanged.', { coord: column.coord, before: column.beforeRemoved, current: column.removed, status: statusWords[column.status] }) },
                 e('strong', null, ct('change_count', '{coord} · {before} → {current}/4 removed', { coord: column.coord, before: column.beforeRemoved, current: column.removed })), e('span', null, statusWords[column.status]))); }))) : null,
           e('label', { className: 'dinolab-checkpoint-guides', htmlFor: 'dino-checkpoint-guides' }, e('input', { id: 'dino-checkpoint-guides', type: 'checkbox', checked: guides, disabled: typeof props.onGuides !== 'function', 'aria-describedby': 'dino-checkpoint-guide-control-hint', onChange: function (event) { if (typeof props.onGuides === 'function' && event && event.target && typeof event.target.checked === 'boolean') props.onGuides(event.target.checked); } }), ct('guides', 'Show checkpoint guides in the 3D excavation')),
           e('p', { id: 'dino-checkpoint-guide-control-hint', className: 'dinolab-checkpoint-hint' }, ct('guide_control_hint', 'Guides compare saved and current surfaces at changed coordinates. In row inspection, only the selected row is shown.')),
+          typeof renderDinoDigCheckpointProfile === 'function' ? renderDinoDigCheckpointProfile(React,Object.assign({},props,{ checkpoint: comparison,statusWords: statusWords })) : null,
           e('section', { className: 'dinolab-checkpoint-reasoning', 'aria-labelledby': 'dino-checkpoint-reasoning-heading' }, e('h4', { id: 'dino-checkpoint-reasoning-heading' }, ct('reasoning_title', 'Explain your investigation')),
             e('p', { id: 'dino-checkpoint-reasoning-hint', className: 'dinolab-checkpoint-hint' }, ct('reasoning_hint', 'Use coordinates and recorded counts. Separate what you observed from what you infer, then choose a next step. Each response allows 400 characters and stays with this baseline; it is not automatically scored.')),
             e('div', { className: 'dinolab-checkpoint-notes' }, note('observation', ct('observation', 'What changed?')), note('interpretation', ct('interpretation', 'What does this support?')), note('next', ct('next', 'Where next?')))),
@@ -9995,6 +10895,36 @@ var CLASSIFY_CASES = [
           e('li', null, e('i', { className: 'dinolab-checkpoint-key dinolab-checkpoint-key-removed', 'aria-hidden': 'true' }), ct('legend_removed', 'Removed since checkpoint · teal vertical lines')))) : null);
   }
   // DINO_VOXEL_CHECKPOINT_UI_END
+
+  // DINO_VOXEL_COVER_GUIDES_UI_START
+  function digCoverPhrase(props, key, fallback, values) {
+    var text = typeof props.translate === 'function' ? props.translate('stem.dinolab.cover_guides_' + key, fallback) : fallback;
+    return String(text == null ? fallback : text).replace(/\{([a-z_]+)\}/g, function (token, name) { return values && Object.prototype.hasOwnProperty.call(values,name) ? values[name] : token; });
+  }
+  function renderDinoDigCoverGuideControl(React, props) {
+    var pair = digVoxelSpatialComparison(props.survey,props.reference);
+    if (props.findMode || !pair.reference || !props.T) return null;
+    var e = React.createElement, T = props.T;
+    return e('div', { className: 'dinolab-cover-guide-control' },
+      e('style', null, '.dinolab-cover-guide-control{margin:12px 0}.dinolab-cover-guide-control label{display:flex;align-items:center;gap:10px;min-height:44px;font-size:12px;line-height:1.5;cursor:pointer}.dinolab-cover-guide-control input{flex:0 0 20px;width:20px;height:20px;accent-color:' + T.text + '}.dinolab-cover-guide-control input:focus-visible{outline:3px solid ' + T.text + ';outline-offset:3px}.dinolab-cover-guide-control p{margin:4px 0 0;font-size:12px;line-height:1.6}'),
+      e('label', { htmlFor: 'dino-cover-guides' }, e('input', { id: 'dino-cover-guides', type: 'checkbox', checked: props.coverGuides === true, disabled: typeof props.onCoverGuides !== 'function', 'aria-describedby': 'dino-cover-guides-hint', onChange: function (event) { if (typeof props.onCoverGuides === 'function') props.onCoverGuides(event.target.checked === true); } }), digCoverPhrase(props,'control','Show removed cover in 3D')),
+      e('p', { id: 'dino-cover-guides-hint' }, digCoverPhrase(props,'hint','Outline boxes show cover already removed at these coordinates. They do not restore sediment or reveal buried finds.')));
+  }
+  function renderDinoDigCoverLegend(React, props) {
+    if (!props.T || !props.site) return null;
+    var observed = digVoxelCoverGuides(props.survey,props.spatialReference,{ guides: props.coverGuides, findMode: props.findMode, inspect: props.inspect, seed: props.site.seed, focus: props.focus });
+    if (!observed.columns.length) return null;
+    var e = React.createElement, T = props.T;
+    return e('aside', { id: 'dino-cover-guide-legend', 'aria-label': digCoverPhrase(props,'legend','Removed-cover guide legend'), style: { margin: '0 0 10px', padding: '10px 12px', border: '1px solid ' + T.border, borderRadius: 10, color: T.text, background: T.panel, fontSize: 12, lineHeight: 1.6 } },
+      e('strong', null, digCoverPhrase(props,'title','Reading the empty space')),
+      e('ul', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px 20px', listStyle: 'none', margin: '6px 0', padding: 0 } }, observed.columns.map(function (column) {
+        return e('li', { key: column.slot, 'data-dig-cover-legend-slot': column.role, style: { display: 'flex', alignItems: 'center', gap: 8 } },
+          e('span', { 'aria-hidden': 'true', style: { width: 18, height: 18, flex: '0 0 18px', border: '2px ' + (column.slot === 0 ? 'dashed #6d4c8d' : 'solid #176b72') } }),
+          column.slot === 0 ? digCoverPhrase(props,'reference','Reference {coord}: {count} removed · violet dashes',{ coord: column.coord,count: column.removed }) : digCoverPhrase(props,'selected','Selected {coord}: {count} removed · solid teal',{ coord: column.coord,count: column.removed }));
+      })),
+      e('span', null, digCoverPhrase(props,'limit','Each outline is one removed model layer. Empty space records excavation, not geological age.')));
+  }
+  // DINO_VOXEL_COVER_GUIDES_UI_END
 
   // DINO_VOXEL_SPATIAL_UI_START
   function renderDinoDigSpatialComparison(React, props) {
@@ -10041,6 +10971,7 @@ var CLASSIFY_CASES = [
           e('button', { id: 'dino-spatial-pin', type: 'button', 'data-dig-spatial-command': 'pin', disabled: typeof props.onReference !== 'function' || pair.kind === 'same', onClick: function () { if (typeof props.onReference === 'function') props.onReference({ seed: pair.seed, index: pair.selected.index }); } }, spt('pin', 'Use {coord} as reference', { coord: pair.selected.coord })),
           e('button', { id: 'dino-spatial-clear', type: 'button', 'data-dig-spatial-command': 'clear', disabled: typeof props.onReference !== 'function' || props.reference == null, onClick: function () { if (typeof props.onReference === 'function') props.onReference(null); } }, spt('clear', 'Clear reference')),
           pair.reference && pair.kind === 'ready' ? e('button', { id: 'dino-spatial-select', type: 'button', 'data-dig-spatial-command': 'select', disabled: typeof props.onSelect !== 'function', onClick: function () { if (typeof props.onSelect === 'function') props.onSelect(pair.reference.index); } }, spt('return', 'Select reference {coord}', { coord: pair.reference.coord })) : null),
+        typeof renderDinoDigCoverGuideControl === 'function' ? renderDinoDigCoverGuideControl(React,props) : null,
         e('p', { id: 'dino-spatial-result', className: 'dinolab-spatial-result', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, comparison),
         pair.reference ? e(React.Fragment, null,
           e('div', { className: 'dinolab-spatial-profiles' }, profile(pair.reference, true), profile(pair.selected, false)),
@@ -10262,7 +11193,7 @@ var CLASSIFY_CASES = [
         var alive = true, canvas = canvasRef.current, renderer = null, scene = null, camera = null, batch = null;
         var raf = 0, observer = null, intersection = null, visible = true, poseTimer = 0, pendingPose = null, cleanups = [];
         var geometries = [], materials = [], textures = [], instanced = [], contextLost = false, lastDepth = null, lastSeed = null, lastPose = '', hover = -1, lastFocus = null, lastObservation = null, lastTerrainLook = null;
-        var bones = [], contacts = [], pickers = [], floorPickers = [], siteFrame = null, sectionGuides = null, dust = null, dustStart = null, dustOrigins = [], extraction = null, footprintGroup = null, footprintCells = [], world = null, findStage = null, findBackdrop = null, findModels = [], lastView = null, siteLights = [], findLighting = null, findAmbient = null, findKey = null, findFill = null, findOutlineMaterial = null, findMeshes = [], strokeGroup = null, strokeCells = [], surveyGroup = null, surveyAxes = null, surveyDatum = null, surveyProfile = null, surveyRemaining = null, surveyRemoved = null, transectGroup = null, transectDatum = null, transectSegments = [], checkpointGroup = null, checkpointCells = [], spatialReference = null;
+        var bones = [], contacts = [], pickers = [], floorPickers = [], siteFrame = null, sectionGuides = null, dust = null, dustStart = null, dustOrigins = [], extraction = null, footprintGroup = null, footprintCells = [], world = null, findStage = null, findBackdrop = null, findModels = [], lastView = null, siteLights = [], findLighting = null, findAmbient = null, findKey = null, findFill = null, findOutlineMaterial = null, findMeshes = [], strokeGroup = null, strokeCells = [], surveyGroup = null, surveyAxes = null, surveyDatum = null, surveyProfile = null, surveyRemaining = null, surveyRemoved = null, transectGroup = null, transectDatum = null, transectSegments = [], checkpointGroup = null, checkpointCells = [], spatialReference = null, spatialCover = null, spatialCoverColumns = [], spatialCoverMaterials = null, patternLocatorGroup = null, patternLocatorCells = [];
         var previewCandidateMaterial = null, previewHeldMaterial = null, previewProtectedMaterial = null, previewCandidateEdge = null, previewHeldEdge = null, previewEnvelopeSolidMaterial = null, previewEnvelopeConditionalMaterial = null;
         var findPlateTarget = null, findPlateCameras = [], findPlatePixels = [], findPlateKey = null, findPlateCanvases = [], findPlateVisible = false, findPlateObserved = null;
         var pose = { yaw: .72, pitch: .70, zoom: 1 }, selected = null, pointer = null, pageVisible = !document.hidden;
@@ -10770,6 +11701,83 @@ var CLASSIFY_CASES = [
         // DINO_VOXEL_CHECKPOINT_ENGINE_START
         // Recompute from the public survey and sanitized saved observation.
         // Guides describe completed changes, never a stroke or buried template.
+        // DINO_VOXEL_PATTERN_LOCATOR_ENGINE_START
+        function syncPatternLocator(p) {
+          if (patternLocatorGroup) {
+            patternLocatorGroup.visible = false; patternLocatorGroup.userData = {};
+            patternLocatorCells.forEach(function (cell) { cell.visible = false; cell.userData = {}; });
+          }
+          var located = digVoxelPatternLocator(p.survey,{ enabled: p.patternLocator, findMode: p.findMode, inspect: p.inspect, seed: p.site && p.site.seed, focus: p.focus });
+          if (!located.active) return;
+          if (!patternLocatorGroup) {
+            var THREE = window.THREE, positions = [], colors = [];
+            var ink = new THREE.Color('#1c2731').convertSRGBToLinear(), gold = new THREE.Color('#ffc857').convertSRGBToLinear();
+            function quad(x1,z1,x2,z2,y,color,sx,sz) {
+              [[x1,z1],[x2,z1],[x2,z2],[x1,z1],[x2,z2],[x1,z2]].forEach(function (point) { positions.push(point[0]*sx,y,point[1]*sz); colors.push(color.r,color.g,color.b); });
+            }
+            [-1,1].forEach(function (sx) { [-1,1].forEach(function (sz) {
+              // Dark backing and inset gold share one geometry. Surface-only
+              // corners retain depth testing and never become picking targets.
+              quad(.125,.405,.495,.495,0,ink,sx,sz); quad(.405,.125,.495,.495,0,ink,sx,sz);
+              quad(.145,.425,.475,.475,.002,gold,sx,sz); quad(.425,.145,.475,.475,.002,gold,sx,sz);
+            }); });
+            var brackets = geometry(new THREE.BufferGeometry());
+            brackets.setAttribute('position',new THREE.Float32BufferAttribute(positions,3)); brackets.setAttribute('color',new THREE.Float32BufferAttribute(colors,3)); brackets.computeBoundingSphere();
+            var paint = material(new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide, depthTest: true, depthWrite: false, toneMapped: false }));
+            patternLocatorGroup = new THREE.Group(); patternLocatorGroup.name = 'dino-pattern-locator'; scene.add(patternLocatorGroup);
+            for (var index = 0; index < 24; index++) {
+              var cell = new THREE.Mesh(brackets,paint); cell.name = 'dino-pattern-match-' + index; cell.visible = false; cell.renderOrder = 7;
+              patternLocatorCells.push(cell); patternLocatorGroup.add(cell);
+            }
+          }
+          patternLocatorGroup.visible = true; patternLocatorGroup.userData = { role: 'observed-depth-matches', seed: located.seed, focus: located.focus, removed: located.removed, total: located.total, marked: located.marked };
+          located.columns.forEach(function (column) {
+            var cell = patternLocatorCells[column.index]; cell.visible = true;
+            cell.position.set((column.col - 2.5)*1.08,column.remaining*.52 + .025,(column.row - 1.5)*1.08);
+            cell.userData = { role: 'observed-depth-match', index: column.index, removed: column.removed, remaining: column.remaining };
+          });
+        }
+        // DINO_VOXEL_PATTERN_LOCATOR_ENGINE_END
+
+        // DINO_VOXEL_COVER_GUIDES_ENGINE_START
+        function syncCoverGuides(p) {
+          if (spatialCover) {
+            spatialCover.visible = false; spatialCover.userData = {};
+            spatialCoverColumns.forEach(function (column) { column.visible = false; column.userData = {}; column.children.forEach(function (box) { box.visible = false; box.userData = {}; }); });
+          }
+          if (!spatialCoverMaterials || typeof digVoxelCoverGuides !== 'function') return;
+          var observed = digVoxelCoverGuides(p.survey, p.spatialReference, { guides: p.coverGuides, findMode: p.findMode, inspect: p.inspect, seed: p.site && p.site.seed, focus: p.focus });
+          if (!observed.columns.length) return;
+          if (!spatialCover) {
+            var THREE = window.THREE, points = [], corners = [[-.48,-.25,-.48],[.48,-.25,-.48],[.48,-.25,.48],[-.48,-.25,.48],[-.48,.25,-.48],[.48,.25,-.48],[.48,.25,.48],[-.48,.25,.48]];
+            [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]].forEach(function (edge) { edge.forEach(function (index) { points.push(new THREE.Vector3(corners[index][0],corners[index][1],corners[index][2])); }); });
+            // One retained edge geometry; both materials are already owned by
+            // the checkpoint renderer. These outlines never enter the pickers.
+            var boxEdges = geometry(new THREE.BufferGeometry().setFromPoints(points));
+            spatialCover = new THREE.Group(); spatialCover.name = 'dino-removed-cover-guides'; scene.add(spatialCover);
+            for (var slot = 0; slot < 2; slot++) {
+              var column = new THREE.Group(); column.name = 'dino-cover-guide-' + (slot === 0 ? 'reference' : 'selected'); column.visible = false;
+              for (var level = 0; level < 4; level++) {
+                var box = new THREE.LineSegments(boxEdges, spatialCoverMaterials[slot]);
+                if (slot === 0 && level === 0) box.computeLineDistances();
+                box.name = 'dino-cover-guide-level-' + slot + '-' + (level + 1); box.position.y = (3.5 - level) * .52; box.renderOrder = 8; box.visible = false; column.add(box);
+              }
+              spatialCoverColumns.push(column); spatialCover.add(column);
+            }
+          }
+          spatialCover.visible = true;
+          spatialCover.userData = { role: 'observed-removed-cover', seed: observed.seed, columns: observed.columns };
+          observed.columns.forEach(function (record) {
+            var column = spatialCoverColumns[record.slot]; column.visible = true; column.userData = record;
+            column.position.set((record.col - 2.5) * 1.08,0,(record.row - 1.5) * 1.08);
+            column.children.forEach(function (box, level) {
+              box.visible = level < record.removed;
+              box.userData = box.visible ? { role: 'removed-model-cover', index: record.index, level: level + 1 } : {};
+            });
+          });
+        }
+        // DINO_VOXEL_COVER_GUIDES_ENGINE_END
+
         // DINO_VOXEL_SPATIAL_ENGINE_START
         function syncSpatialReference(p) {
           if (!spatialReference) return;
@@ -10876,6 +11884,8 @@ var CLASSIFY_CASES = [
           syncCheckpointGuides(p);
           syncTerrainDisplay(p);
           if (typeof syncSpatialReference === 'function') syncSpatialReference(p);
+          if (typeof syncCoverGuides === 'function') syncCoverGuides(p);
+          if (typeof syncPatternLocator === 'function') syncPatternLocator(p);
           var find = digVoxelFind(p.site,p.state,p.focus);
           world.visible = !p.findMode; findStage.visible = !!p.findMode; findBackdrop.visible = !!find.selected;
           findStage.userData.find = find.selected; findStage.userData.columnIndices = find.selected ? [find.selected.index] : [];
@@ -11091,6 +12101,7 @@ var CLASSIFY_CASES = [
             spatialReference = new THREE.LineSegments(previousSurfaceGeo, checkpointBeforeMaterial);
             spatialReference.name = 'dino-spatial-reference'; spatialReference.renderOrder = 8; spatialReference.visible = false; scene.add(spatialReference);
             // DINO_VOXEL_SPATIAL_BUILD_END
+            spatialCoverMaterials = [checkpointBeforeMaterial, checkpointCurrentMaterial];
             // Reuse immutable stroke-boundary geometry for prospective top-layer bounds.
             // Two owned materials distinguish guaranteed brush and conditional trowel removal.
             previewEnvelopeSolidMaterial = material(new THREE.LineBasicMaterial({ color: '#50e3d4', transparent: true, opacity: .95, depthTest: false, depthWrite: false, toneMapped: false }));
@@ -11275,14 +12286,16 @@ var CLASSIFY_CASES = [
         }).catch(function () { if (alive) setStatus('failed'); });
         return dispose;
       }, [epoch]);
-      React.useEffect(function () { if (engineRef.current) engineRef.current.sync(); }, [props.site.seed, props.state.depths.join(','), props.state.contacts.join(','), props.focus, props.state.tool, props.preview, props.action, props.inspect, props.findMode, props.findLook, props.findPlate, props.terrainLook, props.checkpoint, props.checkpointGuides, props.comparison, props.strokeCompare, props.survey, props.surveyGuides, props.transect, props.spatialReference, props.camera, props.pose, props.cameraReset]);
+      React.useEffect(function () { if (engineRef.current) engineRef.current.sync(); }, [props.site.seed, props.state.depths.join(','), props.state.contacts.join(','), props.focus, props.state.tool, props.preview, props.action, props.inspect, props.findMode, props.findLook, props.findPlate, props.terrainLook, props.checkpoint, props.checkpointGuides, props.comparison, props.strokeCompare, props.survey, props.surveyGuides, props.transect, props.spatialReference, props.coverGuides, props.patternLocator, props.camera, props.pose, props.cameraReset]);
       var exposedForView = props.findMode ? digVoxelFind(props.site,props.state,props.focus).selected : null;
       var displayLook = digVoxelFindLook(props.findLook), displayLookLabel = props.translate('stem.dinolab.find_look_' + displayLook,displayLook === 'raking' ? 'Raking light' : displayLook === 'outline' ? 'Outline' : 'Surface');
       var checkpointForView = props.checkpoint && props.checkpoint.kind === 'ready' ? digVoxelCheckpoint(props.survey, props.checkpoint.baseline) : null;
       var checkpointDescriptionReady = !!(checkpointForView && checkpointForView.kind === 'ready' && props.checkpoint.key === checkpointForView.key && props.checkpoint.baselineKey === checkpointForView.baselineKey && props.checkpoint.seed === checkpointForView.seed && props.survey && checkpointForView.seed === props.survey.seed && props.site && checkpointForView.seed === props.site.seed);
       var cameraControls = props.T && typeof renderDinoVoxelCameraControls === 'function' ? renderDinoVoxelCameraControls(React, { summary: cameraSummary, status: status, T: props.T, translate: props.translate, onCommand: function (command) { if (engineRef.current && engineRef.current.cameraCommand) engineRef.current.cameraCommand(command); } }) : null;
-      return e(React.Fragment, null, cameraControls, e('div', { id: 'dino-voxel-stage', className: 'dinolab-voxel-stage', 'data-dig-view': props.findMode ? 'find' : props.inspect ? 'section' : 'full', 'data-dig-find-look': exposedForView ? displayLook : undefined },
-        e('canvas', { id: 'dino-voxel-canvas', key: epoch, ref: canvasRef, role: 'img', tabIndex: 0, 'aria-label': props.findMode ? props.translate('stem.dinolab.find_canvas_label','3D inspection of an exposed illustrative fragment') + (exposedForView ? ' · ' + displayLookLabel : '') : props.inspect ? props.translate('stem.dinolab.section_canvas_label', '3D inspection of one excavation row') : vt('canvas_label', '3D voxel excavation site'), 'aria-describedby': 'dino-voxel-controls-hint' + (cameraControls ? ' dino-voxel-camera-touch-hint dino-voxel-camera-scale-hint' : '') + (exposedForView ? ' dino-find-look-note' : '') + (props.comparison && !props.findMode ? ' dino-stroke-toggle-hint dino-stroke-legend' : '') + (!props.findMode && props.surveyGuides !== false ? ' dino-survey-guides-hint' : '') + (props.inspect && !props.findMode && props.surveyGuides !== false ? ' dino-transect-legend' : '') + (!props.inspect && !props.findMode && props.preview !== false ? ' dino-preview-volume-legend' : '') + (!props.findMode ? ' dino-terrain-light-hint' : '') + (checkpointDescriptionReady && props.checkpointGuides === true && !props.findMode ? ' dino-checkpoint-guides-hint dino-checkpoint-legend' : ''), style: { width: '100%', height: '100%', display: 'block', touchAction: 'none', cursor: 'grab' } }),
+      var coverLegend = typeof renderDinoDigCoverLegend === 'function' ? renderDinoDigCoverLegend(React,props) : null;
+      var patternLocatorLegend = typeof renderDinoDigPatternLocatorLegend === 'function' ? renderDinoDigPatternLocatorLegend(React,props) : null;
+      return e(React.Fragment, null, cameraControls, coverLegend, patternLocatorLegend, e('div', { id: 'dino-voxel-stage', className: 'dinolab-voxel-stage', 'data-dig-view': props.findMode ? 'find' : props.inspect ? 'section' : 'full', 'data-dig-find-look': exposedForView ? displayLook : undefined },
+        e('canvas', { id: 'dino-voxel-canvas', key: epoch, ref: canvasRef, role: 'img', tabIndex: 0, 'aria-label': props.findMode ? props.translate('stem.dinolab.find_canvas_label','3D inspection of an exposed illustrative fragment') + (exposedForView ? ' · ' + displayLookLabel : '') : props.inspect ? props.translate('stem.dinolab.section_canvas_label', '3D inspection of one excavation row') : vt('canvas_label', '3D voxel excavation site'), 'aria-describedby': 'dino-voxel-controls-hint' + (coverLegend ? ' dino-cover-guide-legend' : '') + (patternLocatorLegend ? ' dino-pattern-locator-legend' : '') + (cameraControls ? ' dino-voxel-camera-touch-hint dino-voxel-camera-scale-hint' : '') + (exposedForView ? ' dino-find-look-note' : '') + (props.comparison && !props.findMode ? ' dino-stroke-toggle-hint dino-stroke-legend' : '') + (!props.findMode && props.surveyGuides !== false ? ' dino-survey-guides-hint' : '') + (props.inspect && !props.findMode && props.surveyGuides !== false ? ' dino-transect-legend' : '') + (!props.inspect && !props.findMode && props.preview !== false ? ' dino-preview-volume-legend' : '') + (!props.findMode ? ' dino-terrain-light-hint' : '') + (checkpointDescriptionReady && props.checkpointGuides === true && !props.findMode ? ' dino-checkpoint-guides-hint dino-checkpoint-legend' : ''), style: { width: '100%', height: '100%', display: 'block', touchAction: 'none', cursor: 'grab' } }),
         e('div', { className: 'dinolab-voxel-hud', 'aria-hidden': 'true' }, e('span', null, (props.findMode ? props.translate('stem.dinolab.find_hud_label','EXPOSED FIND') : props.inspect ? props.translate('stem.dinolab.section_hud_label', 'ROW SECTION') + ' ' + (Math.floor(props.focus / 6) + 1) : vt('hud_site', 'FIELD EXCAVATION')) + ' / #' + props.site.seed), e('strong', { ref: readoutRef }, '')),
         !props.inspect && !props.findMode && props.preview !== false ? e('span', { className: 'dinolab-voxel-footprint-label', 'aria-hidden': 'true', style: { position: 'absolute', pointerEvents: 'none', left: 14, bottom: 14, maxWidth: 'calc(100% - 28px)', padding: '7px 10px', borderRadius: 8, background: '#edf0e4', color: '#172b33', fontSize: 11, fontWeight: 800, lineHeight: 1.45, overflowWrap: 'anywhere' } },
           e('span', { id: 'dino-preview-target', ref: footprintTargetRef, 'data-dig-preview-target': props.focus, 'data-dig-preview-tool': props.state.tool, 'data-dig-preview-source': 'selection' }, String(props.translate('stem.dinolab.preview_target','Next 3D stroke: {tool} at {coord}') || 'Next 3D stroke: {tool} at {coord}').replace(/\{coord\}/g,String.fromCharCode(65 + props.focus % 6) + (Math.floor(props.focus / 6) + 1)).replace(/\{tool\}/g,props.state.tool === 'trowel' ? vt('trowel','Trowel') : vt('brush','Brush'))),
@@ -12055,6 +13068,12 @@ var CLASSIFY_CASES = [
         var cameraControlRef = React.useRef(null);
         var visualMaterialsRef = React.useRef(null);
         var lightingControlRef = React.useRef(null);
+        var renderRequestRef = React.useRef(null);
+        function requestSceneRender() {
+          if (renderRequestRef.current) renderRequestRef.current();
+        }
+        // Ref-backed labels and selections also need a frame after React commits.
+        React.useEffect(function () { requestSceneRender(); });
         var studioLightRef = React.useRef('balanced');
         var studioLightState = React.useState('balanced'), studioLightMode = studioLightState[0], setStudioLightMode = studioLightState[1];
         var selectedStudioLight = dinoStudioLightProfile(studioLightMode);
@@ -12077,6 +13096,7 @@ var CLASSIFY_CASES = [
             reducedMotionRef.current = preference.matches;
             motionClockRef.current.last = null;
             setDeviceReducedMotion(preference.matches);
+            requestSceneRender();
           }
           updateMotionPreference();
           if (preference.addEventListener) preference.addEventListener('change', updateMotionPreference);
@@ -12090,6 +13110,7 @@ var CLASSIFY_CASES = [
           motionPausedRef.current = !motionPausedRef.current;
           motionClockRef.current.last = null;
           setMotionPaused(motionPausedRef.current);
+          requestSceneRender();
         }
         var requestedBodyOpacity = Math.max(10, Math.min(100, Number(props.bodyOpacity) || 28));
         var bodyOpacityRef = React.useRef(requestedBodyOpacity);
@@ -12158,7 +13179,9 @@ var CLASSIFY_CASES = [
           var canvas = canvasRef.current;
           if (!canvas || typeof window === 'undefined' || typeof document === 'undefined') return;
           var alive = true;
-          var frame = 0;
+          var renderScheduler = null;
+          var activeRenderControl = null;
+          var contextLost = false;
           var renderer = null;
           var scene = null;
           var camera = null;
@@ -12558,7 +13581,9 @@ var CLASSIFY_CASES = [
             var eyeGlintMat = new THREE.MeshBasicMaterial({ color: 0xfff3cf });
             var corneaMat = THREE.MeshPhysicalMaterial ? new THREE.MeshPhysicalMaterial({ color: 0xffffff, transparent: true, opacity: 0.07, roughness: 0.08, metalness: 0, clearcoat: 0.7, clearcoatRoughness: 0.08, depthWrite: false }) : new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.06, depthWrite: false });
             var mouthMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x241a17, roughness: 0.94 }) : new THREE.MeshPhongMaterial({ color: 0x241a17, shininess: 2 });
-            var mouthCreaseMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0x302821).convertSRGBToLinear(), transparent: headMat.transparent, opacity: headMat.opacity, depthWrite: headMat.depthWrite, side: THREE.DoubleSide });
+            var nostrilMat = null;
+            // Treat the mouth outline as a seated decal to avoid depth flicker on curved skin.
+            var mouthCreaseMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0x302821).convertSRGBToLinear(), transparent: headMat.transparent, opacity: headMat.opacity, depthWrite: headMat.depthWrite, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
             var skeletonCavityMat = new THREE.MeshBasicMaterial({ color: 0x211f1a, transparent: true, opacity: 0.90, depthWrite: false });
             var toothMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0xfff5d6, roughness: 0.48, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: 0xfff5d6, shininess: 24 });
             var muscleMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x8f3f32, transparent: true, opacity: Math.min(0.52, 0.14 + inferenceOpacity * 0.62), roughness: 0.92, metalness: 0, depthWrite: false }) : new THREE.MeshPhongMaterial({ color: 0x8f3f32, transparent: true, opacity: Math.min(0.52, 0.14 + inferenceOpacity * 0.62), shininess: 4, depthWrite: false });
@@ -12566,6 +13591,9 @@ var CLASSIFY_CASES = [
             var airSacMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0xbdeff2, transparent: true, opacity: Math.min(0.34, 0.09 + inferenceOpacity * 0.34), roughness: 0.58, metalness: 0, side: THREE.DoubleSide, depthWrite: false }) : new THREE.MeshPhongMaterial({ color: 0xbdeff2, transparent: true, opacity: Math.min(0.34, 0.09 + inferenceOpacity * 0.34), shininess: 18, side: THREE.DoubleSide, depthWrite: false });
             var pneumaticMarkerMat = new THREE.MeshBasicMaterial({ color: 0x67e8f9, transparent: true, opacity: 0.72, side: THREE.DoubleSide, depthWrite: false });
             var keratinMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x4b3525, transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.94, 0.58 + inferenceOpacity * 0.48), roughness: 0.90, metalness: 0, depthWrite: lifeSurface }) : new THREE.MeshPhongMaterial({ color: 0x4b3525, transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.94, 0.58 + inferenceOpacity * 0.48), shininess: 5, depthWrite: lifeSurface });
+            // Match the sRGB palette swatch, then add grain only to mapped sheaths.
+            keratinMat.color.convertSRGBToLinear();
+            dinoKeratinShading(keratinMat);
             var filamentMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: new THREE.Color(fieldPalette.dark), transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.90, 0.44 + inferenceOpacity * 0.58), roughness: 0.96, metalness: 0, side: THREE.DoubleSide, depthWrite: lifeSurface }) : new THREE.MeshPhongMaterial({ color: new THREE.Color(fieldPalette.dark), transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.90, 0.44 + inferenceOpacity * 0.58), shininess: 2, side: THREE.DoubleSide, depthWrite: lifeSurface });
             var featherVaneMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: new THREE.Color(integument.pattern === 'white-banded' ? '#dadcd8' : (integument.pattern === 'iridescent' ? bodyColor : fieldPalette.accent)), transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.92, 0.48 + inferenceOpacity * 0.60), roughness: 0.92, metalness: 0, side: THREE.DoubleSide, depthWrite: lifeSurface }) : new THREE.MeshPhongMaterial({ color: new THREE.Color(integument.pattern === 'white-banded' ? '#dadcd8' : (integument.pattern === 'iridescent' ? bodyColor : fieldPalette.accent)), transparent: !lifeSurface, opacity: lifeSurface ? 1 : Math.min(0.92, 0.48 + inferenceOpacity * 0.60), shininess: 3, side: THREE.DoubleSide, depthWrite: lifeSurface });
             var scaleReliefMat = bodyMat.clone();
@@ -12587,6 +13615,7 @@ var CLASSIFY_CASES = [
               contourCoatMat.vertexColors = true;
               contourCoatMat.bumpMap = null; contourCoatMat.roughnessMap = null;
               contourCoatMat.roughness = 0.96;
+              contourCoatMat.userData.dinoContourCoat = true;
               dinoSkinMapping(THREE, contourCoatMat, Math.max(len * 0.20, ht * 0.60), 0.07, integument);
               dinoCoatShading(contourCoatMat);
             }
@@ -12616,6 +13645,9 @@ var CLASSIFY_CASES = [
                 featherVaneMat.map = featherTexture;
               }
             }
+            // Back-face casting avoids self-shadow fragments on overlapping closed skin.
+            // Set this after cloning so surface relief and thin feather coats keep their shadows.
+            if (isSauropod) bodyMat.shadowSide = THREE.BackSide;
             activeMaterialSet = { body: bodyMat, head: headMat, wire: bodyWireMat, accent: anatomyAccentMat, muscle: muscleMat, lung: lungMat, airSac: airSacMat, keratin: keratinMat, filament: filamentMat, coat: coatMat, feather: featherVaneMat, scaleRelief: scaleReliefMat };
             activeMaterialSet.contourCoat = contourCoatMat;
             activeMaterialSet.mouthCrease = mouthCreaseMat;
@@ -12882,9 +13914,9 @@ var CLASSIFY_CASES = [
               model.add(mesh);
               return mesh;
             }
-            function addSoftTissueChain(points, radii, mat, cranialShape) {
+            function addSoftTissueChain(points, radii, mat, cranialShape, surfaceOptions) {
               if (!props.showBody || !points || points.length < 2) return [];
-              var surfaceGeometry = cranialShape ? dinoCranialGeometry(THREE, points, radii, cranialShape) : dinoSurfaceGeometry(THREE, points, radii, { smoothProfile: true });
+              var surfaceGeometry = cranialShape ? dinoCranialGeometry(THREE, points, radii, cranialShape) : dinoSurfaceGeometry(THREE, points, radii, surfaceOptions || { smoothProfile: true });
               surfaceGeometry.translate(-points[0].x, -points[0].y, -points[0].z);
               var mesh = new THREE.Mesh(surfaceGeometry, mat || bodyMat);
               mesh.position.copy(points[0]);
@@ -13149,16 +14181,9 @@ var CLASSIFY_CASES = [
               shoulder.clone().add(vec(-bodyLen * 0.25, 0, 0)), shoulder.clone(), thoraxCenter, abdomenCenter, pelvisCenter,
               hip.clone(), hip.clone().add(vec(bodyLen * 0.24, 0, 0))
             ];
-            var torsoRadii = [
-              [surfaceBodyHeight * 0.24, surfaceBodyDepth * 0.28],
-              [surfaceBodyHeight * 0.76 * postcranialSurface.shoulderFullness, surfaceBodyDepth * 0.88 * postcranialSurface.shoulderFullness],
-              [surfaceBodyHeight * 0.96 * postcranialSurface.shoulderFullness, surfaceBodyDepth * 0.96 * postcranialSurface.ribcageFullness],
-              [surfaceBodyHeight * 0.91 * postcranialSurface.bellyFullness, surfaceBodyDepth * 0.94 * postcranialSurface.bellyFullness],
-              [surfaceBodyHeight * 0.88 * postcranialSurface.pelvicFullness, surfaceBodyDepth * 0.94 * postcranialSurface.pelvicFullness],
-              [surfaceBodyHeight * 0.70, surfaceBodyDepth * 0.76],
-              [surfaceBodyHeight * 0.12, surfaceBodyDepth * 0.16]
-            ];
-            var bodyShell = addSoftTissueChain(torsoPoints, torsoRadii, bodyMat)[0] || null;
+            var torsoRadii = dinoTorsoRadii(surfaceBodyHeight, surfaceBodyDepth, postcranialSurface);
+            var bodyShell = addSoftTissueChain(torsoPoints, torsoRadii, bodyMat, null,
+              isSauropod && postcranialSurface.id === 'long-low-sauropod' ? { smoothProfile: true, compactChest: true } : null)[0] || null;
             if (bodyShell) bodyShell.userData.dinoRegion = 'torso';
             if (bodyShell) bodyShell.name = 'continuous-torso';
             if (bodyShell) {
@@ -13234,28 +14259,17 @@ var CLASSIFY_CASES = [
             }
             function addFrillSurface(mat, size) {
               if (!hasAnatomyPart('frill')) return null;
-              var frillScale = cranialSurface.frillScale * size;
+              var nestedBone = mat === boneMat && props.species.id === 'triceratops';
+              var frillScale = cranialSurface.frillScale * (nestedBone ? 1 : size);
               var center = head.clone().add(vec(len * 0.025 * frillScale, ht * 0.052, 0));
               var height = ht * 0.20 * frillScale, width = surfaceBodyDepth * 0.86 * frillScale;
-              var vertices = [], frillUvs = [], indices = [], rings = 8, sides = 64;
-              for (var ring = 0; ring <= rings; ring++) {
-                var r = ring / rings;
-                for (var side = 0; side <= sides; side++) {
-                  var angle = side / sides * Math.PI * 2;
-                  var edge = 1 + 0.025 * Math.cos(angle * 14) * r * r;
-                  var y = Math.max(-height * 0.48, Math.sin(angle) * height * r * edge);
-                  vertices.push(center.x + y * 0.60 + len * 0.010 * r * r, center.y + y, Math.cos(angle) * width * r * edge);
-                  frillUvs.push(0.5 + Math.cos(angle) * r * 0.5, 0.5 + Math.sin(angle) * r * 0.5);
-                  if (ring < rings && side < sides) {
-                    var n = ring * (sides + 1) + side;
-                    indices.push(n, n + 1, n + sides + 1, n + 1, n + sides + 2, n + sides + 1);
-                  }
-                }
+              var geometry = dinoFrillGeometry(THREE, height, width, len * 0.010, props.species.id === 'triceratops');
+              if (nestedBone) {
+                var envelope = geometry;
+                geometry = dinoBonyFrillGeometry(THREE,envelope);
+                envelope.dispose();
               }
-              var geometry = new THREE.BufferGeometry();
-              geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-              geometry.setAttribute('uv', new THREE.Float32BufferAttribute(frillUvs, 2));
-              geometry.setIndex(indices); geometry.computeVertexNormals();
+              geometry.translate(center.x, center.y, center.z);
               if (mat === boneMat) { mat = mat.clone(); mat.side = THREE.DoubleSide; }
               var frill = new THREE.Mesh(geometry, mat);
               frill.castShadow = true; frill.receiveShadow = true; frill.userData.dinoFeature = 'frill';
@@ -13316,7 +14330,10 @@ var CLASSIFY_CASES = [
             registerCranialMotion(addBodyContour(headShell));
             if (props.showBody) {
               var tailBaseRadius = Math.max(0.045 * detailScale, ht * (isTheropod ? 0.105 : 0.075)) * surfaceHypothesis.tailSoftTissueScale * reconstructionProfile.tailBase * postcranialSurface.tailBaseFullness;
-              var neckMeshes = addSoftTissueChain(neckPoints, neckRadii, bodyMat);
+              var neckSkinEnvelope = dinoCervicalSkinEnvelope(cervicalEnvelope,
+                /Ceratops/i.test(cladeName) && hasAnatomyPart('frill'));
+              var neckMeshes = addSoftTissueChain(neckSkinEnvelope.points, neckSkinEnvelope.radii, bodyMat, null,
+                isSauropod ? { smoothProfile: true, taperRoot: true } : null);
               if (neckMeshes[0]) {
                 neckMeshes[0].userData.dinoRegion = 'neck';
                 neckMeshes[0].userData.dinoNeckTip = head.toArray();
@@ -13415,7 +14432,10 @@ var CLASSIFY_CASES = [
                   [[surfaceHeadHeight * 0.36, surfaceHeadDepth * 0.55 * cranialSurface.muzzleTipScale],
                     [surfaceHeadHeight * 0.25, surfaceHeadDepth * 0.42 * cranialSurface.muzzleTipScale],
                     [surfaceHeadHeight * 0.025, surfaceHeadDepth * 0.10]], keratinMat)[0];
-                if (keratinBeak) keratinBeak.userData.dinoFeature = 'keratin-beak';
+                if (keratinBeak) {
+                  dinoBeakSurfaceGeometry(THREE, keratinBeak.geometry, surfaceHeadHeight, /Ceratops/i.test(cladeName));
+                  keratinBeak.userData.dinoFeature = 'keratin-beak';
+                }
                 registerCranialMotion(keratinBeak);
               }
 
@@ -13547,10 +14567,20 @@ var CLASSIFY_CASES = [
               [-1, 1].forEach(function (faceSide) {
                 var eyePos = head.clone().add(vec(-surfaceHeadLength * 0.20 * cranialSurface.eyeForwardScale, surfaceHeadHeight * 0.30 * cranialSurface.eyeHeightScale, faceSide * surfaceHeadDepth * 0.94));
                 eyePos = faceSurfacePoint(eyePos, faceSide, -eyeRadius * 0.14);
+                var eyeBrowAnchor = eyePos.clone();
+                var eyeFrame = null;
+                if (props.species.id === 'tyrannosaurus') {
+                  var eyeAnchor = dinoSurfaceAnchor(THREE, headShell,
+                    vec(eyePos.x, eyePos.y, faceSide * surfaceHeadDepth * 3),
+                    vec(0, 0, -faceSide), surfaceHeadDepth * 6);
+                  if (eyeAnchor) eyeFrame = dinoEyeSurfaceFrame(THREE, eyeAnchor.normal, faceSide, Math.PI * 35 / 180);
+                  if (eyeFrame) eyePos.copy(eyeAnchor.point)
+                    .addScaledVector(vec(0, 0, faceSide).applyQuaternion(eyeFrame), -eyeRadius * 0.14);
+                }
                 var browPoints = [
-                  eyePos.clone().add(vec(-eyeRadius * 1.28, eyeRadius * 0.84, 0)),
-                  eyePos.clone().add(vec(0, eyeRadius * 1.12, 0)),
-                  eyePos.clone().add(vec(eyeRadius * 1.20, eyeRadius * 0.90, 0))
+                  eyeBrowAnchor.clone().add(vec(-eyeRadius * 1.28, eyeRadius * 0.84, 0)),
+                  eyeBrowAnchor.clone().add(vec(0, eyeRadius * 1.12, 0)),
+                  eyeBrowAnchor.clone().add(vec(eyeRadius * 1.20, eyeRadius * 0.90, 0))
                 ];
                 addFacialStrip(browPoints, eyeRadius * 0.33 * cranialSurface.browScale,
                   eyeRadius * 0.28 * cranialSurface.browScale, faceSide, headMat, 'brow-relief');
@@ -13575,40 +14605,68 @@ var CLASSIFY_CASES = [
                 cornea.scale.set(1, 0.84, 0.50);
                 cornea.renderOrder = 12;
                 model.add(cornea);
-                var upperLid = new THREE.Mesh(new THREE.TorusGeometry(eyeRadius * 1.04, eyeRadius * 0.17, 7, 22, Math.PI), headMat);
-                upperLid.position.copy(eyePos).add(vec(0, 0, faceSide * eyeRadius * 0.47));
-                upperLid.scale.y = 0.82;
+                var upperLid = new THREE.Mesh(dinoEyelidGeometry(THREE, eyeRadius, faceSide, true), headMat);
+                upperLid.position.copy(eyePos);
                 upperLid.renderOrder = 13;
                 model.add(upperLid);
-                var lowerLid = new THREE.Mesh(new THREE.TorusGeometry(eyeRadius * 1.02, eyeRadius * 0.13, 7, 22, Math.PI), headMat);
-                lowerLid.position.copy(upperLid.position);
-                lowerLid.rotation.z = Math.PI;
-                lowerLid.scale.y = 0.82;
+                var lowerLid = new THREE.Mesh(dinoEyelidGeometry(THREE, eyeRadius, faceSide, false), headMat);
+                lowerLid.position.copy(eyePos);
                 lowerLid.renderOrder = 13;
                 model.add(lowerLid);
-                [[eye, 'iris'], [pupil, 'pupil'], [cornea, 'cornea'], [glint, 'glint']].forEach(function (part) {
+                [[eye, 'iris'], [pupil, 'pupil'], [cornea, 'cornea'], [glint, 'glint'], [upperLid, 'upper-lid'], [lowerLid, 'lower-lid']].forEach(function (part) {
                   part[0].userData.dinoRegion = 'head'; part[0].userData.dinoEyeRole = part[1]; part[0].userData.dinoEyeSide = faceSide;
                 });
-                idleMotion.eyes.push({ eye: eye, pupil: pupil, glint: glint, cornea: cornea, upperLid: upperLid, lowerLid: lowerLid, eyeBaseY: eye.scale.y, pupilBaseY: pupil.scale.y, corneaBaseY: cornea.scale.y, lidBaseY: upperLid.scale.y });
+                if (eyeFrame) {
+                  // Rotate the eye stack and its curved lid surfaces as one local frame.
+                  [eye, pupil, glint, cornea, upperLid, lowerLid].forEach(function (part) {
+                    part.position.sub(eyePos).applyQuaternion(eyeFrame).add(eyePos);
+                    part.quaternion.premultiply(eyeFrame);
+                    part.userData.dinoSurfaceSeatedEye = true;
+                    part.userData.dinoEyeFrame = eyeFrame.toArray();
+                  });
+                }
+                idleMotion.eyes.push({ eye: eye, pupil: pupil, glint: glint, cornea: cornea, upperLid: upperLid, lowerLid: lowerLid });
                 var nostrilPos = head.clone().lerp(surfaceSnout, cranialSurface.nostrilPosition).add(vec(0, surfaceHeadHeight * 0.12 * cranialSurface.nostrilHeightScale, faceSide * surfaceHeadDepth * (isTheropod ? 0.65 : 0.60 * cranialSurface.muzzleTipScale)));
                 var nostrilRadius = Math.min(surfaceHeadHeight, surfaceHeadDepth) * 0.065 * cranialSurface.nostrilScale;
                 nostrilPos = faceSurfacePoint(nostrilPos, faceSide, nostrilRadius * 0.08);
-                var nostril = new THREE.Mesh(new THREE.SphereGeometry(nostrilRadius, 12, 8), mouthMat);
+                var nostrilFrame = null;
+                var nostrilAnchor = dinoSurfaceAnchor(THREE, headShell,
+                  vec(nostrilPos.x, nostrilPos.y, faceSide * surfaceHeadDepth * 3),
+                  vec(0, 0, -faceSide), surfaceHeadDepth * 6);
+                // Follow the snout's slope while keeping the opening and rim concentric.
+                // As with the eye stack, steep or unsupported hits keep the lateral fallback.
+                if (nostrilAnchor) nostrilFrame = dinoEyeSurfaceFrame(THREE, nostrilAnchor.normal, faceSide, Math.PI / 3);
+                if (nostrilFrame) nostrilPos.copy(nostrilAnchor.point)
+                  .addScaledVector(vec(0, 0, faceSide).applyQuaternion(nostrilFrame), nostrilRadius * 0.08);
+                if (nostrilFrame && !nostrilMat) {
+                  // A dark recessed opening needs the same linear-color convention as skin.
+                  nostrilMat = mouthMat.clone(); nostrilMat.color.convertSRGBToLinear();
+                }
+                var nostril = new THREE.Mesh(new THREE.SphereGeometry(nostrilRadius, 12, 8), nostrilFrame ? nostrilMat : mouthMat);
                 nostril.position.copy(nostrilPos);
-                nostril.scale.set(1.25, 0.55, 0.42);
+                nostril.scale.set(1.25, 0.55, nostrilFrame ? 0.16 : 0.42);
                 nostril.renderOrder = 10;
                 nostril.userData.dinoFeature = 'nostril'; nostril.userData.side = faceSide;
                   model.add(nostril);
                 var nostrilRim = new THREE.Mesh(new THREE.TorusGeometry(nostrilRadius * 1.18, nostrilRadius * 0.20, 7, 18), headMat);
-                nostrilRim.position.copy(nostrilPos).add(vec(0, 0, faceSide * nostrilRadius * 0.40));
+                nostrilRim.position.copy(nostrilPos).add(vec(0, 0, faceSide * nostrilRadius * (nostrilFrame ? 0.12 : 0.40)));
                 nostrilRim.scale.set(1.25, 0.56, 1);
                 nostrilRim.renderOrder = 11;
                 model.add(nostrilRim);
+                [[nostril, 'opening'], [nostrilRim, 'rim']].forEach(function (part) {
+                  part[0].userData.dinoRegion = 'head'; part[0].userData.dinoNostrilRole = part[1]; part[0].userData.dinoNostrilSide = faceSide;
+                  if (nostrilFrame) {
+                    part[0].position.sub(nostrilPos).applyQuaternion(nostrilFrame).add(nostrilPos);
+                    part[0].quaternion.premultiply(nostrilFrame);
+                    part[0].userData.dinoSurfaceSeatedNostril = true;
+                    part[0].userData.dinoNostrilFrame = nostrilFrame.toArray();
+                  }
+                });
                 var mouthStart = head.clone().lerp(surfaceSnout, 0.18).add(vec(0, -surfaceHeadHeight * 0.28, 0));
                 var mouthEnd = head.clone().lerp(surfaceSnout, 0.98).add(vec(0, -surfaceHeadHeight * 0.29, 0));
                 var mouthMiddle = mouthStart.clone().lerp(mouthEnd, 0.5).add(vec(0, -surfaceHeadHeight * 0.035, 0));
                 addFacialStrip([mouthStart, mouthMiddle, mouthEnd], Math.min(surfaceHeadHeight, surfaceHeadDepth) * 0.013,
-                  0, faceSide, mouthCreaseMat, 'mouth-crease');
+                  0, faceSide, mouthCreaseMat, 'mouth-crease', { rings: 128, occluders: [lowerJawShell] });
               });
 
                               captureCranialMotion(cranialFaceBefore);
@@ -13716,9 +14774,17 @@ if (/Ceratops/i.test(cladeName)) {
               var axisCenter = skeletalProfile.craniocervicalDetail ? head.clone().add(neckAxis.clone().multiplyScalar(skullLength * 0.84)) : head.clone();
               addVertebralChain(shoulder, axisCenter, isSauropod ? 12 : 7, Math.max(0.044 * detailScale, ht * 0.015), Math.max(0.032 * detailScale, ht * 0.010), isSauropod ? 1.25 : 1.45, 'cervical');
 
-              addSkeletonEllipsoid(head, vec(skullLength * 0.68, skullHeight, skullDepth), boneMat);
+              var cranialDisplay = dinoCranialDisplayProfile(THREE, props.species, head, snout, skullLength, skullHeight, skullDepth, detailScale, isTheropod);
+              var cranialVault = addSkeletonEllipsoid(cranialDisplay.vaultCenter, cranialDisplay.vaultScale, boneMat);
               var rostrumCenter = new THREE.Vector3().copy(head).lerp(snout, 0.62);
-              addSkeletonEllipsoid(rostrumCenter, vec(Math.max(0.09 * detailScale, skullLength * 0.62), skullHeight * (isTheropod ? 0.58 : 0.48), skullDepth * 0.72), boneMat);
+              var cranialRostrum = addSkeletonEllipsoid(cranialDisplay.rostrumCenter, cranialDisplay.rostrumScale, boneMat);
+              if (cranialDisplay.refined) {
+                [[cranialVault, 'vault'], [cranialRostrum, 'rostrum']].forEach(function (entry) {
+                  if (!entry[0]) return;
+                  entry[0].name = 'cranial-' + entry[1] + '-display-proxy';
+                  entry[0].userData.dinoCranialDisplayProxy = { region: entry[1], interpretive: true, tissueHypothesisIndependent: true };
+                });
+              }
               addBone(head.clone().add(vec(0, skullHeight * 0.42, 0)), snout.clone().add(vec(0, skullHeight * 0.18, 0)), Math.max(0.012 * detailScale, ht * 0.0045));
 
               if (skeletalProfile.craniocervicalDetail) {
@@ -14181,8 +15247,17 @@ if (/Ceratops/i.test(cladeName)) {
 
               function addAnatomyCallout(label, anchor, offset) {
                 var labelPoint = anchor.clone().add(offset);
-                addModelCylinder(anchor, labelPoint, Math.max(0.008 * detailScale, ht * 0.0028), anatomyCalloutMat, 18);
-                addTextLabel(label, labelPoint, '#f8fafc', 0.70);
+                var sprite = addTextLabel(label, labelPoint, '#f8fafc', 0.70);
+                if (!sprite) return;
+                var leader = addModelCylinder(anchor, labelPoint, Math.max(0.008 * detailScale, ht * 0.0028), anatomyCalloutMat, 18);
+                if (leader) {
+                  leader.name = 'dinolab-callout-' + label.toLowerCase();
+                  leader.userData.dinoCalloutLabel = label;
+                  leader.visible = false;
+                  // Keep the runtime link out of serializable userData. The pair
+                  // shares the existing cranial parent and disposal traversal.
+                  sprite.dinoCalloutLeader = leader;
+                }
               }
               var calloutLift = Math.max(0.42 * detailScale, ht * 0.14);
               var tailCalloutPoint = new THREE.Vector3().copy(hip).lerp(tail, 0.58);
@@ -14288,7 +15363,7 @@ if (/Ceratops/i.test(cladeName)) {
                 var padZ = Math.max(0.042 * detailScale, ht * profile.widthScale, bodyDepth * (front ? 0.20 : 0.23));
                 var padHeight = Math.max(0.035 * detailScale, ht * profile.heightScale);
                 var soleY = 0.004 * detailScale;
-                var pad = new THREE.Mesh(dinoPlantarGeometry(THREE, padX, padZ, padHeight, soleY - root.y, profile.mode), headMat);
+                var pad = new THREE.Mesh(dinoCompactFootGeometry(THREE, padX, padZ, padHeight, soleY - root.y, profile.mode, digitCount), headMat);
                 pad.position.copy(root).add(vec(-padX * 0.08, 0, 0));
                 pad.castShadow = true; pad.receiveShadow = true; pad.renderOrder = 6;
                 pad.userData.dinoInference = profile.note;
@@ -14310,7 +15385,13 @@ if (/Ceratops/i.test(cladeName)) {
                   var compactZ = sideSign * compactOffset / Math.max(1, (digitCount - 1) * 0.5) * padZ * 0.79;
                   var compactLength = padX * (1 - Math.abs(compactOffset) * 0.08);
                   var terminalCenter = root.clone().add(vec(-compactLength * (profile.columnar ? 0.78 : 0.88), Math.max(0.009 * detailScale, padHeight * 0.12), compactZ));
-                  var terminal = addEllipsoid(terminalCenter, vec(padX * (profile.columnar ? 0.28 : 0.37), Math.max(0.013 * detailScale, padHeight * 0.20), padZ / Math.max(3.8, digitCount * 1.05)), headMat);
+                  var terminal;
+                  if (profile.columnar) {
+                    terminal = addEllipsoid(terminalCenter, vec(padX * 0.28, Math.max(0.013 * detailScale, padHeight * 0.20), padZ / Math.max(3.8, digitCount * 1.05)), headMat);
+                  } else {
+                    terminal = new THREE.Mesh(dinoCompactDigitGeometry(THREE, padX * 0.37, Math.max(0.013 * detailScale, padHeight * 0.20), padZ / Math.max(3.8, digitCount * 1.05)), headMat);
+                    terminal.position.copy(terminalCenter); terminal.castShadow = true; model.add(terminal);
+                  }
                   tagDistalSurface(terminal, front, sideSign, [partId, digitId], 'compact-digit');
                   if (compactDigitIndex < ungualCount) {
                     var compactClawBase = terminalCenter.clone().add(vec(-padX * 0.18, Math.max(0.004 * detailScale, padHeight * 0.04), 0));
@@ -14319,7 +15400,8 @@ if (/Ceratops/i.test(cladeName)) {
                     if (compactDigitIndex === 0) addBodyPartAnchor('claws', compactClawBase.clone().lerp(compactClawTip, 0.64));
                   } else if (skeletalProfile.hoofedDigits) {
                     var hoofCenter = terminalCenter.clone().add(vec(-padX * 0.22, -padHeight * 0.02, 0));
-                    var hoof = addEllipsoid(hoofCenter, vec(padX * 0.19, Math.max(0.010 * detailScale, padHeight * 0.16), padZ / Math.max(4.0, digitCount * 1.10)), keratinMat);
+                    var hoof = new THREE.Mesh(dinoBluntTerminalGeometry(THREE, padX * 0.19, Math.max(0.010 * detailScale, padHeight * 0.16), padZ / Math.max(4.0, digitCount * 1.10)), keratinMat);
+                    hoof.position.copy(hoofCenter); hoof.castShadow = true; model.add(hoof);
                     tagDistalSurface(hoof, front, sideSign, [partId, digitId], 'hoof-like-terminal');
                   }
                 }
@@ -14381,8 +15463,8 @@ if (/Ceratops/i.test(cladeName)) {
               scale.userData.dinoFeature = 'surface-scale';
               bindSurfaceDetail(scale, surface, anchor);
             }
-            function addFacialStrip(points, width, relief, side, material, feature) {
-              var geometry = dinoFacialStripGeometry(THREE, headShell, points, { width: width, relief: relief, side: side });
+            function addFacialStrip(points, width, relief, side, material, feature, options) {
+              var geometry = dinoFacialStripGeometry(THREE, headShell, points, Object.assign({}, options, { width: width, relief: relief, side: side }));
               if (!geometry) return null;
               var mesh = new THREE.Mesh(geometry, material);
               mesh.name = feature + '-' + side; mesh.userData.dinoFeature = feature; mesh.userData.dinoRegion = 'head';
@@ -14592,7 +15674,8 @@ if (/Ceratops/i.test(cladeName)) {
                 var limbSkinRoot = topPoint.clone(); limbSkinRoot.z *= 0.40;
                 var proximalLimb = topPoint.clone().lerp(knee, 0.16);
                 var upperLimbShell = addSoftTissueChain([limbSkinRoot, proximalLimb, thighMid, knee, calfMid, ankle, foot],
-                  [thighRadius * 0.72, thighRadius * 0.96, thighRadius, kneeRadius, Math.max(kneeRadius * 1.02, ankleRadius * (footSurfaceProfile.columnar ? 1.12 : 1)), ankleRadius, ankleRadius * (footSurfaceProfile.padded ? 0.96 : 0.68)], bodyMat)[0];
+                  dinoCeratopsianForelegRadii([thighRadius * 0.72, thighRadius * 0.96, thighRadius, kneeRadius, Math.max(kneeRadius * 1.02, ankleRadius * (footSurfaceProfile.columnar ? 1.12 : 1)), ankleRadius, ankleRadius * (footSurfaceProfile.padded ? 0.96 : 0.68)],
+                    front && /Ceratopsidae/i.test(cladeName) && !footSurfaceProfile.columnar), bodyMat)[0];
                 upperLimbShell.userData.dinoRegion = (front ? 'foreleg-' : 'hindleg-') + sideSign;
                 upperLimbShell.userData.dinoPartIds = front ? ['forelimb', 'shoulder', 'elbow', 'wrist'] : ['thigh', 'hip', 'knee', 'shin', 'ankle'];
                 dinoPlantLimbSurface(THREE, upperLimbShell, limbSkinRoot, foot, footSurfaceProfile.padded ? 0.006 * detailScale : NaN);
@@ -14608,6 +15691,7 @@ if (/Ceratops/i.test(cladeName)) {
                   mesh: upperLimbShell,
                   baseRotation: upperLimbShell.rotation.clone(),
                   front: !!front,
+                  forelimbBlendWidth: front && isSauropod ? Math.min(thighRadius, surfaceBodyDepth) * 0.30 : 0,
                   side: sideSign
                 });
                 if (!front && !surfaceHypothesis.featureScales) addContourPlumage(upperLimbShell, 240, thighRadius * 0.80, false, null, 0.46);
@@ -14841,6 +15925,40 @@ if (/Ceratops/i.test(cladeName)) {
                 anchorCount: anchorsForPart(part.id).length, meshCount: (anatomyMeshParts[part.id] || []).length };
             });
 
+            // Soften only the rear cranial join after face details and anchors are seated.
+            // Shared specimen-space skin coordinates below inherit the same normal field.
+            if (headShell && neckMeshes && neckMeshes[0]) {
+              headShell.userData.dinoNeckNormalBlend = dinoBlendSurfaceNormals(THREE, headShell, neckMeshes[0],
+                Math.min(surfaceHeadHeight, surfaceHeadDepth) * 0.45, head.x);
+              if (bodyShell) {
+                // Keep the shoulder blend behind every neck vertex reachable by the head blend.
+                // This changes resting surface lighting, without moving the shoulder or its cap.
+                if (!headShell.geometry.boundingBox) headShell.geometry.computeBoundingBox();
+                var shoulderBlendWidth = Math.min(neckBaseRadius, surfaceBodyHeight, surfaceBodyDepth) * 0.45;
+                var protectedHeadX = headShell.geometry.boundingBox.clone().applyMatrix4(headShell.matrixWorld).max.x
+                  + Math.min(surfaceHeadHeight, surfaceHeadDepth) * 0.45;
+                var shoulderBlend = dinoBlendSurfaceNormals(THREE, bodyShell, neckMeshes[0], shoulderBlendWidth, protectedHeadX);
+                if (shoulderBlend) { shoulderBlend.width = shoulderBlendWidth; shoulderBlend.frontLimit = protectedHeadX; }
+                bodyShell.userData.dinoShoulderNormalBlend = shoulderBlend;
+              }
+            }
+
+            // Join the resting forelimb lighting to the sauropod trunk after planting.
+            // Keep the trunk normal field fixed so its neck transition stays intact.
+            if (isSauropod && bodyShell) {
+              idleMotion.legs.forEach(function (legEntry) {
+                if (!(legEntry.forelimbBlendWidth > 0)) return;
+                legEntry.mesh.userData.dinoForelimbNormalBlend = dinoBlendSurfaceNormals(THREE,
+                  bodyShell, legEntry.mesh, legEntry.forelimbBlendWidth, null, true);
+              });
+            }
+
+            // Match the exposed tail collar to the established pelvic shading.
+            if (isSauropod && bodyShell && tailMeshes && tailMeshes[0]) {
+              tailMeshes[0].userData.dinoTailNormalBlend = dinoBlendSurfaceNormals(THREE,
+                bodyShell, tailMeshes[0], Math.min(tailBaseRadius, surfaceBodyHeight, surfaceBodyDepth) * 0.45, null, true);
+            }
+
             // Frame anatomy, not sprites, detached assembly pieces, or habitat scenery.
             var specimenBounds = new THREE.Box3();
             model.updateMatrixWorld(true);
@@ -14872,7 +15990,10 @@ if (/Ceratops/i.test(cladeName)) {
             // Include the selected landmark on both sides, with context padding.
             var bodyPartStudyBounds = {};
             bodyPartDefinitions.forEach(function (part) {
-              var bounds = studyBounds[part.region].clone();
+              // Distal foot detail uses the actual geometry on both sides.
+              // Keep regional context when the visible layer supplies no foot meshes.
+              var footDetail = /^(foot|toes)$/.test(part.id) && (anatomyMeshParts[part.id] || []).length > 0;
+              var bounds = footDetail ? new THREE.Box3() : studyBounds[part.region].clone();
               bodyPartAnchors.forEach(function (anchor) {
                 if (anchor.userData.dinoBodyPart === part.id) bounds.expandByPoint(anchor.getWorldPosition(new THREE.Vector3()));
               });
@@ -15328,6 +16449,7 @@ if (/Ceratops/i.test(cladeName)) {
                 sun.shadow.needsUpdate = true;
                 scene.userData.dinoStudioLighting = lightProfile.id;
                 if (announce) setStatus(lightProfile.label + ' lighting. ' + lightProfile.description);
+                requestSceneRender();
               };
               lightingControlRef.current = activeLightingControl;
               activeLightingControl(studioLightRef.current, false);
@@ -15359,7 +16481,7 @@ if (/Ceratops/i.test(cladeName)) {
                 cameraReadoutRef.current.textContent = nextReadout; lastCameraReadout = nextReadout;
               }
             }
-            function updateCameraView() {
+            function updateCameraView(scheduleRender) {
               var trayVisible = !!assemblyTray && (cameraStudy === 'tray' || (cameraStudy === 'full' && !cameraTargetIsEvidence));
               if (assemblyTray) assemblyTray.visible = trayVisible;
               var fullOverview = cameraStudy === 'full' && !cameraTargetIsEvidence;
@@ -15381,6 +16503,7 @@ if (/Ceratops/i.test(cladeName)) {
               camera.updateProjectionMatrix(); camera.lookAt(targetForView); camera.updateMatrixWorld(true);
               yawRef.current.pitch = pitch; yawRef.current.zoom = zoom;
               updateCameraReadout();
+              if (scheduleRender !== false) requestSceneRender();
             }
             activeCameraControl = function (nextYaw, nextPitch, nextZoom, message, nextStudy) {
               if (nextStudy) cameraStudy = studyBounds[nextStudy] ? nextStudy : 'full';
@@ -15499,6 +16622,9 @@ if (/Ceratops/i.test(cladeName)) {
               });
               candidates.forEach(function (label) {
                 var text = label.userData.dinoLabel;
+                // Hide the connector before every label-culling path; only a
+                // readable label may reveal its matching annotation line.
+                if (label.dinoCalloutLeader) label.dinoCalloutLeader.visible = false;
                 var keyLabel = /^(Skull|Shoulder|Hip)( done)?$|^(Claim:|Placed|Assemble)/.test(text);
                 var measurement = /^\d.* (m|cm)$/.test(text);
                 label.visible = mode !== 'off' && mode !== 'anatomy' && (mode === 'all' || keyLabel || (props.showHuman && measurement && label.userData.labelScale >= 0.5));
@@ -15520,6 +16646,7 @@ if (/Ceratops/i.test(cladeName)) {
                   label.visible = false; return;
                 }
                 occupied.push(rect);
+                if (label.dinoCalloutLeader) label.dinoCalloutLeader.visible = true;
               });
             }
             function resize() {
@@ -15538,6 +16665,33 @@ if (/Ceratops/i.test(cladeName)) {
             } else {
               window.addEventListener('resize', resize);
               cleanupFns.push(function () { window.removeEventListener('resize', resize); });
+            }
+            function contextWasLost(event) {
+              event.preventDefault();
+              contextLost = true;
+              syncAnimation();
+            }
+            function contextWasRestored() {
+              contextLost = false;
+              syncAnimation();
+            }
+            canvas.addEventListener('webglcontextlost', contextWasLost);
+            canvas.addEventListener('webglcontextrestored', contextWasRestored);
+            cleanupFns.push(function () {
+              canvas.removeEventListener('webglcontextlost', contextWasLost);
+              canvas.removeEventListener('webglcontextrestored', contextWasRestored);
+            });
+            function fontMetricsChanged() {
+              if (!alive) return;
+              bodyLabelMetricKey = ''; bodyLabelContext = ''; previousBodyLabels = [];
+              syncAnimation();
+            }
+            if (document.fonts) {
+              if (document.fonts.addEventListener) {
+                document.fonts.addEventListener('loadingdone', fontMetricsChanged);
+                cleanupFns.push(function () { document.fonts.removeEventListener('loadingdone', fontMetricsChanged); });
+              }
+              if (document.fonts.ready) document.fonts.ready.then(fontMetricsChanged);
             }
             function visibilityChanged() {
               pageVisible = document.visibilityState !== 'hidden';
@@ -15592,6 +16746,7 @@ if (/Ceratops/i.test(cladeName)) {
                 yawRef.current.framing = 'full';
                 ev.preventDefault(); yaw = 0.35; pitch = 0.18; zoom = 1; yawRef.current.value = yaw; updateCameraView(); setStatus('Reconstruction returned to its starting view.');
               }
+              requestSceneRender();
             }
             function wheelZoom(ev) {
               ev.preventDefault();
@@ -15620,14 +16775,7 @@ if (/Ceratops/i.test(cladeName)) {
             setStatus(cameraTargetIsEvidence ? 'Camera centered on ' + cap(scanTargetId) + ' evidence anchor.' : (sameSpeciesRefresh ? '3D evidence view updated. Camera view preserved.' : '3D reconstruction loaded. Drag to orbit, use the wheel to zoom, or use the arrow keys.'));
             readySpeciesRef.current = props.species.id;
             function syncAnimation() {
-              if (!alive) return;
-              if (inViewport && pageVisible) {
-                if (!frame) frame = window.requestAnimationFrame(animate);
-              } else {
-                motionClockRef.current.last = null;
-                if (frame) window.cancelAnimationFrame(frame);
-                frame = 0;
-              }
+              if (alive && renderScheduler) renderScheduler.invalidate();
             }
             // Capture is explicit and complete before reparenting. Keeping root
               // transforms in specimen coordinates preserves the rest pose and UV data.
@@ -15645,7 +16793,6 @@ if (/Ceratops/i.test(cladeName)) {
               }
 
               function animate() {
-              frame = 0;
               if (!alive || !renderer || !scene || !camera) return;
               if (model) {
                 var motionRunning = !motionPausedRef.current && !reducedMotionRef.current;
@@ -15724,18 +16871,16 @@ if (/Ceratops/i.test(cladeName)) {
                   var blinkCycle = (idleTime * 0.16 + idleMotion.phase * 0.13) % 1;
                   var blinkAmount = blinkCycle > 0.92 ? Math.sin(((blinkCycle - 0.92) / 0.08) * Math.PI) : 0;
                   idleMotion.eyes.forEach(function (eyeRig) {
-                    eyeRig.eye.scale.y = eyeRig.eyeBaseY * (1 - blinkAmount * 0.88);
-                    eyeRig.pupil.scale.y = eyeRig.pupilBaseY * (1 - blinkAmount * 0.90);
-                    eyeRig.cornea.scale.y = eyeRig.corneaBaseY * (1 - blinkAmount * 0.88);
-                    eyeRig.upperLid.scale.y = eyeRig.lidBaseY * (1 - blinkAmount * 0.88);
-                    eyeRig.lowerLid.scale.y = eyeRig.lidBaseY * (1 - blinkAmount * 0.88);
+                    // Keep the globe intact; curved skin closes across its surface.
+                    dinoUpdateEyelid(eyeRig.upperLid.geometry, blinkAmount);
+                    dinoUpdateEyelid(eyeRig.lowerLid.geometry, blinkAmount);
                     eyeRig.glint.visible = blinkAmount < 0.48;
                   });
                 }
                 yawRef.current.value = yaw;
                 model.rotation.y = yaw;
                 if (contactShadowRig) contactShadowRig.rotation.y = yaw;
-                updateCameraView();
+                updateCameraView(false);
                 if (scanPulse) {
                   var pulse = 1 + Math.sin(idleTime * 6) * 0.10;
                   scanPulse.scale.set(pulse, pulse, pulse);
@@ -15759,19 +16904,29 @@ if (/Ceratops/i.test(cladeName)) {
               layoutSceneLabels();
               layoutBodyPartLabels();
               renderer.render(scene, camera);
-              syncAnimation();
             }
+            renderScheduler = dinoRenderScheduler({
+              requestFrame: function (callback) { return window.requestAnimationFrame(callback); },
+              cancelFrame: function (id) { window.cancelAnimationFrame(id); },
+              draw: animate,
+              canRender: function () { return alive && !!renderer && !!scene && !!camera && !contextLost && inViewport && pageVisible; },
+              isAnimating: function () { return !motionPausedRef.current && !reducedMotionRef.current; },
+              resetClock: function () { motionClockRef.current.last = null; }
+            });
+            activeRenderControl = syncAnimation;
+            renderRequestRef.current = activeRenderControl;
             syncAnimation();
           });
 
           return function () {
             alive = false;
-            if (frame) window.cancelAnimationFrame(frame);
+            if (renderScheduler) renderScheduler.dispose();
             cleanupFns.forEach(function (fn) { try { fn(); } catch (e) {} });
             if (resizeObserver) { try { resizeObserver.disconnect(); } catch (e) {} }
             if (intersectionObserver) { try { intersectionObserver.disconnect(); } catch (e) {} }
             if (cameraControlRef.current === activeCameraControl) cameraControlRef.current = null;
             if (lightingControlRef.current === activeLightingControl) lightingControlRef.current = null;
+            if (renderRequestRef.current === activeRenderControl) renderRequestRef.current = null;
             if (visualMaterialsRef.current === activeMaterialSet) visualMaterialsRef.current = null;
 
           };
@@ -15996,6 +17151,7 @@ if (/Ceratops/i.test(cladeName)) {
               material.needsUpdate = true;
             });
           }
+          requestSceneRender();
           if (announce && statusRef.current) statusRef.current.textContent = (nextOpacity >= 98 ? 'Opaque life surface enabled. ' : 'Body inference opacity ' + nextOpacity + ' percent. ') + 'Skeleton and evidence remain unchanged.';
         }
         function updateBodyOpacity(event) {
@@ -16113,6 +17269,30 @@ var evidenceRoute = [
                 style: { padding: '8px 12px', borderRadius: 8, border: '1px solid ' + (selected ? '#0f766e' : T.border), background: selected ? '#0f766e' : T.deeper, color: selected ? '#ffffff' : T.text, cursor: 'pointer', fontSize: 12, fontWeight: 800 } }, label);
             })
           ),
+          activeStudy === 'head' && props.species.group !== 'other' ? el('section', {
+            className: 'dinolab-head-study-comparison', role: 'region',
+            'aria-label': __alloT('stem.dinolab.head_compare_title', 'Compare skull and life surface'),
+            style: { marginTop: 10, padding: '10px 12px', maxWidth: 620, borderRadius: 9, border: '1px solid ' + T.border, background: T.deeper, color: T.text }
+          },
+            el('h3', { style: { margin: '0 0 5px', fontSize: 13, fontWeight: 900, lineHeight: 1.4 } },
+              __alloT('stem.dinolab.head_compare_title', 'Compare skull and life surface')),
+            el('p', { style: { margin: '0 0 5px', color: T.soft, fontSize: 12, lineHeight: 1.5 } },
+              __alloT('stem.dinolab.head_compare_note', 'Skull openings and the jaw hinge are clues from bone. The living mouth outline, eyelids and skin thickness need reconstruction.')),
+            el('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 12, lineHeight: 1.5 } },
+              __alloT('stem.dinolab.head_compare_prompt', 'Which features could you check in a fossil?')),
+            el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 7 } }, [
+              { id: 'skull', key: 'head_compare_skull', label: 'Inspect skull' },
+              { id: 'jaw', key: 'head_compare_jaws', label: 'Inspect jaws' }
+            ].map(function (choice) {
+              return el('button', { key: choice.id, type: 'button', 'aria-controls': 'dinolab-anatomy-browser',
+                onClick: function () {
+                  if (props.onLabelModeChange && props.labelMode !== 'anatomy') props.onLabelModeChange('anatomy');
+                  selectBodyPart(choice.id, true);
+                },
+                style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: T.panel, color: T.text, fontSize: 12, fontWeight: 800, cursor: 'pointer' }
+              }, __alloT('stem.dinolab.' + choice.key, choice.label));
+            }))
+          ) : null,
           renderAnatomyQuest(),
           el('div', { className: 'dinolab-body-label-controls', style: { marginTop: 10 } },
             el('button', { type: 'button', 'aria-pressed': props.labelMode === 'anatomy' ? 'true' : 'false', onClick: function () { notifyOrientationInteraction(); if (props.onLabelModeChange) props.onLabelModeChange(props.labelMode === 'anatomy' ? 'key' : 'anatomy'); },
@@ -17409,7 +18589,7 @@ var evidenceRoute = [
               el('button', { type: 'button', style: actionStyle, onClick: function () { if (inspectFind) upd({ digVoxelFindPose: null, digVoxelFindReset: Math.max(0,numVal(d.digVoxelFindReset,0)) + 1 }); else if (inspectSection) upd({ digVoxelSectionPose: null, digVoxelSectionReset: Math.max(0, numVal(d.digVoxelSectionReset, 0)) + 1 }); else upd({ digVoxelPose: null, digVoxelCamera: 'oblique', digVoxelCameraReset: Math.max(0, numVal(d.digVoxelCameraReset, 0)) + 1 }); } }, inspectFind ? dft('reset_camera','Reset find camera') : inspectSection ? dst('reset_camera', 'Reset section camera') : dvt('reset_camera', 'Reset camera')),
               el('button', { type: 'button', style: actionStyle, disabled: !undoHistory.length, onClick: undoExcavation }, dvt('undo', 'Undo last excavation'))),
             renderDinoDigTerrainDisplay(React, { look: terrainLook, onLook: setTerrainLook, inspect: inspectSection, findMode: inspectFind, T: T, translate: t }),
-            el(DinoVoxelDig3DStable, { site: site, state: voxel, focus: focusCell, preview: footprintPreview, action: lastAction, inspect: inspectSection, findMode: inspectFind, findLook: findLook, terrainLook: terrainLook, findPlate: findPlate, comparison: strokeComparison, strokeCompare: strokeCompare, survey: survey, surveyGuides: surveyGuides, checkpoint: checkpointComparison, checkpointGuides: checkpointGuides, transect: transect, spatialReference: d.digVoxelReference, T: T, translate: t, camera: cameraView, pose: inspectFind ? d.digVoxelFindPose : inspectSection ? d.digVoxelSectionPose : d.digVoxelPose, cameraReset: (inspectFind ? d.digVoxelFindReset : inspectSection ? d.digVoxelSectionReset : d.digVoxelCameraReset) || 0, fullCameraReset: d.digVoxelCameraReset || 0, sectionCameraReset: d.digVoxelSectionReset || 0, findCameraReset: d.digVoxelFindReset || 0, onSelect: selectDigColumn, onExcavate: dig, onPose: function (pose) { upd(inspectFind ? 'digVoxelFindPose' : inspectSection ? 'digVoxelSectionPose' : 'digVoxelPose', pose); } }),
+            el(DinoVoxelDig3DStable, { site: site, state: voxel, focus: focusCell, preview: footprintPreview, action: lastAction, inspect: inspectSection, findMode: inspectFind, findLook: findLook, terrainLook: terrainLook, findPlate: findPlate, comparison: strokeComparison, strokeCompare: strokeCompare, survey: survey, surveyGuides: surveyGuides, checkpoint: checkpointComparison, checkpointGuides: checkpointGuides, transect: transect, spatialReference: d.digVoxelReference, coverGuides: d.digVoxelCoverGuides === true, patternLocator: d.digVoxelPatternLocator === true, T: T, translate: t, camera: cameraView, pose: inspectFind ? d.digVoxelFindPose : inspectSection ? d.digVoxelSectionPose : d.digVoxelPose, cameraReset: (inspectFind ? d.digVoxelFindReset : inspectSection ? d.digVoxelSectionReset : d.digVoxelCameraReset) || 0, fullCameraReset: d.digVoxelCameraReset || 0, sectionCameraReset: d.digVoxelSectionReset || 0, findCameraReset: d.digVoxelFindReset || 0, onSelect: selectDigColumn, onExcavate: dig, onPose: function (pose) { upd(inspectFind ? 'digVoxelFindPose' : inspectSection ? 'digVoxelSectionPose' : 'digVoxelPose', pose); } }),
             el('div', { className: 'dinolab-voxel-inspector' },
               el('div', null, el('strong', { style: { fontSize: 14 } }, dvt('selected', 'Selected column') + ' ' + activeColumn.coord),
                 el('p', { id: 'dino-voxel-controls-hint' }, inspectFind ? dft('view_controls_hint','Drag to orbit; scroll to zoom. Arrows orbit and +/− zoom. Enter or Space selects only. Exposed finds are shown at adjusted magnification without removing sediment.') : inspectSection ? dst('controls_hint', 'Click or tap a block to select it. Drag to orbit; scroll to zoom. Arrows orbit, +/− zoom, and Enter or Space selects the pointed column. Section inspection leaves sediment and clues unchanged.') : dvt('controls_hint', 'Click or tap a block to excavate. Drag to orbit; scroll to zoom. With the 3D view focused, arrows orbit, +/− zoom, and Enter or Space excavates the displayed target column. When no column is pointed at, it uses the selected column.')),
@@ -17420,8 +18600,8 @@ var evidenceRoute = [
                 el('p', { id: 'dino-voxel-action-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, voxelActionText),
                 el('p', null, dvt('model_limit', 'Four block layers and scattered fragment shapes are teaching choices, not measured strata or diagnostic dinosaur anatomy. Positions do not establish an animal’s pose, age, or association. Exposed fossils are protected.')))),
             el('div', { style: { padding: '0 16px 16px' } }, el('button', { type: 'button', style: actionStyle, onClick: function () { focusSoon('dino-dig-cell-' + focusCell); } }, dvt('use_grid', 'Use the keyboard excavation grid')))),
-          renderDinoDigSurvey(React, { survey: survey, answers: surveyAnswers, guides: surveyGuides, onGuides: function (value) { upd('digVoxelSurveyGuides',value === true); }, onSelect: selectDigColumn, onAnswer: answerSurvey, findMode: inspectFind, inspect: inspectSection, T: T, translate: t }),
-          renderDinoDigSpatialComparison(React, { survey: survey, reference: d.digVoxelReference, onReference: function (value) { upd('digVoxelReference',value); }, onSelect: selectDigColumn, findMode: inspectFind, inspect: inspectSection, T: T, translate: t }),
+          renderDinoDigSurvey(React, { survey: survey, answers: surveyAnswers, patternLocator: d.digVoxelPatternLocator === true, onPatternLocator: function (value) { upd('digVoxelPatternLocator',value === true); }, guides: surveyGuides, onGuides: function (value) { upd('digVoxelSurveyGuides',value === true); }, onSelect: selectDigColumn, onAnswer: answerSurvey, findMode: inspectFind, inspect: inspectSection, T: T, translate: t }),
+          renderDinoDigSpatialComparison(React, { survey: survey, reference: d.digVoxelReference, coverGuides: d.digVoxelCoverGuides === true, onCoverGuides: function (value) { upd('digVoxelCoverGuides',value === true); }, onReference: function (value) { upd('digVoxelReference',value); }, onSelect: selectDigColumn, findMode: inspectFind, inspect: inspectSection, T: T, translate: t }),
           renderDinoDigCheckpoint(React, { survey: survey, checkpoint: checkpointComparison, guides: checkpointGuides, notes: checkpointNotes, onRecord: recordCheckpoint, onClear: clearCheckpoint, onGuides: setCheckpointGuides, onNote: setCheckpointNote, onSelect: selectDigColumn, findMode: inspectFind, inspect: inspectSection, T: T, translate: t }),
           renderDinoDigStrokeComparison(React, { comparison: strokeComparison, show: strokeCompare, onShow: function (value) { upd('digVoxelCompareStroke',value === true); }, inspect: inspectSection, findMode: inspectFind, focus: focusCell, T: T, translate: t }),
           (findView.finds.length || inspectFind) ? renderDinoDigFindPanel(React, { finds: findView, T: T, translate: t, onSelect: selectDigColumn, onInspect: inspectDigFind, findMode: inspectFind, look: findLook, plate: findPlate, onLook: setFindLook, onCamera: setFindCamera }) : null,

@@ -1,0 +1,2 @@
+const fs=require('fs');const r=JSON.parse(fs.readFileSync('C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-scenario-clarity-2026-10-06/'+(process.argv[2]||'scenario-3')+'/results.json'));
+function walk(s){for(const spec of s.specs||[])for(const t of spec.tests||[])for(const result of t.results||[])if(result.status!=='passed')console.log(JSON.stringify({title:spec.title,errors:result.errors},null,2));for(const c of s.suites||[])walk(c);}for(const s of r.suites||[])walk(s);

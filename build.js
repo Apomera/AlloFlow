@@ -881,6 +881,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'WordPractice',
+        filename: 'word_practice_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'AdventureModule',
         filename: 'adventure_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1516,6 +1521,10 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_statslab.js',
     'stem_lab/stem_tool_optics.js',
     'stem_lab/stem_tool_perception.js',
+    'stem_lab/perception_gallery.js',
+    'stem_lab/perception_gallery_scene.js',
+    'stem_lab/perception_walk.js',
+    'stem_lab/perception_walk_scene.js',
     'stem_lab/stem_tool_astronomy.js',
     'stem_lab/stem_tool_bridgelab.js',
     'stem_lab/stem_tool_microbiology.js',
@@ -1844,6 +1853,13 @@ const COMPILE_PAIRS = [
         },
     },
     simplePureCompilePair('AccessibilityEvidence', 'accessibility_evidence', 'AccessibilityEvidenceModule'),
+    {
+        name: 'WordPractice',
+        srcPath: path.join(ROOT, 'word_practice_core.js'),
+        modPath: path.join(ROOT, 'word_practice_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app/public/word_practice_module.js'),
+        wrap() { return require('./_build_word_practice_module.js').buildWordPracticeModule(); },
+    },
     simplePureCompilePair('VerificationPolicy', 'verification_policy', 'VerificationPolicyModule'),
     simplePureCompilePair('ReviewDocumentSession', 'review_document_session', 'ReviewDocumentSessionModule'),
     simplePureCompilePair('SemanticReview', 'semantic_review', 'SemanticReviewModule'),

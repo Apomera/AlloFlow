@@ -1,0 +1,22 @@
+{
+  "file": "tests/firstresponse_lip_surfaces.test.js",
+  "beforeSHA256": "4ab8f4721608f846df69c1ae1b18b612fcf84c2ae995b8fbdf16f10fdc9fa883",
+  "afterSHA256": "a633f999ac4ccd35c11747f00d38f408b9f0802b23c726a5f2abf277fa4f32c8",
+  "beforeFile": "raw-lip-before.test.js",
+  "afterFile": "raw-lip-candidate.test.js",
+  "edits": [
+    {
+      "old": "    for (const fraction of [.25, .5, .75]) {\n      const local = seam.geometry.parameters.path.getPoint(fraction), world = local.clone().applyMatrix4(seam.matrixWorld);",
+      "new": "    const headScale = fixture.head.scale.x / .28;\n    // Probe the closed-mouth curve independently of the mesh topology.\n    for (const fraction of [.125, .25, .375, .5, .625, .75, .875]) {\n      const u = fraction * 2 - 1;\n      const local = new THREE.Vector3(.058 * u, 0, .125 + .008 * (1 - u * u)).multiplyScalar(headScale);\n      const world = local.clone().applyMatrix4(seam.matrixWorld);\n      // Cast from above the face, not from an assumed tube centre.\n      world.addScaledVector(fixture.up, .30 * fixture.unit);"
+    },
+    {
+      "old": "      expect(lower.z - upper.z, 'seam stays thinner than the lip surface').toBeGreaterThan(seam.geometry.parameters.radius * 4);",
+      "new": "      expect(lower.z - upper.z, 'seam stays thinner than the lip surface').toBeGreaterThan(.0018 * headScale * 4);"
+    },
+    {
+      "old": "      expect(lower.z - upper.z, 'seam stays thinner than the lip surface').toBeGreaterThan(.0018 * headScale * 4);",
+      "new": "      if ([.25, .5, .75].includes(fraction)) {\n        expect(lower.z - upper.z, 'seam stays thinner than the lip surface').toBeGreaterThan(.0018 * headScale * 4);\n      } else {\n        expect(lower.z - upper.z, 'lip corners retain room for the tapered seam').toBeGreaterThan(.0018 * headScale * 2);\n      }"
+    }
+  ],
+  "unchangedOutsideListedEdits": true
+}

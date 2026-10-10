@@ -1,0 +1,20 @@
+{
+  "sunny": {
+    "brightness": 12.988317419012635,
+    "opaque": 1,
+    "colors": 111,
+    "solar": 1,
+    "normal": 1,
+    "range": 19113000,
+    "angularRadius": 14.477512185929923
+  },
+  "night": {
+    "brightness": 12.316296296315999,
+    "opaque": 1,
+    "colors": 81,
+    "solar": -1,
+    "normal": -1,
+    "range": 19113000,
+    "angularRadius": 14.477512185929923
+  }
+}

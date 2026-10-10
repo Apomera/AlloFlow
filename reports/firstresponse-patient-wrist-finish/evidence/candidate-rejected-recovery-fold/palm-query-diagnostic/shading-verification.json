@@ -1,0 +1,24 @@
+{
+  "passed": false,
+  "assertions": 4749,
+  "beforeSHA256": "69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242",
+  "candidateSHA256": "38660be59270be0b42e34649f7c7ef62f91a804671d3469631b48b5292a35be4",
+  "checkerSHA256": "b6b37d969af0c15a86e5e297645955beb01283f1ad5a3c6ceae21558829988b7",
+  "inputs": {
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\verify-patient-wrist-palm.cjs": "b6b37d969af0c15a86e5e297645955beb01283f1ad5a3c6ceae21558829988b7",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\candidate.js": "38660be59270be0b42e34649f7c7ef62f91a804671d3469631b48b5292a35be4",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\before.js": "69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\vendor\\three-r128\\three.min.js": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
+  },
+  "interpolation": "THREE r128 Phong vertex-normal normalization followed by fragment interpolation/normalization at actual overlapping surface crossings",
+  "negative": [],
+  "results": [
+    {
+      "age": "adult",
+      "phase": 5,
+      "contrast": false,
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: actual sculpted palm intersects radial surface query {\"palm\":\"fr-patient-left-palm\",\"point\":[-0.8114311674643196,0.08453240978591085,-0.9643834664769827],\"center\":[-0.7613300951529183,0.07572914543804055,-1.0446148396288713],\"direction\":[-0.5273888203860188,0.09266754154707142,0.8445553616403517]}\n    at check (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\verify-patient-wrist-palm.cjs:9:68)\n    at surface (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\verify-patient-wrist-palm.cjs:24:152)\n    at palmCrossings (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\verify-patient-wrist-palm.cjs:26:46)\n    at compare (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\verify-patient-wrist-palm.cjs:55:880)\n    at Object.<anonymous> (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-patient-wrist-finish-work\\verify-patient-wrist-palm.cjs:59:378)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)"
+    }
+  ]
+}

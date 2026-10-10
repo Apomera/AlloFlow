@@ -1,0 +1,72 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/solar_system_comparison_bench.test.js
+[deferred-jsdom] Initializing the official DOM environment.
+
+stdout | tests/solar_system_comparison_bench.test.js
+[deferred-jsdom] DOM environment ready.
+
+stdout | tests/solar_system_comparison_bench.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/solar_system_comparison_bench.test.js
+[deferred-jsdom] Existing repository setup loaded.
+
+ ✓ tests/solar_system_comparison_bench.test.js > Solar System comparison bench > keeps an empty comparison as an explicitly unselected native pair 6018ms
+ ✓ tests/solar_system_comparison_bench.test.js > Solar System comparison bench > provides a named scientific region, raw ratios and both measurement charts 2146ms
+ ✓ tests/solar_system_comparison_bench.test.js > Solar System comparison bench > preserves the exact Earth/Jupiter diameter ratio and discloses the small-disc minimum 723ms
+ ✓ tests/solar_system_comparison_bench.test.js > Solar System comparison bench > preserves the exact Mercury/Mars diameter ratio and discloses the small-disc minimum 553ms
+ ✓ tests/solar_system_comparison_bench.test.js > Solar System comparison bench > preserves the exact Pluto/Jupiter diameter ratio and discloses the small-disc minimum 629ms
+ ✓ tests/solar_system_comparison_bench.test.js > Solar System comparison bench > shows that the smaller Uranus/Neptune world can have stronger listed gravity 828ms
+ ✓ tests/solar_system_comparison_bench.test.js > Solar System comparison bench > keeps equal listed gravity distinct from unequal diameter in saved evidence 1098ms
+ ✓ tests/solar_system_comparison_bench.test.js > Solar System comparison bench > retains the seven exact properties with diameter and weight-force units consistent with the charts 534ms
+ ✓ tests/solar_system_comparison_bench.test.js > Solar System comparison bench > resolves restored Earth/Jupiter selections without rewriting them on render 1655ms
+ ✓ tests/solar_system_comparison_bench.test.js > Solar System comparison bench > resolves restored earth/jupiter selections without rewriting them on render 1375ms
+ ✓ tests/solar_system_comparison_bench.test.js > Solar System comparison bench > resolves restored stem.solar_sys.earth/stem.solar_sys.jupiter selections without rewriting them on render 1042ms
+ ✓ tests/solar_system_comparison_bench.test.js > Solar System comparison bench > resolves world keys to localized canonical names while keeping pair drafts stable 859ms
+ ✓ tests/solar_system_comparison_bench.test.js > Solar System comparison bench > leaves invalid restored selections untouched and renders the empty placeholder safely 7106ms
+ ✓ tests/solar_system_comparison_bench.test.js > Solar System comparison bench > uses a stable sorted draft key through native challenge switching and swapping 3501ms
+ ✓ tests/solar_system_comparison_bench.test.js > Solar System comparison bench > derives empty reasoning from malformed maps, inherited pairs and nonstring drafts 12483ms
+ ✓ tests/solar_system_comparison_bench.test.js > Solar System comparison bench > renders restored same-world measurements honestly and disables evidence capture 4315ms
+ ✓ tests/solar_system_comparison_bench.test.js > Solar System comparison bench > honors a legacy saved-pair marker until writing changes, then permits revised evidence 32376ms
+ ✓ tests/solar_system_comparison_bench.test.js > Solar System comparison bench > guards repeated captured save callbacks and allows a new explanation without repeat XP 3473ms
+ ✓ tests/solar_system_comparison_bench.test.js > Solar System comparison bench > preserves other learning state and existing journal records throughout comparison actions 5269ms
+stdout | tests/solar_system_comparison_scale_navigation.test.js
+[deferred-jsdom] Initializing the official DOM environment.
+
+stdout | tests/solar_system_comparison_scale_navigation.test.js
+[deferred-jsdom] DOM environment ready.
+
+stdout | tests/solar_system_comparison_scale_navigation.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/solar_system_comparison_scale_navigation.test.js
+[deferred-jsdom] Existing repository setup loaded.
+
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > defaults to pair-fit zero-baseline bars and retains exact measurements 3081ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > keeps fixed diameter and gravity ceilings across pair changes and swaps 1499ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > uses pair-fit geometry for malformed restored mode undefined without repairing saved state 108ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > uses pair-fit geometry for malformed restored mode null without repairing saved state 112ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > uses pair-fit geometry for malformed restored mode false without repairing saved state 140ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > uses pair-fit geometry for malformed restored mode true without repairing saved state 130ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > uses pair-fit geometry for malformed restored mode "SYSTEM" without repairing saved state 126ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > uses pair-fit geometry for malformed restored mode "fixed" without repairing saved state 106ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > uses pair-fit geometry for malformed restored mode 1 without repairing saved state 103ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > uses pair-fit geometry for malformed restored mode ["system"] without repairing saved state 102ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > uses pair-fit geometry for malformed restored mode {"mode":"system"} without repairing saved state 105ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > uses pair-fit geometry for malformed restored mode "system" without repairing saved state 94ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > restores the literal system mode and limits native mode changes to their own setting 279ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > focuses Explore Earth only when its matching detail heading commits 206ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > focuses Explore Jupiter only when its matching detail heading commits 188ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > returns focus to the originating connected Explore button without resetting the comparison 271ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > does not focus or scroll an Explore origin that has left the document 198ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > keeps a matching heading request pending until its node is connected 161ms
+ ✓ tests/solar_system_comparison_scale_navigation.test.js > Solar System comparison scale and navigation > cancels pending Explore focus when a different native world selection supersedes it 268ms
+
+ Test Files  2 passed (2)
+      Tests  38 passed (38)
+   Start at  23:38:35
+   Duration  115.61s (transform 1.04s, setup 18.08s, import 890ms, tests 93.29s, environment 2ms)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/solar-comparison-scale-enhancement-2026-10-07/unit-results.json

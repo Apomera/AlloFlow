@@ -1,0 +1,26 @@
+{
+  "completed": false,
+  "pins": {
+    "stem_lab/stem_tool_universe.js": "609b91840f54bbf05447bfb877a4a87e024f6b1d7cfbf65744d2b9c9904a60c6",
+    "stem_lab/universe_flight_scene.js": "c0cc2486b3d5edd620e5975daec3d23b8f2e995a24db151be27ac30820d058c7"
+  },
+  "harnessHash": "fa06097135ac4d649e0f6779df89dd204ed099eade9af42528e0b025a63a324d",
+  "checks": [],
+  "accessibility": [],
+  "captures": [],
+  "poses": [],
+  "detailMeasurements": [],
+  "served": [
+    {
+      "path": "/stem_lab/stem_tool_universe.js",
+      "hash": "609b91840f54bbf05447bfb877a4a87e024f6b1d7cfbf65744d2b9c9904a60c6"
+    },
+    {
+      "path": "/stem_lab/universe_flight_scene.js",
+      "hash": "c0cc2486b3d5edd620e5975daec3d23b8f2e995a24db151be27ac30820d058c7"
+    }
+  ],
+  "servedReadErrors": [],
+  "errors": [],
+  "failure": "TimeoutError: page.waitForFunction: Timeout 60000ms exceeded."
+}

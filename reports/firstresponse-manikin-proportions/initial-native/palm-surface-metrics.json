@@ -1,0 +1,881 @@
+{
+  "baselineSha": "476c1562ef879cb20ac65efdbf290edff9b98fafde9dbd7866f3e612c5750935",
+  "finalSha": "16aceaa1b7d8bbd0ed869536b554451ddd2e5e3a832229e2e3322f8ad75f03e2",
+  "evidence": [
+    {
+      "age": "adult",
+      "width": 1280,
+      "height": 1080,
+      "pose": {
+        "structure": {
+          "hash": "b0354fa8",
+          "bytes": 6534
+        },
+        "preservedTransforms": {
+          "hash": "5421d666",
+          "bytes": 7289
+        },
+        "counts": {
+          "objects": 121,
+          "meshes": 87
+        }
+      },
+      "kind": "body",
+      "variant": "baseline",
+      "sourceSha": "476c1562ef879cb20ac65efdbf290edff9b98fafde9dbd7866f3e612c5750935",
+      "capture": "adult-body-baseline.png",
+      "camera": {
+        "position": [
+          0.44291841884751965,
+          5.22101847239576,
+          4.21483127836524
+        ],
+        "quaternion": [
+          -0.4320856905686952,
+          0.05140993617533819,
+          0.024680905078831247,
+          0.9000276814591378
+        ],
+        "projection": [
+          1.6683754654031857,
+          0,
+          0,
+          0,
+          0,
+          2.6050890646938014,
+          0,
+          0,
+          0,
+          0,
+          -1.002002002002002,
+          -1,
+          0,
+          0,
+          -0.20020020020020018,
+          0
+        ],
+        "aspect": 1.5614525139664805
+      },
+      "draw": {
+        "id": 1,
+        "createdBy": "page",
+        "draws": 8680,
+        "sequence": 56,
+        "calls": 79,
+        "triangles": 100712,
+        "geometries": 77,
+        "programs": 3,
+        "disposeCount": 0
+      },
+      "canvasSize": [
+        559,
+        358
+      ],
+      "selectedCreases": [
+        {
+          "name": "fr-patient-left-palm-crease",
+          "visible": true,
+          "vertices": 175,
+          "triangles": 288,
+          "materialType": "MeshPhongMaterial",
+          "opacity": 1,
+          "worldBounds": [
+            [
+              -0.703226769216282,
+              0.030847634327079723,
+              0.37805293738175444
+            ],
+            [
+              -0.6038951456122503,
+              0.04443450652403392,
+              0.41461583444001476
+            ]
+          ]
+        },
+        {
+          "name": "fr-patient-left-thumb-crease",
+          "visible": true,
+          "vertices": 175,
+          "triangles": 288,
+          "materialType": "MeshPhongMaterial",
+          "opacity": 1,
+          "worldBounds": [
+            [
+              -0.6344291412747644,
+              0.03529490253689083,
+              0.34235803879348564
+            ],
+            [
+              -0.6089014915832096,
+              0.0463063801225414,
+              0.4100947430653119
+            ]
+          ]
+        }
+      ],
+      "allCreases": [
+        {
+          "name": "fr-patient-left-palm-crease",
+          "visible": true,
+          "vertices": 175,
+          "triangles": 288,
+          "materialType": "MeshPhongMaterial",
+          "opacity": 1,
+          "worldBounds": [
+            [
+              -0.703226769216282,
+              0.030847634327079723,
+              0.37805293738175444
+            ],
+            [
+              -0.6038951456122503,
+              0.04443450652403392,
+              0.41461583444001476
+            ]
+          ]
+        },
+        {
+          "name": "fr-patient-left-thumb-crease",
+          "visible": true,
+          "vertices": 175,
+          "triangles": 288,
+          "materialType": "MeshPhongMaterial",
+          "opacity": 1,
+          "worldBounds": [
+            [
+              -0.6344291412747644,
+              0.03529490253689083,
+              0.34235803879348564
+            ],
+            [
+              -0.6089014915832096,
+              0.0463063801225414,
+              0.4100947430653119
+            ]
+          ]
+        },
+        {
+          "name": "fr-patient-right-palm-crease",
+          "visible": true,
+          "vertices": 175,
+          "triangles": 288,
+          "materialType": "MeshPhongMaterial",
+          "opacity": 1,
+          "worldBounds": [
+            [
+              0.6038951443095061,
+              0.03084760699956629,
+              0.3780528943932002
+            ],
+            [
+              0.703226552857307,
+              0.04442505186029246,
+              0.41461507455639934
+            ]
+          ]
+        },
+        {
+          "name": "fr-patient-right-thumb-crease",
+          "visible": true,
+          "vertices": 175,
+          "triangles": 288,
+          "materialType": "MeshPhongMaterial",
+          "opacity": 1,
+          "worldBounds": [
+            [
+              0.6089014636939694,
+              0.03529497614208473,
+              0.34235813176937785
+            ],
+            [
+              0.6344290637207202,
+              0.04630599021625877,
+              0.4100947128405721
+            ]
+          ]
+        }
+      ],
+      "selectedHand": {
+        "total": 7782,
+        "inFrame": 7782,
+        "min": [
+          -0.19029621589047904,
+          -0.12624383083263532,
+          0.9706490548427835
+        ],
+        "max": [
+          -0.13821665872965455,
+          -0.0027828836605810494,
+          0.9716254798587184
+        ]
+      },
+      "head": {
+        "total": 23333,
+        "inFrame": 23333,
+        "min": [
+          -0.034332995411111664,
+          0.3268741285154268,
+          0.9729621663712325
+        ],
+        "max": [
+          0.11884029850593028,
+          0.5665956445044865,
+          0.9754530692610077
+        ]
+      },
+      "wholeBody": {
+        "total": 54803,
+        "inFrame": 54803,
+        "min": [
+          -0.19029621589047904,
+          -0.8579110361942317,
+          0.9612666764702205
+        ],
+        "max": [
+          0.20468537240756787,
+          0.5665956445044865,
+          0.9754530692610077
+        ]
+      },
+      "headBounds": [
+        [
+          -0.3311941037673996,
+          0.07,
+          -1.62
+        ],
+        [
+          0.3311941037673996,
+          0.7075025391578674,
+          -0.88
+        ]
+      ],
+      "bodyBounds": [
+        [
+          -0.8315965143501419,
+          -0.014621911180293712,
+          -1.62
+        ],
+        [
+          0.8315965143501419,
+          0.7500000005960464,
+          2.32084177839962
+        ]
+      ],
+      "cheekContext": null,
+      "state": {
+        "consentAccepted": true,
+        "view": "body3d",
+        "b3dTab": "recovery",
+        "b3dAge": "adult",
+        "b3dRec": [
+          "check",
+          "arm",
+          "hand",
+          "knee",
+          "roll",
+          "airway",
+          "stable",
+          "watch"
+        ],
+        "b3dRecView": 0,
+        "b3dRecoveryGuides": false,
+        "b3dChildHands": "two",
+        "b3dPlaced": "correct",
+        "b3dStatus": "ready"
+      },
+      "errors": []
+    },
+    {
+      "age": "adult",
+      "width": 1280,
+      "height": 1080,
+      "pose": {
+        "structure": {
+          "hash": "b0354fa8",
+          "bytes": 6534
+        },
+        "preservedTransforms": {
+          "hash": "716b43a0",
+          "bytes": 7820
+        },
+        "counts": {
+          "objects": 121,
+          "meshes": 87
+        }
+      },
+      "kind": "near",
+      "variant": "baseline",
+      "sourceSha": "476c1562ef879cb20ac65efdbf290edff9b98fafde9dbd7866f3e612c5750935",
+      "capture": "adult-near-baseline.png",
+      "camera": {
+        "position": [
+          -0.9176753759345256,
+          0.6616324524896193,
+          -1.188483772418992
+        ],
+        "quaternion": [
+          0.2514241372212199,
+          0.738533574223917,
+          0.5073523795892181,
+          -0.3659885597826378
+        ],
+        "projection": [
+          1.6683754654031857,
+          0,
+          0,
+          0,
+          0,
+          2.6050890646938014,
+          0,
+          0,
+          0,
+          0,
+          -1.002002002002002,
+          -1,
+          0,
+          0,
+          -0.20020020020020018,
+          0
+        ],
+        "aspect": 1.5614525139664805
+      },
+      "draw": {
+        "id": 1,
+        "createdBy": "page",
+        "draws": 22741,
+        "sequence": 149,
+        "calls": 20,
+        "triangles": 18056,
+        "geometries": 77,
+        "programs": 3,
+        "disposeCount": 0
+      },
+      "canvasSize": [
+        559,
+        358
+      ],
+      "selectedCreases": [
+        {
+          "name": "fr-patient-left-palm-crease",
+          "visible": true,
+          "vertices": 175,
+          "triangles": 288,
+          "materialType": "MeshPhongMaterial",
+          "opacity": 1,
+          "worldBounds": [
+            [
+              -0.8099267082620301,
+              0.10763178242144544,
+              -1.0690759919074058
+            ],
+            [
+              -0.7124903472471871,
+              0.12188747719604229,
+              -1.0393412552290147
+            ]
+          ]
+        },
+        {
+          "name": "fr-patient-left-thumb-crease",
+          "visible": true,
+          "vertices": 175,
+          "triangles": 288,
+          "materialType": "MeshPhongMaterial",
+          "opacity": 1,
+          "worldBounds": [
+            [
+              -0.7382991994131245,
+              0.10877939165536697,
+              -1.0693930657473079
+            ],
+            [
+              -0.7175618717778363,
+              0.12138210569665858,
+              -1.0030176050527944
+            ]
+          ]
+        }
+      ],
+      "allCreases": [
+        {
+          "name": "fr-patient-left-palm-crease",
+          "visible": true,
+          "vertices": 175,
+          "triangles": 288,
+          "materialType": "MeshPhongMaterial",
+          "opacity": 1,
+          "worldBounds": [
+            [
+              -0.8099267082620301,
+              0.10763178242144544,
+              -1.0690759919074058
+            ],
+            [
+              -0.7124903472471871,
+              0.12188747719604229,
+              -1.0393412552290147
+            ]
+          ]
+        },
+        {
+          "name": "fr-patient-left-thumb-crease",
+          "visible": true,
+          "vertices": 175,
+          "triangles": 288,
+          "materialType": "MeshPhongMaterial",
+          "opacity": 1,
+          "worldBounds": [
+            [
+              -0.7382991994131245,
+              0.10877939165536697,
+              -1.0693930657473079
+            ],
+            [
+              -0.7175618717778363,
+              0.12138210569665858,
+              -1.0030176050527944
+            ]
+          ]
+        },
+        {
+          "name": "fr-patient-right-palm-crease",
+          "visible": true,
+          "vertices": 175,
+          "triangles": 288,
+          "materialType": "MeshPhongMaterial",
+          "opacity": 1,
+          "worldBounds": [
+            [
+              -0.22186035337745172,
+              0.9177854076975369,
+              -1.2195553325248527
+            ],
+            [
+              -0.1236754180591271,
+              0.9601784098286158,
+              -1.1892882410785837
+            ]
+          ]
+        },
+        {
+          "name": "fr-patient-right-thumb-crease",
+          "visible": true,
+          "vertices": 175,
+          "triangles": 288,
+          "materialType": "MeshPhongMaterial",
+          "opacity": 1,
+          "worldBounds": [
+            [
+              -0.2158047706677647,
+              0.913765716754224,
+              -1.2201271157774762
+            ],
+            [
+              -0.19102484429533995,
+              0.9364268494883714,
+              -1.1540979745015225
+            ]
+          ]
+        }
+      ],
+      "selectedHand": {
+        "total": 7782,
+        "inFrame": 7782,
+        "min": [
+          -0.3618190477314575,
+          -0.5806474160699797,
+          0.6459966962936156
+        ],
+        "max": [
+          0.4500006167946109,
+          0.4868812074250888,
+          0.7130972554759365
+        ]
+      },
+      "head": {
+        "total": 23333,
+        "inFrame": 0,
+        "min": [
+          -84.69903528975048,
+          1.7147689642805797,
+          -16.119758976897373
+        ],
+        "max": [
+          -1.0615522833551372,
+          121.26095497203471,
+          0.6602537916551601
+        ]
+      },
+      "wholeBody": null,
+      "headBounds": [
+        [
+          -0.4425761953167411,
+          0.20190502838023922,
+          -1.62
+        ],
+        [
+          0.3350718168450151,
+          0.9705685501774584,
+          -0.88
+        ]
+      ],
+      "bodyBounds": [
+        [
+          -0.8745085550970728,
+          -0.13719702567727532,
+          -1.62
+        ],
+        [
+          0.485111493855497,
+          1.3605556950763178,
+          2.2977785752875626
+        ]
+      ],
+      "cheekContext": [
+        [
+          -25.27787615824428,
+          50.6890475487027,
+          -5.226538910127757
+        ],
+        [
+          42.556800655056676,
+          -61.87570632151646,
+          9.626504747233781
+        ],
+        [
+          -7.2814870744993705,
+          20.825868376494483,
+          -1.2860594195065884
+        ],
+        [
+          -22.937331390635187,
+          45.19800640103297,
+          -5.7866684508922095
+        ],
+        [
+          -27.261625730188552,
+          55.343028398359984,
+          -4.751796127121777
+        ]
+      ],
+      "state": {
+        "consentAccepted": true,
+        "view": "body3d",
+        "b3dTab": "recovery",
+        "b3dAge": "adult",
+        "b3dRec": [
+          "check",
+          "arm",
+          "hand",
+          "knee",
+          "roll",
+          "airway",
+          "stable",
+          "watch"
+        ],
+        "b3dRecView": 5,
+        "b3dRecoveryGuides": false,
+        "b3dChildHands": "two",
+        "b3dPlaced": "correct",
+        "b3dStatus": "ready"
+      },
+      "errors": []
+    },
+    {
+      "age": "adult",
+      "width": 1280,
+      "height": 1080,
+      "pose": {
+        "structure": {
+          "hash": "b0354fa8",
+          "bytes": 6534
+        },
+        "preservedTransforms": {
+          "hash": "716b43a0",
+          "bytes": 7820
+        },
+        "counts": {
+          "objects": 121,
+          "meshes": 87
+        }
+      },
+      "kind": "support",
+      "variant": "baseline",
+      "sourceSha": "476c1562ef879cb20ac65efdbf290edff9b98fafde9dbd7866f3e612c5750935",
+      "capture": "adult-support-baseline.png",
+      "camera": {
+        "position": [
+          -0.5418570325337968,
+          1.5232801332836483,
+          -1.1584853072785588
+        ],
+        "quaternion": [
+          -0.3588554535556178,
+          -0.581919622291384,
+          -0.31788620628667663,
+          0.6569175568504081
+        ],
+        "projection": [
+          1.6683754654031857,
+          0,
+          0,
+          0,
+          0,
+          2.6050890646938014,
+          0,
+          0,
+          0,
+          0,
+          -1.002002002002002,
+          -1,
+          0,
+          0,
+          -0.20020020020020018,
+          0
+        ],
+        "aspect": 1.5614525139664805
+      },
+      "draw": {
+        "id": 1,
+        "createdBy": "page",
+        "draws": 29740,
+        "sequence": 221,
+        "calls": 49,
+        "triangles": 67160,
+        "geometries": 77,
+        "programs": 3,
+        "disposeCount": 0
+      },
+      "canvasSize": [
+        559,
+        358
+      ],
+      "selectedCreases": [
+        {
+          "name": "fr-patient-right-palm-crease",
+          "visible": true,
+          "vertices": 175,
+          "triangles": 288,
+          "materialType": "MeshPhongMaterial",
+          "opacity": 1,
+          "worldBounds": [
+            [
+              -0.22186035337745172,
+              0.9177854076975369,
+              -1.2195553325248527
+            ],
+            [
+              -0.1236754180591271,
+              0.9601784098286158,
+              -1.1892882410785837
+            ]
+          ]
+        },
+        {
+          "name": "fr-patient-right-thumb-crease",
+          "visible": true,
+          "vertices": 175,
+          "triangles": 288,
+          "materialType": "MeshPhongMaterial",
+          "opacity": 1,
+          "worldBounds": [
+            [
+              -0.2158047706677647,
+              0.913765716754224,
+              -1.2201271157774762
+            ],
+            [
+              -0.19102484429533995,
+              0.9364268494883714,
+              -1.1540979745015225
+            ]
+          ]
+        }
+      ],
+      "allCreases": [
+        {
+          "name": "fr-patient-left-palm-crease",
+          "visible": true,
+          "vertices": 175,
+          "triangles": 288,
+          "materialType": "MeshPhongMaterial",
+          "opacity": 1,
+          "worldBounds": [
+            [
+              -0.8099267082620301,
+              0.10763178242144544,
+              -1.0690759919074058
+            ],
+            [
+              -0.7124903472471871,
+              0.12188747719604229,
+              -1.0393412552290147
+            ]
+          ]
+        },
+        {
+          "name": "fr-patient-left-thumb-crease",
+          "visible": true,
+          "vertices": 175,
+          "triangles": 288,
+          "materialType": "MeshPhongMaterial",
+          "opacity": 1,
+          "worldBounds": [
+            [
+              -0.7382991994131245,
+              0.10877939165536697,
+              -1.0693930657473079
+            ],
+            [
+              -0.7175618717778363,
+              0.12138210569665858,
+              -1.0030176050527944
+            ]
+          ]
+        },
+        {
+          "name": "fr-patient-right-palm-crease",
+          "visible": true,
+          "vertices": 175,
+          "triangles": 288,
+          "materialType": "MeshPhongMaterial",
+          "opacity": 1,
+          "worldBounds": [
+            [
+              -0.22186035337745172,
+              0.9177854076975369,
+              -1.2195553325248527
+            ],
+            [
+              -0.1236754180591271,
+              0.9601784098286158,
+              -1.1892882410785837
+            ]
+          ]
+        },
+        {
+          "name": "fr-patient-right-thumb-crease",
+          "visible": true,
+          "vertices": 175,
+          "triangles": 288,
+          "materialType": "MeshPhongMaterial",
+          "opacity": 1,
+          "worldBounds": [
+            [
+              -0.2158047706677647,
+              0.913765716754224,
+              -1.2201271157774762
+            ],
+            [
+              -0.19102484429533995,
+              0.9364268494883714,
+              -1.1540979745015225
+            ]
+          ]
+        }
+      ],
+      "selectedHand": {
+        "total": 7782,
+        "inFrame": 7782,
+        "min": [
+          -0.39764640721427386,
+          -0.47161676154774573,
+          0.7005352282044854
+        ],
+        "max": [
+          0.36449724561321273,
+          0.2712261593431263,
+          0.7473078450152683
+        ]
+      },
+      "head": {
+        "total": 23333,
+        "inFrame": 23333,
+        "min": [
+          -0.6587059729595991,
+          -0.9890446899542861,
+          0.7355859459989886
+        ],
+        "max": [
+          0.5541237774160832,
+          0.5656738771822323,
+          0.8530503374458257
+        ]
+      },
+      "wholeBody": null,
+      "headBounds": [
+        [
+          -0.4425761953167411,
+          0.20190502838023922,
+          -1.62
+        ],
+        [
+          0.3350718168450151,
+          0.9705685501774584,
+          -0.88
+        ]
+      ],
+      "bodyBounds": [
+        [
+          -0.8745085550970728,
+          -0.13719702567727532,
+          -1.62
+        ],
+        [
+          0.485111493855497,
+          1.3605556950763178,
+          2.2977785752875626
+        ]
+      ],
+      "cheekContext": [
+        [
+          -0.019634632458692125,
+          -0.0894336252217102,
+          0.7439810860865995
+        ],
+        [
+          -0.3217125129426503,
+          -0.017423379244203216,
+          0.7385531745901671
+        ],
+        [
+          0.2702469382444026,
+          -0.15853647769549295,
+          0.7491898471772903
+        ],
+        [
+          -0.05752466675932243,
+          -0.5657481212033032,
+          0.7299691600841263
+        ],
+        [
+          0.014543309076099695,
+          0.34021626283768613,
+          0.7566202614408004
+        ]
+      ],
+      "state": {
+        "consentAccepted": true,
+        "view": "body3d",
+        "b3dTab": "recovery",
+        "b3dAge": "adult",
+        "b3dRec": [
+          "check",
+          "arm",
+          "hand",
+          "knee",
+          "roll",
+          "airway",
+          "stable",
+          "watch"
+        ],
+        "b3dRecView": 5,
+        "b3dRecoveryGuides": false,
+        "b3dChildHands": "two",
+        "b3dPlaced": "correct",
+        "b3dStatus": "ready"
+      },
+      "errors": []
+    }
+  ]
+}

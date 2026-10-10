@@ -7,42 +7,66 @@
       "kind": "term",
       "term": "Evidence",
       "title": "Evidence",
-      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A small calendar page with one day circled and a tally beside it. Constraints: no numbers. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately."
+      "prompt": "Create a square isolated OBJECT ICON on an empty ivory background: a small tent-shaped desk calendar with blank grid cells and exactly one cell outlined by a coral circle. Beside it, four simple vertical tally strokes crossed by one diagonal tally stroke. The entire image contains only this calendar and tally. No humans, faces, hair, arms, hands, bodies, plants, books, table or classroom. Warm simple flat shapes in muted coral, mustard, teal, navy. No words, numbers, letters, labels, logos or watermarks.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cc-2b2a-7312-a9c6-59cb394c86cb\\exec-e90f9af7-7ef1-4183-be26-de0ada360323.png",
+      "file": "cy-term-evidence.png",
+      "alt": "A blank desk calendar has one grid cell circled in coral and five tally marks beside it.",
+      "status": "visual-review-passed"
     },
     {
       "id": "cy-term-claim",
       "kind": "term",
       "term": "Claim",
       "title": "Claim",
-      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A speech bubble holding a single star and nothing else. Constraints: empty except the star. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately."
+      "prompt": "Create a square isolated OBJECT ICON on an empty ivory background: one large rounded coral-outline speech bubble containing a single mustard five-point star centered inside. Nothing else at all. No humans, faces, hair, arms, hands, bodies, plants, books, computers or classroom. Warm simple flat shapes in muted coral, mustard, teal, navy. No words, numbers, letters, labels, logos or watermarks.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cc-2b2a-7312-a9c6-59cb394c86cb\\exec-ec100822-46d6-472a-86f3-7c2adbd4042e.png",
+      "file": "cy-term-claim.png",
+      "alt": "A coral speech bubble contains a single mustard-colored star.",
+      "status": "visual-review-passed"
     },
     {
       "id": "cy-term-level",
       "kind": "term",
       "term": "Level",
       "title": "Level",
-      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: Four plain steps rising left to right, a student standing on the third. Constraints: no numbers on steps. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately."
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: Four plain steps rising left to right, a student standing on the third. Constraints: no numbers on steps. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. Composition: square, one clear central concept, generous margin. If a student appears, natural balanced standing posture, exactly two arms each attached to a shoulder and one hand at each wrist; both hands relaxed at sides, coherent hair rooted on the scalp. Exactly four steps and feet supported by the third step for the level concept.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cc-2b2a-7312-a9c6-59cb394c86cb\\exec-5532020a-3936-4d92-84af-da19ca742ef0.png",
+      "file": "cy-term-level.png",
+      "alt": "A student stands on the third of four colored steps that rise from left to right.",
+      "status": "visual-review-passed"
     },
     {
       "id": "cy-term-gap",
       "kind": "term",
       "term": "Gap",
       "title": "Gap",
-      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A path of stepping stones with one stone missing and a footprint on the far side. Constraints: plain stones. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately."
+      "prompt": "Square educational glossary illustration. A path of plain oval stepping stones curves gently from lower left toward upper right. In its middle one clearly missing stone leaves an obvious wide empty gap. A single plain footprint shape lies on the stone immediately after the gap. No people or other objects. Warm simple flat illustration with clean rounded forms in muted coral, mustard, teal and navy on pale warm ivory. No words, letters, numerals, labels, captions, logos or watermark.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cc-2b2a-7312-a9c6-59cb394c86cb\\exec-959fb87b-8e98-4b1a-849d-deb461341db3.png",
+      "file": "cy-term-gap.png",
+      "alt": "A trail of colored stepping stones has a wide gap, with a footprint on the stone just beyond it.",
+      "status": "visual-review-passed"
     },
     {
       "id": "cy-term-slc",
       "kind": "term",
       "term": "Student-led conference",
       "title": "Student-led conference",
-      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A small table with three chairs: a student, an adult family member, and a teacher; the student is the one speaking. Constraints: student clearly leading. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately."
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A small table with three chairs: a student, an adult family member, and a teacher; the student is the one speaking. Constraints: student clearly leading. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. Square composition. Exactly three people seated on three separate chairs around a small table, a middle-school student at left speaking, family member center and teacher right listening. Student speaking with one forearm lifted gently and palm open, opposite hand resting on table. Each arm clearly joins its own shoulder through elbow to wrist, exactly two arms per person. Hair coherently rooted on scalp. Paper entirely blank.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cc-2b2a-7312-a9c6-59cb394c86cb\\exec-5f3bbef3-e466-471a-a23f-bcc6ca75f788.png",
+      "file": "cy-term-slc.png",
+      "alt": "A student speaks with an open hand at a small table while a family member and teacher listen.",
+      "status": "visual-review-passed"
     },
     {
       "id": "cy-term-rehearse",
       "kind": "term",
       "term": "Rehearse",
       "title": "Rehearse",
-      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: Two students facing each other in Crew chairs, one holding a card, a small clock on the wall. Constraints: no text on card. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately."
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: Two students facing each other in Crew chairs, one holding a card, a small clock on the wall. Constraints: no text on card. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. Square composition, exactly two middle-school students seated facing each other. Left student holds one blank card with both hands at lap height; right student rests hands on thighs while listening. All arms connected shoulder-elbow-wrist and no fused fingers. Small wall clock has plain hands with no numerals. Hair coherently rooted.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cc-2b2a-7312-a9c6-59cb394c86cb\\exec-d537dfc6-4b71-4cd9-80b8-6072e91e5e41.png",
+      "file": "cy-term-rehearse.png",
+      "alt": "Two students sit facing each other, one holding a blank card; a numberless clock hangs above them.",
+      "status": "visual-review-passed"
     },
     {
       "id": "cy-img-two-threes",

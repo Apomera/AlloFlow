@@ -1,4 +1,131 @@
+# Enhancement 72 — Scenic viewpoints and finer nebula emission
+
+Landmark cards now contain expandable scenic viewpoints with larger previews, authored names and descriptions, and an explicit Open paused view action. Opening records the current camera and settings; Back restores the prior pose, lens, counters, destination, pace and arrival setting. Neighborhood previews explain that their images show dust on while opened views keep the current dust setting. Failed preview images retain the viewpoint action. These are authored camera presets in a generated teaching scene.
+
+Nearby nebula surfaces gain a static fine emission layer. It fades in with the physical pixel budget of enlarged local surfaces. Broad emission, source positions and existing motion remain intact; the fine layer is illustrative styling and does not simulate gas dynamics or additional dust extinction.
+
+Validation: 71 focused tests; 30 UI browser workflows; 7 accessibility checks with zero violations; 38 rendering workflows and 12 baseline/final comparisons. Paused repeated captures and returning camera poses are deterministic. Unresolved/distant scenes are checked against baseline pixels, along with both relativity samples and galaxy/cosmic scenes. Browser checks cover authored view matching, exact normalized Back restoration, failed opening, preview failure, dust settings, flyby detours, keyboard focus, phone/fullscreen/high contrast/landscape and control reachability. Rendering used Chromium SwiftShader; hardware GPU behavior across devices was not tested.
+
+All 18 scenic previews were regenerated from the final renderer and verified against the manifest and desktop mirror. Source mirrors and syntax checks pass. Nothing staged or committed.
+
+---
+
+# Enhancement 71 — Scenic destination cards and direct journeys
+
+Explore landmarks now shows authored scenic previews linked to each generated landmark, with separate Inspect and Fly here actions. The cards retain their numbers, camera distances, and live center visibility. Preview loading failures leave a numbered placeholder and usable actions. The compact scroll area contains the cards and explanatory note so previews and actions receive more room.
+
+Fly here uses the existing guided approach, matches pace toward approximately 20 playback seconds within scene limits, and pauses at the landmark’s nearest viewing distance. The origin is saved before pace and arrival settings change. Back is available during the trip and after arrival, restoring the camera, lens, counters, selected destination, pace, and previous arrival setting. An already selected and centered target still records a return point at launch. In-range destinations cannot start a redundant approach.
+
+Validation: 30 focused tests; 22 Chromium browser workflows; 5 accessibility checks with zero violations; 8 screenshots; 6 control reachability checks. Browser checks verify target-linked preview files, failed-image recovery, exact projection and opening pixel preservation, complete guided arrival at the correct catalog range, pause and exact Back restoration after the renderer’s existing yaw normalization, immediate Back for a matching target/heading, restoration of a wider arrival setting, stable row identity/focus behavior, phone/fullscreen/high contrast/landscape, and region cleanup. Rendering used Chromium SwiftShader; the complete flight used a narrow viewport to reduce software-rendering cost. Cross-device hardware GPU rendering was not tested.
+
+The renderer and all 18 scenic assets are unchanged. Canonical and desktop UI copies match; source syntax and scoped diff checks pass, and the patch reverses exactly to enhancement 70. Nothing staged or committed.
+
+---
+
+# Enhancement 70 — Explore landmarks in the view
+
+A new Explore landmarks button on the discovery card opens a list of up to four catalog centers currently in view. Matching numbered buttons allow direct inspection from the 3D stage. Numbering and list identities stay fixed during pan and travel; current distances and center visibility update. Projected markers keep their actual positions and are omitted near the stage edges or when they overlap the panel, HUD, or another marker. Every retained landmark remains available through its list button. Closing and reopening rebuilds the list for the new view.
+
+Opening the browser preserves the scene and continues free travel. Inspect pauses and centers the chosen landmark while saving the origin for Back. The browser supports keyboard Escape, focus restoration, and focus transfer from a disappearing marker to its stable list row. Camera-coincident landmarks show At landmark center without an invented bearing. Short landscape fullscreen centers the browser between the persistent side controls.
+
+Validation: 30 focused tests; 16 Chromium browser workflows; five accessibility checks with zero violations; five screenshots; four control reachability checks. Browser checks cover exact marker projection, scene/pixel preservation on opening, frozen row IDs during pan/travel, marker and offscreen row inspection with exact Back restoration, Escape from both panel and marker, resize focus recovery, coincident center state, phone/fullscreen/high contrast/landscape, and cleanup on region change. Chromium used SwiftShader. Cross-device hardware GPU rendering was not tested.
+
+The renderer and all 18 generated preview assets are unchanged. Canonical and desktop UI copies match, source syntax and scoped diff checks pass, and the patch reverses exactly to enhancement 69. Nothing staged or committed.
+
+---
+
+# Enhancement 69 — Focused paired comparison
+
+Opening Compare distances now makes room for the distance readings by hiding the direction rows. The panel retains the center visibility count. Hide distances restores the directions; minimizing and reopening preserves the disclosure choice. Camera position, orientation, lens, clocks, and renderer pixels remain unchanged by these panel actions.
+
+Validation: 21 focused unit tests; 13 Chromium browser workflows; seven accessibility checks with no violations; nine screenshots; three control reachability checks. Desktop and 320 px phone disclosure checks include keyboard closing, retained focus, minimize/reopen, independently calculated distances, and exact scene/pixel preservation. Existing direction, fullscreen, high contrast, landscape, and flyby return checks also passed. Browser rendering used Chromium SwiftShader; this is not a cross-device GPU certification.
+
+Canonical and desktop UI copies match. Renderer unchanged. Nothing staged or committed.
+
+---
+
 # Universe flight explorer
+
+## Enhancement 68 — Paired landmark directions
+
+Each paired landmark now reports whether its center is in view or where to turn to find it. Offscreen guides include an arrow, a written direction, and the angle from view center; rear landmarks are explicitly identified. Directions remain in stable numbered rows inside the comparison panel.
+
+Twenty-one focused tests, nine browser workflows and five scoped accessibility checks passed. [Behavior and limits](pair-guidance/README.md) · [Verification](pair-guidance/verification.json). Changes are uncommitted.
+
+## Enhancement 67 — Frame both
+
+Paired views now recover both landmark centers after panning or zooming. Frame both works from the expanded or minimized panel, keeps the camera position fixed, and widens the lens only when necessary. A narrow window that cannot fit both centers shows a clear explanation.
+
+Seventeen focused tests, ten browser workflows and six scoped accessibility checks passed. Reframing preserves distance measurements and the original Back/flyby return points. [Behavior and limits](pair-reframe/README.md) · [Verification](pair-reframe/verification.json). Changes are uncommitted.
+
+## Enhancement 66 — Clearer paired views
+
+Comparison panels now choose a position with less overlap, show distance values first, and keep their controls visible while the body scrolls. Move panel clears landmarks after panning; Minimize preserves their labels while reducing the card to a small button. Short fullscreen landscape views use the center column.
+
+Seventeen focused tests, nine browser workflows and five scoped accessibility checks passed. Panel actions preserve camera state and scene pixels. [Behavior and limits](pair-layout/README.md) · [Verification](pair-layout/verification.json). Changes are uncommitted.
+
+## Enhancement 65 — Compare distances
+
+Paired views now compare each landmark’s distance from the camera and the separation between their centers. A compact graph uses the same linear scale for both camera ranges. The comparison opens on demand, supports keyboard controls, and scrolls on narrow screens.
+
+Nine focused tests, seven browser workflows and four scoped accessibility checks passed. The renderer and all 18 preview images are unchanged. [Behavior and model notes](pair-depth/README.md) · [Verification](pair-depth/verification.json). Changes are uncommitted.
+
+## Enhancement 64 — View together
+
+Nearby destinations now offer a paired view: turn toward both landmark centers and widen the lens while keeping the camera position fixed. Labels identify each center and report their angular separation. Back restores the original view and inspector; flyby return points remain available.
+
+Nine focused tests, eleven browser workflows and three accessibility checks passed. The renderer and 18 preview images are unchanged. [Behavior and model notes](pair-view/README.md) · [Verification](pair-view/verification.json). Changes are uncommitted.
+
+## Enhancement 63 — Nearby destination cards
+
+Landmark inspectors now show nearby destinations with scenic previews, model type and camera range. Look turns toward a destination; Fly here starts a guided approach. Back restores the previous viewpoint and inspection settings, including during a flyby detour. Expanded Details gives the cards more room.
+
+Four focused inspector tests, seven browser workflows and three accessibility checks passed. All 18 existing preview images and the renderer remain unchanged. [Behavior and model notes](neighbor-cards/README.md) · [Verification](neighbor-cards/verification.json). Changes are uncommitted.
+
+## Enhancement 62 — Star cluster passage
+
+A new 36-second scenic passage slows among the existing nearby stars, then pulls back toward the glowing emission regions. Three highlight previews offer places to pause and explore. Three stellar groups are now destinations for inspection, approach and camera orbit.
+
+54 focused tests, 40 native WebGL captures and browser interaction/accessibility checks passed. The earlier 15 previews and their route poses remain exact. The stars are generated teaching scenery; the route is an exploration-camera path. [Behavior and model notes](cluster-passage/README.md) · [Verification](cluster-passage/verification.json). Changes are uncommitted.
+
+## Enhancement 61 — Starlight through dust
+
+The stellar neighborhood now dims and reddens stars behind generated dust clouds. Moving through a cloud changes the intervening depth; foreground stars stay clear. **Starlight through dust** pauses the view for comparison and follows saved views, captures, inspection Back and flyby returns.
+
+45 focused tests, matched WebGL captures, GPU ray checks and browser controls checks passed. The model is qualitative: generated dust attenuates stellar light while the separate emission scenery keeps its illustrative glow. [Behavior and model notes](stellar-dust/README.md) · [Verification](stellar-dust/verification.json). Changes are uncommitted.
+
+## Enhancement 60 — Explore a flyby stop and return
+
+Paused flybys now offer **Explore this stop**. Zoom, move around, orbit a landmark or visit a scenic viewpoint, then **Return to flyby** to recover the exact paused route moment and continue. A compact return button stays in the inspector; full-screen Explore controls include the return card.
+
+35 focused tests and browser interaction, phone layout and scoped accessibility checks passed. Route geometry, visual rendering and relativity calculations are unchanged. [Behavior and model notes](flyby-detours/README.md) · [Verification](flyby-detours/verification.json). Changes are uncommitted.
+
+## Enhancement 59 — Spiral disk passage
+
+A new 44-second guided passage descends through the existing 3D stellar disk, emerges on its other side, and ends with a wide spiral panorama. Three named highlights have matching preview cards. Pause, look around, follow the view, change playback pace, and resume using the existing flight controls.
+
+36 focused tests, four desktop/phone browser workflows, six scoped accessibility audits and 18 final native WebGL captures pass. The four original routes and their twelve preview cards remain exact. The focused tests use a Node canvas/event shim; the full DOM unit suite was not run.
+
+[Model and evidence](disk-passage/README.md) · [Verification](disk-passage/verification.json). Changes are uncommitted.
+
+
+## Enhancement 58 — Entering spiral disks
+
+Close galaxy passes now fade the exterior spiral illustration within the stellar disk, revealing the existing 3D star and emission records. This removes the large gray triangles reproduced in the recorded interior view and softens the thin map line at nearby heights. The rounded bulge and smooth disk proxy remain unchanged.
+
+39 focused tests, four browser workflows, six scoped accessibility audits and 36 matched WebGL captures were checked. Exterior controls remain pixel exact. All twelve preview cards use the current renderer. The focused unit checks use a Node canvas/event shim; the full DOM unit suite was not run.
+
+[Model and evidence](close-disk/README.md) · [Verification](close-disk/verification.json). Changes are uncommitted.
+
+
+## Enhancement 57 — Spiral disk depth
+
+Spiral galaxies gain a small smooth disk component with finite thickness, making exterior side views more continuous around the warm core. Galaxy Groups adds a paused **Spiral disk profile** view in both scenic menus. The authored arms retain their world plane.
+
+56 focused tests, seven browser workflows, fifteen scoped accessibility audits, forty rest-frame comparison images and separate relativistic checks pass. All twelve preview cards match the current renderer. The focused unit environment uses a Node canvas/event shim; the full DOM unit suite was not run.
+
+[Model, measurements and limitations](disk-depth/README.md) · [Verification](disk-depth/verification.json). Changes are uncommitted.
+
 
 Universe Tool now includes **Open 3D flight**, with two modes:
 
@@ -8,6 +135,49 @@ Universe Tool now includes **Open 3D flight**, with two modes:
 The scene starts paused. Full screen includes a pause control. Leaving the page pauses travel; rendering sleeps offscreen and while paused. Closing the explorer disposes graphics resources and listeners. Reopening starts a fresh, paused journey. Each scene has a finite boundary that stops travel and offers a reset or a look back.
 
 ## Enhanced exploration and experiments
+
+- **Amber stellar limb:** a new paused neighborhood viewpoint frames the amber star and both source-fixed prominence arches against space. It is available in the main scenic menu and fullscreen Explore; the selected star is ready for inspection, saved views and camera orbit. On a small screen, the Detail lens brings the curves closer without moving the camera.
+- **Smoother stellar arches:** sixteen segments replace eight, and rear arches now share the photosphere's antialiased pixel coverage at the rim. The generated material remains a fixed teaching illustration. Source positions, sizes, surface texture, optical calculations, camera routes and physical clocks retain their values. Enhancement 56 evidence is in `prominence-edges/`.
+- **System-color scenic cards:** the scenic menu now uses explicit system colors for its surface, headings and cards. All contrast rules remain enabled; the normal theme is pixel-for-pixel identical in the focused comparison.
+- Verification passes 8 browser workflow groups and 22 scoped accessibility audits with zero violations. Native proof covers 116 observations, 92 PNGs, 25 matched comparisons and six finer-curve references; curve error falls about 75%. Seven full graphics lifecycles and one additional geometry lifecycle release their resources. All twelve rebuilt preview images and poses remain identical; source copies match. The regression run reports 61 passing assertions in 6 files and zero failed assertions. The remaining 25 files encountered worker startup timeouts, and the run ended naturally with exit code 1. One worker shutdown timeout was also observed. The full regression suite remains unverified. No test expectations or project dependencies were changed. A separate diagnostic Node environment passes all 22 original physics assertions; it does not cover DOM behavior. Changes remain uncommitted.
+
+- **Smoother stellar surfaces:** fine granules now adapt to the star's actual rendering resolution, including the compressed surface near its rim. Small disks keep their broad shading and dark regions; larger stars retain detailed centers with softer edges. Closer, the Detail lens and inspection orbits reveal the change on the amber, blue and pale nearby stars. Low, Auto and High use the same local sampling rule.
+- The material stays fixed to each source sphere. The new fade uses the existing sphere reconstruction and adds no graphics capability, uniform, texture, buffer or program. It filters an illustrative surface pattern; it does not simulate convection or calibrate physical granule sizes. Optical calculations, star positions, sizes, camera paths and physical clocks retain their values. Enhancement 55 evidence is in `stellar-sampling/`.
+- Verification passes all 364 tests across 31 files. Six native check groups cover 93 observations, 81 saved PNGs and 29 matched surface comparisons. Resolved cores and outer glow retain exact pixels; nine graphics lifecycles release every resource. Ninety display-flux samples keep the change below 0.074%. All twelve rebuilt preview images and camera poses remain identical. Renderer copies match, syntax and scoped diff checks pass, and changes remain uncommitted.
+
+- **Sharper angled galaxy views:** Auto and High now use capped anisotropic filtering for the galaxy atlas, following the existing Galaxy and Solar System texture handling. This retains more of the generated arm and dust-lane detail when a disk is viewed at a shallow angle. The cap is four, or the browser's lower supported value. Low keeps the original sampling; browsers without the optional capability retain the existing renderer.
+- The setting is queried once and changed only when necessary. It applies to the galaxy atlas; cloud sampling, texture bytes, star positions, emission, camera paths and optical math retain their values. Main and fullscreen quality controls, saved views and camera glides share the same setting. The optional filter follows the [Khronos WebGL extension](https://registry.khronos.org/webgl/extensions/EXT_texture_filter_anisotropic/). It sharpens a generated teaching texture and does not add astronomical data or model light absorption through a galaxy's volume. Enhancement 54 evidence is in `angle-detail/`.
+- Fullscreen controls now explicitly use the system's surface and text colors in forced-colors mode. Selected tabs and toggles, focus outlines, and range accents use the system highlight color. The ordinary display themes retain their styles.
+- Verification passes 364 unique tests in 31 files, 52 matching native captures and six browser workflow groups. Nine scoped accessibility audits report zero violations. Quality changes during a viewpoint glide retain position, progress, physical clocks and exact arrival. The twelve rebuilt preview cards preserve every camera pose and six exact stellar/nebula images. Source and desktop copies match, with unchanged atlas bytes, star populations and graphics allocations. Syntax and scoped diff checks pass. Changes remain uncommitted.
+
+- **Smooth viewpoint glides:** Left, Right, Higher and Lower now share the inspector's Step/Glide movement style with Closer and Farther. Glide eases along a curved path over three seconds, keeps the landmark at the same distance and centered, and pauses at the endpoint. Moving around a galaxy reveals its disk, warm central thickness and surrounding stars through changing perspective. Pause, Resume, End glide and Back remain available throughout.
+- Horizontal glides retain height and change azimuth; vertical glides retain azimuth and change elevation. The full arc must stay inside the scene boundary, and elevation stops at ±85°. The path counter adds the actual arc length; the lens, display settings and physical clocks stay fixed. Near a pole, Step provides an immediate way to move to a viewpoint where a glide can keep the target centered. These paths position the camera in generated scenery; they do not simulate gravitational motion.
+- Back remembers the launch view before the first movement frame. Camera handoffs clear either type of inspection glide, while lens changes and same-target centering retain it. Still and system reduced motion select Step; a live preference change ends motion at the current view. Active arrows retain keyboard focus even when their next move becomes unavailable. Completion moves focus to Details if the initiating direction has reached its limit. Enhancement 53 artifacts are in `viewpoint-glides/`.
+- Verification passes 348 unique tests in 30 files, twenty angular glides across five scenic landmarks, and 32 browser workflow groups across the new viewpoint, existing distance-glide and instant-perspective checks. Twenty-eight scoped accessibility audits report zero violations. The twelve rebuilt preview images and poses remain identical. Scene generation, optical math and shaders remain unchanged; source and desktop copies match. Syntax and scoped diff checks pass. Changes remain uncommitted.
+
+- **Rounded spiral bulges:** spiral, two-arm, and barred galaxies now retain a warm central glow from the side, above the thin arm disk. Spiral galaxies have a thicker central region dominated by older stars; the visual separation follows [ESO's description of Milky Way structure](https://supernova.eso.org/exhibition/1004/?lang=en). The new **Spiral galaxy side view** pauses at three model radii, with the center selected, in both scenic menus.
+- The diffuse bulge projects an oblate shape derived from the existing star population's relative variances. Its projected-area gain balances the moved warm emission as viewing angle changes. A shared brightness scale keeps that layer smooth; the same contribution is removed from the disk atlas before being added through the rounded layer. The remaining angular brightness correction and elongated bar stay in the disk. This is an orthographic shape approximation with a finite grid for perspective and relativistic projection. It fades inside 0.35 model radii and reaches zero at 0.05 radii, where an exterior view proxy cannot describe the surrounding volume. Individual stars keep their original 3D positions.
+- The illustrative palette and generated scenery remain teaching choices. This pass does not calibrate naked-eye brightness or integrate light through a galaxy's volume. Dark arm lanes continue to reduce the disk's own emission; they do not extinguish background objects. Enhancement 52 comparisons and verification are in `rounded-bulges/`.
+- Verification passes 331 unique tests in 29 files, 76 matching native image captures, four scenic-view workflows, and fourteen glide regression groups. Sixteen scoped accessibility audits report zero violations. All three generated star buffers and twelve flyby camera poses retain their original bytes or values. The isolated elliptical, stellar, and nebula views remain identical; galaxy views gain visible central thickness with bounded highlights. The twelve preview cards are rebuilt, retaining six exact stellar/nebula images. Source and desktop copies match, and each scene releases its two textures, buffers, and programs. Changes remain uncommitted.
+
+- **Smooth inspection glides:** Closer and Farther can now ease into a new view over three playback seconds, keeping the landmark centered and pausing on arrival. Step gives an instant move. The inspector shows progress and provides Pause, Resume, End glide and Back. The lens and physical clocks stay fixed; only camera path distance changes. Still and reduced-motion preferences select Step.
+- **Camera distance steps:** the inspector's “Move around this landmark” section now offers Closer and Farther with the next model distance shown on each button. Closer uses 80% of the current range; Farther uses 125%, so an unclipped pair returns to the same camera position. Each move follows the landmark-to-camera ray, keeps the lens and display settings, centers the landmark, and pauses. These moves reveal changing perspective and parallax rather than changing projection.
+- Closer stops at an inspection floor of 10% of the landmark's authored approach distance; Farther clips to the generated scene's spherical boundary. The floor is a camera limit in this teaching model, not an object surface. Buttons disable when their direction has no room to move. Camera path length increases by the actual radial distance; physical clocks stay unchanged. Valid distance steps end orbit, route, or other travel and remember the prior view in the six-entry Back history. Back restores the complete saved view, paused.
+- Enhancement 50 checks and screenshots are in `distance/`; the repeatable browser check is `dev-tools/universe_flight_distance_check.cjs`. All current enhancement work remains uncommitted.
+- Verification passes 200 tests across eleven files: 141 native and distance checks, followed by 59 display, physics, and geometry checks. Six distance browser groups and six tilted-orbit regression groups pass, with eighteen scoped accessibility checks. Five scenic views verify changed pixels, fixed lens and bearing, exact radial path length, focus, and paused Back restores. Phone, short landscape, system colors, text spacing, limit states, and screen-reader distance descriptions are covered. The twelve rebuilt scenic images and saved poses remain identical.
+
+- **Tilted camera orbits:** choose Level or Tilted beside the inspector's viewpoint controls. Tilted inclines the orbit plane from the current position, producing a rising and falling view of a landmark while retaining its range and keeping it centered. The same path preference is available in the normal orbit controls and fullscreen Travel panel. Pause, pace, reversal, manual look, and viewpoint steps retain their existing behavior.
+- Changing the orbit path does not move the camera or start a paused orbit. The path is anchored again at the current position; near-vertical paths that would exceed the look camera's limit are declined. Camera distance uses the orbit circle's actual radius, and the physical clocks remain unchanged. Restoring a view stays paused; orbit path, pace, and direction are session preferences.
+- Enhancement 49 checks and screenshots are in `tilted-orbit/`; its repeatable browser check is `dev-tools/universe_flight_tilted_orbit_check.cjs`. All current enhancement work remains uncommitted.
+- Verification passes 190 tests in ten files, six tilted-orbit browser check groups, six viewpoint regression groups, and eighteen scoped accessibility checks. Moving scenes cover a star, emission cloud, spiral galaxy, and galaxy group; native checks cover all eighteen landmarks. Phone and short landscape controls retain 44-pixel targets, and the selected path has an explicit outline in system colors. The twelve rebuilt scenic previews retain identical images and saved poses.
+
+- **Landmark viewpoints:** the inspector's collapsible “Move around this landmark” section offers 5° and 15° steps left, right, higher, and lower. Each moves the camera on a sphere around the landmark, retains its distance and lens, centers it, and pauses. Elevation uses the scene's vertical axis and stops at ±85°. The entire camera arc must remain within the generated scene. Camera path length increases by the arc length; physical clocks stay unchanged. Back restores the prior position, direction, display settings, and counters.
+- **Inspection orbit controls:** orbit pace and reversal are available beside the viewpoint controls, sharing the normal and fullscreen settings. Top and side diagrams show the camera relative to the landmark. A viewpoint step ends the active orbit or route; returning with Back stays paused. This is camera positioning in the generated model, not orbital dynamics.
+- Enhancement 48 checks and screenshots are in `perspective/`; the repeatable browser check is `dev-tools/universe_flight_perspective_check.cjs`. This pass and the preceding detail-lens work remain uncommitted.
+
+- **Detail lens:** the camera now supports a 10–100° field of view. Landmark inspection offers Wide (90°), Standard (65°), and Detail (10°) presets, plus incremental zoom where space allows. The detail lens reveals existing surface and cloud features while preserving camera position, viewing direction, and journey counters. It changes the projection, not the modeled object's physical size.
+- **Scenic detours with Back:** opening an inspector's pictured scenic viewpoint remembers the previous view. Back restores position, direction, selected target, lens, exposure, quality, and journey counters, always paused. Up to six return points are kept in the current session. Closing the inspector preserves them; resetting, switching scene or mode, or opening an ordinary vista or saved view clears them. Return points are separate from saved field notes.
+- Enhancement 47 verification and screenshots are in `detail-lens/`; the repeatable browser check is `dev-tools/universe_flight_detail_lens_check.cjs`. This pass is intentionally uncommitted.
 
 - Three scenic camera flights start a framed journey through nearby stars, into the spiral galaxy, or toward an island galaxy. Each fits the existing approach planner to about 20 seconds and pauses at its destination. The launcher is prominent above the normal view and available in fullscreen Explore. These are fresh exploration journeys; they reset position and counters, set their own lens and exposure, and allow immediate pause and independent look.
 - **Halo flyby** adds a curved journey that skims the tilted disk, slows for a close star-cluster pass, and pulls outward to reveal the spiral. It takes 36 seconds of planned playback at Standard pace, with Slow and Fast options. Pause and independent look remain available; Follow route view returns to the guided gaze. Completion pauses at a galaxy panorama and offers inspection, orbit, saved view, or replay.
@@ -32,6 +202,15 @@ The scene starts paused. Full screen includes a pause control. Leaving the page 
 
 ## Model and limitations
 
+### Smooth inspection glide pass
+
+- A three-second smoothstep curve moves along the existing distance plan. The launch holds the original position; each frame resolves from the starting pose, and arrival uses the exact endpoint. The minimum viewing distance and generated scene boundary still apply. These are camera movements through illustrative scenery.
+- The inspector stays mounted during motion. Distance actions retain focus and prevent duplicate launches; movement style controls are disabled during a glide. A named progress indicator reports moving, paused and arrived states. The footer provides Pause, Resume and End glide.
+- Pause and hidden or offscreen rendering retain progress without counting the suspended time. End holds the current view. Back records the starting snapshot immediately and restores its position, lens and journey counters, paused. Manual camera actions, different targets and new routes clear active or completed glide state; lens changes and same-target centering retain it.
+- Step is selected for the tool's Still preference and for system reduced motion. Enabling reduced motion during a glide ends it at the current pose. Users can explicitly choose a movement style for later inspection.
+- 210 unique unit tests passed across 11 files. Browser verification passed 26 check groups and 28 scoped accessibility audits, including five exact scenic arrivals, pause/resume, End, Back during motion, completed-state handoffs, duplicate rejection, resource reuse, phone and short landscape layouts, system colors and text spacing. All twelve authored preview images and poses remain unchanged; the manifest records the updated renderer.
+- Evidence is in [distance-glide/verification.json](distance-glide/verification.json), [distance-glide/browser-check.json](distance-glide/browser-check.json), the instant-step and tilted-orbit regression reports, unit-test JSON and screenshots in the same folder. Runtime mirrors match. Changes remain uncommitted.
+
 ### Visual enhancement pass
 
 - The nearby blue and violet emission clouds combine diffuse glow with broad curved filaments and compact knots. Resolved detail fades in over 12–30 CSS pixels of sprite size; distant emission retains its original profile. The texture redistributes the existing light, and source positions remain fixed. These are illustrative emission clouds; gaps do not model absorption or scattering.
@@ -49,7 +228,7 @@ The scene starts paused. Full screen includes a pause control. Leaving the page 
 
 ### Cinematic orbit and galaxy variety
 
-- Free exploration can now orbit a selected destination with fixed distance and height, keeping the destination centered. The camera pace ranges from 0.25 to 12 degrees per playback second and can be reversed. These camera moves do not model gravity or advance the physical journey clocks.
+- Free exploration's Level orbit keeps a selected destination centered at fixed distance and height. Tilted paths add vertical movement while preserving distance. The camera pace ranges from 0.25 to 12 degrees per playback second and can be reversed. These camera moves do not model gravity or advance the physical journey clocks.
 - Pause retains an orbit for resuming. Manual look, direction buttons, or changing the destination end it and pause. Approaching a destination, resetting, restoring a saved view, and switching modes clear the orbit. Model boundaries still stop travel.
 - Scenic viewpoints select a relevant landmark when available, making orbit controls immediately available. There are thirteen viewpoints, including the Golden elliptical galaxy in the group scene and Halo star cluster in the spiral scene. The halo viewpoint clears destination selection and retains independent free look.
 - Warm elliptical galaxies use a smooth generated emission map and a thicker stellar population. Spirals and ellipticals share a single texture atlas. Subpixel cloud brightness fades with projected area to reduce distant sparkle.

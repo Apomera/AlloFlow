@@ -1,0 +1,41 @@
+{
+  "browser": [
+    {
+      "label": "checkpoint-2",
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "label": "roadmap-3",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    }
+  ],
+  "browserPassed": 18,
+  "baselineBrowserPassed": 2,
+  "unit": {
+    "passed": 13,
+    "skipped": 178,
+    "failed": 0,
+    "selection": "technique roadmap|completed technique checkpoint"
+  },
+  "accessibility": {
+    "reports": 15,
+    "violations": 0,
+    "manuallyReviewedGradientNodes": 40,
+    "unresolvedNodes": 0
+  },
+  "visualReview": [
+    "checkpoint-2/captures/after-phone-confirmed-plan.png",
+    "checkpoint-2/captures/after-embedded-large-confirmed-plan.png",
+    "checkpoint-2/captures/after-forced-colors-confirmed-plan.png"
+  ],
+  "limits": [
+    "Local Chromium harness serving working-tree source; no deployed-host check.",
+    "Targeted unit selection; 178 unselected tests were skipped.",
+    "Automated accessibility checks plus visual and contrast review; no assistive-technology user session.",
+    "No commit, push, deployment or full application build."
+  ]
+}

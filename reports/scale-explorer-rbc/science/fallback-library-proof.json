@@ -1,0 +1,15 @@
+{
+  "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-rbc/fallback/delaunator-5.0.0.cjs",
+  "version": "5.0.0",
+  "sourceURL": "https://unpkg.com/delaunator@5.0.0/delaunator.min.js",
+  "sha256": "ddbdb0f66022e73eddfa5a6c283ba07a491a73670913bbfad52ab80572d72546",
+  "bytes": 7787,
+  "officialDocumentation": "https://github.com/mapbox/delaunator#install",
+  "license": "ISC",
+  "licensePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-rbc/fallback/delaunator-5.0.0-LICENSE",
+  "licenseURL": "https://unpkg.com/delaunator@5.0.0/LICENSE",
+  "licenseSha256": "27043d1a6a0e1985fde12660decbbd3b23c67de900b00609c90d4f0aa492f425",
+  "smoke": "CommonJS constructor.from(points) returns a triangle",
+  "use": "Offline scratch generator only; no app dependency",
+  "acquiredAt": "2026-10-07T03:58:38.956Z"
+}

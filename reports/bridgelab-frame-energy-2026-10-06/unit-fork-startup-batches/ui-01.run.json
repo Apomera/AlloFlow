@@ -1,0 +1,120 @@
+{
+  "schema": "bridge-unit-batches-v1",
+  "id": "ui-01",
+  "file": "tests/bridgelab_immersive_motion.test.js",
+  "selectedFullNames": [
+    "Bridge Lab immersive earthquake interaction shaking visual: compares measured amounts on one scale and keeps the 0–16 second bars fixed while inspecting later times",
+    "Bridge Lab immersive earthquake interaction shaking visual: preserves amplitude scaling and arbitrarily small nonzero segments without a minimum display width",
+    "Bridge Lab immersive earthquake interaction shaking visual: leaves exact-zero rows empty and shows undamped stored energy without a loss segment",
+    "Bridge Lab immersive earthquake interaction shaking visual: freezes a saved confounded comparison and rebuilds its bars from the original inputs in a fresh print",
+    "Bridge Lab immersive earthquake interaction starting energy: keeps the optional disclosure open and focused while its 0–16 second values stay fixed",
+    "Bridge Lab immersive earthquake interaction starting energy: rebuilds saved confounded inputs in a fresh disabled-model print after the live pair changes",
+    "Bridge Lab immersive earthquake interaction starting energy: retains tiny input work and distinguishes zero shaking from undamped storage",
+    "Bridge Lab immersive earthquake interaction starting energy: explains damping as the changed input only for a controlled nonzero pair",
+    "Bridge Lab immersive earthquake interaction starting energy: keeps guide provenance independent of notebook selection, scene selection and learner writing",
+    "Bridge Lab immersive earthquake interaction decay time: preserves focused drafts, pauses motion, commits bounded times and keeps saved evidence static",
+    "Bridge Lab immersive earthquake interaction decay fraction: opens a native optional view and follows each model ratio from 16 seconds through the event end",
+    "Bridge Lab immersive earthquake interaction decay fraction: preserves amplitude-independent ratios and bar widths for tiny nonzero energy",
+    "Bridge Lab immersive earthquake interaction decay fraction: leaves zero-initial trials undefined instead of presenting zero percent remaining",
+    "Bridge Lab immersive earthquake interaction decay fraction: displays the measured undamped ratio without forcing it to exactly one",
+    "Bridge Lab immersive earthquake interaction decay fraction: reconstructs a saved confounded pair and exposes its own ratios in a fresh disabled-model print",
+    "Bridge Lab immersive earthquake interaction decay fraction: keeps the prepared pair independent of notebook references, manual evidence and scene fallback"
+  ],
+  "status": "failed",
+  "startedAt": "2026-10-06T20:38:14.601Z",
+  "workingDirectory": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "--max-old-space-size=1024",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/bridgelab_immersive_motion.test.js",
+    "--pool=forks",
+    "--maxWorkers=1",
+    "--testTimeout=120000",
+    "--hookTimeout=120000",
+    "--teardownTimeout=60000",
+    "--silent",
+    "--reporter=dot",
+    "--reporter=json",
+    "--reporter=C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\batch-errors-reporter.cjs",
+    "--outputFile=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\unit-batches\\ui-01.results.json",
+    "--testNamePattern=^(?:Bridge Lab immersive earthquake interaction shaking visual: compares measured amounts on one scale and keeps the 0–16 second bars fixed while inspecting later times|Bridge Lab immersive earthquake interaction shaking visual: preserves amplitude scaling and arbitrarily small nonzero segments without a minimum display width|Bridge Lab immersive earthquake interaction shaking visual: leaves exact-zero rows empty and shows undamped stored energy without a loss segment|Bridge Lab immersive earthquake interaction shaking visual: freezes a saved confounded comparison and rebuilds its bars from the original inputs in a fresh print|Bridge Lab immersive earthquake interaction starting energy: keeps the optional disclosure open and focused while its 0–16 second values stay fixed|Bridge Lab immersive earthquake interaction starting energy: rebuilds saved confounded inputs in a fresh disabled-model print after the live pair changes|Bridge Lab immersive earthquake interaction starting energy: retains tiny input work and distinguishes zero shaking from undamped storage|Bridge Lab immersive earthquake interaction starting energy: explains damping as the changed input only for a controlled nonzero pair|Bridge Lab immersive earthquake interaction starting energy: keeps guide provenance independent of notebook selection, scene selection and learner writing|Bridge Lab immersive earthquake interaction decay time: preserves focused drafts, pauses motion, commits bounded times and keeps saved evidence static|Bridge Lab immersive earthquake interaction decay fraction: opens a native optional view and follows each model ratio from 16 seconds through the event end|Bridge Lab immersive earthquake interaction decay fraction: preserves amplitude-independent ratios and bar widths for tiny nonzero energy|Bridge Lab immersive earthquake interaction decay fraction: leaves zero-initial trials undefined instead of presenting zero percent remaining|Bridge Lab immersive earthquake interaction decay fraction: displays the measured undamped ratio without forcing it to exactly one|Bridge Lab immersive earthquake interaction decay fraction: reconstructs a saved confounded pair and exposes its own ratios in a fresh disabled-model print|Bridge Lab immersive earthquake interaction decay fraction: keeps the prepared pair independent of notebook references, manual evidence and scene fallback)$"
+  ],
+  "nodeOptions": "--max-old-space-size=1024",
+  "workers": 1,
+  "workerHeapMiB": 1024,
+  "retries": 0,
+  "inputsBefore": {
+    "stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "fd5362d52c5b2515606f211c273adf0d4afb58be699898a5d1fbe10697517d2d",
+      "bytes": 1074903
+    },
+    "desktop/web-app/public/stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "fd5362d52c5b2515606f211c273adf0d4afb58be699898a5d1fbe10697517d2d",
+      "bytes": 1074903
+    },
+    "tests/bridgelab_immersive_motion.test.js": {
+      "sha256": "2d807a49139cc6a3d52b4f1588096857561b4625bca5eb2f6f879ba3d88a5f34",
+      "bytes": 314387
+    },
+    "tests/bridgelab_seismic_model.test.js": {
+      "sha256": "224fb18e9b73a4d06e0c376759be329ed7fb51357a4537fbfa57b71f9306ea7e",
+      "bytes": 74373
+    },
+    "tests/bridgelab_seismic_inertia.test.js": {
+      "sha256": "b4ce34ebd70dfaebb6f6368e48c5bcc7100250476ee883470d77081982b23e5f",
+      "bytes": 4774
+    }
+  },
+  "spawnError": null,
+  "metadataPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\unit-batches\\ui-01.run.json",
+  "pid": 32996,
+  "finishedAt": "2026-10-06T20:39:43.540Z",
+  "exitCode": 1,
+  "signal": null,
+  "inputsAfter": {
+    "stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "fd5362d52c5b2515606f211c273adf0d4afb58be699898a5d1fbe10697517d2d",
+      "bytes": 1074903
+    },
+    "desktop/web-app/public/stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "fd5362d52c5b2515606f211c273adf0d4afb58be699898a5d1fbe10697517d2d",
+      "bytes": 1074903
+    },
+    "tests/bridgelab_immersive_motion.test.js": {
+      "sha256": "2d807a49139cc6a3d52b4f1588096857561b4625bca5eb2f6f879ba3d88a5f34",
+      "bytes": 314387
+    },
+    "tests/bridgelab_seismic_model.test.js": {
+      "sha256": "224fb18e9b73a4d06e0c376759be329ed7fb51357a4537fbfa57b71f9306ea7e",
+      "bytes": 74373
+    },
+    "tests/bridgelab_seismic_inertia.test.js": {
+      "sha256": "b4ce34ebd70dfaebb6f6368e48c5bcc7100250476ee883470d77081982b23e5f",
+      "bytes": 4774
+    }
+  },
+  "inputsUnchanged": true,
+  "result": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\unit-batches\\ui-01.results.json",
+    "sha256": "9d76fc052bfdb1c044ae25a2077d21657a98dec70d157fac5a15facf5c23360b",
+    "bytes": 483
+  },
+  "stdout": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\unit-batches\\ui-01.stdout.log",
+    "sha256": "177438a29a0db9fff9cee08e2daf889fbbb09be6cc845ab406a93d1146a88b92",
+    "bytes": 387
+  },
+  "stderr": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\unit-batches\\ui-01.stderr.log",
+    "sha256": "61ae0732493150cda3295591520cf831b1796552f702585fdc08d9595944c91d",
+    "bytes": 923
+  },
+  "errorEvidence": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\unit-batches\\ui-01.unhandled.json",
+    "sha256": "3ef8251636be196fb2fe9a4af5ffb4560df55ac6ec9169d7924fe022703a06e2",
+    "bytes": 820
+  },
+  "validationError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n1 !== 0\n\n    at runBatch (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\run-unit-batches.cjs:124:50)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async run (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\great-work-how-can-we-holistically\\frame-energy-2026-10-06\\validation\\run-unit-batches.cjs:62:21)"
+}

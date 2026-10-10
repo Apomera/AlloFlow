@@ -295,7 +295,7 @@ function rendererTree({ theme = true, ui = true, status = 'ready', view = 'full'
 }
 describe('Dino renderer native camera controls bridge', () => {
   it('mounts camera controls as a sibling and links both existing native hint elements', () => {
-    const f = rendererTree(); expect(f.tree.type).toBe('Fragment'); expect(f.tree.children[0].props.id).toBe('dino-voxel-camera-controls'); expect(f.tree.children[1].props.id).toBe('dino-voxel-stage');
+    const f = rendererTree(); expect(f.tree.type).toBe('Fragment'); expect(f.tree.children.filter(Boolean).map(child => child.props.id)).toEqual(['dino-voxel-camera-controls', 'dino-voxel-stage']);
     const canvas = f.byId('dino-voxel-canvas'), descriptions = canvas.props['aria-describedby'].split(' ');
     for (const id of ['dino-voxel-camera-touch-hint', 'dino-voxel-camera-scale-hint']) { expect(descriptions).toContain(id); expect(f.byId(id).props.id).toBe(id); }
     expect(f.byId('dino-voxel-camera-summary').props['aria-live']).toBe('off');

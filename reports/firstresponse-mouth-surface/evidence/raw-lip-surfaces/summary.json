@@ -1,0 +1,34 @@
+{
+  "sourceSHA256": "bb4526d583db90d928008a1fa9b7540dfef8c8acdfd4055c0fd71225454011bf",
+  "testSHA256": "a633f999ac4ccd35c11747f00d38f408b9f0802b23c726a5f2abf277fa4f32c8",
+  "runnerSHA256": "819c3b98cda5cf9ebd631d26b9bf79935f5df7ddeab49bec2660addd34cfd075",
+  "vendorSHA256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+  "configSHA256": "c56af52b6697db6955c4d9d004ef34dc0eb4271d9af8e786470120d401fa9e85",
+  "exitCode": 0,
+  "numPassedTests": 21,
+  "numFailedTests": 0,
+  "numTotalTests": 21,
+  "numPendingTests": 0,
+  "passed": true,
+  "selftest": {
+    "ran": true,
+    "hiddenSeamRejected": true,
+    "restoredAndReread": true,
+    "result": {
+      "exitCode": 1,
+      "numPassedTests": 12,
+      "numFailedTests": 9,
+      "numTotalTests": 21,
+      "numPendingTests": 0
+    }
+  },
+  "inputsUnchanged": true,
+  "sharedFilesWritten": 0,
+  "sharedHashes": {
+    "stem_lab/stem_tool_firstresponse.js": "f551cf0c50073315effbf3fa5bcd9ce2dd3e1b806dbfcbd3f1434ba7e831af2c",
+    "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js": "f551cf0c50073315effbf3fa5bcd9ce2dd3e1b806dbfcbd3f1434ba7e831af2c",
+    "desktop/app-build/stem_lab/stem_tool_firstresponse.js": "f551cf0c50073315effbf3fa5bcd9ce2dd3e1b806dbfcbd3f1434ba7e831af2c",
+    "desktop/web-app/build/stem_lab/stem_tool_firstresponse.js": "f551cf0c50073315effbf3fa5bcd9ce2dd3e1b806dbfcbd3f1434ba7e831af2c",
+    "tests/firstresponse_lip_surfaces.test.js": "4ab8f4721608f846df69c1ae1b18b612fcf84c2ae995b8fbdf16f10fdc9fa883"
+  }
+}

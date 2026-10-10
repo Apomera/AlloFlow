@@ -1,0 +1,17 @@
+{
+  "help": {
+    "font": 16,
+    "client": 344,
+    "scroll": 344
+  },
+  "parent": {
+    "width": 344.40625,
+    "client": 344,
+    "scroll": 344
+  },
+  "button": {
+    "height": 38.390625,
+    "outline": "solid",
+    "outlineWidth": 3
+  }
+}

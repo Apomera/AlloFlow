@@ -1,0 +1,41 @@
+{
+  "completed": true,
+  "enhancement": 49,
+  "commitCreated": false,
+  "stagedFiles": [],
+  "tests": {
+    "passed": 190,
+    "files": 10
+  },
+  "tiltedOrbit": {
+    "checks": 6,
+    "accessibility": 9,
+    "captures": 8,
+    "movingScenes": 4
+  },
+  "perspectiveRegression": {
+    "checks": 6,
+    "accessibility": 9,
+    "captures": 9
+  },
+  "previews": {
+    "unchangedViews": 12,
+    "oldRendererHash": "980e7bee3d17eee679379769010853e08979767f66d89ab27adc2a4cfe3a04b0",
+    "rendererHash": "0c108927ea47ff484cbb956f394bbfe5f3ec7698052a4d12333d2100abec7a22"
+  },
+  "mirrorsEqual": true,
+  "syntaxChecksPassed": true,
+  "diffCheckPassed": true,
+  "files": {
+    "stem_lab/stem_tool_universe.js": "61b10131a3e7e62d834a7761399cd87065acb6a63d9ab7a8d19cae8abedb313e",
+    "stem_lab/universe_flight_scene.js": "0c108927ea47ff484cbb956f394bbfe5f3ec7698052a4d12333d2100abec7a22",
+    "desktop/web-app/public/stem_lab/stem_tool_universe.js": "61b10131a3e7e62d834a7761399cd87065acb6a63d9ab7a8d19cae8abedb313e",
+    "desktop/web-app/public/stem_lab/universe_flight_scene.js": "0c108927ea47ff484cbb956f394bbfe5f3ec7698052a4d12333d2100abec7a22",
+    "stem_lab/assets/universe-flight/highlights/manifest.json": "4b50623534281450e57c589359d1bc5cbc1d602ed829556a47c3724f91362608",
+    "desktop/web-app/public/stem_lab/assets/universe-flight/highlights/manifest.json": "4b50623534281450e57c589359d1bc5cbc1d602ed829556a47c3724f91362608",
+    "tests/universe_flight_tilted_orbit.test.js": "367223d105d01d65f85f53c49c29f80afb303052306615cb6b32b6eb318649e0",
+    "tests/universe_flight_navigation.test.js": "4463f21214e749e738a7cdffc7873cd43fb831f45df47c485ad2467fad910fe8",
+    "dev-tools/universe_flight_tilted_orbit_check.cjs": "fb0e84b3f036bf67353ac199d2b67403f345597af162a3d758d1b992350e3392",
+    "reports/universe-flight-2026-09-29/README.md": "f5cbc3fa35c7a1db8c3810f07abc15040310280ff23442f2fb9311457dab117d"
+  }
+}

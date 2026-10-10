@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "species": "H2O",
+  "casNumber": "7732-18-5",
+  "scope": "Neutral isolated water; equilibrium geometry with a separately labelled gas-phase ground-vibrational dipole reference",
+  "geometry": {
+    "units": "angstrom",
+    "pointGroup": "C2v",
+    "bondLengthAngstrom": 0.9578,
+    "angleDegrees": 104.4776,
+    "displayBondLengthAngstrom": 0.958,
+    "displayAngleDegrees": 104.5,
+    "coordinateMethod": "Constructed from the reported equilibrium bond length and angle: O at origin, H at [±r sin(theta/2), r cos(theta/2), 0]. The construction preserves the two scalar values; it adds numerical precision rather than experimental precision.",
+    "atoms": [
+      { "id": "O", "element": "O", "at": [0, 0, 0], "qualitativeCharge": "delta-minus" },
+      { "id": "H1", "element": "H", "at": [0.7572078351983744, 0.5865297386443347, 0], "qualitativeCharge": "delta-plus" },
+      { "id": "H2", "element": "H", "at": [-0.7572078351983744, 0.5865297386443347, 0], "qualitativeCharge": "delta-plus" }
+    ],
+    "bonds": [
+      { "atoms": ["O", "H1"], "order": 1 },
+      { "atoms": ["O", "H2"], "order": 1 }
+    ],
+    "hydrogenSeparationAngstrom": 1.5144156703967488,
+    "sourceURL": "https://cccbdb.nist.gov/expgeom2x.asp?casno=7732185",
+    "primaryDOI": "10.1016/0022-2852(79)90019-5",
+    "publishedRoundedCartesianAtoms": [
+      { "id": "O1", "element": "O", "at": [0, 0, 0.1173] },
+      { "id": "H2", "element": "H", "at": [0, 0.7572, -0.4692] },
+      { "id": "H3", "element": "H", "at": [0, -0.7572, -0.4692] }
+    ]
+  },
+  "dipole": {
+    "units": "debye",
+    "groundVibrationalState": 1.85498,
+    "displayGroundVibrationalState": 1.855,
+    "equilibrium": 1.857,
+    "physicalVectorUnit": [0, 1, 0],
+    "physicalVectorConvention": "Electric dipole vector points from negative to positive charge; here from the oxygen side toward the hydrogen midpoint along the angle bisector.",
+    "chemicalPolarityArrowUnit": [0, -1, 0],
+    "chemicalArrowConvention": "An explicitly labelled crossed-tail chemical polarity arrow points toward oxygen; the positive tail is on the hydrogen side.",
+    "sourceURL": "https://cccbdb.nist.gov/exp2x.asp?casno=7732185",
+    "primaryDOI": "10.1063/1.460471",
+    "vectorDefinitionURL": "https://goldbook.iupac.org/terms/view/E01929/html"
+  },
+  "catalogReference": {
+    "sizeMetres": 2.75e-10,
+    "sizeAngstrom": 2.75,
+    "display": "Reference diameter ≈2.75 Å (0.275 nm)",
+    "meaning": "Approximate effective or steric probe diameter used as a catalogue scale convention. It is not a unique gas-phase envelope width, bond length or atom diameter.",
+    "evidenceURL": "https://oro.open.ac.uk/105001/8/105001.pdf",
+    "evidenceDOI": "10.1039/d5cp00271k",
+    "evidenceLocation": "PDF page 13 of 21, journal page 14875: 2.75 Å diameter surface-accessibility probe",
+    "measurementRule": "Keep this approximate reference distinct from a dimension measured across a displayed van der Waals envelope. If geometry is rescaled to a unit-wide illustration, describe atom radii as illustrative and show the equilibrium measurements separately."
+  },
+  "vanDerWaalsOption": {
+    "enabledByDefault": false,
+    "name": "Bondi van der Waals radii",
+    "radiiAngstrom": { "O": 1.52, "H": 1.2 },
+    "model": "Union of overlapping atom spheres at the same equilibrium centers; atom radii model typical contact sizes.",
+    "calculatedBoundsAngstrom": {
+      "min": [-1.9572078351983744, -1.52, -1.52],
+      "max": [1.9572078351983744, 1.7865297386443346, 1.52],
+      "span": [3.914415670396749, 3.3065297386443344, 3.04]
+    },
+    "primaryReferenceURL": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3658832/",
+    "primaryReferenceDOI": "10.1021/jp8111556",
+    "limit": "The sphere surface is a contact-size approximation. It does not represent an observed hard boundary or a computed electron-density isosurface. H radius 1.20 Å specifically selects Bondi; other contact-radius conventions use 1.10 Å."
+  },
+  "inspectionStops": [
+    { "id": "oxygen", "label": "Oxygen", "nativeGeometry": "Visible oxygen atom ball surface", "copy": "One oxygen atom sits at the vertex of the molecule. Red is the display convention for oxygen; the ball marks an atom site." },
+    { "id": "hydrogens", "label": "Two hydrogens", "nativeGeometry": "Visible surface of one hydrogen atom ball; selection may highlight both", "copy": "The two equivalent hydrogen atoms complete H₂O. Their centers are about 1.514 Å apart in this equilibrium geometry." },
+    { "id": "bond", "label": "O–H bond", "nativeGeometry": "Exposed connector between oxygen and hydrogen display balls", "copy": "Each O–H bond is about 0.958 Å long. Connector thickness shows connectivity and is chosen for readability." },
+    { "id": "angle", "label": "104.5° bend", "nativeGeometry": "Pickable angle guide arc clear of the oxygen ball", "copy": "The equilibrium H–O–H angle is about 104.5°. This planar bent arrangement makes the two bond polarities reinforce along the bisector." },
+    { "id": "polarity", "label": "Polarity toward oxygen", "nativeGeometry": "Pickable crossed-tail chemical polarity arrow toward oxygen, clear of atom surfaces", "copy": "The chemical polarity arrow points toward the relatively negative oxygen side. The electric dipole vector uses the opposite direction. Isolated water has a gas-phase ground-vibrational dipole magnitude of about 1.855 D. Partial charge labels show polarity; their numerical values depend on the model." }
+  ],
+  "visualizationLimits": [
+    "Atom balls, bond cylinders, colors, gloss and guide thickness are display choices. Ball-and-stick centers preserve the reference geometry.",
+    "A neutral water molecule has total charge zero even though its charge distribution is polar. Do not present qualitative partial charge labels as ions or measured numerical atomic charges.",
+    "Keep equilibrium atom centers rigid during inspection. Any future vibration animation needs its own labelled mode and amplitude/time conventions.",
+    "The static display omits electrons and nuclear structure. Do not add orbital trajectories, moving electron beads, or synthetic density clouds presented as experimental quantum structure.",
+    "An isolated water molecule has no intermolecular hydrogen bond. Dashed links to neighbors require a separately described multi-molecule arrangement.",
+    "The ground-vibrational dipole reference and equilibrium geometry are separate measured or inferred reference quantities; do not claim that a classical three-charge cartoon derives the measured dipole."
+  ],
+  "additionalSources": {
+    "partialCharges": "https://www.nist.gov/programs-projects/effect-partial-charge-calculation-method-adsorption-thermodynamics-metal-organic",
+    "chemicalArrowEducation": "https://williams.chemistry.gatech.edu/structure/molecular_interactions/mol_int.html"
+  },
+  "reviewedAt": "2026-10-07",
+  "scopeOfFiles": "Scratch-only research and numeric contract; no repository changes or runtime dependency"
+}

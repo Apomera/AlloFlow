@@ -1,0 +1,10 @@
+{
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "spawnError": null,
+  "endedAt": "2026-10-10T04:04:25.120Z",
+  "checkerSHA256": "55e6118ce8eb27d2b1dbb2f246ee2ec35c4acc191a4dcc7b7d8f28eead98c106",
+  "sourceSHA256": "77394bfee2544c33c3274293a13e9666912c26f657117ac98d15416f220f060e",
+  "logSHA256": "a13d97110529db0975687c4c378790f834870bc5968213d0bebad5711d4c0e92"
+}

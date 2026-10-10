@@ -1,0 +1,15 @@
+{
+  "sourceSha256": "cc5649b2caec2ecbec8c9bb18efa2a623a74b4ec4751ca199c07ac48f1024dea",
+  "sourceBytes": 1449675,
+  "mirrorsIdentical": true,
+  "syntaxPassed": true,
+  "reversibleChanges": 11,
+  "priorTestsPreserved": 132,
+  "newTests": {
+    "tests/e2e/moon-mission-tli-stack.spec.ts": "b5baef691a2324d677bf7e9bcdd58dac3ff724f7041c51e0c8ed60b93b4c6100",
+    "tests/moonmission_tli_stack.test.js": "c11564ba64b8f6ae13aff0c93e73f06d2ddab812ca1112c17f7338841ff5d711"
+  },
+  "indexPreserved": true,
+  "ownedStagedPaths": [],
+  "diffCheckPassed": true
+}

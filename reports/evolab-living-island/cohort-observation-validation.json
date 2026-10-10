@@ -1,0 +1,311 @@
+{
+  "date": "2026-10-09",
+  "feature": "Capture exact cohort comparisons and save a learner explanation to a dedicated field journal entry",
+  "sourceSha256": "96001322637ffde085867e01571e6830f67af43782b705faee31f6fd09901b2c",
+  "sourceBytes": 2358844,
+  "sourceMirrorsIdentical": true,
+  "sourceLineEndings": "LF",
+  "committed": false,
+  "deployed": false,
+  "commitsCreated": 0,
+  "deploymentsPerformed": 0,
+  "changes": [
+    "A comparison of same-species cohorts can be captured as a stable observation containing both island and recorded-generation contexts, census sizes, raw mean traits, five band counts and every resident ID with its unrounded trait.",
+    "Captured evidence starts with a compact five-band count and proportion table. The exact raw census record remains available in a nested details disclosure.",
+    "The captured observation remains available while the learner visits other islands, generations or species, clears or replaces the cohort reference, or changes settings. Those interactions do not alter the captured evidence.",
+    "The learner can add an optional explanation of up to 2000 characters and save the exact comparison to its own archipelagoCohortComparison journal entry. Saving again replaces only that dedicated entry.",
+    "The dedicated journal entry has a 12000-character allowance. Full saved note content is verified in the rendered journal and after reload, including combined evidence and explanation text longer than the ordinary 2000-character note limit.",
+    "Capture moves keyboard focus to the captured heading. Saving moves focus to a non-live confirmation. Cancellation returns focus to the capture control when visible, or the persistent variation summary after navigation or collapse.",
+    "Capture identity tokens prevent stale note, save and cancel handlers from affecting a later capture. Founding-frame identity immediately suppresses drafts and feedback from a replaced world, including replacement with the same seed.",
+    "Captured organism comparisons and other investigation notes keep their separate keys. The new capture does not change existing readable Copy Class Snapshot limits of 600 characters or encoded Class Snapshot note limits of 300 characters."
+  ],
+  "scientificCorrectness": [
+    "The same species and inherited trait are required. The reference uses its own pinned recorded frame; the displayed cohort uses its current recorded frame.",
+    "Evidence contains two complete censuses, not a random sample. Every recorded resident contributes once, with IDs and raw trait means retained.",
+    "Five fixed bands use raw means: [0,.2), [.2,.4), [.4,.6), [.6,.8), and [.8,1]. Counts preserve all residents; the last band includes the upper endpoint.",
+    "A and B shares use their own census totals. Empty cohorts have undefined means and shares, not zero-valued substitutes. Mean differences use trait index points and share differences use percentage points.",
+    "Geographic, temporal and combined context differences are explicitly distinguished. The evidence does not imply that individuals changed genes, that populations are separate species, or that both island and generation influences were isolated.",
+    "This descriptive comparison does not isolate selection, dispersal, drift or mutation as a cause, establish speciation, measure genome-wide genetic diversity, or rank breeding success.",
+    "Only copied evidence and presentation state are added. The evolutionary model is byte-identical to the before source; world history and RNG remain unchanged."
+  ],
+  "validation": {
+    "scope": "Only the logged 48 focused checks, two selected EvoLab render checks and twelve listed browser journeys are claimed; this is not a full repository test run.",
+    "focused": {
+      "passed": 48,
+      "base": {
+        "passed": 40,
+        "skipped": 0,
+        "total": 40,
+        "files": 6,
+        "log": "cohort-observation-base-units.log",
+        "logSha256": "db49b370a78850fe3b631c30e100f774bd336e1243e0ad3d1dda2a37a82e5ddf",
+        "logBytes": 1741,
+        "scopes": [
+          "tests/evolab_archipelago.test.js",
+          "tests/evolab_live_region_churn.test.js",
+          "tests/evolab_accessible_names_i18n.test.js",
+          "tests/evolab_resident_comparison.test.js",
+          "tests/evolab_comparison_observation.test.js",
+          "tests/evolab_cohort_variation.test.js"
+        ]
+      },
+      "cohortReference": {
+        "passed": 4,
+        "skipped": 0,
+        "total": 4,
+        "files": 1,
+        "log": "cohort-observation-reference-units.log",
+        "logSha256": "e36407ab212c8c0270d3ac93ed04e8ac87ed3dbc79c070d68d627f06a58b1c6c",
+        "logBytes": 236,
+        "scope": "tests/evolab_cohort_reference.test.js"
+      },
+      "cohortObservation": {
+        "passed": 4,
+        "skipped": 0,
+        "total": 4,
+        "files": 1,
+        "log": "cohort-observation-units.log",
+        "logSha256": "a6f62caaac0886ca9122ca643992b19f85ba14709492dda10d42fbd40bc18fa9",
+        "logBytes": 235,
+        "scope": "tests/evolab_cohort_observation.test.js"
+      },
+      "execution": "Existing checks and four new cohort-observation checks ran in separate completed suites."
+    },
+    "render": {
+      "passed": 2,
+      "skipped": 46,
+      "total": 48,
+      "files": 2,
+      "log": "cohort-observation-goldens.log",
+      "logSha256": "0cdbc30cbae794ee256dc2a0cb0b6a32d5d098df85d317776c4eb6ce6808aabe",
+      "logBytes": 254,
+      "scopes": [
+        "tests/stem_tool_golden.test.js",
+        "tests/stem_longtail_tools_golden.test.js"
+      ],
+      "scope": "Two selected EvoLab golden checks; skipped tests belong to the filtered render run."
+    },
+    "browser": {
+      "passed": 12,
+      "runs": 1,
+      "retries": 0,
+      "log": "cohort-observation-browser.log",
+      "logSha256": "df6e565a01ab6ed3f309d597a04217df31db95ba3bae1b62aeef9c2c4e0d546b",
+      "logBytes": 2722,
+      "scopes": [
+        {
+          "spec": "tests/e2e/evolab-cohort-observation.spec.ts",
+          "passed": 2,
+          "retries": 0
+        },
+        {
+          "spec": "tests/e2e/evolab-cohort-reference.spec.ts",
+          "passed": 2,
+          "retries": 0
+        },
+        {
+          "spec": "tests/e2e/evolab-cohort-variation.spec.ts",
+          "passed": 2,
+          "retries": 0
+        },
+        {
+          "spec": "tests/e2e/evolab-comparison-observation.spec.ts",
+          "passed": 2,
+          "retries": 0
+        },
+        {
+          "spec": "tests/e2e/evolab-resident-comparison.spec.ts",
+          "passed": 2,
+          "retries": 0
+        },
+        {
+          "spec": "tests/e2e/evolab-field-card.spec.ts",
+          "passed": 2,
+          "retries": 0
+        }
+      ],
+      "scope": "Two new cohort-observation journeys and ten existing cohort-reference, cohort-variation, captured-organism-observation, resident-comparison and field-card journeys."
+    },
+    "completedMarkers": {
+      "focusedAndRender": {
+        "state": "complete",
+        "wrapperPid": 30132,
+        "sourceSha256": "96001322637ffde085867e01571e6830f67af43782b705faee31f6fd09901b2c",
+        "jobs": [
+          {
+            "file": "cohort-observation-units.log",
+            "tests": [
+              "tests/evolab_cohort_observation.test.js"
+            ],
+            "count": 4
+          },
+          {
+            "file": "cohort-observation-base-units.log",
+            "tests": [
+              "tests/evolab_archipelago.test.js",
+              "tests/evolab_live_region_churn.test.js",
+              "tests/evolab_accessible_names_i18n.test.js",
+              "tests/evolab_resident_comparison.test.js",
+              "tests/evolab_comparison_observation.test.js",
+              "tests/evolab_cohort_variation.test.js"
+            ],
+            "count": 40
+          },
+          {
+            "file": "cohort-observation-reference-units.log",
+            "tests": [
+              "tests/evolab_cohort_reference.test.js"
+            ],
+            "count": 4
+          },
+          {
+            "file": "cohort-observation-goldens.log",
+            "tests": [
+              "tests/stem_tool_golden.test.js",
+              "tests/stem_longtail_tools_golden.test.js",
+              "--testNamePattern=evoLab"
+            ],
+            "count": 2
+          }
+        ],
+        "startedAt": "2026-10-10T00:18:59.240Z",
+        "finishedAt": "2026-10-10T00:23:01.344Z"
+      },
+      "browser": {
+        "state": "complete",
+        "wrapperPid": 4188,
+        "sourceSha256": "96001322637ffde085867e01571e6830f67af43782b705faee31f6fd09901b2c",
+        "specs": [
+          "evolab-cohort-observation.spec.ts",
+          "evolab-cohort-reference.spec.ts",
+          "evolab-cohort-variation.spec.ts",
+          "evolab-comparison-observation.spec.ts",
+          "evolab-resident-comparison.spec.ts",
+          "evolab-field-card.spec.ts"
+        ],
+        "startedAt": "2026-10-10T00:23:49.317Z",
+        "exitCode": 0,
+        "error": null,
+        "finishedAt": "2026-10-10T00:29:51.219Z"
+      }
+    },
+    "focusedCommandManifest": {
+      "file": "run_cohort_observation_checks.cjs",
+      "sha256": "5c1ac900728473ae4dabfabbed80a5c6bb134461436361de91a54d1a614b23c5",
+      "source": "completed focused/render marker jobs",
+      "jobs": [
+        {
+          "file": "cohort-observation-units.log",
+          "tests": [
+            "tests/evolab_cohort_observation.test.js"
+          ],
+          "count": 4
+        },
+        {
+          "file": "cohort-observation-base-units.log",
+          "tests": [
+            "tests/evolab_archipelago.test.js",
+            "tests/evolab_live_region_churn.test.js",
+            "tests/evolab_accessible_names_i18n.test.js",
+            "tests/evolab_resident_comparison.test.js",
+            "tests/evolab_comparison_observation.test.js",
+            "tests/evolab_cohort_variation.test.js"
+          ],
+          "count": 40
+        },
+        {
+          "file": "cohort-observation-reference-units.log",
+          "tests": [
+            "tests/evolab_cohort_reference.test.js"
+          ],
+          "count": 4
+        },
+        {
+          "file": "cohort-observation-goldens.log",
+          "tests": [
+            "tests/stem_tool_golden.test.js",
+            "tests/stem_longtail_tools_golden.test.js",
+            "--testNamePattern=evoLab"
+          ],
+          "count": 2
+        }
+      ],
+      "scope": "Scopes are checked against the completed marker manifest when available; the Vitest dot reporter logs completed file/test counts without filenames."
+    },
+    "modelSourceUnchanged": true,
+    "modelBeforeFile": "cohort-observation-before.js",
+    "modelBlockBytes": 83566,
+    "modelBlockSha256": "b550e4d66c455e0135beff397a90d1972b5fbea500a3068982b31f003905c833",
+    "preview": {
+      "url": "http://127.0.0.1:56559/?preview=archipelago",
+      "sourceSha256": "96001322637ffde085867e01571e6830f67af43782b705faee31f6fd09901b2c",
+      "sourceBytes": 2358844,
+      "sourceMirrorsIdentical": true,
+      "sourceLineEndings": "LF",
+      "servedSourceMatches": true,
+      "assets": [
+        {
+          "path": "/",
+          "status": 200,
+          "bytes": 1129
+        },
+        {
+          "path": "/evolab.js",
+          "status": 200,
+          "bytes": 2358844
+        },
+        {
+          "path": "/app.css",
+          "status": 200,
+          "bytes": 624950
+        },
+        {
+          "path": "/react.js",
+          "status": 200,
+          "bytes": 10751
+        },
+        {
+          "path": "/react-dom.js",
+          "status": 200,
+          "bytes": 131835
+        },
+        {
+          "path": "/three.js",
+          "status": 200,
+          "bytes": 603445
+        }
+      ]
+    },
+    "screenshots": [
+      {
+        "name": "cohort-observation-desktop.png",
+        "bytes": 67928,
+        "sha256": "ca967c4d5ef5828ab7494fb8b291e7cf5fd7572356c42ab6ecab9776445b8034",
+        "width": 725,
+        "height": 909
+      },
+      {
+        "name": "cohort-observation-phone.png",
+        "bytes": 57185,
+        "sha256": "d35af60d89e1d3461ff8be564b75b8675239f979812c3c87260b5cba96998f3a",
+        "width": 320,
+        "height": 1276
+      }
+    ],
+    "translationDelta": {
+      "file": "ui-strings.delta.json",
+      "keys": 2063,
+      "sha256": "e3665900da756d6dcee46b8baed49681bbd927ea844b5d1b215ea24505ae9cee",
+      "mode": "dry-run",
+      "sharedCatalogsModified": false,
+      "sharedCatalogHashes": {
+        "ui_strings.js": "de8b879b4eda49cd4a92cdd5595863e6e6e7df69f9006280c7050608fd4d1a87",
+        "desktop/web-app/public/ui_strings.js": "de8b879b4eda49cd4a92cdd5595863e6e6e7df69f9006280c7050608fd4d1a87"
+      },
+      "baselineScope": "The finalizer verifies its narrow artifact writes leave current shared catalogs unchanged; unrelated collaborator edits are outside this claim."
+    },
+    "priorValidationReportsModified": false,
+    "priorValidationReportCount": 29,
+    "priorValidationReportScope": "All older validation reports are excluded from outputs and checked for unchanged bytes across finalization."
+  }
+}

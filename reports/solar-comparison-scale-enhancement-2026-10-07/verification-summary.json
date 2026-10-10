@@ -1,0 +1,35 @@
+{
+  "sourceSha256": "91738cd9dcd096919147ec1b53ea9cd5ac70705f877d3070830eea625699d07c",
+  "verifiedAt": "2026-10-08T03:44:25.394Z",
+  "desktopMirrorMatches": true,
+  "units": {
+    "passed": 38,
+    "total": 38,
+    "suites": [
+      "tests\\solar_system_comparison_bench.test.js",
+      "tests\\solar_system_comparison_scale_navigation.test.js"
+    ]
+  },
+  "browser": {
+    "passed": 4,
+    "cases": [
+      "comparison-1060-dark-Earth-Jupiter",
+      "comparison-1060-light-Uranus-Neptune",
+      "comparison-320-dark-Mercury-Mars",
+      "comparison-320-light-Earth-Neptune"
+    ],
+    "checked": [
+      "No horizontal overflow",
+      "No page errors",
+      "13px minimum comparison and fact text",
+      "44px comparison controls",
+      "Fixed axes",
+      "Explore and return focus",
+      "Single-line planet titles",
+      "Separate return row at 320px"
+    ]
+  },
+  "syntax": "passed",
+  "whitespace": "passed",
+  "committed": false
+}

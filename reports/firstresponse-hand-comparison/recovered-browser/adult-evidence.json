@@ -1,0 +1,1394 @@
+{
+  "baselineSourceSha": "cc354bd12dd0712e1e628ebfc16689ba584c3b988d1b085df5a41e1f67cecc26",
+  "finalSourceSha": "476c1562ef879cb20ac65efdbf290edff9b98fafde9dbd7866f3e612c5750935",
+  "original": {
+    "camera": {
+      "position": [
+        0.44291841884751965,
+        5.153329427687884,
+        4.414410389165431
+      ],
+      "quaternion": [
+        -0.43208569056869517,
+        0.05140993617533818,
+        0.02468090507883124,
+        0.9000276814591378
+      ],
+      "projection": [
+        1.6683754654031857,
+        0,
+        0,
+        0,
+        0,
+        2.6050890646938014,
+        0,
+        0,
+        0,
+        0,
+        -1.002002002002002,
+        -1,
+        0,
+        0,
+        -0.20020020020020018,
+        0
+      ],
+      "aspect": 1.5614525139664805
+    },
+    "draw": {
+      "id": 1,
+      "createdBy": "page",
+      "draws": 12400,
+      "sequence": 80,
+      "calls": 79,
+      "triangles": 100712,
+      "geometries": 77,
+      "programs": 3
+    },
+    "canvasSize": [
+      559,
+      358
+    ],
+    "state": {
+      "consentAccepted": true,
+      "view": "body3d",
+      "b3dTab": "recovery",
+      "b3dAge": "adult",
+      "b3dRec": [
+        "check",
+        "arm",
+        "hand",
+        "knee",
+        "roll",
+        "airway",
+        "stable",
+        "watch"
+      ],
+      "b3dRecView": 5,
+      "b3dRecoveryGuides": false,
+      "b3dHandStudy": {
+        "adult": {
+          "version": 1,
+          "near": "palm",
+          "support": "back",
+          "checked": true,
+          "note": "The near palm keeps its folds upward; the supporting hand stays beside the cheek."
+        }
+      },
+      "b3dChildHands": "two",
+      "b3dPlaced": "correct",
+      "b3dDepthLab": {
+        "age": "child",
+        "depth": 5,
+        "lean": 1,
+        "rate": 110,
+        "motion": "inspect",
+        "phase": 50,
+        "hands": true,
+        "anatomy": false,
+        "measure": false
+      },
+      "b3dDepthReference": {
+        "age": "child",
+        "depth": 5,
+        "lean": 0
+      },
+      "b3dDepthInquiry": {
+        "signature": "hand-comparison-observation",
+        "explanation": "Keep this saved prediction."
+      },
+      "b3dStatus": "ready"
+    },
+    "errors": []
+  },
+  "reference": {
+    "near4": {
+      "camera": {
+        "position": [
+          -1.179006174081236,
+          0.6618556322378774,
+          -1.1818248539789034
+        ],
+        "quaternion": [
+          0.25929513086576605,
+          0.7319274236931874,
+          0.506731771066021,
+          -0.37452796123580995
+        ],
+        "projection": [
+          1.6683754654031857,
+          0,
+          0,
+          0,
+          0,
+          2.6050890646938014,
+          0,
+          0,
+          0,
+          0,
+          -1.002002002002002,
+          -1,
+          0,
+          0,
+          -0.20020020020020018,
+          0
+        ],
+        "aspect": 1.5614525139664805
+      },
+      "draw": {
+        "id": 1,
+        "createdBy": "page",
+        "draws": 21682,
+        "sequence": 144,
+        "calls": 21,
+        "triangles": 21336,
+        "geometries": 77,
+        "programs": 3
+      },
+      "canvasSize": [
+        559,
+        358
+      ],
+      "state": {
+        "consentAccepted": true,
+        "view": "body3d",
+        "b3dTab": "recovery",
+        "b3dAge": "adult",
+        "b3dRec": [
+          "check",
+          "arm",
+          "hand",
+          "knee",
+          "roll",
+          "airway",
+          "stable",
+          "watch"
+        ],
+        "b3dRecView": 4,
+        "b3dRecoveryGuides": false,
+        "b3dHandStudy": {
+          "adult": {
+            "version": 1,
+            "near": "palm",
+            "support": "back",
+            "checked": true,
+            "note": "The near palm keeps its folds upward; the supporting hand stays beside the cheek."
+          }
+        },
+        "b3dChildHands": "two",
+        "b3dPlaced": "correct",
+        "b3dDepthLab": {
+          "age": "child",
+          "depth": 5,
+          "lean": 1,
+          "rate": 110,
+          "motion": "inspect",
+          "phase": 50,
+          "hands": true,
+          "anatomy": false,
+          "measure": false
+        },
+        "b3dDepthReference": {
+          "age": "child",
+          "depth": 5,
+          "lean": 0
+        },
+        "b3dDepthInquiry": {
+          "signature": "hand-comparison-observation",
+          "explanation": "Keep this saved prediction."
+        },
+        "b3dStatus": "ready"
+      },
+      "errors": []
+    },
+    "support4": {
+      "camera": {
+        "position": [
+          0.5814264381471221,
+          1.2419376925181878,
+          -1.157405510494503
+        ],
+        "quaternion": [
+          -0.3792163723866853,
+          0.5688608144952841,
+          0.3319062544575462,
+          0.6499465784951923
+        ],
+        "projection": [
+          1.6683754654031857,
+          0,
+          0,
+          0,
+          0,
+          2.6050890646938014,
+          0,
+          0,
+          0,
+          0,
+          -1.002002002002002,
+          -1,
+          0,
+          0,
+          -0.20020020020020018,
+          0
+        ],
+        "aspect": 1.5614525139664805
+      },
+      "draw": {
+        "id": 1,
+        "createdBy": "page",
+        "draws": 27240,
+        "sequence": 198,
+        "calls": 53,
+        "triangles": 74632,
+        "geometries": 77,
+        "programs": 3
+      },
+      "canvasSize": [
+        559,
+        358
+      ],
+      "state": {
+        "consentAccepted": true,
+        "view": "body3d",
+        "b3dTab": "recovery",
+        "b3dAge": "adult",
+        "b3dRec": [
+          "check",
+          "arm",
+          "hand",
+          "knee",
+          "roll",
+          "airway",
+          "stable",
+          "watch"
+        ],
+        "b3dRecView": 4,
+        "b3dRecoveryGuides": false,
+        "b3dHandStudy": {
+          "adult": {
+            "version": 1,
+            "near": "palm",
+            "support": "back",
+            "checked": true,
+            "note": "The near palm keeps its folds upward; the supporting hand stays beside the cheek."
+          }
+        },
+        "b3dChildHands": "two",
+        "b3dPlaced": "correct",
+        "b3dDepthLab": {
+          "age": "child",
+          "depth": 5,
+          "lean": 1,
+          "rate": 110,
+          "motion": "inspect",
+          "phase": 50,
+          "hands": true,
+          "anatomy": false,
+          "measure": false
+        },
+        "b3dDepthReference": {
+          "age": "child",
+          "depth": 5,
+          "lean": 0
+        },
+        "b3dDepthInquiry": {
+          "signature": "hand-comparison-observation",
+          "explanation": "Keep this saved prediction."
+        },
+        "b3dStatus": "ready"
+      },
+      "errors": []
+    },
+    "near5": {
+      "camera": {
+        "position": [
+          -0.9176753759345256,
+          0.6616324524896193,
+          -1.188483772418992
+        ],
+        "quaternion": [
+          0.2514241372212199,
+          0.738533574223917,
+          0.5073523795892181,
+          -0.3659885597826378
+        ],
+        "projection": [
+          1.6683754654031857,
+          0,
+          0,
+          0,
+          0,
+          2.6050890646938014,
+          0,
+          0,
+          0,
+          0,
+          -1.002002002002002,
+          -1,
+          0,
+          0,
+          -0.20020020020020018,
+          0
+        ],
+        "aspect": 1.5614525139664805
+      },
+      "draw": {
+        "id": 1,
+        "createdBy": "page",
+        "draws": 34743,
+        "sequence": 260,
+        "calls": 20,
+        "triangles": 18056,
+        "geometries": 77,
+        "programs": 3
+      },
+      "canvasSize": [
+        559,
+        358
+      ],
+      "state": {
+        "consentAccepted": true,
+        "view": "body3d",
+        "b3dTab": "recovery",
+        "b3dAge": "adult",
+        "b3dRec": [
+          "check",
+          "arm",
+          "hand",
+          "knee",
+          "roll",
+          "airway",
+          "stable",
+          "watch"
+        ],
+        "b3dRecView": 5,
+        "b3dRecoveryGuides": false,
+        "b3dHandStudy": {
+          "adult": {
+            "version": 1,
+            "near": "palm",
+            "support": "back",
+            "checked": true,
+            "note": "The near palm keeps its folds upward; the supporting hand stays beside the cheek."
+          }
+        },
+        "b3dChildHands": "two",
+        "b3dPlaced": "correct",
+        "b3dDepthLab": {
+          "age": "child",
+          "depth": 5,
+          "lean": 1,
+          "rate": 110,
+          "motion": "inspect",
+          "phase": 50,
+          "hands": true,
+          "anatomy": false,
+          "measure": false
+        },
+        "b3dDepthReference": {
+          "age": "child",
+          "depth": 5,
+          "lean": 0
+        },
+        "b3dDepthInquiry": {
+          "signature": "hand-comparison-observation",
+          "explanation": "Keep this saved prediction."
+        },
+        "b3dStatus": "ready"
+      },
+      "errors": []
+    },
+    "support5": {
+      "camera": {
+        "position": [
+          -0.5418570325337968,
+          1.5232801332836483,
+          -1.1584853072785588
+        ],
+        "quaternion": [
+          -0.3588554535556178,
+          -0.581919622291384,
+          -0.31788620628667663,
+          0.6569175568504081
+        ],
+        "projection": [
+          1.6683754654031857,
+          0,
+          0,
+          0,
+          0,
+          2.6050890646938014,
+          0,
+          0,
+          0,
+          0,
+          -1.002002002002002,
+          -1,
+          0,
+          0,
+          -0.20020020020020018,
+          0
+        ],
+        "aspect": 1.5614525139664805
+      },
+      "draw": {
+        "id": 1,
+        "createdBy": "page",
+        "draws": 40034,
+        "sequence": 313,
+        "calls": 49,
+        "triangles": 67160,
+        "geometries": 77,
+        "programs": 3
+      },
+      "canvasSize": [
+        559,
+        358
+      ],
+      "state": {
+        "consentAccepted": true,
+        "view": "body3d",
+        "b3dTab": "recovery",
+        "b3dAge": "adult",
+        "b3dRec": [
+          "check",
+          "arm",
+          "hand",
+          "knee",
+          "roll",
+          "airway",
+          "stable",
+          "watch"
+        ],
+        "b3dRecView": 5,
+        "b3dRecoveryGuides": false,
+        "b3dHandStudy": {
+          "adult": {
+            "version": 1,
+            "near": "palm",
+            "support": "back",
+            "checked": true,
+            "note": "The near palm keeps its folds upward; the supporting hand stays beside the cheek."
+          }
+        },
+        "b3dChildHands": "two",
+        "b3dPlaced": "correct",
+        "b3dDepthLab": {
+          "age": "child",
+          "depth": 5,
+          "lean": 1,
+          "rate": 110,
+          "motion": "inspect",
+          "phase": 50,
+          "hands": true,
+          "anatomy": false,
+          "measure": false
+        },
+        "b3dDepthReference": {
+          "age": "child",
+          "depth": 5,
+          "lean": 0
+        },
+        "b3dDepthInquiry": {
+          "signature": "hand-comparison-observation",
+          "explanation": "Keep this saved prediction."
+        },
+        "b3dStatus": "ready"
+      },
+      "errors": []
+    }
+  },
+  "comparisons": [
+    {
+      "camera": {
+        "position": [
+          0.5814264381471221,
+          1.2419376925181878,
+          -1.157405510494503
+        ],
+        "quaternion": [
+          -0.3792163723866853,
+          0.5688608144952841,
+          0.3319062544575462,
+          0.6499465784951923
+        ],
+        "projection": [
+          1.6683754654031857,
+          0,
+          0,
+          0,
+          0,
+          2.6050890646938014,
+          0,
+          0,
+          0,
+          0,
+          -1.002002002002002,
+          -1,
+          0,
+          0,
+          -0.20020020020020018,
+          0
+        ],
+        "aspect": 1.5614525139664805
+      },
+      "draw": {
+        "id": 1,
+        "createdBy": "page",
+        "draws": 49220,
+        "sequence": 385,
+        "calls": 53,
+        "triangles": 74632,
+        "geometries": 77,
+        "programs": 3
+      },
+      "canvasSize": [
+        559,
+        358
+      ],
+      "state": {
+        "consentAccepted": true,
+        "view": "body3d",
+        "b3dTab": "recovery",
+        "b3dAge": "adult",
+        "b3dRec": [
+          "check",
+          "arm",
+          "hand",
+          "knee",
+          "roll",
+          "airway",
+          "stable",
+          "watch"
+        ],
+        "b3dRecView": 4,
+        "b3dRecoveryGuides": false,
+        "b3dHandStudy": {
+          "adult": {
+            "version": 1,
+            "near": "palm",
+            "support": "back",
+            "checked": true,
+            "note": "The near palm keeps its folds upward; the supporting hand stays beside the cheek."
+          }
+        },
+        "b3dChildHands": "two",
+        "b3dPlaced": "correct",
+        "b3dDepthLab": {
+          "age": "child",
+          "depth": 5,
+          "lean": 1,
+          "rate": 110,
+          "motion": "inspect",
+          "phase": 50,
+          "hands": true,
+          "anatomy": false,
+          "measure": false
+        },
+        "b3dDepthReference": {
+          "age": "child",
+          "depth": 5,
+          "lean": 0
+        },
+        "b3dDepthInquiry": {
+          "signature": "hand-comparison-observation",
+          "explanation": "Keep this saved prediction."
+        },
+        "b3dStatus": "ready"
+      },
+      "errors": []
+    },
+    {
+      "camera": {
+        "position": [
+          -0.5418570325337968,
+          1.5232801332836483,
+          -1.1584853072785588
+        ],
+        "quaternion": [
+          -0.3588554535556178,
+          -0.581919622291384,
+          -0.31788620628667663,
+          0.6569175568504081
+        ],
+        "projection": [
+          1.6683754654031857,
+          0,
+          0,
+          0,
+          0,
+          2.6050890646938014,
+          0,
+          0,
+          0,
+          0,
+          -1.002002002002002,
+          -1,
+          0,
+          0,
+          -0.20020020020020018,
+          0
+        ],
+        "aspect": 1.5614525139664805
+      },
+      "draw": {
+        "id": 1,
+        "createdBy": "page",
+        "draws": 63747,
+        "sequence": 498,
+        "calls": 49,
+        "triangles": 67160,
+        "geometries": 77,
+        "programs": 3
+      },
+      "canvasSize": [
+        559,
+        358
+      ],
+      "state": {
+        "consentAccepted": true,
+        "view": "body3d",
+        "b3dTab": "recovery",
+        "b3dAge": "adult",
+        "b3dRec": [
+          "check",
+          "arm",
+          "hand",
+          "knee",
+          "roll",
+          "airway",
+          "stable",
+          "watch"
+        ],
+        "b3dRecView": 5,
+        "b3dRecoveryGuides": false,
+        "b3dHandStudy": {
+          "adult": {
+            "version": 1,
+            "near": "palm",
+            "support": "back",
+            "checked": true,
+            "note": "The near palm keeps its folds upward; the supporting hand stays beside the cheek."
+          }
+        },
+        "b3dChildHands": "two",
+        "b3dPlaced": "correct",
+        "b3dDepthLab": {
+          "age": "child",
+          "depth": 5,
+          "lean": 1,
+          "rate": 110,
+          "motion": "inspect",
+          "phase": 50,
+          "hands": true,
+          "anatomy": false,
+          "measure": false
+        },
+        "b3dDepthReference": {
+          "age": "child",
+          "depth": 5,
+          "lean": 0
+        },
+        "b3dDepthInquiry": {
+          "signature": "hand-comparison-observation",
+          "explanation": "Keep this saved prediction."
+        },
+        "b3dStatus": "ready"
+      },
+      "errors": []
+    },
+    {
+      "camera": {
+        "position": [
+          -1.179006174081236,
+          0.6618556322378774,
+          -1.1818248539789034
+        ],
+        "quaternion": [
+          0.25929513086576605,
+          0.7319274236931874,
+          0.506731771066021,
+          -0.37452796123580995
+        ],
+        "projection": [
+          1.6683754654031857,
+          0,
+          0,
+          0,
+          0,
+          2.6050890646938014,
+          0,
+          0,
+          0,
+          0,
+          -1.002002002002002,
+          -1,
+          0,
+          0,
+          -0.20020020020020018,
+          0
+        ],
+        "aspect": 1.5614525139664805
+      },
+      "draw": {
+        "id": 1,
+        "createdBy": "page",
+        "draws": 74592,
+        "sequence": 589,
+        "calls": 21,
+        "triangles": 21336,
+        "geometries": 77,
+        "programs": 3
+      },
+      "canvasSize": [
+        559,
+        358
+      ],
+      "state": {
+        "consentAccepted": true,
+        "view": "body3d",
+        "b3dTab": "recovery",
+        "b3dAge": "adult",
+        "b3dRec": [
+          "check",
+          "arm",
+          "hand",
+          "knee",
+          "roll",
+          "airway",
+          "stable",
+          "watch"
+        ],
+        "b3dRecView": 4,
+        "b3dRecoveryGuides": false,
+        "b3dHandStudy": {
+          "adult": {
+            "version": 1,
+            "near": "palm",
+            "support": "back",
+            "checked": true,
+            "note": "The near palm keeps its folds upward; the supporting hand stays beside the cheek."
+          }
+        },
+        "b3dChildHands": "two",
+        "b3dPlaced": "correct",
+        "b3dDepthLab": {
+          "age": "child",
+          "depth": 5,
+          "lean": 1,
+          "rate": 110,
+          "motion": "inspect",
+          "phase": 50,
+          "hands": true,
+          "anatomy": false,
+          "measure": false
+        },
+        "b3dDepthReference": {
+          "age": "child",
+          "depth": 5,
+          "lean": 0
+        },
+        "b3dDepthInquiry": {
+          "signature": "hand-comparison-observation",
+          "explanation": "Keep this saved prediction."
+        },
+        "b3dStatus": "ready"
+      },
+      "errors": []
+    },
+    {
+      "camera": {
+        "position": [
+          -0.9176753759345256,
+          0.6616324524896193,
+          -1.188483772418992
+        ],
+        "quaternion": [
+          0.2514241372212199,
+          0.738533574223917,
+          0.5073523795892181,
+          -0.3659885597826378
+        ],
+        "projection": [
+          1.6683754654031857,
+          0,
+          0,
+          0,
+          0,
+          2.6050890646938014,
+          0,
+          0,
+          0,
+          0,
+          -1.002002002002002,
+          -1,
+          0,
+          0,
+          -0.20020020020020018,
+          0
+        ],
+        "aspect": 1.5614525139664805
+      },
+      "draw": {
+        "id": 1,
+        "createdBy": "page",
+        "draws": 86243,
+        "sequence": 709,
+        "calls": 20,
+        "triangles": 18056,
+        "geometries": 77,
+        "programs": 3
+      },
+      "canvasSize": [
+        559,
+        358
+      ],
+      "state": {
+        "consentAccepted": true,
+        "view": "body3d",
+        "b3dTab": "recovery",
+        "b3dAge": "adult",
+        "b3dRec": [
+          "check",
+          "arm",
+          "hand",
+          "knee",
+          "roll",
+          "airway",
+          "stable",
+          "watch"
+        ],
+        "b3dRecView": 5,
+        "b3dRecoveryGuides": false,
+        "b3dHandStudy": {
+          "adult": {
+            "version": 1,
+            "near": "palm",
+            "support": "back",
+            "checked": true,
+            "note": "The near palm keeps its folds upward; the supporting hand stays beside the cheek."
+          }
+        },
+        "b3dChildHands": "two",
+        "b3dPlaced": "correct",
+        "b3dDepthLab": {
+          "age": "child",
+          "depth": 5,
+          "lean": 1,
+          "rate": 110,
+          "motion": "inspect",
+          "phase": 50,
+          "hands": true,
+          "anatomy": false,
+          "measure": false
+        },
+        "b3dDepthReference": {
+          "age": "child",
+          "depth": 5,
+          "lean": 0
+        },
+        "b3dDepthInquiry": {
+          "signature": "hand-comparison-observation",
+          "explanation": "Keep this saved prediction."
+        },
+        "b3dStatus": "ready"
+      },
+      "errors": []
+    },
+    {
+      "camera": {
+        "position": [
+          -0.5418570325337968,
+          1.5232801332836483,
+          -1.1584853072785588
+        ],
+        "quaternion": [
+          -0.3588554535556178,
+          -0.581919622291384,
+          -0.31788620628667663,
+          0.6569175568504081
+        ],
+        "projection": [
+          1.6683754654031857,
+          0,
+          0,
+          0,
+          0,
+          2.6050890646938014,
+          0,
+          0,
+          0,
+          0,
+          -1.002002002002002,
+          -1,
+          0,
+          0,
+          -0.20020020020020018,
+          0
+        ],
+        "aspect": 1.5614525139664805
+      },
+      "draw": {
+        "id": 1,
+        "createdBy": "page",
+        "draws": 95088,
+        "sequence": 796,
+        "calls": 49,
+        "triangles": 67160,
+        "geometries": 77,
+        "programs": 3
+      },
+      "canvasSize": [
+        559,
+        358
+      ],
+      "state": {
+        "consentAccepted": true,
+        "view": "body3d",
+        "b3dTab": "recovery",
+        "b3dAge": "adult",
+        "b3dRec": [
+          "check",
+          "arm",
+          "hand",
+          "knee",
+          "roll",
+          "airway",
+          "stable",
+          "watch"
+        ],
+        "b3dRecView": 5,
+        "b3dRecoveryGuides": false,
+        "b3dHandStudy": {
+          "adult": {
+            "version": 1,
+            "near": "palm",
+            "support": "back",
+            "checked": true,
+            "note": "The near palm keeps its folds upward; the supporting hand stays beside the cheek."
+          }
+        },
+        "b3dChildHands": "two",
+        "b3dPlaced": "correct",
+        "b3dDepthLab": {
+          "age": "child",
+          "depth": 5,
+          "lean": 1,
+          "rate": 110,
+          "motion": "inspect",
+          "phase": 50,
+          "hands": true,
+          "anatomy": false,
+          "measure": false
+        },
+        "b3dDepthReference": {
+          "age": "child",
+          "depth": 5,
+          "lean": 0
+        },
+        "b3dDepthInquiry": {
+          "signature": "hand-comparison-observation",
+          "explanation": "Keep this saved prediction."
+        },
+        "b3dStatus": "ready"
+      },
+      "errors": []
+    },
+    {
+      "camera": {
+        "position": [
+          -0.9176753759345256,
+          0.6616324524896193,
+          -1.188483772418992
+        ],
+        "quaternion": [
+          0.2514241372212199,
+          0.738533574223917,
+          0.5073523795892181,
+          -0.3659885597826378
+        ],
+        "projection": [
+          1.6683754654031857,
+          0,
+          0,
+          0,
+          0,
+          2.6050890646938014,
+          0,
+          0,
+          0,
+          0,
+          -1.002002002002002,
+          -1,
+          0,
+          0,
+          -0.20020020020020018,
+          0
+        ],
+        "aspect": 1.5614525139664805
+      },
+      "draw": {
+        "id": 1,
+        "createdBy": "page",
+        "draws": 104135,
+        "sequence": 870,
+        "calls": 20,
+        "triangles": 18056,
+        "geometries": 77,
+        "programs": 3
+      },
+      "canvasSize": [
+        559,
+        358
+      ],
+      "state": {
+        "consentAccepted": true,
+        "view": "body3d",
+        "b3dTab": "recovery",
+        "b3dAge": "adult",
+        "b3dRec": [
+          "check",
+          "arm",
+          "hand",
+          "knee",
+          "roll",
+          "airway",
+          "stable",
+          "watch"
+        ],
+        "b3dRecView": 5,
+        "b3dRecoveryGuides": false,
+        "b3dHandStudy": {
+          "adult": {
+            "version": 1,
+            "near": "palm",
+            "support": "back",
+            "checked": true,
+            "note": "The near palm keeps its folds upward; the supporting hand stays beside the cheek."
+          }
+        },
+        "b3dChildHands": "two",
+        "b3dPlaced": "correct",
+        "b3dDepthLab": {
+          "age": "child",
+          "depth": 5,
+          "lean": 1,
+          "rate": 110,
+          "motion": "inspect",
+          "phase": 50,
+          "hands": true,
+          "anatomy": false,
+          "measure": false
+        },
+        "b3dDepthReference": {
+          "age": "child",
+          "depth": 5,
+          "lean": 0
+        },
+        "b3dDepthInquiry": {
+          "signature": "hand-comparison-observation",
+          "explanation": "Keep this saved prediction."
+        },
+        "b3dStatus": "ready"
+      },
+      "errors": []
+    },
+    {
+      "camera": {
+        "position": [
+          -0.5418570325337968,
+          1.5232801332836483,
+          -1.1584853072785588
+        ],
+        "quaternion": [
+          -0.3588554535556178,
+          -0.581919622291384,
+          -0.31788620628667663,
+          0.6569175568504081
+        ],
+        "projection": [
+          1.6683754654031857,
+          0,
+          0,
+          0,
+          0,
+          2.6050890646938014,
+          0,
+          0,
+          0,
+          0,
+          -1.002002002002002,
+          -1,
+          0,
+          0,
+          -0.20020020020020018,
+          0
+        ],
+        "aspect": 1.5614525139664805
+      },
+      "draw": {
+        "id": 1,
+        "createdBy": "page",
+        "draws": 131698,
+        "sequence": 1151,
+        "calls": 49,
+        "triangles": 67160,
+        "geometries": 77,
+        "programs": 3
+      },
+      "canvasSize": [
+        559,
+        358
+      ],
+      "state": {
+        "consentAccepted": true,
+        "view": "body3d",
+        "b3dTab": "recovery",
+        "b3dAge": "adult",
+        "b3dRec": [
+          "check",
+          "arm",
+          "hand",
+          "knee",
+          "roll",
+          "airway",
+          "stable",
+          "watch"
+        ],
+        "b3dRecView": 5,
+        "b3dRecoveryGuides": false,
+        "b3dHandStudy": {
+          "adult": {
+            "version": 1,
+            "near": "palm",
+            "support": "back",
+            "checked": true,
+            "note": "The near palm keeps its folds upward; the supporting hand stays beside the cheek."
+          }
+        },
+        "b3dChildHands": "two",
+        "b3dPlaced": "correct",
+        "b3dDepthLab": {
+          "age": "child",
+          "depth": 5,
+          "lean": 1,
+          "rate": 110,
+          "motion": "inspect",
+          "phase": 50,
+          "hands": true,
+          "anatomy": false,
+          "measure": false
+        },
+        "b3dDepthReference": {
+          "age": "child",
+          "depth": 5,
+          "lean": 0
+        },
+        "b3dDepthInquiry": {
+          "signature": "hand-comparison-observation",
+          "explanation": "Keep this saved prediction."
+        },
+        "b3dStatus": "ready"
+      },
+      "errors": []
+    },
+    {
+      "camera": {
+        "position": [
+          -0.5418570325337968,
+          1.5232801332836483,
+          -1.1584853072785588
+        ],
+        "quaternion": [
+          -0.3588554535556178,
+          -0.581919622291384,
+          -0.31788620628667663,
+          0.6569175568504081
+        ],
+        "projection": [
+          1.6683754654031857,
+          0,
+          0,
+          0,
+          0,
+          2.6050890646938014,
+          0,
+          0,
+          0,
+          0,
+          -1.002002002002002,
+          -1,
+          0,
+          0,
+          -0.20020020020020018,
+          0
+        ],
+        "aspect": 1.5614525139664805
+      },
+      "draw": {
+        "id": 1,
+        "createdBy": "page",
+        "draws": 134683,
+        "sequence": 1172,
+        "calls": 49,
+        "triangles": 67160,
+        "geometries": 77,
+        "programs": 3
+      },
+      "canvasSize": [
+        559,
+        358
+      ],
+      "state": {
+        "consentAccepted": true,
+        "view": "body3d",
+        "b3dTab": "recovery",
+        "b3dAge": "adult",
+        "b3dRec": [
+          "check",
+          "arm",
+          "hand",
+          "knee",
+          "roll",
+          "airway",
+          "stable",
+          "watch"
+        ],
+        "b3dRecView": 5,
+        "b3dRecoveryGuides": false,
+        "b3dHandStudy": {
+          "adult": {
+            "version": 1,
+            "near": "palm",
+            "support": "back",
+            "checked": true,
+            "note": "The near palm keeps its folds upward; the supporting hand stays beside the cheek."
+          }
+        },
+        "b3dChildHands": "two",
+        "b3dPlaced": "correct",
+        "b3dDepthLab": {
+          "age": "child",
+          "depth": 5,
+          "lean": 1,
+          "rate": 110,
+          "motion": "inspect",
+          "phase": 50,
+          "hands": true,
+          "anatomy": false,
+          "measure": false
+        },
+        "b3dDepthReference": {
+          "age": "child",
+          "depth": 5,
+          "lean": 0
+        },
+        "b3dDepthInquiry": {
+          "signature": "hand-comparison-observation",
+          "explanation": "Keep this saved prediction."
+        },
+        "b3dStatus": "ready"
+      },
+      "errors": []
+    }
+  ],
+  "final": {
+    "camera": {
+      "position": [
+        -0.5418570325337968,
+        1.5232801332836483,
+        -1.1584853072785588
+      ],
+      "quaternion": [
+        -0.3588554535556178,
+        -0.581919622291384,
+        -0.31788620628667663,
+        0.6569175568504081
+      ],
+      "projection": [
+        1.6683754654031857,
+        0,
+        0,
+        0,
+        0,
+        2.6050890646938014,
+        0,
+        0,
+        0,
+        0,
+        -1.002002002002002,
+        -1,
+        0,
+        0,
+        -0.20020020020020018,
+        0
+      ],
+      "aspect": 1.5614525139664805
+    },
+    "draw": {
+      "id": 1,
+      "createdBy": "page",
+      "draws": 136183,
+      "sequence": 1184,
+      "calls": 49,
+      "triangles": 67160,
+      "geometries": 77,
+      "programs": 3
+    },
+    "canvasSize": [
+      559,
+      358
+    ],
+    "state": {
+      "consentAccepted": true,
+      "view": "body3d",
+      "b3dTab": "recovery",
+      "b3dAge": "adult",
+      "b3dRec": [
+        "check",
+        "arm",
+        "hand",
+        "knee",
+        "roll",
+        "airway",
+        "stable",
+        "watch"
+      ],
+      "b3dRecView": 5,
+      "b3dRecoveryGuides": false,
+      "b3dHandStudy": {
+        "adult": {
+          "version": 1,
+          "near": "palm",
+          "support": "back",
+          "checked": true,
+          "note": "The near palm keeps its folds upward; the supporting hand stays beside the cheek."
+        }
+      },
+      "b3dChildHands": "two",
+      "b3dPlaced": "correct",
+      "b3dDepthLab": {
+        "age": "child",
+        "depth": 5,
+        "lean": 1,
+        "rate": 110,
+        "motion": "inspect",
+        "phase": 50,
+        "hands": true,
+        "anatomy": false,
+        "measure": false
+      },
+      "b3dDepthReference": {
+        "age": "child",
+        "depth": 5,
+        "lean": 0
+      },
+      "b3dDepthInquiry": {
+        "signature": "hand-comparison-observation",
+        "explanation": "Keep this saved prediction."
+      },
+      "b3dStatus": "ready"
+    },
+    "errors": []
+  }
+}

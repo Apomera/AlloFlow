@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const THREE = require('../vendor/three-r128/three.min.js');
-const source = readFileSync('stem_lab/stem_tool_cephalopodlab.js', 'utf8');
+const source = readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE || 'stem_lab/stem_tool_cephalopodlab.js', 'utf8');
 function region(start, end) {
   const a = source.indexOf(start), b = source.indexOf(end, a);
   if (a < 0 || b <= a) throw new Error('Could not locate live plant region: ' + start);
@@ -21,7 +21,7 @@ function construct() {
   const kelp = region('        var kelpStrands = [];', '        // ─── Hydrothermal vent');
   const math = Object.create(Math), draws = [];let seed = 2741;
   math.random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;const value = seed / 4294967296;draws.push(value);return value; };
-  const result = new Function('THREE', 'Math', helperSource + ';var scene=new THREE.Scene();' + grass + kelp + ';return {scene,grass,kelp:kelpStrands};')(THREE, math);
+  const result = new Function('THREE', 'Math', helperSource + ';var renderer={capabilities:{isWebGL2:true}};var scene=new THREE.Scene();' + grass + kelp + ';return {scene,grass,kelp:kelpStrands};')(THREE, math);
   return { ...result, draws };
 }
 function basalCenter(geometry) {
@@ -32,12 +32,12 @@ function basalCenter(geometry) {
 
 // Execute the production sway blocks under the live loop's actual pause guard.
 const loop = source.indexOf('function loop() {');
-const guardAt = source.indexOf('if (!gameState.gameOver && !gameState.paused) {', loop);
+const guardAt = source.indexOf('if (!gameState.gameOver && !gameState.paused && dt>0) {', loop);
 if (guardAt < 0) throw new Error('Could not locate the production pause guard');
 const guard = source.slice(guardAt, source.indexOf('\n', guardAt));
 const kelpSway = region('            kelpStrands.forEach(function(k) {', '            // Vent plume rises');
 const grassSway = region('            grass.forEach(function(g) {', '            // ─── Floor + caustics follow');
-const sway = new Function('kelpStrands', 'grass', 'gameState', 'now', helperSource + ';' + guard + '\n' + kelpSway + grassSway + '\n}');
+const sway = new Function('kelpStrands', 'grass', 'gameState', 'now', 'dt = 0.05', helperSource + ';' + guard + '\n' + kelpSway + grassSway + '\n}');
 
 describe('Cephalopod Hunter plant geometry', () => {
   it('builds finite folded ribbons with valid triangles, normals and final bounds across plant variants', () => {
@@ -97,7 +97,7 @@ describe('Cephalopod Hunter plant geometry', () => {
         expect(mesh.userData.substrate).toBe('grass');expect(mesh.userData.substrateRadius).toBe(kind === 'grass' ? .6 : 1.4);
         expect(mesh.castShadow).toBe(false);
         if (kind === 'grass') { expect(mesh.count).toBe(7);expect(mesh.frustumCulled).toBe(false); }
-        else { expect(mesh.material.isMeshStandardMaterial).toBe(true);expect(mesh.material.depthWrite).toBe(false); }
+        else { expect(mesh.material.isMeshStandardMaterial).toBe(true);expect(mesh.material.transparent).toBe(false);expect(mesh.material.opacity).toBe(1);expect(mesh.material.depthWrite).toBe(true); }
       }
       expect(at).toBe(525);
     } finally { dispose(fixture); }
@@ -151,7 +151,10 @@ describe('Cephalopod Hunter plant geometry', () => {
       fixture.grass.forEach(plant => expect(plant.flex.value.y).toBe((1200 * .001 + plant.phase) % (Math.PI * 2)));
       fixture.kelp.forEach(plant => expect(plant.flex.value.y).toBe((1200 * .0008 + plant.phase) % (Math.PI * 2)));
       expect(all.every(plant => plant.mesh.rotation.z === 0 && plant.flex.value.w === 1)).toBe(true);
-      const poses = all.map(plant => plant.flex.value.toArray());state.paused = true;
+      const poses = all.map(plant => plant.flex.value.toArray());
+      sway(fixture.kelp, fixture.grass, state, 5500, 0);
+      expect(all.map(plant => plant.flex.value.toArray())).toEqual(poses);
+      state.paused = true;
       sway(fixture.kelp, fixture.grass, state, 5500);
       expect(all.map(plant => plant.flex.value.toArray())).toEqual(poses);
       state.paused = false;state.a11y.reducedMotion = true;

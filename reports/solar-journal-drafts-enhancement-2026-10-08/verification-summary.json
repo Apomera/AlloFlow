@@ -1,0 +1,39 @@
+{
+  "sourceSha256": "41625d22c8059f90b749a9c115725b46cdea49a74cd54ce6124d6edbdfb8c3e6",
+  "verifiedAt": "2026-10-08T23:59:49.762Z",
+  "desktopMirrorMatches": true,
+  "units": {
+    "passed": 31,
+    "total": 31,
+    "suites": [
+      "tests\\solar_system_journal_drafts.test.js",
+      "tests\\solar_system_comparison_scale_navigation.test.js"
+    ]
+  },
+  "browser": {
+    "passed": 4,
+    "cases": [
+      "journal-1060-dark",
+      "journal-1060-light",
+      "journal-320-dark",
+      "journal-320-light"
+    ],
+    "checked": [
+      "Four controlled fields restore after closing",
+      "Drafts stay with their worlds",
+      "Whitespace cannot enable saving",
+      "Saving preserves raw paragraphs and clears only the current draft",
+      "Prior entries and explanation drafts preserved",
+      "Filter resets so the new entry is visible",
+      "Keyboard save focuses confirmation",
+      "Cross-lab synthesis snapshots and labels preserved",
+      "Balanced desktop grid and single-column phone layout",
+      "13px minimum journal text and 44px controls",
+      "16px textareas",
+      "No page overflow or errors"
+    ]
+  },
+  "syntax": "passed",
+  "whitespace": "passed",
+  "committed": false
+}

@@ -1,0 +1,295 @@
+{
+  "reason": "Recover disk space; every old baseline retained losslessly as adjacent gzip, verified before removing uncompressed copy.",
+  "files": [
+    {
+      "file": "followup-baseline\\AlloFlowANTI.txt",
+      "original": 2863920,
+      "compressed": 718003
+    },
+    {
+      "file": "followup-baseline\\desktop\\web-app\\src\\AlloFlowANTI.txt",
+      "original": 2863920,
+      "compressed": 718003
+    },
+    {
+      "file": "followup-baseline\\desktop\\web-app\\src\\App.jsx",
+      "original": 2863920,
+      "compressed": 718003
+    },
+    {
+      "file": "followup-baseline\\host_handlers_module.js",
+      "original": 564376,
+      "compressed": 160265
+    },
+    {
+      "file": "followup-baseline\\host_handlers_source.jsx",
+      "original": 666418,
+      "compressed": 162081
+    },
+    {
+      "file": "followup-baseline\\live_aac_module.js",
+      "original": 75288,
+      "compressed": 20024
+    },
+    {
+      "file": "followup-baseline\\live_aac_source.jsx",
+      "original": 78724,
+      "compressed": 20921
+    },
+    {
+      "file": "followup-baseline\\manifest.json",
+      "original": 2288,
+      "compressed": 1055
+    },
+    {
+      "file": "followup-baseline\\misc_components_module.js",
+      "original": 103137,
+      "compressed": 21541
+    },
+    {
+      "file": "followup-baseline\\misc_components_source.jsx",
+      "original": 151574,
+      "compressed": 28543
+    },
+    {
+      "file": "followup-baseline\\misc_handlers_module.js",
+      "original": 132149,
+      "compressed": 33960
+    },
+    {
+      "file": "followup-baseline\\misc_handlers_source.jsx",
+      "original": 131789,
+      "compressed": 33784
+    },
+    {
+      "file": "followup-baseline\\module_scope_extras_module.js",
+      "original": 92946,
+      "compressed": 25939
+    },
+    {
+      "file": "followup-baseline\\module_scope_extras_source.jsx",
+      "original": 38542,
+      "compressed": 11528
+    },
+    {
+      "file": "followup-baseline\\tests\\word_sounds_family_preload.test.js",
+      "original": 9436,
+      "compressed": 2909
+    },
+    {
+      "file": "followup-baseline\\tts_module.js",
+      "original": 116811,
+      "compressed": 29093
+    },
+    {
+      "file": "followup-baseline\\tts_source.jsx",
+      "original": 116672,
+      "compressed": 29024
+    },
+    {
+      "file": "followup-baseline\\view_word_sounds_preview_module.js",
+      "original": 80381,
+      "compressed": 20314
+    },
+    {
+      "file": "followup-baseline\\view_word_sounds_preview_source.jsx",
+      "original": 17451,
+      "compressed": 4319
+    },
+    {
+      "file": "followup-baseline\\word_sounds_core.js",
+      "original": 30106,
+      "compressed": 9110
+    },
+    {
+      "file": "followup-baseline\\word_sounds_module.js",
+      "original": 911921,
+      "compressed": 193024
+    },
+    {
+      "file": "followup-baseline\\word_sounds_readiness_contract.js",
+      "original": 55999,
+      "compressed": 15837
+    },
+    {
+      "file": "followup-baseline\\word_sounds_setup_module.js",
+      "original": 227777,
+      "compressed": 53313
+    },
+    {
+      "file": "followup-baseline\\word_sounds_setup_source.jsx",
+      "original": 280557,
+      "compressed": 66190
+    },
+    {
+      "file": "next-baseline\\AlloFlowANTI.txt",
+      "original": 2868206,
+      "compressed": 719226
+    },
+    {
+      "file": "next-baseline\\desktop\\web-app\\src\\AlloFlowANTI.txt",
+      "original": 2868206,
+      "compressed": 719226
+    },
+    {
+      "file": "next-baseline\\desktop\\web-app\\src\\App.jsx",
+      "original": 2868206,
+      "compressed": 719226
+    },
+    {
+      "file": "next-baseline\\hashes.json",
+      "original": 4829,
+      "compressed": 1054
+    },
+    {
+      "file": "next-baseline\\host_handlers_module.js",
+      "original": 583905,
+      "compressed": 165388
+    },
+    {
+      "file": "next-baseline\\host_handlers_source.jsx",
+      "original": 666418,
+      "compressed": 162081
+    },
+    {
+      "file": "next-baseline\\live_aac_module.js",
+      "original": 80574,
+      "compressed": 21279
+    },
+    {
+      "file": "next-baseline\\live_aac_source.jsx",
+      "original": 80552,
+      "compressed": 21370
+    },
+    {
+      "file": "next-baseline\\misc_components_module.js",
+      "original": 103876,
+      "compressed": 21754
+    },
+    {
+      "file": "next-baseline\\misc_components_source.jsx",
+      "original": 152387,
+      "compressed": 28776
+    },
+    {
+      "file": "next-baseline\\module_scope_extras_module.js",
+      "original": 117216,
+      "compressed": 31631
+    },
+    {
+      "file": "next-baseline\\module_scope_extras_source.jsx",
+      "original": 39729,
+      "compressed": 11911
+    },
+    {
+      "file": "next-baseline\\tts_module.js",
+      "original": 116811,
+      "compressed": 29093
+    },
+    {
+      "file": "next-baseline\\tts_source.jsx",
+      "original": 116672,
+      "compressed": 29024
+    },
+    {
+      "file": "next-baseline\\view_word_sounds_preview_module.js",
+      "original": 105591,
+      "compressed": 25929
+    },
+    {
+      "file": "next-baseline\\view_word_sounds_preview_source.jsx",
+      "original": 17474,
+      "compressed": 4329
+    },
+    {
+      "file": "next-baseline\\word_sounds_core.js",
+      "original": 48503,
+      "compressed": 14245
+    },
+    {
+      "file": "next-baseline\\word_sounds_module.js",
+      "original": 953259,
+      "compressed": 205547
+    },
+    {
+      "file": "next-baseline\\word_sounds_readiness_contract.js",
+      "original": 79214,
+      "compressed": 21466
+    },
+    {
+      "file": "next-baseline\\word_sounds_setup_module.js",
+      "original": 261859,
+      "compressed": 62010
+    },
+    {
+      "file": "next-baseline\\word_sounds_setup_source.jsx",
+      "original": 314175,
+      "compressed": 75497
+    },
+    {
+      "file": "refine-baseline\\AlloFlowANTI.txt",
+      "original": 2868206,
+      "compressed": 719217
+    },
+    {
+      "file": "refine-baseline\\desktop\\web-app\\src\\AlloFlowANTI.txt",
+      "original": 2868206,
+      "compressed": 719217
+    },
+    {
+      "file": "refine-baseline\\desktop\\web-app\\src\\App.jsx",
+      "original": 2868206,
+      "compressed": 719217
+    },
+    {
+      "file": "refine-baseline\\hashes.json",
+      "original": 3367,
+      "compressed": 695
+    },
+    {
+      "file": "refine-baseline\\host_handlers_module.js",
+      "original": 588165,
+      "compressed": 167101
+    },
+    {
+      "file": "refine-baseline\\live_aac_module.js",
+      "original": 80574,
+      "compressed": 21279
+    },
+    {
+      "file": "refine-baseline\\module_scope_extras_module.js",
+      "original": 121868,
+      "compressed": 33407
+    },
+    {
+      "file": "refine-baseline\\view_word_sounds_preview_module.js",
+      "original": 111251,
+      "compressed": 27788
+    },
+    {
+      "file": "refine-baseline\\word_sounds_core.js",
+      "original": 53155,
+      "compressed": 16015
+    },
+    {
+      "file": "refine-baseline\\word_sounds_module.js",
+      "original": 982039,
+      "compressed": 213404
+    },
+    {
+      "file": "refine-baseline\\word_sounds_readiness_contract.js",
+      "original": 83866,
+      "compressed": 23236
+    },
+    {
+      "file": "refine-baseline\\word_sounds_setup_module.js",
+      "original": 290240,
+      "compressed": 69109
+    },
+    {
+      "file": "refine-baseline\\word_sounds_setup_source.jsx",
+      "original": 342677,
+      "compressed": 83078
+    }
+  ]
+}

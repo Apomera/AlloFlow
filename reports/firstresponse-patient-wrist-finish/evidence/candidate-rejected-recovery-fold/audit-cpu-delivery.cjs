@@ -1,0 +1,13 @@
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const work=__dirname,repo='C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated',hash=b=>crypto.createHash('sha256').update(b).digest('hex'),read=p=>fs.readFileSync(p),json=p=>JSON.parse(read(p)),local=p=>path.join(work,p),safeShared=p=>path.join(repo,p),must=(v,m)=>assert.ok(v,m),same=(a,b,m)=>assert.deepEqual(a,b,m),guardFile=(p,h)=>assert.equal(hash(read(p)),h,p);
+const walk=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(path.join(dir,e.name)):[path.join(dir,e.name)]);
+const fragment=read(local('delivery-raw-cpu.txt')).toString(),block=fragment.slice(fragment.indexOf("  const cpu=json(local('geometry-contract-palm/shading-verification.json'))"));
+assert.ok(block.startsWith('  const cpu='));
+const contract=new Function('local','safeShared','read','json','hash','guardFile','must','same','walk','include','path','sourceSHA','beforeSHA',block);
+const report=json(local('geometry-contract-palm/shading-verification.json')),saved=read(local('geometry-contract-palm/shading-verification.json'));
+function validate(resolver=local){contract(resolver,safeShared,read,json,hash,guardFile,must,same,walk,()=>{},path,report.candidateSHA256,report.beforeSHA256);}
+validate();const negative=[];
+if(process.argv.includes('--selftest')){const dir=local('cpu-delivery-palm-selftest');fs.mkdirSync(dir,{recursive:true});const file=path.join(dir,'report.json'),resolve=p=>p==='geometry-contract-palm/shading-verification.json'?file:local(p);
+ for(const[type,mutate]of [['failed-report',r=>r.passed=false],['newly-reversed-face',r=>r.results[0].wrists[0].normals.newNegativeFaces=1]]){let rejected=false,error='';try{const bad=JSON.parse(saved);mutate(bad);fs.writeFileSync(file,JSON.stringify(bad));try{validate(resolve);}catch(e){rejected=true;error=e.message;}}finally{fs.writeFileSync(file,saved);same(read(file),saved,'saved CPU evidence restored and reread');validate(resolve);}must(rejected,type+' must fail');negative.push({type,rejected,error,restoredAndReread:true,restoredSHA256:hash(read(file))});}
+}
+const result={accepted:true,sourceSHA256:report.candidateSHA256,checkerSHA256:report.checkerSHA256,reportSHA256:hash(saved),gateFragmentSHA256:hash(read(local('delivery-raw-cpu.txt'))),auditorSHA256:hash(read(__filename)),cases:report.results.length,assertions:report.assertions,negative,sharedWrites:0};fs.writeFileSync(local('delivery-cpu-schema-review.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result));

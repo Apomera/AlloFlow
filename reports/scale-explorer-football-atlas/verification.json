@@ -1,0 +1,24 @@
+{
+  "sha": "a0271a015b89ae34469ce0d26ad467f9912aee68657fe95c51ad731bb5bdae96",
+  "bytes": 2379716,
+  "unit": {
+    "passed": 38,
+    "files": 4
+  },
+  "browser": {
+    "startTime": "2026-10-10T02:32:10.101Z",
+    "duration": 31889.273,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "english": {
+    "keys": 18,
+    "copies": 4
+  },
+  "staged": [],
+  "diffCheck": "passed",
+  "feature": "Football pitch: full markings, textured turf, 3D goals and nets, 1.7 m human reference, six inspection destinations and field plan",
+  "reference": "https://www.theifab.com/laws/latest/the-field-of-play/"
+}

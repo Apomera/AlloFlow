@@ -108,6 +108,40 @@ function WordSoundsPreviewView(props) {
   };
   var launchErrorState = React.useState('');
   var launchError = launchErrorState[0], setLaunchError = launchErrorState[1];
+  var practiceState = React.useState({ busy: false, notice: '' });
+  var practiceStatus = practiceState[0], setPracticeStatus = practiceState[1];
+  var practiceControllerRef = React.useRef(null);
+  var canPresentPractice = isTeacherMode && !generatedContent?.sessionConfig?.fixedForm && !generatedContent?.sessionConfig?.studentLocked;
+  React.useEffect(function () {
+    setPracticeStatus({ busy: false, notice: '' });
+    return function () {
+      if (practiceControllerRef.current) practiceControllerRef.current.abort();
+      practiceControllerRef.current = null;
+    };
+  }, [launchContext]);
+  var openWordPractice = async function () {
+    if (!canPresentPractice || practiceControllerRef.current) return;
+    var controller = new AbortController();
+    practiceControllerRef.current = controller;
+    setPracticeStatus({ busy: true, notice: '' });
+    try {
+      if (typeof window.__alloOpenWordPractice !== 'function') throw new Error('Presentation tools unavailable');
+      var words = Array.isArray(generatedContent?.wsPreloadedWords) && generatedContent.wsPreloadedWords.length
+        ? generatedContent.wsPreloadedWords : (generatedContent?.data || []);
+      await window.__alloOpenWordPractice({
+        words: words,
+        title: generatedContent?.title || label('practice_title', 'Word Fluency Pop-Up'),
+        language: generatedContent?.sessionConfig?.language || props.wordSoundsLanguage || 'English',
+        source: 'word-sounds', callTTS: props.callTTS, selectedVoice: props.selectedVoice,
+        ttsSpeed: props.ttsSpeed, t: props.t, signal: controller.signal,
+      });
+      if (!controller.signal.aborted) setPracticeStatus({ busy: false, notice: '' });
+    } catch (_) {
+      if (!controller.signal.aborted) setPracticeStatus({ busy: false, notice: label('practice_open_failed', 'Presentation tools could not open. Please try again.') });
+    } finally {
+      if (practiceControllerRef.current === controller) practiceControllerRef.current = null;
+    }
+  };
   var launchPreparedActivity = function() {
     if (!claimLaunch()) return;
     setLaunchError('');
@@ -135,6 +169,11 @@ function WordSoundsPreviewView(props) {
                       <h3 className="text-lg font-bold text-slate-800 mb-2">{generatedContent?.title || label('preview_title', 'Word Sounds Studio')}</h3>
                       <p className="text-sm text-slate-600 mb-1">{generatedContent?.configSummary || label('preview_ready', 'Ready to practice')}</p>
                       {generatedContent?.data && <p className="text-xs text-violet-700 font-medium">{label('preview_word_count', '{count} words loaded', { count: generatedContent.data.length })}</p>}
+                      {canPresentPractice && <div className="mt-4 rounded-xl border border-violet-200 bg-white p-4 text-start">
+                        <button type="button" onClick={openWordPractice} disabled={practiceStatus.busy} aria-busy={practiceStatus.busy} aria-describedby="word-sounds-preview-presentation-help" className="min-h-11 rounded-lg border border-violet-300 px-4 py-2 text-sm font-bold text-violet-800 hover:bg-violet-50 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:ring-offset-2">{practiceStatus.busy ? label('practice_opening', 'Opening presentation tools…') : label('practice_present_export', 'Present & Export')}</button>
+                        <p id="word-sounds-preview-presentation-help" className="mt-2 text-sm text-slate-600">{label('practice_export_help', 'Project these words or download HTML and PowerPoint with optional audio and prepared activities.')}</p>
+                        {practiceStatus.notice && <p role="status" aria-live="polite" aria-atomic="true" className="mt-1 text-sm text-amber-900">{practiceStatus.notice}</p>}
+                      </div>}
                       {isTeacherMode && wordSoundsAudioCoverage && (
                         <section ref={readinessPanelRef} className="mt-4 rounded-xl border border-violet-200 bg-white p-4 text-start" aria-label={label('readiness_panel', 'Ready for students: audio check')} aria-busy={readinessBusy} onKeyDown={event => { if (event.key === 'Escape' && readinessBusy) { event.preventDefault(); cancelReadiness(); } }}>
                           <h4 className="font-bold text-slate-800">{label('readiness_heading', 'Ready for students')} <span className="text-sm font-medium">{label('readiness_audio_qualifier', 'Audio check')}</span></h4>
@@ -152,7 +191,7 @@ function WordSoundsPreviewView(props) {
                             <button ref={readinessCheckButtonRef} type="button" onClick={checkReadiness} disabled={readinessBusy || !readinessApi} className="min-h-11 rounded-lg border border-violet-300 px-4 py-2 text-sm font-bold text-violet-800 hover:bg-violet-50 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:ring-offset-2">{label('readiness_check', 'Check prepared audio')}</button>
                             {readinessBusy && <button ref={readinessCancelButtonRef} type="button" onClick={cancelReadiness} className="min-h-11 rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:ring-offset-2">{label('readiness_cancel', 'Cancel check')}</button>}
                           </div>
-                          <p className="mt-2 text-xs text-slate-600">{label('readiness_recovery', 'For missing embedded clips, use Teacher: Review Words & Audio, then re-prepare the pack in setup. Starting or reviewing a session follows the existing session controls.')}</p>
+                          <p className="mt-2 text-xs text-slate-600">{label('readiness_recovery', 'For missing speech clips or older syllable boards, open Teacher: Review Words & Audio and choose Repair prepared lesson. Review any flagged items, then save the updated lesson before sharing.')}</p>
                         </section>
                       )}
                       <div className={`grid grid-cols-1 ${isTeacherMode ? 'sm:grid-cols-2' : ''} gap-3 mt-5`}>

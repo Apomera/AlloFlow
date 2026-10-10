@@ -1,0 +1,8 @@
+Starting synthesis-1060-dark
+Checked synthesis-1060-dark
+Starting synthesis-1060-light
+Checked synthesis-1060-light
+Starting synthesis-320-dark
+Checked synthesis-320-dark
+Starting synthesis-320-light
+Checked synthesis-320-light

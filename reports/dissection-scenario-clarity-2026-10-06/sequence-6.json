@@ -1,0 +1,24 @@
+{
+  "start": "2026-10-06T14:18:56.981Z",
+  "runnerPid": 5776,
+  "jobs": [
+    {
+      "mode": "scenario",
+      "label": "scenario-6",
+      "code": 0,
+      "start": "2026-10-06T14:18:56.984Z",
+      "end": "2026-10-06T14:19:54.217Z"
+    },
+    {
+      "mode": "unit-main",
+      "label": "unit-main-6",
+      "code": 1,
+      "start": "2026-10-06T14:19:54.248Z",
+      "end": "2026-10-06T14:21:08.013Z"
+    }
+  ],
+  "running": null,
+  "success": false,
+  "error": "unit-main-6 failed",
+  "end": "2026-10-06T14:21:08.031Z"
+}

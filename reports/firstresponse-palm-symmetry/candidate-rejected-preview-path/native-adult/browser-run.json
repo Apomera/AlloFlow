@@ -1,0 +1,145 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\playwright-face.config.cjs",
+    "rootDir": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-14/firstresponse-palm-symmetry-work",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-14/firstresponse-palm-symmetry-work/native-adult/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-14/firstresponse-palm-symmetry-work",
+        "testIgnore": [
+          "**/candidate-rejected-*/**"
+        ],
+        "testMatch": [
+          "firstresponse-face-preview.spec.ts"
+        ],
+        "timeout": 450000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "firstresponse-face-preview.spec.ts",
+      "file": "firstresponse-face-preview.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "patient palm symmetry adult-wide preview at native view",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 450000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 14219,
+                  "error": {
+                    "message": "Error: page.evaluate: Error: Invalid crease path fr-patient-right-palm-crease\n    at palmGeometry (http://127.0.0.1:63140/__harness:415:121)\n    at visitExact (http://127.0.0.1:63140/__harness:425:367)\n    at http://127.0.0.1:63140/__harness:426:46\n    at Array.forEach (<anonymous>)\n    at visitExact (http://127.0.0.1:63140/__harness:426:20)\n    at http://127.0.0.1:63140/__harness:426:46\n    at Array.forEach (<anonymous>)\n    at visitExact (http://127.0.0.1:63140/__harness:426:20)\n    at http://127.0.0.1:63140/__harness:426:46\n    at Array.forEach (<anonymous>)",
+                    "stack": "Error: page.evaluate: Error: Invalid crease path fr-patient-right-palm-crease\n    at palmGeometry (http://127.0.0.1:63140/__harness:415:121)\n    at visitExact (http://127.0.0.1:63140/__harness:425:367)\n    at http://127.0.0.1:63140/__harness:426:46\n    at Array.forEach (<anonymous>)\n    at visitExact (http://127.0.0.1:63140/__harness:426:20)\n    at http://127.0.0.1:63140/__harness:426:46\n    at Array.forEach (<anonymous>)\n    at visitExact (http://127.0.0.1:63140/__harness:426:20)\n    at http://127.0.0.1:63140/__harness:426:46\n    at Array.forEach (<anonymous>)\n    at palmGeometry (http://127.0.0.1:63140/__harness:415:121)\n    at visitExact (http://127.0.0.1:63140/__harness:425:367)\n    at http://127.0.0.1:63140/__harness:426:46\n    at visitExact (http://127.0.0.1:63140/__harness:426:20)\n    at http://127.0.0.1:63140/__harness:426:46\n    at visitExact (http://127.0.0.1:63140/__harness:426:20)\n    at http://127.0.0.1:63140/__harness:426:46\n    at probe (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\firstresponse-face-preview.spec.ts:162:58)\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\firstresponse-face-preview.spec.ts:190:154",
+                    "location": {
+                      "file": "http://127.0.0.1:63140/__harness",
+                      "column": 121,
+                      "line": 415
+                    }
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "http://127.0.0.1:63140/__harness",
+                        "column": 121,
+                        "line": 415
+                      },
+                      "message": "Error: page.evaluate: Error: Invalid crease path fr-patient-right-palm-crease\n    at palmGeometry (http://127.0.0.1:63140/__harness:415:121)\n    at visitExact (http://127.0.0.1:63140/__harness:425:367)\n    at http://127.0.0.1:63140/__harness:426:46\n    at Array.forEach (<anonymous>)\n    at visitExact (http://127.0.0.1:63140/__harness:426:20)\n    at http://127.0.0.1:63140/__harness:426:46\n    at Array.forEach (<anonymous>)\n    at visitExact (http://127.0.0.1:63140/__harness:426:20)\n    at http://127.0.0.1:63140/__harness:426:46\n    at Array.forEach (<anonymous>)\n    at palmGeometry (http://127.0.0.1:63140/__harness:415:121)\n    at visitExact (http://127.0.0.1:63140/__harness:425:367)\n    at http://127.0.0.1:63140/__harness:426:46\n    at visitExact (http://127.0.0.1:63140/__harness:426:20)\n    at http://127.0.0.1:63140/__harness:426:46\n    at visitExact (http://127.0.0.1:63140/__harness:426:20)\n    at http://127.0.0.1:63140/__harness:426:46\n    at probe (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\firstresponse-face-preview.spec.ts:162:58)\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\firstresponse-face-preview.spec.ts:190:154"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T03:20:36.848Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\native-adult\\artifacts\\firstresponse-face-preview-3f4aa-wide-preview-at-native-view\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\native-adult\\artifacts\\firstresponse-face-preview-3f4aa-wide-preview-at-native-view\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "http://127.0.0.1:63140/__harness",
+                    "column": 121,
+                    "line": 415
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "abe53d2d327fe7af75d4-c7b7bbc89108a3f3dc20",
+          "file": "firstresponse-face-preview.spec.ts",
+          "line": 178,
+          "column": 29
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-10T03:20:30.830Z",
+    "duration": 26289.23,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

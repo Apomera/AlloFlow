@@ -20,7 +20,7 @@ let server, browser;
     await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
     const { chromium } = require(path.join(root, 'node_modules/playwright'));
     const downloadsPath = path.join(__dirname, 'native-downloads'); fs.mkdirSync(downloadsPath, { recursive: true });
-    browser = await chromium.launch({ headless: true, downloadsPath, executablePath: 'C:/Users/cabba/AppData/Local/ms-playwright/chromium_headless_shell-1223/chrome-headless-shell-win64/chrome-headless-shell.exe' });
+    browser = await chromium.launch({ headless: true, downloadsPath, executablePath: process.env.NATIVE_VAULT_BROWSER || 'C:/Users/cabba/AppData/Local/ms-playwright/chromium-1223/chrome-win64/chrome.exe' });
     const page = await browser.newPage({ acceptDownloads: true }); page.on('pageerror', error => pageErrors.push(error.message));
     await page.goto('http://127.0.0.1:' + server.address().port);
     await page.addScriptTag({ content: 'window.React={}; window.AlloModules={};' });

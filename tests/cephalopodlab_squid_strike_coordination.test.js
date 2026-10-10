@@ -17,6 +17,7 @@ const build = new Function('T', 'species', 'Math', region('function createCLHunt
 const drive = new Function('THREE', 'animal', 'speciesId', 'state', `
   var bodyScale=animal.scale,octopus=animal.root,gameState=state.gameState;
   var squidStrikeAimLocal=new THREE.Vector3(),squidStrikeAimOffset=new THREE.Vector3();
+  var octopusStrikeVisual=null,octopusStrikeAimLocal=new THREE.Vector3(),octopusStrikeAimOffset=new THREE.Vector3();
   return function(now,dt){
     var squidStrikeVisual=state.visual,isMoving=state.moving,isJetting=state.jet;
     ${region('// Render reach after prey movement/contact', '// ─── Moray eel AI')}
@@ -235,10 +236,10 @@ describe('Humboldt coordinated feeding strike', () => {
       a.update(8, .016, settings); ordinary.update(8, .016, expected);
       finite(a); expect(record(a)).toEqual(record(ordinary));
     }
-    for (const id of ['commonOcto', 'cuttlefish']) {
+    for (const id of ['bobtailSquid', 'cuttlefish']) {
       const a = rig(id), ordinary = rig(id), settings = pose({ strike: .65, strikeAim: aim });
       a.update(8, .016, { ...settings, strikePreparation: 1, strikeBrace: 1 }); ordinary.update(8, .016, settings);
-      expect(record(a), 'Coordination remains specific to Humboldt squid').toEqual(record(ordinary));
+      expect(record(a), 'Humboldt coordination leaves other swimming rigs unchanged').toEqual(record(ordinary));
     }
   });
 });

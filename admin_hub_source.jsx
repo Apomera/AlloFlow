@@ -410,17 +410,35 @@ function AdminHubPanel(props) {
           <button type="button" onClick={onClose} className="min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl" aria-label={tt('adminhub.close_aria', 'Close Leadership Hub')}>✕</button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {TOOLS.map((tool) => (
-            <button key={tool.id} type="button" data-hub-id={tool.id} data-help-key="adminhub_tool_card"
-              onClick={() => openHubTool(tool.id)}
+          {TOOLS.map((tool) => {
+            // The CDN Hub can be newer than a saved Canvas or cached app shell.
+            // Older shells close the Hub for unknown IDs without opening a tool.
+            const isMaineCase = tool.id === 'maineSldPractice';
+            const Card = isMaineCase ? 'a' : 'button';
+            return <Card key={tool.id} type={isMaineCase ? undefined : 'button'} data-hub-id={tool.id} data-help-key="adminhub_tool_card"
+              href={isMaineCase ? 'https://alloflow-cdn.pages.dev/app/?tool=maine-sld-practice' : undefined}
+              target={isMaineCase ? '_blank' : undefined} rel={isMaineCase ? 'noopener noreferrer' : undefined}
+              onClick={(event) => {
+                if (isMaineCase) {
+                  if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || typeof window.__alloOpenMaineSldPractice !== 'function') return;
+                  try {
+                    if (window.__alloOpenMaineSldPractice({ fromLeadership: true }) !== false) event.preventDefault();
+                  } catch (error) {
+                    console.warn('[AdminHub] Maine SLD launch failed; opening the hosted activity.', error);
+                  }
+                  return;
+                }
+                openHubTool(tool.id);
+              }}
               className={'flex items-start gap-3 p-4 bg-gradient-to-br border rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left ' + tool.accent}>
               <span className="text-3xl mt-1" aria-hidden="true">{tool.icon}</span>
               <div>
                 <h3 className={'font-bold ' + tool.titleCls}>{tool.title}</h3>
                 <p className={'text-xs mt-1 ' + tool.descCls}>{tool.desc}</p>
+                {isMaineCase && typeof window.__alloOpenMaineSldPractice !== 'function' && <span className="block text-xs font-semibold mt-2">Opens in a new tab ↗</span>}
               </div>
-            </button>
-          ))}
+            </Card>;
+          })}
         </div>
         {/* Backup & restore (2026-08-17): nine tools' data lives in ONE
             browser's storage — a lost or reimaged laptop was a lost

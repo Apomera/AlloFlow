@@ -1,0 +1,17 @@
+{
+  "start": "2026-10-07T01:52:19.145Z",
+  "runnerPid": 48400,
+  "jobs": [
+    {
+      "mode": "unit-pointer",
+      "label": "unit-pointer-6",
+      "code": 1,
+      "start": "2026-10-07T01:52:19.153Z",
+      "end": "2026-10-07T01:54:15.384Z"
+    }
+  ],
+  "running": null,
+  "success": false,
+  "error": "unit-pointer-6 failed",
+  "end": "2026-10-07T01:54:16.227Z"
+}

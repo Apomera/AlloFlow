@@ -904,7 +904,7 @@ const validateCitationConservation = (original, candidate) => {
     };
 };
 
-const _REFERENCE_HEADER_LINE_RE = /^(#{1,6})[ \t]+(?:Source[ \t]+Text[ \t]+References|Accuracy[ \t]+Check[ \t]+References|Verified[ \t]+Sources|Referenced[ \t]+Sources|Sources|References|Bibliography|Works[ \t]+Cited|R\u00e9f\u00e9rences|Sources[ \t]+du[ \t]+texte|Referencias|Quellen)[ \t]*:?[ \t]*$/i;
+const _REFERENCE_HEADER_LINE_RE = /^(#{1,6})[ \t]+(?:Source[ \t]+Text[ \t]+References|Your[ \t]+Document[ \t]+References|Research[ \t]+Review|Accuracy[ \t]+Check[ \t]+References|Verified[ \t]+Sources|Referenced[ \t]+Sources|Sources|References|Bibliography|Works[ \t]+Cited|R\u00e9f\u00e9rences|Sources[ \t]+du[ \t]+texte|Referencias|Quellen)[ \t]*:?[ \t]*$/i;
 const _BILINGUAL_DELIMITER_LINE_RE = /^[ \t]*---[ \t]+ENGLISH[ \t]+TRANSLATION[ \t]+---[ \t]*$/i;
 
 const _findMarkdownLineOutsideFences = (source, linePattern, fromIndex = 0) => {
@@ -1633,8 +1633,215 @@ const parseTaggedContent = (text) => {
     'tour-scaffolds-settings': 'sentence-frames',
   };
 
+// Student evidence is a bounded projection, never the teacher's research report.
+const studentSources = (() => {
+  const limit = (value, size) => {
+    if (typeof value !== 'string') return '';
+    let end = Math.min(value.length, size);
+    if (end < value.length && /[\uD800-\uDBFF]/.test(value.charAt(end - 1))) end--;
+    return value.slice(0, end).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').trim();
+  };
+  const href = value => {
+    if (typeof value !== 'string' || value.length > 2048) return '';
+    if (/^#allo-doc-[a-z0-9-]{1,128}$/.test(value)) return value;
+    try {
+      const parsed = new URL(value);
+      return /^https?:$/.test(parsed.protocol) && !parsed.username && !parsed.password ? parsed.href.replace(/\(/g, '%28').replace(/\)/g, '%29') : '';
+    } catch (_) { return ''; }
+  };
+  const key = value => {
+    let hash = 2166136261;
+    for (let i = 0; i < value.length; i++) hash = Math.imul(hash ^ value.charCodeAt(i), 16777619);
+    return value.length + '-' + (hash >>> 0).toString(36);
+  };
+  const parts = text => splitReferencesFromBody(String(text || ''));
+  const bodyKey = text => key(parts(text).body.replace(/\r\n?/g, '\n').trim());
+  const links = text => {
+    const result = [];
+    _mapOutsideMarkdownFences(String(text || ''), line => {
+      const code = _inlineCodeSpans(line);
+      for (let index = 0; index < line.length; index++) {
+        if (line[index] !== '[' || line[index - 1] === '!' || code.some(span => index >= span.start && index < span.end)) continue;
+        let slashes = 0;
+        for (let previous = index - 1; previous >= 0 && line[previous] === '\\'; previous--) slashes++;
+        if (slashes % 2) continue;
+        const link = _readMarkdownLinkAt(line, index);
+        if (!link) continue;
+        const url = href(link.url);
+        if (url) result.push({ label: link.title.replace(/\\([\[\]_*`])/g, '$1'), href: url });
+        index = link.end - 1;
+      }
+      return line;
+    });
+    return result;
+  };
+  const citationLinks = text => links(parts(text).body).filter(item => /^(?:⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾|\d+|(?:Source|Document|Your document)\s+\d+)$/i.test(item.label));
+  const evidenceTypes = ['Page excerpt', 'Search snippet', 'Source-linked AI note', 'AI video transcript', 'Document passage', 'Pasted text'];
+  const videoClipDetails = (passage, url) => {
+    const clip = passage?.videoClip;
+    if (passage?.evidenceType !== 'AI video transcript' || !clip || typeof clip !== 'object' || Array.isArray(clip)
+      || !Number.isSafeInteger(clip.startSeconds) || !Number.isSafeInteger(clip.endSeconds)
+      || clip.startSeconds < 0 || clip.endSeconds <= clip.startSeconds) return null;
+    try {
+      if (typeof url !== 'string' || url.length > 2048 || /[\u0000-\u0020]/.test(url)) return null;
+      const parsed = new URL(url);
+      if (!/^https?:$/.test(parsed.protocol) || parsed.username || parsed.password || parsed.port) return null;
+      const host = parsed.hostname.toLowerCase(), path = parsed.pathname;
+      if (!['youtube.com', 'www.youtube.com', 'm.youtube.com', 'music.youtube.com', 'youtu.be', 'www.youtu.be'].includes(host)) return null;
+      const short = host === 'youtu.be' || host === 'www.youtu.be';
+      const match = path.match(short ? /^\/([a-zA-Z0-9_-]{11})\/?$/ : /^\/(?:shorts|embed|live)\/([a-zA-Z0-9_-]{11})\/?$/);
+      const id = match ? match[1] : !short && path === '/watch' && parsed.searchParams.getAll('v').length === 1 ? parsed.searchParams.get('v') : '';
+      if (!/^[a-zA-Z0-9_-]{11}$/.test(id)) return null;
+      const clock = seconds => (seconds >= 3600 ? Math.floor(seconds / 3600) + ':' + String(Math.floor(seconds / 60) % 60).padStart(2, '0') : String(Math.floor(seconds / 60))) + ':' + String(seconds % 60).padStart(2, '0');
+      const startLabel = clock(clip.startSeconds), endLabel = clock(clip.endSeconds);
+      return { startSeconds: clip.startSeconds, endSeconds: clip.endSeconds, startLabel, endLabel,
+        label: 'Requested clip ' + startLabel + ' to ' + endLabel,
+        url: 'https://www.youtube.com/watch?v=' + id + '&t=' + clip.startSeconds };
+    } catch (_) { return null; }
+  };
+  const sanitize = record => {
+    if (!record || record.version !== 1 || !Array.isArray(record.sources)) return null;
+    const seen = new Set(), sources = [];
+    let passageCount = 0;
+    for (const item of record.sources.slice(0, 24)) {
+      if (!item || typeof item !== 'object') continue;
+      const citationHref = href(item.citationHref || item.url);
+      if (!citationHref || seen.has(citationHref)) continue;
+      const kind = citationHref.startsWith('#allo-doc-') ? 'document' : 'web';
+      if (item.kind !== undefined && item.kind !== kind) continue;
+      const shareExcerpt = item.shareExcerpt === true;
+      const privateLabel = !shareExcerpt && (kind === 'document' || Array.isArray(item.passages) && item.passages.some(passage => passage?.evidenceType === 'Document passage' || passage?.evidenceType === 'Pasted text'));
+      const passages = [];
+      if (shareExcerpt && Array.isArray(item.passages)) {
+        for (const passage of item.passages.slice(0, 4)) {
+          if (passageCount >= 24 || !passage || !evidenceTypes.includes(passage.evidenceType)) continue;
+          const text = limit(passage.text, 1200);
+          const clip = videoClipDetails(passage, citationHref);
+          if (passage.evidenceType === 'AI video transcript' && Object.prototype.hasOwnProperty.call(passage, 'videoClip') && !clip) continue;
+          if (!text || passages.some(previous => previous.text === text && previous.evidenceType === passage.evidenceType
+            && previous.videoClip?.startSeconds === clip?.startSeconds && previous.videoClip?.endSeconds === clip?.endSeconds)) continue;
+          passages.push({ text, evidenceType: passage.evidenceType, locatorLabel: limit(passage.locatorLabel, 200),
+            ...(clip ? { videoClip: { startSeconds: clip.startSeconds, endSeconds: clip.endSeconds } } : {}) });
+          passageCount++;
+        }
+      }
+      seen.add(citationHref);
+      sources.push({ id: 'student-source-' + key(citationHref), kind, citationHref,
+        url: kind === 'web' ? citationHref : '',
+        title: privateLabel ? 'Teacher-provided source' : limit(item.title, 300) || (kind === 'web' ? 'Web source' : 'Teacher-provided source'),
+        shareExcerpt, passages });
+    }
+    return sources.length ? { version: 1, writingMode: ['synthesis', 'quotes'].includes(record.writingMode) ? record.writingMode : 'unknown', bodyKey: limit(record.bodyKey, 80), sources } : null;
+  };
+  const fallback = (text, previous) => {
+    const split = parts(text), citations = citationLinks(text);
+    // Only the bibliography, not raw review/private appendices, supplies labels.
+    const referenceText = split.references.split(/^#{1,6}[ \t]+(?:Your Document References|Research Review)[ \t]*:?[ \t]*\r?$/mi)[0];
+    const references = links(referenceText);
+    const candidates = citations.length ? citations : references;
+    return sanitize({ version: 1, bodyKey: bodyKey(text), sources: candidates.map(item => ({
+      citationHref: item.href, title: previous?.sources?.find(source => source.citationHref === item.href)?.title || (references.find(reference => reference.href === item.href) || {}).label,
+      shareExcerpt: false, passages: []
+    })) });
+  };
+  const forText = (record, text, options = {}) => {
+    const safe = sanitize(record), currentKey = bodyKey(text);
+    if (!safe || safe.bodyKey !== currentKey && options.adapted !== true) return fallback(text, safe);
+    const used = new Set(citationLinks(text).map(item => item.href));
+    const sources = safe.sources.filter(source => used.has(source.citationHref));
+    const basic = fallback(text, safe);
+    for (const source of basic?.sources || []) if (!sources.some(item => item.citationHref === source.citationHref)) sources.push(source);
+    return sanitize({ ...safe, bodyKey: currentKey, sources });
+  };
+  const capture = (report, text, options = {}) => {
+    const basic = fallback(text);
+    if (!report || !Array.isArray(report.supplied) || !Array.isArray(report.citedIds)) return basic ? sanitize({ ...basic, writingMode: options.writingMode }) : null;
+    const cited = new Set(report.citedIds), used = new Set(citationLinks(text).map(item => item.href));
+    const locals = report.supplied.filter(item => item && item.kind !== 'web');
+    const snapshots = report.documents?.supplied || [];
+    const sources = [];
+    for (const item of report.supplied.slice(0, 24)) {
+      if (!item || !cited.has(item.id)) continue;
+      let citationHref = '';
+      if (item.kind === 'web') {
+        citationHref = href(item.url);
+        if (citationHref) { const parsed = new URL(citationHref); parsed.hash = ''; citationHref = parsed.href; }
+      } else {
+        const snapshot = snapshots[locals.indexOf(item)];
+        if (snapshot) citationHref = href('#allo-doc-' + snapshot.id);
+      }
+      if (!citationHref || !used.has(citationHref)) continue;
+      const isPublic = item.kind === 'web' && ['Page excerpt', 'Search snippet', 'Source-linked AI note', 'AI video transcript'].includes(item.evidenceType);
+      const permitted = isPublic || item.shareWithStudents === true;
+      let source = sources.find(source => source.citationHref === citationHref);
+      if (!source) {
+        source = { citationHref, title: permitted ? item.title : 'Teacher-provided source', shareExcerpt: permitted, passages: [] };
+        sources.push(source);
+      }
+      if (permitted && !source.shareExcerpt) {
+        source.title = item.title;
+        source.shareExcerpt = true;
+      }
+      if (permitted) source.passages.push({ text: item.passage, evidenceType: item.evidenceType, locatorLabel: item.locatorLabel,
+        ...(Object.prototype.hasOwnProperty.call(item, 'videoClip') ? { videoClip: item.videoClip } : {}) });
+    }
+    for (const source of basic?.sources || []) if (!sources.some(item => item.citationHref === source.citationHref)) sources.push(source);
+    return sanitize({ version: 1, bodyKey: bodyKey(text), writingMode: options.writingMode, sources });
+  };
+  const markdown = value => String(value || '').replace(/[\\`*_{}\[\]<>#]/g, '\\$&');
+  const publicReferenceTitles = (text, record) => {
+    const sources = sanitize(record)?.sources;
+    if (!sources?.length) return text;
+    let inReferences = false;
+    return _mapOutsideMarkdownFences(text, line => {
+      if (_BILINGUAL_DELIMITER_LINE_RE.test(line)) inReferences = false;
+      else if (_REFERENCE_HEADER_LINE_RE.test(line)) inReferences = true;
+      if (!inReferences) return line;
+      const code = _inlineCodeSpans(line);
+      let result = '', cursor = 0;
+      for (let index = 0; index < line.length; index++) {
+        if (line[index] !== '[' || line[index - 1] === '!' || code.some(span => index >= span.start && index < span.end)) continue;
+        let slashes = 0;
+        for (let previous = index - 1; previous >= 0 && line[previous] === '\\'; previous--) slashes++;
+        if (slashes % 2) continue;
+        const link = _readMarkdownLinkAt(line, index);
+        if (!link) continue;
+        const source = sources.find(item => item.citationHref === href(link.url));
+        if (source) {
+          result += line.slice(cursor, index) + '[' + markdown(source.title) + ']' + line.slice(index + link.title.length + 2, link.end);
+          cursor = link.end;
+        }
+        index = link.end - 1;
+      }
+      return result + line.slice(cursor);
+    });
+  };
+  const publicText = (text, record) => {
+    let result = publicReferenceTitles(String(text || ''), record);
+    const privateAppendix = _findMarkdownLineOutsideFences(result, /^#{1,6}[ \t]+(?:Your Document References|Research Review)[ \t]*:?[ \t]*$/i);
+    if (!privateAppendix) return result;
+    const safe = forText(record, result);
+    // Generated research appendices are trailing. Nested or unknown headings
+    // cannot establish a public boundary inside a private appendix.
+    result = result.slice(0, privateAppendix.index).trimEnd();
+    const documents = (safe?.sources || []).filter(source => source.kind === 'document');
+    if (documents.length) {
+      result += '\n\n### Your Document References\n\n' + documents.map(source => {
+        const citation = citationLinks(text).find(item => item.href === source.citationHref);
+        let entry = '**' + markdown(citation?.label || 'Document') + ': ' + markdown(source.title) + '**';
+        if (!source.shareExcerpt || !source.passages.length) return entry + '\n\nSource excerpt not shared.';
+        for (const passage of source.passages) entry += '\n\n' + (passage.locatorLabel ? markdown(passage.locatorLabel) + '\n\n' : '') + passage.text.split(/\r?\n/).map(line => '> ' + markdown(line)).join('\n');
+        return entry;
+      }).join('\n\n');
+    }
+    return result;
+  };
+  return { sanitize, forText, capture, publicText, bodyKey, videoClipDetails };
+})();
+
 // Factory: takes no parameters (all helpers are pure). Returns the registry.
 const createTextPipelineHelpers = () => ({
+  studentSources,
   generateBilingualText,
   readingText,
   resolveTranslationPolicy,
@@ -1667,6 +1874,7 @@ const createTextPipelineHelpers = () => ({
 // registration only fires once per page load.
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createTextPipelineHelpers = createTextPipelineHelpers;
+window.AlloModules.StudentSources = studentSources;
 
 // Auto-instantiate the factory so inline shims in AlloFlowANTI.txt can look
 // up window.AlloModules.TextPipelineHelpers directly without orchestration.

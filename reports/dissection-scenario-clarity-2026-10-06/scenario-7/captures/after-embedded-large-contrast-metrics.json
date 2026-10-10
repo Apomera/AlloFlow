@@ -1,0 +1,101 @@
+{
+  "width": 274.40625,
+  "height": 1061.078125,
+  "client": 270,
+  "scroll": 270,
+  "containerWidth": 320,
+  "text": [
+    {
+      "text": "Scenario lab · 4-minute technique challenge",
+      "font": 18,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Not started",
+      "font": 18,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Technique challenges apply to the current Skin layer. Study offers a separate two-minute identification check.",
+      "font": 18,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Complete the current layer protocol within four minutes. Safety safeguards and feedback remain active.",
+      "font": 18,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "2/6 protocol steps complete. Start the timer on this attempt, or review Restart scenario for a fresh attempt.",
+      "font": 18,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Choose scenario",
+      "font": 18,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Precision access · CoreStructure trace · CorePreservation challenge · AdvancedOrientation rescue · CoreObscured field recovery · AdvancedRelationship pathway · AdvancedRestricted tray · Challenge4-minute technique challenge · Challenge",
+      "font": 18,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Choosing this challenge starts a four-minute timer on the current attempt. Technique and inspected structures are kept. The deadline continues while you use other activities.",
+      "font": 18,
+      "clipped": false,
+      "textOverflow": "clip"
+    },
+    {
+      "text": "Restart opens a review of the changes before starting a fresh attempt.",
+      "font": 18,
+      "clipped": false,
+      "textOverflow": "clip"
+    }
+  ],
+  "controls": [
+    {
+      "name": "Choose procedure scenario",
+      "width": 246.40625,
+      "height": 78.96875,
+      "font": 18,
+      "clipped": false,
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "backgroundImage": "none",
+      "backgroundPosition": "0% 0%",
+      "backgroundSize": "auto"
+    },
+    {
+      "name": "Start timer on current attempt",
+      "width": 246.40625,
+      "height": 77.1875,
+      "font": 18,
+      "clipped": false,
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "backgroundImage": "none",
+      "backgroundPosition": "0% 0%",
+      "backgroundSize": "auto"
+    },
+    {
+      "name": "Restart scenario: review changes for 4-minute technique challenge",
+      "width": 246.40625,
+      "height": 50.1875,
+      "font": 18,
+      "clipped": false,
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "backgroundImage": "none",
+      "backgroundPosition": "0% 0%",
+      "backgroundSize": "auto"
+    }
+  ]
+}

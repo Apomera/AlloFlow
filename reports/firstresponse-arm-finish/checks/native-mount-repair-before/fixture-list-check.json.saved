@@ -1,0 +1,6 @@
+{
+  "exitCode": 0,
+  "stdout": "Listing tests:\n  firstresponse-arm-preview.spec.ts:129:29 › rescuer arm cap finish adult-heel-side release and compression in matched native views\n  firstresponse-arm-preview.spec.ts:129:29 › rescuer arm cap finish child-heel-side-contrast release and compression in matched native views\nTotal: 2 tests in 1 file\n",
+  "stderr": "",
+  "browserLaunched": false
+}

@@ -1,0 +1,30 @@
+{
+  "files": [
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass34-work.py",
+      "bytes": 21028,
+      "sha256": "c2da688caae1b13d1a71391cd6b9c5a926f1c8d7d6f924fb04f834f9b4ff660c"
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass34-baseline.js",
+      "bytes": 1426232,
+      "sha256": "c4d9746f4495fcdaf83f9443e4911daa30868d4b1126dfb2728fc7f7ffcf505f"
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass34-candidate.js",
+      "bytes": 1431505,
+      "sha256": "ffe2ac5862f814ccc4d3e5add421630ae1da9bb445b007346ce3aa3517690152"
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass34-chart.txt",
+      "bytes": 6176,
+      "sha256": "3b82c7e7633509bcd449e362fc64cfe2303e0a785283679663efd28345f06387"
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass34-entry-recorder.spec.ts",
+      "bytes": 20429,
+      "sha256": "530b8b8157ae2bbe3c849e494d2441ee2bff8f7831a1654b3f5ee75c36cdcefe"
+    }
+  ],
+  "completed": true
+}

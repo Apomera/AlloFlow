@@ -1,0 +1,70 @@
+{
+  "reviewType": "Independent final static preservation review",
+  "reviewedAtUtc": "2026-10-09T22:15:11.435Z",
+  "verdict": "pass",
+  "openFindings": [],
+  "sourceSha256": "9b77f87c70bd2789cdd450bff5d371bfd81d2973abf12c491706da7fbbf78a3a",
+  "publicSha256": "9b77f87c70bd2789cdd450bff5d371bfd81d2973abf12c491706da7fbbf78a3a",
+  "baselineSha256": "c9c4d0a4170a44cb7492f19c7e10823bded91490edcc7ad0998e59a814508a56",
+  "editCount": 9,
+  "exactInverse": true,
+  "exactBaselineArchiveMatch": true,
+  "sourcePublicParity": true,
+  "fontDelta": {
+    "beforeSha256": "5646ce64f266c0a82f74e7f3827d25c8fcab3e3b7c5c04a8a34eff801ce59ce4",
+    "afterSha256": "1d10e56b0d969ccbda290bfbdb884a9c22d8586fe92f51e2c6ea4d2290c28a9b",
+    "exactInverse": true,
+    "cssOnly": true,
+    "before": ".diss-technique-roadmap { grid-column: 1 / -1; display: grid; min-width: 0; gap: .55rem; padding: .7rem; border: 1px solid #a9bdd3; border-radius: .75rem; background: #fff; color: #173f69; }",
+    "after": ".diss-technique-roadmap { font-size: 16px; grid-column: 1 / -1; display: grid; min-width: 0; gap: .55rem; padding: .7rem; border: 1px solid #a9bdd3; border-radius: .75rem; background: #fff; color: #173f69; }\n[data-dissection-root][data-text-size=\"large\"] .diss-technique-roadmap { font-size: 18px; }"
+  },
+  "contrastDelta": {
+    "beforeSha256": "1d10e56b0d969ccbda290bfbdb884a9c22d8586fe92f51e2c6ea4d2290c28a9b",
+    "afterSha256": "9b77f87c70bd2789cdd450bff5d371bfd81d2973abf12c491706da7fbbf78a3a",
+    "exactInverse": true,
+    "cssOnly": true,
+    "before": "[data-dissection-root][data-high-contrast=\"true\"] .diss-technique-roadmap progress { color: #fff !important; background: #000 !important; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-technique-roadmap progress::-webkit-progress-bar { background: #000 !important; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-technique-roadmap progress::-webkit-progress-value { background: #fff !important; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-technique-roadmap progress::-moz-progress-bar { background: #fff !important; }",
+    "after": "[data-dissection-root][data-high-contrast=\"true\"] .diss-technique-roadmap progress { color: #000 !important; background: #fff !important; border: 1px solid #000 !important; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-technique-roadmap progress::-webkit-progress-bar { background: #fff !important; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-technique-roadmap progress::-webkit-progress-value { background: #000 !important; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-technique-roadmap progress::-moz-progress-bar { background: #000 !important; }"
+  },
+  "syntax": true,
+  "checks": [
+    {
+      "name": "Learning and scoring preservation",
+      "status": "pass",
+      "evidence": "All bytes outside the 9 declared edits match the baseline archive. Native gate, action completion, scoring, saved fields, handlers, and protocol definitions are unchanged."
+    },
+    {
+      "name": "Roadmap count and status",
+      "status": "pass",
+      "evidence": "Count uses procedureLearningSummary. Rows use its same physical-action plus predictionCorrect plus reflectionCorrect predicate. Current action uses the required native gate before the next physical action. Required reflect takes precedence over missing plan flags, matching the native gate."
+    },
+    {
+      "name": "Legacy and incomplete records",
+      "status": "pass",
+      "evidence": "The unchanged procedureLearningEntry treats completed actions with no learningChecks record as legacy verified. Records with a checks object retain their actual evidence. Physically complete noncurrent actions with incomplete evidence read Recorded action; evidence incomplete. Cached correct flags without completed action cannot verify a row."
+    },
+    {
+      "name": "Information-only disclosure",
+      "status": "pass",
+      "evidence": "The new renderer reads derived values and emits native details/summary/list/progress markup. It has no event handlers, state updates, timers, action calls, scoring calls or new saved fields."
+    },
+    {
+      "name": "Visibility and native actions",
+      "status": "pass",
+      "evidence": "The new call is inside the existing procedureLearningCheckpointVisible guard. Guided, Study, quiz/practical, revealed-layer visibility logic and all action/Undo handlers remain byte-identical."
+    },
+    {
+      "name": "Presentation changes",
+      "status": "pass",
+      "evidence": "Review heading avoids claiming completion. Two existing labelled phase containers gain group semantics. Progress CSS and inherited font sizing are scoped to the roadmap. The ninth edit changes only high-contrast progress CSS to black fill, white track and a 1px black outline. This gives both completed progress and the empty track a visible boundary on the white card without changing progress values or semantics."
+    }
+  ],
+  "reviewerActions": {
+    "applicationWrites": false,
+    "testWrites": false,
+    "packageWrites": false,
+    "suitesRun": false,
+    "commits": false
+  },
+  "limits": "Static source review only; this receipt does not claim browser, screen-reader or test-suite results."
+}

@@ -1,0 +1,18 @@
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),{spawn}=require('node:child_process');
+const repo='C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated',report=path.join(repo,'reports/dissection-replay-contact-2026-10-10');
+const suffix=process.argv[2];if(!/^\d+$/.test(suffix))throw Error('Invalid suffix');
+const label='regression-'+suffix,out=path.join(report,label),temp=path.join('C:/Users/cabba/Documents/Codex/.diss-replay-contact-20261010',label);
+if(fs.existsSync(out)||fs.existsSync(temp))throw Error('Run exists');
+const disk=fs.statfsSync(repo);if(disk.bavail*disk.bsize<128*1048576)throw Error('Insufficient disk');
+fs.mkdirSync(out);fs.mkdirSync(temp,{recursive:true});
+const hash=value=>crypto.createHash('sha256').update(value).digest('hex');
+const inputs=['stem_lab/stem_tool_dissection.js','desktop/web-app/public/stem_lab/stem_tool_dissection.js','tests/e2e/dissection-replay-review.spec.ts','tests/e2e/helpers/stem_gl_harness.ts'];
+const pins=()=>Object.fromEntries(inputs.map(file=>[file,hash(fs.readFileSync(path.join(repo,file)))]));
+const args=['node_modules/@playwright/test/cli.js','test','tests/e2e/dissection-replay-review.spec.ts','--workers=1','--retries=0','--max-failures=1','--project=chromium','--reporter=list,json','--output='+path.join(out,'test-results')];
+const env={...process.env,NODE_OPTIONS:'--max-old-space-size=512',PLAYWRIGHT_BROWSERS_PATH:'C:/Users/cabba/AppData/Local/ms-playwright',PLAYWRIGHT_JSON_OUTPUT_FILE:path.join(out,'results.json'),DISSECTION_REPLAY_REVIEW_OUTPUT:path.join(out,'captures'),TEMP:temp,TMP:temp};
+const receipt={label,start:new Date().toISOString(),startHashes:pins(),args,freeMiB:disk.bavail*disk.bsize/1048576};
+const stdout=fs.openSync(path.join(out,'stdout.log'),'w'),stderr=fs.openSync(path.join(out,'stderr.log'),'w');
+const child=spawn(process.execPath,args,{cwd:repo,env,stdio:['ignore',stdout,stderr],windowsHide:true});
+receipt.pid=child.pid;fs.writeFileSync(path.join(out,'run.json'),JSON.stringify(receipt,null,2));
+child.on('error',err=>{console.error(err);process.exitCode=1;});
+child.on('exit',(code,signal)=>{fs.closeSync(stdout);fs.closeSync(stderr);Object.assign(receipt,{exitCode:code,signal,end:new Date().toISOString(),endHashes:pins()});receipt.inputHashesStable=JSON.stringify(receipt.startHashes)===JSON.stringify(receipt.endHashes);fs.writeFileSync(path.join(out,'run.json'),JSON.stringify(receipt,null,2));console.log(JSON.stringify({label,code,signal,inputHashesStable:receipt.inputHashesStable}));process.exitCode=code!==0||!receipt.inputHashesStable?1:0;});

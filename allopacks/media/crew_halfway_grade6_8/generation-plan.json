@@ -7,48 +7,66 @@
       "kind": "term",
       "term": "Review",
       "title": "Review",
-      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A student at a table with an open notebook on the left and a small tally card on the right, looking between them. Constraints: no text in the notebook. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately."
+      "prompt": "Use case: illustration-story. Asset type: Square glossary illustration for middle school SEL: one young teenage boy with dark skin and short coherent curly hair seated at a table, open notebook on his left and small tally card on his right, looking between the two. Notebook pages blank except simple ruled lines; card has four simple vertical tally strokes. Both forearms rest naturally on desk, hands relaxed. Warm, simple flat educational illustration, clean rounded forms and subtle paper texture, muted coral, mustard, teal and navy, pale warm cream background. No readable text, words, letters, numerals, logos, watermark, labels or captions anywhere. Clear uncluttered composition. Any person has exactly two arms visibly attached at natural shoulders, coherent elbows and wrists, simple anatomically correct hands, and one coherent hairstyle attached to the head. Avoid overlapping limbs.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cb-94c1-7fe0-a744-652252eed0d8\\exec-ba1403fd-a5d2-47af-8810-9bf63a25ebcb.png",
+      "alt": "A student looks between an open notebook and a small card with four tally strokes.",
+      "status": "visual-review-passed"
     },
     {
       "id": "ch-term-checkpoint",
       "kind": "term",
       "term": "Checkpoint",
       "title": "Checkpoint",
-      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A plain trimester bar mostly filled, a small flag planted where the fill stops, a short empty stretch still ahead. Constraints: no numbers. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately."
+      "prompt": "Use case: illustration-story. Asset type: Square glossary illustration: a large horizontal rounded progress bar filled teal about three quarters of its length, final quarter pale empty outlined space. A small mustard pennant on a vertical pole planted precisely at the boundary where teal fill stops. Simple clear concept of stopping to check progress, generous cream margins. Warm, simple flat educational illustration, clean rounded forms and subtle paper texture, muted coral, mustard, teal and navy, pale warm cream background. No readable text, words, letters, numerals, logos, watermark, labels or captions anywhere. Clear uncluttered composition. Any person has exactly two arms visibly attached at natural shoulders, coherent elbows and wrists, simple anatomically correct hands, and one coherent hairstyle attached to the head. Avoid overlapping limbs.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cb-94c1-7fe0-a744-652252eed0d8\\exec-2309d74a-5630-4780-a313-8e68435ee9da.png",
+      "alt": "A student sits on a mostly filled progress bar beside a flag at the boundary before its empty section.",
+      "status": "visual-review-passed"
     },
     {
       "id": "ch-term-count",
       "kind": "term",
       "term": "Count",
       "title": "Count",
-      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A row of five morning icons (a sun each), four filled and one outlined. Constraints: plain suns. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately."
+      "prompt": "Use case: illustration-story. Asset type: Square glossary illustration: exactly FIVE separate simple sun icons in a single evenly spaced horizontal row. The first FOUR are solid mustard disks with short plain rays. The fifth is a cream-filled outline-only sun with navy outline and rays. No other icons. Generous cream space around row. Warm, simple flat educational illustration, clean rounded forms and subtle paper texture, muted coral, mustard, teal and navy, pale warm cream background. No readable text, words, letters, numerals, logos, watermark, labels or captions anywhere. Clear uncluttered composition. Any person has exactly two arms visibly attached at natural shoulders, coherent elbows and wrists, simple anatomically correct hands, and one coherent hairstyle attached to the head. Avoid overlapping limbs.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cb-94c1-7fe0-a744-652252eed0d8\\exec-adb60b49-8c3b-421b-a55f-cd078abfbc25.png",
+      "alt": "Five sun icons form a row; four are filled and the last is outlined.",
+      "status": "visual-review-passed"
     },
     {
       "id": "ch-term-revise",
       "kind": "term",
       "term": "Revise",
       "title": "Revise",
-      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A bicycle leaning on a wall with one wheel removed and a hand holding a new tire. Constraints: rest of bike intact. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately."
+      "prompt": "Use case: illustration-story. Asset type: Square educational illustration: side view of a simple teal bicycle leaning against a pale wall. Rear wheel attached normally. Front wheel removed, front fork visibly empty. A young teen kneels beside it holding a replacement wheel upright with one hand naturally on the tire rim, other arm relaxed. Entire bicycle frame and remaining parts intact. Simplify frame construction but preserve plausible bike geometry. Warm, simple flat educational illustration, clean rounded forms and subtle paper texture, muted coral, mustard, teal and navy, pale warm cream background. No readable text, words, letters, numerals, logos, watermark, labels or captions anywhere. Clear uncluttered composition. Any person has exactly two arms visibly attached at natural shoulders, coherent elbows and wrists, simple anatomically correct hands, and one coherent hairstyle attached to the head. Avoid overlapping limbs.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cb-94c1-7fe0-a744-652252eed0d8\\exec-75d45c77-9a3b-43e0-8503-0b25b6c981d7.png",
+      "alt": "A student holds a replacement wheel beside a bicycle with its front wheel removed.",
+      "status": "visual-review-passed"
     },
     {
       "id": "ch-term-wish",
       "kind": "term",
       "term": "Wish",
       "title": "Wish",
-      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A folded card at the bottom of a backpack pocket, edges soft, a faint star on it. Constraints: no writing. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately."
+      "prompt": "Use case: illustration-story. Asset type: Square educational illustration, close-up of a navy school backpack's open front pocket. A softly worn folded cream card sits near the bottom of the pocket, peeking out enough to show one faint simple mustard star. Emphasize soft folded edges and quiet forgotten wish. No people. Warm, simple flat educational illustration, clean rounded forms and subtle paper texture, muted coral, mustard, teal and navy, pale warm cream background. No readable text, words, letters, numerals, logos, watermark, labels or captions anywhere. Clear uncluttered composition. Any person has exactly two arms visibly attached at natural shoulders, coherent elbows and wrists, simple anatomically correct hands, and one coherent hairstyle attached to the head. Avoid overlapping limbs.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cb-94c1-7fe0-a744-652252eed0d8\\exec-b084461a-a2d7-4594-905e-8315a6554c52.png",
+      "alt": "A folded card with a faint star peeks from the bottom of a backpack pocket.",
+      "status": "visual-review-passed"
     },
     {
       "id": "ch-term-collide",
       "kind": "term",
       "term": "Collide",
       "title": "Collide",
-      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A clock face with two small icons at the same hour: a checklist and a dog leash. Constraints: no numbers on clock. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately."
+      "prompt": "Use case: illustration-story. Asset type: Square educational concept illustration: a large simple circular navy-rimmed clock with tick marks but no numerals. Both hands aim toward a spot in upper right. At that SAME time position beside clock, two small overlapping icons: a blank checklist with square boxes and simple tick marks, and a coiled coral dog leash with loop handle and clip. Clear sense of two commitments sharing the same time. Warm, simple flat educational illustration, clean rounded forms and subtle paper texture, muted coral, mustard, teal and navy, pale warm cream background. No readable text, words, letters, numerals, logos, watermark, labels or captions anywhere. Clear uncluttered composition. Any person has exactly two arms visibly attached at natural shoulders, coherent elbows and wrists, simple anatomically correct hands, and one coherent hairstyle attached to the head. Avoid overlapping limbs.",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cb-94c1-7fe0-a744-652252eed0d8\\exec-e8858188-88b9-47f4-8463-c2bde90a0220.png",
+      "alt": "A student and dog sit beneath a numberless clock pointing toward checklist and dog leash icons.",
+      "status": "visual-review-passed"
     },
     {
       "id": "ch-img-puppy",
       "kind": "lesson",
       "title": "The check that stopped.",
-      "prompt": "Use case: illustration-story. Asset type: wide lesson panel for a Grade 6–8 Crew SEL learning pack. Scene: A kitchen at evening: a student holding a leash by the door; a closed laptop and an unpacked school bag on the counter.. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. If the scene mentions labelled shapes, draw plain shapes with blank space for native labels. If tally marks are required, simple strokes are allowed but no numerals.",
+      "prompt": "Use case: illustration-story. Asset type: Wide landscape lesson illustration: evening in a simple warm kitchen. A dark-skinned middle school boy with short curly hair, coral top and navy trousers stands by the door holding a looped dog leash at waist level with one naturally bent arm; other arm relaxed by his side. On nearby kitchen counter, clearly visible closed teal laptop and open unpacked school backpack with notebook beside it. Warm evening window light. Calm thoughtful face. Full coherent anatomy. Warm, simple flat educational illustration, clean rounded forms and subtle paper texture, muted coral, mustard, teal and navy, pale warm cream background. No readable text, words, letters, numerals, logos, watermark, labels or captions anywhere. Clear uncluttered composition. Any person has exactly two arms visibly attached at natural shoulders, coherent elbows and wrists, simple anatomically correct hands, and one coherent hairstyle attached to the head. Avoid overlapping limbs.",
       "caption": "he did not decide to stop; it just stopped.",
       "plannedLabels": [
         {
@@ -58,13 +76,16 @@
           "text": "The launch check"
         }
       ],
-      "afterType": "simplified"
+      "afterType": "simplified",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cb-94c1-7fe0-a744-652252eed0d8\\exec-ead110ee-8663-4c7f-86b1-a39faf78bea0.png",
+      "alt": "A student holds a dog's leash by the kitchen door while a closed laptop and open school bag sit on the counter.",
+      "status": "visual-review-passed"
     },
     {
       "id": "ch-img-threeq",
       "kind": "lesson",
       "title": "Three questions.",
-      "prompt": "Use case: illustration-story. Asset type: wide lesson panel for a Grade 6–8 Crew SEL learning pack. Scene: Three cards in a row on a desk: a notebook line, a tally, a single gear.. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. If the scene mentions labelled shapes, draw plain shapes with blank space for native labels. If tally marks are required, simple strokes are allowed but no numerals.",
+      "prompt": "Use case: illustration-story. Asset type: Wide landscape lesson illustration: exactly three cream cards evenly arranged in a row on a simple wooden desk. First card shows a small open notebook icon with plain ruled lines. Middle card shows four vertical tally strokes. Third card shows one single large teal gear icon. No surrounding clutter. Space below each icon stays blank. Warm, simple flat educational illustration, clean rounded forms and subtle paper texture, muted coral, mustard, teal and navy, pale warm cream background. No readable text, words, letters, numerals, logos, watermark, labels or captions anywhere. Clear uncluttered composition. Any person has exactly two arms visibly attached at natural shoulders, coherent elbows and wrists, simple anatomically correct hands, and one coherent hairstyle attached to the head. Avoid overlapping limbs.",
       "caption": "two looks back, one step forward.",
       "plannedLabels": [
         {
@@ -77,13 +98,16 @@
           "text": "Change"
         }
       ],
-      "afterType": "anchor-chart"
+      "afterType": "anchor-chart",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cb-94c1-7fe0-a744-652252eed0d8\\exec-156cd32d-815c-4bed-bc7d-7fe3697c32ea.png",
+      "alt": "A student looks at three cards on a desk showing a notebook, tally strokes, and a gear.",
+      "status": "visual-review-passed"
     },
     {
       "id": "ch-img-moved",
       "kind": "lesson",
       "title": "One part, moved.",
-      "prompt": "Use case: illustration-story. Asset type: wide lesson panel for a Grade 6–8 Crew SEL learning pack. Scene: The same kitchen a week later: the student at the table, laptop open, packing the bag, dinner plates just cleared; the leash still on its hook by the door.. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. If the scene mentions labelled shapes, draw plain shapes with blank space for native labels. If tally marks are required, simple strokes are allowed but no numerals.",
+      "prompt": "Use case: illustration-story. Asset type: Wide landscape lesson illustration: evening warm kitchen with a door on right and a coral dog leash hanging from a hook beside it. Dark-skinned middle school boy with short curly hair and coral top sits naturally at table with open teal laptop showing blank screen. Open navy backpack beside him, he places a closed notebook into bag with one bent arm clearly connected to shoulder and visible elbow, other hand rests on table. Dinner plates stacked on counter in background after dinner. Natural simple posture. Warm, simple flat educational illustration, clean rounded forms and subtle paper texture, muted coral, mustard, teal and navy, pale warm cream background. No readable text, words, letters, numerals, logos, watermark, labels or captions anywhere. Clear uncluttered composition. Any person has exactly two arms visibly attached at natural shoulders, coherent elbows and wrists, simple anatomically correct hands, and one coherent hairstyle attached to the head. Avoid overlapping limbs.",
       "caption": "not a new system, not a new person.",
       "plannedLabels": [
         {
@@ -93,7 +117,10 @@
           "text": "Before the walk"
         }
       ],
-      "afterType": "faq"
+      "afterType": "faq",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123cb-94c1-7fe0-a744-652252eed0d8\\exec-e07cd3cc-63ff-4ddf-a622-1fbb6a27f33e.png",
+      "alt": "A student packs a notebook into a school bag beside an open laptop after dinner; a leash hangs by the door.",
+      "status": "visual-review-passed"
     }
   ]
 }

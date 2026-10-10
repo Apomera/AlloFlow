@@ -1,0 +1,81 @@
+{
+  "artifacts": {
+    "content_engine_module.js": {
+      "sha256": "11d20cbfd8fa383f402a31d8961334f032b895d51d0cfb50e2983b08ed5c2a1d",
+      "pin": "11d20cbf",
+      "mirrors": [
+        "desktop/web-app/public/content_engine_module.js",
+        "desktop/app-build/content_engine_module.js",
+        "desktop/web-app/build/content_engine_module.js"
+      ]
+    },
+    "text_pipeline_helpers_module.js": {
+      "sha256": "c009fc5a95668011290116e289ed0300e4535f6b82cc3309c320e71769e36136",
+      "pin": "c009fc5a",
+      "mirrors": [
+        "desktop/web-app/public/text_pipeline_helpers_module.js",
+        "desktop/app-build/text_pipeline_helpers_module.js",
+        "desktop/web-app/build/text_pipeline_helpers_module.js"
+      ]
+    },
+    "view_misc_panels_module.js": {
+      "sha256": "46bf0c22fd8d5504608a702ae3217d1e86548ada4f198b7a5f4d47011ea3fbe9",
+      "pin": "46bf0c22",
+      "mirrors": [
+        "desktop/web-app/public/view_misc_panels_module.js",
+        "desktop/app-build/view_misc_panels_module.js",
+        "desktop/web-app/build/view_misc_panels_module.js"
+      ]
+    },
+    "view_simplified_module.js": {
+      "sha256": "bb0684ba46204eecf4c2f2f849867f1061402824f6b2766f1f631e7f32d9e6be",
+      "pin": "bb0684ba",
+      "mirrors": [
+        "desktop/web-app/public/view_simplified_module.js",
+        "desktop/app-build/view_simplified_module.js",
+        "desktop/web-app/build/view_simplified_module.js"
+      ]
+    },
+    "generate_dispatcher_module.js": {
+      "sha256": "11c9d07147617e359544f937a69efb44a1dd73dfa3ab761e3d964cc9ea5a6925",
+      "pin": "11c9d071",
+      "mirrors": [
+        "desktop/web-app/public/generate_dispatcher_module.js",
+        "desktop/app-build/generate_dispatcher_module.js",
+        "desktop/web-app/build/generate_dispatcher_module.js"
+      ]
+    },
+    "firestore_sync_module.js": {
+      "sha256": "8326f81be88782ce2d6f98331418ddee62cb3ed437ad87af4899bf601aafe00a",
+      "pin": "8326f81b",
+      "mirrors": [
+        "desktop/web-app/public/firestore_sync_module.js",
+        "desktop/app-build/firestore_sync_module.js",
+        "desktop/web-app/build/firestore_sync_module.js"
+      ]
+    },
+    "live_aac_module.js": {
+      "sha256": "870b0ab1ceb7a5e1459a4274d3f121406f7af8a19bf7590f0751ccf6832282a9",
+      "pin": "870b0ab1",
+      "mirrors": [
+        "desktop/web-app/public/live_aac_module.js",
+        "desktop/app-build/live_aac_module.js",
+        "desktop/web-app/build/live_aac_module.js"
+      ]
+    },
+    "doc_pipeline_module.js": {
+      "sha256": "41343ece6f7b0c7ad176d62fc9da0bb23fa58154de1ba929a0467a7b8cdc0a29",
+      "pin": "41343ece",
+      "mirrors": [
+        "desktop/web-app/public/doc_pipeline_module.js",
+        "desktop/app-build/doc_pipeline_module.js",
+        "desktop/web-app/build/doc_pipeline_module.js"
+      ]
+    }
+  },
+  "hosts": {
+    "AlloFlowANTI.txt": "e27b672182b847f34ee5db0f7502f74226b1a8a3056d974537c37c59302c9139",
+    "desktop/web-app/src/AlloFlowANTI.txt": "e27b672182b847f34ee5db0f7502f74226b1a8a3056d974537c37c59302c9139",
+    "desktop/web-app/src/App.jsx": "e27b672182b847f34ee5db0f7502f74226b1a8a3056d974537c37c59302c9139"
+  }
+}

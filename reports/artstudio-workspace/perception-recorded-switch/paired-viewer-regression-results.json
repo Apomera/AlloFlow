@@ -1,0 +1,183 @@
+{
+  "checks": [
+    {
+      "experiment": "brightness",
+      "exactActualGeometryBothStudies": true,
+      "independentTrialsAndGuides": true,
+      "sameDisplayScale": true,
+      "keyboardFocusAndEscape": true,
+      "preservedAllState": true
+    },
+    {
+      "experiment": "ebbinghaus",
+      "exactActualGeometryBothStudies": true,
+      "independentTrialsAndGuides": true,
+      "sameDisplayScale": true,
+      "keyboardFocusAndEscape": true,
+      "preservedAllState": true
+    },
+    {
+      "experiment": "mullerLyer",
+      "exactActualGeometryBothStudies": true,
+      "independentTrialsAndGuides": true,
+      "sameDisplayScale": true,
+      "keyboardFocusAndEscape": true,
+      "preservedAllState": true
+    },
+    {
+      "blockedPair": "hidden",
+      "noPairedDrawing": true
+    },
+    {
+      "blockedPair": "partial",
+      "noPairedDrawing": true
+    },
+    {
+      "blockedPair": "conflict",
+      "noPairedDrawing": true
+    },
+    {
+      "blockedPair": "reference",
+      "noPairedDrawing": true
+    },
+    {
+      "blockedPair": "experiment",
+      "noPairedDrawing": true
+    },
+    {
+      "invalidatedStudy": "study-a",
+      "reason": "remove",
+      "bothDrawingsRemoved": true
+    },
+    {
+      "invalidatedStudy": "study-a",
+      "reason": "hide",
+      "bothDrawingsRemoved": true
+    },
+    {
+      "invalidatedStudy": "study-a",
+      "reason": "note",
+      "bothDrawingsRemoved": true
+    },
+    {
+      "invalidatedStudy": "study-a",
+      "reason": "settings",
+      "bothDrawingsRemoved": true
+    },
+    {
+      "invalidatedStudy": "study-b",
+      "reason": "remove",
+      "bothDrawingsRemoved": true
+    },
+    {
+      "invalidatedStudy": "study-b",
+      "reason": "hide",
+      "bothDrawingsRemoved": true
+    },
+    {
+      "invalidatedStudy": "study-b",
+      "reason": "note",
+      "bothDrawingsRemoved": true
+    },
+    {
+      "invalidatedStudy": "study-b",
+      "reason": "settings",
+      "bothDrawingsRemoved": true
+    },
+    {
+      "changed": "profile",
+      "bothDrawingsRemoved": true
+    },
+    {
+      "changed": "selection",
+      "bothDrawingsRemoved": true
+    },
+    {
+      "changed": "close-review",
+      "bothDrawingsRemoved": true
+    },
+    {
+      "filterAndDraftPreserveViewer": true
+    },
+    {
+      "width": 320,
+      "equalScale": true,
+      "responsiveStacking": true,
+      "manualStacking": true,
+      "controls44px": true,
+      "fullNotesReachable": true,
+      "axe": []
+    },
+    {
+      "width": 390,
+      "equalScale": true,
+      "responsiveStacking": true,
+      "manualStacking": true,
+      "controls44px": true,
+      "fullNotesReachable": true,
+      "axe": []
+    },
+    {
+      "width": 768,
+      "equalScale": true,
+      "responsiveStacking": true,
+      "manualStacking": true,
+      "controls44px": true,
+      "fullNotesReachable": true,
+      "axe": []
+    },
+    {
+      "width": 1280,
+      "equalScale": true,
+      "responsiveStacking": true,
+      "manualStacking": true,
+      "controls44px": true,
+      "fullNotesReachable": true,
+      "axe": []
+    },
+    {
+      "width": 1600,
+      "equalScale": true,
+      "responsiveStacking": true,
+      "manualStacking": true,
+      "controls44px": true,
+      "fullNotesReachable": true,
+      "axe": []
+    },
+    {
+      "theme": "dark",
+      "preservedDrawingColors": true,
+      "axe": []
+    },
+    {
+      "theme": "contrast",
+      "preservedDrawingColors": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-light",
+      "preservedDrawingColors": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-dark",
+      "preservedDrawingColors": true,
+      "axe": []
+    },
+    {
+      "text200Percent": true,
+      "bothDrawingsAndFullNotesReachable": true,
+      "axe": []
+    },
+    {
+      "singleAndPairViewersIsolated": true
+    },
+    {
+      "unmountReleasesModal": true
+    }
+  ],
+  "errors": [],
+  "sourceSHA256": "6b0604420affc9e6697ec2979e4ab3d854c297516a3ee5bf6999891a19d01cae",
+  "loadedSourceSHA256": "6b0604420affc9e6697ec2979e4ab3d854c297516a3ee5bf6999891a19d01cae",
+  "finalSourceSHA256": "6b0604420affc9e6697ec2979e4ab3d854c297516a3ee5bf6999891a19d01cae"
+}

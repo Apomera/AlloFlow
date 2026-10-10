@@ -1,0 +1,35 @@
+{
+  "mode": "before",
+  "label": "before-1",
+  "start": "2026-10-09T22:31:12.371Z",
+  "startHashes": {
+    "stem_lab/stem_tool_dissection.js": "9b77f87c70bd2789cdd450bff5d371bfd81d2973abf12c491706da7fbbf78a3a",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "9b77f87c70bd2789cdd450bff5d371bfd81d2973abf12c491706da7fbbf78a3a",
+    "tests/e2e/dissection-checkpoint-clarity.spec.ts": "54ba3de648e23133b6d0edf35331250eb16e50f6d23c68fde8b405cb5dd09816",
+    "tests/e2e/dissection-technique-roadmap.spec.ts": "70bbdf48c371174b553e6a7b0d88b3a0d49e5921e886f58a86b6e2cb7085cf58",
+    "tests/dissection_lab_improvements.test.js": "24bda465f604372660464162bdfed58663edd60c0e879d5ff61b9b2f2c34b7ae"
+  },
+  "args": [
+    "node_modules/@playwright/test/cli.js",
+    "test",
+    "tests/e2e/dissection-checkpoint-clarity.spec.ts",
+    "--workers=1",
+    "--retries=0",
+    "--project=chromium",
+    "--reporter=list,json",
+    "--output=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-plan-handoff-2026-10-09\\before-1\\test-results",
+    "--grep",
+    "checkpoint (phone|embedded-large) keeps"
+  ],
+  "pid": 2792,
+  "exitCode": 0,
+  "signal": null,
+  "end": "2026-10-09T22:31:41.717Z",
+  "endHashes": {
+    "stem_lab/stem_tool_dissection.js": "9b77f87c70bd2789cdd450bff5d371bfd81d2973abf12c491706da7fbbf78a3a",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "9b77f87c70bd2789cdd450bff5d371bfd81d2973abf12c491706da7fbbf78a3a",
+    "tests/e2e/dissection-checkpoint-clarity.spec.ts": "54ba3de648e23133b6d0edf35331250eb16e50f6d23c68fde8b405cb5dd09816",
+    "tests/e2e/dissection-technique-roadmap.spec.ts": "70bbdf48c371174b553e6a7b0d88b3a0d49e5921e886f58a86b6e2cb7085cf58",
+    "tests/dissection_lab_improvements.test.js": "24bda465f604372660464162bdfed58663edd60c0e879d5ff61b9b2f2c34b7ae"
+  }
+}

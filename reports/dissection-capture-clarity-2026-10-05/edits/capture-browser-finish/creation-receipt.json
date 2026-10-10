@@ -1,0 +1,11 @@
+{
+  "fixture": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e/dissection-capture-clarity.spec.ts",
+  "fixtureSha256": "a50d894e0c67f40a9a289a54cdc01eea785c0f4004ad0c55c56a3697bff7d22c",
+  "renderer": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/stem_lab/stem_tool_dissection.js",
+  "rendererSha256": "552654074f6136fd415f7cdb8c0c03a788b96a4c6e85c657e4cf1673fb8e9f75",
+  "cases": "6 layouts + 4 focused native capture workflows",
+  "staticValidation": "Babel TypeScript parse passed; scoped git diff --check passed",
+  "execution": "No test suites run by this agent",
+  "ownership": "Released to root",
+  "optionalReferenceMetricsPatch": "Current fixture includes reference metrics assertions; tool reported a delayed context mismatch after the addition was present"
+}

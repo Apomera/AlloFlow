@@ -1,0 +1,45 @@
+{
+  "sourceSha256": "3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875",
+  "startedAt": "2026-10-05T21:23:25.947Z",
+  "completedAt": "2026-10-05T21:23:50.554Z",
+  "exitCode": 0,
+  "files": [
+    "tests/watercycle_comparison_clarity.test.js"
+  ],
+  "runtimeBefore": [
+    {
+      "file": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875"
+    }
+  ],
+  "runtimeAfter": [
+    {
+      "file": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875"
+    }
+  ],
+  "testsBefore": [
+    {
+      "file": "tests/watercycle_comparison_clarity.test.js",
+      "sha256": "de41ebf91f544824574a2c8a15fe749189d242c5566d569b25dac55c5803414c"
+    }
+  ],
+  "testsAfter": [
+    {
+      "file": "tests/watercycle_comparison_clarity.test.js",
+      "sha256": "de41ebf91f544824574a2c8a15fe749189d242c5566d569b25dac55c5803414c"
+    }
+  ],
+  "successful": true,
+  "passed": 17,
+  "failed": 0,
+  "skipped": 0
+}

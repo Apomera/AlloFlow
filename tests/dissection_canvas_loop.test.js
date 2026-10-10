@@ -41,7 +41,7 @@ describe('dissection canvas animation loop', () => {
       expect(source).toContain('var displayed = displayedSpecimenPoint(org);');
       expect(source).toContain('lightIntensity: Math.max(20, Math.min(100, Number(d.lightIntensity) || 68))');
       expect(source).toContain('&& context.lightIntensity === Math.max(20, Math.min(100, Number(d.lightIntensity) || 68))');
-      expect(source).toMatch(/if \(remaining === 0\) \{\s*setProcedureFeedback\('Timed practical expired\.[^']*', 'caution'\);\s*cancelActiveCanvasGesture\('Timed practical expired;[^']*', canvas\);\s*\}/);
+      expect(source).toMatch(/if \(remaining === 0\) \{\s*setProcedureFeedback\('The 4-minute technique challenge expired\.[^']*', 'caution'\);\s*cancelActiveCanvasGesture\('The 4-minute technique challenge expired;[^']*', canvas\);\s*\}/);
       expect(source).toContain('var frameDeltaMs = rawFrameDeltaMs > 180 ? 0 : Math.min(100, rawFrameDeltaMs);');
       expect(source).toContain("cancelActiveCanvasGesture('Specimen contact canceled when the lab moved to the background; no action was recorded.', canvas);");
       expect(source).toContain("cancelActiveCanvasGesture('Specimen contact canceled when the window lost focus; no action was recorded.', canvas);");
@@ -69,7 +69,10 @@ describe('dissection canvas animation loop', () => {
       expect(source).toContain("var liveRenderQuality = drawState.renderQuality || 'auto';");
       expect(source).toContain("var autoBalanced = liveRenderQuality === 'auto'");
       expect(source).toContain("var minFrameMs = Math.max(adaptiveFrameFloor, liveRenderQuality === 'high' ? 16");
-      expect(source).toContain('if (!dissMotionReduced) { dissLastDrawAt = arguments[0] || Date.now(); dissTick++; }');
+      expect(source).toContain("var scheduledFrameAt = typeof arguments[0] === 'number' && isFinite(arguments[0]) ? arguments[0] : null;");
+      expect(source).toContain('if (!dissMotionReduced && dissLastDrawAt && scheduledFrameAt !== null && arguments[1] !== true && scheduledFrameAt - dissLastDrawAt < minFrameMs)');
+      expect(source).toContain('if (!dissMotionReduced) { dissLastDrawAt = scheduledFrameAt !== null ? scheduledFrameAt : frameStartedAt; dissTick++; }');
+      expect(source).not.toContain('dissLastDrawAt = arguments[0] || Date.now()');
       expect(source).toContain('All anatomy and interaction math stays in logical CSS pixels');
       expect(source).toContain('var canvasDisplayRect = canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : null;');
       expect(source).toContain('var canvasDisplayRatio = Math.max(W / Math.max(1, canvasDisplayWidth), H / Math.max(1, canvasDisplayHeight));');
@@ -132,7 +135,7 @@ describe('dissection canvas animation loop', () => {
       expect(source).toContain('mappedY -= (Number(canvas._parallaxY) || 0) / logicalHeight;');
       expect(source.match(/mx -= \(Number\(canvas\._parallaxX\) \|\| 0\) \/ (?:click|hover)LogicalWidth;/g) || []).toHaveLength(2);
       expect(source.match(/my -= \(Number\(canvas\._parallaxY\) \|\| 0\) \/ (?:click|hover)LogicalHeight;/g) || []).toHaveLength(2);
-      expect(source).toMatch(/var nextHoveredOrgan = hit \? hit\.id : null;\s*if \(nextHoveredOrgan !== d\.hoveredOrgan\) upd\('hoveredOrgan', nextHoveredOrgan\);/);
+      expect(source).toMatch(/var nextHoveredOrgan = hit \? hit\.id : null;\s*if \(!d\.annotateMode && !d\.rulerMode && nextHoveredOrgan !== d\.hoveredOrgan\) upd\('hoveredOrgan', nextHoveredOrgan\);/);
       expect(source).not.toContain("upd('hoveredOrgan', hit ? hit.id : null);");
       const assessmentOverlayFlags = ['showEndocrine', 'traceNervous', 'traceCirculation', 'traceDigestion', 'traceRespiration', 'traceExcretory', 'livingFunctionEnabled'];
       assessmentOverlayFlags.forEach((flag) => expect(source).toContain(`if (!d.quizMode && d.${flag}`));

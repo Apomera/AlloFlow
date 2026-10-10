@@ -1,0 +1,91 @@
+{
+  "completed": false,
+  "pins": {
+    "stem_lab/stem_tool_universe.js": "609b91840f54bbf05447bfb877a4a87e024f6b1d7cfbf65744d2b9c9904a60c6",
+    "stem_lab/universe_flight_scene.js": "c0cc2486b3d5edd620e5975daec3d23b8f2e995a24db151be27ac30820d058c7"
+  },
+  "harnessHash": "6ed81cb592974d46f4638fd8192ee88f76271b8ddcfafae11d5a17c30d7729ef",
+  "startup": [
+    {
+      "name": "loaded",
+      "apiPresent": true,
+      "hookedCreate": true,
+      "scenePresent": true,
+      "status": {
+        "state": "ready",
+        "message": "3D flight explorer ready."
+      },
+      "telemetryPresent": true,
+      "stagePresent": true,
+      "sceneText": "−\n65°\n+\nPAUSED · LOOK AROUND\nSTELLAR NEIGHBORHOOD\n+\nIN YOUR VIEW\nPale star\n→\n\n24.13 ly · Generated star\n\nInspect\nFly here\n0° heading · 0° pitch\n3D MODEL\nHide overlay\nFull screen",
+      "canvas": {
+        "width": 940,
+        "height": 468,
+        "clientWidth": 940,
+        "clientHeight": 468,
+        "glError": 0
+      }
+    }
+  ],
+  "loaderRetries": [],
+  "checks": [
+    "The appended stellar limb scenic button preserves existing indices and opens the exact paused Amber star pose, selected target, 18 degree lens and zero journey counters"
+  ],
+  "accessibility": [
+    {
+      "name": "desktop",
+      "violations": []
+    }
+  ],
+  "captures": [
+    {
+      "name": "desktop",
+      "file": "vista-desktop.png",
+      "hash": "96ba924426cad5b733202cf7752ceb19ff6543fa7e6ca46d60514698fa51ff79"
+    }
+  ],
+  "poses": [
+    {
+      "name": "desktop",
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 18,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -2.8705938420238812,
+            1.5515762513665616,
+            8.443995950047807
+          ],
+          "yaw": 4.951831751638937,
+          "pitch": -1.166282251957214,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "amber-star"
+      }
+    }
+  ],
+  "detailMeasurements": [],
+  "served": [
+    {
+      "path": "/stem_lab/stem_tool_universe.js",
+      "hash": "609b91840f54bbf05447bfb877a4a87e024f6b1d7cfbf65744d2b9c9904a60c6"
+    },
+    {
+      "path": "/stem_lab/universe_flight_scene.js",
+      "hash": "c0cc2486b3d5edd620e5975daec3d23b8f2e995a24db151be27ac30820d058c7"
+    }
+  ],
+  "servedReadErrors": [],
+  "errors": [],
+  "failure": "TimeoutError: locator.click: Timeout 60000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.uf-stage').locator('.uf-fs-play')\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"button\" class=\"uf-fs-play\" aria-pressed=\"true\">Pause travel</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    108 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m        - element is not visible\u001b[22m\n\u001b[2m      - retrying click action\u001b[22m\n\u001b[2m        - waiting 500ms\u001b[22m\n"
+}

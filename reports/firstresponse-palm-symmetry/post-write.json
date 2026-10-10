@@ -1,0 +1,33 @@
+{
+  "complete": true,
+  "sourceSHA256": "dfe3e01f38a419187e468c749cc37827f486a47401b9916afaa9ec6f98a3f86a",
+  "runtimeHashes": {
+    "stem_lab/stem_tool_firstresponse.js": "dfe3e01f38a419187e468c749cc37827f486a47401b9916afaa9ec6f98a3f86a",
+    "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js": "dfe3e01f38a419187e468c749cc37827f486a47401b9916afaa9ec6f98a3f86a",
+    "desktop/app-build/stem_lab/stem_tool_firstresponse.js": "dfe3e01f38a419187e468c749cc37827f486a47401b9916afaa9ec6f98a3f86a",
+    "desktop/web-app/build/stem_lab/stem_tool_firstresponse.js": "dfe3e01f38a419187e468c749cc37827f486a47401b9916afaa9ec6f98a3f86a"
+  },
+  "historyReversals": 20,
+  "raw": {
+    "passed": 56,
+    "failed": 0,
+    "total": 56
+  },
+  "cpu": {
+    "cases": 24,
+    "assertions": 1360299
+  },
+  "nativeViews": 3,
+  "images": 12,
+  "indexPreserved": true,
+  "index": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\.git\\index",
+    "SHA256": "01e9ccfeccff7f74ddc149e018b10f7143f466ce74291e0b517f6393e81df5d4"
+  },
+  "commit": false,
+  "deployment": false,
+  "fullApplicationBuild": false,
+  "sourceAndHelperSyntax": true,
+  "preservedFixtures": 39,
+  "preservedCheckers": 8
+}

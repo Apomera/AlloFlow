@@ -183,6 +183,7 @@ function panelProps(extra = {}) {
     sourceTopic: 'How clouds form', sourceVocabulary: '', standardInputValue: '', standardMode: 'manual',
     studentInterests: [], suggestedStandards: [], t, targetStandards: [],
     useOwnSources: false, setUseOwnSources: noop,
+    setSourceTopic: () => {},
     ...extra,
   };
 }
@@ -205,6 +206,7 @@ async function mount(props) {
   document.body.appendChild(container);
   const root = createRoot(container);
   flushSync(() => root.render(React.createElement(SourceGenPanel, props)));
+  flushSync(() => container.querySelector('[aria-label="Research settings"]').click());
   return { container, root, flushSync };
 }
 async function waitFor(check, ms = 4000) {
@@ -229,8 +231,8 @@ describe('source panel own-source controls', () => {
       expect(await waitFor(() => container.textContent.includes('input.my_sources_stored:1'))).toBe(true);
       expect(container.textContent).toContain('input.my_sources_included:0');
       expect(container.textContent).not.toContain('input.my_sources_empty');
-      expect(container.querySelector('#useOwnSources').disabled).toBe(true);
-      expect(setUseOwnSources).toHaveBeenCalledWith(false);
+      expect(container.querySelector('[name="source-research-mode"][value="combined"]').checked).toBe(true);
+      expect(setUseOwnSources).not.toHaveBeenCalled();
       expect(container.querySelector('#includeCitations').checked).toBe(true);
     } finally { root.unmount(); }
   });
@@ -276,14 +278,14 @@ describe('source panel own-source controls', () => {
     } finally { root.unmount(); }
   });
 
-  it('shows the toggle once the own-sources module loads after the panel opened', async () => {
+  it('shows document import once the own-sources module loads after settings opened', async () => {
     expect(typeof SourceGenPanel).toBe('function');
     const { container, root } = await mount(panelProps()); // module not loaded yet
     try {
       await new Promise((r) => setTimeout(r, 200));
-      expect(container.querySelector('#useOwnSources')).toBeNull();
+      expect(container.querySelector('#ownSourcesImport')).toBeNull();
       window.AlloOwnSources = fakeOwnSources(); // arrives from the background pump
-      expect(await waitFor(() => !!container.querySelector('#useOwnSources'))).toBe(true);
+      expect(await waitFor(() => !!container.querySelector('#ownSourcesImport'))).toBe(true);
     } finally {
       root.unmount();
     }

@@ -1,0 +1,74 @@
+{
+  "sourceSHA256": "0cc79f45f9a57ce3c4f1d5fa674b56f462a2418c4b253dbc648557b37a6b2639",
+  "bytes": 780435,
+  "sourceCopies": [
+    "stem_lab/stem_tool_firstresponse.js",
+    "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js",
+    "desktop/app-build/stem_lab/stem_tool_firstresponse.js",
+    "desktop/web-app/build/stem_lab/stem_tool_firstresponse.js"
+  ],
+  "allFourCopiesIdentical": true,
+  "uniqueSourceBlocks": 1,
+  "sourceOutsideTorsoCollarBlockIdentical": true,
+  "existingRawTestsUnchanged": 38,
+  "historicalHelperChains": 6,
+  "geometry": {
+    "cases": 12,
+    "assertions": 182316,
+    "neckCapSamples": 2352,
+    "coveredNeckSideSamples": 12236,
+    "sleeveRootSamples": 1152,
+    "maximumCollarChordError": 0.0003918981721116044,
+    "maximumBoundaryNormalDifference": 0.20454273864979633,
+    "preservesAllGeometryOutsideTorso": true,
+    "preservesAllAcceptedTorsoSectionWidthsAndLengths": true,
+    "preservesAllAcceptedTorsoSectionPositionsFromNegativePoint75": true,
+    "preservesChestTrianglesAtAndPastBoundary": true,
+    "preservesChestNormalsStrictlyPastBoundary": true,
+    "closedOutwardShell": true,
+    "resourcesStableAndDisposedOnce": true
+  },
+  "cpr": {
+    "cases": 2,
+    "passed": true,
+    "scope": "Two maximum-compression regression checks. Complete cap and covered-side burial is claimed only for the12 recovery cases.",
+    "results": [
+      {
+        "age": "adult",
+        "tab": "depth",
+        "baselineCapOutside": 64,
+        "candidateCapOutside": 64,
+        "baselineSideOutside": 506,
+        "candidateSideOutside": 498
+      },
+      {
+        "age": "infant",
+        "tab": "coach",
+        "baselineCapOutside": 0,
+        "candidateCapOutside": 0,
+        "baselineSideOutside": 230,
+        "candidateSideOutside": 109
+      }
+    ]
+  },
+  "rawVitestTest": {
+    "file": "tests/firstresponse_collar_surface.test.js",
+    "frameworkExecuted": true,
+    "passed": 1,
+    "filteredCases": 12,
+    "selectedCase": "adult.*pose5.*contrast=false",
+    "note": "One actual Vitest adult recovery pose5 case passed using byte-identical candidate source, raw test and shared helpers. The focused standalone run exercised all12 recovery cases and mutation checks through the same helper assertions."
+  },
+  "browser": {
+    "startTime": "2026-10-07T23:47:29.796Z",
+    "duration": 413097.70600000006,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "imagesInspected": 12,
+  "staged": false,
+  "committed": false,
+  "deployed": false
+}

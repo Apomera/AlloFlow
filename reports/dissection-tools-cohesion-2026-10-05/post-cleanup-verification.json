@@ -1,0 +1,28 @@
+{
+  "verifiedAt": "2026-10-06T01:29:41.408Z",
+  "archivedEntriesVerified": 193,
+  "linksVerified": 35,
+  "currentHashes": {
+    "stem_lab/stem_tool_dissection.js": "e7fb104c826f70b0af9478fab307cc8015bf7e42813749d3ec74f6b1254110b1",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "e7fb104c826f70b0af9478fab307cc8015bf7e42813749d3ec74f6b1254110b1",
+    "tests/dissection_lab_improvements.test.js": "c76e7143e72284ad3d71ad731eaa9498007441f2d4c31d3baa8f95163f3d006f",
+    "tests/e2e/dissection-tools-cohesion.spec.ts": "1b34409ba5e1c7d2f81f98f206eb01b1b6e1c5417a2b5aec5dab053e4f44ad5b"
+  },
+  "unchangedInputsVerified": 5,
+  "totalUnits": 241,
+  "totalBrowser": 33,
+  "stagedPaths": "",
+  "mirrorMatches": true,
+  "syntax": "passed",
+  "completedRow": "- 2026-10-05 | Codex Dissection tools cohesion COMPLETE: grouped observation, capture/download and report/reset actions with readable native states and select focus; full-resolution PNG downloads refresh offscreen canvas through the native capture helper and preserve learner/evidence/capture-camera state. Canonical/public mirror synced; 241 scoped unit checks and 33 current browser cases passed; 6 baseline layouts archived. Report: reports/dissection-tools-cohesion-2026-10-05/README.md. No staging, commit, push or deployment.",
+  "removedOwnedTemporaryPaths": [
+    "C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-improving-interactivity-engagement-and/dissection-tools-cohesion-2026-10-05",
+    "C:/Users/cabba/Documents/Codex/.diss-tools-20261005"
+  ],
+  "archivedBaselineRunner": {
+    "gzipFallback": true,
+    "syntax": "passed",
+    "exactReversal": true,
+    "sha256": "a7b2d5a0f8ff250defbdc5e5819856bd7c6b88c091ca0a2401790a69229aa211"
+  }
+}

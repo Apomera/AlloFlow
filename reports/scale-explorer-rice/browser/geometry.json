@@ -1,0 +1,64 @@
+{
+  "whole": {
+    "bounds": [
+      0.28668394684791565,
+      1,
+      0.1909644603729248
+    ],
+    "vertices": 15617,
+    "scale": [
+      1,
+      1,
+      1
+    ],
+    "axis": "y",
+    "ruler": true,
+    "ticks": 9,
+    "geometry": "EE17B17F-DDBC-472B-AFE6-4853B99FD100",
+    "material": "642BBA00-926D-462A-B861-008458C98E05",
+    "worldScale": 3
+  },
+  "close": {
+    "bounds": [
+      0.28668394684791565,
+      1,
+      0.1909644603729248
+    ],
+    "vertices": 15617,
+    "scale": [
+      1,
+      1,
+      1
+    ],
+    "axis": "y",
+    "ruler": false,
+    "ticks": 9,
+    "geometry": "EE17B17F-DDBC-472B-AFE6-4853B99FD100",
+    "material": "642BBA00-926D-462A-B861-008458C98E05",
+    "worldScale": 3
+  },
+  "compared": {
+    "bounds": [
+      0.28668394684791565,
+      1,
+      0.1909644603729248
+    ],
+    "vertices": 15617,
+    "scale": [
+      1,
+      1,
+      1
+    ],
+    "axis": "y",
+    "ruler": true,
+    "ticks": 9,
+    "geometry": "EE17B17F-DDBC-472B-AFE6-4853B99FD100",
+    "material": "642BBA00-926D-462A-B861-008458C98E05",
+    "worldScale": 0.08750000000000001,
+    "comparisonBounds": [
+      0.02508484534919262,
+      0.08750000000000001,
+      0.016709390282630923
+    ]
+  }
+}

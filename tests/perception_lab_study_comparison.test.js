@@ -70,7 +70,7 @@ async function openPair(seed = pairState(), options) {
 function resultRow(label) {
   const found = [...results().querySelectorAll('tbody tr')].find(node => node.querySelector('th')?.textContent === label);
   expect(found, label).toBeTruthy();
-  return [...found.querySelectorAll('td')].map(node => node.textContent);
+  return [...found.querySelectorAll('[data-perception-pair-detail-value]')].map(node => node.textContent);
 }
 
 beforeEach(() => {
@@ -281,28 +281,68 @@ describe('Saved matching-study comparison learner workflow', () => {
     expect(shift).toContain('Median shift · B minus A: +' + mode.shift);
     if (mode.id === 'brightness') expect(shift).not.toContain('%');
     else expect(shift).toContain('% of the fixed reference');
-    const plot = results().querySelector('svg[data-perception-study-plot]');
+    const plot = results().querySelector('[data-perception-study-plot]');
     expect(plot.getAttribute('role')).toBe('img');
-    expect(document.getElementById(plot.getAttribute('aria-labelledby')).textContent).toContain('one shared drawing-value scale');
-    expect(plot.querySelectorAll('circle')).toHaveLength(6);
-    expect(plot.querySelectorAll('[data-perception-pair-median]')).toHaveLength(2);
-    expect(plot.querySelector('[data-perception-pair-reference]').dataset.perceptionPairReference).toBe(String(mode.reference));
+    const accessibleText = attribute => {
+      const ids = (plot.getAttribute(attribute) || '').trim().split(/\s+/).filter(Boolean);
+      expect(ids.length).toBeGreaterThan(0);
+      return ids.map(id => {
+        const target = document.getElementById(id);
+        expect(target).not.toBeNull();
+        expect(target.textContent.trim()).not.toBe('');
+        return target.textContent;
+      }).join(' ');
+    };
+    expect(accessibleText('aria-labelledby')).toContain('Recorded matches on a shared scale');
+    expect(accessibleText('aria-describedby')).not.toBe('');
+    const dots = [...plot.querySelectorAll('[data-perception-pair-value]')];
+    expect(dots).toHaveLength(6);
+    const medians = [...plot.querySelectorAll('[data-perception-pair-median]')];
+    expect(medians).toHaveLength(2);
+    const references = [...plot.querySelectorAll('[data-perception-pair-reference]')];
+    expect(references).toHaveLength(2);
+    expect(references.map(mark => mark.dataset.perceptionPairReference)).toEqual([String(mode.reference), String(mode.reference)]);
     const series = [...plot.querySelectorAll('[data-perception-pair-series]')];
-    expect(series.map(node => [...node.querySelectorAll('circle')].map(dot => Number(dot.dataset.perceptionPairValue)))).toEqual([mode.a, mode.b]);
-    expect([...plot.querySelectorAll('circle')].every(dot => Number.isFinite(Number(dot.getAttribute('cx'))))).toBe(true);
+    expect(series.map(node => [...node.querySelectorAll('[data-perception-pair-value]')].map(dot => Number(dot.dataset.perceptionPairValue)))).toEqual([mode.a, mode.b]);
+    expect(plot.querySelectorAll('[data-perception-pair-track]')).toHaveLength(2);
+    expect(plot.hasAttribute('data-perception-pair-min')).toBe(true);
+    expect(plot.hasAttribute('data-perception-pair-max')).toBe(true);
+    const min = Number(plot.dataset.perceptionPairMin), max = Number(plot.dataset.perceptionPairMax);
+    expect(Number.isFinite(min) && Number.isFinite(max)).toBe(true);
+    expect(max).toBeGreaterThan(min);
+    for (const mark of dots.concat(medians, references)) {
+      expect(mark.closest('[data-perception-pair-track]')).not.toBeNull();
+      expect(mark.style.left).toMatch(/^\d+(?:\.\d+)?%$/);
+      const coordinate = Number.parseFloat(mark.style.left);
+      const value = Number(mark.dataset.perceptionPairValue ?? mark.dataset.perceptionPairMedian ?? mark.dataset.perceptionPairReference);
+      expect(Number.isFinite(coordinate)).toBe(true);
+      expect(coordinate).toBeGreaterThanOrEqual(0);
+      expect(coordinate).toBeLessThanOrEqual(100);
+      expect(coordinate).toBeCloseTo((value - min) / (max - min) * 100, 3);
+    }
   });
 
   it.each(MODES)('$id uses identical plot coordinates for identical values and remains finite for zero-range studies', async mode => {
     const values = Array(3).fill(mode.reference);
     await openPair({ studies: [...group('group-a', mode, values), ...group('group-b', mode, values)] });
     const plot = results().querySelector('[data-perception-study-plot]');
-    const coordinates = [...plot.querySelectorAll('circle')].map(dot => Number(dot.getAttribute('cx')));
+    expect(plot.hasAttribute('data-perception-pair-min')).toBe(true);
+    expect(plot.hasAttribute('data-perception-pair-max')).toBe(true);
+    const min = Number(plot.dataset.perceptionPairMin), max = Number(plot.dataset.perceptionPairMax);
+    expect(Number.isFinite(min) && Number.isFinite(max)).toBe(true);
+    expect(max).toBeGreaterThan(min);
+    const dots = [...plot.querySelectorAll('[data-perception-pair-value]')];
+    for (const dot of dots) expect(dot.style.left).toMatch(/^\d+(?:\.\d+)?%$/);
+    const coordinates = dots.map(dot => Number.parseFloat(dot.style.left));
     expect(coordinates).toHaveLength(6);
     expect(coordinates.every(Number.isFinite)).toBe(true);
     expect(new Set(coordinates).size).toBe(1);
+    expect(coordinates[0]).toBeCloseTo((mode.reference - min) / (max - min) * 100, 3);
     const medians = [...plot.querySelectorAll('[data-perception-pair-median]')];
-    expect(medians.map(node => Number(node.getAttribute('x1')))).toEqual([coordinates[0], coordinates[0]]);
-    expect(Number(plot.querySelector('[data-perception-pair-reference]').getAttribute('x1'))).toBe(coordinates[0]);
+    expect(medians.map(node => Number.parseFloat(node.style.left))).toEqual([coordinates[0], coordinates[0]]);
+    const references = [...plot.querySelectorAll('[data-perception-pair-reference]')];
+    expect(references).toHaveLength(2);
+    expect(references.map(node => Number.parseFloat(node.style.left))).toEqual([coordinates[0], coordinates[0]]);
     expect(results().querySelector('[data-perception-median-shift]').textContent).toContain('B minus A: 0');
     expect(resultRow('Match range')).toEqual(Array(2).fill(mode.reference + '–' + mode.reference + ' (0 ' + (mode.id === 'brightness' ? 'RGB-code steps' : 'units') + ')'));
   });

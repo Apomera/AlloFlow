@@ -1,0 +1,40 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/solar_system_assignment_workspace.test.js
+[deferred-jsdom] Initializing the official DOM environment.
+
+stdout | tests/solar_system_assignment_workspace.test.js
+[deferred-jsdom] DOM environment ready.
+
+stdout | tests/solar_system_assignment_workspace.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/solar_system_assignment_workspace.test.js
+[deferred-jsdom] Existing repository setup loaded.
+
+ ✓ tests/solar_system_assignment_workspace.test.js > Solar System assignment workspace > offers four named assignments with saved counts even when none is active 1262ms
+ ✓ tests/solar_system_assignment_workspace.test.js > Solar System assignment workspace > provides a persistent disclosure target and native labeled checklist inputs 175ms
+ ✓ tests/solar_system_assignment_workspace.test.js > Solar System assignment workspace > ignores unknown or inherited active IDs without mutating their saved value 144ms
+ ✓ tests/solar_system_assignment_workspace.test.js > Solar System assignment workspace > counts distinct known integer indices and safely reads malformed task records 113ms
+ ✓ tests/solar_system_assignment_workspace.test.js > Solar System assignment workspace > merges rapid checks with current records while preserving concurrent work 34ms
+ ✓ tests/solar_system_assignment_workspace.test.js > Solar System assignment workspace > preserves independent assignment progress through switching, pausing, and resuming 102ms
+ ✓ tests/solar_system_assignment_workspace.test.js > Solar System assignment workspace > ignores old checkbox callbacks after switch, pause, or collapse 98ms
+ ✓ tests/solar_system_assignment_workspace.test.js > Solar System assignment workspace > resumes the first unchecked connected task without saving or awarding anything 29ms
+ ✓ tests/solar_system_assignment_workspace.test.js > Solar System assignment workspace > disables resume for all checked tasks and enables it again for an unchecked task 44ms
+ ✓ tests/solar_system_assignment_workspace.test.js > Solar System assignment workspace > focuses only a connected committed guide and cancels an opening request on collapse 44ms
+ ✓ tests/solar_system_assignment_workspace.test.js > Solar System assignment workspace > does not let a superseded guide consume the newly selected assignment focus 38ms
+ ✓ tests/solar_system_assignment_workspace.test.js > Solar System assignment workspace > recognizes every saved complete assignment even while paused or another assignment is active 18ms
+ ✓ tests/solar_system_assignment_workspace.test.js > Solar System assignment workspace > awards once after the completion record commits, including replayed updates and effects 93ms
+ ✓ tests/solar_system_assignment_workspace.test.js > Solar System assignment workspace > migrates a legacy completed checklist only on edit and never retroactively awards it 55ms
+ ✓ tests/solar_system_assignment_workspace.test.js > Solar System assignment workspace > respects existing reward records and preserves other assignments when completing a new one 82ms
+ ✓ tests/solar_system_assignment_workspace.test.js > Solar System assignment workspace > does not deliver a pending completion reward against a replaced saved record 44ms
+ ✓ tests/solar_system_assignment_workspace.test.js > Solar System assignment workspace > does not let an older passive effect discard a newly queued completion 35ms
+ ✓ tests/solar_system_assignment_workspace.test.js > Solar System assignment workspace > does not mistake malformed or inherited reward records for an earned completion 283ms
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  17:47:15
+   Duration  5.92s (transform 225ms, setup 2.59s, import 139ms, tests 2.70s, environment 0ms)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/solar-assignment-enhancement-2026-10-09/unit-assignment-results.json

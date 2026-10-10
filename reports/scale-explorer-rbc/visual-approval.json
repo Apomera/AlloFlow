@@ -1,0 +1,69 @@
+{
+  "accepted": true,
+  "sourceSha256": "de20974db8f350264fd6ec10e982b12f45a18d9fdcacd841eec8b56d0157fc5f",
+  "reviewer": "/root",
+  "reviewedAt": "2026-10-07T16:54:08.764Z",
+  "images": [
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-rbc/candidate-browser/rbc-desktop-whole-stage.png",
+      "sha256": "ea1670c5ec759912d7f69e990f1591d65c088133595e5a05bcea0138cc96a5ff"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-rbc/candidate-browser/rbc-desktop-interior-stage.png",
+      "sha256": "4e4afb5e9ece7212908e1b980d0ec677a015ac7d5746faa6a55239444c3ea389"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-rbc/candidate-browser/rbc-desktop-center-stage.png",
+      "sha256": "e08433cd97dc513b7b8d9217f553fa79a656f1d53b0ba7c453f764d960686519"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-rbc/candidate-browser/rbc-desktop-rim-stage.png",
+      "sha256": "bc830176afaafeb1dc47fb8659e07a1130fd3ea319083c562e34012ac091914d"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-rbc/candidate-browser/rbc-desktop-membrane-stage.png",
+      "sha256": "3fb3d102e36d4e3b38f8765fe3d781fa9298eb7f525bb32d2c2b553a3d3d65fc"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-rbc/candidate-browser/rbc-desktop-spectrin-stage.png",
+      "sha256": "a8065c42d6041d42b5dfd6c077c7bd26915d7a2ff8a7f7089d78cff497dcd260"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-rbc/candidate-browser/rbc-desktop-hemoglobin-stage.png",
+      "sha256": "ec786dc97803ef52073e387a16244df14321a3b863a3176333b66ee97e6f764c"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-rbc/candidate-browser/rbc-desktop-restored-window-stage.png",
+      "sha256": "4e4afb5e9ece7212908e1b980d0ec677a015ac7d5746faa6a55239444c3ea389"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-rbc/candidate-browser/rbc-phone-whole-stage.png",
+      "sha256": "6ca9624a5076a70b4b0b415338bfb79b1af31c765bd6b440a4aa4e785986f347"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-rbc/candidate-browser/rbc-phone-interior-stage.png",
+      "sha256": "839b4ebff66eae8ea1e167e9b5d6939260d9cb5646fabcf6439664b03971cee5"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-rbc/candidate-browser/rbc-phone-hemoglobin-stage.png",
+      "sha256": "bc6e4ab07185f8fc2719d2eac4b419ab7d536e7dc4f4a3adec55b4094c3742d1"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-rbc/candidate-browser/rbc-phone-restored-stage.png",
+      "sha256": "a9d07062fe80fbdb4019d3d07704e64613cbb45be28a2f3f8984c4fb47d219b0"
+    },
+    {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-rbc/candidate-browser/rbc-human-comparison-stage.png",
+      "sha256": "28d8a85ba5a5d13e39947f700633819bf1185d4d0bd5307860a27faaf6b0dd69"
+    }
+  ],
+  "checks": [
+    "Continuous closed skin with no false center patch or triangle bands",
+    "Irregular sampled scaffold and unobstructed hemoglobin backbone guide",
+    "Whole and opened cell with readable reference diameter",
+    "Desktop window and phone camera restoration",
+    "330 px phone framing and readable controls",
+    "Comparison uses an intact cell and marks its unresolved size"
+  ],
+  "limits": "Educational molecular details are enlarged and sampled; the measured resting cell diameter is fixed."
+}

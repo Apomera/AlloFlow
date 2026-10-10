@@ -453,13 +453,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     return Math.min(byDistance, cap);
   }
   // Rotation speed for the briefing, from the SAME relation Physics.stallSpeed
-  // uses (CLmax 1.6, sea-level density, Vr = 1.1 x Vs). Derived rather than
+  // uses (aircraft peak lift, sea-level density, Vr = 1.1 x Vs). Derived rather than
   // written down so the menu cannot quote a rotation speed that disagrees with
   // the Vr band the airspeed tape draws in flight.
   function aircraftVrKts(ac) {
     if (!ac || ac.isHelicopter || ac.isDrone) return null;
     if (!ac.wingArea || !ac.weight) return null;
-    var vsFps = Math.sqrt((2 * ac.weight) / (0.002377 * ac.wingArea * 1.6));
+    var peakCl = (ac.cl0 || 0.3) + Physics.CRITICAL_AOA * (ac.clPerAoa || 0.1);
+    var vsFps = Math.sqrt((2 * ac.weight) / (0.002377 * ac.wingArea * peakCl));
     return Math.round(vsFps * 0.5924838 * 1.1);
   }
 
@@ -654,6 +655,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     CL0: 0.3,          // zero-AoA lift coefficient
     CD0: 0.028,         // parasite drag coefficient
     CD_INDUCED_K: 0.042, // induced drag factor
+    CRITICAL_AOA: 15,   // degrees; simplified clean-wing teaching model, not aircraft certification data
 
     airDensity: function(alt) {
       // Standard atmosphere approximation. Clamp the base at 0: above
@@ -663,30 +665,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       return this.RHO_SL * Math.pow(Math.max(0, 1 - 0.0000068756 * alt), 4.2561);
     },
 
+    aerodynamicState: function(aoa) {
+      // One continuous polar drives both the flight model and investigations.
+      // FAA Airplane Flying Handbook, ch. 5: a stall follows excessive AoA,
+      // at any airspeed. The 3-degree warning band and post-stall curve here
+      // are educational approximations, not type-specific flight-test data.
+      var angle = Number(aoa) || 0;
+      var critical = this.CRITICAL_AOA;
+      var magnitude = Math.abs(angle);
+      var limitedAngle = Math.max(-critical, Math.min(critical, angle));
+      var attachedCl = this.CL0 + this.CL_PER_AOA * limitedAngle;
+      var excess = Math.max(0, magnitude - critical);
+      // Lift does not vanish at stall. Separated flow progressively reduces
+      // its coefficient, while pressure drag increases beyond the peak.
+      var cl = attachedCl * (0.2 + 0.8 * Math.exp(-excess / 7));
+      var cd = this.CD0 + this.CD_INDUCED_K * attachedCl * attachedCl
+        + Math.min(1.5, excess * 0.045);
+      return {
+        state: magnitude >= critical ? 'stall' : (magnitude >= critical - 3 ? 'boundary' : 'normal'),
+        cl: cl, cd: cd, criticalAoa: critical
+      };
+    },
+
+    sampleAerodynamics: function(speed, alt, aoa, flaps) {
+      var aero = this.aerodynamicState(aoa);
+      var flap = getFlapAerodynamics(flaps);
+      var dynamicPressure = 0.5 * this.airDensity(alt) * speed * speed;
+      var lift = dynamicPressure * this.WING_AREA * aero.cl * flap.liftMultiplier;
+      return {
+        state: aero.state, cl: aero.cl, cd: aero.cd, criticalAoa: aero.criticalAoa,
+        lift: lift, drag: dynamicPressure * this.WING_AREA * aero.cd * flap.dragMultiplier,
+        weight: this.WEIGHT, ratio: lift / this.WEIGHT
+      };
+    },
+
     liftForce: function(speed, alt, aoa) {
-      var rho = this.airDensity(alt);
-      var cl = this.CL0 + this.CL_PER_AOA * aoa;
-      cl = Math.max(-0.5, Math.min(cl, 1.6)); // stall limit
-      return 0.5 * rho * speed * speed * this.WING_AREA * cl;
+      return this.sampleAerodynamics(speed, alt, aoa).lift;
     },
 
     dragForce: function(speed, alt, aoa) {
-      var rho = this.airDensity(alt);
-      var cl = this.CL0 + this.CL_PER_AOA * aoa;
-      var cd = this.CD0 + this.CD_INDUCED_K * cl * cl;
-      return 0.5 * rho * speed * speed * this.WING_AREA * cd;
+      return this.sampleAerodynamics(speed, alt, aoa).drag;
     },
 
-    isStalling: function(speed, alt) {
-      // Stall speed increases with altitude (lower air density)
-      var rho = this.airDensity(alt);
-      var stallSpeed = Math.sqrt((2 * this.WEIGHT) / (rho * this.WING_AREA * 1.6));
-      return speed < stallSpeed * 1.1; // near-stall warning
+    isStalling: function(aoa) {
+      return this.aerodynamicState(aoa).state === 'stall';
     },
 
     stallSpeed: function(alt) {
+      // 1g, clean-wing reference TAS: insufficient airspeed can require an
+      // excessive AoA to support weight, but speed itself does not define stall.
       var rho = this.airDensity(alt);
-      return Math.sqrt((2 * this.WEIGHT) / (rho * this.WING_AREA * 1.6));
+      var peakCl = this.aerodynamicState(this.CRITICAL_AOA).cl;
+      return Math.sqrt((2 * this.WEIGHT) / (rho * this.WING_AREA * peakCl));
     },
 
     step: function(state, dt, controls) {
@@ -854,28 +884,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         };
       }
 
-      // ── FIXED-WING PHYSICS (unchanged below) ──
-      // Forces
+      // ── FIXED-WING PHYSICS ──
+      // TAS is the velocity magnitude and VSI its vertical component, so
+      // asin(VSI / TAS) gives the flight-path angle. Pitch is not AoA: an
+      // aircraft can be nose-up in a climb without exceeding critical AoA.
+      var flightPathRad = state.onGround ? 0 : Math.asin(Math.max(-1, Math.min(1, vsi / Math.max(speed, 1))));
+      var aoa = pitch - flightPathRad * 180 / Math.PI;
       var thrust = this.MAX_THRUST * throttle;
-      var aoa = pitch - (vsi / Math.max(speed, 1)) * (180 / Math.PI) * 0.5;
-      var lift = this.liftForce(speed, alt, aoa);
-      var drag = this.dragForce(speed, alt, aoa);
+      var aero = this.sampleAerodynamics(speed, alt, aoa, controls.flaps);
+      var lift = aero.lift;
+      var drag = aero.drag;
       var flapAero = getFlapAerodynamics(controls.flaps);
-      lift *= flapAero.liftMultiplier;
-      drag *= flapAero.dragMultiplier;
 
-      // Stall check. A parked plane at speed=0 trivially satisfies speed < stallSpeed,
-      // so without this onGround guard the sim fires STALL warnings the instant you
-      // load into Sky School — banner, horn, voice alert, and an adaptive hint that
-      // tells you to push S (pitch-down) when you actually need Shift (throttle-up).
-      // Stall is a flight phenomenon; suppress it while wheels are on the runway.
+      // Suppress airborne warnings on the runway. Keep the 1g low-speed
+      // advisory separate: neither speed nor L/W determines flow separation.
       var configuredStallSpeed = this.stallSpeed(alt) * flapAero.stallSpeedFactor;
-      var stalling = !state.onGround && speed < configuredStallSpeed * 1.1;
-      if (stalling) { lift *= 0.4; drag *= 1.5; } // dramatic lift loss in stall
+      var stalling = !state.onGround && aero.state === 'stall';
+      var lowAirspeed = !state.onGround && speed < configuredStallSpeed * 1.1;
 
-      // Acceleration along flight path
+      // Acceleration along the velocity vector; gravity opposes a climb,
+      // not a nose-up attitude while rolling on a level runway.
       var pitchRad = pitch * Math.PI / 180;
-      var accelForward = (thrust * Math.cos(pitchRad) - drag - this.WEIGHT * Math.sin(pitchRad)) / (this.WEIGHT / this.G);
+      var accelForward = (thrust * Math.cos(aoa * Math.PI / 180) - drag - this.WEIGHT * Math.sin(flightPathRad)) / (this.WEIGHT / this.G);
       speed += accelForward * dt;
       speed = Math.max(0, speed);
       // Vne cap (kts → ft/s). Fixed-wing had no speed ceiling at all;
@@ -886,8 +916,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       }
 
       // Vertical component
-      var liftVertical = lift * Math.cos(bank * Math.PI / 180);
-      var vertAccel = (liftVertical - this.WEIGHT) / (this.WEIGHT / this.G);
+      var liftVertical = lift * Math.cos(bank * Math.PI / 180) * Math.cos(flightPathRad);
+      var vertAccel = (liftVertical + thrust * Math.sin(pitchRad) - this.WEIGHT) / (this.WEIGHT / this.G);
       vsi += vertAccel * dt * 0.3; // damped for stability
       vsi *= Math.pow(0.98, dt * 30); // slight damping (per-30fps-frame factor, dt-corrected)
       alt += vsi * dt;
@@ -930,7 +960,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       }
 
       // Position update (lat/lon, simplified)
-      var gs = speed * Math.cos(pitchRad); // ground speed ft/s
+      var gs = Math.sqrt(Math.max(0, speed * speed - vsi * vsi)); // horizontal speed ft/s
       var nmPerSec = gs / 6076.12;         // nautical miles per second
       var latChange = nmPerSec * Math.cos(heading * Math.PI / 180) / 60 * dt;
       var lonChange = nmPerSec * Math.sin(heading * Math.PI / 180) / (60 * Math.cos(state.lat * Math.PI / 180)) * dt;
@@ -944,6 +974,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         lon: state.lon + lonChange,
         aoa: aoa,
         stalling: stalling,
+        lowAirspeed: lowAirspeed,
+        aerodynamicState: aero.state,
         // On the ground when at or below the field elevation (within 1ft tolerance)
         onGround: alt <= (state.fieldElev || 0) + 1,
         fieldElev: state.fieldElev || 0,
@@ -1075,7 +1107,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     var pitchDeg = Number(controls.pitch) || 0;
     var bankCos = Math.cos(Math.min(80, Math.abs(bankDeg)) * Math.PI / 180);
     var loadFactor = state.onGround ? 1 : 1 / Math.max(0.17, bankCos);
-    var flightPathAngleDeg = Math.atan2(Number(state.vsi) || 0, Math.max(1, Number(state.speed) || 0)) * 180 / Math.PI;
+    var flightPathAngleDeg = Math.asin(Math.max(-1, Math.min(1,
+      (Number(state.vsi) || 0) / Math.max(1, Number(state.speed) || 0)))) * 180 / Math.PI;
     var fieldElev = Number(state.fieldElev) || 0;
     var aglFt = Math.max(0, altitudeFt - fieldElev);
     var appDist = Number(approachDistanceNm);
@@ -10008,6 +10041,149 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     'Cleared for takeoff.',
   ];
 
+  // Learning records are plain data: the host can save and restore them with
+  // the rest of toolData. Simulation samples and assessment use the same model.
+  function flightPracticeEvidence(record) {
+    var r = record || {};
+    function measured(value) { var n = Number(value); return Number.isFinite(n) ? Math.max(0, n) : 0; }
+    var airborne = measured(r.airborneSeconds);
+    var takeoff = airborne >= 10 && measured(r.peakAGL) >= 100 && r.startedAirborne !== true;
+    var steady = airborne >= 10 && measured(r.bestStableSeconds) >= 10;
+    var landing = airborne >= 10 && measured(r.landings) > 0 && r.bestLanding != null &&
+      Number.isFinite(Number(r.bestLanding)) && Number(r.bestLanding) >= 0 && Number(r.bestLanding) < 500;
+    var count = Number(takeoff) + Number(steady) + Number(landing);
+    var total = r.startedAirborne === true ? 2 : 3;
+    return { takeoff: takeoff, steady: steady, landing: landing, count: count, total: total,
+      score: Math.round(count / total * 100), airborne: airborne > 0 };
+  }
+
+  function updateFlightPractice(log, state, controls, dt) {
+    if (!Number.isFinite(dt) || !(dt > 0)) return log;
+    log = log && typeof log === 'object' ? log : {};
+    if (!state || !Number.isFinite(state.altitude)) return log;
+    controls = controls || {};
+    // Suspended tabs must not create a long streak from one observed frame.
+    dt = Math.min(dt, 1);
+    function measured(value) { var n = Number(value); return Number.isFinite(n) ? Math.max(0, n) : 0; }
+    var agl = Math.max(0, state.altitude - (state.fieldElev || 0));
+    if (!state.onGround && agl > 5) {
+      log.airborneSeconds = measured(log.airborneSeconds) + dt;
+      log.peakAGL = Math.max(measured(log.peakAGL), agl);
+      var stable = !state.stalling && !state.lowAirspeed && agl >= 100 &&
+        Math.abs(state.vsi * 60) <= 200 && Math.abs(controls.bank || 0) <= 10;
+      log.stableSeconds = stable ? measured(log.stableSeconds) + dt : 0;
+      log.bestStableSeconds = Math.max(measured(log.bestStableSeconds), log.stableSeconds);
+    } else log.stableSeconds = 0;
+    return log;
+  }
+
+  function stallInvestigationRecord(saved) {
+    var s = saved && typeof saved === 'object' ? saved : {};
+    var phases = ['predict', 'experiment', 'explain', 'transfer', 'review'];
+    function bounded(value, fallback, low, high) {
+      var n = Number(value);
+      return Number.isFinite(n) ? Math.max(low, Math.min(high, n)) : fallback;
+    }
+    return {
+      version: 1, phase: phases.indexOf(s.phase) >= 0 ? s.phase : 'predict',
+      hypothesis: typeof s.hypothesis === 'string' ? s.hypothesis.slice(0, 4000) : '',
+      prediction: ['angle', 'speed', 'altitude'].indexOf(s.prediction) >= 0 ? s.prediction : '',
+      airspeed: bounded(s.airspeed, 130, 40, 250), altitude: bounded(s.altitude, 5000, 0, 20000),
+      aoa: bounded(s.aoa, 8, -5, 25),
+      observations: (Array.isArray(s.observations) ? s.observations : []).slice(-24).filter(function(p) {
+        return p && Number.isFinite(p.airspeed) && p.airspeed >= 40 && p.airspeed <= 250 &&
+          Number.isFinite(p.altitude) && p.altitude >= 0 && p.altitude <= 20000 &&
+          Number.isFinite(p.aoa) && p.aoa >= -5 && p.aoa <= 25;
+      }).map(function(p) { return sampleStallInvestigation(p.airspeed, p.altitude, p.aoa); }),
+      explanation: typeof s.explanation === 'string' ? s.explanation.slice(0, 6000) : '',
+      transferChoice: ['normal', 'boundary', 'stall'].indexOf(s.transferChoice) >= 0 ? s.transferChoice : '',
+      transferAnswer: ['normal', 'boundary', 'stall'].indexOf(s.transferAnswer) >= 0 ? s.transferAnswer : '',
+      transferAttempts: Math.floor(bounded(s.transferAttempts, 0, 0, 10000)),
+      flight: normalizeStallFlight(s.flight),
+      completedAt: typeof s.completedAt === 'string' ? s.completedAt : null,
+      attempts: (Array.isArray(s.attempts) ? s.attempts : []).slice(-5).filter(function(a) {
+        return a && typeof a === 'object' && !Array.isArray(a);
+      }).map(function(a) {
+        // Archives contain one attempt, not an unbounded recursive history.
+        var attempt = stallInvestigationRecord(Object.assign({}, a, { attempts: [] }));
+        delete attempt.attempts;
+        return attempt;
+      })
+    };
+  }
+
+  function sampleStallInvestigation(airspeed, altitude, aoa) {
+    // An explicit trainer model keeps the experiment unchanged if the learner
+    // previously selected a helicopter or a jet in the hangar.
+    var model = Object.create(Physics);
+    var ac = AIRCRAFT[0];
+    model.WING_AREA = ac.wingArea; model.WEIGHT = ac.weight;
+    model.CL0 = ac.cl0; model.CL_PER_AOA = ac.clPerAoa;
+    model.CD0 = ac.cd0; model.CD_INDUCED_K = ac.cdK;
+    var sample = model.sampleAerodynamics(airspeed / 0.5924838, altitude, aoa, 0);
+    return { airspeed: airspeed, altitude: altitude, aoa: aoa, state: sample.state,
+      lift: Math.round(sample.lift), drag: Math.round(sample.drag), cl: sample.cl,
+      criticalAoa: sample.criticalAoa };
+  }
+
+  function stallEvidencePairs(observations) {
+    var rows = Array.isArray(observations) ? observations : [];
+    var angle = null, speed = null;
+    rows.forEach(function(a, i) { rows.slice(i + 1).forEach(function(b, j) {
+      if (!a || !b) return;
+      if (a.altitude !== b.altitude) return;
+      if (a.airspeed === b.airspeed && a.aoa !== b.aoa &&
+          ((a.state === 'normal' && b.state === 'stall') || (b.state === 'normal' && a.state === 'stall'))) angle = [i + 1, i + j + 2];
+      if (a.aoa === b.aoa && Math.abs(a.airspeed - b.airspeed) >= 30 && a.state === b.state) speed = [i + 1, i + j + 2];
+    }); });
+    return { angle: angle, speed: speed, complete: !!(angle && speed) };
+  }
+
+  function normalizeStallFlight(saved) {
+    if (!saved || typeof saved !== 'object' || Array.isArray(saved)) return null;
+    var seconds = Number(saved.recoverySeconds);
+    var sawStall = saved.sawStall === true;
+    var recovery = sawStall && Number.isFinite(seconds) ? Math.max(0, Math.min(5, seconds)) : 0;
+    var statuses = ['active', 'complete', 'landed', 'time-limit', 'ended', 'incomplete', 'interrupted'];
+    var status = statuses.indexOf(saved.status) >= 0 ? saved.status : 'interrupted';
+    var recovered = status === 'complete' && saved.recovered === true && recovery >= 5 && sawStall;
+    if (status === 'complete' && !recovered) status = 'interrupted';
+    return {
+      status: status, sawStall: sawStall, recovered: recovered, recoverySeconds: recovery,
+      samples: (Array.isArray(saved.samples) ? saved.samples : []).slice(-90).filter(function(row) {
+        return row && Number.isFinite(row.time) && row.time >= 0 && row.time <= 180 &&
+          Number.isFinite(row.aoa) && Number.isFinite(row.airspeed) && row.airspeed >= 0 &&
+          Number.isFinite(row.altitude);
+      }).map(function(row) {
+        return { time: row.time, aoa: row.aoa, airspeed: row.airspeed, altitude: row.altitude,
+          state: Physics.aerodynamicState(row.aoa).state };
+      })
+    };
+  }
+
+  function advanceStallFlight(previous, state, dt, time) {
+    var p = previous || {};
+    if (p.status !== 'active' || !Number.isFinite(dt) || !(dt > 0) || !Number.isFinite(time)) return p;
+    var next = normalizeStallFlight(p);
+    if (time >= 180) { next.status = 'time-limit'; return next; }
+    if (!state || !Number.isFinite(state.aoa) || !Number.isFinite(state.speed) || !Number.isFinite(state.altitude)) return next;
+    dt = Math.min(dt, 1);
+    var alpha = Physics.aerodynamicState(state.aoa);
+    if (!state.onGround && state.stalling && alpha.state === 'stall') next.sawStall = true;
+    var attached = !state.onGround && !state.stalling && alpha.state === 'normal';
+    next.recoverySeconds = next.sawStall && attached ? next.recoverySeconds + dt : 0;
+    var samples = next.samples.slice(-89);
+    var last = samples[samples.length - 1];
+    if (!last || time - last.time >= 1 || last.state !== alpha.state) {
+      samples.push({ time: Math.round(time * 10) / 10, aoa: Math.round(state.aoa * 10) / 10,
+        airspeed: Math.round(state.speed * 0.5924838), altitude: Math.round(state.altitude), state: alpha.state });
+    }
+    next.samples = samples;
+    if (next.recoverySeconds >= 5) { next.status = 'complete'; next.recovered = true; }
+    else if (state.onGround) next.status = 'landed';
+    return next;
+  }
+
   window.StemLab.registerTool('flightSim', {
     icon: '\u2708\uFE0F',
     label: 'SkySchool',
@@ -10113,7 +10289,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             pausedRef: pausedRef,
             flyingRef: flyingRef,
             qualityRef: qualityRef,
-            getWeatherRef: function() { return weatherRef; }
+            getLogRef: function() { return logRef; },
+            checkAchievements: function() { checkAchievements(flightRef.current, timeRef.current, 1 / 30); },
+            getWeatherRef: function() { return weatherRef; },
+            getSprintRef: function() { return sprintRef; }
           };
         }
         return function() {
@@ -12271,13 +12450,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       }, []);
 
       // ── Keyboard Controls ──
-      // Bug fix: arrow keys + WASD weren't preventDefault'd, so the
-      // page scrolled out from under the plane while the student
-      // tried to fly. Now any flight-control key swallows its default
-      // browser action; non-flight keys still fall through so the
-      // student can type elsewhere on the page.
+      // Flight shortcuts belong to the cockpit, while buttons, form fields,
+      // and other widgets keep their native keyboard behavior.
       useEffect(function() {
         if (view !== 'flying') return;
+        var deck = document.getElementById('skyschool-flight-container');
+        var cockpit = deck && deck.querySelector('canvas[role="application"]');
+        // Entering flight removes the launch button. Give its keyboard user
+        // a real flight-control target without stealing focus from a widget.
+        if (cockpit && (!document.activeElement || document.activeElement === document.body)) {
+          try { cockpit.focus({ preventScroll: true }); } catch (err) { cockpit.focus(); }
+        }
         // Every key the flight loop consumes must be in this allowlist — the
         // 2026-05-10 scroll fix narrowed capture to it, which silently killed
         // throttle-down (Ctrl/-), view (V), info (I), forces (F), help (?/),
@@ -12291,29 +12474,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // release on keyup. Digits 1-4 are discarded by a per-frame sweep in
         // the loop so an unconsumed latch can't ghost-answer a later quiz.
         var EDGE_KEYS = { ' ': 1, 'spacebar': 1, 'v': 1, 'i': 1, 'f': 1, 'b': 1, '[': 1, ']': 1, '?': 1, '/': 1, '1': 1, '2': 1, '3': 1, '4': 1, 'escape': 1 };
+        var WIDGETS = 'button, input, textarea, select, a[href], area[href], summary, audio[controls], video[controls], [contenteditable]:not([contenteditable="false"]), [role="button"], [role="link"], [role="checkbox"], [role="radio"], [role="switch"], [role="slider"], [role="spinbutton"], [role="textbox"], [role="combobox"], [role="listbox"], [role="option"], [role="tab"], [role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"], [role="treeitem"], [role="dialog"], [aria-modal="true"]';
+        var isFlightSurface = function(tgt) {
+          return !!(deck && tgt && deck.contains(tgt) && !(tgt.closest && tgt.closest(WIDGETS)) && !tgt.isContentEditable);
+        };
         var onKey = function(e) {
-          // Let students type in chat/search fields without flying the plane
-          var tgt = e.target;
-          if (tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.tagName === 'SELECT' || tgt.isContentEditable)) return;
           var k = (e.key || '').toLowerCase();
-          if (FLIGHT_KEYS[k]) {
-            if (e.type === 'keydown') {
-              // OS auto-repeat must not re-arm edge-triggered keys the loop
-              // already cleared after consuming.
-              if (!e.repeat) keysRef.current[k] = true;
-              e.preventDefault();
-            } else if (!EDGE_KEYS[k]) {
-              keysRef.current[k] = false;
-            }
+          // Release held inputs even if focus moved to a widget before keyup.
+          // Preserve edge latches so a fast tap survives until the next frame.
+          if (e.type === 'keyup') {
+            if (FLIGHT_KEYS[k] && !EDGE_KEYS[k]) keysRef.current[k] = false;
+            return;
           }
+          // A lone Control remains the documented throttle-down control. Once
+          // it forms a browser/assistive shortcut, clear it (and any held key).
+          if ((e.ctrlKey && k !== 'control') || e.altKey || e.metaKey) {
+            keysRef.current = {};
+            return;
+          }
+          if (e.defaultPrevented || e.isComposing || !isFlightSurface(e.target) || !FLIGHT_KEYS[k]) return;
+          // OS auto-repeat must not re-arm an already consumed edge action.
+          if (!e.repeat) keysRef.current[k] = true;
+          e.preventDefault();
         };
         // Alt-Tab / focus loss eats keyup events — clear held keys so the
         // plane doesn't keep pitching or throttling on its own.
         var onBlur = function() { keysRef.current = {}; };
+        var onFocus = function(e) { if (!isFlightSurface(e.target)) onBlur(); };
+        var onVisibility = function() { if (document.hidden) onBlur(); };
         window.addEventListener('keydown', onKey);
         window.addEventListener('keyup', onKey);
         window.addEventListener('blur', onBlur);
-        return function() { window.removeEventListener('keydown', onKey); window.removeEventListener('keyup', onKey); window.removeEventListener('blur', onBlur); };
+        document.addEventListener('focusin', onFocus);
+        document.addEventListener('visibilitychange', onVisibility);
+        return function() {
+          window.removeEventListener('keydown', onKey); window.removeEventListener('keyup', onKey); window.removeEventListener('blur', onBlur);
+          document.removeEventListener('focusin', onFocus); document.removeEventListener('visibilitychange', onVisibility);
+          onBlur();
+        };
       }, [view]);
 
       // ── ESC to Exit Fullscreen ──
@@ -19263,8 +19461,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
         var newBadges = {};
         var justEarned = null;
+        var practice = flightPracticeEvidence(logRef.current);
+        var recordedAirborneSeconds = Number(logRef.current.airborneSeconds);
+        var flightAchievementReady = !state.onGround && Number.isFinite(recordedAirborneSeconds) && recordedAirborneSeconds >= 10;
         ACHIEVEMENTS.forEach(function(ach) {
           if (earnedLive[ach.id]) return;
+          // Badge checks describe the condition; the tracker requires actual
+          // flight evidence so a high field elevation or airborne spawn is
+          // not mistaken for a takeoff or instant flight achievement.
+          if (ach.id === 'first_takeoff' && !practice.takeoff) return;
+          if (['mile_high', 'stratosphere', 'speed100', 'speed_sound', 'night_flight'].indexOf(ach.id) >= 0 && !flightAchievementReady) return;
           try {
             if (ach.check(state, extra)) { newBadges[ach.id] = true; justEarned = ach; }
           } catch(e) {}
@@ -19716,12 +19922,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         };
         timeRef.current = 0;
         flyingRef.current = true;
+        // A geography sprint is a new session, not a continuation of a
+        // preceding stall investigation or landing assessment.
+        stallFlightRef.current = null;
+        blackBoxRef.current = [];
+        landingRef.current = { wasAirborne: false, lastVSI: 0, scored: false, peakAGL: 0 };
+        keysRef.current = {};
+        brakeLatchedRef.current = false;
+        setFlightConfigUi({ flaps: 0, brake: false });
+        geoQuizRef.current = { active: false, place: null, options: [], answer: null, correct: null, showResult: false, score: 0, total: 0 };
         pausedRef.current = false;
         setPausedUi(false);
         geoDiscoveredRef.current = {};
         milestoneRef.current.shown = {};
         Physics.SPRINT_MODE = true; // HyperJet exceeds Vne by design
-        logRef.current = { startTime: 0, maxAlt: 0, maxSpeed: 0, airports: [], distance: 0, lastLat: 0, lastLon: 0 };
+        logRef.current = { startTime: 0, maxAlt: 35000, maxSpeed: 0, airports: [], distance: 0, lastLat: 0, lastLon: 0,
+          airborneSeconds: 0, peakAGL: 0, stableSeconds: 0, bestStableSeconds: 0, startedAirborne: true };
         // Chase camera by default here too — a HyperJet sprint is about watching
         // the world go past, and the cockpit panel is the wrong window for it.
         updMulti({ view: 'flying', showForces: false, thirdPerson: d.thirdPerson !== false });
@@ -20332,9 +20548,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         }
       };
 
-      var startFlying = function(startWaypoint) {
+      var stallFlightRef = useRef(null);
+      var startFlying = function(startWaypoint, guidedStall) {
         originRef.current = null;
         terrainCenterRef.current = null;
+        // Leaving a live geography sprint must not keep its position warp,
+        // automatic steering, or result-key handling in the next flight.
+        sprintRef.current.active = false;
+        sprintRef.current.phase = 'flying';
         var wp = WAYPOINTS.find(function(w) { return w.id === startWaypoint; }) || WAYPOINTS[0];
         // Plane starts ON THE RUNWAY at the airport's field elevation. Speed=0,
         // throttle=0, parked at the runway threshold. Player must apply throttle and
@@ -20347,7 +20568,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // screen explaining why. Real gliders do not self-launch either — a flight
         // begins at tow release — and this tool already teaches aerotow in the
         // Learn library without ever letting anyone fly one.
-        var noEngine = !!(currentAC && currentAC.maxThrust === 0 && !currentAC.isHelicopter && !currentAC.isDrone);
+        var noEngine = !guidedStall && !!(currentAC && currentAC.maxThrust === 0 && !currentAC.isHelicopter && !currentAC.isDrone);
         var TOW_RELEASE_AGL = 3000;   // ft — a routine aerotow release height
         var TOW_RELEASE_KTS = 55;     // ASK 21 sits near best glide here
         flightRef.current = {
@@ -20359,7 +20580,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           aoa: 0, stalling: false, onGround: !noEngine,
           forces: { lift: 0, drag: 0, thrust: 0, weight: 2550 }
         };
+        if (guidedStall) {
+          flightRef.current.speed = 110 / 0.5924838;
+          flightRef.current.altitude = 5000;
+          flightRef.current.onGround = false;
+          flightRef.current.heading = 90;
+        }
         controlsRef.current = { throttle: 0, pitch: 0, bank: 0, flaps: 0, brake: 0 };
+        if (guidedStall) controlsRef.current = { throttle: 0.6, pitch: 0, bank: 0, flaps: 0, brake: 0 };
+        stallFlightRef.current = guidedStall ? { status: 'active', sawStall: false, recovered: false, recoverySeconds: 0, samples: [] } : null;
         brakeLatchedRef.current = false;
         setFlightConfigUi({ flaps: 0, brake: false });
         timeRef.current = 0;
@@ -20386,7 +20615,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // Seeded from the ACTUAL start altitude, not the field elevation: a glider
         // released at 3,000 ft AGL would otherwise have a debrief "max altitude"
         // below where its flight started.
-        logRef.current = { distance: 0, maxAlt: flightRef.current.altitude, maxSpeed: 0, airports: [], startTime: 0 };
+        logRef.current = { distance: 0, maxAlt: flightRef.current.altitude, maxSpeed: 0, airports: [], startTime: 0,
+          airborneSeconds: 0, peakAGL: 0, stableSeconds: 0, bestStableSeconds: 0, startedAirborne: noEngine || !!guidedStall };
         // Chase camera by DEFAULT. First-person put a beginner behind a
         // glareshield and a full instrument panel with no external reference for
         // what the aeroplane was doing; seeing the airframe bank is how a new
@@ -20402,9 +20632,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           thirdPerson: d.thirdPerson !== false,
           railCollapsed: d.railCollapsed !== undefined ? d.railCollapsed : narrowScreen
         });
+        if (guidedStall) {
+          var investigation = stallInvestigationRecord(dataRef.current.stallInvestigation);
+          updMulti({ aircraft: 'cessna172', selectedChallenge: 'stall_investigation',
+            takeoffTutorialDismissed: true, landingTutorialDismissed: true,
+            autopilot: { hdg: false, alt: false, spd: false },
+            stallInvestigation: Object.assign({}, investigation, { phase: 'transfer', flight: stallFlightRef.current }) });
+          weatherRef.current = { type: 'clear', wind: 0, windDir: 270, turbulence: 0, visibility: 1, _gustPhase: 0 };
+        }
         if (noEngine && typeof addToast === 'function') {
           addToast(__alloT('stem.flightsim.toast_aerotow_release', "🪂 Aerotow release at {ft} ft AGL. No engine — trade altitude for speed and hunt for lift.").replace('{ft}', TOW_RELEASE_AGL.toLocaleString()), 'info');
         }
+      };
+
+      var finishFlight = function(returnToInvestigation) {
+        flyingRef.current = false; stopEngineSound(); stopWindSound(); updateStallHorn(false);
+        var log = logRef.current, live = dataRef.current;
+        var evidence = stallFlightRef.current;
+        var patch = {
+          view: returnToInvestigation ? 'stallHunt' : 'debrief',
+          totalFlightTime: (live.totalFlightTime || 0) + Math.round(log.airborneSeconds || 0),
+          geoDiscovered: Object.assign({}, live.geoDiscovered || {}, geoDiscoveredRef.current),
+          lastDebrief: {
+            flightTime: Math.round(log.airborneSeconds || 0), sessionTime: Math.round(timeRef.current),
+            distance: Math.round(log.distance), maxAlt: Math.round(log.maxAlt), maxSpeed: Math.round(log.maxSpeed),
+            airports: log.airports.length, discovered: Object.keys(geoDiscoveredRef.current).length,
+            badges: Object.keys(live.earnedBadges || {}).length, aircraft: currentAC.name, aircraftId: currentAC.id,
+            landings: landingRef.current.scored ? 1 : 0,
+            bestLanding: landingRef.current.scored ? Math.round(landingRef.current.touchdownFPM || 0) : null,
+            airborneSeconds: log.airborneSeconds || 0, peakAGL: log.peakAGL || 0,
+            bestStableSeconds: log.bestStableSeconds || 0, startedAirborne: !!log.startedAirborne,
+            samples: blackBoxRef.current.slice(-500), investigation: !!evidence
+          }
+        };
+        if (evidence) {
+          patch.stallInvestigation = Object.assign({}, stallInvestigationRecord(live.stallInvestigation), {
+            phase: 'transfer', flight: Object.assign({}, evidence, { status: evidence.status === 'active' ? 'ended' : evidence.status })
+          });
+        }
+        updMulti(patch);
       };
 
       useEffect(function() {
@@ -20515,6 +20781,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             var ktsInfo = Math.round(st.speed * 0.5924838);
             skyAnnounce(__alloT('stem.flightsim.announce_status_core', "Altitude {alt} feet. Speed {kts} knots. Heading {hdg} degrees.").replace('{alt}', Math.round(st.altitude)).replace('{kts}', ktsInfo).replace('{hdg}', Math.round(st.heading))
             + (st.stalling ? ' ' + __alloT('stem.flightsim.announce_status_stalling', "Warning: stalling!") : '')
+            + (st.lowAirspeed && !st.stalling ? ' ' + __alloT('stem.flightsim.announce_status_low_airspeed', 'Low airspeed advisory. Monitor lift and angle of attack.') : '')
+            + (!currentAC.isHelicopter && !currentAC.isDrone ? ' ' + __alloT('stem.flightsim.announce_status_aoa', 'Angle of attack {aoa} degrees.').replace('{aoa}', (Number(st.aoa) || 0).toFixed(1)) : '')
             + (st.hitCeiling ? ' ' + __alloT('stem.flightsim.announce_status_ceiling', "Holding at the Part 107 ceiling: 400 feet is a legal limit, not a limit of the drone.") : '')
             + (st.onGround ? ' ' + __alloT('stem.flightsim.announce_status_on_ground', "On ground.") : '')
             + ' ' + __alloT('stem.flightsim.announce_status_discovered', "Places discovered: {n}.").replace('{n}', Object.keys(geoDiscoveredRef.current).length));
@@ -20742,6 +21010,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             hudRef.current._cityCue = { t: timeRef.current, city: cueBest || cuePrev || null };
           }
           flightRef.current = state;
+          updateFlightPractice(logRef.current, state, ctrl, dt);
+          if (stallFlightRef.current && stallFlightRef.current.status === 'active' && dt > 0) {
+            var previousStallFlight = stallFlightRef.current;
+            var nextStallFlight = advanceStallFlight(previousStallFlight, state, dt, timeRef.current);
+            stallFlightRef.current = nextStallFlight;
+            // Save at most once per simulated second, plus objective changes.
+            if (nextStallFlight.status !== previousStallFlight.status || nextStallFlight.sawStall !== previousStallFlight.sawStall ||
+                Math.floor(timeRef.current) !== Math.floor(timeRef.current - dt)) {
+              upd('stallInvestigation', Object.assign({}, stallInvestigationRecord(dataRef.current.stallInvestigation), { flight: nextStallFlight }));
+            }
+            if (nextStallFlight.status !== 'active') setFlightPaused(true);
+          }
           // Advance integrated scroll phases with the frame's actual dt
           scrollAccumRef.current.rwy = (scrollAccumRef.current.rwy + (state.speed * 0.045 + 0.02) * dt) % 1;
           scrollAccumRef.current.px = (scrollAccumRef.current.px + state.speed * 0.5924838 * 0.5 * dt) % 100000;
@@ -22260,7 +22540,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             // W >= 700: below that the top strip is fully claimed (city pill,
             // collapsed deck button, status chips, minimap) and the DOM discovery
             // card already carries this text.
-            if (W >= 700 && nearDist < 3 && state.altitude < nearWp.alt + 2000 && !state.stalling && !state.hitCeiling) {
+            if (W >= 700 && nearDist < 3 && state.altitude < nearWp.alt + 2000 && !state.stalling && !state.lowAirspeed && !state.hitCeiling) {
               gfx.font = 'bold 13px system-ui'; gfx.textAlign = 'center';
               // Airport facts run to a full sentence, so this single centred line
               // used to overrun BOTH canvas edges and read as clipped mid-word at
@@ -22298,9 +22578,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             gfx.fillStyle = 'rgba(239,68,68,' + (0.4 + Math.sin(timeRef.current * 8) * 0.3) + ')';
             gfx.fillRect(0, 32, W, 28);
             gfx.fillStyle = '#fff'; gfx.font = 'bold 14px system-ui'; gfx.textAlign = 'center';
-            gfx.fillText(__alloT('stem.flightsim.hud_stall_warning', "⚠️ STALL WARNING — PUSH NOSE DOWN, ADD POWER"), W / 2, 50);
+            gfx.fillText(__alloT('stem.flightsim.hud_stall_warning', "⚠️ STALL — REDUCE ANGLE OF ATTACK"), W / 2, 50);
             // Stall haptic — continuous vibration while stalling
             if (Math.floor(timeRef.current * 4) % 2 === 0 && window._alloHaptic) window._alloHaptic('bump');
+          }
+
+          if (state.lowAirspeed && !state.stalling && !state.onGround && !state.hitCeiling) {
+            gfx.fillStyle = '#78350f'; gfx.fillRect(0, 32, W, 28);
+            gfx.fillStyle = '#fef3c7'; gfx.font = 'bold 12px system-ui'; gfx.textAlign = 'center';
+            gfx.fillText(__alloT('stem.flightsim.low_airspeed_advisory', 'LOW AIRSPEED — monitor lift and angle of attack'), W / 2, 50);
           }
 
           // Part 107 ceiling warning. The physics has set state.hitCeiling since it
@@ -22746,9 +23032,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var segDist = haversineNm(log.lastLat, log.lastLon, state.lat, state.lon);
           if (segDist > 0.01) { log.distance += segDist; log.lastLat = state.lat; log.lastLon = state.lon; }
           // Airport visit tracking
-          if (nearWp && nearDist < 3 && state.altitude < nearWp.alt + 2000 && log.airports.indexOf(nearWp.code) < 0) {
+          if (nearWp && nearDist < 3 && state.onGround && log.airborneSeconds >= 10 && landingRef.current.scored && log.airports.indexOf(nearWp.code) < 0) {
             log.airports.push(nearWp.code);
-            var visited = d.visitedAirports || [];
+            var visited = dataRef.current.visitedAirports || [];
             if (visited.indexOf(nearWp.id) < 0) { upd('visitedAirports', visited.concat([nearWp.id])); }
           }
 
@@ -24214,7 +24500,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 { id: 'quiz',       icon: '🎯', label: __alloT('stem.flightsim.quiz', 'Quiz'),        desc: __alloT('stem.flightsim.test_your_knowledge_with_scoring_strea', 'Test your knowledge with scoring + streaks'),          bg: 'linear-gradient(160deg, #1e3a8a, #172554)', accent: '#a5b4fc' },
                 { id: 'preflight',  icon: '✅', label: 'Pre-Flight',  desc: __alloT('stem.flightsim.interactive_checklist_real_pilots_use', 'Interactive checklist real pilots use'),              bg: 'linear-gradient(160deg, #115e59, #042f2e)', accent: '#5eead4' },
                 { id: 'calculator', icon: '🧮', label: __alloT('stem.flightsim.lift_calc', 'Lift Calc'),   desc: __alloT('stem.flightsim.compute_lift_for_any_aircraft_speed_al', 'Compute lift for any aircraft + speed + altitude'),   bg: 'linear-gradient(160deg, #155e75, #083344)', accent: '#67e8f9' },
-                { id: 'stallHunt',  icon: '⚠️', label: __alloT('stem.flightsim.stall_discovery', 'Stall Discovery'), desc: __alloT('stem.flightsim.adjust_airspeed_altitude_aoa_discover_', 'Adjust airspeed, altitude, AoA — discover the stall envelope.'), bg: 'linear-gradient(160deg, #92400e, #451a03)', accent: '#fcd34d' }
+                { id: 'stallHunt',  icon: '⚠️', label: __alloT('stem.flightsim.stall_discovery', 'Guided stall investigation'), desc: __alloT('stem.flightsim.adjust_airspeed_altitude_aoa_discover_', 'Predict, test, explain, and apply what causes a stall. About 10 minutes.'), bg: 'linear-gradient(160deg, #92400e, #451a03)', accent: '#fcd34d' }
               ].map(function(m) {
                 return h('button', {
                   key: m.id,
@@ -24498,6 +24784,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               (currentAC.flapDetents ? __alloT('stem.flightsim.chip_flaps_deg', "Flaps {deg}°").replace('{deg}', flightConfigUi.flaps) : __alloT('stem.flightsim.chip_flaps_clean', "Clean"))
               + ' · ' + (flightConfigUi.brake ? __alloT('stem.flightsim.chip_brakes_on', "Brakes on") : __alloT('stem.flightsim.chip_brakes_off', "Brakes off")))
           ),
+          stallFlightRef.current && h('section', { 'aria-label': __alloT('stem.flightsim.guided_flight_practice_label', 'Guided stall flight practice'), style: { order: 0, padding: '12px', maxHeight: '38vh', overflow: 'auto', borderRadius: '10px', border: '1px solid #7dd3fc', background: '#0f172a', color: '#f8fafc', fontSize: '13px', lineHeight: 1.45 } },
+            h('strong', null, __alloT('stem.flightsim.guided_flight_practice_title', 'Stall and recovery practice')),
+            h('p', { role: 'status', style: { margin: '8px 0' } }, stallFlightRef.current.status === 'complete'
+              ? __alloT('stem.flightsim.guided_flight_recovered_paused', 'Recovery observed: five seconds of normal flow. Practice paused.')
+              : stallFlightRef.current.status !== 'active' ? __alloT('stem.flightsim.guided_flight_ended_review', 'Practice ended. Review the recorded evidence.')
+              : stallFlightRef.current.sawStall ? __alloT('stem.flightsim.guided_flight_recover_prompt', 'Stall observed. Reduce angle of attack, then hold normal flow for five seconds.')
+              : __alloT('stem.flightsim.guided_flight_observe_prompt', 'Gently raise the nose to explore the critical angle. Watch the angle of attack, not speed alone.')),
+            h('p', { style: { margin: '8px 0', fontVariantNumeric: 'tabular-nums' } }, __alloT('stem.flightsim.guided_flight_air_data', 'AoA {angle}° · {state} · {speed} kts')
+              .replace('{angle}', (Number(flightRef.current.aoa) || 0).toFixed(1))
+              .replace('{state}', flightRef.current.aerodynamicState === 'stall' ? __alloT('stem.flightsim.guided_flight_flow_stall', 'stall') : flightRef.current.aerodynamicState === 'boundary' ? __alloT('stem.flightsim.guided_flight_flow_boundary', 'boundary') : __alloT('stem.flightsim.guided_flight_flow_normal', 'normal'))
+              .replace('{speed}', Math.round(flightRef.current.speed * 0.5924838))),
+            h('p', { style: { margin: '8px 0' } }, __alloT('stem.flightsim.guided_flight_controls_help', 'Focus the cockpit, then W/S to pitch; Shift to add power. Space pauses. Return here at any time.')),
+            h('button', { onClick: function() { if (canvasRef.current) canvasRef.current.focus(); }, style: Object.assign({}, flightGlassButton(false), { minHeight: '44px', marginBottom: '8px' }) }, __alloT('stem.flightsim.guided_flight_focus_controls', 'Focus cockpit controls')),
+            h('button', { onClick: function() { finishFlight(true); }, style: Object.assign({}, flightGlassButton(true), { minHeight: '44px' }) }, __alloT('stem.flightsim.guided_flight_return_investigation', 'Return to investigation'))
+          ),
           // Overlay controls
           h('nav', { className: 'skyschool-command-rail' + (railOpen ? '' : ' skyschool-rail-collapsed'), 'data-flightsim-command-rail': 'true', 'data-rail-open': railOpen ? 'true' : 'false', 'aria-label': __alloT('stem.flightsim.flight_deck_controls', 'Flight deck controls'), style: { order: 1, alignSelf: railOpen ? 'stretch' : 'flex-start', display: 'grid', gridTemplateColumns: railOpen ? '1fr 1fr' : '1fr', gap: '5px', width: railOpen ? '224px' : 'auto', maxWidth: '224px', padding: '8px', borderRadius: '12px', background: 'linear-gradient(145deg, rgba(2,6,23,0.82), rgba(15,23,42,0.68))', border: '1px solid rgba(125,211,252,0.22)', boxShadow: '0 14px 34px rgba(2,6,23,0.42)', backdropFilter: 'blur(14px)' } },
             // Header doubles as the collapse control. The rail used to be a
@@ -24518,34 +24819,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 style: { minWidth: '28px', minHeight: '26px', padding: '0 6px', borderRadius: '7px', background: 'rgba(56,189,248,0.14)', border: '1px solid rgba(125,211,252,0.3)', color: '#e0f2fe', fontSize: '11px', fontWeight: 900, lineHeight: 1, cursor: 'pointer' }
               }, railOpen ? '\u2039\u2039' : '\u203A\u203A')
             ),
-            railOpen && h('button', { onClick: function() {
-              flyingRef.current = false; stopEngineSound(); stopWindSound(); updateStallHorn(false);
-              // Generate flight debrief
-              var log = logRef.current;
-              var ft = Math.round(timeRef.current - (log.startTime || 0));
-              var discovered = Object.keys(geoDiscoveredRef.current).length;
-              var dLive = dataRef.current;
-              var badges = Object.keys(dLive.earnedBadges || {}).length;
-              // Accumulate total flight time and persist this flight's
-              // discoveries — the fly-10-min quest hook and the menu stats
-              // read these keys, but nothing ever wrote them before.
-              updMulti({
-                view: 'debrief',
-                totalFlightTime: (dLive.totalFlightTime || 0) + ft,
-                geoDiscovered: Object.assign({}, dLive.geoDiscovered || {}, geoDiscoveredRef.current),
-                lastDebrief: {
-                  flightTime: ft, distance: Math.round(log.distance), maxAlt: Math.round(log.maxAlt),
-                  maxSpeed: Math.round(log.maxSpeed), airports: log.airports.length,
-                  discovered: discovered, badges: badges, aircraft: currentAC.name, aircraftId: currentAC.id,
-                  landings: landingRef.current.scored ? 1 : 0,
-                  // Gated on `scored`, the flag set alongside touchdownFPM, rather
-                  // than on the rate's own truthiness: a touchdown that rounds to
-                  // 0 fpm is the best landing the sim can produce, and testing the
-                  // number threw it away as "no landing recorded".
-                  bestLanding: landingRef.current.scored ? Math.round(landingRef.current.touchdownFPM || 0) : null
-                }
-              });
-            },
+            railOpen && h('button', { onClick: function() { finishFlight(false); },
               style: flightGlassButton(false, '#f87171')
             }, __alloT('stem.flightsim.exit', '✕ Exit')),
             railOpen && h('button', { onClick: function() {
@@ -24818,22 +25092,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         })[0] || null;
         var mins = Math.floor(db.flightTime / 60);
         var secs = db.flightTime % 60;
-        var gradeIcon, gradeText, gradeColor, gradeXP;
-        // `!= null`, not truthiness: bestLanding is a touchdown rate in fpm, so the
-        // gentlest possible landing rounds to 0 and a truthy test read the BEST
-        // result in the tool as "no landing recorded".
+        var evidence = flightPracticeEvidence(db);
+        var gradeIcon = evidence.count ? '✓' : '○';
+        var gradeColor = evidence.count ? '#7dd3fc' : '#cbd5e1';
+        var gradeText = __alloT('stem.flightsim.practice_milestone_summary', '{count} of {total} practice milestones observed')
+          .replace('{count}', evidence.count).replace('{total}', evidence.total);
         var landed = db.bestLanding != null;
-        if (db.distance > 200 && db.airports > 0 && landed && db.bestLanding < 200) {
-          gradeIcon = '\uD83C\uDFC6'; gradeText = 'OUTSTANDING — Expert pilot!'; gradeColor = '#fbbf24'; gradeXP = 40;
-        } else if (db.distance > 100 && db.airports > 0) {
-          gradeIcon = '\uD83C\uDF1F'; gradeText = 'Excellent Flight!'; gradeColor = '#fbbf24'; gradeXP = 25;
-        } else if (db.distance > 50) {
-          gradeIcon = '\u2708\uFE0F'; gradeText = 'Great Exploration!'; gradeColor = '#60a5fa'; gradeXP = 15;
-        } else if (db.flightTime > 120) {
-          gradeIcon = '\uD83D\uDEEB'; gradeText = 'Good Practice!'; gradeColor = '#4ade80'; gradeXP = 10;
-        } else {
-          gradeIcon = '\uD83D\uDCDD'; gradeText = 'Quick Hop'; gradeColor = '#cbd5e1'; gradeXP = 5;
-        }
+        var debriefSamples = Array.isArray(db.samples) ? db.samples : blackBoxRef.current;
         var landingQuality = 'No landing recorded';
         // #94a3b8 measured 4.31:1 on the debrief header's gradient — just under
         // the 4.5:1 minimum for this 10px chip. Same reason gradeColor for
@@ -24843,15 +25108,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         else if (db.bestLanding != null && db.bestLanding < 200) { landingQuality = 'Smooth landing'; landingColor = '#4ade80'; }
         else if (db.bestLanding != null && db.bestLanding < 400) { landingQuality = 'Firm landing'; landingColor = '#fbbf24'; }
         else if (db.bestLanding != null) { landingQuality = 'Hard landing'; landingColor = '#f87171'; }
-        var landingPoints = db.bestLanding == null ? 0 : Math.max(0, Math.min(25, (600 - db.bestLanding) / 500 * 25));
-        var performanceScore = Math.round(Math.min(100,
-          10 + Math.min(25, db.flightTime / 300 * 25) + Math.min(20, db.distance / 200 * 20) +
-          Math.min(10, db.airports / 2 * 10) + Math.min(10, db.discovered / 5 * 10) + landingPoints
-        ));
+        var performanceScore = evidence.score;
         // Generate educational tip based on flight data
         var tip = '';
         if (db.maxAlt < 1000 && db.flightTime > 60) tip = '\uD83D\uDCA1 Try climbing higher! At altitude, you can see more terrain and discover landmarks. Use W to pitch up.';
-        else if (db.maxSpeed > 200 && !landed) tip ='\uD83D\uDCA1 You flew fast! Try landing next time — slow to 80 knots near an airport, descend gently, and pitch up just before the runway.';
+        else if (db.maxSpeed > 200 && !landed) tip ='\uD83D\uDCA1 You flew fast! Try landing next time — use the selected aircraft’s approach guidance, manage descent rate, and reduce angle of attack if a stall warning appears.';
         else if (db.distance < 20 && db.flightTime > 60) tip = '\uD83D\uDCA1 Fly further! Use the heading tape at the top to navigate toward airports shown on the mini-map.';
         else if (db.discovered < 3) tip = '\uD83D\uDCA1 Fly over cities and landmarks to discover them! There are 50+ places to find around the world.';
         else if (landed && db.bestLanding > 400) tip ='\uD83D\uDCA1 Your landing was a bit hard (' + db.bestLanding + ' fpm). Try reducing descent rate before touchdown — flare by pressing W gently just before the runway.';
@@ -24862,11 +25123,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           h('style', null, '#skyschool-debrief button{transition:transform .16s ease,filter .16s ease,box-shadow .16s ease}#skyschool-debrief button:hover{transform:translateY(-1px);filter:brightness(1.08)}#skyschool-debrief button:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}@media(max-width:560px){#skyschool-debrief .skyschool-debrief-actions{display:grid!important;grid-template-columns:1fr!important}#skyschool-debrief .skyschool-debrief-actions button{width:100%}}'),
           // Grade card header
           h('section', { 'aria-labelledby': 'skyschool-debrief-title', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', alignItems: 'center', gap: '18px', marginBottom: '16px', padding: '18px', borderRadius: '16px', background: 'linear-gradient(135deg, rgba(15,23,42,0.9), rgba(8,47,73,0.68))', border: '1px solid ' + gradeColor + '55', boxShadow: '0 18px 40px rgba(2,6,23,0.34)' } },
-            h('div', { role: 'img', 'aria-label': __alloT('stem.flightsim.flight_performance_score', 'Flight performance score {score} out of 100').replace('{score}', performanceScore), style: { width: '132px', height: '132px', borderRadius: '50%', padding: '8px', margin: '0 auto', background: 'conic-gradient(' + gradeColor + ' 0 ' + performanceScore + '%, rgba(148,163,184,0.16) ' + performanceScore + '% 100%)', boxShadow: '0 0 0 1px ' + gradeColor + '33, 0 16px 34px rgba(2,6,23,0.42)' } },
+            h('div', { role: 'img', 'aria-label': __alloT('stem.flightsim.flight_performance_score', 'Observed practice milestones: {score} percent').replace('{score}', performanceScore), style: { width: '132px', height: '132px', borderRadius: '50%', padding: '8px', margin: '0 auto', background: 'conic-gradient(' + gradeColor + ' 0 ' + performanceScore + '%, rgba(148,163,184,0.16) ' + performanceScore + '% 100%)', boxShadow: '0 0 0 1px ' + gradeColor + '33, 0 16px 34px rgba(2,6,23,0.42)' } },
               h('div', { style: { width: '100%', height: '100%', borderRadius: '50%', background: 'radial-gradient(circle at 50% 35%, #172554, #020617 72%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.1)' } },
                 h('div', { style: { fontSize: '28px', lineHeight: 1 } }, gradeIcon),
                 h('div', { style: { fontSize: '28px', fontWeight: 950, color: '#f8fafc', lineHeight: 1.05, marginTop: '4px' } }, performanceScore),
-                h('div', { style: { fontSize: '8px', fontWeight: 900, color: '#94a3b8', letterSpacing: '0.14em' } }, 'FLIGHT SCORE')
+                h('div', { style: { fontSize: '8px', fontWeight: 900, color: '#94a3b8', letterSpacing: '0.14em' } }, __alloT('stem.flightsim.practice_evidence_heading', 'PRACTICE EVIDENCE'))
               )
             ),
             h('div', null,
@@ -24875,10 +25136,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               h('div', { style: { fontSize: '16px', color: gradeColor, fontWeight: 850, marginTop: '7px' } }, gradeText),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' } },
                 h('span', { style: { padding: '5px 9px', borderRadius: '999px', background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.24)', color: '#bae6fd', fontSize: '10px', fontWeight: 800 } }, db.aircraft),
-                h('span', { style: { padding: '5px 9px', borderRadius: '999px', background: gradeColor + '18', border: '1px solid ' + gradeColor + '44', color: gradeColor, fontSize: '10px', fontWeight: 850 } }, '+' + gradeXP + ' XP'),
+                h('span', { style: { padding: '5px 9px', borderRadius: '999px', background: gradeColor + '18', border: '1px solid ' + gradeColor + '44', color: gradeColor, fontSize: '10px', fontWeight: 850 } }, __alloT('stem.flightsim.practice_milestone_badge', '{count}/{total} observed').replace('{count}', evidence.count).replace('{total}', evidence.total)),
                 h('span', { style: { padding: '5px 9px', borderRadius: '999px', background: landingColor + '18', border: '1px solid ' + landingColor + '44', color: landingColor, fontSize: '10px', fontWeight: 850 } }, landingQuality)
               )
             )
+          ),
+          h('section', { 'aria-label': __alloT('stem.flightsim.practice_milestones_heading', 'Observed practice milestones'), style: { padding: '16px', marginBottom: '16px', background: '#0f172a', border: '1px solid #475569', borderRadius: '10px', fontSize: '14px', lineHeight: 1.7 } },
+            h('h3', { style: { margin: '0 0 8px' } }, __alloT('stem.flightsim.practice_milestones_heading', 'Observed practice milestones')),
+            h('p', { style: { margin: '0 0 8px', color: '#cbd5e1' } }, __alloT('stem.flightsim.practice_milestones_explanation', 'These are simulation observations, not a grade of understanding or real-world piloting skill. Ground waiting earns no flight credit.')),
+            !db.startedAirborne && h('div', null, (evidence.takeoff ? '✓ ' : '○ ') + __alloT('stem.flightsim.practice_takeoff_criterion', 'Takeoff: at least 10 seconds airborne and 100 ft above the field.')),
+            h('div', null, (evidence.steady ? '✓ ' : '○ ') + __alloT('stem.flightsim.practice_steady_criterion', 'Steady flight: 10 continuous seconds above 100 ft, within ±200 fpm and ±10° bank, without stall or low-airspeed advisories.')),
+            h('div', null, (evidence.landing ? '✓ ' : '○ ') + __alloT('stem.flightsim.practice_touchdown_criterion', 'Controlled touchdown: below 500 fpm after at least 10 seconds airborne.')),
+            db.startedAirborne && h('p', { style: { color: '#cbd5e1' } }, __alloT('stem.flightsim.practice_started_airborne', 'This session began airborne; takeoff is not assessed.')),
+            db.airborneSeconds == null && h('p', { style: { color: '#cbd5e1' } }, __alloT('stem.flightsim.practice_legacy_log', 'This older log has no milestone measurements. Its original flight statistics are retained.'))
           ),
           // Educational tip
           tip && h('aside', { 'aria-label': __alloT('stem.flightsim.next_flight_coaching_tip', 'Next flight coaching tip'), style: { padding: '12px 15px', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(99,102,241,0.14), rgba(14,165,233,0.08))', border: '1px solid rgba(129,140,248,0.3)', borderLeft: '4px solid #818cf8', marginBottom: '16px', fontSize: '12px', color: '#c7d2fe', lineHeight: 1.55, boxShadow: '0 10px 24px rgba(2,6,23,0.2)' } }, tip),
@@ -24903,7 +25173,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             })
           ),
           // Flight Path Map (from black box data)
-          blackBoxRef.current.length > 3 ? h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #1e293b', marginBottom: '16px' } },
+          debriefSamples.length > 3 ? h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #1e293b', marginBottom: '16px' } },
             h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.flightsim.flight_path', '🗺️ Flight Path')),
             h('canvas', { role: 'img', 'aria-label': __alloT('stem.flightsim.flightsim_interactive_visualization', 'Flightsim interactive visualization'),
               ref: function(canvas) {
@@ -24927,7 +25197,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 // conditional now, so clear explicitly before the early return can
                 // leave a stale trace on screen.
                 g.clearRect(0, 0, cW, cH);
-                var bb = blackBoxRef.current;
+                var bb = debriefSamples;
                 if (bb.length < 2) return;
                 // Keeps a label inside the box. Waypoint codes and the START/END
                 // captions are drawn centred above their marker, so any marker near
@@ -25034,7 +25304,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 // conditional now, so clear explicitly before the early return can
                 // leave a stale trace on screen.
                 g.clearRect(0, 0, cW, cH);
-                var bb = blackBoxRef.current;
+                var bb = debriefSamples;
                 if (bb.length < 3) return;
                 g.fillStyle = '#0a1628'; g.fillRect(0, 0, cW, cH);
                 // Grid + labels
@@ -25080,7 +25350,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             // Export flight data button
             h('button', {
               onClick: function() {
-                var bb = blackBoxRef.current;
+                var bb = debriefSamples;
                 var rows = [['Time(s)', 'Lat', 'Lon', 'Alt(ft)', 'Speed(kts)', 'Heading']];
                 bb.forEach(function(p) { rows.push([p.t, p.lat.toFixed(4), p.lon.toFixed(4), p.alt, p.spd, p.hdg]); });
                 var csv = rows.map(function(r) { return r.join(','); }).join('\n');
@@ -25094,7 +25364,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           ) : null,
           // Educational takeaways
           h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #1e293b', marginBottom: '16px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.flightsim.what_you_learned_this_flight', '💡 What You Learned This Flight')),
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.flightsim.what_you_learned_this_flight', '💡 Flight Observations')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
               db.maxAlt > 10000 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #22d3ee' } }, __alloT('stem.flightsim.debrief_learned_altitude', "🌌 You flew above 10,000 ft, where the air is about three quarters as dense as at sea level. Above 12,500 ft the crew needs supplemental oxygen for any stretch longer than 30 minutes, and above 14,000 ft for the whole flight (FAR 91.211).")) : null,
               db.maxSpeed > 400 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #fbbf24' } }, __alloT('stem.flightsim.you_exceeded_400_kts_at_these_speeds_c', '💨 You exceeded 400 kts! At these speeds, compressibility effects start to matter — air can no longer be treated as incompressible.')) : null,
@@ -25419,49 +25689,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       if (view === 'quiz') {
         var qIdxValue = Number(d.quizIdx);
         var qIdx = Number.isFinite(qIdxValue) ? Math.trunc(qIdxValue) : 0;
-        var qPickedValue = d.quizPicked == null ? null : Number(d.quizPicked);
-        var qPicked = Number.isInteger(qPickedValue) && qPickedValue >= 0 && qPickedValue < 4 ? qPickedValue : null;
-        var qScore = Math.max(0, Number(d.quizScore) || 0);
-        var qTotal = Math.max(0, Number(d.quizTotal) || 0);
-        var qStreak = Math.max(0, Number(d.quizStreak) || 0);
-        var qBest = Math.max(0, Number(d.quizBest) || 0);
         var quizDeck = getQuizDeck();
         var safeIdx = ((qIdx % quizDeck.length) + quizDeck.length) % quizDeck.length;
         var q = quizDeck[safeIdx];
+        // Identity follows the question and answer content, not its deck index
+        // or shuffled option positions. Keep the selected text for the same reason.
+        var qKey = q.id ? 'id:' + q.id : JSON.stringify([q.question, q.correct, q.options.slice().sort()]);
+        var hasFirstAttempts = !!(d.quizFirstAttempts && typeof d.quizFirstAttempts === 'object' && !Array.isArray(d.quizFirstAttempts));
+        var qAttempts = hasFirstAttempts ? Object.assign({}, d.quizFirstAttempts) : {};
+        var qLegacy = d.quizLegacySummary || (!hasFirstAttempts && Number(d.quizTotal) > 0 ? { score: Math.max(0, Number(d.quizScore) || 0), total: Math.max(0, Number(d.quizTotal) || 0) } : null);
+        // Old saves know only the current choice and aggregate score. Retain the
+        // aggregates as history; only the recoverable response becomes evidence.
+        var legacyPicked = d.quizPicked == null ? null : Number(d.quizPicked);
+        if (!hasFirstAttempts && Number.isInteger(legacyPicked) && legacyPicked >= 0 && legacyPicked < q.options.length) {
+          qAttempts[qKey] = { choice: q.options[legacyPicked], correct: q.options[legacyPicked] === q.correct, order: 0 };
+        }
+        function quizAttemptStats(attempts) {
+          var entries = Object.keys(attempts).map(function(key) { return attempts[key]; }).filter(function(entry) { return entry && typeof entry.choice === 'string' && typeof entry.correct === 'boolean'; });
+          entries.sort(function(a, b) { return (Number(a.order) || 0) - (Number(b.order) || 0); });
+          var score = 0, streak = 0, best = 0;
+          entries.forEach(function(entry) { if (entry.correct) { score++; streak++; best = Math.max(best, streak); } else streak = 0; });
+          return { quizScore: score, quizTotal: entries.length, quizStreak: streak, quizBest: best };
+        }
+        var qStats = quizAttemptStats(qAttempts);
+        var qScore = qStats.quizScore, qTotal = qStats.quizTotal, qStreak = qStats.quizStreak, qBest = qStats.quizBest;
+        var qFirst = qAttempts[qKey];
+        var qPractice = !!qFirst && d.quizPracticeKey === qKey;
+        var qPickedValue = qPractice ? (d.quizPracticePicked == null ? null : Number(d.quizPracticePicked)) : (qFirst ? q.options.indexOf(qFirst.choice) : null);
+        var qPicked = Number.isInteger(qPickedValue) && qPickedValue >= 0 && qPickedValue < q.options.length ? qPickedValue : null;
         var answered = qPicked != null;
         var isCorrect = answered && q.options[qPicked] === q.correct;
         var accuracy = qTotal > 0 ? Math.round((qScore / qTotal) * 100) : 0;
 
+        function saveQuiz(patch) {
+          // The ref closes the same-tick double-click gap before React renders.
+          dataRef.current = Object.assign({}, dataRef.current, patch);
+          updMulti(patch);
+        }
         function pickAnswer(optionIdx) {
-          if (answered) return;
+          if (answered || !Number.isInteger(optionIdx) || !q.options[optionIdx]) return;
           var pickedCorrect = q.options[optionIdx] === q.correct;
-          var newScore = qScore + (pickedCorrect ? 1 : 0);
-          var newStreak = pickedCorrect ? qStreak + 1 : 0;
-          var newBest = Math.max(qBest, newStreak);
-          updMulti({
-            quizPicked: optionIdx,
-            quizScore: newScore,
-            quizTotal: qTotal + 1,
-            quizStreak: newStreak,
-            quizBest: newBest,
-          });
+          if (qPractice) {
+            if (dataRef.current.quizPracticePicked != null) return;
+            saveQuiz({ quizPracticePicked: optionIdx });
+            return;
+          }
+          var attempts = Object.assign({}, qAttempts, dataRef.current.quizFirstAttempts || {});
+          if (attempts[qKey]) return;
+          attempts[qKey] = { choice: q.options[optionIdx], correct: pickedCorrect, order: Object.keys(attempts).length };
+          saveQuiz(Object.assign({ quizFirstAttempts: attempts, quizLegacySummary: qLegacy, quizPicked: optionIdx }, quizAttemptStats(attempts)));
           if (pickedCorrect && addToast) addToast(__alloT('stem.flightsim.toast_correct', "🎯 Correct!"));
         }
 
+        function goToQuiz(index) {
+          saveQuiz(Object.assign({ quizIdx: index, quizPicked: null, quizFirstAttempts: qAttempts, quizLegacySummary: qLegacy, quizPracticeKey: null, quizPracticePicked: null }, qStats));
+        }
         function nextQuiz() {
-          updMulti({
-            quizIdx: safeIdx + 1,
-            quizPicked: null,
-          });
+          goToQuiz(safeIdx + 1);
         }
 
         function randomQuiz() {
           var rand = Math.floor(Math.random() * quizDeck.length);
-          updMulti({ quizIdx: rand, quizPicked: null });
+          goToQuiz(rand);
         }
 
         function resetQuiz() {
-          updMulti({ quizIdx: 0, quizPicked: null, quizScore: 0, quizTotal: 0, quizStreak: 0, quizBest: 0 });
+          saveQuiz({ quizIdx: 0, quizPicked: null, quizScore: 0, quizTotal: 0, quizStreak: 0, quizBest: 0, quizFirstAttempts: {}, quizLegacySummary: null, quizPracticeKey: null, quizPracticePicked: null });
         }
 
         return h('div', {
@@ -25491,7 +25784,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               h('div', { style: { fontSize: '22px', fontWeight: 900, color: '#fff' } }, (safeIdx + 1) + ' / ' + quizDeck.length)
             ),
             h('div', { style: { flex: 1, minWidth: '100px' } },
-              h('div', { style: { fontSize: '10px', color: '#bfdbfe', fontWeight: 700, textTransform: 'uppercase' } }, __alloT('stem.flightsim.correct', 'Correct')),
+              h('div', { style: { fontSize: '10px', color: '#bfdbfe', fontWeight: 700, textTransform: 'uppercase' } }, __alloT('stem.flightsim.quiz_first_attempt_score', 'First attempts correct')),
               h('div', { style: { fontSize: '22px', fontWeight: 900, color: '#86efac' } }, qScore + ' / ' + qTotal)
             ),
             h('div', { style: { flex: 1, minWidth: '100px' } },
@@ -25503,8 +25796,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               h('div', { style: { fontSize: '22px', fontWeight: 900, color: '#fbbf24' } }, '🔥 ' + qStreak),
               qBest > 0 && h('div', { style: { fontSize: '10px', color: '#bfdbfe' } }, 'Best: ' + qBest)
             ),
-            h('button', { onClick: resetQuiz, style: { padding: '8px 12px', borderRadius: '6px', border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.1)', color: '#fbbf24', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.flightsim.reset', '↻ Reset'))
+            h('button', { onClick: resetQuiz, style: { padding: '8px 12px', borderRadius: '6px', border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.1)', color: '#fbbf24', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.flightsim.quiz_new_attempt', 'Start new attempt'))
           ),
+          h('p', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.5 } }, __alloT('stem.flightsim.quiz_first_attempt_note', 'Your first response to each question counts once. Practice never changes this score.')),
+          qLegacy && h('p', { 'data-quiz-legacy-summary': 'true', style: { fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 } }, __alloT('stem.flightsim.quiz_legacy_summary', 'Earlier saved score: {score}/{total}. Earlier responses without question records are kept as history.').replace('{score}', qLegacy.score).replace('{total}', qLegacy.total)),
 
           // Question card
           h('section', {
@@ -25522,6 +25817,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               h('span', { style: { fontSize: '10px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, q.topic)
             ),
             h('h3', { id: 'skyschool-quiz-question', style: { fontSize: 'clamp(17px, 2.5vw, 21px)', fontWeight: 850, color: '#fff', margin: '0 0 18px 0', lineHeight: 1.42 } }, q.question),
+            qPractice && h('p', { role: 'status', 'data-quiz-practice': 'true', style: { fontSize: '13px', color: '#c4b5fd', lineHeight: 1.5 } }, __alloT('stem.flightsim.quiz_practice_mode', 'Practice mode — this response does not change your first-attempt score.')),
+            qFirst && h('p', { 'data-quiz-first-response': 'true', style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.5 } }, __alloT('stem.flightsim.quiz_first_response', 'First response: {answer}').replace('{answer}', qFirst.choice)),
 
             // Options
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
@@ -25572,11 +25869,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               ),
               h('p', { style: { fontSize: '12px', color: '#cbd5e1', margin: 0, lineHeight: 1.6 } }, q.explanation)
             ),
+            qFirst && (!qPractice || answered) && h('button', { onClick: function() { saveQuiz(Object.assign({ quizFirstAttempts: qAttempts, quizLegacySummary: qLegacy, quizPracticeKey: qKey, quizPracticePicked: null }, qStats)); }, style: { marginTop: '12px', padding: '10px 14px', borderRadius: '8px', border: '1px solid #a78bfa', background: 'rgba(124,58,237,0.16)', color: '#ddd6fe', fontSize: '13px', fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.flightsim.quiz_practice_again', 'Practice this question')),
 
             // Nav
             h('div', { className: 'skyschool-quiz-nav', style: { display: 'flex', gap: '10px', marginTop: '18px', justifyContent: 'space-between' } },
               h('button', {
-                onClick: function() { updMulti({ quizIdx: safeIdx - 1, quizPicked: null }); },
+                onClick: function() { goToQuiz(safeIdx - 1); },
                 disabled: safeIdx === 0,
                 style: { padding: '10px 16px', borderRadius: '8px', border: '1px solid #334155', background: 'transparent', color: safeIdx === 0 ? '#64748b' : '#e2e8f0', fontSize: '12px', fontWeight: 700, cursor: safeIdx === 0 ? 'not-allowed' : 'pointer' }
               }, __alloT('stem.flightsim.previous', '◀ Previous')),
@@ -25743,15 +26041,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // whole point is teaching the density term of the lift equation).
         var rhoSl = 0.002378;  // slugs/ft^3
         var hFt = Math.max(0, calcAltitude);
-        var theta = 1 - (0.0065 * hFt * 0.3048) / 288.15;  // h in meters
-        var sigma = Math.max(0, Math.pow(theta, 4.2561));
-        var rho = rhoSl * sigma;
+        var rho = Physics.airDensity(hFt);
+        var sigma = rho / rhoSl;
         // Speed: knots to ft/s
         var vFtS = calcSpeed * 1.6878;
         // Lift in pounds
         var liftLb = 0.5 * rho * vFtS * vFtS * calcWingArea * calcCl;
         // Comparison to weight
         var ratio = liftLb / preset.weight;
+        var balanced = Math.abs(ratio - 1) < 0.005;
+        var balanceColor = balanced ? '#86efac' : '#fbbf24';
+        var balanceLabel = balanced ? __alloT('stem.flightsim.lift_balanced', 'Lift approximately balances weight')
+          : (ratio > 1 ? __alloT('stem.flightsim.lift_above_weight', 'Lift exceeds weight') : __alloT('stem.flightsim.lift_below_weight', 'Lift is below weight'));
+        var balanceExplanation = balanced
+          ? __alloT('stem.flightsim.lift_balanced_explanation', 'With lift vertical and no other vertical force, vertical acceleration is approximately zero. This does not tell us whether the aircraft is already climbing, level, or descending.')
+          : (ratio > 1
+            ? __alloT('stem.flightsim.lift_above_explanation', 'With lift vertical and no other vertical force, the net force accelerates the aircraft upward. An existing descent can slow before a climb begins.')
+            : __alloT('stem.flightsim.lift_below_explanation', 'With lift vertical and no other vertical force, the net force accelerates the aircraft downward. An existing climb can slow before a descent begins.'));
 
         function setPreset(idx) {
           var p = FORCE_CALCULATOR_PRESETS[idx];
@@ -25840,18 +26146,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               h('div', { style: { marginBottom: '12px' } },
                 h('div', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, __alloT('stem.flightsim.lift_force', 'Lift force')),
                 h('div', { style: { fontSize: '24px', color: '#86efac', fontWeight: 900, fontFamily: 'ui-monospace, Menlo, monospace' } }, Math.round(liftLb).toLocaleString() + ' lb'),
-                h('div', { style: { fontSize: '10px', color: '#94a3b8' } }, '= ' + Math.round(liftLb / 2.2046).toLocaleString() + ' kg')
+                h('div', { style: { fontSize: '10px', color: '#94a3b8' } }, '= ' + Math.round(liftLb / 2.2046).toLocaleString() + ' kgf')
               ),
               h('div', { style: { marginBottom: '12px' } },
                 h('div', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, __alloT('stem.flightsim.aircraft_weight_preset', 'Aircraft weight (preset)')),
                 h('div', { style: { fontSize: '15px', color: '#fbbf24', fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, preset.weight.toLocaleString() + ' lb')
               ),
               h('div', {
-                style: { padding: '12px', borderRadius: '8px', background: ratio >= 1.0 ? 'rgba(22,163,74,0.15)' : 'rgba(220,38,38,0.15)', border: '1px solid ' + (ratio >= 1.0 ? '#16a34a' : '#dc2626') }
+                style: { padding: '12px', borderRadius: '8px', background: balanced ? 'rgba(22,163,74,0.15)' : 'rgba(245,158,11,0.1)', border: '1px solid ' + (balanced ? '#16a34a' : '#b45309') }
               },
-                h('div', { style: { fontSize: '11px', fontWeight: 700, color: ratio >= 1.0 ? '#86efac' : '#fca5a5', textTransform: 'uppercase' } }, ratio >= 1.0 ? 'Lift exceeds weight ✓' : 'Lift below weight ✗'),
-                h('div', { style: { fontSize: '20px', fontWeight: 900, color: ratio >= 1.0 ? '#86efac' : '#fca5a5', marginTop: '4px' } }, 'L/W = ' + ratio.toFixed(2)),
-                h('div', { style: { fontSize: '11px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.4 } }, ratio >= 1.0 ? 'The aircraft would climb at these settings.' : 'Not enough lift — the aircraft would descend. Increase speed, wing area, or Cₗ.')
+                h('div', { style: { fontSize: '11px', fontWeight: 700, color: balanceColor, textTransform: 'uppercase' } }, balanceLabel),
+                h('div', { style: { fontSize: '20px', fontWeight: 900, color: balanceColor, marginTop: '4px' } }, 'L/W = ' + ratio.toFixed(2)),
+                h('div', { style: { fontSize: '12px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 } }, balanceExplanation)
               )
             )
           ),
@@ -25869,105 +26175,186 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         );
       }
 
-      // === H7b'' inquiry widget: stall discovery ===
+      // Guided inquiry: records are persisted by the same host as other tool data.
       if (view === 'stallHunt') {
-        var iq = d.stallHunt || { airspeed: 130, altitude: 5000, aoa: 8, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-        function setIQ(patch) { upd('stallHunt', Object.assign({}, iq, patch)); }
-        // Critical AoA ~17° for most general aviation. Stall depends ONLY on
-        // AoA — that IS the discovery this widget exists to teach. The old
-        // `+2 if airspeed < 65` hack made the state flip while sweeping the
-        // airspeed slider at fixed AoA, directly contradicting the intended
-        // takeaway (and its own guided prompt).
-        // < 14° = normal flow; 14-17° = boundary separation; > 17° = full stall
-        var effectiveAoA = iq.aoa;
-        var state;
-        if (effectiveAoA < 14) state = 'normal';
-        else if (effectiveAoA < 17) state = 'boundary';
-        else state = 'stall';
-        var stateMeta = {
-          normal:   { label: __alloT('stem.flightsim.normal_flow', '🟢 Normal flow'),         color: '#4ade80', bg: 'rgba(22,163,74,0.16)',  border: 'rgba(74,222,128,0.45)', desc: __alloT('stem.flightsim.air_remains_attached_lift_increases_pr', 'Air remains attached. Lift increases predictably with AoA.') },
-          boundary: { label: __alloT('stem.flightsim.boundary_separation', '🟡 Boundary separation'), color: '#fbbf24', bg: 'rgba(251,191,36,0.14)', border: 'rgba(251,191,36,0.5)',  desc: __alloT('stem.flightsim.lift_still_rising_but_turbulent_flow_d', 'Lift still rising but turbulent flow detaching. Buffet may begin.') },
-          stall:    { label: __alloT('stem.flightsim.full_stall', '🔴 Full stall'),          color: '#fb7185', bg: 'rgba(244,63,94,0.16)',  border: 'rgba(251,113,133,0.55)', desc: __alloT('stem.flightsim.lift_collapses_wing_no_longer_producin', 'Lift collapses. Wing no longer producing required lift — nose drops.') }
-        }[state];
-        function logObs() {
-          setIQ({ log: (iq.log || []).concat([{ s: iq.airspeed, a: iq.altitude, aoa: iq.aoa, st: state }]).slice(-8) });
+        var iq = stallInvestigationRecord(d.stallInvestigation || d.stallHunt);
+        var pairs = stallEvidencePairs(iq.observations);
+        var trial = sampleStallInvestigation(iq.airspeed, iq.altitude, iq.aoa);
+        var phases = ['predict', 'experiment', 'explain', 'transfer', 'review'];
+        var phaseLabels = [__alloT("stem.flightsim.guided_phase_prediction", "Prediction"), __alloT("stem.flightsim.guided_phase_trials", "Controlled trials"), __alloT("stem.flightsim.guided_phase_explanation", "Explanation"), __alloT("stem.flightsim.guided_phase_transfer", "Transfer"), __alloT("stem.flightsim.guided_phase_review", "Review")];
+        var flowLabels = { normal: __alloT("stem.flightsim.guided_table_state_normal", "normal"), boundary: __alloT("stem.flightsim.guided_table_state_boundary", "boundary"), stall: __alloT("stem.flightsim.guided_table_state_stall", "stall") };
+        var flightStatusLabels = {
+          active: __alloT("stem.flightsim.guided_flight_status_active", "active"), complete: __alloT("stem.flightsim.guided_flight_status_complete", "complete"), landed: __alloT("stem.flightsim.guided_flight_status_landed", "landed"),
+          'time-limit': __alloT("stem.flightsim.guided_flight_status_time_limit", "time-limit"), ended: __alloT("stem.flightsim.guided_flight_status_ended", "ended"), incomplete: __alloT("stem.flightsim.guided_flight_status_incomplete", "incomplete"), interrupted: __alloT("stem.flightsim.guided_flight_status_interrupted", "interrupted")
+        };
+        var phaseIndex = phases.indexOf(iq.phase);
+        var ready = !!iq.prediction && pairs.complete && !!iq.explanation.trim() && iq.transferAnswer === 'stall';
+        function setIQ(patch) {
+          upd('stallInvestigation', stallInvestigationRecord(Object.assign({}, iq, patch, { completedAt: null })));
         }
-        return h('div', { style: { padding: '20px', maxWidth: '900px', margin: '0 auto' } },
-          h('button', { onClick: function() { upd('view', 'menu'); }, style: { padding: '6px 12px', background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.4)', borderRadius: '6px', fontSize: '11px', cursor: 'pointer', marginBottom: '12px' } }, __alloT('stem.flightsim.back_to_menu_5', '← Back to menu')),
-          h('div', { style: { padding: '16px', background: 'rgba(15,23,42,0.6)', borderRadius: '10px', border: '1px solid rgba(190,18,60,0.3)' } },
-            h('h3', { style: { fontSize: '16px', fontWeight: 800, color: '#fb7185', margin: '0 0 6px 0' } }, __alloT('stem.flightsim.stall_discovery_2', '⚠️ Stall discovery')),
-            h('p', { style: { fontSize: '12.5px', color: '#cbd5e1', lineHeight: 1.6, margin: '0 0 8px 0' } },
-              __alloT('stem.flightsim.stall_discovery_intro', "You are flying. Adjust airspeed, altitude and angle of attack, and watch which of the three states the wing settles into. There is no score and nothing is revealed to you.")),
-            h('p', { style: { fontSize: '12.5px', color: '#7dd3fc', fontWeight: 700, lineHeight: 1.6, margin: '0 0 14px 0' } },
-              __alloT('stem.flightsim.stall_discovery_task', "Sweep one slider at a time. Log what you see. Then write down what you think causes a stall.")),
-            h('div', { style: { marginBottom: '14px', padding: '16px 14px', borderRadius: '12px', textAlign: 'center', background: stateMeta.bg, border: '1px solid ' + stateMeta.border, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)' } },
-              h('div', { style: { fontSize: '18px', fontWeight: 900, color: stateMeta.color, letterSpacing: '0.01em' } }, stateMeta.label),
-              h('div', { style: { fontSize: '12px', color: '#cbd5e1', marginTop: '5px', lineHeight: 1.5 } }, stateMeta.desc)
+        function goIQ(phase) {
+          upd('stallInvestigation', Object.assign({}, iq, { phase: phase }));
+          window.setTimeout(function() { var heading = document.getElementById('stall-phase-title'); if (heading) heading.focus(); }, 0);
+        }
+        var buttonStyle = { minHeight: '44px', padding: '10px 16px', border: '1px solid #7dd3fc', borderRadius: '9px', background: '#0c4a6e', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '14px' };
+        var fieldStyle = { width: '100%', boxSizing: 'border-box', border: '1px solid #94a3b8', borderRadius: '8px', padding: '10px', background: '#0f172a', color: '#f8fafc', font: 'inherit' };
+        var cardStyle = { padding: '20px', border: '1px solid #475569', borderRadius: '12px', background: '#0f172a', marginTop: '16px' };
+        function iqButton(label, action, disabled) {
+          return h('button', { type: 'button', onClick: action, disabled: !!disabled, style: Object.assign({}, buttonStyle, disabled ? { opacity: 0.5, cursor: 'default' } : {}) }, label);
+        }
+        function observationTable() {
+          return h('div', { style: { overflowX: 'auto', marginTop: '16px' }, tabIndex: 0, role: 'region', 'aria-label': __alloT("stem.flightsim.guided_observations_region", "Recorded observations") },
+            h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: '14px' } },
+              h('caption', { style: { textAlign: 'left', padding: '8px 0', color: '#cbd5e1' } }, __alloT("stem.flightsim.guided_evidence_caption", "Evidence log · latest 24 observations")),
+              h('thead', null, h('tr', null, [__alloT("stem.flightsim.guided_trial_column", "Trial"), __alloT("stem.flightsim.guided_airspeed_units", "Airspeed (kts)"), __alloT("stem.flightsim.guided_altitude_units", "Altitude (ft)"), __alloT("stem.flightsim.guided_aoa_column", "AoA (°)"), __alloT("stem.flightsim.guided_flow_state_column", "Flow state"), __alloT("stem.flightsim.guided_lift_column", "Lift (lb)")].map(function(label) {
+                return h('th', { key: label, scope: 'col', style: { padding: '10px', textAlign: 'left', background: '#1e293b', color: '#f8fafc', whiteSpace: 'nowrap' } }, label);
+              }))),
+              h('tbody', null, iq.observations.map(function(row, index) {
+                return h('tr', { key: index }, [index + 1, row.airspeed, row.altitude, row.aoa, flowLabels[row.state], row.lift.toLocaleString()].map(function(value, col) {
+                  return h(col === 0 ? 'th' : 'td', { key: col, scope: col === 0 ? 'row' : undefined, style: { textAlign: 'left', padding: '10px', borderBottom: '1px solid #334155', background: index % 2 ? '#172033' : '#0f172a', color: '#e2e8f0' } }, value);
+                }));
+              })))
+          );
+        }
+        function evidenceSummary() {
+          return h('div', { role: 'status', style: { lineHeight: 1.7, marginTop: '12px', color: '#e2e8f0' } },
+            h('div', null, pairs.angle ? __alloT("stem.flightsim.guided_angle_comparison", "✓ Angle comparison: trials {first} and {second}").replace('{first}', pairs.angle[0]).replace('{second}', pairs.angle[1]) : __alloT("stem.flightsim.guided_angle_comparison_needed", "○ Compare normal flow and stall at the same airspeed and altitude.")),
+            h('div', null, pairs.speed ? __alloT("stem.flightsim.guided_speed_comparison", "✓ Speed comparison: trials {first} and {second}").replace('{first}', pairs.speed[0]).replace('{second}', pairs.speed[1]) : __alloT("stem.flightsim.guided_speed_comparison_needed", "○ Change airspeed by at least 30 kts at the same angle and altitude. Check whether the flow state changes."))
+          );
+        }
+        function liftCurve() {
+          var samples = [], minLift = 0, maxLift = 0;
+          for (var curveAngle = -5; curveAngle <= 25; curveAngle++) {
+            var sample = sampleStallInvestigation(iq.airspeed, iq.altitude, curveAngle);
+            samples.push(sample);
+            minLift = Math.min(minLift, sample.lift); maxLift = Math.max(maxLift, sample.lift);
+          }
+          var low = Math.floor(minLift / 100) * 100, high = Math.max(100, Math.ceil(maxLift / 100) * 100);
+          function curveX(angle) { return 58 + (angle + 5) / 30 * 360; }
+          function curveY(lift) { return 146 - (lift - low) / (high - low) * 126; }
+          var points = samples.map(function(sample) { return curveX(sample.aoa) + ',' + curveY(sample.lift); }).join(' ');
+          return h('figure', { style: { margin: '16px 0', padding: '12px', border: '1px solid #475569', borderRadius: '8px', background: '#071525' } },
+            h('svg', { viewBox: '0 0 440 190', role: 'img', 'aria-labelledby': 'stall-curve-title stall-curve-description', style: { display: 'block', width: '100%', maxHeight: '180px', overflow: 'visible' } },
+              h('title', { id: 'stall-curve-title' }, __alloT('stem.flightsim.guided_curve_title', 'Lift versus angle of attack')),
+              h('desc', { id: 'stall-curve-description' }, __alloT('stem.flightsim.guided_curve_description', 'At {speed} kts and {altitude} ft, this model reaches peak lift at 15° and loses lift beyond that angle. The dot marks the current trial at {angle}° and {lift} lb.').replace('{speed}', iq.airspeed).replace('{altitude}', iq.altitude.toLocaleString()).replace('{angle}', iq.aoa).replace('{lift}', trial.lift.toLocaleString())),
+              h('line', { x1: 58, y1: 20, x2: 58, y2: 146, stroke: '#94a3b8' }),
+              h('line', { x1: 58, y1: 146, x2: 418, y2: 146, stroke: '#94a3b8' }),
+              h('line', { x1: 58, y1: curveY(0), x2: 418, y2: curveY(0), stroke: '#475569', strokeDasharray: '3 4' }),
+              h('text', { x: 52, y: 24, fill: '#cbd5e1', fontSize: 12, textAnchor: 'end' }, high.toLocaleString()),
+              h('text', { x: 52, y: 150, fill: '#cbd5e1', fontSize: 12, textAnchor: 'end' }, low.toLocaleString()),
+              [-5, 0, 10, 20, 25].map(function(angle) { return h('text', { key: angle, x: curveX(angle), y: 164, fill: '#cbd5e1', fontSize: 12, textAnchor: 'middle' }, angle + '°'); }),
+              h('text', { x: 238, y: 187, fill: '#e2e8f0', fontSize: 13, textAnchor: 'middle' }, __alloT('stem.flightsim.guided_angle_units', 'Angle of attack (°)')),
+              h('text', { transform: 'translate(12 84) rotate(-90)', fill: '#e2e8f0', fontSize: 13, textAnchor: 'middle' }, __alloT('stem.flightsim.guided_lift_column', 'Lift (lb)')),
+              h('line', { x1: curveX(Physics.CRITICAL_AOA), y1: 20, x2: curveX(Physics.CRITICAL_AOA), y2: 146, stroke: '#fbbf24', strokeDasharray: '5 4' }),
+              h('text', { x: curveX(Physics.CRITICAL_AOA) + 7, y: 33, fill: '#fbbf24', fontSize: 12 }, __alloT('stem.flightsim.guided_curve_critical', '15° critical')),
+              h('polyline', { points: points, fill: 'none', stroke: '#7dd3fc', strokeWidth: 3, strokeLinejoin: 'round' }),
+              h('circle', { cx: curveX(iq.aoa), cy: curveY(trial.lift), r: 5, fill: '#f8fafc', stroke: '#0284c7', strokeWidth: 3 })
             ),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '10px', marginBottom: '12px' } },
-              [
-                { key: 'airspeed', label: __alloT('stem.flightsim.airspeed_kts', 'Airspeed (kts)'), val: iq.airspeed, min: 40, max: 250, step: 5 },
-                { key: 'altitude', label: __alloT('stem.flightsim.altitude_ft', 'Altitude (ft)'),   val: iq.altitude, min: 0,  max: 30000, step: 500 },
-                { key: 'aoa',      label: __alloT('stem.flightsim.angle_of_attack', 'Angle of attack (°)'), val: iq.aoa, min: 0, max: 25, step: 0.5 }
-              ].map(function(s) {
-                return h('div', { key: s.key },
-                  h('label', { htmlFor: 'sh-' + s.key, style: { display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#cbd5e1', marginBottom: '4px' } },
-                    s.label + ': ', h('span', { style: { color: '#fb7185', fontFamily: 'monospace' } }, s.val)),
-                  h('input', { id: 'sh-' + s.key, className: 'skyschool-range', type: 'range', min: s.min, max: s.max, step: s.step, value: s.val,
-                    onChange: function(e) { var p = {}; p[s.key] = parseFloat(e.target.value); setIQ(p); },
-                    // height 28: the default range track is 16 px, under the
-                    // 24x24 WCAG 2.5.8 target minimum. These three sliders are the
-                    // entire input surface of this view.
-                    style: { width: '100%', height: '28px' }, 'aria-label': s.label }));
-              })
+            h('figcaption', { style: { color: '#cbd5e1', fontSize: '14px', lineHeight: 1.5 } }, __alloT('stem.flightsim.guided_curve_caption', 'Hold airspeed and altitude fixed to compare lift across angles. The dot marks your current trial; the dashed line marks this model’s critical angle. Record trials below to build your evidence.'))
+          );
+        }
+        return h('div', { id: 'skyschool-investigation', style: { background: '#071525', color: '#f8fafc', padding: 'clamp(16px, 4vw, 32px)', borderRadius: '16px', maxWidth: '1000px', margin: '0 auto', fontSize: '16px', lineHeight: 1.6 } },
+          h('style', null, '#skyschool-investigation button:focus-visible,#skyschool-investigation input:focus-visible,#skyschool-investigation textarea:focus-visible{outline:3px solid #fbbf24;outline-offset:3px}#skyschool-investigation button{font-family:inherit}#skyschool-investigation textarea{resize:vertical}'),
+          iqButton(__alloT("stem.flightsim.guided_back_menu", "← Back to menu"), function() { upd('view', 'menu'); }),
+          h('p', { style: { color: '#7dd3fc', marginBottom: 0 } }, __alloT("stem.flightsim.guided_lab_duration", "SKY SCHOOL · GUIDED LAB · ABOUT 10 MINUTES")),
+          h('h2', { style: { fontSize: 'clamp(26px, 4vw, 38px)', lineHeight: 1.2, margin: '8px 0' } }, __alloT('stem.flightsim.guided_stall_title', 'Guided stall investigation')),
+          h('p', null, __alloT("stem.flightsim.guided_introduction", "Can an airplane stall while flying fast? Make a prediction, collect controlled evidence, and apply your explanation to a new situation.")),
+          h('p', { style: { color: '#cbd5e1', fontSize: '14px' } }, __alloT("stem.flightsim.guided_autosave_notice", "Your work saves with this tool. Complete the investigation using the controls below; live flight practice is optional.")),
+          h('ol', { 'aria-label': __alloT("stem.flightsim.guided_progress_label", "Investigation progress"), style: { display: 'flex', flexWrap: 'wrap', paddingLeft: '24px', gap: '8px 32px', color: '#cbd5e1' } }, phaseLabels.map(function(label, i) {
+            return h('li', { key: label, 'aria-current': i === phaseIndex ? 'step' : undefined, style: { color: i === phaseIndex ? '#7dd3fc' : '#cbd5e1', fontWeight: i === phaseIndex ? 800 : 400 } }, label);
+          })),
+          h('section', { style: cardStyle, 'aria-labelledby': 'stall-phase-title' },
+            h('h3', { id: 'stall-phase-title', tabIndex: -1, style: { marginTop: 0, fontSize: '22px' } }, __alloT("stem.flightsim.guided_phase_heading", "{step}. {phase}").replace('{step}', phaseIndex + 1).replace('{phase}', phaseLabels[phaseIndex])),
+            iq.phase === 'predict' && h(React.Fragment, null,
+              h('fieldset', { style: { border: 0, padding: 0 } },
+                h('legend', { style: { fontWeight: 700 } }, __alloT("stem.flightsim.guided_prediction_question", "Which variable do you predict determines whether the wing stalls?")),
+                [['angle', __alloT("stem.flightsim.guided_angle_label", "Angle of attack")], ['speed', __alloT("stem.flightsim.guided_airspeed_label", "Airspeed")], ['altitude', __alloT("stem.flightsim.guided_altitude_label", "Altitude")]].map(function(option) {
+                  return h('label', { key: option[0], style: { display: 'block', padding: '10px 0', cursor: 'pointer' } }, h('input', { type: 'radio', name: 'stall-prediction', value: option[0], checked: iq.prediction === option[0], onChange: function() { setIQ({ prediction: option[0] }); }, style: { marginRight: '10px' } }), option[1]);
+                })),
+              h('label', { htmlFor: 'stall-hypothesis' }, __alloT("stem.flightsim.guided_hypothesis_label", "Why do you think so? (optional)")),
+              h('textarea', { id: 'stall-hypothesis', value: iq.hypothesis, rows: 3, maxLength: 4000, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, style: fieldStyle }),
+              h('p', { style: { color: '#cbd5e1' } }, __alloT("stem.flightsim.guided_prediction_guidance", "Your prediction is a starting idea, not a scored answer. You can change your mind after collecting evidence.")),
+              iqButton(__alloT("stem.flightsim.guided_continue_trials", "Continue to trials"), function() { goIQ('experiment'); }, !iq.prediction)
             ),
-            h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap' } },
-              h('button', { onClick: logObs, style: { padding: '7px 14px', background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(125,211,252,0.35)', borderRadius: '8px', fontWeight: 700, minHeight: '32px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.flightsim.log', '📋 Log')),
-              h('button', { onClick: function() { setIQ({ airspeed: 130, altitude: 5000, aoa: 8, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-                style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: '4px', fontSize: '11px', cursor: 'pointer' } }, __alloT('stem.flightsim.reset_3', '↺ Reset')),
-              (iq.log || []).length > 0 && h('span', { style: { fontSize: '10px', color: '#94a3b8', fontStyle: 'italic' } }, (iq.log || []).length + ' logged')
+            iq.phase === 'experiment' && h(React.Fragment, null,
+              h('p', null, __alloT("stem.flightsim.guided_trial_instructions", "First hold airspeed and altitude constant and vary angle of attack. Then hold angle and altitude constant and change airspeed. Record each condition before changing it.")),
+              h('p', { style: { color: '#cbd5e1' } }, __alloT("stem.flightsim.guided_angle_definition", "Angle of attack is the angle between the wing and its relative airflow; it is different from the aircraft’s pitch above the horizon.")),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px' } }, [
+                { key: 'airspeed', label: __alloT("stem.flightsim.guided_airspeed_units", "Airspeed (kts)"), min: 40, max: 250, step: 5 },
+                { key: 'altitude', label: __alloT("stem.flightsim.guided_altitude_units", "Altitude (ft)"), min: 0, max: 20000, step: 500 },
+                { key: 'aoa', label: __alloT("stem.flightsim.guided_angle_units", "Angle of attack (°)"), min: -5, max: 25, step: 0.5 }
+              ].map(function(control) {
+                function change(e) { if (e.target.value === '') return; var patch = {}; patch[control.key] = Number(e.target.value); setIQ(patch); }
+                return h('div', { key: control.key }, h('label', { htmlFor: 'trial-' + control.key }, control.label),
+                  h('input', { id: 'trial-' + control.key, type: 'range', min: control.min, max: control.max, step: control.step, value: iq[control.key], onChange: change, style: { width: '100%', minHeight: '44px' } }),
+                  h('input', { type: 'number', 'aria-label': __alloT("stem.flightsim.guided_numeric_input_label", "{label} number").replace('{label}', control.label), min: control.min, max: control.max, step: control.step, value: iq[control.key], onChange: change, style: fieldStyle }));
+              })),
+              liftCurve(),
+              h('div', { role: 'status', 'aria-live': 'polite', style: { padding: '16px', background: '#172554', borderRadius: '8px', margin: '16px 0' } },
+                h('strong', null, trial.state === 'stall' ? __alloT("stem.flightsim.guided_state_stall", "Stall") : trial.state === 'boundary' ? __alloT("stem.flightsim.guided_state_approaching", "Approaching critical angle") : __alloT("stem.flightsim.guided_state_normal", "Normal flow")),
+                h('div', null, __alloT("stem.flightsim.guided_trial_forces", "Lift: {lift} lb · Drag: {drag} lb").replace('{lift}', trial.lift.toLocaleString()).replace('{drag}', trial.drag.toLocaleString())),
+                h('div', { style: { fontSize: '14px' } }, __alloT("stem.flightsim.guided_stall_lift_guidance", "A stall reduces lift compared with the peak at this speed. Lift does not disappear."))),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } },
+                iqButton(__alloT("stem.flightsim.guided_record_observation", "Record observation"), function() { setIQ({ observations: iq.observations.concat([trial]).slice(-24) }); }),
+                iqButton(__alloT("stem.flightsim.guided_reference_conditions", "Reference conditions"), function() { setIQ({ airspeed: 130, altitude: 5000, aoa: 8 }); }),
+                iqButton(__alloT("stem.flightsim.guided_change_angle", "Change angle only"), function() { setIQ({ aoa: iq.aoa >= Physics.CRITICAL_AOA ? 8 : 20 }); }),
+                iqButton(__alloT("stem.flightsim.guided_change_speed", "Change speed only"), function() { setIQ({ airspeed: iq.airspeed === 80 ? 130 : 80 }); })
+              ),
+              evidenceSummary(), observationTable(),
+              h('p', { style: { color: '#cbd5e1', fontSize: '14px' } }, __alloT("stem.flightsim.guided_model_limitations", "This simplified Cessna trainer model uses a critical angle of 15°. Real critical angles depend on the wing and configuration. These calculations match the simulator; each trial is a fixed condition, not a promise of level flight.")),
+              h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } }, iqButton(__alloT("stem.flightsim.guided_back_prediction", "Back to prediction"), function() { goIQ('predict'); }), iqButton(__alloT("stem.flightsim.guided_continue_explanation", "Continue to explanation"), function() { goIQ('explain'); }, !iq.prediction || !pairs.complete))
             ),
-            (iq.log || []).length > 0 && h('table', { style: { fontSize: '11px', width: '100%', borderCollapse: 'collapse', color: '#cbd5e1', marginBottom: '14px', border: '1px solid rgba(100,116,139,0.28)', borderRadius: '8px', overflow: 'hidden' } },
-              h('thead', null, h('tr', null,
-                ['airspeed kt', 'altitude ft', 'AoA\u00B0', 'state'].map(function(c, i) {
-                  // background and colour go on the TH: the host stylesheet paints
-                  // th itself, so a colour set on the tr never reaches the cell and
-                  // the header rendered as a pale bar with dark text.
-                  return h('th', { scope: 'col', key: 'h' + i, style: { padding: '7px 10px', background: 'rgba(30,41,59,0.95)', color: '#94a3b8', fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid rgba(100,116,139,0.4)', textAlign: 'left' } }, c);
-                }))),
-              h('tbody', null, iq.log.map(function(o, idx) {
-                var zebra = idx % 2 ? 'rgba(15,23,42,0.5)' : 'transparent';
-                var stColor = o.st === 'stall' ? '#fb7185' : o.st === 'boundary' ? '#fbbf24' : '#4ade80';
-                var num = { padding: '6px 10px', fontFamily: 'ui-monospace, Menlo, monospace', background: zebra };
-                return h('tr', { key: 'lr' + idx },
-                  h('td', { style: num }, o.s),
-                  h('td', { style: num }, o.a),
-                  h('td', { style: num }, o.aoa),
-                  h('td', { style: Object.assign({}, num, { fontFamily: 'inherit', color: stColor, fontWeight: 700 }) }, o.st));
-              }))
+            iq.phase === 'explain' && h(React.Fragment, null,
+              h('p', null, __alloT("stem.flightsim.guided_explanation_instructions", "Explain what causes a stall using the trial numbers below. What changed when you increased airspeed? Could a fast airplane still stall?")),
+              evidenceSummary(), observationTable(),
+              h('label', { htmlFor: 'stall-explanation' }, __alloT("stem.flightsim.guided_explanation_label", "Your explanation")),
+              h('textarea', { id: 'stall-explanation', value: iq.explanation, rows: 5, maxLength: 6000, onChange: function(e) { setIQ({ explanation: e.target.value }); }, style: fieldStyle }),
+              h('p', { style: { color: '#cbd5e1' } }, __alloT("stem.flightsim.guided_writing_prompt", "Writing prompt: “Trials __ and __ show __ because __. Changing airspeed changed __, while __ stayed the same.” Your writing is saved for discussion, not automatically graded.")),
+              h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } }, iqButton(__alloT("stem.flightsim.guided_back_trials", "Back to trials"), function() { goIQ('experiment'); }), iqButton(__alloT("stem.flightsim.guided_continue_transfer", "Continue to transfer"), function() { goIQ('transfer'); }, !iq.prediction || !pairs.complete || !iq.explanation.trim()))
             ),
-            h('textarea', { 'aria-label': __alloT('stem.flightsim.hypothesis_input', 'Stall factors hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
-              placeholder: __alloT('stem.flightsim.hypothesis_free_text_no_right_answer_w', 'Hypothesis (free text — no right answer): Which slider matters most for stall? Is airspeed alone sufficient to prevent it?'),
-              className: 'skyschool-textarea',
-              style: { minHeight: '68px', marginBottom: '12px' }, rows: 3 }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
-              style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '10px' } },
-              __alloT('stem.flightsim.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-            iq.stuckRevealed && h('div', { style: { padding: '10px', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '4px', fontSize: '11px', color: '#cbd5e1', lineHeight: 1.5, marginBottom: '10px' } },
-              h('ul', { style: { margin: 0, paddingLeft: '20px', listStyle: 'disc', display: 'grid', gap: '5px' } },
-                h('li', null, __alloT('stem.flightsim.hold_airspeed_steady_vary_aoa_when_doe', 'Hold airspeed steady. Vary AoA. When does the state flip?')),
-                h('li', null, __alloT('stem.flightsim.at_a_fixed_aoa_vary_airspeed_does_the_', 'At a fixed AoA, vary airspeed. Does the state change?')),
-                h('li', null, __alloT('stem.flightsim.find_two_combinations_that_produce_a_s', 'Find two combinations that produce a stall. What do they share?')),
-                h('li', null, __alloT('stem.flightsim.real_pilots_are_taught_angle_of_attack', 'Real pilots are taught "angle of attack, not airspeed" causes stall. Investigate why.')))),
-            h('div', { style: { padding: '10px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '4px' } },
-              h('label', { style: { display: 'flex', alignItems: 'center', gap: '6px', minHeight: '28px', fontSize: '12px', fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
-                h('input', { className: 'skyschool-check', type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
-                __alloT('stem.flightsim.i_think_i_understand_explain_in_own_wo', 'I think I understand — explain in own words')),
-              iq.understood && h('textarea', { 'aria-label': __alloT('stem.flightsim.explanation_input', 'Stall factors explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
-                placeholder: __alloT('stem.flightsim.explain_in_your_own_words_what_role_do', 'Explain in your own words: what role do airspeed, altitude, and AoA each play?'),
-                className: 'skyschool-textarea',
-                style: { minHeight: '88px', marginTop: '8px', borderColor: 'rgba(16,185,129,0.35)' }, rows: 4 })
+            iq.phase === 'transfer' && h(React.Fragment, null,
+              h('p', { style: { fontWeight: 700 } }, __alloT("stem.flightsim.guided_transfer_condition", "New condition: the same trainer wing is at 220 kts, 10,000 ft, and 20° angle of attack. Predict its flow state.")),
+              h('fieldset', { style: { padding: 0, border: 0 } }, h('legend', null, __alloT("stem.flightsim.guided_transfer_legend", "Flow-state prediction")), [['normal', __alloT("stem.flightsim.guided_state_normal", "Normal flow")], ['boundary', __alloT("stem.flightsim.guided_state_boundary", "Boundary")], ['stall', __alloT("stem.flightsim.guided_state_stall", "Stall")]].map(function(option) {
+                return h('label', { key: option[0], style: { display: 'block', padding: '10px 0' } }, h('input', { type: 'radio', name: 'stall-transfer', checked: iq.transferChoice === option[0], disabled: !!iq.transferAnswer, onChange: function() { setIQ({ transferChoice: option[0] }); }, style: { marginRight: '10px' } }), option[1]);
+              })),
+              !iq.transferAnswer && iqButton(__alloT("stem.flightsim.guided_check_prediction", "Check prediction"), function() { setIQ({ transferAnswer: iq.transferChoice, transferAttempts: iq.transferAttempts + 1 }); }, !iq.transferChoice),
+              iq.transferAnswer && h('div', { role: 'status', style: { padding: '16px', margin: '12px 0', background: '#172554', borderRadius: '8px' } },
+                iq.transferAnswer === 'stall' ? __alloT("stem.flightsim.guided_transfer_correct", "Correct: 20° exceeds this model’s 15° critical angle. More airspeed can increase lift, but it cannot remove a stall at a fixed angle above the critical value.") : __alloT("stem.flightsim.guided_transfer_incorrect", "Revisit your angle comparison: 20° exceeds this model’s critical angle. Speed alone does not prevent a stall. Review your evidence and try again.")),
+              iq.transferAnswer && iq.transferAnswer !== 'stall' && iqButton(__alloT("stem.flightsim.guided_retry_transfer", "Try transfer again"), function() { setIQ({ transferAnswer: '', transferChoice: '' }); }),
+              h('div', { style: Object.assign({}, cardStyle, { background: '#12243a' }) },
+                h('h4', { style: { margin: 0 } }, __alloT("stem.flightsim.guided_optional_flight_heading", "Optional: transfer to flight")),
+                h('p', null, __alloT("stem.flightsim.guided_optional_flight_instructions", "Start at 5,000 ft in calm conditions. Observe a stall, reduce angle of attack, and hold normal flow for five seconds. The practice pauses after recovery or three simulated minutes. You can complete this investigation without flying.")),
+                iq.flight && h('p', { role: 'status' }, iq.flight.status === 'complete' ? __alloT("stem.flightsim.guided_flight_evidence_complete", "Flight evidence: stall observed, then five seconds of normal flow.") : __alloT("stem.flightsim.guided_flight_evidence_status", "Flight evidence: {evidence} Session: {status}.").replace('{evidence}', iq.flight.sawStall ? __alloT("stem.flightsim.guided_flight_stall_without_recovery", "stall observed; sustained recovery not yet recorded.") : __alloT("stem.flightsim.guided_flight_no_stall", "no stall recorded yet.")).replace('{status}', flightStatusLabels[iq.flight.status])),
+                iqButton(iq.flight ? __alloT("stem.flightsim.guided_retry_flight", "Try flight practice again") : __alloT("stem.flightsim.guided_start_flight", "Try flight practice"), function() { startFlying('kpwm', true); })
+              ),
+              h('p', null, __alloT("stem.flightsim.guided_completion_scope", "Completing this activity records the evidence and transfer check. It does not certify piloting skill or grade your written explanation.")),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } }, iqButton(__alloT("stem.flightsim.guided_back_explanation", "Back to explanation"), function() { goIQ('explain'); }), iqButton(__alloT("stem.flightsim.guided_complete", "Complete investigation"), function() {
+                if (ready) upd('stallInvestigation', Object.assign({}, iq, { phase: 'review', completedAt: new Date().toISOString() }));
+              }, !ready))
             ),
+            iq.phase === 'review' && h(React.Fragment, null,
+              h('p', { role: 'status' }, ready && iq.completedAt ? __alloT("stem.flightsim.guided_completion_recorded", "Investigation complete: controlled comparisons, a written explanation, and a correct transfer check are recorded.") : __alloT("stem.flightsim.guided_completion_incomplete", "This record is incomplete. Return to the trials to collect the missing evidence.")),
+              h('p', null, __alloT("stem.flightsim.guided_starting_prediction", "Starting prediction: {prediction}").replace('{prediction}', iq.prediction === 'angle' ? __alloT("stem.flightsim.guided_angle_label", "Angle of attack") : iq.prediction === 'speed' ? __alloT("stem.flightsim.guided_airspeed_label", "Airspeed") : iq.prediction === 'altitude' ? __alloT("stem.flightsim.guided_altitude_label", "Altitude") : __alloT("stem.flightsim.guided_not_recorded", "Not recorded"))),
+              iq.hypothesis && h('p', { style: { whiteSpace: 'pre-wrap' } }, iq.hypothesis),
+              evidenceSummary(), observationTable(),
+              h('h4', null, __alloT("stem.flightsim.guided_explanation_label", "Your explanation")), h('p', { style: { whiteSpace: 'pre-wrap' } }, iq.explanation || __alloT("stem.flightsim.guided_not_recorded", "Not recorded")),
+              h('p', null, __alloT("stem.flightsim.guided_transfer_attempt_summary", "Transfer check attempts: {count}. {result}").replace('{count}', iq.transferAttempts).replace('{result}', iq.transferAnswer === 'stall' ? __alloT("stem.flightsim.guided_transfer_correct_recorded", "Correct response recorded.") : __alloT("stem.flightsim.guided_transfer_correct_missing", "Correct response not yet recorded."))),
+              iq.flight && h('p', null, __alloT("stem.flightsim.guided_optional_flight_summary", "Optional flight: {result}").replace('{result}', iq.flight.status === 'complete' ? __alloT("stem.flightsim.guided_flight_recovery_recorded", "stall and sustained recovery recorded") : __alloT("stem.flightsim.guided_flight_recovery_missing", "practice recorded; sustained recovery not yet observed"))),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } },
+                iqButton(__alloT("stem.flightsim.guided_review_trials", "Review trials"), function() { goIQ('experiment'); }),
+                iqButton(__alloT("stem.flightsim.guided_export", "Export investigation"), function() {
+                  var blob = new Blob([JSON.stringify(iq, null, 2)], { type: 'application/json' });
+                  var url = URL.createObjectURL(blob), anchor = document.createElement('a');
+                  anchor.href = url; anchor.download = 'skyschool-stall-investigation.json';
+                  document.body.appendChild(anchor); anchor.click(); anchor.remove(); window.setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+                }),
+                iqButton(__alloT("stem.flightsim.guided_start_new", "Start a new investigation"), function() {
+                  var archived = Object.assign({}, iq); delete archived.attempts;
+                  upd('stallInvestigation', stallInvestigationRecord({ attempts: iq.attempts.concat([archived]).slice(-5) }));
+                })
+              ),
+              h('p', { style: { color: '#cbd5e1', fontSize: '14px' } }, __alloT("stem.flightsim.guided_attempt_archive_count", "{count} previous attempts saved. Export includes these attempts.").replace('{count}', iq.attempts.length))
+            )
           )
         );
       }
@@ -25985,6 +26372,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
   if (typeof window !== 'undefined' && window.__RR_TEST_EXPORTS__) {
     window.__RR_TEST_EXPORTS__.flightSim = {
       Physics: Physics,
+      aircraftVrKts: aircraftVrKts,
+      flightPracticeEvidence: flightPracticeEvidence,
+      updateFlightPractice: updateFlightPractice,
+      stallInvestigationRecord: stallInvestigationRecord,
+      sampleStallInvestigation: sampleStallInvestigation,
+      stallEvidencePairs: stallEvidencePairs,
+      advanceStallFlight: advanceStallFlight,
       haversineNm: haversineNm,
       bearing: bearing,
       jetStreamTailwindKts: jetStreamTailwindKts,

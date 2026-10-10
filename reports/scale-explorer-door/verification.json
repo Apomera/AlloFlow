@@ -1,0 +1,14 @@
+{
+  "sha256": "46251508808f3d89e360f23989aad89a011cca06110a6415b8d85c11c0600bf0",
+  "bytes": 2434308,
+  "unitTests": 22,
+  "browserTests": 3,
+  "copyKeys": 10,
+  "mirrorsMatch": true,
+  "diffCheck": true,
+  "sources": [
+    "https://cmd-jeld-wen.s3.us-east-2.amazonaws.com/assets/documents/3673755096.pdf"
+  ],
+  "scope": "Illustrative four-panel interior doorway with a two-metre outer frame. Articulated 70-degree hinge opening, separate jambs and stops, recessed panels and profiled molding, three hinges, two lever handles, latch and strike, plaster wall section and oak floor context. Context is excluded from size comparisons. Four guided views persist through the notebook; normal and reduced motion, mobile layout, side/silhouette comparison and GPU cleanup verified.",
+  "committed": false
+}

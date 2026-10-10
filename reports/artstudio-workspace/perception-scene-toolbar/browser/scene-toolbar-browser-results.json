@@ -1,0 +1,2976 @@
+{
+  "checks": [
+    {
+      "sevenExperiments": [
+        {
+          "id": "brightness",
+          "names": [
+            {
+              "name": "Inspect drawing, 100% magnification",
+              "expanded": "false",
+              "pressed": null,
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            },
+            {
+              "name": "Compare surroundings",
+              "expanded": null,
+              "pressed": "false",
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            },
+            {
+              "name": "Expand viewing area",
+              "expanded": null,
+              "pressed": "false",
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            },
+            {
+              "name": "Focus experiment",
+              "expanded": null,
+              "pressed": null,
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            }
+          ],
+          "icons": {
+            "children": [
+              "BUTTON",
+              "BUTTON",
+              "BUTTON",
+              "BUTTON"
+            ],
+            "icons": [
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Inspect drawing"
+              },
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Compare surroundings"
+              },
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Expand viewing area"
+              },
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Focus experiment"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ebbinghaus",
+          "names": [
+            {
+              "name": "Inspect drawing, 100% magnification",
+              "expanded": "false",
+              "pressed": null,
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            },
+            {
+              "name": "Compare surroundings",
+              "expanded": null,
+              "pressed": "false",
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            },
+            {
+              "name": "Expand viewing area",
+              "expanded": null,
+              "pressed": "false",
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            },
+            {
+              "name": "Focus experiment",
+              "expanded": null,
+              "pressed": null,
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            }
+          ],
+          "icons": {
+            "children": [
+              "BUTTON",
+              "BUTTON",
+              "BUTTON",
+              "BUTTON"
+            ],
+            "icons": [
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Inspect drawing"
+              },
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Compare surroundings"
+              },
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Expand viewing area"
+              },
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Focus experiment"
+              }
+            ]
+          }
+        },
+        {
+          "id": "mullerLyer",
+          "names": [
+            {
+              "name": "Inspect drawing, 100% magnification",
+              "expanded": "false",
+              "pressed": null,
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            },
+            {
+              "name": "Compare surroundings",
+              "expanded": null,
+              "pressed": "false",
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            },
+            {
+              "name": "Expand viewing area",
+              "expanded": null,
+              "pressed": "false",
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            },
+            {
+              "name": "Focus experiment",
+              "expanded": null,
+              "pressed": null,
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            }
+          ],
+          "icons": {
+            "children": [
+              "BUTTON",
+              "BUTTON",
+              "BUTTON",
+              "BUTTON"
+            ],
+            "icons": [
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Inspect drawing"
+              },
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Compare surroundings"
+              },
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Expand viewing area"
+              },
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Focus experiment"
+              }
+            ]
+          }
+        },
+        {
+          "id": "cafeWall",
+          "names": [
+            {
+              "name": "Inspect drawing, 100% magnification",
+              "expanded": "false",
+              "pressed": null,
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            },
+            {
+              "name": "Compare surroundings",
+              "expanded": null,
+              "pressed": "false",
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            },
+            {
+              "name": "Expand viewing area",
+              "expanded": null,
+              "pressed": "false",
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            },
+            {
+              "name": "Focus experiment",
+              "expanded": null,
+              "pressed": null,
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            }
+          ],
+          "icons": {
+            "children": [
+              "BUTTON",
+              "BUTTON",
+              "BUTTON",
+              "BUTTON"
+            ],
+            "icons": [
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Inspect drawing"
+              },
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Compare surroundings"
+              },
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Expand viewing area"
+              },
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Focus experiment"
+              }
+            ]
+          }
+        },
+        {
+          "id": "necker",
+          "names": [
+            {
+              "name": "Inspect drawing, 100% magnification",
+              "expanded": "false",
+              "pressed": null,
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            },
+            {
+              "name": "Compare surroundings",
+              "expanded": null,
+              "pressed": "false",
+              "disabled": true,
+              "type": "button",
+              "tag": "BUTTON"
+            },
+            {
+              "name": "Expand viewing area",
+              "expanded": null,
+              "pressed": "false",
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            },
+            {
+              "name": "Focus experiment",
+              "expanded": null,
+              "pressed": null,
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            }
+          ],
+          "icons": {
+            "children": [
+              "BUTTON",
+              "BUTTON",
+              "BUTTON",
+              "BUTTON"
+            ],
+            "icons": [
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Inspect drawing"
+              },
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Compare surroundings"
+              },
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Expand viewing area"
+              },
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Focus experiment"
+              }
+            ]
+          }
+        },
+        {
+          "id": "moire",
+          "names": [
+            {
+              "name": "Inspect drawing, 100% magnification",
+              "expanded": "false",
+              "pressed": null,
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            },
+            {
+              "name": "Compare surroundings",
+              "expanded": null,
+              "pressed": "false",
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            },
+            {
+              "name": "Expand viewing area",
+              "expanded": null,
+              "pressed": "false",
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            },
+            {
+              "name": "Focus experiment",
+              "expanded": null,
+              "pressed": null,
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            }
+          ],
+          "icons": {
+            "children": [
+              "BUTTON",
+              "BUTTON",
+              "BUTTON",
+              "BUTTON"
+            ],
+            "icons": [
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Inspect drawing"
+              },
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Compare surroundings"
+              },
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Expand viewing area"
+              },
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Focus experiment"
+              }
+            ]
+          }
+        },
+        {
+          "id": "ponzo",
+          "names": [
+            {
+              "name": "Inspect drawing, 100% magnification",
+              "expanded": "false",
+              "pressed": null,
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            },
+            {
+              "name": "Compare surroundings",
+              "expanded": null,
+              "pressed": "false",
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            },
+            {
+              "name": "Expand viewing area",
+              "expanded": null,
+              "pressed": "false",
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            },
+            {
+              "name": "Focus experiment",
+              "expanded": null,
+              "pressed": null,
+              "disabled": false,
+              "type": "button",
+              "tag": "BUTTON"
+            }
+          ],
+          "icons": {
+            "children": [
+              "BUTTON",
+              "BUTTON",
+              "BUTTON",
+              "BUTTON"
+            ],
+            "icons": [
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Inspect drawing"
+              },
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Compare surroundings"
+              },
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Expand viewing area"
+              },
+              {
+                "aria": "true",
+                "focusable": "false",
+                "tabindex": null,
+                "label": "Focus experiment"
+              }
+            ]
+          }
+        }
+      ],
+      "nativeButtonAndSceneParity": true
+    },
+    {
+      "nativeInputs": [
+        "click",
+        "Enter",
+        "Space",
+        "touch"
+      ],
+      "inspectOpensAndCloses": true,
+      "zeroWrites": true
+    },
+    {
+      "nativeIconClicks": [
+        {
+          "index": 0,
+          "writes": 0
+        },
+        {
+          "index": 1,
+          "writes": 0
+        },
+        {
+          "index": 2,
+          "writes": 1
+        },
+        {
+          "index": 3,
+          "writes": 0
+        }
+      ],
+      "noExtraWrites": true
+    },
+    {
+      "comparisonHeaders": [
+        {
+          "kind": "pin",
+          "second": {
+            "name": "Clear comparison",
+            "tag": "BUTTON",
+            "inspect": false,
+            "compare": false,
+            "layout": false,
+            "clear": true,
+            "close": false
+          },
+          "headerStructure": {
+            "previous": "BUTTON",
+            "parent": "perception-comparison-toolbar",
+            "top": 537.1875,
+            "previousBottom": 521.1875
+          }
+        },
+        {
+          "kind": "context",
+          "second": {
+            "name": "Close surroundings comparison",
+            "tag": "BUTTON",
+            "inspect": false,
+            "compare": false,
+            "layout": false,
+            "clear": false,
+            "close": true
+          },
+          "headerStructure": {
+            "previous": "BUTTON",
+            "parent": "perception-comparison-toolbar",
+            "top": 537.1875,
+            "previousBottom": 521.1875
+          }
+        },
+        {
+          "kind": "inquiry",
+          "second": {
+            "name": "Close starting-view comparison",
+            "tag": "BUTTON",
+            "inspect": false,
+            "compare": false,
+            "layout": false,
+            "clear": false,
+            "close": false
+          },
+          "headerStructure": {
+            "previous": "BUTTON",
+            "parent": "perception-comparison-toolbar",
+            "top": 537.1875,
+            "previousBottom": 521.1875
+          }
+        }
+      ],
+      "nativeDomOrderMatchesVisualGrouping": true
+    },
+    {
+      "comparisonModes": [
+        {
+          "kind": "pin",
+          "layout": "auto"
+        },
+        {
+          "kind": "pin",
+          "layout": "stacked"
+        },
+        {
+          "kind": "pin",
+          "layout": "switch"
+        },
+        {
+          "kind": "pin",
+          "layout": "slide"
+        },
+        {
+          "kind": "context",
+          "layout": "auto"
+        },
+        {
+          "kind": "context",
+          "layout": "stacked"
+        },
+        {
+          "kind": "context",
+          "layout": "switch"
+        },
+        {
+          "kind": "context",
+          "layout": "slide"
+        },
+        {
+          "kind": "inquiry",
+          "layout": "auto"
+        },
+        {
+          "kind": "inquiry",
+          "layout": "stacked"
+        },
+        {
+          "kind": "inquiry",
+          "layout": "switch"
+        },
+        {
+          "kind": "inquiry",
+          "layout": "slide"
+        }
+      ],
+      "inspectionPreservesCurrentViewAndPin": true
+    },
+    {
+      "expansion": [
+        {
+          "id": "brightness",
+          "writes": 2
+        },
+        {
+          "id": "ebbinghaus",
+          "writes": 2
+        },
+        {
+          "id": "mullerLyer",
+          "writes": 2
+        },
+        {
+          "id": "cafeWall",
+          "writes": 2
+        },
+        {
+          "id": "necker",
+          "writes": 2
+        },
+        {
+          "id": "moire",
+          "writes": 2
+        },
+        {
+          "id": "ponzo",
+          "writes": 2
+        }
+      ],
+      "unchangedStateAndWriteCounts": true
+    },
+    {
+      "focusDialogThreeActions": true,
+      "focusTabSequence": true,
+      "escapeReturnsToOpener": true,
+      "zeroWrites": true
+    },
+    {
+      "disabledHints": [
+        {
+          "kind": "study",
+          "info": {
+            "hint": "Drawing inspection is paused during this study. The whole drawing stays visible.",
+            "id": ":r16:-camera-study-locked",
+            "insideRow": false,
+            "after": true,
+            "top": -1134.4375,
+            "rowBottom": -1144.4375,
+            "children": [
+              "BUTTON",
+              "BUTTON",
+              "BUTTON",
+              "BUTTON"
+            ]
+          }
+        },
+        {
+          "kind": "necker",
+          "info": {
+            "hint": "Choose a face cue in the controls to compare the cube with and without that cue.",
+            "id": ":r17:-context-unavailable",
+            "insideRow": false,
+            "after": true,
+            "top": -1134.4375,
+            "rowBottom": -1144.4375,
+            "children": [
+              "BUTTON",
+              "BUTTON",
+              "BUTTON",
+              "BUTTON"
+            ]
+          }
+        }
+      ],
+      "describedByTargetsPresent": true,
+      "zeroDisabledWrites": true
+    },
+    {
+      "zoomBadgeAndAccessibleName": true,
+      "fitWholeDrawingPreserved": true,
+      "zeroWrites": true
+    },
+    {
+      "inactive": [
+        {
+          "name": "Inspect drawing, 100% magnification",
+          "expanded": "false",
+          "pressed": null,
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(22, 52, 73)",
+          "border": "rgb(106, 129, 144)",
+          "iconStroke": "rgb(22, 52, 73)",
+          "iconColor": "rgb(22, 52, 73)",
+          "iconWidth": 22
+        },
+        {
+          "name": "Compare surroundings",
+          "expanded": null,
+          "pressed": "false",
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(22, 52, 73)",
+          "border": "rgb(106, 129, 144)",
+          "iconStroke": "rgb(22, 52, 73)",
+          "iconColor": "rgb(22, 52, 73)",
+          "iconWidth": 22
+        },
+        {
+          "name": "Expand viewing area",
+          "expanded": null,
+          "pressed": "false",
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(22, 52, 73)",
+          "border": "rgb(106, 129, 144)",
+          "iconStroke": "rgb(22, 52, 73)",
+          "iconColor": "rgb(22, 52, 73)",
+          "iconWidth": 22
+        },
+        {
+          "name": "Focus experiment",
+          "expanded": null,
+          "pressed": null,
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(22, 52, 73)",
+          "border": "rgb(106, 129, 144)",
+          "iconStroke": "rgb(22, 52, 73)",
+          "iconColor": "rgb(22, 52, 73)",
+          "iconWidth": 22
+        }
+      ],
+      "active": [
+        {
+          "name": "Inspect drawing, 100% magnification",
+          "expanded": "true",
+          "pressed": null,
+          "background": "rgb(231, 242, 245)",
+          "color": "rgb(22, 52, 73)",
+          "border": "rgb(21, 86, 108)",
+          "iconStroke": "rgb(22, 52, 73)",
+          "iconColor": "rgb(22, 52, 73)",
+          "iconWidth": 22
+        },
+        {
+          "name": "Compare surroundings",
+          "expanded": null,
+          "pressed": "false",
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(22, 52, 73)",
+          "border": "rgb(106, 129, 144)",
+          "iconStroke": "rgb(22, 52, 73)",
+          "iconColor": "rgb(22, 52, 73)",
+          "iconWidth": 22
+        },
+        {
+          "name": "Expand viewing area",
+          "expanded": null,
+          "pressed": "false",
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(22, 52, 73)",
+          "border": "rgb(106, 129, 144)",
+          "iconStroke": "rgb(22, 52, 73)",
+          "iconColor": "rgb(22, 52, 73)",
+          "iconWidth": 22
+        },
+        {
+          "name": "Focus experiment",
+          "expanded": null,
+          "pressed": null,
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(22, 52, 73)",
+          "border": "rgb(106, 129, 144)",
+          "iconStroke": "rgb(22, 52, 73)",
+          "iconColor": "rgb(22, 52, 73)",
+          "iconWidth": 22
+        }
+      ],
+      "inspectorExpandedVisualState": true,
+      "decorativeIconInheritsTextColor": true,
+      "playbackPreserved": true,
+      "zeroWrites": true
+    },
+    {
+      "layout": {
+        "width": 1600,
+        "font": 16,
+        "suffix": "1600"
+      },
+      "toolbarContainment": {
+        "viewport": 1600,
+        "scroll": 1600,
+        "section": {
+          "left": 373,
+          "right": 1547,
+          "top": 452.1875,
+          "bottom": 500.1875,
+          "width": 1174,
+          "height": 48,
+          "scroll": 1174,
+          "client": 1174
+        },
+        "row": {
+          "left": 373,
+          "right": 1547,
+          "top": 452.1875,
+          "bottom": 500.1875,
+          "width": 1174,
+          "height": 48,
+          "scroll": 1174,
+          "client": 1174
+        },
+        "text": [
+          {
+            "left": 414,
+            "right": 515.4375,
+            "top": 466.390625,
+            "bottom": 485.390625,
+            "text": "Inspect drawing"
+          },
+          {
+            "left": 709.5,
+            "right": 854.765625,
+            "top": 466.390625,
+            "bottom": 485.390625,
+            "text": "Compare surroundings"
+          },
+          {
+            "left": 1005,
+            "right": 1135.3125,
+            "top": 466.390625,
+            "bottom": 485.390625,
+            "text": "Expand viewing area"
+          },
+          {
+            "left": 1300.5,
+            "right": 1412.765625,
+            "top": 466.390625,
+            "bottom": 485.390625,
+            "text": "Focus experiment"
+          }
+        ],
+        "buttons": [
+          {
+            "left": 373,
+            "right": 660.5,
+            "top": 452.1875,
+            "bottom": 500.1875,
+            "width": 287.5,
+            "height": 48,
+            "scroll": 286,
+            "client": 286
+          },
+          {
+            "left": 668.5,
+            "right": 956,
+            "top": 452.1875,
+            "bottom": 500.1875,
+            "width": 287.5,
+            "height": 48,
+            "scroll": 286,
+            "client": 286
+          },
+          {
+            "left": 964,
+            "right": 1251.5,
+            "top": 452.1875,
+            "bottom": 500.1875,
+            "width": 287.5,
+            "height": 48,
+            "scroll": 286,
+            "client": 286
+          },
+          {
+            "left": 1259.5,
+            "right": 1547,
+            "top": 452.1875,
+            "bottom": 500.1875,
+            "width": 287.5,
+            "height": 48,
+            "scroll": 286,
+            "client": 286
+          }
+        ],
+        "icons": [
+          {
+            "display": "block",
+            "left": 384,
+            "right": 406,
+            "top": 465.1875,
+            "bottom": 487.1875,
+            "width": 22,
+            "height": 22,
+            "scroll": 22,
+            "client": 22
+          },
+          {
+            "display": "block",
+            "left": 679.5,
+            "right": 701.5,
+            "top": 465.1875,
+            "bottom": 487.1875,
+            "width": 22,
+            "height": 22,
+            "scroll": 22,
+            "client": 22
+          },
+          {
+            "display": "block",
+            "left": 975,
+            "right": 997,
+            "top": 465.1875,
+            "bottom": 487.1875,
+            "width": 22,
+            "height": 22,
+            "scroll": 22,
+            "client": 22
+          },
+          {
+            "display": "block",
+            "left": 1270.5,
+            "right": 1292.5,
+            "top": 465.1875,
+            "bottom": 487.1875,
+            "width": 22,
+            "height": 22,
+            "scroll": 22,
+            "client": 22
+          }
+        ]
+      },
+      "nativeAccessibility": true,
+      "translatedLabels": false,
+      "forcedTextContrast": [],
+      "axe": []
+    },
+    {
+      "layout": {
+        "width": 320,
+        "font": 16,
+        "suffix": "320"
+      },
+      "toolbarContainment": {
+        "viewport": 320,
+        "scroll": 320,
+        "section": {
+          "left": 33,
+          "right": 287,
+          "top": 510.6875,
+          "bottom": 633.0625,
+          "width": 254,
+          "height": 122.375,
+          "scroll": 254,
+          "client": 254
+        },
+        "row": {
+          "left": 33,
+          "right": 287,
+          "top": 510.6875,
+          "bottom": 633.0625,
+          "width": 254,
+          "height": 122.375,
+          "scroll": 254,
+          "client": 254
+        },
+        "text": [
+          {
+            "left": 44,
+            "right": 89.8125,
+            "top": 519.6875,
+            "bottom": 538.6875,
+            "text": "Inspect drawing"
+          },
+          {
+            "left": 44,
+            "right": 95.78125,
+            "top": 539.28125,
+            "bottom": 558.28125,
+            "text": "Inspect drawing"
+          },
+          {
+            "left": 175,
+            "right": 232.53125,
+            "top": 519.6875,
+            "bottom": 538.6875,
+            "text": "Compare surroundings"
+          },
+          {
+            "left": 175,
+            "right": 258.890625,
+            "top": 539.28125,
+            "bottom": 558.28125,
+            "text": "Compare surroundings"
+          },
+          {
+            "left": 44,
+            "right": 143.34375,
+            "top": 584.875,
+            "bottom": 603.875,
+            "text": "Expand viewing area"
+          },
+          {
+            "left": 44,
+            "right": 71.125,
+            "top": 604.46875,
+            "bottom": 623.46875,
+            "text": "Expand viewing area"
+          },
+          {
+            "left": 175,
+            "right": 211.1875,
+            "top": 584.875,
+            "bottom": 603.875,
+            "text": "Focus experiment"
+          },
+          {
+            "left": 175,
+            "right": 247.234375,
+            "top": 604.46875,
+            "bottom": 623.46875,
+            "text": "Focus experiment"
+          }
+        ],
+        "buttons": [
+          {
+            "left": 33,
+            "right": 156,
+            "top": 510.6875,
+            "bottom": 567.875,
+            "width": 123,
+            "height": 57.1875,
+            "scroll": 121,
+            "client": 121
+          },
+          {
+            "left": 164,
+            "right": 287,
+            "top": 510.6875,
+            "bottom": 567.875,
+            "width": 123,
+            "height": 57.1875,
+            "scroll": 121,
+            "client": 121
+          },
+          {
+            "left": 33,
+            "right": 156,
+            "top": 575.875,
+            "bottom": 633.0625,
+            "width": 123,
+            "height": 57.1875,
+            "scroll": 121,
+            "client": 121
+          },
+          {
+            "left": 164,
+            "right": 287,
+            "top": 575.875,
+            "bottom": 633.0625,
+            "width": 123,
+            "height": 57.1875,
+            "scroll": 121,
+            "client": 121
+          }
+        ],
+        "icons": [
+          {
+            "display": "none",
+            "left": 0,
+            "right": 0,
+            "top": 0,
+            "bottom": 0,
+            "width": 0,
+            "height": 0,
+            "scroll": 0,
+            "client": 0
+          },
+          {
+            "display": "none",
+            "left": 0,
+            "right": 0,
+            "top": 0,
+            "bottom": 0,
+            "width": 0,
+            "height": 0,
+            "scroll": 0,
+            "client": 0
+          },
+          {
+            "display": "none",
+            "left": 0,
+            "right": 0,
+            "top": 0,
+            "bottom": 0,
+            "width": 0,
+            "height": 0,
+            "scroll": 0,
+            "client": 0
+          },
+          {
+            "display": "none",
+            "left": 0,
+            "right": 0,
+            "top": 0,
+            "bottom": 0,
+            "width": 0,
+            "height": 0,
+            "scroll": 0,
+            "client": 0
+          }
+        ]
+      },
+      "nativeAccessibility": true,
+      "translatedLabels": false,
+      "forcedTextContrast": [],
+      "axe": []
+    },
+    {
+      "layout": {
+        "width": 390,
+        "font": 16,
+        "suffix": "390"
+      },
+      "toolbarContainment": {
+        "viewport": 390,
+        "scroll": 390,
+        "section": {
+          "left": 33,
+          "right": 357,
+          "top": 587.1875,
+          "bottom": 709.5625,
+          "width": 324,
+          "height": 122.375,
+          "scroll": 324,
+          "client": 324
+        },
+        "row": {
+          "left": 33,
+          "right": 357,
+          "top": 587.1875,
+          "bottom": 709.5625,
+          "width": 324,
+          "height": 122.375,
+          "scroll": 324,
+          "client": 324
+        },
+        "text": [
+          {
+            "left": 74,
+            "right": 175.4375,
+            "top": 605.984375,
+            "bottom": 624.984375,
+            "text": "Inspect drawing"
+          },
+          {
+            "left": 240,
+            "right": 297.53125,
+            "top": 596.1875,
+            "bottom": 615.1875,
+            "text": "Compare surroundings"
+          },
+          {
+            "left": 240,
+            "right": 323.890625,
+            "top": 615.78125,
+            "bottom": 634.78125,
+            "text": "Compare surroundings"
+          },
+          {
+            "left": 74,
+            "right": 173.34375,
+            "top": 661.375,
+            "bottom": 680.375,
+            "text": "Expand viewing area"
+          },
+          {
+            "left": 74,
+            "right": 101.125,
+            "top": 680.96875,
+            "bottom": 699.96875,
+            "text": "Expand viewing area"
+          },
+          {
+            "left": 240,
+            "right": 276.1875,
+            "top": 661.375,
+            "bottom": 680.375,
+            "text": "Focus experiment"
+          },
+          {
+            "left": 240,
+            "right": 312.234375,
+            "top": 680.96875,
+            "bottom": 699.96875,
+            "text": "Focus experiment"
+          }
+        ],
+        "buttons": [
+          {
+            "left": 33,
+            "right": 191,
+            "top": 587.1875,
+            "bottom": 644.375,
+            "width": 158,
+            "height": 57.1875,
+            "scroll": 156,
+            "client": 156
+          },
+          {
+            "left": 199,
+            "right": 357,
+            "top": 587.1875,
+            "bottom": 644.375,
+            "width": 158,
+            "height": 57.1875,
+            "scroll": 156,
+            "client": 156
+          },
+          {
+            "left": 33,
+            "right": 191,
+            "top": 652.375,
+            "bottom": 709.5625,
+            "width": 158,
+            "height": 57.1875,
+            "scroll": 156,
+            "client": 156
+          },
+          {
+            "left": 199,
+            "right": 357,
+            "top": 652.375,
+            "bottom": 709.5625,
+            "width": 158,
+            "height": 57.1875,
+            "scroll": 156,
+            "client": 156
+          }
+        ],
+        "icons": [
+          {
+            "display": "block",
+            "left": 44,
+            "right": 66,
+            "top": 604.78125,
+            "bottom": 626.78125,
+            "width": 22,
+            "height": 22,
+            "scroll": 22,
+            "client": 22
+          },
+          {
+            "display": "block",
+            "left": 210,
+            "right": 232,
+            "top": 604.78125,
+            "bottom": 626.78125,
+            "width": 22,
+            "height": 22,
+            "scroll": 22,
+            "client": 22
+          },
+          {
+            "display": "block",
+            "left": 44,
+            "right": 66,
+            "top": 669.96875,
+            "bottom": 691.96875,
+            "width": 22,
+            "height": 22,
+            "scroll": 22,
+            "client": 22
+          },
+          {
+            "display": "block",
+            "left": 210,
+            "right": 232,
+            "top": 669.96875,
+            "bottom": 691.96875,
+            "width": 22,
+            "height": 22,
+            "scroll": 22,
+            "client": 22
+          }
+        ]
+      },
+      "nativeAccessibility": true,
+      "translatedLabels": false,
+      "forcedTextContrast": [],
+      "axe": []
+    },
+    {
+      "layout": {
+        "width": 700,
+        "font": 16,
+        "suffix": "700"
+      },
+      "toolbarContainment": {
+        "viewport": 700,
+        "scroll": 700,
+        "section": {
+          "left": 35,
+          "right": 665,
+          "top": 391.6875,
+          "bottom": 448.875,
+          "width": 630,
+          "height": 57.1875,
+          "scroll": 630,
+          "client": 630
+        },
+        "row": {
+          "left": 35,
+          "right": 665,
+          "top": 391.6875,
+          "bottom": 448.875,
+          "width": 630,
+          "height": 57.1875,
+          "scroll": 630,
+          "client": 630
+        },
+        "text": [
+          {
+            "left": 76,
+            "right": 121.8125,
+            "top": 400.6875,
+            "bottom": 419.6875,
+            "text": "Inspect drawing"
+          },
+          {
+            "left": 76,
+            "right": 127.78125,
+            "top": 420.28125,
+            "bottom": 439.28125,
+            "text": "Inspect drawing"
+          },
+          {
+            "left": 235.5,
+            "right": 293.03125,
+            "top": 400.6875,
+            "bottom": 419.6875,
+            "text": "Compare surroundings"
+          },
+          {
+            "left": 235.5,
+            "right": 319.390625,
+            "top": 420.28125,
+            "bottom": 439.28125,
+            "text": "Compare surroundings"
+          },
+          {
+            "left": 395,
+            "right": 494.34375,
+            "top": 400.6875,
+            "bottom": 419.6875,
+            "text": "Expand viewing area"
+          },
+          {
+            "left": 395,
+            "right": 422.125,
+            "top": 420.28125,
+            "bottom": 439.28125,
+            "text": "Expand viewing area"
+          },
+          {
+            "left": 554.5,
+            "right": 590.6875,
+            "top": 400.6875,
+            "bottom": 419.6875,
+            "text": "Focus experiment"
+          },
+          {
+            "left": 554.5,
+            "right": 626.734375,
+            "top": 420.28125,
+            "bottom": 439.28125,
+            "text": "Focus experiment"
+          }
+        ],
+        "buttons": [
+          {
+            "left": 35,
+            "right": 186.5,
+            "top": 391.6875,
+            "bottom": 448.875,
+            "width": 151.5,
+            "height": 57.1875,
+            "scroll": 150,
+            "client": 150
+          },
+          {
+            "left": 194.5,
+            "right": 346,
+            "top": 391.6875,
+            "bottom": 448.875,
+            "width": 151.5,
+            "height": 57.1875,
+            "scroll": 150,
+            "client": 150
+          },
+          {
+            "left": 354,
+            "right": 505.5,
+            "top": 391.6875,
+            "bottom": 448.875,
+            "width": 151.5,
+            "height": 57.1875,
+            "scroll": 150,
+            "client": 150
+          },
+          {
+            "left": 513.5,
+            "right": 665,
+            "top": 391.6875,
+            "bottom": 448.875,
+            "width": 151.5,
+            "height": 57.1875,
+            "scroll": 150,
+            "client": 150
+          }
+        ],
+        "icons": [
+          {
+            "display": "block",
+            "left": 46,
+            "right": 68,
+            "top": 409.28125,
+            "bottom": 431.28125,
+            "width": 22,
+            "height": 22,
+            "scroll": 22,
+            "client": 22
+          },
+          {
+            "display": "block",
+            "left": 205.5,
+            "right": 227.5,
+            "top": 409.28125,
+            "bottom": 431.28125,
+            "width": 22,
+            "height": 22,
+            "scroll": 22,
+            "client": 22
+          },
+          {
+            "display": "block",
+            "left": 365,
+            "right": 387,
+            "top": 409.28125,
+            "bottom": 431.28125,
+            "width": 22,
+            "height": 22,
+            "scroll": 22,
+            "client": 22
+          },
+          {
+            "display": "block",
+            "left": 524.5,
+            "right": 546.5,
+            "top": 409.28125,
+            "bottom": 431.28125,
+            "width": 22,
+            "height": 22,
+            "scroll": 22,
+            "client": 22
+          }
+        ]
+      },
+      "nativeAccessibility": true,
+      "translatedLabels": false,
+      "forcedTextContrast": [],
+      "axe": []
+    },
+    {
+      "layout": {
+        "width": 320,
+        "font": 32,
+        "suffix": "320-200"
+      },
+      "toolbarContainment": {
+        "viewport": 320,
+        "scroll": 320,
+        "section": {
+          "left": 33,
+          "right": 287,
+          "top": 521.6875,
+          "bottom": 852.8125,
+          "width": 254,
+          "height": 331.125,
+          "scroll": 254,
+          "client": 254
+        },
+        "row": {
+          "left": 33,
+          "right": 287,
+          "top": 521.6875,
+          "bottom": 852.8125,
+          "width": 254,
+          "height": 331.125,
+          "scroll": 254,
+          "client": 254
+        },
+        "text": [
+          {
+            "left": 44,
+            "right": 246.859375,
+            "top": 531.6875,
+            "bottom": 568.6875,
+            "text": "Inspect drawing"
+          },
+          {
+            "left": 44,
+            "right": 159.0625,
+            "top": 596.875,
+            "bottom": 633.875,
+            "text": "Compare surroundings"
+          },
+          {
+            "left": 44,
+            "right": 211.765625,
+            "top": 636.0625,
+            "bottom": 673.0625,
+            "text": "Compare surroundings"
+          },
+          {
+            "left": 44,
+            "right": 242.6875,
+            "top": 701.25,
+            "bottom": 738.25,
+            "text": "Expand viewing area"
+          },
+          {
+            "left": 44,
+            "right": 98.234375,
+            "top": 740.4375,
+            "bottom": 777.4375,
+            "text": "Expand viewing area"
+          },
+          {
+            "left": 44,
+            "right": 268.53125,
+            "top": 805.625,
+            "bottom": 842.625,
+            "text": "Focus experiment"
+          }
+        ],
+        "buttons": [
+          {
+            "left": 33,
+            "right": 287,
+            "top": 521.6875,
+            "bottom": 578.875,
+            "width": 254,
+            "height": 57.1875,
+            "scroll": 252,
+            "client": 252
+          },
+          {
+            "left": 33,
+            "right": 287,
+            "top": 586.875,
+            "bottom": 683.25,
+            "width": 254,
+            "height": 96.375,
+            "scroll": 252,
+            "client": 252
+          },
+          {
+            "left": 33,
+            "right": 287,
+            "top": 691.25,
+            "bottom": 787.625,
+            "width": 254,
+            "height": 96.375,
+            "scroll": 252,
+            "client": 252
+          },
+          {
+            "left": 33,
+            "right": 287,
+            "top": 795.625,
+            "bottom": 852.8125,
+            "width": 254,
+            "height": 57.1875,
+            "scroll": 252,
+            "client": 252
+          }
+        ],
+        "icons": [
+          {
+            "display": "none",
+            "left": 0,
+            "right": 0,
+            "top": 0,
+            "bottom": 0,
+            "width": 0,
+            "height": 0,
+            "scroll": 0,
+            "client": 0
+          },
+          {
+            "display": "none",
+            "left": 0,
+            "right": 0,
+            "top": 0,
+            "bottom": 0,
+            "width": 0,
+            "height": 0,
+            "scroll": 0,
+            "client": 0
+          },
+          {
+            "display": "none",
+            "left": 0,
+            "right": 0,
+            "top": 0,
+            "bottom": 0,
+            "width": 0,
+            "height": 0,
+            "scroll": 0,
+            "client": 0
+          },
+          {
+            "display": "none",
+            "left": 0,
+            "right": 0,
+            "top": 0,
+            "bottom": 0,
+            "width": 0,
+            "height": 0,
+            "scroll": 0,
+            "client": 0
+          }
+        ]
+      },
+      "nativeAccessibility": true,
+      "translatedLabels": false,
+      "forcedTextContrast": [],
+      "axe": []
+    },
+    {
+      "layout": {
+        "width": 320,
+        "font": 32,
+        "suffix": "long-rtl-320-200",
+        "long": true
+      },
+      "toolbarContainment": {
+        "viewport": 320,
+        "scroll": 320,
+        "section": {
+          "left": 33,
+          "right": 287,
+          "top": 180.6875,
+          "bottom": 1099.625,
+          "width": 254,
+          "height": 918.9375,
+          "scroll": 254,
+          "client": 254
+        },
+        "row": {
+          "left": 33,
+          "right": 287,
+          "top": 180.6875,
+          "bottom": 1099.625,
+          "width": 254,
+          "height": 918.9375,
+          "scroll": 254,
+          "client": 254
+        },
+        "text": [
+          {
+            "left": 135.03125,
+            "right": 276,
+            "top": 190.6875,
+            "bottom": 227.6875,
+            "text": "فحص الرسم بالتفصيل InspectTheDrawingWithLongTranslatedWords"
+          },
+          {
+            "left": 170.78125,
+            "right": 276,
+            "top": 229.875,
+            "bottom": 266.875,
+            "text": "فحص الرسم بالتفصيل InspectTheDrawingWithLongTranslatedWords"
+          },
+          {
+            "left": 47.875,
+            "right": 276,
+            "top": 269.0625,
+            "bottom": 306.0625,
+            "text": "فحص الرسم بالتفصيل InspectTheDrawingWithLongTranslatedWords"
+          },
+          {
+            "left": 46.25,
+            "right": 276,
+            "top": 308.25,
+            "bottom": 345.25,
+            "text": "فحص الرسم بالتفصيل InspectTheDrawingWithLongTranslatedWords"
+          },
+          {
+            "left": 152.1875,
+            "right": 276,
+            "top": 347.4375,
+            "bottom": 384.4375,
+            "text": "فحص الرسم بالتفصيل InspectTheDrawingWithLongTranslatedWords"
+          },
+          {
+            "left": 59.546875,
+            "right": 276,
+            "top": 412.625,
+            "bottom": 449.625,
+            "text": "قارن عناصر الخلفية والبيئة المحيطة CompareTheSurroundingsWithLongTranslatedWords"
+          },
+          {
+            "left": 99.96875,
+            "right": 276,
+            "top": 451.8125,
+            "bottom": 488.8125,
+            "text": "قارن عناصر الخلفية والبيئة المحيطة CompareTheSurroundingsWithLongTranslatedWords"
+          },
+          {
+            "left": 45.53125,
+            "right": 276,
+            "top": 491,
+            "bottom": 528,
+            "text": "قارن عناصر الخلفية والبيئة المحيطة CompareTheSurroundingsWithLongTranslatedWords"
+          },
+          {
+            "left": 49.46875,
+            "right": 276,
+            "top": 530.1875,
+            "bottom": 567.1875,
+            "text": "قارن عناصر الخلفية والبيئة المحيطة CompareTheSurroundingsWithLongTranslatedWords"
+          },
+          {
+            "left": 63.703125,
+            "right": 276,
+            "top": 569.375,
+            "bottom": 606.375,
+            "text": "قارن عناصر الخلفية والبيئة المحيطة CompareTheSurroundingsWithLongTranslatedWords"
+          },
+          {
+            "left": 66.53125,
+            "right": 276,
+            "top": 634.5625,
+            "bottom": 671.5625,
+            "text": "تكبير مساحة عرض الرسم ExpandTheDrawingViewingAreaWithLongTranslatedWords"
+          },
+          {
+            "left": 210.53125,
+            "right": 276,
+            "top": 673.75,
+            "bottom": 710.75,
+            "text": "تكبير مساحة عرض الرسم ExpandTheDrawingViewingAreaWithLongTranslatedWords"
+          },
+          {
+            "left": 46.59375,
+            "right": 276,
+            "top": 712.9375,
+            "bottom": 749.9375,
+            "text": "تكبير مساحة عرض الرسم ExpandTheDrawingViewingAreaWithLongTranslatedWords"
+          },
+          {
+            "left": 54.390625,
+            "right": 276,
+            "top": 752.125,
+            "bottom": 789.125,
+            "text": "تكبير مساحة عرض الرسم ExpandTheDrawingViewingAreaWithLongTranslatedWords"
+          },
+          {
+            "left": 65.890625,
+            "right": 276,
+            "top": 791.3125,
+            "bottom": 828.3125,
+            "text": "تكبير مساحة عرض الرسم ExpandTheDrawingViewingAreaWithLongTranslatedWords"
+          },
+          {
+            "left": 193.875,
+            "right": 276,
+            "top": 830.5,
+            "bottom": 867.5,
+            "text": "تكبير مساحة عرض الرسم ExpandTheDrawingViewingAreaWithLongTranslatedWords"
+          },
+          {
+            "left": 80.578125,
+            "right": 276,
+            "top": 895.6875,
+            "bottom": 932.6875,
+            "text": "افتح التجربة بملء الشاشة FocusTheExperimentWithLongTranslatedWords"
+          },
+          {
+            "left": 191.828125,
+            "right": 276,
+            "top": 934.875,
+            "bottom": 971.875,
+            "text": "افتح التجربة بملء الشاشة FocusTheExperimentWithLongTranslatedWords"
+          },
+          {
+            "left": 54.265625,
+            "right": 276,
+            "top": 974.0625,
+            "bottom": 1011.0625,
+            "text": "افتح التجربة بملء الشاشة FocusTheExperimentWithLongTranslatedWords"
+          },
+          {
+            "left": 55.796875,
+            "right": 276,
+            "top": 1013.25,
+            "bottom": 1050.25,
+            "text": "افتح التجربة بملء الشاشة FocusTheExperimentWithLongTranslatedWords"
+          },
+          {
+            "left": 118.171875,
+            "right": 276,
+            "top": 1052.4375,
+            "bottom": 1089.4375,
+            "text": "افتح التجربة بملء الشاشة FocusTheExperimentWithLongTranslatedWords"
+          }
+        ],
+        "buttons": [
+          {
+            "left": 33,
+            "right": 287,
+            "top": 180.6875,
+            "bottom": 394.625,
+            "width": 254,
+            "height": 213.9375,
+            "scroll": 252,
+            "client": 252
+          },
+          {
+            "left": 33,
+            "right": 287,
+            "top": 402.625,
+            "bottom": 616.5625,
+            "width": 254,
+            "height": 213.9375,
+            "scroll": 252,
+            "client": 252
+          },
+          {
+            "left": 33,
+            "right": 287,
+            "top": 624.5625,
+            "bottom": 877.6875,
+            "width": 254,
+            "height": 253.125,
+            "scroll": 252,
+            "client": 252
+          },
+          {
+            "left": 33,
+            "right": 287,
+            "top": 885.6875,
+            "bottom": 1099.625,
+            "width": 254,
+            "height": 213.9375,
+            "scroll": 252,
+            "client": 252
+          }
+        ],
+        "icons": [
+          {
+            "display": "none",
+            "left": 0,
+            "right": 0,
+            "top": 0,
+            "bottom": 0,
+            "width": 0,
+            "height": 0,
+            "scroll": 0,
+            "client": 0
+          },
+          {
+            "display": "none",
+            "left": 0,
+            "right": 0,
+            "top": 0,
+            "bottom": 0,
+            "width": 0,
+            "height": 0,
+            "scroll": 0,
+            "client": 0
+          },
+          {
+            "display": "none",
+            "left": 0,
+            "right": 0,
+            "top": 0,
+            "bottom": 0,
+            "width": 0,
+            "height": 0,
+            "scroll": 0,
+            "client": 0
+          },
+          {
+            "display": "none",
+            "left": 0,
+            "right": 0,
+            "top": 0,
+            "bottom": 0,
+            "width": 0,
+            "height": 0,
+            "scroll": 0,
+            "client": 0
+          }
+        ]
+      },
+      "nativeAccessibility": true,
+      "translatedLabels": true,
+      "forcedTextContrast": [],
+      "axe": []
+    },
+    {
+      "layout": {
+        "width": 390,
+        "font": 16,
+        "suffix": "dark",
+        "theme": "dark"
+      },
+      "toolbarContainment": {
+        "viewport": 390,
+        "scroll": 390,
+        "section": {
+          "left": 45,
+          "right": 345,
+          "top": 500.1875,
+          "bottom": 622.5625,
+          "width": 300,
+          "height": 122.375,
+          "scroll": 300,
+          "client": 300
+        },
+        "row": {
+          "left": 45,
+          "right": 345,
+          "top": 500.1875,
+          "bottom": 622.5625,
+          "width": 300,
+          "height": 122.375,
+          "scroll": 300,
+          "client": 300
+        },
+        "text": [
+          {
+            "left": 56,
+            "right": 157.4375,
+            "top": 518.984375,
+            "bottom": 537.984375,
+            "text": "Inspect drawing"
+          },
+          {
+            "left": 210,
+            "right": 267.53125,
+            "top": 509.1875,
+            "bottom": 528.1875,
+            "text": "Compare surroundings"
+          },
+          {
+            "left": 210,
+            "right": 293.890625,
+            "top": 528.78125,
+            "bottom": 547.78125,
+            "text": "Compare surroundings"
+          },
+          {
+            "left": 56,
+            "right": 155.34375,
+            "top": 574.375,
+            "bottom": 593.375,
+            "text": "Expand viewing area"
+          },
+          {
+            "left": 56,
+            "right": 83.125,
+            "top": 593.96875,
+            "bottom": 612.96875,
+            "text": "Expand viewing area"
+          },
+          {
+            "left": 210,
+            "right": 322.265625,
+            "top": 584.171875,
+            "bottom": 603.171875,
+            "text": "Focus experiment"
+          }
+        ],
+        "buttons": [
+          {
+            "left": 45,
+            "right": 191,
+            "top": 500.1875,
+            "bottom": 557.375,
+            "width": 146,
+            "height": 57.1875,
+            "scroll": 144,
+            "client": 144
+          },
+          {
+            "left": 199,
+            "right": 345,
+            "top": 500.1875,
+            "bottom": 557.375,
+            "width": 146,
+            "height": 57.1875,
+            "scroll": 144,
+            "client": 144
+          },
+          {
+            "left": 45,
+            "right": 191,
+            "top": 565.375,
+            "bottom": 622.5625,
+            "width": 146,
+            "height": 57.1875,
+            "scroll": 144,
+            "client": 144
+          },
+          {
+            "left": 199,
+            "right": 345,
+            "top": 565.375,
+            "bottom": 622.5625,
+            "width": 146,
+            "height": 57.1875,
+            "scroll": 144,
+            "client": 144
+          }
+        ],
+        "icons": [
+          {
+            "display": "none",
+            "left": 0,
+            "right": 0,
+            "top": 0,
+            "bottom": 0,
+            "width": 0,
+            "height": 0,
+            "scroll": 0,
+            "client": 0
+          },
+          {
+            "display": "none",
+            "left": 0,
+            "right": 0,
+            "top": 0,
+            "bottom": 0,
+            "width": 0,
+            "height": 0,
+            "scroll": 0,
+            "client": 0
+          },
+          {
+            "display": "none",
+            "left": 0,
+            "right": 0,
+            "top": 0,
+            "bottom": 0,
+            "width": 0,
+            "height": 0,
+            "scroll": 0,
+            "client": 0
+          },
+          {
+            "display": "none",
+            "left": 0,
+            "right": 0,
+            "top": 0,
+            "bottom": 0,
+            "width": 0,
+            "height": 0,
+            "scroll": 0,
+            "client": 0
+          }
+        ]
+      },
+      "nativeAccessibility": true,
+      "translatedLabels": false,
+      "forcedTextContrast": [],
+      "axe": []
+    },
+    {
+      "layout": {
+        "width": 390,
+        "font": 16,
+        "suffix": "contrast",
+        "theme": "contrast"
+      },
+      "toolbarContainment": {
+        "viewport": 390,
+        "scroll": 390,
+        "section": {
+          "left": 33,
+          "right": 357,
+          "top": 438.1875,
+          "bottom": 560.5625,
+          "width": 324,
+          "height": 122.375,
+          "scroll": 324,
+          "client": 324
+        },
+        "row": {
+          "left": 33,
+          "right": 357,
+          "top": 438.1875,
+          "bottom": 560.5625,
+          "width": 324,
+          "height": 122.375,
+          "scroll": 324,
+          "client": 324
+        },
+        "text": [
+          {
+            "left": 74,
+            "right": 175.4375,
+            "top": 456.984375,
+            "bottom": 475.984375,
+            "text": "Inspect drawing"
+          },
+          {
+            "left": 240,
+            "right": 297.53125,
+            "top": 447.1875,
+            "bottom": 466.1875,
+            "text": "Compare surroundings"
+          },
+          {
+            "left": 240,
+            "right": 323.890625,
+            "top": 466.78125,
+            "bottom": 485.78125,
+            "text": "Compare surroundings"
+          },
+          {
+            "left": 74,
+            "right": 173.34375,
+            "top": 512.375,
+            "bottom": 531.375,
+            "text": "Expand viewing area"
+          },
+          {
+            "left": 74,
+            "right": 101.125,
+            "top": 531.96875,
+            "bottom": 550.96875,
+            "text": "Expand viewing area"
+          },
+          {
+            "left": 240,
+            "right": 276.1875,
+            "top": 512.375,
+            "bottom": 531.375,
+            "text": "Focus experiment"
+          },
+          {
+            "left": 240,
+            "right": 312.234375,
+            "top": 531.96875,
+            "bottom": 550.96875,
+            "text": "Focus experiment"
+          }
+        ],
+        "buttons": [
+          {
+            "left": 33,
+            "right": 191,
+            "top": 438.1875,
+            "bottom": 495.375,
+            "width": 158,
+            "height": 57.1875,
+            "scroll": 156,
+            "client": 156
+          },
+          {
+            "left": 199,
+            "right": 357,
+            "top": 438.1875,
+            "bottom": 495.375,
+            "width": 158,
+            "height": 57.1875,
+            "scroll": 156,
+            "client": 156
+          },
+          {
+            "left": 33,
+            "right": 191,
+            "top": 503.375,
+            "bottom": 560.5625,
+            "width": 158,
+            "height": 57.1875,
+            "scroll": 156,
+            "client": 156
+          },
+          {
+            "left": 199,
+            "right": 357,
+            "top": 503.375,
+            "bottom": 560.5625,
+            "width": 158,
+            "height": 57.1875,
+            "scroll": 156,
+            "client": 156
+          }
+        ],
+        "icons": [
+          {
+            "display": "block",
+            "left": 44,
+            "right": 66,
+            "top": 455.78125,
+            "bottom": 477.78125,
+            "width": 22,
+            "height": 22,
+            "scroll": 22,
+            "client": 22
+          },
+          {
+            "display": "block",
+            "left": 210,
+            "right": 232,
+            "top": 455.78125,
+            "bottom": 477.78125,
+            "width": 22,
+            "height": 22,
+            "scroll": 22,
+            "client": 22
+          },
+          {
+            "display": "block",
+            "left": 44,
+            "right": 66,
+            "top": 520.96875,
+            "bottom": 542.96875,
+            "width": 22,
+            "height": 22,
+            "scroll": 22,
+            "client": 22
+          },
+          {
+            "display": "block",
+            "left": 210,
+            "right": 232,
+            "top": 520.96875,
+            "bottom": 542.96875,
+            "width": 22,
+            "height": 22,
+            "scroll": 22,
+            "client": 22
+          }
+        ]
+      },
+      "nativeAccessibility": true,
+      "translatedLabels": false,
+      "forcedTextContrast": [],
+      "axe": []
+    },
+    {
+      "layout": {
+        "width": 390,
+        "font": 16,
+        "suffix": "forced",
+        "theme": "forced"
+      },
+      "toolbarContainment": {
+        "viewport": 390,
+        "scroll": 390,
+        "section": {
+          "left": 33,
+          "right": 357,
+          "top": 438.1875,
+          "bottom": 560.5625,
+          "width": 324,
+          "height": 122.375,
+          "scroll": 324,
+          "client": 324
+        },
+        "row": {
+          "left": 33,
+          "right": 357,
+          "top": 438.1875,
+          "bottom": 560.5625,
+          "width": 324,
+          "height": 122.375,
+          "scroll": 324,
+          "client": 324
+        },
+        "text": [
+          {
+            "left": 74,
+            "right": 175.4375,
+            "top": 456.984375,
+            "bottom": 475.984375,
+            "text": "Inspect drawing"
+          },
+          {
+            "left": 240,
+            "right": 297.53125,
+            "top": 447.1875,
+            "bottom": 466.1875,
+            "text": "Compare surroundings"
+          },
+          {
+            "left": 240,
+            "right": 323.890625,
+            "top": 466.78125,
+            "bottom": 485.78125,
+            "text": "Compare surroundings"
+          },
+          {
+            "left": 74,
+            "right": 173.34375,
+            "top": 512.375,
+            "bottom": 531.375,
+            "text": "Expand viewing area"
+          },
+          {
+            "left": 74,
+            "right": 101.125,
+            "top": 531.96875,
+            "bottom": 550.96875,
+            "text": "Expand viewing area"
+          },
+          {
+            "left": 240,
+            "right": 276.1875,
+            "top": 512.375,
+            "bottom": 531.375,
+            "text": "Focus experiment"
+          },
+          {
+            "left": 240,
+            "right": 312.234375,
+            "top": 531.96875,
+            "bottom": 550.96875,
+            "text": "Focus experiment"
+          }
+        ],
+        "buttons": [
+          {
+            "left": 33,
+            "right": 191,
+            "top": 438.1875,
+            "bottom": 495.375,
+            "width": 158,
+            "height": 57.1875,
+            "scroll": 156,
+            "client": 156
+          },
+          {
+            "left": 199,
+            "right": 357,
+            "top": 438.1875,
+            "bottom": 495.375,
+            "width": 158,
+            "height": 57.1875,
+            "scroll": 156,
+            "client": 156
+          },
+          {
+            "left": 33,
+            "right": 191,
+            "top": 503.375,
+            "bottom": 560.5625,
+            "width": 158,
+            "height": 57.1875,
+            "scroll": 156,
+            "client": 156
+          },
+          {
+            "left": 199,
+            "right": 357,
+            "top": 503.375,
+            "bottom": 560.5625,
+            "width": 158,
+            "height": 57.1875,
+            "scroll": 156,
+            "client": 156
+          }
+        ],
+        "icons": [
+          {
+            "display": "block",
+            "left": 44,
+            "right": 66,
+            "top": 455.78125,
+            "bottom": 477.78125,
+            "width": 22,
+            "height": 22,
+            "scroll": 22,
+            "client": 22
+          },
+          {
+            "display": "block",
+            "left": 210,
+            "right": 232,
+            "top": 455.78125,
+            "bottom": 477.78125,
+            "width": 22,
+            "height": 22,
+            "scroll": 22,
+            "client": 22
+          },
+          {
+            "display": "block",
+            "left": 44,
+            "right": 66,
+            "top": 520.96875,
+            "bottom": 542.96875,
+            "width": 22,
+            "height": 22,
+            "scroll": 22,
+            "client": 22
+          },
+          {
+            "display": "block",
+            "left": 210,
+            "right": 232,
+            "top": 520.96875,
+            "bottom": 542.96875,
+            "width": 22,
+            "height": 22,
+            "scroll": 22,
+            "client": 22
+          }
+        ]
+      },
+      "nativeAccessibility": true,
+      "translatedLabels": false,
+      "forcedTextContrast": [
+        {
+          "scheme": "light",
+          "activeState": "inspect",
+          "focusStyle": {
+            "visible": true,
+            "width": "3px",
+            "offset": "3px",
+            "style": "solid"
+          }
+        },
+        {
+          "scheme": "light",
+          "activeState": "inspect",
+          "name": "Inspect drawing, 200% magnification",
+          "contrast": 15.134013837043632,
+          "expanded": "true",
+          "iconColor": "rgb(255, 255, 255)",
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "scheme": "light",
+          "activeState": "inspect",
+          "name": "Compare surroundings",
+          "contrast": 21,
+          "expanded": null,
+          "iconColor": "rgb(0, 0, 0)",
+          "color": "rgb(0, 0, 0)"
+        },
+        {
+          "scheme": "light",
+          "activeState": "inspect",
+          "name": "Expand viewing area",
+          "contrast": 21,
+          "expanded": null,
+          "iconColor": "rgb(0, 0, 0)",
+          "color": "rgb(0, 0, 0)"
+        },
+        {
+          "scheme": "light",
+          "activeState": "inspect",
+          "name": "Focus experiment",
+          "contrast": 21,
+          "expanded": null,
+          "iconColor": "rgb(0, 0, 0)",
+          "color": "rgb(0, 0, 0)"
+        },
+        {
+          "scheme": "light",
+          "activeState": "inspect",
+          "text": "Inspect drawing200% inspection",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(55, 0, 110)",
+          "class": "perception-scene-action-copy",
+          "contrast": 15.134013837043632
+        },
+        {
+          "scheme": "light",
+          "activeState": "inspect",
+          "text": "Compare surroundings",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)",
+          "class": "perception-scene-action-copy",
+          "contrast": 21
+        },
+        {
+          "scheme": "light",
+          "activeState": "inspect",
+          "text": "Expand viewing area",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)",
+          "class": "perception-scene-action-copy",
+          "contrast": 21
+        },
+        {
+          "scheme": "light",
+          "activeState": "inspect",
+          "text": "Focus experiment",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)",
+          "class": "perception-scene-action-copy",
+          "contrast": 21
+        },
+        {
+          "scheme": "dark",
+          "activeState": "inspect",
+          "focusStyle": {
+            "visible": true,
+            "width": "3px",
+            "offset": "3px",
+            "style": "solid"
+          }
+        },
+        {
+          "scheme": "dark",
+          "activeState": "inspect",
+          "name": "Inspect drawing, 200% magnification",
+          "contrast": 14.371254724906635,
+          "expanded": "true",
+          "iconColor": "rgb(0, 0, 0)",
+          "color": "rgb(0, 0, 0)"
+        },
+        {
+          "scheme": "dark",
+          "activeState": "inspect",
+          "name": "Compare surroundings",
+          "contrast": 21,
+          "expanded": null,
+          "iconColor": "rgb(255, 255, 255)",
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "scheme": "dark",
+          "activeState": "inspect",
+          "name": "Expand viewing area",
+          "contrast": 21,
+          "expanded": null,
+          "iconColor": "rgb(255, 255, 255)",
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "scheme": "dark",
+          "activeState": "inspect",
+          "name": "Focus experiment",
+          "contrast": 21,
+          "expanded": null,
+          "iconColor": "rgb(255, 255, 255)",
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "scheme": "dark",
+          "activeState": "inspect",
+          "text": "Inspect drawing200% inspection",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgb(26, 235, 255)",
+          "class": "perception-scene-action-copy",
+          "contrast": 14.371254724906635
+        },
+        {
+          "scheme": "dark",
+          "activeState": "inspect",
+          "text": "Compare surroundings",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(0, 0, 0)",
+          "class": "perception-scene-action-copy",
+          "contrast": 21
+        },
+        {
+          "scheme": "dark",
+          "activeState": "inspect",
+          "text": "Expand viewing area",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(0, 0, 0)",
+          "class": "perception-scene-action-copy",
+          "contrast": 21
+        },
+        {
+          "scheme": "dark",
+          "activeState": "inspect",
+          "text": "Focus experiment",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(0, 0, 0)",
+          "class": "perception-scene-action-copy",
+          "contrast": 21
+        },
+        {
+          "scheme": "light",
+          "activeState": "compare",
+          "focusStyle": {
+            "visible": true,
+            "width": "3px",
+            "offset": "3px",
+            "style": "solid"
+          }
+        },
+        {
+          "scheme": "light",
+          "activeState": "compare",
+          "name": "Inspect drawing, 200% magnification",
+          "contrast": 15.134013837043632,
+          "expanded": "true",
+          "iconColor": "rgb(255, 255, 255)",
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "scheme": "light",
+          "activeState": "compare",
+          "name": "Compare surroundings",
+          "contrast": 15.134013837043632,
+          "expanded": null,
+          "iconColor": "rgb(255, 255, 255)",
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "scheme": "light",
+          "activeState": "compare",
+          "name": "Expand viewing area",
+          "contrast": 21,
+          "expanded": null,
+          "iconColor": "rgb(0, 0, 0)",
+          "color": "rgb(0, 0, 0)"
+        },
+        {
+          "scheme": "light",
+          "activeState": "compare",
+          "name": "Focus experiment",
+          "contrast": 21,
+          "expanded": null,
+          "iconColor": "rgb(0, 0, 0)",
+          "color": "rgb(0, 0, 0)"
+        },
+        {
+          "scheme": "light",
+          "activeState": "compare",
+          "text": "Inspect drawing200% inspection",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(55, 0, 110)",
+          "class": "perception-scene-action-copy",
+          "contrast": 15.134013837043632
+        },
+        {
+          "scheme": "light",
+          "activeState": "compare",
+          "text": "Compare surroundings",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(55, 0, 110)",
+          "class": "perception-scene-action-copy",
+          "contrast": 15.134013837043632
+        },
+        {
+          "scheme": "light",
+          "activeState": "compare",
+          "text": "Expand viewing area",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)",
+          "class": "perception-scene-action-copy",
+          "contrast": 21
+        },
+        {
+          "scheme": "light",
+          "activeState": "compare",
+          "text": "Focus experiment",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)",
+          "class": "perception-scene-action-copy",
+          "contrast": 21
+        },
+        {
+          "scheme": "dark",
+          "activeState": "compare",
+          "focusStyle": {
+            "visible": true,
+            "width": "3px",
+            "offset": "3px",
+            "style": "solid"
+          }
+        },
+        {
+          "scheme": "dark",
+          "activeState": "compare",
+          "name": "Inspect drawing, 200% magnification",
+          "contrast": 14.371254724906635,
+          "expanded": "true",
+          "iconColor": "rgb(0, 0, 0)",
+          "color": "rgb(0, 0, 0)"
+        },
+        {
+          "scheme": "dark",
+          "activeState": "compare",
+          "name": "Compare surroundings",
+          "contrast": 14.371254724906635,
+          "expanded": null,
+          "iconColor": "rgb(0, 0, 0)",
+          "color": "rgb(0, 0, 0)"
+        },
+        {
+          "scheme": "dark",
+          "activeState": "compare",
+          "name": "Expand viewing area",
+          "contrast": 21,
+          "expanded": null,
+          "iconColor": "rgb(255, 255, 255)",
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "scheme": "dark",
+          "activeState": "compare",
+          "name": "Focus experiment",
+          "contrast": 21,
+          "expanded": null,
+          "iconColor": "rgb(255, 255, 255)",
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "scheme": "dark",
+          "activeState": "compare",
+          "text": "Inspect drawing200% inspection",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgb(26, 235, 255)",
+          "class": "perception-scene-action-copy",
+          "contrast": 14.371254724906635
+        },
+        {
+          "scheme": "dark",
+          "activeState": "compare",
+          "text": "Compare surroundings",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgb(26, 235, 255)",
+          "class": "perception-scene-action-copy",
+          "contrast": 14.371254724906635
+        },
+        {
+          "scheme": "dark",
+          "activeState": "compare",
+          "text": "Expand viewing area",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(0, 0, 0)",
+          "class": "perception-scene-action-copy",
+          "contrast": 21
+        },
+        {
+          "scheme": "dark",
+          "activeState": "compare",
+          "text": "Focus experiment",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(0, 0, 0)",
+          "class": "perception-scene-action-copy",
+          "contrast": 21
+        },
+        {
+          "scheme": "light",
+          "activeState": "expanded",
+          "focusStyle": {
+            "visible": true,
+            "width": "3px",
+            "offset": "3px",
+            "style": "solid"
+          }
+        },
+        {
+          "scheme": "light",
+          "activeState": "expanded",
+          "name": "Inspect drawing, 200% magnification",
+          "contrast": 15.134013837043632,
+          "expanded": "true",
+          "iconColor": "rgb(255, 255, 255)",
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "scheme": "light",
+          "activeState": "expanded",
+          "name": "Compare surroundings",
+          "contrast": 15.134013837043632,
+          "expanded": null,
+          "iconColor": "rgb(255, 255, 255)",
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "scheme": "light",
+          "activeState": "expanded",
+          "name": "Compact viewing area",
+          "contrast": 15.134013837043632,
+          "expanded": null,
+          "iconColor": "rgb(255, 255, 255)",
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "scheme": "light",
+          "activeState": "expanded",
+          "name": "Focus experiment",
+          "contrast": 21,
+          "expanded": null,
+          "iconColor": "rgb(0, 0, 0)",
+          "color": "rgb(0, 0, 0)"
+        },
+        {
+          "scheme": "light",
+          "activeState": "expanded",
+          "text": "Inspect drawing200% inspection",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(55, 0, 110)",
+          "class": "perception-scene-action-copy",
+          "contrast": 15.134013837043632
+        },
+        {
+          "scheme": "light",
+          "activeState": "expanded",
+          "text": "Compare surroundings",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(55, 0, 110)",
+          "class": "perception-scene-action-copy",
+          "contrast": 15.134013837043632
+        },
+        {
+          "scheme": "light",
+          "activeState": "expanded",
+          "text": "Compact viewing area",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(55, 0, 110)",
+          "class": "perception-scene-action-copy",
+          "contrast": 15.134013837043632
+        },
+        {
+          "scheme": "light",
+          "activeState": "expanded",
+          "text": "Focus experiment",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgba(255, 255, 255, 0)",
+          "class": "perception-scene-action-copy",
+          "contrast": 21
+        },
+        {
+          "scheme": "dark",
+          "activeState": "expanded",
+          "focusStyle": {
+            "visible": true,
+            "width": "3px",
+            "offset": "3px",
+            "style": "solid"
+          }
+        },
+        {
+          "scheme": "dark",
+          "activeState": "expanded",
+          "name": "Inspect drawing, 200% magnification",
+          "contrast": 14.371254724906635,
+          "expanded": "true",
+          "iconColor": "rgb(0, 0, 0)",
+          "color": "rgb(0, 0, 0)"
+        },
+        {
+          "scheme": "dark",
+          "activeState": "expanded",
+          "name": "Compare surroundings",
+          "contrast": 14.371254724906635,
+          "expanded": null,
+          "iconColor": "rgb(0, 0, 0)",
+          "color": "rgb(0, 0, 0)"
+        },
+        {
+          "scheme": "dark",
+          "activeState": "expanded",
+          "name": "Compact viewing area",
+          "contrast": 14.371254724906635,
+          "expanded": null,
+          "iconColor": "rgb(0, 0, 0)",
+          "color": "rgb(0, 0, 0)"
+        },
+        {
+          "scheme": "dark",
+          "activeState": "expanded",
+          "name": "Focus experiment",
+          "contrast": 21,
+          "expanded": null,
+          "iconColor": "rgb(255, 255, 255)",
+          "color": "rgb(255, 255, 255)"
+        },
+        {
+          "scheme": "dark",
+          "activeState": "expanded",
+          "text": "Inspect drawing200% inspection",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgb(26, 235, 255)",
+          "class": "perception-scene-action-copy",
+          "contrast": 14.371254724906635
+        },
+        {
+          "scheme": "dark",
+          "activeState": "expanded",
+          "text": "Compare surroundings",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgb(26, 235, 255)",
+          "class": "perception-scene-action-copy",
+          "contrast": 14.371254724906635
+        },
+        {
+          "scheme": "dark",
+          "activeState": "expanded",
+          "text": "Compact viewing area",
+          "color": "rgb(0, 0, 0)",
+          "background": "rgb(26, 235, 255)",
+          "class": "perception-scene-action-copy",
+          "contrast": 14.371254724906635
+        },
+        {
+          "scheme": "dark",
+          "activeState": "expanded",
+          "text": "Focus experiment",
+          "color": "rgb(255, 255, 255)",
+          "background": "rgb(0, 0, 0)",
+          "class": "perception-scene-action-copy",
+          "contrast": 21
+        }
+      ],
+      "axe": []
+    }
+  ],
+  "errors": [],
+  "sourceSHA256": "29d06320f560c7341ed4be4eb7b1b5014091c21f72341cfbf78f30b73d50d2e2",
+  "loadedSourceSHA256": "29d06320f560c7341ed4be4eb7b1b5014091c21f72341cfbf78f30b73d50d2e2",
+  "finalSourceSHA256": "29d06320f560c7341ed4be4eb7b1b5014091c21f72341cfbf78f30b73d50d2e2",
+  "baselineSHA256": "96d8b48cec2f0e5f84016d9b8f8fed310068cbb7a42dc7a60334b2127fb92b49"
+}

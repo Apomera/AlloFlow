@@ -6,11 +6,11 @@ import { createRequire } from 'node:module';
 const require=createRequire(import.meta.url),THREE=require('../vendor/three-r128/three.min.js');
 const source=readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE||'stem_lab/stem_tool_cephalopodlab.js','utf8').replace(/\r\n/g,'\n');
 // Reconstruct only the previous bell material policy. The complete live geometry,
-// anatomy, update and spawn regions remain in both sides of this paired fixture.
+// gel shading, anatomy, update and spawn remain in both sides of this paired fixture.
 const policyStart=source.indexOf('          // Composite the translucent inner surface before the outer crown, including views from beneath.');
 const policyLast="bell.name='cl-jelly-bell';root.add(bell);",policyEnd=source.indexOf(policyLast,policyStart)+policyLast.length;
 assert.ok(policyStart>=0&&policyEnd>policyStart,'Actual translucent bell policy region is missing');
-const originalPolicy="          var bell=new THREE.Mesh(bellGeo,new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:0.30,metalness:0,transparent:true,opacity:0.34,side:THREE.DoubleSide,depthWrite:false}));bell.name='cl-jelly-bell';root.add(bell);";
+const originalPolicy="          var bell=new THREE.Mesh(bellGeo,finishCLHuntJellyGel(new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:0.30,metalness:0,transparent:true,opacity:0.34,side:THREE.DoubleSide,depthWrite:false})));bell.name='cl-jelly-bell';root.add(bell);";
 const reference=source.slice(0,policyStart)+originalPolicy+source.slice(policyEnd),fixtures=[];
 function builder(text){const start=text.indexOf('var jellyfish = [];'),end=text.indexOf('// ─── Surface light rays',start);assert.ok(start>=0&&end>start);return new Function('THREE','Math','var scene=new THREE.Scene();'+text.slice(start,end)+';return{scene,jellyfish,update:updateCLHuntMoonJellyVisual};');}
 const construct=builder(source),constructReference=builder(reference);
@@ -32,8 +32,8 @@ describe('Cephalopod Hunter moon-jelly transparency',()=>{
     for(let i=0;i<ownership.length;i++)for(let j=i+1;j<ownership.length;j++)assert.ok([...ownership[i]].every(resource=>!ownership[j].has(resource)));
     for(let actor=0;actor<current.jellyfish.length;actor++){
       const jelly=current.jellyfish[actor],old=prior.jellyfish[actor],bell=jelly.children[0];assert.deepEqual(spawn(jelly),spawn(old));
-      assert.deepEqual(budget(jelly),{meshes:8,geometries:8,materials:9,vertices:1721,triangles:2970,bytes:79776,draws:9,submittedTriangles:3882});
-      assert.deepEqual(budget(old),{meshes:8,geometries:8,materials:8,vertices:1721,triangles:2970,bytes:79776,draws:8,submittedTriangles:2970});
+      assert.deepEqual(budget(jelly),{meshes:8,geometries:8,materials:9,vertices:1961,triangles:3354,bytes:90720,draws:9,submittedTriangles:4266});
+      assert.deepEqual(budget(old),{meshes:8,geometries:8,materials:8,vertices:1961,triangles:3354,bytes:90720,draws:8,submittedTriangles:3354});
       assert.ok(Array.isArray(bell.material));assert.equal(bell.material.length,2);assert.notEqual(bell.material[0],bell.material[1]);
       assert.deepEqual(bell.material.map(material=>material.side),[THREE.BackSide,THREE.FrontSide],'Inner bell must be composited before outer bell');
       assert.deepEqual(bell.geometry.groups,[{start:0,count:2736,materialIndex:0},{start:0,count:2736,materialIndex:1}],'Both shell passes must include the complete original crown and rolled lip');

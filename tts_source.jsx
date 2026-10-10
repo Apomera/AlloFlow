@@ -915,6 +915,27 @@ let piperLoadPromise = null;
             signal: !!_signal,
             canvas: !!_isCanvasEnv,
         });
+        // Prepared Word Sounds clips keep the explicitly selected local
+        // provider across retries. Run before cloud caches and routing so an
+        // older Gemini fallback can never satisfy a Kokoro-only request.
+        if (_callOpts.allowProviderFallback === false && KOKORO_VOICE_PREFIX.test(voiceName)) {
+            if (!_isEnglish) {
+                _ttsTrace('calltts:selected-provider-unavailable', { provider: 'kokoro', language: _language });
+                return null;
+            }
+            try {
+                if (!window._kokoroTTS?.ready) await ensureKokoroTts(undefined, _signal);
+                if (!window._kokoroTTS?.ready) return null;
+                const localUrl = await window._kokoroTTS.speak(cleanTextForLocalTTS(text), voiceName, speed, { signal: _signal, force: _forceRefresh });
+                if (!localUrl) return null;
+                return _emitResolvedProfile(localUrl,
+                    _resolutionProfile('local', 'kokoro-browser', null, _resolvedKokoroVoice(voiceName), 1));
+            } catch (error) {
+                if (_isAbortError(error)) throw error;
+                _ttsTrace('calltts:selected-provider-failed', { provider: 'kokoro', error: String(error?.message || error) });
+                return null;
+            }
+        }
         // Canvas: Gemini TTS (primary, expressive, multilingual) → Kokoro/Piper (offline fallback)
         if (_isCanvasEnv && _earlyTtsProvider !== 'local') {
             // Hoisted so the end-of-branch diagnostics trace can report the

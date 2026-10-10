@@ -1,0 +1,486 @@
+{
+  "name": "recorded-1",
+  "hud": {
+    "state": {
+      "alt": 84.25,
+      "vVel": 2.75,
+      "hVel": -3.5,
+      "fuel": 43.25,
+      "thrust": 0.68
+    },
+    "expected": [
+      "2.8 m/s",
+      "3.5 m/s",
+      "43 s",
+      "84.3 m",
+      "Altitude",
+      "Drift",
+      "Engine 68%",
+      "Hover reserve",
+      "Left · land <5",
+      "Up · land <3",
+      "Vertical"
+    ],
+    "generation": 128,
+    "width": 310,
+    "height": 420,
+    "rows": [
+      {
+        "text": "Altitude",
+        "x": 20,
+        "y": 26,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "align": "left",
+        "baseline": "alphabetic",
+        "alpha": 1,
+        "color": "#c4d5e4",
+        "width": 43.60546875,
+        "box": {
+          "left": 19,
+          "right": 64.23046875,
+          "top": 17,
+          "bottom": 26
+        },
+        "transform": {
+          "a": 2,
+          "b": 0,
+          "c": 0,
+          "d": 2,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "text": "84.3 m",
+        "x": 20,
+        "y": 52,
+        "font": "bold 24px system-ui, sans-serif",
+        "size": 24,
+        "cssSize": 24,
+        "align": "left",
+        "baseline": "alphabetic",
+        "alpha": 1,
+        "color": "#b9f0ff",
+        "width": 76.5234375,
+        "box": {
+          "left": 20,
+          "right": 95.5390625,
+          "top": 35,
+          "bottom": 52
+        },
+        "transform": {
+          "a": 2,
+          "b": 0,
+          "c": 0,
+          "d": 2,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "text": "Hover reserve",
+        "x": 163,
+        "y": 26,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "align": "left",
+        "baseline": "alphabetic",
+        "alpha": 1,
+        "color": "#c4d5e4",
+        "width": 75.650390625,
+        "box": {
+          "left": 163,
+          "right": 239.275390625,
+          "top": 17,
+          "bottom": 26
+        },
+        "transform": {
+          "a": 2,
+          "b": 0,
+          "c": 0,
+          "d": 2,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "text": "43 s",
+        "x": 163,
+        "y": 52,
+        "font": "bold 22px system-ui, sans-serif",
+        "size": 22,
+        "cssSize": 22,
+        "align": "left",
+        "baseline": "alphabetic",
+        "alpha": 1,
+        "color": "#ffdb99",
+        "width": 41.056640625,
+        "box": {
+          "left": 163,
+          "right": 204.3779296875,
+          "top": 36,
+          "bottom": 52
+        },
+        "transform": {
+          "a": 2,
+          "b": 0,
+          "c": 0,
+          "d": 2,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "text": "Vertical",
+        "x": 20,
+        "y": 79,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "align": "left",
+        "baseline": "alphabetic",
+        "alpha": 1,
+        "color": "#c4d5e4",
+        "width": 40.60546875,
+        "box": {
+          "left": 19,
+          "right": 60.470703125,
+          "top": 70,
+          "bottom": 79
+        },
+        "transform": {
+          "a": 2,
+          "b": 0,
+          "c": 0,
+          "d": 2,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "text": "Drift",
+        "x": 163,
+        "y": 79,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "align": "left",
+        "baseline": "alphabetic",
+        "alpha": 1,
+        "color": "#c4d5e4",
+        "width": 24.87890625,
+        "box": {
+          "left": 163,
+          "right": 188.54296875,
+          "top": 70,
+          "bottom": 79
+        },
+        "transform": {
+          "a": 2,
+          "b": 0,
+          "c": 0,
+          "d": 2,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "text": "2.8 m/s",
+        "x": 20,
+        "y": 102,
+        "font": "bold 20px system-ui, sans-serif",
+        "size": 20,
+        "cssSize": 20,
+        "align": "left",
+        "baseline": "alphabetic",
+        "alpha": 1,
+        "color": "#f5f9ff",
+        "width": 69.931640625,
+        "box": {
+          "left": 20,
+          "right": 90.1328125,
+          "top": 88,
+          "bottom": 104
+        },
+        "transform": {
+          "a": 2,
+          "b": 0,
+          "c": 0,
+          "d": 2,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "text": "3.5 m/s",
+        "x": 163,
+        "y": 102,
+        "font": "bold 20px system-ui, sans-serif",
+        "size": 20,
+        "cssSize": 20,
+        "align": "left",
+        "baseline": "alphabetic",
+        "alpha": 1,
+        "color": "#f5f9ff",
+        "width": 69.931640625,
+        "box": {
+          "left": 163,
+          "right": 233.1328125,
+          "top": 88,
+          "bottom": 104
+        },
+        "transform": {
+          "a": 2,
+          "b": 0,
+          "c": 0,
+          "d": 2,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "text": "Up · land <3",
+        "x": 20,
+        "y": 121,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "align": "left",
+        "baseline": "alphabetic",
+        "alpha": 1,
+        "color": "#c4d5e4",
+        "width": 67.083984375,
+        "box": {
+          "left": 20,
+          "right": 87.421875,
+          "top": 112,
+          "bottom": 124
+        },
+        "transform": {
+          "a": 2,
+          "b": 0,
+          "c": 0,
+          "d": 2,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "text": "Left · land <5",
+        "x": 163,
+        "y": 121,
+        "font": "500 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "align": "left",
+        "baseline": "alphabetic",
+        "alpha": 1,
+        "color": "#c4d5e4",
+        "width": 72.3515625,
+        "box": {
+          "left": 163,
+          "right": 235.689453125,
+          "top": 112,
+          "bottom": 121
+        },
+        "transform": {
+          "a": 2,
+          "b": 0,
+          "c": 0,
+          "d": 2,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "text": "Engine 68%",
+        "x": 20,
+        "y": 146,
+        "font": "600 12px system-ui, sans-serif",
+        "size": 12,
+        "cssSize": 12,
+        "align": "left",
+        "baseline": "alphabetic",
+        "alpha": 1,
+        "color": "#f5f9ff",
+        "width": 63.697265625,
+        "box": {
+          "left": 20,
+          "right": 83.61328125,
+          "top": 137,
+          "bottom": 149
+        },
+        "transform": {
+          "a": 2,
+          "b": 0,
+          "c": 0,
+          "d": 2,
+          "e": 0,
+          "f": 0
+        }
+      },
+      {
+        "text": "RECORDED FRAME  10.0 s",
+        "x": 155,
+        "y": 391,
+        "font": "bold 12px system-ui",
+        "size": 12,
+        "cssSize": 12,
+        "align": "center",
+        "baseline": "alphabetic",
+        "alpha": 1,
+        "color": "#a5f3fc",
+        "width": 145.44140625,
+        "box": {
+          "left": 82.279296875,
+          "right": 228.44140625,
+          "top": 382,
+          "bottom": 391
+        },
+        "transform": {
+          "a": 2,
+          "b": 0,
+          "c": 0,
+          "d": 2,
+          "e": 0,
+          "f": 0
+        }
+      }
+    ],
+    "layout": "compact",
+    "bottom": "156",
+    "cssWidth": 310,
+    "backingWidth": 620,
+    "horizontalOverflow": false,
+    "reviewTime": "10.000",
+    "collisions": []
+  },
+  "held": {
+    "alt": 0,
+    "vVel": -1.2,
+    "hVel": -0.02,
+    "fuel": 23.5,
+    "thrust": 0,
+    "tilt": 0,
+    "x": 32,
+    "elapsed": 20,
+    "contact": true
+  },
+  "saved": {
+    "missionXP": 42,
+    "landingResult": {
+      "crashed": false,
+      "score": 84,
+      "grade": "B",
+      "vVel": 1.2,
+      "hVel": 0.02,
+      "fuel": 24,
+      "fuelUnit": "s",
+      "recording": {
+        "version": 1,
+        "samples": [
+          {
+            "t": 0,
+            "alt": 1320.5,
+            "v": -14.25,
+            "h": 5.25,
+            "fuel": 100.5,
+            "throttle": 0.3,
+            "tilt": 0.1,
+            "x": 0
+          },
+          {
+            "t": 10,
+            "alt": 84.25,
+            "v": 2.75,
+            "h": -3.5,
+            "fuel": 43.25,
+            "throttle": 0.68,
+            "tilt": -0.1,
+            "x": 40
+          },
+          {
+            "t": 20,
+            "alt": 0,
+            "v": -1.2,
+            "h": -0.02,
+            "fuel": 23.5,
+            "throttle": 0,
+            "tilt": 0,
+            "x": 32
+          }
+        ],
+        "firstBurn": {
+          "t": 0,
+          "alt": 1320.5
+        },
+        "burnSeconds": 10,
+        "peakDescent": 14.25,
+        "peakDrift": 5.25
+      }
+    },
+    "landingAttempts": [
+      {
+        "crashed": false,
+        "score": 84,
+        "grade": "B",
+        "vVel": 1.2,
+        "hVel": 0.02,
+        "fuel": 24,
+        "fuelUnit": "s",
+        "recording": {
+          "version": 1,
+          "samples": [
+            {
+              "t": 0,
+              "alt": 1320.5,
+              "v": -14.25,
+              "h": 5.25,
+              "fuel": 100.5,
+              "throttle": 0.3,
+              "tilt": 0.1,
+              "x": 0
+            },
+            {
+              "t": 10,
+              "alt": 84.25,
+              "v": 2.75,
+              "h": -3.5,
+              "fuel": 43.25,
+              "throttle": 0.68,
+              "tilt": -0.1,
+              "x": 40
+            },
+            {
+              "t": 20,
+              "alt": 0,
+              "v": -1.2,
+              "h": -0.02,
+              "fuel": 23.5,
+              "throttle": 0,
+              "tilt": 0,
+              "x": 32
+            }
+          ],
+          "firstBurn": {
+            "t": 0,
+            "alt": 1320.5
+          },
+          "burnSeconds": 10,
+          "peakDescent": 14.25,
+          "peakDrift": 5.25
+        }
+      }
+    ],
+    "landingRewarded": true
+  },
+  "dust": {
+    "time": null,
+    "capacity": 90,
+    "grains": []
+  },
+  "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass29-2026-10-09\\direct-fallback-2\\fallback\\recorded-1.png"
+}

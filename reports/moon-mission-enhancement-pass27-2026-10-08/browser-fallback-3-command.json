@@ -1,0 +1,21 @@
+{
+  "args": [
+    "node",
+    "node_modules/@playwright/test/cli.js",
+    "test",
+    "--config",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass27-2026-10-08\\playwright.config.ts",
+    "tests/e2e/moon-mission-descent-hud.spec.ts",
+    "--grep",
+    "fallback",
+    "--workers=1",
+    "--retries=0",
+    "--reporter=line,json",
+    "--output",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass27-2026-10-08\\browser-fallback-3\\test-results"
+  ],
+  "cwd": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "browserCache": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+  "processTimeoutSeconds": 300,
+  "startUtc": "2026-10-09T00:00:17.656471+00:00"
+}

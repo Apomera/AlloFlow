@@ -1,0 +1,9 @@
+{
+  "startedAt": "2026-10-07T00:57:39.633Z",
+  "sourceSha256": "b1db98e0502ca2e561572f8d8b111d56d89fda712aec4a321f68cb84117a7fec",
+  "suites": [],
+  "complete": false,
+  "error": "AssertionError [ERR_ASSERTION]: reports/atc-deep-dive-2026-10-03/run-tests.cjs failed; inspect C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-flight-paths-2026-10-05\\validation\\20261007T005739633Z\\unit-tests.txt\n\n1 !== 0\n\n    at execute (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-flight-paths-2026-10-05\\run-validation.cjs:19:10)\n    at Object.<anonymous> (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-flight-paths-2026-10-05\\run-validation.cjs:31:78)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47",
+  "completedAt": "2026-10-07T00:59:47.550Z",
+  "sourceStable": true
+}

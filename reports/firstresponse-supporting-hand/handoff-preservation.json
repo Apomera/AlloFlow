@@ -1,0 +1,7 @@
+{
+  "beforeSHA256": "377bbca3cf4cc23025613633f96fcfd072863a9831275ef554cec2e488568a33",
+  "afterSHA256": "83dfc7f47beefaa3e264f85d3a34a50d5b6d18fb1ec88564a80d296b3d3c2533",
+  "prefixExact": true,
+  "suffixExact": true,
+  "changedRows": 1
+}

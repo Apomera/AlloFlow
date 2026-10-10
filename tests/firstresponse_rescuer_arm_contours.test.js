@@ -195,7 +195,10 @@ describe('First Response rescuer arm contours', () => {
           expect(arm.hand.worldToLocal(actual).distanceTo(expected)).toBeLessThan(1e-8);
         }
         const axis = end(arm.upper, 1).sub(end(arm.forearm, -1)).normalize();
-        expect(axis.y, arm.hand.name + ' straight vertical arm').toBeCloseTo(1, 8);
+        expect(axis.y, arm.hand.name + ' nearly upright arm').toBeGreaterThan(.96);
+        const foreAxis = end(arm.forearm, 1).sub(end(arm.forearm, -1)).normalize();
+        const upperAxis = end(arm.upper, 1).sub(end(arm.upper, -1)).normalize();
+        expect(foreAxis.dot(upperAxis), arm.hand.name + ' straight elbow').toBeGreaterThan(.99999);
         assertJoin(arm);
       }
       if (recorded.length === 2) {

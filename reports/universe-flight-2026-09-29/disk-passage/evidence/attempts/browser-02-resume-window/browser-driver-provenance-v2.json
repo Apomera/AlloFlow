@@ -1,0 +1,22 @@
+{
+  "driverSha256": "0cc5711b68b7c3724871680da374bdd25355c1976ffb9a7950240689769f094c",
+  "previousDriverSha256": "6c1b4705ad484e134944eb38fafe618256cb8b986bfc33677e7d22316e97a205",
+  "preservedAttempt": "attempts/browser-01-selector",
+  "classification": "Harness selector mismatch; beta expectation corrected from static source before exercising it.",
+  "sourcePins": {
+    "stem_lab/universe_flight_scene.js": "255f57893385f5e0ae1a932d00f3ba8e7e98cacc8851bc6ce8985003bd025a75",
+    "stem_lab/stem_tool_universe.js": "52bea55b412a2ce73ce4bd55724e1fce5befef32e17da6ad730f995bfe7a0874"
+  },
+  "edits": [
+    {
+      "before": "await page.locator('#uf-mode').selectOption('explore');",
+      "after": "await page.locator('.uf-modes').getByRole('button',{name:'Free exploration',exact:true}).click();",
+      "reason": "Installed UI exposes flight mode as buttons (UI lines 1333-1335)."
+    },
+    {
+      "before": "assert.equal(pose.settings.beta,0);",
+      "after": "assert.equal(pose.settings.beta,0.9);",
+      "reason": "Launcher preserves the remembered relativity beta (UI lines 911-915), default .9 (UI line 705). Renderer displayBeta() returns zero in explore mode (renderer line 1891)."
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+[
+  {
+    "event": "online",
+    "elapsedMs": 291
+  },
+  {
+    "event": "message",
+    "elapsedMs": 328,
+    "message": "before-jsdom"
+  },
+  {
+    "event": "timeout",
+    "elapsedMs": 30021
+  },
+  {
+    "event": "exit",
+    "elapsedMs": 32397,
+    "exit": 1
+  }
+]

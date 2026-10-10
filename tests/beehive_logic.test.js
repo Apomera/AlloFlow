@@ -610,7 +610,10 @@ describe('3D hive inspection feeds the learning loop', () => {
   it('records the frame reading in the Science Notebook snapshot', () => {
     // The notebook exists to hold observations, and the frame reading was the
     // one part of an inspection a learner could not write down.
-    expect(SRC_TEXT).toMatch(/snapshot \+= ' \| Frame ' \+ \(hive3dFrame \+ 1\)/);
+    const capture = BH.bhBeekeeperNotebookCapture({ day: 5 }, { number: 3, reading: 'A centre frame: the widest slice of the brood nest.' });
+    expect(capture.frameObservation).toBe('Schematic frame observation: Frame 3/6 — A centre frame: the widest slice of the brood nest.');
+    expect(capture.text.endsWith(capture.frameObservation)).toBe(true);
+    expect(capture.readings.every(reading => reading.value === 'Not recorded')).toBe(true);
   });
 });
 

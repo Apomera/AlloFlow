@@ -1,0 +1,46 @@
+{
+  "kind": "unit",
+  "startedAt": "2026-10-06T19:49:27.083Z",
+  "workingDirectory": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "--max-old-space-size=1536",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/bridgelab_immersive_motion.test.js",
+    "tests/bridgelab_seismic_model.test.js",
+    "tests/bridgelab_seismic_inertia.test.js",
+    "--pool=forks",
+    "--maxWorkers=1",
+    "--testTimeout=120000",
+    "--hookTimeout=120000",
+    "--teardownTimeout=60000",
+    "--silent",
+    "--reporter=dot",
+    "--reporter=json",
+    "--outputFile=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-frame-energy-2026-10-06\\unit-results.json"
+  ],
+  "inputsBefore": {
+    "stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "fd5362d52c5b2515606f211c273adf0d4afb58be699898a5d1fbe10697517d2d",
+      "bytes": 1074903
+    },
+    "desktop/web-app/public/stem_lab/stem_tool_bridgelab.js": {
+      "sha256": "fd5362d52c5b2515606f211c273adf0d4afb58be699898a5d1fbe10697517d2d",
+      "bytes": 1074903
+    },
+    "tests/bridgelab_immersive_motion.test.js": {
+      "sha256": "2d807a49139cc6a3d52b4f1588096857561b4625bca5eb2f6f879ba3d88a5f34",
+      "bytes": 314387
+    },
+    "tests/bridgelab_seismic_model.test.js": {
+      "sha256": "224fb18e9b73a4d06e0c376759be329ed7fb51357a4537fbfa57b71f9306ea7e",
+      "bytes": 74373
+    },
+    "tests/bridgelab_seismic_inertia.test.js": {
+      "sha256": "b4ce34ebd70dfaebb6f6368e48c5bcc7100250476ee883470d77081982b23e5f",
+      "bytes": 4774
+    }
+  },
+  "note": "English registries are checked separately; the harness uses literal fallbacks."
+}

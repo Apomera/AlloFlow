@@ -1,0 +1,205 @@
+{
+  "schema": "moon-pass38-direct-browser-v1",
+  "runner": "direct-playwright-api",
+  "playwrightCliResult": false,
+  "mode": "crew",
+  "status": "passed",
+  "startedAt": "2026-10-10T04:03:27.187Z",
+  "repo": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "specPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-return-crew.spec.ts",
+  "output": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\browser\\direct-crew-4",
+  "browserCache": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+  "timeouts": {
+    "action": 20000,
+    "navigation": 60000,
+    "expect": 15000,
+    "launch": 60000,
+    "workflow": 180000
+  },
+  "launchOptions": {
+    "headless": true,
+    "timeout": 60000,
+    "downloadsPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\browser\\direct-crew-4\\downloads"
+  },
+  "workflowCompleted": true,
+  "cleanupCompleted": true,
+  "milestones": [
+    {
+      "name": "load:before",
+      "elapsedMs": 2
+    },
+    {
+      "name": "load:after",
+      "elapsedMs": 3044,
+      "workflow": "crew Earth camera preserves measured coast, physical angular size, sunlight, receipts and accessible phone controls",
+      "registered": [
+        "crew Earth camera preserves measured coast, physical angular size, sunlight, receipts and accessible phone controls"
+      ]
+    },
+    {
+      "name": "harness-start:before",
+      "elapsedMs": 3044
+    },
+    {
+      "name": "harness-start:after",
+      "elapsedMs": 3064
+    },
+    {
+      "name": "browser-launch:before",
+      "elapsedMs": 3070
+    },
+    {
+      "name": "browser-launch:after",
+      "elapsedMs": 4897
+    },
+    {
+      "name": "context-create:before",
+      "elapsedMs": 4898
+    },
+    {
+      "name": "context-create:after",
+      "elapsedMs": 4905
+    },
+    {
+      "name": "page-create:before",
+      "elapsedMs": 4906
+    },
+    {
+      "name": "page-create:after",
+      "elapsedMs": 5503
+    },
+    {
+      "name": "workflow:before",
+      "elapsedMs": 5504
+    },
+    {
+      "name": "workflow:after",
+      "elapsedMs": 47746
+    },
+    {
+      "name": "cleanup:before",
+      "elapsedMs": 47747
+    },
+    {
+      "name": "after-each:before",
+      "elapsedMs": 47748
+    },
+    {
+      "name": "after-each:after",
+      "elapsedMs": 47783
+    },
+    {
+      "name": "context-close:before",
+      "elapsedMs": 47784
+    },
+    {
+      "name": "page-close",
+      "elapsedMs": 47790
+    },
+    {
+      "name": "context-close:after",
+      "elapsedMs": 47802
+    },
+    {
+      "name": "browser-close:before",
+      "elapsedMs": 47803
+    },
+    {
+      "name": "browser-close:after",
+      "elapsedMs": 74713
+    },
+    {
+      "name": "harness-stop:before",
+      "elapsedMs": 74714
+    },
+    {
+      "name": "harness-stop:after",
+      "elapsedMs": 74715
+    },
+    {
+      "name": "cleanup:after",
+      "elapsedMs": 74728,
+      "status": "passed"
+    }
+  ],
+  "errors": [],
+  "attachments": [
+    {
+      "name": "crew-departure-1100",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\browser\\direct-crew-4\\crew-departure-1100-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "crew-day-one-1100",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\browser\\direct-crew-4\\crew-day-one-1100-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "crew-final-fifteen-minutes-1100",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\browser\\direct-crew-4\\crew-final-fifteen-minutes-1100-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "crew-entry-interface-1100",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\browser\\direct-crew-4\\crew-entry-interface-1100-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "crew-workspace-1100",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\browser\\direct-crew-4\\crew-workspace-1100-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "crew-departure-320",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\browser\\direct-crew-4\\crew-departure-320-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "crew-day-one-320",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\browser\\direct-crew-4\\crew-day-one-320-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "crew-final-fifteen-minutes-320",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\browser\\direct-crew-4\\crew-final-fifteen-minutes-320-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "crew-entry-interface-320",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\browser\\direct-crew-4\\crew-entry-interface-320-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "crew-workspace-320",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass38-2026-10-09\\browser\\direct-crew-4\\crew-workspace-320-chromium.png",
+      "contentType": "image/png"
+    }
+  ],
+  "inputHashes": {
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-return-crew.spec.ts": "d31b37c9c15ec775b685fdd1ab1cb855a58970a07efa6a3f2a8ef430b8a1f666",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_moonmission.js": "0d89fb6277c1c6cb9ff4f0785f2d8be953c27f4bd613836367cf777625820778",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_moonmission.js": "0d89fb6277c1c6cb9ff4f0785f2d8be953c27f4bd613836367cf777625820778"
+  },
+  "transform": {
+    "name": "Playwright bundled babelTransform",
+    "bundlePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\transform\\babelBundle.js",
+    "sha256": "9201df11ae9c9ee1febd587c5013c4f862aa7e9981b92b86ccbbbd37e71f9124"
+  },
+  "workflow": "crew Earth camera preserves measured coast, physical angular size, sunlight, receipts and accessible phone controls",
+  "suiteOptions": {
+    "timeout": 180000,
+    "retries": 0
+  },
+  "browserVersion": "148.0.7778.96",
+  "pageEvents": [
+    {
+      "event": "close",
+      "elapsedMs": 47790,
+      "message": null
+    }
+  ],
+  "finishedAt": "2026-10-10T04:04:41.915Z",
+  "elapsedMs": 74728
+}

@@ -1,0 +1,30 @@
+[
+  {
+    "from": "h('details',{className:'uf-pair-depth'},",
+    "to": "h('details',{className:'uf-pair-depth',open:props.open,onToggle:function(event){props.onOpenChange(event.currentTarget.open);}},"
+  },
+  {
+    "from": "h('summary',null,label('pair_compare_distances','Compare distances')),",
+    "to": "h('summary',null,props.open?label('pair_hide_distances','Hide distances · show directions'):label('pair_compare_distances','Compare distances')),"
+  },
+  {
+    "from": "var compactState=React.useState(false),compact=compactState[0],setCompact=compactState[1];",
+    "to": "var compactState=React.useState(false),compact=compactState[0],setCompact=compactState[1];\n    var depthState=React.useState(false),depthOpen=depthState[0],setDepthOpen=depthState[1];"
+  },
+  {
+    "from": "[compact,props.targets[0].id,props.targets[1].id,props.frameRevision]",
+    "to": "[compact,depthOpen,props.targets[0].id,props.targets[1].id,props.frameRevision]"
+  },
+  {
+    "from": "h(UniverseFlightPairGuidance,{React:React,label:label,targets:targets}),",
+    "to": "h('div',{hidden:depthOpen},h(UniverseFlightPairGuidance,{React:React,label:label,targets:targets})),"
+  },
+  {
+    "from": "visible<2&&h('p',{className:'uf-pair-visibility'}",
+    "to": "(visible<2||depthOpen)&&h('p',{className:'uf-pair-visibility'}"
+  },
+  {
+    "from": "h(UniverseFlightPairDepth,{React:React,label:label,targets:props.targets,position:props.info.position,number:props.number})",
+    "to": "h(UniverseFlightPairDepth,{React:React,label:label,targets:props.targets,position:props.info.position,number:props.number,open:depthOpen,onOpenChange:setDepthOpen})"
+  }
+]

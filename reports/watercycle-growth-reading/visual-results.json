@@ -1,0 +1,353 @@
+{
+  "passed": true,
+  "sourceSha256": "f3e3f9f692887b2e1bb76db09aac3c75e93121003035a32510b3f6eee9895f0f",
+  "captures": [
+    "warm-desktop.png",
+    "warm-phone.png",
+    "cold-desktop.png",
+    "cold-small-phone.png",
+    "cold-dark-phone.png",
+    "cold-forced-colors.png"
+  ],
+  "layouts": [
+    {
+      "width": 1280,
+      "overflow": false,
+      "guide": {
+        "x": 41,
+        "y": 308.21875,
+        "width": 715.4375,
+        "height": 284.5,
+        "top": 308.21875,
+        "right": 756.4375,
+        "bottom": 592.71875,
+        "left": 41
+      },
+      "cards": [
+        {
+          "box": {
+            "x": 56,
+            "y": 357.71875,
+            "width": 221.8125,
+            "height": 192,
+            "top": 357.71875,
+            "right": 277.8125,
+            "bottom": 549.71875,
+            "left": 56
+          },
+          "overflow": false
+        },
+        {
+          "box": {
+            "x": 287.8125,
+            "y": 357.71875,
+            "width": 221.8125,
+            "height": 192,
+            "top": 357.71875,
+            "right": 509.625,
+            "bottom": 549.71875,
+            "left": 287.8125
+          },
+          "overflow": false
+        },
+        {
+          "box": {
+            "x": 519.625,
+            "y": 357.71875,
+            "width": 221.8125,
+            "height": 192,
+            "top": 357.71875,
+            "right": 741.4375,
+            "bottom": 549.71875,
+            "left": 519.625
+          },
+          "overflow": false
+        }
+      ],
+      "text": "How drops join · coalescence\nThree reference frames\n01\nTwo droplets approach\n\nCloud droplets are liquid water. Their paths bring them together.\n\n02\nThe droplets touch\n\nThis example follows a collision that successfully joins the drops.\n\n03\nOne larger drop\n\nThe new drop contains their combined water. Further growth may be needed for rain.\n\nRead left to right, or top to bottom. Enlarged teaching samples; this sequence does not measure collision frequency or rainfall."
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "guide": {
+        "x": 29,
+        "y": 242.875,
+        "width": 332,
+        "height": 414,
+        "top": 242.875,
+        "right": 361,
+        "bottom": 656.875,
+        "left": 29
+      },
+      "cards": [
+        {
+          "box": {
+            "x": 41,
+            "y": 309.875,
+            "width": 308,
+            "height": 80,
+            "top": 309.875,
+            "right": 349,
+            "bottom": 389.875,
+            "left": 41
+          },
+          "overflow": false
+        },
+        {
+          "box": {
+            "x": 41,
+            "y": 396.875,
+            "width": 308,
+            "height": 80,
+            "top": 396.875,
+            "right": 349,
+            "bottom": 476.875,
+            "left": 41
+          },
+          "overflow": false
+        },
+        {
+          "box": {
+            "x": 41,
+            "y": 483.875,
+            "width": 308,
+            "height": 97,
+            "top": 483.875,
+            "right": 349,
+            "bottom": 580.875,
+            "left": 41
+          },
+          "overflow": false
+        }
+      ],
+      "text": "How drops join · coalescence\nThree reference frames\n01\nTwo droplets approach\n\nCloud droplets are liquid water. Their paths bring them together.\n\n02\nThe droplets touch\n\nThis example follows a collision that successfully joins the drops.\n\n03\nOne larger drop\n\nThe new drop contains their combined water. Further growth may be needed for rain.\n\nRead left to right, or top to bottom. Enlarged teaching samples; this sequence does not measure collision frequency or rainfall."
+    },
+    {
+      "width": 1280,
+      "overflow": false,
+      "guide": {
+        "x": 41,
+        "y": 317.21875,
+        "width": 715.4375,
+        "height": 266.5,
+        "top": 317.21875,
+        "right": 756.4375,
+        "bottom": 583.71875,
+        "left": 41
+      },
+      "cards": [
+        {
+          "box": {
+            "x": 56,
+            "y": 366.71875,
+            "width": 221.8125,
+            "height": 174,
+            "top": 366.71875,
+            "right": 277.8125,
+            "bottom": 540.71875,
+            "left": 56
+          },
+          "overflow": false
+        },
+        {
+          "box": {
+            "x": 287.8125,
+            "y": 366.71875,
+            "width": 221.8125,
+            "height": 174,
+            "top": 366.71875,
+            "right": 509.625,
+            "bottom": 540.71875,
+            "left": 287.8125
+          },
+          "overflow": false
+        },
+        {
+          "box": {
+            "x": 519.625,
+            "y": 366.71875,
+            "width": 221.8125,
+            "height": 174,
+            "top": 366.71875,
+            "right": 741.4375,
+            "bottom": 540.71875,
+            "left": 519.625
+          },
+          "overflow": false
+        }
+      ],
+      "text": "How ice grows · deposition\nThree reference frames\n01\nAn existing crystal\n\nIce is already present. Hollow rings trace invisible water vapor.\n\n02\nVapor adds to ice\n\nDeposition changes water directly from gas to solid.\n\n03\nA larger crystal\n\nAdded water builds the ice. Liquid droplets can still coexist nearby.\n\nRead left to right, or top to bottom. Shapes and timing are illustrative. Below 0°C, some droplets may remain liquid (supercooled)."
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "guide": {
+        "x": 29,
+        "y": 226.46875,
+        "width": 262,
+        "height": 448,
+        "top": 226.46875,
+        "right": 291,
+        "bottom": 674.46875,
+        "left": 29
+      },
+      "cards": [
+        {
+          "box": {
+            "x": 41,
+            "y": 293.46875,
+            "width": 238,
+            "height": 97,
+            "top": 293.46875,
+            "right": 279,
+            "bottom": 390.46875,
+            "left": 41
+          },
+          "overflow": false
+        },
+        {
+          "box": {
+            "x": 41,
+            "y": 397.46875,
+            "width": 238,
+            "height": 97,
+            "top": 397.46875,
+            "right": 279,
+            "bottom": 494.46875,
+            "left": 41
+          },
+          "overflow": false
+        },
+        {
+          "box": {
+            "x": 41,
+            "y": 501.46875,
+            "width": 238,
+            "height": 97,
+            "top": 501.46875,
+            "right": 279,
+            "bottom": 598.46875,
+            "left": 41
+          },
+          "overflow": false
+        }
+      ],
+      "text": "How ice grows · deposition\nThree reference frames\n01\nAn existing crystal\n\nIce is already present. Hollow rings trace invisible water vapor.\n\n02\nVapor adds to ice\n\nDeposition changes water directly from gas to solid.\n\n03\nA larger crystal\n\nAdded water builds the ice. Liquid droplets can still coexist nearby.\n\nRead left to right, or top to bottom. Shapes and timing are illustrative. Below 0°C, some droplets may remain liquid (supercooled)."
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "guide": {
+        "x": 29,
+        "y": 261.875,
+        "width": 332,
+        "height": 376.5,
+        "top": 261.875,
+        "right": 361,
+        "bottom": 638.375,
+        "left": 29
+      },
+      "cards": [
+        {
+          "box": {
+            "x": 41,
+            "y": 308.375,
+            "width": 308,
+            "height": 80,
+            "top": 308.375,
+            "right": 349,
+            "bottom": 388.375,
+            "left": 41
+          },
+          "overflow": false
+        },
+        {
+          "box": {
+            "x": 41,
+            "y": 395.375,
+            "width": 308,
+            "height": 80,
+            "top": 395.375,
+            "right": 349,
+            "bottom": 475.375,
+            "left": 41
+          },
+          "overflow": false
+        },
+        {
+          "box": {
+            "x": 41,
+            "y": 482.375,
+            "width": 308,
+            "height": 80,
+            "top": 482.375,
+            "right": 349,
+            "bottom": 562.375,
+            "left": 41
+          },
+          "overflow": false
+        }
+      ],
+      "text": "How ice grows · deposition\nThree reference frames\n01\nAn existing crystal\n\nIce is already present. Hollow rings trace invisible water vapor.\n\n02\nVapor adds to ice\n\nDeposition changes water directly from gas to solid.\n\n03\nA larger crystal\n\nAdded water builds the ice. Liquid droplets can still coexist nearby.\n\nRead left to right, or top to bottom. Shapes and timing are illustrative. Below 0°C, some droplets may remain liquid (supercooled)."
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "guide": {
+        "x": 29,
+        "y": 261.875,
+        "width": 332,
+        "height": 376.5,
+        "top": 261.875,
+        "right": 361,
+        "bottom": 638.375,
+        "left": 29
+      },
+      "cards": [
+        {
+          "box": {
+            "x": 41,
+            "y": 308.375,
+            "width": 308,
+            "height": 80,
+            "top": 308.375,
+            "right": 349,
+            "bottom": 388.375,
+            "left": 41
+          },
+          "overflow": false
+        },
+        {
+          "box": {
+            "x": 41,
+            "y": 395.375,
+            "width": 308,
+            "height": 80,
+            "top": 395.375,
+            "right": 349,
+            "bottom": 475.375,
+            "left": 41
+          },
+          "overflow": false
+        },
+        {
+          "box": {
+            "x": 41,
+            "y": 482.375,
+            "width": 308,
+            "height": 80,
+            "top": 482.375,
+            "right": 349,
+            "bottom": 562.375,
+            "left": 41
+          },
+          "overflow": false
+        }
+      ],
+      "text": "How ice grows · deposition\nThree reference frames\n01\nAn existing crystal\n\nIce is already present. Hollow rings trace invisible water vapor.\n\n02\nVapor adds to ice\n\nDeposition changes water directly from gas to solid.\n\n03\nA larger crystal\n\nAdded water builds the ice. Liquid droplets can still coexist nearby.\n\nRead left to right, or top to bottom. Shapes and timing are illustrative. Below 0°C, some droplets may remain liquid (supercooled)."
+    }
+  ],
+  "errors": [],
+  "captionKeyboardToggle": true,
+  "paused3dInitialization": true
+}

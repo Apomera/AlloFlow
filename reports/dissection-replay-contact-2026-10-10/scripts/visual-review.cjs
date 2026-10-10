@@ -1,0 +1,9 @@
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const report='C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-replay-contact-2026-10-10',suffix=process.argv[2];assert(/^\d+$/.test(suffix));
+const browserRun='browser-'+suffix,names=['desktop-motion','phone-reduced','phone-forced-colors','embedded-large-contrast'],inspected=[];
+const run=JSON.parse(fs.readFileSync(path.join(report,browserRun,'run.json'),'utf8'));assert.equal(run.exitCode,0);assert.equal(run.inputHashesStable,true);
+for(const name of names)for(const kind of['controls','canvas']){const file=browserRun+'/captures/'+name+'-'+kind+'.png',bytes=fs.readFileSync(path.join(report,file));inspected.push({file,sha256:crypto.createHash('sha256').update(bytes).digest('hex')});}
+const result={at:new Date().toISOString(),browserRun,inspector:'Codex',method:'Direct visual inspection of all eight final native Chromium PNG captures using view_image.',inspected,
+observations:['Paused action status and supported-position explanation are readable in every control panel.','Review controls wrap without clipping on phone and embedded layouts.','Focused Next action retains a visible ring, including high contrast and forced colors.','Canvas replay captions retain the action, recorded setting, position provenance and HYDRATE verb within the visible specimen field.','No pending forceps/pin hint circles compete with the replay contact in the captured frame.'],
+limits:'Captures show held action2 with its supported contact. Browser assertions additionally prove distinct saved and teaching contacts, hint restoration, caption bounds and saved-state preservation. Screenshots and scoped axe do not establish whole-app or screen-reader accessibility.'};
+fs.writeFileSync(path.join(report,'visual-review.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify({inspected:inspected.length,browserRun}));

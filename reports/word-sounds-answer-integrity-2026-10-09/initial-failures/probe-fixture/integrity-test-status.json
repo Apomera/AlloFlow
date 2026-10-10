@@ -1,0 +1,84 @@
+{
+  "phase": "finished",
+  "pid": 25808,
+  "started": "2026-10-10T03:33:59.753Z",
+  "steps": [
+    {
+      "name": "integrity-final-1",
+      "code": 0,
+      "tests": 37,
+      "files": 3,
+      "receipt": {
+        "status": "finished",
+        "code": 0,
+        "finished": "2026-10-10T03:34:13.607Z"
+      }
+    },
+    {
+      "name": "integrity-final-2",
+      "code": 0,
+      "tests": 39,
+      "files": 3,
+      "receipt": {
+        "status": "finished",
+        "code": 0,
+        "finished": "2026-10-10T03:34:21.103Z"
+      }
+    },
+    {
+      "name": "integrity-final-3",
+      "code": 0,
+      "tests": 23,
+      "files": 3,
+      "receipt": {
+        "status": "finished",
+        "code": 0,
+        "finished": "2026-10-10T03:34:25.619Z"
+      }
+    }
+  ],
+  "code": 0,
+  "focused": {
+    "status": "finished",
+    "code": 0,
+    "tests": 99,
+    "files": 9,
+    "batches": [
+      {
+        "name": "integrity-final-1",
+        "code": 0,
+        "tests": 37,
+        "files": 3,
+        "receipt": {
+          "status": "finished",
+          "code": 0,
+          "finished": "2026-10-10T03:34:13.607Z"
+        }
+      },
+      {
+        "name": "integrity-final-2",
+        "code": 0,
+        "tests": 39,
+        "files": 3,
+        "receipt": {
+          "status": "finished",
+          "code": 0,
+          "finished": "2026-10-10T03:34:21.103Z"
+        }
+      },
+      {
+        "name": "integrity-final-3",
+        "code": 0,
+        "tests": 23,
+        "files": 3,
+        "receipt": {
+          "status": "finished",
+          "code": 0,
+          "finished": "2026-10-10T03:34:25.619Z"
+        }
+      }
+    ],
+    "finished": "2026-10-10T03:34:25.632Z"
+  },
+  "finished": "2026-10-10T03:34:25.633Z"
+}

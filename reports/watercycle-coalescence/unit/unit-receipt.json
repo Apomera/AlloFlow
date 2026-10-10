@@ -1,0 +1,87 @@
+{
+  "startedAt": "2026-10-08T00:06:37.750Z",
+  "expectedSha256": "1281abe1619064fa59fd31b71a598068563c4a588db35597de5972c356946e5f",
+  "command": {
+    "executable": "C:\\Progra~1\\nodejs\\node.exe",
+    "args": [
+      "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\vitest\\vitest.mjs",
+      "run",
+      "--config",
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\watercycle-coalescence\\coalescence-vitest.config.mjs",
+      "--reporter=json",
+      "--outputFile",
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\watercycle-coalescence\\unit-final-2\\vitest-results.json"
+    ],
+    "cwd": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated"
+  },
+  "before": [
+    {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_watercycle.js",
+      "bytes": 3304831,
+      "sha256": "1281abe1619064fa59fd31b71a598068563c4a588db35597de5972c356946e5f"
+    },
+    {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_watercycle.js",
+      "bytes": 3304831,
+      "sha256": "1281abe1619064fa59fd31b71a598068563c4a588db35597de5972c356946e5f"
+    },
+    {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\watercycle_coalescence_visual.test.js",
+      "bytes": 7996,
+      "sha256": "026c1335a2f254b562055819f09da0118ec581e0c4324a74698dd49a98836d03"
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\watercycle-coalescence\\coalescence-vitest.config.mjs",
+      "bytes": 228,
+      "sha256": "16d240857e71965903f710bf3fdf848658514d8859e451b0ac035ec0f454a912"
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\watercycle-coalescence\\run-unit.cjs",
+      "bytes": 3819,
+      "sha256": "89fe44d7c051fce5cf4a18e2a5e32377c57530b0a9f87c0394ab1647a9269752"
+    }
+  ],
+  "completedAt": "2026-10-08T00:06:56.061Z",
+  "exitCode": 0,
+  "signal": null,
+  "launchError": null,
+  "after": [
+    {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_watercycle.js",
+      "bytes": 3304831,
+      "sha256": "1281abe1619064fa59fd31b71a598068563c4a588db35597de5972c356946e5f"
+    },
+    {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_watercycle.js",
+      "bytes": 3304831,
+      "sha256": "1281abe1619064fa59fd31b71a598068563c4a588db35597de5972c356946e5f"
+    },
+    {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\watercycle_coalescence_visual.test.js",
+      "bytes": 7996,
+      "sha256": "026c1335a2f254b562055819f09da0118ec581e0c4324a74698dd49a98836d03"
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\watercycle-coalescence\\coalescence-vitest.config.mjs",
+      "bytes": 228,
+      "sha256": "16d240857e71965903f710bf3fdf848658514d8859e451b0ac035ec0f454a912"
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\watercycle-coalescence\\run-unit.cjs",
+      "bytes": 3819,
+      "sha256": "89fe44d7c051fce5cf4a18e2a5e32377c57530b0a9f87c0394ab1647a9269752"
+    }
+  ],
+  "passed": true,
+  "tests": 9,
+  "rawResults": {
+    "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\watercycle-coalescence\\unit-final-2\\vitest-results.json",
+    "bytes": 4501,
+    "sha256": "c5f1ad661d290ad3be30618117aa3f1e6866690d8be0659c60ca1459fab635d7"
+  },
+  "loadedSource": {
+    "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\watercycle-coalescence\\unit-final-2\\loaded-source.json",
+    "bytes": 661,
+    "sha256": "e1638fb2bcad336ad14d352f9e134b3e13d430bb5b9d7c48d7c865861792147b"
+  }
+}

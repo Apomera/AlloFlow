@@ -1,0 +1,42 @@
+{
+  "saved": {
+    "itemId": "earth",
+    "detailId": "nile-night",
+    "size": 12742000,
+    "you": false,
+    "note": "Compare the Nile with the night layer hidden.",
+    "zoom": 2.5,
+    "yaw": -1.3309590944727911,
+    "pitch": 0.5727706270568897,
+    "sunAngle": 180,
+    "nebulaReveal": false,
+    "nebulaInside": false,
+    "nebulaPose": null,
+    "nebulaSpeed": 0.8,
+    "terrainRelief": 8,
+    "riverKm": 0,
+    "terrainPoint": {
+      "east": 0,
+      "north": 900
+    },
+    "terrainFlight": null,
+    "terrainFlightSpeed": 180,
+    "terrainFlightWaypoint": null,
+    "pollenGrowth": 0,
+    "cutaway": true,
+    "view": "atlas",
+    "earthLights": false
+  },
+  "layout": {
+    "overflow": false,
+    "buttons": [
+      44,
+      48,
+      48,
+      54,
+      44,
+      44
+    ]
+  },
+  "notes": "Scale Explorer field notebook\nObject dimensions are measured references. Colors and anatomical details in the 3D models are illustrative.\n\n1. The Earth · Nile valley & delta\nRecorded size: 13 thousand km across\n1.3 × 10⁷ m\nNight lights hidden.\nLighting model: 180° Sun–observer angle; approximately 0% of the disc illuminated.\nMy observation: Compare the Nile with the night layer hidden.\nFollow the narrow ribbon of light along the Nile into the broad delta. The surrounding desert makes this pattern especially distinct in NASA’s 2016 composite. Move the sunlight toward twilight to compare it with the daytime landscape.\nhttps://science.nasa.gov/earth/earth-observatory/earth-at-night/maps/\nhttps://alloflow-cdn.pages.dev/app/?tool=scaleExplorer&focus=earth\n"
+}

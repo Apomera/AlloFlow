@@ -1,0 +1,41 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/solar_system_challenge_rewards.test.js
+[deferred-jsdom] Initializing the official DOM environment.
+
+stdout | tests/solar_system_challenge_rewards.test.js
+[deferred-jsdom] DOM environment ready.
+
+stdout | tests/solar_system_challenge_rewards.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/solar_system_challenge_rewards.test.js
+[deferred-jsdom] Existing repository setup loaded.
+
+ ✓ tests/solar_system_challenge_rewards.test.js > Solar System challenge reward transactions > merges delayed rewards into the latest balances, achievements, and unrelated state 639ms
+ ✓ tests/solar_system_challenge_rewards.test.js > Solar System challenge reward transactions > rechecks eligibility against the latest state when applying a queued reward 79ms
+ ✓ tests/solar_system_challenge_rewards.test.js > Solar System challenge reward transactions > finds newly eligible latest state even when the timer render had no eligible challenge 21ms
+ ✓ tests/solar_system_challenge_rewards.test.js > Solar System challenge reward transactions > does not lose later completion records or reward already completed IDs twice 19ms
+ ✓ tests/solar_system_challenge_rewards.test.js > Solar System challenge reward transactions > keeps updater replay pure and consumes duplicate timer requests and effect replays once 17ms
+ ✓ tests/solar_system_challenge_rewards.test.js > Solar System challenge reward transactions > does not let an older passive effect consume a newer pending reward request 24ms
+ ✓ tests/solar_system_challenge_rewards.test.js > Solar System challenge reward transactions > retains feedback when an unrelated commit happens before a queued award is applied 28ms
+ ✓ tests/solar_system_challenge_rewards.test.js > Solar System challenge reward transactions > does not announce rejected or abandoned rewards 31ms
+ ✓ tests/solar_system_challenge_rewards.test.js > Solar System challenge reward transactions > does not award or announce achievements restored from a saved project 15ms
+ ✓ tests/solar_system_challenge_rewards.test.js > Solar System challenge reward transactions > normalizes malformed balances and ledgers only when a real reward is earned 45ms
+ ✓ tests/solar_system_challenge_rewards.test.js > Solar System challenge reward transactions > caps large valid balances without producing unsafe integers 10ms
+ ✓ tests/solar_system_challenge_rewards.test.js > Solar System challenge reward transactions > does not write malformed saved values when no new challenge is eligible 6ms
+ ✓ tests/solar_system_challenge_rewards.test.js > Solar System challenge reward transactions > counts unique recognized worlds for the three-world and grand-tour rewards 21ms
+ ✓ tests/solar_system_challenge_rewards.test.js > Solar System challenge reward transactions > recognizes translated selected-world names and stored stable world keys 17ms
+ ✓ tests/solar_system_challenge_rewards.test.js > Solar System challenge reward transactions > keeps feedback bookkeeping bounded through repeated no-op timer callbacks 15ms
+ ✓ tests/solar_system_challenge_rewards.test.js > Solar System challenge reward transactions > records committed planet visits against the latest ledger and ignores duplicate callbacks 9ms
+ ✓ tests/solar_system_challenge_rewards.test.js > Solar System challenge reward transactions > starts no reward timer during render and uses the latest committed checker 14ms
+ ✓ tests/solar_system_challenge_rewards.test.js > Solar System challenge reward transactions > merges rapid engagement actions and preserves other activity counts 16ms
+ ✓ tests/solar_system_challenge_rewards.test.js > Solar System challenge reward transactions > cancels pending challenge checks and feedback on unmount 15ms
+
+ Test Files  1 passed (1)
+      Tests  19 passed (19)
+   Start at  19:22:07
+   Duration  2.12s (transform 48ms, setup 856ms, import 67ms, tests 1.05s, environment 0ms)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/solar-activity-shortcuts-enhancement-2026-10-09/unit-rewards-results.json

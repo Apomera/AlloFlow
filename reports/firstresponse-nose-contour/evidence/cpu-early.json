@@ -1,0 +1,168 @@
+{
+  "beforeSHA256": "0af58d9afd30ed0de275caf53197320ddabed9308f08b191cce7bf4927d83f84",
+  "candidateSHA256": "164407bb58546fc91584761e51e9a907d2eacd33442a0a5fae31da0c22ef37c0",
+  "checkerSHA256": "a2981baf14da24926367432d1cdfec050b2b41e1004b628589e0bb17bec1a6bd",
+  "checks": 45494,
+  "negativeTests": [
+    {
+      "kind": "unchanged-profile",
+      "error": "narrow bridge receives visibly fuller relief"
+    },
+    {
+      "kind": "raised-nostril",
+      "error": "fr-manikin-nostril-left shallow central detail remains visible"
+    },
+    {
+      "kind": "invalid-normal",
+      "error": "fr-manikin-nose unit normals"
+    }
+  ],
+  "passed": 1,
+  "failed": 0,
+  "results": [
+    {
+      "age": "adult",
+      "phase": 8,
+      "contrast": false,
+      "status": "passed",
+      "checks": 45490,
+      "durationMs": 2456,
+      "preserved": {
+        "sha256": "2670e71c428d643365207e2315f017e6cd0e2ac7173cc85fdb16fe07222864be",
+        "nodes": 217,
+        "meshes": 148,
+        "geometries": 146,
+        "materials": 28
+      },
+      "shells": [
+        {
+          "name": "fr-manikin-nose",
+          "vertices": 1617,
+          "faces": 2976,
+          "volume": 0.00008031955036494703,
+          "minAgreement": 0.8151752432866635,
+          "minNormal": 0.9999999599528737,
+          "maxNormal": 1.0000000361278165,
+          "seamNormal": 0.9999999406139288
+        },
+        {
+          "name": "fr-manikin-nostril-left",
+          "vertices": 825,
+          "faces": 1472,
+          "volume": 2.7204638163142e-8,
+          "minAgreement": 0.5886995580616073,
+          "minNormal": 0.9999999598724695,
+          "maxNormal": 1.000000040175597,
+          "seamNormal": 0.9999999318733872
+        },
+        {
+          "name": "fr-manikin-nostril-right",
+          "vertices": 825,
+          "faces": 1472,
+          "volume": 2.7204638163142e-8,
+          "minAgreement": 0.5886995580616073,
+          "minNormal": 0.9999999598724695,
+          "maxNormal": 1.000000040175597,
+          "seamNormal": 0.9999999318733872
+        }
+      ],
+      "relief": {
+        "middle": [
+          0.015866226593157305,
+          0.03268718147299235,
+          0.04678547540371513
+        ],
+        "beforeMiddle": [
+          0.013196723838688128,
+          0.035107049504055944,
+          0.05509611477868008
+        ],
+        "bridgeGain": 0.002669502754469177,
+        "tipReduction": 0.00831063937496495,
+        "tipRatio": 0.8491610632011238,
+        "boundaryCount": 49,
+        "boundaryRange": [
+          -0.0014154980568886306,
+          -0.0011293135013651968
+        ],
+        "maxChangedDepth": 0.008310639374964946,
+        "nostrils": [
+          {
+            "name": "fr-manikin-nostril-left",
+            "middle": [
+              0.0005743458577572182,
+              0.0007200321338110024,
+              0.0005561267069349392
+            ],
+            "edges": [
+              -0.0003290321396114689,
+              -0.0004743395248585358,
+              -0.00040416923277034733,
+              -0.00044200816726871063
+            ]
+          },
+          {
+            "name": "fr-manikin-nostril-right",
+            "middle": [
+              0.0005541518423313335,
+              0.0007243157411520626,
+              0.0005636653576014184
+            ],
+            "edges": [
+              -0.00047749341243452496,
+              -0.000322558185591902,
+              -0.000411131903168504,
+              -0.0004204862487720277
+            ]
+          }
+        ]
+      },
+      "localGeometry": [
+        [
+          "fr-manikin-nose",
+          "490816c0b6c163eed76623c5e3600ac3bee836153f6caaf6f153c83b66174a17",
+          "fe91dcbeb809660f5eeacefb19ed7c9ebca714e40490902d24bfcca7f93875a0",
+          "cb33c5bd3687ea54cfa9bd1b6701cbda1a197e118bc0510f7cff97ec91f1a1e7"
+        ],
+        [
+          "fr-manikin-nostril-left",
+          "9623089cdb054379c51d8988cec530d08a4d4394e666fd52e3428d9d0270d2c2",
+          "6c5572e95cf581f12f04d0186a837a6707d640caa409af68cfc4c79fca8a1de2",
+          "e072d2d4eba2f3608165bc5f5e6a7c890ef373ec92e25cc802502fb0b2853e42"
+        ],
+        [
+          "fr-manikin-nostril-right",
+          "2b01b3aa7418653e7fa954efa0d5769b38c333e449dcce3b708b75263a4e2d5f",
+          "eeb4b69921049fbf873108cf7279e9ef0a1bb4d86f692bb96971710e04b87de4",
+          "bae9cc0f3ce4b42f52c8b5c51fa615f56a44dee2c8339d7b4c06036e23e6a133"
+        ]
+      ],
+      "triangleCounts": [
+        {
+          "name": "fr-manikin-nose",
+          "triangles": 2976
+        },
+        {
+          "name": "fr-manikin-nostril-left",
+          "triangles": 1472
+        },
+        {
+          "name": "fr-manikin-nostril-right",
+          "triangles": 1472
+        }
+      ],
+      "resources": {
+        "geometries": 146,
+        "materials": 28,
+        "allocatedGeometries": 142,
+        "allocatedMaterials": 26
+      },
+      "priorResources": {
+        "geometries": 146,
+        "materials": 28,
+        "allocatedGeometries": 142,
+        "allocatedMaterials": 26
+      }
+    }
+  ]
+}

@@ -1,0 +1,200 @@
+{
+  "verifiedAt": "2026-10-07T02:27:03.563Z",
+  "pairs": [
+    {
+      "name": "stem_tool_geometryworld.js",
+      "syntax": "pass",
+      "mirrorParity": "pass",
+      "sha256": "3162fc1314b4532205011b60141347bd017baa8033146612459c3f278f874933",
+      "servedSha256": "3162fc1314b4532205011b60141347bd017baa8033146612459c3f278f874933",
+      "unitTestSha256": "525cf1377422f89293f51361d78dd7f3fcfa52e2cb04b3a9f4cac7d51755f317",
+      "inventoryTestSha256": "b16ea0f6c84a03c72f8e41e733f2a64d9e1a855a1fe02323d1f65d5205d7ad9b",
+      "browserTestSha256": "7f75483cd5807384b98db4eb994439cca3e0e30b90574b5775afb06bc206fe92"
+    },
+    {
+      "name": "stem_tool_geometryworld_builder.js",
+      "syntax": "pass",
+      "mirrorParity": "pass",
+      "sha256": "5966a9ba35f26206776d607ea93cc52672c9b565ee41efb4995b6ae7690961a7",
+      "servedSha256": "5966a9ba35f26206776d607ea93cc52672c9b565ee41efb4995b6ae7690961a7",
+      "unitTestSha256": "5966a9ba35f26206776d607ea93cc52672c9b565ee41efb4995b6ae7690961a7",
+      "inventoryTestSha256": "5966a9ba35f26206776d607ea93cc52672c9b565ee41efb4995b6ae7690961a7",
+      "browserTestSha256": "5966a9ba35f26206776d607ea93cc52672c9b565ee41efb4995b6ae7690961a7"
+    }
+  ],
+  "preview": {
+    "url": "http://127.0.0.1:61309/?mode=home",
+    "status": 200
+  },
+  "tests": {
+    "passed": 285,
+    "files": 8,
+    "initialRun": {
+      "passed": 284,
+      "failed": 1,
+      "exitCode": 1,
+      "finishedAt": "2026-10-07T00:40:49.115Z"
+    },
+    "focusedRerun": {
+      "passed": 15,
+      "exitCode": 0,
+      "finishedAt": "2026-10-07T00:44:55.538Z"
+    },
+    "pool": "vmForks",
+    "isolate": true,
+    "sourceSha256": "525cf1377422f89293f51361d78dd7f3fcfa52e2cb04b3a9f4cac7d51755f317",
+    "inventorySourceSha256": "b16ea0f6c84a03c72f8e41e733f2a64d9e1a855a1fe02323d1f65d5205d7ad9b",
+    "postTestChange": "Only four isolated CSS rules changed after unit testing. Exact line removal restores each tested source version. Full browser workflows verify visibility changes; a focused final-source probe verifies selected-tab styling."
+  },
+  "browser": {
+    "passed": 78,
+    "accessibilityAudits": 36,
+    "screenshots": 42,
+    "resourcesClosed": true,
+    "cleanup": {
+      "serverClosed": true,
+      "browserDisconnected": true,
+      "closePromiseError": "Private browser close exceeded 20 seconds"
+    },
+    "sourceSha256": "7f75483cd5807384b98db4eb994439cca3e0e30b90574b5775afb06bc206fe92",
+    "postMatrixChange": "One contrast/forced-color selected-tab underline rule. Removing its exact line restores full-matrix source bytes."
+  },
+  "focusedBrowser": {
+    "passed": 6,
+    "screenshots": 3,
+    "sourceSha256": "3162fc1314b4532205011b60141347bd017baa8033146612459c3f278f874933",
+    "exitCode": 0,
+    "resourcesClosed": true,
+    "cleanup": {
+      "serverClosed": true,
+      "browserDisconnected": true,
+      "closePromiseError": "Private browser close exceeded 20 seconds"
+    },
+    "tabSelectionAudit": [
+      {
+        "mode": "normal",
+        "distinctComputedAppearance": true,
+        "nonColorIndicator": false,
+        "selected": {
+          "borderBottomColor": "rgb(185, 238, 228)",
+          "borderBottomWidth": "3px",
+          "borderBottomStyle": "solid",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(185, 238, 228)",
+          "fontWeight": "600",
+          "textDecorationLine": "none",
+          "textDecorationThickness": "auto",
+          "textUnderlineOffset": "auto"
+        },
+        "unselected": [
+          {
+            "borderBottomColor": "rgba(0, 0, 0, 0)",
+            "borderBottomWidth": "3px",
+            "borderBottomStyle": "solid",
+            "background": "rgba(0, 0, 0, 0)",
+            "color": "rgb(217, 229, 227)",
+            "fontWeight": "600",
+            "textDecorationLine": "none",
+            "textDecorationThickness": "auto",
+            "textUnderlineOffset": "auto"
+          },
+          {
+            "borderBottomColor": "rgba(0, 0, 0, 0)",
+            "borderBottomWidth": "3px",
+            "borderBottomStyle": "solid",
+            "background": "rgba(0, 0, 0, 0)",
+            "color": "rgb(217, 229, 227)",
+            "fontWeight": "600",
+            "textDecorationLine": "none",
+            "textDecorationThickness": "auto",
+            "textUnderlineOffset": "auto"
+          }
+        ],
+        "nonColorRequirementSatisfied": true
+      },
+      {
+        "mode": "contrast",
+        "distinctComputedAppearance": true,
+        "nonColorIndicator": true,
+        "selected": {
+          "borderBottomColor": "rgb(0, 255, 0)",
+          "borderBottomWidth": "3px",
+          "borderBottomStyle": "solid",
+          "background": "rgb(0, 0, 0)",
+          "color": "rgb(0, 255, 0)",
+          "fontWeight": "600",
+          "textDecorationLine": "underline",
+          "textDecorationThickness": "auto",
+          "textUnderlineOffset": "4px"
+        },
+        "unselected": [
+          {
+            "borderBottomColor": "rgb(0, 255, 0)",
+            "borderBottomWidth": "3px",
+            "borderBottomStyle": "solid",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "fontWeight": "600",
+            "textDecorationLine": "none",
+            "textDecorationThickness": "auto",
+            "textUnderlineOffset": "auto"
+          },
+          {
+            "borderBottomColor": "rgb(0, 255, 0)",
+            "borderBottomWidth": "3px",
+            "borderBottomStyle": "solid",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "fontWeight": "600",
+            "textDecorationLine": "none",
+            "textDecorationThickness": "auto",
+            "textUnderlineOffset": "auto"
+          }
+        ],
+        "nonColorRequirementSatisfied": true
+      },
+      {
+        "mode": "forced",
+        "distinctComputedAppearance": true,
+        "nonColorIndicator": true,
+        "selected": {
+          "borderBottomColor": "rgba(5, 0, 73, 0.8)",
+          "borderBottomWidth": "3px",
+          "borderBottomStyle": "solid",
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(0, 0, 0)",
+          "fontWeight": "600",
+          "textDecorationLine": "underline",
+          "textDecorationThickness": "auto",
+          "textUnderlineOffset": "4px"
+        },
+        "unselected": [
+          {
+            "borderBottomColor": "rgb(0, 0, 0)",
+            "borderBottomWidth": "3px",
+            "borderBottomStyle": "solid",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "fontWeight": "600",
+            "textDecorationLine": "none",
+            "textDecorationThickness": "auto",
+            "textUnderlineOffset": "auto"
+          },
+          {
+            "borderBottomColor": "rgb(0, 0, 0)",
+            "borderBottomWidth": "3px",
+            "borderBottomStyle": "solid",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "fontWeight": "600",
+            "textDecorationLine": "none",
+            "textDecorationThickness": "auto",
+            "textUnderlineOffset": "auto"
+          }
+        ],
+        "nonColorRequirementSatisfied": true
+      }
+    ]
+  },
+  "whitespace": "pass"
+}

@@ -3194,6 +3194,12 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         return;
     }
     const _sourceSnapshot = _selectedSource.sourceSnapshot || null;
+    const _studentSourcesApi = window.AlloModules?.StudentSources || window.AlloModules?.TextPipelineHelpers?.studentSources;
+    const _selectedStudentRecord = _selectedSource.artifact?.studentSources || _selectedSource.item?.studentSources
+        || generationHistory.find(item => item?.id === _selectedSource.inputArtifactId)?.studentSources;
+    const _inputStudentRecord = _studentSourcesApi?.sanitize?.(_selectedStudentRecord || deps.sourceProvenance?.studentSources);
+    const _studentRecordMatchesInput = !!_inputStudentRecord
+        && _inputStudentRecord.bodyKey === _studentSourcesApi?.bodyKey?.(_selectedSource.text);
     const _primarySourceArtifactId = _selectedSource.sourceArtifactId || null;
     const _inputArtifactId = _selectedSource.inputArtifactId || null;
     const _chosenPrimaryArtifactId = _selectedSource.instructionalText?.role === 'primary' ? _inputArtifactId : null;
@@ -4831,6 +4837,26 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
       }
       throwIfGenerationAborted();
       if (!fullTargetText.trim() || !String(finalAdaptedItem.data || '').trim()) throw new Error('The adaptation returned no usable text. Previously saved resources were kept.');
+      if ((!_studentSourcesApi?.forText || !_studentSourcesApi?.publicText)
+          && /^#{1,6}[ \t]+(?:Your Document References|Research Review)[ \t]*:?[ \t]*\r?$/mi.test(finalAdaptedItem.data)) {
+          throw new Error('Student source privacy controls are unavailable. Reload before adapting this reading. Previously saved resources were kept.');
+      }
+      if (_studentSourcesApi?.forText && _studentSourcesApi?.publicText) {
+          // Citation identity is checked after display normalization as well as
+          // model rewrites. It does not establish semantic support for a rewrite.
+          const finalBody = splitAdaptationReferences(finalAdaptedItem.data).body;
+          const finalSections = finalBody.split(/(?:^|\r?\n)[ \t]*--- ENGLISH TRANSLATION ---[ \t]*(?:\r?\n|$)/i);
+          const citationsConserved = keepCitations && finalSections.every(section =>
+              validateAdaptationCitationConservation(textWithoutRefs, section).valid);
+          const studentRecord = _studentSourcesApi.forText(
+              _studentRecordMatchesInput && citationsConserved ? { ..._inputStudentRecord, writingMode: 'synthesis' } : null,
+              finalAdaptedItem.data,
+              { adapted: _studentRecordMatchesInput && citationsConserved }
+          );
+          finalAdaptedItem = { ...finalAdaptedItem,
+              data: _studentSourcesApi.publicText(finalAdaptedItem.data, studentRecord),
+              ...(studentRecord ? { studentSources: studentRecord } : {}) };
+      }
       const canReplace = item => item?.id === configOverride.relevelReplaceId
           && replacementBaselineKey && JSON.stringify(item) === replacementBaselineKey;
       setHistory(prev => {
@@ -9043,6 +9069,17 @@ Return ONLY JSON:
                   replacementAuthorization: { authorized: false, source: 'none' }, ...(_selectedSource.instructionalText || {}), ...(configOverride.instructionalText || {}) }
           } : (configOverride.instructionalText ? { instructionalText: configOverride.instructionalText } : {}))
       };
+      if (type === 'analysis' && typeof newItem.data?.originalText === 'string'
+          && (!_studentSourcesApi?.forText || !_studentSourcesApi?.publicText)
+          && /^#{1,6}[ \t]+(?:Your Document References|Research Review)[ \t]*:?[ \t]*\r?$/mi.test(newItem.data.originalText)) {
+          throw new Error('Student source privacy controls are unavailable. Reload before analyzing this reading. Previously saved resources were kept.');
+      }
+      if (type === 'analysis' && typeof newItem.data?.originalText === 'string'
+          && _studentSourcesApi?.forText && _studentSourcesApi?.publicText) {
+          const studentRecord = _studentSourcesApi.forText(_studentRecordMatchesInput ? _inputStudentRecord : null, newItem.data.originalText);
+          newItem.data = { ...newItem.data, originalText: _studentSourcesApi.publicText(newItem.data.originalText, studentRecord) };
+          if (studentRecord) newItem.studentSources = studentRecord;
+      }
       if (type === 'analysis' && newItem.instructionalText.form !== 'adapted') {
           const originId = _primarySourceArtifactId || newItemId;
           newItem.sourceSnapshot = _instructionalContextModule?.createSourceSnapshot?.(_sourceSnapshot?.text || _selectedSource.text, {

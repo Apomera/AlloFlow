@@ -1,0 +1,846 @@
+{
+  "completed": true,
+  "purpose": "Independently check the local resolution of the reconstructed spherical photosphere. This checks screen-to-sphere geometry; it does not reproduce the shader noise or its sampling gate.",
+  "rendererReference": {
+    "path": "stem_lab/universe_flight_scene.js",
+    "sha256": "a8de9ef0c0dc7362dc1284917b106ff82072f3a6b4943d947a3c8de6354dadcf",
+    "note": "The candidate retains the same reconstructed sphere and orthonormal source frame."
+  },
+  "screenMap": {
+    "coordinates": "S(x,y) = [x, y, sqrt(1 - x*x - y*y)]",
+    "domain": "x*x + y*y < 1",
+    "basis": "[stellarRight, -stellarUp, stellarToward] is orthonormal; multiplying by that frame preserves singular values.",
+    "jacobianRows": [
+      [
+        "1",
+        "0"
+      ],
+      [
+        "0",
+        "1"
+      ],
+      [
+        "-x/mu",
+        "-y/mu"
+      ]
+    ],
+    "gramMatrix": "J^T J = I + [x,y]^T [x,y] / mu^2",
+    "analyticSingularValues": [
+      "1",
+      "1/mu"
+    ],
+    "mu": "sqrt(1 - x*x - y*y)"
+  },
+  "method": {
+    "finiteDifference": "Centered differences of the sphere map in each screen-plane coordinate; singular values measured from the eigenvalues of the resulting 2x2 Gram matrix.",
+    "step": 1e-7,
+    "radii": [
+      0,
+      0.25,
+      0.5,
+      0.8,
+      0.95,
+      0.99
+    ],
+    "azimuthRadians": [
+      0,
+      0.37,
+      1.23
+    ],
+    "sampleCount": 18,
+    "arithmetic": "IEEE 754 double precision; no renderer, browser, atlas, texture or shader evaluation."
+  },
+  "samplingImplication": {
+    "photosphereDiameterPhysicalPixels": "spriteSizePhysicalPixels * 0.35",
+    "normalizedScreenStepPerPhysicalPixel": "2 / photosphereDiameterPhysicalPixels",
+    "largestSourceStepPerPhysicalPixel": "2 / (photosphereDiameterPhysicalPixels * mu)",
+    "effectiveDiameterInLeastResolvedDirection": "photosphereDiameterPhysicalPixels * mu",
+    "edge": "The shader clamps mu to zero at/outside the sphere. Multiplication gives zero effective diameter there without dividing by mu."
+  },
+  "example": {
+    "envelopeCssPixels": 240,
+    "pixelRatio": 1,
+    "photosphereDiameterPhysicalPixels": 84,
+    "normalizedScreenRadius": 0.99,
+    "mu": 0.14106735979665894,
+    "largestStretch": 7.088812050083354,
+    "effectiveDiameterPhysicalPixels": 11.84965822291935
+  },
+  "maxRelativeError": 7.358050662973228e-10,
+  "samples": [
+    {
+      "radius": 0,
+      "azimuthRadians": 0,
+      "screen": [
+        0,
+        0
+      ],
+      "mu": 1,
+      "centralDifferenceColumns": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ]
+      ],
+      "gramMatrix": [
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "expectedSingularValues": [
+        1,
+        1
+      ],
+      "measuredSingularValues": [
+        1,
+        1
+      ],
+      "relativeErrors": [
+        0,
+        0
+      ]
+    },
+    {
+      "radius": 0,
+      "azimuthRadians": 0.37,
+      "screen": [
+        0,
+        0
+      ],
+      "mu": 1,
+      "centralDifferenceColumns": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ]
+      ],
+      "gramMatrix": [
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "expectedSingularValues": [
+        1,
+        1
+      ],
+      "measuredSingularValues": [
+        1,
+        1
+      ],
+      "relativeErrors": [
+        0,
+        0
+      ]
+    },
+    {
+      "radius": 0,
+      "azimuthRadians": 1.23,
+      "screen": [
+        0,
+        0
+      ],
+      "mu": 1,
+      "centralDifferenceColumns": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ]
+      ],
+      "gramMatrix": [
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "expectedSingularValues": [
+        1,
+        1
+      ],
+      "measuredSingularValues": [
+        1,
+        1
+      ],
+      "relativeErrors": [
+        0,
+        0
+      ]
+    },
+    {
+      "radius": 0.25,
+      "azimuthRadians": 0,
+      "screen": [
+        0.25,
+        0
+      ],
+      "mu": 0.9682458365518543,
+      "centralDifferenceColumns": [
+        [
+          1.0000000000287557,
+          0,
+          -0.2581988900463017
+        ],
+        [
+          0,
+          1,
+          0
+        ]
+      ],
+      "gramMatrix": [
+        [
+          1.0666666668786535,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "expectedSingularValues": [
+        1,
+        1.0327955589886444
+      ],
+      "measuredSingularValues": [
+        0.9999999999999999,
+        1.032795559091272
+      ],
+      "relativeErrors": [
+        1.1102230246251565e-16,
+        9.936882787259189e-11
+      ]
+    },
+    {
+      "radius": 0.25,
+      "azimuthRadians": 0.37,
+      "screen": [
+        0.23308183640150862,
+        0.0904038579912405
+      ],
+      "mu": 0.9682458365518543,
+      "centralDifferenceColumns": [
+        [
+          1.0000000000287557,
+          0,
+          -0.2407258853365235
+        ],
+        [
+          0,
+          1.0000000000287557,
+          -0.0933687027693253
+        ]
+      ],
+      "gramMatrix": [
+        [
+          1.0579489519285643,
+          0.022476263636868547
+        ],
+        [
+          0.022476263636868547,
+          1.008717714714338
+        ]
+      ],
+      "expectedSingularValues": [
+        1,
+        1.0327955589886444
+      ],
+      "measuredSingularValues": [
+        1.0000000000287557,
+        1.0327955589492972
+      ],
+      "relativeErrors": [
+        2.8755664516211255e-11,
+        3.809775499970742e-11
+      ]
+    },
+    {
+      "radius": 0.25,
+      "azimuthRadians": 1.23,
+      "screen": [
+        0.08355943178112565,
+        0.23562220048292437
+      ],
+      "mu": 0.9682458365518543,
+      "centralDifferenceColumns": [
+        [
+          1.0000000000287557,
+          0,
+          -0.08629980952079563
+        ],
+        [
+          0,
+          1.0000000000287557,
+          -0.24334956216787162
+        ]
+      ],
+      "gramMatrix": [
+        [
+          1.0074476571808368,
+          0.021001020862056338
+        ],
+        [
+          0.021001020862056338,
+          1.0592190094648062
+        ]
+      ],
+      "expectedSingularValues": [
+        1,
+        1.0327955589886444
+      ],
+      "measuredSingularValues": [
+        1.0000000000287557,
+        1.0327955589506241
+      ],
+      "relativeErrors": [
+        2.8755664516211255e-11,
+        3.6812952264564586e-11
+      ]
+    },
+    {
+      "radius": 0.5,
+      "azimuthRadians": 0,
+      "screen": [
+        0.5,
+        0
+      ],
+      "mu": 0.8660254037844386,
+      "centralDifferenceColumns": [
+        [
+          0.9999999997511999,
+          0,
+          -0.5773502692596466
+        ],
+        [
+          0,
+          1,
+          0
+        ]
+      ],
+      "gramMatrix": [
+        [
+          1.3333333329165862,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "expectedSingularValues": [
+        1,
+        1.1547005383792517
+      ],
+      "measuredSingularValues": [
+        1,
+        1.154700538198795
+      ],
+      "relativeErrors": [
+        0,
+        1.562801390037354e-10
+      ]
+    },
+    {
+      "radius": 0.5,
+      "azimuthRadians": 0.37,
+      "screen": [
+        0.46616367280301724,
+        0.180807715982481
+      ],
+      "mu": 0.8660254037844386,
+      "centralDifferenceColumns": [
+        [
+          1.0000000000287557,
+          0,
+          -0.5382794443509198
+        ],
+        [
+          0,
+          1.0000000000287557,
+          -0.20877876705238663
+        ]
+      ],
+      "gramMatrix": [
+        [
+          1.2897447602682464,
+          0.11238131872122879
+        ],
+        [
+          0.11238131872122879,
+          1.0435885736294261
+        ]
+      ],
+      "expectedSingularValues": [
+        1,
+        1.1547005383792517
+      ],
+      "measuredSingularValues": [
+        1.0000000000287557,
+        1.1547005385987144
+      ],
+      "relativeErrors": [
+        2.8755664516211255e-11,
+        1.9006024762662957e-10
+      ]
+    },
+    {
+      "radius": 0.5,
+      "azimuthRadians": 1.23,
+      "screen": [
+        0.1671188635622513,
+        0.47124440096584874
+      ],
+      "mu": 0.8660254037844386,
+      "centralDifferenceColumns": [
+        [
+          1.0000000000287557,
+          0,
+          -0.19297224151948456
+        ],
+        [
+          0,
+          1.0000000000287557,
+          -0.5441461631283673
+        ]
+      ],
+      "gramMatrix": [
+        [
+          1.0372382860545657,
+          0.10500510481310814
+        ],
+        [
+          0.10500510481310814,
+          1.296095046904835
+        ]
+      ],
+      "expectedSingularValues": [
+        1,
+        1.1547005383792517
+      ],
+      "measuredSingularValues": [
+        1.0000000000287557,
+        1.1547005381924307
+      ],
+      "relativeErrors": [
+        2.8755664516211255e-11,
+        1.61791734655448e-10
+      ]
+    },
+    {
+      "radius": 0.8,
+      "azimuthRadians": 0,
+      "screen": [
+        0.8,
+        0
+      ],
+      "mu": 0.5999999999999999,
+      "centralDifferenceColumns": [
+        [
+          0.9999999994736442,
+          0,
+          -1.3333333326315255
+        ],
+        [
+          0,
+          1,
+          0
+        ]
+      ],
+      "gramMatrix": [
+        [
+          2.7777777748535786,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "expectedSingularValues": [
+        1,
+        1.666666666666667
+      ],
+      "measuredSingularValues": [
+        1,
+        1.666666665789407
+      ],
+      "relativeErrors": [
+        0,
+        5.263560254320508e-10
+      ]
+    },
+    {
+      "radius": 0.8,
+      "azimuthRadians": 0.37,
+      "screen": [
+        0.7458618764848276,
+        0.2892923455719696
+      ],
+      "mu": 0.5999999999999999,
+      "centralDifferenceColumns": [
+        [
+          0.9999999994736442,
+          0,
+          -1.2431031271020743
+        ],
+        [
+          0,
+          1.0000000000287557,
+          -0.4821539095756222
+        ]
+      ],
+      "gramMatrix": [
+        [
+          2.545305383558244,
+          0.5993670327379467
+        ],
+        [
+          0.5993670327379467,
+          1.2324723925765686
+        ]
+      ],
+      "expectedSingularValues": [
+        1,
+        1.666666666666667
+      ],
+      "measuredSingularValues": [
+        0.9999999999561661,
+        1.6666666662000775
+      ],
+      "relativeErrors": [
+        4.383393648055289e-11,
+        2.7995366025379547e-10
+      ]
+    },
+    {
+      "radius": 0.8,
+      "azimuthRadians": 1.23,
+      "screen": [
+        0.2673901816996021,
+        0.753991041545358
+      ],
+      "mu": 0.5999999999999999,
+      "centralDifferenceColumns": [
+        [
+          1.0000000000287557,
+          0,
+          -0.44565030277166073
+        ],
+        [
+          0,
+          0.9999999994736442,
+          -1.2566517348933104
+        ]
+      ],
+      "gramMatrix": [
+        [
+          1.1986041924179842,
+          0.5600272261337366
+        ],
+        [
+          0.5600272261337366,
+          2.5791735817576553
+        ]
+      ],
+      "expectedSingularValues": [
+        1,
+        1.666666666666667
+      ],
+      "measuredSingularValues": [
+        0.9999999999667414,
+        1.6666666656059803
+      ],
+      "relativeErrors": [
+        3.325861808178843e-11,
+        6.364119897739327e-10
+      ]
+    },
+    {
+      "radius": 0.95,
+      "azimuthRadians": 0,
+      "screen": [
+        0.95,
+        0
+      ],
+      "mu": 0.31224989991991997,
+      "centralDifferenceColumns": [
+        [
+          0.9999999994736442,
+          0,
+          -3.0424349206636947
+        ],
+        [
+          0,
+          1,
+          0
+        ]
+      ],
+      "gramMatrix": [
+        [
+          10.25641024542119,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "expectedSingularValues": [
+        1,
+        3.202563076101742
+      ],
+      "measuredSingularValues": [
+        1,
+        3.202563074386075
+      ],
+      "relativeErrors": [
+        0,
+        5.357167615546494e-10
+      ]
+    },
+    {
+      "radius": 0.95,
+      "azimuthRadians": 0.37,
+      "screen": [
+        0.8857109783257328,
+        0.3435346603667139
+      ],
+      "mu": 0.31224989991991997,
+      "centralDifferenceColumns": [
+        [
+          0.9999999994736442,
+          0,
+          -2.8365452728329466
+        ],
+        [
+          0,
+          1.0000000000287557,
+          -1.1001914185237993
+        ]
+      ],
+      "gramMatrix": [
+        [
+          9.045989083778224,
+          3.1207427674250567
+        ],
+        [
+          3.1207427674250567,
+          2.210421157450921
+        ]
+      ],
+      "expectedSingularValues": [
+        1,
+        3.202563076101742
+      ],
+      "measuredSingularValues": [
+        0.9999999999561657,
+        3.2025630737452797
+      ],
+      "relativeErrors": [
+        4.383426954746028e-11,
+        7.358050662973228e-10
+      ]
+    },
+    {
+      "radius": 0.95,
+      "azimuthRadians": 1.23,
+      "screen": [
+        0.31752584076827745,
+        0.8953643618351126
+      ],
+      "mu": 0.31224989991991997,
+      "centralDifferenceColumns": [
+        [
+          1.0000000000287557,
+          0,
+          -1.0168965336454505
+        ],
+        [
+          0,
+          0.9999999994736442,
+          -2.8674608437695426
+        ]
+      ],
+      "gramMatrix": [
+        [
+          2.034078560197644,
+          2.9159109923933064
+        ],
+        [
+          2.9159109923933064,
+          9.222331689498825
+        ]
+      ],
+      "expectedSingularValues": [
+        1,
+        3.202563076101742
+      ],
+      "measuredSingularValues": [
+        0.9999999999667413,
+        3.202563075063938
+      ],
+      "relativeErrors": [
+        3.325872910409089e-11,
+        3.240542154037835e-10
+      ]
+    },
+    {
+      "radius": 0.99,
+      "azimuthRadians": 0,
+      "screen": [
+        0.99,
+        0
+      ],
+      "mu": 0.14106735979665894,
+      "centralDifferenceColumns": [
+        [
+          0.9999999994736442,
+          0,
+          -7.0179239258783
+        ],
+        [
+          0,
+          1,
+          0
+        ]
+      ],
+      "gramMatrix": [
+        [
+          50.25125622836238,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "expectedSingularValues": [
+        1,
+        7.088812050083354
+      ],
+      "measuredSingularValues": [
+        1,
+        7.088812046341924
+      ],
+      "relativeErrors": [
+        0,
+        5.277936909980158e-10
+      ]
+    },
+    {
+      "radius": 0.99,
+      "azimuthRadians": 0.37,
+      "screen": [
+        0.9230040721499742,
+        0.35799927764531236
+      ],
+      "mu": 0.14106735979665894,
+      "centralDifferenceColumns": [
+        [
+          0.9999999994736442,
+          0,
+          -6.5430023864221365
+        ],
+        [
+          0,
+          1.0000000000287557,
+          -2.5377895933320627
+        ]
+      ],
+      "gramMatrix": [
+        [
+          43.81088022767306,
+          16.60476336540895
+        ],
+        [
+          16.60476336540895,
+          7.440376020082027
+        ]
+      ],
+      "expectedSingularValues": [
+        1,
+        7.088812050083354
+      ],
+      "measuredSingularValues": [
+        0.9999999999561648,
+        7.0888120477159475
+      ],
+      "relativeErrors": [
+        4.383515772587998e-11,
+        3.339638148653296e-10
+      ]
+    },
+    {
+      "radius": 0.99,
+      "azimuthRadians": 1.23,
+      "screen": [
+        0.3308953498532576,
+        0.9330639139123805
+      ],
+      "mu": 0.14106735979665894,
+      "centralDifferenceColumns": [
+        [
+          1.0000000000287557,
+          0,
+          -2.345654944446718
+        ],
+        [
+          0,
+          0.9999999994736442,
+          -6.614314712466429
+        ]
+      ],
+      "gramMatrix": [
+        [
+          6.502097118464846,
+          15.51490000942355
+        ],
+        [
+          15.51490000942355,
+          44.749159114497154
+        ]
+      ],
+      "expectedSingularValues": [
+        1,
+        7.088812050083354
+      ],
+      "measuredSingularValues": [
+        0.9999999999667413,
+        7.088812046671044
+      ],
+      "relativeErrors": [
+        3.325872910409089e-11,
+        4.813656237612029e-10
+      ]
+    }
+  ]
+}

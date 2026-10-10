@@ -1,0 +1,29 @@
+{
+  "artifacts": [
+    {
+      "name": "content_engine_module.js",
+      "sha256": "280f9bebfbf7951fd43455d0c7bb6d6e055349a0eac067037d3599de1ee4e7da",
+      "pin": "280f9beb",
+      "mirrors": [
+        "desktop/web-app/public/content_engine_module.js",
+        "desktop/app-build/content_engine_module.js",
+        "desktop/web-app/build/content_engine_module.js"
+      ]
+    },
+    {
+      "name": "view_misc_panels_module.js",
+      "sha256": "c022b4612f6861c59ca053aa5abaceb85a088b72a0bdd0291b079a4594c4f8ec",
+      "pin": "c022b461",
+      "mirrors": [
+        "desktop/web-app/public/view_misc_panels_module.js",
+        "desktop/app-build/view_misc_panels_module.js",
+        "desktop/web-app/build/view_misc_panels_module.js"
+      ]
+    }
+  ],
+  "hosts": {
+    "AlloFlowANTI.txt": "3c29f5ab04a11c6bcb3e48d7b56c97fe48065e81d87237c3694655bbfcc323c4",
+    "desktop/web-app/src/AlloFlowANTI.txt": "eee4eb138794d378e555805856999149793b9809f467ddfbef952d7d836b8084",
+    "desktop/web-app/src/App.jsx": "eee4eb138794d378e555805856999149793b9809f467ddfbef952d7d836b8084"
+  }
+}

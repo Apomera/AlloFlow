@@ -1,0 +1,29 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+ ✓ tests/universe_flight_cloud_surfaces.test.js (5 tests) 20051ms
+     ✓ preserves every world and atlas and repeats exactly the 1000 local cloud records in a static suffix  9174ms
+     ✓ uses one additive cloud batch with source attributes and restores the named-star and point paths  722ms
+     ✓ keeps native cloud approach, orbit, pause and lens changes independent of source uploads and clocks  3646ms
+     ✓ restores the same batch after other scenes, reuses cached atlases on reopen and releases every object once  6194ms
+ ✓ tests/universe_flight_barred_detail.test.js (3 tests) 18707ms
+     ✓ uploads a changed barred map while preserving both accepted spiral maps, the elliptical map, barred core, gutters and cloud atlas  9300ms
+     ✓ arrives at the native barred-galaxy standoff and preserves points, disk geometry and atlas resources through orbit, pause and free look  6907ms
+     ✓ restores a paused barred view at extreme beta across regions and reuses cached atlas objects after clean disposal  2263ms
+ ✓ tests/universe_flight_two_arm_detail.test.js (3 tests) 20531ms
+     ✓ uploads a changed two-arm map while preserving the accepted four-arm map, elliptical map, companion core, gutters and cloud atlas  8706ms
+     ✓ arrives at the native companion standoff and preserves points, disk geometry and atlas resources through orbit, pause and free look  9290ms
+     ✓ restores a paused companion view at extreme beta across regions and reuses cached atlas objects after clean disposal  2508ms
+ ✓ tests/universe_flight_spiral_detail.test.js (5 tests) 19201ms
+     ✓ uploads a refined spiral map while preserving the original bulge, gutters, the elliptical map and cloud atlas  10764ms
+     ✓ keeps every generated point and original galaxy xyz/UV exact across regions without rebuilding either atlas  1897ms
+     ✓ retains fixed geometry and atlas uploads through native spiral approach, orbit, pause and manual viewing  4264ms
+     ✓ keeps physical viewing uniforms finite at extreme beta and restores a paused spiral pose after region changes  1606ms
+     ✓ reuses the cached CPU maps on reopening and deletes every graphics object once without leaving scheduled frames  656ms
+
+ Test Files  4 passed (4)
+      Tests  16 passed (16)
+   Start at  11:51:19
+   Duration  80.97s (transform 683ms, setup 139ms, import 734ms, tests 78.49s, environment 0ms)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/universe-flight-2026-09-29/disk-depth/unit/affected-retry/results.json

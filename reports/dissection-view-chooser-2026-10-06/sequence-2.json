@@ -1,0 +1,17 @@
+{
+  "start": "2026-10-06T12:31:09.100Z",
+  "runnerPid": 4324,
+  "jobs": [
+    {
+      "mode": "view",
+      "label": "view-2",
+      "code": 1,
+      "start": "2026-10-06T12:31:09.103Z",
+      "end": "2026-10-06T12:38:42.466Z"
+    }
+  ],
+  "running": null,
+  "success": false,
+  "error": "view-2 failed",
+  "end": "2026-10-06T12:38:42.527Z"
+}

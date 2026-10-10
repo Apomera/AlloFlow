@@ -1,0 +1,42 @@
+{
+  "fixture": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-capture-clarity.spec.ts",
+  "beforeSha256": "eefb144f147084ca516e96fb1033752ae38fdb66dac908c4d73c527385a52b33",
+  "afterSha256": "007db45b401ce6470082eb456b845ee48dfb5ab5ecaec0b55a5ea713177ae2f7",
+  "beforeBytes": 30701,
+  "afterBytes": 33280,
+  "renderer": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_dissection.js",
+  "rendererSha256": "bf89763b349b9cc74a24f440e4a0c2f98b11660de700bb82ac1debe2129723dd",
+  "exactBeforeSnapshot": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-capture-clarity-2026-10-05\\capture-browser-finish\\dissection-capture-clarity-transition.spec.ts",
+  "exactAfterSnapshot": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-capture-clarity-2026-10-05\\capture-browser-finish\\dissection-capture-clarity-browser-setup.spec.ts",
+  "edits": [
+    {
+      "before": "  expect(records[0].textAfterCopy.some((s: string) => s === 'ANATOMICAL AXIS')).toBe(true);",
+      "after": "  expect(records[0].textAfterCopy.some((s: string) => s === 'ANATOMICAL AXIS')).toBe(false);"
+    },
+    {
+      "before": "  await capture(page).scrollIntoViewIfNeeded(); await expect.poll(async () => source(page).evaluate((c: any) => c._dissInViewport)).toBe(false);",
+      "after": "  await page.setViewportSize({ width: 1440, height: 320 });\n  await page.addStyleTag({ content: '#diss-lab-tools {margin-bottom:360px!important;}' });\n  await capture(page).scrollIntoViewIfNeeded(); await expect(capture(page)).toBeInViewport();\n  await expect.poll(async () => source(page).evaluate((c: any) => { const box = c.getBoundingClientRect(); return box.bottom <= 0 || box.top >= window.innerHeight; })).toBe(true);\n  await expect.poll(async () => source(page).evaluate((c: any) => c._dissInViewport)).toBe(false);\n  const geometry = await page.evaluate(() => {\n    const canvas = document.querySelector('[data-diss-canvas]')!, button = document.querySelector('[data-evidence-capture]')!;\n    const box = (node: Element) => { const r = node.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, width: r.width, height: r.height }; };\n    return { viewportHeight: window.innerHeight, canvas: box(canvas), capture: box(button) };\n  });\n  expect(geometry.canvas.bottom <= 0 || geometry.canvas.top >= geometry.viewportHeight).toBe(true);\n  expect(geometry.capture.bottom).toBeGreaterThan(0); expect(geometry.capture.top).toBeLessThan(geometry.viewportHeight);"
+    },
+    {
+      "before": "  await preference(page).selectOption('canvas'); const full = await nativeCapture(page), second = (await observations(page))[1];",
+      "after": "  await preference(page).selectOption('canvas'); await capture(page).scrollIntoViewIfNeeded();\n  await expect.poll(async () => source(page).evaluate((c: any) => c._dissInViewport)).toBe(false);\n  const full = await nativeCapture(page), second = (await observations(page))[1];"
+    },
+    {
+      "before": "  await writeFile(`${out}/offscreen-proof.json`, JSON.stringify((await observations(page)).map(({ jpegAtCopy, pngAtCopy, ...record }: any) => record), null, 2));",
+      "after": "  await writeFile(`${out}/offscreen-proof.json`, JSON.stringify({ geometry, observations: (await observations(page)).map(({ jpegAtCopy, pngAtCopy, ...record }: any) => record) }, null, 2));"
+    },
+    {
+      "before": "  test.skip(baseline); await mount(page, { reducedMotion: false, livingFunctionEnabled: true, livingFunctionPaused: false, livingFunctionSpeed: 'fast' }, 1440, 1180); await painted(page);",
+      "after": "  test.skip(baseline); await page.emulateMedia({ reducedMotion: 'no-preference' });\n  await mount(page, { activeLayer: 'organs', selectedOrgan: null, hoveredOrgan: null, inspectionLens: false, macroInset: false,\n    revealedLayers: { skin: true, muscle: true }, procedureByLayer: { skin: complete, muscle: complete, organs: complete },\n    reducedMotion: true, livingFunctionEnabled: true, livingFunctionPaused: false, livingFunctionSpeed: 'fast' }, 390, 390);\n  await page.getByRole('button', { name: 'View and accessibility options', exact: true }).click();\n  const motion = page.getByRole('button', { name: 'Toggle additional reduced motion; operating system reduced motion settings are always honored', exact: true });\n  await expect(motion).toHaveAttribute('aria-pressed', 'true'); await motion.click(); await expect(motion).toHaveAttribute('aria-pressed', 'false');\n  await page.getByRole('button', { name: 'Lab tool options', exact: true }).click(); await painted(page);\n  await expect.poll(async () => source(page).evaluate((c: any) => c._dissMotionReduced)).toBe(false);\n  await expect(page.locator('.diss-living-function')).toHaveAttribute('data-motion', 'playing');"
+    },
+    {
+      "before": "  await writeFile(`${out}/failed-copy-proof.json`, JSON.stringify((await observations(page)).map(({ jpegAtCopy, pngAtCopy, ...record }: any) => record), null, 2));",
+      "after": "  await painted(page);\n  await expect.poll(async () => source(page).evaluate((c: any) => c._livingFunctionElapsedMs)).toBeGreaterThan(retry.entryClock[0]);\n  const resumedClock = await source(page).evaluate((c: any) => ({ elapsedMs: c._livingFunctionElapsedMs, motionReduced: c._dissMotionReduced }));\n  expect(resumedClock.motionReduced).toBe(false);\n  await writeFile(`${out}/failed-copy-proof.json`, JSON.stringify({ resumedClock, observations: (await observations(page)).map(({ jpegAtCopy, pngAtCopy, ...record }: any) => record) }, null, 2));"
+    }
+  ],
+  "guardedForwardAndReverse": true,
+  "baselineLayoutDefinitionsAndBodiesUnchanged": true,
+  "staticValidation": "Babel TypeScript parse passed",
+  "execution": "No browser or unit suites run by this agent",
+  "ownership": "Released to root"
+}

@@ -1,0 +1,233 @@
+Explore
+Be the Water
+Storm Lab
+Steward
+Water Worlds
+STORM TO STREAM · GUIDED INVESTIGATION
+Where will the stormwater go?
+
+Follow a storm, change one land-cover setting, and explain the difference.
+
+Start investigation
+INTERACTIVE STORM CHAMBER
+🌧️ Precipitation Lab
+
+Build a cloud, shape the temperature profile, and watch water reach the surface as rain, snow, wintry mix, freezing rain, hail, or virga.
+
+Compare two setups
+2D chamber
+3D cloud chamber
+Full journey →
+Environment
+Forest clearing
+Beach
+Suburban street
+Storm scenario
+Custom settings
+Gentle rain
+Summer downpour
+Mountain snow
+Virga
+Freezing rain
+Hailstorm
+Steer storm track · 0.0
+Transition time · 6 seconds
+
+Wind now 10.0 m/s · track 0.0 · conditions settled
+
+Drag to orbit, scroll to zoom, or select Inside the storm to move through the environment.
+
+The track control steers an illustrative weather column; it is not a forecast track. Wetness, tree movement, and waves are qualitative effects.
+
+Full-screen storm
+Inside the storm
+Whole storm
+Inside cloud
+Surface path
+AIR COLUMN
+Cloud
+5°C
+Middle
+9°C
+Surface
+18°C
+No 0°C crossing
+Vapor tracer → droplets
+Drops collide + merge
+Reset view
+◆
+3D CLOUD CHAMBER
+Steady rain
+Reaches the surface
+INTENSITY INDEX
+Moderate · 55/100
+Static
+
+Inside-cloud lens: faint cyan points are teaching tracers for invisible water vapor. Rising air cools toward saturation at the glowing cloud base; vapor condenses on tiny nuclei into visible droplets and releases latent heat. In each illustrated collision, two droplets approach, touch, and join into one larger round drop containing their combined water. Further growth may be needed before rain forms. Collision timing is schematic. This transparent cutaway reveals droplets and ice inside the shaded cloud volume. Its level underside marks the modeled saturation base. Updraft strength controls how long particles remain aloft. Particles are enlarged for teaching and are not to scale.
+
+☁
+CLOUD
+LIQUID DROPS
+0°
+AIR COLUMN
+ABOVE FREEZING THROUGH THE COLUMN
+◆
+SURFACE
+RAIN
+Cloud field guide
+10 cloud types · shapes, height & weather
+Storm lifecycle
+MATURE · 52/100
+Developing
+Mature
+Weakening
+STORM TIME · 52/100
+Previous
+Static
+Next
+
+This is the peak part of the model sequence. Lightning is unavailable in the current setup.
+
+Snow
+0/100
+Glaze
+0/100
+Hail
+0/100
+Puddles
+21/100
+Runoff
+15/100
+Compare three moments
+⚡ Flash → thunder · No lightning flash to trigger thunder
+Thunder is quiet in this setup because the modeled storm does not yet have enough electrical activity for a lightning flash.
+Sound is muted; follow the captioned delay to observe the same idea.
+Measure the storm
+No lightning flash is modeled yet, so there is no flash-to-thunder interval to measure. Increase cloud depth, moisture, or updraft to build electrical activity.
+Steady rain
+STEADY FALL
+
+Liquid cloud drops collide, merge, and remain liquid on the way to the surface.
+
+Moderate lift and a 8 km cloud produce a 70/100 particle-growth index. Liquid through the column determines what reaches the ground.
+
+Particle growth
+70/100
+Cloud phase
+Liquid drops
+Temperature path
+Liquid through the column
+Fall path
+Liquid drops remain liquid to the surface
+Electrical activity
+61/100
+Terrain effect
+Flat terrain
+CLOUD ENGINE
+Cloud moisture
+96%
+Cloud depth
+8.0 km
+Vertical lift / updraft
+68/100
+VERTICAL TEMPERATURE PROFILE
+-20°
+0°
+20°
+COLD AIR
+WARM AIR
+CLOUD
+5°C
+MIDDLE
+9°C
+SURFACE
+18°C
+
+Adjust the three temperatures. Each 0°C crossing becomes a visible phase-change layer, and the shaded band shows how far the drop falls through freezing air before it lands.
+
+Inspect the falling particle
+Cloud temperature
+5°C
+Middle-atmosphere temperature
+9°C
+Surface temperature
+18°C
+FALL SURVIVAL
+Below-cloud humidity
+90%
+SCENARIO PRESET
+Custom setup
+Gentle rain
+Summer downpour
+Mountain snow
+Virga
+Freezing rain
+Hailstorm
+
+Moderate moisture and lift grow drops that survive the humid air below.
+
+Horizontal wind / drift
+10 m/s
+Terrain
+Open plains
+Mountain ridge
+Coastline
+Wind direction
+West to east
+East to west
+Lightning distance
+3.0 km
+Play optional thunder after each eligible flash
+Show wind and updraft pathways
+Show charge, lightning pathway, and thunder wavefront
+↺ Reset lab
+PREDICT · CHANGE · EXPLAIN
+One change, two storms
+
+Keep a starting storm beside your experiment. Which input changes where the water goes, or what reaches the ground?
+
+A = pinned · B = live
+↓
+Will rain reach the ground?
+Keep the cloud steady; change the humidity below it.
+Test dry air
+0°
+Can snow become freezing rain?
+Keep cloud and surface temperatures steady; warm the middle layer.
+Test a warm layer
+↑
+What changes when air rises?
+Keep moisture and cloud depth steady; change the updraft.
+Test rising air
+Each guided test loads a starting storm and pins A. Or pin your own setup below. Your writing and saved comparisons are kept.
+1. Plan your test
+My storm prediction
+Variable to investigate
+Below-cloud humidity
+Middle-atmosphere temperature
+Vertical lift / updraft
+Cloud moisture
+Cloud temperature
+Surface temperature
+Cloud depth
+Horizontal wind / drift
+Wind direction
+Terrain
+Storm time
+Lightning distance
+Pin current setup as A
+Pinning pauses storm time so the storm stage stays the same.
+2. Observe the evidence
+Your chamber is ready to investigate.
+
+Choose a question above or pin the current setup. A stays fixed while you explore B.
+
+Pin a starting setup, then change one input.
+
+Saved comparisons · 0 of 4
+
+Read these as model experiments. Intensity is a relative 0–100 index, not a measured rainfall rate. The air column uses three temperature levels; real storms vary continuously with height and time.
+
+Investigation notebook · 0 observations
+
+Qualitative teaching model, not a weather measurement or forecast. Real precipitation depends on the full vertical temperature and humidity profile, cloud nuclei, and storm dynamics. The 3D view uses illustrative scale.

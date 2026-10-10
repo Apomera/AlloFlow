@@ -1,0 +1,484 @@
+{
+  "at": "2026-10-09T23:55:57.022Z",
+  "sourceSha256": "16c960aa8e0cdb992d1166950150e34e09407abfd448b8b78734937cc2497745",
+  "unitSha256": "5548f01c1ec302281c286ca7811e339895a0a733b90e7e070edabed9a3dc87de",
+  "browserSha256": "e04b694f95c894ed7ace9305e70771950c7dbc8ab03fc772daf6ef4a54a78838",
+  "sourceMirrorIdentical": true,
+  "syntaxPassed": true,
+  "sourceEditsReversible": true,
+  "unitEditsReversible": true,
+  "protectedFilesUnchanged": 391,
+  "headUnchanged": "2f9789e0bba98c9795492beb226202cf34f0d675",
+  "indexUnchanged": true,
+  "scopedDiffCheckPassed": true,
+  "runs": {
+    "before-1": {
+      "start": "2026-10-09T23:51:47.204Z",
+      "end": "2026-10-09T23:51:55.959Z",
+      "inputHashes": {
+        "stem_lab/stem_tool_dissection.js": "c7708b29982ee76b498aff5427cdf265672359430f1e559d483265de4f51e39c",
+        "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "c7708b29982ee76b498aff5427cdf265672359430f1e559d483265de4f51e39c",
+        "tests/e2e/dissection-monitor-handoff.spec.ts": "536312090867ddd84b0053d8617ac640883274c36340ab82c74375e6ab4ee0bb",
+        "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6"
+      },
+      "counts": {
+        "startTime": "2026-10-09T23:51:48.165Z",
+        "duration": 7759.134999999999,
+        "expected": 2,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    "unit-2": {
+      "start": "2026-10-09T23:52:43.966Z",
+      "end": "2026-10-09T23:52:55.028Z",
+      "inputHashes": {
+        "stem_lab/stem_tool_dissection.js": "16c960aa8e0cdb992d1166950150e34e09407abfd448b8b78734937cc2497745",
+        "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "16c960aa8e0cdb992d1166950150e34e09407abfd448b8b78734937cc2497745",
+        "tests/dissection_lab_improvements.test.js": "5548f01c1ec302281c286ca7811e339895a0a733b90e7e070edabed9a3dc87de"
+      },
+      "counts": {
+        "passed": 21,
+        "failed": 0,
+        "skipped": 201
+      }
+    },
+    "browser-4": {
+      "start": "2026-10-09T23:54:08.289Z",
+      "end": "2026-10-09T23:54:36.078Z",
+      "inputHashes": {
+        "stem_lab/stem_tool_dissection.js": "16c960aa8e0cdb992d1166950150e34e09407abfd448b8b78734937cc2497745",
+        "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "16c960aa8e0cdb992d1166950150e34e09407abfd448b8b78734937cc2497745",
+        "tests/e2e/dissection-monitor-handoff.spec.ts": "e04b694f95c894ed7ace9305e70771950c7dbc8ab03fc772daf6ef4a54a78838",
+        "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6"
+      },
+      "counts": {
+        "startTime": "2026-10-09T23:54:09.331Z",
+        "duration": 26718.021,
+        "expected": 5,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    }
+  },
+  "audits": {
+    "phone": {
+      "auditFile": "browser-4/captures/phone-axe.json",
+      "auditSha256": "16d98592334a4ad3a84b1587300f27a7e7c7b8add834167962d1e223d2f6a83d",
+      "metricsFile": "browser-4/captures/phone-metrics.json",
+      "metricsSha256": "200160e9aeafe32c8e6747691dcdde6e89ae4038eb22e1e5f90636713130bf87",
+      "violations": 0,
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": [
+            {
+              "target": [
+                ".diss-stage__telemetry-action"
+              ],
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<section class=\"diss-stage__telemetry\" data-tone=\"stable\" role=\"group\" aria-label=\"Live specimen response monitor\">",
+                      "target": [
+                        ".diss-stage__telemetry"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".diss-stage__telemetry-priority"
+              ],
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<section class=\"diss-stage__telemetry\" data-tone=\"stable\" role=\"group\" aria-label=\"Live specimen response monitor\">",
+                      "target": [
+                        ".diss-stage__telemetry"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "width": 256.75,
+        "client": 257,
+        "scroll": 257,
+        "controls": [
+          {
+            "text": "Review plan",
+            "font": 16,
+            "client": 111,
+            "scroll": 111,
+            "height": 48
+          }
+        ],
+        "focus": {
+          "width": 3,
+          "style": "solid"
+        },
+        "cues": [
+          {
+            "id": "diss-procedure-summary",
+            "width": 274.40625,
+            "client": 274,
+            "scroll": 274,
+            "fonts": [
+              16,
+              16
+            ]
+          },
+          {
+            "id": "diss-procedure-title",
+            "width": 274.40625,
+            "client": 274,
+            "scroll": 274,
+            "fonts": [
+              16
+            ]
+          },
+          {
+            "id": "diss-active-tool-help",
+            "width": 184.828125,
+            "client": 185,
+            "scroll": 185,
+            "fonts": [
+              16
+            ]
+          }
+        ]
+      }
+    },
+    "desktop-final": {
+      "auditFile": "browser-4/captures/desktop-final-axe.json",
+      "auditSha256": "d889473b6cfe10c55be13dd47a50c6010c19da56d77023bf90e7eb16e29aa8b3",
+      "metricsFile": "browser-4/captures/desktop-final-metrics.json",
+      "metricsSha256": "7d11bd8e2f8fe386b3db9be1888e4170a12edc2b550133d0e3bd7deac9992d9d",
+      "violations": 0,
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": [
+            {
+              "target": [
+                ".diss-stage__telemetry-action"
+              ],
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<section class=\"diss-stage__telemetry\" data-tone=\"stable\" role=\"group\" aria-label=\"Live specimen response monitor\">",
+                      "target": [
+                        ".diss-stage__telemetry"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".diss-stage__telemetry-priority"
+              ],
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<section class=\"diss-stage__telemetry\" data-tone=\"stable\" role=\"group\" aria-label=\"Live specimen response monitor\">",
+                      "target": [
+                        ".diss-stage__telemetry"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "width": 753.5625,
+        "client": 754,
+        "scroll": 754,
+        "controls": [
+          {
+            "text": "Explain result",
+            "font": 16,
+            "client": 120,
+            "scroll": 120,
+            "height": 48
+          }
+        ],
+        "focus": {
+          "width": 3,
+          "style": "solid"
+        },
+        "cues": [
+          {
+            "id": "diss-procedure-summary",
+            "width": 771.21875,
+            "client": 771,
+            "scroll": 771,
+            "fonts": [
+              16,
+              16
+            ]
+          },
+          {
+            "id": "diss-procedure-title",
+            "width": 502.53125,
+            "client": 503,
+            "scroll": 503,
+            "fonts": [
+              16
+            ]
+          },
+          {
+            "id": "diss-active-tool-help",
+            "width": 675.234375,
+            "client": 675,
+            "scroll": 675,
+            "fonts": [
+              16
+            ]
+          }
+        ]
+      }
+    },
+    "embedded-large": {
+      "auditFile": "browser-4/captures/embedded-large-axe.json",
+      "auditSha256": "6c1fe78b275aa30981773eb87b4cc2f76fa03f6ec113719ec8a90e3ee4181483",
+      "metricsFile": "browser-4/captures/embedded-large-metrics.json",
+      "metricsSha256": "93af6cdb42f32074fc57c4afb2286253802d093bd2e64019fb01031653a8453f",
+      "violations": 0,
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": [
+            {
+              "target": [
+                ".diss-stage__telemetry-action"
+              ],
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "10.8pt (14.4px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<section class=\"diss-stage__telemetry\" data-tone=\"stable\" role=\"group\" aria-label=\"Live specimen response monitor\">",
+                      "target": [
+                        ".diss-stage__telemetry"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".diss-stage__telemetry-priority"
+              ],
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "10.8pt (14.4px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<section class=\"diss-stage__telemetry\" data-tone=\"stable\" role=\"group\" aria-label=\"Live specimen response monitor\">",
+                      "target": [
+                        ".diss-stage__telemetry"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "width": 256.75,
+        "client": 257,
+        "scroll": 257,
+        "controls": [
+          {
+            "text": "Explain result",
+            "font": 18,
+            "client": 132,
+            "scroll": 132,
+            "height": 49.78125
+          }
+        ],
+        "focus": {
+          "width": 3,
+          "style": "solid"
+        },
+        "cues": [
+          {
+            "id": "diss-procedure-summary",
+            "width": 274.40625,
+            "client": 274,
+            "scroll": 274,
+            "fonts": [
+              18,
+              18
+            ]
+          },
+          {
+            "id": "diss-procedure-title",
+            "width": 274.40625,
+            "client": 274,
+            "scroll": 274,
+            "fonts": [
+              18
+            ]
+          },
+          {
+            "id": "diss-active-tool-help",
+            "width": 184.828125,
+            "client": 185,
+            "scroll": 185,
+            "fonts": [
+              18
+            ]
+          }
+        ]
+      }
+    },
+    "forced-colors": {
+      "auditFile": "browser-4/captures/forced-colors-axe.json",
+      "auditSha256": "3deacb67bd850d6466bdf23780a9e34785b5d8f0a13cfa3192f162334a8a0ac1",
+      "metricsFile": "browser-4/captures/forced-colors-metrics.json",
+      "metricsSha256": "ef11f09362224452effb659efc2164acf178f6d3e9f6b497515e47bc190414e3",
+      "violations": 0,
+      "incomplete": [],
+      "metrics": {
+        "width": 326.75,
+        "client": 327,
+        "scroll": 327,
+        "controls": [
+          {
+            "text": "Explain result",
+            "font": 16,
+            "client": 120,
+            "scroll": 120,
+            "height": 48
+          }
+        ],
+        "focus": {
+          "width": 3,
+          "style": "solid"
+        },
+        "cues": [
+          {
+            "id": "diss-procedure-summary",
+            "width": 344.40625,
+            "client": 344,
+            "scroll": 344,
+            "fonts": [
+              16,
+              16
+            ]
+          },
+          {
+            "id": "diss-procedure-title",
+            "width": 344.40625,
+            "client": 344,
+            "scroll": 344,
+            "fonts": [
+              16
+            ]
+          },
+          {
+            "id": "diss-active-tool-help",
+            "width": 254.828125,
+            "client": 255,
+            "scroll": 255,
+            "fonts": [
+              16
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

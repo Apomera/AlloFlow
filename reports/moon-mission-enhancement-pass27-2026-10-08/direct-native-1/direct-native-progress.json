@@ -1,0 +1,159 @@
+{
+  "schema": "moon-pass27-direct-browser-v1",
+  "runner": "direct-playwright-api",
+  "playwrightCliResult": false,
+  "mode": "native",
+  "status": "passed",
+  "startedAt": "2026-10-09T05:36:48.874Z",
+  "repo": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "specPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-hud.spec.ts",
+  "output": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass27-2026-10-08\\direct-native-1",
+  "browserCache": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+  "timeouts": {
+    "action": 20000,
+    "navigation": 60000,
+    "expect": 15000,
+    "launch": 60000,
+    "workflow": 180000
+  },
+  "launchOptions": {
+    "headless": true,
+    "timeout": 60000
+  },
+  "workflowCompleted": true,
+  "cleanupCompleted": true,
+  "milestones": [
+    {
+      "name": "load:before",
+      "elapsedMs": 2417
+    },
+    {
+      "name": "load:after",
+      "elapsedMs": 191371,
+      "workflow": "lighter native HUD keeps paused telemetry readable across desktop, phone, camera and context loss",
+      "registered": [
+        "lighter native HUD keeps paused telemetry readable across desktop, phone, camera and context loss",
+        "2D fallback recorded HUD follows the official scrubber and preserves honest legacy fuel displays"
+      ]
+    },
+    {
+      "name": "harness-start:before",
+      "elapsedMs": 191467
+    },
+    {
+      "name": "harness-start:after",
+      "elapsedMs": 192095
+    },
+    {
+      "name": "browser-launch:before",
+      "elapsedMs": 192097
+    },
+    {
+      "name": "browser-launch:after",
+      "elapsedMs": 195898
+    },
+    {
+      "name": "context-create:before",
+      "elapsedMs": 195900
+    },
+    {
+      "name": "context-create:after",
+      "elapsedMs": 195922
+    },
+    {
+      "name": "page-create:before",
+      "elapsedMs": 195924
+    },
+    {
+      "name": "page-create:after",
+      "elapsedMs": 199932
+    },
+    {
+      "name": "workflow:before",
+      "elapsedMs": 199934
+    },
+    {
+      "name": "workflow:after",
+      "elapsedMs": 227051
+    },
+    {
+      "name": "cleanup:before",
+      "elapsedMs": 227052
+    },
+    {
+      "name": "after-each:before",
+      "elapsedMs": 227053
+    },
+    {
+      "name": "after-each:after",
+      "elapsedMs": 227096
+    },
+    {
+      "name": "context-close:before",
+      "elapsedMs": 227097
+    },
+    {
+      "name": "context-close:after",
+      "elapsedMs": 227332
+    },
+    {
+      "name": "browser-close:before",
+      "elapsedMs": 227333
+    },
+    {
+      "name": "browser-close:after",
+      "elapsedMs": 242912
+    },
+    {
+      "name": "harness-stop:before",
+      "elapsedMs": 242914
+    },
+    {
+      "name": "harness-stop:after",
+      "elapsedMs": 242917
+    },
+    {
+      "name": "cleanup:after",
+      "elapsedMs": 243045,
+      "status": "passed"
+    }
+  ],
+  "errors": [],
+  "attachments": [
+    {
+      "name": "desktop",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass27-2026-10-08\\direct-native-1\\native\\desktop.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "phone",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass27-2026-10-08\\direct-native-1\\native\\phone.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "phone-context-loss",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass27-2026-10-08\\direct-native-1\\native\\phone-context-loss.png",
+      "contentType": "image/png"
+    }
+  ],
+  "inputHashes": {
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-hud.spec.ts": "752192b27324aab3b56c491ce5a23fe90112fe770bb5ae41d80d2d0600933029",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_moonmission.js": "cb9bc2190a58ed06c8bb2019e18dab89b0a0e102aa1c0787960b5946f4cf6900",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_moonmission.js": "cb9bc2190a58ed06c8bb2019e18dab89b0a0e102aa1c0787960b5946f4cf6900"
+  },
+  "transform": {
+    "name": "Playwright bundled babelTransform",
+    "bundlePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\transform\\babelBundle.js",
+    "sha256": "9201df11ae9c9ee1febd587c5013c4f862aa7e9981b92b86ccbbbd37e71f9124"
+  },
+  "workflow": "lighter native HUD keeps paused telemetry readable across desktop, phone, camera and context loss",
+  "suiteOptions": {
+    "timeout": 180000,
+    "retries": 0
+  },
+  "browserVersion": "148.0.7778.96",
+  "finishedAt": "2026-10-09T05:40:51.919Z",
+  "elapsedMs": 243045
+}

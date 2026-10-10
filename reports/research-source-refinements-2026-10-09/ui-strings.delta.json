@@ -1,0 +1,6 @@
+{
+  "input": {
+    "research_include_passage": "Include passage {number}",
+    "research_undo_limit": "This source cannot be restored because the research collection is full."
+  }
+}

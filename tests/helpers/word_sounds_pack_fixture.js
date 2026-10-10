@@ -60,7 +60,7 @@ export function makePackItem() {
       blending: { options: ['cat', 'cot', 'cut', 'bat'], answer: 'cat' },
       rhyming: { options: ['hat', 'dog', 'sun', 'bed'], answer: 'hat' },
       manipulation: { task: MANIP_TASK, options: ['at', 'it', 'on', 'up', 'an', 'in'] },
-      syllable_blending: { syllables: ['cat'], options: ['cat', 'rabbit', 'window', 'pencil'], answer: 'cat' },
+      syllable_blending: { version: 1, supported: false, contentStatus: 'syllable_audio_required', targetWord: 'cat', syllables: [], audioUnits: [], options: [], answer: 'cat' },
       syllable_counting: { syllables: ['cat'], answer: 1 },
       orthography: { options: ['cat', 'kat', 'catt', 'cta'], answer: 'cat' },
       mapping: { graphemes: ['c', 'a', 't'], chipOrder: [{ id: 2, text: 't' }, { id: 0, text: 'c' }, { id: 1, text: 'a' }] },
@@ -75,6 +75,30 @@ export function makePackItem() {
   };
 }
 
+// Syllable blending needs a real multi-syllable stimulus. Keep the shared
+// cat fixture for all other activities and prepare every spoken unit/choice.
+export function makeSyllablePackItem() {
+  const choices = ['sunset', 'raincoat', 'bedtime', 'toothbrush'];
+  return {
+    ...makePackItem(),
+    id: 2, term: 'sunset', word: 'sunset', targetWord: 'sunset', displayWord: 'sunset',
+    phonemes: ['s', 'u', 'n', 's', 'e', 't'], phonemeCount: 6,
+    graphemes: ['s', 'u', 'n', 's', 'e', 't'], syllables: ['sun', 'set'],
+    syllableBlendingOptions: choices, definition: 'the sun going down in the evening',
+    _ttsAssets: { ...packTts, ...Object.fromEntries([...choices, 'sun', 'set'].map(word => [word, ttsAsset])) },
+    _decodingAssets: Object.fromEntries(choices.map(word => [word, IMG])),
+    _aacAssets: Object.fromEntries(choices.map(word => [word, IMG])),
+    activityItems: {
+      syllable_blending: {
+        version: 1, supported: true, contentStatus: 'curated_compound', targetWord: 'sunset',
+        syllables: ['sun', 'set'], audioUnits: [{key:'sun',text:'sun'}, {key:'set',text:'set'}],
+        options: choices, answer: 'sunset',
+      },
+      syllable_counting: { syllables: ['sun', 'set'], answer: 2 },
+    },
+  };
+}
+
 export function makeThrowingAi(calls, label) {
   return (...args) => {
     const entry = `${label}(${String(args[0]).slice(0, 60)})`;
@@ -84,7 +108,7 @@ export function makeThrowingAi(calls, label) {
 }
 
 export function studentProps(activity, calls) {
-  const packItem = makePackItem();
+  const packItem = activity === 'syllable_blending' ? makeSyllablePackItem() : makePackItem();
   return {
     ...baseProps(activity),
     allowRuntimeAi: false,
@@ -93,7 +117,7 @@ export function studentProps(activity, calls) {
     callImagen: makeThrowingAi(calls, 'callImagen'),
     glossaryTerms: [],
     wsPreloadedWords: [packItem],
-    currentWordSoundsWord: 'cat',
+    currentWordSoundsWord: packItem.word,
     // The full per-word pack object (word + phonemes + activityItems), the
     // shape the player receives after fetchWordData resolves a pack word.
     wordSoundsPhonemes: packItem,

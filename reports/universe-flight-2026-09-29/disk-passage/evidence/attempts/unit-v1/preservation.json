@@ -1,0 +1,50 @@
+{
+  "preservedAt": "2026-10-07T22:00:01.421Z",
+  "originalRendererSha256": "255f57893385f5e0ae1a932d00f3ba8e7e98cacc8851bc6ce8985003bd025a75",
+  "evidence": [
+    {
+      "path": "candidate-disk-passage.test.js",
+      "sha256": "b2bc0c1e3f0e26d7062330ae6699d15d42eef4379e481df32dec5de1234b9d1a"
+    },
+    {
+      "path": "candidate-navigation.test.js",
+      "sha256": "e35154d951bd6875c27fb06e284734f31362d53408e56636b4f332a74f57d81d"
+    },
+    {
+      "path": "node-renderer-setup.mjs",
+      "sha256": "d5d773c4303605bea674e66a7f27ee14cc7dd74438e87d40b2daecaeb0db9f90"
+    },
+    {
+      "path": "node-renderer.config.mjs",
+      "sha256": "34313eb081f2af9a0a96193158ae5f0386c9d29912d47c757a7635e2f180ae4b"
+    },
+    {
+      "path": "run-focused-unit.cjs",
+      "sha256": "e2dd9a46629f14693ffea71a8d9adcf7a110e0c7e9488b7002d8e6a8a66bdff1"
+    },
+    {
+      "path": "test-patch-manifest.json",
+      "sha256": "c6be1732b823268462f7847bc8be339ce9ee940015b1039febe98814b22450ed"
+    },
+    {
+      "path": "universe_flight_disk_passage.test.js",
+      "sha256": "b2bc0c1e3f0e26d7062330ae6699d15d42eef4379e481df32dec5de1234b9d1a"
+    },
+    {
+      "path": "universe_flight_navigation.test.js",
+      "sha256": "e35154d951bd6875c27fb06e284734f31362d53408e56636b4f332a74f57d81d"
+    },
+    {
+      "path": "focused-unit/execution.json",
+      "sha256": "9dcdea363a546d63c234f9182d0937f1105c205b6acfc9f74d20968b33993caf"
+    },
+    {
+      "path": "focused-unit/results.json",
+      "sha256": "47cf285b819a5379eb2a83b3cb200b941e4dc615a3624ec7ffc2ac03e772f3ee"
+    },
+    {
+      "path": "focused-unit/stdout.txt",
+      "sha256": "3e97c2394e4d57d9c7cd0fa9c906556bf07e2e5f5fd787d0599250f6497a965a"
+    }
+  ]
+}

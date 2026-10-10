@@ -1,0 +1,44 @@
+{
+  "completedAtUTC": "2026-10-07T16:59:39.735Z",
+  "sourceSHA256": "024c9eb9a6e120589bedd015e21a80ab21b13808c494000201a6fd1fd3a56d09",
+  "nativeBrowser": {
+    "passedGroups": 43,
+    "completeFinalRuns": 1,
+    "errors": [],
+    "results": "browser/slide-browser-results.json"
+  },
+  "pureEngine": {
+    "sourceSHA256": "024c9eb9a6e120589bedd015e21a80ab21b13808c494000201a6fd1fd3a56d09",
+    "desktopSHA256": "024c9eb9a6e120589bedd015e21a80ab21b13808c494000201a6fd1fd3a56d09",
+    "baselineSHA256": "0c8c3558dd0f78c8937fa6ecb9e4194d90bea7ae9ee6c411590c95bc836edb32",
+    "compile": true,
+    "catalogParity": true,
+    "englishKeys": 533,
+    "baselineSceneCases": 84,
+    "engineAPIUnchanged": true,
+    "baselineMetadataUnchanged": true,
+    "baselineModelsAndMeasurementsUnchanged": true
+  },
+  "formalDOMSuite": {
+    "file": "tests/perception_lab_slide_comparison.test.js",
+    "cases": 21,
+    "syntax": true,
+    "reviewed": true,
+    "executed": false,
+    "limitation": "Existing installed Vitest/jsdom worker stalls before test collection; no dependency or test configuration changes."
+  },
+  "visualInspection": [
+    "slide-desktop.png",
+    "slide-phone-200.png",
+    "slide-dark.png",
+    "rtl-slide.png",
+    "focused-drawing-320-16.png",
+    "focused-drawing-760-32.png",
+    "forced-light.png",
+    "forced-dark.png",
+    "enlarged-labels-320.png",
+    "enlarged-labels-390.png"
+  ],
+  "staged": false,
+  "committed": false
+}

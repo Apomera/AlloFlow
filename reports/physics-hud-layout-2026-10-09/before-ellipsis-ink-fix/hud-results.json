@@ -1,0 +1,212 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-hud-layout-2026-10-09\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 1,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/physics-hud-layout-2026-10-09/hud-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "physics-hud-layout.spec.ts",
+      "file": "physics-hud-layout.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "native HUD and energy text fit extreme settings at three widths in every theme",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 17731,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T00:44:23.866Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0a910af18838c16c7a70-f05840bbcae673f38899",
+          "file": "physics-hud-layout.spec.ts",
+          "line": 133,
+          "column": 5
+        },
+        {
+          "title": "translated run identities and energy labels retain complete text and original measurements",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 6021,
+                  "error": {
+                    "message": "Error: oversized-grapheme final native ink: …\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
+                    "stack": "Error: oversized-grapheme final native ink: …\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at readable (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-hud-layout.spec.ts:120:72)\n    at capture (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-hud-layout.spec.ts:127:46)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-hud-layout.spec.ts:171:87",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-hud-layout.spec.ts",
+                      "column": 72,
+                      "line": 120
+                    },
+                    "snippet": "  118 |     expect(paint.top, name + ' top: ' + paint.text).toBeGreaterThanOrEqual(region === 'header' ? 0 : result.layout.groundY + 48);\n  119 |     expect(paint.bottom, name + ' bottom: ' + paint.text).toBeLessThanOrEqual(region === 'header' ? result.layout.plotTop - 18 : result.height - 2);\n> 120 |     expect(paint.inkPixels, name + ' final native ink: ' + paint.text).toBeGreaterThan(0);\n      |                                                                        ^\n  121 |     for (const other of entries.slice(index + 1)) expect(paint.left < other.right && paint.right > other.left && paint.top < other.bottom && paint.bottom > other.top, `${name}: ${paint.text} overlaps ${other.text}`).toBe(false);\n  122 |   }\n  123 |   expect(header.some(paint => paint.fontSize >= 13.99), name + ' 14px heading').toBe(true); expect(result.description).toBeTruthy();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-hud-layout.spec.ts",
+                        "column": 72,
+                        "line": 120
+                      },
+                      "message": "Error: oversized-grapheme final native ink: …\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  118 |     expect(paint.top, name + ' top: ' + paint.text).toBeGreaterThanOrEqual(region === 'header' ? 0 : result.layout.groundY + 48);\n  119 |     expect(paint.bottom, name + ' bottom: ' + paint.text).toBeLessThanOrEqual(region === 'header' ? result.layout.plotTop - 18 : result.height - 2);\n> 120 |     expect(paint.inkPixels, name + ' final native ink: ' + paint.text).toBeGreaterThan(0);\n      |                                                                        ^\n  121 |     for (const other of entries.slice(index + 1)) expect(paint.left < other.right && paint.right > other.left && paint.top < other.bottom && paint.bottom > other.top, `${name}: ${paint.text} overlaps ${other.text}`).toBe(false);\n  122 |   }\n  123 |   expect(header.some(paint => paint.fontSize >= 13.99), name + ' 14px heading').toBe(true); expect(result.description).toBeTruthy();\n    at readable (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-hud-layout.spec.ts:120:72)\n    at capture (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-hud-layout.spec.ts:127:46)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-hud-layout.spec.ts:171:87"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T00:44:42.076Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-hud-layout-2026-10-09\\hud-artifacts\\physics-hud-layout-transla-e5535-t-and-original-measurements-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-hud-layout-2026-10-09\\hud-artifacts\\physics-hud-layout-transla-e5535-t-and-original-measurements-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-hud-layout-2026-10-09\\hud-artifacts\\physics-hud-layout-transla-e5535-t-and-original-measurements-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-hud-layout-2026-10-09\\hud-artifacts\\physics-hud-layout-transla-e5535-t-and-original-measurements-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-hud-layout.spec.ts",
+                    "column": 72,
+                    "line": 120
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "0a910af18838c16c7a70-9c5a43453f24a5dc6f7e",
+          "file": "physics-hud-layout.spec.ts",
+          "line": 159,
+          "column": 5
+        },
+        {
+          "title": "wrapping preserves plot space and restores the original selected sample through resizing",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "0a910af18838c16c7a70-6d8d5aa10561270b9bb9",
+          "file": "physics-hud-layout.spec.ts",
+          "line": 176,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "message": "\u001b[31mTesting stopped early after 1 maximum allowed failures.\u001b[39m"
+    }
+  ],
+  "stats": {
+    "startTime": "2026-10-10T00:44:22.198Z",
+    "duration": 33472.022999999994,
+    "expected": 1,
+    "skipped": 1,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

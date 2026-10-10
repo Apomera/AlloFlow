@@ -11,7 +11,7 @@ assert.ok(start>=0&&end>start,'Actual animal factory must be present');
 const build=new Function('T','species','Math',source.slice(start,end)+';return createCLHuntAnimal(T,species);');
 // Pass30 reverses only the exact accepted Humboldt fin roll and skin finish for this older protected fingerprint.
 // All live geometry/material/motion assertions still use the actual production build.
-const {restorePass42AnimalSource}=require('./helpers/cephalopod_pass42_reference.cjs');
+const {restorePass42AnimalSource:restorePass42AnimalOnly}=require('./helpers/cephalopod_pass42_reference.cjs');
 const protectedBuild=new Function('T','species','Math',restoreCLSquidFinReference(restorePass42AnimalSource(source.slice(start,end)),true)+';return createCLHuntAnimal(T,species);');
 
 const noRandom=Object.assign(Object.create(Math),{random(){throw Error('Animal construction/animation consumed dive RNG');}}),allocated=[];
@@ -95,3 +95,6 @@ describe('Humboldt squid continuous muscular funnel',()=>{
     assert.deepEqual(captureProtectedFingerprints(protectedBuild),Object.assign({},fixture.fingerprints,{humboldtSquid:'86c10d96cc149317d1f7faefccfff6c14a35c11dc2509829d819e5575460f081'}));
   },240000);
 });
+
+// Historical fingerprints predate the approved fin roll, layered pigment, oral finish and octopus cups.
+function restorePass42AnimalSource(source){return require('./helpers/cephalopod_pass34_animal_reference.cjs').restorePass34AnimalSource(require('./helpers/cephalopod_pass36_animal_reference.cjs').restorePass36AnimalSource(restorePass42AnimalOnly(require('./helpers/cephalopod_pass50_reference.cjs').restorePass50Source(require('./helpers/cephalopod_pass51_reference.cjs').restorePass51Source(require('./helpers/cephalopod_pass52_reference.cjs').restorePass52Source(require('./helpers/cephalopod_pass53_reference.cjs').restorePass53Source(require('./helpers/cephalopod_pass54_reference.cjs').restorePass54Source(source))))))));}

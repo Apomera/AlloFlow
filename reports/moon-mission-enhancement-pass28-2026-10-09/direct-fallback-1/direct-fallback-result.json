@@ -1,0 +1,174 @@
+{
+  "schema": "moon-pass28-direct-browser-v1",
+  "runner": "direct-playwright-api",
+  "playwrightCliResult": false,
+  "mode": "fallback",
+  "status": "passed",
+  "startedAt": "2026-10-09T15:56:33.180Z",
+  "repo": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "specPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-hud.spec.ts",
+  "output": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass28-2026-10-09\\direct-fallback-1",
+  "browserCache": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+  "timeouts": {
+    "action": 20000,
+    "navigation": 60000,
+    "expect": 15000,
+    "launch": 60000,
+    "workflow": 180000
+  },
+  "launchOptions": {
+    "headless": true,
+    "timeout": 60000
+  },
+  "workflowCompleted": true,
+  "cleanupCompleted": true,
+  "milestones": [
+    {
+      "name": "load:before",
+      "elapsedMs": 4
+    },
+    {
+      "name": "load:after",
+      "elapsedMs": 3702,
+      "workflow": "2D fallback recorded HUD follows the official scrubber and preserves honest legacy fuel displays",
+      "registered": [
+        "lighter native HUD keeps paused telemetry readable across desktop, phone, camera and context loss",
+        "2D fallback recorded HUD follows the official scrubber and preserves honest legacy fuel displays"
+      ]
+    },
+    {
+      "name": "harness-start:before",
+      "elapsedMs": 3704
+    },
+    {
+      "name": "harness-start:after",
+      "elapsedMs": 3737
+    },
+    {
+      "name": "browser-launch:before",
+      "elapsedMs": 3739
+    },
+    {
+      "name": "browser-launch:after",
+      "elapsedMs": 4449
+    },
+    {
+      "name": "context-create:before",
+      "elapsedMs": 4451
+    },
+    {
+      "name": "context-create:after",
+      "elapsedMs": 4474
+    },
+    {
+      "name": "page-create:before",
+      "elapsedMs": 4475
+    },
+    {
+      "name": "page-create:after",
+      "elapsedMs": 5150
+    },
+    {
+      "name": "workflow:before",
+      "elapsedMs": 5157
+    },
+    {
+      "name": "workflow:after",
+      "elapsedMs": 24890
+    },
+    {
+      "name": "cleanup:before",
+      "elapsedMs": 24891
+    },
+    {
+      "name": "after-each:before",
+      "elapsedMs": 24893
+    },
+    {
+      "name": "after-each:after",
+      "elapsedMs": 24978
+    },
+    {
+      "name": "context-close:before",
+      "elapsedMs": 24979
+    },
+    {
+      "name": "context-close:after",
+      "elapsedMs": 25233
+    },
+    {
+      "name": "browser-close:before",
+      "elapsedMs": 25235
+    },
+    {
+      "name": "browser-close:after",
+      "elapsedMs": 38134
+    },
+    {
+      "name": "harness-stop:before",
+      "elapsedMs": 38135
+    },
+    {
+      "name": "harness-stop:after",
+      "elapsedMs": 38137
+    },
+    {
+      "name": "cleanup:after",
+      "elapsedMs": 38215,
+      "status": "passed"
+    }
+  ],
+  "errors": [],
+  "attachments": [
+    {
+      "name": "recorded-0",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass28-2026-10-09\\direct-fallback-1\\fallback\\recorded-0.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "recorded-1",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass28-2026-10-09\\direct-fallback-1\\fallback\\recorded-1.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "recorded-touchdown",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass28-2026-10-09\\direct-fallback-1\\fallback\\recorded-touchdown.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "legacy-percent-fuel",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass28-2026-10-09\\direct-fallback-1\\fallback\\legacy-percent-fuel.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "legacy-missing-fuel",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass28-2026-10-09\\direct-fallback-1\\fallback\\legacy-missing-fuel.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "retry-live",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass28-2026-10-09\\direct-fallback-1\\fallback\\retry-live.png",
+      "contentType": "image/png"
+    }
+  ],
+  "inputHashes": {
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-hud.spec.ts": "0c1e0ad638b0248ec661d01aa49dc384556fd98c2c0e80b1b8c69d457d0c34f0",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_moonmission.js": "a4e45616c42a6f15c63e18c66fd33dce9ae00efafe7236d98ee2eff773874f25",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_moonmission.js": "a4e45616c42a6f15c63e18c66fd33dce9ae00efafe7236d98ee2eff773874f25"
+  },
+  "transform": {
+    "name": "Playwright bundled babelTransform",
+    "bundlePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\transform\\babelBundle.js",
+    "sha256": "9201df11ae9c9ee1febd587c5013c4f862aa7e9981b92b86ccbbbd37e71f9124"
+  },
+  "workflow": "2D fallback recorded HUD follows the official scrubber and preserves honest legacy fuel displays",
+  "suiteOptions": {
+    "timeout": 180000,
+    "retries": 0
+  },
+  "browserVersion": "148.0.7778.96",
+  "finishedAt": "2026-10-09T15:57:11.395Z",
+  "elapsedMs": 38215
+}

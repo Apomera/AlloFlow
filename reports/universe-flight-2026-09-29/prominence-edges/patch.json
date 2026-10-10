@@ -1,0 +1,54 @@
+{
+  "replacements": [
+    [
+      "    'float stellarArch(vec2 p,vec3 anchor,vec3 tangent,float width,float height) {',",
+      "    'float stellarArch(vec2 p,vec3 anchor,vec3 tangent,float width,float height,float cover) {',"
+    ],
+    [
+      "    '  for (int i=1;i<=8;i++) {',",
+      "    '  for (int i=1;i<=16;i++) {',"
+    ],
+    [
+      "    '    float angle = float(i)*0.3926990817;',",
+      "    '    float angle = float(i)*0.19634954085;',"
+    ],
+    [
+      "    '      float visible = impact2>=1.0 ? 1.0 : smoothstep(front-0.012,front+0.012,depth);',",
+      "    // Match the photosphere's pixel coverage: its uncovered fraction can\n    // reveal a far-side arch, while foreground arches retain their emission.\n    '      float visible = mix(1.0,smoothstep(front-0.012,front+0.012,depth),cover);',"
+    ],
+    [
+      "stellarArch(p,anchorA,tangentA,0.22,0.24)+stellarArch(p,anchorB,tangentB,0.19,0.29)",
+      "stellarArch(p,anchorA,tangentA,0.22,0.24,disk)+stellarArch(p,anchorB,tangentB,0.19,0.29,disk)"
+    ]
+  ],
+  "portrait": {
+    "title": "Amber stellar limb",
+    "position": [
+      -2.8705938420238812,
+      1.5515762513665616,
+      8.443995950047807
+    ],
+    "aim": [
+      -3.1,
+      1,
+      8.5
+    ],
+    "fov": 18,
+    "targetId": "amber-star"
+  },
+  "seed": 0.7868210619661795,
+  "anchor": [
+    0.8930665578053405,
+    -0.3935720988883304,
+    -0.21802093089048782
+  ],
+  "viewDirection": [
+    0.3823435966268644,
+    0.9192937522776027,
+    -0.09334008325365566
+  ],
+  "rendererHash": "c0cc2486b3d5edd620e5975daec3d23b8f2e995a24db151be27ac30820d058c7",
+  "uiHash": "166dd6c8a059c03fd21e79c646c14bd104ea0be93d8cc43105231fd6f5576742",
+  "uiBeforePaletteHash": "609b91840f54bbf05447bfb877a4a87e024f6b1d7cfbf65744d2b9c9904a60c6",
+  "uiStyleInsertion": "  @media(forced-colors:active){\n    [data-universe-tool] .uf-vistas{background:Canvas;color:CanvasText;border-color:CanvasText;box-shadow:none;}\n    [data-universe-tool] .uf-vistas .uf-section-heading h3,[data-universe-tool] .uf-vistas .uf-section-heading p,[data-universe-tool] .uf-vistas .uf-section-heading span{color:CanvasText!important;}\n    [data-universe-tool] .uf-vista-list button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;}\n    [data-universe-tool] .uf-vista-list button span,[data-universe-tool] .uf-vista-list button strong,[data-universe-tool] .uf-vista-list button small{color:ButtonText!important;}\n  }\n"
+}

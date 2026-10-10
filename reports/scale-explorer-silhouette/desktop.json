@@ -1,0 +1,303 @@
+{
+  "side": {
+    "roots": {
+      "moon": {
+        "scale": 0.8181604143776487,
+        "position": [
+          0.4090802071888244,
+          0.4090802071888244,
+          0
+        ],
+        "modelVisible": true,
+        "geometry": [
+          "E4D84119-8477-4CF6-8998-53AC88F10CF9"
+        ]
+      },
+      "earth": {
+        "scale": 3,
+        "position": [
+          3.5948767592779247,
+          1.710500796332033,
+          0
+        ],
+        "modelVisible": true,
+        "geometry": [
+          "E4D84119-8477-4CF6-8998-53AC88F10CF9",
+          "E4D84119-8477-4CF6-8998-53AC88F10CF9"
+        ]
+      }
+    },
+    "stats": null,
+    "mask": null,
+    "identity": null,
+    "quadVisible": false,
+    "renderTarget": true,
+    "projection": "OrthographicCamera",
+    "canvasHeight": 787,
+    "theme": "101f2a",
+    "type": "webgl"
+  },
+  "overlay": {
+    "roots": {
+      "moon": {
+        "scale": 0.8181604143776487,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "modelVisible": true,
+        "geometry": [
+          "E4D84119-8477-4CF6-8998-53AC88F10CF9"
+        ]
+      },
+      "earth": {
+        "scale": 3,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "modelVisible": true,
+        "geometry": [
+          "E4D84119-8477-4CF6-8998-53AC88F10CF9",
+          "E4D84119-8477-4CF6-8998-53AC88F10CF9"
+        ]
+      }
+    },
+    "stats": {
+      "active": true,
+      "bigId": "earth",
+      "width": 1280,
+      "height": 961,
+      "maskPasses": 1
+    },
+    "mask": {
+      "coverage": 0.1264600676378772,
+      "width": 1280,
+      "height": 961
+    },
+    "identity": [
+      "8A7077BF-73BF-42A4-A47D-7F87EFE46E5B",
+      "D7413E2F-3BFB-43D1-9E0E-3450D9D326B4",
+      "D20A4391-B2BF-46DD-93FB-D465F07D6E7F"
+    ],
+    "quadVisible": true,
+    "renderTarget": true,
+    "projection": "OrthographicCamera",
+    "canvasHeight": 787,
+    "theme": "101f2a",
+    "type": "webgl"
+  },
+  "orbited": {
+    "roots": {
+      "moon": {
+        "scale": 0.8181604143776487,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "modelVisible": true,
+        "geometry": [
+          "E4D84119-8477-4CF6-8998-53AC88F10CF9"
+        ]
+      },
+      "earth": {
+        "scale": 3,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "modelVisible": true,
+        "geometry": [
+          "E4D84119-8477-4CF6-8998-53AC88F10CF9",
+          "E4D84119-8477-4CF6-8998-53AC88F10CF9"
+        ]
+      }
+    },
+    "stats": {
+      "active": true,
+      "bigId": "earth",
+      "width": 1280,
+      "height": 961,
+      "maskPasses": 2
+    },
+    "mask": {
+      "coverage": 0.12144250780437045,
+      "width": 1280,
+      "height": 961
+    },
+    "identity": [
+      "8A7077BF-73BF-42A4-A47D-7F87EFE46E5B",
+      "D7413E2F-3BFB-43D1-9E0E-3450D9D326B4",
+      "D20A4391-B2BF-46DD-93FB-D465F07D6E7F"
+    ],
+    "quadVisible": true,
+    "renderTarget": true,
+    "projection": "OrthographicCamera",
+    "canvasHeight": 787,
+    "theme": "101f2a",
+    "type": "webgl"
+  },
+  "returned": {
+    "roots": {
+      "moon": {
+        "scale": 0.8181604143776487,
+        "position": [
+          0.4090802071888244,
+          0.4090802071888244,
+          0
+        ],
+        "modelVisible": true,
+        "geometry": [
+          "E4D84119-8477-4CF6-8998-53AC88F10CF9"
+        ]
+      },
+      "earth": {
+        "scale": 3,
+        "position": [
+          3.5948767592779247,
+          1.710500796332033,
+          0
+        ],
+        "modelVisible": true,
+        "geometry": [
+          "E4D84119-8477-4CF6-8998-53AC88F10CF9",
+          "E4D84119-8477-4CF6-8998-53AC88F10CF9"
+        ]
+      }
+    },
+    "stats": {
+      "active": false,
+      "bigId": "",
+      "width": 1280,
+      "height": 961,
+      "maskPasses": 2
+    },
+    "mask": null,
+    "identity": [
+      "8A7077BF-73BF-42A4-A47D-7F87EFE46E5B",
+      "D7413E2F-3BFB-43D1-9E0E-3450D9D326B4",
+      "D20A4391-B2BF-46DD-93FB-D465F07D6E7F"
+    ],
+    "quadVisible": false,
+    "renderTarget": true,
+    "projection": "OrthographicCamera",
+    "canvasHeight": 787,
+    "theme": "101f2a",
+    "type": "webgl"
+  },
+  "transparent": {
+    "roots": {
+      "hydrogen": {
+        "scale": 1.1563636363636365,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "modelVisible": true,
+        "geometry": [
+          "CF205777-7DFF-4C33-A8C5-D590899F3F98",
+          "63CEF5FE-B027-4C01-B456-938497A92DAF",
+          "39C27AD0-BFFD-474C-B143-4824C4E15536",
+          "0E88B4B1-4931-4EF7-9A8F-5278858986CB",
+          "FDCC5A4B-852B-4CA0-AF82-95DD51C7E713"
+        ]
+      },
+      "water": {
+        "scale": 3,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "modelVisible": true,
+        "geometry": []
+      }
+    },
+    "stats": {
+      "active": true,
+      "bigId": "water",
+      "width": 1280,
+      "height": 942,
+      "maskPasses": 6
+    },
+    "mask": {
+      "coverage": 0.011905354299363057,
+      "width": 1280,
+      "height": 942
+    },
+    "identity": [
+      "8A7077BF-73BF-42A4-A47D-7F87EFE46E5B",
+      "D7413E2F-3BFB-43D1-9E0E-3450D9D326B4",
+      "D20A4391-B2BF-46DD-93FB-D465F07D6E7F"
+    ],
+    "quadVisible": true,
+    "renderTarget": true,
+    "projection": "OrthographicCamera",
+    "canvasHeight": 771,
+    "theme": "101f2a",
+    "type": "webgl"
+  },
+  "nucleus": {
+    "roots": {
+      "proton": {
+        "scale": 0.36,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "modelVisible": true,
+        "geometry": [
+          "E4D84119-8477-4CF6-8998-53AC88F10CF9",
+          "C25E98D8-DCEF-4E8D-87E4-607839AB7E7E",
+          "0BA6C02E-2B85-45CE-AB5D-F68524DC2BC5"
+        ]
+      },
+      "nucleus": {
+        "scale": 2.9999999999999996,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "modelVisible": true,
+        "geometry": [
+          "CBC2FDA5-1F3C-4990-A126-5479F58163FC",
+          "23DCA279-2EFF-4B14-A2DA-7F6A897A2919",
+          "CBC2FDA5-1F3C-4990-A126-5479F58163FC",
+          "23DCA279-2EFF-4B14-A2DA-7F6A897A2919",
+          "175BEC5D-0A95-4032-846E-C52664C144AF"
+        ]
+      }
+    },
+    "stats": {
+      "active": true,
+      "bigId": "nucleus",
+      "width": 1280,
+      "height": 961,
+      "maskPasses": 10
+    },
+    "mask": {
+      "coverage": 0.144673517169615,
+      "width": 1280,
+      "height": 961
+    },
+    "identity": [
+      "8A7077BF-73BF-42A4-A47D-7F87EFE46E5B",
+      "D7413E2F-3BFB-43D1-9E0E-3450D9D326B4",
+      "D20A4391-B2BF-46DD-93FB-D465F07D6E7F"
+    ],
+    "quadVisible": true,
+    "renderTarget": true,
+    "projection": "OrthographicCamera",
+    "canvasHeight": 787,
+    "theme": "101f2a",
+    "type": "webgl"
+  },
+  "errors": []
+}

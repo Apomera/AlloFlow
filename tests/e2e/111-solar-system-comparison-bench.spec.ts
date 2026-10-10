@@ -110,13 +110,15 @@ async function expectMeasurements(region: Locator, pair: [World, World]) {
   expect(sample.stageRole).toBe('img');
   expect(sample.same).toBe(String(pair[0] === pair[1]));
   expect(sample.portraits.map((portrait) => portrait.key)).toEqual(pair);
+  // Chromium serializes CSSOM lengths with limited decimal precision; keep
+  // exact model metadata while allowing less than 0.001px in inline lengths.
   expect(sample.portraits.filter((portrait, index) => {
     const radius = worlds[pair[index]].radius, raw = 128 * radius / radiusMax, drawn = Math.max(3, raw);
     return ![portrait.diameter, portrait.raw, portrait.drawn, portrait.width, portrait.height, portrait.styleWidth, portrait.styleHeight].every(Number.isFinite) ||
       portrait.diameter !== 2 * radius || Math.abs(portrait.raw - raw) > 1e-9 || Math.abs(portrait.drawn - drawn) > 1e-9 ||
       portrait.exaggerated !== String(raw < 3) || Math.abs(portrait.width - drawn) > 0.04 ||
-      Math.abs(portrait.height - drawn) > 0.04 || Math.abs(portrait.styleWidth - drawn) > 1e-9 ||
-      Math.abs(portrait.styleHeight - drawn) > 1e-9;
+      Math.abs(portrait.height - drawn) > 0.04 || Math.abs(portrait.styleWidth - drawn) > 0.001 ||
+      Math.abs(portrait.styleHeight - drawn) > 0.001;
   }), 'portrait diameters follow the measured linear scale, with only the disclosed visibility floor').toEqual([]);
   const expectedRatios = {
     diameter: radiusMax / Math.min(...pair.map((name) => worlds[name].radius)),
@@ -319,11 +321,22 @@ test('malformed saved draft values remain untouched until deliberate writing, an
     if (!Array.isArray(drafts)) expect((await state(page)).compareReasoningDrafts.keep).toBe('Earlier pair draft.');
     await noErrors(page);
   }
-  await mountComparison(page, 1060, false, { showVisualCompare: false });
-  await expect(page.locator('#solar-visual-comparison')).toHaveCount(0);
-  await expectMeasurements(comparison(page), ['Earth', 'Jupiter']);
-  await exactTable(comparison(page), ['Earth', 'Jupiter']);
-  await noErrors(page);
+  for (const width of [1060, 320]) {
+    await mountComparison(page, width, false, { showVisualCompare: false });
+    await expect(page.locator('#solar-visual-comparison')).toHaveCount(0);
+    await expectMeasurements(comparison(page), ['Earth', 'Jupiter']);
+    await exactTable(comparison(page), ['Earth', 'Jupiter']);
+    await readableLayout(comparison(page), width);
+    const clipped = await comparison(page).evaluate((section) => {
+      const stage = section.querySelector('.solar-compare-stage')!.getBoundingClientRect();
+      return [...section.querySelectorAll('.solar-compare-circle')].filter((circle) => {
+        const box = circle.getBoundingClientRect();
+        return box.left < stage.left - 0.5 || box.right > stage.right + 0.5 || box.top < stage.top - 0.5 || box.bottom > stage.bottom + 0.5;
+      }).length;
+    });
+    expect(clipped, 'both proportionally drawn world circles fit in the narrow sidebar').toBe(0);
+    await noErrors(page);
+  }
 });
 
 for (const dark of [false, true]) {

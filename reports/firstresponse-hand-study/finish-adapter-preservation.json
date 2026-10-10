@@ -1,0 +1,6 @@
+{
+  "beforeSHA256": "fdc25339d159f5ee5e7d8eb10008b97e92e9980866f4f15d32d2d8dbc2bc009b",
+  "afterSHA256": "84b81da9e679f82e5888db409ddeb005c01a3acc0e0b218873b7c9f21a9fe1b6",
+  "fixedHashLinesExact": true,
+  "onlyGuardedAdapterEdits": true
+}

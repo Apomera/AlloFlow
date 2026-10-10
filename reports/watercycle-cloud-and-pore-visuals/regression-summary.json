@@ -1,0 +1,33 @@
+{
+  "sourceSha256": "f00632bfe4eb8f57091aca4550b05d0eb0272a745dccbdf7a1f8a8d740d50086",
+  "testGroups": [
+    {
+      "name": "model-behavior",
+      "passed": 137,
+      "failed": 0,
+      "total": 137,
+      "skipped": 0,
+      "todo": 0,
+      "successful": true,
+      "exitCode": 0,
+      "reportPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\watercycle-cloud-pore-review\\model-behavior-results.json"
+    },
+    {
+      "name": "chapter-behavior",
+      "passed": 36,
+      "failed": 0,
+      "total": 39,
+      "skipped": 3,
+      "todo": 0,
+      "successful": true,
+      "exitCode": 0,
+      "reportPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\watercycle-cloud-pore-review\\chapter-behavior-results.json"
+    }
+  ],
+  "startedAt": "2026-10-05T16:42:12.247Z",
+  "completed": true,
+  "pid": 24628,
+  "completedAt": "2026-10-05T16:42:33.741Z",
+  "passed": 173,
+  "failed": 0
+}

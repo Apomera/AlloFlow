@@ -1,0 +1,18 @@
+{
+  "phase": "finished",
+  "pid": 22876,
+  "started": "2026-10-10T03:53:12.919Z",
+  "steps": [
+    {
+      "name": "new",
+      "code": 0,
+      "retainedFinalSourceReceipt": true
+    },
+    {
+      "name": "existing",
+      "code": 0
+    }
+  ],
+  "code": 0,
+  "finished": "2026-10-10T03:53:56.955Z"
+}

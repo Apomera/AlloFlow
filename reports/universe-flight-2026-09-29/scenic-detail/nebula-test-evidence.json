@@ -1,0 +1,15 @@
+{
+  "renderer": "16d181fbe835baf707ea9b89611958f51a5f492bd2cf831f872cff652bfdde1c",
+  "mirrorExact": true,
+  "testPins": {
+    "tests/universe_flight_nebula_detail.test.js": "35b8e2c9c4b329b923ff699e92f91f2511e7a962f5f17bbbc62ef57feba12dca",
+    "tests/universe_flight_cloud_surfaces.test.js": "ee48e0c12ab072f9abb8a52397c06b8f5894bdb974d5a2c01706c5455022707c"
+  },
+  "focused": {
+    "exit": 0,
+    "total": 35,
+    "passed": 35,
+    "failed": 0,
+    "failures": []
+  }
+}

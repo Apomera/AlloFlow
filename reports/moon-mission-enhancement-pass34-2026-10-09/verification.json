@@ -1,0 +1,14 @@
+{
+  "sourceSha256": "ffe2ac5862f814ccc4d3e5add421630ae1da9bb445b007346ce3aa3517690152",
+  "sourceBytes": 1431505,
+  "mirrorsIdentical": true,
+  "reversesToAcceptedPass33": true,
+  "priorTestsUnchanged": 127,
+  "ownedTests": {
+    "tests/e2e/moon-mission-entry-recorder.spec.ts": "530b8b8157ae2bbe3c849e494d2441ee2bff8f7831a1654b3f5ee75c36cdcefe"
+  },
+  "indexUnchanged": true,
+  "stagedOwnedPaths": [],
+  "syntaxChecksPassed": true,
+  "diffCheckPassed": true
+}

@@ -1,0 +1,17 @@
+{
+  "sourceSHA256": "73bdf677e5db35de02d5b671fe3dd688ebb42b9dcddedc7be18a7d3e69f67a2e",
+  "baselineSHA256": "024c9eb9a6e120589bedd015e21a80ab21b13808c494000201a6fd1fd3a56d09",
+  "inspectorBrowserGroups": 51,
+  "slideRegressionGroups": 43,
+  "browserRuntimeErrors": [],
+  "baselineSceneCases": 84,
+  "englishCatalogEntries": 552,
+  "newEnglishEntries": 19,
+  "sourceDesktopParity": true,
+  "compilation": true,
+  "regressionCases": 26,
+  "regressionSyntax": "passed",
+  "formalDOMSuite": "unexecuted: existing Vitest/jsdom worker stalls before collection",
+  "independentSourceReview": "no material unresolved findings",
+  "gitAction": "No staging or commit performed."
+}

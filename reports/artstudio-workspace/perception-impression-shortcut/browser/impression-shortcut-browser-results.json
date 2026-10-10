@@ -1,0 +1,1292 @@
+{
+  "checks": [
+    {
+      "allSevenExperiments": [
+        {
+          "id": "brightness",
+          "prediction": "",
+          "question": "Which center square looks brighter?",
+          "summary": "Not recorded",
+          "focus": "Left"
+        },
+        {
+          "id": "brightness",
+          "prediction": "Right",
+          "question": "Which center square looks brighter?",
+          "summary": "Right",
+          "focus": "Right"
+        },
+        {
+          "id": "ebbinghaus",
+          "prediction": "",
+          "question": "Which orange center circle looks larger?",
+          "summary": "Not recorded",
+          "focus": "Left"
+        },
+        {
+          "id": "ebbinghaus",
+          "prediction": "Right",
+          "question": "Which orange center circle looks larger?",
+          "summary": "Right",
+          "focus": "Right"
+        },
+        {
+          "id": "mullerLyer",
+          "prediction": "",
+          "question": "Which horizontal shaft looks longer?",
+          "summary": "Not recorded",
+          "focus": "Top"
+        },
+        {
+          "id": "mullerLyer",
+          "prediction": "Bottom",
+          "question": "Which horizontal shaft looks longer?",
+          "summary": "Bottom",
+          "focus": "Bottom"
+        },
+        {
+          "id": "cafeWall",
+          "prediction": "",
+          "question": "How do the horizontal mortar bands look?",
+          "summary": "Not recorded",
+          "focus": "Level"
+        },
+        {
+          "id": "cafeWall",
+          "prediction": "Mixed",
+          "question": "How do the horizontal mortar bands look?",
+          "summary": "Mixed",
+          "focus": "Mixed"
+        },
+        {
+          "id": "necker",
+          "prediction": "",
+          "question": "Which square face seems closest?",
+          "summary": "Not recorded",
+          "focus": "Lower left"
+        },
+        {
+          "id": "necker",
+          "prediction": "It changes",
+          "question": "Which square face seems closest?",
+          "summary": "It changes",
+          "focus": "It changes"
+        },
+        {
+          "id": "moire",
+          "prediction": "",
+          "question": "What structure do the overlapping lines suggest?",
+          "summary": "Not recorded",
+          "focus": "Broad bands"
+        },
+        {
+          "id": "moire",
+          "prediction": "Both",
+          "question": "What structure do the overlapping lines suggest?",
+          "summary": "Both",
+          "focus": "Both"
+        },
+        {
+          "id": "ponzo",
+          "prediction": "",
+          "question": "Which horizontal bar looks longer?",
+          "summary": "Not recorded",
+          "focus": "Upper"
+        },
+        {
+          "id": "ponzo",
+          "prediction": "Same",
+          "question": "Which horizontal bar looks longer?",
+          "summary": "Same",
+          "focus": "Same"
+        }
+      ],
+      "initialAndSelected": true,
+      "questionAndChoiceParity": true,
+      "sceneSVGParity": true,
+      "fullStatePreserved": true,
+      "navigationWrites": 0
+    },
+    {
+      "localizedExperiments": [
+        "brightness",
+        "ebbinghaus",
+        "mullerLyer",
+        "cafeWall",
+        "necker",
+        "moire",
+        "ponzo"
+      ],
+      "realTranslationPath": true,
+      "localizedChoiceAndQuestion": true,
+      "noWrites": true
+    },
+    {
+      "nativeInputs": [
+        "click",
+        "Enter",
+        "Space",
+        "touch"
+      ],
+      "collapsedControlsOpened": true,
+      "firstChoiceFocused": true,
+      "noWrites": true
+    },
+    {
+      "nativeChoiceCommitsThroughExistingAction": true,
+      "existingSingleWrite": true,
+      "notebookUnchanged": true,
+      "deferredSummaryOnlyReflectsCommittedPrediction": true,
+      "baselineStateParity": true
+    },
+    {
+      "expandedAndFocus": [
+        {
+          "width": 1600,
+          "mode": "expanded",
+          "geometry": {
+            "top": 427.578125,
+            "bottom": 471.578125,
+            "viewport": 900,
+            "dialog": null
+          },
+          "writes": 1
+        },
+        {
+          "width": 1600,
+          "mode": "focus",
+          "geometry": {
+            "top": 535.5,
+            "bottom": 579.5,
+            "viewport": 900,
+            "dialog": {
+              "top": 12,
+              "bottom": 888
+            }
+          },
+          "writes": 0
+        },
+        {
+          "width": 390,
+          "mode": "expanded",
+          "geometry": {
+            "top": 427.96875,
+            "bottom": 471.96875,
+            "viewport": 900,
+            "dialog": null
+          },
+          "writes": 1
+        },
+        {
+          "width": 390,
+          "mode": "focus",
+          "geometry": {
+            "top": 428.375,
+            "bottom": 472.375,
+            "viewport": 900,
+            "dialog": {
+              "top": 6,
+              "bottom": 894
+            }
+          },
+          "writes": 0
+        }
+      ],
+      "noExtraWrites": true,
+      "sceneParity": true
+    },
+    {
+      "comparisonContexts": [
+        "pin",
+        "context",
+        "inquiry"
+      ],
+      "layouts": [
+        "stacked",
+        "switch",
+        "slide"
+      ],
+      "referenceHasNoPrompt": true,
+      "switchPinnedHiddenInertAndNoAXOrTabStop": true,
+      "slidePromptAbsent": true,
+      "pinAndInquiryStateUnchanged": true,
+      "SVGParity": true
+    },
+    {
+      "pendingStartDisablesShortcut": true,
+      "collectingShortcutEnabled": true,
+      "threeNativeTrials": [
+        2,
+        3,
+        4
+      ],
+      "completedAndRevealedStudyDisablesShortcut": true,
+      "disabledShortcutNoWrites": true
+    },
+    {
+      "matchPreparationBusyDisables": true,
+      "notebookImportBusyDisables": true,
+      "disabledNavigationAddsNoWrites": true,
+      "reEnabledAfterCommit": true
+    },
+    {
+      "staleNavigationContexts": [
+        {
+          "kind": "experiment",
+          "choiceFocusCalls": []
+        },
+        {
+          "kind": "profile",
+          "choiceFocusCalls": []
+        },
+        {
+          "kind": "unmount",
+          "choiceFocusCalls": []
+        },
+        {
+          "kind": "focus-exit",
+          "choiceFocusCalls": []
+        }
+      ],
+      "noLateChoiceFocus": true,
+      "noWrites": true
+    },
+    {
+      "layout": {
+        "width": 1600,
+        "font": 16,
+        "suffix": "1600"
+      },
+      "promptContainment": {
+        "viewport": 1600,
+        "scroll": 1600,
+        "section": {
+          "left": 373,
+          "right": 1547,
+          "top": 1301.578125,
+          "bottom": 1383.96875,
+          "width": 1174,
+          "height": 82.390625,
+          "scroll": 1172,
+          "client": 1172
+        },
+        "children": [
+          {
+            "left": 388,
+            "right": 1376.328125,
+            "top": 1316.578125,
+            "bottom": 1368.96875,
+            "width": 988.328125,
+            "height": 52.390625,
+            "scroll": 988,
+            "client": 988
+          },
+          {
+            "left": 1388.328125,
+            "right": 1532,
+            "top": 1320.765625,
+            "bottom": 1364.765625,
+            "width": 143.671875,
+            "height": 44,
+            "scroll": 142,
+            "client": 142
+          }
+        ],
+        "text": [
+          {
+            "left": 388,
+            "right": 659.359375,
+            "top": 1317.578125,
+            "bottom": 1338.578125,
+            "text": "Which center square looks brighter?"
+          },
+          {
+            "left": 388,
+            "right": 512.296875,
+            "top": 1347.578125,
+            "bottom": 1366.578125,
+            "text": "Current impression: "
+          },
+          {
+            "left": 512.296875,
+            "right": 548.078125,
+            "top": 1347.578125,
+            "bottom": 1366.578125,
+            "text": "Same"
+          },
+          {
+            "left": 1401.328125,
+            "right": 1519,
+            "top": 1333.265625,
+            "bottom": 1352.265625,
+            "text": "Review impression"
+          }
+        ],
+        "button": {
+          "left": 1388.328125,
+          "right": 1532,
+          "top": 1320.765625,
+          "bottom": 1364.765625,
+          "width": 143.671875,
+          "height": 44,
+          "scroll": 142,
+          "client": 142
+        }
+      },
+      "nativeAccessibility": true,
+      "realTranslations": false,
+      "forcedTextContrast": [],
+      "axe": [],
+      "noWrites": true
+    },
+    {
+      "layout": {
+        "width": 320,
+        "font": 16,
+        "suffix": "320"
+      },
+      "promptContainment": {
+        "viewport": 320,
+        "scroll": 320,
+        "section": {
+          "left": 33,
+          "right": 287,
+          "top": 562.078125,
+          "bottom": 724.46875,
+          "width": 254,
+          "height": 162.390625,
+          "scroll": 252,
+          "client": 252
+        },
+        "children": [
+          {
+            "left": 48,
+            "right": 272,
+            "top": 577.078125,
+            "bottom": 653.46875,
+            "width": 224,
+            "height": 76.390625,
+            "scroll": 224,
+            "client": 224
+          },
+          {
+            "left": 48,
+            "right": 191.671875,
+            "top": 665.46875,
+            "bottom": 709.46875,
+            "width": 143.671875,
+            "height": 44,
+            "scroll": 142,
+            "client": 142
+          }
+        ],
+        "text": [
+          {
+            "left": 48,
+            "right": 246.3125,
+            "top": 578.078125,
+            "bottom": 599.078125,
+            "text": "Which center square looks brighter?"
+          },
+          {
+            "left": 48,
+            "right": 116.640625,
+            "top": 602.078125,
+            "bottom": 623.078125,
+            "text": "Which center square looks brighter?"
+          },
+          {
+            "left": 48,
+            "right": 172.296875,
+            "top": 632.078125,
+            "bottom": 651.078125,
+            "text": "Current impression: "
+          },
+          {
+            "left": 172.296875,
+            "right": 208.078125,
+            "top": 632.078125,
+            "bottom": 651.078125,
+            "text": "Same"
+          },
+          {
+            "left": 61,
+            "right": 178.671875,
+            "top": 677.96875,
+            "bottom": 696.96875,
+            "text": "Review impression"
+          }
+        ],
+        "button": {
+          "left": 48,
+          "right": 191.671875,
+          "top": 665.46875,
+          "bottom": 709.46875,
+          "width": 143.671875,
+          "height": 44,
+          "scroll": 142,
+          "client": 142
+        }
+      },
+      "nativeAccessibility": true,
+      "realTranslations": false,
+      "forcedTextContrast": [],
+      "axe": [],
+      "noWrites": true
+    },
+    {
+      "layout": {
+        "width": 390,
+        "font": 16,
+        "suffix": "390"
+      },
+      "promptContainment": {
+        "viewport": 390,
+        "scroll": 390,
+        "section": {
+          "left": 33,
+          "right": 357,
+          "top": 471.578125,
+          "bottom": 609.96875,
+          "width": 324,
+          "height": 138.390625,
+          "scroll": 322,
+          "client": 322
+        },
+        "children": [
+          {
+            "left": 48,
+            "right": 342,
+            "top": 486.578125,
+            "bottom": 538.96875,
+            "width": 294,
+            "height": 52.390625,
+            "scroll": 294,
+            "client": 294
+          },
+          {
+            "left": 48,
+            "right": 191.671875,
+            "top": 550.96875,
+            "bottom": 594.96875,
+            "width": 143.671875,
+            "height": 44,
+            "scroll": 142,
+            "client": 142
+          }
+        ],
+        "text": [
+          {
+            "left": 48,
+            "right": 319.359375,
+            "top": 487.578125,
+            "bottom": 508.578125,
+            "text": "Which center square looks brighter?"
+          },
+          {
+            "left": 48,
+            "right": 172.296875,
+            "top": 517.578125,
+            "bottom": 536.578125,
+            "text": "Current impression: "
+          },
+          {
+            "left": 172.296875,
+            "right": 208.078125,
+            "top": 517.578125,
+            "bottom": 536.578125,
+            "text": "Same"
+          },
+          {
+            "left": 61,
+            "right": 178.671875,
+            "top": 563.46875,
+            "bottom": 582.46875,
+            "text": "Review impression"
+          }
+        ],
+        "button": {
+          "left": 48,
+          "right": 191.671875,
+          "top": 550.96875,
+          "bottom": 594.96875,
+          "width": 143.671875,
+          "height": 44,
+          "scroll": 142,
+          "client": 142
+        }
+      },
+      "nativeAccessibility": true,
+      "realTranslations": false,
+      "forcedTextContrast": [],
+      "axe": [],
+      "noWrites": true
+    },
+    {
+      "layout": {
+        "width": 700,
+        "font": 16,
+        "suffix": "700"
+      },
+      "promptContainment": {
+        "viewport": 700,
+        "scroll": 700,
+        "section": {
+          "left": 35,
+          "right": 665,
+          "top": 582.6875,
+          "bottom": 665.078125,
+          "width": 630,
+          "height": 82.390625,
+          "scroll": 628,
+          "client": 628
+        },
+        "children": [
+          {
+            "left": 50,
+            "right": 494.328125,
+            "top": 597.6875,
+            "bottom": 650.078125,
+            "width": 444.328125,
+            "height": 52.390625,
+            "scroll": 444,
+            "client": 444
+          },
+          {
+            "left": 506.328125,
+            "right": 650,
+            "top": 601.875,
+            "bottom": 645.875,
+            "width": 143.671875,
+            "height": 44,
+            "scroll": 142,
+            "client": 142
+          }
+        ],
+        "text": [
+          {
+            "left": 50,
+            "right": 321.359375,
+            "top": 598.6875,
+            "bottom": 619.6875,
+            "text": "Which center square looks brighter?"
+          },
+          {
+            "left": 50,
+            "right": 174.296875,
+            "top": 628.6875,
+            "bottom": 647.6875,
+            "text": "Current impression: "
+          },
+          {
+            "left": 174.296875,
+            "right": 210.078125,
+            "top": 628.6875,
+            "bottom": 647.6875,
+            "text": "Same"
+          },
+          {
+            "left": 519.328125,
+            "right": 637,
+            "top": 614.375,
+            "bottom": 633.375,
+            "text": "Review impression"
+          }
+        ],
+        "button": {
+          "left": 506.328125,
+          "right": 650,
+          "top": 601.875,
+          "bottom": 645.875,
+          "width": 143.671875,
+          "height": 44,
+          "scroll": 142,
+          "client": 142
+        }
+      },
+      "nativeAccessibility": true,
+      "realTranslations": false,
+      "forcedTextContrast": [],
+      "axe": [],
+      "noWrites": true
+    },
+    {
+      "layout": {
+        "width": 320,
+        "font": 32,
+        "suffix": "320-200"
+      },
+      "promptContainment": {
+        "viewport": 320,
+        "scroll": 320,
+        "section": {
+          "left": 33,
+          "right": 287,
+          "top": 1645.078125,
+          "bottom": 2028.671875,
+          "width": 254,
+          "height": 383.59375,
+          "scroll": 252,
+          "client": 252
+        },
+        "children": [
+          {
+            "left": 48,
+            "right": 272,
+            "top": 1660.078125,
+            "bottom": 1899.671875,
+            "width": 224,
+            "height": 239.59375,
+            "scroll": 224,
+            "client": 224
+          },
+          {
+            "left": 48,
+            "right": 272,
+            "top": 1911.671875,
+            "bottom": 2013.671875,
+            "width": 224,
+            "height": 102,
+            "scroll": 222,
+            "client": 222
+          }
+        ],
+        "text": [
+          {
+            "left": 48,
+            "right": 246.375,
+            "top": 1662.078125,
+            "bottom": 1705.078125,
+            "text": "Which center square looks brighter?"
+          },
+          {
+            "left": 48,
+            "right": 237.40625,
+            "top": 1710.078125,
+            "bottom": 1753.078125,
+            "text": "Which center square looks brighter?"
+          },
+          {
+            "left": 48,
+            "right": 185.265625,
+            "top": 1758.078125,
+            "bottom": 1801.078125,
+            "text": "Which center square looks brighter?"
+          },
+          {
+            "left": 48,
+            "right": 140.640625,
+            "top": 1813.078125,
+            "bottom": 1850.078125,
+            "text": "Current impression: "
+          },
+          {
+            "left": 48,
+            "right": 196.28125,
+            "top": 1857.875,
+            "bottom": 1894.875,
+            "text": "Current impression: "
+          },
+          {
+            "left": 196.28125,
+            "right": 267.84375,
+            "top": 1857.875,
+            "bottom": 1894.875,
+            "text": "Same"
+          },
+          {
+            "left": 115.421875,
+            "right": 204.5625,
+            "top": 1922.671875,
+            "bottom": 1959.671875,
+            "text": "Review impression"
+          },
+          {
+            "left": 90.75,
+            "right": 229.25,
+            "top": 1964.671875,
+            "bottom": 2001.671875,
+            "text": "Review impression"
+          }
+        ],
+        "button": {
+          "left": 48,
+          "right": 272,
+          "top": 1911.671875,
+          "bottom": 2013.671875,
+          "width": 224,
+          "height": 102,
+          "scroll": 222,
+          "client": 222
+        }
+      },
+      "nativeAccessibility": true,
+      "realTranslations": false,
+      "forcedTextContrast": [],
+      "axe": [],
+      "noWrites": true
+    },
+    {
+      "layout": {
+        "width": 320,
+        "font": 32,
+        "suffix": "long-rtl-320-200",
+        "long": true
+      },
+      "promptContainment": {
+        "viewport": 320,
+        "scroll": 320,
+        "section": {
+          "left": 33,
+          "right": 287,
+          "top": 358.078125,
+          "bottom": 1652.046875,
+          "width": 254,
+          "height": 1293.96875,
+          "scroll": 252,
+          "client": 252
+        },
+        "children": [
+          {
+            "left": 48,
+            "right": 272,
+            "top": 373.078125,
+            "bottom": 1355.046875,
+            "width": 224,
+            "height": 981.96875,
+            "scroll": 224,
+            "client": 224
+          },
+          {
+            "left": 48,
+            "right": 272,
+            "top": 1367.046875,
+            "bottom": 1637.046875,
+            "width": 224,
+            "height": 270,
+            "scroll": 222,
+            "client": 222
+          }
+        ],
+        "text": [
+          {
+            "left": 118.890625,
+            "right": 272,
+            "top": 375.078125,
+            "bottom": 418.078125,
+            "text": "أي المربعين المركزيين يبدو أكثر سطوعًا عند مراقبة هذا الرسم المفصل ومقارنته؟ WhichCenterSquareAppearsBrighterInThisDetailedDrawing"
+          },
+          {
+            "left": 86.828125,
+            "right": 272,
+            "top": 423.078125,
+            "bottom": 466.078125,
+            "text": "أي المربعين المركزيين يبدو أكثر سطوعًا عند مراقبة هذا الرسم المفصل ومقارنته؟ WhichCenterSquareAppearsBrighterInThisDetailedDrawing"
+          },
+          {
+            "left": 64.609375,
+            "right": 272,
+            "top": 471.078125,
+            "bottom": 514.078125,
+            "text": "أي المربعين المركزيين يبدو أكثر سطوعًا عند مراقبة هذا الرسم المفصل ومقارنته؟ WhichCenterSquareAppearsBrighterInThisDetailedDrawing"
+          },
+          {
+            "left": 53.9375,
+            "right": 272,
+            "top": 519.078125,
+            "bottom": 562.078125,
+            "text": "أي المربعين المركزيين يبدو أكثر سطوعًا عند مراقبة هذا الرسم المفصل ومقارنته؟ WhichCenterSquareAppearsBrighterInThisDetailedDrawing"
+          },
+          {
+            "left": 165.125,
+            "right": 272,
+            "top": 567.078125,
+            "bottom": 610.078125,
+            "text": "أي المربعين المركزيين يبدو أكثر سطوعًا عند مراقبة هذا الرسم المفصل ومقارنته؟ WhichCenterSquareAppearsBrighterInThisDetailedDrawing"
+          },
+          {
+            "left": 149.078125,
+            "right": 272,
+            "top": 615.078125,
+            "bottom": 658.078125,
+            "text": "أي المربعين المركزيين يبدو أكثر سطوعًا عند مراقبة هذا الرسم المفصل ومقارنته؟ WhichCenterSquareAppearsBrighterInThisDetailedDrawing"
+          },
+          {
+            "left": 59.90625,
+            "right": 272,
+            "top": 663.078125,
+            "bottom": 706.078125,
+            "text": "أي المربعين المركزيين يبدو أكثر سطوعًا عند مراقبة هذا الرسم المفصل ومقارنته؟ WhichCenterSquareAppearsBrighterInThisDetailedDrawing"
+          },
+          {
+            "left": 61.96875,
+            "right": 272,
+            "top": 711.078125,
+            "bottom": 754.078125,
+            "text": "أي المربعين المركزيين يبدو أكثر سطوعًا عند مراقبة هذا الرسم المفصل ومقارنته؟ WhichCenterSquareAppearsBrighterInThisDetailedDrawing"
+          },
+          {
+            "left": 57.390625,
+            "right": 272,
+            "top": 759.078125,
+            "bottom": 802.078125,
+            "text": "أي المربعين المركزيين يبدو أكثر سطوعًا عند مراقبة هذا الرسم المفصل ومقارنته؟ WhichCenterSquareAppearsBrighterInThisDetailedDrawing"
+          },
+          {
+            "left": 57.953125,
+            "right": 272,
+            "top": 807.078125,
+            "bottom": 850.078125,
+            "text": "أي المربعين المركزيين يبدو أكثر سطوعًا عند مراقبة هذا الرسم المفصل ومقارنته؟ WhichCenterSquareAppearsBrighterInThisDetailedDrawing"
+          },
+          {
+            "left": 232.828125,
+            "right": 272,
+            "top": 855.078125,
+            "bottom": 898.078125,
+            "text": "أي المربعين المركزيين يبدو أكثر سطوعًا عند مراقبة هذا الرسم المفصل ومقارنته؟ WhichCenterSquareAppearsBrighterInThisDetailedDrawing"
+          },
+          {
+            "left": 53.25,
+            "right": 272,
+            "top": 910.078125,
+            "bottom": 947.078125,
+            "text": "الانطباع الحالي لهذا الرسم Current impression for this drawing: "
+          },
+          {
+            "left": 106.21875,
+            "right": 198.859375,
+            "top": 954.875,
+            "bottom": 991.875,
+            "text": "الانطباع الحالي لهذا الرسم Current impression for this drawing: "
+          },
+          {
+            "left": 198.859375,
+            "right": 272,
+            "top": 954.875,
+            "bottom": 991.875,
+            "text": "الانطباع الحالي لهذا الرسم Current impression for this drawing: "
+          },
+          {
+            "left": 94.890625,
+            "right": 272,
+            "top": 999.671875,
+            "bottom": 1036.671875,
+            "text": "الانطباع الحالي لهذا الرسم Current impression for this drawing: "
+          },
+          {
+            "left": 114.4375,
+            "right": 120.515625,
+            "top": 1044.46875,
+            "bottom": 1081.46875,
+            "text": "الانطباع الحالي لهذا الرسم Current impression for this drawing: "
+          },
+          {
+            "left": 120.515625,
+            "right": 272,
+            "top": 1044.46875,
+            "bottom": 1081.46875,
+            "text": "الانطباع الحالي لهذا الرسم Current impression for this drawing: "
+          },
+          {
+            "left": 107.625,
+            "right": 272,
+            "top": 1089.265625,
+            "bottom": 1126.265625,
+            "text": "التفسير الحالي المختار لكلا المربعين CurrentSelectedImpressionBothLookTheSame"
+          },
+          {
+            "left": 147.375,
+            "right": 272,
+            "top": 1134.0625,
+            "bottom": 1171.0625,
+            "text": "التفسير الحالي المختار لكلا المربعين CurrentSelectedImpressionBothLookTheSame"
+          },
+          {
+            "left": 173.796875,
+            "right": 272,
+            "top": 1178.859375,
+            "bottom": 1215.859375,
+            "text": "التفسير الحالي المختار لكلا المربعين CurrentSelectedImpressionBothLookTheSame"
+          },
+          {
+            "left": 52.890625,
+            "right": 272,
+            "top": 1223.65625,
+            "bottom": 1260.65625,
+            "text": "التفسير الحالي المختار لكلا المربعين CurrentSelectedImpressionBothLookTheSame"
+          },
+          {
+            "left": 59.015625,
+            "right": 272,
+            "top": 1268.453125,
+            "bottom": 1305.453125,
+            "text": "التفسير الحالي المختار لكلا المربعين CurrentSelectedImpressionBothLookTheSame"
+          },
+          {
+            "left": 102.140625,
+            "right": 272,
+            "top": 1313.25,
+            "bottom": 1350.25,
+            "text": "التفسير الحالي المختار لكلا المربعين CurrentSelectedImpressionBothLookTheSame"
+          },
+          {
+            "left": 88.34375,
+            "right": 231.640625,
+            "top": 1378.046875,
+            "bottom": 1415.046875,
+            "text": "راجع الانطباع الحالي للمتابعة ReviewTheCurrentImpressionInExperimentControls"
+          },
+          {
+            "left": 74.3125,
+            "right": 245.671875,
+            "top": 1420.046875,
+            "bottom": 1457.046875,
+            "text": "راجع الانطباع الحالي للمتابعة ReviewTheCurrentImpressionInExperimentControls"
+          },
+          {
+            "left": 64.890625,
+            "right": 255.109375,
+            "top": 1462.046875,
+            "bottom": 1499.046875,
+            "text": "راجع الانطباع الحالي للمتابعة ReviewTheCurrentImpressionInExperimentControls"
+          },
+          {
+            "left": 65.578125,
+            "right": 254.421875,
+            "top": 1504.046875,
+            "bottom": 1541.046875,
+            "text": "راجع الانطباع الحالي للمتابعة ReviewTheCurrentImpressionInExperimentControls"
+          },
+          {
+            "left": 62.734375,
+            "right": 257.265625,
+            "top": 1546.046875,
+            "bottom": 1583.046875,
+            "text": "راجع الانطباع الحالي للمتابعة ReviewTheCurrentImpressionInExperimentControls"
+          },
+          {
+            "left": 123.65625,
+            "right": 196.34375,
+            "top": 1588.046875,
+            "bottom": 1625.046875,
+            "text": "راجع الانطباع الحالي للمتابعة ReviewTheCurrentImpressionInExperimentControls"
+          }
+        ],
+        "button": {
+          "left": 48,
+          "right": 272,
+          "top": 1367.046875,
+          "bottom": 1637.046875,
+          "width": 224,
+          "height": 270,
+          "scroll": 222,
+          "client": 222
+        },
+        "longLegend": {
+          "left": 33,
+          "right": 287,
+          "parentLeft": 33,
+          "parentRight": 287,
+          "scroll": 254,
+          "client": 254
+        }
+      },
+      "nativeAccessibility": true,
+      "realTranslations": true,
+      "forcedTextContrast": [],
+      "axe": [],
+      "noWrites": true
+    },
+    {
+      "layout": {
+        "width": 390,
+        "font": 16,
+        "suffix": "dark",
+        "theme": "dark"
+      },
+      "promptContainment": {
+        "viewport": 390,
+        "scroll": 390,
+        "section": {
+          "left": 45,
+          "right": 345,
+          "top": -697.8125,
+          "bottom": -535.421875,
+          "width": 300,
+          "height": 162.390625,
+          "scroll": 298,
+          "client": 298
+        },
+        "children": [
+          {
+            "left": 60,
+            "right": 330,
+            "top": -682.8125,
+            "bottom": -606.421875,
+            "width": 270,
+            "height": 76.390625,
+            "scroll": 270,
+            "client": 270
+          },
+          {
+            "left": 60,
+            "right": 203.671875,
+            "top": -594.421875,
+            "bottom": -550.421875,
+            "width": 143.671875,
+            "height": 44,
+            "scroll": 142,
+            "client": 142
+          }
+        ],
+        "text": [
+          {
+            "left": 60,
+            "right": 258.3125,
+            "top": -681.8125,
+            "bottom": -660.8125,
+            "text": "Which center square looks brighter?"
+          },
+          {
+            "left": 60,
+            "right": 128.640625,
+            "top": -657.8125,
+            "bottom": -636.8125,
+            "text": "Which center square looks brighter?"
+          },
+          {
+            "left": 60,
+            "right": 184.296875,
+            "top": -627.8125,
+            "bottom": -608.8125,
+            "text": "Current impression: "
+          },
+          {
+            "left": 184.296875,
+            "right": 220.078125,
+            "top": -627.8125,
+            "bottom": -608.8125,
+            "text": "Same"
+          },
+          {
+            "left": 73,
+            "right": 190.671875,
+            "top": -581.921875,
+            "bottom": -562.921875,
+            "text": "Review impression"
+          }
+        ],
+        "button": {
+          "left": 60,
+          "right": 203.671875,
+          "top": -594.421875,
+          "bottom": -550.421875,
+          "width": 143.671875,
+          "height": 44,
+          "scroll": 142,
+          "client": 142
+        }
+      },
+      "nativeAccessibility": true,
+      "realTranslations": false,
+      "forcedTextContrast": [],
+      "axe": [],
+      "noWrites": true
+    },
+    {
+      "layout": {
+        "width": 390,
+        "font": 16,
+        "suffix": "contrast",
+        "theme": "contrast"
+      },
+      "promptContainment": {
+        "viewport": 390,
+        "scroll": 390,
+        "section": {
+          "left": 33,
+          "right": 357,
+          "top": 317.578125,
+          "bottom": 455.96875,
+          "width": 324,
+          "height": 138.390625,
+          "scroll": 322,
+          "client": 322
+        },
+        "children": [
+          {
+            "left": 48,
+            "right": 342,
+            "top": 332.578125,
+            "bottom": 384.96875,
+            "width": 294,
+            "height": 52.390625,
+            "scroll": 294,
+            "client": 294
+          },
+          {
+            "left": 48,
+            "right": 191.671875,
+            "top": 396.96875,
+            "bottom": 440.96875,
+            "width": 143.671875,
+            "height": 44,
+            "scroll": 142,
+            "client": 142
+          }
+        ],
+        "text": [
+          {
+            "left": 48,
+            "right": 319.359375,
+            "top": 333.578125,
+            "bottom": 354.578125,
+            "text": "Which center square looks brighter?"
+          },
+          {
+            "left": 48,
+            "right": 172.296875,
+            "top": 363.578125,
+            "bottom": 382.578125,
+            "text": "Current impression: "
+          },
+          {
+            "left": 172.296875,
+            "right": 208.078125,
+            "top": 363.578125,
+            "bottom": 382.578125,
+            "text": "Same"
+          },
+          {
+            "left": 61,
+            "right": 178.671875,
+            "top": 409.46875,
+            "bottom": 428.46875,
+            "text": "Review impression"
+          }
+        ],
+        "button": {
+          "left": 48,
+          "right": 191.671875,
+          "top": 396.96875,
+          "bottom": 440.96875,
+          "width": 143.671875,
+          "height": 44,
+          "scroll": 142,
+          "client": 142
+        }
+      },
+      "nativeAccessibility": true,
+      "realTranslations": false,
+      "forcedTextContrast": [],
+      "axe": [],
+      "noWrites": true
+    },
+    {
+      "layout": {
+        "width": 390,
+        "font": 16,
+        "suffix": "forced",
+        "theme": "forced"
+      },
+      "promptContainment": {
+        "viewport": 390,
+        "scroll": 390,
+        "section": {
+          "left": 33,
+          "right": 357,
+          "top": 317.578125,
+          "bottom": 455.96875,
+          "width": 324,
+          "height": 138.390625,
+          "scroll": 322,
+          "client": 322
+        },
+        "children": [
+          {
+            "left": 48,
+            "right": 342,
+            "top": 332.578125,
+            "bottom": 384.96875,
+            "width": 294,
+            "height": 52.390625,
+            "scroll": 294,
+            "client": 294
+          },
+          {
+            "left": 48,
+            "right": 191.671875,
+            "top": 396.96875,
+            "bottom": 440.96875,
+            "width": 143.671875,
+            "height": 44,
+            "scroll": 142,
+            "client": 142
+          }
+        ],
+        "text": [
+          {
+            "left": 48,
+            "right": 319.359375,
+            "top": 333.578125,
+            "bottom": 354.578125,
+            "text": "Which center square looks brighter?"
+          },
+          {
+            "left": 48,
+            "right": 172.296875,
+            "top": 363.578125,
+            "bottom": 382.578125,
+            "text": "Current impression: "
+          },
+          {
+            "left": 172.296875,
+            "right": 208.078125,
+            "top": 363.578125,
+            "bottom": 382.578125,
+            "text": "Same"
+          },
+          {
+            "left": 61,
+            "right": 178.671875,
+            "top": 409.46875,
+            "bottom": 428.46875,
+            "text": "Review impression"
+          }
+        ],
+        "button": {
+          "left": 48,
+          "right": 191.671875,
+          "top": 396.96875,
+          "bottom": 440.96875,
+          "width": 143.671875,
+          "height": 44,
+          "scroll": 142,
+          "client": 142
+        }
+      },
+      "nativeAccessibility": true,
+      "realTranslations": false,
+      "forcedTextContrast": [
+        {
+          "scheme": "light",
+          "textNodes": 3,
+          "minimumContrast": 21
+        },
+        {
+          "scheme": "dark",
+          "textNodes": 3,
+          "minimumContrast": 21
+        }
+      ],
+      "axe": [],
+      "noWrites": true
+    }
+  ],
+  "errors": [],
+  "sourceSHA256": "15ed562020a011994c79ae707d448fa47b830cf8ff03352c7b82515110b77964",
+  "loadedSourceSHA256": "15ed562020a011994c79ae707d448fa47b830cf8ff03352c7b82515110b77964",
+  "finalSourceSHA256": "15ed562020a011994c79ae707d448fa47b830cf8ff03352c7b82515110b77964",
+  "baselineSHA256": "64e1feeb153f179311bbed8f7ee11dbb2ca188c6deaa5a64d8382387c1f24749"
+}

@@ -1,0 +1,44 @@
+{
+  "verifiedAt": "2026-10-06T21:41:12.212Z",
+  "pairs": [
+    {
+      "name": "stem_tool_geometryworld.js",
+      "syntax": "pass",
+      "mirrorParity": "pass",
+      "sha256": "1016d09ef498fb7d5acc4475086457f7fdfc40da922437d03e06babebd2e54e8",
+      "servedSha256": "1016d09ef498fb7d5acc4475086457f7fdfc40da922437d03e06babebd2e54e8"
+    },
+    {
+      "name": "stem_tool_geometryworld_builder.js",
+      "syntax": "pass",
+      "mirrorParity": "pass",
+      "sha256": "5966a9ba35f26206776d607ea93cc52672c9b565ee41efb4995b6ae7690961a7",
+      "servedSha256": "5966a9ba35f26206776d607ea93cc52672c9b565ee41efb4995b6ae7690961a7"
+    }
+  ],
+  "preview": {
+    "url": "http://127.0.0.1:61309/?mode=home",
+    "status": 200
+  },
+  "tests": {
+    "passed": 512,
+    "files": 16,
+    "exitCode": 0,
+    "pool": "vmForks",
+    "isolate": true,
+    "finishedAt": "2026-10-06T21:25:59.062Z"
+  },
+  "browser": {
+    "passed": 105,
+    "accessibilityAudits": 40,
+    "screenshots": 40,
+    "resourcesClosed": true
+  },
+  "recovery": {
+    "passed": 24,
+    "accessibilityAudits": 6,
+    "screenshots": 6,
+    "resourcesClosed": true
+  },
+  "whitespace": "pass"
+}

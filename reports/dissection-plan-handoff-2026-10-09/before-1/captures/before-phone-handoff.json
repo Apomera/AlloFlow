@@ -1,0 +1,50 @@
+{
+  "focused": "diss-canvas",
+  "evidence": {
+    "notes": {
+      "frog|ventral_skin": "Keep this observation."
+    },
+    "confidence": {
+      "frog|ventral_skin": 2
+    },
+    "verified": {
+      "frog|tympanum": true
+    },
+    "score": 1,
+    "total": 2,
+    "revealed": {},
+    "instrument": "forceps",
+    "physical": {
+      "inspected": false,
+      "incisionStarted": false,
+      "incisionExtended": false,
+      "retracted": false,
+      "pins": [],
+      "probed": false,
+      "tissue": {
+        "moisture": 67,
+        "tension": 52,
+        "exposure": 8,
+        "trauma": 0,
+        "clarity": 81,
+        "stability": 19,
+        "risk": 11,
+        "salineDrops": 0,
+        "variantId": "firm",
+        "variantLabel": "Firm preservation",
+        "lastAction": "prepared",
+        "lastUpdatedAt": 123456,
+        "consequences": []
+      }
+    },
+    "checks": {
+      "inspect": {
+        "predictionChoice": "confirm-route",
+        "predictionCorrect": true,
+        "predictionAttempts": 1,
+        "predictionFeedback": "Plan confirmed. Demonstrate the action on the specimen; the action will not run automatically.",
+        "predictionAnsweredAt": 1791585087245
+      }
+    }
+  }
+}

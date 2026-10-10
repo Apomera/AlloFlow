@@ -1,0 +1,13 @@
+{
+  "sourceBefore": "9e338c48eec53d00ba8233921b0c51f65138641b0ce4c0a9a5f0e360395fa338",
+  "sourceAfter": "9e338c48eec53d00ba8233921b0c51f65138641b0ce4c0a9a5f0e360395fa338",
+  "sourceStable": true,
+  "exitCode": 0,
+  "expected": 58,
+  "testTimeoutMs": 30000,
+  "hookTimeoutMs": 30000,
+  "tests": 58,
+  "passed": 58,
+  "failed": 0,
+  "success": true
+}

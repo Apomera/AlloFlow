@@ -1,0 +1,55 @@
+{
+  "completedDate": "2026-10-09",
+  "sourceSha256": "a4e45616c42a6f15c63e18c66fd33dce9ae00efafe7236d98ee2eff773874f25",
+  "preservation": {
+    "sourceSha256": "a4e45616c42a6f15c63e18c66fd33dce9ae00efafe7236d98ee2eff773874f25",
+    "sourceBytes": 1414560,
+    "canonicalPublicIdentical": true,
+    "guardedOperations": 5,
+    "reverseMatchesAcceptedPass27": true,
+    "otherPriorTestsUnchanged": 122,
+    "intentionallyExtendedPriorTests": {
+      "tests/e2e/moon-mission-descent-hud.spec.ts": "0c1e0ad638b0248ec661d01aa49dc384556fd98c2c0e80b1b8c69d457d0c34f0"
+    },
+    "scopedIndexUnchanged": true,
+    "currentlyStagedOwnedPaths": [],
+    "syntaxAndDiffWhitespaceChecksPassed": true
+  },
+  "runs": {
+    "native": {
+      "status": "passed",
+      "browser": "148.0.7778.96",
+      "tag": "direct-native-1",
+      "stages": [
+        "desktop",
+        "phone",
+        "phone-landing-camera",
+        "phone-overhead-camera",
+        "desktop-restored",
+        "phone-context-loss"
+      ],
+      "screenshots": 5,
+      "workflowMilliseconds": 31175,
+      "processSeconds": 44.539310200023465
+    },
+    "fallback": {
+      "status": "passed",
+      "browser": "148.0.7778.96",
+      "tag": "direct-fallback-1",
+      "stages": [
+        "recorded-0",
+        "recorded-1",
+        "recorded-touchdown",
+        "legacy-percent-fuel",
+        "legacy-missing-fuel",
+        "retry-live"
+      ],
+      "screenshots": 6,
+      "workflowMilliseconds": 19733,
+      "processSeconds": 38.65315389999887
+    }
+  },
+  "visualReview": "Root inspected all eleven final captures; independent reviewer accepted all six fallback captures.",
+  "scope": "Focused Chromium presentation and retry checks; broad prior suites and full application builds were not run.",
+  "runner": "Real Playwright API assertions from the extended repository spec; not a Playwright CLI worker result."
+}

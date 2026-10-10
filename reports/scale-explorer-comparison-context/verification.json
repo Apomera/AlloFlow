@@ -1,0 +1,28 @@
+{
+  "sourceSha256": "816ec1349f89ee4d33f5eb824698d24367d27f29165af4f1b69e208425b1ba33",
+  "sourceAndDesktopMatch": true,
+  "englishKeys": 8,
+  "englishCopies": 4,
+  "unitTests": {
+    "passed": 46,
+    "files": 5
+  },
+  "browserTests": {
+    "passed": 3,
+    "retries": 0,
+    "webgl": "WebGL 1",
+    "desktop": 1400,
+    "phone": 360
+  },
+  "gitDiffCheck": "passed",
+  "stagedChanges": [],
+  "preview": "http://127.0.0.1:54391/?tool=scaleExplorer&focus=moon&v=measurements",
+  "changes": [
+    "Projected measurement cards and leaders use the actual ruler axis and catalog dimension text",
+    "Labels avoid foreground models and one another, and respect heading, gesture and viewport bounds",
+    "Subpixel objects retain the position-only locator; measurement controls hide all new labels",
+    "Larger reference selector and previous/next controls preserve the smaller object and comparison presentation",
+    "Reference changes retain scroll position and keyboard focus, with personalized-height filtering",
+    "Physical default references omit distances and wavelengths while preserving explicitly chosen comparisons"
+  ]
+}

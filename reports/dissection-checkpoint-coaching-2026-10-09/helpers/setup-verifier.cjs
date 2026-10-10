@@ -1,0 +1,6 @@
+const fs=require('fs'),path=require('path');
+let source=fs.readFileSync(path.join(__dirname,'../checkpoint-work/verify.cjs'),'utf8');
+source=source.replaceAll('dissection-monitor-handoff-2026-10-09','dissection-checkpoint-coaching-2026-10-09').replaceAll('dissection-monitor-handoff.spec.ts','dissection-checkpoint-coaching.spec.ts').replaceAll("resume=json('resume.json')","resume=baseline").replaceAll('16c960aa8e0cdb992d1166950150e34e09407abfd448b8b78734937cc2497745','1665a57757125b1cfaceff6dbcca13aeb930987984fce2bd3f06019b30b9285a').replace("assert.equal(unitReverse.split(u.assertionEdit.after).length,2);unitReverse=unitReverse.replace(u.assertionEdit.after,u.assertionEdit.before);",'').replaceAll('unit-2','unit-3').replace("counts.passed,21","counts.passed,30").replace("counts.expected,5","counts.expected,4").replaceAll('desktop-final','desktop').replaceAll('forced-colors','forced-colors-guided');
+source=source.replace("['before-1','unit-3','browser-4']","['before-1','unit-3','browser-4','adjacent-5']");
+source=source.replace("assert.equal(runs['browser-4'].counts.unexpected,0);","assert.equal(runs['browser-4'].counts.unexpected,0);assert.equal(runs['adjacent-5'].counts.expected,2);assert.equal(runs['adjacent-5'].counts.unexpected,0);");
+fs.writeFileSync(path.join(__dirname,'verify.cjs'),source);console.log('Coaching preservation verifier prepared.');

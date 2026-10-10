@@ -209,9 +209,9 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("id: 'powerful-theropod', shortLabel: 'Powerful pelvis'");
     expect(source).toContain("id: 'high-shouldered-sauropod', shortLabel: 'High shoulders'");
     expect(source).toContain("id: 'low-armored-barrel', shortLabel: 'Low armored barrel'");
-    expect(source).toContain('function addSoftTissueChain(points, radii, mat, cranialShape)');
+    expect(source).toContain('function addSoftTissueChain(points, radii, mat, cranialShape, surfaceOptions)');
     expect(source).toContain('var thoraxCenter = new THREE.Vector3()');
-    expect(source).toContain("var torsoRadii = [");
+    expect(source).toContain("var torsoRadii = dinoTorsoRadii(surfaceBodyHeight, surfaceBodyDepth, postcranialSurface);");
     expect(source).toContain("var bodyShell = addSoftTissueChain(torsoPoints, torsoRadii, bodyMat)[0] || null;");
     expect(source).toContain('var neckPoints = [shoulder, neckMidA, neckMidB, head];');
     expect(source).toContain('var tailMeshes = addSoftTissueChain([tailSkinRoot, tailMidA, tailMidB, tail]');

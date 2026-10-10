@@ -1,0 +1,1 @@
+const fs=require('fs'),path=require('path');let s=fs.readFileSync(path.join(__dirname,'open-pass51-preview.cjs'),'utf8').replaceAll('pass-fifty-one','pass-fifty-two').replaceAll('pass=51','pass=52').replace('Arms that flow together','Momentum in every arm.');fs.writeFileSync(path.join(__dirname,'open-pass52-preview.cjs'),s);

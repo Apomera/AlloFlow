@@ -1,0 +1,179 @@
+{
+  "checks": [
+    {
+      "allSevenExperiments": true,
+      "contextRevealCombinations": 28,
+      "baselineSVGParity": true,
+      "keyboardStopCountUnchanged": true,
+      "noWrites": true
+    },
+    {
+      "cubeCueCases": 6,
+      "noFaceCueReportedWhenContextRemoved": true
+    },
+    {
+      "independentPinnedStates": true,
+      "layouts": [
+        "auto",
+        "stacked",
+        "switch",
+        "slide"
+      ],
+      "switchVisibility": true,
+      "slideEndpoints": true,
+      "baselineSVGParity": true,
+      "noWrites": true
+    },
+    {
+      "referenceUsesItsOwnExperimentAndSettings": true
+    },
+    {
+      "sevenLiveContextPairs": true,
+      "inquiryStartingViewStaysIndependent": true,
+      "noWritesForContextComparison": true
+    },
+    {
+      "reflectsOnlyCommittedSettings": true,
+      "existingToggleWriteCountUnchanged": true,
+      "baselineStateAndSVGParity": true
+    },
+    {
+      "activeStudyShowsOnlyCurrentView": true,
+      "guidesHidden": true,
+      "noDrawingValuesInConditions": true
+    },
+    {
+      "focusedCaptionsPreserved": true,
+      "normalAndFocusRoundtripNoWrites": true
+    },
+    {
+      "layout": {
+        "width": 1600,
+        "font": 16,
+        "suffix": "1600"
+      },
+      "noHorizontalOverflow": true,
+      "labelContainment": true,
+      "realTranslationPath": false,
+      "forcedColorSchemes": [],
+      "axe": [],
+      "noWrites": true
+    },
+    {
+      "layout": {
+        "width": 320,
+        "font": 16,
+        "suffix": "320"
+      },
+      "noHorizontalOverflow": true,
+      "labelContainment": true,
+      "realTranslationPath": false,
+      "forcedColorSchemes": [],
+      "axe": [],
+      "noWrites": true
+    },
+    {
+      "layout": {
+        "width": 390,
+        "font": 16,
+        "suffix": "390"
+      },
+      "noHorizontalOverflow": true,
+      "labelContainment": true,
+      "realTranslationPath": false,
+      "forcedColorSchemes": [],
+      "axe": [],
+      "noWrites": true
+    },
+    {
+      "layout": {
+        "width": 700,
+        "font": 16,
+        "suffix": "700"
+      },
+      "noHorizontalOverflow": true,
+      "labelContainment": true,
+      "realTranslationPath": false,
+      "forcedColorSchemes": [],
+      "axe": [],
+      "noWrites": true
+    },
+    {
+      "layout": {
+        "width": 320,
+        "font": 32,
+        "suffix": "320-200"
+      },
+      "noHorizontalOverflow": true,
+      "labelContainment": true,
+      "realTranslationPath": false,
+      "forcedColorSchemes": [],
+      "axe": [],
+      "noWrites": true
+    },
+    {
+      "layout": {
+        "width": 320,
+        "font": 32,
+        "suffix": "long-rtl-320-200",
+        "long": true
+      },
+      "noHorizontalOverflow": true,
+      "labelContainment": true,
+      "realTranslationPath": true,
+      "forcedColorSchemes": [],
+      "axe": [],
+      "noWrites": true
+    },
+    {
+      "layout": {
+        "width": 390,
+        "font": 16,
+        "suffix": "dark",
+        "theme": "dark"
+      },
+      "noHorizontalOverflow": true,
+      "labelContainment": true,
+      "realTranslationPath": false,
+      "forcedColorSchemes": [],
+      "axe": [],
+      "noWrites": true
+    },
+    {
+      "layout": {
+        "width": 390,
+        "font": 16,
+        "suffix": "contrast",
+        "theme": "contrast"
+      },
+      "noHorizontalOverflow": true,
+      "labelContainment": true,
+      "realTranslationPath": false,
+      "forcedColorSchemes": [],
+      "axe": [],
+      "noWrites": true
+    },
+    {
+      "layout": {
+        "width": 390,
+        "font": 16,
+        "suffix": "forced",
+        "theme": "forced"
+      },
+      "noHorizontalOverflow": true,
+      "labelContainment": true,
+      "realTranslationPath": false,
+      "forcedColorSchemes": [
+        "light",
+        "dark"
+      ],
+      "axe": [],
+      "noWrites": true
+    }
+  ],
+  "errors": [],
+  "sourceSHA256": "0172a87887dfded48dcdaed4465e232882bfc890e9f8e353c90885ee0749f3ab",
+  "loadedSourceSHA256": "0172a87887dfded48dcdaed4465e232882bfc890e9f8e353c90885ee0749f3ab",
+  "finalSourceSHA256": "0172a87887dfded48dcdaed4465e232882bfc890e9f8e353c90885ee0749f3ab",
+  "baselineSHA256": "2a8adbc0910ef6ac600388115c5cccb447484ef099be6eff7430f6870977c572"
+}

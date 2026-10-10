@@ -5,11 +5,457 @@ import vm from 'node:vm';
 const source = readFileSync('stem_lab/stem_tool_bridgelab.js', 'utf8');
 const sandbox = { window: { StemLab: { registerTool() {} } }, console };
 vm.runInNewContext(source.replace("window.StemLab.registerTool('bridgeLab', {", `
-  window.seismicModel = { bridgeSeismicPowerHistory, bridgeComparisonPercentText, bridgeRecordedNumberText, bridgeSeismicResponse, bridgeSeismicSample, bridgeSeismicEnergyInterval, bridgeSeismicEnergyQuestions, bridgeSeismicEnergyQuestionId, bridgeSeismicIntervalBudget, bridgeSeismicForces, bridgeSeismicForceFrame, bridgeSeismicOrbitFrame, bridgeSeismicOrbitLimit, bridgeSeismicOrbitChart, bridgeSeismicOrbitTrail, bridgeSeismicTrials, bridgeSeismicInvestigation, bridgeSeismicTimeline, bridgeSeismicComparison, bridgeSeismicScanPoint, bridgeSeismicScanSummary, BRIDGE_RESPONSE_ARCHETYPES };
+  window.seismicModel = { bridgeSeismicShakingBars, bridgeSeismicShakingBudget, bridgeSeismicDecayFractions, bridgeSeismicDecayBudget, bridgeSeismicPowerHistory, bridgeComparisonPercentText, bridgeRecordedNumberText, bridgeSeismicResponse, bridgeSeismicSample, bridgeSeismicEnergyInterval, bridgeSeismicEnergyQuestions, bridgeSeismicEnergyQuestionId, bridgeSeismicIntervalBudget, bridgeSeismicForces, bridgeSeismicForceFrame, bridgeSeismicOrbitFrame, bridgeSeismicOrbitLimit, bridgeSeismicOrbitChart, bridgeSeismicOrbitTrail, bridgeSeismicTrials, bridgeSeismicInvestigation, bridgeSeismicTimeline, bridgeSeismicComparison, bridgeSeismicScanPoint, bridgeSeismicScanSummary, BRIDGE_RESPONSE_ARCHETYPES };
   window.StemLab.registerTool('bridgeLab', {`), sandbox);
 const { bridgeSeismicResponse: response, bridgeSeismicSample: sample, BRIDGE_RESPONSE_ARCHETYPES: archetypes } = sandbox.window.seismicModel;
 
 describe('Bridge Lab illustrative seismic response', () => {
+  it('shaking visual: preserves signed work and unequal row totals on one exact scale', () => {
+    const bars = sandbox.window.seismicModel.bridgeSeismicShakingBars;
+    const budget = { trials: [
+      { id: 'a', initialJPerKg: 8, inputJPerKg: -2, dissipatedJPerKg: 1, storedJPerKg: 4, balanceErrorJPerKg: 1 },
+      { id: 'b', initialJPerKg: 4, inputJPerKg: 2, dissipatedJPerKg: 1, storedJPerKg: 7, balanceErrorJPerKg: -2 }
+    ] };
+    const result = bars(budget);
+    expect(result).toEqual({ scaleJPerKg: 8, hasEnergy: true, trials: [
+      { id: 'a', initialJPerKg: 8, addedJPerKg: 0, storedJPerKg: 4, dissipatedJPerKg: 1,
+        returnedJPerKg: 2, availableJPerKg: 8, accountedJPerKg: 7 },
+      { id: 'b', initialJPerKg: 4, addedJPerKg: 2, storedJPerKg: 7, dissipatedJPerKg: 1,
+        returnedJPerKg: 0, availableJPerKg: 6, accountedJPerKg: 8 }
+    ] });
+    result.trials.forEach((trial, index) => {
+      expect(trial.availableJPerKg - trial.accountedJPerKg).toBe(budget.trials[index].balanceErrorJPerKg);
+      expect(trial.addedJPerKg * trial.returnedJPerKg).toBe(0);
+    });
+  });
+
+  it('shaking visual: keeps zero empty and preserves tiny and undamped model proportions without a floor', () => {
+    const { bridgeSeismicShakingBars: bars, bridgeSeismicShakingBudget: budget } = sandbox.window.seismicModel;
+    const zero = response({ intensityG: 0 });
+    const empty = bars(budget(zero, zero));
+    expect(empty.scaleJPerKg).toBe(1);
+    expect(empty.hasEnergy).toBe(false);
+    empty.trials.forEach(trial => Object.entries(trial).forEach(([field, value]) => {
+      if (field !== 'id') expect(value).toBe(0);
+    }));
+    const ratio = (1e-6 / 0.12) ** 2;
+    const ordinary = [0, 0.2].map(dampingRatio => response({ intensityG: 0.12, dampingRatio }));
+    const tiny = [0, 0.2].map(dampingRatio => response({ intensityG: 1e-6, dampingRatio }));
+    const normal = bars(budget(...ordinary)), small = bars(budget(...tiny));
+    expect(small.hasEnergy).toBe(true);
+    expect(small.scaleJPerKg).toBeGreaterThan(0);
+    expect(small.scaleJPerKg).toBeLessThan(0.001);
+    expect(Math.abs(small.scaleJPerKg / normal.scaleJPerKg - ratio)).toBeLessThan(ratio * 1e-9);
+    for (const field of ['addedJPerKg', 'storedJPerKg', 'dissipatedJPerKg', 'availableJPerKg', 'accountedJPerKg']) {
+      normal.trials.forEach((trial, index) => {
+        expect(small.trials[index][field] / small.scaleJPerKg).toBeCloseTo(trial[field] / normal.scaleJPerKg, 9);
+      });
+    }
+    expect(small.trials[0].dissipatedJPerKg).toBe(0);
+    expect(small.trials[0].storedJPerKg).toBeGreaterThan(0);
+    const mixed = bars(budget(ordinary[0], tiny[1]));
+    expect(mixed.trials[1].storedJPerKg).toBe(small.trials[1].storedJPerKg);
+    expect(mixed.trials[1].storedJPerKg / mixed.scaleJPerKg).toBeGreaterThan(0);
+    const subnormal = Number.MIN_VALUE;
+    const smallest = bars({ trials: ['a', 'b'].map(id => ({ id, initialJPerKg: subnormal,
+      inputJPerKg: subnormal, storedJPerKg: subnormal, dissipatedJPerKg: subnormal, balanceErrorJPerKg: 0 })) });
+    expect(smallest.scaleJPerKg).toBe(subnormal * 2);
+    expect(smallest.hasEnergy).toBe(true);
+    expect(smallest.trials[0].storedJPerKg / smallest.scaleJPerKg).toBe(0.5);
+  });
+
+  it('shaking visual: retains the shared scale when trials reverse and returns independent data', () => {
+    const bars = sandbox.window.seismicModel.bridgeSeismicShakingBars;
+    const trials = Object.freeze([
+      Object.freeze({ id: 'a', initialJPerKg: 3, inputJPerKg: 2, storedJPerKg: 4, dissipatedJPerKg: 1, balanceErrorJPerKg: 0 }),
+      Object.freeze({ id: 'b', initialJPerKg: 8, inputJPerKg: -3, storedJPerKg: 4, dissipatedJPerKg: 1, balanceErrorJPerKg: 0 })
+    ]);
+    const input = Object.freeze({ trials }), before = JSON.stringify(input);
+    const forward = bars(input), reverse = bars({ trials: [trials[1], trials[0]] });
+    expect(reverse.scaleJPerKg).toBe(forward.scaleJPerKg);
+    expect(reverse.trials).toEqual([forward.trials[1], forward.trials[0]]);
+    forward.trials[0].storedJPerKg = 999;
+    expect(JSON.stringify(input)).toBe(before);
+    expect(bars(input).trials[0].storedJPerKg).toBe(4);
+  });
+
+  it('shaking visual: rejects malformed, nonfinite and negative energy data without clamping', () => {
+    const bars = sandbox.window.seismicModel.bridgeSeismicShakingBars;
+    const a = { id: 'a', initialJPerKg: 1, inputJPerKg: 2, storedJPerKg: 2,
+      dissipatedJPerKg: 1, balanceErrorJPerKg: 0 }, b = { ...a, id: 'b' };
+    const invalid = [null, undefined, {}, { trials: {} }, { trials: [] }, { trials: [a] },
+      { trials: [a, b, b] }, { trials: [null, b] }, { trials: [a, null] },
+      { trials: new Array(2) }, { trials: [a, { ...b, id: 'a' }] },
+      { trials: [{ ...a, id: undefined }, b] }, { trials: [a, { ...b, id: 'c' }] }];
+    for (const field of ['initialJPerKg', 'inputJPerKg', 'storedJPerKg', 'dissipatedJPerKg', 'balanceErrorJPerKg']) {
+      for (const value of [NaN, Infinity, -Infinity, undefined, null, '1', true]) {
+        invalid.push({ trials: [{ ...a, [field]: value }, b] });
+        invalid.push({ trials: [a, { ...b, [field]: value }] });
+      }
+    }
+    for (const field of ['initialJPerKg', 'storedJPerKg', 'dissipatedJPerKg']) {
+      invalid.push({ trials: [{ ...a, [field]: -Number.MIN_VALUE }, b] });
+      invalid.push({ trials: [a, { ...b, [field]: -1 }] });
+    }
+    invalid.forEach(input => expect(bars(input)).toBeNull());
+  });
+
+  it('shaking visual: rejects overflowing row totals but keeps the largest finite scale unpadded', () => {
+    const bars = sandbox.window.seismicModel.bridgeSeismicShakingBars;
+    const a = { id: 'a', initialJPerKg: 0, inputJPerKg: 0, storedJPerKg: 0,
+      dissipatedJPerKg: 0, balanceErrorJPerKg: 0 }, b = { ...a, id: 'b' };
+    for (const invalid of [
+      { ...a, initialJPerKg: Number.MAX_VALUE, inputJPerKg: Number.MAX_VALUE },
+      { ...a, storedJPerKg: Number.MAX_VALUE, dissipatedJPerKg: Number.MAX_VALUE },
+      { ...a, storedJPerKg: Number.MAX_VALUE, inputJPerKg: -Number.MAX_VALUE }
+    ]) {
+      expect(bars({ trials: [invalid, b] })).toBeNull();
+      expect(bars({ trials: [a, { ...invalid, id: 'b' }] })).toBeNull();
+    }
+    const largest = bars({ trials: [{ ...a, initialJPerKg: Number.MAX_VALUE, storedJPerKg: Number.MAX_VALUE }, b] });
+    expect(largest.scaleJPerKg).toBe(Number.MAX_VALUE);
+    expect(largest.hasEnergy).toBe(true);
+    expect(largest.trials[0].availableJPerKg / largest.scaleJPerKg).toBe(1);
+    expect(largest.trials[0].accountedJPerKg / largest.scaleJPerKg).toBe(1);
+  });
+
+  it('shaking budget: identical ground motion can do different net work when only damping changes', () => {
+    const budget = sandbox.window.seismicModel.bridgeSeismicShakingBudget;
+    const reference = response({ archetype: 'balanced', groundFrequencyHz: 1.1, intensityG: 0.12, dampingRatio: 0.05 });
+    const current = response({ ...reference.settings, dampingRatio: 0.2 });
+    const result = budget(reference, current);
+    expect(result.startTimeS).toBe(0);
+    expect(result.endTimeS).toBe(16);
+    expect(result.trials).toHaveLength(2);
+    reference.samples.forEach((point, index) => {
+      expect(current.samples[index].groundAccelerationMps2).toBe(point.groundAccelerationMps2);
+    });
+    [reference, current].forEach((model, index) => {
+      const first = model.samples[0], last = model.samples.find(point => point.timeS === 16);
+      const work = last.inputJPerKg - first.inputJPerKg;
+      const loss = last.dissipatedJPerKg - first.dissipatedJPerKg;
+      expect(result.trials[index]).toEqual({
+        id: index === 0 ? 'a' : 'b', initialJPerKg: first.storedJPerKg,
+        inputJPerKg: work, dissipatedJPerKg: loss, storedJPerKg: last.storedJPerKg,
+        balanceErrorJPerKg: work - (last.storedJPerKg - first.storedJPerKg) - loss
+      });
+      expect(result.trials[index].inputJPerKg).toBeGreaterThan(0);
+      expect(result.trials[index].dissipatedJPerKg).toBeGreaterThan(0);
+    });
+    const [a, b] = result.trials;
+    expect(Math.abs(a.inputJPerKg - b.inputJPerKg)).toBeGreaterThan(0.001 * Math.max(a.inputJPerKg, b.inputJPerKg));
+  });
+
+  it('shaking budget: preserves zero, tiny and undamped energy amounts without a display floor', () => {
+    const budget = sandbox.window.seismicModel.bridgeSeismicShakingBudget;
+    const zero = response({ intensityG: 0 });
+    expect(budget(zero, zero).trials).toEqual(['a', 'b'].map(id => ({
+      id, initialJPerKg: 0, inputJPerKg: 0, dissipatedJPerKg: 0, storedJPerKg: 0, balanceErrorJPerKg: 0
+    })));
+    const ratio = (1e-6 / 0.12) ** 2;
+    for (const dampingRatio of [0, 0.05, 0.2]) {
+      const ordinary = response({ intensityG: 0.12, dampingRatio });
+      const tiny = response({ intensityG: 1e-6, dampingRatio });
+      const [a, b] = budget(ordinary, tiny).trials;
+      const scale = Math.max(Math.abs(a.inputJPerKg), Math.abs(a.dissipatedJPerKg), Math.abs(a.storedJPerKg)) * ratio;
+      expect(a.initialJPerKg).toBe(0);
+      expect(b.initialJPerKg).toBe(0);
+      expect(b.inputJPerKg).toBeGreaterThan(0);
+      expect(b.inputJPerKg).toBeLessThan(0.001);
+      expect(b.storedJPerKg).toBeGreaterThan(0);
+      for (const field of ['inputJPerKg', 'dissipatedJPerKg', 'storedJPerKg']) {
+        expect(Math.abs(b[field] - a[field] * ratio)).toBeLessThanOrEqual(scale * 1e-9);
+      }
+      if (dampingRatio === 0) {
+        expect(a.dissipatedJPerKg).toBe(0);
+        expect(b.dissipatedJPerKg).toBe(0);
+      } else expect(b.dissipatedJPerKg).toBeGreaterThan(0);
+    }
+  });
+
+  it('shaking budget: keeps signed net work, nonzero initial energy and residuals without mutating histories', () => {
+    const budget = sandbox.window.seismicModel.bridgeSeismicShakingBudget;
+    // Bookkeeping fixtures deliberately retain nonzero initial stored energy
+    // and signed residuals; they are not fresh zero-state earthquake runs.
+    const point = (timeS, inputJPerKg, dissipatedJPerKg, storedJPerKg) => Object.freeze({
+      timeS, inputJPerKg, dissipatedJPerKg, storedJPerKg,
+      kineticJPerKg: storedJPerKg / 2, strainJPerKg: storedJPerKg / 2
+    });
+    const a = Object.freeze({ samples: Object.freeze([point(0, 10, 3, 8), point(16, 8, 4, 4)]) });
+    const b = Object.freeze({ samples: Object.freeze([point(0, 20, 7, 4), point(16, 22, 8, 7)]) });
+    const before = JSON.stringify([a, b]);
+    const result = budget(a, b), reversed = budget(b, a);
+    expect(result.trials).toEqual([
+      { id: 'a', initialJPerKg: 8, inputJPerKg: -2, dissipatedJPerKg: 1, storedJPerKg: 4, balanceErrorJPerKg: 1 },
+      { id: 'b', initialJPerKg: 4, inputJPerKg: 2, dissipatedJPerKg: 1, storedJPerKg: 7, balanceErrorJPerKg: -2 }
+    ]);
+    expect(reversed.trials).toEqual([{ ...result.trials[1], id: 'a' }, { ...result.trials[0], id: 'b' }]);
+    result.trials[0].initialJPerKg = -999;
+    expect(JSON.stringify([a, b])).toBe(before);
+    expect(budget(a, b).trials[0].initialJPerKg).toBe(8);
+  });
+
+  it('shaking budget: interpolates recorded boundary values instead of requiring a sample at 16 s', () => {
+    const budget = sandbox.window.seismicModel.bridgeSeismicShakingBudget;
+    const point = (timeS, inputJPerKg, dissipatedJPerKg, storedJPerKg) => ({
+      timeS, inputJPerKg, dissipatedJPerKg, storedJPerKg,
+      kineticJPerKg: storedJPerKg / 2, strainJPerKg: storedJPerKg / 2
+    });
+    const model = { samples: [point(0, 3, 1, 2), point(10, 11, 4, 7), point(20, 17, 5, 9)] };
+    const work = 11 + (17 - 11) * 0.6 - 3;
+    const loss = 4 + (5 - 4) * 0.6 - 1;
+    const stored = 7 + (9 - 7) * 0.6;
+    expect(budget(model, model).trials[0]).toEqual({
+      id: 'a', initialJPerKg: 2, inputJPerKg: work, dissipatedJPerKg: loss,
+      storedJPerKg: stored, balanceErrorJPerKg: work - (stored - 2) - loss
+    });
+  });
+
+  it('shaking budget: rejects malformed, nonfinite or incomplete histories and overflowing interval arithmetic', () => {
+    const budget = sandbox.window.seismicModel.bridgeSeismicShakingBudget;
+    const point = timeS => ({ timeS, inputJPerKg: timeS, dissipatedJPerKg: timeS / 2,
+      storedJPerKg: timeS / 2, kineticJPerKg: timeS / 4, strainJPerKg: timeS / 4 });
+    const valid = { samples: [point(0), point(16)] };
+    const invalidHistories = [null, undefined, {}, { samples: [] }, { samples: {} }, { samples: [null] },
+      { samples: [point(0)] }, { samples: [point(0), null, point(16)] },
+      { samples: Object.assign(new Array(3), { 0: point(0), 2: point(16) }) },
+      { samples: [point(0.001), point(16)] }, { samples: [point(0), point(15.999)] },
+      { samples: [point(0), point(8), point(8), point(16)] }, { samples: [point(0), point(16), point(8)] }];
+    for (const field of ['timeS', 'inputJPerKg', 'dissipatedJPerKg', 'storedJPerKg', 'kineticJPerKg', 'strainJPerKg']) {
+      for (const value of [NaN, Infinity, -Infinity, undefined, null, '1', true]) {
+        invalidHistories.push({ samples: [point(0), { ...point(16), [field]: value }] });
+      }
+    }
+    invalidHistories.push({ samples: [
+      { ...point(0), inputJPerKg: -Number.MAX_VALUE }, { ...point(16), inputJPerKg: Number.MAX_VALUE }
+    ] });
+    for (const invalid of invalidHistories) {
+      expect(budget(invalid, valid)).toBeNull();
+      expect(budget(valid, invalid)).toBeNull();
+    }
+  });
+
+  it('decay fraction: matches recorded energy ratios at 16 s, fractional times and observation end', () => {
+    const { bridgeSeismicDecayFractions: fractions, bridgeSeismicDecayBudget: budget,
+      bridgeSeismicEnergyInterval: energyInterval } = sandbox.window.seismicModel;
+    for (const mode of archetypes) {
+      const reference = response({ archetype: mode.id, dampingRatio: 0.05 });
+      const current = response({ archetype: mode.id, dampingRatio: 0.2 });
+      for (const time of [16, 16.003, 21.217, 24]) {
+        const result = fractions(budget(reference, current, time));
+        expect(result.startTimeS).toBe(16);
+        expect(result.endTimeS).toBe(time);
+        expect(result.trials).toHaveLength(2);
+        [reference, current].forEach((model, index) => {
+          const interval = energyInterval(model, 16, time);
+          const initial = interval.earlier.storedJPerKg;
+          const remaining = interval.later.storedJPerKg;
+          expect(result.trials[index]).toEqual({
+            id: index === 0 ? 'a' : 'b', initialJPerKg: initial,
+            remainingJPerKg: remaining, remainingFraction: remaining / initial
+          });
+          if (time === 16) expect(result.trials[index].remainingFraction).toBe(1);
+        });
+        expect(result.scaleFraction).toBe(Math.max(1, ...result.trials.map(trial => trial.remainingFraction)));
+      }
+    }
+  });
+
+  it('decay fraction: stays invariant when both input amplitudes become tiny', () => {
+    const { bridgeSeismicDecayFractions: fractions, bridgeSeismicDecayBudget: budget } = sandbox.window.seismicModel;
+    const ordinary = [response({ intensityG: 0.12, dampingRatio: 0.05 }), response({ intensityG: 0.12, dampingRatio: 0.2 })];
+    const tiny = [response({ intensityG: 1e-6, dampingRatio: 0.05 }), response({ intensityG: 1e-6, dampingRatio: 0.2 })];
+    for (const time of [16, 16.003, 21.217, 24]) {
+      const largeResult = fractions(budget(...ordinary, time));
+      const smallResult = fractions(budget(...tiny, time));
+      expect(smallResult.scaleFraction).toBeCloseTo(largeResult.scaleFraction, 10);
+      smallResult.trials.forEach((trial, index) => {
+        expect(trial.initialJPerKg).toBeGreaterThan(0);
+        expect(trial.initialJPerKg).toBeLessThan(0.001);
+        expect(trial.remainingFraction).not.toBeNull();
+        expect(trial.remainingFraction).toBeCloseTo(largeResult.trials[index].remainingFraction, 10);
+        expect(trial.remainingFraction).toBe(trial.remainingJPerKg / trial.initialJPerKg);
+      });
+    }
+  });
+
+  it('decay fraction: distinguishes an undefined zero-energy baseline from zero remaining and keeps ratios above one', () => {
+    const fractions = sandbox.window.seismicModel.bridgeSeismicDecayFractions;
+    const zeroAndSpent = fractions({ startTimeS: 16, endTimeS: 24, trials: [
+      { id: 'a', initialJPerKg: 0, remainingJPerKg: 0 },
+      { id: 'b', initialJPerKg: 5, remainingJPerKg: 0 }
+    ] });
+    expect(zeroAndSpent.trials[0].remainingFraction).toBeNull();
+    expect(zeroAndSpent.trials[1].remainingFraction).toBe(0);
+    expect(zeroAndSpent.scaleFraction).toBe(1);
+
+    for (const [initial, remaining, expected] of [[2, 3, 1.5], [1e-250, 5e-251, 0.5], [Number.MIN_VALUE, Number.MIN_VALUE, 1]]) {
+      const result = fractions({ startTimeS: 16, endTimeS: 24, trials: [
+        { id: 'single', initialJPerKg: initial, remainingJPerKg: remaining }
+      ] });
+      expect(result.trials[0].remainingFraction).toBe(expected);
+      expect(result.scaleFraction).toBe(Math.max(1, expected));
+    }
+    const emptyEnergy = fractions({ startTimeS: 16, endTimeS: 24, trials: [
+      { id: 'zero', initialJPerKg: 0, remainingJPerKg: 0 }
+    ] });
+    expect(emptyEnergy.trials[0].remainingFraction).toBeNull();
+    expect(emptyEnergy.scaleFraction).toBe(1);
+  });
+
+  it('decay fraction: preserves trial order and inputs while rejecting malformed amounts and overflowing ratios', () => {
+    const fractions = sandbox.window.seismicModel.bridgeSeismicDecayFractions;
+    const input = Object.freeze({ startTimeS: 16, endTimeS: 21.217, trials: Object.freeze([
+      Object.freeze({ id: 'a', initialJPerKg: 4, remainingJPerKg: 1 }),
+      Object.freeze({ id: 'b', initialJPerKg: 2, remainingJPerKg: 1 })
+    ]) });
+    const before = JSON.stringify(input);
+    const result = fractions(input);
+    const reversed = fractions({ ...input, trials: [...input.trials].reverse() });
+    expect(reversed.trials).toEqual([...result.trials].reverse());
+    expect(reversed.scaleFraction).toBe(result.scaleFraction);
+    expect(JSON.stringify(input)).toBe(before);
+    expect(result).not.toBe(input);
+    expect(result.trials[0]).not.toBe(input.trials[0]);
+
+    for (const invalid of [null, undefined, {}, { trials: [] }, { trials: {} }, { trials: [null] }, { trials: [{}] }]) {
+      expect(fractions(invalid)).toBeNull();
+    }
+    for (const field of ['initialJPerKg', 'remainingJPerKg']) {
+      for (const value of [-1, NaN, Infinity, -Infinity, undefined, null, '1', true]) {
+        expect(fractions({ ...input, trials: [{ ...input.trials[0], [field]: value }] })).toBeNull();
+      }
+    }
+    expect(fractions({ startTimeS: 16, endTimeS: 24, trials: [
+      { id: 'overflow', initialJPerKg: Number.MIN_VALUE, remainingJPerKg: 1 }
+    ] })).toBeNull();
+  });
+
+  it('guide energy: preserves interval readings at the shaking boundary, fractional times and observation end', () => {
+    const { bridgeSeismicDecayBudget: budget, bridgeSeismicEnergyInterval: energyInterval } = sandbox.window.seismicModel;
+    const reference = response({ dampingRatio: 0.05 });
+    const current = response({ dampingRatio: 0.2 });
+    const before = [JSON.stringify(reference), JSON.stringify(current)];
+
+    for (const time of [16, 21.217, 24]) {
+      const result = budget(reference, current, time);
+      expect(result.startTimeS).toBe(16);
+      expect(result.endTimeS).toBe(time);
+      expect(result.hasEnergy).toBe(true);
+      expect(result.trials).toHaveLength(2);
+      const intervals = [reference, current].map(trial => energyInterval(trial, 16, time));
+
+      intervals.forEach((interval, index) => {
+        expect(result.trials[index]).toEqual({
+          id: index === 0 ? 'a' : 'b',
+          initialJPerKg: interval.earlier.storedJPerKg,
+          remainingJPerKg: interval.later.storedJPerKg,
+          dissipatedJPerKg: interval.dissipatedJPerKg,
+          inputJPerKg: interval.inputJPerKg,
+          balanceErrorJPerKg: interval.balanceErrorJPerKg
+        });
+        expect(result.trials[index].inputJPerKg).toBe(0);
+        if (time === 16) {
+          expect(result.trials[index].remainingJPerKg).toBe(result.trials[index].initialJPerKg);
+          expect(result.trials[index].dissipatedJPerKg).toBe(0);
+          expect(result.trials[index].balanceErrorJPerKg).toBe(0);
+        }
+      });
+      const expectedScale = Math.max(...intervals.flatMap(interval => [
+        interval.earlier.storedJPerKg,
+        interval.later.storedJPerKg + interval.dissipatedJPerKg
+      ]));
+      expect(result.scaleJPerKg).toBe(expectedScale);
+    }
+
+    expect(budget(reference, current, 99)).toEqual(budget(reference, current, 24));
+    expect(budget(reference, current, '21.217')).toEqual(budget(reference, current, 21.217));
+    for (const time of [15.999, -1, NaN, Infinity, undefined, null, '', 'invalid', {}, []]) {
+      expect(budget(reference, current, time)).toBeNull();
+    }
+    for (const missing of [null, undefined, { samples: [] }]) {
+      expect(budget(missing, current, 24)).toBeNull();
+      expect(budget(reference, missing, 24)).toBeNull();
+    }
+    expect([JSON.stringify(reference), JSON.stringify(current)]).toEqual(before);
+  });
+
+  it('guide energy: preserves quadratic amplitude scaling and a shared range for reversed, tiny and zero pairs', () => {
+    const budget = sandbox.window.seismicModel.bridgeSeismicDecayBudget;
+    const ordinaryA = response({ intensityG: 0.12, dampingRatio: 0.05 });
+    const ordinaryB = response({ intensityG: 0.12, dampingRatio: 0.2 });
+    const tinyA = response({ intensityG: 1e-6, dampingRatio: 0.05 });
+    const tinyB = response({ intensityG: 1e-6, dampingRatio: 0.2 });
+    const zero = response({ intensityG: 0 });
+    const squaredRatio = (1e-6 / 0.12) ** 2;
+    const fields = ['initialJPerKg', 'remainingJPerKg', 'dissipatedJPerKg'];
+
+    for (const time of [16, 21.217, 24]) {
+      const ordinary = budget(ordinaryA, ordinaryB, time);
+      const tiny = budget(tinyA, tinyB, time);
+      expect(tiny.hasEnergy).toBe(true);
+      expect(tiny.scaleJPerKg).toBeGreaterThan(0);
+      expect(tiny.scaleJPerKg).toBeLessThan(0.001);
+      expect(tiny.scaleJPerKg / ordinary.scaleJPerKg).toBeCloseTo(squaredRatio, 18);
+      tiny.trials.forEach((trial, index) => {
+        for (const field of fields) {
+          expect(trial[field] / tiny.scaleJPerKg)
+            .toBeCloseTo(ordinary.trials[index][field] / ordinary.scaleJPerKg, 10);
+        }
+      });
+
+      const reverse = budget(tinyB, tinyA, time);
+      expect(reverse.scaleJPerKg).toBe(tiny.scaleJPerKg);
+      expect(reverse.trials[0]).toEqual({ ...tiny.trials[1], id: 'a' });
+      expect(reverse.trials[1]).toEqual({ ...tiny.trials[0], id: 'b' });
+
+      const empty = budget(zero, zero, time);
+      expect(empty.hasEnergy).toBe(false);
+      expect(empty.scaleJPerKg).toBe(1);
+      for (const trial of empty.trials) {
+        for (const [key, value] of Object.entries(trial)) {
+          if (key !== 'id') expect(value).toBe(0);
+        }
+      }
+
+      const tinyOnly = budget(tinyA, tinyA, time);
+      for (const [a, b, nonzeroIndex] of [[zero, tinyA, 1], [tinyA, zero, 0]]) {
+        const mixed = budget(a, b, time);
+        expect(mixed.hasEnergy).toBe(true);
+        expect(mixed.scaleJPerKg).toBe(tinyOnly.scaleJPerKg);
+        expect(mixed.trials[nonzeroIndex].initialJPerKg).toBe(tinyOnly.trials[0].initialJPerKg);
+        expect(mixed.trials[1 - nonzeroIndex].initialJPerKg).toBe(0);
+      }
+    }
+  });
+
+  it('guide energy: retains undamped energy and the signed numerical residual without forcing exact conservation', () => {
+    const { bridgeSeismicDecayBudget: budget, bridgeSeismicEnergyInterval: energyInterval } = sandbox.window.seismicModel;
+    for (const mode of archetypes) {
+      const trial = response({ archetype: mode.id, groundFrequencyHz: mode.naturalFrequencyHz, dampingRatio: 0 });
+      const initial = sample(trial, 16).storedJPerKg;
+      // Match the existing interval-accounting tolerance for the integrated
+      // energy history, including a fractional inspection endpoint.
+      const tolerance = 1e-5 * Math.max(1, trial.peaks.storedJPerKg);
+      expect(initial).toBeGreaterThan(0);
+
+      for (const time of [16, 21.217, 24]) {
+        const interval = energyInterval(trial, 16, time);
+        const result = budget(trial, trial, time);
+        for (const row of result.trials) {
+          expect(row.initialJPerKg).toBe(initial);
+          expect(row.remainingJPerKg).toBe(sample(trial, time).storedJPerKg);
+          expect(row.remainingJPerKg).toBeGreaterThan(0);
+          expect(row.inputJPerKg).toBe(0);
+          expect(row.dissipatedJPerKg).toBe(0);
+          expect(row.balanceErrorJPerKg).toBe(interval.balanceErrorJPerKg);
+          expect(Math.abs(row.remainingJPerKg - row.initialJPerKg)).toBeLessThan(tolerance);
+          expect(Math.abs(row.balanceErrorJPerKg)).toBeLessThan(tolerance);
+        }
+      }
+    }
+  });
+
   it('rate history clips fractional endpoints, orders shading chronologically and preserves recorded totals',()=>{
     const h=sandbox.window.seismicModel,r=response(),before=JSON.stringify(r),a=h.bridgeSeismicPowerHistory(r,6.123,10.456),b=h.bridgeSeismicPowerHistory(r,10.456,6.123),q=h.bridgeSeismicEnergyInterval(r,6.123,10.456);
     expect(a.interval.startTimeS).toBe(6.123);expect(a.interval.endTimeS).toBe(10.456);expect(a.rangeWPerKg).toBe(b.rangeWPerKg);expect(a.curves.map(c=>c.line)).toEqual(b.curves.map(c=>c.line));expect(a.curves.map(c=>c.areas)).toEqual(b.curves.map(c=>c.areas));

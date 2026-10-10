@@ -1,0 +1,2624 @@
+{
+  "beforeSHA256": "af6ecb094af6d67ebb0955170a55e0a9726308c59f4ddd9b196d56cfe434e4c7",
+  "candidateSHA256": "546cbd2a4ebb7fd6c8930846ec754a8d329883b7ae820a5c1cfee61e836e4cb6",
+  "checkerSHA256": "1db8abf49d0b48cccf226607e0579142b059163fd892e34d3c86d677db6e2f1b",
+  "checks": 367831,
+  "negativeTests": [
+    {
+      "kind": "raised-lid",
+      "error": "fr-manikin-upper-lid-left front relief remains shallow"
+    },
+    {
+      "kind": "invalid-normal",
+      "error": "fr-manikin-upper-lid-left unit normals"
+    }
+  ],
+  "passed": 12,
+  "failed": 0,
+  "results": [
+    {
+      "age": "adult",
+      "phase": 0,
+      "contrast": false,
+      "status": "passed",
+      "checks": 38555,
+      "durationMs": 3384,
+      "preserved": {
+        "sha256": "e82379dfbbe45f91f1b66509161e26066e767a034d83c84a297b23894a4f94a8",
+        "nodes": 211,
+        "meshes": 144,
+        "geometries": 142,
+        "materials": 25
+      },
+      "shells": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.0000022516798770497095,
+          "minAgreement": 0.8688241597746234,
+          "minNormal": 0.9999999592585642,
+          "maxNormal": 1.0000000374345686,
+          "seamNormal": 0.99999991851713
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 8.535563017680418e-7,
+          "minAgreement": 0.8427141205396844,
+          "minNormal": 0.9999999631221457,
+          "maxNormal": 1.000000039641569,
+          "seamNormal": 0.9999999467179335
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.0000022516798770497095,
+          "minAgreement": 0.8688241597746234,
+          "minNormal": 0.9999999592585642,
+          "maxNormal": 1.0000000374345686,
+          "seamNormal": 0.99999991851713
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 8.535563017680418e-7,
+          "minAgreement": 0.8427141205396844,
+          "minNormal": 0.9999999631221457,
+          "maxNormal": 1.000000039641569,
+          "seamNormal": 0.9999999467179335
+        }
+      ],
+      "relief": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "middle": [
+            0.0018398147067076787,
+            0.0030312536443464033,
+            0.0031301266471889695,
+            0.0024959940393373607,
+            0.0018398066949308885
+          ],
+          "tails": [
+            -0.0011155445411436642,
+            -0.0011212944166977268
+          ],
+          "maxBack": -0.0011999909934047555,
+          "maxBoundary": -0.0011999909934047555,
+          "minFront": 0.0022623388742969265,
+          "maxFront": 0.0037999919979988485,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "middle": [
+            0.001002944354266392,
+            0.0017618840391405515,
+            0.0020335830784656613,
+            0.0015600355701128085,
+            0.0008352505163268707
+          ],
+          "tails": [
+            -0.0011424064019082947,
+            -0.0011449139391042716
+          ],
+          "maxBack": -0.0011999869073133804,
+          "maxBoundary": -0.0011999869073133804,
+          "minFront": 0.0012251756933787331,
+          "maxFront": 0.002299992764749963,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "middle": [
+            0.001743331448048883,
+            0.0011970192590111312,
+            0.0029179308766676313,
+            0.0019255706741549221,
+            0.001832098214850214
+          ],
+          "tails": [
+            -0.0017606992461437698,
+            -0.0012290278136892283
+          ],
+          "maxBack": -0.001199992052608156,
+          "maxBoundary": -0.001199992052608156,
+          "minFront": 0.0010686135576371068,
+          "maxFront": 0.00374816845318815,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "middle": [
+            0.0008258403504839253,
+            0.0014037738248981993,
+            0.001439270580241247,
+            0.0013796178805834107,
+            0.0009385987000480112
+          ],
+          "tails": [
+            -0.0017915732011295152,
+            -0.00126473186283662
+          ],
+          "maxBack": -0.0011999970249322476,
+          "maxBoundary": -0.0011999970249322476,
+          "minFront": 0.0006766073549903047,
+          "maxFront": 0.0021754365693816774,
+          "backs": 673,
+          "boundary": 144
+        }
+      ],
+      "creases": [
+        {
+          "name": "fr-manikin-eye-left",
+          "minimum": 0.0006472442768526657,
+          "maximum": 0.0010793968501399132,
+          "samples": 1807
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "minimum": 0.0006797060024489711,
+          "maximum": 0.001156555902580742,
+          "samples": 1807
+        }
+      ],
+      "baselineCreases": [
+        {
+          "name": "fr-manikin-eye-left",
+          "minimum": 0.0006617810414284532,
+          "maximum": 0.0011630119390593219,
+          "samples": 1807
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "minimum": 0.0006590505317247517,
+          "maximum": 0.0011773539533836733,
+          "samples": 1807
+        }
+      ],
+      "localGeometry": [
+        [
+          "fr-manikin-upper-lid-left",
+          "274beea543958f88ba91397e1fe50f1f9262700aad22cb299167eb28e123c039",
+          "be68ebec5a1b09d23dbc1867c40a6182c72a80f2b199cb821db127fd1cd0db27",
+          "d08cdcb29482f1b0eae7c4ed67df815ab3974108de5c7635af2b2e1d8e88a4c9"
+        ],
+        [
+          "fr-manikin-lower-lid-left",
+          "30d35a2f8784aa69ad9a800410e4adba776dc5f789cc01af891fa5c12a8818eb",
+          "12d3d96e9c0621de075bd7478ed21bb8751a5126a551268fbcd84bed1eed1907",
+          "d08cdcb29482f1b0eae7c4ed67df815ab3974108de5c7635af2b2e1d8e88a4c9"
+        ],
+        [
+          "fr-manikin-upper-lid-right",
+          "a099c42f7a2b0e6eee621d210519525e4e0fc03746de5755234f90c03204a66b",
+          "97c3058752a0075bb8c4d41296afc855b962ee30c7cbea8ceb5436c3cf11bcaf",
+          "94d36496bf4f4f648e636c72c679fc80d92768f13108d7280f657c620b4cda5f"
+        ],
+        [
+          "fr-manikin-lower-lid-right",
+          "f16b4c7163c26a510be9a40b74b3c973e07676ac82c1a10b81cb5eb11a9748fc",
+          "12cf39bb617469910e6ade65f7d826decadf841284db094477970cc52c04fe60",
+          "94d36496bf4f4f648e636c72c679fc80d92768f13108d7280f657c620b4cda5f"
+        ],
+        [
+          "fr-manikin-eye-left",
+          "b83436a4ae0267f9abd14d8a80fad2965a6ca4299e4cff47898a7018cf55dc89",
+          "493c957b6ebe8c7d971d72241016a7ece2783b375c01553fcb3d026e0df7079e",
+          "6dab3fe81286f1ac68f9b623260012d7d766dbc122ccc906388ba1ab40a91e9c"
+        ],
+        [
+          "fr-manikin-eye-right",
+          "f7703d3a8a21a3289d80f284283436a3ed10658516edec2a8101d70bc09731e9",
+          "acdd50071c071c49afc1ceffa301adb3c75a106be7d898a453c6b2358bfd80ee",
+          "6dab3fe81286f1ac68f9b623260012d7d766dbc122ccc906388ba1ab40a91e9c"
+        ]
+      ],
+      "resources": {
+        "geometries": 142,
+        "materials": 25,
+        "allocatedGeometries": 138,
+        "allocatedMaterials": 23
+      },
+      "priorResources": {
+        "geometries": 142,
+        "materials": 25,
+        "allocatedGeometries": 140,
+        "allocatedMaterials": 23
+      }
+    },
+    {
+      "age": "adult",
+      "phase": 0,
+      "contrast": true,
+      "status": "passed",
+      "checks": 29934,
+      "durationMs": 2691,
+      "preserved": {
+        "sha256": "b48faf79c4943bf4b222074223df53efa22f5359d60acf69542050ac9ed24b0b",
+        "nodes": 210,
+        "meshes": 144,
+        "geometries": 142,
+        "materials": 27
+      },
+      "shells": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.0000022516798770497095,
+          "minAgreement": 0.8688241597746234,
+          "minNormal": 0.9999999592585642,
+          "maxNormal": 1.0000000374345686,
+          "seamNormal": 0.99999991851713
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 8.535563017680418e-7,
+          "minAgreement": 0.8427141205396844,
+          "minNormal": 0.9999999631221457,
+          "maxNormal": 1.000000039641569,
+          "seamNormal": 0.9999999467179335
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.0000022516798770497095,
+          "minAgreement": 0.8688241597746234,
+          "minNormal": 0.9999999592585642,
+          "maxNormal": 1.0000000374345686,
+          "seamNormal": 0.99999991851713
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 8.535563017680418e-7,
+          "minAgreement": 0.8427141205396844,
+          "minNormal": 0.9999999631221457,
+          "maxNormal": 1.000000039641569,
+          "seamNormal": 0.9999999467179335
+        }
+      ],
+      "relief": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "middle": [
+            0.0018398147067076787,
+            0.0030312536443464033,
+            0.0031301266471889695,
+            0.0024959940393373607,
+            0.0018398066949308885
+          ],
+          "tails": [
+            -0.0011155445411436642,
+            -0.0011212944166977268
+          ],
+          "maxBack": -0.0011999909934047555,
+          "maxBoundary": -0.0011999909934047555,
+          "minFront": 0.0022623388742969265,
+          "maxFront": 0.0037999919979988485,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "middle": [
+            0.001002944354266392,
+            0.0017618840391405515,
+            0.0020335830784656613,
+            0.0015600355701128085,
+            0.0008352505163268707
+          ],
+          "tails": [
+            -0.0011424064019082947,
+            -0.0011449139391042716
+          ],
+          "maxBack": -0.0011999869073133804,
+          "maxBoundary": -0.0011999869073133804,
+          "minFront": 0.0012251756933787331,
+          "maxFront": 0.002299992764749963,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "middle": [
+            0.001743331448048883,
+            0.0011970192590111312,
+            0.0029179308766676313,
+            0.0019255706741549221,
+            0.001832098214850214
+          ],
+          "tails": [
+            -0.0017606992461437698,
+            -0.0012290278136892283
+          ],
+          "maxBack": -0.001199992052608156,
+          "maxBoundary": -0.001199992052608156,
+          "minFront": 0.0010686135576371068,
+          "maxFront": 0.00374816845318815,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "middle": [
+            0.0008258403504839253,
+            0.0014037738248981993,
+            0.001439270580241247,
+            0.0013796178805834107,
+            0.0009385987000480112
+          ],
+          "tails": [
+            -0.0017915732011295152,
+            -0.00126473186283662
+          ],
+          "maxBack": -0.0011999970249322476,
+          "maxBoundary": -0.0011999970249322476,
+          "minFront": 0.0006766073549903047,
+          "maxFront": 0.0021754365693816774,
+          "backs": 673,
+          "boundary": 144
+        }
+      ],
+      "creases": [
+        {
+          "name": "fr-manikin-eye-left",
+          "minimum": 0.0006472442768526657,
+          "maximum": 0.0010793968501399132,
+          "samples": 1807
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "minimum": 0.0006797060024489711,
+          "maximum": 0.001156555902580742,
+          "samples": 1807
+        }
+      ],
+      "baselineCreases": [
+        {
+          "name": "fr-manikin-eye-left",
+          "minimum": 0.0006617810414284532,
+          "maximum": 0.0011630119390593219,
+          "samples": 1807
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "minimum": 0.0006590505317247517,
+          "maximum": 0.0011773539533836733,
+          "samples": 1807
+        }
+      ],
+      "localGeometry": [
+        [
+          "fr-manikin-upper-lid-left",
+          "274beea543958f88ba91397e1fe50f1f9262700aad22cb299167eb28e123c039",
+          "be68ebec5a1b09d23dbc1867c40a6182c72a80f2b199cb821db127fd1cd0db27",
+          "d08cdcb29482f1b0eae7c4ed67df815ab3974108de5c7635af2b2e1d8e88a4c9"
+        ],
+        [
+          "fr-manikin-lower-lid-left",
+          "30d35a2f8784aa69ad9a800410e4adba776dc5f789cc01af891fa5c12a8818eb",
+          "12d3d96e9c0621de075bd7478ed21bb8751a5126a551268fbcd84bed1eed1907",
+          "d08cdcb29482f1b0eae7c4ed67df815ab3974108de5c7635af2b2e1d8e88a4c9"
+        ],
+        [
+          "fr-manikin-upper-lid-right",
+          "a099c42f7a2b0e6eee621d210519525e4e0fc03746de5755234f90c03204a66b",
+          "97c3058752a0075bb8c4d41296afc855b962ee30c7cbea8ceb5436c3cf11bcaf",
+          "94d36496bf4f4f648e636c72c679fc80d92768f13108d7280f657c620b4cda5f"
+        ],
+        [
+          "fr-manikin-lower-lid-right",
+          "f16b4c7163c26a510be9a40b74b3c973e07676ac82c1a10b81cb5eb11a9748fc",
+          "12cf39bb617469910e6ade65f7d826decadf841284db094477970cc52c04fe60",
+          "94d36496bf4f4f648e636c72c679fc80d92768f13108d7280f657c620b4cda5f"
+        ],
+        [
+          "fr-manikin-eye-left",
+          "b83436a4ae0267f9abd14d8a80fad2965a6ca4299e4cff47898a7018cf55dc89",
+          "493c957b6ebe8c7d971d72241016a7ece2783b375c01553fcb3d026e0df7079e",
+          "6dab3fe81286f1ac68f9b623260012d7d766dbc122ccc906388ba1ab40a91e9c"
+        ],
+        [
+          "fr-manikin-eye-right",
+          "f7703d3a8a21a3289d80f284283436a3ed10658516edec2a8101d70bc09731e9",
+          "acdd50071c071c49afc1ceffa301adb3c75a106be7d898a453c6b2358bfd80ee",
+          "6dab3fe81286f1ac68f9b623260012d7d766dbc122ccc906388ba1ab40a91e9c"
+        ]
+      ],
+      "resources": {
+        "geometries": 142,
+        "materials": 27,
+        "allocatedGeometries": 138,
+        "allocatedMaterials": 23
+      },
+      "priorResources": {
+        "geometries": 142,
+        "materials": 27,
+        "allocatedGeometries": 140,
+        "allocatedMaterials": 23
+      }
+    },
+    {
+      "age": "adult",
+      "phase": 8,
+      "contrast": false,
+      "status": "passed",
+      "checks": 29934,
+      "durationMs": 2432,
+      "preserved": {
+        "sha256": "a29ff1fc4f383c683afa388225359af09619f5c10ea52d0878e5da21d71a338b",
+        "nodes": 217,
+        "meshes": 148,
+        "geometries": 146,
+        "materials": 28
+      },
+      "shells": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.0000022516798770497095,
+          "minAgreement": 0.8688241597746234,
+          "minNormal": 0.9999999592585642,
+          "maxNormal": 1.0000000374345686,
+          "seamNormal": 0.99999991851713
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 8.535563017680418e-7,
+          "minAgreement": 0.8427141205396844,
+          "minNormal": 0.9999999631221457,
+          "maxNormal": 1.000000039641569,
+          "seamNormal": 0.9999999467179335
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.0000022516798770497095,
+          "minAgreement": 0.8688241597746234,
+          "minNormal": 0.9999999592585642,
+          "maxNormal": 1.0000000374345686,
+          "seamNormal": 0.99999991851713
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 8.535563017680418e-7,
+          "minAgreement": 0.8427141205396844,
+          "minNormal": 0.9999999631221457,
+          "maxNormal": 1.000000039641569,
+          "seamNormal": 0.9999999467179335
+        }
+      ],
+      "relief": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "middle": [
+            0.0018398147067076787,
+            0.0030312536443464033,
+            0.0031301266471889695,
+            0.0024959940393373607,
+            0.0018398066949308885
+          ],
+          "tails": [
+            -0.0011155445411436642,
+            -0.0011212944166977268
+          ],
+          "maxBack": -0.0011999909934047555,
+          "maxBoundary": -0.0011999909934047555,
+          "minFront": 0.0022623388742969265,
+          "maxFront": 0.0037999919979988485,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "middle": [
+            0.001002944354266392,
+            0.0017618840391405515,
+            0.0020335830784656613,
+            0.0015600355701128085,
+            0.0008352505163268707
+          ],
+          "tails": [
+            -0.0011424064019082947,
+            -0.0011449139391042716
+          ],
+          "maxBack": -0.0011999869073133804,
+          "maxBoundary": -0.0011999869073133804,
+          "minFront": 0.0012251756933787331,
+          "maxFront": 0.002299992764749963,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "middle": [
+            0.001743331448048883,
+            0.0011970192590111312,
+            0.0029179308766676313,
+            0.0019255706741549221,
+            0.001832098214850214
+          ],
+          "tails": [
+            -0.0017606992461437698,
+            -0.0012290278136892283
+          ],
+          "maxBack": -0.001199992052608156,
+          "maxBoundary": -0.001199992052608156,
+          "minFront": 0.0010686135576371068,
+          "maxFront": 0.00374816845318815,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "middle": [
+            0.0008258403504839253,
+            0.0014037738248981993,
+            0.001439270580241247,
+            0.0013796178805834107,
+            0.0009385987000480112
+          ],
+          "tails": [
+            -0.0017915732011295152,
+            -0.00126473186283662
+          ],
+          "maxBack": -0.0011999970249322476,
+          "maxBoundary": -0.0011999970249322476,
+          "minFront": 0.0006766073549903047,
+          "maxFront": 0.0021754365693816774,
+          "backs": 673,
+          "boundary": 144
+        }
+      ],
+      "creases": [
+        {
+          "name": "fr-manikin-eye-left",
+          "minimum": 0.0006472442768526657,
+          "maximum": 0.0010793968501399132,
+          "samples": 1807
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "minimum": 0.0006797060024489711,
+          "maximum": 0.001156555902580742,
+          "samples": 1807
+        }
+      ],
+      "baselineCreases": [
+        {
+          "name": "fr-manikin-eye-left",
+          "minimum": 0.0006617810414284532,
+          "maximum": 0.0011630119390593219,
+          "samples": 1807
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "minimum": 0.0006590505317247517,
+          "maximum": 0.0011773539533836733,
+          "samples": 1807
+        }
+      ],
+      "localGeometry": [
+        [
+          "fr-manikin-upper-lid-left",
+          "274beea543958f88ba91397e1fe50f1f9262700aad22cb299167eb28e123c039",
+          "be68ebec5a1b09d23dbc1867c40a6182c72a80f2b199cb821db127fd1cd0db27",
+          "d08cdcb29482f1b0eae7c4ed67df815ab3974108de5c7635af2b2e1d8e88a4c9"
+        ],
+        [
+          "fr-manikin-lower-lid-left",
+          "30d35a2f8784aa69ad9a800410e4adba776dc5f789cc01af891fa5c12a8818eb",
+          "12d3d96e9c0621de075bd7478ed21bb8751a5126a551268fbcd84bed1eed1907",
+          "d08cdcb29482f1b0eae7c4ed67df815ab3974108de5c7635af2b2e1d8e88a4c9"
+        ],
+        [
+          "fr-manikin-upper-lid-right",
+          "a099c42f7a2b0e6eee621d210519525e4e0fc03746de5755234f90c03204a66b",
+          "97c3058752a0075bb8c4d41296afc855b962ee30c7cbea8ceb5436c3cf11bcaf",
+          "94d36496bf4f4f648e636c72c679fc80d92768f13108d7280f657c620b4cda5f"
+        ],
+        [
+          "fr-manikin-lower-lid-right",
+          "f16b4c7163c26a510be9a40b74b3c973e07676ac82c1a10b81cb5eb11a9748fc",
+          "12cf39bb617469910e6ade65f7d826decadf841284db094477970cc52c04fe60",
+          "94d36496bf4f4f648e636c72c679fc80d92768f13108d7280f657c620b4cda5f"
+        ],
+        [
+          "fr-manikin-eye-left",
+          "b83436a4ae0267f9abd14d8a80fad2965a6ca4299e4cff47898a7018cf55dc89",
+          "493c957b6ebe8c7d971d72241016a7ece2783b375c01553fcb3d026e0df7079e",
+          "6dab3fe81286f1ac68f9b623260012d7d766dbc122ccc906388ba1ab40a91e9c"
+        ],
+        [
+          "fr-manikin-eye-right",
+          "f7703d3a8a21a3289d80f284283436a3ed10658516edec2a8101d70bc09731e9",
+          "acdd50071c071c49afc1ceffa301adb3c75a106be7d898a453c6b2358bfd80ee",
+          "6dab3fe81286f1ac68f9b623260012d7d766dbc122ccc906388ba1ab40a91e9c"
+        ]
+      ],
+      "resources": {
+        "geometries": 146,
+        "materials": 28,
+        "allocatedGeometries": 142,
+        "allocatedMaterials": 26
+      },
+      "priorResources": {
+        "geometries": 146,
+        "materials": 28,
+        "allocatedGeometries": 144,
+        "allocatedMaterials": 26
+      }
+    },
+    {
+      "age": "adult",
+      "phase": 8,
+      "contrast": true,
+      "status": "passed",
+      "checks": 29934,
+      "durationMs": 2310,
+      "preserved": {
+        "sha256": "5f8ca4c00c23b3a9a72bdffa19140217404c742ccee614e160a8a21b7670d2f5",
+        "nodes": 216,
+        "meshes": 148,
+        "geometries": 146,
+        "materials": 30
+      },
+      "shells": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.0000022516798770497095,
+          "minAgreement": 0.8688241597746234,
+          "minNormal": 0.9999999592585642,
+          "maxNormal": 1.0000000374345686,
+          "seamNormal": 0.99999991851713
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 8.535563017680418e-7,
+          "minAgreement": 0.8427141205396844,
+          "minNormal": 0.9999999631221457,
+          "maxNormal": 1.000000039641569,
+          "seamNormal": 0.9999999467179335
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.0000022516798770497095,
+          "minAgreement": 0.8688241597746234,
+          "minNormal": 0.9999999592585642,
+          "maxNormal": 1.0000000374345686,
+          "seamNormal": 0.99999991851713
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 8.535563017680418e-7,
+          "minAgreement": 0.8427141205396844,
+          "minNormal": 0.9999999631221457,
+          "maxNormal": 1.000000039641569,
+          "seamNormal": 0.9999999467179335
+        }
+      ],
+      "relief": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "middle": [
+            0.0018398147067076787,
+            0.0030312536443464033,
+            0.0031301266471889695,
+            0.0024959940393373607,
+            0.0018398066949308885
+          ],
+          "tails": [
+            -0.0011155445411436642,
+            -0.0011212944166977268
+          ],
+          "maxBack": -0.0011999909934047555,
+          "maxBoundary": -0.0011999909934047555,
+          "minFront": 0.0022623388742969265,
+          "maxFront": 0.0037999919979988485,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "middle": [
+            0.001002944354266392,
+            0.0017618840391405515,
+            0.0020335830784656613,
+            0.0015600355701128085,
+            0.0008352505163268707
+          ],
+          "tails": [
+            -0.0011424064019082947,
+            -0.0011449139391042716
+          ],
+          "maxBack": -0.0011999869073133804,
+          "maxBoundary": -0.0011999869073133804,
+          "minFront": 0.0012251756933787331,
+          "maxFront": 0.002299992764749963,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "middle": [
+            0.001743331448048883,
+            0.0011970192590111312,
+            0.0029179308766676313,
+            0.0019255706741549221,
+            0.001832098214850214
+          ],
+          "tails": [
+            -0.0017606992461437698,
+            -0.0012290278136892283
+          ],
+          "maxBack": -0.001199992052608156,
+          "maxBoundary": -0.001199992052608156,
+          "minFront": 0.0010686135576371068,
+          "maxFront": 0.00374816845318815,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "middle": [
+            0.0008258403504839253,
+            0.0014037738248981993,
+            0.001439270580241247,
+            0.0013796178805834107,
+            0.0009385987000480112
+          ],
+          "tails": [
+            -0.0017915732011295152,
+            -0.00126473186283662
+          ],
+          "maxBack": -0.0011999970249322476,
+          "maxBoundary": -0.0011999970249322476,
+          "minFront": 0.0006766073549903047,
+          "maxFront": 0.0021754365693816774,
+          "backs": 673,
+          "boundary": 144
+        }
+      ],
+      "creases": [
+        {
+          "name": "fr-manikin-eye-left",
+          "minimum": 0.0006472442768526657,
+          "maximum": 0.0010793968501399132,
+          "samples": 1807
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "minimum": 0.0006797060024489711,
+          "maximum": 0.001156555902580742,
+          "samples": 1807
+        }
+      ],
+      "baselineCreases": [
+        {
+          "name": "fr-manikin-eye-left",
+          "minimum": 0.0006617810414284532,
+          "maximum": 0.0011630119390593219,
+          "samples": 1807
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "minimum": 0.0006590505317247517,
+          "maximum": 0.0011773539533836733,
+          "samples": 1807
+        }
+      ],
+      "localGeometry": [
+        [
+          "fr-manikin-upper-lid-left",
+          "274beea543958f88ba91397e1fe50f1f9262700aad22cb299167eb28e123c039",
+          "be68ebec5a1b09d23dbc1867c40a6182c72a80f2b199cb821db127fd1cd0db27",
+          "d08cdcb29482f1b0eae7c4ed67df815ab3974108de5c7635af2b2e1d8e88a4c9"
+        ],
+        [
+          "fr-manikin-lower-lid-left",
+          "30d35a2f8784aa69ad9a800410e4adba776dc5f789cc01af891fa5c12a8818eb",
+          "12d3d96e9c0621de075bd7478ed21bb8751a5126a551268fbcd84bed1eed1907",
+          "d08cdcb29482f1b0eae7c4ed67df815ab3974108de5c7635af2b2e1d8e88a4c9"
+        ],
+        [
+          "fr-manikin-upper-lid-right",
+          "a099c42f7a2b0e6eee621d210519525e4e0fc03746de5755234f90c03204a66b",
+          "97c3058752a0075bb8c4d41296afc855b962ee30c7cbea8ceb5436c3cf11bcaf",
+          "94d36496bf4f4f648e636c72c679fc80d92768f13108d7280f657c620b4cda5f"
+        ],
+        [
+          "fr-manikin-lower-lid-right",
+          "f16b4c7163c26a510be9a40b74b3c973e07676ac82c1a10b81cb5eb11a9748fc",
+          "12cf39bb617469910e6ade65f7d826decadf841284db094477970cc52c04fe60",
+          "94d36496bf4f4f648e636c72c679fc80d92768f13108d7280f657c620b4cda5f"
+        ],
+        [
+          "fr-manikin-eye-left",
+          "b83436a4ae0267f9abd14d8a80fad2965a6ca4299e4cff47898a7018cf55dc89",
+          "493c957b6ebe8c7d971d72241016a7ece2783b375c01553fcb3d026e0df7079e",
+          "6dab3fe81286f1ac68f9b623260012d7d766dbc122ccc906388ba1ab40a91e9c"
+        ],
+        [
+          "fr-manikin-eye-right",
+          "f7703d3a8a21a3289d80f284283436a3ed10658516edec2a8101d70bc09731e9",
+          "acdd50071c071c49afc1ceffa301adb3c75a106be7d898a453c6b2358bfd80ee",
+          "6dab3fe81286f1ac68f9b623260012d7d766dbc122ccc906388ba1ab40a91e9c"
+        ]
+      ],
+      "resources": {
+        "geometries": 146,
+        "materials": 30,
+        "allocatedGeometries": 142,
+        "allocatedMaterials": 26
+      },
+      "priorResources": {
+        "geometries": 146,
+        "materials": 30,
+        "allocatedGeometries": 144,
+        "allocatedMaterials": 26
+      }
+    },
+    {
+      "age": "child",
+      "phase": 0,
+      "contrast": false,
+      "status": "passed",
+      "checks": 29933,
+      "durationMs": 2214,
+      "preserved": {
+        "sha256": "64e6d4e641b258afa1602bb8ba6db5da98998e110b69abedc77b11839642d702",
+        "nodes": 210,
+        "meshes": 143,
+        "geometries": 141,
+        "materials": 25
+      },
+      "shells": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.0000031774292474663143,
+          "minAgreement": 0.8687239668941533,
+          "minNormal": 0.9999999599603658,
+          "maxNormal": 1.0000000384134655,
+          "seamNormal": 0.9999999503785288
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.0000012044001632292375,
+          "minAgreement": 0.837067996029037,
+          "minNormal": 0.9999999611244409,
+          "maxNormal": 1.0000000401456002,
+          "seamNormal": 0.9999999412287721
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.0000031774292474663143,
+          "minAgreement": 0.8687239668941533,
+          "minNormal": 0.9999999599603658,
+          "maxNormal": 1.0000000384134655,
+          "seamNormal": 0.9999999503785288
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.0000012044001632292375,
+          "minAgreement": 0.837067996029037,
+          "minNormal": 0.9999999611244409,
+          "maxNormal": 1.0000000401456002,
+          "seamNormal": 0.9999999412287721
+        }
+      ],
+      "relief": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "middle": [
+            0.0019201259336725604,
+            0.002922340569783668,
+            0.0027667651471862363,
+            0.003031265308949869,
+            0.001707493292052342
+          ],
+          "tails": [
+            -0.00111771324713225,
+            -0.0011213072868871791
+          ],
+          "maxBack": -0.0011999892757027428,
+          "maxBoundary": -0.0011999892757027428,
+          "minFront": 0.002264544770324013,
+          "maxFront": 0.003800005832443419,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "middle": [
+            0.0010029441080731264,
+            0.0016856466788178893,
+            0.0020335753633669365,
+            0.0013872052878300583,
+            0.0008352449833536175
+          ],
+          "tails": [
+            -0.0011423947452243533,
+            -0.0011449094296012822
+          ],
+          "maxBack": -0.0011999869781913648,
+          "maxBoundary": -0.0011999869781913648,
+          "minFront": 0.0012169255348596312,
+          "maxFront": 0.002300005055849574,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "middle": [
+            0.0016223647251437804,
+            0.0026245628442491194,
+            0.0027205146436344,
+            0.0019151686002505854,
+            0.00179421341192024
+          ],
+          "tails": [
+            -0.001644099870849184,
+            -0.0011527974241207586
+          ],
+          "maxBack": -0.0012225743120722835,
+          "maxBoundary": -0.0012225743120722835,
+          "minFront": 0.0007263652016223131,
+          "maxFront": 0.003725701354566865,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "middle": [
+            0.0005909888583736437,
+            0.0009202295077870427,
+            0.001840990417151178,
+            0.0016156798117979438,
+            0.0007470274346566265
+          ],
+          "tails": [
+            -0.0016756637656018985,
+            -0.0011738548481323038
+          ],
+          "maxBack": -0.0012000001890801735,
+          "maxBoundary": -0.0012000001890801735,
+          "minFront": 0.00047535652933608947,
+          "maxFront": 0.0021332841334582736,
+          "backs": 673,
+          "boundary": 144
+        }
+      ],
+      "creases": [
+        {
+          "name": "fr-manikin-eye-left",
+          "minimum": 0.0006472495570526721,
+          "maximum": 0.0011028050189555599,
+          "samples": 1807
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "minimum": 0.0006587558588206146,
+          "maximum": 0.0011576199437027892,
+          "samples": 1807
+        }
+      ],
+      "baselineCreases": [
+        {
+          "name": "fr-manikin-eye-left",
+          "minimum": 0.0006910523425779826,
+          "maximum": 0.0011928616610342845,
+          "samples": 1807
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "minimum": 0.0006587558588206146,
+          "maximum": 0.0011686687181457697,
+          "samples": 1807
+        }
+      ],
+      "localGeometry": [
+        [
+          "fr-manikin-upper-lid-left",
+          "f7ceaaf3884a2d2c7cb5f2cc78f64ed43e2930ab0e7356405fc64437b1b62e86",
+          "2eeb675a1ea92a410d5e917d19eb5f28108a1cccf4e9d0c7013efd3bc4ef7fb0",
+          "d08cdcb29482f1b0eae7c4ed67df815ab3974108de5c7635af2b2e1d8e88a4c9"
+        ],
+        [
+          "fr-manikin-lower-lid-left",
+          "e5a534169baf83befac3291c475ea27990999a80c195c7152364688e499d4f6b",
+          "7da809baa15dcded7d1e20e5886abfd283c11d1b0836a0bb1687407465e4b226",
+          "d08cdcb29482f1b0eae7c4ed67df815ab3974108de5c7635af2b2e1d8e88a4c9"
+        ],
+        [
+          "fr-manikin-upper-lid-right",
+          "d521faf369aae572f5b565c7021df8b76553a7bc5aeff5d9a96b3c3a27437226",
+          "81a63eb935b112e57eba76159c2f374e7944fe91b251e6220de7e852a04cc48c",
+          "94d36496bf4f4f648e636c72c679fc80d92768f13108d7280f657c620b4cda5f"
+        ],
+        [
+          "fr-manikin-lower-lid-right",
+          "96b1d8d69996fa3cb0ace3f4b65fa8837e8adc126554f57cb595617ea52ba823",
+          "793e415dfcc0b48ffa8d6ee3e0e7b4a5df83a4232fad362062f3d7b1ae382dc7",
+          "94d36496bf4f4f648e636c72c679fc80d92768f13108d7280f657c620b4cda5f"
+        ],
+        [
+          "fr-manikin-eye-left",
+          "48c248c38778c04a31c564814723d625365fbabb51068beeb79f4d9833820363",
+          "e1bd9e6fa18f859ae2530829d5aeffd5f1bbb0f28ac075c0ce50cb50e9fc8b74",
+          "6dab3fe81286f1ac68f9b623260012d7d766dbc122ccc906388ba1ab40a91e9c"
+        ],
+        [
+          "fr-manikin-eye-right",
+          "d4e172e1a29e48d3d7ec5af86148c4faef1d6f1bca2f2b6a24e93f9a3d321f0d",
+          "7054a5b65a9698f4dca88b72c937e41916a91943fa1ed0340fa5d479cb267a78",
+          "6dab3fe81286f1ac68f9b623260012d7d766dbc122ccc906388ba1ab40a91e9c"
+        ]
+      ],
+      "resources": {
+        "geometries": 141,
+        "materials": 25,
+        "allocatedGeometries": 137,
+        "allocatedMaterials": 23
+      },
+      "priorResources": {
+        "geometries": 141,
+        "materials": 25,
+        "allocatedGeometries": 139,
+        "allocatedMaterials": 23
+      }
+    },
+    {
+      "age": "child",
+      "phase": 0,
+      "contrast": true,
+      "status": "passed",
+      "checks": 29934,
+      "durationMs": 2057,
+      "preserved": {
+        "sha256": "159ad857dce2d4b91c48e08fd3d0aff1459e3d8856dce48eca6d8010ac00b010",
+        "nodes": 209,
+        "meshes": 143,
+        "geometries": 141,
+        "materials": 27
+      },
+      "shells": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.0000031774292474663143,
+          "minAgreement": 0.8687239668941533,
+          "minNormal": 0.9999999599603658,
+          "maxNormal": 1.0000000384134655,
+          "seamNormal": 0.9999999503785288
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.0000012044001632292375,
+          "minAgreement": 0.837067996029037,
+          "minNormal": 0.9999999611244409,
+          "maxNormal": 1.0000000401456002,
+          "seamNormal": 0.9999999412287721
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.0000031774292474663143,
+          "minAgreement": 0.8687239668941533,
+          "minNormal": 0.9999999599603658,
+          "maxNormal": 1.0000000384134655,
+          "seamNormal": 0.9999999503785288
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.0000012044001632292375,
+          "minAgreement": 0.837067996029037,
+          "minNormal": 0.9999999611244409,
+          "maxNormal": 1.0000000401456002,
+          "seamNormal": 0.9999999412287721
+        }
+      ],
+      "relief": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "middle": [
+            0.0019201259336725604,
+            0.002922340569783668,
+            0.0027667651471862363,
+            0.003031265308949869,
+            0.001707493292052342
+          ],
+          "tails": [
+            -0.00111771324713225,
+            -0.0011213072868871791
+          ],
+          "maxBack": -0.0011999892757027428,
+          "maxBoundary": -0.0011999892757027428,
+          "minFront": 0.002264544770324013,
+          "maxFront": 0.003800005832443419,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "middle": [
+            0.0010029441080731264,
+            0.0016856466788178893,
+            0.0020335753633669365,
+            0.0013872052878300583,
+            0.0008352449833536175
+          ],
+          "tails": [
+            -0.0011423947452243533,
+            -0.0011449094296012822
+          ],
+          "maxBack": -0.0011999869781913648,
+          "maxBoundary": -0.0011999869781913648,
+          "minFront": 0.0012169255348596312,
+          "maxFront": 0.002300005055849574,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "middle": [
+            0.0016223647251437804,
+            0.0026245628442491194,
+            0.0027205146436344,
+            0.0019151686002505854,
+            0.00179421341192024
+          ],
+          "tails": [
+            -0.001644099870849184,
+            -0.0011527974241207586
+          ],
+          "maxBack": -0.0012225743120722835,
+          "maxBoundary": -0.0012225743120722835,
+          "minFront": 0.0007263652016223131,
+          "maxFront": 0.003725701354566865,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "middle": [
+            0.0005909888583736437,
+            0.0009202295077870427,
+            0.001840990417151178,
+            0.0016156798117979438,
+            0.0007470274346566265
+          ],
+          "tails": [
+            -0.0016756637656018985,
+            -0.0011738548481323038
+          ],
+          "maxBack": -0.0012000001890801735,
+          "maxBoundary": -0.0012000001890801735,
+          "minFront": 0.00047535652933608947,
+          "maxFront": 0.0021332841334582736,
+          "backs": 673,
+          "boundary": 144
+        }
+      ],
+      "creases": [
+        {
+          "name": "fr-manikin-eye-left",
+          "minimum": 0.0006472495570526721,
+          "maximum": 0.0011028050189555599,
+          "samples": 1807
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "minimum": 0.0006587558588206146,
+          "maximum": 0.0011576199437027892,
+          "samples": 1807
+        }
+      ],
+      "baselineCreases": [
+        {
+          "name": "fr-manikin-eye-left",
+          "minimum": 0.0006910523425779826,
+          "maximum": 0.0011928616610342845,
+          "samples": 1807
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "minimum": 0.0006587558588206146,
+          "maximum": 0.0011686687181457697,
+          "samples": 1807
+        }
+      ],
+      "localGeometry": [
+        [
+          "fr-manikin-upper-lid-left",
+          "f7ceaaf3884a2d2c7cb5f2cc78f64ed43e2930ab0e7356405fc64437b1b62e86",
+          "2eeb675a1ea92a410d5e917d19eb5f28108a1cccf4e9d0c7013efd3bc4ef7fb0",
+          "d08cdcb29482f1b0eae7c4ed67df815ab3974108de5c7635af2b2e1d8e88a4c9"
+        ],
+        [
+          "fr-manikin-lower-lid-left",
+          "e5a534169baf83befac3291c475ea27990999a80c195c7152364688e499d4f6b",
+          "7da809baa15dcded7d1e20e5886abfd283c11d1b0836a0bb1687407465e4b226",
+          "d08cdcb29482f1b0eae7c4ed67df815ab3974108de5c7635af2b2e1d8e88a4c9"
+        ],
+        [
+          "fr-manikin-upper-lid-right",
+          "d521faf369aae572f5b565c7021df8b76553a7bc5aeff5d9a96b3c3a27437226",
+          "81a63eb935b112e57eba76159c2f374e7944fe91b251e6220de7e852a04cc48c",
+          "94d36496bf4f4f648e636c72c679fc80d92768f13108d7280f657c620b4cda5f"
+        ],
+        [
+          "fr-manikin-lower-lid-right",
+          "96b1d8d69996fa3cb0ace3f4b65fa8837e8adc126554f57cb595617ea52ba823",
+          "793e415dfcc0b48ffa8d6ee3e0e7b4a5df83a4232fad362062f3d7b1ae382dc7",
+          "94d36496bf4f4f648e636c72c679fc80d92768f13108d7280f657c620b4cda5f"
+        ],
+        [
+          "fr-manikin-eye-left",
+          "48c248c38778c04a31c564814723d625365fbabb51068beeb79f4d9833820363",
+          "e1bd9e6fa18f859ae2530829d5aeffd5f1bbb0f28ac075c0ce50cb50e9fc8b74",
+          "6dab3fe81286f1ac68f9b623260012d7d766dbc122ccc906388ba1ab40a91e9c"
+        ],
+        [
+          "fr-manikin-eye-right",
+          "d4e172e1a29e48d3d7ec5af86148c4faef1d6f1bca2f2b6a24e93f9a3d321f0d",
+          "7054a5b65a9698f4dca88b72c937e41916a91943fa1ed0340fa5d479cb267a78",
+          "6dab3fe81286f1ac68f9b623260012d7d766dbc122ccc906388ba1ab40a91e9c"
+        ]
+      ],
+      "resources": {
+        "geometries": 141,
+        "materials": 27,
+        "allocatedGeometries": 137,
+        "allocatedMaterials": 23
+      },
+      "priorResources": {
+        "geometries": 141,
+        "materials": 27,
+        "allocatedGeometries": 139,
+        "allocatedMaterials": 23
+      }
+    },
+    {
+      "age": "child",
+      "phase": 8,
+      "contrast": false,
+      "status": "passed",
+      "checks": 29934,
+      "durationMs": 2458,
+      "preserved": {
+        "sha256": "82b0523aa340d4258c1d59a16253e18cb5706b0346b537467e118ac69469749e",
+        "nodes": 216,
+        "meshes": 147,
+        "geometries": 145,
+        "materials": 28
+      },
+      "shells": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.0000031774292474663143,
+          "minAgreement": 0.8687239668941533,
+          "minNormal": 0.9999999599603658,
+          "maxNormal": 1.0000000384134655,
+          "seamNormal": 0.9999999503785288
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.0000012044001632292375,
+          "minAgreement": 0.837067996029037,
+          "minNormal": 0.9999999611244409,
+          "maxNormal": 1.0000000401456002,
+          "seamNormal": 0.9999999412287721
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.0000031774292474663143,
+          "minAgreement": 0.8687239668941533,
+          "minNormal": 0.9999999599603658,
+          "maxNormal": 1.0000000384134655,
+          "seamNormal": 0.9999999503785288
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.0000012044001632292375,
+          "minAgreement": 0.837067996029037,
+          "minNormal": 0.9999999611244409,
+          "maxNormal": 1.0000000401456002,
+          "seamNormal": 0.9999999412287721
+        }
+      ],
+      "relief": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "middle": [
+            0.0019201259336725604,
+            0.002922340569783668,
+            0.0027667651471862363,
+            0.003031265308949869,
+            0.001707493292052342
+          ],
+          "tails": [
+            -0.00111771324713225,
+            -0.0011213072868871791
+          ],
+          "maxBack": -0.0011999892757027428,
+          "maxBoundary": -0.0011999892757027428,
+          "minFront": 0.002264544770324013,
+          "maxFront": 0.003800005832443419,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "middle": [
+            0.0010029441080731264,
+            0.0016856466788178893,
+            0.0020335753633669365,
+            0.0013872052878300583,
+            0.0008352449833536175
+          ],
+          "tails": [
+            -0.0011423947452243533,
+            -0.0011449094296012822
+          ],
+          "maxBack": -0.0011999869781913648,
+          "maxBoundary": -0.0011999869781913648,
+          "minFront": 0.0012169255348596312,
+          "maxFront": 0.002300005055849574,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "middle": [
+            0.0016223647251437804,
+            0.0026245628442491194,
+            0.0027205146436344,
+            0.0019151686002505854,
+            0.00179421341192024
+          ],
+          "tails": [
+            -0.001644099870849184,
+            -0.0011527974241207586
+          ],
+          "maxBack": -0.0012225743120722835,
+          "maxBoundary": -0.0012225743120722835,
+          "minFront": 0.0007263652016223131,
+          "maxFront": 0.003725701354566865,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "middle": [
+            0.0005909888583736437,
+            0.0009202295077870427,
+            0.001840990417151178,
+            0.0016156798117979438,
+            0.0007470274346566265
+          ],
+          "tails": [
+            -0.0016756637656018985,
+            -0.0011738548481323038
+          ],
+          "maxBack": -0.0012000001890801735,
+          "maxBoundary": -0.0012000001890801735,
+          "minFront": 0.00047535652933608947,
+          "maxFront": 0.0021332841334582736,
+          "backs": 673,
+          "boundary": 144
+        }
+      ],
+      "creases": [
+        {
+          "name": "fr-manikin-eye-left",
+          "minimum": 0.0006472495570526721,
+          "maximum": 0.0011028050189555599,
+          "samples": 1807
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "minimum": 0.0006587558588206146,
+          "maximum": 0.0011576199437027892,
+          "samples": 1807
+        }
+      ],
+      "baselineCreases": [
+        {
+          "name": "fr-manikin-eye-left",
+          "minimum": 0.0006910523425779826,
+          "maximum": 0.0011928616610342845,
+          "samples": 1807
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "minimum": 0.0006587558588206146,
+          "maximum": 0.0011686687181457697,
+          "samples": 1807
+        }
+      ],
+      "localGeometry": [
+        [
+          "fr-manikin-upper-lid-left",
+          "f7ceaaf3884a2d2c7cb5f2cc78f64ed43e2930ab0e7356405fc64437b1b62e86",
+          "2eeb675a1ea92a410d5e917d19eb5f28108a1cccf4e9d0c7013efd3bc4ef7fb0",
+          "d08cdcb29482f1b0eae7c4ed67df815ab3974108de5c7635af2b2e1d8e88a4c9"
+        ],
+        [
+          "fr-manikin-lower-lid-left",
+          "e5a534169baf83befac3291c475ea27990999a80c195c7152364688e499d4f6b",
+          "7da809baa15dcded7d1e20e5886abfd283c11d1b0836a0bb1687407465e4b226",
+          "d08cdcb29482f1b0eae7c4ed67df815ab3974108de5c7635af2b2e1d8e88a4c9"
+        ],
+        [
+          "fr-manikin-upper-lid-right",
+          "d521faf369aae572f5b565c7021df8b76553a7bc5aeff5d9a96b3c3a27437226",
+          "81a63eb935b112e57eba76159c2f374e7944fe91b251e6220de7e852a04cc48c",
+          "94d36496bf4f4f648e636c72c679fc80d92768f13108d7280f657c620b4cda5f"
+        ],
+        [
+          "fr-manikin-lower-lid-right",
+          "96b1d8d69996fa3cb0ace3f4b65fa8837e8adc126554f57cb595617ea52ba823",
+          "793e415dfcc0b48ffa8d6ee3e0e7b4a5df83a4232fad362062f3d7b1ae382dc7",
+          "94d36496bf4f4f648e636c72c679fc80d92768f13108d7280f657c620b4cda5f"
+        ],
+        [
+          "fr-manikin-eye-left",
+          "48c248c38778c04a31c564814723d625365fbabb51068beeb79f4d9833820363",
+          "e1bd9e6fa18f859ae2530829d5aeffd5f1bbb0f28ac075c0ce50cb50e9fc8b74",
+          "6dab3fe81286f1ac68f9b623260012d7d766dbc122ccc906388ba1ab40a91e9c"
+        ],
+        [
+          "fr-manikin-eye-right",
+          "d4e172e1a29e48d3d7ec5af86148c4faef1d6f1bca2f2b6a24e93f9a3d321f0d",
+          "7054a5b65a9698f4dca88b72c937e41916a91943fa1ed0340fa5d479cb267a78",
+          "6dab3fe81286f1ac68f9b623260012d7d766dbc122ccc906388ba1ab40a91e9c"
+        ]
+      ],
+      "resources": {
+        "geometries": 145,
+        "materials": 28,
+        "allocatedGeometries": 141,
+        "allocatedMaterials": 26
+      },
+      "priorResources": {
+        "geometries": 145,
+        "materials": 28,
+        "allocatedGeometries": 143,
+        "allocatedMaterials": 26
+      }
+    },
+    {
+      "age": "child",
+      "phase": 8,
+      "contrast": true,
+      "status": "passed",
+      "checks": 29934,
+      "durationMs": 2697,
+      "preserved": {
+        "sha256": "19a2a03129b64494d1f69e7d178010f7c97a7b2b5d11bf17667c39a6b2df11fc",
+        "nodes": 215,
+        "meshes": 147,
+        "geometries": 145,
+        "materials": 30
+      },
+      "shells": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.0000031774292474663143,
+          "minAgreement": 0.8687239668941533,
+          "minNormal": 0.9999999599603658,
+          "maxNormal": 1.0000000384134655,
+          "seamNormal": 0.9999999503785288
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.0000012044001632292375,
+          "minAgreement": 0.837067996029037,
+          "minNormal": 0.9999999611244409,
+          "maxNormal": 1.0000000401456002,
+          "seamNormal": 0.9999999412287721
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.0000031774292474663143,
+          "minAgreement": 0.8687239668941533,
+          "minNormal": 0.9999999599603658,
+          "maxNormal": 1.0000000384134655,
+          "seamNormal": 0.9999999503785288
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.0000012044001632292375,
+          "minAgreement": 0.837067996029037,
+          "minNormal": 0.9999999611244409,
+          "maxNormal": 1.0000000401456002,
+          "seamNormal": 0.9999999412287721
+        }
+      ],
+      "relief": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "middle": [
+            0.0019201259336725604,
+            0.002922340569783668,
+            0.0027667651471862363,
+            0.003031265308949869,
+            0.001707493292052342
+          ],
+          "tails": [
+            -0.00111771324713225,
+            -0.0011213072868871791
+          ],
+          "maxBack": -0.0011999892757027428,
+          "maxBoundary": -0.0011999892757027428,
+          "minFront": 0.002264544770324013,
+          "maxFront": 0.003800005832443419,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "middle": [
+            0.0010029441080731264,
+            0.0016856466788178893,
+            0.0020335753633669365,
+            0.0013872052878300583,
+            0.0008352449833536175
+          ],
+          "tails": [
+            -0.0011423947452243533,
+            -0.0011449094296012822
+          ],
+          "maxBack": -0.0011999869781913648,
+          "maxBoundary": -0.0011999869781913648,
+          "minFront": 0.0012169255348596312,
+          "maxFront": 0.002300005055849574,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "middle": [
+            0.0016223647251437804,
+            0.0026245628442491194,
+            0.0027205146436344,
+            0.0019151686002505854,
+            0.00179421341192024
+          ],
+          "tails": [
+            -0.001644099870849184,
+            -0.0011527974241207586
+          ],
+          "maxBack": -0.0012225743120722835,
+          "maxBoundary": -0.0012225743120722835,
+          "minFront": 0.0007263652016223131,
+          "maxFront": 0.003725701354566865,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "middle": [
+            0.0005909888583736437,
+            0.0009202295077870427,
+            0.001840990417151178,
+            0.0016156798117979438,
+            0.0007470274346566265
+          ],
+          "tails": [
+            -0.0016756637656018985,
+            -0.0011738548481323038
+          ],
+          "maxBack": -0.0012000001890801735,
+          "maxBoundary": -0.0012000001890801735,
+          "minFront": 0.00047535652933608947,
+          "maxFront": 0.0021332841334582736,
+          "backs": 673,
+          "boundary": 144
+        }
+      ],
+      "creases": [
+        {
+          "name": "fr-manikin-eye-left",
+          "minimum": 0.0006472495570526721,
+          "maximum": 0.0011028050189555599,
+          "samples": 1807
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "minimum": 0.0006587558588206146,
+          "maximum": 0.0011576199437027892,
+          "samples": 1807
+        }
+      ],
+      "baselineCreases": [
+        {
+          "name": "fr-manikin-eye-left",
+          "minimum": 0.0006910523425779826,
+          "maximum": 0.0011928616610342845,
+          "samples": 1807
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "minimum": 0.0006587558588206146,
+          "maximum": 0.0011686687181457697,
+          "samples": 1807
+        }
+      ],
+      "localGeometry": [
+        [
+          "fr-manikin-upper-lid-left",
+          "f7ceaaf3884a2d2c7cb5f2cc78f64ed43e2930ab0e7356405fc64437b1b62e86",
+          "2eeb675a1ea92a410d5e917d19eb5f28108a1cccf4e9d0c7013efd3bc4ef7fb0",
+          "d08cdcb29482f1b0eae7c4ed67df815ab3974108de5c7635af2b2e1d8e88a4c9"
+        ],
+        [
+          "fr-manikin-lower-lid-left",
+          "e5a534169baf83befac3291c475ea27990999a80c195c7152364688e499d4f6b",
+          "7da809baa15dcded7d1e20e5886abfd283c11d1b0836a0bb1687407465e4b226",
+          "d08cdcb29482f1b0eae7c4ed67df815ab3974108de5c7635af2b2e1d8e88a4c9"
+        ],
+        [
+          "fr-manikin-upper-lid-right",
+          "d521faf369aae572f5b565c7021df8b76553a7bc5aeff5d9a96b3c3a27437226",
+          "81a63eb935b112e57eba76159c2f374e7944fe91b251e6220de7e852a04cc48c",
+          "94d36496bf4f4f648e636c72c679fc80d92768f13108d7280f657c620b4cda5f"
+        ],
+        [
+          "fr-manikin-lower-lid-right",
+          "96b1d8d69996fa3cb0ace3f4b65fa8837e8adc126554f57cb595617ea52ba823",
+          "793e415dfcc0b48ffa8d6ee3e0e7b4a5df83a4232fad362062f3d7b1ae382dc7",
+          "94d36496bf4f4f648e636c72c679fc80d92768f13108d7280f657c620b4cda5f"
+        ],
+        [
+          "fr-manikin-eye-left",
+          "48c248c38778c04a31c564814723d625365fbabb51068beeb79f4d9833820363",
+          "e1bd9e6fa18f859ae2530829d5aeffd5f1bbb0f28ac075c0ce50cb50e9fc8b74",
+          "6dab3fe81286f1ac68f9b623260012d7d766dbc122ccc906388ba1ab40a91e9c"
+        ],
+        [
+          "fr-manikin-eye-right",
+          "d4e172e1a29e48d3d7ec5af86148c4faef1d6f1bca2f2b6a24e93f9a3d321f0d",
+          "7054a5b65a9698f4dca88b72c937e41916a91943fa1ed0340fa5d479cb267a78",
+          "6dab3fe81286f1ac68f9b623260012d7d766dbc122ccc906388ba1ab40a91e9c"
+        ]
+      ],
+      "resources": {
+        "geometries": 145,
+        "materials": 30,
+        "allocatedGeometries": 141,
+        "allocatedMaterials": 26
+      },
+      "priorResources": {
+        "geometries": 145,
+        "materials": 30,
+        "allocatedGeometries": 143,
+        "allocatedMaterials": 26
+      }
+    },
+    {
+      "age": "infant",
+      "phase": 0,
+      "contrast": false,
+      "status": "passed",
+      "checks": 29933,
+      "durationMs": 2002,
+      "preserved": {
+        "sha256": "18bd67b719eb87ccd0dd00f03a364d533ddc84c966a8693922a19310d31f6625",
+        "nodes": 181,
+        "meshes": 125,
+        "geometries": 123,
+        "materials": 25
+      },
+      "shells": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.000008899273252479247,
+          "minAgreement": 0.8686557597044038,
+          "minNormal": 0.9999999634318357,
+          "maxNormal": 1.0000000399707942,
+          "seamNormal": 0.9999999391644128
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.00000337350810126983,
+          "minAgreement": 0.8347842145195922,
+          "minNormal": 0.9999999628031835,
+          "maxNormal": 1.0000000380217455,
+          "seamNormal": 0.9999999454811723
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.000008899273252479247,
+          "minAgreement": 0.8686557597044038,
+          "minNormal": 0.9999999634318357,
+          "maxNormal": 1.0000000399707942,
+          "seamNormal": 0.9999999391644128
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.00000337350810126983,
+          "minAgreement": 0.8347842145195922,
+          "minNormal": 0.9999999628031835,
+          "maxNormal": 1.0000000380217455,
+          "seamNormal": 0.9999999454811723
+        }
+      ],
+      "relief": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "middle": [
+            0.0018398120174491159,
+            0.0027428995019112023,
+            0.0034193861684902473,
+            0.002742891820506687,
+            0.0015254155846685668
+          ],
+          "tails": [
+            -0.0011451237717331503,
+            -0.00112129187425571
+          ],
+          "maxBack": -0.0011999874281908459,
+          "maxBoundary": -0.0011999874281908459,
+          "minFront": 0.0022645476944965627,
+          "maxFront": 0.0037999988319724594,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "middle": [
+            0.0010029370242669576,
+            0.0015600326325258594,
+            0.0017983519554269647,
+            0.0013871840233997822,
+            0.0007077840652218935
+          ],
+          "tails": [
+            -0.0011636407311655967,
+            -0.0011449177624861197
+          ],
+          "maxBack": -0.0011999877154402249,
+          "maxBoundary": -0.0011999877154402249,
+          "minFront": 0.0012251841594286348,
+          "maxFront": 0.00227503509291686,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "middle": [
+            0.0011119230037610125,
+            0.0027148238556980544,
+            0.0031911125301387353,
+            0.0020914280639751314,
+            0.0013275249443052786
+          ],
+          "tails": [
+            -0.0014497933458111208,
+            -0.0011177211667716984
+          ],
+          "maxBack": -0.0011999834255341402,
+          "maxBoundary": -0.0011999834255341402,
+          "minFront": 0.0008241919822372116,
+          "maxFront": 0.0036680897448634637,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "middle": [
+            0.000630918748200824,
+            0.0006907804379361755,
+            0.0018310772311491128,
+            0.0012154635777861245,
+            0.0009663549623055731
+          ],
+          "tails": [
+            -0.0014850802189227926,
+            -0.0011424113577692505
+          ],
+          "maxBack": -0.0011999834255341402,
+          "maxBoundary": -0.0011999834255341402,
+          "minFront": 0.00018992603045503575,
+          "maxFront": 0.0023000072335685393,
+          "backs": 673,
+          "boundary": 144
+        }
+      ],
+      "creases": [
+        {
+          "name": "fr-manikin-eye-left",
+          "minimum": 0.000642854314153072,
+          "maximum": 0.001093092855058891,
+          "samples": 1807
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "minimum": 0.0006405745638508128,
+          "maximum": 0.001130472001698973,
+          "samples": 1807
+        }
+      ],
+      "baselineCreases": [
+        {
+          "name": "fr-manikin-eye-left",
+          "minimum": 0.0006030078757793908,
+          "maximum": 0.0011834494318464345,
+          "samples": 1807
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "minimum": 0.0006829909521521469,
+          "maximum": 0.0012033531989828347,
+          "samples": 1807
+        }
+      ],
+      "localGeometry": [
+        [
+          "fr-manikin-upper-lid-left",
+          "4daa018eda1d591026b2dfcf6872570595240540743602baa64c45dd016717c8",
+          "7b6a20063be85a70abad2ba31b8403566c30d4736a70c431a4c5b0dcb614dfc2",
+          "d08cdcb29482f1b0eae7c4ed67df815ab3974108de5c7635af2b2e1d8e88a4c9"
+        ],
+        [
+          "fr-manikin-lower-lid-left",
+          "de802736bd43e65f30db58de3706b1a217c74fbf2b175d0b2de01a5e57c69439",
+          "7a646ba30bc960b1f889d515a68e01acc2318acd18618ee698855dbf509fb112",
+          "d08cdcb29482f1b0eae7c4ed67df815ab3974108de5c7635af2b2e1d8e88a4c9"
+        ],
+        [
+          "fr-manikin-upper-lid-right",
+          "0e235d2caf35ab9f21d9ae88709f9f126a4457e8cc5f24295fa45f4800873f09",
+          "83e508c85229c2efc982e743f7069c0083b91d2f39b465f4884fcb1782aa76d1",
+          "94d36496bf4f4f648e636c72c679fc80d92768f13108d7280f657c620b4cda5f"
+        ],
+        [
+          "fr-manikin-lower-lid-right",
+          "91a9b4b69a60cfcd4714669666e140534dcf5390a5796645590a6d649d56f9ca",
+          "a6ab0ce4acc8a40c6b6f13385c5ca5b6dbddb250e09b9cdff78d3b2ec1e6c883",
+          "94d36496bf4f4f648e636c72c679fc80d92768f13108d7280f657c620b4cda5f"
+        ],
+        [
+          "fr-manikin-eye-left",
+          "db5239dda6751657e3cfe8b1251b852bcc3d32795be846778f4567f1e7159275",
+          "7d86563aa6c244c0d40e5b326b291e334289c19401f46fdb475fac2067e74eb2",
+          "6dab3fe81286f1ac68f9b623260012d7d766dbc122ccc906388ba1ab40a91e9c"
+        ],
+        [
+          "fr-manikin-eye-right",
+          "b36b2753fedb75fe8ea8b134cc4ff535fb22c5d54f67c45bdecc8bf75ddfbeb6",
+          "e85d3caca08057ff5575cddb3cb0881d4d589c2001b5068e1690ff7c40dfcc4f",
+          "6dab3fe81286f1ac68f9b623260012d7d766dbc122ccc906388ba1ab40a91e9c"
+        ]
+      ],
+      "resources": {
+        "geometries": 123,
+        "materials": 25,
+        "allocatedGeometries": 119,
+        "allocatedMaterials": 23
+      },
+      "priorResources": {
+        "geometries": 123,
+        "materials": 25,
+        "allocatedGeometries": 121,
+        "allocatedMaterials": 23
+      }
+    },
+    {
+      "age": "infant",
+      "phase": 0,
+      "contrast": true,
+      "status": "passed",
+      "checks": 29934,
+      "durationMs": 2003,
+      "preserved": {
+        "sha256": "35ce73bd2b60bb2821ed2d35f8c2239221c2c7e448b4b58c8556ed5dd8c48af1",
+        "nodes": 180,
+        "meshes": 125,
+        "geometries": 123,
+        "materials": 27
+      },
+      "shells": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.000008899273252479247,
+          "minAgreement": 0.8686557597044038,
+          "minNormal": 0.9999999634318357,
+          "maxNormal": 1.0000000399707942,
+          "seamNormal": 0.9999999391644128
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.00000337350810126983,
+          "minAgreement": 0.8347842145195922,
+          "minNormal": 0.9999999628031835,
+          "maxNormal": 1.0000000380217455,
+          "seamNormal": 0.9999999454811723
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.000008899273252479247,
+          "minAgreement": 0.8686557597044038,
+          "minNormal": 0.9999999634318357,
+          "maxNormal": 1.0000000399707942,
+          "seamNormal": 0.9999999391644128
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.00000337350810126983,
+          "minAgreement": 0.8347842145195922,
+          "minNormal": 0.9999999628031835,
+          "maxNormal": 1.0000000380217455,
+          "seamNormal": 0.9999999454811723
+        }
+      ],
+      "relief": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "middle": [
+            0.0018398120174491159,
+            0.0027428995019112023,
+            0.0034193861684902473,
+            0.002742891820506687,
+            0.0015254155846685668
+          ],
+          "tails": [
+            -0.0011451237717331503,
+            -0.00112129187425571
+          ],
+          "maxBack": -0.0011999874281908459,
+          "maxBoundary": -0.0011999874281908459,
+          "minFront": 0.0022645476944965627,
+          "maxFront": 0.0037999988319724594,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "middle": [
+            0.0010029370242669576,
+            0.0015600326325258594,
+            0.0017983519554269647,
+            0.0013871840233997822,
+            0.0007077840652218935
+          ],
+          "tails": [
+            -0.0011636407311655967,
+            -0.0011449177624861197
+          ],
+          "maxBack": -0.0011999877154402249,
+          "maxBoundary": -0.0011999877154402249,
+          "minFront": 0.0012251841594286348,
+          "maxFront": 0.00227503509291686,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "middle": [
+            0.0011119230037610125,
+            0.0027148238556980544,
+            0.0031911125301387353,
+            0.0020914280639751314,
+            0.0013275249443052786
+          ],
+          "tails": [
+            -0.0014497933458111208,
+            -0.0011177211667716984
+          ],
+          "maxBack": -0.0011999834255341402,
+          "maxBoundary": -0.0011999834255341402,
+          "minFront": 0.0008241919822372116,
+          "maxFront": 0.0036680897448634637,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "middle": [
+            0.000630918748200824,
+            0.0006907804379361755,
+            0.0018310772311491128,
+            0.0012154635777861245,
+            0.0009663549623055731
+          ],
+          "tails": [
+            -0.0014850802189227926,
+            -0.0011424113577692505
+          ],
+          "maxBack": -0.0011999834255341402,
+          "maxBoundary": -0.0011999834255341402,
+          "minFront": 0.00018992603045503575,
+          "maxFront": 0.0023000072335685393,
+          "backs": 673,
+          "boundary": 144
+        }
+      ],
+      "creases": [
+        {
+          "name": "fr-manikin-eye-left",
+          "minimum": 0.000642854314153072,
+          "maximum": 0.001093092855058891,
+          "samples": 1807
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "minimum": 0.0006405745638508128,
+          "maximum": 0.001130472001698973,
+          "samples": 1807
+        }
+      ],
+      "baselineCreases": [
+        {
+          "name": "fr-manikin-eye-left",
+          "minimum": 0.0006030078757793908,
+          "maximum": 0.0011834494318464345,
+          "samples": 1807
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "minimum": 0.0006829909521521469,
+          "maximum": 0.0012033531989828347,
+          "samples": 1807
+        }
+      ],
+      "localGeometry": [
+        [
+          "fr-manikin-upper-lid-left",
+          "4daa018eda1d591026b2dfcf6872570595240540743602baa64c45dd016717c8",
+          "7b6a20063be85a70abad2ba31b8403566c30d4736a70c431a4c5b0dcb614dfc2",
+          "d08cdcb29482f1b0eae7c4ed67df815ab3974108de5c7635af2b2e1d8e88a4c9"
+        ],
+        [
+          "fr-manikin-lower-lid-left",
+          "de802736bd43e65f30db58de3706b1a217c74fbf2b175d0b2de01a5e57c69439",
+          "7a646ba30bc960b1f889d515a68e01acc2318acd18618ee698855dbf509fb112",
+          "d08cdcb29482f1b0eae7c4ed67df815ab3974108de5c7635af2b2e1d8e88a4c9"
+        ],
+        [
+          "fr-manikin-upper-lid-right",
+          "0e235d2caf35ab9f21d9ae88709f9f126a4457e8cc5f24295fa45f4800873f09",
+          "83e508c85229c2efc982e743f7069c0083b91d2f39b465f4884fcb1782aa76d1",
+          "94d36496bf4f4f648e636c72c679fc80d92768f13108d7280f657c620b4cda5f"
+        ],
+        [
+          "fr-manikin-lower-lid-right",
+          "91a9b4b69a60cfcd4714669666e140534dcf5390a5796645590a6d649d56f9ca",
+          "a6ab0ce4acc8a40c6b6f13385c5ca5b6dbddb250e09b9cdff78d3b2ec1e6c883",
+          "94d36496bf4f4f648e636c72c679fc80d92768f13108d7280f657c620b4cda5f"
+        ],
+        [
+          "fr-manikin-eye-left",
+          "db5239dda6751657e3cfe8b1251b852bcc3d32795be846778f4567f1e7159275",
+          "7d86563aa6c244c0d40e5b326b291e334289c19401f46fdb475fac2067e74eb2",
+          "6dab3fe81286f1ac68f9b623260012d7d766dbc122ccc906388ba1ab40a91e9c"
+        ],
+        [
+          "fr-manikin-eye-right",
+          "b36b2753fedb75fe8ea8b134cc4ff535fb22c5d54f67c45bdecc8bf75ddfbeb6",
+          "e85d3caca08057ff5575cddb3cb0881d4d589c2001b5068e1690ff7c40dfcc4f",
+          "6dab3fe81286f1ac68f9b623260012d7d766dbc122ccc906388ba1ab40a91e9c"
+        ]
+      ],
+      "resources": {
+        "geometries": 123,
+        "materials": 27,
+        "allocatedGeometries": 119,
+        "allocatedMaterials": 23
+      },
+      "priorResources": {
+        "geometries": 123,
+        "materials": 27,
+        "allocatedGeometries": 121,
+        "allocatedMaterials": 23
+      }
+    },
+    {
+      "age": "infant",
+      "phase": 8,
+      "contrast": false,
+      "status": "passed",
+      "checks": 29934,
+      "durationMs": 2084,
+      "preserved": {
+        "sha256": "16006584d07ef4d44f2bb063547a268b7e166aae15696fcec16e363d0347481a",
+        "nodes": 187,
+        "meshes": 129,
+        "geometries": 127,
+        "materials": 28
+      },
+      "shells": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.000008899273252479247,
+          "minAgreement": 0.8686557597044038,
+          "minNormal": 0.9999999634318357,
+          "maxNormal": 1.0000000399707942,
+          "seamNormal": 0.9999999391644128
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.00000337350810126983,
+          "minAgreement": 0.8347842145195922,
+          "minNormal": 0.9999999628031835,
+          "maxNormal": 1.0000000380217455,
+          "seamNormal": 0.9999999454811723
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.000008899273252479247,
+          "minAgreement": 0.8686557597044038,
+          "minNormal": 0.9999999634318357,
+          "maxNormal": 1.0000000399707942,
+          "seamNormal": 0.9999999391644128
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.00000337350810126983,
+          "minAgreement": 0.8347842145195922,
+          "minNormal": 0.9999999628031835,
+          "maxNormal": 1.0000000380217455,
+          "seamNormal": 0.9999999454811723
+        }
+      ],
+      "relief": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "middle": [
+            0.0018398120174491159,
+            0.0027428995019112023,
+            0.0034193861684902473,
+            0.002742891820506687,
+            0.0015254155846685668
+          ],
+          "tails": [
+            -0.0011451237717331503,
+            -0.00112129187425571
+          ],
+          "maxBack": -0.0011999874281908459,
+          "maxBoundary": -0.0011999874281908459,
+          "minFront": 0.0022645476944965627,
+          "maxFront": 0.0037999988319724594,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "middle": [
+            0.0010029370242669576,
+            0.0015600326325258594,
+            0.0017983519554269647,
+            0.0013871840233997822,
+            0.0007077840652218935
+          ],
+          "tails": [
+            -0.0011636407311655967,
+            -0.0011449177624861197
+          ],
+          "maxBack": -0.0011999877154402249,
+          "maxBoundary": -0.0011999877154402249,
+          "minFront": 0.0012251841594286348,
+          "maxFront": 0.00227503509291686,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "middle": [
+            0.0011119230037610125,
+            0.0027148238556980544,
+            0.0031911125301387353,
+            0.0020914280639751314,
+            0.0013275249443052786
+          ],
+          "tails": [
+            -0.0014497933458111208,
+            -0.0011177211667716984
+          ],
+          "maxBack": -0.0011999834255341402,
+          "maxBoundary": -0.0011999834255341402,
+          "minFront": 0.0008241919822372116,
+          "maxFront": 0.0036680897448634637,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "middle": [
+            0.000630918748200824,
+            0.0006907804379361755,
+            0.0018310772311491128,
+            0.0012154635777861245,
+            0.0009663549623055731
+          ],
+          "tails": [
+            -0.0014850802189227926,
+            -0.0011424113577692505
+          ],
+          "maxBack": -0.0011999834255341402,
+          "maxBoundary": -0.0011999834255341402,
+          "minFront": 0.00018992603045503575,
+          "maxFront": 0.0023000072335685393,
+          "backs": 673,
+          "boundary": 144
+        }
+      ],
+      "creases": [
+        {
+          "name": "fr-manikin-eye-left",
+          "minimum": 0.000642854314153072,
+          "maximum": 0.001093092855058891,
+          "samples": 1807
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "minimum": 0.0006405745638508128,
+          "maximum": 0.001130472001698973,
+          "samples": 1807
+        }
+      ],
+      "baselineCreases": [
+        {
+          "name": "fr-manikin-eye-left",
+          "minimum": 0.0006030078757793908,
+          "maximum": 0.0011834494318464345,
+          "samples": 1807
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "minimum": 0.0006829909521521469,
+          "maximum": 0.0012033531989828347,
+          "samples": 1807
+        }
+      ],
+      "localGeometry": [
+        [
+          "fr-manikin-upper-lid-left",
+          "4daa018eda1d591026b2dfcf6872570595240540743602baa64c45dd016717c8",
+          "7b6a20063be85a70abad2ba31b8403566c30d4736a70c431a4c5b0dcb614dfc2",
+          "d08cdcb29482f1b0eae7c4ed67df815ab3974108de5c7635af2b2e1d8e88a4c9"
+        ],
+        [
+          "fr-manikin-lower-lid-left",
+          "de802736bd43e65f30db58de3706b1a217c74fbf2b175d0b2de01a5e57c69439",
+          "7a646ba30bc960b1f889d515a68e01acc2318acd18618ee698855dbf509fb112",
+          "d08cdcb29482f1b0eae7c4ed67df815ab3974108de5c7635af2b2e1d8e88a4c9"
+        ],
+        [
+          "fr-manikin-upper-lid-right",
+          "0e235d2caf35ab9f21d9ae88709f9f126a4457e8cc5f24295fa45f4800873f09",
+          "83e508c85229c2efc982e743f7069c0083b91d2f39b465f4884fcb1782aa76d1",
+          "94d36496bf4f4f648e636c72c679fc80d92768f13108d7280f657c620b4cda5f"
+        ],
+        [
+          "fr-manikin-lower-lid-right",
+          "91a9b4b69a60cfcd4714669666e140534dcf5390a5796645590a6d649d56f9ca",
+          "a6ab0ce4acc8a40c6b6f13385c5ca5b6dbddb250e09b9cdff78d3b2ec1e6c883",
+          "94d36496bf4f4f648e636c72c679fc80d92768f13108d7280f657c620b4cda5f"
+        ],
+        [
+          "fr-manikin-eye-left",
+          "db5239dda6751657e3cfe8b1251b852bcc3d32795be846778f4567f1e7159275",
+          "7d86563aa6c244c0d40e5b326b291e334289c19401f46fdb475fac2067e74eb2",
+          "6dab3fe81286f1ac68f9b623260012d7d766dbc122ccc906388ba1ab40a91e9c"
+        ],
+        [
+          "fr-manikin-eye-right",
+          "b36b2753fedb75fe8ea8b134cc4ff535fb22c5d54f67c45bdecc8bf75ddfbeb6",
+          "e85d3caca08057ff5575cddb3cb0881d4d589c2001b5068e1690ff7c40dfcc4f",
+          "6dab3fe81286f1ac68f9b623260012d7d766dbc122ccc906388ba1ab40a91e9c"
+        ]
+      ],
+      "resources": {
+        "geometries": 127,
+        "materials": 28,
+        "allocatedGeometries": 123,
+        "allocatedMaterials": 26
+      },
+      "priorResources": {
+        "geometries": 127,
+        "materials": 28,
+        "allocatedGeometries": 125,
+        "allocatedMaterials": 26
+      }
+    },
+    {
+      "age": "infant",
+      "phase": 8,
+      "contrast": true,
+      "status": "passed",
+      "checks": 29934,
+      "durationMs": 3708,
+      "preserved": {
+        "sha256": "641ce1aa88f333ff9a80c71d4b3be19e706e9f209136929ef846fe0dd5c9dc0d",
+        "nodes": 186,
+        "meshes": 129,
+        "geometries": 127,
+        "materials": 30
+      },
+      "shells": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.000008899273252479247,
+          "minAgreement": 0.8686557597044038,
+          "minNormal": 0.9999999634318357,
+          "maxNormal": 1.0000000399707942,
+          "seamNormal": 0.9999999391644128
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.00000337350810126983,
+          "minAgreement": 0.8347842145195922,
+          "minNormal": 0.9999999628031835,
+          "maxNormal": 1.0000000380217455,
+          "seamNormal": 0.9999999454811723
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.000008899273252479247,
+          "minAgreement": 0.8686557597044038,
+          "minNormal": 0.9999999634318357,
+          "maxNormal": 1.0000000399707942,
+          "seamNormal": 0.9999999391644128
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "vertices": 1225,
+          "faces": 2208,
+          "volume": 0.00000337350810126983,
+          "minAgreement": 0.8347842145195922,
+          "minNormal": 0.9999999628031835,
+          "maxNormal": 1.0000000380217455,
+          "seamNormal": 0.9999999454811723
+        }
+      ],
+      "relief": [
+        {
+          "name": "fr-manikin-upper-lid-left",
+          "middle": [
+            0.0018398120174491159,
+            0.0027428995019112023,
+            0.0034193861684902473,
+            0.002742891820506687,
+            0.0015254155846685668
+          ],
+          "tails": [
+            -0.0011451237717331503,
+            -0.00112129187425571
+          ],
+          "maxBack": -0.0011999874281908459,
+          "maxBoundary": -0.0011999874281908459,
+          "minFront": 0.0022645476944965627,
+          "maxFront": 0.0037999988319724594,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-lower-lid-left",
+          "middle": [
+            0.0010029370242669576,
+            0.0015600326325258594,
+            0.0017983519554269647,
+            0.0013871840233997822,
+            0.0007077840652218935
+          ],
+          "tails": [
+            -0.0011636407311655967,
+            -0.0011449177624861197
+          ],
+          "maxBack": -0.0011999877154402249,
+          "maxBoundary": -0.0011999877154402249,
+          "minFront": 0.0012251841594286348,
+          "maxFront": 0.00227503509291686,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-upper-lid-right",
+          "middle": [
+            0.0011119230037610125,
+            0.0027148238556980544,
+            0.0031911125301387353,
+            0.0020914280639751314,
+            0.0013275249443052786
+          ],
+          "tails": [
+            -0.0014497933458111208,
+            -0.0011177211667716984
+          ],
+          "maxBack": -0.0011999834255341402,
+          "maxBoundary": -0.0011999834255341402,
+          "minFront": 0.0008241919822372116,
+          "maxFront": 0.0036680897448634637,
+          "backs": 673,
+          "boundary": 144
+        },
+        {
+          "name": "fr-manikin-lower-lid-right",
+          "middle": [
+            0.000630918748200824,
+            0.0006907804379361755,
+            0.0018310772311491128,
+            0.0012154635777861245,
+            0.0009663549623055731
+          ],
+          "tails": [
+            -0.0014850802189227926,
+            -0.0011424113577692505
+          ],
+          "maxBack": -0.0011999834255341402,
+          "maxBoundary": -0.0011999834255341402,
+          "minFront": 0.00018992603045503575,
+          "maxFront": 0.0023000072335685393,
+          "backs": 673,
+          "boundary": 144
+        }
+      ],
+      "creases": [
+        {
+          "name": "fr-manikin-eye-left",
+          "minimum": 0.000642854314153072,
+          "maximum": 0.001093092855058891,
+          "samples": 1807
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "minimum": 0.0006405745638508128,
+          "maximum": 0.001130472001698973,
+          "samples": 1807
+        }
+      ],
+      "baselineCreases": [
+        {
+          "name": "fr-manikin-eye-left",
+          "minimum": 0.0006030078757793908,
+          "maximum": 0.0011834494318464345,
+          "samples": 1807
+        },
+        {
+          "name": "fr-manikin-eye-right",
+          "minimum": 0.0006829909521521469,
+          "maximum": 0.0012033531989828347,
+          "samples": 1807
+        }
+      ],
+      "localGeometry": [
+        [
+          "fr-manikin-upper-lid-left",
+          "4daa018eda1d591026b2dfcf6872570595240540743602baa64c45dd016717c8",
+          "7b6a20063be85a70abad2ba31b8403566c30d4736a70c431a4c5b0dcb614dfc2",
+          "d08cdcb29482f1b0eae7c4ed67df815ab3974108de5c7635af2b2e1d8e88a4c9"
+        ],
+        [
+          "fr-manikin-lower-lid-left",
+          "de802736bd43e65f30db58de3706b1a217c74fbf2b175d0b2de01a5e57c69439",
+          "7a646ba30bc960b1f889d515a68e01acc2318acd18618ee698855dbf509fb112",
+          "d08cdcb29482f1b0eae7c4ed67df815ab3974108de5c7635af2b2e1d8e88a4c9"
+        ],
+        [
+          "fr-manikin-upper-lid-right",
+          "0e235d2caf35ab9f21d9ae88709f9f126a4457e8cc5f24295fa45f4800873f09",
+          "83e508c85229c2efc982e743f7069c0083b91d2f39b465f4884fcb1782aa76d1",
+          "94d36496bf4f4f648e636c72c679fc80d92768f13108d7280f657c620b4cda5f"
+        ],
+        [
+          "fr-manikin-lower-lid-right",
+          "91a9b4b69a60cfcd4714669666e140534dcf5390a5796645590a6d649d56f9ca",
+          "a6ab0ce4acc8a40c6b6f13385c5ca5b6dbddb250e09b9cdff78d3b2ec1e6c883",
+          "94d36496bf4f4f648e636c72c679fc80d92768f13108d7280f657c620b4cda5f"
+        ],
+        [
+          "fr-manikin-eye-left",
+          "db5239dda6751657e3cfe8b1251b852bcc3d32795be846778f4567f1e7159275",
+          "7d86563aa6c244c0d40e5b326b291e334289c19401f46fdb475fac2067e74eb2",
+          "6dab3fe81286f1ac68f9b623260012d7d766dbc122ccc906388ba1ab40a91e9c"
+        ],
+        [
+          "fr-manikin-eye-right",
+          "b36b2753fedb75fe8ea8b134cc4ff535fb22c5d54f67c45bdecc8bf75ddfbeb6",
+          "e85d3caca08057ff5575cddb3cb0881d4d589c2001b5068e1690ff7c40dfcc4f",
+          "6dab3fe81286f1ac68f9b623260012d7d766dbc122ccc906388ba1ab40a91e9c"
+        ]
+      ],
+      "resources": {
+        "geometries": 127,
+        "materials": 30,
+        "allocatedGeometries": 123,
+        "allocatedMaterials": 26
+      },
+      "priorResources": {
+        "geometries": 127,
+        "materials": 30,
+        "allocatedGeometries": 125,
+        "allocatedMaterials": 26
+      }
+    }
+  ]
+}

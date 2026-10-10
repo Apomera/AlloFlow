@@ -1,0 +1,107 @@
+{
+  "sourceSHA256": "0172a87887dfded48dcdaed4465e232882bfc890e9f8e353c90885ee0749f3ab",
+  "loadedSourceSHA256": "0172a87887dfded48dcdaed4465e232882bfc890e9f8e353c90885ee0749f3ab",
+  "finalSourceSHA256": "0172a87887dfded48dcdaed4465e232882bfc890e9f8e353c90885ee0749f3ab",
+  "baselineSHA256": "2a8adbc0910ef6ac600388115c5cccb447484ef099be6eff7430f6870977c572",
+  "passedGroups": 17,
+  "errors": [],
+  "runner": "perception_lab_drawing_conditions_qa.cjs",
+  "runnerSHA256": "f55660e89094e1d2265bc5b528d88d6d4d6207202fb3e625d11cc1bff9c52c2b",
+  "artifacts": [
+    {
+      "file": "drawing-conditions-1600-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "drawing-conditions-1600.png",
+      "bytes": 21715,
+      "sha256": "933b8157c86f2c93d680cd4c810ef6be751a06ca938cf402b9fb2b69fa0d881d"
+    },
+    {
+      "file": "drawing-conditions-320-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "drawing-conditions-320.png",
+      "bytes": 20052,
+      "sha256": "0ccc86a3b121445341eabf9e29b942a6ed5d0a889e6a99592a7ecf4440610545"
+    },
+    {
+      "file": "drawing-conditions-390-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "drawing-conditions-390.png",
+      "bytes": 21026,
+      "sha256": "3b0246410986223201d8d543c1b250fc522c0de6a546057927ad76894eca57dc"
+    },
+    {
+      "file": "drawing-conditions-700-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "drawing-conditions-700.png",
+      "bytes": 25137,
+      "sha256": "d1467a7d76b1f4dbc1a264254bd94ec19e72fa6dff911177b2f2e2dabdaded0c"
+    },
+    {
+      "file": "drawing-conditions-320-200-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "drawing-conditions-320-200.png",
+      "bytes": 47911,
+      "sha256": "47deea2298fefe5178bb8f37f5c761495b0d9945b705b06b6d925f2cbdbb737d"
+    },
+    {
+      "file": "drawing-conditions-long-rtl-320-200-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "drawing-conditions-long-rtl-320-200.png",
+      "bytes": 73988,
+      "sha256": "fb41a93109af8341a475a004801b5642c42197212bf9d6dca17f71e0e1651386"
+    },
+    {
+      "file": "drawing-conditions-dark-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "drawing-conditions-dark.png",
+      "bytes": 19171,
+      "sha256": "712bef0974465b4a1e8f0e0d5f256b4c2f92b1816e3eeb841af98b78c469b61a"
+    },
+    {
+      "file": "drawing-conditions-contrast-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "drawing-conditions-contrast.png",
+      "bytes": 17031,
+      "sha256": "7fe2f4f0d46c30211483b445e6fb867bded083f6d86b4a44ea97ac33367a89cc"
+    },
+    {
+      "file": "drawing-conditions-forced-axe.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "file": "drawing-conditions-forced.png",
+      "bytes": 16932,
+      "sha256": "789eace787139093e2024ee558c68370ed1d32dc0b3347e5bc76a4acb665970b"
+    },
+    {
+      "file": "drawing-conditions-browser-results.json",
+      "bytes": 4228,
+      "sha256": "ab195dbfae3423e94e290c92c1891ec0962f6d47fbcbadfc94effb498923c2e4"
+    }
+  ]
+}

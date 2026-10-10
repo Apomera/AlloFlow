@@ -1,0 +1,17 @@
+{
+  "exitCode": 0,
+  "tests": 4,
+  "passed": 4,
+  "failed": 0,
+  "before": {
+    "renderer": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7",
+    "ui": "30f1ae3bb21b233b5d34dbb477d9d330759eac143a22de23107d33ba467754df",
+    "test": "724cc1d44e96c3476e1ee4c7e8b102a62b928ec2541f9f970a16ab807717b9dd"
+  },
+  "after": {
+    "renderer": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7",
+    "ui": "30f1ae3bb21b233b5d34dbb477d9d330759eac143a22de23107d33ba467754df",
+    "test": "724cc1d44e96c3476e1ee4c7e8b102a62b928ec2541f9f970a16ab807717b9dd"
+  },
+  "unchanged": true
+}

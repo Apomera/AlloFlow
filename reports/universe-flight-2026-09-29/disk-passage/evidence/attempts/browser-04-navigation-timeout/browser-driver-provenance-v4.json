@@ -1,0 +1,28 @@
+{
+  "previousDriverSha256": "c5c7062586c087b05484228120905411e07feb32c95195650ba76a88a04ee7d3",
+  "driverSha256": "6045d7fe62c67f051b048d0224b98bae6063dc1626c58ebec69762e391bf4359",
+  "preservedPreviousDriver": "attempts/browser-03-narrow-layout/browser-check-executed.cjs",
+  "addedCoverage": "Ten actual-DOM phone checks: eight paused active-route poses and two running poses. Badge and phase rectangles must not intersect the zoom controls; redundant region badge must be hidden.",
+  "edits": [
+    {
+      "before": "imageLoads:[],served:[]",
+      "after": "imageLoads:[],hudBounds:[],served:[]"
+    },
+    {
+      "before": " async function accessible(name,selectors)",
+      "after": "\n async function hudClear(name,state){if(await page.evaluate(()=>innerWidth>480))return;await frames();const bounds=await page.evaluate(()=>{const stage=document.querySelector('.uf-stage'),chip=stage.querySelector('.uf-flight-chip'),phase=stage.querySelector('.uf-flight-phase'),lens=stage.querySelector('.uf-lens-controls'),region=stage.querySelector('.uf-flight-chip + .uf-chip'),rect=n=>{const r=n.getBoundingClientRect();return{left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};},visible=n=>n&&getComputedStyle(n).display!=='none'&&n.getBoundingClientRect().width>0&&n.getBoundingClientRect().height>0;if(!visible(chip)||!visible(phase)||!visible(lens))return null;const a=rect(chip),p=rect(phase),b=rect(lens),intersects=(x,y)=>Math.max(x.left,y.left)<Math.min(x.right,y.right)&&Math.max(x.top,y.top)<Math.min(x.bottom,y.bottom);return{viewportWidth:innerWidth,stageWidth:stage.getBoundingClientRect().width,chip:a,phase:p,lens:b,chipText:chip.textContent,phaseText:phase.textContent,regionHidden:!visible(region),chipIntersectsLens:intersects(a,b),phaseIntersectsLens:intersects(p,b)};});if(!bounds)return;result.hudBounds.push({name,state,...bounds});save();assert.equal(bounds.regionHidden,true,'Phone flyby HUD reserves space for phase text');assert.equal(bounds.chipIntersectsLens,false,'Phone flyby badge stays clear of zoom controls');assert.equal(bounds.phaseIntersectsLens,false,'Phone flyby phase stays clear of zoom controls');}\n async function accessible(name,selectors)"
+    },
+    {
+      "before": "info=await page.evaluate(()=>__routeInfo);assert.equal(pose.settings.mode",
+      "after": "info=await page.evaluate(()=>__routeInfo);await hudClear(name,'paused');assert.equal(pose.settings.mode"
+    },
+    {
+      "before": "await page.waitForFunction(()=>__routeInfo.running===true);await page.waitForTimeout(300);",
+      "after": "await page.waitForFunction(()=>__routeInfo.running===true);await hudClear(name+'-running','running');await page.waitForTimeout(300);"
+    },
+    {
+      "before": "assert.equal(result.imageLoads.length,12);result.completed=true;",
+      "after": "assert.equal(result.imageLoads.length,12);assert.equal(result.poses.length,20);assert.equal(result.captures.length,8);assert.equal(result.hudBounds.filter(b=>b.state==='paused').length,8);assert.equal(result.hudBounds.filter(b=>b.state==='running').length,2);result.completed=true;"
+    }
+  ]
+}

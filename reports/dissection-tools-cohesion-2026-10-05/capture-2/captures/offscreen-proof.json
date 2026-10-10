@@ -1,0 +1,121 @@
+{
+  "geometry": {
+    "viewportHeight": 320,
+    "canvas": {
+      "top": 1216.953125,
+      "bottom": 1996.953125,
+      "width": 650,
+      "height": 780
+    },
+    "capture": {
+      "top": 135.578125,
+      "bottom": 183.578125,
+      "width": 349.078125,
+      "height": 48
+    }
+  },
+  "observations": [
+    {
+      "contents": "specimen",
+      "width": 220,
+      "height": 264,
+      "entryOffscreen": true,
+      "entryMotionReduced": true,
+      "stageCopies": 1,
+      "textBeforeCopy": [
+        "STABLE ANCHOR",
+        "1",
+        "2",
+        "Dorsal Skin",
+        "Ventral Skin",
+        "SURFACE · LAYERED",
+        "Nictitating Membrane · surface · selected"
+      ],
+      "textAfterCopy": [
+        "🟢 Skin Layer",
+        "🐸 Frog (Rana)  /  LATERAL",
+        "A ↑  ↓ P",
+        "anterior-posterior",
+        "1 cm  /  2.0x"
+      ],
+      "entryClock": [
+        0,
+        null,
+        0
+      ],
+      "stageCamera": [
+        2,
+        -21,
+        11
+      ],
+      "stageView": "lateral",
+      "result": true,
+      "bitmapRestored": true,
+      "datasetRestored": true,
+      "keysRestored": true,
+      "changedReferences": [],
+      "changedValues": [],
+      "requestCleared": true,
+      "exitClock": [
+        0,
+        null,
+        0
+      ]
+    },
+    {
+      "contents": "canvas",
+      "width": 220,
+      "height": 264,
+      "entryOffscreen": true,
+      "entryMotionReduced": true,
+      "stageCopies": 1,
+      "textBeforeCopy": [
+        "SEQUENCE 6/6 · COMPLETE",
+        "Complete the frog ventral-access sequence",
+        "STABLE ANCHOR",
+        "1",
+        "2",
+        "1/37 viewed · observation 3%",
+        "Tympanic Membrane · surface · visible ·",
+        "layered: External eardrum behind eye.",
+        "View: lateral",
+        "Dorsal Skin",
+        "Ventral Skin",
+        "SURFACE · LAYERED",
+        "Tympanic Membrane · surface",
+        "SURFACE · LAYERED",
+        "Nictitating Membrane · surface ·",
+        "selected",
+        "🟢 Skin Layer",
+        "🐸 Frog (Rana)  /  LATERAL",
+        "A ↑  ↓ P",
+        "anterior-posterior",
+        "1 cm  /  2.0x"
+      ],
+      "textAfterCopy": [],
+      "entryClock": [
+        0,
+        null,
+        0
+      ],
+      "stageCamera": [
+        2,
+        -21,
+        11
+      ],
+      "stageView": "lateral",
+      "result": true,
+      "bitmapRestored": true,
+      "datasetRestored": true,
+      "keysRestored": true,
+      "changedReferences": [],
+      "changedValues": [],
+      "requestCleared": true,
+      "exitClock": [
+        0,
+        null,
+        0
+      ]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "capturedOriginalDriver": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-disk-depth57\\build-candidate-capture.cjs",
+  "capturedOriginalDriverHash": "bcd2ef10395e0b196b5b77490c5db45e2298086988b4057b8955b610d03a03f2",
+  "reproductionDriver": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-disk-depth57\\build-candidate.cjs",
+  "reproductionDriverHash": "631fe5e40b485fd669183addc2c5be0d718616d54f8d399071dcbdfe42dc3dde",
+  "actualCommand": "node build-candidate.cjs",
+  "actualExecSession": 1083,
+  "method": "Exact reversal of the single later audit-driver patch; the active process had already loaded this original source.",
+  "candidateHash": "8121868ef2aa764c5e3e88284089ebf76fe0c9e1ec264ee4ae95fe434d7e9bc9",
+  "candidateUnchanged": true
+}

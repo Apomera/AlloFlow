@@ -1,0 +1,12 @@
+{
+  "startedAt": "2026-10-07T01:49:23.202Z",
+  "completedAt": "2026-10-07T01:53:21.909Z",
+  "sourceHash": "7f75483cd5807384b98db4eb994439cca3e0e30b90574b5775afb06bc206fe92",
+  "wrapperPid": 51276,
+  "childPid": 32912,
+  "exitCode": 0,
+  "signal": null,
+  "reportStartedAt": "2026-10-07T01:49:50.909Z",
+  "reportCompletedAt": "2026-10-07T01:51:53.745Z",
+  "resourcesClosed": true
+}

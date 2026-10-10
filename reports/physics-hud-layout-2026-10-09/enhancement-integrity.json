@@ -1,0 +1,9 @@
+{
+  "beforeSha256": "90d7922145112ef4c87b0f84c579cc413ed9fa5aa0b2d33a04386dcd9ceacd4b",
+  "sourceSha256": "862666ca23a82fa5d15b73917b011fa9eb157554ac3d76302a4cb4d4a051abe0",
+  "mirrorMatches": true,
+  "numericalPrefixUnchanged": true,
+  "simulationStepBlockMovedIntact": true,
+  "minimumFont": 12,
+  "extraHeightPreservesPlot": true
+}

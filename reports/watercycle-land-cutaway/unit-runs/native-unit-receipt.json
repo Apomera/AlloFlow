@@ -1,0 +1,90 @@
+{
+  "sourceSha256": "3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875",
+  "startedAt": "2026-10-05T21:14:36.006Z",
+  "completedAt": "2026-10-05T21:18:11.879Z",
+  "exitCode": 1,
+  "runtimeBefore": [
+    {
+      "file": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875"
+    }
+  ],
+  "runtimeAfter": [
+    {
+      "file": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875"
+    }
+  ],
+  "testsBefore": [
+    {
+      "file": "tests/watercycle_land_cutaway.test.js",
+      "sha256": "ff34aa2c84e973fd428c2b04163a403aae6042be4004941aedde5201e698c90d"
+    },
+    {
+      "file": "tests/watercycle_land_surface.test.js",
+      "sha256": "3b3ebcafb9632b05133e5b9a33a9d0b33c997c4c30358713151903917d03e00f"
+    },
+    {
+      "file": "tests/watercycle_conditions_clarity.test.js",
+      "sha256": "95dd0f2f398b70b45c44eda4bbbac1522dd2cd306701ddca8b4cd0212f9618e6"
+    },
+    {
+      "file": "tests/watercycle_comparison_clarity.test.js",
+      "sha256": "de41ebf91f544824574a2c8a15fe749189d242c5566d569b25dac55c5803414c"
+    },
+    {
+      "file": "tests/watercycle_next_experiment.test.js",
+      "sha256": "ddaef3e388deda56a177f2200007d8a7d2c6e847ffa13dca63ab518546ad4e89"
+    },
+    {
+      "file": "tests/watercycle_baseline_restore.test.js",
+      "sha256": "562c3a88fcdef1216cc489468afa2b0d9d829811a6d41cd8ff48b809c6082fd7"
+    },
+    {
+      "file": "tests/watercycle_auto_baseline.test.js",
+      "sha256": "99214d97e09a7ab8603bbcd3c3999cb1aed6210c1366c65346771f6f4609375e"
+    }
+  ],
+  "testsAfter": [
+    {
+      "file": "tests/watercycle_land_cutaway.test.js",
+      "sha256": "ff34aa2c84e973fd428c2b04163a403aae6042be4004941aedde5201e698c90d"
+    },
+    {
+      "file": "tests/watercycle_land_surface.test.js",
+      "sha256": "3b3ebcafb9632b05133e5b9a33a9d0b33c997c4c30358713151903917d03e00f"
+    },
+    {
+      "file": "tests/watercycle_conditions_clarity.test.js",
+      "sha256": "95dd0f2f398b70b45c44eda4bbbac1522dd2cd306701ddca8b4cd0212f9618e6"
+    },
+    {
+      "file": "tests/watercycle_comparison_clarity.test.js",
+      "sha256": "de41ebf91f544824574a2c8a15fe749189d242c5566d569b25dac55c5803414c"
+    },
+    {
+      "file": "tests/watercycle_next_experiment.test.js",
+      "sha256": "ddaef3e388deda56a177f2200007d8a7d2c6e847ffa13dca63ab518546ad4e89"
+    },
+    {
+      "file": "tests/watercycle_baseline_restore.test.js",
+      "sha256": "562c3a88fcdef1216cc489468afa2b0d9d829811a6d41cd8ff48b809c6082fd7"
+    },
+    {
+      "file": "tests/watercycle_auto_baseline.test.js",
+      "sha256": "99214d97e09a7ab8603bbcd3c3999cb1aed6210c1366c65346771f6f4609375e"
+    }
+  ],
+  "successful": false,
+  "passed": 96,
+  "failed": 0,
+  "skipped": 17
+}

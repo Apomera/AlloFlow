@@ -1,0 +1,1087 @@
+{
+  "source": "stem_lab/stem_tool_moonmission.js",
+  "sourceSha256": "068da4ff212e559099fb5f6dd0f0f8d0802344b442766dec74ebc84e528cb4a3",
+  "sourceBytes": 1405932,
+  "oracle": "Indexed triangle edge half-plane clipping; independent plane/parabola roots; continuous line/face clearance",
+  "constants": {
+    "worldScale": 0.6,
+    "gravity": 1.624,
+    "initialHeight": 0.02,
+    "displayHorizon": 2.5,
+    "maxTrailSegments": 16
+  },
+  "tolerance": {
+    "age": 2e-8,
+    "position": 2e-7,
+    "clearance": 2e-7
+  },
+  "cases": [
+    {
+      "name": "flat plane",
+      "vertices": 15,
+      "triangles": 16,
+      "births": 3,
+      "counts": {
+        "impact": 3,
+        "mesh-exit": 0,
+        "display-limit": 0
+      },
+      "rowsByTime": [
+        {
+          "time": 0.001,
+          "rows": 3
+        },
+        {
+          "time": 0.03,
+          "rows": 3
+        },
+        {
+          "time": 0.08,
+          "rows": 3
+        },
+        {
+          "time": 0.2,
+          "rows": 3
+        },
+        {
+          "time": 0.45,
+          "rows": 3
+        },
+        {
+          "time": 0.8,
+          "rows": 2
+        },
+        {
+          "time": 1.1,
+          "rows": 0
+        },
+        {
+          "time": 1.5,
+          "rows": 0
+        },
+        {
+          "time": 2.1,
+          "rows": 0
+        },
+        {
+          "time": 2.4,
+          "rows": 0
+        },
+        {
+          "time": 2.6,
+          "rows": 0
+        }
+      ],
+      "maxDisplayedTrailSegments": 2,
+      "bounds": {
+        "minX": -100,
+        "maxX": 100,
+        "minZ": -100,
+        "maxZ": 100
+      },
+      "selected": [
+        {
+          "id": 0,
+          "flatLife": 0.8873509012768787,
+          "launchY": 0,
+          "life": 0.8873509012768788,
+          "endKind": "impact",
+          "impact": {
+            "age": 0.8873509012768788,
+            "x": 10.641724212998877,
+            "y": -6.661338147750939e-17,
+            "z": 0
+          },
+          "faceIntervals": 10
+        },
+        {
+          "id": 1,
+          "flatLife": 0.68096347768014,
+          "launchY": 0,
+          "life": 0.68096347768014,
+          "endKind": "impact",
+          "impact": {
+            "age": 0.68096347768014,
+            "x": 2.42094942520774,
+            "y": 3.3306690738754695e-17,
+            "z": 9.153324032260326
+          },
+          "faceIntervals": 3
+        },
+        {
+          "id": 2,
+          "flatLife": 0.8873509012768787,
+          "launchY": 0,
+          "life": 0.8873509012768788,
+          "endKind": "impact",
+          "impact": {
+            "age": 0.8873509012768788,
+            "x": 0,
+            "y": -6.661338147750939e-17,
+            "z": 0
+          },
+          "faceIntervals": 6
+        }
+      ]
+    },
+    {
+      "name": "rising plane: contact before flat return",
+      "vertices": 15,
+      "triangles": 16,
+      "births": 2,
+      "counts": {
+        "impact": 2,
+        "mesh-exit": 0,
+        "display-limit": 0
+      },
+      "rowsByTime": [
+        {
+          "time": 0.001,
+          "rows": 2
+        },
+        {
+          "time": 0.03,
+          "rows": 2
+        },
+        {
+          "time": 0.08,
+          "rows": 1
+        },
+        {
+          "time": 0.2,
+          "rows": 0
+        },
+        {
+          "time": 0.45,
+          "rows": 0
+        },
+        {
+          "time": 0.8,
+          "rows": 0
+        },
+        {
+          "time": 1.1,
+          "rows": 0
+        },
+        {
+          "time": 1.5,
+          "rows": 0
+        },
+        {
+          "time": 2.1,
+          "rows": 0
+        },
+        {
+          "time": 2.4,
+          "rows": 0
+        },
+        {
+          "time": 2.6,
+          "rows": 0
+        }
+      ],
+      "maxDisplayedTrailSegments": 1,
+      "bounds": {
+        "minX": -100,
+        "maxX": 100,
+        "minZ": -100,
+        "maxZ": 100
+      },
+      "selected": [
+        {
+          "id": 0,
+          "flatLife": 0.8873509012768787,
+          "launchY": 0,
+          "life": 0.05746142783479045,
+          "endKind": "impact",
+          "impact": {
+            "age": 0.05746142783479045,
+            "x": 0.6891170866261117,
+            "y": 0.03445585433130559,
+            "z": 0
+          },
+          "faceIntervals": 10
+        },
+        {
+          "id": 1,
+          "flatLife": 2.160140580402384,
+          "launchY": -0.5,
+          "life": 0.08561658119755042,
+          "endKind": "impact",
+          "impact": {
+            "age": 0.08561658119755042,
+            "x": -8.03884490514891,
+            "y": -0.4019422452574455,
+            "z": 0.6066563619440412
+          },
+          "faceIntervals": 6
+        }
+      ]
+    },
+    {
+      "name": "falling plane: airborne beyond flat return",
+      "vertices": 15,
+      "triangles": 16,
+      "births": 1,
+      "counts": {
+        "impact": 1,
+        "mesh-exit": 0,
+        "display-limit": 0
+      },
+      "rowsByTime": [
+        {
+          "time": 0.001,
+          "rows": 1
+        },
+        {
+          "time": 0.03,
+          "rows": 1
+        },
+        {
+          "time": 0.08,
+          "rows": 1
+        },
+        {
+          "time": 0.2,
+          "rows": 1
+        },
+        {
+          "time": 0.45,
+          "rows": 1
+        },
+        {
+          "time": 0.8,
+          "rows": 1
+        },
+        {
+          "time": 1.1,
+          "rows": 1
+        },
+        {
+          "time": 1.5,
+          "rows": 1
+        },
+        {
+          "time": 2.1,
+          "rows": 1
+        },
+        {
+          "time": 2.4,
+          "rows": 0
+        },
+        {
+          "time": 2.6,
+          "rows": 0
+        }
+      ],
+      "maxDisplayedTrailSegments": 1,
+      "bounds": {
+        "minX": -100,
+        "maxX": 100,
+        "minZ": -100,
+        "maxZ": 100
+      },
+      "selected": [
+        {
+          "id": 0,
+          "flatLife": 0.8873509012768787,
+          "launchY": 0,
+          "life": 2.1020875770020244,
+          "endKind": "impact",
+          "impact": {
+            "age": 2.1020875770020244,
+            "x": 25.209684504559444,
+            "y": -1.2604842252279722,
+            "z": 0
+          },
+          "faceIntervals": 10
+        }
+      ]
+    },
+    {
+      "name": "display horizon: no invented contact",
+      "vertices": 15,
+      "triangles": 16,
+      "births": 1,
+      "counts": {
+        "impact": 0,
+        "mesh-exit": 0,
+        "display-limit": 1
+      },
+      "rowsByTime": [
+        {
+          "time": 0.001,
+          "rows": 1
+        },
+        {
+          "time": 0.03,
+          "rows": 1
+        },
+        {
+          "time": 0.08,
+          "rows": 1
+        },
+        {
+          "time": 0.2,
+          "rows": 1
+        },
+        {
+          "time": 0.45,
+          "rows": 1
+        },
+        {
+          "time": 0.8,
+          "rows": 1
+        },
+        {
+          "time": 1.1,
+          "rows": 1
+        },
+        {
+          "time": 1.5,
+          "rows": 1
+        },
+        {
+          "time": 2.1,
+          "rows": 1
+        },
+        {
+          "time": 2.4,
+          "rows": 1
+        },
+        {
+          "time": 2.6,
+          "rows": 0
+        }
+      ],
+      "maxDisplayedTrailSegments": 1,
+      "bounds": {
+        "minX": -100,
+        "maxX": 100,
+        "minZ": -100,
+        "maxZ": 100
+      },
+      "selected": [
+        {
+          "id": 0,
+          "flatLife": 0.8873509012768787,
+          "launchY": 0,
+          "life": 2.5,
+          "endKind": "display-limit",
+          "impact": null,
+          "faceIntervals": 10
+        }
+      ]
+    },
+    {
+      "name": "finite mesh exit before contact",
+      "vertices": 9,
+      "triangles": 8,
+      "births": 2,
+      "counts": {
+        "impact": 0,
+        "mesh-exit": 2,
+        "display-limit": 0
+      },
+      "rowsByTime": [
+        {
+          "time": 0.001,
+          "rows": 2
+        },
+        {
+          "time": 0.03,
+          "rows": 2
+        },
+        {
+          "time": 0.08,
+          "rows": 1
+        },
+        {
+          "time": 0.2,
+          "rows": 0
+        },
+        {
+          "time": 0.45,
+          "rows": 0
+        },
+        {
+          "time": 0.8,
+          "rows": 0
+        },
+        {
+          "time": 1.1,
+          "rows": 0
+        },
+        {
+          "time": 1.5,
+          "rows": 0
+        },
+        {
+          "time": 2.1,
+          "rows": 0
+        },
+        {
+          "time": 2.4,
+          "rows": 0
+        },
+        {
+          "time": 2.6,
+          "rows": 0
+        }
+      ],
+      "maxDisplayedTrailSegments": 1,
+      "bounds": {
+        "minX": -1,
+        "maxX": 1,
+        "minZ": -1,
+        "maxZ": 1
+      },
+      "selected": [
+        {
+          "id": 0,
+          "flatLife": 0.8873509012768787,
+          "launchY": 0,
+          "life": 0.08338412869156848,
+          "endKind": "mesh-exit",
+          "impact": null,
+          "faceIntervals": 7
+        },
+        {
+          "id": 1,
+          "flatLife": 0.8873509012768787,
+          "launchY": 0,
+          "life": 0.04716918627291187,
+          "endKind": "mesh-exit",
+          "impact": null,
+          "faceIntervals": 1
+        }
+      ]
+    },
+    {
+      "name": "narrow rim: first impact despite clear later endpoint",
+      "vertices": 21,
+      "triangles": 24,
+      "births": 3,
+      "counts": {
+        "impact": 3,
+        "mesh-exit": 0,
+        "display-limit": 0
+      },
+      "rowsByTime": [
+        {
+          "time": 0.001,
+          "rows": 3
+        },
+        {
+          "time": 0.03,
+          "rows": 1
+        },
+        {
+          "time": 0.08,
+          "rows": 1
+        },
+        {
+          "time": 0.2,
+          "rows": 1
+        },
+        {
+          "time": 0.45,
+          "rows": 0
+        },
+        {
+          "time": 0.8,
+          "rows": 0
+        },
+        {
+          "time": 1.1,
+          "rows": 0
+        },
+        {
+          "time": 1.5,
+          "rows": 0
+        },
+        {
+          "time": 2.1,
+          "rows": 0
+        },
+        {
+          "time": 2.4,
+          "rows": 0
+        },
+        {
+          "time": 2.6,
+          "rows": 0
+        }
+      ],
+      "maxDisplayedTrailSegments": 2,
+      "bounds": {
+        "minX": -80,
+        "maxX": 80,
+        "minZ": -80,
+        "maxZ": 80
+      },
+      "selected": [
+        {
+          "id": 0,
+          "flatLife": 0.8873509012768787,
+          "launchY": 0,
+          "life": 0.025481253788255095,
+          "endKind": "impact",
+          "impact": {
+            "age": 0.025481253788255095,
+            "x": 0.3055887755631327,
+            "y": 0.022355059010366014,
+            "z": 0
+          },
+          "faceIntervals": 18
+        },
+        {
+          "id": 1,
+          "flatLife": 0.8873509012768787,
+          "launchY": 0,
+          "life": 0.20171984830034795,
+          "endKind": "impact",
+          "impact": {
+            "age": 0.20171984830034795,
+            "x": 0.5808364077713848,
+            "y": 0.0766544490520246,
+            "z": 2.962620949836586e-16
+          },
+          "faceIntervals": 19
+        },
+        {
+          "id": 2,
+          "flatLife": 0.8874778703023812,
+          "launchY": 0,
+          "life": 0.016866381984433416,
+          "endKind": "impact",
+          "impact": {
+            "age": 0.016866381984433416,
+            "x": 0.30473151566631274,
+            "y": 0.018926018741796925,
+            "z": 0
+          },
+          "faceIntervals": 18
+        }
+      ]
+    },
+    {
+      "name": "mixed-diagonal bowl",
+      "vertices": 35,
+      "triangles": 48,
+      "births": 3,
+      "counts": {
+        "impact": 3,
+        "mesh-exit": 0,
+        "display-limit": 0
+      },
+      "rowsByTime": [
+        {
+          "time": 0.001,
+          "rows": 3
+        },
+        {
+          "time": 0.03,
+          "rows": 3
+        },
+        {
+          "time": 0.08,
+          "rows": 3
+        },
+        {
+          "time": 0.2,
+          "rows": 2
+        },
+        {
+          "time": 0.45,
+          "rows": 2
+        },
+        {
+          "time": 0.8,
+          "rows": 2
+        },
+        {
+          "time": 1.1,
+          "rows": 2
+        },
+        {
+          "time": 1.5,
+          "rows": 2
+        },
+        {
+          "time": 2.1,
+          "rows": 1
+        },
+        {
+          "time": 2.4,
+          "rows": 0
+        },
+        {
+          "time": 2.6,
+          "rows": 0
+        }
+      ],
+      "maxDisplayedTrailSegments": 2,
+      "bounds": {
+        "minX": -80,
+        "maxX": 80,
+        "minZ": -80,
+        "maxZ": 80
+      },
+      "selected": [
+        {
+          "id": 0,
+          "flatLife": 0.8873509012768787,
+          "launchY": 0,
+          "life": 1.9797340744718739,
+          "endKind": "impact",
+          "impact": {
+            "age": 1.9797340744718739,
+            "x": 23.742336887571962,
+            "y": -1.0684051874941838,
+            "z": 0
+          },
+          "faceIntervals": 10
+        },
+        {
+          "id": 1,
+          "flatLife": 0.9919114136154579,
+          "launchY": 0,
+          "life": 2.236712629771755,
+          "endKind": "impact",
+          "impact": {
+            "age": 2.236712629771755,
+            "x": 31.50105062268547,
+            "y": -1.3715521636100194,
+            "z": 11.498781094375886
+          },
+          "faceIntervals": 9
+        },
+        {
+          "id": 2,
+          "flatLife": 1.8931563125664292,
+          "launchY": -0.43799999418358004,
+          "life": 0.13073603744540718,
+          "endKind": "impact",
+          "impact": {
+            "age": 0.13073603744540718,
+            "x": 7.257156280163643,
+            "y": -0.3145720304012648,
+            "z": 3.0000000000000004
+          },
+          "faceIntervals": 5
+        }
+      ]
+    },
+    {
+      "name": "mixed diagonals and nonuniform relief",
+      "vertices": 64,
+      "triangles": 98,
+      "births": 36,
+      "counts": {
+        "impact": 35,
+        "mesh-exit": 0,
+        "display-limit": 1
+      },
+      "rowsByTime": [
+        {
+          "time": 0.001,
+          "rows": 36
+        },
+        {
+          "time": 0.03,
+          "rows": 35
+        },
+        {
+          "time": 0.08,
+          "rows": 29
+        },
+        {
+          "time": 0.2,
+          "rows": 26
+        },
+        {
+          "time": 0.45,
+          "rows": 20
+        },
+        {
+          "time": 0.8,
+          "rows": 18
+        },
+        {
+          "time": 1.1,
+          "rows": 12
+        },
+        {
+          "time": 1.5,
+          "rows": 7
+        },
+        {
+          "time": 2.1,
+          "rows": 1
+        },
+        {
+          "time": 2.4,
+          "rows": 1
+        },
+        {
+          "time": 2.6,
+          "rows": 0
+        }
+      ],
+      "maxDisplayedTrailSegments": 6,
+      "bounds": {
+        "minX": -90,
+        "maxX": 90,
+        "minZ": -90,
+        "maxZ": 90
+      },
+      "selected": [
+        {
+          "id": 0,
+          "flatLife": 0.3861771013883939,
+          "launchY": -0.03042790526524186,
+          "life": 0.033843958641973475,
+          "endKind": "impact",
+          "impact": {
+            "age": 0.033843958641973475,
+            "x": -3.9454507636116913,
+            "y": -0.01367002404525669,
+            "z": -3.25
+          },
+          "faceIntervals": 11
+        },
+        {
+          "id": 1,
+          "flatLife": 0.63013161542032,
+          "launchY": -0.03603342341259119,
+          "life": 0.29335617411944,
+          "endKind": "impact",
+          "impact": {
+            "age": 0.29335617411944,
+            "x": -5.404635123883093,
+            "y": 0.01851300656129881,
+            "z": -0.6349203876539797
+          },
+          "faceIntervals": 11
+        },
+        {
+          "id": 2,
+          "flatLife": 0.9605335731712021,
+          "launchY": -0.0645777399651706,
+          "life": 1.6687882413858446,
+          "endKind": "impact",
+          "impact": {
+            "age": 1.6687882413858446,
+            "x": 1.687703466707556,
+            "y": -0.6492608701194165,
+            "z": -32.1658221109483
+          },
+          "faceIntervals": 8
+        }
+      ]
+    },
+    {
+      "name": "dense face crossings shorten trail within sixteen segments",
+      "vertices": 609,
+      "triangles": 808,
+      "births": 1,
+      "counts": {
+        "impact": 1,
+        "mesh-exit": 0,
+        "display-limit": 0
+      },
+      "rowsByTime": [
+        {
+          "time": 0.001,
+          "rows": 1
+        },
+        {
+          "time": 0.03,
+          "rows": 1
+        },
+        {
+          "time": 0.08,
+          "rows": 1
+        },
+        {
+          "time": 0.2,
+          "rows": 1
+        },
+        {
+          "time": 0.45,
+          "rows": 1
+        },
+        {
+          "time": 0.8,
+          "rows": 1
+        },
+        {
+          "time": 1.1,
+          "rows": 0
+        },
+        {
+          "time": 1.5,
+          "rows": 0
+        },
+        {
+          "time": 2.1,
+          "rows": 0
+        },
+        {
+          "time": 2.4,
+          "rows": 0
+        },
+        {
+          "time": 2.6,
+          "rows": 0
+        }
+      ],
+      "maxDisplayedTrailSegments": 16,
+      "bounds": {
+        "minX": -20,
+        "maxX": 20,
+        "minZ": -3,
+        "maxZ": 3
+      },
+      "selected": [
+        {
+          "id": 0,
+          "flatLife": 0.8873509012768787,
+          "launchY": 0,
+          "life": 0.8873509012768788,
+          "endKind": "impact",
+          "impact": {
+            "age": 0.8873509012768788,
+            "x": 10.641724212998877,
+            "y": -6.661338147750939e-17,
+            "z": 0
+          },
+          "faceIntervals": 406
+        }
+      ]
+    },
+    {
+      "name": "actual source lighter terrain (140 segments)",
+      "vertices": 19881,
+      "triangles": 39200,
+      "births": 84,
+      "counts": {
+        "impact": 54,
+        "mesh-exit": 0,
+        "display-limit": 30
+      },
+      "rowsByTime": [
+        {
+          "time": 0.001,
+          "rows": 84
+        },
+        {
+          "time": 0.03,
+          "rows": 47
+        },
+        {
+          "time": 0.08,
+          "rows": 46
+        },
+        {
+          "time": 0.2,
+          "rows": 45
+        },
+        {
+          "time": 0.45,
+          "rows": 45
+        },
+        {
+          "time": 0.8,
+          "rows": 44
+        },
+        {
+          "time": 1.1,
+          "rows": 42
+        },
+        {
+          "time": 1.5,
+          "rows": 37
+        },
+        {
+          "time": 2.1,
+          "rows": 32
+        },
+        {
+          "time": 2.4,
+          "rows": 30
+        },
+        {
+          "time": 2.6,
+          "rows": 0
+        }
+      ],
+      "maxDisplayedTrailSegments": 4,
+      "bounds": {
+        "minX": -8000,
+        "maxX": 8000,
+        "minZ": -8000,
+        "maxZ": 8000
+      },
+      "selected": [
+        {
+          "id": 0,
+          "flatLife": 0.3861771013883939,
+          "launchY": -4.025458777694368,
+          "life": 0.008602065967366151,
+          "endKind": "impact",
+          "impact": {
+            "age": 0.008602065967366151,
+            "x": -199.92259319752054,
+            "y": -4.012143687557758,
+            "z": -80
+          },
+          "faceIntervals": 2
+        },
+        {
+          "id": 1,
+          "flatLife": 0.7321476658288407,
+          "launchY": -4.025458777694368,
+          "life": 2.3454626298672356,
+          "endKind": "impact",
+          "impact": {
+            "age": 2.3454626298672356,
+            "x": -183.40722264261123,
+            "y": -5.89545139348526,
+            "z": -47.39918044649359
+          },
+          "faceIntervals": 8
+        },
+        {
+          "id": 2,
+          "flatLife": 1.2130958507176652,
+          "launchY": -4.025458777694368,
+          "life": 2.5,
+          "endKind": "display-limit",
+          "impact": null,
+          "faceIntervals": 5
+        }
+      ]
+    },
+    {
+      "name": "actual source detailed terrain (220 segments)",
+      "vertices": 48841,
+      "triangles": 96800,
+      "births": 84,
+      "counts": {
+        "impact": 53,
+        "mesh-exit": 0,
+        "display-limit": 31
+      },
+      "rowsByTime": [
+        {
+          "time": 0.001,
+          "rows": 84
+        },
+        {
+          "time": 0.03,
+          "rows": 47
+        },
+        {
+          "time": 0.08,
+          "rows": 46
+        },
+        {
+          "time": 0.2,
+          "rows": 45
+        },
+        {
+          "time": 0.45,
+          "rows": 45
+        },
+        {
+          "time": 0.8,
+          "rows": 44
+        },
+        {
+          "time": 1.1,
+          "rows": 42
+        },
+        {
+          "time": 1.5,
+          "rows": 37
+        },
+        {
+          "time": 2.1,
+          "rows": 32
+        },
+        {
+          "time": 2.4,
+          "rows": 31
+        },
+        {
+          "time": 2.6,
+          "rows": 0
+        }
+      ],
+      "maxDisplayedTrailSegments": 4,
+      "bounds": {
+        "minX": -8000,
+        "maxX": 8000,
+        "minZ": -8000,
+        "maxZ": 8000
+      },
+      "selected": [
+        {
+          "id": 0,
+          "flatLife": 0.3861771013883939,
+          "launchY": -3.7393599294786597,
+          "life": 0.0097219782424393,
+          "endKind": "impact",
+          "impact": {
+            "age": 0.0097219782424393,
+            "x": -199.91251552215746,
+            "y": -3.7258789308523594,
+            "z": -80
+          },
+          "faceIntervals": 3
+        },
+        {
+          "id": 1,
+          "flatLife": 0.7321476658288407,
+          "launchY": -3.7393599294786597,
+          "life": 2.5,
+          "endKind": "display-limit",
+          "impact": null,
+          "faceIntervals": 13
+        },
+        {
+          "id": 2,
+          "flatLife": 1.2130958507176652,
+          "launchY": -3.7393599294786597,
+          "life": 2.5,
+          "endKind": "display-limit",
+          "impact": null,
+          "faceIntervals": 7
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "flights": 220,
+    "impacts": 155,
+    "meshExits": 2,
+    "displayLimits": 63,
+    "sampleRows": 1168,
+    "trailSegments": 1647,
+    "trailInteriorPoints": 11529,
+    "continuousTriangleIntervals": 2993
+  },
+  "maxima": {
+    "lifeError": 2.4202861936828413e-14,
+    "launchHeightError": 1.0658141036401503e-14,
+    "impactPositionError": 2.327027459614328e-13,
+    "headPositionError": 1.0658141036401503e-14
+  },
+  "minimumTrailClearance": 0.0006961318023770979,
+  "cacheReplacementCheck": "passed",
+  "status": "passed",
+  "scope": "First contact and finite lifetime of illustrative scene dust only. The oracle uses actual indexed meshes for both source tiers and synthetic relief. Flight, recorder, grades and browser pixels are outside this numerical probe.",
+  "limits": "The finite 2.5 s display horizon can retire grains that have no terrain impact. This does not assert physical settling beyond that horizon, physical-device rendering performance, or collision with decorative rocks."
+}

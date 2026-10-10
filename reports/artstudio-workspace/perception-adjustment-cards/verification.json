@@ -1,0 +1,20 @@
+{
+  "sourceSHA256": "c6843a06b8d247d0d3b3b52494202c3a7c9b7090fa42d13d3f13cd6ac27acd2c",
+  "baselineSHA256": "7025a784e72e551be738a0b278a999fe27ca7167c61712d817200ce20aebe99a",
+  "newAdjustmentCardsBrowserGroups": 18,
+  "totalBrowserGroups": 18,
+  "baselineSceneCases": 84,
+  "englishCatalogEntries": 588,
+  "newEnglishEntries": 0,
+  "updatedEnglishEntries": 0,
+  "sourceDesktopParity": true,
+  "cssOnly": true,
+  "catalogParity": true,
+  "engineImplementationUnchanged": true,
+  "browserErrors": [],
+  "screenshots": 11,
+  "emptyAccessibilityAudits": 9,
+  "formalDOMSuite": "Not run: existing Vitest/jsdom worker stalls before collection.",
+  "legacyRegressionScope": "No older browser suite was rerun in this pass. Focused native checks cover adjustment cards, exact-value edits and resets, invalid values, keyboard focus, disabled states, responsive layouts, enlarged text, translations, themes, and accessibility.",
+  "gitAction": "No staging or commit performed."
+}

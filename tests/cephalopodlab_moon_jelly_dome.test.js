@@ -34,7 +34,7 @@ function assertOwnedResources(jelly,saved){
   for(const row of saved){assert.equal(row.mesh.geometry,row.geometry);assert.equal(row.mesh.material,row.material);assert.equal(row.geometry.index,row.index);assert.equal(row.index.array,row.indexArray);assert.ok(bytes(row.indexArray).equals(bytes(row.indices)),'Original jelly indices changed');
     assert.ok(row.geometry.boundingBox.equals(row.box));assert.ok(row.geometry.boundingSphere.center.equals(row.sphere.center));assert.equal(row.geometry.boundingSphere.radius,row.sphere.radius);
     for(const [name,prior]of Object.entries(row.attrs)){assert.equal(row.geometry.attributes[name],prior.attribute);assert.equal(prior.attribute.array,prior.array);
-      if(row.geometry!==jelly.userData.bellGeo||name==='color'){assert.equal(prior.attribute.version,prior.version);assert.ok(bytes(prior.array).equals(bytes(prior.values)),'Static jelly surface changed');}}
+      if((row.geometry!==jelly.userData.bellGeo&&!row.geometry.userData.clJellyOral)||name==='color'){assert.equal(prior.attribute.version,prior.version);assert.ok(bytes(prior.array).equals(bytes(prior.values)),'Static jelly surface changed');}}
   }
 }
 
@@ -49,7 +49,7 @@ describe('Cephalopod Hunter moon-jelly dome flex',()=>{
     for(let i=0;i<ownership.length;i++)for(let j=i+1;j<ownership.length;j++)expect([...ownership[i]].every(resource=>!ownership[j].has(resource))).toBe(true);
     for(let i=0;i<current.jellyfish.length;i++){
       const jelly=current.jellyfish[i],old=prior.jellyfish[i];expect(spawnRecord(jelly)).toEqual(spawnRecord(old));
-      expect(budget(jelly)).toEqual({meshes:8,geometries:8,materials:9,vertices:1721,triangles:2970,bytes:79776});
+      expect(budget(jelly)).toEqual({meshes:8,geometries:8,materials:9,vertices:1961,triangles:3354,bytes:90720});
       expect(jelly.children.map(mesh=>[frame(mesh),geometryRecord(mesh.geometry),materialRecord(mesh.material)])).toEqual(old.children.map(mesh=>[frame(mesh),geometryRecord(mesh.geometry),materialRecord(mesh.material)]));
       expect(bytes(jelly.userData.bellBasePos).equals(bytes(old.userData.bellBasePos))).toBe(true);
     }

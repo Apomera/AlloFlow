@@ -1,0 +1,15 @@
+{
+  "run": "native-child-contrast",
+  "view": "child-heel-side-contrast",
+  "startedAt": "2026-10-08T15:49:57.688Z",
+  "limitMs": 900000,
+  "wrapperSHA256": "4482212981bad0c695d3119c0e3544a2707cbcbe8007c902c78a3c42490c4c4d",
+  "runnerSHA256": "ebd77aad9f6378ed1e878ff3a270778bbdc65cc7a3153b7de2fa6a377d90daab",
+  "timedOut": false,
+  "pid": 20340,
+  "finishedAt": "2026-10-08T15:54:23.152Z",
+  "elapsedMs": 265422,
+  "exitCode": 0,
+  "signal": null,
+  "runnerUnchanged": true
+}

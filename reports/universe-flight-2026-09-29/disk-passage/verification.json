@@ -1,0 +1,70 @@
+{
+  "completed": true,
+  "verifiedAt": "2026-10-07T22:54:47.641Z",
+  "verifierHash": "a8323d3aad0b7ebe84cce548c30cea9899b027aa1269391cefb55677ef01999e",
+  "runtime": [
+    {
+      "file": "stem_lab/universe_flight_scene.js",
+      "sha256": "255f57893385f5e0ae1a932d00f3ba8e7e98cacc8851bc6ce8985003bd025a75",
+      "syntaxPassed": true
+    },
+    {
+      "file": "stem_lab/stem_tool_universe.js",
+      "sha256": "a679c684270d23bb8558017543b8f283b57ef0db675b6dbe9590895ceb7c7b12",
+      "syntaxPassed": true
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/universe_flight_scene.js",
+      "sha256": "255f57893385f5e0ae1a932d00f3ba8e7e98cacc8851bc6ce8985003bd025a75",
+      "syntaxPassed": true
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_universe.js",
+      "sha256": "a679c684270d23bb8558017543b8f283b57ef0db675b6dbe9590895ceb7c7b12",
+      "syntaxPassed": true
+    }
+  ],
+  "newTestHash": "b7659ac07be1dd76a8679b9560402e3810d43fbf002ce7eef64f1a0ad7cc0b1e",
+  "inverseSourceAndProductPatchesExact": true,
+  "served": [
+    {
+      "file": "stem_lab/universe_flight_scene.js",
+      "sha256": "255f57893385f5e0ae1a932d00f3ba8e7e98cacc8851bc6ce8985003bd025a75"
+    },
+    {
+      "file": "stem_lab/stem_tool_universe.js",
+      "sha256": "a679c684270d23bb8558017543b8f283b57ef0db675b6dbe9590895ceb7c7b12"
+    },
+    {
+      "file": "stem_lab/assets/universe-flight/highlights/disk-arms.webp",
+      "sha256": "4748f7c694b9c6683c12e7542493cd5ef1958292c38eccc7d49ca1c18bae8e30"
+    },
+    {
+      "file": "stem_lab/assets/universe-flight/highlights/disk-crossing.webp",
+      "sha256": "8f8c0106161c48c14c61de9e95ed5e23c1db9eee6dc55dbe666a0e2fc9f8f4a4"
+    },
+    {
+      "file": "stem_lab/assets/universe-flight/highlights/disk-panorama.webp",
+      "sha256": "600feacdd48b9a38b6068620bfca26d8973228fbb78335271cbb3b9e16f7ddef"
+    }
+  ],
+  "newRoutePoses": 44001,
+  "oldRoutePoses": 8196,
+  "maximumWorldVelocityJoinRelativeJump": 0.0015443440551964039,
+  "nativeCaptures": 18,
+  "originalControlComparisonsExact": 5,
+  "focusedTests": 36,
+  "focusedFiles": 3,
+  "unitEnvironment": "Node canvas/event shim",
+  "fullDomUnitSuiteRun": false,
+  "browserWorkflows": 4,
+  "browserCaptures": 8,
+  "scopedAccessibilityAudits": 6,
+  "thumbnailLoads": 12,
+  "previewCards": 15,
+  "oldPreviewImagesExact": 12,
+  "newPreviewCards": 3,
+  "gitDiffCheckPassed": true,
+  "gitIndexEmpty": true,
+  "committed": false
+}

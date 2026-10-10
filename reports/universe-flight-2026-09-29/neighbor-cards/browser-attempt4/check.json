@@ -1,0 +1,232 @@
+{
+  "completed": true,
+  "pins": {
+    "stem_lab/universe_flight_scene.js": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7",
+    "stem_lab/stem_tool_universe.js": "30f1ae3bb21b233b5d34dbb477d9d330759eac143a22de23107d33ba467754df"
+  },
+  "harnessSha256": "98b1ed3535702693e73ccf7e15398fca548eee3f3e58838721d183ee4178ac63",
+  "workflows": [
+    {
+      "name": "neighborhood-preview-mapping",
+      "targets": [
+        {
+          "id": "pale-star",
+          "range": 14.074808316002978,
+          "label": "14.07 ly\nfrom your camera",
+          "image": "http://127.0.0.1:3187/stem_lab/assets/universe-flight/highlights/stellar-pale.webp",
+          "expected": "stellar-pale.webp",
+          "loaded": true
+        },
+        {
+          "id": "blue-star",
+          "range": 21.99429784910482,
+          "label": "21.99 ly\nfrom your camera",
+          "image": "http://127.0.0.1:3187/stem_lab/assets/universe-flight/highlights/stellar-blue.webp",
+          "expected": "stellar-blue.webp",
+          "loaded": true
+        },
+        {
+          "id": "amber-star",
+          "range": 22.211003594605828,
+          "label": "22.21 ly\nfrom your camera",
+          "image": "http://127.0.0.1:3187/stem_lab/assets/universe-flight/highlights/stellar-amber.webp",
+          "expected": "stellar-amber.webp",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "name": "keyboard-look-and-back",
+      "positionLensAndCountersPreserved": true,
+      "detailsExpanded": true,
+      "returnedPixelsExact": true,
+      "flybyDetourPreserved": true
+    },
+    {
+      "name": "guided-flight-pause-and-back",
+      "target": "pale-star",
+      "speedRestored": true,
+      "arrivalScaleRestored": true,
+      "positionLensAndCountersExact": true
+    },
+    {
+      "name": "guided-flight-arrival-and-back",
+      "arrivalPaused": true,
+      "expandedOnArrival": true,
+      "inRangeTravelDisabled": true
+    },
+    {
+      "name": "galaxy-preview-mapping",
+      "targets": [
+        {
+          "id": "halo-cluster-1",
+          "range": 108537.70414975194,
+          "label": "108,537.7 ly\nfrom your camera",
+          "image": null,
+          "expected": null,
+          "loaded": true
+        },
+        {
+          "id": "inner-arm",
+          "range": 93347.61593099206,
+          "label": "93,347.62 ly\nfrom your camera",
+          "image": "http://127.0.0.1:3187/stem_lab/assets/universe-flight/highlights/disk-arms.webp",
+          "expected": "disk-arms.webp",
+          "loaded": true
+        },
+        {
+          "id": "halo-cluster-6",
+          "range": 88443.9881912299,
+          "label": "88,443.99 ly\nfrom your camera",
+          "image": null,
+          "expected": null,
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "name": "cosmic-preview-mapping",
+      "targets": [
+        {
+          "id": "golden-elliptical",
+          "range": 3200781.1546558444,
+          "label": "3,200,781.15 ly\nfrom your camera",
+          "image": "http://127.0.0.1:3187/stem_lab/assets/universe-flight/highlights/group-elliptical.webp",
+          "expected": "group-elliptical.webp",
+          "loaded": true
+        },
+        {
+          "id": "companion-galaxy",
+          "range": 3537866.5887791757,
+          "label": "3,537,866.59 ly\nfrom your camera",
+          "image": null,
+          "expected": null,
+          "loaded": true
+        },
+        {
+          "id": "distant-galaxy",
+          "range": 6783067.152844649,
+          "label": "6,783,067.15 ly\nfrom your camera",
+          "image": null,
+          "expected": null,
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "name": "phone-and-fullscreen-controls",
+      "width": 320,
+      "keyboardLook": true
+    }
+  ],
+  "accessibility": [
+    {
+      "name": "desktop-inspector",
+      "violations": []
+    },
+    {
+      "name": "phone-inspector",
+      "violations": []
+    },
+    {
+      "name": "phone-fullscreen-inspector",
+      "violations": []
+    }
+  ],
+  "captures": [
+    {
+      "name": "desktop-neighbor-cards",
+      "file": "desktop-neighbor-cards.png",
+      "sha256": "c9a197a4c72f6470f29c8994184f5aeeb29cd66c9d83a9a74592dead0c3af974"
+    },
+    {
+      "name": "phone-neighbor-cards",
+      "file": "phone-neighbor-cards.png",
+      "sha256": "d0cb0d6a8400a6ce1ef6b900e12c8085b1ad7210170cff927f0dd341b1d4d814"
+    },
+    {
+      "name": "phone-fullscreen-neighbors",
+      "file": "phone-fullscreen-neighbors.png",
+      "sha256": "f4da026fba0176ebb3dc2d58117be505ccfb20353038efabc45b958df4f00b9d"
+    },
+    {
+      "name": "galaxy-neighbor-cards",
+      "file": "galaxy-neighbor-cards.png",
+      "sha256": "490742048ea5b8e08b354052dfed874e9a052f24565eaace4fedbc2b6f974181"
+    },
+    {
+      "name": "cosmic-neighbor-cards",
+      "file": "cosmic-neighbor-cards.png",
+      "sha256": "59bf565b098efbc64b86f625074118e1d46305ad458193f655365407fc6f6648"
+    }
+  ],
+  "bounds": [
+    {
+      "name": "phone Look",
+      "left": 68,
+      "right": 154.5,
+      "top": 391.171875,
+      "bottom": 435.171875,
+      "width": 86.5,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "phone Fly here",
+      "left": 162.5,
+      "right": 249,
+      "top": 391.171875,
+      "bottom": 435.171875,
+      "width": 86.5,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "fullscreen Look",
+      "left": 38,
+      "right": 154.5,
+      "top": 202.5,
+      "bottom": 246.5,
+      "width": 116.5,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    },
+    {
+      "name": "fullscreen Fly here",
+      "left": 162.5,
+      "right": 279,
+      "top": 202.5,
+      "bottom": 246.5,
+      "width": 116.5,
+      "height": 44,
+      "viewport": [
+        320,
+        740
+      ],
+      "covered": false
+    }
+  ],
+  "served": [
+    {
+      "file": "stem_lab/stem_tool_universe.js",
+      "sha256": "30f1ae3bb21b233b5d34dbb477d9d330759eac143a22de23107d33ba467754df"
+    },
+    {
+      "file": "stem_lab/universe_flight_scene.js",
+      "sha256": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7"
+    }
+  ],
+  "errors": []
+}

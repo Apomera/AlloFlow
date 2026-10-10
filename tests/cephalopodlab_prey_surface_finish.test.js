@@ -10,6 +10,13 @@ const {restorePass41Source}=require('./helpers/cephalopod_pass41_reference.cjs')
 const {restorePass40Source}=require('./helpers/cephalopod_pass40_reference.cjs');
 const {restorePass39FishSource}=require('./helpers/cephalopod_prey_surface_reference.cjs');
 const {restorePass43Source}=require('./helpers/cephalopod_pass43_reference.cjs');
+const {restorePass44Source}=require('./helpers/cephalopod_pass44_reference.cjs');
+const {restorePass45Source}=require('./helpers/cephalopod_pass45_reference.cjs');
+const {restorePass46Source}=require('./helpers/cephalopod_pass46_reference.cjs');
+const {restorePass47Source:restorePass47Only}=require('./helpers/cephalopod_pass47_reference.cjs');
+const {restorePass48Source:restorePass48Only}=require('./helpers/cephalopod_pass48_reference.cjs');
+// These historical hashes predate the current oral tissue surface and motion.
+const restorePass47Source=source=>restorePass47Only(restorePass48Source(source));
 const source=readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE||'stem_lab/stem_tool_cephalopodlab.js','utf8').replace(/\r\n/g,'\n'),prior=restorePass39FishSource(source),owned=[];
 const math=Object.assign(Object.create(Math),{random(){throw Error('Fish finish consumed simulation RNG');}});
 function build(text,index){const a=text.indexOf('function createCLHuntFish('),b=text.indexOf('\n}\n',a)+3;assert.ok(a>=0&&b>a);const f=new Function('T','index','Math',text.slice(a,b)+';return createCLHuntFish(T,index);')(T,index,math);owned.push(f);return f;}
@@ -19,7 +26,7 @@ afterEach(()=>{const resources=new Set();for(const f of owned.splice(0))f.traver
 
 describe('Cephalopod Hunter current fish surface finish',()=>{
   it('recovers the exact accepted source and preserves every original geometry, color, frame and static material parameter',()=>{
-    expect(createHash('sha256').update(restorePass40Source(restorePass41Source(restorePass42Source(restorePass43Source(prior))))).digest('hex')).toBe('f65b507f0110ab173584c65708a7f5455d8ace814b3fc9e236694aed447dc690');
+    expect(createHash('sha256').update(restorePass40Source(restorePass41Source(restorePass42Source(restorePass43Source(restorePass44Source(restorePass45Source(restorePass46Source(restorePass47Source(prior))))))))).digest('hex')).toBe('f65b507f0110ab173584c65708a7f5455d8ace814b3fc9e236694aed447dc690');
     for(let index=0;index<8;index++){
       const f=build(source,index),p=build(prior,index);expect(frame(f)).toEqual(frame(p));expect(f.children.length).toBe(2);expect(f.userData.swimPhase).toBe(p.userData.swimPhase);
       let bytes=0;
@@ -56,3 +63,6 @@ describe('Cephalopod Hunter current fish surface finish',()=>{
     }
   });
 });
+
+// Historical references predate the ink surface. Keep live fixtures on current visuals.
+function restorePass48Source(source){return restorePass48Only(require('./helpers/cephalopod_pass49_reference.cjs').restorePass49Source(require('./helpers/cephalopod_pass50_reference.cjs').restorePass50Source(require('./helpers/cephalopod_pass51_reference.cjs').restorePass51Source(require('./helpers/cephalopod_pass52_reference.cjs').restorePass52Source(require('./helpers/cephalopod_pass53_reference.cjs').restorePass53Source(require('./helpers/cephalopod_pass54_reference.cjs').restorePass54Source(source)))))));}

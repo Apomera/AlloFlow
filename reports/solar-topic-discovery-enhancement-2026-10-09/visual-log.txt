@@ -1,0 +1,8 @@
+Starting topic-discovery-1060-dark
+Checked topic-discovery-1060-dark
+Starting topic-discovery-1060-light
+Checked topic-discovery-1060-light
+Starting topic-discovery-320-dark
+Checked topic-discovery-320-dark
+Starting topic-discovery-320-light
+Checked topic-discovery-320-light

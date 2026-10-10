@@ -1,5 +1,6 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
+import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { loadAlloModule } from './setup.js';
 
@@ -139,12 +140,13 @@ describe('closed state SLD public search policy', () => {
 describe('state search served backend release copies', () => {
   it('serves the same reviewed provider from every existing app preload', () => {
     const backend = fs.readFileSync('ai_backend_module.js');
+    const version = createHash('sha256').update(backend).digest('hex').slice(0, 8);
     for (const directory of ['app', 'desktop/web-app/public/app', 'desktop/app-build', 'desktop/web-app/build']) {
       expect(fs.readFileSync(directory + '/ai_backend_module.js')).toEqual(backend);
       const index = fs.readFileSync(directory + '/index.html', 'utf8');
       const tags = index.match(/<script\b[^>]*\bid="alloflow-ai-backend-script"[^>]*>/g) || [];
       expect(tags).toHaveLength(1);
-      expect(tags[0]).toContain('src="./ai_backend_module.js?v=cd1a5a87"');
+      expect(tags[0]).toContain(`src="./ai_backend_module.js?v=${version}"`);
     }
   });
 });

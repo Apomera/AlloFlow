@@ -1,0 +1,9 @@
+const fs=require('fs'),path=require('path');
+const cwd=path.dirname(__dirname),dir=__dirname;
+let prepare=fs.readFileSync(path.join(cwd,'coaching-work/prepare.cjs'),'utf8');
+prepare=prepare.replaceAll('dissection-checkpoint-coaching-2026-10-09','dissection-adaptive-coaching-2026-10-09').replaceAll('16c960aa8e0cdb992d1166950150e34e09407abfd448b8b78734937cc2497745','1665a57757125b1cfaceff6dbcca13aeb930987984fce2bd3f06019b30b9285a').replaceAll('5548f01c1ec302281c286ca7811e339895a0a733b90e7e070edabed9a3dc87de','46fc37513940c40c277cd6a862ae6f1264160dac379668e765e668f9f8d5f550').replaceAll('dissection-monitor-handoff-2026-10-09','dissection-checkpoint-coaching-2026-10-09').replaceAll('tests/e2e/dissection-monitor-handoff.spec.ts','tests/e2e/dissection-checkpoint-coaching.spec.ts').replaceAll('Codex Dissection checkpoint coaching IN PROGRESS','Codex Dissection adaptive coaching IN PROGRESS').replaceAll('new tests/e2e/dissection-checkpoint-coaching.spec.ts','new tests/e2e/dissection-adaptive-coaching.spec.ts').replace('Place coaching beside the selected answer and improve retry readability; preserve grading, keyboard flow and saved work.','Connect each adaptive recommendation to relevant controls with clear labels and focus; preserve instruments, modes, grading and saved work.');
+fs.writeFileSync(path.join(dir,'prepare.cjs'),prepare);
+let runner=fs.readFileSync(path.join(cwd,'coaching-work/run.cjs'),'utf8');
+runner=runner.replaceAll('dissection-checkpoint-coaching','dissection-adaptive-coaching').replaceAll('DISSECTION_COACHING','DISSECTION_ADAPTIVE_COACHING').replace('checkpoint coaching|monitor handoff|technique availability','adaptive coaching|checkpoint coaching|monitor handoff');
+fs.writeFileSync(path.join(dir,'run.cjs'),runner);
+console.log('Prepared scoped baseline and test runner helpers.');

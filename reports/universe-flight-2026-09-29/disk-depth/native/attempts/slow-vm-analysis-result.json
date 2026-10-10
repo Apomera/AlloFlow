@@ -1,0 +1,10 @@
+{
+  "completed": false,
+  "driver": "slow-vm-analysis.cjs",
+  "termination": "Ctrl+C",
+  "observedExitCode": 1,
+  "reason": "VM image decoder was slow; replaced with ordinary Node execution of identical pinned helper functions.",
+  "newBrowserLaunches": 0,
+  "newCaptures": 0,
+  "baseCapturedImagesPreserved": 40
+}

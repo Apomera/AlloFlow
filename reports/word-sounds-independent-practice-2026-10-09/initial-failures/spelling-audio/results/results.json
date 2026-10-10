@@ -1,0 +1,162 @@
+{
+  "checks": [],
+  "errors": [
+    "page.waitForFunction: Timeout 12000ms exceeded.\n    at spelling (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\word_sounds_voice_modes_acceptance.cjs:97:173)\n    at async run (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\word_sounds_voice_modes_acceptance.cjs:145:734)"
+  ],
+  "externalRequests": [],
+  "runs": [
+    {
+      "name": "failure",
+      "word": "cat",
+      "activity": "spelling_bee",
+      "score": {
+        "correct": 0,
+        "total": 0,
+        "streak": 0
+      },
+      "feedback": null,
+      "recognitionEvents": [],
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "loadedmetadata",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "at": 1304.699999999255,
+          "active": []
+        },
+        {
+          "id": 1,
+          "type": "loadedmetadata",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "at": 1304.9000000003725,
+          "active": []
+        },
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "kokoro-word:cat",
+          "at": 1600.5999999996275
+        },
+        {
+          "id": 1,
+          "type": "play-call",
+          "label": "kokoro-word:cat",
+          "at": 1606.5
+        },
+        {
+          "id": 0,
+          "type": "pause",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "at": 1607.9000000003725,
+          "active": [
+            1
+          ]
+        },
+        {
+          "id": 1,
+          "type": "playing",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "at": 1624.0999999996275,
+          "active": [
+            1
+          ]
+        },
+        {
+          "id": 2,
+          "type": "play-call",
+          "label": "instruction:inst_spelling_bee",
+          "at": 1672.5
+        },
+        {
+          "id": 1,
+          "type": "pause",
+          "label": "kokoro-word:cat",
+          "duration": 0.521,
+          "at": 1677.4000000003725,
+          "active": [
+            2
+          ]
+        },
+        {
+          "id": 2,
+          "type": "loadedmetadata",
+          "label": "instruction:inst_spelling_bee",
+          "duration": 2.520097,
+          "at": 1682.4000000003725,
+          "active": [
+            2
+          ]
+        },
+        {
+          "id": 2,
+          "type": "playing",
+          "label": "instruction:inst_spelling_bee",
+          "duration": 2.520097,
+          "at": 2620.9000000003725,
+          "active": [
+            2
+          ]
+        },
+        {
+          "id": 2,
+          "type": "pause",
+          "label": "instruction:inst_spelling_bee",
+          "duration": 2.520097,
+          "at": 5527.199999999255,
+          "active": []
+        },
+        {
+          "id": 2,
+          "type": "ended",
+          "label": "instruction:inst_spelling_bee",
+          "duration": 2.520097,
+          "at": 5527.299999998882,
+          "active": []
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    }
+  ],
+  "consoleMessages": [
+    "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "[PureHelpers] 7 helpers registered",
+    "[MiscComponentsModule] 3 components registered.",
+    "[MiscComponentsModule] 3 components registered (incl. WordSoundsReviewPanel with Sound Swap)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] loadProbeBanks stub (CDN)",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] WordSoundsModal MOUNTED. initialShowReviewPanel: false, activity: spelling_bee",
+    "[WS-DBG] initialShowReviewPanel changed to: false",
+    "[WS-DBG] 🔄 Reset hasStartedFromReview for new word set: cat",
+    "[WS-DBG] 🚀 Initializing Session Queue for spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] Streak preserved across activity change to: spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] 🔄 Synced currentWordIndex to 1 to skip: cat",
+    "[WS-DBG] 🚀 Using preloaded data for: cat",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] ⚡ using prepared Word Sounds TTS for: cat",
+    "[WS-DBG] ⚡ using prepared Word Sounds TTS for: cat"
+  ],
+  "runtimeSha256": "961bde0dc77435f4e52f0cbfb803d23ed0459d5ff2bb6bb087c30e183d762416",
+  "voiceSha256": "ab8f03324c8eac75f229d2dc98b2a314e06fa5f847485d5f4ddd03fde0e4d6b9",
+  "limitations": [
+    "Controlled SpeechRecognition callbacks exercise browser UI lifetimes; no physical microphone or speech service was tested.",
+    "Native playback uses existing local Kokoro word-bank clips and standard instruction/phoneme bank clips. No live Kokoro synthesis, cloud calls, physical microphone, or pronunciation judgment was performed."
+  ]
+}

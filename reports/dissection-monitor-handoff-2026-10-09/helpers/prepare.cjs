@@ -1,0 +1,17 @@
+const fs=require('fs'),path=require('path'),crypto=require('crypto'),zlib=require('zlib'),{execFileSync}=require('child_process');
+const repo='C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated',report=path.join(repo,'reports/dissection-monitor-handoff-2026-10-09'),hash=b=>crypto.createHash('sha256').update(b).digest('hex');
+const git=args=>execFileSync('git',args,{cwd:repo,encoding:'utf8',windowsHide:true}).trim();
+if(fs.existsSync(report))throw Error('Report exists');
+const source=fs.readFileSync(path.join(repo,'stem_lab/stem_tool_dissection.js')),unit=fs.readFileSync(path.join(repo,'tests/dissection_lab_improvements.test.js'));
+if(hash(source)!=='c7708b29982ee76b498aff5427cdf265672359430f1e559d483265de4f51e39c'||!source.equals(fs.readFileSync(path.join(repo,'desktop/web-app/public/stem_lab/stem_tool_dissection.js'))))throw Error('Source drift');
+const walk=d=>fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(path.join(d,e.name)):[path.join(d,e.name)]);
+const previous=JSON.parse(fs.readFileSync(path.join(repo,'reports/dissection-technique-availability-2026-10-09/baseline.json')));
+const protectedFiles=[...Object.keys(previous.protected),'tests/e2e/dissection-technique-availability.spec.ts',...walk(path.join(repo,'reports/dissection-technique-availability-2026-10-09')).map(f=>path.relative(repo,f).replaceAll('\\','/'))];
+fs.mkdirSync(path.join(report,'edits'),{recursive:true});
+const baseline={at:new Date().toISOString(),source:hash(source),unit:hash(unit),head:git(['rev-parse','HEAD']),staged:git(['diff','--cached','--name-status']),scopedStatus:git(['status','--short','--untracked-files=no','--','stem_lab/stem_tool_dissection.js','desktop/web-app/public/stem_lab/stem_tool_dissection.js','tests/dissection_lab_improvements.test.js']),protected:Object.fromEntries(protectedFiles.map(f=>[f,hash(fs.readFileSync(path.join(repo,f)))]))};
+fs.writeFileSync(path.join(report,'baseline.json'),JSON.stringify(baseline,null,2));
+fs.writeFileSync(path.join(report,'edits/source-before.js.gz'),zlib.gzipSync(source));fs.writeFileSync(path.join(report,'edits/unit-before.js.gz'),zlib.gzipSync(unit));
+const handoff=path.join(repo,'AGENT_HANDOFF.md'),before=fs.readFileSync(handoff,'utf8'),row='- 2026-10-09 | Codex Dissection monitor handoff IN PROGRESS: owns canonical/public stem_lab/stem_tool_dissection.js, targeted unit additions/one outdated assertion, new monitor browser fixture and reports/dissection-monitor-handoff-2026-10-09. Align Field monitor navigation, Simple steps and technique status with current learning phase; preserve action gates and saved work. No staging, commit, push or deployment.';
+if(fs.readFileSync(handoff,'utf8')!==before)throw Error('Handoff changed');fs.writeFileSync(handoff,before+'\n'+row+'\n');fs.writeFileSync(path.join(report,'edits/handoff-start.json'),JSON.stringify({row},null,2));
+const disk=fs.statfsSync(repo);console.log(JSON.stringify({report,source:baseline.source,unit:baseline.unit,protectedFiles:protectedFiles.length,freeMiB:disk.bavail*disk.bsize/1048576}));
+const temp='C:/Users/cabba/Documents/Codex/.diss-availability-20261009';if(fs.existsSync(temp))console.log(JSON.stringify(fs.readdirSync(temp).map(n=>{const d=path.join(temp,n),files=walk(d);return {path:d,files:files.length,MiB:files.reduce((s,f)=>s+fs.statSync(f).size,0)/1048576};})));

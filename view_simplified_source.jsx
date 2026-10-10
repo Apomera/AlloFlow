@@ -2497,6 +2497,101 @@
     ['t', 'splitTextToSentences', 'getSideBySideContent', 'splitReferencesFromBody', 'parseReferenceItems', 'getContentDirection', 'isRtlLang'].forEach(function (key) { snapshot[key] = props[key]; });
     return snapshot;
   }
+  function SimplifiedStudentSources({ record, referencesText, t, controlRef }) {
+    var disclosure = React.useRef(null), summaries = React.useRef(new Map()), opener = React.useRef(null);
+    var [hasOpener, setHasOpener] = React.useState(false);
+    var helpers = window.AlloModules?.TextPipelineHelpers;
+    var api = window.AlloModules?.StudentSources || helpers?.studentSources;
+    var plainReferences = React.useMemo(() => {
+      try {
+        var safe = api?.publicText?.(referencesText, record) || '';
+        return (helpers?.parseReferenceItems?.(safe) || []).filter(item => !item.url && item.num && item.raw).map(item => item.raw);
+      } catch (_) { return []; }
+    }, [api, helpers, record, referencesText]);
+    var label = (key, fallback, values) => simplifiedText(key, fallback, values, t);
+    var returnToReading = () => {
+      var target = opener.current;
+      if (target?.isConnected) { target.focus(); target.scrollIntoView?.({ block: 'nearest' }); }
+      else disclosure.current?.querySelector('summary')?.focus();
+      opener.current = null; setHasOpener(false);
+    };
+    React.useImperativeHandle(controlRef, () => ({
+      openSource(href, trigger) {
+        var lookupHref = href;
+        try {
+          lookupHref = api?.sanitize?.({ version: 1, sources: [{ citationHref: href }] })?.sources?.[0]?.citationHref || href;
+        } catch (_) {}
+        var source = record?.sources?.find(item => item.citationHref === lookupHref || item.url === lookupHref);
+        var summary = source && summaries.current.get(source.id);
+        if (!summary || !disclosure.current) return false;
+        opener.current = trigger; setHasOpener(true);
+        disclosure.current.open = true;
+        summary.parentElement.open = true;
+        summary.focus(); summary.scrollIntoView?.({ block: 'nearest' });
+        return true;
+      }
+    }), [record, api]);
+    React.useEffect(() => {
+      opener.current = null; setHasOpener(false);
+      if (disclosure.current) disclosure.current.open = false;
+      summaries.current.forEach(summary => { summary.parentElement.open = false; });
+    }, [record]);
+    if (!record?.sources?.length) return null;
+    var evidenceLabel = type => {
+      if (type === 'Search snippet') return label('simplified.sources_snippet', 'Search snippet');
+      if (type === 'Source-linked AI note') return label('simplified.sources_ai_note', 'AI-linked note');
+      if (type === 'AI video transcript') return label('simplified.sources_video_transcript', 'AI video transcript');
+      if (type === 'Document passage') return label('simplified.sources_document_passage', 'Document passage');
+      if (type === 'Pasted text') return label('simplified.sources_pasted_text', 'Pasted text');
+      if (type === 'Page excerpt') return label('simplified.sources_page_excerpt', 'Page excerpt');
+      return label('simplified.sources_excerpt', 'Source excerpt');
+    };
+    return <details ref={disclosure} data-student-sources data-reading-ui="true" className="mt-6 min-w-0 border-t border-slate-300 pt-2 text-sm text-slate-800" onKeyDown={event => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault(); event.stopPropagation(); disclosure.current.open = false; returnToReading();
+    }}>
+      <summary className="min-h-11 cursor-pointer rounded px-1 py-3 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{label('simplified.sources_title', 'Sources')} <span className="font-normal">({record.sources.length + plainReferences.length})</span></summary>
+      {record.writingMode === 'synthesis' && <p data-student-sources-writing className="my-2">{label('simplified.sources_synthesis', 'AI-written reading. Source passages and AI notes are labeled separately.')}</p>}
+      {record.writingMode === 'quotes' && <p data-student-sources-writing className="my-2">{label('simplified.sources_quotes', 'This reading uses selected source quotations.')}</p>}
+      <ul className="min-w-0 divide-y divide-slate-200">{record.sources.map(source => {
+        var passages = source.shareExcerpt ? source.passages || [] : [];
+        var types = [...new Set(passages.map(passage => passage.evidenceType))];
+        var domain = ''; try { domain = new URL(source.url).hostname; } catch (_) {}
+        var sourceTitle = source.kind === 'document' && !source.shareExcerpt ? label('simplified.sources_teacher_source', 'Teacher-provided source') : source.title;
+        var metadata = [domain, ...types.map(evidenceLabel)].filter(Boolean).join(' · ');
+        return <li key={source.id} className="min-w-0 py-2" style={{ overflowWrap: 'anywhere' }}>
+          <details data-student-source={source.id}>
+            <summary ref={node => { if (node) summaries.current.set(source.id, node); else summaries.current.delete(source.id); }} className="min-h-11 cursor-pointer rounded px-1 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
+              <span className="font-semibold">{sourceTitle}</span>
+              {metadata && <span className="mt-1 block text-xs text-slate-600">{metadata}</span>}
+            </summary>
+            <div className="min-w-0 space-y-3 px-1 pb-3">
+              {source.url && <a href={source.url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer" className="inline-flex min-h-11 items-center rounded text-indigo-800 underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{label('simplified.sources_open_source', 'Open source')}</a>}
+              {!passages.length && <p>{source.kind === 'document' ? label('simplified.sources_not_shared', 'The source text has not been shared with students.') : label('simplified.sources_link_only', 'Only a source link is available; no page passage was saved.')}</p>}
+              {passages.map((passage, index) => {
+                var clip = api?.videoClipDetails?.(passage, source.url);
+                return <div key={index} className="min-w-0">
+                <p className="mb-1 text-xs font-semibold text-slate-600">{evidenceLabel(passage.evidenceType)}{passage.locatorLabel ? ': ' + passage.locatorLabel : ''}</p>
+                {clip && <p className="mb-2 text-xs">
+                  {!passage.locatorLabel?.includes(clip.label) && <span>{label('simplified.sources_video_clip', 'Requested clip {start} to {end}', { start: clip.startLabel, end: clip.endLabel })}{' '}</span>}
+                  <a href={clip.url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer" className="inline-flex min-h-11 items-center rounded text-indigo-800 underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{label('simplified.sources_open_clip_start', 'Open clip start')}</a>
+                </p>}
+                {passage.evidenceType === 'Search snippet' && <p className="mb-2 text-xs">{label('simplified.sources_snippet_limit', 'This is a search preview, not a passage from a page that was read.')}</p>}
+                {passage.evidenceType === 'Source-linked AI note' && <p className="mb-2 text-xs">{label('simplified.sources_ai_note_limit', 'This is an AI note linked to the source, not the source\'s exact wording.')}</p>}
+                {passage.evidenceType === 'AI video transcript' && <p className="mb-2 text-xs">{label('simplified.sources_video_transcript_limit', 'AI-generated transcript, not verified captions. It may contain transcription errors.')}</p>}
+                {passage.evidenceType === 'AI video transcript'
+                  ? <div data-student-source-passage className="border-l-2 border-slate-300 pl-3 font-normal leading-relaxed" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{passage.text}</div>
+                  : <blockquote data-student-source-passage className="border-l-2 border-slate-300 pl-3 font-normal leading-relaxed" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{passage.text}</blockquote>}
+              </div>;
+              })}
+            </div>
+          </details>
+        </li>;
+      })}{plainReferences.map((reference, index) => <li key={'plain-' + index} data-student-plain-reference className="min-w-0 py-3 font-normal" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{reference}</li>)}</ul>
+      {hasOpener && <button type="button" data-student-sources-return onClick={returnToReading} className="min-h-11 rounded px-1 py-2 font-semibold text-indigo-800 underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{label('simplified.sources_back', 'Back to reading')}</button>}
+    </details>;
+  }
+
   function SimplifiedPreviewReferences({ referencesText }) {
     if (!referencesText) return null;
     return <section data-preview-references className="mt-4 whitespace-pre-wrap text-sm">{simplifiedInline(referencesText, function (text) { return text; })}</section>;
@@ -2855,6 +2950,20 @@
     var ConfettiExplosion = props.ConfettiExplosion;
     var ComplexityGauge = props.ComplexityGauge;
     var SourceReferencesPanel = props.SourceReferencesPanel;
+    var studentSourcesApi = window.AlloModules?.StudentSources || window.AlloModules?.TextPipelineHelpers?.studentSources;
+    var studentSourceControl = React.useRef(null);
+    var studentSourcesRecord = React.useMemo(() => {
+      try { return studentSourcesApi?.forText?.(generatedContent?.studentSources, generatedContent?.data) || null; }
+      catch (_) { return null; }
+    }, [studentSourcesApi, generatedContent?.studentSources, generatedContent?.data]);
+    function openStudentSource(event) {
+      var link = event.target.closest?.('a[href]');
+      if (!link || !event.currentTarget.contains(link)) return;
+      var href = link.getAttribute('href');
+      if (!/^#allo-doc-/.test(href || '') && (event.button > 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)) return;
+      if (!studentSourceControl.current?.openSource(href, link)) return;
+      event.preventDefault(); event.stopPropagation();
+    }
     // The immersive reader is a z-[200] full-screen overlay. Word-level popups
     // (Define / Phonics / selection / revise) default to z-[100]/z-[90], so when
     // immersive is open they render BEHIND it — the definition appears to land in
@@ -2909,6 +3018,7 @@
     } catch (_) {}
     var adaptedCitationAudit = generatedContent && generatedContent.config && generatedContent.config.citationAudit;
     var simplifiedReferences = resolveSimplifiedReferences(simplifiedDisplayBody, simplifiedContentParts.references, simplifiedInputReferences, adaptedCitationAudit);
+    if (studentSourcesApi?.publicText) simplifiedReferences = studentSourcesApi.publicText(simplifiedReferences, studentSourcesRecord);
     simplifiedContentParts.references = simplifiedReferences;
     var simplifiedReadAloudText = protectedOriginal ? simplifiedDisplayBody : simplifiedDisplayBody.trim();
     var supportOwner = findSimplifiedReadingSupportOwner(history, generatedContent, capturedSource);
@@ -6194,7 +6304,7 @@
         </div>
         {renderReadingPlacePanels()}
 
-        <div ref={readingStartRef} data-reading-passage="true" data-reading-language={readingLanguage} data-paragraph-focus={!!isLineFocusMode} tabIndex={-1} role="region" aria-label={readerText('simplified.passage', 'Reading passage')} className={(isLineFocusMode ? 'bg-slate-950 rounded-xl p-4 ' : '') + 'rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600'}>
+        <div ref={readingStartRef} data-reading-passage="true" data-reading-language={readingLanguage} data-paragraph-focus={!!isLineFocusMode} onClickCapture={openStudentSource} onAuxClickCapture={openStudentSource} tabIndex={-1} role="region" aria-label={readerText('simplified.passage', 'Reading passage')} className={(isLineFocusMode ? 'bg-slate-950 rounded-xl p-4 ' : '') + 'rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600'}>
           {parts && isSideBySide ? <>
             {parts.source.length !== parts.target.length && <p role="status" className="mb-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">{readerText('simplified.unmatched_paragraphs', 'The versions have different paragraph counts. They are shown in order; a row may not be an exact translation match.')}</p>}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{Array.from({ length: Math.max(rendered[0].length, rendered[1].length) }, (_, i) => <React.Fragment key={i}>{languages.map((section, j) => <section key={section.key} data-reading-language={section.label} lang={simplifiedLanguageTag(section.label)} dir={j === 1 ? getContentDirection(readingTranslationLanguage) : sourceDirection} className="min-w-0 rounded-xl border border-slate-200 bg-white/60 p-4" style={{ backgroundColor: isLineFocusMode ? 'transparent' : undefined }}><div data-reading-ui="true" className="mb-3 text-sm font-bold" style={{ color: isLineFocusMode ? '#e2e8f0' : '#334155' }}>{section.label}</div><div style={{ maxWidth: readingColumn + 'ch', marginInline: 'auto' }}>{rendered[j][i] || <p data-reading-ui="true" className="text-sm italic text-slate-600">{readerText('simplified.no_paired_paragraph', 'No corresponding paragraph in this version.')}</p>}</div></section>)}</React.Fragment>)}</div>
@@ -6203,7 +6313,7 @@
         {renderSectionPromptsArea()}
         {/* Novak's ramp: an adaptation prepares students for the original, so its end leads there. */}
         {props.onReadOriginal && capturedSource && !protectedOriginal && instructionalRole !== 'primary' && interactionMode !== 'cloze' && <div data-read-original-next className="mt-6 flex justify-center"><button type="button" onClick={() => openOriginalReading(generatedContent, capturedSource.text, true)} className="min-h-11 rounded-lg border-2 border-indigo-700 bg-white px-4 py-2 font-bold text-indigo-800 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">{viewText('simplified.read_original_next', 'Now read the original')} <span aria-hidden="true">&rarr;</span></button></div>}
-        <SourceReferencesPanel referencesText={simplifiedReferences} />
+        {studentSourcesRecord?.sources?.length ? <SimplifiedStudentSources record={studentSourcesRecord} referencesText={simplifiedReferences} t={t} controlRef={studentSourceControl} /> : <SourceReferencesPanel referencesText={simplifiedReferences} />}
         <p role="status" data-generating-status className={isProcessing ? 'mt-4 text-sm text-indigo-700' : 'sr-only'}>{isProcessing ? simplifiedGeneratingMoreLabel : ''}</p>
       </div>;
     }
@@ -6452,6 +6562,7 @@
   SimplifiedView.locateWordHelp = locateWordHelp;
   SimplifiedView.readingTextSegments = readingTextSegments;
   SimplifiedView.findGlossOccurrences = findReadingGlossOccurrences;
+  SimplifiedView.StudentSources = SimplifiedStudentSources;
   SimplifiedView.languageTag = simplifiedLanguageTag;
   SimplifiedView.wordSegments = simplifiedWordSegments;
   SimplifiedView.paragraphBlocks = simplifiedParagraphBlocks;

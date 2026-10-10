@@ -1,0 +1,14 @@
+{
+  "beforeSHA256": "67f0099c534e98ea6f1a916d8966b61ac19980bcdcaa21d7f30b37f30ec4c5f8",
+  "sourceSHA256": "0c8c3558dd0f78c8937fa6ecb9e4194d90bea7ae9ee6c411590c95bc836edb32",
+  "mirrored": true,
+  "englishKeys": 524,
+  "addedKeys": 20,
+  "legacySceneCases": 84,
+  "existingMetadataUnchanged": true,
+  "matchingUnchanged": true,
+  "compile": true,
+  "visualPolishFromSHA256": "790e56f6d3d3772855fc1c1b2853ece7cf35ce194cdef3712ae589bcebbea2ea",
+  "visualPolish": true,
+  "darkTableContrastCorrected": true
+}

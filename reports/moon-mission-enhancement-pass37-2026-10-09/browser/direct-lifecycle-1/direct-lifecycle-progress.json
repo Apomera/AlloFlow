@@ -1,0 +1,171 @@
+{
+  "schema": "moon-pass37-direct-browser-v1",
+  "runner": "direct-playwright-api",
+  "playwrightCliResult": false,
+  "mode": "lifecycle",
+  "status": "passed",
+  "startedAt": "2026-10-10T03:26:30.575Z",
+  "repo": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "specPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-finite-injection.spec.ts",
+  "output": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass37-2026-10-09\\browser\\direct-lifecycle-1",
+  "browserCache": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+  "timeouts": {
+    "action": 20000,
+    "navigation": 60000,
+    "expect": 15000,
+    "launch": 60000,
+    "workflow": 180000
+  },
+  "launchOptions": {
+    "headless": true,
+    "timeout": 60000,
+    "downloadsPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass37-2026-10-09\\browser\\direct-lifecycle-1\\downloads"
+  },
+  "workflowCompleted": true,
+  "cleanupCompleted": true,
+  "milestones": [
+    {
+      "name": "load:before",
+      "elapsedMs": 2
+    },
+    {
+      "name": "load:after",
+      "elapsedMs": 3283,
+      "workflow": "cutoff review survives rewind and reload, and plan changes invalidate measured completion",
+      "registered": [
+        "finite burn instruments and both cameras follow the computed state",
+        "cutoff review survives rewind and reload, and plan changes invalidate measured completion",
+        "overlong burn has positive orbital energy and explicitly reports escape",
+        "corrupted result and malformed run restart unverified and clear stored evidence",
+        "injection playback freezes while hidden and resumes without catch-up",
+        "320px keyboard, resize, reload and accessibility preserve the measured burn"
+      ]
+    },
+    {
+      "name": "harness-start:before",
+      "elapsedMs": 3284
+    },
+    {
+      "name": "harness-start:after",
+      "elapsedMs": 3311
+    },
+    {
+      "name": "browser-launch:before",
+      "elapsedMs": 3335
+    },
+    {
+      "name": "browser-launch:after",
+      "elapsedMs": 3941
+    },
+    {
+      "name": "context-create:before",
+      "elapsedMs": 3942
+    },
+    {
+      "name": "context-create:after",
+      "elapsedMs": 3954
+    },
+    {
+      "name": "page-create:before",
+      "elapsedMs": 3954
+    },
+    {
+      "name": "page-create:after",
+      "elapsedMs": 4155
+    },
+    {
+      "name": "workflow:before",
+      "elapsedMs": 4156
+    },
+    {
+      "name": "workflow:after",
+      "elapsedMs": 7902
+    },
+    {
+      "name": "cleanup:before",
+      "elapsedMs": 7903
+    },
+    {
+      "name": "after-each:before",
+      "elapsedMs": 7904
+    },
+    {
+      "name": "after-each:after",
+      "elapsedMs": 7942
+    },
+    {
+      "name": "context-close:before",
+      "elapsedMs": 7943
+    },
+    {
+      "name": "page-close",
+      "elapsedMs": 7958
+    },
+    {
+      "name": "context-close:after",
+      "elapsedMs": 7967
+    },
+    {
+      "name": "browser-close:before",
+      "elapsedMs": 7969
+    },
+    {
+      "name": "browser-close:after",
+      "elapsedMs": 9011
+    },
+    {
+      "name": "harness-stop:before",
+      "elapsedMs": 9012
+    },
+    {
+      "name": "harness-stop:after",
+      "elapsedMs": 9013
+    },
+    {
+      "name": "cleanup:after",
+      "elapsedMs": 9031,
+      "status": "passed"
+    }
+  ],
+  "errors": [],
+  "attachments": [
+    {
+      "name": "injection-lunar-distance",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass37-2026-10-09\\browser\\direct-lifecycle-1\\injection-lunar-distance-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "injection-short-burn",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass37-2026-10-09\\browser\\direct-lifecycle-1\\injection-short-burn-chromium.png",
+      "contentType": "image/png"
+    }
+  ],
+  "inputHashes": {
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-finite-injection.spec.ts": "551707f063d25616f98dd31e006a3f36f72b7cc16603ef36ee22819a0962bb35",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_moonmission.js": "cc5649b2caec2ecbec8c9bb18efa2a623a74b4ec4751ca199c07ac48f1024dea",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_moonmission.js": "cc5649b2caec2ecbec8c9bb18efa2a623a74b4ec4751ca199c07ac48f1024dea"
+  },
+  "transform": {
+    "name": "Playwright bundled babelTransform",
+    "bundlePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\transform\\babelBundle.js",
+    "sha256": "9201df11ae9c9ee1febd587c5013c4f862aa7e9981b92b86ccbbbd37e71f9124"
+  },
+  "workflowAdaptation": "Only the historical screenshot destination is redirected to the current owned report directory.",
+  "workflow": "cutoff review survives rewind and reload, and plan changes invalidate measured completion",
+  "suiteOptions": {
+    "timeout": 180000,
+    "retries": 0
+  },
+  "browserVersion": "148.0.7778.96",
+  "pageEvents": [
+    {
+      "event": "close",
+      "elapsedMs": 7958,
+      "message": null
+    }
+  ],
+  "finishedAt": "2026-10-10T03:26:39.606Z",
+  "elapsedMs": 9031
+}

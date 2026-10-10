@@ -1,0 +1,290 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-action-handoff-2026-10-09/browser-2/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "dissection-action-handoff.spec.ts",
+      "file": "dissection-action-handoff.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "phone outcome points to the required explanation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5147,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T23:09:36.977Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bf6ee3f215b7e933d1a0-585ed5523740a139af62",
+          "file": "dissection-action-handoff.spec.ts",
+          "line": 61,
+          "column": 8
+        },
+        {
+          "title": "desktop outcome points to the required explanation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6472,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T23:09:42.368Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bf6ee3f215b7e933d1a0-896dd8ded09d67aa20cf",
+          "file": "dissection-action-handoff.spec.ts",
+          "line": 61,
+          "column": 8
+        },
+        {
+          "title": "embedded-large outcome points to the required explanation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5681,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T23:09:48.861Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bf6ee3f215b7e933d1a0-a54378b421068320dcd9",
+          "file": "dissection-action-handoff.spec.ts",
+          "line": 61,
+          "column": 8
+        },
+        {
+          "title": "forced-colors outcome points to the required explanation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5129,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T23:09:54.569Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bf6ee3f215b7e933d1a0-7a6d40206b657f86f07f",
+          "file": "dissection-action-handoff.spec.ts",
+          "line": 61,
+          "column": 8
+        },
+        {
+          "title": "native action handoff follows reflection, second pin, and final probe without advancing work",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 17900,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatch\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected pattern: \u001b[32m/Next: .*second/i\u001b[39m\nReceived string:  \u001b[31m\"First stabilizer placed. Angle calibration 100%. Equivalent action replayed with a controlled anchor. Scenario checkpoint: 100%. Next: Place the opposing body-wall anchor.\"\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatch\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected pattern: \u001b[32m/Next: .*second/i\u001b[39m\nReceived string:  \u001b[31m\"First stabilizer placed. Angle calibration 100%. Equivalent action replayed with a controlled anchor. Scenario checkpoint: 100%. Next: Place the opposing body-wall anchor.\"\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-action-handoff.spec.ts:103:50",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-action-handoff.spec.ts",
+                      "column": 50,
+                      "line": 103
+                    },
+                    "snippet": "  101 |       expect(firstPin.procedureByLayer.skin.pins).toHaveLength(1);\n  102 |       expect(firstPin.procedureFeedback.message).toContain('First stabilizer placed.');\n> 103 |       expect(firstPin.procedureFeedback.message).toMatch(/Next: .*second/i);\n      |                                                  ^\n  104 |       expect(firstPin.procedureFeedback.message).not.toContain(reflectionCue);\n  105 |       await expect(checkpoint(page)).toHaveAttribute('data-phase', 'perform');\n  106 |       steps.push({ action: 'first pin', message: firstPin.procedureFeedback.message });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-action-handoff.spec.ts",
+                        "column": 50,
+                        "line": 103
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatch\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected pattern: \u001b[32m/Next: .*second/i\u001b[39m\nReceived string:  \u001b[31m\"First stabilizer placed. Angle calibration 100%. Equivalent action replayed with a controlled anchor. Scenario checkpoint: 100%. Next: Place the opposing body-wall anchor.\"\u001b[39m\n\n  101 |       expect(firstPin.procedureByLayer.skin.pins).toHaveLength(1);\n  102 |       expect(firstPin.procedureFeedback.message).toContain('First stabilizer placed.');\n> 103 |       expect(firstPin.procedureFeedback.message).toMatch(/Next: .*second/i);\n      |                                                  ^\n  104 |       expect(firstPin.procedureFeedback.message).not.toContain(reflectionCue);\n  105 |       await expect(checkpoint(page)).toHaveAttribute('data-phase', 'perform');\n  106 |       steps.push({ action: 'first pin', message: firstPin.procedureFeedback.message });\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-action-handoff.spec.ts:103:50"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T23:09:59.711Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-action-handoff-2026-10-09\\browser-2\\test-results\\dissection-action-handoff--491f4-robe-without-advancing-work-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-action-handoff-2026-10-09\\browser-2\\test-results\\dissection-action-handoff--491f4-robe-without-advancing-work-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-action-handoff-2026-10-09\\browser-2\\test-results\\dissection-action-handoff--491f4-robe-without-advancing-work-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-action-handoff-2026-10-09\\browser-2\\test-results\\dissection-action-handoff--491f4-robe-without-advancing-work-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-action-handoff.spec.ts",
+                    "column": 50,
+                    "line": 103
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "bf6ee3f215b7e933d1a0-45e41907e459d1392ff1",
+          "file": "dissection-action-handoff.spec.ts",
+          "line": 89,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-09T23:09:35.697Z",
+    "duration": 44552.356999999996,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

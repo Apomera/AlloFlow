@@ -37,13 +37,210 @@
     var v = Math.sqrt(ISS_GM / r);
     return { r: r, v: v, minutes: (2 * Math.PI * r / v) / 60 };
   }
+  // Two-body flight model: km, seconds and km/s internally. Burn readouts use
+  // m/s. Hohmann assumes coplanar circular endpoints and instantaneous burns.
+  // NASA: https://science.nasa.gov/learn/basics-of-space-flight/chapter4-1/
+  function issFlightNumber(value, fallback, min, max) {
+    var number = value == null || value === '' ? fallback : Number(value);
+    return Math.max(min, Math.min(max, isFinite(number) ? number : fallback));
+  }
+  function issTransferPlan(startAltitude, targetAltitude) {
+    var start = issFlightNumber(startAltitude, ISS_REF_ALT, 180, 2200);
+    var target = issFlightNumber(targetAltitude, 800, 180, 2200);
+    var r1 = ISS_R_EARTH + start, r2 = ISS_R_EARTH + target;
+    var a = (r1 + r2) / 2;
+    var e = (r2 - r1) / (r1 + r2);
+    var startSpeed = Math.sqrt(ISS_GM / r1), targetSpeed = Math.sqrt(ISS_GM / r2);
+    var departureSpeed = Math.sqrt(ISS_GM * (2 / r1 - 1 / a));
+    var arrivalSpeed = Math.sqrt(ISS_GM * (2 / r2 - 1 / a));
+    var burn1 = (departureSpeed - startSpeed) * 1000;
+    var burn2 = (targetSpeed - arrivalSpeed) * 1000;
+    return { startAltitude: start, targetAltitude: target, r1: r1, r2: r2,
+      a: a, signedEccentricity: e, eccentricity: Math.abs(e),
+      startSpeed: startSpeed, targetSpeed: targetSpeed,
+      departureSpeed: departureSpeed, arrivalSpeed: arrivalSpeed,
+      burn1: burn1, burn2: burn2, deltaV: Math.abs(burn1) + Math.abs(burn2),
+      coastSeconds: start === target ? 0 : Math.PI * Math.sqrt(a * a * a / ISS_GM) };
+  }
+  function issTransferState(plan, fraction) {
+    var f = issFlightNumber(fraction, 0, 0, 1);
+    var e = plan.signedEccentricity, mean = Math.PI * f, eccentric = mean;
+    // Solve Kepler's equation: equal slider steps are equal elapsed time, not
+    // equal angle. Signed e places both ascending and descending starts at +X.
+    for (var i = 0; i < 10; i++) eccentric -= (eccentric - e * Math.sin(eccentric) - mean) / (1 - e * Math.cos(eccentric));
+    var c = Math.cos(eccentric), s = Math.sin(eccentric), minor = Math.sqrt(1 - e * e);
+    var radius = plan.a * (1 - e * c);
+    var angular = Math.sqrt(ISS_GM / (plan.a * plan.a * plan.a)) / (1 - e * c);
+    var vx = -plan.a * s * angular, vy = plan.a * minor * c * angular;
+    return { x: plan.a * (c - e), y: plan.a * minor * s, vx: vx, vy: vy,
+      radius: radius, altitude: radius - ISS_R_EARTH,
+      speed: Math.sqrt(vx * vx + vy * vy), elapsedSeconds: plan.coastSeconds * f,
+      specificEnergy: -ISS_GM / (2 * plan.a),
+      angularMomentum: Math.sqrt(ISS_GM * plan.a * (1 - e * e)) };
+  }
+  // Secular, nearly-circular decay from dE/dt = -D*v/m and E = -mu/(2r).
+  // SI drag D = 1/2 rho Cd A v²; stationary atmosphere, constant Cd and area.
+  // NASA: https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/drag-equation/
+  function issDragSnapshot(altitude, solarFactor, frontalArea, massKg) {
+    var alt = issFlightNumber(altitude, ISS_REF_ALT, 180, 2200);
+    var factor = issFlightNumber(solarFactor, 1, .1, 5);
+    var area = issFlightNumber(frontalArea, 800, 200, 1600);
+    var mass = issFlightNumber(massKg, 420000, 100000, 1000000);
+    var mu = ISS_GM * 1e9, radius = (ISS_R_EARTH + alt) * 1000, cd = 2.2;
+    // Density is illustrative, calibrated to the stated 75 m/day benchmark;
+    // an exponential scale height is not an operational thermosphere model.
+    var referenceDensity = (75 / 86400) / (cd * 800 / 420000 * Math.sqrt(mu * (ISS_R_EARTH + ISS_REF_ALT) * 1000));
+    var density = referenceDensity * Math.exp((ISS_REF_ALT - alt) / 60) * factor;
+    var speed = Math.sqrt(mu / radius), force = .5 * density * cd * area * speed * speed;
+    return { density: density, forceN: force, acceleration: force / mass,
+      dailyLossKm: density * cd * area / mass * Math.sqrt(mu * radius) * 86400 / 1000,
+      ballisticCoefficient: mass / (cd * area), area: area, mass: mass, cd: cd };
+  }
+  function issDragPropagate(altitude, solarFactor, frontalArea, reboostDay) {
+    var current = issFlightNumber(altitude, ISS_REF_ALT, 180, 2000);
+    var boostDay = [10, 20].indexOf(Number(reboostDay)) >= 0 ? Number(reboostDay) : 0;
+    var samples = [{ day: 0, altitude: current }], boostDeltaV = 0, elapsed = 0;
+    for (var hour = 1; hour <= 720 && current > 180; hour++) {
+      // The +5 km intervention is a completed two-burn circular raise. The
+      // coast (~half an orbit) is unresolved on this 30-day secular chart.
+      if (boostDay && hour === boostDay * 24 + 1) {
+        samples.push({ day: boostDay, altitude: current });
+        boostDeltaV = issTransferPlan(current, current + 5).deltaV;
+        current += 5;
+        samples.push({ day: boostDay, altitude: current });
+      }
+      var loss = issDragSnapshot(current, solarFactor, frontalArea).dailyLossKm / 24;
+      var midpoint = Math.max(180, current - loss / 2);
+      current = Math.max(180, current - issDragSnapshot(midpoint, solarFactor, frontalArea).dailyLossKm / 24);
+      elapsed = hour / 24;
+      if (hour % 24 === 0 || current <= 180) samples.push({ day: elapsed, altitude: current });
+    }
+    return { samples: samples, endAltitude: current, endDay: elapsed,
+      stopped: current <= 180, boostDeltaV: boostDeltaV,
+      initial: issDragSnapshot(altitude, solarFactor, frontalArea) };
+  }
   var _issRefOrbit = issOrbit(ISS_REF_ALT);
 
-  // Derived, not quoted — from the same orbital physics the Orbit Lab teaches.
-  // Geostationary is the ONE radius whose period is a sidereal day, so it falls
-  // straight out of Kepler's third law; the round-trip delay is then just the
-  // path length over c. Rounded to the nearest 100 km because the model uses a
-  // mean Earth radius, and the equatorial figure differs by a few km.
+  // Fixed-axis astronaut response to a tool pulse, in SI units and radians.
+  function issEvaReaction(options, elapsed) {
+    options = options || {};
+    function bounded(value, min, max, fallback) {
+      var number = Number(value);
+      return Math.max(min, Math.min(max, value == null || !isFinite(number) ? fallback : number));
+    }
+    var torque = bounded(options.torque, 6, 30, 18);
+    var inertia = bounded(options.inertia, 16, 64, 32);
+    var time = bounded(elapsed, 0, 2.5, 0), pulse = 0.5;
+    var braced = options.braced !== false;
+    var poweredTime = Math.min(time, pulse), coastTime = Math.max(0, time - pulse);
+    // Opposite tool reaction about one body axis. After the pulse, torque is
+    // zero but angular momentum persists; the restraint cancels body torque.
+    // NASA: www1.grc.nasa.gov/beginners-guide-to-aeronautics/torque-moment/
+    var alpha = braced ? 0 : -torque / inertia;
+    var omega = time === 0 ? 0 : alpha * poweredTime;
+    return { torque: torque, inertia: inertia, braced: braced, time: time,
+      pulseDuration: pulse, duration: 2.5, omega: omega,
+      angle: time === 0 ? 0 : alpha * (0.5 * poweredTime * poweredTime + poweredTime * coastTime),
+      angularMomentum: inertia * omega, energy: 0.5 * inertia * omega * omega,
+      netTorque: time > 0 && time < pulse ? alpha * inertia : 0,
+      phase: time === 0 ? 'ready' : time < pulse ? 'pulse' : time < 2.5 ? 'coast' : 'complete' };
+  }
+
+  // Ideal one-dimensional free flight and contact, in SI units. The initial
+  // rail impulse is external; momentum is conserved during the later contact.
+  // NASA Glenn: www1.grc.nasa.gov/beginners-guide-to-aeronautics/conservation-of-momentum-2/
+  function issMomentumTrial(options, elapsed) {
+    options = options || {};
+    function bounded(value, min, max, fallback) {
+      var number = Number(value);
+      return Math.max(min, Math.min(max, value == null || !isFinite(number) ? fallback : number));
+    }
+    var mass = bounded(options.mass, 50, 110, 70);
+    var cargo = bounded(options.cargo, 5, 40, 15);
+    var impulse = bounded(options.impulse, 4, 22, 12);
+    var drift = bounded(options.drift, -0.1, 0.1, 0.02);
+    var restitution = options.mode === 'elastic' ? 1 : 0;
+    var initialSpeed = impulse / mass;
+    var closingSpeed = initialSpeed - drift;
+    var contactTime = closingSpeed > 1e-8 ? 2.5 / closingSpeed : Infinity;
+    var duration = Math.min(120, Math.max(30, isFinite(contactTime) ? contactTime * 1.5 : 60));
+    var time = bounded(elapsed, 0, duration, 0);
+    var contacted = time >= contactTime;
+    var momentum = mass * initialSpeed + cargo * drift;
+    var afterCrew = (momentum - cargo * restitution * closingSpeed) / (mass + cargo);
+    var afterCargo = afterCrew + restitution * closingSpeed;
+    var crewV = contacted ? afterCrew : initialSpeed;
+    var cargoV = contacted ? afterCargo : drift;
+    var contactX = isFinite(contactTime) ? initialSpeed * contactTime : 0;
+    var crewX = contacted ? contactX + afterCrew * (time - contactTime) : initialSpeed * time;
+    var cargoX = contacted ? contactX + afterCargo * (time - contactTime) : 2.5 + drift * time;
+    var initialEnergy = 0.5 * mass * initialSpeed * initialSpeed + 0.5 * cargo * drift * drift;
+    var energy = 0.5 * mass * crewV * crewV + 0.5 * cargo * cargoV * cargoV;
+    return { mass: mass, cargo: cargo, impulse: impulse, drift: drift, time: time,
+      duration: duration, contactTime: contactTime, contacted: contacted, mode: restitution ? 'elastic' : 'catch',
+      crewX: crewX, cargoX: cargoX, crewV: crewV, cargoV: cargoV,
+      initialSpeed: initialSpeed, momentum: momentum, initialEnergy: initialEnergy,
+      energy: energy, energyLost: Math.max(0, initialEnergy - energy) };
+  }
+
+  // User-started clocks stay local to the mounted experiment. Saved projects
+  // restore their last time, never an autoplaying simulation. The analytic
+  // models receive seconds; display acceleration does not alter their physics.
+  function issExperimentPlayback(props) {
+    var React = props.React, h = React.createElement;
+    var playingState = React.useState(false), playing = playingState[0], setPlaying = playingState[1];
+    var rateState = React.useState((props.speeds || [1, 4, 10])[0]), rate = rateState[0], setRate = rateState[1];
+    var latest = React.useRef(props), emitted = React.useRef(props.value);
+    latest.current = props;
+    var t = props.t || function (key, fallback) { return fallback; };
+    var canPlay = !props.disabled && props.value < props.max;
+    React.useEffect(function () { setPlaying(false); }, [props.resetKey, props.disabled]);
+    React.useEffect(function () {
+      // A slider, step button, or reset outside this clock pauses playback.
+      if (Math.abs(props.value - emitted.current) > 1e-7) setPlaying(false);
+      emitted.current = props.value;
+    }, [props.value]);
+    React.useEffect(function () {
+      if (!playing || !canPlay) return;
+      var frame = 0, previous = null, sinceCommit = 0, time = latest.current.value;
+      function stopHidden() { if (document.hidden) setPlaying(false); }
+      function tick(now) {
+        if (document.hidden) { setPlaying(false); return; }
+        if (previous !== null) {
+          // A stalled frame must never fast-forward through an encounter.
+          var delta = Math.max(0, Math.min(0.25, (now - previous) / 1000));
+          sinceCommit += delta;
+          time = Math.min(latest.current.max, time + delta * rate);
+          if (sinceCommit >= 0.1 || time >= latest.current.max) {
+            emitted.current = time;
+            latest.current.onAdvance(time);
+            sinceCommit = 0;
+          }
+        }
+        previous = now;
+        if (time >= latest.current.max) { setPlaying(false); return; }
+        frame = requestAnimationFrame(tick);
+      }
+      document.addEventListener('visibilitychange', stopHidden);
+      frame = requestAnimationFrame(tick);
+      return function () { cancelAnimationFrame(frame); document.removeEventListener('visibilitychange', stopHidden); };
+    }, [playing, rate, props.resetKey, props.disabled, canPlay]);
+    return h('div', { className: 'iss-experiment-playback iss-experiment-actions', 'data-iss-playback': props.id },
+      h('button', { type: 'button', 'data-iss-playback-toggle': props.id, 'aria-pressed': playing,
+        disabled: !canPlay, onClick: function () { setPlaying(!playing); } },
+        playing ? t('stem.spacestation.playback_pause', 'Pause motion') : t('stem.spacestation.playback_play', 'Play motion')),
+      h('label', { htmlFor: 'iss-playback-speed-' + props.id, style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#cbd5e1' } },
+        t('stem.spacestation.playback_speed', 'Simulation speed'),
+        h('select', { id: 'iss-playback-speed-' + props.id, 'data-iss-playback-speed': props.id, value: rate,
+          style: { background: '#102538', color: '#e2e8f0', border: '1px solid #58748a', borderRadius: 7, padding: '7px 9px' },
+          onChange: function (event) { setRate(Number(event.target.value)); } },
+          (props.speeds || [1, 4, 10]).map(function (speed) { return h('option', { key: speed, value: speed }, speed + '×'); }))),
+      h('span', { style: { flexBasis: '100%', fontSize: 11, color: '#94a3b8' } },
+        t('stem.spacestation.playback_hint', 'Playback pauses when you seek, change the setup, or leave this view.')));
+  }
+
+  // Geostationary radius follows Kepler's third law for one sidereal day.
+  // Round the altitude to 100 km because the model uses a mean Earth radius.
   var ISS_SIDEREAL_DAY_S = 86164;
   var ISS_C_KM_S = 299792.458;
   var _issGeoR = Math.cbrt(ISS_GM * ISS_SIDEREAL_DAY_S * ISS_SIDEREAL_DAY_S / (4 * Math.PI * Math.PI));
@@ -1069,7 +1266,7 @@
           renderer.setSize(Wc, Hc, false);
           if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
           if (THREE.ACESFilmicToneMapping) renderer.toneMapping = THREE.ACESFilmicToneMapping;
-          renderer.toneMappingExposure = 1.08;
+          renderer.toneMappingExposure = 0.96;
           renderer.shadowMap.enabled = true;
           renderer.shadowMap.type = THREE.PCFSoftShadowMap;
           var scene = new THREE.Scene();
@@ -1082,13 +1279,17 @@
           scene.background = new THREE.Color(0x000102);
           scene.fog = new THREE.FogExp2(0x000102, 0.0055);
           var camera = new THREE.PerspectiveCamera(46, Wc / Hc, 0.1, 220);
+          // Preserve horizontal framing on phones without changing view presets.
+          function mapFieldOfView(aspect) { return Math.min(80, 2 * Math.atan(Math.tan(23 * Math.PI / 180) * Math.max(1, 1.3 / aspect)) * 180 / Math.PI); }
+          camera.fov = mapFieldOfView(camera.aspect);
+          camera.updateProjectionMatrix();
           camera.position.set(8.2, 4.8, 10.4);
           camera.lookAt(0, 0, 1);
-          var earthShine = new THREE.HemisphereLight(0x9bdcff, 0x081225, 0.65);
+          var earthShine = new THREE.HemisphereLight(0x9bdcff, 0x081225, 0.46);
           scene.add(earthShine);
-          var fillAmbient = new THREE.AmbientLight(0x7288aa, 0.32);
+          var fillAmbient = new THREE.AmbientLight(0x7288aa, 0.22);
           scene.add(fillAmbient);
-          var sun = new THREE.DirectionalLight(0xfff3da, 1.65);
+          var sun = new THREE.DirectionalLight(0xfff3da, 1.35);
           // Deliberately NOT a point on the sweep above. Under reduced motion
           // the sweep never runs, so this value's only job is to be the best
           // still image of the station; it was chosen for that and photographed
@@ -1126,7 +1327,7 @@
             // vanish under it. A tight, small glint is both the truer look and
             // the one that leaves the map readable.
             earthMatOpts.shininess = 130;
-            earthMatOpts.specular = 0x9ec7e8;
+            earthMatOpts.specular = 0x244963;
             earthMatOpts.map = issTexture(earthSkin.day, true);
             earthMatOpts.specularMap = issTexture(earthSkin.spec, false);
             // Phong adds emissive regardless of the light direction, so the
@@ -1146,10 +1347,9 @@
           // carries the planet's hue and scaling it would shift the colour.
           var earthExposureMat = earthSkin ? earth.material : null;
           earth.position.set(0, -34.5, 0); earth.receiveShadow = false;
-          // Chosen by photographing the scene at six rotations and counting how
-          // much land and how many city lights land in the DEFAULT view: this
-          // one puts a populated, land-heavy face under the station at rest
-          // instead of the middle of the Pacific.
+          // Tilt the globe so the default view reveals temperate coastlines
+          // rather than looking almost straight down at the pole.
+          earth.rotation.x = 0.68;
           earth.rotation.y = 0;
           scene.add(earth);
           var cloudMatOpts = { color: 0xdff4ff, transparent: true, opacity: 0.055, depthWrite: false, shininess: 4 };
@@ -1165,6 +1365,7 @@
           // the limb. Weather lives around 10 km.
           var cloudShell = new THREE.Mesh(new THREE.SphereGeometry(earthSkin ? 30.06 : 30.18, 64, 40), new THREE.MeshPhongMaterial(cloudMatOpts));
           cloudShell.position.copy(earth.position);
+          cloudShell.rotation.x = earth.rotation.x;
           cloudShell.rotation.y = earth.rotation.y;
           scene.add(cloudShell);
           // Two additive back-side shells give the limb the "thin blue line":
@@ -1214,9 +1415,9 @@
             });
             return mesh;
           }
-          var atmo = makeLimbShell(30.65, 0x67c8ff, 0xff8b3d, 0.17);
+          var atmo = makeLimbShell(30.32, 0x67c8ff, 0xff8b3d, 0.24);
           scene.add(atmo);
-          var airglow = makeLimbShell(30.3, 0x8fdcff, 0xffb056, 0.32);
+          var airglow = makeLimbShell(30.12, 0x8fdcff, 0xffb056, 0.38);
           scene.add(airglow);
           // Stars, in two magnitude tiers with per-star colour. A single
           // uniform white field reads as digital dust; real starlight varies in
@@ -1670,7 +1871,7 @@
             var nextH = cv.clientHeight || Hc;
             if (nextW === Wc && nextH === Hc) return;
             Wc = nextW; Hc = nextH;
-            camera.aspect = Wc / Math.max(1, Hc); camera.updateProjectionMatrix();
+            camera.aspect = Wc / Math.max(1, Hc); camera.fov = mapFieldOfView(camera.aspect); camera.updateProjectionMatrix();
             renderer.setSize(Wc, Hc, false);
             if (composer) { try { composer.setSize(Math.max(1, Math.round(Wc * bloomRes)), Math.max(1, Math.round(Hc * bloomRes))); } catch (e) {} }
           }
@@ -1783,8 +1984,8 @@
             // the 35-minute eclipse, far too little to pass for daylight. Under
             // reduced motion the sweep never runs and daylight01 pins to 1, so
             // the frozen still image is exactly what it was.
-            earthShine.intensity = 0.19 + 0.46 * daylight01;
-            fillAmbient.intensity = 0.11 + 0.21 * daylight01;
+            earthShine.intensity = 0.14 + 0.32 * daylight01;
+            fillAmbient.intensity = 0.10 + 0.12 * daylight01;
             rim.intensity = 0.26 + 0.54 * daylight01;
             _sunDir.copy(sun.position).normalize();
             // Repaint the limb only when the Sun has actually moved enough to
@@ -1818,7 +2019,7 @@
             // use puts them where they belong. This is also true to life: you
             // cannot see a city's lights from orbit at local noon.
             if (earthLightsMat) earthLightsMat.emissiveIntensity = 0.1 + 1.45 * lampOn;
-            if (earthExposureMat) earthExposureMat.color.setScalar(1 + 0.46 * lampOn);
+            if (earthExposureMat) earthExposureMat.color.setScalar(1.5 + 0.3 * lampOn);
             for (var vi = 0; vi < viewportMats.length; vi++) {
               viewportMats[vi].color.setRGB(0.42 + 0.32 * lampOn, 0.62 + 0.33 * lampOn, 0.72 + 0.28 * lampOn);
             }
@@ -5979,23 +6180,119 @@
         cv.width = Wc * 2; cv.height = Hc * 2;
         if (ctx2) ctx2.setTransform(2, 0, 0, 2, 0, 0); // jsdom has no 2-D context; never throw inside a React ref
         var realMode = cv._dockRealMode !== false;
+        var completedDockRuns = Math.max(0, Number(d.dockRuns) || 0);
+        var completedDockWins = Math.max(0, Number(d.dockWins) || 0);
         // Game state (meters; station docking port at origin, approach along +Y = right)
-        var st = { x: 26, y: -190, vx: 0, vy: 1.0, fuel: 100, t: 0, over: false, msg: '', trail: [], lastTrail: 0, thrust: { up: false, down: false, fwd: false, back: false } };
+        var st = { x: 26, y: -190, vx: 0, vy: 1.0, fuel: 100, propellant: 80, t: 0, over: false, paused: false, timeScale: 4, precision: false, damp: false, deltaV: 0, scenario: 'rendezvous', forecastSeconds: 60, msg: '', trail: [], lastTrail: 0, thrust: { up: false, down: false, fwd: false, back: false } };
+        var practiceStarts = {
+          rendezvous: { x: 26, y: -190, vx: 0, vy: 1, label: __alloT('stem.spacestation.dock_practice_rendezvous', 'Rendezvous') },
+          final: { x: .6, y: -25, vx: -.015, vy: .24, label: __alloT('stem.spacestation.dock_practice_final', 'Final approach') },
+          drift: { x: 8, y: -50, vx: .15, vy: .65, label: __alloT('stem.spacestation.dock_practice_drift', 'Cross drift') }
+        };
         cv._dockState = st;
-        var N_ORBIT = 0.02;   // orbital rate, exaggerated ~18x so coupling is feelable in a minute
-        var ACCEL = 0.35, DT = 0.35;
+        // Local radial / along-track HCW dynamics about a circular 420 km orbit.
+        // The orbital rate is physical, not exaggerated. Only the clock is accelerated.
+        // MIT 16.346 lecture 26: https://ocw.mit.edu/courses/16-346-astrodynamics-fall-2008/resources/lec_26/
+        var N_ORBIT = Math.sqrt(3.986004418e14 / Math.pow(6371000 + 420000, 3));
+        var DRY_MASS = 8000, PROPELLANT = 80, THRUST = 400, ISP = 220, G0 = 9.80665;
+        var ACCEL = THRUST / (DRY_MASS + PROPELLANT), DT = 1 / 60;
+        function acceleration() { return THRUST * (st.precision ? .25 : 1) / (DRY_MASS + st.propellant); }
+        function brakingSnapshot() {
+          var speed = Math.sqrt(st.vx * st.vx + st.vy * st.vy);
+          var range = Math.sqrt(st.x * st.x + st.y * st.y);
+          var remainingDeltaV = ISP * G0 * Math.log1p(st.propellant / DRY_MASS);
+          // Each fixed-axis thruster spends propellant separately. Cancelling
+          // diagonal motion costs the sum of the two component impulses.
+          var requiredDeltaV = Math.abs(st.vx) + Math.abs(st.vy);
+          var reason = st.propellant <= 0 ? 'empty' : remainingDeltaV + 1e-9 < requiredDeltaV ? 'insufficient' : 'available';
+          // Constant initial acceleration estimate; this is not a propagated
+          // powered HCW trajectory or a guarantee of a clear capture path.
+          var distance = reason === 'available' ? speed * speed / (2 * acceleration()) : Infinity;
+          return { reason: reason, remainingDeltaV: remainingDeltaV, distance: distance, margin: range - distance - 5 };
+        }
+        function propagateRelative(state, dt, ax, ay) {
+          // RK4 keeps the velocity-dependent Coriolis term accurate in both the
+          // live flight and coast prediction. No artificial friction in vacuum.
+          function rate(st) {
+            return [st.vx, st.vy, ax + (realMode ? 3 * N_ORBIT * N_ORBIT * st.x + 2 * N_ORBIT * st.vy : 0), ay + (realMode ? -2 * N_ORBIT * st.vx : 0)];
+          }
+          function offset(k, scale) { return { x: state.x + k[0] * scale, y: state.y + k[1] * scale, vx: state.vx + k[2] * scale, vy: state.vy + k[3] * scale }; }
+          var a = rate(state), b = rate(offset(a, dt / 2)), c = rate(offset(b, dt / 2)), e = rate(offset(c, dt));
+          return { x: state.x + dt / 6 * (a[0] + 2 * b[0] + 2 * c[0] + e[0]), y: state.y + dt / 6 * (a[1] + 2 * b[1] + 2 * c[1] + e[1]), vx: state.vx + dt / 6 * (a[2] + 2 * b[2] + 2 * c[2] + e[2]), vy: state.vy + dt / 6 * (a[3] + 2 * b[3] + 2 * c[3] + e[3]) };
+        }
+        var forecastKey = '', cachedForecast = null;
+        function coastForecast() {
+          // The same HCW integrator as live flight, with every thruster off.
+          // Stop at the first contact or zone exit: never draw through hardware
+          // and report a later, fictitious arrival as a successful approach.
+          var key = [st.x, st.y, st.vx, st.vy, realMode, st.forecastSeconds, st.over].join(':');
+          if (cachedForecast && key === forecastKey) return cachedForecast;
+          var point = { x: st.x, y: st.y, vx: st.vx, vy: st.vy, time: 0 };
+          var points = [point], terminal = null, planeCrossing = null;
+          function outside(p) { return Math.hypot(p.x, p.y) > 420 || p.y > 35; }
+          if (st.over) terminal = 'complete'; else if (outside(point)) terminal = 'exit';
+          while (!terminal && point.time < st.forecastSeconds) {
+            var dt = Math.min(2, st.forecastSeconds - point.time);
+            var next = propagateRelative(point, dt, 0, 0);
+            function locateEvent(isPast) {
+              var low = 0, high = dt;
+              for (var refine = 0; refine < 24; refine++) {
+                var mid = (low + high) / 2, sample = propagateRelative(point, mid, 0, 0);
+                if (isPast(sample)) high = mid; else low = mid;
+              }
+              var atEvent = propagateRelative(point, high, 0, 0);
+              atEvent.time = point.time + high;
+              return atEvent;
+            }
+            if (point.y < -5 && next.y >= -5) {
+              var contactPoint = locateEvent(function (sample) { return sample.y >= -5; });
+              contactPoint.y = -5; planeCrossing = contactPoint;
+              if (Math.abs(contactPoint.x) < 70) { terminal = 'contact'; next = contactPoint; dt = contactPoint.time - point.time; }
+            }
+            if (!terminal && outside(next)) {
+              next = locateEvent(outside); dt = next.time - point.time; terminal = 'exit';
+              if (planeCrossing && planeCrossing.time > next.time) planeCrossing = null;
+            }
+            next.time = point.time + dt;
+            points.push(next); point = next;
+          }
+          var speed = Math.hypot(point.vx, point.vy), offset = Math.abs(point.x);
+          forecastKey = key;
+          cachedForecast = { points: points, endpoint: point, horizon: st.forecastSeconds,
+            terminal: terminal, planeCrossing: planeCrossing, speed: speed, offset: offset,
+            range: Math.hypot(point.x, point.y),
+            capture: terminal === 'contact' && speed <= .6 && offset < 2.5 };
+          return cachedForecast;
+        }
+        cv._dockForecast = coastForecast;
+        function forecastLabel(forecast) {
+          if (st.over) return __alloT('stem.spacestation.dock_forecast_complete', 'Run complete — start another approach.');
+          if (forecast.capture) return __alloT('stem.spacestation.dock_forecast_capture', 'Soft capture forecast');
+          if (forecast.terminal === 'contact') {
+            if (forecast.speed > .6 && forecast.offset >= 2.5) return __alloT('stem.spacestation.dock_forecast_fast_offset', 'Fast, off-axis contact forecast');
+            return forecast.speed > .6 ? __alloT('stem.spacestation.dock_forecast_fast', 'Contact too fast') : __alloT('stem.spacestation.dock_forecast_offset', 'Contact outside the port');
+          }
+          if (forecast.terminal === 'exit') return __alloT('stem.spacestation.dock_forecast_exit', 'Leaves the approach zone');
+          if (forecast.planeCrossing) return __alloT('stem.spacestation.dock_forecast_pass', 'Passes outside the station');
+          return __alloT('stem.spacestation.dock_forecast_coast', 'No contact within this window');
+        }
+        function forecastSummary(forecast) {
+          return __alloFill(__alloT('stem.spacestation.dock_forecast_summary', '{status}. With all thrusters off, at +{time} seconds: range {range} meters, axis offset {offset} meters, relative speed {speed} meters per second.'),
+            { status: forecastLabel(forecast), time: forecast.endpoint.time.toFixed(1), range: forecast.range.toFixed(1), offset: forecast.offset.toFixed(1), speed: forecast.speed.toFixed(2) });
+        }
         function endRun(result, msg) {
           if (st.over) return;
           st.over = true; st.msg = msg;
           st.overAt = frame; st.overResult = result;   // drives the one-shot capture bloom
-          var wins = (d.dockWins || 0) + (result === 'docked' ? 1 : 0);
+          completedDockRuns += 1;
+          completedDockWins += result === 'docked' ? 1 : 0;
           var finalRange = Math.sqrt(st.x * st.x + st.y * st.y);
           var finalSpeed = Math.sqrt(st.vx * st.vx + st.vy * st.vy);
           upd({
-            dockResult: result, dockMsg: msg, dockWins: wins, dockRuns: (d.dockRuns || 0) + 1,
+            dockResult: result, dockMsg: msg, dockWins: completedDockWins, dockRuns: completedDockRuns,
             dockDebrief: {
               range: finalRange, speed: finalSpeed, offset: Math.abs(st.x),
-              fuel: st.fuel, elapsed: st.t, mode: realMode ? 'orbital' : 'game'
+              fuel: st.fuel, elapsed: st.t, mode: realMode ? 'orbital' : 'game', propellantUsed: PROPELLANT - st.propellant, deltaV: st.deltaV
             }
           });
           if (result === 'docked') {
@@ -6004,37 +6301,55 @@
           }
         }
         function step() {
-          if (st.over) return;
+          if (st.over || st.paused) return;
           st.t += DT;
-          var ax = 0, ay = 0;
-          if (st.fuel > 0) {
-            if (st.thrust.up) ax += ACCEL; if (st.thrust.down) ax -= ACCEL;
-            if (st.thrust.fwd) ay += ACCEL; if (st.thrust.back) ay -= ACCEL;
-            var burning = (st.thrust.up || st.thrust.down || st.thrust.fwd || st.thrust.back);
-            if (burning) st.fuel = Math.max(0, st.fuel - 0.35);
+          var ux = Number(st.thrust.up) - Number(st.thrust.down), uy = Number(st.thrust.fwd) - Number(st.thrust.back);
+          // A rate-hold controller fires the same finite thrusters as the pilot.
+          // It cancels relative velocity, not position; manual input overrides it.
+          if (st.damp) {
+            ux = Math.max(-1, Math.min(1, (-st.vx * .6 - (realMode ? 3 * N_ORBIT * N_ORBIT * st.x + 2 * N_ORBIT * st.vy : 0)) / acceleration()));
+            uy = Math.max(-1, Math.min(1, (-st.vy * .6 + (realMode ? 2 * N_ORBIT * st.vx : 0)) / acceleration()));
           }
-          if (realMode) {
-            // Clohessy-Wiltshire relative motion: x = radial (screen up), y = along-track
-            ax += 3 * N_ORBIT * N_ORBIT * st.x + 2 * N_ORBIT * st.vy;
-            ay += -2 * N_ORBIT * st.vx;
-          }
-          st.vx += ax * DT; st.vy += ay * DT;
-          st.x += st.vx * DT; st.y += st.vy * DT;
+          var force = THRUST * (st.precision ? .25 : 1);
+          // mdot = F / (Isp * g0), NASA Glenn specific-impulse definition.
+          var requestedFuel = (Math.abs(ux) + Math.abs(uy)) * force * DT / (ISP * G0);
+          var usedFuel = Math.min(st.propellant, requestedFuel), burnFraction = requestedFuel > 0 ? usedFuel / requestedFuel : 0;
+          var ax = ux * force * burnFraction / (DRY_MASS + st.propellant - usedFuel / 2);
+          var ay = uy * force * burnFraction / (DRY_MASS + st.propellant - usedFuel / 2);
+          st.propellant = Math.max(0, st.propellant - usedFuel); st.fuel = st.propellant / PROPELLANT * 100;
+          st.deltaV += Math.sqrt(ax * ax + ay * ay) * DT;
+          st.firing = { up: ax > .00001, down: ax < -.00001, fwd: ay > .00001, back: ay < -.00001 };
+          ACCEL = acceleration();
+          var previous = { x: st.x, y: st.y, vx: st.vx, vy: st.vy };
+          var nextState = propagateRelative(st, DT, ax, ay);
+          st.x = nextState.x; st.y = nextState.y; st.vx = nextState.vx; st.vy = nextState.vy;
           if (st.t - st.lastTrail >= 1.4) { st.trail.push({ x: st.x, y: st.y }); st.trail = st.trail.slice(-70); st.lastTrail = st.t; }
           var range = Math.sqrt(st.x * st.x + st.y * st.y);
           var speed = Math.sqrt(st.vx * st.vx + st.vy * st.vy);
-          if (range < 5) {
+          // Swept contact with the station's front plane prevents tunnelling.
+          // Capture is possible only from the approach side, with positive closure.
+          var contact = previous.y < -5 && st.y >= -5;
+          if (contact) {
+            var fraction = (-5 - previous.y) / (st.y - previous.y);
+            var contactX = previous.x + (st.x - previous.x) * fraction;
+            if (Math.abs(contactX) < 70) {
+              st.x = contactX; st.y = -5;
+              st.vx = previous.vx + (st.vx - previous.vx) * fraction;
+              st.vy = previous.vy + (st.vy - previous.vy) * fraction;
+              speed = Math.sqrt(st.vx * st.vx + st.vy * st.vy);
             // {speed} is substituted AFTER translation. Interpolating it into the
             // fallback instead would work today but silently drop the measured
             // contact speed the moment a lang pack supplies these keys, because
             // __alloT then returns the pack string and never sees the number.
             if (speed <= 0.6 && Math.abs(st.x) < 2.5) endRun('docked', __alloT('stem.spacestation.dock_win', 'Soft capture! Contact at {speed} m/s — gentle enough for the docking latches.').replace('{speed}', speed.toFixed(2)));
             else endRun('bonk', __alloT('stem.spacestation.dock_bonk', 'Contact too fast or off-axis ({speed} m/s). Real vehicles would abort long before this — try arriving under 0.6 m/s, centered.').replace('{speed}', speed.toFixed(2)));
-          } else if (range > 420 || (st.fuel <= 0 && speed < 0.05 && range > 60)) {
+            }
+          } else if (range > 420 || st.y > 35 || (st.fuel <= 0 && speed < 0.05 && range > 60)) {
             endRun('drift', __alloT('stem.spacestation.dock_drift', 'Drifted out of the approach zone. Notice HOW you drifted — in orbit, thrusting forward raises you and slows you.'));
           }
         }
         function draw() {
+          if (!ctx2) return;
           var spaceGradient = ctx2.createLinearGradient(0, 0, 0, Hc);
           spaceGradient.addColorStop(0, '#020611'); spaceGradient.addColorStop(0.62, '#061225'); spaceGradient.addColorStop(1, '#0a2037');
           ctx2.fillStyle = spaceGradient; ctx2.fillRect(0, 0, Wc, Hc);
@@ -6086,21 +6401,27 @@
             ctx2.strokeStyle = 'rgba(125,211,252,.34)'; ctx2.lineWidth = 1.4; ctx2.setLineDash([2, 5]); ctx2.beginPath();
             st.trail.forEach(function (point, trailIndex) { var trailX = ox + point.y * sc, trailY = oy - point.x * sc; if (trailIndex) ctx2.lineTo(trailX, trailY); else ctx2.moveTo(trailX, trailY); }); ctx2.stroke(); ctx2.setLineDash([]);
           }
-          var predictX = st.x, predictY = st.y, predictVx = st.vx, predictVy = st.vy;
+          var forecast = coastForecast(), forecastEnd = forecast.endpoint;
           ctx2.strokeStyle = 'rgba(232,121,249,.72)'; ctx2.lineWidth = 1.6; ctx2.setLineDash([6, 5]); ctx2.beginPath(); ctx2.moveTo(px, py);
-          for (var predictStep = 0; predictStep < 30; predictStep++) {
-            var predictAx = realMode ? 3 * N_ORBIT * N_ORBIT * predictX + 2 * N_ORBIT * predictVy : 0;
-            var predictAy = realMode ? -2 * N_ORBIT * predictVx : 0;
-            predictVx += predictAx * 1.2; predictVy += predictAy * 1.2; predictX += predictVx * 1.2; predictY += predictVy * 1.2;
-            ctx2.lineTo(ox + predictY * sc, oy - predictX * sc);
-          }
+          forecast.points.forEach(function (point) { ctx2.lineTo(ox + point.y * sc, oy - point.x * sc); });
           ctx2.stroke(); ctx2.setLineDash([]);
+          var forecastX = ox + forecastEnd.y * sc, forecastY = oy - forecastEnd.x * sc;
+          var forecastColor = forecast.capture ? '#86efac' : forecast.terminal ? '#fbbf24' : '#f0abfc';
+          if (!st.over && forecastX > 12 && forecastX < Wc - 12 && forecastY > 125 && forecastY < Hc - 38) {
+            ctx2.strokeStyle = forecastColor; ctx2.lineWidth = 1.5;
+            ctx2.beginPath(); ctx2.arc(forecastX, forecastY, 7, 0, Math.PI * 2); ctx2.stroke();
+            ctx2.beginPath(); ctx2.moveTo(forecastX - 3, forecastY); ctx2.lineTo(forecastX + 3, forecastY); ctx2.moveTo(forecastX, forecastY - 3); ctx2.lineTo(forecastX, forecastY + 3); ctx2.stroke();
+            var forecastTextX = Math.max(18, Math.min(Wc - 116, forecastX - 38));
+            ctx2.fillStyle = 'rgba(2,6,23,.88)'; ctx2.fillRect(forecastTextX - 4, forecastY + 11, 113, 17);
+            ctx2.fillStyle = forecastColor; ctx2.font = '800 8px ui-monospace, monospace';
+            ctx2.fillText((forecast.terminal === 'contact' ? 'CONTACT +' : 'COAST +') + forecastEnd.time.toFixed(1) + ' s', forecastTextX, forecastY + 23);
+          }
           var navSpeed = Math.sqrt(st.vx * st.vx + st.vy * st.vy);
           var navRange = Math.sqrt(st.x * st.x + st.y * st.y);
           var closingRate = navRange > .01 ? -(st.x * st.vx + st.y * st.vy) / navRange : 0;
-          var stopDistance = navSpeed * navSpeed / (2 * ACCEL);
-          var stopMargin = navRange - stopDistance - 5;
-          if (navSpeed > .02) {
+          var braking = brakingSnapshot(), stopDistance = braking.distance;
+          var stopMargin = braking.margin;
+          if (navSpeed > .02 && isFinite(stopDistance)) {
             var stopX = px + st.vy / navSpeed * stopDistance * sc, stopY = py - st.vx / navSpeed * stopDistance * sc;
             ctx2.strokeStyle = stopMargin >= 8 ? 'rgba(74,222,128,.32)' : 'rgba(248,113,113,.48)'; ctx2.lineWidth = 4; ctx2.beginPath(); ctx2.moveTo(px, py); ctx2.lineTo(stopX, stopY); ctx2.stroke();
             ctx2.strokeStyle = stopMargin >= 8 ? '#4ade80' : '#f87171'; ctx2.lineWidth = 1.3; ctx2.beginPath(); ctx2.moveTo(stopX - 5, stopY); ctx2.lineTo(stopX + 5, stopY); ctx2.moveTo(stopX, stopY - 5); ctx2.lineTo(stopX, stopY + 5); ctx2.stroke();
@@ -6116,7 +6437,7 @@
           ctx2.shadowColor = 'rgba(253,224,71,.9)'; ctx2.shadowBlur = 9;
           ctx2.lineCap = 'round';
           [['fwd', [-11, -2, -18, 0, -11, 2]], ['back', [12, -2, 18, 0, 12, 2]], ['up', [-2, 8, 0, 15, 2, 8]], ['down', [-2, -8, 0, -15, 2, -8]]].forEach(function (jet) {
-            if (!st.thrust[jet[0]] || st.fuel <= 0) return;
+            if (!(st.firing || st.thrust)[jet[0]] || st.fuel <= 0 || st.paused || st.over) return;
             var p = jet[1];
             ctx2.strokeStyle = 'rgba(251,146,60,.55)'; ctx2.lineWidth = 5;
             ctx2.beginPath(); ctx2.moveTo(p[0], p[1]); ctx2.lineTo(p[2], p[3]); ctx2.lineTo(p[4], p[5]); ctx2.stroke();
@@ -6136,9 +6457,14 @@
           ctx2.font = '700 8px ui-monospace, monospace'; ctx2.fillStyle = '#94a3b8'; ctx2.fillText('RELATIVE NAVIGATION', 20, 24);
           ctx2.font = '850 12px ui-monospace, monospace'; ctx2.fillStyle = '#dbeafe'; ctx2.fillText(range.toFixed(0) + ' m', 20, 43); ctx2.fillText(speed.toFixed(2) + ' m/s', 83, 43);
           ctx2.fillStyle = st.fuel > 25 ? '#4ade80' : '#fbbf24'; ctx2.fillRect(20, 53, Math.max(0, st.fuel) * 1.22, 5); ctx2.strokeStyle = '#475569'; ctx2.strokeRect(20, 53, 122, 5);
+          ctx2.fillStyle = '#cbd5e1'; ctx2.font = '700 8px ui-monospace, monospace';
+          ctx2.fillText('MET ' + st.t.toFixed(1) + ' s  ·  ' + (st.paused ? 'PAUSED' : ((range < 40 ? 1 : st.timeScale) + '× CLOCK')), 20, 86);
+          ctx2.fillText('CLOSE ' + closingRate.toFixed(2) + '  RADIAL ' + (st.vx >= 0 ? '+' : '') + st.vx.toFixed(2) + ' m/s', 20, 100);
+          ctx2.fillStyle = st.damp ? '#86efac' : '#bae6fd';
+          ctx2.fillText(st.damp ? 'RATE HOLD · ACTIVE RCS' : st.precision ? 'PRECISION · 25% THRUST' : 'MANUAL · COAST BETWEEN BURNS', 20, 114);
           var approachPhase = range > 100 ? 'FAR FIELD' : range > 40 ? 'MIDCOURSE' : range > 5 ? 'FINAL APPROACH' : 'CAPTURE ZONE';
           ctx2.fillStyle = speed > 0.6 && range < 40 ? '#fbbf24' : '#86efac'; ctx2.font = '800 9px ui-monospace, monospace'; ctx2.textAlign = 'right'; ctx2.fillText(approachPhase + (speed > 0.6 && range < 40 ? ' // HIGH RATE' : ' // RATE GO'), Wc - 12, 20);
-          ctx2.fillStyle = stopMargin >= 8 ? '#86efac' : '#fca5a5'; ctx2.fillText('BRAKING DISTANCE ' + stopDistance.toFixed(1) + ' M // ' + (stopMargin >= 0 ? 'STOP MARGIN +' : 'NO STOP MARGIN ') + stopMargin.toFixed(1) + ' M', Wc - 12, 34); ctx2.textAlign = 'left';
+          ctx2.fillStyle = stopMargin >= 8 ? '#86efac' : '#fca5a5'; ctx2.fillText(braking.reason === 'empty' ? 'NO RCS PROPELLANT · BRAKING UNAVAILABLE' : braking.reason === 'insufficient' ? 'INSUFFICIENT RCS PROPELLANT · BRAKING UNAVAILABLE' : 'BRAKING DISTANCE ' + stopDistance.toFixed(1) + ' M // ' + (stopMargin >= 0 ? 'STOP MARGIN +' : 'NO STOP MARGIN ') + stopMargin.toFixed(1) + ' M', Wc - 12, 34); ctx2.textAlign = 'left';
           // Closing-rate tape: green is the soft-capture envelope, while the
           // needle reports total relative speed (lateral motion counts too).
           // Anchored to the station, not the canvas edge: at 500-628 the tape
@@ -6195,7 +6521,8 @@
             }
             ctx2.fillText(line, Wc / 2, ly); ctx2.textAlign = 'left';
           }
-        }        var rafId = 0, frame = 0;
+        }
+        var rafId = 0, frame = 0, lastTimestamp = null, accumulator = 0, lastHudAt = -1;
         var milestones = { m100: false, m40: false, m15: false };
         function updateHudMirror() {
           // Text mirror of the canvas HUD (WCAG 1.1.1) — imperative textContent
@@ -6207,31 +6534,91 @@
           if (!el) return;
           var range = Math.sqrt(st.x * st.x + st.y * st.y), speed = Math.sqrt(st.vx * st.vx + st.vy * st.vy);
           var phase = range > 100 ? 'far field' : range > 40 ? 'midcourse' : range > 5 ? 'final approach' : 'capture zone';
-          var margin = range - speed * speed / (2 * ACCEL) - 5;
-          el.textContent = 'Phase ' + phase + ' · range ' + range.toFixed(0) + ' m · relative speed ' + speed.toFixed(2) + ' m/s · stopping margin ' + margin.toFixed(1) + ' m · fuel ' + st.fuel.toFixed(0) + '%' + (st.over ? ' · run over' : '');
+          var braking = brakingSnapshot(), margin = braking.margin;
+          var closure = range > .01 ? -(st.x * st.vx + st.y * st.vy) / range : 0;
+          el.textContent = 'Phase ' + phase + ' · range ' + range.toFixed(1) + ' m · relative speed ' + speed.toFixed(2) + ' m/s · closing ' + closure.toFixed(2) + ' m/s · radial ' + st.vx.toFixed(2) + ' m/s · stopping margin ' + (isFinite(margin) ? margin.toFixed(1) + ' m (estimate)' : braking.reason === 'empty' ? 'unavailable (no propellant)' : 'unavailable (insufficient propellant)') + ' · remaining RCS Δv ' + braking.remainingDeltaV.toFixed(3) + ' m/s · fuel ' + st.fuel.toFixed(1) + '% (' + st.propellant.toFixed(1) + ' kg) · MET ' + st.t.toFixed(1) + ' s · ' + (st.over ? 'run over' : st.paused ? 'paused' : (range < 40 ? 1 : st.timeScale) + '× clock');
+          var controls = cv.parentElement && cv.parentElement.parentElement;
+          if (controls) {
+            var pauseButton = controls.querySelector('[data-dock-pause]');
+            if (pauseButton) { pauseButton.setAttribute('aria-pressed', String(st.paused)); pauseButton.textContent = st.paused ? '▶ Resume' : 'Ⅱ Pause'; }
+            var dampButton = controls.querySelector('[data-dock-damp]');
+            if (dampButton) dampButton.setAttribute('aria-pressed', String(st.damp));
+            var precisionButton = controls.querySelector('[data-dock-precision]');
+            if (precisionButton) precisionButton.setAttribute('aria-pressed', String(st.precision));
+            Object.keys(practiceStarts).forEach(function (id) {
+              var button = controls.querySelector('[data-dock-scenario="' + id + '"]');
+              if (button) button.setAttribute('aria-pressed', String(st.scenario === id));
+            });
+            var forecast = coastForecast();
+            var forecastPanel = controls.querySelector('[data-dock-forecast-panel]');
+            if (forecastPanel) {
+              forecastPanel.setAttribute('data-dock-forecast-kind', st.over ? 'complete' : forecast.capture ? 'capture' : forecast.terminal || 'coast');
+              forecastPanel.setAttribute('aria-label', forecastSummary(forecast));
+              var readings = {
+                status: forecastLabel(forecast),
+                time: '+' + forecast.endpoint.time.toFixed(1) + ' s',
+                range: forecast.range.toFixed(1) + ' m',
+                offset: forecast.offset.toFixed(1) + ' m',
+                speed: forecast.speed.toFixed(2) + ' m/s'
+              };
+              Object.keys(readings).forEach(function (name) {
+                var reading = forecastPanel.querySelector('[data-dock-forecast-reading="' + name + '"]');
+                if (reading) reading.textContent = readings[name];
+              });
+            }
+          }
           if (!st.over) {
             if (!milestones.m100 && range < 100) { milestones.m100 = true; announceToSR(__alloFill(__alloT('stem.spacestation.sr_100_meters_to_the_port_speed_meters_per_second', '100 meters to the port. Speed {value1} meters per second.'), { value1: speed.toFixed(2) })); }
             if (!milestones.m40 && range < 40) { milestones.m40 = true; announceToSR(__alloT('stem.spacestation.sr_final_approach_40_meters_dock_slower_than_0_6_met', 'Final approach, 40 meters. Dock slower than 0.6 meters per second.')); }
             if (!milestones.m15 && range < 15) { milestones.m15 = true; announceToSR(__alloT('stem.spacestation.sr_capture_corridor_15_meters_verify_alignment_and_p', 'Capture corridor, 15 meters. Verify alignment and positive stopping margin.')); }
           }
         }
-        cv._dockResetMilestones = function () { milestones.m100 = false; milestones.m40 = false; milestones.m15 = false; };
-        function loop() {
+        cv._dockResetMilestones = function () {
+          // Practice starts can begin inside a range gate. Announce only gates
+          // crossed during this run, not ones already behind the vehicle.
+          var startRange = Math.hypot(st.x, st.y);
+          milestones.m100 = startRange < 100; milestones.m40 = startRange < 40; milestones.m15 = startRange < 15;
+        };
+        function loop(timestamp) {
           if (!cv.isConnected) { cleanup(); return; }
           frame++;
-          if (!st.over) step();
+          var stamp = typeof timestamp === 'number' ? timestamp : null;
+          var elapsed = lastTimestamp == null || stamp == null ? 0 : Math.max(0, (stamp - lastTimestamp) / 1000);
+          lastTimestamp = stamp;
+          // Ignore background / suspended-tab gaps. All foreground frames use
+          // fixed 1/60 s physics ticks; refresh rate cannot change the trajectory.
+          if (!st.over && !st.paused && !document.hidden && elapsed < .5) {
+            var range = Math.sqrt(st.x * st.x + st.y * st.y);
+            accumulator += elapsed * (range < 40 ? 1 : st.timeScale);
+            while (accumulator + 1e-10 >= DT && !st.over) { step(); accumulator -= DT; }
+          } else accumulator = 0;
           if (!_prefersReducedMotion || frame % 4 === 0) draw();
-          if (frame % 30 === 0) updateHudMirror();
+          if (lastHudAt < 0 || (stamp != null && stamp - lastHudAt >= 250)) { updateHudMirror(); lastHudAt = stamp || 0; }
           rafId = requestAnimationFrame(loop);
         }
-        function setThrust(dir, on) { st.thrust[dir] = on; }
+        function setThrust(dir, on) { if (Object.prototype.hasOwnProperty.call(st.thrust, dir)) { st.thrust[dir] = on; if (on) st.damp = false; } }
         cv._dockSetThrust = setThrust;
-        cv._dockReset = function (mode) {
+        cv._dockTogglePause = function () { st.paused = !st.paused; clearThrust(); st.firing = {}; accumulator = 0; lastTimestamp = null; updateHudMirror(); announceToSR(st.paused ? 'Docking paused.' : 'Docking resumed.'); };
+        cv._dockSetTimeScale = function (value) { st.timeScale = [1, 4, 8].indexOf(Number(value)) >= 0 ? Number(value) : 1; updateHudMirror(); };
+        cv._dockSetPrecision = function () { st.precision = !st.precision; ACCEL = acceleration(); updateHudMirror(); };
+        cv._dockSetDamp = function () { st.damp = !st.damp; clearThrust(); updateHudMirror(); announceToSR(st.damp ? 'Rate hold enabled. Thrusters consume propellant to cancel relative velocity.' : 'Rate hold disabled. Capsule coasting.'); };
+        cv._dockSetHorizon = function (value) {
+          if ([30, 60, 120].indexOf(Number(value)) < 0) return;
+          st.forecastSeconds = Number(value); updateHudMirror(); draw();
+        };
+        cv._dockReset = function (mode, scenario, paused) {
           realMode = mode !== false; cv._dockRealMode = realMode;
-          st.x = 26; st.y = -190; st.vx = 0; st.vy = 1.0; st.fuel = 100; st.t = 0; st.over = false; st.msg = ''; st.trail = []; st.lastTrail = 0; st.overResult = null;
+          st.scenario = Object.prototype.hasOwnProperty.call(practiceStarts, scenario) ? scenario : st.scenario;
+          var start = practiceStarts[st.scenario];
+          st.x = start.x; st.y = start.y; st.vx = start.vx; st.vy = start.vy; st.fuel = 100; st.t = 0; st.over = false; st.msg = ''; st.trail = []; st.lastTrail = 0; st.overResult = null;
+          st.propellant = PROPELLANT; st.deltaV = 0; st.damp = false; st.paused = paused === true; st.firing = {}; accumulator = 0; lastTimestamp = null; ACCEL = acceleration();
           st.thrust = { up: false, down: false, fwd: false, back: false };
           if (cv._dockResetMilestones) cv._dockResetMilestones();
-          announceToSR(__alloT('stem.spacestation.dock_start_sr', 'New approach started: 190 meters from the docking port, closing at 1 meter per second.'));
+          updateHudMirror(); draw();
+          announceToSR(__alloFill(__alloT('stem.spacestation.dock_practice_start_sr', '{name}. Range {range} meters; relative speed {speed} meters per second. {state}'), { name: start.label, range: Math.hypot(st.x, st.y).toFixed(1), speed: Math.hypot(st.vx, st.vy).toFixed(2), state: st.paused ? __alloT('stem.spacestation.dock_practice_paused', 'Paused. Inspect the coast forecast, then resume when ready.') : __alloT('stem.spacestation.dock_practice_running', 'Approach started.') }));
+        };
+        cv._dockSetScenario = function (id) {
+          if (Object.prototype.hasOwnProperty.call(practiceStarts, id)) cv._dockReset(realMode, id, true);
         };
         function onKey(e, on) {
           var k = typeof e.key === 'string' && e.key.length === 1 ? e.key.toLowerCase() : e.key;
@@ -6239,13 +6626,17 @@
           else if (k === 'ArrowDown' || k === 's') { setThrust('down', on); e.preventDefault(); }
           else if (k === 'ArrowRight' || k === 'd') { setThrust('fwd', on); e.preventDefault(); }
           else if (k === 'ArrowLeft' || k === 'a') { setThrust('back', on); e.preventDefault(); }
+          else if ((k === ' ' || k === 'p') && on && !e.repeat) { cv._dockTogglePause(); e.preventDefault(); }
         }
         function clearThrust() { st.thrust = { up: false, down: false, fwd: false, back: false }; }
         var kd = function (e) { onKey(e, true); }, ku = function (e) { onKey(e, false); };
+        var visibilityChange = function () { clearThrust(); st.firing = {}; accumulator = 0; lastTimestamp = null; };
         cv.addEventListener('keydown', kd); cv.addEventListener('keyup', ku); cv.addEventListener('blur', clearThrust); window.addEventListener('blur', clearThrust);
+        document.addEventListener('visibilitychange', visibilityChange);
         function cleanup() {
           cancelAnimationFrame(rafId);
           cv.removeEventListener('keydown', kd); cv.removeEventListener('keyup', ku); cv.removeEventListener('blur', clearThrust); window.removeEventListener('blur', clearThrust);
+          document.removeEventListener('visibilitychange', visibilityChange);
           cv._dockInit = false;
         }
         cv._dockCleanup = cleanup;
@@ -6258,7 +6649,9 @@
       function evaUpd(patch) { upd({ eva: Object.assign({}, evaS, patch) }); }
       function evaLog(entry, cost, extra) {
         var log2 = (evaS.log || []).concat([entry]).slice(-4);
-        evaUpd(Object.assign({ log: log2, o2: Math.max(0, evaS.o2 - cost) }, extra || {}));
+        var patch = Object.assign({ log: log2, o2: Math.max(0, evaS.o2 - cost) }, extra || {});
+        if (patch.o2 <= 0) { patch.done = true; patch.failMsg = __alloT('stem.spacestation.eva_o2_out', 'Suit consumables exhausted — EVA aborted. Real spacewalks budget every breath; try a cleaner run.'); }
+        evaUpd(patch);
       }
       function evaClip() {
         if (evaS.done) return;
@@ -6294,6 +6687,17 @@
       }
       function evaTorque() {
         if (evaS.done || evaS.pos !== EVA_RAILS.length - 1) return;
+        var response = issEvaReaction({ torque: evaS.toolTorque, inertia: evaS.bodyInertia, braced: false }, 0.5);
+        var torque = response.torque;
+        if (evaS.footRestraint === false) {
+          evaLog('↶ Equal and opposite reaction: the free astronaut turns at ' + (Math.abs(response.omega) * 180 / Math.PI).toFixed(1) + '°/s after a 0.5 s tool pulse. Secure the foot restraint before tightening.', 2, { reactionTrial: true });
+          return;
+        }
+        if (torque < 16 || torque > 22) {
+          evaLog(torque < 16 ? '🔧 Torque too low: the teaching fixture needs 16–22 N·m. Increase the tool setting.' : '⚠ Torque limiter stopped the tool: choose 16–22 N·m to protect this teaching fixture.', 2, { reactionTrial: true });
+          return;
+        }
+        if (evaS.o2 <= 5) { evaLog('📻 Insufficient suit budget to complete this bolt. Return to the airlock in the real procedure.', 5); return; }
         var b = Math.min(4, (evaS.bolts || 0) + 1);
         if (b >= 4) {
           // Charge and log the last bolt like the other three. The route
@@ -6309,7 +6713,76 @@
           evaLog('🔩 Bolt ' + b + '/4 torqued. Gloved hands tire fast — pace yourself.', 5, { bolts: b });
         }
       }
-      function evaReset() { upd({ eva: { pos: 0, tetherA: 0, tetherB: 0, freeTether: 'B', o2: 100, bolts: 0, done: false, failMsg: '', started: true, log: ['📻 Airlock egress complete. Two tethers, both clipped at Quest. Daylight window open.'] } }); }
+      function evaReset() { upd({ evaTorqueTime: 0, evaTorqueSeekToken: !d.evaTorqueSeekToken, eva: { pos: 0, tetherA: 0, tetherB: 0, freeTether: 'B', o2: 100, bolts: 0, toolTorque: 18, bodyInertia: 32, footRestraint: true, reactionTrial: false, done: false, failMsg: '', started: true, log: ['📻 Airlock egress complete. Two tethers, both clipped at Quest. Daylight window open.'] } }); }
+
+      function renderEvaMechanics() {
+        var settings = { torque: evaS.toolTorque, inertia: evaS.bodyInertia, braced: evaS.footRestraint !== false };
+        var response = issEvaReaction(settings, d.evaTorqueTime), end = issEvaReaction(settings, 2.5);
+        var torque = response.torque, braced = response.braced;
+        var rateDegrees = Math.abs(response.omega) * 180 / Math.PI, reactionAngle = response.angle * 180 / Math.PI;
+        var color = braced && torque >= 16 && torque <= 22 ? '#86efac' : '#fbbf24';
+        function setup(patch) { upd({ eva: Object.assign({}, evaS, patch), evaTorqueTime: 0, evaTorqueSeekToken: !d.evaTorqueSeekToken }); }
+        function seek(time) { upd({ evaTorqueTime: time, evaTorqueSeekToken: !d.evaTorqueSeekToken }); }
+        function tx(time) { return 45 + time / response.duration * 335; }
+        function ry(rate) { return 98 - Math.abs(rate) * 180 / Math.PI / 60 * 65; }
+        var phaseText = response.phase === 'ready' ? __alloT('stem.spacestation.eva_pulse_ready', 'Ready. Run a half-second pulse, then watch the coast.')
+          : braced ? __alloT('stem.spacestation.eva_pulse_held', 'Restraint holding. The reaction passes into the station; the astronaut stays still.')
+          : response.phase === 'pulse' ? __alloT('stem.spacestation.eva_pulse_active', 'Torque on. Angular velocity is increasing.')
+          : __alloT('stem.spacestation.eva_pulse_coast', 'Torque off. Angular velocity stays constant as the astronaut keeps turning.');
+        return h('div', { 'data-iss-eva-mechanics': 'true', 'data-eva-phase': response.phase, style: { margin: '12px 0', padding: 14, border: '1px solid #334d68', borderRadius: 12, color: '#e2e8f0', background: 'linear-gradient(125deg,#08182b,#122033)' } },
+          h('div', { className: 'iss-experiment-heading' },
+            h('div', null, h('span', { className: 'iss-experiment-kicker' }, __alloT('stem.spacestation.eva_reaction_kicker', 'EVA / REACTION LAB')),
+              h('h3', null, __alloT('stem.spacestation.eva_reaction_title', 'Turn the wrench. Watch the reaction.'))),
+            h('span', { className: 'iss-model-badge' }, __alloT('stem.spacestation.eva_pulse_badge', '0.5 s pulse + 2 s coast'))),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'center' } },
+            h('svg', { viewBox: '0 0 230 180', width: 230, height: 180, role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.eva_reaction_diagram', 'At {value1} seconds, astronaut rotation is {value2} degrees opposite the tool and angular speed is {value3} degrees per second.'), { value1: response.time.toFixed(2), value2: Math.abs(reactionAngle).toFixed(1), value3: rateDegrees.toFixed(1) }), style: { flex: '0 1 230px', maxWidth: '100%' } },
+              h('rect', { x: 1, y: 1, width: 228, height: 178, rx: 12, fill: '#06111e', stroke: '#334d68' }),
+              h('circle', { cx: 112, cy: 91, r: 62, fill: 'none', stroke: '#35516b', strokeDasharray: '3 6' }),
+              h('path', { d: 'M15 168 H215 M22 175 L42 164 L62 175 L82 164 L102 175 L122 164 L142 175 L162 164 L182 175 L202 164', fill: 'none', stroke: '#64748b', strokeWidth: 2 }),
+              h('path', { d: 'M112 95 Q156 143 181 88', fill: 'none', stroke: '#38bdf8', strokeDasharray: '4 3', strokeWidth: 2 }),
+              h('rect', { x: 172, y: 48, width: 39, height: 52, rx: 6, fill: '#384457', stroke: '#a3b3c7' }),
+              h('circle', { cx: 183, cy: 71, r: 6, fill: response.phase === 'pulse' ? '#fbbf24' : '#7a8b9e' }),
+              !braced && response.time > 0 ? h('g', { opacity: .18, fill: 'none', stroke: '#e2e8f0', strokeDasharray: '3 3' }, h('circle', { cx: 111, cy: 51, r: 14 }), h('rect', { x: 93, y: 63, width: 35, height: 35, rx: 12 })) : null,
+              h('g', { transform: 'translate(0 18) rotate(' + reactionAngle + ' 112 73)', 'data-eva-body-angle': reactionAngle.toFixed(3) },
+                h('rect', { x: 93, y: 45, width: 35, height: 35, rx: 12, fill: '#e2e8f0', stroke: '#7dd3fc' }),
+                h('circle', { cx: 111, cy: 33, r: 14, fill: '#f8fafc' }),
+                h('ellipse', { cx: 115, cy: 33, rx: 9, ry: 8, fill: '#c79935' }),
+                h('path', { d: 'M99 80 L98 99 M120 80 L124 99 M127 52 L152 49 L166 53', fill: 'none', stroke: '#e2e8f0', strokeWidth: 8, strokeLinecap: 'round' }),
+                h('path', { d: 'M157 53 H184', stroke: '#fbbf24', strokeWidth: 6, strokeLinecap: 'round' })),
+              braced ? h('g', null, h('path', { d: 'M112 121 L139 165', stroke: '#4ade80', strokeWidth: 5 }), h('rect', { x: 87, y: 119, width: 48, height: 7, rx: 2, fill: '#4ade80' })) : h('path', { d: 'M69 44 Q41 74 63 99 M63 99 L53 96 M63 99 L64 88', fill: 'none', stroke: '#fbbf24', strokeWidth: 2 }),
+              h('text', { x: 12, y: 18, fill: color, fontSize: 9, fontWeight: 850 }, braced ? __alloT('stem.spacestation.eva_braced_label', 'RESTRAINT LOCKED') : __alloT('stem.spacestation.eva_free_label', 'FREE ROTATION'))),
+            h('div', { style: { flex: '1 1 230px' } },
+              h('label', { htmlFor: 'iss-eva-torque', className: 'iss-experiment-control' }, h('span', null, __alloT('stem.spacestation.eva_tool_torque', 'Tool torque'), h('strong', null, torque + ' N·m')),
+                h('input', { id: 'iss-eva-torque', type: 'range', min: 6, max: 30, step: 1, value: torque, 'aria-valuetext': torque + ' N·m', onChange: function (e) { setup({ toolTorque: Number(e.target.value) }); } })),
+              h('label', { htmlFor: 'iss-eva-inertia', className: 'iss-experiment-control', style: { marginTop: 12 } }, h('span', null, __alloT('stem.spacestation.eva_inertia', 'Model rotational inertia'), h('strong', null, response.inertia + ' kg·m²')),
+                h('input', { id: 'iss-eva-inertia', type: 'range', min: 16, max: 64, step: 4, value: response.inertia, 'aria-valuetext': response.inertia + ' kg·m²', onChange: function (e) { setup({ bodyInertia: Number(e.target.value) }); } })),
+              h('p', { style: { margin: '5px 0', color: SOFT, fontSize: 11, lineHeight: 1.6 } }, __alloT('stem.spacestation.eva_inertia_hint', 'A more spread-out body has greater rotational inertia. Change it between trials to compare the same pulse.')),
+              h('button', { type: 'button', 'aria-pressed': braced, onClick: function () { setup({ footRestraint: !braced }); }, style: { marginTop: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + color, background: 'rgba(2,6,23,.4)', color: color, fontSize: 12, fontWeight: 750, cursor: 'pointer' } }, braced ? __alloT('stem.spacestation.eva_restraint_locked', '✓ Foot restraint locked') : __alloT('stem.spacestation.eva_restraint_free', '○ Astronaut unrestrained')))),
+          h('div', { className: 'iss-flight-telemetry', style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8, marginTop: 12 } },
+            [[__alloT('stem.spacestation.eva_body_rate', 'BODY RATE'), rateDegrees.toFixed(1) + '°/s', 'data-eva-angular-rate'], [__alloT('stem.spacestation.eva_turn_angle', 'TURN ANGLE'), Math.abs(reactionAngle).toFixed(1) + '°', 'data-eva-turn-angle'], [__alloT('stem.spacestation.eva_body_torque', 'BODY NET TORQUE'), Math.abs(response.netTorque).toFixed(1) + ' N·m', 'data-eva-net-torque']].map(function (metric) {
+              var attrs = { key: metric[2], className: 'iss-flight-reading', style: { padding: 9, border: '1px solid #35516b', borderRadius: 8, color: '#e2e8f0' } }; attrs[metric[2]] = 'true';
+              return h('div', attrs, h('span', { style: { display: 'block', minHeight: 24, color: SOFT, fontSize: 10 } }, metric[0]), h('strong', { style: { display: 'block', marginTop: 4, fontFamily: 'ui-monospace,monospace', fontWeight: 700, fontSize: 'clamp(12px,2.5vw,15px)', color: color } }, metric[1]));
+            })),
+          h('svg', { viewBox: '0 0 400 135', role: 'img', 'aria-label': __alloT('stem.spacestation.eva_rate_plot', 'Angular speed against time. With the restraint released, speed rises during the first half second, then stays constant during the coast.'), style: { display: 'block', width: '100%', maxWidth: '100%', maxHeight: 180, marginTop: 10 } },
+            h('rect', { x: 45, y: 30, width: 67, height: 68, fill: 'rgba(251,191,36,.12)' }),
+            [0, 30, 60].map(function (degrees) { var y = 98 - degrees / 60 * 65; return h('g', { key: degrees }, h('path', { d: 'M45 ' + y + ' H380', fill: 'none', stroke: '#35516b', strokeDasharray: '3 5' }), h('text', { x: 38, y: y + 3, textAnchor: 'end', fill: '#afc4d7', fontSize: 10 }, degrees + '°/s')); }),
+            h('text', { x: 78.5, y: 18, textAnchor: 'middle', fill: '#fcd34d', fontSize: 9 }, __alloT('stem.spacestation.eva_plot_pulse', 'TORQUE PULSE')),
+            h('text', { x: 246, y: 18, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 10 }, __alloT('stem.spacestation.eva_plot_coast', 'COAST — NO TOOL TORQUE')),
+            h('path', { d: 'M45 98 L112 ' + ry(end.omega) + ' H380', fill: 'none', stroke: '#fbbf24', strokeWidth: 2.5 }),
+            h('line', { x1: tx(response.time), x2: tx(response.time), y1: 26, y2: 104, stroke: '#e0f2fe', strokeWidth: 1.5 }),
+            h('circle', { cx: tx(response.time), cy: ry(response.omega), r: 4, fill: '#e0f2fe', stroke: '#07192a' }),
+            [0, .5, 1, 1.5, 2, 2.5].map(function (time) { return h('text', { key: time, x: tx(time), y: 120, textAnchor: 'middle', fill: '#afc4d7', fontSize: 10 }, time + ' s'); })),
+          h(issExperimentPlayback, { React: React, id: 'eva', t: __alloT, value: response.time, max: response.duration, speeds: [1, 2, 4],
+            resetKey: [torque, response.inertia, braced, !!d.evaTorqueSeekToken].join(':'), onAdvance: function (time) { upd({ evaTorqueTime: time }); } }),
+          h('label', { htmlFor: 'iss-eva-time', className: 'iss-experiment-control' }, h('span', null, __alloT('stem.spacestation.eva_scrub_time', 'Inspect pulse and coast time'), h('strong', null, response.time.toFixed(2) + ' s')),
+            h('input', { id: 'iss-eva-time', type: 'range', min: 0, max: response.duration, step: 0.01, value: response.time, 'aria-valuetext': response.time.toFixed(2) + ' s', onChange: function (e) { seek(Number(e.target.value)); } })),
+          h('div', { className: 'iss-experiment-actions' },
+            h('button', { type: 'button', 'data-eva-pulse-action': 'reset', onClick: function () { seek(0); } }, __alloT('stem.spacestation.eva_reset_pulse', 'Reset pulse')),
+            h('button', { type: 'button', 'data-eva-pulse-action': 'pulse-end', onClick: function () { seek(0.5); } }, __alloT('stem.spacestation.eva_end_pulse', 'Inspect torque cutoff')),
+            h('button', { type: 'button', 'data-eva-pulse-action': 'coast-end', onClick: function () { seek(2.5); } }, __alloT('stem.spacestation.eva_end_coast', 'Inspect end of coast'))),
+          h('div', { className: 'iss-experiment-phase', role: 'status', 'aria-live': 'polite' }, phaseText),
+          h('p', { style: { margin: '9px 0 0', fontSize: 11, color: SOFT, lineHeight: 1.6 } }, __alloT('stem.spacestation.eva_reaction_scope', 'Body response: α = −τ/I during the 0.5 s pulse; ω stays constant afterward. Readouts show magnitudes; the astronaut turns opposite to the tool. Inertia stays fixed within each trial. This ideal model ignores tether tension, joint motion and damping. A tether does not replace a rigid work restraint. Teaching fixture target: 16–22 N·m.')));
+      }
 
       function renderEvaRouteVisual() {
         var routeX = [54, 142, 230, 318, 406, 494, 582];
@@ -6335,7 +6808,7 @@
         var phaseIndex = !evaS.started ? 0 : position < routeX.length - 1 ? 1 : !evaS.done ? 2 : 3;
         var phaseLabel = evaS.done && evaS.failMsg ? 'ABORTED' : phaseSteps[phaseIndex];
         var phaseColor = evaS.done && evaS.failMsg ? '#f87171' : evaS.done ? '#4ade80' : '#38bdf8';
-        return h('div', { className: 'iss-learning-visual iss-eva-visual' },
+        return h('div', { className: 'iss-learning-visual iss-eva-visual', tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.spacestation.eva_route_scroll', 'Spacewalk route diagram. Use arrow keys to scroll when needed.') },
           h('svg', { viewBox: '0 0 640 190', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_spacewalk_route_astronaut_at_tether_a_at_tether', 'Spacewalk route. Astronaut at {value1}. Tether A at {value2}. Tether B at {value3}. Suit consumables {value4} percent. Projected at worksite {value5} percent. {value6}. {value7}.'), { value1: EVA_RAILS[position], value2: EVA_RAILS[evaS.tetherA || 0], value3: EVA_RAILS[evaS.tetherB || 0], value4: oxygen, value5: projectedOxygen, value6: reserveStatus, value7: tetherStatus })},
             h('defs', null, h('linearGradient', { id: 'iss-eva-bg', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#020611' }), h('stop', { offset: '100%', stopColor: '#09213a' })),
               // Matches the gradient Earths already used by the orbit/ops/day
@@ -6551,7 +7024,7 @@
         var outcome = d.dockResult === 'docked' ? 'SOFT CAPTURE' : d.dockResult === 'bonk' ? 'HARD CONTACT' : 'APPROACH LOST';
         var outcomeColor = d.dockResult === 'docked' ? '#4ade80' : d.dockResult === 'bonk' ? '#fbbf24' : '#f87171';
         var modeLabel = report.mode === 'game' ? 'GAME PHYSICS' : 'ORBITAL PHYSICS';
-        function metric(y, label, value, max, targetMax, unit, decimals, color) {
+        function metric(y, label, value, max, targetMax, unit, decimals, color, strictLimit) {
           var markerX = 178 + 374 * Math.min(1, value / max);
           var targetWidth = targetMax == null ? 0 : 374 * Math.min(1, targetMax / max);
           return h('g', { key: label },
@@ -6563,10 +7036,10 @@
             h('line', { x1: markerX, y1: y - 11, x2: markerX, y2: y + 11, stroke: color, strokeWidth: 2 }),
             h('circle', { cx: markerX, cy: y, r: 4, fill: color, stroke: '#f8fafc', strokeWidth: 1.2 }),
             h('text', { x: 610, y: y + 4, textAnchor: 'end', fill: color, fontSize: 10, fontWeight: 900 }, value.toFixed(decimals) + unit),
-            targetMax == null ? null : h('text', { x: 178, y: y + 18, fill: '#86efac', fontSize: 7.5, fontWeight: 800 }, 'CAPTURE ENVELOPE ≤ ' + targetMax.toFixed(decimals) + unit));
+            targetMax == null ? null : h('text', { x: 178, y: y + 18, fill: '#86efac', fontSize: 7.5, fontWeight: 800 }, 'CAPTURE ENVELOPE ' + (strictLimit ? '< ' : '≤ ') + targetMax.toFixed(decimals) + unit));
         }
         var aria = __alloFill(__alloT('stem.spacestation.a11y_dock_debrief', '{value1}. {value2} rate {value3} meters per second. Port offset {value4} meters. Propellant {value5} percent. Elapsed time {value6} seconds. {value7}.'), { value1: outcome, value2: d.dockResult === 'drift' ? __alloT('stem.spacestation.a11y_dock_rate_final', 'Final') : __alloT('stem.spacestation.a11y_dock_rate_contact', 'Contact'), value3: speed.toFixed(2), value4: offset.toFixed(2), value5: fuel.toFixed(0), value6: elapsed.toFixed(0), value7: modeLabel });
-        return h('div', { className: 'iss-learning-visual iss-dock-debrief', 'data-iss-dock-debrief': d.dockResult || 'complete' },
+        return h('div', { className: 'iss-learning-visual iss-dock-debrief', 'data-iss-dock-debrief': d.dockResult || 'complete', tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.spacestation.dock_debrief_scroll', 'Docking debrief diagram. Use arrow keys to scroll when needed.') },
           h('svg', { viewBox: '0 0 640 184', role: 'img', 'aria-label': aria },
             h('defs', null, h('linearGradient', { id: 'iss-dock-debrief-bg', x1: '0', y1: '0', x2: '1', y2: '1' }, h('stop', { offset: '0%', stopColor: '#03101f' }), h('stop', { offset: '100%', stopColor: '#0b2038' }))),
             h('rect', { width: 640, height: 184, rx: 12, fill: 'url(#iss-dock-debrief-bg)' }),
@@ -6576,7 +7049,7 @@
             h('text', { x: 610, y: 22, textAnchor: 'end', fill: '#cbd5e1', fontSize: 8.5, fontWeight: 800 }, modeLabel),
             h('text', { x: 610, y: 36, textAnchor: 'end', fill: '#94a3b8', fontSize: 8.5 }, 'MET ' + elapsed.toFixed(1) + ' s · RANGE ' + Math.max(0, Number(report.range || 0)).toFixed(1) + ' m'),
             metric(66, d.dockResult === 'drift' ? 'FINAL RATE' : 'CONTACT RATE', speed, 2, .6, ' m/s', 2, speed <= .6 ? '#4ade80' : '#f87171'),
-            metric(111, 'PORT OFFSET', offset, 10, 2.5, ' m', 2, offset <= 2.5 ? '#4ade80' : '#fbbf24'),
+            metric(111, 'PORT OFFSET', offset, 10, 2.5, ' m', 2, offset < 2.5 ? '#4ade80' : '#fbbf24', true),
             metric(156, 'PROPELLANT', fuel, 100, null, '%', 0, fuel > 20 ? '#38bdf8' : '#fbbf24')),
           h('div', { className: 'iss-visual-caption' },
             h('span', null, 'Green bands = soft-capture limits'),
@@ -6584,14 +7057,22 @@
       }
       function renderMissions() {
         var dockRealMode = d.dockRealMode !== false;
+        var flightControlStyle = { padding: '8px 12px', minHeight: 36, borderRadius: 8, border: '1px solid #475569', background: '#0b1b30', color: '#e2e8f0', fontSize: 12, fontWeight: 750, cursor: 'pointer' };
+        function flightControl(e, method, value) { var panel = e.currentTarget.closest('[data-iss-dock-panel]'); var cv = panel && panel.querySelector('[data-dock-canvas]'); if (cv && cv[method]) cv[method](value); }
         return h('div', null,
           h('p', { style: { fontSize: 12.5, color: SOFT, lineHeight: 1.6, margin: '0 0 10px' } },
-            __alloT('stem.spacestation.missions_intro', 'Two hands-on missions. Both are simplified but honest: the docking sim runs the real relative-motion equations (with orbit effects sped up so you can feel them), and the spacewalk enforces the real two-tether safety rule.')),
+            __alloT('stem.spacestation.missions_intro_v2', 'Take the controls. Fly a capsule with orbital inertia, finite propellant and a clock you control; then plan a tethered spacewalk and explore how a torque wrench turns an unrestrained astronaut.')),
 
           card('🚀 ' + __alloT('stem.spacestation.mission_dock', 'Mission 1 — Dock the cargo capsule'),
-            h('div', null,
+            h('div', { 'data-iss-dock-panel': 'true' },
               h('p', { id: 'iss-dock-instructions', style: { fontSize: 12, color: SOFT, lineHeight: 1.55, margin: '0 0 8px' } },
-                __alloT('stem.spacestation.dock_help', 'Fly the capsule (left side) onto the glowing port. Arrow keys / WASD or hold a thruster button with Space or Enter: → thrusts forward, ← brakes, ↑/↓ steer radially. Dock slower than 0.6 m/s, inside the corridor. With ORBITAL PHYSICS ON, watch the counter-intuitive part: thrusting forward also pushes you upward off the approach line — orbits are not roads.')),
+                __alloT('stem.spacestation.dock_help_v2', 'Fly onto the glowing port using arrow keys / WASD or hold a thruster button with Space or Enter. Release to coast: momentum remains. Use opposite thrust to brake, Precision RCS for small corrections, or Rate hold to spend propellant cancelling velocity. Cross the port below 0.6 m/s and within 2.5 m of its axis. The clock returns to 1× inside 40 m.')),
+              h('div', { className: 'iss-dock-practice', 'data-iss-flight-controls': 'true', role: 'group', 'aria-label': __alloT('stem.spacestation.dock_practice_starts', 'Docking practice starts') },
+                h('span', null, __alloT('stem.spacestation.dock_practice_label', 'Practice start')),
+                [['rendezvous', __alloT('stem.spacestation.dock_practice_rendezvous', 'Rendezvous'), '190 m'], ['final', __alloT('stem.spacestation.dock_practice_final', 'Final approach'), '25 m'], ['drift', __alloT('stem.spacestation.dock_practice_drift', 'Cross drift'), '50 m']].map(function (scenario) {
+                  return h('button', { key: scenario[0], type: 'button', 'data-dock-scenario': scenario[0], 'aria-pressed': scenario[0] === 'rendezvous', onClick: function (e) { flightControl(e, '_dockSetScenario', scenario[0]); upd({ dockResult: null, dockMsg: '', dockDebrief: null }); }, style: flightControlStyle }, scenario[1] + ' · ' + scenario[2]);
+                }),
+                h('small', null, __alloT('stem.spacestation.dock_practice_hint', 'Each start resets fuel and pauses the clock.'))),
               h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); }, style: { position: 'relative' } },
               h('button', {
                 type: 'button',
@@ -6609,17 +7090,34 @@
                 tabIndex: 0, role: 'application',
                 'aria-label': __alloT('stem.spacestation.dock_aria', 'Docking simulator. Use arrow keys or W A S D to thrust. Goal: reach the docking port slower than 0.6 meters per second.'),
                 'aria-describedby': 'iss-dock-instructions iss-dock-status',
-                'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight W A S D',
+                'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight W A S D P Space',
                 style: { width: '100%', maxWidth: 820, display: 'block', margin: '0 auto', borderRadius: 12, border: '1px solid #334155', background: '#050a18', cursor: 'crosshair' }
               })
               ),
-              h('div', { id: 'iss-dock-status', className: 'iss-sr-only', 'data-dock-hud': 'true', 'aria-live': 'off', 'aria-atomic': 'true' }, 'Phase far field · range 192 m · relative speed 1.00 m/s · stopping margin 185.3 m · fuel 100%'),
-              h('div', { role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_thruster_controls', 'Thruster controls'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginTop: 8 } },
+              h('div', { role: 'group', 'data-dock-thrusters': 'true', 'aria-label': __alloT('stem.spacestation.a11y_thruster_controls', 'Thruster controls'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginTop: 8 } },
                 [['back', '←', 'Brake'], ['up', '↑', 'Radial out'], ['down', '↓', 'Radial in'], ['fwd', '→', 'Forward']].map(function (b) {
-                  function press(on) { return function (e) { e.preventDefault(); var cv = document.querySelector('[data-dock-canvas]') || e.currentTarget.parentElement.parentElement.querySelector('canvas'); if (cv && cv._dockSetThrust) cv._dockSetThrust(b[0], on); }; }
+                  function press(on) { return function (e) { e.preventDefault(); var cv = e.currentTarget.parentElement.parentElement.querySelector('[data-dock-canvas]'); if (cv && cv._dockSetThrust) cv._dockSetThrust(b[0], on); }; }
                   function holdKey(on) { return function (e) { if (e.key === ' ' || e.key === 'Enter') press(on)(e); }; }
                   return h('button', { key: b[0], type: 'button', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_thrust_press_and_hold_with_space_or_enter', 'Thrust {value1}. Press and hold with Space or Enter.'), { value1: b[2] }), onPointerDown: press(true), onPointerUp: press(false), onPointerCancel: press(false), onPointerLeave: press(false), onKeyDown: holdKey(true), onKeyUp: holdKey(false), onBlur: press(false), style: { padding: '10px 16px', borderRadius: 10, fontSize: 14, fontWeight: 900, cursor: 'pointer', background: PANEL, color: TEXT, border: '1px solid #475569', touchAction: 'none' } }, b[1] + ' ', h('span', { style: { fontSize: 10, fontWeight: 600, color: SOFT } }, b[2]));
                 })),
+              h('div', { 'data-iss-flight-controls': 'true', role: 'group', 'aria-label': __alloT('stem.spacestation.flight_computer_controls', 'Flight computer controls'), style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', padding: '12px 0 4px' } },
+                h('button', { type: 'button', 'data-dock-pause': 'true', 'aria-pressed': false, onClick: function (e) { flightControl(e, '_dockTogglePause'); }, style: flightControlStyle }, 'Ⅱ Pause'),
+                h('button', { type: 'button', 'data-dock-precision': 'true', 'aria-pressed': false, onClick: function (e) { flightControl(e, '_dockSetPrecision'); }, style: flightControlStyle }, '◎ Precision RCS'),
+                h('button', { type: 'button', 'data-dock-damp': 'true', 'aria-pressed': false, onClick: function (e) { flightControl(e, '_dockSetDamp'); }, style: flightControlStyle }, '⊙ Rate hold'),
+                h('label', { style: { display: 'inline-flex', gap: 7, alignItems: 'center', color: SOFT, fontSize: 12 } }, 'Simulation clock', h('select', { defaultValue: '4', 'aria-label': __alloT('stem.spacestation.docking_clock_speed', 'Docking simulation clock speed'), onChange: function (e) { flightControl(e, '_dockSetTimeScale', e.target.value); }, style: flightControlStyle }, [1, 4, 8].map(function (rate) { return h('option', { key: rate, value: rate }, rate + '×'); })))),
+              h('div', { id: 'iss-dock-status', 'data-dock-hud': 'true', 'aria-live': 'off', 'aria-atomic': 'true', style: { marginTop: 8, padding: '10px 12px', borderRadius: 10, background: '#061425', border: '1px solid #1e405c', fontSize: 11, fontFamily: 'ui-monospace, monospace', color: '#bae6fd', lineHeight: 1.8 } }, 'Phase far field · range 191.8 m · relative speed 1.00 m/s · stopping margin 176.7 m (estimate) · fuel 100% (80.0 kg) · 4× clock'),
+              h('section', { className: 'iss-dock-forecast', 'data-dock-forecast-panel': 'true', 'data-dock-forecast-kind': 'coast', 'aria-label': __alloT('stem.spacestation.dock_coast_forecast', 'Coast forecast'), 'aria-live': 'off' },
+                h('div', { className: 'iss-dock-forecast-header' },
+                  h('div', null, h('span', { className: 'iss-dock-forecast-kicker' }, __alloT('stem.spacestation.dock_coast_forecast', 'Coast forecast')),
+                    h('strong', { 'data-dock-forecast-reading': 'status' }, __alloT('stem.spacestation.dock_forecast_coast', 'No contact within this window'))),
+                  h('label', null, __alloT('stem.spacestation.dock_forecast_window', 'Look ahead'),
+                    h('select', { defaultValue: '60', 'data-dock-horizon': 'true', 'aria-label': __alloT('stem.spacestation.dock_forecast_window_aria', 'Coast forecast window'), onChange: function (e) { flightControl(e, '_dockSetHorizon', e.target.value); }, style: flightControlStyle },
+                      [30, 60, 120].map(function (seconds) { return h('option', { key: seconds, value: seconds }, seconds + ' s'); })))),
+                h('div', { className: 'iss-dock-forecast-readings' },
+                  [['time', __alloT('stem.spacestation.dock_forecast_time', 'Time ahead')], ['range', __alloT('stem.spacestation.dock_forecast_range', 'Range to port')], ['offset', __alloT('stem.spacestation.dock_forecast_axis', 'Axis offset')], ['speed', __alloT('stem.spacestation.dock_forecast_speed', 'Relative speed')]].map(function (reading) {
+                    return h('div', { className: 'iss-flight-reading', key: reading[0] }, h('span', null, reading[1]), h('strong', { 'data-dock-forecast-reading': reading[0] }, '—'));
+                  })),
+                h('p', { className: 'iss-dock-forecast-footer' }, __alloT('stem.spacestation.dock_forecast_scope', 'Dashed magenta = all thrusters off, including Rate hold. Readings show first contact, zone exit, or the end of the window. Capture needs speed ≤0.6 m/s and offset <2.5 m.'))),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginTop: 8 } },
                 h('button', { type: 'button', onClick: function (e) { var cv = e.currentTarget.parentElement.parentElement.querySelector('canvas'); if (cv && cv._dockReset) cv._dockReset(dockRealMode); upd({ dockResult: null, dockMsg: '', dockDebrief: null }); }, style: { padding: '6px 12px', borderRadius: 8, border: 'none', background: '#0ea5e9', color: '#082f49', fontWeight: 800, fontSize: 12, cursor: 'pointer' } }, '🔁 ' + __alloT('stem.spacestation.dock_retry', 'New approach')),
                 h('button', { type: 'button', 'aria-pressed': dockRealMode, onClick: function (e) { var next = !dockRealMode; var cv = e.currentTarget.parentElement.parentElement.querySelector('canvas'); upd({ dockRealMode: next, dockResult: null, dockMsg: '', dockDebrief: null }); if (cv && cv._dockReset) cv._dockReset(next); }, style: { padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 800, cursor: 'pointer', background: dockRealMode ? 'rgba(34,197,94,0.15)' : 'rgba(251,191,36,0.12)', color: dockRealMode ? '#4ade80' : '#fbbf24', border: '1px solid ' + (dockRealMode ? '#22c55e' : '#fbbf24') } }, dockRealMode ? '🧲 ' + __alloT('stem.spacestation.dock_real_on', 'Orbital physics ON') : '🎮 ' + __alloT('stem.spacestation.dock_real_off', 'Video-game mode (physics OFF)'))),
@@ -6628,7 +7126,7 @@
                 (d.dockRuns || 0) > 0 ? h('span', { style: { color: SOFT } }, '  (' + (d.dockWins || 0) + '/' + d.dockRuns + ' docked)') : null) : null,
               renderDockDebrief(),
               h('p', { style: { fontSize: 11, color: SOFT, marginTop: 8, lineHeight: 1.5 } },
-                __alloT('stem.spacestation.dock_science', '🔬 The science: relative motion near an orbiting target follows the Clohessy-Wiltshire equations — thrust toward the target and you drift off-axis, because raising your speed raises your orbit. Real approaches are therefore slow, computed, and rehearsed. Try predicting your drift BEFORE toggling physics on: that is the whole discipline of rendezvous in one toggle.'))
+                __alloT('stem.spacestation.dock_science_v3', 'Flight model: 2D Clohessy-Wiltshire motion about a circular 420 km orbit, integrated in fixed time steps. This illustrative capsule has 8,000 kg dry mass, 80 kg propellant, 400 N per axis and 220 s specific impulse. The magenta path forecasts unpowered flight for your selected window; green shows velocity. Braking distance estimates constant thrust and excludes orbital coupling. Capture limits are teaching targets, not flight procedures.'))
             ), '#38bdf8'),
 
           card('🧑‍🚀 ' + __alloT('stem.spacestation.mission_eva', 'Mission 2 — Spacewalk: replace the failed pump'),
@@ -6636,6 +7134,7 @@
               h('p', { style: { fontSize: 12, color: SOFT, lineHeight: 1.55, margin: '0 0 8px' } },
                 __alloT('stem.spacestation.eva_help', 'An ammonia pump on the truss has failed. Translate hand-over-hand from the Quest airlock to the worksite and torque 4 bolts — while respecting the real rule that keeps astronauts alive: at least one tether clipped AT ALL TIMES. Clip the free tether ahead, then move. Every action costs suit consumables.')),
               renderEvaRouteVisual(),
+              renderEvaMechanics(),
               !evaS.started ? h('button', { type: 'button', onClick: evaReset, style: { padding: '8px 16px', borderRadius: 10, border: 'none', background: '#0ea5e9', color: '#082f49', fontWeight: 900, fontSize: 13, cursor: 'pointer' } }, '🚪 ' + __alloT('stem.spacestation.eva_start', 'Open the hatch')) :
               h('div', null,
                 h('div', { role: 'list', 'aria-label': __alloT('stem.spacestation.a11y_handrail_route', 'Handrail route'), style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 } },
@@ -6665,6 +7164,84 @@
       }
 
       // ── Interior shift: room exploration + learn-by-doing activities ──
+      function renderMomentumBench() {
+        var settings = { mass: d.momentumMass, cargo: d.momentumCargo, impulse: d.momentumImpulse, drift: d.momentumDrift, mode: d.momentumMode };
+        var trial = issMomentumTrial(settings, d.momentumTime);
+        var last = issMomentumTrial(settings, trial.duration);
+        var low = Math.min(-0.5, last.crewX - 0.5, last.cargoX - 0.5);
+        var high = Math.max(4, last.crewX + 0.7, last.cargoX + 0.7);
+        function x(value) { return 40 + (value - low) / (high - low) * 560; }
+        function change(field, value) { var patch = { momentumTime: 0, momentumSeekToken: !d.momentumSeekToken }; patch[field] = value; upd(patch); }
+        function seek(seconds) { upd({ momentumTime: seconds, momentumSeekToken: !d.momentumSeekToken }); }
+        function control(id, label, value, min, max, step, unit, field) {
+          return h('label', { className: 'iss-experiment-control', htmlFor: id },
+            h('span', null, label, h('strong', null, (step < 1 ? value.toFixed(2) : value) + ' ' + unit)),
+            h('input', { id: id, type: 'range', min: min, max: max, step: step, value: value,
+              'aria-valuetext': value + ' ' + unit, onChange: function (event) { change(field, Number(event.target.value)); } }));
+        }
+        var phase = trial.contacted ? trial.mode === 'catch' ? 'Moving together' : 'Objects separating' : trial.contactTime > trial.duration ? 'No contact in this window' : 'Coasting toward contact';
+        function vector(position, y, velocity, color) {
+          var length = Math.max(28 - position, Math.min(612 - position, velocity * 220));
+          return h('g', null, h('line', { x1: position, y1: y, x2: position + length, y2: y, stroke: color, strokeWidth: 3 }),
+            Math.abs(length) > 2 ? h('path', { d: 'M' + (position + length - Math.sign(length) * 6) + ' ' + (y - 4) + ' L' + (position + length) + ' ' + y + ' L' + (position + length - Math.sign(length) * 6) + ' ' + (y + 4), fill: 'none', stroke: color, strokeWidth: 2 }) : null);
+        }
+        return h('section', { className: 'iss-momentum-bench', 'data-iss-momentum-bench': 'true', 'aria-labelledby': 'iss-momentum-title' },
+          h('div', { className: 'iss-experiment-heading' }, h('div', null,
+            h('span', { className: 'iss-experiment-kicker' }, __alloT('stem.spacestation.momentum_kicker', 'UNITY / PHYSICS BENCH')),
+            h('h3', { id: 'iss-momentum-title' }, __alloT('stem.spacestation.momentum_title', 'Catch cargo. Feel the momentum.'))),
+            h('span', { className: 'iss-model-badge' }, __alloT('stem.spacestation.momentum_badge', '1-D contact model'))),
+          h('p', { className: 'iss-experiment-intro' }, __alloT('stem.spacestation.momentum_intro', 'Change the masses and push, then play or scrub through the encounter. Catching cargo slows you down only if its velocity is lower than yours.')),
+          h('div', { className: 'iss-experiment-controls' },
+            control('iss-momentum-mass', __alloT('stem.spacestation.momentum_crew', 'Crew mass'), trial.mass, 50, 110, 5, 'kg', 'momentumMass'),
+            control('iss-momentum-cargo', __alloT('stem.spacestation.momentum_cargo', 'Cargo mass'), trial.cargo, 5, 40, 5, 'kg', 'momentumCargo'),
+            control('iss-momentum-impulse', __alloT('stem.spacestation.momentum_push', 'Rail push impulse'), trial.impulse, 4, 22, 1, 'N·s', 'momentumImpulse'),
+            control('iss-momentum-drift', __alloT('stem.spacestation.momentum_drift', 'Cargo initial velocity'), trial.drift, -0.1, 0.1, 0.01, 'm/s', 'momentumDrift')),
+          h('div', { className: 'iss-experiment-actions', role: 'group', 'aria-label': __alloT('stem.spacestation.momentum_contact_type', 'Contact type') },
+            [['catch', __alloT('stem.spacestation.momentum_catch', 'Catch and hold')], ['elastic', __alloT('stem.spacestation.momentum_elastic', 'Ideal elastic bounce')]].map(function (mode) {
+              return h('button', { key: mode[0], type: 'button', 'data-iss-momentum-mode': mode[0], 'aria-pressed': trial.mode === mode[0], onClick: function () { change('momentumMode', mode[0]); } }, mode[1]);
+            })),
+          h('div', { className: 'iss-momentum-stage' },
+            h('svg', { viewBox: '0 0 640 232', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.momentum_diagram', 'At {value1} seconds, crew velocity is {value2} meters per second and cargo velocity is {value3} meters per second. {value4}.'), { value1: trial.time.toFixed(1), value2: trial.crewV.toFixed(3), value3: trial.cargoV.toFixed(3), value4: phase }) },
+              h('defs', null, h('linearGradient', { id: 'iss-bench-metal', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#c5d7e8' }), h('stop', { offset: '40%', stopColor: '#607d99' }), h('stop', { offset: '100%', stopColor: '#253d57' }))),
+              h('rect', { x: 1, y: 1, width: 638, height: 230, rx: 14, fill: '#06111e', stroke: '#35516b' }),
+              [50, 125, 200, 275, 350, 425, 500, 575].map(function (p) { return h('g', { key: p, opacity: 0.4 }, h('rect', { x: p, y: 30, width: 37, height: 130, rx: 8, fill: '#12263b', stroke: '#47647e' }), h('line', { x1: p + 6, y1: 55, x2: p + 30, y2: 55, stroke: '#7692ac' })); }),
+              h('path', { d: 'M20 28 H620 M20 164 H620', fill: 'none', stroke: 'url(#iss-bench-metal)', strokeWidth: 8 }),
+              h('path', { d: 'M20 36 H620', fill: 'none', stroke: '#bae6fd', strokeWidth: 2, opacity: 0.65 }),
+              h('line', { x1: 35, y1: 104, x2: 605, y2: 104, stroke: '#38bdf8', strokeDasharray: '3 6', opacity: 0.25 }),
+              h('text', { x: 22, y: 19, fill: '#91b2d0', fontSize: 9, letterSpacing: 1 }, 'RELATIVE TO THE STATION / METERS'),
+              h('g', { transform: 'translate(' + x(trial.crewX).toFixed(2) + ',80)' },
+                h('ellipse', { cy: -12, rx: 11, ry: 13, fill: '#dce9f4', stroke: '#7dd3fc', strokeWidth: 2 }),
+                h('rect', { x: -8, y: -17, width: 16, height: 9, rx: 4, fill: '#0b3049' }),
+                h('rect', { x: -12, y: 2, width: 24, height: 30, rx: 8, fill: '#dae7ef', stroke: '#7dd3fc', strokeWidth: 2 }),
+                h('path', { d: 'M-11 8 L-20 22 M11 8 L23 15 M-6 32 L-12 43 M6 32 L13 43', stroke: '#e2e8f0', strokeWidth: 6, strokeLinecap: 'round' }),
+                h('rect', { x: -6, y: 8, width: 12, height: 8, rx: 2, fill: '#1976a3' })),
+              h('g', { transform: 'translate(' + x(trial.cargoX).toFixed(2) + ',143)' },
+                h('rect', { x: -15, y: -15, width: 30, height: 25, rx: 4, fill: '#9d703d', stroke: '#fde68a', strokeWidth: 2 }),
+                h('path', { d: 'M-9 -15 V-20 H9 V-15 M-7 -14 V9 M7 -14 V9', fill: 'none', stroke: '#fcd34d', strokeWidth: 2 })),
+              trial.contacted && trial.mode === 'catch' ? h('line', { x1: x(trial.crewX) + 18, y1: 95, x2: x(trial.cargoX) + 10, y2: 126, stroke: '#6ee7b7', strokeWidth: 2, strokeDasharray: '4 3' }) : null,
+              vector(x(trial.crewX), 48, trial.crewV, '#7dd3fc'), vector(x(trial.cargoX), 118, trial.cargoV, '#fcd34d'),
+              [0, 1, 2, 3, 4, 5].map(function (i) { var pos = low + (high - low) * i / 5; return h('g', { key: i }, h('line', { x1: x(pos), y1: 176, x2: x(pos), y2: 182, stroke: '#91b2d0' }), h('text', { x: x(pos), y: 195, textAnchor: 'middle', fill: '#abc3da', fontSize: 10 }, pos.toFixed(1) + ' m')); }),
+              h('text', { x: 22, y: 218, fill: '#7dd3fc', fontSize: 11, fontWeight: 700 }, 'CREW ' + trial.crewV.toFixed(3) + ' m/s'),
+              h('text', { x: 618, y: 218, textAnchor: 'end', fill: '#fcd34d', fontSize: 11, fontWeight: 700 }, 'CARGO ' + trial.cargoV.toFixed(3) + ' m/s'))),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 14, marginTop: 9, font: '700 12px ui-monospace,monospace' } },
+            h('span', { style: { color: '#7dd3fc' } }, __alloT('stem.spacestation.momentum_crew_velocity', 'Crew') + ' ' + trial.crewV.toFixed(3) + ' m/s'),
+            h('span', { style: { color: '#fcd34d' } }, __alloT('stem.spacestation.momentum_cargo_velocity', 'Cargo') + ' ' + trial.cargoV.toFixed(3) + ' m/s')),
+          h(issExperimentPlayback, { React: React, id: 'momentum', t: __alloT, value: trial.time, max: trial.duration,
+            resetKey: [trial.mass, trial.cargo, trial.impulse, trial.drift, trial.mode, !!d.momentumSeekToken].join(':'),
+            onAdvance: function (seconds) { upd({ momentumTime: seconds }); } }),
+          h('label', { className: 'iss-experiment-control iss-experiment-timeline', htmlFor: 'iss-momentum-time' },
+            h('span', null, __alloT('stem.spacestation.momentum_time', 'Scrub experiment time'), h('strong', null, trial.time.toFixed(1) + ' s')),
+            h('input', { id: 'iss-momentum-time', type: 'range', min: 0, max: trial.duration, step: 0.1, value: trial.time, 'aria-valuetext': trial.time.toFixed(1) + ' seconds', onChange: function (event) { seek(Number(event.target.value)); } })),
+          h('div', { className: 'iss-experiment-actions' },
+            h('button', { type: 'button', onClick: function () { seek(0); } }, __alloT('stem.spacestation.momentum_reset', 'Reset time')),
+            h('button', { type: 'button', disabled: trial.contactTime > trial.duration, 'data-iss-momentum-contact': 'true', onClick: function () { seek(trial.contactTime); } }, __alloT('stem.spacestation.momentum_contact', 'Jump to contact')),
+            h('button', { type: 'button', disabled: trial.time >= trial.duration, onClick: function () { seek(Math.min(trial.duration, trial.time + 5)); } }, __alloT('stem.spacestation.momentum_step', 'Advance 5 seconds'))),
+          h('p', { className: 'iss-experiment-phase', role: 'status', 'data-iss-momentum-phase': trial.contacted ? 'contact' : 'coast' }, phase),
+          h('div', { className: 'iss-flight-telemetry' },
+            [[__alloT('stem.spacestation.momentum_total', 'Total momentum'), trial.momentum.toFixed(2) + ' kg·m/s'], [__alloT('stem.spacestation.momentum_energy', 'Kinetic energy'), trial.energy.toFixed(3) + ' J'], [__alloT('stem.spacestation.momentum_loss', 'Energy to deformation / heat'), trial.energyLost.toFixed(3) + ' J']].map(function (metric) { return h('div', { key: metric[0], className: 'iss-flight-reading' }, h('span', null, metric[0]), h('strong', null, metric[1])); })),
+          h('p', { className: 'iss-physics-note' }, __alloT('stem.spacestation.momentum_note', 'Δv = impulse / mass. Contact conserves total momentum; catching converts some kinetic energy to deformation and heat. Ideal elastic contact also conserves kinetic energy. Point masses begin 2.5 m apart; vertical separation is only for legibility. No walls, air drag, or rotation in this experiment.')));
+      }
+
       function renderInterior() {
         var interiorView = d.interiorView === 'diagram' ? 'diagram' : '3d';
         var storedNavigation = d.interiorNav || {};
@@ -7776,6 +8353,7 @@
               h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginTop: 8 } },
                 h('button', { type: 'button', disabled: routeRoomIdx <= 0, onClick: function () { if (routeRoomIdx > 0) visitRoomById(interiorRouteRooms[routeRoomIdx - 1].id); }, style: { padding: '7px 11px', borderRadius: 8, border: '1px solid #475569', background: PANEL, color: TEXT, fontSize: 11.5, fontWeight: 700, cursor: routeRoomIdx > 0 ? 'pointer' : 'not-allowed', opacity: routeRoomIdx > 0 ? 1 : 0.45 } }, 'Previous module'),
                 h('button', { type: 'button', disabled: routeRoomIdx >= interiorRouteRooms.length - 1, onClick: function () { if (routeRoomIdx < interiorRouteRooms.length - 1) visitRoomById(interiorRouteRooms[routeRoomIdx + 1].id); }, style: { padding: '7px 11px', borderRadius: 8, border: '1px solid #475569', background: PANEL, color: TEXT, fontSize: 11.5, fontWeight: 700, cursor: routeRoomIdx < interiorRouteRooms.length - 1 ? 'pointer' : 'not-allowed', opacity: routeRoomIdx < interiorRouteRooms.length - 1 ? 1 : 0.45 } }, 'Next module')),
+              room.id === 'unity' ? renderMomentumBench() : null,
               h('p', { style: { color: TEXT, fontSize: 12.5, lineHeight: 1.6, margin: '10px 0 4px' } }, room.scene),
               h('p', { style: { color: SOFT, fontSize: 11.5, lineHeight: 1.55, margin: 0 } }, h('strong', { style: { color: room.color } }, '🎧 You notice: '), room.sound),
               selectedDiscovery >= 0 && room.discoveries[selectedDiscovery] ? h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 9, padding: 9, borderRadius: 9, background: room.color + '12', borderLeft: '3px solid ' + room.color, color: TEXT, fontSize: 12, lineHeight: 1.55 } }, h('strong', { style: { color: room.color } }, room.discoveries[selectedDiscovery][0] + ': '), room.discoveries[selectedDiscovery][1]) : h('p', { style: { color: SOFT, fontSize: 10.5, margin: '8px 0 0' } }, 'Select the two labeled hotspots to look closer.')),
@@ -8799,6 +9377,9 @@
         var theta = -0.58;
         var stationX = 320 + Math.cos(theta) * orbitRx;
         var stationY = 140 + Math.sin(theta) * orbitRy;
+        var tangentX = -Math.sin(theta) * orbitRx, tangentY = Math.cos(theta) * orbitRy;
+        var tangentLength = Math.sqrt(tangentX * tangentX + tangentY * tangentY);
+        tangentX = tangentX / tangentLength * 65; tangentY = tangentY / tangentLength * 65;
         return h('div', { className: 'iss-learning-visual iss-orbit-visual' },
           h('svg', { viewBox: '0 0 640 245', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_orbit_diagram_at_kilometers_altitude_moving_kil', 'Orbit diagram at {value1} kilometers altitude, moving {value2} kilometers per second with a period of {value3} minutes. {value4}.'), { value1: orbitAlt, value2: orbitAnswerVisible ? orbitV.toFixed(2) : 'an amount hidden until you predict', value3: orbitAnswerVisible ? orbitT.toFixed(1) : 'a hidden number of', value4: comparisonText.toLowerCase() })},
             h('defs', null,
@@ -8828,15 +9409,113 @@
               h('rect', { x: -45, y: -10, width: 14, height: 20, rx: 2, fill: '#c58a20', stroke: '#fbbf24' }),
               h('rect', { x: 31, y: -10, width: 14, height: 20, rx: 2, fill: '#c58a20', stroke: '#fbbf24' }),
               h('circle', { cx: 0, cy: 0, r: 3, fill: '#38bdf8' })),
-            h('line', { x1: stationX + 6, y1: stationY - 10, x2: stationX + 77, y2: stationY - 29, stroke: '#4ade80', strokeWidth: 2.5, markerEnd: 'url(#iss-velocity-arrow)' }),
-            h('text', { x: stationX + 44, y: stationY - 35, textAnchor: 'middle', fill: orbitAnswerVisible ? '#86efac' : '#94a3b8', fontSize: 9, fontWeight: 850 }, orbitAnswerVisible ? (orbitV.toFixed(2) + ' km/s') : '? km/s'),
+            h('line', { x1: stationX, y1: stationY, x2: stationX + tangentX, y2: stationY + tangentY, stroke: '#4ade80', strokeWidth: 2.5, markerEnd: 'url(#iss-velocity-arrow)' }),
+            h('text', { x: stationX + tangentX + 4, y: stationY + tangentY + 16, textAnchor: 'middle', fill: orbitAnswerVisible ? '#86efac' : '#94a3b8', fontSize: 9, fontWeight: 850 }, orbitAnswerVisible ? (orbitV.toFixed(2) + ' km/s') : '? km/s'),
             h('line', { x1: 320, y1: 84, x2: 320, y2: 37, stroke: '#fbbf24', strokeWidth: 1.4, strokeDasharray: '3 3' }),
             h('text', { x: 330, y: 48, fill: '#fde68a', fontSize: 10, fontWeight: 800 }, orbitAlt + ' km'),
             h('text', { x: 22, y: 28, fill: '#7dd3fc', fontSize: 10, fontWeight: 850, letterSpacing: 1.5 }, 'ORBITAL PROFILE // LIVE MODEL'),
             h('g', { transform: 'translate(472,18)' }, h('line', { x1: 0, y1: 4, x2: 23, y2: 4, stroke: '#38bdf8', strokeWidth: 2.4 }), h('text', { x: 29, y: 7, fill: '#cbd5e1', fontSize: 8 }, 'CURRENT'), h('line', { x1: 0, y1: 17, x2: 23, y2: 17, stroke: '#94a3b8', strokeWidth: 1.2, strokeDasharray: '5 4' }), h('text', { x: 29, y: 20, fill: '#94a3b8', fontSize: 8 }, 'ISS REF 420 KM')),
             h('text', { x: 22, y: 224, fill: atReference ? '#bae6fd' : '#cbd5e1', fontSize: 8.5, fontWeight: 800 }, comparisonText),
             h('text', { x: 618, y: 224, textAnchor: 'end', fill: '#94a3b8', fontSize: 8.5 }, 'Diagram exaggerates altitude for learning')),
-          h('div', { className: 'iss-visual-caption' }, h('span', null, atReference ? 'Current design matches the ISS reference orbit.' : 'Solid current orbit compared with dashed 420 km ISS reference.'), h('span', null, orbitT.toFixed(1) + ' MIN / ORBIT')));
+          h('div', { className: 'iss-visual-caption' }, h('span', null, atReference ? 'Current design matches the ISS reference orbit.' : 'Solid current orbit compared with dashed 420 km ISS reference.'), h('span', null, orbitAnswerVisible ? orbitT.toFixed(1) + ' MIN / ORBIT' : 'PERIOD HIDDEN UNTIL YOU PREDICT')));
+      }
+      function renderTransferLab() {
+        var target = issFlightNumber(d.orbitTransferTarget, 800, 200, 2000);
+        var plan = issTransferPlan(orbitAlt, target);
+        // A plan belongs to its departure orbit; changing the main altitude
+        // invalidates a saved in-flight state instead of teleporting the craft.
+        var sameDeparture = Number(d.orbitTransferOrigin) === orbitAlt;
+        var stage = sameDeparture ? Math.round(issFlightNumber(d.orbitTransferStage, 0, 0, 2)) : 0;
+        var progress = stage === 0 ? 0 : stage === 2 ? 1 : issFlightNumber(d.orbitTransferProgress, 0, 0, 1);
+        var flight = issTransferState(plan, progress);
+        var noTransfer = Math.abs(target - orbitAlt) < .01;
+        var ready = stage === 1 && progress >= .999999;
+        var status = noTransfer ? 'Already at target altitude' : stage === 2 ? 'Target orbit circularized' : stage === 0 ? 'Departure burn ready' : ready ? 'Arrival burn ready' : 'Coasting without thrust';
+        var currentSpeed = stage === 0 ? plan.startSpeed : stage === 2 ? plan.targetSpeed : flight.speed;
+        var currentEnergy = stage === 0 ? -ISS_GM / (2 * plan.r1) : stage === 2 ? -ISS_GM / (2 * plan.r2) : flight.specificEnergy;
+        var scale = 130 / Math.max(plan.r1, plan.r2), cx = 320, cy = 168;
+        function point(state) { return { x: cx + state.x * scale, y: cy - state.y * scale }; }
+        function flightPath(until) {
+          var parts = [];
+          for (var p = 0; p <= 72; p++) {
+            var xy = point(issTransferState(plan, until * p / 72));
+            parts.push((p ? 'L' : 'M') + xy.x.toFixed(2) + ' ' + xy.y.toFixed(2));
+          }
+          return parts.join(' ');
+        }
+        var ship = point(flight), departure = point(issTransferState(plan, 0)), arrival = point(issTransferState(plan, 1));
+        var angle = Math.atan2(-flight.vy, flight.vx) * 180 / Math.PI;
+        var vectorX = flight.vx / flight.speed * 34, vectorY = -flight.vy / flight.speed * 34;
+        function setFlight(nextProgress, nextStage, continuous) {
+          var patch = { orbitTransferOrigin: orbitAlt, orbitTransferProgress: nextProgress, orbitTransferStage: nextStage };
+          if (!continuous) patch.orbitTransferSeekToken = !d.orbitTransferSeekToken;
+          upd(patch);
+        }
+        function signedBurn(value) { return (value >= 0 ? '+' : '−') + Math.abs(value).toFixed(1) + ' m/s'; }
+        function reading(label, value, color) {
+          return h('div', { className: 'iss-flight-reading', key: label, style: { padding: 10, border: '1px solid #334155', borderRadius: 9, background: 'rgba(2,6,23,.45)' } },
+            h('div', { style: { color: SOFT, fontSize: 10, textTransform: 'uppercase', letterSpacing: '.04em' } }, label),
+            h('strong', { style: { display: 'block', color: color || '#e0f2fe', fontSize: 16, marginTop: 3, fontVariantNumeric: 'tabular-nums' } }, value));
+        }
+        return card('🚀 Transfer flight deck', h('div', { className: 'iss-transfer-lab', 'data-iss-transfer-stage': stage },
+          h('p', { style: { color: SOFT, fontSize: 12.5, lineHeight: 1.6, marginTop: 0 } }, 'Fly a two-burn transfer from your designed orbit. Fire along the velocity vector to raise an orbit, or against it to lower one. Between burns, gravity alone changes the flight path.'),
+          !orbitAnswerVisible ? h('p', { className: 'iss-network-detail' }, 'Commit your speed prediction above to unlock the flight deck.') : h('div', null,
+            h('label', { htmlFor: 'iss-transfer-target', style: { display: 'flex', justifyContent: 'space-between', gap: 10, color: SOFT, fontSize: 12 } }, h('span', null, 'Target circular orbit'), h('strong', { style: { color: '#c4b5fd' } }, target + ' km')),
+            h('input', { id: 'iss-transfer-target', type: 'range', min: 200, max: 2000, step: 10, value: target, 'aria-valuetext': target + ' kilometers', style: { width: '100%', accentColor: '#a78bfa' }, onChange: function (event) { upd({ orbitTransferTarget: Number(event.target.value), orbitTransferStage: 0, orbitTransferProgress: 0, orbitTransferOrigin: orbitAlt }); } }),
+            h('div', { className: 'iss-network-focus', role: 'group', 'aria-label': __alloT('stem.spacestation.transfer_flight_presets', 'Transfer flight presets') },
+              [{ label: 'Raise 20 km', altitude: Math.min(2000, orbitAlt + 20) }, { label: 'Lower 100 km', altitude: Math.max(200, orbitAlt - 100) }, { label: 'Target 800 km', altitude: 800 }].map(function (preset) { return h('button', { key: preset.label, type: 'button', onClick: function () { upd({ orbitTransferTarget: preset.altitude, orbitTransferStage: 0, orbitTransferProgress: 0, orbitTransferOrigin: orbitAlt }); } }, preset.label); })),
+            h('div', { className: 'iss-learning-visual iss-transfer-visual' },
+              h('svg', { viewBox: '0 0 640 328', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.transfer_orbit_diagram', 'To-scale orbital transfer from {value1} to {value2} kilometers. {value3}. Elapsed {value4} minutes. Current altitude {value5} kilometers. Amber path is the transfer ellipse; Earth lies at its focus.'), { value1: orbitAlt, value2: target, value3: status, value4: (flight.elapsedSeconds / 60).toFixed(1), value5: flight.altitude.toFixed(1) }) },
+                h('defs', null,
+                  h('radialGradient', { id: 'iss-transfer-earth', cx: '32%', cy: '25%' }, h('stop', { offset: '0%', stopColor: '#278bb5' }), h('stop', { offset: '65%', stopColor: '#103d70' }), h('stop', { offset: '100%', stopColor: '#061324' })),
+                  h('marker', { id: 'iss-transfer-vector', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' }, h('path', { d: 'M0 0 L10 5 L0 10z', fill: '#86efac' }))),
+                h('rect', { width: 640, height: 328, fill: '#040d1a' }),
+                [[34,65],[82,238],[153,108],[489,68],[568,236],[592,105],[112,294],[532,292]].map(function (star, i) { return h('circle', { key: i, cx: star[0], cy: star[1], r: i % 2 ? 1 : 1.5, fill: '#7892b0', opacity: .6 }); }),
+                h('text', { x: 18, y: 23, fill: '#7dd3fc', fontSize: 10, fontWeight: 800, letterSpacing: 1.5 }, 'TWO-BODY FLIGHT // EARTH AT FOCUS'),
+                h('circle', { cx: cx, cy: cy, r: ISS_R_EARTH * scale + 3, fill: '#38bdf8', opacity: .18 }),
+                h('circle', { cx: cx, cy: cy, r: ISS_R_EARTH * scale, fill: 'url(#iss-transfer-earth)', stroke: '#457d9c', strokeWidth: 1 }),
+                h('path', { className: 'iss-earth-disc-land', fill: '#448375', opacity: .62, d: issLandDiscPath(cx, cy, ISS_R_EARTH * scale, 18, -28) }),
+                h('circle', { cx: cx, cy: cy, r: plan.r1 * scale, fill: 'none', stroke: '#38bdf8', strokeWidth: 1.5, opacity: .75 }),
+                h('circle', { cx: cx, cy: cy, r: plan.r2 * scale, fill: 'none', stroke: '#a78bfa', strokeWidth: 1.5, strokeDasharray: '5 4', opacity: .9 }),
+                h('path', { d: flightPath(1), fill: 'none', stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: '4 4', opacity: .48 }),
+                stage > 0 ? h('path', { d: flightPath(progress), fill: 'none', stroke: '#fbbf24', strokeWidth: 3 }) : null,
+                h('text', { x: cx, y: cy - 8, textAnchor: 'middle', fill: '#c8e4f5', fontSize: 11, letterSpacing: 2 }, 'EARTH'),
+                h('text', { x: cx, y: cy + 12, textAnchor: 'middle', fill: '#96b9d0', fontSize: 9 }, 'Distances to scale'),
+                h('circle', { cx: departure.x, cy: departure.y, r: 5, fill: '#38bdf8', stroke: '#e0f2fe' }),
+                h('circle', { cx: arrival.x, cy: arrival.y, r: 5, fill: '#a78bfa', stroke: '#ede9fe' }),
+                h('text', { x: departure.x + 13, y: departure.y + 4, fill: '#7dd3fc', fontSize: 10, fontWeight: 800 }, '1  DEPART'),
+                h('text', { x: departure.x + 13, y: departure.y + 20, fill: '#94a3b8', fontSize: 9 }, orbitAlt + ' km'),
+                h('text', { x: arrival.x - 13, y: arrival.y + 4, textAnchor: 'end', fill: '#c4b5fd', fontSize: 10, fontWeight: 800 }, '2  ARRIVE'),
+                h('text', { x: arrival.x - 13, y: arrival.y + 20, textAnchor: 'end', fill: '#94a3b8', fontSize: 9 }, target + ' km'),
+                h('line', { x1: ship.x, y1: ship.y, x2: ship.x + vectorX, y2: ship.y + vectorY, stroke: '#86efac', strokeWidth: 2, markerEnd: 'url(#iss-transfer-vector)' }),
+                h('g', { transform: 'translate(' + ship.x.toFixed(2) + ',' + ship.y.toFixed(2) + ') rotate(' + angle.toFixed(2) + ')' },
+                  h('rect', { x: -4, y: -12, width: 6, height: 24, rx: 1, fill: '#d6a93e', stroke: '#fde68a', strokeWidth: .8 }),
+                  h('path', { d: 'M-8 -4 L6 -4 L11 0 L6 4 L-8 4 Z', fill: '#e0f2fe', stroke: '#fff' })),
+                h('text', { x: 18, y: 313, fill: '#fcd34d', fontSize: 9, fontWeight: 800 }, 'AMBER: TRANSFER ARC'),
+                h('text', { x: 622, y: 313, textAnchor: 'end', fill: '#86efac', fontSize: 9 }, 'GREEN: VELOCITY DIRECTION')),
+              h('div', { className: 'iss-visual-caption' }, h('span', null, 'The tiny gap in low Earth orbit is real. Orbit radii share Earth’s scale.'), h('span', null, 'No plane change · instantaneous burns'))),
+            h('div', { className: 'iss-flight-telemetry', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(135px,1fr))', gap: 8, margin: '12px 0' } },
+              reading('Altitude now', flight.altitude.toFixed(1) + ' km', '#7dd3fc'), reading('Speed now', currentSpeed.toFixed(3) + ' km/s', '#86efac'), reading('Elapsed coast', (flight.elapsedSeconds / 60).toFixed(1) + ' min', '#fcd34d'), reading('Total burn budget', plan.deltaV.toFixed(1) + ' m/s', '#c4b5fd')),
+            h(issExperimentPlayback, { React: React, id: 'transfer', t: __alloT, value: flight.elapsedSeconds, max: plan.coastSeconds,
+              speeds: [30, 120, 300], disabled: stage !== 1 || noTransfer || ready,
+              resetKey: [orbitAlt, target, stage, !!d.orbitTransferSeekToken].join(':'), onAdvance: function (seconds) { setFlight(seconds / plan.coastSeconds, 1, true); } }),
+            h('div', { className: 'iss-transfer-controls' },
+              h('label', { htmlFor: 'iss-transfer-time', style: { display: 'flex', justifyContent: 'space-between', color: SOFT, fontSize: 12, gap: 10 } }, h('span', null, 'Scrub coast time'), h('span', null, '0 – ' + (plan.coastSeconds / 60).toFixed(1) + ' minutes')),
+              h('input', { id: 'iss-transfer-time', type: 'range', min: 0, max: 1000, step: 1, value: Math.round(progress * 1000), disabled: stage !== 1 || noTransfer, 'aria-valuetext': (flight.elapsedSeconds / 60).toFixed(1) + ' elapsed minutes', style: { width: '100%', accentColor: '#fbbf24' }, onChange: function (event) { setFlight(Number(event.target.value) / 1000, 1); } }),
+              h('div', { className: 'iss-network-focus', role: 'group', 'aria-label': __alloT('stem.spacestation.transfer_flight_controls', 'Transfer flight controls') },
+                h('button', { type: 'button', 'data-iss-transfer-action': 'inject', disabled: stage !== 0 || noTransfer, onClick: function () { setFlight(0, 1); } }, '1 · Inject ' + signedBurn(plan.burn1)),
+                h('button', { type: 'button', 'data-iss-transfer-action': 'coast', disabled: stage !== 1 || ready || noTransfer, onClick: function () { setFlight(Math.min(1, progress + 300 / plan.coastSeconds), 1); } }, 'Coast +5 min'),
+                h('button', { type: 'button', 'data-iss-transfer-action': 'arrive', disabled: stage !== 1 || ready || noTransfer, onClick: function () { setFlight(1, 1); } }, 'Coast to arrival'),
+                h('button', { type: 'button', 'data-iss-transfer-action': 'circularize', disabled: !ready || noTransfer, onClick: function () { setFlight(1, 2); } }, '2 · Circularize ' + signedBurn(plan.burn2)),
+                h('button', { type: 'button', onClick: function () { setFlight(0, 0); } }, 'Reset flight'))),
+            h('div', { className: 'iss-network-detail', role: 'status', 'aria-live': 'polite', 'data-iss-transfer-status': status }, h('strong', null, status + '. '),
+              stage === 2 ? 'The second burn changes the transfer ellipse into the target circle.' : ready ? 'You have reached the target radius. A second burn is required to stay in a circular orbit here.' : stage === 1 ? 'No engine is firing. Specific orbital energy remains ' + currentEnergy.toFixed(3) + ' MJ/kg while speed and altitude change.' : noTransfer ? 'Choose a different target to plan a maneuver.' : 'Both burns are ' + (target > orbitAlt ? 'prograde (along motion)' : 'retrograde (against motion)') + '. Coast time is ' + (plan.coastSeconds / 60).toFixed(1) + ' minutes.'),
+            h('details', { className: 'iss-physics-note', style: { color: SOFT, fontSize: 11.5, lineHeight: 1.65, marginTop: 10 } },
+              h('summary', null, 'Physics and model assumptions'),
+              h('p', null, 'Speed uses vis-viva: v² = μ(2/r − 1/a). Position uses Kepler’s equation, so equal time steps sweep equal areas. Eccentricity: ' + plan.eccentricity.toFixed(5) + '. Coast energy: ' + (-ISS_GM / (2 * plan.a)).toFixed(3) + ' MJ/kg. Thrust changes orbital energy only at the two burns.'),
+              h('p', null, 'This ideal transfer joins circular orbits in one plane around a spherical Earth. It neglects drag, Earth’s oblateness, finite burn duration and rendezvous timing; matching altitude alone does not rendezvous with a station. Small altitude changes correctly look almost circular.'),
+              h('a', { href: 'https://science.nasa.gov/learn/basics-of-space-flight/chapter4-1/', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc' } }, 'NASA · orbital transfer mechanics')))
+        ), '#fbbf24');
       }
       function renderOrbitEnvironmentBand() {
         var markerX = 44 + ((orbitAlt - 200) / 1800) * 552;
@@ -8872,23 +9551,14 @@
         var solar = solarModes[solarId];
         var reboostDay = [0, 10, 20].indexOf(Number(d.orbitReboostDay)) >= 0 ? Number(d.orbitReboostDay) : 20;
         var reboostGain = reboostDay > 0 ? 5 : 0;
-        var samples = [{ day: 0, altitude: orbitAlt }];
-        var currentAltitude = orbitAlt;
-        function dailyDrag(altitude) {
-          // Training approximation anchored to 75 m/day at 420 km. Density,
-          // attitude, area, and solar activity make real decay highly variable.
-          return Math.min(6, .075 * Math.exp((420 - altitude) / 60) * solar.factor);
-        }
-        var initialDrag = dailyDrag(currentAltitude);
-        for (var dragDay = 1; dragDay <= 30; dragDay++) {
-          if (dragDay === reboostDay) currentAltitude += reboostGain;
-          currentAltitude = Math.max(120, currentAltitude - dailyDrag(currentAltitude));
-          samples.push({ day: dragDay, altitude: currentAltitude });
-        }
-        var endAltitude = samples[samples.length - 1].altitude;
+        var frontalArea = issFlightNumber(d.orbitFrontalArea, 800, 200, 1600);
+        var model = issDragPropagate(orbitAlt, solar.factor, frontalArea, reboostDay);
+        var samples = model.samples;
+        var initialDrag = model.initial.dailyLossKm;
+        var endAltitude = model.endAltitude;
         var netChange = endAltitude - orbitAlt;
-        var floorReached = endAltitude <= 120.01;
-        var trajectoryState = floorReached ? 'MODEL FLOOR REACHED' : endAltitude < 200 ? 'RAPID DECAY REGION' : reboostDay > 0 && netChange >= 0 ? 'REBOOST OFFSETS DRAG' : Math.abs(netChange) < 5 ? 'MANAGEABLE TREND' : 'ALTITUDE TREND DOWN';
+        var floorReached = model.stopped;
+        var trajectoryState = floorReached ? 'MODEL STOPS AT 180 KM' : endAltitude < 200 ? 'RAPID DECAY REGION' : reboostDay > 0 && netChange >= 0 ? 'REBOOST OFFSETS DRAG' : Math.abs(netChange) < 5 ? 'MANAGEABLE TREND' : 'ALTITUDE TREND DOWN';
         var stateColor = floorReached || endAltitude < 200 ? '#f87171' : netChange < -5 ? '#fbbf24' : '#4ade80';
         var maxAltitude = Math.max.apply(null, samples.map(function (sample) { return sample.altitude; }).concat([orbitAlt + 2]));
         var minAltitude = Math.min.apply(null, samples.map(function (sample) { return sample.altitude; }).concat([orbitAlt - 2]));
@@ -8898,7 +9568,7 @@
         function plotX(day) { return plotLeft + day / 30 * (plotRight - plotLeft); }
         function plotY(altitude) { return plotTop + (yMax - altitude) / (yMax - yMin) * (plotBottom - plotTop); }
         var path = samples.map(function (sample, i) { return (i ? 'L' : 'M') + plotX(sample.day).toFixed(1) + ' ' + plotY(sample.altitude).toFixed(1); }).join(' ');
-        var areaPath = path + ' L' + plotRight + ' ' + plotBottom + ' L' + plotLeft + ' ' + plotBottom + ' Z';
+        var areaPath = path + ' L' + plotX(model.endDay) + ' ' + plotBottom + ' L' + plotLeft + ' ' + plotBottom + ' Z';
         var thresholdVisible = yMin <= 200 && yMax >= 200;
         var thresholdY = plotY(200);
         var plannedLabel = reboostDay > 0 ? 'DAY ' + reboostDay + ' // +' + reboostGain + ' KM' : 'NO REBOOST';
@@ -8916,14 +9586,14 @@
             thresholdVisible ? h('g', null, h('line', { x1: plotLeft, y1: thresholdY, x2: plotRight, y2: thresholdY, stroke: '#f87171', strokeWidth: 1.2, strokeDasharray: '5 4' }), h('text', { x: plotRight, y: thresholdY - 5, textAnchor: 'end', fill: '#fca5a5', fontSize: 7.5, fontWeight: 850 }, '200 KM // RAPID DECAY')) : null,
             h('path', { d: areaPath, fill: 'url(#iss-drag-area)' }),
             h('path', { d: path, fill: 'none', stroke: stateColor, strokeWidth: 2.8, strokeLinejoin: 'round', filter: 'url(#iss-drag-glow)' }),
-            reboostDay > 0 ? h('g', null,
+            reboostDay > 0 && model.boostDeltaV > 0 ? h('g', null,
               h('line', { x1: plotX(reboostDay), y1: plotTop, x2: plotX(reboostDay), y2: plotBottom, stroke: '#e879f9', strokeWidth: 1.4, strokeDasharray: '4 4' }),
               h('path', { d: 'M' + (plotX(reboostDay) - 5) + ' ' + (plotTop + 8) + ' L' + (plotX(reboostDay) + 5) + ' ' + (plotTop + 8) + ' L' + plotX(reboostDay) + ' ' + plotTop + ' Z', fill: '#e879f9' }),
               h('text', { x: plotX(reboostDay), y: plotTop + 19, textAnchor: 'middle', fill: '#f0abfc', fontSize: 7.5, fontWeight: 850 }, 'REBOOST +' + reboostGain + ' KM')) : null,
             h('circle', { cx: plotLeft, cy: plotY(orbitAlt), r: 4, fill: '#7dd3fc', stroke: '#e0f2fe', strokeWidth: 1 }),
-            h('circle', { cx: plotRight, cy: plotY(endAltitude), r: 5, fill: stateColor, stroke: '#f8fafc', strokeWidth: 1.2 }),
+            h('circle', { cx: plotX(model.endDay), cy: plotY(endAltitude), r: 5, fill: stateColor, stroke: '#f8fafc', strokeWidth: 1.2 }),
             h('text', { x: plotLeft + 6, y: plotY(orbitAlt) - 7, fill: '#bae6fd', fontSize: 8, fontWeight: 850 }, 'START ' + orbitAlt.toFixed(0) + ' KM'),
-            h('text', { x: plotRight - 5, y: plotY(endAltitude) - 8, textAnchor: 'end', fill: stateColor, fontSize: 8.5, fontWeight: 900 }, 'DAY 30 // ' + endAltitude.toFixed(1) + ' KM'),
+            h('text', { x: plotX(model.endDay) - 5, y: plotY(endAltitude) - 8, textAnchor: 'end', fill: stateColor, fontSize: 8.5, fontWeight: 900 }, 'DAY ' + model.endDay.toFixed(floorReached ? 1 : 0) + ' // ' + endAltitude.toFixed(1) + ' KM'),
             [0,10,20,30].map(function (day) { return h('g', { key: day }, h('line', { x1: plotX(day), y1: plotBottom, x2: plotX(day), y2: plotBottom + 5, stroke: '#64748b' }), h('text', { x: plotX(day), y: 189, textAnchor: day === 0 ? 'start' : day === 30 ? 'end' : 'middle', fill: '#94a3b8', fontSize: 7.5 }, 'DAY ' + day)); }),
             h('text', { x: 20, y: 23, fill: '#7dd3fc', fontSize: 10, fontWeight: 850, letterSpacing: 1.4 }, 'DRAG + REBOOST // 30-DAY TRAINING MODEL'),
             h('text', { x: 620, y: 23, textAnchor: 'end', fill: stateColor, fontSize: 8.5, fontWeight: 900 }, trajectoryState),
@@ -8931,8 +9601,20 @@
             h('text', { x: 606, y: 207, textAnchor: 'end', fill: '#cbd5e1', fontSize: 8.5, fontWeight: 800 }, plannedLabel + ' // NET ' + (netChange >= 0 ? '+' : '−') + Math.abs(netChange).toFixed(1) + ' KM')),
           h('div', { className: 'iss-network-focus', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_select_solar_activity_for_the_drag_model', 'Select solar activity for the drag model') }, Object.keys(solarModes).map(function (id) { var on = id === solarId; return h('button', { key: id, type: 'button', 'data-iss-solar-mode': id, 'aria-pressed': on, onClick: function () { upd({ orbitSolar: id }); } }, solarModes[id].label.toLowerCase()); })),
           h('div', { className: 'iss-network-focus', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_select_a_reboost_plan', 'Select a reboost plan') }, [{ day: 0, label: 'No reboost' }, { day: 10, label: 'Reboost day 10' }, { day: 20, label: 'Reboost day 20' }].map(function (plan) { var on = plan.day === reboostDay; return h('button', { key: plan.day, type: 'button', 'data-iss-reboost-plan': plan.day, 'aria-pressed': on, onClick: function () { upd({ orbitReboostDay: plan.day }); } }, plan.label); })),
-          h('div', { className: 'iss-network-detail', role: 'status', 'aria-live': 'polite' }, 'Initial modeled decay ' + rateLabel + ' m/day · Day-30 altitude ' + endAltitude.toFixed(1) + ' km · Net ' + (netChange >= 0 ? '+' : '−') + Math.abs(netChange).toFixed(1) + ' km.'),
-          h('div', { className: 'iss-visual-caption' }, h('span', null, 'Anchored to 75 m/day at 420 km in nominal conditions'), h('span', null, 'Simplified density response · not a reentry forecast')));
+          h('div', { style: { padding: '8px 12px' } },
+            h('label', { htmlFor: 'iss-drag-frontal-area', style: { display: 'flex', justifyContent: 'space-between', gap: 10, color: SOFT, fontSize: 12 } }, h('span', null, 'Frontal area exposed to thin air'), h('strong', { style: { color: '#7dd3fc' } }, frontalArea + ' m²')),
+            h('input', { id: 'iss-drag-frontal-area', type: 'range', min: 200, max: 1600, step: 50, value: frontalArea, 'aria-valuetext': frontalArea + ' square meters', style: { width: '100%', accentColor: '#38bdf8' }, onChange: function (event) { upd({ orbitFrontalArea: Number(event.target.value) }); } })),
+          h('div', { className: 'iss-flight-telemetry', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 8, padding: '0 12px 8px', color: SOFT, fontSize: 11.5, lineHeight: 1.8 } },
+            h('span', null, 'Density: ', h('strong', { style: { color: '#e0f2fe' } }, model.initial.density.toExponential(2) + ' kg/m³')),
+            h('span', null, 'Drag force: ', h('strong', { style: { color: '#fcd34d' } }, model.initial.forceN.toPrecision(3) + ' N')),
+            h('span', null, 'Ballistic coefficient: ', h('strong', { style: { color: '#e0f2fe' } }, model.initial.ballisticCoefficient.toFixed(0) + ' kg/m²')),
+            h('span', null, 'Reboost budget: ', h('strong', { style: { color: '#e9d5ff' } }, model.boostDeltaV.toFixed(2) + ' m/s'))),
+          h('div', { className: 'iss-network-detail', role: 'status', 'aria-live': 'polite' }, 'Initial modeled decay ' + rateLabel + ' m/day · ' + (floorReached ? 'Model ends on day ' + model.endDay.toFixed(1) + ' at ' : 'Day-30 altitude ') + endAltitude.toFixed(1) + ' km · Net ' + (netChange >= 0 ? '+' : '−') + Math.abs(netChange).toFixed(1) + ' km.' + (floorReached ? ' No reentry prediction is made below 180 km.' : '')),
+          h('details', { className: 'iss-physics-note', style: { padding: '0 12px 10px', color: SOFT, fontSize: 11.5, lineHeight: 1.65 } }, h('summary', null, 'Drag model and assumptions'),
+            h('p', null, 'D = ½ρCᴅAv²; orbital energy loss determines altitude decay. Mass: 420,000 kg; Cᴅ: 2.2; adjustable area: ' + frontalArea + ' m². Density decreases exponentially with a 60 km scale height. Solar settings multiply this illustrative density. The integrator updates once per simulated hour.'),
+            h('p', null, 'The +5 km reboost represents a completed two-burn circular raise, with its Δv computed from orbital mechanics. This model assumes near-circular orbits and ignores atmospheric rotation, winds, changing attitude and space-weather forecasts. Density far from 420 km is an extrapolation, not measured data.'),
+            h('a', { href: 'https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/drag-equation/', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc' } }, 'NASA · drag equation')),
+          h('div', { className: 'iss-visual-caption' }, h('span', null, 'Anchored to 75 m/day at 420 km · nominal density, 800 m² area'), h('span', null, 'Illustrative thermosphere · not a reentry forecast')));
       }
       function renderSystems() {
         var idx = issIndex(d.sysIdx, SYSTEMS.length, 0);
@@ -9311,7 +9993,7 @@ __alloFill(__alloT('stem.spacestation.a11y_ground_track_all_reach', 'All {value1
                 h('span', { style: { color: '#7dd3fc', fontWeight: 800 }, 'aria-hidden': 'true' }, orbitAlt + ' km')),
               h('input', {
                 id: 'iss-orbit-alt', type: 'range', min: 200, max: 2000, step: 10, value: orbitAlt,
-                onChange: function (e) { upd({ orbitAlt: parseInt(e.target.value, 10), orbitTouched: true }); },
+                onChange: function (e) { upd({ orbitAlt: parseInt(e.target.value, 10), orbitTouched: true, orbitTransferStage: 0, orbitTransferProgress: 0, orbitTransferOrigin: null }); },
                 'aria-valuetext': orbitAlt + ' kilometers', 'aria-describedby': 'iss-orbit-tradeoff',
                 style: { width: '100%', accentColor: '#38bdf8' }
               }),
@@ -9341,6 +10023,7 @@ __alloFill(__alloT('stem.spacestation.a11y_ground_track_all_reach', 'All {value1
               h('p', { style: { fontSize: 11, color: SOFT, marginTop: 8, lineHeight: 1.5 } },
                 __alloT('stem.spacestation.orbit_note', 'Notice the counter-intuitive part: LOWER orbits are FASTER. To catch up with something ahead of you in orbit, you briefly slow down and drop lower. Orbital mechanics breaks driving intuition — which is why dockings are computed, not eyeballed.'))
             ), '#38bdf8'),
+          renderTransferLab(),
           renderInclinationLab(),
           renderOrbitChallenges(),
           card(__alloT('stem.spacestation.why_400', '🎯 Why ~400 km?'),
@@ -9653,6 +10336,30 @@ __alloFill(__alloT('stem.spacestation.a11y_ground_track_all_reach', 'All {value1
         );
       }
 
+      function enhancementStyles() {
+        return h('style', null, [
+          '.iss-transfer-visual>svg{width:100%;height:auto;min-width:0!important}.iss-interior-layout>*{min-width:0}.iss-momentum-bench{min-width:0;max-width:100%}.iss-momentum-stage{max-width:100%}.iss-momentum-stage>svg{min-width:0!important}',
+          '.iss-root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}.iss-hero{padding:12px 5px 0}.iss-title{max-width:850px;line-height:1.15}.iss-status-item{border-radius:8px;border-top:2px solid #365d79;padding:10px 12px;background:linear-gradient(120deg,rgba(15,35,54,.8),rgba(3,13,24,.7))}.iss-status-value{font-size:15px;margin-top:5px;font-variant-numeric:tabular-nums}.iss-status-label{color:#a7bdd1}.iss-panel{background:linear-gradient(150deg,rgba(14,28,45,.9),rgba(4,13,25,.9))}.iss-tab{min-height:46px}.iss-hero-emblem{width:154px;height:110px;opacity:.95}',
+          '.iss-launch-routes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 16px}.iss-launch-route{display:flex;align-items:center;gap:12px;min-width:0;padding:13px;text-align:left;border:1px solid #35506b;border-radius:12px;color:#e7eef8;background:linear-gradient(125deg,#132c43,#0c1a2c);cursor:pointer}.iss-launch-route:nth-child(2){background:linear-gradient(125deg,#182844,#0e182a)}.iss-launch-route:nth-child(3){background:linear-gradient(125deg,#103a39,#0b2028)}.iss-launch-number{font:700 23px ui-monospace,monospace;color:#6598bd}.iss-launch-route strong,.iss-launch-route small{display:block}.iss-launch-route strong{font-size:13px;line-height:1.4}.iss-launch-route small{font-size:11px;font-weight:400;color:#b3c6d8;margin-top:3px;line-height:1.5}.iss-launch-arrow{margin-left:auto;color:#7dd3fc;font-size:22px}',
+          '.iss-momentum-bench{margin-top:18px;padding:16px;border:1px solid #356779;border-radius:15px;background:radial-gradient(ellipse at 100% 0,rgba(20,184,166,.1),transparent 65%),#0a1928;color:#e2e8f0}.iss-experiment-heading{display:flex;align-items:start;justify-content:space-between;flex-wrap:wrap;gap:8px}.iss-experiment-kicker{font:700 10px ui-monospace,monospace;letter-spacing:1.5px;color:#6ee7b7}.iss-experiment-heading h3{margin:6px 0;font-size:19px;line-height:1.25}.iss-model-badge{font:600 10px ui-monospace,monospace;color:#bbd9e7;border:1px solid #365567;border-radius:20px;padding:5px 8px}.iss-experiment-intro{font-size:12px;line-height:1.65;color:#b6cadb;margin:5px 0 14px}.iss-experiment-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.iss-experiment-control{display:block;min-width:0;color:#bfd2e3;font-size:11px}.iss-experiment-control>span{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:4px}.iss-experiment-control strong{font:700 12px ui-monospace,monospace;color:#ecf8ff}.iss-experiment-control input{display:block;width:100%;margin:6px 0;accent-color:#5eead4;cursor:pointer}.iss-experiment-timeline{margin-top:14px}.iss-experiment-actions{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}.iss-experiment-actions button{border:1px solid #48637c;border-radius:8px;padding:8px 11px;background:#12283b;color:#d9eaf5;font-size:11px;font-weight:700;min-height:36px;cursor:pointer}.iss-experiment-actions button[aria-pressed="true"]{color:#b7fff0;border-color:#5eead4;background:#154237}.iss-experiment-actions button:disabled{opacity:.45;cursor:not-allowed}.iss-momentum-stage{margin-top:13px}.iss-momentum-stage svg{display:block;width:100%;height:auto}.iss-experiment-phase{font-size:12px;color:#a7f3d0;padding:8px 10px;border-left:2px solid #5eead4;background:rgba(16,185,129,.08)}',
+          '.iss-flight-telemetry{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:8px;margin:12px 0}.iss-flight-reading{min-width:0;padding:10px;border:1px solid #314d65;border-radius:9px;background:#0a1728}.iss-flight-reading span{display:block;color:#b4c7d9;font-size:10px;line-height:1.45}.iss-flight-reading strong{display:block;color:#e2f5ff;font:700 14px ui-monospace,monospace;margin-top:5px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.iss-physics-note{font-size:11px!important;color:#b4c7d9!important;line-height:1.65!important;margin:12px 0 0;padding-top:10px;border-top:1px solid #2a4359}.iss-transfer-lab input[type="range"]{accent-color:#5eead4}.iss-interior-hud span,.iss-interior-help,.iss-interior-route-hud{font-size:10px;letter-spacing:.2px}.iss-interior-speed{font-variant-numeric:tabular-nums}.iss-hud-chip{font-size:10px}.iss-ops-control label{font-size:12px}.iss-map-controls button{min-height:38px;font-size:11px}.iss-root [data-iss-flight-controls] button[aria-pressed="true"]{background:#164e63!important;color:#e0f2fe!important;border-color:#67e8f9!important;box-shadow:inset 0 -2px #67e8f9}',
+          '.iss-dock-practice{display:flex;flex-wrap:wrap;gap:7px;align-items:center;padding:10px;margin-bottom:12px;border:1px solid #314d65;border-radius:11px;background:#091829}.iss-dock-practice>span{color:#bae6fd;font:750 10px ui-monospace,monospace;text-transform:uppercase;letter-spacing:.7px;margin-right:4px}.iss-dock-practice>small{flex-basis:100%;color:#b4c7d9;font-size:11px;line-height:1.5}.iss-dock-forecast{min-width:0;margin-top:10px;padding:12px;border:1px solid #574369;border-radius:12px;background:linear-gradient(120deg,#10192c,#151c32);color:#e2e8f0}.iss-dock-forecast-header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px}.iss-dock-forecast-kicker{display:block;color:#e9b6fa;font:750 10px ui-monospace,monospace;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}.iss-dock-forecast-header strong{display:block;color:#f0abfc;font-size:14px;line-height:1.45}.iss-dock-forecast-header label{display:flex;align-items:center;gap:8px;font-size:12px;color:#cbd5e1}.iss-dock-forecast-readings{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}.iss-dock-forecast-readings .iss-flight-reading{padding:9px}.iss-dock-forecast-readings .iss-flight-reading strong{white-space:nowrap;overflow-wrap:normal}.iss-dock-forecast-footer{color:#b4c7d9;font-size:11px;line-height:1.6;margin:10px 0 0}.iss-dock-forecast[data-dock-forecast-kind="capture"]{border-color:#327759}.iss-dock-forecast[data-dock-forecast-kind="capture"] .iss-dock-forecast-header strong{color:#86efac}.iss-dock-forecast[data-dock-forecast-kind="contact"] .iss-dock-forecast-header strong,.iss-dock-forecast[data-dock-forecast-kind="exit"] .iss-dock-forecast-header strong{color:#fde68a}@media(max-width:600px){.iss-dock-forecast-readings{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-dock-practice>span{flex-basis:100%}}@media(forced-colors:active){.iss-dock-practice,.iss-dock-forecast{background:Canvas;color:CanvasText;border-color:CanvasText}.iss-dock-practice>span,.iss-dock-practice>small,.iss-dock-forecast-kicker,.iss-dock-forecast-header strong,.iss-dock-forecast-header label,.iss-dock-forecast-footer{color:CanvasText!important}}',
+          '@media(min-width:1100px){.iss-tablist{grid-template-columns:repeat(9,minmax(0,1fr))}.iss-tab{font-size:11px!important;padding:9px 5px!important}.iss-tab-icon{display:block;margin:0 0 5px;font-size:17px}}@media(max-width:760px){.iss-hero-emblem{display:none}.iss-launch-routes{grid-template-columns:1fr;gap:7px}.iss-launch-route{padding:10px 12px}.iss-launch-number{font-size:18px}.iss-launch-route small{margin-top:0}.iss-status-value{font-size:13px}.iss-interior-hud{grid-template-columns:minmax(0,1fr) auto}.iss-experiment-heading h3{font-size:17px}}@media(max-width:420px){.iss-momentum-bench{padding:11px}.iss-experiment-controls{grid-template-columns:1fr}.iss-flight-telemetry{grid-template-columns:1fr}.iss-momentum-stage{overflow-x:auto}.iss-momentum-stage svg{min-width:450px}.iss-status-value{font-size:12px}}',
+          '@media(forced-colors:active){.iss-momentum-bench,.iss-flight-reading,.iss-launch-route,.iss-status-item,.iss-experiment-actions button{background:Canvas;color:CanvasText;border-color:CanvasText}.iss-momentum-stage{forced-color-adjust:none}.iss-experiment-kicker,.iss-experiment-intro,.iss-experiment-control,.iss-experiment-control strong,.iss-model-badge,.iss-experiment-phase,.iss-flight-reading span,.iss-flight-reading strong,.iss-launch-route small,.iss-launch-number,.iss-launch-arrow,.iss-physics-note{color:CanvasText!important}.iss-experiment-actions button[aria-pressed="true"]{color:HighlightText;background:Highlight}.iss-model-badge{border-color:CanvasText}}'
+        ].join(''));
+      }
+
+      function renderLaunchRoutes() {
+        return h('div', { className: 'iss-launch-routes', role: 'group', 'aria-label': __alloT('stem.spacestation.launch_routes', 'Choose a station experiment') },
+          [
+            ['interior', __alloT('stem.spacestation.launch_crew', 'Work a crew shift'), __alloT('stem.spacestation.launch_crew_detail', 'Float, catch cargo, and investigate momentum')],
+            ['orbit', __alloT('stem.spacestation.launch_orbit', 'Engineer an orbit'), __alloT('stem.spacestation.launch_orbit_detail', 'Plan two burns and explore atmospheric drag')],
+            ['missions', __alloT('stem.spacestation.launch_missions', 'Take the flight controls'), __alloT('stem.spacestation.launch_missions_detail', 'Manage thrust, fuel, and a precise docking')]
+          ].map(function (route, index) { return h('button', { key: route[0], type: 'button', className: 'iss-launch-route', 'data-iss-launch': route[0], onClick: function () { selectTab(TABS.findIndex(function (candidate) { return candidate.id === route[0]; }), true); } },
+            h('span', { className: 'iss-launch-number', 'aria-hidden': 'true' }, '0' + (index + 1)),
+            h('span', null, h('strong', null, route[1]), h('small', null, route[2])), h('span', { className: 'iss-launch-arrow', 'aria-hidden': 'true' }, '↗')); }));
+      }
+
       function selectTab(index, moveFocus) {
         var next = TABS[((index % TABS.length) + TABS.length) % TABS.length];
         upd({ tab: next.id });
@@ -9677,12 +10384,21 @@ __alloFill(__alloT('stem.spacestation.a11y_ground_track_all_reach', 'All {value1
 
       return h('div', { className: 'iss-root', style: { maxWidth: 1440, margin: '0 auto' } },
         wcagStyles(),
+        enhancementStyles(),
         h('header', { className: 'iss-hero' },
           h('div', { className: 'iss-hero-copy' },
             h('div', { className: 'iss-eyebrow' }, h('span', { className: 'iss-live-dot', 'aria-hidden': 'true' }), __alloT('stem.spacestation.hero_kicker', 'Expedition learning console / live simulation')),
             h('h2', { className: 'iss-title', style: { fontSize: 18, fontWeight: 900, color: TEXT, margin: '0 0 5px' } }, '🛰️ ' + __alloT('stem.spacestation.title', 'Space Station — a permanent home off Earth')),
             h('p', { className: 'iss-subtitle', style: { fontSize: 12, color: SOFT, margin: 0 } }, __alloT('stem.spacestation.subtitle', 'The International Space Station: 420 tonnes of engineering falling around the planet at 7.66 km/s, continuously inhabited for over 25 years.'))),
-          h('div', { className: 'iss-orbit-mark', 'aria-hidden': 'true' }, h('span', { className: 'iss-orbit-core' }, '\uD83C\uDF0D')),
+          h('svg', { className: 'iss-hero-emblem', viewBox: '0 0 180 120', 'aria-hidden': 'true', focusable: 'false' },
+            h('circle', { cx: 88, cy: 61, r: 48, fill: '#0c253b', stroke: '#355c76' }),
+            h('circle', { cx: 88, cy: 61, r: 33, fill: '#143e57', stroke: '#63a4ba', strokeWidth: 0.6 }),
+            h('path', { d: issLandDiscPath(88, 61, 33, 18, 15), fill: '#469088', opacity: 0.8 }),
+            h('ellipse', { cx: 88, cy: 61, rx: 80, ry: 28, fill: 'none', stroke: '#7dd3fc', strokeDasharray: '3 5', opacity: 0.7, transform: 'rotate(-22 88 61)' }),
+            h('g', { transform: 'translate(139 34) rotate(-22)' },
+              h('path', { d: 'M-27 0 H27 M0 -14 V14', stroke: '#d2e3f0', strokeWidth: 3 }),
+              [-23, -13, 13, 23].map(function (p) { return h('g', { key: p }, h('rect', { x: p - 3, y: -15, width: 6, height: 30, fill: '#ac7a2c', stroke: '#ffe4a0', strokeWidth: 0.6 }), h('path', { d: 'M' + (p - 3) + ' -7 H' + (p + 3) + ' M' + (p - 3) + ' 7 H' + (p + 3), stroke: '#e8bc63', strokeWidth: 0.6 })); }),
+              h('rect', { x: -5, y: -11, width: 10, height: 22, rx: 4, fill: '#ebf4f9', stroke: '#8db3ca' }))),
           h('div', { className: 'iss-status-strip', role: 'list', 'aria-label': __alloT('stem.spacestation.orbit_status', 'Current station reference data') },
             [['Orbit altitude', '~' + orbitAlt + ' km'],
              // Gated ONLY while the Orbit tab is the tab asking the question:
@@ -9705,7 +10421,7 @@ __alloFill(__alloT('stem.spacestation.a11y_ground_track_all_reach', 'All {value1
         h('div', { className: 'iss-panel', id: 'iss-panel', role: 'tabpanel', 'aria-labelledby': 'iss-tab-' + tab, tabIndex: 0 },
           tab === 'interior' ? renderInterior() :
           tab === 'operations' ? renderOperations() :
-          tab === 'map' ? renderMap() :
+          tab === 'map' ? h('div', null, renderLaunchRoutes(), renderMap()) :
           tab === 'day' ? renderDay() :
           tab === 'systems' ? renderSystems() :
           tab === 'orbit' ? renderOrbit() :

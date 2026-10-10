@@ -1,0 +1,48 @@
+{
+  "runKind": "installed source and mirror, extracted with acorn; no scratch helper override",
+  "loadedAt": "2026-10-08T16:07:09.896Z",
+  "completedAt": "2026-10-08T16:07:15.542Z",
+  "cwd": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/vitest/vitest.mjs",
+    "run",
+    "--root",
+    "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated",
+    "--config",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\watercycle-air-profile\\vitest.actual.config.mjs"
+  ],
+  "exitCode": 0,
+  "error": null,
+  "expectedSHA256": "9a31c9d2107ccaf74c578e3423958d5066915cd0dcd8b42b9fb5dc6442a56ed9",
+  "before": [
+    {
+      "path": "stem_lab/stem_tool_watercycle.js",
+      "bytes": 3336294,
+      "sha256": "9a31c9d2107ccaf74c578e3423958d5066915cd0dcd8b42b9fb5dc6442a56ed9"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "bytes": 3336294,
+      "sha256": "9a31c9d2107ccaf74c578e3423958d5066915cd0dcd8b42b9fb5dc6442a56ed9"
+    }
+  ],
+  "after": [
+    {
+      "path": "stem_lab/stem_tool_watercycle.js",
+      "bytes": 3336294,
+      "sha256": "9a31c9d2107ccaf74c578e3423958d5066915cd0dcd8b42b9fb5dc6442a56ed9"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "bytes": 3336294,
+      "sha256": "9a31c9d2107ccaf74c578e3423958d5066915cd0dcd8b42b9fb5dc6442a56ed9"
+    }
+  ],
+  "runtimesUnchanged": true,
+  "test": {
+    "path": "tests/watercycle_air_profile.test.js",
+    "bytes": 9623,
+    "sha256": "368f540b88ec7abe573b62b8941dae6623da0d9092847f1993d849a2e1fc6c4b"
+  }
+}

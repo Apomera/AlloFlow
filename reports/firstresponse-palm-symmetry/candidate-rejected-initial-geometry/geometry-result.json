@@ -1,0 +1,227 @@
+{
+  "passed": false,
+  "beforeSHA256": "147670787861ae0251c9b4c65c90847a613c6b879d41737533749c19a5f6f891",
+  "candidateSHA256": "dfe3e01f38a419187e468c749cc37827f486a47401b9916afaa9ec6f98a3f86a",
+  "checkerSHA256": "6f463f0d905fb78c80bcbd431b9e0fa834046f262bf13043966ce0064968e1e7",
+  "inputs": {
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs": "6f463f0d905fb78c80bcbd431b9e0fa834046f262bf13043966ce0064968e1e7",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\before.js": "147670787861ae0251c9b4c65c90847a613c6b879d41737533749c19a5f6f891",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\candidate.js": "dfe3e01f38a419187e468c749cc37827f486a47401b9916afaa9ec6f98a3f86a",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\vendor\\three-r128\\three.min.js": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
+  },
+  "assertions": 3149,
+  "cases": 12,
+  "results": [
+    {
+      "age": "adult",
+      "phase": 0,
+      "contrast": false,
+      "sceneParity": {
+        "SHA256": "0b365d12f3a123664ffdc2e99b1a843240402962d88a0e0681a8f21cf11556ba",
+        "nodes": 211,
+        "meshes": 144,
+        "geometries": 142,
+        "materials": 25,
+        "allowedChanges": [
+          "fr-patient-right-palm-crease.normal",
+          "fr-patient-right-palm-crease.pathPoints",
+          "fr-patient-right-palm-crease.position",
+          "fr-patient-right-palm.index",
+          "fr-patient-right-palm.normal",
+          "fr-patient-right-thumb-crease.normal",
+          "fr-patient-right-thumb-crease.pathPoints",
+          "fr-patient-right-thumb-crease.position",
+          "fr-patient-right-wrist.normal",
+          "fr-rescuer-upper-palm.index",
+          "fr-rescuer-upper-palm.normal"
+        ]
+      },
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: mirrored palm vertex shader normal patient\n    at check (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:19:55)\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:187:5\n    at Array.forEach (<anonymous>)\n    at mirrorPalmPair (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:182:25)\n    at Object.<anonymous> (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:284:21)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)"
+    },
+    {
+      "age": "adult",
+      "phase": 2,
+      "contrast": false,
+      "sceneParity": {
+        "SHA256": "62eef87594bb935ea0e976e118d0ec83a2484933a594d5c1d55209b764279fc4",
+        "nodes": 213,
+        "meshes": 145,
+        "geometries": 143,
+        "materials": 26,
+        "allowedChanges": [
+          "fr-patient-right-palm-crease.normal",
+          "fr-patient-right-palm-crease.pathPoints",
+          "fr-patient-right-palm-crease.position",
+          "fr-patient-right-palm.index",
+          "fr-patient-right-palm.normal",
+          "fr-patient-right-thumb-crease.normal",
+          "fr-patient-right-thumb-crease.pathPoints",
+          "fr-patient-right-thumb-crease.position",
+          "fr-patient-right-wrist.normal",
+          "fr-rescuer-upper-palm.index",
+          "fr-rescuer-upper-palm.normal"
+        ]
+      },
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: mirrored palm vertex shader normal patient\n    at check (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:19:55)\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:187:5\n    at Array.forEach (<anonymous>)\n    at mirrorPalmPair (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:182:25)\n    at Object.<anonymous> (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:284:21)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)"
+    },
+    {
+      "age": "adult",
+      "phase": 5,
+      "contrast": false,
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: scene exact outside explicitly scoped palm/crease/wrist attributes\n+ actual - expected\n\n  {\n+   SHA256: 'd09ed47978493434cef04a39eb3d7984a67fe0f65c5a3dbdadc015f8b87d22de',\n-   SHA256: '805d2300a7b28a2fd4f0f651fc8425eb01d27b0fc841f26f4bad7e7d97373baf',\n    geometries: 143,\n    materials: 26,\n    meshes: 145,\n    nodes: 213\n  }\n\n    at equal (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:20:66)\n    at Object.<anonymous> (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:282:5)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47"
+    },
+    {
+      "age": "adult",
+      "phase": 8,
+      "contrast": false,
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: scene exact outside explicitly scoped palm/crease/wrist attributes\n+ actual - expected\n\n  {\n+   SHA256: '1d5d963b478267f9e083726b619217700b59ea22cd3068ebd6a86c11aef9657c',\n-   SHA256: 'e63f3957c70bc667c9965e36616801761a14ea554ff1f00a096c8279b79365f6',\n    geometries: 143,\n    materials: 26,\n    meshes: 145,\n    nodes: 213\n  }\n\n    at equal (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:20:66)\n    at Object.<anonymous> (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:282:5)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47"
+    },
+    {
+      "age": "child",
+      "phase": 0,
+      "contrast": false,
+      "sceneParity": {
+        "SHA256": "2582fd2838de7ea897a2f9339d170797643901246bc22351751ac5ed08f66d71",
+        "nodes": 210,
+        "meshes": 143,
+        "geometries": 141,
+        "materials": 25,
+        "allowedChanges": [
+          "fr-patient-right-palm-crease.normal",
+          "fr-patient-right-palm-crease.pathPoints",
+          "fr-patient-right-palm-crease.position",
+          "fr-patient-right-palm.index",
+          "fr-patient-right-palm.normal",
+          "fr-patient-right-thumb-crease.normal",
+          "fr-patient-right-thumb-crease.pathPoints",
+          "fr-patient-right-thumb-crease.position",
+          "fr-patient-right-wrist.normal",
+          "fr-rescuer-upper-palm.index",
+          "fr-rescuer-upper-palm.normal"
+        ]
+      },
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: mirrored palm vertex shader normal patient\n    at check (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:19:55)\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:187:5\n    at Array.forEach (<anonymous>)\n    at mirrorPalmPair (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:182:25)\n    at Object.<anonymous> (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:284:21)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)"
+    },
+    {
+      "age": "child",
+      "phase": 2,
+      "contrast": false,
+      "sceneParity": {
+        "SHA256": "8b04a5519571121de87e6e06a317b05e62d1fbd8f17768db8ee475dfa517605f",
+        "nodes": 212,
+        "meshes": 144,
+        "geometries": 142,
+        "materials": 26,
+        "allowedChanges": [
+          "fr-patient-right-palm-crease.normal",
+          "fr-patient-right-palm-crease.pathPoints",
+          "fr-patient-right-palm-crease.position",
+          "fr-patient-right-palm.index",
+          "fr-patient-right-palm.normal",
+          "fr-patient-right-thumb-crease.normal",
+          "fr-patient-right-thumb-crease.pathPoints",
+          "fr-patient-right-thumb-crease.position",
+          "fr-patient-right-wrist.normal",
+          "fr-rescuer-upper-palm.index",
+          "fr-rescuer-upper-palm.normal"
+        ]
+      },
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: mirrored palm vertex shader normal patient\n    at check (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:19:55)\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:187:5\n    at Array.forEach (<anonymous>)\n    at mirrorPalmPair (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:182:25)\n    at Object.<anonymous> (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:284:21)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)"
+    },
+    {
+      "age": "child",
+      "phase": 5,
+      "contrast": false,
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: scene exact outside explicitly scoped palm/crease/wrist attributes\n+ actual - expected\n\n  {\n+   SHA256: '3c5de9f4a3ea8eb0a727ca18126a4a236deb619320ed1d6706e621465199ff34',\n-   SHA256: '190b0164b833ff8817cbc417330965af8d41f6a2707b1b188d2c2eb058d86552',\n    geometries: 142,\n    materials: 26,\n    meshes: 144,\n    nodes: 212\n  }\n\n    at equal (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:20:66)\n    at Object.<anonymous> (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:282:5)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47"
+    },
+    {
+      "age": "child",
+      "phase": 8,
+      "contrast": false,
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: scene exact outside explicitly scoped palm/crease/wrist attributes\n+ actual - expected\n\n  {\n+   SHA256: 'bc192294928a81c0d679eab6dd6b10b31a96ffedffc980b73447d5ed5e2b7ebb',\n-   SHA256: 'be29e4d5392b64bc8ba840b3edae44f4338c8d7dd7303f5b62365dbcbc31bbc2',\n    geometries: 142,\n    materials: 26,\n    meshes: 144,\n    nodes: 212\n  }\n\n    at equal (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:20:66)\n    at Object.<anonymous> (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:282:5)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47"
+    },
+    {
+      "age": "infant",
+      "phase": 0,
+      "contrast": false,
+      "sceneParity": {
+        "SHA256": "5fbf8f2b31b20d8c23897011a7f8a99320c7f523a4ab0e39893844c1e9542796",
+        "nodes": 181,
+        "meshes": 125,
+        "geometries": 123,
+        "materials": 25,
+        "allowedChanges": [
+          "fr-patient-right-palm-crease.normal",
+          "fr-patient-right-palm-crease.pathPoints",
+          "fr-patient-right-palm-crease.position",
+          "fr-patient-right-palm.index",
+          "fr-patient-right-palm.normal",
+          "fr-patient-right-thumb-crease.normal",
+          "fr-patient-right-thumb-crease.pathPoints",
+          "fr-patient-right-thumb-crease.position",
+          "fr-patient-right-wrist.normal"
+        ]
+      },
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: mirrored palm vertex shader normal patient\n    at check (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:19:55)\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:187:5\n    at Array.forEach (<anonymous>)\n    at mirrorPalmPair (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:182:25)\n    at Object.<anonymous> (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:284:21)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)"
+    },
+    {
+      "age": "infant",
+      "phase": 2,
+      "contrast": false,
+      "sceneParity": {
+        "SHA256": "155a1089d74d0dc79b577fde83747af775a1ac88fcaad132fa35b33872b54614",
+        "nodes": 183,
+        "meshes": 126,
+        "geometries": 124,
+        "materials": 26,
+        "allowedChanges": [
+          "fr-patient-right-palm-crease.normal",
+          "fr-patient-right-palm-crease.pathPoints",
+          "fr-patient-right-palm-crease.position",
+          "fr-patient-right-palm.index",
+          "fr-patient-right-palm.normal",
+          "fr-patient-right-thumb-crease.normal",
+          "fr-patient-right-thumb-crease.pathPoints",
+          "fr-patient-right-thumb-crease.position",
+          "fr-patient-right-wrist.normal"
+        ]
+      },
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: mirrored palm vertex shader normal patient\n    at check (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:19:55)\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:187:5\n    at Array.forEach (<anonymous>)\n    at mirrorPalmPair (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:182:25)\n    at Object.<anonymous> (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:284:21)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)"
+    },
+    {
+      "age": "infant",
+      "phase": 5,
+      "contrast": false,
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: scene exact outside explicitly scoped palm/crease/wrist attributes\n+ actual - expected\n\n  {\n+   SHA256: 'bc108a1d517864bf7d1d1406fe8fc8e30f03ac22f89184819e32415a07da1740',\n-   SHA256: '1b9d822041bbd4e82cb64ff7f792e7b5c775b3f03a99a96dbc2f866434adeac2',\n    geometries: 124,\n    materials: 26,\n    meshes: 126,\n    nodes: 183\n  }\n\n    at equal (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:20:66)\n    at Object.<anonymous> (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:282:5)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47"
+    },
+    {
+      "age": "infant",
+      "phase": 8,
+      "contrast": false,
+      "status": "failed",
+      "error": "AssertionError [ERR_ASSERTION]: scene exact outside explicitly scoped palm/crease/wrist attributes\n+ actual - expected\n\n  {\n+   SHA256: '353570afa64a76c04f543b610174b2a0396761f50a8f6652465f8c9c886fb698',\n-   SHA256: 'b8fb82da646d3524e0b08be0f80f81d2f5e4d5797faee2e9de9d3251e3ea4ccf',\n    geometries: 124,\n    materials: 26,\n    meshes: 126,\n    nodes: 183\n  }\n\n    at equal (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:20:66)\n    at Object.<anonymous> (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\verify-palm-symmetry.cjs:282:5)\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1893:10)\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47"
+    }
+  ],
+  "negative": [],
+  "selftestRequested": true,
+  "scope": "Only right patient and upper rescuer palm indices/normals, right patient wrist normals, and right patient primary/thumb crease positions/normals/path control points may differ. All other scene bytes, transforms, parameters, materials, metadata, counts and viewer configuration are preserved.",
+  "tolerances": {
+    "palmPositionQuantization": 1e-7,
+    "palmNormalMirrorError": 0.000001,
+    "creaseMirrorError": 1e-7,
+    "skinGapMinimum": -0.001,
+    "skinGapMaximum": 0.004
+  },
+  "limitation": "CPU raw-module scenes with bundled THREE r128. Skin fit covers every crease vertex plus each ribbon edge midpoint and triangle centroid and 129 center-path samples; it is not a proof over every continuous point. Browser, full application loader and full build are separate checks."
+}

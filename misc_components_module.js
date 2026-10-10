@@ -207,8 +207,11 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswer
 });
 const WordSoundsReviewPanel = ({
   preloadedWords,
+  packMaintenance,
   onUpdateWord,
   onReorderWords,
+  renderSyllableEditor,
+  syllableReviewRequest,
   onStartActivity,
   onClose,
   onBackToSetup,
@@ -251,6 +254,19 @@ const WordSoundsReviewPanel = ({
   React.useEffect(() => {
   }, []);
   const [expandedIndex, setExpandedIndex] = React.useState(null);
+  React.useEffect(() => {
+    if (!syllableReviewRequest || !Number.isInteger(syllableReviewRequest.index)) return;
+    setExpandedIndex(syllableReviewRequest.index);
+    const timer = setTimeout(() => {
+      const editor = document.getElementById("ws-syllables-" + syllableReviewRequest.index);
+      if (editor) {
+        editor.open = true;
+        editor.scrollIntoView?.({ block: "nearest" });
+        editor.querySelector("summary")?.focus();
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [syllableReviewRequest?.index, syllableReviewRequest?.nonce]);
   const [showPhonemeBank, setShowPhonemeBank] = React.useState(null);
   const [bankLabelMode, setBankLabelMode] = React.useState(() => {
     try {
@@ -717,7 +733,7 @@ const WordSoundsReviewPanel = ({
       title: t("word_sounds.retry_audio_tooltip") || "Retry audio generation for words that failed"
     },
     t("word_sounds.retry_audio") || "Retry audio"
-  ))), reviewError && /* @__PURE__ */ React.createElement("p", { id: "word-sounds-review-error", role: "alert", className: "mt-3 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-800" }, reviewError.message)), deletedWordUndo && /* @__PURE__ */ React.createElement("div", { className: "mx-3 mt-3 sm:mx-6 sm:mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950" }, /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", "aria-atomic": "true" }, "\u201C", deletedWordUndo.label, "\u201D ", t("word_sounds.word_removed") || "removed."), typeof onReorderWords === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: undoReviewWordDelete, className: "min-h-11 rounded-lg px-3 py-2 font-bold text-amber-900 underline decoration-2 underline-offset-2 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-700" }, t("common.undo") || "Undo")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4 custom-scrollbar" }, (() => {
+  ))), reviewError && /* @__PURE__ */ React.createElement("p", { id: "word-sounds-review-error", role: "alert", className: "mt-3 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-800" }, reviewError.message)), deletedWordUndo && /* @__PURE__ */ React.createElement("div", { className: "mx-3 mt-3 sm:mx-6 sm:mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950" }, /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", "aria-atomic": "true" }, "\u201C", deletedWordUndo.label, "\u201D ", t("word_sounds.word_removed") || "removed."), typeof onReorderWords === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: undoReviewWordDelete, className: "min-h-11 rounded-lg px-3 py-2 font-bold text-amber-900 underline decoration-2 underline-offset-2 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-700" }, t("common.undo") || "Undo")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4 custom-scrollbar" }, packMaintenance, (() => {
     const words = [...new Set((preloadedWords || []).flatMap((w) => w?._instructionalCoverage?.untaughtWords || []))];
     if (!words.length) return null;
     const label = t("word_sounds.coverage_review", { words: words.join(", ") }) || "Check taught spellings: {words}";
@@ -1092,7 +1108,7 @@ const WordSoundsReviewPanel = ({
       },
       /* @__PURE__ */ React.createElement(ChevronDown, { size: 20, "aria-hidden": "true", className: `transition-transform motion-reduce:transition-none ${expandedIndex === idx ? "rotate-180" : ""}` })
     )),
-    expandedIndex === idx && /* @__PURE__ */ React.createElement("div", { id: `word-sounds-details-${idx}`, className: "border-t border-slate-100 p-4 space-y-4 animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, t("word_sounds.phonemes")), /* @__PURE__ */ React.createElement(
+    expandedIndex === idx && /* @__PURE__ */ React.createElement("div", { id: `word-sounds-details-${idx}`, className: "border-t border-slate-100 p-4 space-y-4 animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, typeof renderSyllableEditor === "function" && renderSyllableEditor(word, idx), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, t("word_sounds.phonemes")), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",

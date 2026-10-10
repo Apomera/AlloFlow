@@ -828,13 +828,15 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     }
   });
 
-  it('captures live evidence and persists a complete notebook separately for each role', async () => {
-    await mount({ viewMode: 'beekeeper', beeView: 'scene', day: 5, motionPaused: true, notebookOpen: true });
+  it('captures previewed evidence and persists a complete notebook separately for each role', async () => {
+    await mount({ viewMode: 'beekeeper', beeView: 'scene', day: 5, varroaLevel: 5, motionPaused: true, notebookOpen: true });
     const capture = host.querySelector('[data-beehive-capture-evidence="beekeeper"]');
-    expect(capture.className).toContain('min-h-[44px]');
+    expect(capture.type).toBe('button');
+    expect(capture.textContent).toBe('Add these readings');
+    expect(host.querySelector('[data-colony-notebook-capture="true"]')).toBeTruthy();
     await act(async () => { capture.click(); await Promise.resolve(); });
     expect(latest.beehive.notebook.beekeeper.evidence).toContain('Day 5');
-    expect(latest.beehive.notebook.beekeeper.evidence).toContain('Mite pressure 5 points');
+    expect(latest.beehive.notebook.beekeeper.evidence).toContain('Mite pressure: 5 points');
     expect(document.getElementById('allo-live-beehive').textContent).toContain('evidence captured in the Science Notebook');
 
     let reviewInputs = Array.from(host.querySelectorAll('input[data-notebook-review]'));
@@ -889,14 +891,21 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(portfolioProgress.getAttribute('aria-valuemax')).toBe('10');
     expect(portfolioProgress.getAttribute('aria-valuenow')).toBe('3');
     expect(portfolio.querySelectorAll('button[data-notebook-role]')).toHaveLength(3);
-    expect(Array.from(portfolio.querySelectorAll('button[data-notebook-role]')).every((button) => button.className.includes('min-h-[48px]'))).toBe(true);
+    expect(Array.from(portfolio.querySelectorAll('button[data-notebook-role]')).every((button) => button.type === 'button' && button.tabIndex === 0)).toBe(true);
     expect(host.querySelectorAll('textarea[data-notebook-field]')).toHaveLength(3);
     expect(Array.from(host.querySelectorAll('textarea[data-notebook-field]')).every((area) => area.maxLength === 1200)).toBe(true);
 
     const queenPortfolioButton = host.querySelector('[data-notebook-role="queen"]');
-    expect(queenPortfolioButton.getAttribute('aria-label')).toContain('0 of 3 sections written, self-review 0 of 3 ready');
+    expect(queenPortfolioButton.textContent).toBe('Open Colony Network notebook');
+    const queenPortfolioStatus = document.getElementById(queenPortfolioButton.getAttribute('aria-describedby'));
+    expect(queenPortfolioStatus).toBeTruthy();
+    expect(Array.from(queenPortfolioStatus.querySelectorAll('dd')).map((item) => item.textContent)).toEqual(['0 / 3 written', '0 / 3 self-reviewed']);
+    const writingTitle = document.getElementById('beehive-notebook-writing-title');
+    writingTitle.scrollIntoView = vi.fn();
     await act(async () => { queenPortfolioButton.click(); await Promise.resolve(); });
     expect(latest.beehive.viewMode).toBe('queen');
+    expect(document.activeElement).toBe(writingTitle);
+    expect(writingTitle.scrollIntoView).toHaveBeenCalled();
     expect(latest.beehive.notebook.beekeeper.evidence).toContain('Day 5');
     expect(host.querySelector('[data-beehive-notebook="queen"] [role="progressbar"]').getAttribute('aria-valuenow')).toBe('0');
     expect(host.querySelector('[data-notebook-role="queen"]').getAttribute('aria-current')).toBe('true');
@@ -913,7 +922,8 @@ describe('Beehive WCAG 2.2 accessibility', () => {
 
     Object.defineProperty(navigator, 'clipboard', { configurable: true, value: undefined });
     const copyPortfolio = host.querySelector('[data-beehive-copy-notebook="true"]');
-    expect(copyPortfolio.className).toContain('min-h-[44px]');
+    expect(copyPortfolio.type).toBe('button');
+    expect(copyPortfolio.textContent).toBe('Copy portfolio');
     await act(async () => { copyPortfolio.click(); await Promise.resolve(); });
     expect(latest.beehive.exportedReportTitle).toBe('Science Notebook Portfolio');
     expect(latest.beehive.exportedReport).toContain('# Bee Science Notebook Portfolio');

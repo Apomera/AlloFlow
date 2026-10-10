@@ -1,0 +1,72 @@
+{
+  "sourceSha256": "12132650ea1f18152ac4bf1e07dfd1c4c9d1c9bc84501276904ada975ad3e244",
+  "files": [
+    "tests/watercycle_heat_actor_clarity.test.js",
+    "tests/watercycle_matter_energy.test.js",
+    "tests/watercycle_groundwater_lens.test.js",
+    "tests/watercycle_groundwater_workspace.test.js"
+  ],
+  "startedAt": "2026-10-06T01:30:36.479Z",
+  "completedAt": "2026-10-06T01:31:13.929Z",
+  "exitCode": 0,
+  "runtimeBefore": [
+    {
+      "file": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "12132650ea1f18152ac4bf1e07dfd1c4c9d1c9bc84501276904ada975ad3e244"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "12132650ea1f18152ac4bf1e07dfd1c4c9d1c9bc84501276904ada975ad3e244"
+    }
+  ],
+  "runtimeAfter": [
+    {
+      "file": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "12132650ea1f18152ac4bf1e07dfd1c4c9d1c9bc84501276904ada975ad3e244"
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "12132650ea1f18152ac4bf1e07dfd1c4c9d1c9bc84501276904ada975ad3e244"
+    }
+  ],
+  "testsBefore": [
+    {
+      "file": "tests/watercycle_heat_actor_clarity.test.js",
+      "sha256": "486fdfd31ff2337ff875b3147dbc9508d1bce47c9168a08bc76b3cb9dcdbc084"
+    },
+    {
+      "file": "tests/watercycle_matter_energy.test.js",
+      "sha256": "36f733e85337655afc2594eb45262e89e37b815373abf7faaa7caa2f8be249a0"
+    },
+    {
+      "file": "tests/watercycle_groundwater_lens.test.js",
+      "sha256": "9d36da1a741fe3ed616af9c80fd7126ca407d2864fb7866e4e37db89ffb2c9d7"
+    },
+    {
+      "file": "tests/watercycle_groundwater_workspace.test.js",
+      "sha256": "85437b48627802faed5595042e712c355166a06d02ad2c8917d8f8a0a99c0fc7"
+    }
+  ],
+  "testsAfter": [
+    {
+      "file": "tests/watercycle_heat_actor_clarity.test.js",
+      "sha256": "486fdfd31ff2337ff875b3147dbc9508d1bce47c9168a08bc76b3cb9dcdbc084"
+    },
+    {
+      "file": "tests/watercycle_matter_energy.test.js",
+      "sha256": "36f733e85337655afc2594eb45262e89e37b815373abf7faaa7caa2f8be249a0"
+    },
+    {
+      "file": "tests/watercycle_groundwater_lens.test.js",
+      "sha256": "9d36da1a741fe3ed616af9c80fd7126ca407d2864fb7866e4e37db89ffb2c9d7"
+    },
+    {
+      "file": "tests/watercycle_groundwater_workspace.test.js",
+      "sha256": "85437b48627802faed5595042e712c355166a06d02ad2c8917d8f8a0a99c0fc7"
+    }
+  ],
+  "successful": true,
+  "passed": 84,
+  "failed": 0,
+  "skipped": 0
+}

@@ -1,0 +1,108 @@
+{
+  "date": "2026-10-05",
+  "feature": "Larger, directly explorable islands and camera framing",
+  "sourceSha256": "57b46eb3b277c50f47e64387daf960cbc1dd0deda49dc919f3961b54844a37da",
+  "sourceBytes": 2286115,
+  "sourceMirrorsIdentical": true,
+  "sourceLineEndings": "LF",
+  "committed": false,
+  "deployed": false,
+  "changes": [
+    "Coastline scale increased from .55 to .70, with a consistent .82 ellipse and terrain elevation scale .90. Land area is roughly 66% greater, independently checked against the former 64-segment coast.",
+    "Higher-resolution 32-by-96 terrain and bay-following shallow water replace the circular coastal plate.",
+    "Resident positions spread within 80% of the actual coastline and sample the same terrain height.",
+    "Presentation centers remain separate from the complete, unchanged evolution model, migration distances, population counts and randomness.",
+    "Initial selected-island habitat view, 460px desktop/340px phone stage, whole-archipelago toggle, native zoom and reset controls.",
+    "Camera fits actual rendered terrain, shores and organism geometry for the current screen aspect and angle. Other islands are hidden in habitat view.",
+    "Selecting terrain focuses the island; visible organism bodies open their inspector. Terrain occludes clicks on hidden residents. Native island and resident controls remain available without WebGL."
+  ],
+  "validation": {
+    "focused": {
+      "passed": 26,
+      "files": 3,
+      "log": "island-framing-units-final.log",
+      "covers": [
+        "Evolution model invariants",
+        "Accessible labels and translations",
+        "Live-region stability"
+      ]
+    },
+    "render": {
+      "passed": 2,
+      "log": "island-framing-goldens-final.log",
+      "digest": {
+        "buttons": 49,
+        "inputs": 6,
+        "lengthBucket": 721,
+        "sha": "30150f65ab616433",
+        "svgs": 1
+      },
+      "snapshotScope": "Only the two EvoLab entries updated; unrelated tool snapshots preserved."
+    },
+    "browser": {
+      "passed": 6,
+      "log": "island-framing-browser-final.log",
+      "covers": [
+        "Independently reconstructed former coast area and actual enlarged vertex geometry",
+        "Actual projected terrain and every visible organism vertex remain within the reset camera frame",
+        "Every island, overview, turning, zoom magnification and reset",
+        "Terrain selection and actual exposed body selection through camera rays",
+        "390px phone, 320px, landscape and desktop resize",
+        "Keyboard controls, reduced motion, no WebGL fallback, zero axe violations and no horizontal overflow",
+        "Exact expedition, stored world, model coordinates and RNG preserved by camera interactions",
+        "Existing primer, private comparisons, recorded migration and founder investigation journeys"
+      ]
+    },
+    "modelSourceUnchanged": true,
+    "preview": {
+      "url": "http://127.0.0.1:56559/?preview=archipelago",
+      "sourceSha256": "57b46eb3b277c50f47e64387daf960cbc1dd0deda49dc919f3961b54844a37da",
+      "sourceBytes": 2286115,
+      "sourceMirrorsIdentical": true,
+      "sourceLineEndings": "LF",
+      "servedSourceMatches": true,
+      "assets": [
+        {
+          "path": "/",
+          "status": 200,
+          "bytes": 1129
+        },
+        {
+          "path": "/evolab.js",
+          "status": 200,
+          "bytes": 2286115
+        },
+        {
+          "path": "/app.css",
+          "status": 200,
+          "bytes": 624950
+        },
+        {
+          "path": "/react.js",
+          "status": 200,
+          "bytes": 10751
+        },
+        {
+          "path": "/react-dom.js",
+          "status": 200,
+          "bytes": 131835
+        },
+        {
+          "path": "/three.js",
+          "status": 200,
+          "bytes": 603445
+        }
+      ]
+    },
+    "screenshots": [
+      "island-framing-start-desktop.png",
+      "island-framing-desktop.png",
+      "island-framing-phone.png"
+    ],
+    "translationDelta": {
+      "keys": 1946,
+      "sharedCatalogsModified": false
+    },
+    "scope": "Presentation changes only: larger illustrated terrain does not change carrying capacity, ecological selection or migration rules."
+  }
+}

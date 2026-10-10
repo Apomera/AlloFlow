@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "sourceSHA256": "77394bfee2544c33c3274293a13e9666912c26f657117ac98d15416f220f060e",
+  "checks": [
+    {
+      "kind": "wrong-source",
+      "rejected": true,
+      "restoredAndReread": true,
+      "restoredSHA256": "77394bfee2544c33c3274293a13e9666912c26f657117ac98d15416f220f060e"
+    },
+    {
+      "kind": "unaccepted-review",
+      "rejected": true,
+      "restoredAndReread": true,
+      "restoredSHA256": "234be95b41eb18d33b21e6db3ff2150a7ab4c4a9adfa912e5583ee5a0e52f25b"
+    },
+    {
+      "kind": "outside-finger-target-pixel",
+      "rejected": true,
+      "restoredAndReread": true,
+      "restoredSHA256": "bf5e1fefb2dac038791395ac8a030ebe5c431c168ebab9b819b431718826c2d5"
+    }
+  ]
+}

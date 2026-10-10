@@ -1,0 +1,4175 @@
+{
+  "title": "Land response cutaway native UI",
+  "startedAt": "2026-10-05T21:06:56.088Z",
+  "sourceSha256": "3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875",
+  "publicSourceSha256": "3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875",
+  "harnessSha256": "f07e124011b160685896a0354a07fc7b6ebe1f1cfc44b6d712c21af150124474",
+  "loadedSources": [
+    {
+      "case": "light-1040-default",
+      "sha256": "3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875",
+      "status": 200
+    },
+    {
+      "case": "light-1040-heavy-wet-urban",
+      "sha256": "3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875",
+      "status": 200
+    },
+    {
+      "case": "light-390-no-rain-dry-forest",
+      "sha256": "3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875",
+      "status": 200
+    },
+    {
+      "case": "light-320-heavy-grass",
+      "sha256": "3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875",
+      "status": 200
+    },
+    {
+      "case": "dark-1040-forest",
+      "sha256": "3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875",
+      "status": 200
+    },
+    {
+      "case": "dark-320-urban",
+      "sha256": "3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875",
+      "status": 200
+    },
+    {
+      "case": "contrast-390",
+      "sha256": "3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875",
+      "status": 200
+    },
+    {
+      "case": "forced-320",
+      "sha256": "3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875",
+      "status": 200
+    }
+  ],
+  "checks": [
+    {
+      "passed": true,
+      "label": "native localhost preview serves the integrated candidate",
+      "detail": {
+        "url": "http://127.0.0.1:8770/stem_lab/stem_tool_watercycle.js",
+        "status": 200,
+        "sha256": "3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875"
+      }
+    },
+    {
+      "passed": true,
+      "label": "light-1040-default loads the candidate from the actual server"
+    },
+    {
+      "passed": true,
+      "label": "feature navigation covers exactly the five existing land inputs",
+      "detail": [
+        {
+          "key": "landRainIntensity",
+          "label": "Adjust rainfall intensity, currently 55/100"
+        },
+        {
+          "key": "landSaturation",
+          "label": "Adjust soil saturation, currently 45/100"
+        },
+        {
+          "key": "landCover",
+          "label": "Adjust land cover, currently Grass"
+        },
+        {
+          "key": "landPermeability",
+          "label": "Adjust soil permeability, currently Medium"
+        },
+        {
+          "key": "landSlope",
+          "label": "Adjust slope, currently Moderate"
+        }
+      ]
+    },
+    {
+      "passed": true,
+      "label": "feature landRainIntensity focuses its existing control"
+    },
+    {
+      "passed": true,
+      "label": "feature landRainIntensity retains state outside existing action fields",
+      "detail": {
+        "changed": []
+      }
+    },
+    {
+      "passed": true,
+      "label": "feature landRainIntensity leaves scoring events unchanged"
+    },
+    {
+      "passed": true,
+      "label": "feature landRainIntensity retains paused parcel route and progress"
+    },
+    {
+      "passed": true,
+      "label": "feature landSaturation focuses its existing control"
+    },
+    {
+      "passed": true,
+      "label": "feature landSaturation retains state outside existing action fields",
+      "detail": {
+        "changed": []
+      }
+    },
+    {
+      "passed": true,
+      "label": "feature landSaturation leaves scoring events unchanged"
+    },
+    {
+      "passed": true,
+      "label": "feature landSaturation retains paused parcel route and progress"
+    },
+    {
+      "passed": true,
+      "label": "feature landCover focuses its existing control"
+    },
+    {
+      "passed": true,
+      "label": "feature landCover retains state outside existing action fields",
+      "detail": {
+        "changed": []
+      }
+    },
+    {
+      "passed": true,
+      "label": "feature landCover leaves scoring events unchanged"
+    },
+    {
+      "passed": true,
+      "label": "feature landCover retains paused parcel route and progress"
+    },
+    {
+      "passed": true,
+      "label": "feature landPermeability focuses its existing control"
+    },
+    {
+      "passed": true,
+      "label": "feature landPermeability retains state outside existing action fields",
+      "detail": {
+        "changed": []
+      }
+    },
+    {
+      "passed": true,
+      "label": "feature landPermeability leaves scoring events unchanged"
+    },
+    {
+      "passed": true,
+      "label": "feature landPermeability retains paused parcel route and progress"
+    },
+    {
+      "passed": true,
+      "label": "feature landSlope focuses its existing control"
+    },
+    {
+      "passed": true,
+      "label": "feature landSlope retains state outside existing action fields",
+      "detail": {
+        "changed": []
+      }
+    },
+    {
+      "passed": true,
+      "label": "feature landSlope leaves scoring events unchanged"
+    },
+    {
+      "passed": true,
+      "label": "feature landSlope retains paused parcel route and progress"
+    },
+    {
+      "passed": true,
+      "label": "landPermeability native choice reaches low"
+    },
+    {
+      "passed": true,
+      "label": "native permeability low retains pore and grain geometry"
+    },
+    {
+      "passed": true,
+      "label": "native permeability low retains state outside existing action fields",
+      "detail": {
+        "changed": []
+      }
+    },
+    {
+      "passed": true,
+      "label": "native permeability low leaves scoring events unchanged"
+    },
+    {
+      "passed": true,
+      "label": "native permeability low retains paused parcel route and progress"
+    },
+    {
+      "passed": true,
+      "label": "landPermeability native choice reaches high"
+    },
+    {
+      "passed": true,
+      "label": "native permeability high retains pore and grain geometry"
+    },
+    {
+      "passed": true,
+      "label": "native permeability high retains state outside existing action fields",
+      "detail": {
+        "changed": []
+      }
+    },
+    {
+      "passed": true,
+      "label": "native permeability high leaves scoring events unchanged"
+    },
+    {
+      "passed": true,
+      "label": "native permeability high retains paused parcel route and progress"
+    },
+    {
+      "passed": true,
+      "label": "landPermeability native choice reaches medium"
+    },
+    {
+      "passed": true,
+      "label": "native permeability medium retains pore and grain geometry"
+    },
+    {
+      "passed": true,
+      "label": "native permeability medium retains state outside existing action fields",
+      "detail": {
+        "changed": []
+      }
+    },
+    {
+      "passed": true,
+      "label": "native permeability medium leaves scoring events unchanged"
+    },
+    {
+      "passed": true,
+      "label": "native permeability medium retains paused parcel route and progress"
+    },
+    {
+      "passed": true,
+      "label": "landRainIntensity native range reaches 0"
+    },
+    {
+      "passed": true,
+      "label": "native zero rain retains antecedent wetness45"
+    },
+    {
+      "passed": true,
+      "label": "zero-rain-retained-wetness preserves the original independent teaching-index calculation",
+      "detail": {
+        "expected": {
+          "runoff": 30,
+          "infiltration": 59
+        },
+        "rendered": {
+          "runoff": 30,
+          "infiltration": 59
+        },
+        "kernel": {
+          "runoff": 30,
+          "infiltration": 59
+        }
+      }
+    },
+    {
+      "passed": true,
+      "label": "zero-rain-retained-wetness has no horizontal page overflow"
+    },
+    {
+      "passed": true,
+      "label": "zero-rain-retained-wetness places controls beside the live evidence"
+    },
+    {
+      "passed": true,
+      "label": "zero-rain-retained-wetness exposes five usable feature controls"
+    },
+    {
+      "passed": true,
+      "label": "zero-rain-retained-wetness keeps text inside the cutaway"
+    },
+    {
+      "passed": true,
+      "label": "zero-rain-retained-wetness no-rain scene hides new rainfall and pathway marks",
+      "detail": [
+        {
+          "cue": "rain",
+          "visible": false
+        },
+        {
+          "cue": "surface",
+          "visible": true
+        },
+        {
+          "cue": "moisture",
+          "visible": true
+        },
+        {
+          "cue": "permeability",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "passed": true,
+      "label": "landRainIntensity native range reaches 100"
+    },
+    {
+      "passed": true,
+      "label": "light-1040-default adjustments retains state outside existing action fields",
+      "detail": {
+        "changed": []
+      }
+    },
+    {
+      "passed": true,
+      "label": "light-1040-default adjustments leaves scoring events unchanged"
+    },
+    {
+      "passed": true,
+      "label": "light-1040-default adjustments retains paused parcel route and progress"
+    },
+    {
+      "passed": true,
+      "label": "light-1040-default preserves the original independent teaching-index calculation",
+      "detail": {
+        "expected": {
+          "runoff": 60,
+          "infiltration": 51
+        },
+        "rendered": {
+          "runoff": 60,
+          "infiltration": 51
+        },
+        "kernel": {
+          "runoff": 60,
+          "infiltration": 51
+        }
+      }
+    },
+    {
+      "passed": true,
+      "label": "light-1040-default has no horizontal page overflow"
+    },
+    {
+      "passed": true,
+      "label": "light-1040-default places controls beside the live evidence"
+    },
+    {
+      "passed": true,
+      "label": "light-1040-default exposes five usable feature controls"
+    },
+    {
+      "passed": true,
+      "label": "light-1040-default keeps text inside the cutaway"
+    },
+    {
+      "passed": true,
+      "label": "light-1040-default keyboard return focuses updated cutaway"
+    },
+    {
+      "passed": true,
+      "label": "light-1040-default return navigation retains state outside existing action fields",
+      "detail": {
+        "changed": []
+      }
+    },
+    {
+      "passed": true,
+      "label": "light-1040-default return navigation leaves scoring events unchanged"
+    },
+    {
+      "passed": true,
+      "label": "light-1040-default return navigation retains paused parcel route and progress"
+    },
+    {
+      "passed": true,
+      "label": "light-1040-default cutaway accessibility",
+      "detail": []
+    },
+    {
+      "passed": true,
+      "label": "light-1040-heavy-wet-urban loads the candidate from the actual server"
+    },
+    {
+      "passed": true,
+      "label": "landRainIntensity native range reaches 100"
+    },
+    {
+      "passed": true,
+      "label": "landRainIntensity updates its cutaway attribute",
+      "detail": {
+        "value": 100,
+        "attribute": "100"
+      }
+    },
+    {
+      "passed": true,
+      "label": "landRainIntensity updates visible scene markup",
+      "detail": {
+        "beforeShape": "0b82bd01f56dd4482070406065f709a6e0f71fb7b077ee38bb2ddcba72f4b53e",
+        "afterShape": "5f3b31faee4495062094ea0ebde1aab5ccdaa498cd8244065fd17f3490908f68"
+      }
+    },
+    {
+      "passed": true,
+      "label": "landSaturation native range reaches 100"
+    },
+    {
+      "passed": true,
+      "label": "landSaturation updates its cutaway attribute",
+      "detail": {
+        "value": 100,
+        "attribute": "100"
+      }
+    },
+    {
+      "passed": true,
+      "label": "landSaturation updates visible scene markup",
+      "detail": {
+        "beforeShape": "5f3b31faee4495062094ea0ebde1aab5ccdaa498cd8244065fd17f3490908f68",
+        "afterShape": "e994a29cefa86707216df7237807c6ccbf7d71d883e80dfe6a1c759922229e5d"
+      }
+    },
+    {
+      "passed": true,
+      "label": "landCover native choice reaches urban"
+    },
+    {
+      "passed": true,
+      "label": "landCover updates its cutaway attribute",
+      "detail": {
+        "value": "urban",
+        "attribute": "urban"
+      }
+    },
+    {
+      "passed": true,
+      "label": "landCover updates visible scene markup",
+      "detail": {
+        "beforeShape": "e994a29cefa86707216df7237807c6ccbf7d71d883e80dfe6a1c759922229e5d",
+        "afterShape": "08250582bcb0d419ccb03f41a80f3674b8454371e7ab7e22cd9065e9c5ae8ad1"
+      }
+    },
+    {
+      "passed": true,
+      "label": "landPermeability native choice reaches low"
+    },
+    {
+      "passed": true,
+      "label": "landPermeability updates its cutaway attribute",
+      "detail": {
+        "value": "low",
+        "attribute": "low"
+      }
+    },
+    {
+      "passed": true,
+      "label": "landPermeability updates visible scene markup",
+      "detail": {
+        "beforeShape": "08250582bcb0d419ccb03f41a80f3674b8454371e7ab7e22cd9065e9c5ae8ad1",
+        "afterShape": "fe51bd48f245378998c1e8e9c761ecffb2976e7fc509529f69b7b724c714147a"
+      }
+    },
+    {
+      "passed": true,
+      "label": "landSlope native choice reaches steep"
+    },
+    {
+      "passed": true,
+      "label": "landSlope updates its cutaway attribute",
+      "detail": {
+        "value": "steep",
+        "attribute": "steep"
+      }
+    },
+    {
+      "passed": true,
+      "label": "landSlope updates visible scene markup",
+      "detail": {
+        "beforeShape": "fe51bd48f245378998c1e8e9c761ecffb2976e7fc509529f69b7b724c714147a",
+        "afterShape": "c8042fc582831f1d18c5efaab19373f38b5c98ced68f48a69f12ddaea9146f83"
+      }
+    },
+    {
+      "passed": true,
+      "label": "light-1040-heavy-wet-urban adjustments retains state outside existing action fields",
+      "detail": {
+        "changed": []
+      }
+    },
+    {
+      "passed": true,
+      "label": "light-1040-heavy-wet-urban adjustments leaves scoring events unchanged"
+    },
+    {
+      "passed": true,
+      "label": "light-1040-heavy-wet-urban adjustments retains paused parcel route and progress"
+    },
+    {
+      "passed": true,
+      "label": "light-1040-heavy-wet-urban preserves the original independent teaching-index calculation",
+      "detail": {
+        "expected": {
+          "runoff": 93,
+          "infiltration": 9
+        },
+        "rendered": {
+          "runoff": 93,
+          "infiltration": 9
+        },
+        "kernel": {
+          "runoff": 93,
+          "infiltration": 9
+        }
+      }
+    },
+    {
+      "passed": true,
+      "label": "light-1040-heavy-wet-urban has no horizontal page overflow"
+    },
+    {
+      "passed": true,
+      "label": "light-1040-heavy-wet-urban places controls beside the live evidence"
+    },
+    {
+      "passed": true,
+      "label": "light-1040-heavy-wet-urban exposes five usable feature controls"
+    },
+    {
+      "passed": true,
+      "label": "light-1040-heavy-wet-urban keeps text inside the cutaway"
+    },
+    {
+      "passed": true,
+      "label": "light-1040-heavy-wet-urban keyboard return focuses updated cutaway"
+    },
+    {
+      "passed": true,
+      "label": "light-1040-heavy-wet-urban return navigation retains state outside existing action fields",
+      "detail": {
+        "changed": []
+      }
+    },
+    {
+      "passed": true,
+      "label": "light-1040-heavy-wet-urban return navigation leaves scoring events unchanged"
+    },
+    {
+      "passed": true,
+      "label": "light-1040-heavy-wet-urban return navigation retains paused parcel route and progress"
+    },
+    {
+      "passed": true,
+      "label": "light-1040-heavy-wet-urban cutaway accessibility",
+      "detail": []
+    },
+    {
+      "passed": true,
+      "label": "light-390-no-rain-dry-forest loads the candidate from the actual server"
+    },
+    {
+      "passed": true,
+      "label": "landRainIntensity native range reaches 0"
+    },
+    {
+      "passed": true,
+      "label": "landRainIntensity updates its cutaway attribute",
+      "detail": {
+        "value": 0,
+        "attribute": "0"
+      }
+    },
+    {
+      "passed": true,
+      "label": "landRainIntensity updates visible scene markup",
+      "detail": {
+        "beforeShape": "0b82bd01f56dd4482070406065f709a6e0f71fb7b077ee38bb2ddcba72f4b53e",
+        "afterShape": "a853888ec39519c753025459664da832855817999a7980efaaffb82224383508"
+      }
+    },
+    {
+      "passed": true,
+      "label": "stopping rain retains existing soil wetness"
+    },
+    {
+      "passed": true,
+      "label": "landSaturation native range reaches 0"
+    },
+    {
+      "passed": true,
+      "label": "landSaturation updates its cutaway attribute",
+      "detail": {
+        "value": 0,
+        "attribute": "0"
+      }
+    },
+    {
+      "passed": true,
+      "label": "landSaturation updates visible scene markup",
+      "detail": {
+        "beforeShape": "a853888ec39519c753025459664da832855817999a7980efaaffb82224383508",
+        "afterShape": "f083a6e673d6f90fa5acc6321aec3ac4d0a2a92e771da8d06269a9e48e5561a0"
+      }
+    },
+    {
+      "passed": true,
+      "label": "landCover native choice reaches forest"
+    },
+    {
+      "passed": true,
+      "label": "landCover updates its cutaway attribute",
+      "detail": {
+        "value": "forest",
+        "attribute": "forest"
+      }
+    },
+    {
+      "passed": true,
+      "label": "landCover updates visible scene markup",
+      "detail": {
+        "beforeShape": "f083a6e673d6f90fa5acc6321aec3ac4d0a2a92e771da8d06269a9e48e5561a0",
+        "afterShape": "42b714887200d00cce09049a34bfd48d2228c7f8bad40c47922528a6b25a26f6"
+      }
+    },
+    {
+      "passed": true,
+      "label": "landPermeability native choice reaches high"
+    },
+    {
+      "passed": true,
+      "label": "landPermeability updates its cutaway attribute",
+      "detail": {
+        "value": "high",
+        "attribute": "high"
+      }
+    },
+    {
+      "passed": true,
+      "label": "landPermeability updates visible scene markup",
+      "detail": {
+        "beforeShape": "42b714887200d00cce09049a34bfd48d2228c7f8bad40c47922528a6b25a26f6",
+        "afterShape": "305fcb4d64d9851e5729ad63b3dd46abd9d21179364f84ae8d2451c19cdbb1fd"
+      }
+    },
+    {
+      "passed": true,
+      "label": "landSlope native choice reaches gentle"
+    },
+    {
+      "passed": true,
+      "label": "landSlope updates its cutaway attribute",
+      "detail": {
+        "value": "gentle",
+        "attribute": "gentle"
+      }
+    },
+    {
+      "passed": true,
+      "label": "landSlope updates visible scene markup",
+      "detail": {
+        "beforeShape": "305fcb4d64d9851e5729ad63b3dd46abd9d21179364f84ae8d2451c19cdbb1fd",
+        "afterShape": "91fa412b340b3f4cc2ff56bb7a29bd404d1484f23e6d2314eca1c07225278c69"
+      }
+    },
+    {
+      "passed": true,
+      "label": "light-390-no-rain-dry-forest adjustments retains state outside existing action fields",
+      "detail": {
+        "changed": []
+      }
+    },
+    {
+      "passed": true,
+      "label": "light-390-no-rain-dry-forest adjustments leaves scoring events unchanged"
+    },
+    {
+      "passed": true,
+      "label": "light-390-no-rain-dry-forest adjustments retains paused parcel route and progress"
+    },
+    {
+      "passed": true,
+      "label": "light-390-no-rain-dry-forest preserves the original independent teaching-index calculation",
+      "detail": {
+        "expected": {
+          "runoff": 7,
+          "infiltration": 91
+        },
+        "rendered": {
+          "runoff": 7,
+          "infiltration": 91
+        },
+        "kernel": {
+          "runoff": 7,
+          "infiltration": 91
+        }
+      }
+    },
+    {
+      "passed": true,
+      "label": "light-390-no-rain-dry-forest has no horizontal page overflow"
+    },
+    {
+      "passed": true,
+      "label": "light-390-no-rain-dry-forest stacks controls after the evidence"
+    },
+    {
+      "passed": true,
+      "label": "light-390-no-rain-dry-forest exposes five usable feature controls"
+    },
+    {
+      "passed": true,
+      "label": "light-390-no-rain-dry-forest keeps text inside the cutaway"
+    },
+    {
+      "passed": true,
+      "label": "light-390-no-rain-dry-forest no-rain scene hides new rainfall and pathway marks",
+      "detail": [
+        {
+          "cue": "rain",
+          "visible": false
+        },
+        {
+          "cue": "surface",
+          "visible": true
+        },
+        {
+          "cue": "moisture",
+          "visible": false
+        },
+        {
+          "cue": "permeability",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "passed": true,
+      "label": "light-390-no-rain-dry-forest keyboard return focuses updated cutaway"
+    },
+    {
+      "passed": true,
+      "label": "light-390-no-rain-dry-forest return navigation retains state outside existing action fields",
+      "detail": {
+        "changed": []
+      }
+    },
+    {
+      "passed": true,
+      "label": "light-390-no-rain-dry-forest return navigation leaves scoring events unchanged"
+    },
+    {
+      "passed": true,
+      "label": "light-390-no-rain-dry-forest return navigation retains paused parcel route and progress"
+    },
+    {
+      "passed": true,
+      "label": "light-390-no-rain-dry-forest cutaway accessibility",
+      "detail": []
+    },
+    {
+      "passed": true,
+      "label": "light-320-heavy-grass loads the candidate from the actual server"
+    },
+    {
+      "passed": true,
+      "label": "landRainIntensity native range reaches 100"
+    },
+    {
+      "passed": true,
+      "label": "landRainIntensity updates its cutaway attribute",
+      "detail": {
+        "value": 100,
+        "attribute": "100"
+      }
+    },
+    {
+      "passed": true,
+      "label": "landRainIntensity updates visible scene markup",
+      "detail": {
+        "beforeShape": "0b82bd01f56dd4482070406065f709a6e0f71fb7b077ee38bb2ddcba72f4b53e",
+        "afterShape": "5f3b31faee4495062094ea0ebde1aab5ccdaa498cd8244065fd17f3490908f68"
+      }
+    },
+    {
+      "passed": true,
+      "label": "landCover native choice reaches grass"
+    },
+    {
+      "passed": true,
+      "label": "landCover updates its cutaway attribute",
+      "detail": {
+        "value": "grass",
+        "attribute": "grass"
+      }
+    },
+    {
+      "passed": true,
+      "label": "light-320-heavy-grass adjustments retains state outside existing action fields",
+      "detail": {
+        "changed": []
+      }
+    },
+    {
+      "passed": true,
+      "label": "light-320-heavy-grass adjustments leaves scoring events unchanged"
+    },
+    {
+      "passed": true,
+      "label": "light-320-heavy-grass adjustments retains paused parcel route and progress"
+    },
+    {
+      "passed": true,
+      "label": "light-320-heavy-grass preserves the original independent teaching-index calculation",
+      "detail": {
+        "expected": {
+          "runoff": 60,
+          "infiltration": 51
+        },
+        "rendered": {
+          "runoff": 60,
+          "infiltration": 51
+        },
+        "kernel": {
+          "runoff": 60,
+          "infiltration": 51
+        }
+      }
+    },
+    {
+      "passed": true,
+      "label": "light-320-heavy-grass has no horizontal page overflow"
+    },
+    {
+      "passed": true,
+      "label": "light-320-heavy-grass stacks controls after the evidence"
+    },
+    {
+      "passed": true,
+      "label": "light-320-heavy-grass exposes five usable feature controls"
+    },
+    {
+      "passed": true,
+      "label": "light-320-heavy-grass keeps text inside the cutaway"
+    },
+    {
+      "passed": true,
+      "label": "light-320-heavy-grass keyboard return focuses updated cutaway"
+    },
+    {
+      "passed": true,
+      "label": "light-320-heavy-grass return navigation retains state outside existing action fields",
+      "detail": {
+        "changed": []
+      }
+    },
+    {
+      "passed": true,
+      "label": "light-320-heavy-grass return navigation leaves scoring events unchanged"
+    },
+    {
+      "passed": true,
+      "label": "light-320-heavy-grass return navigation retains paused parcel route and progress"
+    },
+    {
+      "passed": true,
+      "label": "light-320-heavy-grass cutaway accessibility",
+      "detail": []
+    },
+    {
+      "passed": true,
+      "label": "dark-1040-forest loads the candidate from the actual server"
+    },
+    {
+      "passed": true,
+      "label": "landCover native choice reaches forest"
+    },
+    {
+      "passed": true,
+      "label": "landCover updates its cutaway attribute",
+      "detail": {
+        "value": "forest",
+        "attribute": "forest"
+      }
+    },
+    {
+      "passed": true,
+      "label": "landCover updates visible scene markup",
+      "detail": {
+        "beforeShape": "0b82bd01f56dd4482070406065f709a6e0f71fb7b077ee38bb2ddcba72f4b53e",
+        "afterShape": "a40546d26a8be068c81d30408a48fed9f2004ae71d606abee3ea5ac82b1be54f"
+      }
+    },
+    {
+      "passed": true,
+      "label": "dark-1040-forest adjustments retains state outside existing action fields",
+      "detail": {
+        "changed": []
+      }
+    },
+    {
+      "passed": true,
+      "label": "dark-1040-forest adjustments leaves scoring events unchanged"
+    },
+    {
+      "passed": true,
+      "label": "dark-1040-forest adjustments retains paused parcel route and progress"
+    },
+    {
+      "passed": true,
+      "label": "dark-1040-forest preserves the original independent teaching-index calculation",
+      "detail": {
+        "expected": {
+          "runoff": 43,
+          "infiltration": 59
+        },
+        "rendered": {
+          "runoff": 43,
+          "infiltration": 59
+        },
+        "kernel": {
+          "runoff": 43,
+          "infiltration": 59
+        }
+      }
+    },
+    {
+      "passed": true,
+      "label": "dark-1040-forest has no horizontal page overflow"
+    },
+    {
+      "passed": true,
+      "label": "dark-1040-forest places controls beside the live evidence"
+    },
+    {
+      "passed": true,
+      "label": "dark-1040-forest exposes five usable feature controls"
+    },
+    {
+      "passed": true,
+      "label": "dark-1040-forest keeps text inside the cutaway"
+    },
+    {
+      "passed": true,
+      "label": "dark-1040-forest keyboard return focuses updated cutaway"
+    },
+    {
+      "passed": true,
+      "label": "dark-1040-forest return navigation retains state outside existing action fields",
+      "detail": {
+        "changed": []
+      }
+    },
+    {
+      "passed": true,
+      "label": "dark-1040-forest return navigation leaves scoring events unchanged"
+    },
+    {
+      "passed": true,
+      "label": "dark-1040-forest return navigation retains paused parcel route and progress"
+    },
+    {
+      "passed": true,
+      "label": "dark-1040-forest cutaway accessibility",
+      "detail": []
+    },
+    {
+      "passed": true,
+      "label": "dark-320-urban loads the candidate from the actual server"
+    },
+    {
+      "passed": true,
+      "label": "landCover native choice reaches urban"
+    },
+    {
+      "passed": true,
+      "label": "landCover updates its cutaway attribute",
+      "detail": {
+        "value": "urban",
+        "attribute": "urban"
+      }
+    },
+    {
+      "passed": true,
+      "label": "landCover updates visible scene markup",
+      "detail": {
+        "beforeShape": "0b82bd01f56dd4482070406065f709a6e0f71fb7b077ee38bb2ddcba72f4b53e",
+        "afterShape": "e130b1d9bc89c0506558144361f2f654b4340b2c4b8e1fdbaf1a1229ea2b97f8"
+      }
+    },
+    {
+      "passed": true,
+      "label": "dark-320-urban adjustments retains state outside existing action fields",
+      "detail": {
+        "changed": []
+      }
+    },
+    {
+      "passed": true,
+      "label": "dark-320-urban adjustments leaves scoring events unchanged"
+    },
+    {
+      "passed": true,
+      "label": "dark-320-urban adjustments retains paused parcel route and progress"
+    },
+    {
+      "passed": true,
+      "label": "dark-320-urban preserves the original independent teaching-index calculation",
+      "detail": {
+        "expected": {
+          "runoff": 57,
+          "infiltration": 44
+        },
+        "rendered": {
+          "runoff": 57,
+          "infiltration": 44
+        },
+        "kernel": {
+          "runoff": 57,
+          "infiltration": 44
+        }
+      }
+    },
+    {
+      "passed": true,
+      "label": "dark-320-urban has no horizontal page overflow"
+    },
+    {
+      "passed": true,
+      "label": "dark-320-urban stacks controls after the evidence"
+    },
+    {
+      "passed": true,
+      "label": "dark-320-urban exposes five usable feature controls"
+    },
+    {
+      "passed": true,
+      "label": "dark-320-urban keeps text inside the cutaway"
+    },
+    {
+      "passed": true,
+      "label": "dark-320-urban keyboard return focuses updated cutaway"
+    },
+    {
+      "passed": true,
+      "label": "dark-320-urban return navigation retains state outside existing action fields",
+      "detail": {
+        "changed": []
+      }
+    },
+    {
+      "passed": true,
+      "label": "dark-320-urban return navigation leaves scoring events unchanged"
+    },
+    {
+      "passed": true,
+      "label": "dark-320-urban return navigation retains paused parcel route and progress"
+    },
+    {
+      "passed": true,
+      "label": "dark-320-urban cutaway accessibility",
+      "detail": []
+    },
+    {
+      "passed": true,
+      "label": "contrast-390 loads the candidate from the actual server"
+    },
+    {
+      "passed": true,
+      "label": "contrast-390 adjustments retains state outside existing action fields",
+      "detail": {
+        "changed": []
+      }
+    },
+    {
+      "passed": true,
+      "label": "contrast-390 adjustments leaves scoring events unchanged"
+    },
+    {
+      "passed": true,
+      "label": "contrast-390 adjustments retains paused parcel route and progress"
+    },
+    {
+      "passed": true,
+      "label": "contrast-390 preserves the original independent teaching-index calculation",
+      "detail": {
+        "expected": {
+          "runoff": 47,
+          "infiltration": 55
+        },
+        "rendered": {
+          "runoff": 47,
+          "infiltration": 55
+        },
+        "kernel": {
+          "runoff": 47,
+          "infiltration": 55
+        }
+      }
+    },
+    {
+      "passed": true,
+      "label": "contrast-390 has no horizontal page overflow"
+    },
+    {
+      "passed": true,
+      "label": "contrast-390 stacks controls after the evidence"
+    },
+    {
+      "passed": true,
+      "label": "contrast-390 exposes five usable feature controls"
+    },
+    {
+      "passed": true,
+      "label": "contrast-390 keeps text inside the cutaway"
+    },
+    {
+      "passed": true,
+      "label": "contrast-390 keyboard return focuses updated cutaway"
+    },
+    {
+      "passed": true,
+      "label": "contrast-390 return navigation retains state outside existing action fields",
+      "detail": {
+        "changed": []
+      }
+    },
+    {
+      "passed": true,
+      "label": "contrast-390 return navigation leaves scoring events unchanged"
+    },
+    {
+      "passed": true,
+      "label": "contrast-390 return navigation retains paused parcel route and progress"
+    },
+    {
+      "passed": true,
+      "label": "contrast-390 cutaway accessibility",
+      "detail": []
+    },
+    {
+      "passed": true,
+      "label": "forced-320 loads the candidate from the actual server"
+    },
+    {
+      "passed": true,
+      "label": "forced-320 adjustments retains state outside existing action fields",
+      "detail": {
+        "changed": []
+      }
+    },
+    {
+      "passed": true,
+      "label": "forced-320 adjustments leaves scoring events unchanged"
+    },
+    {
+      "passed": true,
+      "label": "forced-320 adjustments retains paused parcel route and progress"
+    },
+    {
+      "passed": true,
+      "label": "forced-320 preserves the original independent teaching-index calculation",
+      "detail": {
+        "expected": {
+          "runoff": 47,
+          "infiltration": 55
+        },
+        "rendered": {
+          "runoff": 47,
+          "infiltration": 55
+        },
+        "kernel": {
+          "runoff": 47,
+          "infiltration": 55
+        }
+      }
+    },
+    {
+      "passed": true,
+      "label": "forced-320 has no horizontal page overflow"
+    },
+    {
+      "passed": true,
+      "label": "forced-320 stacks controls after the evidence"
+    },
+    {
+      "passed": true,
+      "label": "forced-320 exposes five usable feature controls"
+    },
+    {
+      "passed": true,
+      "label": "forced-320 keeps text inside the cutaway"
+    },
+    {
+      "passed": true,
+      "label": "forced-320 keyboard return focuses updated cutaway"
+    },
+    {
+      "passed": true,
+      "label": "forced-320 return navigation retains state outside existing action fields",
+      "detail": {
+        "changed": []
+      }
+    },
+    {
+      "passed": true,
+      "label": "forced-320 return navigation leaves scoring events unchanged"
+    },
+    {
+      "passed": true,
+      "label": "forced-320 return navigation retains paused parcel route and progress"
+    },
+    {
+      "passed": true,
+      "label": "forced-320 cutaway accessibility",
+      "detail": []
+    },
+    {
+      "passed": true,
+      "label": "forced colors uses system ink for both direction arrows",
+      "detail": {
+        "system": "rgb(0, 0, 0)",
+        "runoff": "rgb(0, 0, 0)",
+        "infiltration": "rgb(0, 0, 0)"
+      }
+    },
+    {
+      "passed": true,
+      "label": "source remains unchanged throughout QA"
+    },
+    {
+      "passed": true,
+      "label": "both runtime copies stay identical"
+    },
+    {
+      "passed": true,
+      "label": "QA harness remains unchanged during execution"
+    }
+  ],
+  "cases": [
+    {
+      "label": "zero-rain-retained-wetness",
+      "inputs": {
+        "landRainIntensity": 0,
+        "landSaturation": 45,
+        "landCover": "grass",
+        "landPermeability": "medium",
+        "landSlope": "moderate"
+      },
+      "workbench": {
+        "rect": {
+          "x": 46,
+          "y": -51.59375,
+          "width": 948,
+          "height": 1221.25,
+          "right": 994,
+          "bottom": 1169.65625
+        },
+        "evidence": {
+          "x": 46,
+          "y": -51.59375,
+          "width": 558,
+          "height": 1221.25,
+          "right": 604,
+          "bottom": 1169.65625
+        },
+        "controls": {
+          "x": 622,
+          "y": -51.59375,
+          "width": 372,
+          "height": 815.75,
+          "right": 994,
+          "bottom": 764.15625
+        }
+      },
+      "attributes": {
+        "data-land-cutaway": "true",
+        "data-cutaway-rain": "0",
+        "data-cutaway-saturation": "45",
+        "data-cutaway-cover": "grass",
+        "data-cutaway-permeability": "medium",
+        "data-cutaway-slope": "moderate"
+      },
+      "rect": {
+        "x": 46,
+        "y": -51.59375,
+        "width": 558,
+        "height": 780.71875,
+        "right": 604,
+        "bottom": 729.125
+      },
+      "viewport": 1040,
+      "pageOverflow": false,
+      "controls": [
+        {
+          "feature": "landRainIntensity",
+          "label": "Adjust rainfall intensity, currently 0/100",
+          "rect": {
+            "x": 61,
+            "y": 458.96875,
+            "width": 170.65625,
+            "height": 83.296875,
+            "right": 231.65625,
+            "bottom": 542.265625
+          }
+        },
+        {
+          "feature": "landSaturation",
+          "label": "Adjust soil saturation, currently 45/100",
+          "rect": {
+            "x": 239.65625,
+            "y": 458.96875,
+            "width": 170.671875,
+            "height": 83.296875,
+            "right": 410.328125,
+            "bottom": 542.265625
+          }
+        },
+        {
+          "feature": "landCover",
+          "label": "Adjust land cover, currently Grass",
+          "rect": {
+            "x": 418.328125,
+            "y": 458.96875,
+            "width": 170.671875,
+            "height": 83.296875,
+            "right": 589,
+            "bottom": 542.265625
+          }
+        },
+        {
+          "feature": "landPermeability",
+          "label": "Adjust soil permeability, currently Medium",
+          "rect": {
+            "x": 61,
+            "y": 550.265625,
+            "width": 170.65625,
+            "height": 83.296875,
+            "right": 231.65625,
+            "bottom": 633.5625
+          }
+        },
+        {
+          "feature": "landSlope",
+          "label": "Adjust slope, currently Moderate",
+          "rect": {
+            "x": 239.65625,
+            "y": 550.265625,
+            "width": 170.671875,
+            "height": 83.296875,
+            "right": 410.328125,
+            "bottom": 633.5625
+          }
+        }
+      ],
+      "text": [
+        {
+          "tag": "FIGCAPTION",
+          "text": "YOUR LANDSCAPE\nSee what shapes the pathways\n\nSelect a feature to adjust that condition. Compare both teaching indices below, then compare with your saved baseline.",
+          "font": 16,
+          "rect": {
+            "x": 61,
+            "y": -36.59375,
+            "width": 528,
+            "height": 95.734375,
+            "right": 589,
+            "bottom": 59.140625
+          }
+        },
+        {
+          "tag": "H5",
+          "text": "See what shapes the pathways",
+          "font": 19,
+          "rect": {
+            "x": 61,
+            "y": -16.09375,
+            "width": 528,
+            "height": 25.640625,
+            "right": 589,
+            "bottom": 9.546875
+          }
+        },
+        {
+          "tag": "P",
+          "text": "Select a feature to adjust that condition. Compare both teaching indices below, then compare with your saved baseline.",
+          "font": 13,
+          "rect": {
+            "x": 61,
+            "y": 17.546875,
+            "width": 528,
+            "height": 41.59375,
+            "right": 589,
+            "bottom": 59.140625
+          }
+        },
+        {
+          "tag": "P",
+          "text": "No new rain · existing soil wetness remains.",
+          "font": 12,
+          "rect": {
+            "x": 62,
+            "y": 378.96875,
+            "width": 526,
+            "height": 37,
+            "right": 588,
+            "bottom": 415.96875
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Rainfall intensity\n0/100\n↗\nNo new rain",
+          "font": 16,
+          "rect": {
+            "x": 61,
+            "y": 458.96875,
+            "width": 170.65625,
+            "height": 83.296875,
+            "right": 231.65625,
+            "bottom": 542.265625
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Soil saturation\n45/100\n↗\nWetness before this rain",
+          "font": 16,
+          "rect": {
+            "x": 239.65625,
+            "y": 458.96875,
+            "width": 170.671875,
+            "height": 83.296875,
+            "right": 410.328125,
+            "bottom": 542.265625
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Land cover\nGrass\n↗\nGrass and rooted ground",
+          "font": 16,
+          "rect": {
+            "x": 418.328125,
+            "y": 458.96875,
+            "width": 170.671875,
+            "height": 83.296875,
+            "right": 589,
+            "bottom": 542.265625
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Soil permeability\nMedium\n↗\nIntermediate ease of passage",
+          "font": 16,
+          "rect": {
+            "x": 61,
+            "y": 550.265625,
+            "width": 170.65625,
+            "height": 83.296875,
+            "right": 231.65625,
+            "bottom": 633.5625
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Slope\nModerate\n↗\nDownhill surface direction",
+          "font": 16,
+          "rect": {
+            "x": 239.65625,
+            "y": 550.265625,
+            "width": 170.671875,
+            "height": 83.296875,
+            "right": 410.328125,
+            "bottom": 633.5625
+          }
+        },
+        {
+          "tag": "P",
+          "text": "Illustrative land pathways. Arrows identify directions; the independent indices do not measure water amounts or groundwater recharge. Pore geometry is fixed; water tint illustrates the soil wetness setting.",
+          "font": 12,
+          "rect": {
+            "x": 61,
+            "y": 645.5625,
+            "width": 528,
+            "height": 68.5625,
+            "right": 589,
+            "bottom": 714.125
+          }
+        }
+      ],
+      "svg": {
+        "rect": {
+          "x": 62,
+          "y": 72.140625,
+          "width": 526,
+          "height": 306.828125,
+          "right": 588,
+          "bottom": 378.96875
+        },
+        "viewBox": "0 0 480 280",
+        "role": null,
+        "label": null,
+        "textCount": 0
+      },
+      "renderedIndices": {
+        "runoff": 30,
+        "infiltration": 59
+      },
+      "kernel": {
+        "runoff": 30,
+        "infiltration": 59
+      },
+      "cues": [
+        {
+          "cue": "rain",
+          "visible": false,
+          "tag": "g",
+          "d": null,
+          "fill": "rgb(0, 0, 0)",
+          "stroke": "none"
+        },
+        {
+          "cue": "surface",
+          "visible": true,
+          "tag": "path",
+          "d": "M24 112.01692457509265 Q128 120.2456440739891 236 127.45023711723114 T456 141.08762133732154V264H24Z",
+          "fill": "url(\"#wcLandSceneSoil\")",
+          "stroke": "rgb(88, 79, 66)"
+        },
+        {
+          "cue": "moisture",
+          "visible": true,
+          "tag": "rect",
+          "d": null,
+          "fill": "rgb(40, 123, 154)",
+          "stroke": "none"
+        },
+        {
+          "cue": "permeability",
+          "visible": true,
+          "tag": "path",
+          "d": "M84 202Q117 197 143 208T205 211T267 215T330 220T390 223",
+          "fill": "none",
+          "stroke": "rgb(40, 123, 154)"
+        }
+      ]
+    },
+    {
+      "label": "light-1040-default",
+      "inputs": {
+        "landRainIntensity": 100,
+        "landSaturation": 45,
+        "landCover": "grass",
+        "landPermeability": "medium",
+        "landSlope": "moderate"
+      },
+      "workbench": {
+        "rect": {
+          "x": 46,
+          "y": -51.59375,
+          "width": 948,
+          "height": 1221.25,
+          "right": 994,
+          "bottom": 1169.65625
+        },
+        "evidence": {
+          "x": 46,
+          "y": -51.59375,
+          "width": 558,
+          "height": 1221.25,
+          "right": 604,
+          "bottom": 1169.65625
+        },
+        "controls": {
+          "x": 622,
+          "y": -51.59375,
+          "width": 372,
+          "height": 815.75,
+          "right": 994,
+          "bottom": 764.15625
+        }
+      },
+      "attributes": {
+        "data-land-cutaway": "true",
+        "data-cutaway-rain": "100",
+        "data-cutaway-saturation": "45",
+        "data-cutaway-cover": "grass",
+        "data-cutaway-permeability": "medium",
+        "data-cutaway-slope": "moderate"
+      },
+      "rect": {
+        "x": 46,
+        "y": -51.59375,
+        "width": 558,
+        "height": 780.71875,
+        "right": 604,
+        "bottom": 729.125
+      },
+      "viewport": 1040,
+      "pageOverflow": false,
+      "controls": [
+        {
+          "feature": "landRainIntensity",
+          "label": "Adjust rainfall intensity, currently 100/100",
+          "rect": {
+            "x": 61,
+            "y": 458.96875,
+            "width": 170.65625,
+            "height": 83.296875,
+            "right": 231.65625,
+            "bottom": 542.265625
+          }
+        },
+        {
+          "feature": "landSaturation",
+          "label": "Adjust soil saturation, currently 45/100",
+          "rect": {
+            "x": 239.65625,
+            "y": 458.96875,
+            "width": 170.671875,
+            "height": 83.296875,
+            "right": 410.328125,
+            "bottom": 542.265625
+          }
+        },
+        {
+          "feature": "landCover",
+          "label": "Adjust land cover, currently Grass",
+          "rect": {
+            "x": 418.328125,
+            "y": 458.96875,
+            "width": 170.671875,
+            "height": 83.296875,
+            "right": 589,
+            "bottom": 542.265625
+          }
+        },
+        {
+          "feature": "landPermeability",
+          "label": "Adjust soil permeability, currently Medium",
+          "rect": {
+            "x": 61,
+            "y": 550.265625,
+            "width": 170.65625,
+            "height": 83.296875,
+            "right": 231.65625,
+            "bottom": 633.5625
+          }
+        },
+        {
+          "feature": "landSlope",
+          "label": "Adjust slope, currently Moderate",
+          "rect": {
+            "x": 239.65625,
+            "y": 550.265625,
+            "width": 170.671875,
+            "height": 83.296875,
+            "right": 410.328125,
+            "bottom": 633.5625
+          }
+        }
+      ],
+      "text": [
+        {
+          "tag": "FIGCAPTION",
+          "text": "YOUR LANDSCAPE\nSee what shapes the pathways\n\nSelect a feature to adjust that condition. Compare both teaching indices below, then compare with your saved baseline.",
+          "font": 16,
+          "rect": {
+            "x": 61,
+            "y": -36.59375,
+            "width": 528,
+            "height": 95.734375,
+            "right": 589,
+            "bottom": 59.140625
+          }
+        },
+        {
+          "tag": "H5",
+          "text": "See what shapes the pathways",
+          "font": 19,
+          "rect": {
+            "x": 61,
+            "y": -16.09375,
+            "width": 528,
+            "height": 25.640625,
+            "right": 589,
+            "bottom": 9.546875
+          }
+        },
+        {
+          "tag": "P",
+          "text": "Select a feature to adjust that condition. Compare both teaching indices below, then compare with your saved baseline.",
+          "font": 13,
+          "rect": {
+            "x": 61,
+            "y": 17.546875,
+            "width": 528,
+            "height": 41.59375,
+            "right": 589,
+            "bottom": 59.140625
+          }
+        },
+        {
+          "tag": "P",
+          "text": "Rain reaches the surface · compare the two possible pathways.",
+          "font": 12,
+          "rect": {
+            "x": 62,
+            "y": 378.96875,
+            "width": 526,
+            "height": 37,
+            "right": 588,
+            "bottom": 415.96875
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Rainfall intensity\n100/100\n↗\nHeavier rain setting",
+          "font": 16,
+          "rect": {
+            "x": 61,
+            "y": 458.96875,
+            "width": 170.65625,
+            "height": 83.296875,
+            "right": 231.65625,
+            "bottom": 542.265625
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Soil saturation\n45/100\n↗\nWetness before this rain",
+          "font": 16,
+          "rect": {
+            "x": 239.65625,
+            "y": 458.96875,
+            "width": 170.671875,
+            "height": 83.296875,
+            "right": 410.328125,
+            "bottom": 542.265625
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Land cover\nGrass\n↗\nGrass and rooted ground",
+          "font": 16,
+          "rect": {
+            "x": 418.328125,
+            "y": 458.96875,
+            "width": 170.671875,
+            "height": 83.296875,
+            "right": 589,
+            "bottom": 542.265625
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Soil permeability\nMedium\n↗\nIntermediate ease of passage",
+          "font": 16,
+          "rect": {
+            "x": 61,
+            "y": 550.265625,
+            "width": 170.65625,
+            "height": 83.296875,
+            "right": 231.65625,
+            "bottom": 633.5625
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Slope\nModerate\n↗\nDownhill surface direction",
+          "font": 16,
+          "rect": {
+            "x": 239.65625,
+            "y": 550.265625,
+            "width": 170.671875,
+            "height": 83.296875,
+            "right": 410.328125,
+            "bottom": 633.5625
+          }
+        },
+        {
+          "tag": "P",
+          "text": "Illustrative land pathways. Arrows identify directions; the independent indices do not measure water amounts or groundwater recharge. Pore geometry is fixed; water tint illustrates the soil wetness setting.",
+          "font": 12,
+          "rect": {
+            "x": 61,
+            "y": 645.5625,
+            "width": 528,
+            "height": 68.5625,
+            "right": 589,
+            "bottom": 714.125
+          }
+        }
+      ],
+      "svg": {
+        "rect": {
+          "x": 62,
+          "y": 72.140625,
+          "width": 526,
+          "height": 306.828125,
+          "right": 588,
+          "bottom": 378.96875
+        },
+        "viewBox": "0 0 480 280",
+        "role": null,
+        "label": null,
+        "textCount": 0
+      },
+      "renderedIndices": {
+        "runoff": 60,
+        "infiltration": 51
+      },
+      "kernel": {
+        "runoff": 60,
+        "infiltration": 51
+      },
+      "cues": [
+        {
+          "cue": "rain",
+          "visible": true,
+          "tag": "g",
+          "d": null,
+          "fill": "rgb(0, 0, 0)",
+          "stroke": "none"
+        },
+        {
+          "cue": "surface",
+          "visible": true,
+          "tag": "path",
+          "d": "M24 112.01692457509265 Q128 120.2456440739891 236 127.45023711723114 T456 141.08762133732154V264H24Z",
+          "fill": "url(\"#wcLandSceneSoil\")",
+          "stroke": "rgb(88, 79, 66)"
+        },
+        {
+          "cue": "moisture",
+          "visible": true,
+          "tag": "rect",
+          "d": null,
+          "fill": "rgb(40, 123, 154)",
+          "stroke": "none"
+        },
+        {
+          "cue": "permeability",
+          "visible": true,
+          "tag": "path",
+          "d": "M84 202Q117 197 143 208T205 211T267 215T330 220T390 223",
+          "fill": "none",
+          "stroke": "rgb(40, 123, 154)"
+        },
+        {
+          "cue": "runoff",
+          "visible": true,
+          "tag": "path",
+          "d": "M156 91.25355408756582L241.82084442506778 96.8017666076767M233.29119195780228 89.23572214655492L241.82084442506778 96.8017666076767L232.38799457080748 103.20655728551945",
+          "fill": "none",
+          "stroke": "rgb(0, 107, 150)"
+        },
+        {
+          "cue": "infiltration",
+          "visible": true,
+          "tag": "path",
+          "d": "M195 113.87941287376512V199.87941287376512m-7-9 7 9 7-9",
+          "fill": "none",
+          "stroke": "rgb(0, 94, 88)"
+        }
+      ]
+    },
+    {
+      "label": "light-1040-heavy-wet-urban",
+      "inputs": {
+        "landRainIntensity": 100,
+        "landSaturation": 100,
+        "landCover": "urban",
+        "landPermeability": "low",
+        "landSlope": "steep"
+      },
+      "workbench": {
+        "rect": {
+          "x": 46,
+          "y": -224.59375,
+          "width": 948,
+          "height": 1240.4375,
+          "right": 994,
+          "bottom": 1015.84375
+        },
+        "evidence": {
+          "x": 46,
+          "y": -224.59375,
+          "width": 558,
+          "height": 1240.4375,
+          "right": 604,
+          "bottom": 1015.84375
+        },
+        "controls": {
+          "x": 622,
+          "y": -224.59375,
+          "width": 372,
+          "height": 815.75,
+          "right": 994,
+          "bottom": 591.15625
+        }
+      },
+      "attributes": {
+        "data-land-cutaway": "true",
+        "data-cutaway-rain": "100",
+        "data-cutaway-saturation": "100",
+        "data-cutaway-cover": "urban",
+        "data-cutaway-permeability": "low",
+        "data-cutaway-slope": "steep"
+      },
+      "rect": {
+        "x": 46,
+        "y": -224.59375,
+        "width": 558,
+        "height": 780.71875,
+        "right": 604,
+        "bottom": 556.125
+      },
+      "viewport": 1040,
+      "pageOverflow": false,
+      "controls": [
+        {
+          "feature": "landRainIntensity",
+          "label": "Adjust rainfall intensity, currently 100/100",
+          "rect": {
+            "x": 61,
+            "y": 285.96875,
+            "width": 170.65625,
+            "height": 83.296875,
+            "right": 231.65625,
+            "bottom": 369.265625
+          }
+        },
+        {
+          "feature": "landSaturation",
+          "label": "Adjust soil saturation, currently 100/100",
+          "rect": {
+            "x": 239.65625,
+            "y": 285.96875,
+            "width": 170.671875,
+            "height": 83.296875,
+            "right": 410.328125,
+            "bottom": 369.265625
+          }
+        },
+        {
+          "feature": "landCover",
+          "label": "Adjust land cover, currently Urban",
+          "rect": {
+            "x": 418.328125,
+            "y": 285.96875,
+            "width": 170.671875,
+            "height": 83.296875,
+            "right": 589,
+            "bottom": 369.265625
+          }
+        },
+        {
+          "feature": "landPermeability",
+          "label": "Adjust soil permeability, currently Low",
+          "rect": {
+            "x": 61,
+            "y": 377.265625,
+            "width": 170.65625,
+            "height": 83.296875,
+            "right": 231.65625,
+            "bottom": 460.5625
+          }
+        },
+        {
+          "feature": "landSlope",
+          "label": "Adjust slope, currently Steep",
+          "rect": {
+            "x": 239.65625,
+            "y": 377.265625,
+            "width": 170.671875,
+            "height": 83.296875,
+            "right": 410.328125,
+            "bottom": 460.5625
+          }
+        }
+      ],
+      "text": [
+        {
+          "tag": "FIGCAPTION",
+          "text": "YOUR LANDSCAPE\nSee what shapes the pathways\n\nSelect a feature to adjust that condition. Compare both teaching indices below, then compare with your saved baseline.",
+          "font": 16,
+          "rect": {
+            "x": 61,
+            "y": -209.59375,
+            "width": 528,
+            "height": 95.734375,
+            "right": 589,
+            "bottom": -113.859375
+          }
+        },
+        {
+          "tag": "H5",
+          "text": "See what shapes the pathways",
+          "font": 19,
+          "rect": {
+            "x": 61,
+            "y": -189.09375,
+            "width": 528,
+            "height": 25.640625,
+            "right": 589,
+            "bottom": -163.453125
+          }
+        },
+        {
+          "tag": "P",
+          "text": "Select a feature to adjust that condition. Compare both teaching indices below, then compare with your saved baseline.",
+          "font": 13,
+          "rect": {
+            "x": 61,
+            "y": -155.453125,
+            "width": 528,
+            "height": 41.59375,
+            "right": 589,
+            "bottom": -113.859375
+          }
+        },
+        {
+          "tag": "P",
+          "text": "Rain reaches the surface · compare the two possible pathways.",
+          "font": 12,
+          "rect": {
+            "x": 62,
+            "y": 205.96875,
+            "width": 526,
+            "height": 37,
+            "right": 588,
+            "bottom": 242.96875
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Rainfall intensity\n100/100\n↗\nHeavier rain setting",
+          "font": 16,
+          "rect": {
+            "x": 61,
+            "y": 285.96875,
+            "width": 170.65625,
+            "height": 83.296875,
+            "right": 231.65625,
+            "bottom": 369.265625
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Soil saturation\n100/100\n↗\nWetness before this rain",
+          "font": 16,
+          "rect": {
+            "x": 239.65625,
+            "y": 285.96875,
+            "width": 170.671875,
+            "height": 83.296875,
+            "right": 410.328125,
+            "bottom": 369.265625
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Land cover\nUrban\n↗\nBuilt surfaces and gaps",
+          "font": 16,
+          "rect": {
+            "x": 418.328125,
+            "y": 285.96875,
+            "width": 170.671875,
+            "height": 83.296875,
+            "right": 589,
+            "bottom": 369.265625
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Soil permeability\nLow\n↗\nWater passes less easily",
+          "font": 16,
+          "rect": {
+            "x": 61,
+            "y": 377.265625,
+            "width": 170.65625,
+            "height": 83.296875,
+            "right": 231.65625,
+            "bottom": 460.5625
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Slope\nSteep\n↗\nDownhill surface direction",
+          "font": 16,
+          "rect": {
+            "x": 239.65625,
+            "y": 377.265625,
+            "width": 170.671875,
+            "height": 83.296875,
+            "right": 410.328125,
+            "bottom": 460.5625
+          }
+        },
+        {
+          "tag": "P",
+          "text": "Illustrative land pathways. Arrows identify directions; the independent indices do not measure water amounts or groundwater recharge. Pore geometry is fixed; water tint illustrates the soil wetness setting.",
+          "font": 12,
+          "rect": {
+            "x": 61,
+            "y": 472.5625,
+            "width": 528,
+            "height": 68.5625,
+            "right": 589,
+            "bottom": 541.125
+          }
+        }
+      ],
+      "svg": {
+        "rect": {
+          "x": 62,
+          "y": -100.859375,
+          "width": 526,
+          "height": 306.828125,
+          "right": 588,
+          "bottom": 205.96875
+        },
+        "viewBox": "0 0 480 280",
+        "role": null,
+        "label": null,
+        "textCount": 0
+      },
+      "renderedIndices": {
+        "runoff": 93,
+        "infiltration": 9
+      },
+      "kernel": {
+        "runoff": 93,
+        "infiltration": 9
+      },
+      "cues": [
+        {
+          "cue": "rain",
+          "visible": true,
+          "tag": "g",
+          "d": null,
+          "fill": "rgb(0, 0, 0)",
+          "stroke": "none"
+        },
+        {
+          "cue": "surface",
+          "visible": true,
+          "tag": "path",
+          "d": "M24 111.67730193358321 Q128 128.73621011172494 236 145.11061447572172 T456 177.42724397883094V264H24Z",
+          "fill": "url(\"#wcLandSceneSoil\")",
+          "stroke": "rgb(88, 79, 66)"
+        },
+        {
+          "cue": "moisture",
+          "visible": true,
+          "tag": "rect",
+          "d": null,
+          "fill": "rgb(40, 123, 154)",
+          "stroke": "none"
+        },
+        {
+          "cue": "permeability",
+          "visible": true,
+          "tag": "path",
+          "d": "M84 202Q117 197 143 208T205 211T267 215T330 220T390 223",
+          "fill": "none",
+          "stroke": "rgb(40, 123, 154)"
+        },
+        {
+          "cue": "runoff",
+          "visible": true,
+          "tag": "path",
+          "d": "M156 102.12147861586769L241.05407773735274 114.84169324646086M233.1884359091897 106.58750166696309L241.05407773735274 114.84169324646086L231.11770329490707 120.43351432188099",
+          "fill": "none",
+          "stroke": "rgb(0, 107, 150)"
+        },
+        {
+          "cue": "infiltration",
+          "visible": true,
+          "tag": "path",
+          "d": "M195 128.058658156784V214.058658156784m-7-9 7 9 7-9",
+          "fill": "none",
+          "stroke": "rgb(0, 94, 88)"
+        }
+      ]
+    },
+    {
+      "label": "light-390-no-rain-dry-forest",
+      "inputs": {
+        "landRainIntensity": 0,
+        "landSaturation": 0,
+        "landCover": "forest",
+        "landPermeability": "high",
+        "landSlope": "gentle"
+      },
+      "workbench": {
+        "rect": {
+          "x": 36,
+          "y": -1804.5,
+          "width": 318,
+          "height": 2395.875,
+          "right": 354,
+          "bottom": 591.375
+        },
+        "evidence": {
+          "x": 36,
+          "y": -1804.5,
+          "width": 318,
+          "height": 1524.9375,
+          "right": 354,
+          "bottom": -279.5625
+        },
+        "controls": {
+          "x": 36,
+          "y": -261.5625,
+          "width": 318,
+          "height": 852.9375,
+          "right": 354,
+          "bottom": 591.375
+        }
+      },
+      "attributes": {
+        "data-land-cutaway": "true",
+        "data-cutaway-rain": "0",
+        "data-cutaway-saturation": "0",
+        "data-cutaway-cover": "forest",
+        "data-cutaway-permeability": "high",
+        "data-cutaway-slope": "gentle"
+      },
+      "rect": {
+        "x": 36,
+        "y": -1804.5,
+        "width": 318,
+        "height": 831,
+        "right": 354,
+        "bottom": -973.5
+      },
+      "viewport": 390,
+      "pageOverflow": false,
+      "controls": [
+        {
+          "feature": "landRainIntensity",
+          "label": "Adjust rainfall intensity, currently 0/100",
+          "rect": {
+            "x": 51,
+            "y": -1387.140625,
+            "width": 140,
+            "height": 83.296875,
+            "right": 191,
+            "bottom": -1303.84375
+          }
+        },
+        {
+          "feature": "landSaturation",
+          "label": "Adjust soil saturation, currently 0/100",
+          "rect": {
+            "x": 199,
+            "y": -1387.140625,
+            "width": 140,
+            "height": 83.296875,
+            "right": 339,
+            "bottom": -1303.84375
+          }
+        },
+        {
+          "feature": "landCover",
+          "label": "Adjust land cover, currently Forest",
+          "rect": {
+            "x": 51,
+            "y": -1295.84375,
+            "width": 140,
+            "height": 99.796875,
+            "right": 191,
+            "bottom": -1196.046875
+          }
+        },
+        {
+          "feature": "landPermeability",
+          "label": "Adjust soil permeability, currently High",
+          "rect": {
+            "x": 199,
+            "y": -1295.84375,
+            "width": 140,
+            "height": 99.796875,
+            "right": 339,
+            "bottom": -1196.046875
+          }
+        },
+        {
+          "feature": "landSlope",
+          "label": "Adjust slope, currently Gentle",
+          "rect": {
+            "x": 51,
+            "y": -1188.046875,
+            "width": 140,
+            "height": 99.796875,
+            "right": 191,
+            "bottom": -1088.25
+          }
+        }
+      ],
+      "text": [
+        {
+          "tag": "FIGCAPTION",
+          "text": "YOUR LANDSCAPE\nSee what shapes the pathways\n\nSelect a feature to adjust that condition. Compare both teaching indices below, then compare with your saved baseline.",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": -1789.5,
+            "width": 288,
+            "height": 116.53125,
+            "right": 339,
+            "bottom": -1672.96875
+          }
+        },
+        {
+          "tag": "H5",
+          "text": "See what shapes the pathways",
+          "font": 19,
+          "rect": {
+            "x": 51,
+            "y": -1769,
+            "width": 288,
+            "height": 25.640625,
+            "right": 339,
+            "bottom": -1743.359375
+          }
+        },
+        {
+          "tag": "P",
+          "text": "Select a feature to adjust that condition. Compare both teaching indices below, then compare with your saved baseline.",
+          "font": 13,
+          "rect": {
+            "x": 51,
+            "y": -1735.359375,
+            "width": 288,
+            "height": 62.390625,
+            "right": 339,
+            "bottom": -1672.96875
+          }
+        },
+        {
+          "tag": "P",
+          "text": "No new rain · existing soil wetness remains.",
+          "font": 12,
+          "rect": {
+            "x": 52,
+            "y": -1493.140625,
+            "width": 286,
+            "height": 37,
+            "right": 338,
+            "bottom": -1456.140625
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Rainfall intensity\n0/100\n↗\nNo new rain",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": -1387.140625,
+            "width": 140,
+            "height": 83.296875,
+            "right": 191,
+            "bottom": -1303.84375
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Soil saturation\n0/100\n↗\nWetness before this rain",
+          "font": 16,
+          "rect": {
+            "x": 199,
+            "y": -1387.140625,
+            "width": 140,
+            "height": 83.296875,
+            "right": 339,
+            "bottom": -1303.84375
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Land cover\nForest\n↗\nCanopy and rooted ground",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": -1295.84375,
+            "width": 140,
+            "height": 99.796875,
+            "right": 191,
+            "bottom": -1196.046875
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Soil permeability\nHigh\n↗\nWater passes more easily",
+          "font": 16,
+          "rect": {
+            "x": 199,
+            "y": -1295.84375,
+            "width": 140,
+            "height": 99.796875,
+            "right": 339,
+            "bottom": -1196.046875
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Slope\nGentle\n↗\nDownhill surface direction",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": -1188.046875,
+            "width": 140,
+            "height": 99.796875,
+            "right": 191,
+            "bottom": -1088.25
+          }
+        },
+        {
+          "tag": "P",
+          "text": "Illustrative land pathways. Arrows identify directions; the independent indices do not measure water amounts or groundwater recharge. Pore geometry is fixed; water tint illustrates the soil wetness setting.",
+          "font": 12,
+          "rect": {
+            "x": 51,
+            "y": -1076.25,
+            "width": 288,
+            "height": 87.75,
+            "right": 339,
+            "bottom": -988.5
+          }
+        }
+      ],
+      "svg": {
+        "rect": {
+          "x": 52,
+          "y": -1659.96875,
+          "width": 286,
+          "height": 166.828125,
+          "right": 338,
+          "bottom": -1493.140625
+        },
+        "viewBox": "0 0 480 280",
+        "role": null,
+        "label": null,
+        "textCount": 0
+      },
+      "renderedIndices": {
+        "runoff": 7,
+        "infiltration": 91
+      },
+      "kernel": {
+        "runoff": 7,
+        "infiltration": 91
+      },
+      "cues": [
+        {
+          "cue": "rain",
+          "visible": false,
+          "tag": "g",
+          "d": null,
+          "fill": "rgb(0, 0, 0)",
+          "stroke": "none"
+        },
+        {
+          "cue": "surface",
+          "visible": true,
+          "tag": "path",
+          "d": "M24 112.22447174490397 Q128 115.05696482870609 236 116.65778428704246 T456 118.8800741675102V264H24Z",
+          "fill": "url(\"#wcLandSceneSoil\")",
+          "stroke": "rgb(88, 79, 66)"
+        },
+        {
+          "cue": "moisture",
+          "visible": false,
+          "tag": "rect",
+          "d": null,
+          "fill": "rgb(40, 123, 154)",
+          "stroke": "none"
+        },
+        {
+          "cue": "permeability",
+          "visible": true,
+          "tag": "path",
+          "d": "M84 202Q117 197 143 208T205 211T267 215T330 220T390 223",
+          "fill": "none",
+          "stroke": "rgb(40, 123, 154)"
+        }
+      ]
+    },
+    {
+      "label": "light-320-heavy-grass",
+      "inputs": {
+        "landRainIntensity": 100,
+        "landSaturation": 45,
+        "landCover": "grass",
+        "landPermeability": "medium",
+        "landSlope": "moderate"
+      },
+      "workbench": {
+        "rect": {
+          "x": 36,
+          "y": -2242.546875,
+          "width": 248,
+          "height": 2883.671875,
+          "right": 284,
+          "bottom": 641.125
+        },
+        "evidence": {
+          "x": 36,
+          "y": -2242.546875,
+          "width": 248,
+          "height": 1844.140625,
+          "right": 284,
+          "bottom": -398.40625
+        },
+        "controls": {
+          "x": 36,
+          "y": -380.40625,
+          "width": 248,
+          "height": 1021.53125,
+          "right": 284,
+          "bottom": 641.125
+        }
+      },
+      "attributes": {
+        "data-land-cutaway": "true",
+        "data-cutaway-rain": "100",
+        "data-cutaway-saturation": "45",
+        "data-cutaway-cover": "grass",
+        "data-cutaway-permeability": "medium",
+        "data-cutaway-slope": "moderate"
+      },
+      "rect": {
+        "x": 36,
+        "y": -2242.546875,
+        "width": 248,
+        "height": 1055.171875,
+        "right": 284,
+        "bottom": -1187.375
+      },
+      "viewport": 320,
+      "pageOverflow": false,
+      "controls": [
+        {
+          "feature": "landRainIntensity",
+          "label": "Adjust rainfall intensity, currently 100/100",
+          "rect": {
+            "x": 51,
+            "y": -1788.984375,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": -1705.6875
+          }
+        },
+        {
+          "feature": "landSaturation",
+          "label": "Adjust soil saturation, currently 45/100",
+          "rect": {
+            "x": 51,
+            "y": -1697.6875,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": -1614.390625
+          }
+        },
+        {
+          "feature": "landCover",
+          "label": "Adjust land cover, currently Grass",
+          "rect": {
+            "x": 51,
+            "y": -1606.390625,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": -1523.09375
+          }
+        },
+        {
+          "feature": "landPermeability",
+          "label": "Adjust soil permeability, currently Medium",
+          "rect": {
+            "x": 51,
+            "y": -1515.09375,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": -1431.796875
+          }
+        },
+        {
+          "feature": "landSlope",
+          "label": "Adjust slope, currently Moderate",
+          "rect": {
+            "x": 51,
+            "y": -1423.796875,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": -1340.5
+          }
+        }
+      ],
+      "text": [
+        {
+          "tag": "FIGCAPTION",
+          "text": "YOUR LANDSCAPE\nSee what shapes the pathways\n\nSelect a feature to adjust that condition. Compare both teaching indices below, then compare with your saved baseline.",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": -2227.546875,
+            "width": 218,
+            "height": 157.5625,
+            "right": 269,
+            "bottom": -2069.984375
+          }
+        },
+        {
+          "tag": "H5",
+          "text": "See what shapes the pathways",
+          "font": 17,
+          "rect": {
+            "x": 51,
+            "y": -2207.046875,
+            "width": 218,
+            "height": 45.875,
+            "right": 269,
+            "bottom": -2161.171875
+          }
+        },
+        {
+          "tag": "P",
+          "text": "Select a feature to adjust that condition. Compare both teaching indices below, then compare with your saved baseline.",
+          "font": 13,
+          "rect": {
+            "x": 51,
+            "y": -2153.171875,
+            "width": 218,
+            "height": 83.1875,
+            "right": 269,
+            "bottom": -2069.984375
+          }
+        },
+        {
+          "tag": "P",
+          "text": "Rain reaches the surface · compare the two possible pathways.",
+          "font": 12,
+          "rect": {
+            "x": 52,
+            "y": -1930.984375,
+            "width": 216,
+            "height": 73,
+            "right": 268,
+            "bottom": -1857.984375
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Rainfall intensity\n100/100\n↗\nHeavier rain setting",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": -1788.984375,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": -1705.6875
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Soil saturation\n45/100\n↗\nWetness before this rain",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": -1697.6875,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": -1614.390625
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Land cover\nGrass\n↗\nGrass and rooted ground",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": -1606.390625,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": -1523.09375
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Soil permeability\nMedium\n↗\nIntermediate ease of passage",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": -1515.09375,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": -1431.796875
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Slope\nModerate\n↗\nDownhill surface direction",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": -1423.796875,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": -1340.5
+          }
+        },
+        {
+          "tag": "P",
+          "text": "Illustrative land pathways. Arrows identify directions; the independent indices do not measure water amounts or groundwater recharge. Pore geometry is fixed; water tint illustrates the soil wetness setting.",
+          "font": 12,
+          "rect": {
+            "x": 51,
+            "y": -1328.5,
+            "width": 218,
+            "height": 126.125,
+            "right": 269,
+            "bottom": -1202.375
+          }
+        }
+      ],
+      "svg": {
+        "rect": {
+          "x": 52,
+          "y": -2056.984375,
+          "width": 216,
+          "height": 126,
+          "right": 268,
+          "bottom": -1930.984375
+        },
+        "viewBox": "0 0 480 280",
+        "role": null,
+        "label": null,
+        "textCount": 0
+      },
+      "renderedIndices": {
+        "runoff": 60,
+        "infiltration": 51
+      },
+      "kernel": {
+        "runoff": 60,
+        "infiltration": 51
+      },
+      "cues": [
+        {
+          "cue": "rain",
+          "visible": true,
+          "tag": "g",
+          "d": null,
+          "fill": "rgb(0, 0, 0)",
+          "stroke": "none"
+        },
+        {
+          "cue": "surface",
+          "visible": true,
+          "tag": "path",
+          "d": "M24 112.01692457509265 Q128 120.2456440739891 236 127.45023711723114 T456 141.08762133732154V264H24Z",
+          "fill": "url(\"#wcLandSceneSoil\")",
+          "stroke": "rgb(88, 79, 66)"
+        },
+        {
+          "cue": "moisture",
+          "visible": true,
+          "tag": "rect",
+          "d": null,
+          "fill": "rgb(40, 123, 154)",
+          "stroke": "none"
+        },
+        {
+          "cue": "permeability",
+          "visible": true,
+          "tag": "path",
+          "d": "M84 202Q117 197 143 208T205 211T267 215T330 220T390 223",
+          "fill": "none",
+          "stroke": "rgb(40, 123, 154)"
+        },
+        {
+          "cue": "runoff",
+          "visible": true,
+          "tag": "path",
+          "d": "M156 91.25355408756582L241.82084442506778 96.8017666076767M233.29119195780228 89.23572214655492L241.82084442506778 96.8017666076767L232.38799457080748 103.20655728551945",
+          "fill": "none",
+          "stroke": "rgb(0, 107, 150)"
+        },
+        {
+          "cue": "infiltration",
+          "visible": true,
+          "tag": "path",
+          "d": "M195 113.87941287376512V199.87941287376512m-7-9 7 9 7-9",
+          "fill": "none",
+          "stroke": "rgb(0, 94, 88)"
+        }
+      ]
+    },
+    {
+      "label": "dark-1040-forest",
+      "inputs": {
+        "landRainIntensity": 55,
+        "landSaturation": 45,
+        "landCover": "forest",
+        "landPermeability": "medium",
+        "landSlope": "moderate"
+      },
+      "workbench": {
+        "rect": {
+          "x": 46,
+          "y": -224.59375,
+          "width": 948,
+          "height": 1221.25,
+          "right": 994,
+          "bottom": 996.65625
+        },
+        "evidence": {
+          "x": 46,
+          "y": -224.59375,
+          "width": 558,
+          "height": 1221.25,
+          "right": 604,
+          "bottom": 996.65625
+        },
+        "controls": {
+          "x": 622,
+          "y": -224.59375,
+          "width": 372,
+          "height": 815.75,
+          "right": 994,
+          "bottom": 591.15625
+        }
+      },
+      "attributes": {
+        "data-land-cutaway": "true",
+        "data-cutaway-rain": "55",
+        "data-cutaway-saturation": "45",
+        "data-cutaway-cover": "forest",
+        "data-cutaway-permeability": "medium",
+        "data-cutaway-slope": "moderate"
+      },
+      "rect": {
+        "x": 46,
+        "y": -224.59375,
+        "width": 558,
+        "height": 780.71875,
+        "right": 604,
+        "bottom": 556.125
+      },
+      "viewport": 1040,
+      "pageOverflow": false,
+      "controls": [
+        {
+          "feature": "landRainIntensity",
+          "label": "Adjust rainfall intensity, currently 55/100",
+          "rect": {
+            "x": 61,
+            "y": 285.96875,
+            "width": 170.65625,
+            "height": 83.296875,
+            "right": 231.65625,
+            "bottom": 369.265625
+          }
+        },
+        {
+          "feature": "landSaturation",
+          "label": "Adjust soil saturation, currently 45/100",
+          "rect": {
+            "x": 239.65625,
+            "y": 285.96875,
+            "width": 170.671875,
+            "height": 83.296875,
+            "right": 410.328125,
+            "bottom": 369.265625
+          }
+        },
+        {
+          "feature": "landCover",
+          "label": "Adjust land cover, currently Forest",
+          "rect": {
+            "x": 418.328125,
+            "y": 285.96875,
+            "width": 170.671875,
+            "height": 83.296875,
+            "right": 589,
+            "bottom": 369.265625
+          }
+        },
+        {
+          "feature": "landPermeability",
+          "label": "Adjust soil permeability, currently Medium",
+          "rect": {
+            "x": 61,
+            "y": 377.265625,
+            "width": 170.65625,
+            "height": 83.296875,
+            "right": 231.65625,
+            "bottom": 460.5625
+          }
+        },
+        {
+          "feature": "landSlope",
+          "label": "Adjust slope, currently Moderate",
+          "rect": {
+            "x": 239.65625,
+            "y": 377.265625,
+            "width": 170.671875,
+            "height": 83.296875,
+            "right": 410.328125,
+            "bottom": 460.5625
+          }
+        }
+      ],
+      "text": [
+        {
+          "tag": "FIGCAPTION",
+          "text": "YOUR LANDSCAPE\nSee what shapes the pathways\n\nSelect a feature to adjust that condition. Compare both teaching indices below, then compare with your saved baseline.",
+          "font": 16,
+          "rect": {
+            "x": 61,
+            "y": -209.59375,
+            "width": 528,
+            "height": 95.734375,
+            "right": 589,
+            "bottom": -113.859375
+          }
+        },
+        {
+          "tag": "H5",
+          "text": "See what shapes the pathways",
+          "font": 19,
+          "rect": {
+            "x": 61,
+            "y": -189.09375,
+            "width": 528,
+            "height": 25.640625,
+            "right": 589,
+            "bottom": -163.453125
+          }
+        },
+        {
+          "tag": "P",
+          "text": "Select a feature to adjust that condition. Compare both teaching indices below, then compare with your saved baseline.",
+          "font": 13,
+          "rect": {
+            "x": 61,
+            "y": -155.453125,
+            "width": 528,
+            "height": 41.59375,
+            "right": 589,
+            "bottom": -113.859375
+          }
+        },
+        {
+          "tag": "P",
+          "text": "Rain reaches the surface · compare the two possible pathways.",
+          "font": 12,
+          "rect": {
+            "x": 62,
+            "y": 205.96875,
+            "width": 526,
+            "height": 37,
+            "right": 588,
+            "bottom": 242.96875
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Rainfall intensity\n55/100\n↗\nModerate rain setting",
+          "font": 16,
+          "rect": {
+            "x": 61,
+            "y": 285.96875,
+            "width": 170.65625,
+            "height": 83.296875,
+            "right": 231.65625,
+            "bottom": 369.265625
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Soil saturation\n45/100\n↗\nWetness before this rain",
+          "font": 16,
+          "rect": {
+            "x": 239.65625,
+            "y": 285.96875,
+            "width": 170.671875,
+            "height": 83.296875,
+            "right": 410.328125,
+            "bottom": 369.265625
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Land cover\nForest\n↗\nCanopy and rooted ground",
+          "font": 16,
+          "rect": {
+            "x": 418.328125,
+            "y": 285.96875,
+            "width": 170.671875,
+            "height": 83.296875,
+            "right": 589,
+            "bottom": 369.265625
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Soil permeability\nMedium\n↗\nIntermediate ease of passage",
+          "font": 16,
+          "rect": {
+            "x": 61,
+            "y": 377.265625,
+            "width": 170.65625,
+            "height": 83.296875,
+            "right": 231.65625,
+            "bottom": 460.5625
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Slope\nModerate\n↗\nDownhill surface direction",
+          "font": 16,
+          "rect": {
+            "x": 239.65625,
+            "y": 377.265625,
+            "width": 170.671875,
+            "height": 83.296875,
+            "right": 410.328125,
+            "bottom": 460.5625
+          }
+        },
+        {
+          "tag": "P",
+          "text": "Illustrative land pathways. Arrows identify directions; the independent indices do not measure water amounts or groundwater recharge. Pore geometry is fixed; water tint illustrates the soil wetness setting.",
+          "font": 12,
+          "rect": {
+            "x": 61,
+            "y": 472.5625,
+            "width": 528,
+            "height": 68.5625,
+            "right": 589,
+            "bottom": 541.125
+          }
+        }
+      ],
+      "svg": {
+        "rect": {
+          "x": 62,
+          "y": -100.859375,
+          "width": 526,
+          "height": 306.828125,
+          "right": 588,
+          "bottom": 205.96875
+        },
+        "viewBox": "0 0 480 280",
+        "role": null,
+        "label": null,
+        "textCount": 0
+      },
+      "renderedIndices": {
+        "runoff": 43,
+        "infiltration": 59
+      },
+      "kernel": {
+        "runoff": 43,
+        "infiltration": 59
+      },
+      "cues": [
+        {
+          "cue": "rain",
+          "visible": true,
+          "tag": "g",
+          "d": null,
+          "fill": "rgb(0, 0, 0)",
+          "stroke": "none"
+        },
+        {
+          "cue": "surface",
+          "visible": true,
+          "tag": "path",
+          "d": "M24 112.01692457509265 Q128 120.2456440739891 236 127.45023711723114 T456 141.08762133732154V264H24Z",
+          "fill": "url(\"#wcLandSceneSoil\")",
+          "stroke": "rgb(30, 56, 58)"
+        },
+        {
+          "cue": "moisture",
+          "visible": true,
+          "tag": "rect",
+          "d": null,
+          "fill": "rgb(102, 200, 228)",
+          "stroke": "none"
+        },
+        {
+          "cue": "permeability",
+          "visible": true,
+          "tag": "path",
+          "d": "M84 202Q117 197 143 208T205 211T267 215T330 220T390 223",
+          "fill": "none",
+          "stroke": "rgb(102, 200, 228)"
+        },
+        {
+          "cue": "runoff",
+          "visible": true,
+          "tag": "path",
+          "d": "M156 91.25355408756582L241.82084442506778 96.8017666076767M233.29119195780228 89.23572214655492L241.82084442506778 96.8017666076767L232.38799457080748 103.20655728551945",
+          "fill": "none",
+          "stroke": "rgb(151, 226, 255)"
+        },
+        {
+          "cue": "infiltration",
+          "visible": true,
+          "tag": "path",
+          "d": "M195 113.87941287376512V199.87941287376512m-7-9 7 9 7-9",
+          "fill": "none",
+          "stroke": "rgb(179, 244, 214)"
+        }
+      ]
+    },
+    {
+      "label": "dark-320-urban",
+      "inputs": {
+        "landRainIntensity": 55,
+        "landSaturation": 45,
+        "landCover": "urban",
+        "landPermeability": "medium",
+        "landSlope": "moderate"
+      },
+      "workbench": {
+        "rect": {
+          "x": 36,
+          "y": -2311.546875,
+          "width": 248,
+          "height": 2902.859375,
+          "right": 284,
+          "bottom": 591.3125
+        },
+        "evidence": {
+          "x": 36,
+          "y": -2311.546875,
+          "width": 248,
+          "height": 1863.328125,
+          "right": 284,
+          "bottom": -448.21875
+        },
+        "controls": {
+          "x": 36,
+          "y": -430.21875,
+          "width": 248,
+          "height": 1021.53125,
+          "right": 284,
+          "bottom": 591.3125
+        }
+      },
+      "attributes": {
+        "data-land-cutaway": "true",
+        "data-cutaway-rain": "55",
+        "data-cutaway-saturation": "45",
+        "data-cutaway-cover": "urban",
+        "data-cutaway-permeability": "medium",
+        "data-cutaway-slope": "moderate"
+      },
+      "rect": {
+        "x": 36,
+        "y": -2311.546875,
+        "width": 248,
+        "height": 1055.171875,
+        "right": 284,
+        "bottom": -1256.375
+      },
+      "viewport": 320,
+      "pageOverflow": false,
+      "controls": [
+        {
+          "feature": "landRainIntensity",
+          "label": "Adjust rainfall intensity, currently 55/100",
+          "rect": {
+            "x": 51,
+            "y": -1857.984375,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": -1774.6875
+          }
+        },
+        {
+          "feature": "landSaturation",
+          "label": "Adjust soil saturation, currently 45/100",
+          "rect": {
+            "x": 51,
+            "y": -1766.6875,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": -1683.390625
+          }
+        },
+        {
+          "feature": "landCover",
+          "label": "Adjust land cover, currently Urban",
+          "rect": {
+            "x": 51,
+            "y": -1675.390625,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": -1592.09375
+          }
+        },
+        {
+          "feature": "landPermeability",
+          "label": "Adjust soil permeability, currently Medium",
+          "rect": {
+            "x": 51,
+            "y": -1584.09375,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": -1500.796875
+          }
+        },
+        {
+          "feature": "landSlope",
+          "label": "Adjust slope, currently Moderate",
+          "rect": {
+            "x": 51,
+            "y": -1492.796875,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": -1409.5
+          }
+        }
+      ],
+      "text": [
+        {
+          "tag": "FIGCAPTION",
+          "text": "YOUR LANDSCAPE\nSee what shapes the pathways\n\nSelect a feature to adjust that condition. Compare both teaching indices below, then compare with your saved baseline.",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": -2296.546875,
+            "width": 218,
+            "height": 157.5625,
+            "right": 269,
+            "bottom": -2138.984375
+          }
+        },
+        {
+          "tag": "H5",
+          "text": "See what shapes the pathways",
+          "font": 17,
+          "rect": {
+            "x": 51,
+            "y": -2276.046875,
+            "width": 218,
+            "height": 45.875,
+            "right": 269,
+            "bottom": -2230.171875
+          }
+        },
+        {
+          "tag": "P",
+          "text": "Select a feature to adjust that condition. Compare both teaching indices below, then compare with your saved baseline.",
+          "font": 13,
+          "rect": {
+            "x": 51,
+            "y": -2222.171875,
+            "width": 218,
+            "height": 83.1875,
+            "right": 269,
+            "bottom": -2138.984375
+          }
+        },
+        {
+          "tag": "P",
+          "text": "Rain reaches the surface · compare the two possible pathways.",
+          "font": 12,
+          "rect": {
+            "x": 52,
+            "y": -1999.984375,
+            "width": 216,
+            "height": 73,
+            "right": 268,
+            "bottom": -1926.984375
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Rainfall intensity\n55/100\n↗\nModerate rain setting",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": -1857.984375,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": -1774.6875
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Soil saturation\n45/100\n↗\nWetness before this rain",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": -1766.6875,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": -1683.390625
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Land cover\nUrban\n↗\nBuilt surfaces and gaps",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": -1675.390625,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": -1592.09375
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Soil permeability\nMedium\n↗\nIntermediate ease of passage",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": -1584.09375,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": -1500.796875
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Slope\nModerate\n↗\nDownhill surface direction",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": -1492.796875,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": -1409.5
+          }
+        },
+        {
+          "tag": "P",
+          "text": "Illustrative land pathways. Arrows identify directions; the independent indices do not measure water amounts or groundwater recharge. Pore geometry is fixed; water tint illustrates the soil wetness setting.",
+          "font": 12,
+          "rect": {
+            "x": 51,
+            "y": -1397.5,
+            "width": 218,
+            "height": 126.125,
+            "right": 269,
+            "bottom": -1271.375
+          }
+        }
+      ],
+      "svg": {
+        "rect": {
+          "x": 52,
+          "y": -2125.984375,
+          "width": 216,
+          "height": 126,
+          "right": 268,
+          "bottom": -1999.984375
+        },
+        "viewBox": "0 0 480 280",
+        "role": null,
+        "label": null,
+        "textCount": 0
+      },
+      "renderedIndices": {
+        "runoff": 57,
+        "infiltration": 44
+      },
+      "kernel": {
+        "runoff": 57,
+        "infiltration": 44
+      },
+      "cues": [
+        {
+          "cue": "rain",
+          "visible": true,
+          "tag": "g",
+          "d": null,
+          "fill": "rgb(0, 0, 0)",
+          "stroke": "none"
+        },
+        {
+          "cue": "surface",
+          "visible": true,
+          "tag": "path",
+          "d": "M24 112.01692457509265 Q128 120.2456440739891 236 127.45023711723114 T456 141.08762133732154V264H24Z",
+          "fill": "url(\"#wcLandSceneSoil\")",
+          "stroke": "rgb(30, 56, 58)"
+        },
+        {
+          "cue": "moisture",
+          "visible": true,
+          "tag": "rect",
+          "d": null,
+          "fill": "rgb(102, 200, 228)",
+          "stroke": "none"
+        },
+        {
+          "cue": "permeability",
+          "visible": true,
+          "tag": "path",
+          "d": "M84 202Q117 197 143 208T205 211T267 215T330 220T390 223",
+          "fill": "none",
+          "stroke": "rgb(102, 200, 228)"
+        },
+        {
+          "cue": "runoff",
+          "visible": true,
+          "tag": "path",
+          "d": "M156 91.25355408756582L241.82084442506778 96.8017666076767M233.29119195780228 89.23572214655492L241.82084442506778 96.8017666076767L232.38799457080748 103.20655728551945",
+          "fill": "none",
+          "stroke": "rgb(151, 226, 255)"
+        },
+        {
+          "cue": "infiltration",
+          "visible": true,
+          "tag": "path",
+          "d": "M195 113.87941287376512V199.87941287376512m-7-9 7 9 7-9",
+          "fill": "none",
+          "stroke": "rgb(179, 244, 214)"
+        }
+      ]
+    },
+    {
+      "label": "contrast-390",
+      "inputs": {
+        "landRainIntensity": 55,
+        "landSaturation": 45,
+        "landCover": "grass",
+        "landPermeability": "medium",
+        "landSlope": "moderate"
+      },
+      "workbench": {
+        "rect": {
+          "x": 36,
+          "y": 5747.5,
+          "width": 318,
+          "height": 2394.6875,
+          "right": 354,
+          "bottom": 8142.1875
+        },
+        "evidence": {
+          "x": 36,
+          "y": 5747.5,
+          "width": 318,
+          "height": 1523.75,
+          "right": 354,
+          "bottom": 7271.25
+        },
+        "controls": {
+          "x": 36,
+          "y": 7289.25,
+          "width": 318,
+          "height": 852.9375,
+          "right": 354,
+          "bottom": 8142.1875
+        }
+      },
+      "attributes": {
+        "data-land-cutaway": "true",
+        "data-cutaway-rain": "55",
+        "data-cutaway-saturation": "45",
+        "data-cutaway-cover": "grass",
+        "data-cutaway-permeability": "medium",
+        "data-cutaway-slope": "moderate"
+      },
+      "rect": {
+        "x": 36,
+        "y": 5747.5,
+        "width": 318,
+        "height": 849,
+        "right": 354,
+        "bottom": 6596.5
+      },
+      "viewport": 390,
+      "pageOverflow": false,
+      "controls": [
+        {
+          "feature": "landRainIntensity",
+          "label": "Adjust rainfall intensity, currently 55/100",
+          "rect": {
+            "x": 51,
+            "y": 6182.859375,
+            "width": 140,
+            "height": 83.296875,
+            "right": 191,
+            "bottom": 6266.15625
+          }
+        },
+        {
+          "feature": "landSaturation",
+          "label": "Adjust soil saturation, currently 45/100",
+          "rect": {
+            "x": 199,
+            "y": 6182.859375,
+            "width": 140,
+            "height": 83.296875,
+            "right": 339,
+            "bottom": 6266.15625
+          }
+        },
+        {
+          "feature": "landCover",
+          "label": "Adjust land cover, currently Grass",
+          "rect": {
+            "x": 51,
+            "y": 6274.15625,
+            "width": 140,
+            "height": 99.796875,
+            "right": 191,
+            "bottom": 6373.953125
+          }
+        },
+        {
+          "feature": "landPermeability",
+          "label": "Adjust soil permeability, currently Medium",
+          "rect": {
+            "x": 199,
+            "y": 6274.15625,
+            "width": 140,
+            "height": 99.796875,
+            "right": 339,
+            "bottom": 6373.953125
+          }
+        },
+        {
+          "feature": "landSlope",
+          "label": "Adjust slope, currently Moderate",
+          "rect": {
+            "x": 51,
+            "y": 6381.953125,
+            "width": 140,
+            "height": 99.796875,
+            "right": 191,
+            "bottom": 6481.75
+          }
+        }
+      ],
+      "text": [
+        {
+          "tag": "FIGCAPTION",
+          "text": "YOUR LANDSCAPE\nSee what shapes the pathways\n\nSelect a feature to adjust that condition. Compare both teaching indices below, then compare with your saved baseline.",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": 5762.5,
+            "width": 288,
+            "height": 116.53125,
+            "right": 339,
+            "bottom": 5879.03125
+          }
+        },
+        {
+          "tag": "H5",
+          "text": "See what shapes the pathways",
+          "font": 19,
+          "rect": {
+            "x": 51,
+            "y": 5783,
+            "width": 288,
+            "height": 25.640625,
+            "right": 339,
+            "bottom": 5808.640625
+          }
+        },
+        {
+          "tag": "P",
+          "text": "Select a feature to adjust that condition. Compare both teaching indices below, then compare with your saved baseline.",
+          "font": 13,
+          "rect": {
+            "x": 51,
+            "y": 5816.640625,
+            "width": 288,
+            "height": 62.390625,
+            "right": 339,
+            "bottom": 5879.03125
+          }
+        },
+        {
+          "tag": "P",
+          "text": "Rain reaches the surface · compare the two possible pathways.",
+          "font": 12,
+          "rect": {
+            "x": 52,
+            "y": 6058.859375,
+            "width": 286,
+            "height": 55,
+            "right": 338,
+            "bottom": 6113.859375
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Rainfall intensity\n55/100\n↗\nModerate rain setting",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": 6182.859375,
+            "width": 140,
+            "height": 83.296875,
+            "right": 191,
+            "bottom": 6266.15625
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Soil saturation\n45/100\n↗\nWetness before this rain",
+          "font": 16,
+          "rect": {
+            "x": 199,
+            "y": 6182.859375,
+            "width": 140,
+            "height": 83.296875,
+            "right": 339,
+            "bottom": 6266.15625
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Land cover\nGrass\n↗\nGrass and rooted ground",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": 6274.15625,
+            "width": 140,
+            "height": 99.796875,
+            "right": 191,
+            "bottom": 6373.953125
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Soil permeability\nMedium\n↗\nIntermediate ease of passage",
+          "font": 16,
+          "rect": {
+            "x": 199,
+            "y": 6274.15625,
+            "width": 140,
+            "height": 99.796875,
+            "right": 339,
+            "bottom": 6373.953125
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Slope\nModerate\n↗\nDownhill surface direction",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": 6381.953125,
+            "width": 140,
+            "height": 99.796875,
+            "right": 191,
+            "bottom": 6481.75
+          }
+        },
+        {
+          "tag": "P",
+          "text": "Illustrative land pathways. Arrows identify directions; the independent indices do not measure water amounts or groundwater recharge. Pore geometry is fixed; water tint illustrates the soil wetness setting.",
+          "font": 12,
+          "rect": {
+            "x": 51,
+            "y": 6493.75,
+            "width": 288,
+            "height": 87.75,
+            "right": 339,
+            "bottom": 6581.5
+          }
+        }
+      ],
+      "svg": {
+        "rect": {
+          "x": 52,
+          "y": 5892.03125,
+          "width": 286,
+          "height": 166.828125,
+          "right": 338,
+          "bottom": 6058.859375
+        },
+        "viewBox": "0 0 480 280",
+        "role": null,
+        "label": null,
+        "textCount": 0
+      },
+      "renderedIndices": {
+        "runoff": 47,
+        "infiltration": 55
+      },
+      "kernel": {
+        "runoff": 47,
+        "infiltration": 55
+      },
+      "cues": [
+        {
+          "cue": "rain",
+          "visible": true,
+          "tag": "g",
+          "d": null,
+          "fill": "rgb(0, 0, 0)",
+          "stroke": "none"
+        },
+        {
+          "cue": "surface",
+          "visible": true,
+          "tag": "path",
+          "d": "M24 112.01692457509265 Q128 120.2456440739891 236 127.45023711723114 T456 141.08762133732154V264H24Z",
+          "fill": "url(\"#wcLandSceneSoil\")",
+          "stroke": "rgb(23, 42, 45)"
+        },
+        {
+          "cue": "moisture",
+          "visible": true,
+          "tag": "rect",
+          "d": null,
+          "fill": "rgb(0, 98, 133)",
+          "stroke": "none"
+        },
+        {
+          "cue": "permeability",
+          "visible": true,
+          "tag": "path",
+          "d": "M84 202Q117 197 143 208T205 211T267 215T330 220T390 223",
+          "fill": "none",
+          "stroke": "rgb(0, 98, 133)"
+        },
+        {
+          "cue": "runoff",
+          "visible": true,
+          "tag": "path",
+          "d": "M156 91.25355408756582L241.82084442506778 96.8017666076767M233.29119195780228 89.23572214655492L241.82084442506778 96.8017666076767L232.38799457080748 103.20655728551945",
+          "fill": "none",
+          "stroke": "rgb(0, 76, 118)"
+        },
+        {
+          "cue": "infiltration",
+          "visible": true,
+          "tag": "path",
+          "d": "M195 113.87941287376512V199.87941287376512m-7-9 7 9 7-9",
+          "fill": "none",
+          "stroke": "rgb(0, 74, 52)"
+        }
+      ]
+    },
+    {
+      "label": "forced-320",
+      "inputs": {
+        "landRainIntensity": 55,
+        "landSaturation": 45,
+        "landCover": "grass",
+        "landPermeability": "medium",
+        "landSlope": "moderate"
+      },
+      "workbench": {
+        "rect": {
+          "x": 36,
+          "y": 6570.453125,
+          "width": 248,
+          "height": 2883.671875,
+          "right": 284,
+          "bottom": 9454.125
+        },
+        "evidence": {
+          "x": 36,
+          "y": 6570.453125,
+          "width": 248,
+          "height": 1844.140625,
+          "right": 284,
+          "bottom": 8414.59375
+        },
+        "controls": {
+          "x": 36,
+          "y": 8432.59375,
+          "width": 248,
+          "height": 1021.53125,
+          "right": 284,
+          "bottom": 9454.125
+        }
+      },
+      "attributes": {
+        "data-land-cutaway": "true",
+        "data-cutaway-rain": "55",
+        "data-cutaway-saturation": "45",
+        "data-cutaway-cover": "grass",
+        "data-cutaway-permeability": "medium",
+        "data-cutaway-slope": "moderate"
+      },
+      "rect": {
+        "x": 36,
+        "y": 6570.453125,
+        "width": 248,
+        "height": 1055.171875,
+        "right": 284,
+        "bottom": 7625.625
+      },
+      "viewport": 320,
+      "pageOverflow": false,
+      "controls": [
+        {
+          "feature": "landRainIntensity",
+          "label": "Adjust rainfall intensity, currently 55/100",
+          "rect": {
+            "x": 51,
+            "y": 7024.015625,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": 7107.3125
+          }
+        },
+        {
+          "feature": "landSaturation",
+          "label": "Adjust soil saturation, currently 45/100",
+          "rect": {
+            "x": 51,
+            "y": 7115.3125,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": 7198.609375
+          }
+        },
+        {
+          "feature": "landCover",
+          "label": "Adjust land cover, currently Grass",
+          "rect": {
+            "x": 51,
+            "y": 7206.609375,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": 7289.90625
+          }
+        },
+        {
+          "feature": "landPermeability",
+          "label": "Adjust soil permeability, currently Medium",
+          "rect": {
+            "x": 51,
+            "y": 7297.90625,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": 7381.203125
+          }
+        },
+        {
+          "feature": "landSlope",
+          "label": "Adjust slope, currently Moderate",
+          "rect": {
+            "x": 51,
+            "y": 7389.203125,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": 7472.5
+          }
+        }
+      ],
+      "text": [
+        {
+          "tag": "FIGCAPTION",
+          "text": "YOUR LANDSCAPE\nSee what shapes the pathways\n\nSelect a feature to adjust that condition. Compare both teaching indices below, then compare with your saved baseline.",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": 6585.453125,
+            "width": 218,
+            "height": 157.5625,
+            "right": 269,
+            "bottom": 6743.015625
+          }
+        },
+        {
+          "tag": "H5",
+          "text": "See what shapes the pathways",
+          "font": 17,
+          "rect": {
+            "x": 51,
+            "y": 6605.953125,
+            "width": 218,
+            "height": 45.875,
+            "right": 269,
+            "bottom": 6651.828125
+          }
+        },
+        {
+          "tag": "P",
+          "text": "Select a feature to adjust that condition. Compare both teaching indices below, then compare with your saved baseline.",
+          "font": 13,
+          "rect": {
+            "x": 51,
+            "y": 6659.828125,
+            "width": 218,
+            "height": 83.1875,
+            "right": 269,
+            "bottom": 6743.015625
+          }
+        },
+        {
+          "tag": "P",
+          "text": "Rain reaches the surface · compare the two possible pathways.",
+          "font": 12,
+          "rect": {
+            "x": 52,
+            "y": 6882.015625,
+            "width": 216,
+            "height": 73,
+            "right": 268,
+            "bottom": 6955.015625
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Rainfall intensity\n55/100\n↗\nModerate rain setting",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": 7024.015625,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": 7107.3125
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Soil saturation\n45/100\n↗\nWetness before this rain",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": 7115.3125,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": 7198.609375
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Land cover\nGrass\n↗\nGrass and rooted ground",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": 7206.609375,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": 7289.90625
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Soil permeability\nMedium\n↗\nIntermediate ease of passage",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": 7297.90625,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": 7381.203125
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Slope\nModerate\n↗\nDownhill surface direction",
+          "font": 16,
+          "rect": {
+            "x": 51,
+            "y": 7389.203125,
+            "width": 218,
+            "height": 83.296875,
+            "right": 269,
+            "bottom": 7472.5
+          }
+        },
+        {
+          "tag": "P",
+          "text": "Illustrative land pathways. Arrows identify directions; the independent indices do not measure water amounts or groundwater recharge. Pore geometry is fixed; water tint illustrates the soil wetness setting.",
+          "font": 12,
+          "rect": {
+            "x": 51,
+            "y": 7484.5,
+            "width": 218,
+            "height": 126.125,
+            "right": 269,
+            "bottom": 7610.625
+          }
+        }
+      ],
+      "svg": {
+        "rect": {
+          "x": 52,
+          "y": 6756.015625,
+          "width": 216,
+          "height": 126,
+          "right": 268,
+          "bottom": 6882.015625
+        },
+        "viewBox": "0 0 480 280",
+        "role": null,
+        "label": null,
+        "textCount": 0
+      },
+      "renderedIndices": {
+        "runoff": 47,
+        "infiltration": 55
+      },
+      "kernel": {
+        "runoff": 47,
+        "infiltration": 55
+      },
+      "cues": [
+        {
+          "cue": "rain",
+          "visible": true,
+          "tag": "g",
+          "d": null,
+          "fill": "rgb(0, 0, 0)",
+          "stroke": "none"
+        },
+        {
+          "cue": "surface",
+          "visible": true,
+          "tag": "path",
+          "d": "M24 112.01692457509265 Q128 120.2456440739891 236 127.45023711723114 T456 141.08762133732154V264H24Z",
+          "fill": "rgb(255, 255, 255)",
+          "stroke": "rgb(0, 0, 0)"
+        },
+        {
+          "cue": "moisture",
+          "visible": true,
+          "tag": "rect",
+          "d": null,
+          "fill": "rgb(55, 0, 110)",
+          "stroke": "none"
+        },
+        {
+          "cue": "permeability",
+          "visible": true,
+          "tag": "path",
+          "d": "M84 202Q117 197 143 208T205 211T267 215T330 220T390 223",
+          "fill": "none",
+          "stroke": "rgb(55, 0, 110)"
+        },
+        {
+          "cue": "runoff",
+          "visible": true,
+          "tag": "path",
+          "d": "M156 91.25355408756582L241.82084442506778 96.8017666076767M233.29119195780228 89.23572214655492L241.82084442506778 96.8017666076767L232.38799457080748 103.20655728551945",
+          "fill": "none",
+          "stroke": "rgb(0, 0, 0)"
+        },
+        {
+          "cue": "infiltration",
+          "visible": true,
+          "tag": "path",
+          "d": "M195 113.87941287376512V199.87941287376512m-7-9 7 9 7-9",
+          "fill": "none",
+          "stroke": "rgb(0, 0, 0)"
+        }
+      ]
+    }
+  ],
+  "captures": [
+    {
+      "file": "light-1040-default.png",
+      "sha256": "ce8b5a05aaf446f6736707478224d7c3c22ab383399550f3e2ff9103864687ca",
+      "bytes": 150309,
+      "width": 948,
+      "height": 1222
+    },
+    {
+      "file": "light-1040-heavy-wet-urban.png",
+      "sha256": "ac6bb3eb91b993823129a67534b4cb285620ead2f39ca92f8d7fac497fc0f422",
+      "bytes": 71061,
+      "width": 558,
+      "height": 782
+    },
+    {
+      "file": "light-390-no-rain-dry-forest.png",
+      "sha256": "7f1cb3e0c228f3224b12d43b18809cfe264fb984acf954af52cbec50d746290c",
+      "bytes": 51460,
+      "width": 318,
+      "height": 832
+    },
+    {
+      "file": "light-320-heavy-grass.png",
+      "sha256": "4e11a95e5bc17d1b352da1763791a56f519e495960dedc968b1b8f8d5016de9a",
+      "bytes": 51028,
+      "width": 248,
+      "height": 1056
+    },
+    {
+      "file": "dark-1040-forest.png",
+      "sha256": "116b9869c6adaa0f8df3670bce420f1dfea3a2f4ab9c7ab893e53d43ecfca36a",
+      "bytes": 75946,
+      "width": 558,
+      "height": 782
+    },
+    {
+      "file": "dark-320-urban.png",
+      "sha256": "af3aa80d9a4f63caa7d81f2366d6f7fde4798b63380ee35fbeea7ce969db38d5",
+      "bytes": 49496,
+      "width": 248,
+      "height": 1056
+    },
+    {
+      "file": "contrast-390.png",
+      "sha256": "94640c1e451bc4eb2ed496d965ef3c77751f2874f0369852d660d18402c40130",
+      "bytes": 45654,
+      "width": 318,
+      "height": 850
+    },
+    {
+      "file": "forced-320.png",
+      "sha256": "76119dfef07552c93b9dd9dc29a154ec0ee94c499215e4ef266a8439e3c2db3f",
+      "bytes": 37410,
+      "width": 248,
+      "height": 1056
+    }
+  ],
+  "errors": [],
+  "browserClosed": true,
+  "serverClosed": true,
+  "nativePreview": {
+    "url": "http://127.0.0.1:8770/stem_lab/stem_tool_watercycle.js",
+    "status": 200,
+    "sha256": "3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875"
+  },
+  "finalSourceSha256": "3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875",
+  "finalPublicSourceSha256": "3931756397bb4943e201fe8b7761dc9d83facac7421d013d9ddb6d0e7db6c875",
+  "passed": 205,
+  "failed": 0,
+  "successful": true,
+  "finishedAt": "2026-10-05T21:07:41.579Z"
+}

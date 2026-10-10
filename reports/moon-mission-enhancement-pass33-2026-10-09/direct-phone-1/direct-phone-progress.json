@@ -1,0 +1,162 @@
+{
+  "schema": "moon-pass33-direct-browser-v1",
+  "runner": "direct-playwright-api",
+  "playwrightCliResult": false,
+  "mode": "phone",
+  "status": "passed",
+  "startedAt": "2026-10-09T23:09:58.056Z",
+  "repo": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "specPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-flight-review.spec.ts",
+  "output": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\direct-phone-1",
+  "browserCache": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+  "timeouts": {
+    "action": 20000,
+    "navigation": 60000,
+    "expect": 15000,
+    "launch": 60000,
+    "workflow": 180000
+  },
+  "launchOptions": {
+    "headless": true,
+    "timeout": 60000,
+    "downloadsPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\direct-phone-1\\downloads"
+  },
+  "workflowCompleted": true,
+  "cleanupCompleted": true,
+  "milestones": [
+    {
+      "name": "load:before",
+      "elapsedMs": 2
+    },
+    {
+      "name": "load:after",
+      "elapsedMs": 1389,
+      "workflow": "phone recorder fits the viewport and supports keyboard inspection",
+      "registered": [
+        "camera views change the rendered perspective while a paused flight remains unchanged",
+        "a saved touchdown can be inspected and exported, then retried without losing earlier attempts",
+        "phone recorder fits the viewport and supports keyboard inspection"
+      ]
+    },
+    {
+      "name": "harness-start:before",
+      "elapsedMs": 1390
+    },
+    {
+      "name": "harness-start:after",
+      "elapsedMs": 1399
+    },
+    {
+      "name": "browser-launch:before",
+      "elapsedMs": 1400
+    },
+    {
+      "name": "browser-launch:after",
+      "elapsedMs": 1576
+    },
+    {
+      "name": "context-create:before",
+      "elapsedMs": 1576
+    },
+    {
+      "name": "context-create:after",
+      "elapsedMs": 1587
+    },
+    {
+      "name": "page-create:before",
+      "elapsedMs": 1587
+    },
+    {
+      "name": "page-create:after",
+      "elapsedMs": 1740
+    },
+    {
+      "name": "workflow:before",
+      "elapsedMs": 1741
+    },
+    {
+      "name": "workflow:after",
+      "elapsedMs": 19511
+    },
+    {
+      "name": "cleanup:before",
+      "elapsedMs": 19512
+    },
+    {
+      "name": "after-each:before",
+      "elapsedMs": 19512
+    },
+    {
+      "name": "after-each:after",
+      "elapsedMs": 19576
+    },
+    {
+      "name": "context-close:before",
+      "elapsedMs": 19577
+    },
+    {
+      "name": "page-close",
+      "elapsedMs": 19582
+    },
+    {
+      "name": "context-close:after",
+      "elapsedMs": 19725
+    },
+    {
+      "name": "browser-close:before",
+      "elapsedMs": 19725
+    },
+    {
+      "name": "browser-close:after",
+      "elapsedMs": 21111
+    },
+    {
+      "name": "harness-stop:before",
+      "elapsedMs": 21112
+    },
+    {
+      "name": "harness-stop:after",
+      "elapsedMs": 21113
+    },
+    {
+      "name": "cleanup:after",
+      "elapsedMs": 21132,
+      "status": "passed"
+    }
+  ],
+  "errors": [],
+  "attachments": [
+    {
+      "name": "recorder-phone",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass33-2026-10-09\\direct-phone-1\\review\\recorder-phone-chromium.png",
+      "contentType": "image/png"
+    }
+  ],
+  "inputHashes": {
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-flight-review.spec.ts": "01f889b41e6ae7b1cae5347c40fac086dbb57b70a09155204934e45cb9c791c9",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_moonmission.js": "c4d9746f4495fcdaf83f9443e4911daa30868d4b1126dfb2728fc7f7ffcf505f",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_moonmission.js": "c4d9746f4495fcdaf83f9443e4911daa30868d4b1126dfb2728fc7f7ffcf505f"
+  },
+  "transform": {
+    "name": "Playwright bundled babelTransform",
+    "bundlePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\transform\\babelBundle.js",
+    "sha256": "9201df11ae9c9ee1febd587c5013c4f862aa7e9981b92b86ccbbbd37e71f9124"
+  },
+  "workflow": "phone recorder fits the viewport and supports keyboard inspection",
+  "suiteOptions": {
+    "timeout": 180000,
+    "retries": 0
+  },
+  "browserVersion": "148.0.7778.96",
+  "pageEvents": [
+    {
+      "event": "close",
+      "elapsedMs": 19582,
+      "message": null
+    }
+  ],
+  "finishedAt": "2026-10-09T23:10:19.188Z",
+  "elapsedMs": 21132
+}

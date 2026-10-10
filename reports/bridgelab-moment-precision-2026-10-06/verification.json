@@ -1,0 +1,84 @@
+{
+  "status": "verified",
+  "checkedAt": "2026-10-07T02:02:07.478Z",
+  "sourceSha256": "b0f0cf46dba121cee27a9fe047680c091869d6c2715feea46cc53099860907fc",
+  "sourceMirrorsIdentical": true,
+  "syntaxValid": true,
+  "english": [
+    {
+      "file": "ui_strings.js",
+      "sha256": "be85509311461c168d85955430a31b6c342169b494848b3998393284980df4ab",
+      "literalFallbacksMatched": 1355
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "sha256": "be85509311461c168d85955430a31b6c342169b494848b3998393284980df4ab",
+      "literalFallbacksMatched": 1355
+    }
+  ],
+  "model": {
+    "configurationsPreviouslyPassed": 144,
+    "modelCodeUnchanged": true,
+    "path": "reports/bridgelab-frame-energy-2026-10-06/model-invariants-before-rounding.json",
+    "sha256": "9d0b444ddbf45ef17965c4a5413f716338cb9d8f77c8f79fbdfa7a6c80b7ef81",
+    "sweepSourceSha256": "fd5362d52c5b2515606f211c273adf0d4afb58be699898a5d1fbe10697517d2d",
+    "proof": "Reversing exactly the three documented UI edits and the prior rounding sentence reproduces the checked source hash."
+  },
+  "browser": {
+    "passed": 8,
+    "startedAt": "2026-10-07T01:39:07.801Z",
+    "finishedAt": "2026-10-07T01:57:20.456Z",
+    "retries": 0,
+    "workers": 1,
+    "browserCache": "C:/Users/cabba/AppData/Local/ms-playwright"
+  },
+  "captures": [
+    {
+      "name": "moment-precision-1000-normal-acceleration.png",
+      "sha256": "41b54b31b42d493385dc356571dc719169c7d81db353d076d0765b4820927985",
+      "bytes": 6229,
+      "width": 270,
+      "height": 108
+    },
+    {
+      "name": "moment-precision-1000-tiny-end.png",
+      "sha256": "f8069cbe829c5a1cffbb2e357a9f49473ba7101fd8fc29c280297ad9f6ab750f",
+      "bytes": 8876,
+      "width": 270,
+      "height": 145
+    },
+    {
+      "name": "moment-precision-1000-tiny-motion.png",
+      "sha256": "c10045bb7ea25d2b6c7791bc064a6116dead95116cbfbbf59d48b1fb403d8cc2",
+      "bytes": 8559,
+      "width": 270,
+      "height": 145
+    },
+    {
+      "name": "moment-precision-320-normal-acceleration.png",
+      "sha256": "4d17681bb05ffccfc8e0fa5c344c91f548328108d59b6c5a68441df29192d74a",
+      "bytes": 6289,
+      "width": 226,
+      "height": 125
+    },
+    {
+      "name": "moment-precision-320-tiny-end.png",
+      "sha256": "531e15c5753845f4b4050ec3a185c135855a2605f9d5ac9c82026314a116669c",
+      "bytes": 8944,
+      "width": 226,
+      "height": 161
+    },
+    {
+      "name": "moment-precision-320-tiny-motion.png",
+      "sha256": "ce83bcd0c17ca34d8c297cc4db61de1f38ec65f97eac1d31c3f051620022d5f3",
+      "bytes": 8690,
+      "width": 226,
+      "height": 161
+    }
+  ],
+  "unit": {
+    "status": "focused run did not complete successfully",
+    "passed": null,
+    "exitCode": 1
+  }
+}

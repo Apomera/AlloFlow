@@ -1,0 +1,92 @@
+{
+  "verifiedAt": "2026-10-06T03:43:33.364Z",
+  "pairs": [
+    {
+      "name": "stem_tool_geometryworld.js",
+      "syntax": "pass",
+      "mirrorParity": "pass",
+      "sha256": "88E1B47F00C86475811172A3E555802310B3B9D2D579DB59C5CB330AA99ADD9A",
+      "liveHttpStatus": 200,
+      "servedSha256": "88E1B47F00C86475811172A3E555802310B3B9D2D579DB59C5CB330AA99ADD9A"
+    },
+    {
+      "name": "stem_tool_geometryworld_builder.js",
+      "syntax": "pass",
+      "mirrorParity": "pass",
+      "sha256": "4B63D4F570489FC6F17A921826912C732B75ADA8654A7D6C6D9BEA426CD33EA2",
+      "liveHttpStatus": 200,
+      "servedSha256": "4B63D4F570489FC6F17A921826912C732B75ADA8654A7D6C6D9BEA426CD33EA2"
+    }
+  ],
+  "regressions": [
+    {
+      "name": "coordinate-notebook-tests.json",
+      "passed": 75,
+      "files": 2
+    },
+    {
+      "name": "finder-navigation-final-tests.json",
+      "passed": 35,
+      "files": 2
+    },
+    {
+      "name": "workspace-preferences-tests.json",
+      "passed": 55,
+      "files": 1
+    },
+    {
+      "name": "mobile-inspector-tests.json",
+      "passed": 12,
+      "files": 1
+    },
+    {
+      "name": "keyboard-form-tests.json",
+      "passed": 24,
+      "files": 1
+    },
+    {
+      "name": "inspector-clarity-tests.json",
+      "passed": 21,
+      "files": 1
+    }
+  ],
+  "browser": [
+    {
+      "name": "coordinate-browser-report.json",
+      "passed": 90,
+      "screenshots": 18,
+      "audits": 18,
+      "resourcesClosed": true
+    },
+    {
+      "name": "notebook-browser-report.json",
+      "passed": 30,
+      "screenshots": 2,
+      "audits": 2,
+      "resourcesClosed": true
+    },
+    {
+      "name": "finder-browser-report.json",
+      "passed": 14,
+      "screenshots": 2,
+      "audits": 2,
+      "resourcesClosed": true
+    },
+    {
+      "name": "lesson-coordinate-browser-report.json",
+      "passed": 11,
+      "screenshots": 3,
+      "audits": 0,
+      "resourcesClosed": true
+    }
+  ],
+  "preview": {
+    "url": "http://127.0.0.1:61309/?mode=home",
+    "status": 200
+  },
+  "totalTests": 222,
+  "totalBrowserChecks": 145,
+  "accessibilityAudits": 22,
+  "totalScreenshots": 25,
+  "whitespace": "pass"
+}

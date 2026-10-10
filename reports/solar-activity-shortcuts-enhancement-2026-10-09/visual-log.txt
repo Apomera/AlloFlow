@@ -1,0 +1,8 @@
+Starting activity-shortcuts-1060-dark
+Checked activity-shortcuts-1060-dark
+Starting activity-shortcuts-1060-light
+Checked activity-shortcuts-1060-light
+Starting activity-shortcuts-320-dark
+Checked activity-shortcuts-320-dark
+Starting activity-shortcuts-320-light
+Checked activity-shortcuts-320-light

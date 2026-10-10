@@ -1,0 +1,1867 @@
+{
+  "checkedAt": "2026-10-07T22:45:45.585Z",
+  "sourceSha256": "e7e0acd6ee8a59fdffb59a63849660e0f154fda0820c4bdf129cee2fcadf87ca",
+  "unitTests": 104,
+  "browserTests": 10,
+  "workers": 1,
+  "retries": 0,
+  "substitution": null,
+  "repositorySourceHashes": {
+    "source": "e7e0acd6ee8a59fdffb59a63849660e0f154fda0820c4bdf129cee2fcadf87ca",
+    "mirror": "e7e0acd6ee8a59fdffb59a63849660e0f154fda0820c4bdf129cee2fcadf87ca"
+  },
+  "unitSha256": "0772ed5a2d89dfca9aeb99c02edbc0a314bfcb324af55ad3ffb6796d6f573fd5",
+  "browserSha256": "25f05c9800ca2a259a3dd252de851358d51c400655a3aef1db56a900fcd5160e",
+  "artifactCount": 231,
+  "exploratoryCount": 23,
+  "artifacts": [
+    {
+      "path": "adapted-water.spec.ts",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/adapted-water.spec.ts",
+      "bytes": 23918,
+      "sha256": "8346a1d6994f58be9698fe05e97156b2ce84a6f8e8fc6e214184f374716bf8ff",
+      "classification": "supporting",
+      "copyRecommended": false
+    },
+    {
+      "path": "adapted-water.test.js",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/adapted-water.test.js",
+      "bytes": 12583,
+      "sha256": "5a1d09e0d6af78b4243a1eac5c0edf6ee4e6ba80db7f609fa5722095c4102bc4",
+      "classification": "supporting",
+      "copyRecommended": false
+    },
+    {
+      "path": "adoption-manifest.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/adoption-manifest.json",
+      "bytes": 4591,
+      "sha256": "8a1079a362bb72ab35ff9d54cc5b0a0c326f3ffcf7f37dc6887c990467d4bbad",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "adoption.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/adoption.json",
+      "bytes": 1438,
+      "sha256": "4ee7d081802911a707f772da11c70cb5e9ddfd418bb90a02fa134f2a48c2c00d",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "apply-prepared.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/apply-prepared.cjs",
+      "bytes": 3258,
+      "sha256": "33ca2f71868ff76f3fdc9a580f62eb96fd22970ded214dc4f34571b0b79bb072",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "apply-report.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/apply-report.cjs",
+      "bytes": 2624,
+      "sha256": "073bf3fab9f855cc1053b5ba1bd7b4beeb1d17ebecef73e135f36389c8238269",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "archive-mode-attempt.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/archive-mode-attempt.cjs",
+      "bytes": 2016,
+      "sha256": "0c6baccd60866b40adfc72577ba5c6ee64f53a6e29ae83b6ee75905d1346da18",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "archive-renderer-attempt.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/archive-renderer-attempt.cjs",
+      "bytes": 1134,
+      "sha256": "2c67c2dc8a27f537a46e49299b4f61257560b325931073c46a5492235ab51be1",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "archive-water-science.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/archive-water-science.cjs",
+      "bytes": 23600,
+      "sha256": "b9a89762bb91dfbbd95e058410b465340b1fa8957bfea40cdd9830ed539f8b63",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "base-source.js",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/base-source.js",
+      "bytes": 2189688,
+      "sha256": "de20974db8f350264fd6ec10e982b12f45a18d9fdcacd841eec8b56d0157fc5f",
+      "classification": "supporting",
+      "copyRecommended": false
+    },
+    {
+      "path": "browser-cases.fragment.txt",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/browser-cases.fragment.txt",
+      "bytes": 10777,
+      "sha256": "254e7d35d76341d1b7aa0f1cdc1591c0dc12dc561e1e7fabf0153eea0415aeed",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "browser.config.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/browser.config.cjs",
+      "bytes": 644,
+      "sha256": "5b6f0206f8e2d08257f8c5563405ba9eb9ebcc59947d93559dc1c6fcc6adf837",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "build-water.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/build-water.cjs",
+      "bytes": 11193,
+      "sha256": "b28872c3db5c7df40912be26e535e474b5bc31ad51e5682dc23855724ee194e6",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser-proof.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser-proof.json",
+      "bytes": 2754,
+      "sha256": "7285277a841d95fcbbf01112ab8c60c0ae1427242c4447aaf51e56dbc59afc37",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser-run.log",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser-run.log",
+      "bytes": 961,
+      "sha256": "28a751f87faead67d06a4030143dcb2a42fa55eaa86a221343b7c38367eb02ce",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/collection-proof.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/collection-proof.json",
+      "bytes": 764,
+      "sha256": "65f84527252de82f01664e5fc1adcdc9f77602a6cfdc897f6d7bf546131ed121",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/collection-report.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/collection-report.json",
+      "bytes": 2897,
+      "sha256": "0ac9234b3c703ba7fe8d8ca87cb0cf4d7b5c8dc239b92b89b86562454a8f1587",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/report.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/report.json",
+      "bytes": 4357,
+      "sha256": "07e5f632636825e92fbdf24d283247941466cb0b317d1b7332653f9ddf46a88f",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/results/.last-run.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/results/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/specimen-browser-source.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/specimen-browser-source.json",
+      "bytes": 349,
+      "sha256": "d529c30b51925bbbf566f9ad1508905e7719101f869147f829948527f7b1cc19",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-desktop-angle-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-angle-gl.png",
+      "bytes": 120589,
+      "sha256": "c21fa9fda14b6b3165acd9fca26169138e8225754675a33f86597ee9b3e9453e",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-desktop-angle-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-angle-stage.png",
+      "bytes": 153133,
+      "sha256": "e09918d7120934e2be2be2238b5cacb9085bd5a4f90e4786ab60b33dd6f11ef3",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-desktop-bond-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-bond-gl.png",
+      "bytes": 128211,
+      "sha256": "c394ffc97a939361869dbab7efea4406d62dff72718acf522c247ac555c94247",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-desktop-bond-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-bond-stage.png",
+      "bytes": 166836,
+      "sha256": "915ac79f2aec96701f420d6b31d63c3e4c5d2188e0dcd3c9c77fdeb30b8962ec",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-desktop-controls.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-controls.png",
+      "bytes": 33357,
+      "sha256": "5cdf20bb80eecd38012ff03547407c2e35a3441a0c449fca50f1acba879ecc3d",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-desktop-hydrogens-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-hydrogens-gl.png",
+      "bytes": 86892,
+      "sha256": "8489f1df46c4489e80b17109129680d6e958e69a351ec9debcfb3afcbc54aa17",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-desktop-hydrogens-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-hydrogens-stage.png",
+      "bytes": 118326,
+      "sha256": "185f28cdf43e588b53746d08f1c472a473755b2b39c627d588cc3653b74bd179",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-desktop-oxygen-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-oxygen-gl.png",
+      "bytes": 84207,
+      "sha256": "aed42e6e80ec0fb7c1caa6c8eaa6e0e09eec520147c5ffe4aadbf7ef2422527c",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-desktop-oxygen-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-oxygen-stage.png",
+      "bytes": 146292,
+      "sha256": "8938f905552dfcf202d0c5b583a298b96a67f114bb5aaa5dca3bccb02562fcbf",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-desktop-polarity-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-polarity-gl.png",
+      "bytes": 72784,
+      "sha256": "e73a1b7e51550078b4130ae1391e02046ffc6e18511f54ebf0703fa354103dcd",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-desktop-polarity-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-polarity-stage.png",
+      "bytes": 120259,
+      "sha256": "cf421bd0d7dc21aba75ff5213df2a0d2d64904d0448eb7538f5082c63fc4de30",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-desktop-restored-guides-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-restored-guides-gl.png",
+      "bytes": 38041,
+      "sha256": "0ffa7246c525a83ca2ea47913caa30fcb8b6da9e208a70c5787dd8bad987c509",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-desktop-restored-guides-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-restored-guides-stage.png",
+      "bytes": 80833,
+      "sha256": "a2310c7a1cbe8ff6afe624d60ffdb7010837193b8194c324c4ed366bb4936041",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-desktop-structure-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-structure-gl.png",
+      "bytes": 33304,
+      "sha256": "8d1dc5b401d561058348418b377c4b6cc54b01d68231507a6725a403ac603221",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-desktop-structure-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-structure-stage.png",
+      "bytes": 76401,
+      "sha256": "78e00f1b498ea2c21b7e68aee2e5da61c5bd7ce6dd8adf9ba9ba433f0316e083",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-desktop-whole-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-whole-gl.png",
+      "bytes": 38041,
+      "sha256": "0ffa7246c525a83ca2ea47913caa30fcb8b6da9e208a70c5787dd8bad987c509",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-desktop-whole-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop-whole-stage.png",
+      "bytes": 80833,
+      "sha256": "a2310c7a1cbe8ff6afe624d60ffdb7010837193b8194c324c4ed366bb4936041",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-desktop.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-desktop.json",
+      "bytes": 57145,
+      "sha256": "c6e53ac242395d8970235f0dfd04437eeb09f64b5731f01516ae443385ec55ad",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-hydrogen-comparison-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-hydrogen-comparison-gl.png",
+      "bytes": 17711,
+      "sha256": "782c2078678689f2e7bac09abcf1a9fa8ca70b209042aebba226ec266da48578",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-hydrogen-comparison-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-hydrogen-comparison-stage.png",
+      "bytes": 44095,
+      "sha256": "f7e1c0c4833db85478a344a10382f01c3a810d47a040703f6c2660dd6745279b",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-phone-controls.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-phone-controls.png",
+      "bytes": 37134,
+      "sha256": "0f26ecc01b5ace0299196ebcb3588e4931ba5e30a4fea82ec3a3f83f017d3d71",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-phone-notebook-comparison.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-phone-notebook-comparison.json",
+      "bytes": 33413,
+      "sha256": "91b52c607472df63b005f3a4b1e86dcd7450dda017baf14aa0422c6d8b494e6a",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-phone-polarity-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-phone-polarity-gl.png",
+      "bytes": 12971,
+      "sha256": "ef9126e17600ebe223b7365990f35452d300a43dd9d686fe0998d4b64af5d8ff",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-phone-polarity-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-phone-polarity-stage.png",
+      "bytes": 45715,
+      "sha256": "53efc5fa93fa838d67d7de3615d05a657a8d198e9d30b1353666d010f44bc163",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-phone-restored-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-phone-restored-gl.png",
+      "bytes": 26561,
+      "sha256": "6e5e2ca30868ea109ffa639cea8f99e792a1ae3fed16b9779b20ff8607bcd05d",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-phone-restored-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-phone-restored-stage.png",
+      "bytes": 56168,
+      "sha256": "50dfe0e8a4adf5eb7497f97651a6ac18343a0eaa71a68174be5d05eea870c329",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-phone-structure-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-phone-structure-gl.png",
+      "bytes": 12014,
+      "sha256": "c96f25f8095cb0497d8fce001fb96a35d5cef93775944291fa75a168f2bc7982",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-phone-structure-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-phone-structure-stage.png",
+      "bytes": 38893,
+      "sha256": "9a6792e296bb2269b9898d7d63b05d0b2418bf95f6c291f11967ec05d4da4779",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-phone-whole-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-phone-whole-gl.png",
+      "bytes": 13719,
+      "sha256": "278e2d05e3cd04b36e46538e72eaf140e315ea235676245bdebf9f8fa1d008f2",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-browser/water-phone-whole-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-browser/water-phone-whole-stage.png",
+      "bytes": 40435,
+      "sha256": "bc01a373ba0c88ab7268ad5d7b43898f0725a78e8c95c8bd0a5c414b57210c78",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-proof.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-proof.json",
+      "bytes": 384,
+      "sha256": "e55fef08504a70cda5a0b1f8254609d9161253a9d6bf0abeea7c9dde04c818b8",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-source.js",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-source.js",
+      "bytes": 2206583,
+      "sha256": "e7e0acd6ee8a59fdffb59a63849660e0f154fda0820c4bdf129cee2fcadf87ca",
+      "classification": "supporting",
+      "copyRecommended": false
+    },
+    {
+      "path": "candidate-units-proof.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-units-proof.json",
+      "bytes": 2754,
+      "sha256": "ae3faac54ffaaca5feb484c1fd8aaa28185ad05aa2eba7ea12d8104ecdc2226d",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-units-run.log",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-units-run.log",
+      "bytes": 1073,
+      "sha256": "3dfd491b752608f3c03f98646585eaff0dcbd767f2bc0c3d0bf0c1eb2034cc45",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "candidate-units.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/candidate-units.json",
+      "bytes": 3753,
+      "sha256": "98d50077cd1831e0f9d724d159e23f5e93c5b09349389ce63a61c741eb2b7881",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "check-browser-collection.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/check-browser-collection.cjs",
+      "bytes": 2102,
+      "sha256": "b3841a92f5c3f2f6976e512a0299b5ad4b36341225c5e91f18c8c7d8e8523bf7",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "check-report-helpers.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/check-report-helpers.cjs",
+      "bytes": 1923,
+      "sha256": "e606ac5780f37128e0095ea09624525600f2f124a6aae55b59d3d76261fcf5ee",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "check-string-targets.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/check-string-targets.cjs",
+      "bytes": 750,
+      "sha256": "68cf12269b06cbe05e2622368218faaff95cf6a14386ef681c5aae77a1dd0a56",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "check-workflow.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/check-workflow.cjs",
+      "bytes": 1440,
+      "sha256": "bbb882a7664ce8cabc4e171d46358b361b685f375a774f7662b37cefaaca4fab",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "edits.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/edits.json",
+      "bytes": 806,
+      "sha256": "83ea64128acf39797f412990c595989698fc23fd8785622d81bb3a629c725b59",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "exploratory/browser-mode-assumption-attempt-1/adapted-water.spec.ts",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/exploratory/browser-mode-assumption-attempt-1/adapted-water.spec.ts",
+      "bytes": 22988,
+      "sha256": "eb8c071c6b4ef19594eda39b9840141c99c529a7826ce66bee327cc33b0d6d31",
+      "classification": "exploratory",
+      "copyRecommended": false
+    },
+    {
+      "path": "exploratory/browser-mode-assumption-attempt-1/archive.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/exploratory/browser-mode-assumption-attempt-1/archive.json",
+      "bytes": 1904,
+      "sha256": "a38b2f26c77b8711fbd08248378988a7a0754344207627d25782df75b4fdb737",
+      "classification": "exploratory",
+      "copyRecommended": true
+    },
+    {
+      "path": "exploratory/browser-mode-assumption-attempt-1/browser-cases.fragment.txt",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/exploratory/browser-mode-assumption-attempt-1/browser-cases.fragment.txt",
+      "bytes": 9847,
+      "sha256": "8b2da54247ea975bf10fb3c6fabac809cbf2994c9b9448f39ba888def0a23cc2",
+      "classification": "exploratory",
+      "copyRecommended": true
+    },
+    {
+      "path": "exploratory/browser-mode-assumption-attempt-1/browser.config.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/exploratory/browser-mode-assumption-attempt-1/browser.config.cjs",
+      "bytes": 644,
+      "sha256": "5b6f0206f8e2d08257f8c5563405ba9eb9ebcc59947d93559dc1c6fcc6adf837",
+      "classification": "exploratory",
+      "copyRecommended": true
+    },
+    {
+      "path": "exploratory/browser-mode-assumption-attempt-1/candidate-browser-proof.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/exploratory/browser-mode-assumption-attempt-1/candidate-browser-proof.json",
+      "bytes": 2755,
+      "sha256": "2d1d26357b6f52647586e0b644d3cf5798ddeb32c9e2aac8b91bc11098035c58",
+      "classification": "exploratory",
+      "copyRecommended": true
+    },
+    {
+      "path": "exploratory/browser-mode-assumption-attempt-1/candidate-browser-run.log",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/exploratory/browser-mode-assumption-attempt-1/candidate-browser-run.log",
+      "bytes": 3944,
+      "sha256": "6143a37d3b7bfba1e87d21a48c18031274845846814bd612e53e6763e09afdc6",
+      "classification": "exploratory",
+      "copyRecommended": true
+    },
+    {
+      "path": "exploratory/browser-mode-assumption-attempt-1/candidate-browser/collection-proof.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/exploratory/browser-mode-assumption-attempt-1/candidate-browser/collection-proof.json",
+      "bytes": 764,
+      "sha256": "642c3ba5614d8f983f199b9fbd043b2d69420bac83b4559c78daa79d9010cd98",
+      "classification": "exploratory",
+      "copyRecommended": true
+    },
+    {
+      "path": "exploratory/browser-mode-assumption-attempt-1/candidate-browser/collection-report.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/exploratory/browser-mode-assumption-attempt-1/candidate-browser/collection-report.json",
+      "bytes": 2907,
+      "sha256": "71fdb65d0838674451763585fc6b58aac13c2505ac7d0690264d473ddc4bac84",
+      "classification": "exploratory",
+      "copyRecommended": true
+    },
+    {
+      "path": "exploratory/browser-mode-assumption-attempt-1/candidate-browser/report.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/exploratory/browser-mode-assumption-attempt-1/candidate-browser/report.json",
+      "bytes": 9922,
+      "sha256": "c1314584fb00540939c2ba6c140b43d77f3dc73a84b96250a9bb929957ccc328",
+      "classification": "exploratory",
+      "copyRecommended": true
+    },
+    {
+      "path": "exploratory/browser-mode-assumption-attempt-1/candidate-browser/results/.last-run.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/exploratory/browser-mode-assumption-attempt-1/candidate-browser/results/.last-run.json",
+      "bytes": 96,
+      "sha256": "2b4ce45451a28ed8bcae10bf53883aea28b18e9cafa8c3ac7a163a6ffa0668e9",
+      "classification": "exploratory",
+      "copyRecommended": true
+    },
+    {
+      "path": "exploratory/browser-mode-assumption-attempt-1/candidate-browser/results/adapted-water-water-native-6df22-eserve-the-275-pm-reference/error-context.md",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/exploratory/browser-mode-assumption-attempt-1/candidate-browser/results/adapted-water-water-native-6df22-eserve-the-275-pm-reference/error-context.md",
+      "bytes": 24672,
+      "sha256": "e157cc84037539f5c4e596eb6c9af06ea8881c2567fd83d74b09a3892aa9635b",
+      "classification": "exploratory",
+      "copyRecommended": true
+    },
+    {
+      "path": "exploratory/browser-mode-assumption-attempt-1/candidate-browser/results/adapted-water-water-native-6df22-eserve-the-275-pm-reference/test-failed-1.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/exploratory/browser-mode-assumption-attempt-1/candidate-browser/results/adapted-water-water-native-6df22-eserve-the-275-pm-reference/test-failed-1.png",
+      "bytes": 165837,
+      "sha256": "6001015759c88aa4a5971332dffa351aba33fdf0e2564eeec1d087bf9b955cf2",
+      "classification": "exploratory",
+      "copyRecommended": true
+    },
+    {
+      "path": "exploratory/browser-mode-assumption-attempt-1/candidate-browser/specimen-browser-source.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/exploratory/browser-mode-assumption-attempt-1/candidate-browser/specimen-browser-source.json",
+      "bytes": 349,
+      "sha256": "94a90932bcb7217aec7997d4ebd2da039619faf7b7af53f80f6c55d3afa29bc6",
+      "classification": "exploratory",
+      "copyRecommended": true
+    },
+    {
+      "path": "exploratory/browser-mode-assumption-attempt-1/candidate-browser/water-desktop-whole-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/exploratory/browser-mode-assumption-attempt-1/candidate-browser/water-desktop-whole-gl.png",
+      "bytes": 38041,
+      "sha256": "0ffa7246c525a83ca2ea47913caa30fcb8b6da9e208a70c5787dd8bad987c509",
+      "classification": "exploratory",
+      "copyRecommended": true
+    },
+    {
+      "path": "exploratory/browser-mode-assumption-attempt-1/candidate-browser/water-desktop-whole-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/exploratory/browser-mode-assumption-attempt-1/candidate-browser/water-desktop-whole-stage.png",
+      "bytes": 80833,
+      "sha256": "a2310c7a1cbe8ff6afe624d60ffdb7010837193b8194c324c4ed366bb4936041",
+      "classification": "exploratory",
+      "copyRecommended": true
+    },
+    {
+      "path": "exploratory/browser-mode-assumption-attempt-1/candidate-proof.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/exploratory/browser-mode-assumption-attempt-1/candidate-proof.json",
+      "bytes": 384,
+      "sha256": "e55fef08504a70cda5a0b1f8254609d9161253a9d6bf0abeea7c9dde04c818b8",
+      "classification": "exploratory",
+      "copyRecommended": true
+    },
+    {
+      "path": "exploratory/browser-mode-assumption-attempt-1/candidate-source.js",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/exploratory/browser-mode-assumption-attempt-1/candidate-source.js",
+      "bytes": 2206583,
+      "sha256": "e7e0acd6ee8a59fdffb59a63849660e0f154fda0820c4bdf129cee2fcadf87ca",
+      "classification": "exploratory",
+      "copyRecommended": false
+    },
+    {
+      "path": "exploratory/browser-mode-assumption-attempt-1/candidate-units-proof.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/exploratory/browser-mode-assumption-attempt-1/candidate-units-proof.json",
+      "bytes": 2754,
+      "sha256": "ae3faac54ffaaca5feb484c1fd8aaa28185ad05aa2eba7ea12d8104ecdc2226d",
+      "classification": "exploratory",
+      "copyRecommended": true
+    },
+    {
+      "path": "exploratory/browser-mode-assumption-attempt-1/candidate-units.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/exploratory/browser-mode-assumption-attempt-1/candidate-units.json",
+      "bytes": 3753,
+      "sha256": "98d50077cd1831e0f9d724d159e23f5e93c5b09349389ce63a61c741eb2b7881",
+      "classification": "exploratory",
+      "copyRecommended": true
+    },
+    {
+      "path": "exploratory/browser-mode-assumption-attempt-1/scale-explorer-water.spec.ts",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/exploratory/browser-mode-assumption-attempt-1/scale-explorer-water.spec.ts",
+      "bytes": 22812,
+      "sha256": "2250b5ff9f0f5d5c78332e71501009782d8565eeeae43a18e978e7d4ecf20d6f",
+      "classification": "exploratory",
+      "copyRecommended": true
+    },
+    {
+      "path": "exploratory/browser-mode-assumption-attempt-1/test-preparation-proof.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/exploratory/browser-mode-assumption-attempt-1/test-preparation-proof.json",
+      "bytes": 742,
+      "sha256": "56bd51be9991fd535198e08e4adf56fb3a658aef02c1c9a741321f0ff8392654",
+      "classification": "exploratory",
+      "copyRecommended": true
+    },
+    {
+      "path": "exploratory/geometry-attempt-1-summary.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/exploratory/geometry-attempt-1-summary.json",
+      "bytes": 836,
+      "sha256": "ff69148f4f35755bdf627890d7aee7dc307e13f919e328fa9280043bb140e40a",
+      "classification": "exploratory",
+      "copyRecommended": true
+    },
+    {
+      "path": "exploratory/water-renderer-attempt-1.js",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/exploratory/water-renderer-attempt-1.js",
+      "bytes": 6893,
+      "sha256": "3d07b434a41204f3b69c6500882268b3977b7da8417e5e829e688d0ea48bac73",
+      "classification": "exploratory",
+      "copyRecommended": true
+    },
+    {
+      "path": "fetch-source-proof.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/fetch-source-proof.cjs",
+      "bytes": 2613,
+      "sha256": "798de1e6ce00c24528dd0900fde0e973e9b059423ed37cd5b4e700002243d881",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/after.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/after.json",
+      "bytes": 5071,
+      "sha256": "e9c8e8223b91e0dad331b5b35506811cbbfbcdede7140af186e52f974c0f9b60",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/before.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/before.json",
+      "bytes": 5033,
+      "sha256": "9c5af2ebb1098c59bfeb9c85835eec60d5af96286f0936763021f512762993e9",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/config.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/config.cjs",
+      "bytes": 877,
+      "sha256": "2dfc7d7e4a357118971c55696bd765e70b0c0e00dc04cd2a8d8a1899653978da",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-desktop-center-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-desktop-center-gl.png",
+      "bytes": 337321,
+      "sha256": "bfdd9e6a7d8ab3f07174c9da7464ac0e639792d0d05365a8a8ca8e5eb39c74f3",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-desktop-center-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-desktop-center-stage.png",
+      "bytes": 385735,
+      "sha256": "e08433cd97dc513b7b8d9217f553fa79a656f1d53b0ba7c453f764d960686519",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-desktop-hemoglobin-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-desktop-hemoglobin-gl.png",
+      "bytes": 338742,
+      "sha256": "6ca635dc9a9119fe2b0fe0c4f64158f5821790d4b31328adc5fe2ab93aad1765",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-desktop-hemoglobin-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-desktop-hemoglobin-stage.png",
+      "bytes": 347584,
+      "sha256": "ec786dc97803ef52073e387a16244df14321a3b863a3176333b66ee97e6f764c",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-desktop-interior-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-desktop-interior-gl.png",
+      "bytes": 119211,
+      "sha256": "08aae6a46e0b039525e3703bf5471a37f50fbcdd2ad47ce239413ac756cd31e4",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-desktop-interior-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-desktop-interior-stage.png",
+      "bytes": 169176,
+      "sha256": "4e4afb5e9ece7212908e1b980d0ec677a015ac7d5746faa6a55239444c3ea389",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-desktop-membrane-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-desktop-membrane-gl.png",
+      "bytes": 236123,
+      "sha256": "8da53e53e7fb4149f1d7e787f5a48cfb4e5f29a5b9d73d9e50006a63c7886072",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-desktop-membrane-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-desktop-membrane-stage.png",
+      "bytes": 261402,
+      "sha256": "3fb3d102e36d4e3b38f8765fe3d781fa9298eb7f525bb32d2c2b553a3d3d65fc",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-desktop-restored-window-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-desktop-restored-window-gl.png",
+      "bytes": 119211,
+      "sha256": "08aae6a46e0b039525e3703bf5471a37f50fbcdd2ad47ce239413ac756cd31e4",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-desktop-restored-window-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-desktop-restored-window-stage.png",
+      "bytes": 169176,
+      "sha256": "4e4afb5e9ece7212908e1b980d0ec677a015ac7d5746faa6a55239444c3ea389",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-desktop-rim-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-desktop-rim-gl.png",
+      "bytes": 281335,
+      "sha256": "8395daaf6a562d9d47e0b5a7ed6b6a09d7c96e0968ee03899a5cfd531ec81412",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-desktop-rim-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-desktop-rim-stage.png",
+      "bytes": 266582,
+      "sha256": "bc830176afaafeb1dc47fb8659e07a1130fd3ea319083c562e34012ac091914d",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-desktop-spectrin-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-desktop-spectrin-gl.png",
+      "bytes": 431335,
+      "sha256": "87ab6039f123f969e82091bc402b0624d7a12554c29ffc1e2cc2295ae61fe47b",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-desktop-spectrin-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-desktop-spectrin-stage.png",
+      "bytes": 419803,
+      "sha256": "f0b022ba95d42e94c598993cd8a91d4a3c8423e4d0b8078a8c5f9345c4d7ba7a",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-desktop-whole-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-desktop-whole-gl.png",
+      "bytes": 102635,
+      "sha256": "20090f339908a40c1d957dbace6afdd28d60d112834acd9d731ee80ae79fc5da",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-desktop-whole-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-desktop-whole-stage.png",
+      "bytes": 154225,
+      "sha256": "ea1670c5ec759912d7f69e990f1591d65c088133595e5a05bcea0138cc96a5ff",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-desktop.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-desktop.json",
+      "bytes": 53908,
+      "sha256": "a190ac9cd18dcb6b0b6be81fdc831d65300269bd61745cdbe7d3b95ea80948ce",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-human-comparison-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-human-comparison-gl.png",
+      "bytes": 17437,
+      "sha256": "b462c25fb85e49c772d85a2bce51b0f7548e36ef425f1b9ccd8442e10fa753d2",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-human-comparison-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-human-comparison-stage.png",
+      "bytes": 46301,
+      "sha256": "28d8a85ba5a5d13e39947f700633819bf1185d4d0bd5307860a27faaf6b0dd69",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-phone-hemoglobin-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-phone-hemoglobin-gl.png",
+      "bytes": 87359,
+      "sha256": "8aa0dd9d5a5bb7263ad2df56d2bf77e853fcdbdc25ee5a6d61ebd199ff97ab28",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-phone-hemoglobin-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-phone-hemoglobin-stage.png",
+      "bytes": 114433,
+      "sha256": "bc6e4ab07185f8fc2719d2eac4b419ab7d536e7dc4f4a3adec55b4094c3742d1",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-phone-interior-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-phone-interior-gl.png",
+      "bytes": 29543,
+      "sha256": "f0626500a367a2d45c1fde08700de84f90d536828e129ca22a99eb3bb24f4bc2",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-phone-interior-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-phone-interior-stage.png",
+      "bytes": 55321,
+      "sha256": "839b4ebff66eae8ea1e167e9b5d6939260d9cb5646fabcf6439664b03971cee5",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-phone-notebook-comparison.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-phone-notebook-comparison.json",
+      "bytes": 26598,
+      "sha256": "28a201dcf9ed76012333be313ab99d5320e5056474cd58cd903789e55bd6b20d",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-phone-restored-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-phone-restored-gl.png",
+      "bytes": 90586,
+      "sha256": "5b263c914197a53eb1d699bcc0c1f194516c1e8c37745acf5a78425840b6b918",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-phone-restored-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-phone-restored-stage.png",
+      "bytes": 114785,
+      "sha256": "a9d07062fe80fbdb4019d3d07704e64613cbb45be28a2f3f8984c4fb47d219b0",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-phone-whole-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-phone-whole-gl.png",
+      "bytes": 26262,
+      "sha256": "8b59fe5e8fbdfe74ef301affb98a5a4b47931de0b7bcb1d899b7345d07313537",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/rbc-phone-whole-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/rbc-phone-whole-stage.png",
+      "bytes": 52983,
+      "sha256": "6ca9624a5076a70b4b0b415338bfb79b1af31c765bd6b440a4aa4e785986f347",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/rbc/specimen-browser-source.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/rbc/specimen-browser-source.json",
+      "bytes": 231,
+      "sha256": "9b80d39e52ba1ee2b92d7c79a528f50f4df66f101eb9d38708d587c0c761f77c",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/report.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/report.json",
+      "bytes": 13496,
+      "sha256": "44410924e6d2f8813af2e4cfe00f77dd0d42677adb8f016d9cef336c97a4fde7",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/results/.last-run.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/results/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/run.log",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/run.log",
+      "bytes": 2009,
+      "sha256": "422a21b32a1326b72d8eb9485302ba3318ec02eae303b60084994b6fa8502170",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/dust-mite-desktop-native-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/dust-mite-desktop-native-gl.png",
+      "bytes": 289557,
+      "sha256": "6223d733b2646929045a5ad75fc4cd241e16bca9cd0a52fd93d5410f4dea0cf2",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/dust-mite-desktop-native-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/dust-mite-desktop-native-stage.png",
+      "bytes": 333725,
+      "sha256": "cc030c9b367d9927b4c37a9966f645266cf72979b396be11a1f75353ce688347",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/dust-mite-desktop-whole-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/dust-mite-desktop-whole-gl.png",
+      "bytes": 68944,
+      "sha256": "ede81b1058991622842ff3f6ec58fb53f632d3ef455467ed49a5da2abb21c7d8",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/dust-mite-desktop-whole-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/dust-mite-desktop-whole-stage.png",
+      "bytes": 105452,
+      "sha256": "5ef5cdc73bbba1a83aa3f053e394fbf4a678bb4e091beaf7c4b907780b991945",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/dust-mite-phone-frame.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/dust-mite-phone-frame.json",
+      "bytes": 2049,
+      "sha256": "c09482e53ba953f316133692cb03570f3850d86a937007635193daa706c0133a",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/dust-mite-phone-landmark-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/dust-mite-phone-landmark-gl.png",
+      "bytes": 41524,
+      "sha256": "1b2f07f97776c271b87e846195221739204dfe9e09901945a3a049917bb468c1",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/dust-mite-phone-landmark-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/dust-mite-phone-landmark-stage.png",
+      "bytes": 67530,
+      "sha256": "f4ec3405369a495f757b73a4fc8c955542f3028a045f1f7e9e8148ae02fe9800",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/dust-mite-phone-whole-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/dust-mite-phone-whole-gl.png",
+      "bytes": 24808,
+      "sha256": "ef618f1ee7af85dce2bd05d7dabd1bd4e3b2b6f9b8c634c55f7ced949e4e84bc",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/dust-mite-phone-whole-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/dust-mite-phone-whole-stage.png",
+      "bytes": 48239,
+      "sha256": "b77aabf59c80805de0abff088a0bd30362782920a7d11fbea299100e2227d7b6",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/flea-desktop-native-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/flea-desktop-native-gl.png",
+      "bytes": 261516,
+      "sha256": "bfd13ec2842906a035c1acc319e7af432539344ab6fb61edbdca53fde3ec8e3d",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/flea-desktop-native-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/flea-desktop-native-stage.png",
+      "bytes": 308764,
+      "sha256": "136432ce04a1fc2331ea3871f8168b1b5d93a2d12357681de2b446f550b58843",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/flea-desktop-whole-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/flea-desktop-whole-gl.png",
+      "bytes": 75501,
+      "sha256": "d5ed320c93759d94256d394e93781c44dfa6ca425153bd22a24ac1fdbee49a55",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/flea-desktop-whole-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/flea-desktop-whole-stage.png",
+      "bytes": 108892,
+      "sha256": "69a379a5765a9a770a96a17796d610e629d0c216af5ef36d52159ee1d2023c10",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/flea-phone-frame.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/flea-phone-frame.json",
+      "bytes": 4073,
+      "sha256": "0bd1380ecaa1c56b871c5ea709df567d5d351634c094acf62cea7add74b194a2",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/flea-phone-landmark-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/flea-phone-landmark-gl.png",
+      "bytes": 62131,
+      "sha256": "95383f4b789900a1061384db4d7047a795e8ddaab5b562daea5730cae60f8ef3",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/flea-phone-landmark-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/flea-phone-landmark-stage.png",
+      "bytes": 89498,
+      "sha256": "7659a3677d7e9e56ac877951fccfd05fa0110a5572b6f8375d739ea5167adf9e",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/flea-phone-whole-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/flea-phone-whole-gl.png",
+      "bytes": 25910,
+      "sha256": "c16511640292b4ccb2421ca9c0fd33412c73d67cea3b37da8f163552b06cff56",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/flea-phone-whole-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/flea-phone-whole-stage.png",
+      "bytes": 47307,
+      "sha256": "8d73a32bc20027e3a1f0b24cd1e498dcc6621ff8c1b9a5701e7e4918653730e6",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/mouse-desktop-native-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/mouse-desktop-native-gl.png",
+      "bytes": 257522,
+      "sha256": "f525dd635b1f078a5a061d53b716c74a2ba4e13c850f63a8dce9d94ea8ba60f1",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/mouse-desktop-native-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/mouse-desktop-native-stage.png",
+      "bytes": 314070,
+      "sha256": "d642653c6516c500c9a463d7c59643e6b75ed291360286a44e95b7ff8e37a6a1",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/mouse-desktop-whole-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/mouse-desktop-whole-gl.png",
+      "bytes": 41859,
+      "sha256": "d7accd47b39d1d1eac7ecc4f85634d16ec0b1475eba0605cbf99e4d0b36afc6c",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/mouse-desktop-whole-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/mouse-desktop-whole-stage.png",
+      "bytes": 82600,
+      "sha256": "6793d2edf308fa95f2b16f88fd1445d9b21e2a50d4398853c69d3af6d9301ac4",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/mouse-flea-comparison-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/mouse-flea-comparison-gl.png",
+      "bytes": 92915,
+      "sha256": "61f2f62b66ad8870216d2bdb1ada4096f38d6e9c4026b82d4e8fb79fef97ccc5",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/mouse-flea-comparison-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/mouse-flea-comparison-stage.png",
+      "bytes": 129176,
+      "sha256": "de9511c3ac66f7fad9d23ad6b5a674b80fcab3afccfeb7eeabdf67b1f23f39a1",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/mouse-phone-frame.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/mouse-phone-frame.json",
+      "bytes": 2798,
+      "sha256": "5d8f6dec6886224dfc7badbb4b7d1f7982f36aff91c8ee736a23ee643dbf192b",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/mouse-phone-landmark-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/mouse-phone-landmark-gl.png",
+      "bytes": 47189,
+      "sha256": "8057b37a5d0b0a9212f716e6289055decaf4140330005bc8a3054a9fcafafade",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/mouse-phone-landmark-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/mouse-phone-landmark-stage.png",
+      "bytes": 66564,
+      "sha256": "d711e93ee16227365d16bca0220bc270e163b94377b55a38604a42f01bb234a1",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/mouse-phone-whole-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/mouse-phone-whole-gl.png",
+      "bytes": 13980,
+      "sha256": "91f73bfc4e4573e072b2614425ac11a742e7474c3eadf6bd6f1a0ffaa12e912f",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/mouse-phone-whole-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/mouse-phone-whole-stage.png",
+      "bytes": 39017,
+      "sha256": "7f8035f3514fbd4b020ba5ab6d5369fbac58f27b45f78d0facd1ad607b8bd9a5",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/specimen-browser-source.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/specimen-browser-source.json",
+      "bytes": 231,
+      "sha256": "1bf8e133dfd5dea13710e85b8ee9fa78d22bd9ae2799e80600eb3a984e7c56ac",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/specimen-desktop.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/specimen-desktop.json",
+      "bytes": 71375,
+      "sha256": "b8f7b6c61861f16abac01756025bd99f861ae07938ed18912ada08d0e95f0fd7",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/specimen-notebook-comparison.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/specimen-notebook-comparison.json",
+      "bytes": 30123,
+      "sha256": "394ca54b05bdd92b8cac02b9b7fea1b8643399a3b58f90203e04743405edaae7",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/specimens/specimen-phone.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/specimens/specimen-phone.json",
+      "bytes": 22358,
+      "sha256": "b7fcd572c95a660ec2f9487dc5aad38193704e4f19ff338d180f57066b0f3655",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/specimen-browser-source.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/specimen-browser-source.json",
+      "bytes": 231,
+      "sha256": "a44ce398022abf02d6b0cbca67574bf35f754c521907f4c2c08acb3a4837b3f1",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-desktop-angle-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-desktop-angle-gl.png",
+      "bytes": 120589,
+      "sha256": "c21fa9fda14b6b3165acd9fca26169138e8225754675a33f86597ee9b3e9453e",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-desktop-angle-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-desktop-angle-stage.png",
+      "bytes": 153157,
+      "sha256": "ce27f181fa90b0abe1c08f834b94322e5977230700809fe8c9c4bb61bae4d3c5",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-desktop-bond-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-desktop-bond-gl.png",
+      "bytes": 128211,
+      "sha256": "c394ffc97a939361869dbab7efea4406d62dff72718acf522c247ac555c94247",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-desktop-bond-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-desktop-bond-stage.png",
+      "bytes": 166836,
+      "sha256": "915ac79f2aec96701f420d6b31d63c3e4c5d2188e0dcd3c9c77fdeb30b8962ec",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-desktop-controls.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-desktop-controls.png",
+      "bytes": 33357,
+      "sha256": "5cdf20bb80eecd38012ff03547407c2e35a3441a0c449fca50f1acba879ecc3d",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-desktop-hydrogens-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-desktop-hydrogens-gl.png",
+      "bytes": 86892,
+      "sha256": "8489f1df46c4489e80b17109129680d6e958e69a351ec9debcfb3afcbc54aa17",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-desktop-hydrogens-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-desktop-hydrogens-stage.png",
+      "bytes": 118326,
+      "sha256": "185f28cdf43e588b53746d08f1c472a473755b2b39c627d588cc3653b74bd179",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-desktop-oxygen-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-desktop-oxygen-gl.png",
+      "bytes": 84207,
+      "sha256": "aed42e6e80ec0fb7c1caa6c8eaa6e0e09eec520147c5ffe4aadbf7ef2422527c",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-desktop-oxygen-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-desktop-oxygen-stage.png",
+      "bytes": 146292,
+      "sha256": "8938f905552dfcf202d0c5b583a298b96a67f114bb5aaa5dca3bccb02562fcbf",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-desktop-polarity-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-desktop-polarity-gl.png",
+      "bytes": 72784,
+      "sha256": "e73a1b7e51550078b4130ae1391e02046ffc6e18511f54ebf0703fa354103dcd",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-desktop-polarity-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-desktop-polarity-stage.png",
+      "bytes": 120259,
+      "sha256": "cf421bd0d7dc21aba75ff5213df2a0d2d64904d0448eb7538f5082c63fc4de30",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-desktop-restored-guides-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-desktop-restored-guides-gl.png",
+      "bytes": 38041,
+      "sha256": "0ffa7246c525a83ca2ea47913caa30fcb8b6da9e208a70c5787dd8bad987c509",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-desktop-restored-guides-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-desktop-restored-guides-stage.png",
+      "bytes": 80805,
+      "sha256": "5765d6aef0a44ed4bd6ae8da29e8d05b08681c8f6a8eb32b922d5abe153220ba",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-desktop-structure-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-desktop-structure-gl.png",
+      "bytes": 33304,
+      "sha256": "8d1dc5b401d561058348418b377c4b6cc54b01d68231507a6725a403ac603221",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-desktop-structure-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-desktop-structure-stage.png",
+      "bytes": 76401,
+      "sha256": "78e00f1b498ea2c21b7e68aee2e5da61c5bd7ce6dd8adf9ba9ba433f0316e083",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-desktop-whole-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-desktop-whole-gl.png",
+      "bytes": 38041,
+      "sha256": "0ffa7246c525a83ca2ea47913caa30fcb8b6da9e208a70c5787dd8bad987c509",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-desktop-whole-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-desktop-whole-stage.png",
+      "bytes": 80805,
+      "sha256": "5765d6aef0a44ed4bd6ae8da29e8d05b08681c8f6a8eb32b922d5abe153220ba",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-desktop.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-desktop.json",
+      "bytes": 57145,
+      "sha256": "3d99602b377f8d5937153aff9328864fa7194e61ae5ca1a4ffff7a7d2803823c",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-hydrogen-comparison-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-hydrogen-comparison-gl.png",
+      "bytes": 17711,
+      "sha256": "782c2078678689f2e7bac09abcf1a9fa8ca70b209042aebba226ec266da48578",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-hydrogen-comparison-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-hydrogen-comparison-stage.png",
+      "bytes": 44095,
+      "sha256": "f7e1c0c4833db85478a344a10382f01c3a810d47a040703f6c2660dd6745279b",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-phone-controls.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-phone-controls.png",
+      "bytes": 37134,
+      "sha256": "0f26ecc01b5ace0299196ebcb3588e4931ba5e30a4fea82ec3a3f83f017d3d71",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-phone-notebook-comparison.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-phone-notebook-comparison.json",
+      "bytes": 33413,
+      "sha256": "03da8bd3fc35eb2976ad45fdfa23951dd3c5e88f6db3bf6fa6b4b8699cb01d92",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-phone-polarity-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-phone-polarity-gl.png",
+      "bytes": 12971,
+      "sha256": "ef9126e17600ebe223b7365990f35452d300a43dd9d686fe0998d4b64af5d8ff",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-phone-polarity-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-phone-polarity-stage.png",
+      "bytes": 45715,
+      "sha256": "53efc5fa93fa838d67d7de3615d05a657a8d198e9d30b1353666d010f44bc163",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-phone-restored-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-phone-restored-gl.png",
+      "bytes": 26561,
+      "sha256": "6e5e2ca30868ea109ffa639cea8f99e792a1ae3fed16b9779b20ff8607bcd05d",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-phone-restored-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-phone-restored-stage.png",
+      "bytes": 56168,
+      "sha256": "50dfe0e8a4adf5eb7497f97651a6ac18343a0eaa71a68174be5d05eea870c329",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-phone-structure-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-phone-structure-gl.png",
+      "bytes": 12014,
+      "sha256": "c96f25f8095cb0497d8fce001fb96a35d5cef93775944291fa75a168f2bc7982",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-phone-structure-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-phone-structure-stage.png",
+      "bytes": 38893,
+      "sha256": "9a6792e296bb2269b9898d7d63b05d0b2418bf95f6c291f11967ec05d4da4779",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-phone-whole-gl.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-phone-whole-gl.png",
+      "bytes": 13719,
+      "sha256": "278e2d05e3cd04b36e46538e72eaf140e315ea235676245bdebf9f8fa1d008f2",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-browser/water/water-phone-whole-stage.png",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/water/water-phone-whole-stage.png",
+      "bytes": 40435,
+      "sha256": "bc01a373ba0c88ab7268ad5d7b43898f0725a78e8c95c8bd0a5c414b57210c78",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-science-e7e0acd6ee8a-archive-proof.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-science-e7e0acd6ee8a-archive-proof.json",
+      "bytes": 740,
+      "sha256": "746b3fd66071db837402fc43589c28946bc4453bebd4a877534d6f4a954fee66",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-summary.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-summary.json",
+      "bytes": 1584,
+      "sha256": "e6600842222e92a973117e4de1ebd003214426b52fb6af58c998ee3303ab7938",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-units/after.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-units/after.json",
+      "bytes": 4970,
+      "sha256": "a7d134e0190f79c412b03616ceac533e372eb4f62a2ab3464fa00da59a9dc1a8",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-units/before.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-units/before.json",
+      "bytes": 4932,
+      "sha256": "b0d4ac7367259ac04b5d0cd64bafd46bea994f09ff351ff72ccb9fb1d90c327c",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-units/config.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-units/config.cjs",
+      "bytes": 767,
+      "sha256": "3a1ae3c6028b4dc6774c7035fa1d0db28ea681c2db2b0c6c44e0c191d7b6d9da",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-units/report.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-units/report.json",
+      "bytes": 44442,
+      "sha256": "a07853acac567dd961af26693e74f5143bdb68d5237aaae7bedfc797caa79ba2",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "final-units/run.log",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-units/run.log",
+      "bytes": 4879,
+      "sha256": "aadf30e61a1e18ae46c34091f0a1e65420c34b8317ee42535b7843a9a8a77f6a",
+      "classification": "actual-final",
+      "copyRecommended": true
+    },
+    {
+      "path": "nist-water-geometry.html",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/nist-water-geometry.html",
+      "bytes": 34522,
+      "sha256": "e78b87c943841b02d2c9d963c72ea40c0d7094fdef67e93c0db583b2c125cd18",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "nist-water-properties.html",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/nist-water-properties.html",
+      "bytes": 51320,
+      "sha256": "bb77de53955e2e4d99f85a6db455838c20a57a7d35a55b197d3fb05031b442ed",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "prepare-adoption.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/prepare-adoption.cjs",
+      "bytes": 3292,
+      "sha256": "62b91baa81ce21445014f19b8932463378d526f896a8f416e66f0a6ba565b4d6",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "prepare-browser.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/prepare-browser.cjs",
+      "bytes": 2785,
+      "sha256": "8565cdcd856c3e159079d04d20be681496d4f102bff22377996478bc52bd40ef",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "prepare-checks.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/prepare-checks.cjs",
+      "bytes": 1729,
+      "sha256": "9ca8cb63d6b0bf9929e60f907365b1e1b838b7a8c67474850060d5f8d678a95d",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "prepare-report.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/prepare-report.cjs",
+      "bytes": 4036,
+      "sha256": "382c16de392acbf8d145627c87d03e8da9eebdd1131f396fb17e2fff722dd4c1",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "prepare-water-strings.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/prepare-water-strings.cjs",
+      "bytes": 10176,
+      "sha256": "de6b8316ba2e60e867a404ee024bfe5cb90c249942278a6f599492f52f547e1a",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "proof-schema.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/proof-schema.json",
+      "bytes": 2655,
+      "sha256": "080e12e2928350f06b56061d7285e9206b0add47e6226f3478fa1da6efa599be",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "prove-renderer.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/prove-renderer.cjs",
+      "bytes": 5948,
+      "sha256": "6feb02f62f813410ea5bd6d8be9b50871b5a9e3aa2d423abe318d10d7b332019",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "read-integration.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/read-integration.cjs",
+      "bytes": 660,
+      "sha256": "e03729fcae7294066b91467773ae3f01c216b8635d02820ce457904553322bc0",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "read-model-architecture.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/read-model-architecture.cjs",
+      "bytes": 560,
+      "sha256": "c903613c2002d21b526233b717f364465fcda3bf6cfeeceb2935846e251b09a0",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "read-model-tail.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/read-model-tail.cjs",
+      "bytes": 242,
+      "sha256": "06118c6a06d38e9147291d64af05b818fba88c81323229676cf7a41c93da508a",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "read-ranges.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/read-ranges.cjs",
+      "bytes": 272,
+      "sha256": "cb5e16850123d22531c89780a1b84728835f6a568accbb11f6985168159d4193",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "read-renderer-helpers.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/read-renderer-helpers.cjs",
+      "bytes": 541,
+      "sha256": "9eb4e7c1d0651584b7728b9ebb50400bd3740e0cc341a123fb47c1279037b10d",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "README.draft.md",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/README.draft.md",
+      "bytes": 3006,
+      "sha256": "fa733d11b227c3a968ec6e91190c209b007458a751245d2201225931878052f2",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "record-visual-review.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/record-visual-review.cjs",
+      "bytes": 4077,
+      "sha256": "b1e32aeb9fed37f3322583368ce292c9a03944104e84c582866f734905ddebab",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "references.md",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/references.md",
+      "bytes": 5121,
+      "sha256": "862a3241d8b2ce73a8633c03d9b0ab45bfe0c8a89861d8573ab61134ea43b2ae",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "report-guard.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/report-guard.cjs",
+      "bytes": 11985,
+      "sha256": "d7bbae895c7066628884fef02e49dbba31034823350b675d4be706a3680c4a20",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "report-helper-proof.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/report-helper-proof.json",
+      "bytes": 8013,
+      "sha256": "f087b59b2f10058454a94826cef6dfa6c27d11e02cc900d65363c0b4c80b716a",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "report-plan.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/report-plan.cjs",
+      "bytes": 3527,
+      "sha256": "82c55c5a8fd1deb5ffe1f85d131f2f5cf71f94d7325ddad791945b932ab8083e",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "run-candidate.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/run-candidate.cjs",
+      "bytes": 5017,
+      "sha256": "cd8846de9f9aad3b065e9af6a358c32be9d5fc181ff6e6951e39f401b9b8ea11",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "run-final.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/run-final.cjs",
+      "bytes": 5086,
+      "sha256": "91e335b28ea0cc48056fb884c8bf17558235069f7362b4dc79d028bcf22794ab",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "run-plan.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/run-plan.cjs",
+      "bytes": 2237,
+      "sha256": "c6ac8863d1a0ea0e72fe5e08458a08bc810ab9b98f94dd911d5591ae25dd9cd9",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "scale_explorer_water.test.js",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/scale_explorer_water.test.js",
+      "bytes": 12507,
+      "sha256": "0772ed5a2d89dfca9aeb99c02edbc0a314bfcb324af55ad3ffb6796d6f573fd5",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "scale-explorer-water.spec.ts",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/scale-explorer-water.spec.ts",
+      "bytes": 23742,
+      "sha256": "25f05c9800ca2a259a3dd252de851358d51c400655a3aef1db56a900fcd5160e",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "string-manifest.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/string-manifest.json",
+      "bytes": 4334,
+      "sha256": "a90f9c473bc850ce5c370fec968f7821bd0e248e2134438041480588c198bcd7",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "string-proof.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/string-proof.json",
+      "bytes": 10258,
+      "sha256": "1ed0010c12219141725d243596ba6c491cd59a4b05387056230fac15d19da774",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "strings-baseline-e7e0acd6ee8a.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/strings-baseline-e7e0acd6ee8a.json",
+      "bytes": 2453,
+      "sha256": "07bd0d769916c77672833dfe6014670c78e67e70b86f71d285e1fc89f040cc0f",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "strings-baseline-retry-1.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/strings-baseline-retry-1.json",
+      "bytes": 2453,
+      "sha256": "9d9a14afc4f34bd33bdc5a65477cf496bd3a4073e0791638be279dda0785418e",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "strings-baseline.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/strings-baseline.json",
+      "bytes": 2453,
+      "sha256": "c6b73dfa9fea304e34756e38fa0bee06a049ed51cdaaafb89e91d89970e67f63",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "test-preparation-proof.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/test-preparation-proof.json",
+      "bytes": 742,
+      "sha256": "0b33aa0be2d306256061e4625f54bcaa07cdb7dc2b85cd611c911cf740485866",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "unit.config.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/unit.config.cjs",
+      "bytes": 286,
+      "sha256": "de89bd4098ce92b55bbc72d0d1c764ee80d6ca2d4042c3da48cee5f4905a3d5e",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "verify-final.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/verify-final.cjs",
+      "bytes": 8579,
+      "sha256": "971df7966ea0679735e94ac1f2124ac865da105dbde8490011f56e9941542304",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "verify-report.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/verify-report.cjs",
+      "bytes": 1986,
+      "sha256": "455370af6ba486661c096f412422bac7827327e8629179356f02e171a80c09fb",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "visual-approval.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/visual-approval.json",
+      "bytes": 4996,
+      "sha256": "c3a59adde6148264b15c09fa9019abaa535a5fa40e35d4a5b0f3df30e3afc730",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "water-data.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/water-data.cjs",
+      "bytes": 4592,
+      "sha256": "b3dcc7d3f8055cf588e80f83e6a3c855f910295a404b3f31f0867776e0ca7322",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "water-geometry-proof.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/water-geometry-proof.json",
+      "bytes": 8936,
+      "sha256": "d064633fe7edf72107b0add23f26ce40613af362e57b3d57ac65ab4216700220",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "water-renderer.js",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/water-renderer.js",
+      "bytes": 7193,
+      "sha256": "6152d8afe782118ff0669999217d54d307f60852dde9e7eb371e9760ec7ed77c",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "water-science-data.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/water-science-data.json",
+      "bytes": 7028,
+      "sha256": "f296f6bcc14790c642faa5825acf87cc8a5ce475b770f0b1186ed03f93935580",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "water-source-proof.json",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/water-source-proof.json",
+      "bytes": 1140,
+      "sha256": "040129c1708183d63471b9b35ffc38383392c8c6d6dfe9b1c978d4c7b8721950",
+      "classification": "supporting",
+      "copyRecommended": true
+    },
+    {
+      "path": "write-artifacts.cjs",
+      "absolutePath": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/write-artifacts.cjs",
+      "bytes": 3067,
+      "sha256": "7004925199cd5d678e8f1ea9d778fe0169b13ea050f084455385f24ec4f1dad1",
+      "classification": "supporting",
+      "copyRecommended": true
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "phase": "finished",
+  "pid": 32152,
+  "started": "2026-10-10T00:47:58.901Z",
+  "steps": [
+    {
+      "name": "focused",
+      "code": 0
+    }
+  ],
+  "focused": {
+    "status": "finished",
+    "code": 134,
+    "finished": "2026-10-10T00:48:51.361Z"
+  },
+  "code": 1,
+  "finished": "2026-10-10T00:48:51.570Z"
+}

@@ -1,0 +1,21 @@
+{
+  "pid": 34372,
+  "command": [
+    "node",
+    "--max-old-space-size=768",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/moonmission_tli_stack.test.js",
+    "tests/moonmission_tli_visuals.test.js",
+    "tests/moonmission_tli_physics.test.js",
+    "tests/moonmission_tli_saved_state.test.js",
+    "tests/moonmission_tli_window.test.js",
+    "--pool=threads",
+    "--maxWorkers=1",
+    "--testTimeout=30000"
+  ],
+  "inputs": {
+    "stem_lab/stem_tool_moonmission.js": "cc5649b2caec2ecbec8c9bb18efa2a623a74b4ec4751ca199c07ac48f1024dea",
+    "desktop/web-app/public/stem_lab/stem_tool_moonmission.js": "cc5649b2caec2ecbec8c9bb18efa2a623a74b4ec4751ca199c07ac48f1024dea"
+  }
+}

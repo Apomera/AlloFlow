@@ -1,0 +1,70 @@
+{
+  "completed": true,
+  "verifiedAt": "2026-10-07T16:22:22.465Z",
+  "verifierHash": "87ea43cd90d3804d591633949998a5b4d73cf8317c9e3cd0cf16ae1e48e5e6f4",
+  "sourceChecks": [
+    {
+      "file": "universe_flight_scene.js",
+      "sha256": "8121868ef2aa764c5e3e88284089ebf76fe0c9e1ec264ee4ae95fe434d7e9bc9",
+      "mirrorExact": true,
+      "inversePatchExact": true,
+      "servedExact": true,
+      "syntax": true
+    },
+    {
+      "file": "stem_tool_universe.js",
+      "sha256": "a744f3d2e32b5bec28864c8ee29468ec68178cd20d9bb08bcd8fa3d9eefc19a9",
+      "mirrorExact": true,
+      "inversePatchExact": true,
+      "servedExact": true,
+      "syntax": true
+    }
+  ],
+  "originalPointsExact": true,
+  "existingGeometryPrefixExact": true,
+  "ellipticalAndCloudMapsExact": true,
+  "bulgeAlphaExact": true,
+  "hostPoseCount": 712,
+  "native": {
+    "savedComparisons": 20,
+    "pngs": 40,
+    "originalAnalysisFailurePreserved": true,
+    "reanalysisCompleted": true,
+    "betaCompleted": true,
+    "betaCaptures": 4,
+    "visibleBetaCaptures": 2,
+    "originalBeta09Scope": "Compilation and finite inputs only; the rest-direction camera placed the source outside the frame.",
+    "visibleBeta09": [
+      {
+        "phase": "baseline",
+        "signal": 169636.77160000495,
+        "nonzeroPixels": 5056
+      },
+      {
+        "phase": "candidate",
+        "signal": 174167.48000000414,
+        "nonzeroPixels": 5156
+      }
+    ]
+  },
+  "browser": {
+    "checks": 7,
+    "accessibilityAudits": 15,
+    "captures": 10,
+    "loaderRetries": []
+  },
+  "unit": {
+    "passed": 56,
+    "files": 7,
+    "environment": "Diagnostic Node canvas/events shim; shared workers without isolation. Real DOM/WebGL checked separately.",
+    "fullDomSuiteRun": false
+  },
+  "previews": {
+    "views": 12,
+    "posesUnchanged": true
+  },
+  "archivedEvidenceFiles": 171,
+  "committed": false,
+  "indexEmpty": true,
+  "scope": "Enhancement 57 focused checks. No full DOM unit-suite completion claim."
+}

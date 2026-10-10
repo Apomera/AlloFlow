@@ -1,0 +1,52 @@
+{
+  "opposite": {
+    "overlay": true,
+    "visible": true,
+    "sceneChild": true,
+    "key": "[{\"longitude\":0,\"latitude\":0},{\"longitude\":-180,\"latitude\":0}]",
+    "arc": {
+      "distance": 5458.517235612266,
+      "angle": 3.141592653589793,
+      "ambiguous": true,
+      "start": {
+        "longitude": 0,
+        "latitude": 0
+      },
+      "end": {
+        "longitude": -180,
+        "latitude": 0
+      }
+    },
+    "geometry": "EDD68C24-C1A3-449B-A004-B3675581D7CE",
+    "materials": [
+      "9B032BB9-8247-4BA9-8168-2F8F2754FFF0",
+      "609D1E5F-8135-4E93-98B7-E0FC91E34EA2",
+      "1C6AF477-238D-488C-9E71-F9A4ABB395EE"
+    ],
+    "scale": 3,
+    "body": [
+      3,
+      3,
+      3
+    ],
+    "geometries": 19,
+    "labels": [
+      {
+        "id": "a",
+        "hidden": true,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "id": "b",
+        "hidden": false,
+        "x": 526,
+        "y": 537.140625
+      }
+    ]
+  },
+  "geometry": {
+    "finite": true,
+    "radius": 0.5649425582018452
+  }
+}

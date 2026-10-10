@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { React, ReactDOMClient, loadTool, makeCtx, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const FILE = 'stem_lab/stem_tool_perception.js';
-const IDS = ['brightness', 'ebbinghaus', 'mullerLyer', 'cafeWall', 'necker', 'moire'];
+const IDS = ['brightness', 'ebbinghaus', 'mullerLyer', 'cafeWall', 'necker', 'moire', 'ponzo'];
 const { act } = React;
 let engine, config, host, root, latest, latestAll, edit, changeProfile, announce, navigate, frames, media, mediaListeners;
 
@@ -75,7 +75,7 @@ afterEach(async () => {
 });
 
 describe('Perception Lab experiment geometry', () => {
-  it('registers a dedicated tool with six independently normalized experiments', () => {
+  it('registers a dedicated tool with seven independently normalized experiments', () => {
     const state = engine.normalize();
     expect(config.id).toBe('perceptionLab');
     expect(state.experiment).toBe('brightness');
@@ -318,11 +318,15 @@ describe('Perception Lab learner workflow', () => {
     await click('Reveal measurements');
     const svg = host.querySelector('#perception-stage-current').cloneNode(true);
     svg.setAttribute('width', '800'); svg.setAttribute('height', '480');
-    svg.removeAttribute('class'); svg.setAttribute('style', 'background:#fff;overflow:hidden');
+    svg.removeAttribute('class'); svg.removeAttribute('xmlns'); svg.setAttribute('style', 'background:#fff;overflow:hidden');
     const serialized = new XMLSerializer().serializeToString(svg);
     const blobSpy = vi.spyOn(globalThis, 'Blob');
     await click('Export SVG');
     expect(blobSpy).toHaveBeenCalledWith([serialized], { type: 'image/svg+xml;charset=utf-8' });
+    const exported = new DOMParser().parseFromString(blobSpy.mock.calls[0][0][0], 'image/svg+xml');
+    expect(exported.querySelector('parsererror')).toBeNull();
+    expect(exported.documentElement.namespaceURI).toBe('http://www.w3.org/2000/svg');
+    expect(exported.querySelectorAll('[data-perception-target]')).toHaveLength(svg.querySelectorAll('[data-perception-target]').length);
     expect(downloads).toEqual([{ href: 'blob:perception', file: 'perception-brightness.svg' }]);
     expect(announce).toHaveBeenCalledWith('Current experiment exported as SVG.');
     await act(async () => vi.runOnlyPendingTimers());

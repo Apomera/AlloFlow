@@ -1,0 +1,26 @@
+{
+  "sourceSHA256": "f551cf0c50073315effbf3fa5bcd9ce2dd3e1b806dbfcbd3f1434ba7e831af2c",
+  "accepted": true,
+  "imageHashes": {
+    "adult-support-baseline-face.png": "af9a0936b6bb7b5537477a9658735fe8c030d3324a6e05f61f1fd8f34e728e7c",
+    "adult-support-baseline-stage.png": "c9f992f529d40cd1361fcd5b03392dbb8716bda68a9b8cf82ee7108e9eb075b4",
+    "adult-support-candidate-face.png": "c857cad20f94b561609c65c99ea430315476a887b8deb208a2fe818b05da9e78",
+    "adult-support-candidate-stage.png": "af6096c5bf39073004f4cc1c742d34be4d6fe728fdcdfef4d7fe791f4ff05451",
+    "adult-head-baseline-face.png": "63b8365cb953373022b237e4a42aa66e8e090e0b4155e2b07b50060d906acb3f",
+    "adult-head-baseline-stage.png": "de677179f8e5221884f8b1a803a16f049098aaee33304be7690fa01af2755de0",
+    "adult-head-candidate-face.png": "e8987cbc22be14dd8cebee18f04369a7e8c449855e4780d720326a02f2b38ae6",
+    "adult-head-candidate-stage.png": "c5c03ff786e83981c3f446c83590762d07d8a39657e9e54c32ca0c4a678c6ebe",
+    "infant-head-contrast-baseline-face.png": "4fadd230e9ea0e44e9ec02a0e2592badc3199675740b4d329ccac4d80bd25415",
+    "infant-head-contrast-baseline-stage.png": "0acdce0ac977b95c9f8c011be758c71d61a3737aaee23f5a590fa9f331940b31",
+    "infant-head-contrast-candidate-face.png": "9e607dc25be392984a65ec846a3e54e3d5b05bb51ca7a080a40a8b690b4bb70e",
+    "infant-head-contrast-candidate-stage.png": "6993dbf34fc69f3e3dfc021edd839c7e1fb736319525b3b39569474a2bc09ba6"
+  },
+  "observations": [
+    "Root directly viewed all 12 original PNGs after all three matching native comparisons passed.",
+    "Adult head: the lower-screen brow has a smoother continuous edge through its middle with fewer dark fragments. The upper-screen brow retains some stipple at this small pixel size. Improvement is modest at full stage scale.",
+    "Adult support: the exposed brow below the upper-screen fingertips reads more evenly. Hand placement and silhouette, palm contact, facial expression and head proportions appear consistent.",
+    "Infant high contrast: the small brow silhouette changes do not visibly disrupt eye separation, expression or stage framing.",
+    "The change is accepted as a focused brow surface improvement. The original 64 by 32 sampling resolution and all rendered resource counts remain unchanged."
+  ],
+  "limitations": "Three matched raw-module views only. Full application loader/build/deployment not tested. Some small-scale facial stippling remains."
+}

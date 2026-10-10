@@ -1,0 +1,5197 @@
+{
+  "sourceSha256": "f5f50bac94b15e51a47c2cd9af88feed37469820e452cd48ba933ba5f140ac83",
+  "publicSourceSha256": "f5f50bac94b15e51a47c2cd9af88feed37469820e452cd48ba933ba5f140ac83",
+  "harnessSha256": "7f4b4a173d1cb2974f2e46310d0faf340b62ce3204019d8e97f61b6cdc72f0a7",
+  "startedAt": "2026-10-05T23:43:51.087Z",
+  "checks": [
+    {
+      "passed": true,
+      "label": "native preview serves installed runtime",
+      "detail": {
+        "url": "http://127.0.0.1:8770/stem_lab/stem_tool_watercycle.js",
+        "status": 200,
+        "sha256": "f5f50bac94b15e51a47c2cd9af88feed37469820e452cd48ba933ba5f140ac83"
+      }
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light loads frozen installed bytes"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light opens native lens"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light soil retains native selector focus"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light soil does not jump the viewport"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light soil updates selected zone"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light soil clears only the active practice answer"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light soil retains the other scope record"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light soil retains all unrelated learner and model fields"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light soil adds no score events"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light soil retains paused parcel progress"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light soil retains grain geometry"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light boundary retains native selector focus"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light boundary does not jump the viewport"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light boundary updates selected zone"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light boundary clears only the active practice answer"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light boundary retains the other scope record"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light boundary retains all unrelated learner and model fields"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light boundary adds no score events"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light boundary retains paused parcel progress"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light boundary retains grain geometry"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light groundwater retains native selector focus"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light groundwater does not jump the viewport"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light groundwater updates selected zone"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light groundwater clears only the active practice answer"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light groundwater retains the other scope record"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light groundwater retains all unrelated learner and model fields"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light groundwater adds no score events"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light groundwater retains paused parcel progress"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light groundwater retains grain geometry"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light context open retains all unrelated learner and model fields"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light context open adds no score events"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light context open retains paused parcel progress"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light opens authored context"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light open context selection retains native selector focus"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light open context selection does not jump the viewport"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light open context selection updates selected zone"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light open context selection clears only the active practice answer"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light open context selection retains the other scope record"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light open context selection retains all unrelated learner and model fields"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light open context selection adds no score events"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light open context selection retains paused parcel progress"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light retains disclosure state while selecting"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light all_recharge gives original feedback"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light all_recharge retains feedback focus"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light all_recharge retains all unrelated learner and model fields"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light all_recharge adds no score events"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light all_recharge retains paused parcel progress"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light dry_soil gives original feedback"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light dry_soil retains feedback focus"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light dry_soil retains all unrelated learner and model fields"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light dry_soil adds no score events"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light dry_soil retains paused parcel progress"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light soil_storage gives original feedback"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light soil_storage retains feedback focus"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light soil_storage retains all unrelated learner and model fields"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light soil_storage adds no score events"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light soil_storage retains paused parcel progress"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light capture selection retains native selector focus"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light capture selection does not jump the viewport"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light capture selection updates selected zone"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light capture selection clears only the active practice answer"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light capture selection retains the other scope record"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light capture selection retains all unrelated learner and model fields"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light capture selection adds no score events"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light capture selection retains paused parcel progress"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light final geometry unchanged"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light has no horizontal page overflow"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light retains44px native targets"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light keeps visible text inside its workspace"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light orders observation, diagrams and context"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light has unique scoped IDs"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light keeps SVG artwork decorative"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light exposes concise hidden selection status"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light maps the selected label to the inspected zone"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light pairs both figures"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light spans the chapter grid"
+    },
+    {
+      "passed": true,
+      "label": "explorer-1280-light accessibility",
+      "detail": []
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-dark loads frozen installed bytes"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-dark opens native lens"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-dark capture selection retains native selector focus"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-dark capture selection does not jump the viewport"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-dark capture selection updates selected zone"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-dark capture selection clears only the active practice answer"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-dark capture selection retains the other scope record"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-dark capture selection retains all unrelated learner and model fields"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-dark capture selection adds no score events"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-dark capture selection retains paused parcel progress"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-dark final geometry unchanged"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-dark has no horizontal page overflow"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-dark retains44px native targets"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-dark keeps visible text inside its workspace"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-dark orders observation, diagrams and context"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-dark has unique scoped IDs"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-dark keeps SVG artwork decorative"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-dark exposes concise hidden selection status"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-dark maps the selected label to the inspected zone"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-dark stacks the figure pair"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-dark accessibility",
+      "detail": []
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-light loads frozen installed bytes"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-light opens native lens"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-light capture selection retains native selector focus"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-light capture selection does not jump the viewport"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-light capture selection updates selected zone"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-light capture selection clears only the active practice answer"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-light capture selection retains the other scope record"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-light capture selection retains all unrelated learner and model fields"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-light capture selection adds no score events"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-light capture selection retains paused parcel progress"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-light final geometry unchanged"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-light has no horizontal page overflow"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-light retains44px native targets"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-light keeps visible text inside its workspace"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-light orders observation, diagrams and context"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-light has unique scoped IDs"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-light keeps SVG artwork decorative"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-light exposes concise hidden selection status"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-light maps the selected label to the inspected zone"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-light stacks the figure pair"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-light accessibility",
+      "detail": []
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-contrast loads frozen installed bytes"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-contrast opens native lens"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-contrast capture selection retains native selector focus"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-contrast capture selection does not jump the viewport"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-contrast capture selection updates selected zone"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-contrast capture selection clears only the active practice answer"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-contrast capture selection retains the other scope record"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-contrast capture selection retains all unrelated learner and model fields"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-contrast capture selection adds no score events"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-contrast capture selection retains paused parcel progress"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-contrast final geometry unchanged"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-contrast has no horizontal page overflow"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-contrast retains44px native targets"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-contrast keeps visible text inside its workspace"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-contrast orders observation, diagrams and context"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-contrast has unique scoped IDs"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-contrast keeps SVG artwork decorative"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-contrast exposes concise hidden selection status"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-contrast maps the selected label to the inspected zone"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-contrast stacks the figure pair"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-contrast accessibility",
+      "detail": []
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-forced loads frozen installed bytes"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-forced opens native lens"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-forced capture selection retains native selector focus"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-forced capture selection does not jump the viewport"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-forced capture selection updates selected zone"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-forced capture selection clears only the active practice answer"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-forced capture selection retains the other scope record"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-forced capture selection retains all unrelated learner and model fields"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-forced capture selection adds no score events"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-forced capture selection retains paused parcel progress"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-forced final geometry unchanged"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-forced has no horizontal page overflow"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-forced retains44px native targets"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-forced keeps visible text inside its workspace"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-forced orders observation, diagrams and context"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-forced has unique scoped IDs"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-forced keeps SVG artwork decorative"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-forced exposes concise hidden selection status"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-forced maps the selected label to the inspected zone"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-forced stacks the figure pair"
+    },
+    {
+      "passed": true,
+      "label": "explorer-320-forced accessibility",
+      "detail": []
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-zoom150 loads frozen installed bytes"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-zoom150 opens native lens"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-zoom150 capture selection retains native selector focus"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-zoom150 capture selection does not jump the viewport"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-zoom150 capture selection updates selected zone"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-zoom150 capture selection clears only the active practice answer"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-zoom150 capture selection retains the other scope record"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-zoom150 capture selection retains all unrelated learner and model fields"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-zoom150 capture selection adds no score events"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-zoom150 capture selection retains paused parcel progress"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-zoom150 final geometry unchanged"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-zoom150 has no horizontal page overflow"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-zoom150 retains44px native targets"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-zoom150 keeps visible text inside its workspace"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-zoom150 orders observation, diagrams and context"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-zoom150 has unique scoped IDs"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-zoom150 keeps SVG artwork decorative"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-zoom150 exposes concise hidden selection status"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-zoom150 maps the selected label to the inspected zone"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-zoom150 stacks the figure pair"
+    },
+    {
+      "passed": true,
+      "label": "explorer-390-zoom150 accessibility",
+      "detail": []
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light loads frozen installed bytes"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light opens native lens"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light soil retains native selector focus"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light soil does not jump the viewport"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light soil updates selected zone"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light soil clears only the active practice answer"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light soil retains the other scope record"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light soil retains all unrelated learner and model fields"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light soil adds no score events"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light soil retains paused parcel progress"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light soil retains grain geometry"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light boundary retains native selector focus"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light boundary does not jump the viewport"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light boundary updates selected zone"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light boundary clears only the active practice answer"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light boundary retains the other scope record"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light boundary retains all unrelated learner and model fields"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light boundary adds no score events"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light boundary retains paused parcel progress"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light boundary retains grain geometry"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light groundwater retains native selector focus"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light groundwater does not jump the viewport"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light groundwater updates selected zone"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light groundwater clears only the active practice answer"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light groundwater retains the other scope record"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light groundwater retains all unrelated learner and model fields"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light groundwater adds no score events"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light groundwater retains paused parcel progress"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light groundwater retains grain geometry"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light context open retains all unrelated learner and model fields"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light context open adds no score events"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light context open retains paused parcel progress"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light opens authored context"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light open context selection retains native selector focus"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light open context selection does not jump the viewport"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light open context selection updates selected zone"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light open context selection clears only the active practice answer"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light open context selection retains the other scope record"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light open context selection retains all unrelated learner and model fields"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light open context selection adds no score events"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light open context selection retains paused parcel progress"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light retains disclosure state while selecting"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light all_recharge gives original feedback"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light all_recharge retains feedback focus"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light all_recharge retains all unrelated learner and model fields"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light all_recharge adds no score events"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light all_recharge retains paused parcel progress"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light dry_soil gives original feedback"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light dry_soil retains feedback focus"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light dry_soil retains all unrelated learner and model fields"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light dry_soil adds no score events"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light dry_soil retains paused parcel progress"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light soil_storage gives original feedback"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light soil_storage retains feedback focus"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light soil_storage retains all unrelated learner and model fields"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light soil_storage adds no score events"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light soil_storage retains paused parcel progress"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light capture selection retains native selector focus"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light capture selection does not jump the viewport"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light capture selection updates selected zone"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light capture selection clears only the active practice answer"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light capture selection retains the other scope record"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light capture selection retains all unrelated learner and model fields"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light capture selection adds no score events"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light capture selection retains paused parcel progress"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light final geometry unchanged"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light has no horizontal page overflow"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light retains44px native targets"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light keeps visible text inside its workspace"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light orders observation, diagrams and context"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light has unique scoped IDs"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light keeps SVG artwork decorative"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light exposes concise hidden selection status"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light maps the selected label to the inspected zone"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light pairs both figures"
+    },
+    {
+      "passed": true,
+      "label": "check-1280-light accessibility",
+      "detail": []
+    },
+    {
+      "passed": true,
+      "label": "check-320-dark loads frozen installed bytes"
+    },
+    {
+      "passed": true,
+      "label": "check-320-dark opens native lens"
+    },
+    {
+      "passed": true,
+      "label": "check-320-dark capture selection retains native selector focus"
+    },
+    {
+      "passed": true,
+      "label": "check-320-dark capture selection does not jump the viewport"
+    },
+    {
+      "passed": true,
+      "label": "check-320-dark capture selection updates selected zone"
+    },
+    {
+      "passed": true,
+      "label": "check-320-dark capture selection clears only the active practice answer"
+    },
+    {
+      "passed": true,
+      "label": "check-320-dark capture selection retains the other scope record"
+    },
+    {
+      "passed": true,
+      "label": "check-320-dark capture selection retains all unrelated learner and model fields"
+    },
+    {
+      "passed": true,
+      "label": "check-320-dark capture selection adds no score events"
+    },
+    {
+      "passed": true,
+      "label": "check-320-dark capture selection retains paused parcel progress"
+    },
+    {
+      "passed": true,
+      "label": "check-320-dark final geometry unchanged"
+    },
+    {
+      "passed": true,
+      "label": "check-320-dark has no horizontal page overflow"
+    },
+    {
+      "passed": true,
+      "label": "check-320-dark retains44px native targets"
+    },
+    {
+      "passed": true,
+      "label": "check-320-dark keeps visible text inside its workspace"
+    },
+    {
+      "passed": true,
+      "label": "check-320-dark orders observation, diagrams and context"
+    },
+    {
+      "passed": true,
+      "label": "check-320-dark has unique scoped IDs"
+    },
+    {
+      "passed": true,
+      "label": "check-320-dark keeps SVG artwork decorative"
+    },
+    {
+      "passed": true,
+      "label": "check-320-dark exposes concise hidden selection status"
+    },
+    {
+      "passed": true,
+      "label": "check-320-dark maps the selected label to the inspected zone"
+    },
+    {
+      "passed": true,
+      "label": "check-320-dark stacks the figure pair"
+    },
+    {
+      "passed": true,
+      "label": "check-320-dark accessibility",
+      "detail": []
+    },
+    {
+      "passed": true,
+      "label": "both runtime copies remain unchanged"
+    },
+    {
+      "passed": true,
+      "label": "QA harness remains unchanged"
+    }
+  ],
+  "cases": [
+    {
+      "config": {
+        "label": "explorer-1280-light",
+        "width": 1280,
+        "scope": "explorer",
+        "theme": "light",
+        "part": "soil"
+      },
+      "part": "soil",
+      "rect": {
+        "x": 173,
+        "y": 388.203125,
+        "width": 933.984375,
+        "height": 909.15625,
+        "right": 1106.984375,
+        "bottom": 1297.359375
+      },
+      "chapter": {
+        "x": 154,
+        "y": -266.484375,
+        "width": 972,
+        "height": 1598.84375,
+        "right": 1126,
+        "bottom": 1332.359375
+      },
+      "chapterInnerWidth": 934,
+      "chapterSpan": "1 / -1",
+      "readingBeforeDiagrams": true,
+      "contextAfterDiagrams": true,
+      "figures": [
+        {
+          "kind": "cutaway",
+          "rect": {
+            "x": 186,
+            "y": 653.609375,
+            "width": 447.984375,
+            "height": 389.78125,
+            "right": 633.984375,
+            "bottom": 1043.390625
+          }
+        },
+        {
+          "kind": "pores",
+          "rect": {
+            "x": 645.984375,
+            "y": 653.609375,
+            "width": 448,
+            "height": 389.78125,
+            "right": 1093.984375,
+            "bottom": 1043.390625
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "label": "Look inside the ground",
+          "rect": {
+            "x": 174,
+            "y": 389.203125,
+            "width": 931.984375,
+            "height": 53.59375,
+            "right": 1105.984375,
+            "bottom": 442.796875
+          }
+        },
+        {
+          "label": "✓Soil pore water",
+          "rect": {
+            "x": 186,
+            "y": 477.1875,
+            "width": 297.328125,
+            "height": 45,
+            "right": 483.328125,
+            "bottom": 522.1875
+          }
+        },
+        {
+          "label": "○Water table",
+          "rect": {
+            "x": 491.328125,
+            "y": 477.1875,
+            "width": 297.328125,
+            "height": 45,
+            "right": 788.65625,
+            "bottom": 522.1875
+          }
+        },
+        {
+          "label": "○Groundwater pores",
+          "rect": {
+            "x": 796.65625,
+            "y": 477.1875,
+            "width": 297.328125,
+            "height": 45,
+            "right": 1093.984375,
+            "bottom": 522.1875
+          }
+        },
+        {
+          "label": "Understand this zone",
+          "rect": {
+            "x": 197,
+            "y": 1091.1875,
+            "width": 885.984375,
+            "height": 44,
+            "right": 1082.984375,
+            "bottom": 1135.1875
+          }
+        },
+        {
+          "label": "Check the distinction",
+          "rect": {
+            "x": 186,
+            "y": 1147.1875,
+            "width": 907.984375,
+            "height": 46.390625,
+            "right": 1093.984375,
+            "bottom": 1193.578125
+          }
+        },
+        {
+          "label": "",
+          "rect": {
+            "x": 186,
+            "y": 1227.96875,
+            "width": 907.984375,
+            "height": 45,
+            "right": 1093.984375,
+            "bottom": 1272.96875
+          }
+        },
+        {
+          "label": "",
+          "rect": {
+            "x": 186,
+            "y": 1280.96875,
+            "width": 907.984375,
+            "height": 44,
+            "right": 1093.984375,
+            "bottom": 1324.96875
+          }
+        },
+        {
+          "label": "",
+          "rect": {
+            "x": 186,
+            "y": 1332.96875,
+            "width": 907.984375,
+            "height": 44,
+            "right": 1093.984375,
+            "bottom": 1376.96875
+          }
+        }
+      ],
+      "text": [
+        {
+          "text": "Look inside the ground",
+          "font": 16,
+          "rect": {
+            "x": 174,
+            "y": 389.203125,
+            "width": 931.984375,
+            "height": 53.59375,
+            "right": 1105.984375,
+            "bottom": 442.796875
+          },
+          "scrollWidth": 932,
+          "clientWidth": 932
+        },
+        {
+          "text": "Choose a zone to highlight it. Read the observation, then compare the cutaway and pore view.",
+          "font": 14,
+          "rect": {
+            "x": 186,
+            "y": 442.796875,
+            "width": 907.984375,
+            "height": 22.390625,
+            "right": 1093.984375,
+            "bottom": 465.1875
+          },
+          "scrollWidth": 908,
+          "clientWidth": 908
+        },
+        {
+          "text": "✓Soil pore water",
+          "font": 14,
+          "rect": {
+            "x": 186,
+            "y": 477.1875,
+            "width": 297.328125,
+            "height": 45,
+            "right": 483.328125,
+            "bottom": 522.1875
+          },
+          "scrollWidth": 293,
+          "clientWidth": 293
+        },
+        {
+          "text": "○Water table",
+          "font": 14,
+          "rect": {
+            "x": 491.328125,
+            "y": 477.1875,
+            "width": 297.328125,
+            "height": 45,
+            "right": 788.65625,
+            "bottom": 522.1875
+          },
+          "scrollWidth": 295,
+          "clientWidth": 295
+        },
+        {
+          "text": "○Groundwater pores",
+          "font": 14,
+          "rect": {
+            "x": 796.65625,
+            "y": 477.1875,
+            "width": 297.328125,
+            "height": 45,
+            "right": 1093.984375,
+            "bottom": 522.1875
+          },
+          "scrollWidth": 295,
+          "clientWidth": 295
+        },
+        {
+          "text": "Air and water share pore space",
+          "font": 19,
+          "rect": {
+            "x": 202,
+            "y": 571.375,
+            "width": 878.984375,
+            "height": 27.546875,
+            "right": 1080.984375,
+            "bottom": 598.921875
+          },
+          "scrollWidth": 879,
+          "clientWidth": 879
+        },
+        {
+          "text": "Look for: Find water beside air between the solid grains. Unsaturated does not mean completely dry.",
+          "font": 14,
+          "rect": {
+            "x": 202,
+            "y": 606.921875,
+            "width": 878.984375,
+            "height": 21.6875,
+            "right": 1080.984375,
+            "bottom": 628.609375
+          },
+          "scrollWidth": 879,
+          "clientWidth": 879
+        },
+        {
+          "text": "Find it in the cutaway",
+          "font": 14,
+          "rect": {
+            "x": 199,
+            "y": 666.609375,
+            "width": 421.984375,
+            "height": 31.390625,
+            "right": 620.984375,
+            "bottom": 698
+          },
+          "scrollWidth": 422,
+          "clientWidth": 422
+        },
+        {
+          "text": "Air + water",
+          "font": 14,
+          "rect": {
+            "x": 331,
+            "y": 708,
+            "width": 289.984375,
+            "height": 78,
+            "right": 620.984375,
+            "bottom": 786
+          },
+          "scrollWidth": 287,
+          "clientWidth": 287
+        },
+        {
+          "text": "Water table",
+          "font": 14,
+          "rect": {
+            "x": 331,
+            "y": 786,
+            "width": 289.984375,
+            "height": 54,
+            "right": 620.984375,
+            "bottom": 840
+          },
+          "scrollWidth": 287,
+          "clientWidth": 287
+        },
+        {
+          "text": "Water in pores",
+          "font": 14,
+          "rect": {
+            "x": 331,
+            "y": 840,
+            "width": 289.984375,
+            "height": 78,
+            "right": 620.984375,
+            "bottom": 918
+          },
+          "scrollWidth": 287,
+          "clientWidth": 287
+        },
+        {
+          "text": "Dashed line: schematic water table. The thin band above it represents the capillary fringe.",
+          "font": 14,
+          "rect": {
+            "x": 199,
+            "y": 918,
+            "width": 421.984375,
+            "height": 44.78125,
+            "right": 620.984375,
+            "bottom": 962.78125
+          },
+          "scrollWidth": 422,
+          "clientWidth": 422
+        },
+        {
+          "text": "Magnified · Unsaturated soil",
+          "font": 14,
+          "rect": {
+            "x": 658.984375,
+            "y": 666.609375,
+            "width": 422,
+            "height": 31.390625,
+            "right": 1080.984375,
+            "bottom": 698
+          },
+          "scrollWidth": 422,
+          "clientWidth": 422
+        },
+        {
+          "text": "Some spaces contain air; others hold liquid water or water films.",
+          "font": 14,
+          "rect": {
+            "x": 658.984375,
+            "y": 1008,
+            "width": 422,
+            "height": 22.390625,
+            "right": 1080.984375,
+            "bottom": 1030.390625
+          },
+          "scrollWidth": 422,
+          "clientWidth": 422
+        },
+        {
+          "text": "Understand this zone",
+          "font": 14,
+          "rect": {
+            "x": 197,
+            "y": 1091.1875,
+            "width": 885.984375,
+            "height": 44,
+            "right": 1082.984375,
+            "bottom": 1135.1875
+          },
+          "scrollWidth": 886,
+          "clientWidth": 886
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 197,
+            "y": 1135.1875,
+            "width": 885.984375,
+            "height": 22.390625,
+            "right": 1082.984375,
+            "bottom": 1157.578125
+          },
+          "scrollWidth": 886,
+          "clientWidth": 886
+        },
+        {
+          "text": "Check the distinction",
+          "font": 14,
+          "rect": {
+            "x": 186,
+            "y": 1147.1875,
+            "width": 907.984375,
+            "height": 46.390625,
+            "right": 1093.984375,
+            "bottom": 1193.578125
+          },
+          "scrollWidth": 908,
+          "clientWidth": 908
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 186,
+            "y": 1227.96875,
+            "width": 907.984375,
+            "height": 45,
+            "right": 1093.984375,
+            "bottom": 1272.96875
+          },
+          "scrollWidth": 904,
+          "clientWidth": 904
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 186,
+            "y": 1280.96875,
+            "width": 907.984375,
+            "height": 44,
+            "right": 1093.984375,
+            "bottom": 1324.96875
+          },
+          "scrollWidth": 906,
+          "clientWidth": 906
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 186,
+            "y": 1332.96875,
+            "width": 907.984375,
+            "height": 44,
+            "right": 1093.984375,
+            "bottom": 1376.96875
+          },
+          "scrollWidth": 906,
+          "clientWidth": 906
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 201,
+            "y": 1423.359375,
+            "width": 880.984375,
+            "height": 22.390625,
+            "right": 1081.984375,
+            "bottom": 1445.75
+          },
+          "scrollWidth": 881,
+          "clientWidth": 881
+        },
+        {
+          "text": "Magnified schematic of an unconfined groundwater setting. Grain sizes, layer depths and arrows are illustrative. This view does not measure recharge, water-table depth or travel time.",
+          "font": 14,
+          "rect": {
+            "x": 186,
+            "y": 1193.578125,
+            "width": 907.984375,
+            "height": 44.78125,
+            "right": 1093.984375,
+            "bottom": 1238.359375
+          },
+          "scrollWidth": 908,
+          "clientWidth": 908
+        }
+      ],
+      "ids": [
+        "wcGroundwater-explorer-Summary",
+        "wcGroundwater-explorer-Detail",
+        "wcGroundwater-explorer-DetailTitle",
+        "wcGroundwater-explorer-Question",
+        "wcGroundwater-explorer-FeedbackTitle"
+      ],
+      "announcement": {
+        "text": "Soil pore water selected. Air and water share pore space",
+        "role": "status",
+        "live": "polite",
+        "atomic": "true",
+        "rect": {
+          "x": 185,
+          "y": 640.609375,
+          "width": 1,
+          "height": 1,
+          "right": 186,
+          "bottom": 641.609375
+        }
+      },
+      "contextOpen": false,
+      "pageOverflow": false,
+      "svgText": 0,
+      "hiddenSvg": true,
+      "activeLayers": [
+        "soil"
+      ],
+      "activeElement": "soil"
+    },
+    {
+      "config": {
+        "label": "explorer-390-dark",
+        "width": 390,
+        "scope": "explorer",
+        "theme": "dark",
+        "part": "boundary"
+      },
+      "part": "boundary",
+      "rect": {
+        "x": 47,
+        "y": 471.984375,
+        "width": 296,
+        "height": 1428.0625,
+        "right": 343,
+        "bottom": 1900.046875
+      },
+      "chapter": {
+        "x": 40,
+        "y": -719.828125,
+        "width": 310,
+        "height": 2650.875,
+        "right": 350,
+        "bottom": 1931.046875
+      },
+      "chapterInnerWidth": 280,
+      "chapterSpan": "1 / -1",
+      "readingBeforeDiagrams": true,
+      "contextAfterDiagrams": true,
+      "figures": [
+        {
+          "kind": "cutaway",
+          "rect": {
+            "x": 56,
+            "y": 953.09375,
+            "width": 278,
+            "height": 270.0625,
+            "right": 334,
+            "bottom": 1223.15625
+          }
+        },
+        {
+          "kind": "pores",
+          "rect": {
+            "x": 56,
+            "y": 1235.15625,
+            "width": 278,
+            "height": 314.171875,
+            "right": 334,
+            "bottom": 1549.328125
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "label": "Look inside the ground",
+          "rect": {
+            "x": 48,
+            "y": 472.984375,
+            "width": 294,
+            "height": 53.59375,
+            "right": 342,
+            "bottom": 526.578125
+          }
+        },
+        {
+          "label": "○Soil pore water",
+          "rect": {
+            "x": 56,
+            "y": 605.75,
+            "width": 278,
+            "height": 44,
+            "right": 334,
+            "bottom": 649.75
+          }
+        },
+        {
+          "label": "✓Water table",
+          "rect": {
+            "x": 56,
+            "y": 657.75,
+            "width": 278,
+            "height": 45,
+            "right": 334,
+            "bottom": 702.75
+          }
+        },
+        {
+          "label": "○Groundwater pores",
+          "rect": {
+            "x": 56,
+            "y": 710.75,
+            "width": 278,
+            "height": 44,
+            "right": 334,
+            "bottom": 754.75
+          }
+        },
+        {
+          "label": "Understand this zone",
+          "rect": {
+            "x": 67,
+            "y": 1625.921875,
+            "width": 256,
+            "height": 44,
+            "right": 323,
+            "bottom": 1669.921875
+          }
+        },
+        {
+          "label": "Check the distinction",
+          "rect": {
+            "x": 56,
+            "y": 1681.921875,
+            "width": 278,
+            "height": 46.390625,
+            "right": 334,
+            "bottom": 1728.3125
+          }
+        },
+        {
+          "label": "",
+          "rect": {
+            "x": 56,
+            "y": 1785.09375,
+            "width": 278,
+            "height": 64,
+            "right": 334,
+            "bottom": 1849.09375
+          }
+        },
+        {
+          "label": "",
+          "rect": {
+            "x": 56,
+            "y": 1857.09375,
+            "width": 278,
+            "height": 64,
+            "right": 334,
+            "bottom": 1921.09375
+          }
+        },
+        {
+          "label": "",
+          "rect": {
+            "x": 56,
+            "y": 1929.09375,
+            "width": 278,
+            "height": 64,
+            "right": 334,
+            "bottom": 1993.09375
+          }
+        }
+      ],
+      "text": [
+        {
+          "text": "Look inside the ground",
+          "font": 16,
+          "rect": {
+            "x": 48,
+            "y": 472.984375,
+            "width": 294,
+            "height": 53.59375,
+            "right": 342,
+            "bottom": 526.578125
+          },
+          "scrollWidth": 294,
+          "clientWidth": 294
+        },
+        {
+          "text": "Choose a zone to highlight it. Read the observation, then compare the cutaway and pore view.",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 526.578125,
+            "width": 278,
+            "height": 67.171875,
+            "right": 334,
+            "bottom": 593.75
+          },
+          "scrollWidth": 278,
+          "clientWidth": 278
+        },
+        {
+          "text": "○Soil pore water",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 605.75,
+            "width": 278,
+            "height": 44,
+            "right": 334,
+            "bottom": 649.75
+          },
+          "scrollWidth": 276,
+          "clientWidth": 276
+        },
+        {
+          "text": "✓Water table",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 657.75,
+            "width": 278,
+            "height": 45,
+            "right": 334,
+            "bottom": 702.75
+          },
+          "scrollWidth": 274,
+          "clientWidth": 274
+        },
+        {
+          "text": "○Groundwater pores",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 710.75,
+            "width": 278,
+            "height": 44,
+            "right": 334,
+            "bottom": 754.75
+          },
+          "scrollWidth": 276,
+          "clientWidth": 276
+        },
+        {
+          "text": "A boundary, not a solid underground floor",
+          "font": 19,
+          "rect": {
+            "x": 70,
+            "y": 801.9375,
+            "width": 253,
+            "height": 55.09375,
+            "right": 323,
+            "bottom": 857.03125
+          },
+          "scrollWidth": 253,
+          "clientWidth": 253
+        },
+        {
+          "text": "Look for: Follow the dashed boundary across the cutaway. It does not represent an impermeable layer.",
+          "font": 14,
+          "rect": {
+            "x": 70,
+            "y": 865.03125,
+            "width": 253,
+            "height": 65.0625,
+            "right": 323,
+            "bottom": 930.09375
+          },
+          "scrollWidth": 253,
+          "clientWidth": 253
+        },
+        {
+          "text": "Find it in the cutaway",
+          "font": 14,
+          "rect": {
+            "x": 65,
+            "y": 962.09375,
+            "width": 260,
+            "height": 31.390625,
+            "right": 325,
+            "bottom": 993.484375
+          },
+          "scrollWidth": 260,
+          "clientWidth": 260
+        },
+        {
+          "text": "Air + water",
+          "font": 13,
+          "rect": {
+            "x": 155,
+            "y": 1007.234375,
+            "width": 170,
+            "height": 44,
+            "right": 325,
+            "bottom": 1051.234375
+          },
+          "scrollWidth": 167,
+          "clientWidth": 167
+        },
+        {
+          "text": "Water table",
+          "font": 13,
+          "rect": {
+            "x": 155,
+            "y": 1053.234375,
+            "width": 170,
+            "height": 44,
+            "right": 325,
+            "bottom": 1097.234375
+          },
+          "scrollWidth": 167,
+          "clientWidth": 167
+        },
+        {
+          "text": "Water in pores",
+          "font": 13,
+          "rect": {
+            "x": 155,
+            "y": 1099.234375,
+            "width": 170,
+            "height": 44,
+            "right": 325,
+            "bottom": 1143.234375
+          },
+          "scrollWidth": 167,
+          "clientWidth": 167
+        },
+        {
+          "text": "Dashed line: schematic water table. The thin band above it represents the capillary fringe.",
+          "font": 14,
+          "rect": {
+            "x": 65,
+            "y": 1146.984375,
+            "width": 260,
+            "height": 67.171875,
+            "right": 325,
+            "bottom": 1214.15625
+          },
+          "scrollWidth": 260,
+          "clientWidth": 260
+        },
+        {
+          "text": "Magnified · Water-table boundary",
+          "font": 14,
+          "rect": {
+            "x": 65,
+            "y": 1244.15625,
+            "width": 260,
+            "height": 31.390625,
+            "right": 325,
+            "bottom": 1275.546875
+          },
+          "scrollWidth": 260,
+          "clientWidth": 260
+        },
+        {
+          "text": "The water table marks the top of groundwater in this unconfined example.",
+          "font": 14,
+          "rect": {
+            "x": 65,
+            "y": 1495.546875,
+            "width": 260,
+            "height": 44.78125,
+            "right": 325,
+            "bottom": 1540.328125
+          },
+          "scrollWidth": 260,
+          "clientWidth": 260
+        },
+        {
+          "text": "Understand this zone",
+          "font": 14,
+          "rect": {
+            "x": 67,
+            "y": 1625.921875,
+            "width": 256,
+            "height": 44,
+            "right": 323,
+            "bottom": 1669.921875
+          },
+          "scrollWidth": 256,
+          "clientWidth": 256
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 67,
+            "y": 1669.921875,
+            "width": 256,
+            "height": 134.34375,
+            "right": 323,
+            "bottom": 1804.265625
+          },
+          "scrollWidth": 256,
+          "clientWidth": 256
+        },
+        {
+          "text": "Check the distinction",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 1681.921875,
+            "width": 278,
+            "height": 46.390625,
+            "right": 334,
+            "bottom": 1728.3125
+          },
+          "scrollWidth": 278,
+          "clientWidth": 278
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 1785.09375,
+            "width": 278,
+            "height": 64,
+            "right": 334,
+            "bottom": 1849.09375
+          },
+          "scrollWidth": 276,
+          "clientWidth": 276
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 1857.09375,
+            "width": 278,
+            "height": 64,
+            "right": 334,
+            "bottom": 1921.09375
+          },
+          "scrollWidth": 276,
+          "clientWidth": 276
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 1929.09375,
+            "width": 278,
+            "height": 64,
+            "right": 334,
+            "bottom": 1993.09375
+          },
+          "scrollWidth": 276,
+          "clientWidth": 276
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 71,
+            "y": 2039.484375,
+            "width": 251,
+            "height": 44.78125,
+            "right": 322,
+            "bottom": 2084.265625
+          },
+          "scrollWidth": 251,
+          "clientWidth": 251
+        },
+        {
+          "text": "Magnified schematic of an unconfined groundwater setting. Grain sizes, layer depths and arrows are illustrative. This view does not measure recharge, water-table depth or travel time.",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 1728.3125,
+            "width": 278,
+            "height": 111.953125,
+            "right": 334,
+            "bottom": 1840.265625
+          },
+          "scrollWidth": 278,
+          "clientWidth": 278
+        }
+      ],
+      "ids": [
+        "wcGroundwater-explorer-Summary",
+        "wcGroundwater-explorer-Detail",
+        "wcGroundwater-explorer-DetailTitle",
+        "wcGroundwater-explorer-Question",
+        "wcGroundwater-explorer-FeedbackTitle"
+      ],
+      "announcement": {
+        "text": "Water table selected. A boundary, not a solid underground floor",
+        "role": "status",
+        "live": "polite",
+        "atomic": "true",
+        "rect": {
+          "x": 55,
+          "y": 940.09375,
+          "width": 1,
+          "height": 1,
+          "right": 56,
+          "bottom": 941.09375
+        }
+      },
+      "contextOpen": false,
+      "pageOverflow": false,
+      "svgText": 0,
+      "hiddenSvg": true,
+      "activeLayers": [
+        "boundary"
+      ],
+      "activeElement": "boundary"
+    },
+    {
+      "config": {
+        "label": "explorer-320-light",
+        "width": 320,
+        "scope": "explorer",
+        "theme": "light",
+        "part": "soil"
+      },
+      "part": "soil",
+      "rect": {
+        "x": 47,
+        "y": 472.21875,
+        "width": 226,
+        "height": 1530.75,
+        "right": 273,
+        "bottom": 2002.96875
+      },
+      "chapter": {
+        "x": 40,
+        "y": -809.8125,
+        "width": 240,
+        "height": 2843.78125,
+        "right": 280,
+        "bottom": 2033.96875
+      },
+      "chapterInnerWidth": 210,
+      "chapterSpan": "1 / -1",
+      "readingBeforeDiagrams": true,
+      "contextAfterDiagrams": true,
+      "figures": [
+        {
+          "kind": "cutaway",
+          "rect": {
+            "x": 56,
+            "y": 1016.59375,
+            "width": 208,
+            "height": 270.0625,
+            "right": 264,
+            "bottom": 1286.65625
+          }
+        },
+        {
+          "kind": "pores",
+          "rect": {
+            "x": 56,
+            "y": 1298.65625,
+            "width": 208,
+            "height": 302.40625,
+            "right": 264,
+            "bottom": 1601.0625
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "label": "Look inside the ground",
+          "rect": {
+            "x": 48,
+            "y": 473.21875,
+            "width": 224,
+            "height": 53.59375,
+            "right": 272,
+            "bottom": 526.8125
+          }
+        },
+        {
+          "label": "✓Soil pore water",
+          "rect": {
+            "x": 56,
+            "y": 628.375,
+            "width": 208,
+            "height": 45,
+            "right": 264,
+            "bottom": 673.375
+          }
+        },
+        {
+          "label": "○Water table",
+          "rect": {
+            "x": 56,
+            "y": 681.375,
+            "width": 208,
+            "height": 44,
+            "right": 264,
+            "bottom": 725.375
+          }
+        },
+        {
+          "label": "○Groundwater pores",
+          "rect": {
+            "x": 56,
+            "y": 733.375,
+            "width": 208,
+            "height": 44,
+            "right": 264,
+            "bottom": 777.375
+          }
+        },
+        {
+          "label": "Understand this zone",
+          "rect": {
+            "x": 67,
+            "y": 1706.453125,
+            "width": 186,
+            "height": 44,
+            "right": 253,
+            "bottom": 1750.453125
+          }
+        },
+        {
+          "label": "Check the distinction",
+          "rect": {
+            "x": 56,
+            "y": 1762.453125,
+            "width": 208,
+            "height": 46.390625,
+            "right": 264,
+            "bottom": 1808.84375
+          }
+        },
+        {
+          "label": "",
+          "rect": {
+            "x": 56,
+            "y": 1888.015625,
+            "width": 208,
+            "height": 85,
+            "right": 264,
+            "bottom": 1973.015625
+          }
+        },
+        {
+          "label": "",
+          "rect": {
+            "x": 56,
+            "y": 1981.015625,
+            "width": 208,
+            "height": 64,
+            "right": 264,
+            "bottom": 2045.015625
+          }
+        },
+        {
+          "label": "",
+          "rect": {
+            "x": 56,
+            "y": 2053.015625,
+            "width": 208,
+            "height": 64,
+            "right": 264,
+            "bottom": 2117.015625
+          }
+        }
+      ],
+      "text": [
+        {
+          "text": "Look inside the ground",
+          "font": 16,
+          "rect": {
+            "x": 48,
+            "y": 473.21875,
+            "width": 224,
+            "height": 53.59375,
+            "right": 272,
+            "bottom": 526.8125
+          },
+          "scrollWidth": 224,
+          "clientWidth": 224
+        },
+        {
+          "text": "Choose a zone to highlight it. Read the observation, then compare the cutaway and pore view.",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 526.8125,
+            "width": 208,
+            "height": 89.5625,
+            "right": 264,
+            "bottom": 616.375
+          },
+          "scrollWidth": 208,
+          "clientWidth": 208
+        },
+        {
+          "text": "✓Soil pore water",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 628.375,
+            "width": 208,
+            "height": 45,
+            "right": 264,
+            "bottom": 673.375
+          },
+          "scrollWidth": 204,
+          "clientWidth": 204
+        },
+        {
+          "text": "○Water table",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 681.375,
+            "width": 208,
+            "height": 44,
+            "right": 264,
+            "bottom": 725.375
+          },
+          "scrollWidth": 206,
+          "clientWidth": 206
+        },
+        {
+          "text": "○Groundwater pores",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 733.375,
+            "width": 208,
+            "height": 44,
+            "right": 264,
+            "bottom": 777.375
+          },
+          "scrollWidth": 206,
+          "clientWidth": 206
+        },
+        {
+          "text": "Air and water share pore space",
+          "font": 19,
+          "rect": {
+            "x": 70,
+            "y": 843.75,
+            "width": 183,
+            "height": 55.09375,
+            "right": 253,
+            "bottom": 898.84375
+          },
+          "scrollWidth": 183,
+          "clientWidth": 183
+        },
+        {
+          "text": "Look for: Find water beside air between the solid grains. Unsaturated does not mean completely dry.",
+          "font": 14,
+          "rect": {
+            "x": 70,
+            "y": 906.84375,
+            "width": 183,
+            "height": 86.75,
+            "right": 253,
+            "bottom": 993.59375
+          },
+          "scrollWidth": 183,
+          "clientWidth": 183
+        },
+        {
+          "text": "Find it in the cutaway",
+          "font": 14,
+          "rect": {
+            "x": 65,
+            "y": 1025.59375,
+            "width": 190,
+            "height": 31.390625,
+            "right": 255,
+            "bottom": 1056.984375
+          },
+          "scrollWidth": 190,
+          "clientWidth": 190
+        },
+        {
+          "text": "Air + water",
+          "font": 13,
+          "rect": {
+            "x": 155,
+            "y": 1070.734375,
+            "width": 100,
+            "height": 44,
+            "right": 255,
+            "bottom": 1114.734375
+          },
+          "scrollWidth": 97,
+          "clientWidth": 97
+        },
+        {
+          "text": "Water table",
+          "font": 13,
+          "rect": {
+            "x": 155,
+            "y": 1116.734375,
+            "width": 100,
+            "height": 44,
+            "right": 255,
+            "bottom": 1160.734375
+          },
+          "scrollWidth": 97,
+          "clientWidth": 97
+        },
+        {
+          "text": "Water in pores",
+          "font": 13,
+          "rect": {
+            "x": 155,
+            "y": 1162.734375,
+            "width": 100,
+            "height": 44,
+            "right": 255,
+            "bottom": 1206.734375
+          },
+          "scrollWidth": 97,
+          "clientWidth": 97
+        },
+        {
+          "text": "Dashed line: schematic water table. The thin band above it represents the capillary fringe.",
+          "font": 14,
+          "rect": {
+            "x": 65,
+            "y": 1210.484375,
+            "width": 190,
+            "height": 67.171875,
+            "right": 255,
+            "bottom": 1277.65625
+          },
+          "scrollWidth": 190,
+          "clientWidth": 190
+        },
+        {
+          "text": "Magnified · Unsaturated soil",
+          "font": 14,
+          "rect": {
+            "x": 65,
+            "y": 1307.65625,
+            "width": 190,
+            "height": 53.78125,
+            "right": 255,
+            "bottom": 1361.4375
+          },
+          "scrollWidth": 190,
+          "clientWidth": 190
+        },
+        {
+          "text": "Some spaces contain air; others hold liquid water or water films.",
+          "font": 14,
+          "rect": {
+            "x": 65,
+            "y": 1524.890625,
+            "width": 190,
+            "height": 67.171875,
+            "right": 255,
+            "bottom": 1592.0625
+          },
+          "scrollWidth": 190,
+          "clientWidth": 190
+        },
+        {
+          "text": "Understand this zone",
+          "font": 14,
+          "rect": {
+            "x": 67,
+            "y": 1706.453125,
+            "width": 186,
+            "height": 44,
+            "right": 253,
+            "bottom": 1750.453125
+          },
+          "scrollWidth": 186,
+          "clientWidth": 186
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 67,
+            "y": 1750.453125,
+            "width": 186,
+            "height": 111.953125,
+            "right": 253,
+            "bottom": 1862.40625
+          },
+          "scrollWidth": 186,
+          "clientWidth": 186
+        },
+        {
+          "text": "Check the distinction",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 1762.453125,
+            "width": 208,
+            "height": 46.390625,
+            "right": 264,
+            "bottom": 1808.84375
+          },
+          "scrollWidth": 208,
+          "clientWidth": 208
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 1888.015625,
+            "width": 208,
+            "height": 85,
+            "right": 264,
+            "bottom": 1973.015625
+          },
+          "scrollWidth": 206,
+          "clientWidth": 206
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 1981.015625,
+            "width": 208,
+            "height": 64,
+            "right": 264,
+            "bottom": 2045.015625
+          },
+          "scrollWidth": 206,
+          "clientWidth": 206
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 2053.015625,
+            "width": 208,
+            "height": 64,
+            "right": 264,
+            "bottom": 2117.015625
+          },
+          "scrollWidth": 206,
+          "clientWidth": 206
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 71,
+            "y": 2163.40625,
+            "width": 181,
+            "height": 67.171875,
+            "right": 252,
+            "bottom": 2230.578125
+          },
+          "scrollWidth": 181,
+          "clientWidth": 181
+        },
+        {
+          "text": "Magnified schematic of an unconfined groundwater setting. Grain sizes, layer depths and arrows are illustrative. This view does not measure recharge, water-table depth or travel time.",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 1808.84375,
+            "width": 208,
+            "height": 134.34375,
+            "right": 264,
+            "bottom": 1943.1875
+          },
+          "scrollWidth": 208,
+          "clientWidth": 208
+        }
+      ],
+      "ids": [
+        "wcGroundwater-explorer-Summary",
+        "wcGroundwater-explorer-Detail",
+        "wcGroundwater-explorer-DetailTitle",
+        "wcGroundwater-explorer-Question",
+        "wcGroundwater-explorer-FeedbackTitle"
+      ],
+      "announcement": {
+        "text": "Soil pore water selected. Air and water share pore space",
+        "role": "status",
+        "live": "polite",
+        "atomic": "true",
+        "rect": {
+          "x": 55,
+          "y": 1003.59375,
+          "width": 1,
+          "height": 1,
+          "right": 56,
+          "bottom": 1004.59375
+        }
+      },
+      "contextOpen": false,
+      "pageOverflow": false,
+      "svgText": 0,
+      "hiddenSvg": true,
+      "activeLayers": [
+        "soil"
+      ],
+      "activeElement": "soil"
+    },
+    {
+      "config": {
+        "label": "explorer-320-contrast",
+        "width": 320,
+        "scope": "explorer",
+        "theme": "contrast",
+        "part": "groundwater"
+      },
+      "part": "groundwater",
+      "rect": {
+        "x": 47,
+        "y": 472.21875,
+        "width": 226,
+        "height": 1530.046875,
+        "right": 273,
+        "bottom": 2002.265625
+      },
+      "chapter": {
+        "x": 40,
+        "y": -809.8125,
+        "width": 240,
+        "height": 2843.078125,
+        "right": 280,
+        "bottom": 2033.265625
+      },
+      "chapterInnerWidth": 210,
+      "chapterSpan": "1 / -1",
+      "readingBeforeDiagrams": true,
+      "contextAfterDiagrams": true,
+      "figures": [
+        {
+          "kind": "cutaway",
+          "rect": {
+            "x": 56,
+            "y": 1038.28125,
+            "width": 208,
+            "height": 270.0625,
+            "right": 264,
+            "bottom": 1308.34375
+          }
+        },
+        {
+          "kind": "pores",
+          "rect": {
+            "x": 56,
+            "y": 1320.34375,
+            "width": 208,
+            "height": 280.015625,
+            "right": 264,
+            "bottom": 1600.359375
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "label": "Look inside the ground",
+          "rect": {
+            "x": 48,
+            "y": 473.21875,
+            "width": 224,
+            "height": 53.59375,
+            "right": 272,
+            "bottom": 526.8125
+          }
+        },
+        {
+          "label": "○Soil pore water",
+          "rect": {
+            "x": 56,
+            "y": 628.375,
+            "width": 208,
+            "height": 44,
+            "right": 264,
+            "bottom": 672.375
+          }
+        },
+        {
+          "label": "○Water table",
+          "rect": {
+            "x": 56,
+            "y": 680.375,
+            "width": 208,
+            "height": 44,
+            "right": 264,
+            "bottom": 724.375
+          }
+        },
+        {
+          "label": "✓Groundwater pores",
+          "rect": {
+            "x": 56,
+            "y": 732.375,
+            "width": 208,
+            "height": 45,
+            "right": 264,
+            "bottom": 777.375
+          }
+        },
+        {
+          "label": "Understand this zone",
+          "rect": {
+            "x": 67,
+            "y": 1705.75,
+            "width": 186,
+            "height": 44,
+            "right": 253,
+            "bottom": 1749.75
+          }
+        },
+        {
+          "label": "Check the distinction",
+          "rect": {
+            "x": 56,
+            "y": 1761.75,
+            "width": 208,
+            "height": 46.390625,
+            "right": 264,
+            "bottom": 1808.140625
+          }
+        },
+        {
+          "label": "",
+          "rect": {
+            "x": 56,
+            "y": 1887.3125,
+            "width": 208,
+            "height": 85,
+            "right": 264,
+            "bottom": 1972.3125
+          }
+        },
+        {
+          "label": "",
+          "rect": {
+            "x": 56,
+            "y": 1980.3125,
+            "width": 208,
+            "height": 64,
+            "right": 264,
+            "bottom": 2044.3125
+          }
+        },
+        {
+          "label": "",
+          "rect": {
+            "x": 56,
+            "y": 2052.3125,
+            "width": 208,
+            "height": 64,
+            "right": 264,
+            "bottom": 2116.3125
+          }
+        }
+      ],
+      "text": [
+        {
+          "text": "Look inside the ground",
+          "font": 16,
+          "rect": {
+            "x": 48,
+            "y": 473.21875,
+            "width": 224,
+            "height": 53.59375,
+            "right": 272,
+            "bottom": 526.8125
+          },
+          "scrollWidth": 224,
+          "clientWidth": 224
+        },
+        {
+          "text": "Choose a zone to highlight it. Read the observation, then compare the cutaway and pore view.",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 526.8125,
+            "width": 208,
+            "height": 89.5625,
+            "right": 264,
+            "bottom": 616.375
+          },
+          "scrollWidth": 208,
+          "clientWidth": 208
+        },
+        {
+          "text": "○Soil pore water",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 628.375,
+            "width": 208,
+            "height": 44,
+            "right": 264,
+            "bottom": 672.375
+          },
+          "scrollWidth": 206,
+          "clientWidth": 206
+        },
+        {
+          "text": "○Water table",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 680.375,
+            "width": 208,
+            "height": 44,
+            "right": 264,
+            "bottom": 724.375
+          },
+          "scrollWidth": 206,
+          "clientWidth": 206
+        },
+        {
+          "text": "✓Groundwater pores",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 732.375,
+            "width": 208,
+            "height": 45,
+            "right": 264,
+            "bottom": 777.375
+          },
+          "scrollWidth": 204,
+          "clientWidth": 204
+        },
+        {
+          "text": "Water fills connected spaces",
+          "font": 19,
+          "rect": {
+            "x": 70,
+            "y": 843.75,
+            "width": 183,
+            "height": 55.09375,
+            "right": 253,
+            "bottom": 898.84375
+          },
+          "scrollWidth": 183,
+          "clientWidth": 183
+        },
+        {
+          "text": "Look for: Trace the possible flow through the water-filled spaces around grains. The arrow does not measure speed.",
+          "font": 14,
+          "rect": {
+            "x": 70,
+            "y": 906.84375,
+            "width": 183,
+            "height": 108.4375,
+            "right": 253,
+            "bottom": 1015.28125
+          },
+          "scrollWidth": 183,
+          "clientWidth": 183
+        },
+        {
+          "text": "Find it in the cutaway",
+          "font": 14,
+          "rect": {
+            "x": 65,
+            "y": 1047.28125,
+            "width": 190,
+            "height": 31.390625,
+            "right": 255,
+            "bottom": 1078.671875
+          },
+          "scrollWidth": 190,
+          "clientWidth": 190
+        },
+        {
+          "text": "Air + water",
+          "font": 13,
+          "rect": {
+            "x": 155,
+            "y": 1089.578125,
+            "width": 100,
+            "height": 44,
+            "right": 255,
+            "bottom": 1133.578125
+          },
+          "scrollWidth": 97,
+          "clientWidth": 97
+        },
+        {
+          "text": "Water table",
+          "font": 13,
+          "rect": {
+            "x": 155,
+            "y": 1135.578125,
+            "width": 100,
+            "height": 44,
+            "right": 255,
+            "bottom": 1179.578125
+          },
+          "scrollWidth": 97,
+          "clientWidth": 97
+        },
+        {
+          "text": "Water in pores",
+          "font": 13,
+          "rect": {
+            "x": 155,
+            "y": 1181.578125,
+            "width": 100,
+            "height": 49.6875,
+            "right": 255,
+            "bottom": 1231.265625
+          },
+          "scrollWidth": 97,
+          "clientWidth": 97
+        },
+        {
+          "text": "Dashed line: schematic water table. The thin band above it represents the capillary fringe.",
+          "font": 14,
+          "rect": {
+            "x": 65,
+            "y": 1232.171875,
+            "width": 190,
+            "height": 67.171875,
+            "right": 255,
+            "bottom": 1299.34375
+          },
+          "scrollWidth": 190,
+          "clientWidth": 190
+        },
+        {
+          "text": "Magnified · Saturated groundwater",
+          "font": 14,
+          "rect": {
+            "x": 65,
+            "y": 1329.34375,
+            "width": 190,
+            "height": 53.78125,
+            "right": 255,
+            "bottom": 1383.125
+          },
+          "scrollWidth": 190,
+          "clientWidth": 190
+        },
+        {
+          "text": "Liquid water fills pore spaces between solid grains.",
+          "font": 14,
+          "rect": {
+            "x": 65,
+            "y": 1546.578125,
+            "width": 190,
+            "height": 44.78125,
+            "right": 255,
+            "bottom": 1591.359375
+          },
+          "scrollWidth": 190,
+          "clientWidth": 190
+        },
+        {
+          "text": "Understand this zone",
+          "font": 14,
+          "rect": {
+            "x": 67,
+            "y": 1705.75,
+            "width": 186,
+            "height": 44,
+            "right": 253,
+            "bottom": 1749.75
+          },
+          "scrollWidth": 186,
+          "clientWidth": 186
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 67,
+            "y": 1749.75,
+            "width": 186,
+            "height": 134.34375,
+            "right": 253,
+            "bottom": 1884.09375
+          },
+          "scrollWidth": 186,
+          "clientWidth": 186
+        },
+        {
+          "text": "Check the distinction",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 1761.75,
+            "width": 208,
+            "height": 46.390625,
+            "right": 264,
+            "bottom": 1808.140625
+          },
+          "scrollWidth": 208,
+          "clientWidth": 208
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 1887.3125,
+            "width": 208,
+            "height": 85,
+            "right": 264,
+            "bottom": 1972.3125
+          },
+          "scrollWidth": 206,
+          "clientWidth": 206
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 1980.3125,
+            "width": 208,
+            "height": 64,
+            "right": 264,
+            "bottom": 2044.3125
+          },
+          "scrollWidth": 206,
+          "clientWidth": 206
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 2052.3125,
+            "width": 208,
+            "height": 64,
+            "right": 264,
+            "bottom": 2116.3125
+          },
+          "scrollWidth": 206,
+          "clientWidth": 206
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 71,
+            "y": 2162.703125,
+            "width": 181,
+            "height": 67.171875,
+            "right": 252,
+            "bottom": 2229.875
+          },
+          "scrollWidth": 181,
+          "clientWidth": 181
+        },
+        {
+          "text": "Magnified schematic of an unconfined groundwater setting. Grain sizes, layer depths and arrows are illustrative. This view does not measure recharge, water-table depth or travel time.",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 1808.140625,
+            "width": 208,
+            "height": 134.34375,
+            "right": 264,
+            "bottom": 1942.484375
+          },
+          "scrollWidth": 208,
+          "clientWidth": 208
+        }
+      ],
+      "ids": [
+        "wcGroundwater-explorer-Summary",
+        "wcGroundwater-explorer-Detail",
+        "wcGroundwater-explorer-DetailTitle",
+        "wcGroundwater-explorer-Question",
+        "wcGroundwater-explorer-FeedbackTitle"
+      ],
+      "announcement": {
+        "text": "Groundwater pores selected. Water fills connected spaces",
+        "role": "status",
+        "live": "polite",
+        "atomic": "true",
+        "rect": {
+          "x": 55,
+          "y": 1025.28125,
+          "width": 1,
+          "height": 1,
+          "right": 56,
+          "bottom": 1026.28125
+        }
+      },
+      "contextOpen": false,
+      "pageOverflow": false,
+      "svgText": 0,
+      "hiddenSvg": true,
+      "activeLayers": [
+        "groundwater"
+      ],
+      "activeElement": "groundwater"
+    },
+    {
+      "config": {
+        "label": "explorer-320-forced",
+        "width": 320,
+        "scope": "explorer",
+        "theme": "contrast",
+        "part": "boundary",
+        "forced": true
+      },
+      "part": "boundary",
+      "rect": {
+        "x": 47,
+        "y": 472.21875,
+        "width": 226,
+        "height": 1558.296875,
+        "right": 273,
+        "bottom": 2030.515625
+      },
+      "chapter": {
+        "x": 40,
+        "y": -809.8125,
+        "width": 240,
+        "height": 2871.328125,
+        "right": 280,
+        "bottom": 2061.515625
+      },
+      "chapterInnerWidth": 210,
+      "chapterSpan": "1 / -1",
+      "readingBeforeDiagrams": true,
+      "contextAfterDiagrams": true,
+      "figures": [
+        {
+          "kind": "cutaway",
+          "rect": {
+            "x": 56,
+            "y": 1044.140625,
+            "width": 208,
+            "height": 270.0625,
+            "right": 264,
+            "bottom": 1314.203125
+          }
+        },
+        {
+          "kind": "pores",
+          "rect": {
+            "x": 56,
+            "y": 1326.203125,
+            "width": 208,
+            "height": 302.40625,
+            "right": 264,
+            "bottom": 1628.609375
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "label": "Look inside the ground",
+          "rect": {
+            "x": 48,
+            "y": 473.21875,
+            "width": 224,
+            "height": 53.59375,
+            "right": 272,
+            "bottom": 526.8125
+          }
+        },
+        {
+          "label": "○Soil pore water",
+          "rect": {
+            "x": 56,
+            "y": 628.375,
+            "width": 208,
+            "height": 44,
+            "right": 264,
+            "bottom": 672.375
+          }
+        },
+        {
+          "label": "✓Water table",
+          "rect": {
+            "x": 56,
+            "y": 680.375,
+            "width": 208,
+            "height": 45,
+            "right": 264,
+            "bottom": 725.375
+          }
+        },
+        {
+          "label": "○Groundwater pores",
+          "rect": {
+            "x": 56,
+            "y": 733.375,
+            "width": 208,
+            "height": 44,
+            "right": 264,
+            "bottom": 777.375
+          }
+        },
+        {
+          "label": "Understand this zone",
+          "rect": {
+            "x": 67,
+            "y": 1734,
+            "width": 186,
+            "height": 44,
+            "right": 253,
+            "bottom": 1778
+          }
+        },
+        {
+          "label": "Check the distinction",
+          "rect": {
+            "x": 56,
+            "y": 1790,
+            "width": 208,
+            "height": 46.390625,
+            "right": 264,
+            "bottom": 1836.390625
+          }
+        },
+        {
+          "label": "",
+          "rect": {
+            "x": 56,
+            "y": 1915.5625,
+            "width": 208,
+            "height": 85,
+            "right": 264,
+            "bottom": 2000.5625
+          }
+        },
+        {
+          "label": "",
+          "rect": {
+            "x": 56,
+            "y": 2008.5625,
+            "width": 208,
+            "height": 64,
+            "right": 264,
+            "bottom": 2072.5625
+          }
+        },
+        {
+          "label": "",
+          "rect": {
+            "x": 56,
+            "y": 2080.5625,
+            "width": 208,
+            "height": 64,
+            "right": 264,
+            "bottom": 2144.5625
+          }
+        }
+      ],
+      "text": [
+        {
+          "text": "Look inside the ground",
+          "font": 16,
+          "rect": {
+            "x": 48,
+            "y": 473.21875,
+            "width": 224,
+            "height": 53.59375,
+            "right": 272,
+            "bottom": 526.8125
+          },
+          "scrollWidth": 224,
+          "clientWidth": 224
+        },
+        {
+          "text": "Choose a zone to highlight it. Read the observation, then compare the cutaway and pore view.",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 526.8125,
+            "width": 208,
+            "height": 89.5625,
+            "right": 264,
+            "bottom": 616.375
+          },
+          "scrollWidth": 208,
+          "clientWidth": 208
+        },
+        {
+          "text": "○Soil pore water",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 628.375,
+            "width": 208,
+            "height": 44,
+            "right": 264,
+            "bottom": 672.375
+          },
+          "scrollWidth": 206,
+          "clientWidth": 206
+        },
+        {
+          "text": "✓Water table",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 680.375,
+            "width": 208,
+            "height": 45,
+            "right": 264,
+            "bottom": 725.375
+          },
+          "scrollWidth": 204,
+          "clientWidth": 204
+        },
+        {
+          "text": "○Groundwater pores",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 733.375,
+            "width": 208,
+            "height": 44,
+            "right": 264,
+            "bottom": 777.375
+          },
+          "scrollWidth": 206,
+          "clientWidth": 206
+        },
+        {
+          "text": "A boundary, not a solid underground floor",
+          "font": 19,
+          "rect": {
+            "x": 70,
+            "y": 843.75,
+            "width": 183,
+            "height": 82.640625,
+            "right": 253,
+            "bottom": 926.390625
+          },
+          "scrollWidth": 183,
+          "clientWidth": 183
+        },
+        {
+          "text": "Look for: Follow the dashed boundary across the cutaway. It does not represent an impermeable layer.",
+          "font": 14,
+          "rect": {
+            "x": 70,
+            "y": 934.390625,
+            "width": 183,
+            "height": 86.75,
+            "right": 253,
+            "bottom": 1021.140625
+          },
+          "scrollWidth": 183,
+          "clientWidth": 183
+        },
+        {
+          "text": "Find it in the cutaway",
+          "font": 14,
+          "rect": {
+            "x": 65,
+            "y": 1053.140625,
+            "width": 190,
+            "height": 31.390625,
+            "right": 255,
+            "bottom": 1084.53125
+          },
+          "scrollWidth": 190,
+          "clientWidth": 190
+        },
+        {
+          "text": "Air + water",
+          "font": 13,
+          "rect": {
+            "x": 155,
+            "y": 1098.28125,
+            "width": 100,
+            "height": 44,
+            "right": 255,
+            "bottom": 1142.28125
+          },
+          "scrollWidth": 97,
+          "clientWidth": 97
+        },
+        {
+          "text": "Water table",
+          "font": 13,
+          "rect": {
+            "x": 155,
+            "y": 1144.28125,
+            "width": 100,
+            "height": 44,
+            "right": 255,
+            "bottom": 1188.28125
+          },
+          "scrollWidth": 97,
+          "clientWidth": 97
+        },
+        {
+          "text": "Water in pores",
+          "font": 13,
+          "rect": {
+            "x": 155,
+            "y": 1190.28125,
+            "width": 100,
+            "height": 44,
+            "right": 255,
+            "bottom": 1234.28125
+          },
+          "scrollWidth": 97,
+          "clientWidth": 97
+        },
+        {
+          "text": "Dashed line: schematic water table. The thin band above it represents the capillary fringe.",
+          "font": 14,
+          "rect": {
+            "x": 65,
+            "y": 1238.03125,
+            "width": 190,
+            "height": 67.171875,
+            "right": 255,
+            "bottom": 1305.203125
+          },
+          "scrollWidth": 190,
+          "clientWidth": 190
+        },
+        {
+          "text": "Magnified · Water-table boundary",
+          "font": 14,
+          "rect": {
+            "x": 65,
+            "y": 1335.203125,
+            "width": 190,
+            "height": 53.78125,
+            "right": 255,
+            "bottom": 1388.984375
+          },
+          "scrollWidth": 190,
+          "clientWidth": 190
+        },
+        {
+          "text": "The water table marks the top of groundwater in this unconfined example.",
+          "font": 14,
+          "rect": {
+            "x": 65,
+            "y": 1552.4375,
+            "width": 190,
+            "height": 67.171875,
+            "right": 255,
+            "bottom": 1619.609375
+          },
+          "scrollWidth": 190,
+          "clientWidth": 190
+        },
+        {
+          "text": "Understand this zone",
+          "font": 14,
+          "rect": {
+            "x": 67,
+            "y": 1734,
+            "width": 186,
+            "height": 44,
+            "right": 253,
+            "bottom": 1778
+          },
+          "scrollWidth": 186,
+          "clientWidth": 186
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 67,
+            "y": 1778,
+            "width": 186,
+            "height": 179.125,
+            "right": 253,
+            "bottom": 1957.125
+          },
+          "scrollWidth": 186,
+          "clientWidth": 186
+        },
+        {
+          "text": "Check the distinction",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 1790,
+            "width": 208,
+            "height": 46.390625,
+            "right": 264,
+            "bottom": 1836.390625
+          },
+          "scrollWidth": 208,
+          "clientWidth": 208
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 1915.5625,
+            "width": 208,
+            "height": 85,
+            "right": 264,
+            "bottom": 2000.5625
+          },
+          "scrollWidth": 206,
+          "clientWidth": 206
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 2008.5625,
+            "width": 208,
+            "height": 64,
+            "right": 264,
+            "bottom": 2072.5625
+          },
+          "scrollWidth": 206,
+          "clientWidth": 206
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 2080.5625,
+            "width": 208,
+            "height": 64,
+            "right": 264,
+            "bottom": 2144.5625
+          },
+          "scrollWidth": 206,
+          "clientWidth": 206
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 71,
+            "y": 2190.953125,
+            "width": 181,
+            "height": 67.171875,
+            "right": 252,
+            "bottom": 2258.125
+          },
+          "scrollWidth": 181,
+          "clientWidth": 181
+        },
+        {
+          "text": "Magnified schematic of an unconfined groundwater setting. Grain sizes, layer depths and arrows are illustrative. This view does not measure recharge, water-table depth or travel time.",
+          "font": 14,
+          "rect": {
+            "x": 56,
+            "y": 1836.390625,
+            "width": 208,
+            "height": 134.34375,
+            "right": 264,
+            "bottom": 1970.734375
+          },
+          "scrollWidth": 208,
+          "clientWidth": 208
+        }
+      ],
+      "ids": [
+        "wcGroundwater-explorer-Summary",
+        "wcGroundwater-explorer-Detail",
+        "wcGroundwater-explorer-DetailTitle",
+        "wcGroundwater-explorer-Question",
+        "wcGroundwater-explorer-FeedbackTitle"
+      ],
+      "announcement": {
+        "text": "Water table selected. A boundary, not a solid underground floor",
+        "role": "status",
+        "live": "polite",
+        "atomic": "true",
+        "rect": {
+          "x": 55,
+          "y": 1031.140625,
+          "width": 1,
+          "height": 1,
+          "right": 56,
+          "bottom": 1032.140625
+        }
+      },
+      "contextOpen": false,
+      "pageOverflow": false,
+      "svgText": 0,
+      "hiddenSvg": true,
+      "activeLayers": [
+        "boundary"
+      ],
+      "activeElement": "boundary"
+    },
+    {
+      "config": {
+        "label": "explorer-390-zoom150",
+        "width": 390,
+        "scope": "explorer",
+        "theme": "light",
+        "part": "boundary",
+        "zoom": 1.5
+      },
+      "part": "boundary",
+      "rect": {
+        "x": 69,
+        "y": 439.796875,
+        "width": 252,
+        "height": 3119.1875,
+        "right": 321,
+        "bottom": 3558.984375
+      },
+      "chapter": {
+        "x": 59,
+        "y": -1820.21875,
+        "width": 272,
+        "height": 5425.203125,
+        "right": 331,
+        "bottom": 3604.984375
+      },
+      "chapterInnerWidth": 152,
+      "chapterSpan": "1 / -1",
+      "readingBeforeDiagrams": true,
+      "contextAfterDiagrams": true,
+      "figures": [
+        {
+          "kind": "cutaway",
+          "rect": {
+            "x": 82,
+            "y": 1503.671875,
+            "width": 226,
+            "height": 820.15625,
+            "right": 308,
+            "bottom": 2323.828125
+          }
+        },
+        {
+          "kind": "pores",
+          "rect": {
+            "x": 82,
+            "y": 2341.828125,
+            "width": 226,
+            "height": 417.09375,
+            "right": 308,
+            "bottom": 2758.921875
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "label": "Look inside the ground",
+          "rect": {
+            "x": 70,
+            "y": 440.796875,
+            "width": 250,
+            "height": 118.78125,
+            "right": 320,
+            "bottom": 559.578125
+          }
+        },
+        {
+          "label": "○Soil pore water",
+          "rect": {
+            "x": 82,
+            "y": 745.546875,
+            "width": 226,
+            "height": 66,
+            "right": 308,
+            "bottom": 811.546875
+          }
+        },
+        {
+          "label": "✓Water table",
+          "rect": {
+            "x": 82,
+            "y": 823.546875,
+            "width": 226,
+            "height": 67.5,
+            "right": 308,
+            "bottom": 891.046875
+          }
+        },
+        {
+          "label": "○Groundwater pores",
+          "rect": {
+            "x": 82,
+            "y": 903.046875,
+            "width": 226,
+            "height": 95,
+            "right": 308,
+            "bottom": 998.046875
+          }
+        },
+        {
+          "label": "Understand this zone",
+          "rect": {
+            "x": 98,
+            "y": 2916.484375,
+            "width": 194,
+            "height": 97.1875,
+            "right": 292,
+            "bottom": 3013.671875
+          }
+        },
+        {
+          "label": "Check the distinction",
+          "rect": {
+            "x": 82,
+            "y": 3030.671875,
+            "width": 226,
+            "height": 103.1875,
+            "right": 308,
+            "bottom": 3133.859375
+          }
+        },
+        {
+          "label": "",
+          "rect": {
+            "x": 82,
+            "y": 3286.234375,
+            "width": 226,
+            "height": 158,
+            "right": 308,
+            "bottom": 3444.234375
+          }
+        },
+        {
+          "label": "",
+          "rect": {
+            "x": 82,
+            "y": 3456.234375,
+            "width": 226,
+            "height": 158,
+            "right": 308,
+            "bottom": 3614.234375
+          }
+        },
+        {
+          "label": "",
+          "rect": {
+            "x": 82,
+            "y": 3626.234375,
+            "width": 226,
+            "height": 126.5,
+            "right": 308,
+            "bottom": 3752.734375
+          }
+        }
+      ],
+      "text": [
+        {
+          "text": "Look inside the ground",
+          "font": 16,
+          "rect": {
+            "x": 70,
+            "y": 440.796875,
+            "width": 250,
+            "height": 118.78125,
+            "right": 320,
+            "bottom": 559.578125
+          },
+          "scrollWidth": 167,
+          "clientWidth": 167
+        },
+        {
+          "text": "Choose a zone to highlight it. Read the observation, then compare the cutaway and pore view.",
+          "font": 14,
+          "rect": {
+            "x": 82,
+            "y": 559.578125,
+            "width": 226,
+            "height": 167.96875,
+            "right": 308,
+            "bottom": 727.546875
+          },
+          "scrollWidth": 151,
+          "clientWidth": 151
+        },
+        {
+          "text": "○Soil pore water",
+          "font": 14,
+          "rect": {
+            "x": 82,
+            "y": 745.546875,
+            "width": 226,
+            "height": 66,
+            "right": 308,
+            "bottom": 811.546875
+          },
+          "scrollWidth": 149,
+          "clientWidth": 149
+        },
+        {
+          "text": "✓Water table",
+          "font": 14,
+          "rect": {
+            "x": 82,
+            "y": 823.546875,
+            "width": 226,
+            "height": 67.5,
+            "right": 308,
+            "bottom": 891.046875
+          },
+          "scrollWidth": 147,
+          "clientWidth": 147
+        },
+        {
+          "text": "○Groundwater pores",
+          "font": 14,
+          "rect": {
+            "x": 82,
+            "y": 903.046875,
+            "width": 226,
+            "height": 95,
+            "right": 308,
+            "bottom": 998.046875
+          },
+          "scrollWidth": 149,
+          "clientWidth": 149
+        },
+        {
+          "text": "A boundary, not a solid underground floor",
+          "font": 19,
+          "rect": {
+            "x": 103,
+            "y": 1097.140625,
+            "width": 189,
+            "height": 165.25,
+            "right": 292,
+            "bottom": 1262.390625
+          },
+          "scrollWidth": 126,
+          "clientWidth": 126
+        },
+        {
+          "text": "Look for: Follow the dashed boundary across the cutaway. It does not represent an impermeable layer.",
+          "font": 14,
+          "rect": {
+            "x": 103,
+            "y": 1274.390625,
+            "width": 189,
+            "height": 195.28125,
+            "right": 292,
+            "bottom": 1469.671875
+          },
+          "scrollWidth": 126,
+          "clientWidth": 126
+        },
+        {
+          "text": "Find it in the cutaway",
+          "font": 14,
+          "rect": {
+            "x": 95,
+            "y": 1516.671875,
+            "width": 200,
+            "height": 80.1875,
+            "right": 295,
+            "bottom": 1596.859375
+          },
+          "scrollWidth": 133,
+          "clientWidth": 133
+        },
+        {
+          "text": "Air + water",
+          "font": 13,
+          "rect": {
+            "x": 95,
+            "y": 1938.859375,
+            "width": 200,
+            "height": 66,
+            "right": 295,
+            "bottom": 2004.859375
+          },
+          "scrollWidth": 131,
+          "clientWidth": 131
+        },
+        {
+          "text": "Water table",
+          "font": 13,
+          "rect": {
+            "x": 95,
+            "y": 2007.859375,
+            "width": 200,
+            "height": 66,
+            "right": 295,
+            "bottom": 2073.859375
+          },
+          "scrollWidth": 131,
+          "clientWidth": 131
+        },
+        {
+          "text": "Water in pores",
+          "font": 13,
+          "rect": {
+            "x": 95,
+            "y": 2076.859375,
+            "width": 200,
+            "height": 66,
+            "right": 295,
+            "bottom": 2142.859375
+          },
+          "scrollWidth": 131,
+          "clientWidth": 131
+        },
+        {
+          "text": "Dashed line: schematic water table. The thin band above it represents the capillary fringe.",
+          "font": 14,
+          "rect": {
+            "x": 95,
+            "y": 2142.859375,
+            "width": 200,
+            "height": 167.96875,
+            "right": 295,
+            "bottom": 2310.828125
+          },
+          "scrollWidth": 133,
+          "clientWidth": 133
+        },
+        {
+          "text": "Magnified · Water-table boundary",
+          "font": 14,
+          "rect": {
+            "x": 95,
+            "y": 2354.828125,
+            "width": 200,
+            "height": 80.1875,
+            "right": 295,
+            "bottom": 2435.015625
+          },
+          "scrollWidth": 133,
+          "clientWidth": 133
+        },
+        {
+          "text": "The water table marks the top of groundwater in this unconfined example.",
+          "font": 14,
+          "rect": {
+            "x": 95,
+            "y": 2611.546875,
+            "width": 200,
+            "height": 134.375,
+            "right": 295,
+            "bottom": 2745.921875
+          },
+          "scrollWidth": 133,
+          "clientWidth": 133
+        },
+        {
+          "text": "Understand this zone",
+          "font": 14,
+          "rect": {
+            "x": 98,
+            "y": 2916.484375,
+            "width": 194,
+            "height": 97.1875,
+            "right": 292,
+            "bottom": 3013.671875
+          },
+          "scrollWidth": 129,
+          "clientWidth": 129
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 98,
+            "y": 3013.671875,
+            "width": 194,
+            "height": 403.125,
+            "right": 292,
+            "bottom": 3416.796875
+          },
+          "scrollWidth": 129,
+          "clientWidth": 129
+        },
+        {
+          "text": "Check the distinction",
+          "font": 14,
+          "rect": {
+            "x": 82,
+            "y": 3030.671875,
+            "width": 226,
+            "height": 103.1875,
+            "right": 308,
+            "bottom": 3133.859375
+          },
+          "scrollWidth": 151,
+          "clientWidth": 151
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 82,
+            "y": 3286.234375,
+            "width": 226,
+            "height": 158,
+            "right": 308,
+            "bottom": 3444.234375
+          },
+          "scrollWidth": 149,
+          "clientWidth": 149
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 82,
+            "y": 3456.234375,
+            "width": 226,
+            "height": 158,
+            "right": 308,
+            "bottom": 3614.234375
+          },
+          "scrollWidth": 149,
+          "clientWidth": 149
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 82,
+            "y": 3626.234375,
+            "width": 226,
+            "height": 126.5,
+            "right": 308,
+            "bottom": 3752.734375
+          },
+          "scrollWidth": 149,
+          "clientWidth": 149
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 104,
+            "y": 3855.921875,
+            "width": 186,
+            "height": 201.5625,
+            "right": 290,
+            "bottom": 4057.484375
+          },
+          "scrollWidth": 124,
+          "clientWidth": 124
+        },
+        {
+          "text": "Magnified schematic of an unconfined groundwater setting. Grain sizes, layer depths and arrows are illustrative. This view does not measure recharge, water-table depth or travel time.",
+          "font": 14,
+          "rect": {
+            "x": 82,
+            "y": 3133.859375,
+            "width": 226,
+            "height": 302.34375,
+            "right": 308,
+            "bottom": 3436.203125
+          },
+          "scrollWidth": 151,
+          "clientWidth": 151
+        }
+      ],
+      "ids": [
+        "wcGroundwater-explorer-Summary",
+        "wcGroundwater-explorer-Detail",
+        "wcGroundwater-explorer-DetailTitle",
+        "wcGroundwater-explorer-Question",
+        "wcGroundwater-explorer-FeedbackTitle"
+      ],
+      "announcement": {
+        "text": "Water table selected. A boundary, not a solid underground floor",
+        "role": "status",
+        "live": "polite",
+        "atomic": "true",
+        "rect": {
+          "x": 80.5,
+          "y": 1484.171875,
+          "width": 1.5,
+          "height": 1.5,
+          "right": 82,
+          "bottom": 1485.671875
+        }
+      },
+      "contextOpen": false,
+      "pageOverflow": false,
+      "svgText": 0,
+      "hiddenSvg": true,
+      "activeLayers": [
+        "boundary"
+      ],
+      "activeElement": "boundary"
+    },
+    {
+      "config": {
+        "label": "check-1280-light",
+        "width": 1280,
+        "scope": "check",
+        "theme": "light",
+        "part": "groundwater"
+      },
+      "part": "groundwater",
+      "rect": {
+        "x": 159,
+        "y": 388.203125,
+        "width": 962,
+        "height": 903.421875,
+        "right": 1121,
+        "bottom": 1291.625
+      },
+      "chapter": null,
+      "chapterInnerWidth": 962,
+      "chapterSpan": "auto",
+      "readingBeforeDiagrams": true,
+      "contextAfterDiagrams": true,
+      "figures": [
+        {
+          "kind": "cutaway",
+          "rect": {
+            "x": 172,
+            "y": 652.65625,
+            "width": 462,
+            "height": 388.1875,
+            "right": 634,
+            "bottom": 1040.84375
+          }
+        },
+        {
+          "kind": "pores",
+          "rect": {
+            "x": 646,
+            "y": 652.65625,
+            "width": 462,
+            "height": 388.1875,
+            "right": 1108,
+            "bottom": 1040.84375
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "label": "Look inside the ground",
+          "rect": {
+            "x": 160,
+            "y": 389.203125,
+            "width": 960,
+            "height": 53.59375,
+            "right": 1120,
+            "bottom": 442.796875
+          }
+        },
+        {
+          "label": "○\nSoil pore water",
+          "rect": {
+            "x": 172,
+            "y": 477.1875,
+            "width": 306.65625,
+            "height": 45,
+            "right": 478.65625,
+            "bottom": 522.1875
+          }
+        },
+        {
+          "label": "○\nWater table",
+          "rect": {
+            "x": 486.65625,
+            "y": 477.1875,
+            "width": 306.671875,
+            "height": 45,
+            "right": 793.328125,
+            "bottom": 522.1875
+          }
+        },
+        {
+          "label": "✓\nGroundwater pores",
+          "rect": {
+            "x": 801.328125,
+            "y": 477.1875,
+            "width": 306.65625,
+            "height": 45,
+            "right": 1107.984375,
+            "bottom": 522.1875
+          }
+        },
+        {
+          "label": "Understand this zone",
+          "rect": {
+            "x": 183,
+            "y": 1088.640625,
+            "width": 914,
+            "height": 44,
+            "right": 1097,
+            "bottom": 1132.640625
+          }
+        },
+        {
+          "label": "Check the distinction",
+          "rect": {
+            "x": 172,
+            "y": 1144.640625,
+            "width": 936,
+            "height": 46.390625,
+            "right": 1108,
+            "bottom": 1191.03125
+          }
+        },
+        {
+          "label": "",
+          "rect": {
+            "x": 172,
+            "y": 1225.421875,
+            "width": 936,
+            "height": 45,
+            "right": 1108,
+            "bottom": 1270.421875
+          }
+        },
+        {
+          "label": "",
+          "rect": {
+            "x": 172,
+            "y": 1278.421875,
+            "width": 936,
+            "height": 44,
+            "right": 1108,
+            "bottom": 1322.421875
+          }
+        },
+        {
+          "label": "",
+          "rect": {
+            "x": 172,
+            "y": 1330.421875,
+            "width": 936,
+            "height": 44,
+            "right": 1108,
+            "bottom": 1374.421875
+          }
+        }
+      ],
+      "text": [
+        {
+          "text": "Look inside the ground",
+          "font": 16,
+          "rect": {
+            "x": 160,
+            "y": 389.203125,
+            "width": 960,
+            "height": 53.59375,
+            "right": 1120,
+            "bottom": 442.796875
+          },
+          "scrollWidth": 960,
+          "clientWidth": 960
+        },
+        {
+          "text": "Choose a zone to highlight it. Read the observation, then compare the cutaway and pore view.",
+          "font": 14,
+          "rect": {
+            "x": 172,
+            "y": 442.796875,
+            "width": 936,
+            "height": 22.390625,
+            "right": 1108,
+            "bottom": 465.1875
+          },
+          "scrollWidth": 936,
+          "clientWidth": 936
+        },
+        {
+          "text": "○\nSoil pore water",
+          "font": 14,
+          "rect": {
+            "x": 172,
+            "y": 477.1875,
+            "width": 306.65625,
+            "height": 45,
+            "right": 478.65625,
+            "bottom": 522.1875
+          },
+          "scrollWidth": 305,
+          "clientWidth": 305
+        },
+        {
+          "text": "○\nWater table",
+          "font": 14,
+          "rect": {
+            "x": 486.65625,
+            "y": 477.1875,
+            "width": 306.671875,
+            "height": 45,
+            "right": 793.328125,
+            "bottom": 522.1875
+          },
+          "scrollWidth": 305,
+          "clientWidth": 305
+        },
+        {
+          "text": "✓\nGroundwater pores",
+          "font": 14,
+          "rect": {
+            "x": 801.328125,
+            "y": 477.1875,
+            "width": 306.65625,
+            "height": 45,
+            "right": 1107.984375,
+            "bottom": 522.1875
+          },
+          "scrollWidth": 303,
+          "clientWidth": 303
+        },
+        {
+          "text": "Water fills connected spaces",
+          "font": 19,
+          "rect": {
+            "x": 188,
+            "y": 571.375,
+            "width": 907,
+            "height": 26.59375,
+            "right": 1095,
+            "bottom": 597.96875
+          },
+          "scrollWidth": 907,
+          "clientWidth": 907
+        },
+        {
+          "text": "Look for: Trace the possible flow through the water-filled spaces around grains. The arrow does not measure speed.",
+          "font": 14,
+          "rect": {
+            "x": 188,
+            "y": 605.96875,
+            "width": 907,
+            "height": 21.6875,
+            "right": 1095,
+            "bottom": 627.65625
+          },
+          "scrollWidth": 907,
+          "clientWidth": 907
+        },
+        {
+          "text": "Find it in the cutaway",
+          "font": 14,
+          "rect": {
+            "x": 185,
+            "y": 665.65625,
+            "width": 436,
+            "height": 31.390625,
+            "right": 621,
+            "bottom": 697.046875
+          },
+          "scrollWidth": 436,
+          "clientWidth": 436
+        },
+        {
+          "text": "Air + water",
+          "font": 14,
+          "rect": {
+            "x": 317,
+            "y": 707.046875,
+            "width": 304,
+            "height": 78,
+            "right": 621,
+            "bottom": 785.046875
+          },
+          "scrollWidth": 301,
+          "clientWidth": 301
+        },
+        {
+          "text": "Water table",
+          "font": 14,
+          "rect": {
+            "x": 317,
+            "y": 785.046875,
+            "width": 304,
+            "height": 54,
+            "right": 621,
+            "bottom": 839.046875
+          },
+          "scrollWidth": 301,
+          "clientWidth": 301
+        },
+        {
+          "text": "Water in pores",
+          "font": 14,
+          "rect": {
+            "x": 317,
+            "y": 839.046875,
+            "width": 304,
+            "height": 78,
+            "right": 621,
+            "bottom": 917.046875
+          },
+          "scrollWidth": 301,
+          "clientWidth": 301
+        },
+        {
+          "text": "Dashed line: schematic water table. The thin band above it represents the capillary fringe.",
+          "font": 13,
+          "rect": {
+            "x": 185,
+            "y": 917.046875,
+            "width": 436,
+            "height": 41.59375,
+            "right": 621,
+            "bottom": 958.640625
+          },
+          "scrollWidth": 436,
+          "clientWidth": 436
+        },
+        {
+          "text": "Magnified · Saturated groundwater",
+          "font": 14,
+          "rect": {
+            "x": 659,
+            "y": 665.65625,
+            "width": 436,
+            "height": 31.390625,
+            "right": 1095,
+            "bottom": 697.046875
+          },
+          "scrollWidth": 436,
+          "clientWidth": 436
+        },
+        {
+          "text": "Liquid water fills pore spaces between solid grains.",
+          "font": 13,
+          "rect": {
+            "x": 659,
+            "y": 1007.046875,
+            "width": 436,
+            "height": 20.796875,
+            "right": 1095,
+            "bottom": 1027.84375
+          },
+          "scrollWidth": 436,
+          "clientWidth": 436
+        },
+        {
+          "text": "Understand this zone",
+          "font": 14,
+          "rect": {
+            "x": 183,
+            "y": 1088.640625,
+            "width": 914,
+            "height": 44,
+            "right": 1097,
+            "bottom": 1132.640625
+          },
+          "scrollWidth": 914,
+          "clientWidth": 914
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 183,
+            "y": 1132.640625,
+            "width": 914,
+            "height": 44.78125,
+            "right": 1097,
+            "bottom": 1177.421875
+          },
+          "scrollWidth": 914,
+          "clientWidth": 914
+        },
+        {
+          "text": "Check the distinction",
+          "font": 14,
+          "rect": {
+            "x": 172,
+            "y": 1144.640625,
+            "width": 936,
+            "height": 46.390625,
+            "right": 1108,
+            "bottom": 1191.03125
+          },
+          "scrollWidth": 936,
+          "clientWidth": 936
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 172,
+            "y": 1225.421875,
+            "width": 936,
+            "height": 45,
+            "right": 1108,
+            "bottom": 1270.421875
+          },
+          "scrollWidth": 932,
+          "clientWidth": 932
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 172,
+            "y": 1278.421875,
+            "width": 936,
+            "height": 44,
+            "right": 1108,
+            "bottom": 1322.421875
+          },
+          "scrollWidth": 934,
+          "clientWidth": 934
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 172,
+            "y": 1330.421875,
+            "width": 936,
+            "height": 44,
+            "right": 1108,
+            "bottom": 1374.421875
+          },
+          "scrollWidth": 934,
+          "clientWidth": 934
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 187,
+            "y": 1420.8125,
+            "width": 909,
+            "height": 22.390625,
+            "right": 1096,
+            "bottom": 1443.203125
+          },
+          "scrollWidth": 909,
+          "clientWidth": 909
+        },
+        {
+          "text": "Magnified schematic of an unconfined groundwater setting. Grain sizes, layer depths and arrows are illustrative. This view does not measure recharge, water-table depth or travel time.",
+          "font": 13,
+          "rect": {
+            "x": 172,
+            "y": 1191.03125,
+            "width": 936,
+            "height": 41.59375,
+            "right": 1108,
+            "bottom": 1232.625
+          },
+          "scrollWidth": 936,
+          "clientWidth": 936
+        }
+      ],
+      "ids": [
+        "wcGroundwater-check-Summary",
+        "wcGroundwater-check-Detail",
+        "wcGroundwater-check-DetailTitle",
+        "wcGroundwater-check-Question",
+        "wcGroundwater-check-FeedbackTitle"
+      ],
+      "announcement": {
+        "text": "Groundwater pores selected. Water fills connected spaces",
+        "role": "status",
+        "live": "polite",
+        "atomic": "true",
+        "rect": {
+          "x": 171,
+          "y": 639.65625,
+          "width": 1,
+          "height": 1,
+          "right": 172,
+          "bottom": 640.65625
+        }
+      },
+      "contextOpen": false,
+      "pageOverflow": false,
+      "svgText": 0,
+      "hiddenSvg": true,
+      "activeLayers": [
+        "groundwater"
+      ],
+      "activeElement": "groundwater"
+    },
+    {
+      "config": {
+        "label": "check-320-dark",
+        "width": 320,
+        "scope": "check",
+        "theme": "dark",
+        "part": "soil"
+      },
+      "part": "soil",
+      "rect": {
+        "x": 45,
+        "y": 472.171875,
+        "width": 230,
+        "height": 1489.34375,
+        "right": 275,
+        "bottom": 1961.515625
+      },
+      "chapter": null,
+      "chapterInnerWidth": 230,
+      "chapterSpan": "auto",
+      "readingBeforeDiagrams": true,
+      "contextAfterDiagrams": true,
+      "figures": [
+        {
+          "kind": "cutaway",
+          "rect": {
+            "x": 54,
+            "y": 1011.828125,
+            "width": 212,
+            "height": 265.28125,
+            "right": 266,
+            "bottom": 1277.109375
+          }
+        },
+        {
+          "kind": "pores",
+          "rect": {
+            "x": 54,
+            "y": 1289.109375,
+            "width": 212,
+            "height": 280.0625,
+            "right": 266,
+            "bottom": 1569.171875
+          }
+        }
+      ],
+      "buttons": [
+        {
+          "label": "Look inside the ground",
+          "rect": {
+            "x": 46,
+            "y": 473.171875,
+            "width": 228,
+            "height": 53.59375,
+            "right": 274,
+            "bottom": 526.765625
+          }
+        },
+        {
+          "label": "✓\nSoil pore water",
+          "rect": {
+            "x": 54,
+            "y": 628.328125,
+            "width": 212,
+            "height": 45,
+            "right": 266,
+            "bottom": 673.328125
+          }
+        },
+        {
+          "label": "○\nWater table",
+          "rect": {
+            "x": 54,
+            "y": 681.328125,
+            "width": 212,
+            "height": 44,
+            "right": 266,
+            "bottom": 725.328125
+          }
+        },
+        {
+          "label": "○\nGroundwater pores",
+          "rect": {
+            "x": 54,
+            "y": 733.328125,
+            "width": 212,
+            "height": 44,
+            "right": 266,
+            "bottom": 777.328125
+          }
+        },
+        {
+          "label": "Understand this zone",
+          "rect": {
+            "x": 65,
+            "y": 1674.5625,
+            "width": 190,
+            "height": 44,
+            "right": 255,
+            "bottom": 1718.5625
+          }
+        },
+        {
+          "label": "Check the distinction",
+          "rect": {
+            "x": 54,
+            "y": 1730.5625,
+            "width": 212,
+            "height": 46.390625,
+            "right": 266,
+            "bottom": 1776.953125
+          }
+        },
+        {
+          "label": "",
+          "rect": {
+            "x": 54,
+            "y": 1856.125,
+            "width": 212,
+            "height": 85,
+            "right": 266,
+            "bottom": 1941.125
+          }
+        },
+        {
+          "label": "",
+          "rect": {
+            "x": 54,
+            "y": 1949.125,
+            "width": 212,
+            "height": 64,
+            "right": 266,
+            "bottom": 2013.125
+          }
+        },
+        {
+          "label": "",
+          "rect": {
+            "x": 54,
+            "y": 2021.125,
+            "width": 212,
+            "height": 64,
+            "right": 266,
+            "bottom": 2085.125
+          }
+        }
+      ],
+      "text": [
+        {
+          "text": "Look inside the ground",
+          "font": 16,
+          "rect": {
+            "x": 46,
+            "y": 473.171875,
+            "width": 228,
+            "height": 53.59375,
+            "right": 274,
+            "bottom": 526.765625
+          },
+          "scrollWidth": 228,
+          "clientWidth": 228
+        },
+        {
+          "text": "Choose a zone to highlight it. Read the observation, then compare the cutaway and pore view.",
+          "font": 14,
+          "rect": {
+            "x": 54,
+            "y": 526.765625,
+            "width": 212,
+            "height": 89.5625,
+            "right": 266,
+            "bottom": 616.328125
+          },
+          "scrollWidth": 212,
+          "clientWidth": 212
+        },
+        {
+          "text": "✓\nSoil pore water",
+          "font": 14,
+          "rect": {
+            "x": 54,
+            "y": 628.328125,
+            "width": 212,
+            "height": 45,
+            "right": 266,
+            "bottom": 673.328125
+          },
+          "scrollWidth": 208,
+          "clientWidth": 208
+        },
+        {
+          "text": "○\nWater table",
+          "font": 14,
+          "rect": {
+            "x": 54,
+            "y": 681.328125,
+            "width": 212,
+            "height": 44,
+            "right": 266,
+            "bottom": 725.328125
+          },
+          "scrollWidth": 210,
+          "clientWidth": 210
+        },
+        {
+          "text": "○\nGroundwater pores",
+          "font": 14,
+          "rect": {
+            "x": 54,
+            "y": 733.328125,
+            "width": 212,
+            "height": 44,
+            "right": 266,
+            "bottom": 777.328125
+          },
+          "scrollWidth": 210,
+          "clientWidth": 210
+        },
+        {
+          "text": "Air and water share pore space",
+          "font": 18,
+          "rect": {
+            "x": 68,
+            "y": 843.703125,
+            "width": 187,
+            "height": 50.375,
+            "right": 255,
+            "bottom": 894.078125
+          },
+          "scrollWidth": 187,
+          "clientWidth": 187
+        },
+        {
+          "text": "Look for: Find water beside air between the solid grains. Unsaturated does not mean completely dry.",
+          "font": 14,
+          "rect": {
+            "x": 68,
+            "y": 902.078125,
+            "width": 187,
+            "height": 86.75,
+            "right": 255,
+            "bottom": 988.828125
+          },
+          "scrollWidth": 187,
+          "clientWidth": 187
+        },
+        {
+          "text": "Find it in the cutaway",
+          "font": 14,
+          "rect": {
+            "x": 63,
+            "y": 1020.828125,
+            "width": 194,
+            "height": 31.390625,
+            "right": 257,
+            "bottom": 1052.21875
+          },
+          "scrollWidth": 194,
+          "clientWidth": 194
+        },
+        {
+          "text": "Air + water",
+          "font": 13,
+          "rect": {
+            "x": 153,
+            "y": 1065.96875,
+            "width": 104,
+            "height": 44,
+            "right": 257,
+            "bottom": 1109.96875
+          },
+          "scrollWidth": 101,
+          "clientWidth": 101
+        },
+        {
+          "text": "Water table",
+          "font": 13,
+          "rect": {
+            "x": 153,
+            "y": 1111.96875,
+            "width": 104,
+            "height": 44,
+            "right": 257,
+            "bottom": 1155.96875
+          },
+          "scrollWidth": 101,
+          "clientWidth": 101
+        },
+        {
+          "text": "Water in pores",
+          "font": 13,
+          "rect": {
+            "x": 153,
+            "y": 1157.96875,
+            "width": 104,
+            "height": 44,
+            "right": 257,
+            "bottom": 1201.96875
+          },
+          "scrollWidth": 101,
+          "clientWidth": 101
+        },
+        {
+          "text": "Dashed line: schematic water table. The thin band above it represents the capillary fringe.",
+          "font": 13,
+          "rect": {
+            "x": 63,
+            "y": 1205.71875,
+            "width": 194,
+            "height": 62.390625,
+            "right": 257,
+            "bottom": 1268.109375
+          },
+          "scrollWidth": 194,
+          "clientWidth": 194
+        },
+        {
+          "text": "Magnified · Unsaturated soil",
+          "font": 14,
+          "rect": {
+            "x": 63,
+            "y": 1298.109375,
+            "width": 194,
+            "height": 53.78125,
+            "right": 257,
+            "bottom": 1351.890625
+          },
+          "scrollWidth": 194,
+          "clientWidth": 194
+        },
+        {
+          "text": "Some spaces contain air; others hold liquid water or water films.",
+          "font": 13,
+          "rect": {
+            "x": 63,
+            "y": 1518.578125,
+            "width": 194,
+            "height": 41.59375,
+            "right": 257,
+            "bottom": 1560.171875
+          },
+          "scrollWidth": 194,
+          "clientWidth": 194
+        },
+        {
+          "text": "Understand this zone",
+          "font": 14,
+          "rect": {
+            "x": 65,
+            "y": 1674.5625,
+            "width": 190,
+            "height": 44,
+            "right": 255,
+            "bottom": 1718.5625
+          },
+          "scrollWidth": 190,
+          "clientWidth": 190
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 65,
+            "y": 1718.5625,
+            "width": 190,
+            "height": 89.5625,
+            "right": 255,
+            "bottom": 1808.125
+          },
+          "scrollWidth": 190,
+          "clientWidth": 190
+        },
+        {
+          "text": "Check the distinction",
+          "font": 14,
+          "rect": {
+            "x": 54,
+            "y": 1730.5625,
+            "width": 212,
+            "height": 46.390625,
+            "right": 266,
+            "bottom": 1776.953125
+          },
+          "scrollWidth": 212,
+          "clientWidth": 212
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 54,
+            "y": 1856.125,
+            "width": 212,
+            "height": 85,
+            "right": 266,
+            "bottom": 1941.125
+          },
+          "scrollWidth": 210,
+          "clientWidth": 210
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 54,
+            "y": 1949.125,
+            "width": 212,
+            "height": 64,
+            "right": 266,
+            "bottom": 2013.125
+          },
+          "scrollWidth": 210,
+          "clientWidth": 210
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 54,
+            "y": 2021.125,
+            "width": 212,
+            "height": 64,
+            "right": 266,
+            "bottom": 2085.125
+          },
+          "scrollWidth": 210,
+          "clientWidth": 210
+        },
+        {
+          "text": "",
+          "font": 14,
+          "rect": {
+            "x": 69,
+            "y": 2131.515625,
+            "width": 185,
+            "height": 67.171875,
+            "right": 254,
+            "bottom": 2198.6875
+          },
+          "scrollWidth": 185,
+          "clientWidth": 185
+        },
+        {
+          "text": "Magnified schematic of an unconfined groundwater setting. Grain sizes, layer depths and arrows are illustrative. This view does not measure recharge, water-table depth or travel time.",
+          "font": 13,
+          "rect": {
+            "x": 54,
+            "y": 1776.953125,
+            "width": 212,
+            "height": 124.78125,
+            "right": 266,
+            "bottom": 1901.734375
+          },
+          "scrollWidth": 212,
+          "clientWidth": 212
+        }
+      ],
+      "ids": [
+        "wcGroundwater-check-Summary",
+        "wcGroundwater-check-Detail",
+        "wcGroundwater-check-DetailTitle",
+        "wcGroundwater-check-Question",
+        "wcGroundwater-check-FeedbackTitle"
+      ],
+      "announcement": {
+        "text": "Soil pore water selected. Air and water share pore space",
+        "role": "status",
+        "live": "polite",
+        "atomic": "true",
+        "rect": {
+          "x": 53,
+          "y": 998.828125,
+          "width": 1,
+          "height": 1,
+          "right": 54,
+          "bottom": 999.828125
+        }
+      },
+      "contextOpen": false,
+      "pageOverflow": false,
+      "svgText": 0,
+      "hiddenSvg": true,
+      "activeLayers": [
+        "soil"
+      ],
+      "activeElement": "soil"
+    }
+  ],
+  "captures": [
+    {
+      "file": "explorer-1280-light.png",
+      "sha256": "1104785b28358e39dc83deb6d0b7e659c2a2ac8194db0221332c801a73c9e01c",
+      "bytes": 90931,
+      "width": 934,
+      "height": 910
+    },
+    {
+      "file": "explorer-390-dark.png",
+      "sha256": "b6f647a91e2f6a82a59813b1bb5172b1d3f374fab8e43e0b2f5a72e15d213107",
+      "bytes": 74737,
+      "width": 296,
+      "height": 1430
+    },
+    {
+      "file": "explorer-320-light.png",
+      "sha256": "4d46266600976d7d18b57a923265b31fe1bb659ceeaf848f1b1e03ab80aa72e6",
+      "bytes": 73490,
+      "width": 226,
+      "height": 1531
+    },
+    {
+      "file": "explorer-320-contrast.png",
+      "sha256": "3e2556087dff1e82f5b40c9aacb83cd3b78dbbaffe77d9ed7e224682aa1ace70",
+      "bytes": 66334,
+      "width": 226,
+      "height": 1531
+    },
+    {
+      "file": "explorer-320-forced.png",
+      "sha256": "ad3b1dbea3078afc0ebb193e58f70330fafa2f8272d1602e01da34fd63320185",
+      "bytes": 65017,
+      "width": 226,
+      "height": 1559
+    },
+    {
+      "file": "explorer-390-zoom150.png",
+      "sha256": "e9e816ee8b1ecd894a61dbf3012501eda0a370df1eb208c98db2e53ed71f92ab",
+      "bytes": 162557,
+      "width": 252,
+      "height": 3120
+    },
+    {
+      "file": "check-1280-light.png",
+      "sha256": "a1240e21fdc8cbf4942915694e1b14295b693ba6125c5d673b337b2c35c9165d",
+      "bytes": 88298,
+      "width": 962,
+      "height": 904
+    },
+    {
+      "file": "check-320-dark.png",
+      "sha256": "3a409674ed6de8d4f15e89381477fe2979f9428becb853d47b5d23b1989f1a4c",
+      "bytes": 69194,
+      "width": 230,
+      "height": 1490
+    }
+  ],
+  "loadedSources": [
+    {
+      "case": "explorer-1280-light",
+      "sha256": "f5f50bac94b15e51a47c2cd9af88feed37469820e452cd48ba933ba5f140ac83"
+    },
+    {
+      "case": "explorer-390-dark",
+      "sha256": "f5f50bac94b15e51a47c2cd9af88feed37469820e452cd48ba933ba5f140ac83"
+    },
+    {
+      "case": "explorer-320-light",
+      "sha256": "f5f50bac94b15e51a47c2cd9af88feed37469820e452cd48ba933ba5f140ac83"
+    },
+    {
+      "case": "explorer-320-contrast",
+      "sha256": "f5f50bac94b15e51a47c2cd9af88feed37469820e452cd48ba933ba5f140ac83"
+    },
+    {
+      "case": "explorer-320-forced",
+      "sha256": "f5f50bac94b15e51a47c2cd9af88feed37469820e452cd48ba933ba5f140ac83"
+    },
+    {
+      "case": "explorer-390-zoom150",
+      "sha256": "f5f50bac94b15e51a47c2cd9af88feed37469820e452cd48ba933ba5f140ac83"
+    },
+    {
+      "case": "check-1280-light",
+      "sha256": "f5f50bac94b15e51a47c2cd9af88feed37469820e452cd48ba933ba5f140ac83"
+    },
+    {
+      "case": "check-320-dark",
+      "sha256": "f5f50bac94b15e51a47c2cd9af88feed37469820e452cd48ba933ba5f140ac83"
+    }
+  ],
+  "errors": [],
+  "browserClosed": true,
+  "serverClosed": true,
+  "nativePreview": {
+    "url": "http://127.0.0.1:8770/stem_lab/stem_tool_watercycle.js",
+    "status": 200,
+    "sha256": "f5f50bac94b15e51a47c2cd9af88feed37469820e452cd48ba933ba5f140ac83"
+  },
+  "finalSourceSha256": "f5f50bac94b15e51a47c2cd9af88feed37469820e452cd48ba933ba5f140ac83",
+  "finalPublicSourceSha256": "f5f50bac94b15e51a47c2cd9af88feed37469820e452cd48ba933ba5f140ac83",
+  "passed": 282,
+  "failed": 0,
+  "successful": true,
+  "completedAt": "2026-10-05T23:44:47.855Z"
+}

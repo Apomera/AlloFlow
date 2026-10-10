@@ -1,0 +1,17 @@
+{
+  "start": "2026-10-09T23:09:10.130Z",
+  "jobs": [
+    {
+      "label": "unit-2",
+      "code": 0
+    },
+    {
+      "label": "browser-2",
+      "code": 1
+    }
+  ],
+  "running": null,
+  "success": false,
+  "error": "browser-2 failed",
+  "end": "2026-10-09T23:10:20.322Z"
+}

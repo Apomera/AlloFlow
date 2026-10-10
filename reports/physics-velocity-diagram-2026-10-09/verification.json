@@ -1,0 +1,379 @@
+{
+  "sourceSha256": "e91d73525e07eb90f66ade539610f31847a0dcdba21d69c9434aab27dc694e7f",
+  "mirrorSha256": "e91d73525e07eb90f66ade539610f31847a0dcdba21d69c9434aab27dc694e7f",
+  "numericalPrefixUnchanged": true,
+  "initialSpecSha256": "956be3bba8495d35777be1a5dadd9e7f3723508c1b0ac143e919cfd7cddbd4a1",
+  "specSha256": "8f3a5419bdea74050ea868866a32564b21a2d597397ef5735d9c5bde7681a267",
+  "unitTests": 356,
+  "browserRuns": [
+    {
+      "resultFile": "browser-results.json",
+      "outcomes": {
+        "expected": 15,
+        "unexpected": 0,
+        "flaky": 0,
+        "skipped": 0
+      },
+      "cases": [
+        {
+          "title": "analysis tabs automatically activate with arrows, Home, and End while preserving persistent panels and exact selection",
+          "file": "physics-analysis-workspace.spec.ts",
+          "durationMs": 21684,
+          "resultFile": "browser-results.json"
+        },
+        {
+          "title": "view changes retain an older run, its captured force settings, synchronized readings, and unchanged flight CSV",
+          "file": "physics-analysis-workspace.spec.ts",
+          "durationMs": 40730,
+          "resultFile": "browser-results.json"
+        },
+        {
+          "title": "the live latest timeline selects an actual record and pauses playback without remounting the canvas or advancing evidence",
+          "file": "physics-analysis-workspace.spec.ts",
+          "durationMs": 7296,
+          "resultFile": "browser-results.json"
+        },
+        {
+          "title": "the shared timeline and tabs stay usable at 320 pixels in default, dark, and contrast themes",
+          "file": "physics-analysis-workspace.spec.ts",
+          "durationMs": 32537,
+          "resultFile": "browser-results.json"
+        },
+        {
+          "title": "vacuum and drag forces follow recorded rising, apex, falling, and impact motion on one shared scale",
+          "file": "physics-force-clarity.spec.ts",
+          "durationMs": 23501,
+          "resultFile": "browser-results.json"
+        },
+        {
+          "title": "force readings retain captured mass, gravity, and drag after control edits and when reopening an older run",
+          "file": "physics-force-clarity.spec.ts",
+          "durationMs": 27423,
+          "resultFile": "browser-results.json"
+        },
+        {
+          "title": "synthetic tiny, minimum positive, and zero forces retain exact geometry and accessible numeric readings",
+          "file": "physics-force-clarity.spec.ts",
+          "durationMs": 68914,
+          "resultFile": "browser-results.json"
+        },
+        {
+          "title": "native force details open and close with Enter and Space while retaining focus, DOM nodes, and flight evidence",
+          "file": "physics-force-clarity.spec.ts",
+          "durationMs": 12590,
+          "resultFile": "browser-results.json"
+        },
+        {
+          "title": "force cards and phase explanations retain readable contrast, focus, touch size, and geometry in nine layouts",
+          "file": "physics-force-clarity.spec.ts",
+          "durationMs": 40301,
+          "resultFile": "browser-results.json"
+        },
+        {
+          "title": "velocity and energy graphs navigate every original point and retain focus across recorded runs",
+          "file": "physics-graph-keyboard.spec.ts",
+          "durationMs": 93323,
+          "resultFile": "browser-results.json"
+        },
+        {
+          "title": "graph activation pauses live playback, keeps one-sample evidence, and ignores modified keys and unsupported records",
+          "file": "physics-graph-keyboard.spec.ts",
+          "durationMs": 56201,
+          "resultFile": "browser-results.json"
+        },
+        {
+          "title": "focused graph selections have distinct solid guides, rings and readable labels across widths and themes",
+          "file": "physics-graph-keyboard.spec.ts",
+          "durationMs": 50053,
+          "resultFile": "browser-results.json"
+        },
+        {
+          "title": "recorded velocity construction uses original signed components and a fixed flight scale through moments and older runs",
+          "file": "physics-velocity-diagram.spec.ts",
+          "durationMs": 12129,
+          "resultFile": "browser-results.json"
+        },
+        {
+          "title": "zero, leftward, downward and tiny velocity components retain exact geometry and visible numeric explanations",
+          "file": "physics-velocity-diagram.spec.ts",
+          "durationMs": 11838,
+          "resultFile": "browser-results.json"
+        },
+        {
+          "title": "velocity construction, legends and readings remain visible and readable in twelve saved layouts",
+          "file": "physics-velocity-diagram.spec.ts",
+          "durationMs": 20434,
+          "resultFile": "browser-results.json"
+        }
+      ]
+    },
+    {
+      "resultFile": "scale-sampling-results.json",
+      "outcomes": {
+        "expected": 1,
+        "unexpected": 0,
+        "flaky": 0,
+        "skipped": 0
+      },
+      "cases": [
+        {
+          "title": "zero, leftward, downward and tiny velocity components retain exact geometry and visible numeric explanations",
+          "file": "physics-velocity-diagram.spec.ts",
+          "durationMs": 6071,
+          "resultFile": "scale-sampling-results.json"
+        }
+      ]
+    }
+  ],
+  "browserTests": [
+    {
+      "title": "analysis tabs automatically activate with arrows, Home, and End while preserving persistent panels and exact selection",
+      "file": "physics-analysis-workspace.spec.ts",
+      "durationMs": 21684,
+      "resultFile": "browser-results.json"
+    },
+    {
+      "title": "view changes retain an older run, its captured force settings, synchronized readings, and unchanged flight CSV",
+      "file": "physics-analysis-workspace.spec.ts",
+      "durationMs": 40730,
+      "resultFile": "browser-results.json"
+    },
+    {
+      "title": "the live latest timeline selects an actual record and pauses playback without remounting the canvas or advancing evidence",
+      "file": "physics-analysis-workspace.spec.ts",
+      "durationMs": 7296,
+      "resultFile": "browser-results.json"
+    },
+    {
+      "title": "the shared timeline and tabs stay usable at 320 pixels in default, dark, and contrast themes",
+      "file": "physics-analysis-workspace.spec.ts",
+      "durationMs": 32537,
+      "resultFile": "browser-results.json"
+    },
+    {
+      "title": "vacuum and drag forces follow recorded rising, apex, falling, and impact motion on one shared scale",
+      "file": "physics-force-clarity.spec.ts",
+      "durationMs": 23501,
+      "resultFile": "browser-results.json"
+    },
+    {
+      "title": "force readings retain captured mass, gravity, and drag after control edits and when reopening an older run",
+      "file": "physics-force-clarity.spec.ts",
+      "durationMs": 27423,
+      "resultFile": "browser-results.json"
+    },
+    {
+      "title": "synthetic tiny, minimum positive, and zero forces retain exact geometry and accessible numeric readings",
+      "file": "physics-force-clarity.spec.ts",
+      "durationMs": 68914,
+      "resultFile": "browser-results.json"
+    },
+    {
+      "title": "native force details open and close with Enter and Space while retaining focus, DOM nodes, and flight evidence",
+      "file": "physics-force-clarity.spec.ts",
+      "durationMs": 12590,
+      "resultFile": "browser-results.json"
+    },
+    {
+      "title": "force cards and phase explanations retain readable contrast, focus, touch size, and geometry in nine layouts",
+      "file": "physics-force-clarity.spec.ts",
+      "durationMs": 40301,
+      "resultFile": "browser-results.json"
+    },
+    {
+      "title": "velocity and energy graphs navigate every original point and retain focus across recorded runs",
+      "file": "physics-graph-keyboard.spec.ts",
+      "durationMs": 93323,
+      "resultFile": "browser-results.json"
+    },
+    {
+      "title": "graph activation pauses live playback, keeps one-sample evidence, and ignores modified keys and unsupported records",
+      "file": "physics-graph-keyboard.spec.ts",
+      "durationMs": 56201,
+      "resultFile": "browser-results.json"
+    },
+    {
+      "title": "focused graph selections have distinct solid guides, rings and readable labels across widths and themes",
+      "file": "physics-graph-keyboard.spec.ts",
+      "durationMs": 50053,
+      "resultFile": "browser-results.json"
+    },
+    {
+      "title": "recorded velocity construction uses original signed components and a fixed flight scale through moments and older runs",
+      "file": "physics-velocity-diagram.spec.ts",
+      "durationMs": 12129,
+      "resultFile": "browser-results.json"
+    },
+    {
+      "title": "zero, leftward, downward and tiny velocity components retain exact geometry and visible numeric explanations",
+      "file": "physics-velocity-diagram.spec.ts",
+      "durationMs": 6071,
+      "resultFile": "scale-sampling-results.json"
+    },
+    {
+      "title": "velocity construction, legends and readings remain visible and readable in twelve saved layouts",
+      "file": "physics-velocity-diagram.spec.ts",
+      "durationMs": 20434,
+      "resultFile": "browser-results.json"
+    }
+  ],
+  "visualReports": [
+    {
+      "file": "velocity-visual-results.json",
+      "positiveCaptures": 12,
+      "savedPixelWitnesses": 33
+    },
+    {
+      "file": "graph-visual-results.json",
+      "positiveCaptures": 12,
+      "savedPixelWitnesses": 48
+    }
+  ],
+  "pngs": [
+    {
+      "file": "velocity-default-1100.png",
+      "sha256": "5f2acb2921e9d60db8970410f057546bcb61bc662e4417a9faaf658ef5b07da7",
+      "width": 1972,
+      "height": 1168
+    },
+    {
+      "file": "velocity-dark-1100.png",
+      "sha256": "93a95b538d8b0cc0ea61cf321fe9e0182c2955d72a1d6f502225d08623a0fe8e",
+      "width": 1972,
+      "height": 1168
+    },
+    {
+      "file": "velocity-contrast-1100.png",
+      "sha256": "9fd80d3554b29fcde447ddbff6c884a77d65ce75333d9f61b67f2f48bbe27af5",
+      "width": 1972,
+      "height": 1168
+    },
+    {
+      "file": "velocity-default-375.png",
+      "sha256": "d2b147d2bfcb61c4ecb1ead6a68e355794d7451b1d8634a929e9373f8ecc6950",
+      "width": 694,
+      "height": 1596
+    },
+    {
+      "file": "velocity-dark-375.png",
+      "sha256": "876b73f062c3f6f1c43d438bd7da5e5463ffcbb1d7a2adb9e2dab6e9e85976ce",
+      "width": 654,
+      "height": 1616
+    },
+    {
+      "file": "velocity-contrast-375.png",
+      "sha256": "b3ce895487a6d42414e5abfff1a78dd192e8c08dbd8ce159909e7a3299b7bf6f",
+      "width": 654,
+      "height": 1616
+    },
+    {
+      "file": "velocity-default-320.png",
+      "sha256": "54ff9fcfeca5f4931271c25517c8de0e72f6416db684d628958a938d9b12b2fc",
+      "width": 584,
+      "height": 1638
+    },
+    {
+      "file": "velocity-apex-default-320.png",
+      "sha256": "b5fe51ba78a1d53af737e99c6ba188dbb0d665846d515deacaabd867306a7dbd",
+      "width": 584,
+      "height": 1770
+    },
+    {
+      "file": "velocity-dark-320.png",
+      "sha256": "c44be4e4b6cde2065d751683ee858201b5a29c42a81a6fda409f98d56fc97aad",
+      "width": 544,
+      "height": 1604
+    },
+    {
+      "file": "velocity-apex-dark-320.png",
+      "sha256": "81962e3303079573a1b2a1aaef2b537ddf2e3364c124cb70b2d2fc51362696d3",
+      "width": 544,
+      "height": 1740
+    },
+    {
+      "file": "velocity-contrast-320.png",
+      "sha256": "4990b9cf32140ba66c9f544f226e176e2ef63a9de543cebef9071272e2f04b26",
+      "width": 544,
+      "height": 1604
+    },
+    {
+      "file": "velocity-apex-contrast-320.png",
+      "sha256": "bffd2534c157d09eae5f8b35047a7c13509c350e426b6a107b6b3449ce8efea7",
+      "width": 544,
+      "height": 1740
+    },
+    {
+      "file": "motion-default-1100.png",
+      "sha256": "e67cd13b24deceb24152e86385523b10fd9fabaee91d0321fd346aee42049c50",
+      "width": 952,
+      "height": 1066
+    },
+    {
+      "file": "motion-dark-1100.png",
+      "sha256": "7cb27d520e3a44a14f6b9275d2225765f1747eed6b892ca32fd5fb63b4ec906b",
+      "width": 952,
+      "height": 1066
+    },
+    {
+      "file": "motion-contrast-1100.png",
+      "sha256": "aa01e31b0ca56ac55ca76d232691b62cf4862ea51629dbab85c9e7d0606d7247",
+      "width": 952,
+      "height": 1066
+    },
+    {
+      "file": "motion-default-375.png",
+      "sha256": "5a36835d07b9b2eaf4063e059f290e106d2ecbbaa817386655e64cf76088411f",
+      "width": 650,
+      "height": 1088
+    },
+    {
+      "file": "motion-dark-375.png",
+      "sha256": "f704620e428bd330a944df20f3caad85ee96ee0f67463d61469ee0d26c32f8b6",
+      "width": 610,
+      "height": 1092
+    },
+    {
+      "file": "motion-contrast-375.png",
+      "sha256": "7a48321f731060f84bc263bcab567c8580c1fdb5660dd7dd0a4ba5c5ad09a579",
+      "width": 610,
+      "height": 1092
+    },
+    {
+      "file": "motion-default-320.png",
+      "sha256": "4eb740a62f48eaa027e9d56985f2a988dfec1ea45e27dffa4af5029ca516f159",
+      "width": 540,
+      "height": 1036
+    },
+    {
+      "file": "energy-default-320.png",
+      "sha256": "f84595836487d0625ff3e845b25e9ea76957d240fd8ead378774ecca58dd3382",
+      "width": 584,
+      "height": 1718
+    },
+    {
+      "file": "motion-dark-320.png",
+      "sha256": "134e46f6e5cb846b7786775dae618e51769d00a8da6d7f34f87b9d06f137ce3f",
+      "width": 500,
+      "height": 1040
+    },
+    {
+      "file": "energy-dark-320.png",
+      "sha256": "2a2a34ea289a2bc746a9d795728e9d81ed02c38200c7ff925b0bfcfe18219c40",
+      "width": 544,
+      "height": 1688
+    },
+    {
+      "file": "motion-contrast-320.png",
+      "sha256": "3a1b17911b18f97fc07cff7861ebe99a6c1596735a9b7bcf1f7db73dc2f9faed",
+      "width": 500,
+      "height": 1040
+    },
+    {
+      "file": "energy-contrast-320.png",
+      "sha256": "cfc387ad8b16a8bb90c3a043f8adf53467e6093f82d03e7bc5d53d93336f8c5b",
+      "width": 544,
+      "height": 1688
+    }
+  ],
+  "scope": "Checks complete test outcomes, no retries, source identity, native geometry and saved pixel-witness records, and capture hashes. The browser specs independently decode saved PNGs; this script does not decode them again."
+}

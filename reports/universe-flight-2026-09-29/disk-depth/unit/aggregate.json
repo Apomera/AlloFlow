@@ -1,0 +1,47 @@
+{
+  "completed": true,
+  "allFocusedAssertionsPassed": true,
+  "distinctFiles": 7,
+  "distinctTests": 56,
+  "environment": "Diagnostic Node canvas/events shim; shared workers without isolation. Real DOM/WebGL checked separately.",
+  "primary": {
+    "resultsHash": "459190f8412bcc5814faff7678af37941c35bc37c43e8a93e69796dfe62deb11",
+    "passedFiles": 3,
+    "failedFilesRetried": 4
+  },
+  "retry": {
+    "resultsHash": "fd756fdeaa75ad0f38be25d992f24b9736f6f31e05aab9c3055b1ab1bb226b74",
+    "passedFiles": 4
+  },
+  "suites": [
+    {
+      "name": "universe_flight_bulges.test.js",
+      "passed": 10
+    },
+    {
+      "name": "universe_flight_physics.test.js",
+      "passed": 22
+    },
+    {
+      "name": "universe_flight_stellar_surfaces.test.js",
+      "passed": 8
+    },
+    {
+      "name": "universe_flight_barred_detail.test.js",
+      "passed": 3
+    },
+    {
+      "name": "universe_flight_cloud_surfaces.test.js",
+      "passed": 5
+    },
+    {
+      "name": "universe_flight_spiral_detail.test.js",
+      "passed": 5
+    },
+    {
+      "name": "universe_flight_two_arm_detail.test.js",
+      "passed": 3
+    }
+  ],
+  "fullDomSuiteRun": false
+}

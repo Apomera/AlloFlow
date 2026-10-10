@@ -1,0 +1,446 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-2\\scale-water\\final-browser\\config.cjs",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/scale-explorer-water.spec.ts",
+          "**/scale-explorer-comparison.spec.ts",
+          "**/scale-explorer-rbc.spec.ts",
+          "**/scale-explorer-specimens.spec.ts"
+        ],
+        "timeout": 270000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-water/final-browser/report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "scale-explorer-comparison.spec.ts",
+      "file": "scale-explorer-comparison.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "the shared 3D scene preserves dimensions through orbit, swaps, inspection and same-item comparisons",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 38536,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T22:22:04.056Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2d16d5bf9df1005833bc-29c3a0b36e2802ccd7bd",
+          "file": "scale-explorer-comparison.spec.ts",
+          "line": 51,
+          "column": 5
+        },
+        {
+          "title": "subpixel locators, exact bridge navigation, notebook protection and recorded heights work together",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 41460,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T22:22:43.271Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2d16d5bf9df1005833bc-45b01f8e3dfcafbddd4f",
+          "file": "scale-explorer-comparison.spec.ts",
+          "line": 85,
+          "column": 5
+        },
+        {
+          "title": "the phone diagram retains extreme ratios without WebGL and labels distance evidence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13502,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T22:23:24.797Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2d16d5bf9df1005833bc-4a8f40f4f59b3e457b63",
+          "file": "scale-explorer-comparison.spec.ts",
+          "line": 127,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "scale-explorer-rbc.spec.ts",
+      "file": "scale-explorer-rbc.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "rbc landmarks reveal five native surfaces and internal anatomy while its 7.5 µm reference stays fixed",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 270000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 60109,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T22:23:38.637Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5559911673395682c5e5-57813b5bf35479e482a6",
+          "file": "scale-explorer-rbc.spec.ts",
+          "line": 91,
+          "column": 5
+        },
+        {
+          "title": "330 pixel WebGL 1 framing, touch navigation, notebook restoration and comparison preserve rbc anatomy",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 270000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 28903,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T22:24:38.977Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5559911673395682c5e5-341328075ec1d7b38084",
+          "file": "scale-explorer-rbc.spec.ts",
+          "line": 111,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "scale-explorer-specimens.spec.ts",
+      "file": "scale-explorer-specimens.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "three anatomical models expose actual native surfaces and five camera landmarks without rebuilding",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 270000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 54113,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T22:25:08.097Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0b24a871e1d04b574b8f-55fa823cb69e961bd3fd",
+          "file": "scale-explorer-specimens.spec.ts",
+          "line": 90,
+          "column": 5
+        },
+        {
+          "title": "330 pixel WebGL 1 views frame every appendage and offer touch, keyboard and Escape navigation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 270000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 32826,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T22:26:02.432Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0b24a871e1d04b574b8f-4ed49b3293e384357ea0",
+          "file": "scale-explorer-specimens.spec.ts",
+          "line": 103,
+          "column": 5
+        },
+        {
+          "title": "notebook restores precise native cameras and mouse to flea comparison stays at forty to one",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 270000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 106165,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T22:26:35.305Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0b24a871e1d04b574b8f-3e9ba227c4e013360838",
+          "file": "scale-explorer-specimens.spec.ts",
+          "line": 117,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "scale-explorer-water.spec.ts",
+      "file": "scale-explorer-water.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "water native geometry, reversible guides and saved whole viewpoints preserve the 275 pm reference",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 270000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 165177,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T22:28:28.817Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "192c736f2314a351c0a0-5f6cef07aa2351a11b6a",
+          "file": "scale-explorer-water.spec.ts",
+          "line": 91,
+          "column": 5
+        },
+        {
+          "title": "330 pixel WebGL 1 water inspection, notebook mode restoration and comparison remain usable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 270000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 92229,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-07T22:31:19.765Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "192c736f2314a351c0a0-19e660d62b893b8664f9",
+          "file": "scale-explorer-water.spec.ts",
+          "line": 110,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-07T22:21:59.952Z",
+    "duration": 747571.166,
+    "expected": 10,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

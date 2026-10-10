@@ -1,0 +1,36 @@
+{
+  "mode": "before",
+  "label": "before-1",
+  "start": "2026-10-09T23:51:47.204Z",
+  "startHashes": {
+    "stem_lab/stem_tool_dissection.js": "c7708b29982ee76b498aff5427cdf265672359430f1e559d483265de4f51e39c",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "c7708b29982ee76b498aff5427cdf265672359430f1e559d483265de4f51e39c",
+    "tests/e2e/dissection-monitor-handoff.spec.ts": "536312090867ddd84b0053d8617ac640883274c36340ab82c74375e6ab4ee0bb",
+    "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6"
+  },
+  "args": [
+    "node_modules/@playwright/test/cli.js",
+    "test",
+    "tests/e2e/dissection-monitor-handoff.spec.ts",
+    "--workers=1",
+    "--retries=0",
+    "--max-failures=1",
+    "--project=chromium",
+    "--reporter=list,json",
+    "--output=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-monitor-handoff-2026-10-09\\before-1\\test-results",
+    "--grep",
+    "phone|desktop-final"
+  ],
+  "freeMiB": 1693.7265625,
+  "pid": 29996,
+  "exitCode": 0,
+  "signal": null,
+  "end": "2026-10-09T23:51:55.959Z",
+  "endHashes": {
+    "stem_lab/stem_tool_dissection.js": "c7708b29982ee76b498aff5427cdf265672359430f1e559d483265de4f51e39c",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "c7708b29982ee76b498aff5427cdf265672359430f1e559d483265de4f51e39c",
+    "tests/e2e/dissection-monitor-handoff.spec.ts": "536312090867ddd84b0053d8617ac640883274c36340ab82c74375e6ab4ee0bb",
+    "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6"
+  },
+  "inputHashesStable": true
+}

@@ -1,0 +1,145 @@
+{
+  "completedDate": "2026-10-05",
+  "committedByTask": false,
+  "units": {
+    "passed": 65,
+    "files": [
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/solar_system_learning_journey.test.js",
+        "passed": 10
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/solar_system_moon_eclipse_lab.test.js",
+        "passed": 6
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/solar_system_moon_observer.test.js",
+        "passed": 22
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/solar_system_themed_color_safety.test.js",
+        "passed": 6
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/solar_system_visual_science.test.js",
+        "passed": 17
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/solar_system_science_trust.test.js",
+        "passed": 4
+      }
+    ],
+    "workerStartupTimeoutResolvedBySeparateScienceRun": true
+  },
+  "browsers": {
+    "passed": 16,
+    "cases": [
+      {
+        "file": "113-solar-system-moon-observer.spec.ts",
+        "title": "the Earth-view portrait, terminator and fixed illumination meter agree across all eight phases",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "113-solar-system-moon-observer.spec.ts",
+        "title": "saved evidence survives schematic north–south rotations without changing the phase, measurements or XP",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "113-solar-system-moon-observer.spec.ts",
+        "title": "exact and fractional prediction restores stay locked to their unrounded geometry and boolean saved state",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "113-solar-system-moon-observer.spec.ts",
+        "title": "malformed restores render finite fallback readings and hide stale predictions without rewriting the raw save",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "113-solar-system-moon-observer.spec.ts",
+        "title": "same-frame native prediction handlers preserve the first commitment and reveal one ungraded comparison",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "113-solar-system-moon-observer.spec.ts",
+        "title": "captured native saves append once per trial and returning to an earlier geometry permits new evidence",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "113-solar-system-moon-observer.spec.ts",
+        "title": "same-frame native phase and node callbacks merge both axes and invalidate the committed evidence",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "113-solar-system-moon-observer.spec.ts",
+        "title": "Moon trials, journal saving and reopening preserve orbital, signal, comparison and practice state",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "113-solar-system-moon-observer.spec.ts",
+        "title": "320px light observer retains readable controls, visible portrait and keyboard-scrolled scientific geometry",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "113-solar-system-moon-observer.spec.ts",
+        "title": "320px dark observer retains readable controls, visible portrait and keyboard-scrolled scientific geometry",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "50-solar-system-moon-eclipse-lab.spec.ts",
+        "title": "connects phase, node geometry, eclipse alignment, prediction, and evidence",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "50-solar-system-moon-eclipse-lab.spec.ts",
+        "title": "keeps the featured Moon investigation clear and usable at 340px",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "50-solar-system-moon-eclipse-lab.spec.ts",
+        "title": "completes the ungraded planet claim cycle through explanation-based revision",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "53-solar-system-moon-phase-navigator.spec.ts",
+        "title": "navigates all eight phases and wraps the cycle using keyboard controls",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "53-solar-system-moon-phase-navigator.spec.ts",
+        "title": "withholds the diagram answer until prediction and preserves evidence when changing view",
+        "project": "chromium",
+        "status": "passed"
+      },
+      {
+        "file": "53-solar-system-moon-phase-navigator.spec.ts",
+        "title": "keeps the eight-phase navigator legible at 340px in both themes",
+        "project": "chromium",
+        "status": "passed"
+      }
+    ]
+  },
+  "visualStates": 16,
+  "minimumEnabledTextContrast": 7.058342386517619,
+  "minimumControlHeight": 44,
+  "minimumTextSize": 13,
+  "overflowFree": true,
+  "runtimeErrors": 0,
+  "syntax": "passed",
+  "scopedWhitespace": "passed",
+  "canonicalMirrorIdentical": true,
+  "sourceSha256": "2fa42601621962deae9ea800a14ac27ee3978d02ae1f6a979a2a46f6f633f521"
+}

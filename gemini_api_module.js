@@ -622,9 +622,36 @@ const createGeminiAPI = (deps) => {
 
     // One attempt. The retrying wrapper `callGemini` is defined immediately below —
     // call THAT everywhere, not this.
-    const _callGeminiAttempt = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null, useCodeExecution = false, telemetry = null, deferBanner = false, feedbackContext = null) => {
-      await assertManagedAIConnection({ backend: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', apiKey: _resolveApiKey(), canvasHost: Boolean(_isCanvasEnv && _bootApiKey), operation: 'text', search: useSearch });
+    const _callGeminiAttempt = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null, useCodeExecution = false, telemetry = null, searchOptions = null, deferBanner = false, feedbackContext = null) => {
+      const hasVideoInput = !!(searchOptions && Object.prototype.hasOwnProperty.call(searchOptions, 'videoUrl'));
+      const videoUrl = hasVideoInput ? searchOptions.videoUrl : null;
+      if (hasVideoInput && (typeof videoUrl !== 'string' || videoUrl !== videoUrl.trim() || !/^https:\/\/www\.youtube\.com\/watch\?v=[A-Za-z0-9_-]{11}$/.test(videoUrl))) {
+        const invalidVideo = new Error('Use a valid YouTube video link to read a video.');
+        invalidVideo.code = 'allo/invalid-video-url';
+        throw invalidVideo;
+      }
+      if (hasVideoInput && (useSearch || useCodeExecution)) {
+        const incompatibleVideo = new Error('Read a video separately from web search or code execution.');
+        incompatibleVideo.code = 'allo/video-tools-unsupported';
+        throw incompatibleVideo;
+      }
+      const hasVideoClip = !!(searchOptions && Object.prototype.hasOwnProperty.call(searchOptions, 'videoClip'));
+      const videoClip = hasVideoClip ? searchOptions.videoClip : null;
+      if (hasVideoClip && (!hasVideoInput || !videoClip || typeof videoClip !== 'object' || Array.isArray(videoClip)
+        || !Object.prototype.hasOwnProperty.call(videoClip, 'startSeconds') || !Object.prototype.hasOwnProperty.call(videoClip, 'endSeconds')
+        || !Number.isSafeInteger(videoClip.startSeconds) || !Number.isSafeInteger(videoClip.endSeconds)
+        || videoClip.startSeconds < 0 || videoClip.endSeconds <= videoClip.startSeconds)) {
+        const invalidClip = new Error('Use a valid YouTube video link and whole-second clip times, with the end after the start.');
+        invalidClip.code = 'allo/invalid-video-clip';
+        throw invalidClip;
+      }
+      await assertManagedAIConnection({ backend: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', apiKey: _resolveApiKey(), canvasHost: Boolean(_isCanvasEnv && _bootApiKey), operation: hasVideoInput ? 'media' : 'text', search: useSearch });
       if (!_resolveApiKey() && !_isCanvasEnv) {
+        if (hasVideoInput) {
+          const missingKey = new Error('No Gemini API key is configured. Open AI Backend Settings and check the approved connection, then retry reading the video.');
+          missingKey.code = 'allo/no-api-key';
+          throw missingKey;
+        }
         console.warn('[callGemini] No API key available — skipping request.');
         if (jsonMode) return "{}";
         if (useSearch) return { text: "", textParts: [], groundingMetadata: null };
@@ -632,7 +659,12 @@ const createGeminiAPI = (deps) => {
       }
       const _buildUrl = (model) => { console.log(`[callGemini] ✉ Using model: ${model}`); return `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`; };
       const payload = {
-        contents: [{ parts: [{ text: prompt }] }],
+        contents: [{ parts: hasVideoInput
+          ? [{ text: _protectAttachmentPrompt(prompt) }, {
+            fileData: { fileUri: videoUrl, ...(hasVideoClip ? { mimeType: 'video/*' } : {}) },
+            ...(hasVideoClip ? { videoMetadata: { startOffset: `${videoClip.startSeconds}s`, endOffset: `${videoClip.endSeconds}s` } } : {}),
+          }]
+          : [{ text: prompt }] }],
         generationConfig: {
             maxOutputTokens: _textMaxOutputTokens,
             ...(jsonMode ? { responseMimeType: "application/json" } : {}),
@@ -654,7 +686,9 @@ const createGeminiAPI = (deps) => {
               throw unavailable;
           }
           try {
-              const { contextPrompt, groundingMetadata } = await window.WebSearchProvider.search(prompt, 10, searchQuery);
+              const { contextPrompt, groundingMetadata } = searchOptions?.intent === 'user-topic'
+                  ? await window.WebSearchProvider.searchTopic(searchQuery, 10)
+                  : await window.WebSearchProvider.search(prompt, 10, searchQuery);
               const groundedChunks = Array.isArray(groundingMetadata?.groundingChunks)
                   ? groundingMetadata.groundingChunks
                   : [];
@@ -789,9 +823,16 @@ const createGeminiAPI = (deps) => {
         // ones are the model's prose; the code/result parts are reasoning that
         // the model already incorporated into the prose).
         const _parts = data.candidates?.[0]?.content?.parts || [];
-        const textParts = _parts.map(p => (typeof p.text === 'string' ? p.text : null));
+        const textParts = _parts.map(p => (p && typeof p.text === 'string' && (!hasVideoInput || p.thought !== true) ? p.text : null));
         let text = textParts.map(part => part || '').join('');
-        if (!text && _parts[0]?.text !== undefined) text = _parts[0].text;
+        if (!text && !hasVideoInput && _parts[0]?.text !== undefined) text = _parts[0].text;
+        // Research evidence must come from a complete attached-video response,
+        // never a truncated transcript or a text-only JSON repair request.
+        if (hasVideoInput && data.candidates?.[0]?.finishReason !== 'STOP') {
+          const incompleteVideo = new Error('The video transcript could not be completed. Retry reading the video, or paste a transcript.');
+          incompleteVideo.code = 'allo/video-response-incomplete';
+          throw incompleteVideo;
+        }
         if (data.candidates?.[0]?.finishReason) {
              const reason = data.candidates[0].finishReason;
              if (reason === 'MAX_TOKENS') {
@@ -861,7 +902,7 @@ const createGeminiAPI = (deps) => {
         // Refusals are surfaced gracefully — the caller asked for content the
         // model declined to produce. Return a placeholder so the pipeline
         // keeps moving instead of crashing the whole audit.
-        if (cls.kind === 'refusal') {
+        if (cls.kind === 'refusal' && !hasVideoInput) {
           warnLog("Gemini Model Refusal caught in callGemini (suppressed crash):", _diagnosticErrorSummary(err));
           if (jsonMode) return "{}";
           if (useSearch) return { text: "Definition unavailable due to content safety filters.", textParts: ["Definition unavailable due to content safety filters."], groundingMetadata: null };
@@ -872,7 +913,7 @@ const createGeminiAPI = (deps) => {
         // is "Daily Usage Limit Reached" (which masked the gemini-3-flash-preview
         // deploy fabrication for weeks).
         if (cls.kind === 'quota' || cls.kind === 'auth' || cls.kind === 'config') {
-          if (cls.kind === 'quota') {
+          if (cls.kind === 'quota' && !hasVideoInput) {
             if (feedbackContext && _readLocalFallbackConfig()) _emitApiFeedback(feedbackContext, 'retrying', err);
             const localFallback = await _tryLocalFallbackAfterQuota(prompt, { jsonMode, useSearch, temperature, signal, useCodeExecution });
             if (localFallback.used) {
@@ -906,7 +947,7 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
       timer = setTimeout(() => { cleanup(); resolve(); }, Math.max(0, ms));
     });
 
-    const callGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null, useCodeExecution = false, telemetry = null) => {
+    const callGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null, useCodeExecution = false, telemetry = null, searchOptions = null) => {
       const context = _newFeedbackRequest('text');
       const effectiveSignal = signal || (typeof getAbortSignal === 'function' ? getAbortSignal() : null) || null;
       _emitApiFeedback(context, 'pending');
@@ -922,7 +963,7 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
           if (effectiveSignal && effectiveSignal.aborted) throw _abortError();
           const rungStartedAt = Date.now();
           try {
-            const value = await _callGeminiAttempt(prompt, jsonMode, useSearch, temperature, searchQuery, effectiveSignal, useCodeExecution, telemetry, true, context);
+            const value = await _callGeminiAttempt(prompt, jsonMode, useSearch, temperature, searchQuery, effectiveSignal, useCodeExecution, telemetry, searchOptions, true, context);
             if (effectiveSignal && effectiveSignal.aborted) throw _abortError();
             _emitApiFeedback(context, 'succeeded', null, attempt + 1);
             return value;
@@ -1188,6 +1229,10 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
     // Runtime routing metadata for the destination indicator and research path.
     callGemini._alloflowBackend = 'gemini';
     _callGeminiAttempt._alloflowBackend = 'gemini';
+    callGemini._alloflowVideoInput = true;
+    _callGeminiAttempt._alloflowVideoInput = true;
+    callGemini._alloflowVideoClipInput = true;
+    _callGeminiAttempt._alloflowVideoClipInput = true;
     return { callGemini, callGeminiSingleAttempt: _callGeminiAttempt, callGeminiImageEdit, callGeminiVision, probeModelHealth, listAvailableModels, _classifyGeminiError };
 };
 

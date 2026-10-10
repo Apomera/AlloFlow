@@ -1,0 +1,10 @@
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),crypto=require('node:crypto');
+const stage=__dirname, report=path.join(stage,'focused-unit'), attempt=path.join(report,'attempts/01-config-outside-workspace');
+const sha=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+const execution=JSON.parse(fs.readFileSync(path.join(report,'execution.json')));
+assert.equal(execution.completed,true);assert.equal(execution.exitCode,1);assert.equal(execution.inputsUnchanged,true);assert.equal(execution.diagnosticsUnchanged,true);
+assert.equal(fs.existsSync(attempt),false);fs.mkdirSync(attempt,{recursive:true});
+for(const file of['execution.json','stdout.txt']) fs.copyFileSync(path.join(report,file),path.join(attempt,file));
+for(const file of['run-focused-unit.cjs','node-renderer.config.mjs','node-renderer-setup.mjs','candidate-close-disk.test.js']) fs.copyFileSync(path.join(stage,file),path.join(attempt,file));
+assert.equal(sha(path.join(attempt,'run-focused-unit.cjs')),execution.diagnostics.find(item=>item.path==='run-focused-unit.cjs').sha256);
+console.log(JSON.stringify({completed:true,attempt:path.relative(stage,attempt).replaceAll('\\','/'),executionHash:sha(path.join(attempt,'execution.json')),driverHash:sha(path.join(attempt,'run-focused-unit.cjs')),assertionsRun:0}));

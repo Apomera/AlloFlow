@@ -1,0 +1,16 @@
+{
+  "accepted": true,
+  "sourceSHA256": "147670787861ae0251c9b4c65c90847a613c6b879d41737533749c19a5f6f891",
+  "imageHashes": {
+    "adult-wide-baseline-stage.png": "0807e2357e8ea8f4483538fd135aea4851595920486b41c06a6eeea0ec395a7c",
+    "adult-wide-baseline-wrist.png": "5b63b89f7a49098a6016c45a7f9453ff471ec45fc75bd35034580933afa8a31d",
+    "adult-wide-candidate-stage.png": "0bb16ad958616588cb48dfba3765315a7f057ed0de94e0af85cdb4b4ff0f00fc",
+    "adult-wide-candidate-wrist.png": "6affae4fc9aa9036c96300a2334dfa12cc2bfedd6c23523ce85219af1bfe7464"
+  },
+  "observations": [
+    "Reviewed all four adult recovery-pose-8 stage and wrist images. The lower wrist-to-palm join has a rounder lighting transition where the baseline showed a hard lip.",
+    "The bent wrist has no new visible dark patch or shading spike. The hand outline, finger placement and contact with the face remain clear.",
+    "The forearm outline and full-stage framing remain aligned in the before-and-after pair."
+  ],
+  "limitations": "This is one additional raw-module adult recovery-pose-8 view. The full application loader, build and deployment were not tested."
+}

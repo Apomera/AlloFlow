@@ -1,0 +1,28 @@
+{
+  "beforeSha256": "ace3a133dd2720df60741a1242e0dbf9be05977677067429b1892318924223cf",
+  "afterSha256": "b959aea16e1580738efb2d21388b5173613fcf37a91cbede2d17dd36daa696c9",
+  "edits": [
+    {
+      "name": "Wrap native scenario selector for decorative contrast arrow",
+      "before": "React.createElement(\"select\", { \"aria-describedby\": \"diss-scenario-purpose diss-scenario-effects diss-scenario-objective\", id: \"diss-scenario-select\", value: scenarioDefinition.id, onChange: function (event) { var chosen = ADVANCED_SCENARIOS.find(function (scenario) { return scenario.id === event.target.value; }); activateProcedureScenario(chosen, false); }, \"aria-label\": __alloT('stem.dissection.a11y_choose_procedure_scenario', 'Choose procedure scenario') },\n                              ADVANCED_SCENARIOS.map(function (scenario) { return React.createElement(\"option\", { key: scenario.id, value: scenario.id }, scenario.label + ' \\u00B7 ' + scenario.difficulty); })\n                            )",
+      "after": "React.createElement(\"span\", { className: \"diss-scenario-console__select-wrap\" }, React.createElement(\"select\", { \"aria-describedby\": \"diss-scenario-purpose diss-scenario-effects diss-scenario-objective\", id: \"diss-scenario-select\", value: scenarioDefinition.id, onChange: function (event) { var chosen = ADVANCED_SCENARIOS.find(function (scenario) { return scenario.id === event.target.value; }); activateProcedureScenario(chosen, false); }, \"aria-label\": __alloT('stem.dissection.a11y_choose_procedure_scenario', 'Choose procedure scenario') },\n                              ADVANCED_SCENARIOS.map(function (scenario) { return React.createElement(\"option\", { key: scenario.id, value: scenario.id }, scenario.label + ' \\u00B7 ' + scenario.difficulty); })\n                            ))"
+    },
+    {
+      "name": "Keep actual focus inset and define decorative selector wrapper",
+      "before": "[data-dissection-root] .diss-scenario-console :is(button, select):focus-visible { outline: 3px solid #1766d2; outline-offset: -5px; box-shadow: none; }",
+      "after": "[data-dissection-root] .diss-scenario-console :is(button, select):is(:focus, :focus-visible) { outline: 3px solid #1766d2 !important; outline-offset: -5px !important; box-shadow: none !important; }\n[data-dissection-root] .diss-scenario-console__select-wrap { position: relative; display: block; min-width: 0; }\n[data-dissection-root] .diss-scenario-console__select-wrap::after { content: \"\"; display: none; position: absolute; pointer-events: none; right: .9rem; top: 50%; width: .5em; height: .5em; border-right: .15em solid currentColor; border-bottom: .15em solid currentColor; transform: translateY(-75%) rotate(45deg); }"
+    },
+    {
+      "name": "Keep high contrast scenario name wrapping with currentColor chevron",
+      "before": "[data-dissection-root][data-high-contrast=\"true\"] .diss-scenario-console select { appearance: auto; }",
+      "after": "[data-dissection-root][data-high-contrast=\"true\"] .diss-scenario-console select { appearance: none; padding-right: 2.25rem !important; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-scenario-console__select-wrap::after { display: block; }"
+    },
+    {
+      "name": "Keep forced color scenario name wrapping and actual focus cue",
+      "before": "  [data-dissection-root] .diss-scenario-console select { appearance: auto; }\n  [data-dissection-root] .diss-scenario-console :is(button, select):focus-visible { outline-color: Highlight !important; }",
+      "after": "  [data-dissection-root] .diss-scenario-console select { appearance: none; padding-right: 2.25rem !important; }\n  [data-dissection-root] .diss-scenario-console__select-wrap::after { display: block; }\n  [data-dissection-root] .diss-scenario-console :is(button, select):is(:focus, :focus-visible) { outline-color: Highlight !important; }"
+    }
+  ],
+  "exactReversal": true,
+  "syntax": "passed"
+}

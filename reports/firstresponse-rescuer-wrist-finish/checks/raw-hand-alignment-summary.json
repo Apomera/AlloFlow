@@ -1,0 +1,37 @@
+{
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\vitest\\vitest.mjs",
+    "run",
+    "--config",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-rescuer-wrists-work\\raw-hand-alignment-final\\vitest.config.cjs"
+  ],
+  "cwd": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-rescuer-wrists-work\\raw-hand-alignment-final",
+  "tempDirectory": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-rescuer-wrists-work\\raw-hand-alignment-final\\temp",
+  "inputs": {
+    "stem_lab/stem_tool_firstresponse.js": "f6cfbcccc65323918d7ca7b209737dcd13cf57a31246da4110f2ab980907147f",
+    "tests/firstresponse_hand_alignment.test.js": "1732c7cb9eff98ea04b3cb19eac5cf25d2a108a8eae4a1e08321ac492554868d",
+    "vendor/three-r128/three.min.js": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
+  },
+  "sharedSourceHashes": {
+    "stem_lab/stem_tool_firstresponse.js": "f21eeaf8d3bd87810142d77f2cfe5e7ab9ee56e80a6548d927a4dcabec7af511",
+    "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js": "f21eeaf8d3bd87810142d77f2cfe5e7ab9ee56e80a6548d927a4dcabec7af511",
+    "desktop/app-build/stem_lab/stem_tool_firstresponse.js": "f21eeaf8d3bd87810142d77f2cfe5e7ab9ee56e80a6548d927a4dcabec7af511",
+    "desktop/web-app/build/stem_lab/stem_tool_firstresponse.js": "f21eeaf8d3bd87810142d77f2cfe5e7ab9ee56e80a6548d927a4dcabec7af511"
+  },
+  "configSHA256": "6bc4966dca440ecb81e07a1a056b1801ed1fbd7e107edec91f787b175277fcb2",
+  "startedAt": "2026-10-08T04:31:35.726Z",
+  "testFile": "tests/firstresponse_hand_alignment.test.js",
+  "rawTestSHA256": "1732c7cb9eff98ea04b3cb19eac5cf25d2a108a8eae4a1e08321ac492554868d",
+  "sourceSHA256": "f6cfbcccc65323918d7ca7b209737dcd13cf57a31246da4110f2ab980907147f",
+  "finishedAt": "2026-10-08T04:34:32.634Z",
+  "exitCode": 0,
+  "passed": true,
+  "numPassedTests": 12,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTotalTests": 12,
+  "sourceIsExactCandidate": true,
+  "rawTestExact": true,
+  "sharedFilesWritten": 0
+}

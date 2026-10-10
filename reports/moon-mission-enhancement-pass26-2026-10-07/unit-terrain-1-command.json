@@ -1,0 +1,16 @@
+{
+  "args": [
+    "node",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "--config",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass26-2026-10-07\\vitest.config.mjs",
+    "--reporter=verbose",
+    "--reporter=json",
+    "--outputFile.json=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass26-2026-10-07\\unit-terrain-1.json"
+  ],
+  "cwd": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "processTimeoutSeconds": 240,
+  "retryCount": 0,
+  "startUtc": "2026-10-08T02:23:15Z"
+}

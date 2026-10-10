@@ -1,0 +1,225 @@
+{
+  "schema": "moon-pass35-direct-browser-v1",
+  "runner": "direct-playwright-api",
+  "playwrightCliResult": false,
+  "mode": "instruments",
+  "status": "passed",
+  "startedAt": "2026-10-10T00:14:38.991Z",
+  "repo": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "specPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-docking-instruments.spec.ts",
+  "output": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass35-2026-10-09\\direct-instruments-3",
+  "browserCache": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+  "timeouts": {
+    "action": 20000,
+    "navigation": 60000,
+    "expect": 15000,
+    "launch": 60000,
+    "workflow": 240000
+  },
+  "launchOptions": {
+    "headless": true,
+    "timeout": 60000,
+    "downloadsPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass35-2026-10-09\\direct-instruments-3\\downloads"
+  },
+  "workflowCompleted": true,
+  "cleanupCompleted": true,
+  "milestones": [
+    {
+      "name": "load:before",
+      "elapsedMs": 3
+    },
+    {
+      "name": "load:after",
+      "elapsedMs": 28606,
+      "workflow": "docking contact instruments preserve signed measurements, exact limits and live control outcomes",
+      "registered": [
+        "docking contact instruments preserve signed measurements, exact limits and live control outcomes"
+      ]
+    },
+    {
+      "name": "harness-start:before",
+      "elapsedMs": 28651
+    },
+    {
+      "name": "harness-start:after",
+      "elapsedMs": 28829
+    },
+    {
+      "name": "browser-launch:before",
+      "elapsedMs": 28865
+    },
+    {
+      "name": "browser-launch:after",
+      "elapsedMs": 30586
+    },
+    {
+      "name": "context-create:before",
+      "elapsedMs": 30587
+    },
+    {
+      "name": "context-create:after",
+      "elapsedMs": 30694
+    },
+    {
+      "name": "page-create:before",
+      "elapsedMs": 30723
+    },
+    {
+      "name": "page-create:after",
+      "elapsedMs": 31341
+    },
+    {
+      "name": "workflow:before",
+      "elapsedMs": 31361
+    },
+    {
+      "name": "workflow:after",
+      "elapsedMs": 81322
+    },
+    {
+      "name": "cleanup:before",
+      "elapsedMs": 81323
+    },
+    {
+      "name": "after-each:before",
+      "elapsedMs": 81323
+    },
+    {
+      "name": "after-each:after",
+      "elapsedMs": 81444
+    },
+    {
+      "name": "context-close:before",
+      "elapsedMs": 81444
+    },
+    {
+      "name": "page-close",
+      "elapsedMs": 81485
+    },
+    {
+      "name": "context-close:after",
+      "elapsedMs": 81528
+    },
+    {
+      "name": "browser-close:before",
+      "elapsedMs": 81529
+    },
+    {
+      "name": "browser-close:after",
+      "elapsedMs": 90180
+    },
+    {
+      "name": "harness-stop:before",
+      "elapsedMs": 90281
+    },
+    {
+      "name": "harness-stop:after",
+      "elapsedMs": 90283
+    },
+    {
+      "name": "cleanup:after",
+      "elapsedMs": 90652,
+      "status": "passed"
+    }
+  ],
+  "errors": [],
+  "attachments": [
+    {
+      "name": "phone-initial-clipped",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass35-2026-10-09\\direct-instruments-3\\phone-initial-clipped.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "phone-initial-clipped-measurements",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass35-2026-10-09\\direct-instruments-3\\phone-initial-clipped.json",
+      "contentType": "application/json"
+    },
+    {
+      "name": "desktop-inclusive-boundaries",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass35-2026-10-09\\direct-instruments-3\\desktop-inclusive-boundaries.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "desktop-inclusive-boundaries-measurements",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass35-2026-10-09\\direct-instruments-3\\desktop-inclusive-boundaries.json",
+      "contentType": "application/json"
+    },
+    {
+      "name": "phone-just-outside-limits",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass35-2026-10-09\\direct-instruments-3\\phone-just-outside-limits.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "phone-just-outside-limits-measurements",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass35-2026-10-09\\direct-instruments-3\\phone-just-outside-limits.json",
+      "contentType": "application/json"
+    },
+    {
+      "name": "phone-separating-clipped",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass35-2026-10-09\\direct-instruments-3\\phone-separating-clipped.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "phone-separating-clipped-measurements",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass35-2026-10-09\\direct-instruments-3\\phone-separating-clipped.json",
+      "contentType": "application/json"
+    },
+    {
+      "name": "desktop-guided-contact",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass35-2026-10-09\\direct-instruments-3\\desktop-guided-contact.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "desktop-guided-contact-measurements",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass35-2026-10-09\\direct-instruments-3\\desktop-guided-contact.json",
+      "contentType": "application/json"
+    },
+    {
+      "name": "desktop-unsafe-contact",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass35-2026-10-09\\direct-instruments-3\\desktop-unsafe-contact.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "desktop-unsafe-contact-measurements",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass35-2026-10-09\\direct-instruments-3\\desktop-unsafe-contact.json",
+      "contentType": "application/json"
+    },
+    {
+      "name": "phone-manual-pulses",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass35-2026-10-09\\direct-instruments-3\\phone-manual-pulses.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "phone-manual-pulses-measurements",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass35-2026-10-09\\direct-instruments-3\\phone-manual-pulses.json",
+      "contentType": "application/json"
+    }
+  ],
+  "inputHashes": {
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-docking-instruments.spec.ts": "a535ae79dcfd20d378cd1b4ed7f18f14fe0c6aa41184ab154851b685c5693bc9",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_moonmission.js": "f8689059ea0aca089544f891a798107b094d84ebd02e64711342a86ec50e6dea",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_moonmission.js": "f8689059ea0aca089544f891a798107b094d84ebd02e64711342a86ec50e6dea"
+  },
+  "transform": {
+    "name": "Playwright bundled babelTransform",
+    "bundlePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\transform\\babelBundle.js",
+    "sha256": "9201df11ae9c9ee1febd587c5013c4f862aa7e9981b92b86ccbbbd37e71f9124"
+  },
+  "workflow": "docking contact instruments preserve signed measurements, exact limits and live control outcomes",
+  "suiteOptions": {
+    "timeout": 240000,
+    "retries": 0
+  },
+  "browserVersion": "148.0.7778.96",
+  "pageEvents": [
+    {
+      "event": "close",
+      "elapsedMs": 81485,
+      "message": null
+    }
+  ],
+  "finishedAt": "2026-10-10T00:16:09.643Z",
+  "elapsedMs": 90652
+}

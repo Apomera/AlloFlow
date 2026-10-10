@@ -1,0 +1,238 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-hud-layout-2026-10-09\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 1,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/physics-hud-layout-2026-10-09/callout-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "physics-canvas-callouts.spec.ts",
+      "file": "physics-canvas-callouts.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "original launch, apex and impact callouts retain painted text and clearance in nine layouts",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 31502,
+                  "error": {
+                    "message": "Error: No deterministic browser raster transform preserves every fixed axis constellation: [{\"kind\":\"css-origin-rounding\",\"rasterOrigin\":{\"left\":40,\"top\":487},\"maxResidual\":190,\"worst\":[{\"nativePixelX\":75,\"nativePixelY\":737,\"savedPixelX\":75,\"savedPixelY\":737,\"savedRgb\":[15,23,42],\"projected\":{\"rawX\":75,\"rawY\":737,\"xWeight\":0,\"yWeight\":0,\"inputs\":[{\"pixelX\":75,\"pixelY\":737,\"rgba\":[203,213,225,255],\"weight\":1},{\"pixelX\":76,\"pixelY\":737,\"rgba\":[161,172,187,255],\"weight\":0},{\"pixelX\":75,\"pixelY\":738,\"rgba\":[203,213,225,255],\"weight\":0},{\"pixelX\":76,\"pixelY\":738,\"rgba\":[146,159,174,255],\"weight\":0}],\"rgba\":[203,213,225,255]},\"channelError\":190},{\"nativePixelX\":75,\"nativePixelY\":738,\"savedPixelX\":75,\"savedPixelY\":738,\"savedRgb\":[15,23,42],\"projected\":{\"rawX\":75,\"rawY\":738,\"xWeight\":0,\"yWeight\":0,\"inputs\":[{\"pixelX\":75,\"pixelY\":738,\"rgba\":[203,213,225,255],\"weight\":1},{\"pixelX\":76,\"pixelY\":738,\"rgba\":[146,159,174,255],\"weight\":0},{\"pixelX\":75,\"pixelY\":739,\"rgba\":[203,213,225,255],\"weight\":0},{\"pixelX\":76,\"pixelY\":739,\"rgba\":[146,160,174,255],\"weight\":0}],\"rgba\":[203,213,225,255]},\"channelError\":190}]},{\"kind\":\"device-origin-rounding\",\"rasterOrigin\":{\"left\":40,\"top\":487},\"maxResidual\":190,\"worst\":[{\"nativePixelX\":75,\"nativePixelY\":737,\"savedPixelX\":75,\"savedPixelY\":737,\"savedRgb\":[15,23,42],\"projected\":{\"rawX\":75,\"rawY\":737,\"xWeight\":0,\"yWeight\":0,\"inputs\":[{\"pixelX\":75,\"pixelY\":737,\"rgba\":[203,213,225,255],\"weight\":1},{\"pixelX\":76,\"pixelY\":737,\"rgba\":[161,172,187,255],\"weight\":0},{\"pixelX\":75,\"pixelY\":738,\"rgba\":[203,213,225,255],\"weight\":0},{\"pixelX\":76,\"pixelY\":738,\"rgba\":[146,159,174,255],\"weight\":0}],\"rgba\":[203,213,225,255]},\"channelError\":190},{\"nativePixelX\":75,\"nativePixelY\":738,\"savedPixelX\":75,\"savedPixelY\":738,\"savedRgb\":[15,23,42],\"projected\":{\"rawX\":75,\"rawY\":738,\"xWeight\":0,\"yWeight\":0,\"inputs\":[{\"pixelX\":75,\"pixelY\":738,\"rgba\":[203,213,225,255],\"weight\":1},{\"pixelX\":76,\"pixelY\":738,\"rgba\":[146,159,174,255],\"weight\":0},{\"pixelX\":75,\"pixelY\":739,\"rgba\":[203,213,225,255],\"weight\":0},{\"pixelX\":76,\"pixelY\":739,\"rgba\":[146,160,174,255],\"weight\":0}],\"rgba\":[203,213,225,255]},\"channelError\":190}]},{\"kind\":\"continuous-css-origin\",\"rasterOrigin\":{\"left\":40,\"top\":487.03125},\"maxResidual\":190,\"worst\":[{\"nativePixelX\":75,\"nativePixelY\":737,\"savedPixelX\":75,\"savedPixelY\":737,\"savedRgb\":[15,23,42],\"projected\":{\"rawX\":75,\"rawY\":736.9375,\"xWeight\":0,\"yWeight\":0.9375,\"inputs\":[{\"pixelX\":75,\"pixelY\":736,\"rgba\":[203,213,225,255],\"weight\":0.0625},{\"pixelX\":76,\"pixelY\":736,\"rgba\":[169,180,194,255],\"weight\":0},{\"pixelX\":75,\"pixelY\":737,\"rgba\":[203,213,225,255],\"weight\":0.9375},{\"pixelX\":76,\"pixelY\":737,\"rgba\":[161,172,187,255],\"weight\":0}],\"rgba\":[203,213,225,255]},\"channelError\":190},{\"nativePixelX\":75,\"nativePixelY\":738,\"savedPixelX\":75,\"savedPixelY\":738,\"savedRgb\":[15,23,42],\"projected\":{\"rawX\":75,\"rawY\":737.9375,\"xWeight\":0,\"yWeight\":0.9375,\"inputs\":[{\"pixelX\":75,\"pixelY\":737,\"rgba\":[203,213,225,255],\"weight\":0.0625},{\"pixelX\":76,\"pixelY\":737,\"rgba\":[161,172,187,255],\"weight\":0},{\"pixelX\":75,\"pixelY\":738,\"rgba\":[203,213,225,255],\"weight\":0.9375},{\"pixelX\":76,\"pixelY\":738,\"rgba\":[146,159,174,255],\"weight\":0}],\"rgba\":[203,213,225,255]},\"channelError\":190}]}]",
+                    "stack": "Error: No deterministic browser raster transform preserves every fixed axis constellation: [{\"kind\":\"css-origin-rounding\",\"rasterOrigin\":{\"left\":40,\"top\":487},\"maxResidual\":190,\"worst\":[{\"nativePixelX\":75,\"nativePixelY\":737,\"savedPixelX\":75,\"savedPixelY\":737,\"savedRgb\":[15,23,42],\"projected\":{\"rawX\":75,\"rawY\":737,\"xWeight\":0,\"yWeight\":0,\"inputs\":[{\"pixelX\":75,\"pixelY\":737,\"rgba\":[203,213,225,255],\"weight\":1},{\"pixelX\":76,\"pixelY\":737,\"rgba\":[161,172,187,255],\"weight\":0},{\"pixelX\":75,\"pixelY\":738,\"rgba\":[203,213,225,255],\"weight\":0},{\"pixelX\":76,\"pixelY\":738,\"rgba\":[146,159,174,255],\"weight\":0}],\"rgba\":[203,213,225,255]},\"channelError\":190},{\"nativePixelX\":75,\"nativePixelY\":738,\"savedPixelX\":75,\"savedPixelY\":738,\"savedRgb\":[15,23,42],\"projected\":{\"rawX\":75,\"rawY\":738,\"xWeight\":0,\"yWeight\":0,\"inputs\":[{\"pixelX\":75,\"pixelY\":738,\"rgba\":[203,213,225,255],\"weight\":1},{\"pixelX\":76,\"pixelY\":738,\"rgba\":[146,159,174,255],\"weight\":0},{\"pixelX\":75,\"pixelY\":739,\"rgba\":[203,213,225,255],\"weight\":0},{\"pixelX\":76,\"pixelY\":739,\"rgba\":[146,160,174,255],\"weight\":0}],\"rgba\":[203,213,225,255]},\"channelError\":190}]},{\"kind\":\"device-origin-rounding\",\"rasterOrigin\":{\"left\":40,\"top\":487},\"maxResidual\":190,\"worst\":[{\"nativePixelX\":75,\"nativePixelY\":737,\"savedPixelX\":75,\"savedPixelY\":737,\"savedRgb\":[15,23,42],\"projected\":{\"rawX\":75,\"rawY\":737,\"xWeight\":0,\"yWeight\":0,\"inputs\":[{\"pixelX\":75,\"pixelY\":737,\"rgba\":[203,213,225,255],\"weight\":1},{\"pixelX\":76,\"pixelY\":737,\"rgba\":[161,172,187,255],\"weight\":0},{\"pixelX\":75,\"pixelY\":738,\"rgba\":[203,213,225,255],\"weight\":0},{\"pixelX\":76,\"pixelY\":738,\"rgba\":[146,159,174,255],\"weight\":0}],\"rgba\":[203,213,225,255]},\"channelError\":190},{\"nativePixelX\":75,\"nativePixelY\":738,\"savedPixelX\":75,\"savedPixelY\":738,\"savedRgb\":[15,23,42],\"projected\":{\"rawX\":75,\"rawY\":738,\"xWeight\":0,\"yWeight\":0,\"inputs\":[{\"pixelX\":75,\"pixelY\":738,\"rgba\":[203,213,225,255],\"weight\":1},{\"pixelX\":76,\"pixelY\":738,\"rgba\":[146,159,174,255],\"weight\":0},{\"pixelX\":75,\"pixelY\":739,\"rgba\":[203,213,225,255],\"weight\":0},{\"pixelX\":76,\"pixelY\":739,\"rgba\":[146,160,174,255],\"weight\":0}],\"rgba\":[203,213,225,255]},\"channelError\":190}]},{\"kind\":\"continuous-css-origin\",\"rasterOrigin\":{\"left\":40,\"top\":487.03125},\"maxResidual\":190,\"worst\":[{\"nativePixelX\":75,\"nativePixelY\":737,\"savedPixelX\":75,\"savedPixelY\":737,\"savedRgb\":[15,23,42],\"projected\":{\"rawX\":75,\"rawY\":736.9375,\"xWeight\":0,\"yWeight\":0.9375,\"inputs\":[{\"pixelX\":75,\"pixelY\":736,\"rgba\":[203,213,225,255],\"weight\":0.0625},{\"pixelX\":76,\"pixelY\":736,\"rgba\":[169,180,194,255],\"weight\":0},{\"pixelX\":75,\"pixelY\":737,\"rgba\":[203,213,225,255],\"weight\":0.9375},{\"pixelX\":76,\"pixelY\":737,\"rgba\":[161,172,187,255],\"weight\":0}],\"rgba\":[203,213,225,255]},\"channelError\":190},{\"nativePixelX\":75,\"nativePixelY\":738,\"savedPixelX\":75,\"savedPixelY\":738,\"savedRgb\":[15,23,42],\"projected\":{\"rawX\":75,\"rawY\":737.9375,\"xWeight\":0,\"yWeight\":0.9375,\"inputs\":[{\"pixelX\":75,\"pixelY\":737,\"rgba\":[203,213,225,255],\"weight\":0.0625},{\"pixelX\":76,\"pixelY\":737,\"rgba\":[161,172,187,255],\"weight\":0},{\"pixelX\":75,\"pixelY\":738,\"rgba\":[203,213,225,255],\"weight\":0.9375},{\"pixelX\":76,\"pixelY\":738,\"rgba\":[146,159,174,255],\"weight\":0}],\"rgba\":[203,213,225,255]},\"channelError\":190}]}]\n    at capture (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-canvas-callouts.spec.ts:535:48)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-canvas-callouts.spec.ts:630:87",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-canvas-callouts.spec.ts",
+                      "column": 48,
+                      "line": 535
+                    },
+                    "snippet": "  533 |   });\n  534 |   const selectedTransform = [...candidates].sort((a, b) => a.maxResidual - b.maxResidual || a.meanResidual - b.meanResidual || a.order - b.order)[0];\n> 535 |   if (selectedTransform.maxResidual > 4) throw Error('No deterministic browser raster transform preserves every fixed axis constellation: ' + JSON.stringify(candidates.map(c => ({ kind: c.kind, rasterOrigin: c.rasterOrigin, maxResidual: c.maxResidual, worst: c.calibration.flatMap(a => a.samples).sort((a, b) => b.channelError - a.channelError).slice(0, 2) }))));\n      |                                                ^\n  536 |   const rasterOrigin = selectedTransform.rasterOrigin, offsetDevicePixels = { x: (rasterOrigin.left - effectiveCanvasOrigin.left) * dpr, y: (rasterOrigin.top - effectiveCanvasOrigin.top) * dpr };\n  537 |   expect(Math.abs(offsetDevicePixels.x)).toBeLessThanOrEqual(.5 * dpr); expect(Math.abs(offsetDevicePixels.y)).toBeLessThanOrEqual(.5 * dpr);\n  538 |   const rasterTransform = { kind: selectedTransform.kind, selectionRule: 'lowest maximum residual, then mean residual, then CSS rounding, device rounding, continuous origin', cssOrigin: { left: canvasRect.left, top: canvasRect.top }, documentCanvasOrigin, screenshotDocumentOrigin, effectiveCanvasOrigin, rasterOrigin, offsetDevicePixels, nativeConstellations: calibrationNative, candidates, calibration: selectedTransform.calibration, maxResidual: selectedTransform.maxResidual };"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-canvas-callouts.spec.ts",
+                        "column": 48,
+                        "line": 535
+                      },
+                      "message": "Error: No deterministic browser raster transform preserves every fixed axis constellation: [{\"kind\":\"css-origin-rounding\",\"rasterOrigin\":{\"left\":40,\"top\":487},\"maxResidual\":190,\"worst\":[{\"nativePixelX\":75,\"nativePixelY\":737,\"savedPixelX\":75,\"savedPixelY\":737,\"savedRgb\":[15,23,42],\"projected\":{\"rawX\":75,\"rawY\":737,\"xWeight\":0,\"yWeight\":0,\"inputs\":[{\"pixelX\":75,\"pixelY\":737,\"rgba\":[203,213,225,255],\"weight\":1},{\"pixelX\":76,\"pixelY\":737,\"rgba\":[161,172,187,255],\"weight\":0},{\"pixelX\":75,\"pixelY\":738,\"rgba\":[203,213,225,255],\"weight\":0},{\"pixelX\":76,\"pixelY\":738,\"rgba\":[146,159,174,255],\"weight\":0}],\"rgba\":[203,213,225,255]},\"channelError\":190},{\"nativePixelX\":75,\"nativePixelY\":738,\"savedPixelX\":75,\"savedPixelY\":738,\"savedRgb\":[15,23,42],\"projected\":{\"rawX\":75,\"rawY\":738,\"xWeight\":0,\"yWeight\":0,\"inputs\":[{\"pixelX\":75,\"pixelY\":738,\"rgba\":[203,213,225,255],\"weight\":1},{\"pixelX\":76,\"pixelY\":738,\"rgba\":[146,159,174,255],\"weight\":0},{\"pixelX\":75,\"pixelY\":739,\"rgba\":[203,213,225,255],\"weight\":0},{\"pixelX\":76,\"pixelY\":739,\"rgba\":[146,160,174,255],\"weight\":0}],\"rgba\":[203,213,225,255]},\"channelError\":190}]},{\"kind\":\"device-origin-rounding\",\"rasterOrigin\":{\"left\":40,\"top\":487},\"maxResidual\":190,\"worst\":[{\"nativePixelX\":75,\"nativePixelY\":737,\"savedPixelX\":75,\"savedPixelY\":737,\"savedRgb\":[15,23,42],\"projected\":{\"rawX\":75,\"rawY\":737,\"xWeight\":0,\"yWeight\":0,\"inputs\":[{\"pixelX\":75,\"pixelY\":737,\"rgba\":[203,213,225,255],\"weight\":1},{\"pixelX\":76,\"pixelY\":737,\"rgba\":[161,172,187,255],\"weight\":0},{\"pixelX\":75,\"pixelY\":738,\"rgba\":[203,213,225,255],\"weight\":0},{\"pixelX\":76,\"pixelY\":738,\"rgba\":[146,159,174,255],\"weight\":0}],\"rgba\":[203,213,225,255]},\"channelError\":190},{\"nativePixelX\":75,\"nativePixelY\":738,\"savedPixelX\":75,\"savedPixelY\":738,\"savedRgb\":[15,23,42],\"projected\":{\"rawX\":75,\"rawY\":738,\"xWeight\":0,\"yWeight\":0,\"inputs\":[{\"pixelX\":75,\"pixelY\":738,\"rgba\":[203,213,225,255],\"weight\":1},{\"pixelX\":76,\"pixelY\":738,\"rgba\":[146,159,174,255],\"weight\":0},{\"pixelX\":75,\"pixelY\":739,\"rgba\":[203,213,225,255],\"weight\":0},{\"pixelX\":76,\"pixelY\":739,\"rgba\":[146,160,174,255],\"weight\":0}],\"rgba\":[203,213,225,255]},\"channelError\":190}]},{\"kind\":\"continuous-css-origin\",\"rasterOrigin\":{\"left\":40,\"top\":487.03125},\"maxResidual\":190,\"worst\":[{\"nativePixelX\":75,\"nativePixelY\":737,\"savedPixelX\":75,\"savedPixelY\":737,\"savedRgb\":[15,23,42],\"projected\":{\"rawX\":75,\"rawY\":736.9375,\"xWeight\":0,\"yWeight\":0.9375,\"inputs\":[{\"pixelX\":75,\"pixelY\":736,\"rgba\":[203,213,225,255],\"weight\":0.0625},{\"pixelX\":76,\"pixelY\":736,\"rgba\":[169,180,194,255],\"weight\":0},{\"pixelX\":75,\"pixelY\":737,\"rgba\":[203,213,225,255],\"weight\":0.9375},{\"pixelX\":76,\"pixelY\":737,\"rgba\":[161,172,187,255],\"weight\":0}],\"rgba\":[203,213,225,255]},\"channelError\":190},{\"nativePixelX\":75,\"nativePixelY\":738,\"savedPixelX\":75,\"savedPixelY\":738,\"savedRgb\":[15,23,42],\"projected\":{\"rawX\":75,\"rawY\":737.9375,\"xWeight\":0,\"yWeight\":0.9375,\"inputs\":[{\"pixelX\":75,\"pixelY\":737,\"rgba\":[203,213,225,255],\"weight\":0.0625},{\"pixelX\":76,\"pixelY\":737,\"rgba\":[161,172,187,255],\"weight\":0},{\"pixelX\":75,\"pixelY\":738,\"rgba\":[203,213,225,255],\"weight\":0.9375},{\"pixelX\":76,\"pixelY\":738,\"rgba\":[146,159,174,255],\"weight\":0}],\"rgba\":[203,213,225,255]},\"channelError\":190}]}]\n\n  533 |   });\n  534 |   const selectedTransform = [...candidates].sort((a, b) => a.maxResidual - b.maxResidual || a.meanResidual - b.meanResidual || a.order - b.order)[0];\n> 535 |   if (selectedTransform.maxResidual > 4) throw Error('No deterministic browser raster transform preserves every fixed axis constellation: ' + JSON.stringify(candidates.map(c => ({ kind: c.kind, rasterOrigin: c.rasterOrigin, maxResidual: c.maxResidual, worst: c.calibration.flatMap(a => a.samples).sort((a, b) => b.channelError - a.channelError).slice(0, 2) }))));\n      |                                                ^\n  536 |   const rasterOrigin = selectedTransform.rasterOrigin, offsetDevicePixels = { x: (rasterOrigin.left - effectiveCanvasOrigin.left) * dpr, y: (rasterOrigin.top - effectiveCanvasOrigin.top) * dpr };\n  537 |   expect(Math.abs(offsetDevicePixels.x)).toBeLessThanOrEqual(.5 * dpr); expect(Math.abs(offsetDevicePixels.y)).toBeLessThanOrEqual(.5 * dpr);\n  538 |   const rasterTransform = { kind: selectedTransform.kind, selectionRule: 'lowest maximum residual, then mean residual, then CSS rounding, device rounding, continuous origin', cssOrigin: { left: canvasRect.left, top: canvasRect.top }, documentCanvasOrigin, screenshotDocumentOrigin, effectiveCanvasOrigin, rasterOrigin, offsetDevicePixels, nativeConstellations: calibrationNative, candidates, calibration: selectedTransform.calibration, maxResidual: selectedTransform.maxResidual };\n    at capture (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-canvas-callouts.spec.ts:535:48)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-canvas-callouts.spec.ts:630:87"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-10T02:03:37.684Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-hud-layout-2026-10-09\\callout-artifacts\\physics-canvas-callouts-or-43514-d-clearance-in-nine-layouts-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-hud-layout-2026-10-09\\callout-artifacts\\physics-canvas-callouts-or-43514-d-clearance-in-nine-layouts-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-hud-layout-2026-10-09\\callout-artifacts\\physics-canvas-callouts-or-43514-d-clearance-in-nine-layouts-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-hud-layout-2026-10-09\\callout-artifacts\\physics-canvas-callouts-or-43514-d-clearance-in-nine-layouts-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-canvas-callouts.spec.ts",
+                    "column": 48,
+                    "line": 535
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "bd24b5a7a1a567d94fb2-324c45b4c33b2d37a69c",
+          "file": "physics-canvas-callouts.spec.ts",
+          "line": 624,
+          "column": 5
+        },
+        {
+          "title": "horizontal release and ground impact preserve original events and clear point markers",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "bd24b5a7a1a567d94fb2-e116077dee1ba3403732",
+          "file": "physics-canvas-callouts.spec.ts",
+          "line": 642,
+          "column": 5
+        },
+        {
+          "title": "drag callouts retain captured values after all six launch controls change",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "bd24b5a7a1a567d94fb2-154c56f58ca5969e01b3",
+          "file": "physics-canvas-callouts.spec.ts",
+          "line": 651,
+          "column": 5
+        },
+        {
+          "title": "an unfinished rising path stays paused with a visible original latest-point callout",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "bd24b5a7a1a567d94fb2-353e6a3948728a9bc30f",
+          "file": "physics-canvas-callouts.spec.ts",
+          "line": 662,
+          "column": 5
+        },
+        {
+          "title": "dense original route labels and long translation tokens fit beside protected points",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "bd24b5a7a1a567d94fb2-805d14c034a124a8aaa6",
+          "file": "physics-canvas-callouts.spec.ts",
+          "line": 674,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "message": "\u001b[31mTesting stopped early after 1 maximum allowed failures.\u001b[39m"
+    }
+  ],
+  "stats": {
+    "startTime": "2026-10-10T02:03:36.105Z",
+    "duration": 34770.502,
+    "expected": 0,
+    "skipped": 4,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

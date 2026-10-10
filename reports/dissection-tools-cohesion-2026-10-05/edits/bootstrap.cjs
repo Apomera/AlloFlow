@@ -1,0 +1,11 @@
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+const repo='C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated',sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+fs.mkdirSync(__dirname,{recursive:true});
+const source=fs.readFileSync(path.join(repo,'stem_lab/stem_tool_dissection.js'));
+if(sha(source)!=='bf89763b349b9cc74a24f440e4a0c2f98b11660de700bb82ac1debe2129723dd'||!source.equals(fs.readFileSync(path.join(repo,'desktop/web-app/public/stem_lab/stem_tool_dissection.js'))))throw Error('Source guard');
+const snapshot=path.join(__dirname,'renderer-baseline.js');if(fs.existsSync(snapshot))throw Error('Bootstrap already applied');fs.writeFileSync(snapshot,source);
+const file=path.join(repo,'AGENT_HANDOFF.md'),before=fs.readFileSync(file,'utf8'),marker='## Work Log';const at=before.indexOf(marker);if(at<0||before.indexOf(marker,at+1)>=0)throw Error('Work log guard');
+const old=marker,newText=marker+'\n\n- 2026-10-05 | Codex Dissection tools cohesion IN PROGRESS: root owns canonical/public stem_lab/stem_tool_dissection.js, focused lab unit/new tools browser fixture, and reports/dissection-tools-cohesion-2026-10-05. Group observation, evidence/export and report/reset actions; preserve native modes/focus and prior work; refresh full-canvas PNG downloads through the native capture helper. No staging, commit, push or deployment.';
+const after=before.slice(0,at)+newText+before.slice(at+old.length);if(sha(fs.readFileSync(file))!==sha(before))throw Error('Shared handoff changed');
+fs.writeFileSync(path.join(__dirname,'handoff-start-edits.json'),JSON.stringify({file:'AGENT_HANDOFF.md',baselineSha256:sha(before),finalSha256:sha(after),edits:[{offset:at,old,new:newText}],exactReversal:after.slice(0,at)+old+after.slice(at+newText.length)===before},null,2));fs.writeFileSync(file,after);
+console.log(JSON.stringify({baseline:sha(source),handoff:sha(after)}));

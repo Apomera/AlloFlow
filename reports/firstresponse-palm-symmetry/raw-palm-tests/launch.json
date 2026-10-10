@@ -1,0 +1,19 @@
+{
+  "startedAt": "2026-10-10T03:15:44.984Z",
+  "pid": 41104,
+  "parentPid": 9596,
+  "args": [
+    "--no-opt",
+    "--no-sparkplug",
+    "--max-old-space-size=256",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\vitest\\vitest.mjs",
+    "run",
+    "--config",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\raw-palm-tests\\vitest.config.cjs"
+  ],
+  "cwd": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\firstresponse-palm-symmetry-work\\raw-palm-tests",
+  "sourceSHA256": "dfe3e01f38a419187e468c749cc37827f486a47401b9916afaa9ec6f98a3f86a",
+  "runnerSHA256": "cf32a1d6fc1e2d25e7beb6141e9e11c0c06769aa222bea258c5846ba89b31821",
+  "timeoutMs": 240000,
+  "streamedOutput": true
+}

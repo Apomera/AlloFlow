@@ -1,0 +1,46 @@
+{
+  "pass": 26,
+  "auditDate": "2026-10-08",
+  "status": "final: three native lighter recovery captures and two partial native detailed captures reviewed",
+  "counts": {"reviewed": 5, "fromPassingAttempt": 3, "fromIncompleteAttempt": 2},
+  "method": "Direct inspection of the retained native PNG files with view_image. No image alteration, synthetic rendering, browser run or code change was performed by this audit.",
+  "reviews": [
+    {
+      "path": "browser-terrain-lighter-2/lighter/terrain-ballistic-dust.png",
+      "observed": "The 3D lander, sloped terrain, scattered rocks, cast shadow, cyan surface ring, yellow direction arrow and thrust controls are visible. The main HUD values and thrust label are readable. Dust details are faint against the terrain.",
+      "layout": "No overlap or clipping of the lander, HUD or bottom controls is visible in this canvas crop.",
+      "limit": "Small particle trajectories and first contact cannot be certified from this still image."
+    },
+    {
+      "path": "browser-terrain-lighter-2/lighter/landing-view-terrain-dust.png",
+      "observed": "The alternate landing view shows the lander larger above the terrain, with the surface ring and direction arrow still visible. The HUD and the three bottom controls remain readable and unobstructed. Dust details remain faint.",
+      "layout": "No clipping of the lander or controls is visible in this canvas crop.",
+      "limit": "This capture supports camera and resize presentation only; exact terrain clearance is established by the recorded geometry checks."
+    },
+    {
+      "path": "browser-terrain-lighter-2/lighter/context-loss-flat-dust.png",
+      "observed": "The capture shows the flat fallback scene with stars, a lander above the ground band, surface markers, HUD values and bottom thrust controls. The controls remain readable and visible.",
+      "layout": "No clipping or overlap of the lander, HUD or controls is visible in this canvas crop.",
+      "limit": "The image shows the resulting fallback appearance. The context-loss trigger and lifecycle outcome are recorded by the test evidence."
+    },
+    {
+      "path": "browser-terrain-detailed-1/detailed/terrain-ballistic-dust.png",
+      "attemptStatus": "partial capture from a browser attempt that later timed out without a result JSON",
+      "observed": "The 3D lander, relief, rocks, shadows, cyan surface ring and yellow direction arrow are visible. Fine pale trails are visible spreading across the terrain near the thrust plume. The HUD values and thrust controls are readable.",
+      "layout": "No clipping or overlap of the lander, HUD or controls is visible in this canvas crop.",
+      "limit": "A visible trail in a still image does not establish exact surface clearance, first contact or a completed browser test."
+    },
+    {
+      "path": "browser-terrain-detailed-1/detailed/landing-view-terrain-dust.png",
+      "attemptStatus": "partial capture from a browser attempt that later timed out without a result JSON",
+      "observed": "The alternate landing camera shows a larger lander and plume, with fine pale dust trails spreading laterally near the surface. Terrain relief, rocks, HUD, surface markers and the bottom controls remain visible.",
+      "layout": "The main HUD values and thrust controls are readable; the lander and controls are not clipped in this crop.",
+      "limit": "This partial capture supports appearance at the saved moment only. It does not replace the missing detailed test result or numerical evidence JSON."
+    }
+  ],
+  "limits": [
+    "These are canvas captures, not full-page or physical-device usability reviews.",
+    "Faint dust stills do not independently establish continuous first-impact correctness, animation smoothness or performance.",
+    "Only the captures listed above have been visually inspected at this audit stage."
+  ]
+}

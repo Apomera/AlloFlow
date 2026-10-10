@@ -1,0 +1,46 @@
+{
+  "stats": {
+    "view": [
+      0.9595877381371414,
+      0.23683814606561876,
+      -0.15198376684713874
+    ],
+    "scale": 3,
+    "mode": "surface",
+    "texture": "36F9F037-E12D-46C2-ABF8-A9D072367834",
+    "color": "36F9F037-E12D-46C2-ABF8-A9D072367834",
+    "height": "AB9C9095-FC82-4FD7-9F12-DDF1EAA44B81",
+    "geometry": "10E91BB2-8822-43FD-AFA8-A3D3CF513FBE",
+    "vertices": 6305,
+    "diameter": 3,
+    "near": 0.05,
+    "cameraDistance": 3.6525454545454545
+  },
+  "layout": {
+    "width": 330,
+    "scroll": 330,
+    "buttons": [
+      {
+        "width": 148,
+        "height": 44
+      },
+      {
+        "width": 148,
+        "height": 44
+      },
+      {
+        "width": 74.15625,
+        "height": 44
+      },
+      {
+        "width": 64.359375,
+        "height": 44
+      },
+      {
+        "width": 302,
+        "height": 44
+      }
+    ],
+    "overflow": false
+  }
+}

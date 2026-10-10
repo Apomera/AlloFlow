@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "sourceSHA256": "0cc79f45f9a57ce3c4f1d5fa674b56f462a2418c4b253dbc648557b37a6b2639",
+  "sourceCopiesIdentical": 4,
+  "rawTestsUnchanged": 38,
+  "historicalHelperChains": 6,
+  "syntaxFiles": 6,
+  "reportLinksVerified": 14,
+  "rawTestAndHelperMatchExecutedFiles": true,
+  "staged": false,
+  "committed": false,
+  "deployed": false
+}

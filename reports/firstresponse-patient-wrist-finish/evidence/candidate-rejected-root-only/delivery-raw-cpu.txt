@@ -1,0 +1,51 @@
+  const rawDirectory=local('raw-wrist-tests'),raw=json(path.join(rawDirectory,'summary.json'));
+  const rawFiles=['tests/firstresponse_patient_wrists.test.js','tests/firstresponse_hand_surface.test.js'];
+  const testHashes=Object.fromEntries(rawFiles.map(file=>[file,history.fixtureHashes[path.basename(file)]]));
+  same(raw.testHashes,testHashes,'Selected raw fixtures must retain original bytes');
+  must(raw.passed===true&&raw.sourceSHA256===sourceSHA&&raw.exitCode===0&&raw.numPassedTests===56&&raw.numFailedTests===0&&raw.numTotalTests===56&&raw.numPendingTests===0,'Focused raw wrist/hand tests incomplete');
+  must(raw.inputsUnchanged===true&&raw.sharedFilesWritten===0,'Raw fixture run modified shared inputs');
+  guardFile(local('run-raw-wrist.cjs'),raw.runnerSHA256);syntax(local('run-raw-wrist.cjs'));
+  guardFile(safeShared('vendor/three-r128/three.min.js'),raw.vendorSHA256);guardFile(path.join(rawDirectory,'vitest.config.cjs'),raw.configSHA256);
+  guardFile(path.join(rawDirectory,'stem_lab/stem_tool_firstresponse.js'),sourceSHA);guardFile(path.join(rawDirectory,'vendor/three-r128/three.min.js'),raw.vendorSHA256);
+  for(const[file,h]of Object.entries(testHashes))guardFile(path.join(rawDirectory,file),h);
+  must(raw.selftest?.ran&&raw.selftest.inputMutationRejected&&raw.selftest.restoredAndReread&&raw.selftest.browserLaunched===false,'Raw input pin selftest missing');
+  same(Object.keys(raw.sharedHashes).sort(),[...Object.keys(history.sourceHashes),...rawFiles,'vendor/three-r128/three.min.js'].sort(),'Raw fixture shared pin list');
+  for(const[file,h]of Object.entries(raw.sharedHashes)){must(h===(testHashes[file]|| (file==='vendor/three-r128/three.min.js'?raw.vendorSHA256:beforeSHA)),'Raw test shared baseline mismatch');guardFile(safeShared(file),h);}
+  const helperExpected={...history.helperHashes};for(const e of integration.edits)helperExpected[path.basename(e.file)]=e.afterSHA256;for(const a of integration.additions)helperExpected[path.basename(a.file)]=a.afterSHA256;
+  same(raw.helperHashes,helperExpected,'Raw helper sandbox differs from complete proposed history');
+  same(fs.readdirSync(path.join(rawDirectory,'tests/helpers')).sort(),Object.keys(helperExpected).sort(),'Unexpected raw helper files');
+  for(const[name,h]of Object.entries(helperExpected)){guardFile(path.join(rawDirectory,'tests/helpers',name),h);guardFile(local('history-helper-sandbox/'+name),h);}
+  const rawResult=json(path.join(rawDirectory,'candidate-results.json'));
+  must(rawResult.numPassedTests===56&&rawResult.numFailedTests===0&&rawResult.numTotalTests===56&&rawResult.numPendingTests===0&&rawResult.success===true,'Raw test report differs from summary');
+  must(rawResult.testResults.length===2&&rawResult.testResults.every(row=>row.assertionResults.every(test=>test.status==='passed')),'Raw individual test outcomes incomplete');
+  same(rawResult.testResults.map(row=>row.assertionResults.length).sort((a,b)=>a-b),[23,33],'Raw test per-file counts');
+  same(rawResult.testResults.map(row=>path.basename(row.name)).sort(),rawFiles.map(file=>path.basename(file)).sort(),'Raw result fixture names');
+  for(const file of walk(rawDirectory))include(file);
+  syntax(local('candidate.js'),source);syntax(local('run-face-browser.cjs'));syntax(local('verify-patient-wrist-finish.cjs'));syntax(__filename);
+  const cpu=json(local('geometry-contract/shading-verification.json'));
+  same(read(local('geometry-contract/shading-verification.json')),read(local('geometry-contract-final/shading-verification.json')),'Canonical CPU evidence must equal the completed final run');
+  must(cpu.passed===true&&cpu.beforeSHA256===beforeSHA&&cpu.candidateSHA256===sourceSHA&&cpu.checkerSHA256===hash(read(local('verify-patient-wrist-finish.cjs'))),'CPU source/checker mismatch');
+  must(cpu.results.length===30&&Number.isInteger(cpu.assertions)&&cpu.assertions>0,'CPU validation incomplete');
+  same(cpu.results.map(r=>[r.age,r.phase,r.contrast].join(':')).sort(),['adult','child','infant'].flatMap(age=>[0,3,4,5,8].flatMap(phase=>[false,true].map(contrast=>[age,phase,contrast].join(':')))).sort(),'CPU scenarios incomplete');
+  same(Object.keys(cpu.inputs).map(file=>path.resolve(file)).sort(),[local('candidate.js'),local('before.js'),local('verify-patient-wrist-finish.cjs'),safeShared('vendor/three-r128/three.min.js')].map(file=>path.resolve(file)).sort(),'CPU input scope');
+  for(const[file,pin]of Object.entries(cpu.inputs))guardFile(file,pin);
+  same(cpu.negative.map(test=>test.type).sort(),['omit-patient-wrist-blend','off-scope-palm-normal'].sort(),'CPU deliberate-failure cases missing or duplicated');
+  must(cpu.negative.every(test=>test.rejected===true&&typeof test.error==='string'&&test.error.length>0&&test.restored===true&&test.restoredSHA256===sourceSHA),'CPU deliberate failures not rejected/restored');
+  guardFile(local('geometry-contract/selftest-candidate.js'),sourceSHA);
+  guardFile(local('geometry-contract-final/selftest-candidate.js'),sourceSHA);
+  for(const row of cpu.results){
+    must(row.status==='passed','CPU case failed');must(/^[a-f0-9]{64}$/.test(row.preservation.SHA256),'CPU scene preservation pin missing');
+    for(const key of ['nodes','meshes'])must(Number.isInteger(row.preservation[key])&&row.preservation[key]>0,'CPU resource count missing '+key);
+    same(row.priorResources,row.currentResources,'CPU resource allocations changed');same(row.repeatResources,row.currentResources,'CPU repeat resource allocations changed');
+    for(const key of ['geometries','materials','total'])must(Number.isInteger(row.currentResources[key])&&row.currentResources[key]>0,'CPU resources invalid');
+    must(row.currentResources.total===row.currentResources.geometries+row.currentResources.materials,'CPU total resources mismatch');
+    same(row.wrists.map(w=>w.side),['left','right'],'CPU wrist scope');
+    for(const w of row.wrists){const n=w.normals,b=w.baseline,c=w.candidate;
+      same(n.changedRows,[0,1,2,3,4,5,6,7],'CPU root normal scope');same(n.unchangedJointAndPalmRows,[8,24],'CPU unchanged joint/palm scope');
+      must(n.count===1200&&n.changed===384&&n.minLength>.9999&&n.maxLength<1.0001&&n.minimumChangedFaceDot>0&&n.unchangedFacesExact===true&&Number.isFinite(n.minimumFaceDot)&&Number.isFinite(n.minimumUnchangedFaceDot)&&/^[a-f0-9]{64}$/.test(n.SHA256),'CPU normal geometry failed');
+      must(n.minimumFaceDot===Math.min(n.minimumChangedFaceDot,n.minimumUnchangedFaceDot),'CPU global normal agreement does not match changed and unchanged regions');
+      must(b.samples===48&&c.samples===48&&Number.isFinite(b.meanAngleDegrees)&&b.meanAngleDegrees>0&&Number.isFinite(c.meanAngleDegrees)&&c.meanAngleDegrees>=0&&c.meanAngleDegrees<b.meanAngleDegrees*.25&&c.maximumAngleDegrees<2,'CPU seam normal continuity failed');
+      for(const m of [b,c])must(Number.isFinite(m.minimumAngleDegrees)&&m.minimumAngleDegrees>=0&&Number.isFinite(m.maximumSurfaceGap)&&m.maximumSurfaceGap>=0&&m.maximumCrossingRootRow<5&&m.minimumCrossingDistance>0&&m.maximumCrossingDistance>=m.minimumCrossingDistance,'CPU overlap crossing invalid');
+    }
+  }
+  for(const file of walk(local('geometry-contract')))include(file);

@@ -1,0 +1,93 @@
+
+Running 22 tests using 1 worker
+
+[1A[2K(node:7384) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:7384) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K[1/22] [chromium] › tests\e2e\114-solar-system-seasons-observer.spec.ts:197:5 › local noon observers and fixed daylight meters agree at all exact Earth checkpoints
+[1A[2K[2/22] [chromium] › tests\e2e\114-solar-system-seasons-observer.spec.ts:208:5 › fractional latitude and orbital position retain unrounded readings, chart geometry and immutable raw state
+[1A[2K[chromium] › tests\e2e\114-solar-system-seasons-observer.spec.ts:208:5 › fractional latitude and orbital position retain unrounded readings, chart geometry and immutable raw state
+
+<--- Last few GCs --->
+
+[7384:0000029024825000]   116139 ms: Scavenge 60.6 (64.3) -> 59.6 (64.3) MB, pooled: 0 MB, 1.81 / 0.00 ms  (average mu = 0.945, current mu = 0.939) allocation failure; 
+[7384:0000029024825000]   116178 ms: Scavenge 60.7 (64.3) -> 59.9 (65.1) MB, pooled: 0 MB, 6.08 / 0.00 ms  (average mu = 0.945, current mu = 0.939) task; 
+[7384:0000029024825000]   116207 ms: Scavenge 61.3 (65.1) -> 60.3 (65.3) MB, pooled: 1 MB, 2.57 / 0.00 ms  (average mu = 0.945, current mu = 0.939) task; 
+
+
+
+[1A[2KFATAL ERROR: Committing semi space failed. Allocation failed - JavaScript heap out of memory
+----- Native stack trace -----
+
+
+
+[1A[2K 1: 00007FF6086A4954 
+
+
+[1A[2K  1) [chromium] › tests\e2e\114-solar-system-seasons-observer.spec.ts:208:5 › fractional latitude and orbital position retain unrounded readings, chart geometry and immutable raw state 
+
+    Error: worker process exited unexpectedly (code=134, signal=null)
+
+
+[1A[2K(node:43996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:43996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K[3/22] [chromium] › tests\e2e\114-solar-system-seasons-observer.spec.ts:230:5 › Uranus reports signed noon altitude below the horizon and keeps Earth-hour latitude work scoped to Earth
+[1A[2K  2) [chromium] › tests\e2e\114-solar-system-seasons-observer.spec.ts:230:5 › Uranus reports signed noon altitude below the horizon and keeps Earth-hour latitude work scoped to Earth 
+
+    Error: worker process exited unexpectedly (code=3221226505, signal=null)
+
+
+[1A[2K(node:32348) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:32348) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K[4/22] [chromium] › tests\e2e\114-solar-system-seasons-observer.spec.ts:256:5 › malformed restores use finite fallback geometry and hide stale interpretations without render-time writes
+[1A[2K  3) [chromium] › tests\e2e\114-solar-system-seasons-observer.spec.ts:256:5 › malformed restores use finite fallback geometry and hide stale interpretations without render-time writes 
+
+    [31mTest timeout of 180000ms exceeded.[39m
+
+    Error: page.waitForFunction: Test timeout of 180000ms exceeded.
+
+      23 |   await page.emulateMedia({ reducedMotion: 'reduce' });
+      24 |   await page.goto(`${harness.url}/__harness`);
+    > 25 |   await page.waitForFunction(() => Boolean((window as any).StemLab?._registry?.solarSystem));
+         |              ^
+      26 |   await page.locator('#wrap').evaluate((wrap, nextWidth) => { (wrap as HTMLElement).style.width = `${nextWidth}px`; }, width);
+      27 |   await page.evaluate(({ data, translatedNames }) => {
+      28 |     (window as any).__mount({ solarSystem: data });
+        at mountSeasons (C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\114-solar-system-seasons-observer.spec.ts:25:14)
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\114-solar-system-seasons-observer.spec.ts:265:17
+
+    Error Context: reports\solar-seasons-observer-enhancement-2026-10-06\browser-artifacts\114-solar-system-seasons-o-9df13--without-render-time-writes-chromium\error-context.md
+
+    Error Context: reports\solar-seasons-observer-enhancement-2026-10-06\browser-artifacts\114-solar-system-seasons-o-9df13--without-render-time-writes-chromium\error-context.md
+
+
+[1A[2K(node:26700) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:26700) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K[5/22] [chromium] › tests\e2e\114-solar-system-seasons-observer.spec.ts:277:5 › valid fractional interpretations restore precisely and string saved flags do not suppress explicit saving
+[1A[2K[6/22] [chromium] › tests\e2e\114-solar-system-seasons-observer.spec.ts:292:5 › physically inconsistent guided observations stay locked until explicit capture repairs the selected record
+[1A[2K[7/22] [chromium] › tests\e2e\114-solar-system-seasons-observer.spec.ts:327:5 › same-frame guided predictions preserve the first commitment while interpretation remains editable
+[1A[2K[8/22] [chromium] › tests\e2e\114-solar-system-seasons-observer.spec.ts:354:5 › same-frame world and position updates merge, and captured evidence insertions keep both sentences
+[1A[2K[9/22] [chromium] › tests\e2e\114-solar-system-seasons-observer.spec.ts:393:5 › all three native save paths append once per frame and leave earlier evidence and unrelated work intact

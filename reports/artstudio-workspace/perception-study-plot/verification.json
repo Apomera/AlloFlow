@@ -1,0 +1,30 @@
+{
+  "sourceSHA256": "d1bb7ea05c30ee1b68c35556ac5e55dd4ed0194a7b4a9c647d0b575cc9f6b873",
+  "baselineSHA256": "689692a6622b638365b432c00949833e65092445bede9b294a24883f94f11df1",
+  "newStudyPlotBrowserGroups": 28,
+  "existingFrameBrowserGroups": 27,
+  "existingComparisonExperimentGroups": 3,
+  "totalBrowserGroups": 58,
+  "baselineSceneCases": 84,
+  "englishCatalogEntries": 568,
+  "newEnglishEntries": 4,
+  "updatedEnglishEntries": 1,
+  "sourceDesktopParity": true,
+  "catalogParity": true,
+  "browserErrors": [],
+  "screenshots": 16,
+  "emptyAccessibilityAudits": 16,
+  "updatedTests": [
+    {
+      "file": "dev-tools/perception_lab_study_compare_qa.cjs",
+      "sha256": "2d5368a38d94bc66c6741c5862c3226b66686e703531e3c90a69e1596156b9e2"
+    },
+    {
+      "file": "tests/perception_lab_study_comparison.test.js",
+      "sha256": "32a9f49319114a5c6c58402a3f477e56a9fac528d24c5c392115c0a402363300"
+    }
+  ],
+  "formalDOMSuite": "Not run: existing Vitest/jsdom worker stalls before collection.",
+  "comparisonRegressionScope": "Only the three existing matching-experiment workflows were replayed; the full comparison suite was not run.",
+  "gitAction": "No staging or commit performed."
+}

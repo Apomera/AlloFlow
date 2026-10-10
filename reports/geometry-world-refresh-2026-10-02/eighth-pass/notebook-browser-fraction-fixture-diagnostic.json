@@ -1,0 +1,305 @@
+{
+  "startedAt": "2026-10-06T01:42:21.576Z",
+  "checks": [
+    {
+      "name": "desktop-notebook: decreased occupied volume and exact surface from native world measurements",
+      "status": "pass",
+      "evidence": {
+        "previous": {
+          "occupiedVolume": 12,
+          "surface": 32,
+          "exact": true,
+          "historyStamp": 1791250980164
+        },
+        "latest": {
+          "occupiedVolume": 8,
+          "surface": 28,
+          "exact": true,
+          "historyStamp": 1791250981458
+        },
+        "volume": "Latest has 4 fewer cubic units",
+        "surface": "Latest has 4 fewer square units",
+        "sameVolumeOnlyInsight": false
+      }
+    },
+    {
+      "name": "desktop-notebook: increased occupied volume and exact surface from native world measurements",
+      "status": "pass",
+      "evidence": {
+        "previous": {
+          "occupiedVolume": 8,
+          "surface": 28,
+          "exact": true,
+          "historyStamp": 1791250988173
+        },
+        "latest": {
+          "occupiedVolume": 12,
+          "surface": 32,
+          "exact": true,
+          "historyStamp": 1791250988189
+        },
+        "volume": "Latest has 4 more cubic units",
+        "surface": "Latest has 4 more square units",
+        "sameVolumeOnlyInsight": false
+      }
+    },
+    {
+      "name": "desktop-notebook: same volume with increased surface from native world measurements",
+      "status": "pass",
+      "evidence": {
+        "previous": {
+          "occupiedVolume": 8,
+          "surface": 28,
+          "exact": true,
+          "historyStamp": 1791250993420
+        },
+        "latest": {
+          "occupiedVolume": 8,
+          "surface": 32,
+          "exact": true,
+          "historyStamp": 1791250993512
+        },
+        "volume": "No change (same occupied volume)",
+        "surface": "Latest has 4 more square units",
+        "sameVolumeOnlyInsight": true
+      }
+    },
+    {
+      "name": "desktop-notebook: same volume with decreased surface from native world measurements",
+      "status": "pass",
+      "evidence": {
+        "previous": {
+          "occupiedVolume": 8,
+          "surface": 32,
+          "exact": true,
+          "historyStamp": 1791250999902
+        },
+        "latest": {
+          "occupiedVolume": 8,
+          "surface": 28,
+          "exact": true,
+          "historyStamp": 1791251002192
+        },
+        "volume": "No change (same occupied volume)",
+        "surface": "Latest has 4 fewer square units",
+        "sameVolumeOnlyInsight": true
+      }
+    },
+    {
+      "name": "desktop-notebook: decreased volume with unchanged surface from native world measurements",
+      "status": "pass",
+      "evidence": {
+        "previous": {
+          "occupiedVolume": 12,
+          "surface": 32,
+          "exact": true,
+          "historyStamp": 1791251005179
+        },
+        "latest": {
+          "occupiedVolume": 8,
+          "surface": 32,
+          "exact": true,
+          "historyStamp": 1791251006221
+        },
+        "volume": "Latest has 4 fewer cubic units",
+        "surface": "No change (same exposed surface area)",
+        "sameVolumeOnlyInsight": false
+      }
+    },
+    {
+      "name": "desktop-notebook: increased volume with independently decreased surface from native world measurements",
+      "status": "pass",
+      "evidence": {
+        "previous": {
+          "occupiedVolume": 8,
+          "surface": 32,
+          "exact": true,
+          "historyStamp": 1791251010969
+        },
+        "latest": {
+          "occupiedVolume": 9,
+          "surface": 30,
+          "exact": true,
+          "historyStamp": 1791251012684
+        },
+        "volume": "Latest has 1 more cubic unit",
+        "surface": "Latest has 2 fewer square units",
+        "sameVolumeOnlyInsight": false
+      }
+    },
+    {
+      "name": "desktop-notebook: increased fractional occupied volume and unavailable surface from native world measurements",
+      "status": "fail",
+      "message": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'Latest has 1/2 more cubic units'\n- 'Latest has 0.5 more cubic units'\n              ^\n"
+    },
+    {
+      "name": "desktop-notebook: complete browser workflow",
+      "status": "fail",
+      "message": "Profile stopped after first unsuccessful native comparison; subsequent stale locators are not product evidence."
+    },
+    {
+      "name": "narrow-large-notebook: decreased occupied volume and exact surface from native world measurements",
+      "status": "pass",
+      "evidence": {
+        "previous": {
+          "occupiedVolume": 12,
+          "surface": 32,
+          "exact": true,
+          "historyStamp": 1791251033635
+        },
+        "latest": {
+          "occupiedVolume": 8,
+          "surface": 28,
+          "exact": true,
+          "historyStamp": 1791251034686
+        },
+        "volume": "Latest has 4 fewer cubic units",
+        "surface": "Latest has 4 fewer square units",
+        "sameVolumeOnlyInsight": false
+      }
+    },
+    {
+      "name": "narrow-large-notebook: increased occupied volume and exact surface from native world measurements",
+      "status": "pass",
+      "evidence": {
+        "previous": {
+          "occupiedVolume": 8,
+          "surface": 28,
+          "exact": true,
+          "historyStamp": 1791251038558
+        },
+        "latest": {
+          "occupiedVolume": 12,
+          "surface": 32,
+          "exact": true,
+          "historyStamp": 1791251038579
+        },
+        "volume": "Latest has 4 more cubic units",
+        "surface": "Latest has 4 more square units",
+        "sameVolumeOnlyInsight": false
+      }
+    },
+    {
+      "name": "narrow-large-notebook: same volume with increased surface from native world measurements",
+      "status": "pass",
+      "evidence": {
+        "previous": {
+          "occupiedVolume": 8,
+          "surface": 28,
+          "exact": true,
+          "historyStamp": 1791251042217
+        },
+        "latest": {
+          "occupiedVolume": 8,
+          "surface": 32,
+          "exact": true,
+          "historyStamp": 1791251042258
+        },
+        "volume": "No change (same occupied volume)",
+        "surface": "Latest has 4 more square units",
+        "sameVolumeOnlyInsight": true
+      }
+    },
+    {
+      "name": "narrow-large-notebook: same volume with decreased surface from native world measurements",
+      "status": "pass",
+      "evidence": {
+        "previous": {
+          "occupiedVolume": 8,
+          "surface": 32,
+          "exact": true,
+          "historyStamp": 1791251045640
+        },
+        "latest": {
+          "occupiedVolume": 8,
+          "surface": 28,
+          "exact": true,
+          "historyStamp": 1791251045720
+        },
+        "volume": "No change (same occupied volume)",
+        "surface": "Latest has 4 fewer square units",
+        "sameVolumeOnlyInsight": true
+      }
+    },
+    {
+      "name": "narrow-large-notebook: decreased volume with unchanged surface from native world measurements",
+      "status": "pass",
+      "evidence": {
+        "previous": {
+          "occupiedVolume": 12,
+          "surface": 32,
+          "exact": true,
+          "historyStamp": 1791251048427
+        },
+        "latest": {
+          "occupiedVolume": 8,
+          "surface": 32,
+          "exact": true,
+          "historyStamp": 1791251048759
+        },
+        "volume": "Latest has 4 fewer cubic units",
+        "surface": "No change (same exposed surface area)",
+        "sameVolumeOnlyInsight": false
+      }
+    },
+    {
+      "name": "narrow-large-notebook: increased volume with independently decreased surface from native world measurements",
+      "status": "pass",
+      "evidence": {
+        "previous": {
+          "occupiedVolume": 8,
+          "surface": 32,
+          "exact": true,
+          "historyStamp": 1791251050440
+        },
+        "latest": {
+          "occupiedVolume": 9,
+          "surface": 30,
+          "exact": true,
+          "historyStamp": 1791251050459
+        },
+        "volume": "Latest has 1 more cubic unit",
+        "surface": "Latest has 2 fewer square units",
+        "sameVolumeOnlyInsight": false
+      }
+    },
+    {
+      "name": "narrow-large-notebook: increased fractional occupied volume and unavailable surface from native world measurements",
+      "status": "fail",
+      "message": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'Latest has 1/2 more cubic units'\n- 'Latest has 0.5 more cubic units'\n              ^\n"
+    },
+    {
+      "name": "narrow-large-notebook: complete browser workflow",
+      "status": "fail",
+      "message": "Profile stopped after first unsuccessful native comparison; subsequent stale locators are not product evidence."
+    }
+  ],
+  "failures": [
+    {
+      "name": "desktop-notebook: increased fractional occupied volume and unavailable surface from native world measurements",
+      "status": "fail",
+      "message": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'Latest has 1/2 more cubic units'\n- 'Latest has 0.5 more cubic units'\n              ^\n"
+    },
+    {
+      "name": "desktop-notebook: complete browser workflow",
+      "status": "fail",
+      "message": "Profile stopped after first unsuccessful native comparison; subsequent stale locators are not product evidence."
+    },
+    {
+      "name": "narrow-large-notebook: increased fractional occupied volume and unavailable surface from native world measurements",
+      "status": "fail",
+      "message": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'Latest has 1/2 more cubic units'\n- 'Latest has 0.5 more cubic units'\n              ^\n"
+    },
+    {
+      "name": "narrow-large-notebook: complete browser workflow",
+      "status": "fail",
+      "message": "Profile stopped after first unsuccessful native comparison; subsequent stale locators are not product evidence."
+    }
+  ],
+  "screenshots": [
+    "desktop-notebook-diagnostic.png",
+    "narrow-large-notebook-diagnostic.png"
+  ],
+  "resourcesClosed": true,
+  "completedAt": "2026-10-06T01:44:14.881Z"
+}

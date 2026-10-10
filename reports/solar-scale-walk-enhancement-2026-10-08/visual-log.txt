@@ -1,0 +1,8 @@
+Starting walk-1060-dark-100m
+Checked walk-1060-dark-100m
+Starting walk-1060-light-1000m
+Checked walk-1060-light-1000m
+Starting walk-320-dark-10m
+Checked walk-320-dark-10m
+Starting walk-320-light-100m
+Checked walk-320-light-100m

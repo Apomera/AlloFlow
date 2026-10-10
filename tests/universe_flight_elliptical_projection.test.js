@@ -13,7 +13,7 @@ let created;
 let deleted;
 
 const GOLDEN = { center: [800000, 550000, 850000], radius: 135000, tilt: 1.05, turn: -0.55 };
-const STRIDE = 5;
+const STRIDE = 6;
 const MODEL_FLOATS = 8 * 8 * 6 * STRIDE;
 const GOLDEN_START = 3 * MODEL_FLOATS;
 const dot = (a, b) => a.reduce((sum, value, index) => sum + value * b[index], 0);
@@ -164,7 +164,7 @@ describe('Universe elliptical light projection', () => {
     expect(length(subtract(centered.center, GOLDEN.center))).toBeLessThan(0.3);
   });
 
-  it('updates only elliptical ranges and leaves spiral and point bytes unchanged while the camera moves', () => {
+  it('updates projected ranges and leaves the fixed spiral disks and point bytes unchanged while the camera moves', () => {
     const buffer = surfaceBuffer(), original = surface().slice();
     const pointBuffer = created.Buffer.find(item => item !== buffer);
     const originalPoints = buffers.get(pointBuffer).slice();
@@ -178,12 +178,12 @@ describe('Universe elliptical light projection', () => {
       expect(update.offset % (STRIDE * 4)).toBe(0);
       expect(update.data.length % STRIDE).toBe(0);
       const offset = update.offset / 4;
-      for (let index = offset; index < offset + update.data.length; index += STRIDE) expect(original[index + 3]).toBeGreaterThan(0.75);
+      for (let index = offset; index < offset + update.data.length; index += STRIDE) expect(original[index + 3] > 0.75 || original[index + 5] > 0).toBe(true);
     }
     const current = surface();
     for (let index = 0; index < original.length; index += STRIDE) {
-      expect(current.slice(index + 3, index + STRIDE)).toEqual(original.slice(index + 3, index + STRIDE));
-      if (original[index + 3] < 0.75) expect(current.slice(index, index + STRIDE)).toEqual(original.slice(index, index + STRIDE));
+      expect(current.slice(index + 3, index + 5)).toEqual(original.slice(index + 3, index + 5));
+      if (original[index + 3] < 0.75 && original[index + 5] === 0) expect(current.slice(index, index + STRIDE)).toEqual(original.slice(index, index + STRIDE));
     }
     expect(buffers.get(pointBuffer)).toEqual(originalPoints);
     expect(current.slice(GOLDEN_START, GOLDEN_START + MODEL_FLOATS)).not.toEqual(original.slice(GOLDEN_START, GOLDEN_START + MODEL_FLOATS));

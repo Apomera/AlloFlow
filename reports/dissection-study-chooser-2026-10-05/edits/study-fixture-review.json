@@ -1,0 +1,89 @@
+{
+  "review": "Independent static review of staged Study unit and browser fixtures",
+  "reviewedAt": "2026-10-05",
+  "rendererSha256": "72c75cc596b0ee7307b7b7549fcd34e02cefdf9cdfb00f445bb21a26cc2dfeed",
+  "unitFragmentPath": "C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-improving-interactivity-engagement-and/dissection-study-chooser-2026-10-05/study-unit-additions.jsfrag",
+  "unitFragmentSha256": "169c00fa45753e09da8d52f287ca6a62989660c2af5e460108a5a2f805587c5f",
+  "browserSpecPath": "C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-improving-interactivity-engagement-and/dissection-study-chooser-2026-10-05/dissection-study-chooser.spec.ts",
+  "browserSpecSha256": "7941e1e85ac47ec7005ac1cf529f488f7173a39079a4b811e7d3a04b8e46031e",
+  "previousReviewedBrowserSpecSha256": "e5008f6133bcbfcf596e27d67247c0b3ee0fda0ce70ca9dab3a19ada6d0d32b6",
+  "initialBrowserSpecSha256": "7673d8d528e6670dcb4416832fa6a499e6bc32f25eb8859645b82c93aabef5c2",
+  "status": "static_fixture_review_passed",
+  "scope": "Static review only. No source or fixture writes, suites, browser mutations, or weakened assertions. This review artifact is the sole write.",
+  "checks": [
+    {
+      "area": "Native visible-pool inspection helper",
+      "result": "pass",
+      "evidence": "Updated visibleIds snapshots selectedOrgan, requires that selected structure already be observed, opens the conditional native directory with Back to structure directory, reads visible IDs from its native results, and restores the original structure through the real directory handler with native selection-title focus. Existing before/after work proofs remain around callers, and the practical assertions still require the native deadline, target set and start guards. No fake DOM pool or rewritten renderer guard is introduced."
+    },
+    {
+      "area": "Browser transition setup",
+      "result": "pass",
+      "evidence": "Current browser fixture mounts before installing and pausing the clock, then seeds _incisionAnim using page Date.now. False readiness, enabled feedback control, exact native caution, practical-not-started and learner-work equality assertions remain strict. The earlier inference that the drawing elapsed check clears a seeded active flag was withdrawn after checking its actual owner: the layer reveal handler clears the state through its completion timer. The field-only seed does not start that owner timer."
+    },
+    {
+      "area": "Real native handlers",
+      "result": "pass",
+      "evidence": "The unit fragment reuses mountMarkingFixture and clickEvidenceControl. The existing mounted React component calls the registered native renderer; control.click dispatches the real event under act, then waits 20 ms for the native deferred focus callback. Browser cases activate controls through real Enter/Space, directory, note, and return handlers."
+    },
+    {
+      "area": "Unit work preservation and expected resets",
+      "result": "pass",
+      "evidence": "studyChooserWorkProof extends the existing evidence proof to restore saved visual evidence and retain assessment records. Compare expects no selection/lens/measurement/evidence changes. Flashcard expects only native selection and hover clearing. The practical unit seeds native reset fields already neutral: selected/hover null, inspector/lens false, pinned points null, score/total zero, marking modes false and endpoints null. Thus strict before/after work equality is consistent with the unchanged native start handler."
+    },
+    {
+      "area": "Unit focus contracts",
+      "result": "pass",
+      "evidence": "Compare retains focus on its native toggle. Opening flashcards expects the native prompt focus target, and Return to specimen expects the canvas. Practical Start/End expects the reused button identity and focus, with its description IDs updated as timer output is mounted and removed. These contracts match renderer code at 4503–4507, 19190–19194 and 19955–20004."
+    },
+    {
+      "area": "Unit readiness and sheep eye gates",
+      "result": "pass",
+      "evidence": "Skin/internal view has insufficient native visible targets; dorsal skin has three eligible function-bearing structures. The active transition remains guarded and unchanged in the unit fixture, whose existing canvas getContext mock suppresses drawing. Static sheep-eye cases keep eyeStudyMode=false, so chooser ordering and both native quiz/practical gates are tested without starting the WebGL companion."
+    },
+    {
+      "area": "Browser work preservation",
+      "result": "pass",
+      "evidence": "Browser proof explicitly excludes selection/presentation fields that native activity handlers may intentionally change, while retaining notes, confidence, inspections, verifications, layer/view/instrument/camera, procedures, calibration, archived attempts, objectives, inquiry, annotations, visual evidence, reference/notebook, scores and assessment records. The practical alone permits native quizScore/quizTotal resets to zero. Separate assertions still check selected-organ clearing, mode transitions, flashcard draft preservation and labels."
+    },
+    {
+      "area": "Browser practical targets and countdown",
+      "result": "pass",
+      "evidence": "The browser fixture's unfiltered frog layer directory uses the same structureExposureState result and source order as the native quiz pool; all its structures have fn, so visibleIds is a valid expected target list. The practical case freezes the browser clock after mounting, asserts a 120000 ms deadline, immutable target list/deadline while remaining seconds decrease, live-off visible output, label restoration, native interval ownership, both canvas timer handles cleared, and no changes after End."
+    },
+    {
+      "area": "Accessibility and layout assertions",
+      "result": "pass_after_fixture_corrections",
+      "evidence": "Assertions check exact owned description/heading IDs, no new tab stops, visible text and accessible names, native keyboard order, minimum target and text size, clipping, container breakpoints, Essentials hiding, eye order/focus/assessment gates, descendant pressed borders/underlines and focus outlines in forced colors, and print hiding. The layout span field and initial keyboard modality need the corrections recorded below. Axe saves complete results and only rejects confirmed violations; incomplete checks remain visible for manual review. Final browser uses gridColumnStart and establishes keyboard modality with a real Tab. Strict existing assertions remain."
+    }
+  ],
+  "findings": [],
+  "reviewNotes": [
+    {
+      "topic": "Withdrawn transition race inference",
+      "status": "withdrawn_after_full_owner_check",
+      "explanation": "The initial report inferred that the 500 ms native drawing window clears _incisionAnim.active. The full renderer shows that the drawing block only renders a sweep; the layer-reveal handler's owned completion timer clears the animation state. A field-only test seed does not invoke that timer, so spontaneous guard clearance during the harness mount wait was not substantiated. The owner adopted a paused page-clock setup that remains deterministic and preserves every native guard assertion."
+    }
+  ],
+  "runtimeVerification": "Root reported all final checks passed: study-3 12, unit-main-3 248, unit-axe-3 1, tools-3 11. Reviewer ran no suites.",
+  "visualReview": "pending_aftershots",
+  "resolvedFindings": [
+    {
+      "priority": 2,
+      "title": "Read the computed grid start field for the desktop span",
+      "file": "dissection-study-chooser.spec.ts",
+      "candidateLine": 98,
+      "evidence": "The metrics helper reads gridColumnEnd as span. The renderer at 587 uses grid-column: span 2, which sets gridColumnStart to span 2 and gridColumnEnd to auto. The wide-layout assertion expects span 2, so it inspects the wrong side of the shorthand.",
+      "recommendation": "Read gridColumnStart or separately assert start/end while keeping the width and alignment assertions.",
+      "resolution": "Resolved: final browser reads gridColumnStart; all six saved metrics confirm the expected span and columns."
+    },
+    {
+      "priority": 2,
+      "title": "Establish keyboard modality before checking the layout focus outline",
+      "file": "dissection-study-chooser.spec.ts",
+      "evidence": "The native-directory inspection helper activates real controls by click. Programmatic flashcard.focus after those pointer interactions does not guarantee :focus-visible. The layout fixture immediately demands its keyboard-only outline before any keyboard event. Root reported that all six layout cases failed on this setup; six workflow cases, including native guard and countdown teardown, passed.",
+      "recommendation": "Move focus using a real keyboard Tab sequence before the first focused helper assertion. Retain the strict outline, keyboard order and work-preservation assertions.",
+      "resolution": "Resolved: final browser sends a real Tab before the first focus-visible assertion; all six layout metrics were saved after the strict focus and work assertions."
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+[
+  {
+    "condition": "pixel-evidence-infant-pose-5-palm",
+    "pixels": {
+      "width": 294,
+      "height": 329,
+      "pixelScale": 1,
+      "changed": 855,
+      "noise": 0,
+      "exteriorSamples": 0,
+      "exteriorChanged": 0,
+      "exteriorNoise": 0,
+      "headSamples": 0,
+      "headChanged": 0,
+      "headNoise": 0,
+      "whiteHead": 0,
+      "clothingSamples": 0,
+      "clothingChanged": 0,
+      "clothingNoise": 0,
+      "whiteHand": 12201,
+      "darkHand": 13,
+      "whiteInterior": 12066,
+      "cheekDark": 0,
+      "largestComponent": 5
+    }
+  }
+]

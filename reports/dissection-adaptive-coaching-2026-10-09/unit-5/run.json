@@ -1,0 +1,33 @@
+{
+  "mode": "unit",
+  "label": "unit-5",
+  "start": "2026-10-10T01:05:42.464Z",
+  "startHashes": {
+    "stem_lab/stem_tool_dissection.js": "dc8520adc1296e75a25a7dda7bef5488956c2720db1dab9808aabf99e0e51f3d",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "dc8520adc1296e75a25a7dda7bef5488956c2720db1dab9808aabf99e0e51f3d",
+    "tests/dissection_lab_improvements.test.js": "408c7b3f7369063f539846297c9c26610c673b8316236777d88f228bdb4196e8"
+  },
+  "args": [
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/dissection_lab_improvements.test.js",
+    "--pool=threads",
+    "--maxWorkers=1",
+    "--no-file-parallelism",
+    "--reporter=verbose",
+    "--reporter=json",
+    "--outputFile=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-adaptive-coaching-2026-10-09\\unit-5\\results.json",
+    "--testNamePattern=adaptive coaching|checkpoint coaching|monitor handoff|persistent, accessible procedural instrument|renders guided instruments"
+  ],
+  "freeMiB": 7436.64453125,
+  "pid": 1284,
+  "exitCode": 1,
+  "signal": null,
+  "end": "2026-10-10T01:06:41.772Z",
+  "endHashes": {
+    "stem_lab/stem_tool_dissection.js": "dc8520adc1296e75a25a7dda7bef5488956c2720db1dab9808aabf99e0e51f3d",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "dc8520adc1296e75a25a7dda7bef5488956c2720db1dab9808aabf99e0e51f3d",
+    "tests/dissection_lab_improvements.test.js": "408c7b3f7369063f539846297c9c26610c673b8316236777d88f228bdb4196e8"
+  },
+  "inputHashesStable": true
+}

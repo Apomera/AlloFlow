@@ -1,0 +1,225 @@
+{
+  "schema": "moon-pass39-direct-browser-v1",
+  "runner": "direct-playwright-api",
+  "playwrightCliResult": false,
+  "mode": "horizon",
+  "status": "passed",
+  "startedAt": "2026-10-10T05:53:43.631Z",
+  "repo": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "specPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-entry-horizon.spec.ts",
+  "output": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass39-2026-10-10\\browser\\direct-horizon-3",
+  "browserCache": "C:/Users/cabba/AppData/Local/ms-playwright",
+  "timeouts": {
+    "action": 20000,
+    "navigation": 60000,
+    "expect": 15000,
+    "launch": 60000,
+    "workflow": 180000
+  },
+  "launchOptions": {
+    "headless": true,
+    "timeout": 60000,
+    "downloadsPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass39-2026-10-10\\browser\\direct-horizon-3\\downloads"
+  },
+  "workflowCompleted": true,
+  "cleanupCompleted": true,
+  "milestones": [
+    {
+      "name": "load:before",
+      "elapsedMs": 2
+    },
+    {
+      "name": "load:after",
+      "elapsedMs": 2983,
+      "workflow": "entry horizon follows spherical altitude and exact field geometry through paused review, parachutes, receipt reload and skip-out",
+      "registered": [
+        "entry horizon follows spherical altitude and exact field geometry through paused review, parachutes, receipt reload and skip-out"
+      ]
+    },
+    {
+      "name": "harness-start:before",
+      "elapsedMs": 2984
+    },
+    {
+      "name": "harness-start:after",
+      "elapsedMs": 2991
+    },
+    {
+      "name": "browser-launch:before",
+      "elapsedMs": 2992
+    },
+    {
+      "name": "browser-launch:after",
+      "elapsedMs": 3517
+    },
+    {
+      "name": "context-create:before",
+      "elapsedMs": 3517
+    },
+    {
+      "name": "context-create:after",
+      "elapsedMs": 3525
+    },
+    {
+      "name": "page-create:before",
+      "elapsedMs": 3525
+    },
+    {
+      "name": "page-create:after",
+      "elapsedMs": 3867
+    },
+    {
+      "name": "workflow:before",
+      "elapsedMs": 3868
+    },
+    {
+      "name": "workflow:after",
+      "elapsedMs": 67857
+    },
+    {
+      "name": "cleanup:before",
+      "elapsedMs": 67858
+    },
+    {
+      "name": "after-each:before",
+      "elapsedMs": 67859
+    },
+    {
+      "name": "after-each:after",
+      "elapsedMs": 67895
+    },
+    {
+      "name": "context-close:before",
+      "elapsedMs": 67896
+    },
+    {
+      "name": "page-close",
+      "elapsedMs": 67903
+    },
+    {
+      "name": "context-close:after",
+      "elapsedMs": 71698
+    },
+    {
+      "name": "browser-close:before",
+      "elapsedMs": 71699
+    },
+    {
+      "name": "browser-close:after",
+      "elapsedMs": 100733
+    },
+    {
+      "name": "harness-stop:before",
+      "elapsedMs": 100772
+    },
+    {
+      "name": "harness-stop:after",
+      "elapsedMs": 100773
+    },
+    {
+      "name": "cleanup:after",
+      "elapsedMs": 100789,
+      "status": "passed"
+    }
+  ],
+  "errors": [],
+  "attachments": [
+    {
+      "name": "horizon-interface-1100",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass39-2026-10-10\\browser\\direct-horizon-3\\horizon-interface-1100-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "horizon-peak-heat-1100",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass39-2026-10-10\\browser\\direct-horizon-3\\horizon-peak-heat-1100-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "horizon-workspace-1100",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass39-2026-10-10\\browser\\direct-horizon-3\\horizon-workspace-1100-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "horizon-before-drogue-1100",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass39-2026-10-10\\browser\\direct-horizon-3\\horizon-before-drogue-1100-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "horizon-drogue-1100",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass39-2026-10-10\\browser\\direct-horizon-3\\horizon-drogue-1100-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "horizon-main-1100",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass39-2026-10-10\\browser\\direct-horizon-3\\horizon-main-1100-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "horizon-interface-320",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass39-2026-10-10\\browser\\direct-horizon-3\\horizon-interface-320-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "horizon-peak-heat-320",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass39-2026-10-10\\browser\\direct-horizon-3\\horizon-peak-heat-320-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "horizon-workspace-320",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass39-2026-10-10\\browser\\direct-horizon-3\\horizon-workspace-320-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "horizon-before-drogue-320",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass39-2026-10-10\\browser\\direct-horizon-3\\horizon-before-drogue-320-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "horizon-drogue-320",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass39-2026-10-10\\browser\\direct-horizon-3\\horizon-drogue-320-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "horizon-main-320",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass39-2026-10-10\\browser\\direct-horizon-3\\horizon-main-320-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "horizon-splash-320",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass39-2026-10-10\\browser\\direct-horizon-3\\horizon-splash-320-chromium.png",
+      "contentType": "image/png"
+    },
+    {
+      "name": "horizon-skip-320",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass39-2026-10-10\\browser\\direct-horizon-3\\horizon-skip-320-chromium.png",
+      "contentType": "image/png"
+    }
+  ],
+  "inputHashes": {
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-entry-horizon.spec.ts": "e48144241340f40ed58573516da0f6cadbc4fb6aac4f084c5af23411d4d80cb0",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_moonmission.js": "305fdc3bcffb0dd94f06fd5631bedf4dc6079c752c2318aa5ad0049a2b75bd0b",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\stem_lab\\stem_tool_moonmission.js": "305fdc3bcffb0dd94f06fd5631bedf4dc6079c752c2318aa5ad0049a2b75bd0b"
+  },
+  "transform": {
+    "name": "Playwright bundled babelTransform",
+    "bundlePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\transform\\babelBundle.js",
+    "sha256": "9201df11ae9c9ee1febd587c5013c4f862aa7e9981b92b86ccbbbd37e71f9124"
+  },
+  "workflow": "entry horizon follows spherical altitude and exact field geometry through paused review, parachutes, receipt reload and skip-out",
+  "suiteOptions": {
+    "timeout": 180000,
+    "retries": 0
+  },
+  "browserVersion": "148.0.7778.96",
+  "pageEvents": [
+    {
+      "event": "close",
+      "elapsedMs": 67903,
+      "message": null
+    }
+  ],
+  "finishedAt": "2026-10-10T05:55:24.419Z",
+  "elapsedMs": 100788
+}

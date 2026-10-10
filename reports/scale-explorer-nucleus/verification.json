@@ -1,0 +1,28 @@
+{
+  "sourceSha256": "43fdd30e5241c671694ff4b39a68fd297fdf690035296141b851891670510a39",
+  "sourceBytes": 2278415,
+  "sourceAndDesktopMatch": true,
+  "englishKeys": 31,
+  "englishCopies": 4,
+  "unitTests": {
+    "passed": 56,
+    "files": 6,
+    "detail": "42 unchanged regression tests, 4 comparison tests and 10 final nucleus tests passed. Initial catalog comparison timeout resolved by the longer run."
+  },
+  "browserTests": {
+    "passed": 2,
+    "retries": 0,
+    "webgl": "WebGL 1",
+    "desktop": 1400,
+    "phone": 360
+  },
+  "gitDiffCheck": "passed",
+  "stagedChanges": [],
+  "preview": "http://127.0.0.1:54391/?tool=scaleExplorer&focus=nucleus&v=gold-197",
+  "changes": [
+    "197 retained markers: 79 protons, 118 neutrons",
+    "Movable capped section, four native inspection stops, saved mode and depth",
+    "Reference bounds preserve 14 fm scale in inspection and comparison",
+    "Complete instance color buffers and phone framing"
+  ]
+}

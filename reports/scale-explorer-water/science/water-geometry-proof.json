@@ -1,0 +1,453 @@
+{
+  "sourceSha256": "6152d8afe782118ff0669999217d54d307f60852dde9e7eb371e9760ec7ed77c",
+  "metadataSha256": "b3dcc7d3f8055cf588e80f83e6a3c855f910295a404b3f31f0867776e0ca7322",
+  "threeRevision": "128",
+  "computedFromRenderedAtomCenters": {
+    "OHAngstrom": 0.9578,
+    "HOHDegrees": 104.4776,
+    "worldCenters": {
+      "O": [
+        0,
+        -0.055,
+        0
+      ],
+      "HPlus": [
+        0.2753483037084998,
+        0.1582835413252126,
+        0
+      ],
+      "HMinus": [
+        -0.2753483037084998,
+        0.1582835413252126,
+        0
+      ]
+    }
+  },
+  "fixedReference": {
+    "dimension": "x",
+    "extent": 1,
+    "measureCenter": 0,
+    "meters": 2.75e-10
+  },
+  "drawables": 13,
+  "triangles": 11784,
+  "maxVertices": 1617,
+  "resources": 17,
+  "uniqueGeometries": 11,
+  "flags": {
+    "nonfinite": 0,
+    "degenerate": 0,
+    "wrongWinding": 0,
+    "indexUnsafe": 0
+  },
+  "minNormalFaceCosine": 0.9960138911374035,
+  "nativePicks": {
+    "oxygen": {
+      "at": [
+        0,
+        -0.055,
+        0.18
+      ],
+      "view": [
+        0,
+        0,
+        1
+      ],
+      "zoom": 3,
+      "hit": "oxygen",
+      "name": "water-oxygen",
+      "distanceToTarget": 6.938893903907228e-18
+    },
+    "hydrogens": {
+      "at": [
+        0.2753483037084998,
+        0.1582835413252126,
+        0.1
+      ],
+      "view": [
+        0,
+        0,
+        1
+      ],
+      "zoom": 4,
+      "hit": "hydrogens",
+      "name": "water-hydrogen-positive-x",
+      "distanceToTarget": 6.206335383118183e-17
+    },
+    "bond": {
+      "at": [
+        0.1692969472269112,
+        0.07613664385719118,
+        0.017
+      ],
+      "view": [
+        0,
+        0,
+        1
+      ],
+      "zoom": 5.5,
+      "hit": "bond",
+      "name": "water-bond-oxygen-1",
+      "distanceToTarget": 9.238719927973095e-10
+    },
+    "angle": {
+      "at": [
+        0,
+        0.175,
+        0.006
+      ],
+      "view": [
+        0,
+        0,
+        1
+      ],
+      "zoom": 3.8,
+      "hit": "angle",
+      "name": "water-angle-arc",
+      "distanceToTarget": 7.463951626901499e-10
+    },
+    "polarity": {
+      "at": [
+        -0.47,
+        0.08,
+        0.014
+      ],
+      "view": [
+        0,
+        0,
+        1
+      ],
+      "zoom": 2.8,
+      "hit": "polarity",
+      "name": "water-polarity-shaft",
+      "distanceToTarget": 5.2154064053566707e-11
+    }
+  },
+  "guideStates": [
+    {
+      "id": "",
+      "whole": true,
+      "angle": true,
+      "polarity": true
+    },
+    {
+      "id": "",
+      "whole": false,
+      "angle": false,
+      "polarity": false
+    },
+    {
+      "id": "oxygen",
+      "whole": true,
+      "angle": false,
+      "polarity": false
+    },
+    {
+      "id": "hydrogens",
+      "whole": true,
+      "angle": false,
+      "polarity": false
+    },
+    {
+      "id": "bond",
+      "whole": true,
+      "angle": false,
+      "polarity": false
+    },
+    {
+      "id": "angle",
+      "whole": false,
+      "angle": true,
+      "polarity": false
+    },
+    {
+      "id": "polarity",
+      "whole": false,
+      "angle": false,
+      "polarity": true
+    }
+  ],
+  "stablePoseTransitions": 1000,
+  "resourceDisposalEvents": [
+    {
+      "type": "MeshStandardMaterial",
+      "events": 1
+    },
+    {
+      "type": "MeshStandardMaterial",
+      "events": 1
+    },
+    {
+      "type": "MeshStandardMaterial",
+      "events": 1
+    },
+    {
+      "type": "MeshStandardMaterial",
+      "events": 1
+    },
+    {
+      "type": "MeshStandardMaterial",
+      "events": 1
+    },
+    {
+      "type": "MeshStandardMaterial",
+      "events": 1
+    },
+    {
+      "type": "SphereGeometry",
+      "events": 1
+    },
+    {
+      "type": "CylinderGeometry",
+      "events": 1
+    },
+    {
+      "type": "CylinderGeometry",
+      "events": 1
+    },
+    {
+      "type": "CylinderGeometry",
+      "events": 1
+    },
+    {
+      "type": "CylinderGeometry",
+      "events": 1
+    },
+    {
+      "type": "TubeGeometry",
+      "events": 1
+    },
+    {
+      "type": "CylinderGeometry",
+      "events": 1
+    },
+    {
+      "type": "CylinderGeometry",
+      "events": 1
+    },
+    {
+      "type": "CylinderGeometry",
+      "events": 1
+    },
+    {
+      "type": "ConeGeometry",
+      "events": 1
+    },
+    {
+      "type": "CylinderGeometry",
+      "events": 1
+    }
+  ],
+  "perMesh": [
+    {
+      "name": "water-oxygen",
+      "id": "oxygen",
+      "vertices": 1617,
+      "triangles": 2976,
+      "indexType": "Uint16Array",
+      "flags": {
+        "degenerate": 0,
+        "wrongWinding": 0,
+        "nonfinite": 0,
+        "indexUnsafe": 0
+      }
+    },
+    {
+      "name": "water-hydrogen-positive-x",
+      "id": "hydrogens",
+      "vertices": 1617,
+      "triangles": 2976,
+      "indexType": "Uint16Array",
+      "flags": {
+        "degenerate": 0,
+        "wrongWinding": 0,
+        "nonfinite": 0,
+        "indexUnsafe": 0
+      }
+    },
+    {
+      "name": "water-hydrogen-negative-x",
+      "id": "hydrogens",
+      "vertices": 1617,
+      "triangles": 2976,
+      "indexType": "Uint16Array",
+      "flags": {
+        "degenerate": 0,
+        "wrongWinding": 0,
+        "nonfinite": 0,
+        "indexUnsafe": 0
+      }
+    },
+    {
+      "name": "water-bond-oxygen--1",
+      "id": "bond",
+      "vertices": 100,
+      "triangles": 64,
+      "indexType": "Uint16Array",
+      "flags": {
+        "degenerate": 0,
+        "wrongWinding": 0,
+        "nonfinite": 0,
+        "indexUnsafe": 0
+      }
+    },
+    {
+      "name": "water-bond-hydrogen--1",
+      "id": "bond",
+      "vertices": 100,
+      "triangles": 64,
+      "indexType": "Uint16Array",
+      "flags": {
+        "degenerate": 0,
+        "wrongWinding": 0,
+        "nonfinite": 0,
+        "indexUnsafe": 0
+      }
+    },
+    {
+      "name": "water-bond-oxygen-1",
+      "id": "bond",
+      "vertices": 100,
+      "triangles": 64,
+      "indexType": "Uint16Array",
+      "flags": {
+        "degenerate": 0,
+        "wrongWinding": 0,
+        "nonfinite": 0,
+        "indexUnsafe": 0
+      }
+    },
+    {
+      "name": "water-bond-hydrogen-1",
+      "id": "bond",
+      "vertices": 100,
+      "triangles": 64,
+      "indexType": "Uint16Array",
+      "flags": {
+        "degenerate": 0,
+        "wrongWinding": 0,
+        "nonfinite": 0,
+        "indexUnsafe": 0
+      }
+    },
+    {
+      "name": "water-angle-arc",
+      "id": "angle",
+      "vertices": 1261,
+      "triangles": 2304,
+      "indexType": "Uint16Array",
+      "flags": {
+        "degenerate": 0,
+        "wrongWinding": 0,
+        "nonfinite": 0,
+        "indexUnsafe": 0
+      }
+    },
+    {
+      "name": "water-angle-end-0",
+      "id": "angle",
+      "vertices": 100,
+      "triangles": 64,
+      "indexType": "Uint16Array",
+      "flags": {
+        "degenerate": 0,
+        "wrongWinding": 0,
+        "nonfinite": 0,
+        "indexUnsafe": 0
+      }
+    },
+    {
+      "name": "water-angle-end-1",
+      "id": "angle",
+      "vertices": 100,
+      "triangles": 64,
+      "indexType": "Uint16Array",
+      "flags": {
+        "degenerate": 0,
+        "wrongWinding": 0,
+        "nonfinite": 0,
+        "indexUnsafe": 0
+      }
+    },
+    {
+      "name": "water-polarity-shaft",
+      "id": "polarity",
+      "vertices": 100,
+      "triangles": 64,
+      "indexType": "Uint16Array",
+      "flags": {
+        "degenerate": 0,
+        "wrongWinding": 0,
+        "nonfinite": 0,
+        "indexUnsafe": 0
+      }
+    },
+    {
+      "name": "water-polarity-head",
+      "id": "polarity",
+      "vertices": 83,
+      "triangles": 40,
+      "indexType": "Uint16Array",
+      "flags": {
+        "degenerate": 0,
+        "wrongWinding": 0,
+        "nonfinite": 0,
+        "indexUnsafe": 0
+      }
+    },
+    {
+      "name": "water-polarity-positive-cross",
+      "id": "polarity",
+      "vertices": 100,
+      "triangles": 64,
+      "indexType": "Uint16Array",
+      "flags": {
+        "degenerate": 0,
+        "wrongWinding": 0,
+        "nonfinite": 0,
+        "indexUnsafe": 0
+      }
+    }
+  ],
+  "stats": {
+    "bodyExtent": 1,
+    "bodyReferenceMeters": 2.75e-10,
+    "reference": "catalog-characteristic-size",
+    "coordinateUnits": "Angstrom",
+    "nuclearScaleAngstrom": 2.75,
+    "nuclearCoordinatesAngstrom": {
+      "oxygen": [
+        0,
+        0,
+        0
+      ],
+      "hydrogens": [
+        [
+          0.7572078351983744,
+          0.5865297386443347,
+          0
+        ],
+        [
+          -0.7572078351983744,
+          0.5865297386443347,
+          0
+        ]
+      ]
+    },
+    "centerYOffset": -0.055,
+    "ohLengthAngstrom": 0.9578,
+    "hohAngleDegrees": 104.4776,
+    "oxygenDisplayRadius": 0.18,
+    "hydrogenDisplayRadius": 0.1,
+    "atomRadiiIllustrative": true,
+    "bondWidthsIllustrative": true,
+    "dipoleConvention": "chemistry-arrow-toward-negative-oxygen",
+    "dipoleMagnitudeNotToScale": true,
+    "electronCloud": false,
+    "drawables": 13,
+    "triangles": 11784,
+    "vertices": 6995,
+    "ownedGeometries": 11,
+    "nativeSites": 5
+  }
+}

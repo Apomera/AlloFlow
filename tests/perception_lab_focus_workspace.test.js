@@ -238,4 +238,35 @@ describe('Focused live experiment workspace', () => {
     await mount(seed(), { strict: true }); const before = latest, beforeWrites = writes; await enter(); await leave(); await enter();
     expect(host.querySelectorAll('[data-perception-focus-dialog]')).toHaveLength(1); expectLocalOnly(before, beforeWrites);
   });
+  it('navigates to the drawing and reopens collapsed controls without changing the experiment', async () => {
+    await mount(engine.normalize({ expanded: true })); await enter();
+    const before = latest, beforeWrites = writes, drawing = live();
+    const details = focusDialog().querySelector('.perception-controls details');
+    await act(async () => { details.open = false; details.dispatchEvent(new Event('toggle')); });
+    await click('Go to controls'); expect(details.open).toBe(true);
+    expect(document.activeElement).toBe(details.querySelector('summary'));
+    await click('Go to drawing'); expect(document.activeElement.getAttribute('aria-label')).toBe('Experiment drawings');
+    expect(document.activeElement.contains(drawing)).toBe(true); expect(live()).toBe(drawing);
+    expectLocalOnly(before, beforeWrites);
+  });
+  it('navigates to the visible pinned drawing without resetting the comparison selection', async () => {
+    await mount(engine.normalize({ comparison: { experiment: 'necker', model: {} } })); await enter();
+    await input(host.querySelector('[data-perception-comparison-layout]'), 'switch');
+    await act(async () => host.querySelector('[data-perception-show-pinned]').click());
+    const before = latest, beforeWrites = writes;
+    await click('Go to drawing');
+    expect(document.activeElement.className).toBe('perception-live-pair');
+    expect(host.querySelector('[data-perception-show-pinned]').getAttribute('aria-pressed')).toBe('true');
+    expect(host.querySelector('.perception-live-stage').hasAttribute('inert')).toBe(true);
+    expectLocalOnly(before, beforeWrites);
+  });
+  it('does not wrap keyboard focus into a hidden comparison card', async () => {
+    await mount(engine.normalize({ models: { brightness: { reveal: true } }, comparison: { experiment: 'necker', model: {} } })); await enter();
+    await input(host.querySelector('[data-perception-comparison-layout]'), 'switch');
+    await act(async () => host.querySelector('[data-perception-show-pinned]').click());
+    await key(button('Back to workspace'), 'Tab', true);
+    expect(document.activeElement).toBe(host.querySelector('[data-perception-show-pinned]'));
+    expect(document.activeElement.closest('[inert]')).toBeNull();
+    await key(document.activeElement, 'Tab'); expect(document.activeElement).toBe(button('Back to workspace'));
+  });
 });

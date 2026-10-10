@@ -15,6 +15,51 @@ beforeAll(async()=>{
 });
 afterEach(()=>{vi.restoreAllMocks();vi.unstubAllGlobals();localStorage.removeItem('alloflow_ai_config');window.__alloSearchTrace=[];});
 describe('external search privacy boundary',()=>{
+  it('normalizes explicit topics without applying the automatic-search vocabulary',()=>{
+    for(const topic of ['R', '\u03c0', 'AI', 'How clouds form', 'photosynthesis in desert plants', 'History of jazz', '\u96f2\u306e\u5f62\u6210', 'x'.repeat(500)]) {
+      expect(policy(topic)).toBe('');
+      expect(policy.forIntent(topic,'user-topic')).toBe(topic);
+      expect(policy.forIntent(topic,'unknown')).toBe('');
+    }
+    expect(policy.userTopic('  cloud\n  formation\t')).toBe('cloud formation');
+    for(const topic of [null, {}, '', ' \t ', 'x'.repeat(501), 'cloud\u0000formation']) expect(policy.userTopic(topic)).toBe('');
+  });
+
+  it('transports explicit topics unchanged through every provider while defaults remain restricted',async()=>{
+    const topic='History of jazz in New Orleans';
+    const fetch=vi.fn(async()=>({ok:true,json:async()=>({organic:[],results:[],RelatedTopics:[]})}));
+    vi.stubGlobal('fetch',fetch);
+    vi.spyOn(provider,'_serperDirectKey').mockReturnValue('synthetic-test-key');
+    const original={url:provider._serperProxyUrl,mode:provider._serperProxyMode};
+    const canvas=vi.spyOn(provider,'_isCanvas','get').mockReturnValue(true);
+    const firebase=window.__alloFirebase;
+    try {
+      provider._serperProxyUrl='https://search.example.test/search';
+      provider._serperProxyMode='canvas-compat-get';
+      await provider._fetchSerper(topic,3,'user-topic');
+      expect(new URL(fetch.mock.calls[0][0]).searchParams.get('q')).toBe(topic);
+      expect(new URL(fetch.mock.calls[0][0]).searchParams.get('intent')).toBe('user-topic');
+      canvas.mockReturnValue(false);
+      window.__alloFirebase={getFunctionSecurityHeaders:async()=>({Authorization:'Bearer synthetic'})};
+      await provider._fetchSerper(topic,3,'user-topic');
+      expect(JSON.parse(fetch.mock.calls[1][1].body)).toEqual({query:topic,num:3,intent:'user-topic'});
+      await provider._fetchSerperDirect(topic,3,'user-topic');
+      expect(JSON.parse(fetch.mock.calls[2][1].body)).toEqual({q:topic,num:3});
+      await provider._fetchSearXNG(topic,3,'user-topic');
+      await provider._fetchDuckDuckGo(topic,3,'user-topic');
+      for(const [url,opts] of fetch.mock.calls.slice(3)) {
+        expect(new URL(url).searchParams.get('q')).toBe(topic);
+        expect(opts).toMatchObject({referrerPolicy:'no-referrer',credentials:'omit'});
+      }
+      for(const method of ['_fetchSerperDirect','_fetchSerper','_fetchSearXNG','_fetchDuckDuckGo'])
+        await expect(provider[method](topic,3)).rejects.toThrow('approved public topic');
+      expect(fetch).toHaveBeenCalledTimes(5);
+    } finally {
+      provider._serperProxyUrl=original.url; provider._serperProxyMode=original.mode;
+      window.__alloFirebase=firebase;
+    }
+  });
+
   it('rejects arbitrary text at every transport without network or trace disclosure',async()=>{
     const fetch=vi.fn();vi.stubGlobal('fetch',fetch);
     vi.spyOn(provider,'_serperDirectKey').mockReturnValue('synthetic-test-key');
@@ -74,6 +119,22 @@ describe('external search privacy boundary',()=>{
       if(q!=='photosynthesis')expect(body.error).toBe('public-query-required');
     }
     expect(fetch).toHaveBeenCalledOnce();expect(JSON.parse(fetch.mock.calls[0][1].body).q).toBe('photosynthesis');
+    for(const [q,intent,expected] of [
+      ['History of jazz','user-topic',200],
+      ['R','user-topic',200],
+      ['\u03c0','user-topic',200],
+      ['History of jazz','automatic',400],
+      ['clouds\u0000private','user-topic',400],
+      ['x'.repeat(501),'user-topic',400],
+    ]) {
+      let status=200;
+      const res={set:()=>{},status:n=>{status=n;return res;},json:()=>{}};
+      const req={method:'POST',is:()=>true,body:{query:q,intent},get:name=>({Origin:'https://app.test',Authorization:'Bearer synthetic','X-Firebase-AppCheck':'synthetic'}[name])};
+      await context.exports.searchProxy(req,res);
+      expect(status).toBe(expected);
+    }
+    expect(fetch).toHaveBeenCalledTimes(4);
+    expect(JSON.parse(fetch.mock.calls[1][1].body)).toEqual({q:'History of jazz',num:5});
   });
   it('keeps the canonical server policy identical to both embedded copies',()=>{
     const canonical=fs.readFileSync('desktop/web-app/functions/public_search_policy.js','utf8').replace('module.exports = publicSearchQuery;','').trim().replace(/\r\n/g,'\n');

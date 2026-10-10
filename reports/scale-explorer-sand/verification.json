@@ -1,0 +1,17 @@
+{
+  "sha256": "fa2a5fac97e9d7c07d1c868f1b544766e61eec2a2cae9bd8d0835841dd4b2ae7",
+  "bytes": 2421981,
+  "unitTests": 22,
+  "sandBrowserTests": 2,
+  "riceBrowserTests": 2,
+  "copyKeys": 13,
+  "mirrorsMatch": true,
+  "diffCheck": true,
+  "sources": [
+    "https://www.nps.gov/articles/coastal-sediments-sand-colors.htm",
+    "https://www.nps.gov/articles/coastal-sediments-parent-material.htm",
+    "https://qrius.si.edu/taxonomy/term/11943"
+  ],
+  "scope": "Illustrative subangular quartz grain with composed fracture faces, deterministic irregular surface wear, partial light transmission and a procedural studio reflection map. Width remains 500 micrometers. This is not a scan or a universal representation of sand.",
+  "committed": false
+}

@@ -1,0 +1,12 @@
+{
+  "start": "2026-10-09T23:07:10.500Z",
+  "jobs": [
+    {
+      "label": "before-1",
+      "code": 0
+    }
+  ],
+  "running": null,
+  "success": true,
+  "end": "2026-10-09T23:07:17.053Z"
+}

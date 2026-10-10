@@ -1,0 +1,32 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/solar_system_scale_walk_navigation.test.js
+[deferred-jsdom] Initializing the official DOM environment.
+
+stdout | tests/solar_system_scale_walk_navigation.test.js
+[deferred-jsdom] DOM environment ready.
+
+stdout | tests/solar_system_scale_walk_navigation.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/solar_system_scale_walk_navigation.test.js
+[deferred-jsdom] Existing repository setup loaded.
+
+ ✓ tests/solar_system_scale_walk_navigation.test.js > Solar System scale walk stop guide and map views > starts at the Sun with a common physical scale and full linear map 24594ms
+ ✓ tests/solar_system_scale_walk_navigation.test.js > Solar System scale walk stop guide and map views > magnifies exactly Sun through Mars while preserving all nine physical measurements 26442ms
+ ✓ tests/solar_system_scale_walk_navigation.test.js > Solar System scale walk stop guide and map views > changes only the map setting when zooming and keeps saved evidence and other activities intact 6681ms
+ ✓ tests/solar_system_scale_walk_navigation.test.js > Solar System scale walk stop guide and map views > reports exact adjacent gaps, total distances and diameters for every selected stop 13338ms
+ ✓ tests/solar_system_scale_walk_navigation.test.js > Solar System scale walk stop guide and map views > visits all nine stops in both directions and guards the two endpoints 24034ms
+ ✓ tests/solar_system_scale_walk_navigation.test.js > Solar System scale walk stop guide and map views > keeps inner stop selections magnified and returns to the whole map for an outer stop 1486ms
+ ✓ tests/solar_system_scale_walk_navigation.test.js > Solar System scale walk stop guide and map views > explains a selected outer stop outside the inner view and offers a map-only return 937ms
+ ✓ tests/solar_system_scale_walk_navigation.test.js > Solar System scale walk stop guide and map views > falls back from malformed restored stop and map values without rewriting saved state 4829ms
+ ✓ tests/solar_system_scale_walk_navigation.test.js > Solar System scale walk stop guide and map views > doubles distances, diameters and the selected gap together without moving the stop or zoom 1064ms
+ ✓ tests/solar_system_scale_walk_navigation.test.js > Solar System scale walk stop guide and map views > keeps a saved placement plan immutable during inspection and enables a new save after scaling 2301ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  16:18:36
+   Duration  153.83s (transform 2.88s, setup 37.65s, import 2.00s, tests 105.73s, environment 0ms)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/solar-scale-walk-enhancement-2026-10-08/unit-walk-results.json

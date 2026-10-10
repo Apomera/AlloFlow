@@ -1,0 +1,44 @@
+{
+  "start": "2026-10-06T14:28:57.593Z",
+  "runnerPid": 35652,
+  "jobs": [
+    {
+      "mode": "scenario",
+      "label": "scenario-7",
+      "code": 0,
+      "start": "2026-10-06T14:28:57.597Z",
+      "end": "2026-10-06T14:29:56.764Z"
+    },
+    {
+      "mode": "unit-main",
+      "label": "unit-main-7",
+      "code": 0,
+      "start": "2026-10-06T14:29:56.822Z",
+      "end": "2026-10-06T14:31:38.275Z"
+    },
+    {
+      "mode": "unit-axe",
+      "label": "unit-axe-7",
+      "code": 0,
+      "start": "2026-10-06T14:31:38.307Z",
+      "end": "2026-10-06T14:31:54.223Z"
+    },
+    {
+      "mode": "study",
+      "label": "study-7",
+      "code": 0,
+      "start": "2026-10-06T14:31:54.321Z",
+      "end": "2026-10-06T14:32:52.650Z"
+    },
+    {
+      "mode": "view",
+      "label": "view-7",
+      "code": 0,
+      "start": "2026-10-06T14:32:52.694Z",
+      "end": "2026-10-06T14:35:31.631Z"
+    }
+  ],
+  "running": null,
+  "success": true,
+  "end": "2026-10-06T14:35:31.903Z"
+}

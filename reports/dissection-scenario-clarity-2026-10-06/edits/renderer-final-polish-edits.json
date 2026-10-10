@@ -1,0 +1,18 @@
+{
+  "beforeSha256": "6b96c71e04bc42f4a5e6bc4ecfe6c61d96edf8f4d8fc02f296b99bcd41497de9",
+  "afterSha256": "ace3a133dd2720df60741a1242e0dbf9be05977677067429b1892318924223cf",
+  "edits": [
+    {
+      "name": "Restore native scenario select arrow in high contrast",
+      "before": "[data-dissection-root][data-high-contrast=\"true\"] .diss-scenario-console, [data-dissection-root][data-high-contrast=\"true\"] .diss-scenario-console :is(h4, h5, p, label, select, button, .diss-scenario-console__state, .diss-scenario-console__timer, .diss-scenario-console__restart-review) { border-color: #111827; background: #fff; color: #000; }",
+      "after": "[data-dissection-root][data-high-contrast=\"true\"] .diss-scenario-console, [data-dissection-root][data-high-contrast=\"true\"] .diss-scenario-console :is(h4, h5, p, label, select, button, .diss-scenario-console__state, .diss-scenario-console__timer, .diss-scenario-console__restart-review) { border-color: #111827; background: #fff; color: #000; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-scenario-console select { appearance: auto; }"
+    },
+    {
+      "name": "Restore native scenario select arrow in forced colors",
+      "before": "  [data-dissection-root] .diss-scenario-console__progress > span { background: Highlight !important; }\n  [data-dissection-root] .diss-scenario-console :is(button, select):focus-visible { outline-color: Highlight !important; }",
+      "after": "  [data-dissection-root] .diss-scenario-console__progress > span { background: Highlight !important; }\n  [data-dissection-root] .diss-scenario-console select { appearance: auto; }\n  [data-dissection-root] .diss-scenario-console :is(button, select):focus-visible { outline-color: Highlight !important; }"
+    }
+  ],
+  "exactReversal": true,
+  "syntax": "passed"
+}

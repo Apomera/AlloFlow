@@ -1,10 +1,26 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import vm from 'node:vm';
 import { React, ReactDOMClient, loadTool, makeCtx, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const require = createRequire(import.meta.url);
 const { act, Simulate } = require(resolve('desktop/web-app/node_modules/react-dom/test-utils'));
+// Load the numerical model once. Expected guide readings come from recorded
+// response intervals, independently of the new guide-budget rendering helper.
+const guideEnergySource = readFileSync(resolve('stem_lab/stem_tool_bridgelab.js'), 'utf8');
+const guideEnergySandbox = { window: { StemLab: { registerTool() {} } }, console };
+vm.runInNewContext(guideEnergySource.replace("window.StemLab.registerTool('bridgeLab', {", `
+  window.guideEnergyOracle = { bridgeSeismicResponse, bridgeSeismicEnergyInterval };
+  window.StemLab.registerTool('bridgeLab', {`), guideEnergySandbox);
+const guideEnergyOracle = guideEnergySandbox.window.guideEnergyOracle;
+const guideEnergyResponses = new Map();
+function guideEnergyResponse(inputs) {
+  const key = JSON.stringify(inputs);
+  if (!guideEnergyResponses.has(key)) guideEnergyResponses.set(key, guideEnergyOracle.bridgeSeismicResponse(inputs));
+  return guideEnergyResponses.get(key);
+}
 let host, root, state, update, media, hidden, configuration, viewerStatus, viewerListener, lastScene;
 
 function mount(overrides = {}) {
@@ -69,10 +85,954 @@ afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+  guideEnergyResponses.clear();
   delete globalThis.IS_REACT_ACT_ENVIRONMENT;
 });
 
 describe('Bridge Lab immersive earthquake interaction', () => {
+  function startingEnergyFrame(origin = 'current') {
+    return guideEnergyFigure(origin)?.querySelector('[data-guide-shaking-budget]');
+  }
+  function openStartingEnergy(origin = 'current') {
+    const disclosure = guideEnergyFigure(origin).querySelector('[data-guide-shaking-disclosure]');
+    expect(disclosure).toBeTruthy();
+    expect(disclosure.tagName).toBe('DETAILS');
+    const summary = disclosure.querySelector(':scope > summary');
+    expect(summary.textContent.trim()).toBe('Where did the starting energy come from?');
+    if (!disclosure.open) act(() => { summary.click(); vi.advanceTimersByTime(0); });
+    expect(disclosure.open).toBe(true);
+    return { disclosure, summary };
+  }
+  function checkStartingEnergy(referenceInputs, currentInputs, origin = 'current') {
+    const frame = startingEnergyFrame(origin);
+    expect(frame).toBeTruthy();
+    expect(Number(frame.dataset.guideShakingStart)).toBe(0);
+    expect(Number(frame.dataset.guideShakingEnd)).toBe(16);
+    const expected = [referenceInputs, currentInputs].map((inputs, index) => {
+      const interval = guideEnergyOracle.bridgeSeismicEnergyInterval(guideEnergyResponse(inputs), 0, 16);
+      const row = { initial: interval.earlier.storedJPerKg, input: interval.inputJPerKg,
+        damping: interval.dissipatedJPerKg, stored: interval.later.storedJPerKg, residual: interval.balanceErrorJPerKg };
+      const id = index === 0 ? 'a' : 'b';
+      const trial = frame.querySelector('[data-guide-shaking-trial="' + id + '"]');
+      expect(trial).toBeTruthy();
+      for (const [field, value] of Object.entries(row)) {
+        const reading = trial.querySelector('[data-guide-shaking-field="' + field + '"]');
+        expect(reading, id + ' ' + field).toBeTruthy();
+        expect(Number(reading.dataset.guideShakingValue)).toBe(value);
+      }
+      const starting = guideEnergyFigure(origin).querySelector('[data-guide-energy-trial="' + id + '"] [data-guide-energy-field="initial"]');
+      expect(Number(starting.dataset.guideEnergyValue)).toBe(row.stored);
+      return row;
+    });
+    expect(frame.textContent).toContain('J/kg');
+    expect(frame.innerHTML).not.toMatch(/NaN|Infinity/);
+    return expected;
+  }
+
+  function checkShakingVisual(referenceInputs, currentInputs, origin = 'current') {
+    const frame = startingEnergyFrame(origin);
+    const expected = [referenceInputs, currentInputs].map((inputs, index) => {
+      const interval = guideEnergyOracle.bridgeSeismicEnergyInterval(guideEnergyResponse(inputs), 0, 16);
+      const amounts = { initial: interval.earlier.storedJPerKg, added: Math.max(0, interval.inputJPerKg),
+        stored: interval.later.storedJPerKg, damping: interval.dissipatedJPerKg, returned: Math.max(0, -interval.inputJPerKg) };
+      return { id: index === 0 ? 'a' : 'b', amounts,
+        available: amounts.initial + amounts.added, accounted: amounts.stored + amounts.damping + amounts.returned };
+    });
+    const largest = Math.max(...expected.flatMap(row => [row.available, row.accounted]));
+    const scale = largest === 0 ? 1 : largest;
+    expect(Number(frame.dataset.guideShakingRange)).toBe(scale);
+    const legend = frame.querySelector('[data-guide-shaking-legend]');
+    expect(legend).toBeTruthy();
+    expect(legend.closest('svg,[aria-hidden="true"]')).toBeNull();
+    for (const label of ['Stored', 'Net added by ground', 'Damping loss', 'Net removed by ground']) {
+      expect(legend.textContent).toContain(label);
+    }
+    const snapshot = { range: scale, trials: [] };
+    for (const row of expected) {
+      const trial = frame.querySelector('[data-guide-shaking-trial="' + row.id + '"]');
+      const svg = trial.querySelector('svg');
+      expect(svg, 'paired energy bar for ' + row.id).toBeTruthy();
+      expect(svg.getAttribute('aria-hidden')).toBe('true');
+      expect(svg.getAttribute('viewBox')).toBe('0 0 400 48');
+      const caption = svg.parentElement.querySelector('figcaption');
+      expect(caption).toBeTruthy();
+      expect(caption.closest('[aria-hidden="true"]')).toBeNull();
+      expect(caption.textContent).toContain('Top: initial stored + net added');
+      expect(caption.textContent).toContain('Bottom: stored at 16 s + damping + net removed');
+      for (const track of ['available', 'accounted']) {
+        const background = svg.querySelector('[data-guide-shaking-track="' + track + '"]');
+        expect(background, row.id + ' empty ' + track + ' track').toBeTruthy();
+        expect(Number(background.getAttribute('width'))).toBe(400);
+        expect(Number(background.getAttribute('x'))).toBe(0);
+      }
+      const segments = [...svg.querySelectorAll('[data-guide-shaking-bar]')];
+      expect(segments).toHaveLength(Object.values(row.amounts).filter(value => value !== 0).length);
+      const rendered = [];
+      for (const [kind, amount] of Object.entries(row.amounts)) {
+        const segment = svg.querySelector('[data-guide-shaking-bar="' + kind + '"]');
+        if (amount === 0) {
+          expect(segment, row.id + ' exact-zero ' + kind).toBeNull();
+          continue;
+        }
+        expect(segment, row.id + ' ' + kind).toBeTruthy();
+        expect(segment.tagName.toLowerCase()).toBe('rect');
+        expect(Number(segment.dataset.guideShakingAmount)).toBe(amount);
+        const width = Number(segment.getAttribute('width'));
+        expect(width).toBe(amount / scale * 400);
+        expect(width).toBeGreaterThan(0);
+        expect(width).toBeLessThanOrEqual(400);
+        const available = kind === 'initial' || kind === 'added';
+        const offset = kind === 'added' ? row.amounts.initial : kind === 'damping' ? row.amounts.stored
+          : kind === 'returned' ? row.amounts.stored + row.amounts.damping : 0;
+        expect(Number(segment.getAttribute('x'))).toBe(offset / scale * 400);
+        expect(Number(segment.getAttribute('y'))).toBe(available ? 2 : 32);
+        expect(Number(segment.getAttribute('height'))).toBe(14);
+        rendered.push({ kind, amount, width, x: segment.getAttribute('x'), y: segment.getAttribute('y') });
+      }
+      snapshot.trials.push({ id: row.id, rendered });
+    }
+    expect(Boolean(frame.querySelector('[data-guide-shaking-zero]'))).toBe(largest === 0);
+    expect(frame.innerHTML).not.toMatch(/NaN|Infinity/);
+    checkStartingEnergy(referenceInputs, currentInputs, origin);
+    return { expected, snapshot, scale };
+  }
+
+  it('shaking visual: compares measured amounts on one scale and keeps the 0–16 second bars fixed while inspecting later times', () => {
+    mount({ seismicGuideOpen: true, seismicGuidePrediction: 'Keep prediction.', seismicIntervalPinS: 12.319 });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 15.999 });
+    expect(startingEnergyFrame()).toBeFalsy();
+    patch({ seismicTime: 16 });
+    const disclosure = guideEnergyFigure().querySelector('[data-guide-shaking-disclosure]');
+    expect(disclosure.open).toBe(false);
+    const { summary } = openStartingEnergy();
+    act(() => summary.focus());
+    const inputs = { reference: state.seismicGuideBaseline.inputs, current: guideEnergyCurrentInputs() };
+    const original = checkShakingVisual(inputs.reference, inputs.current);
+    expect(original.expected[0].amounts.added).not.toBe(original.expected[1].amounts.added);
+    expect(original.expected[0].amounts.stored).not.toBe(original.expected[1].amounts.stored);
+    for (const time of [21.217, 24]) {
+      patch({ seismicTime: time });
+      expect(checkShakingVisual(inputs.reference, inputs.current).snapshot).toEqual(original.snapshot);
+      expect(guideEnergyFigure().querySelector('[data-guide-shaking-disclosure]')).toBe(disclosure);
+      expect(disclosure.open).toBe(true);
+      expect(document.activeElement).toBe(summary);
+    }
+    expect(state).toMatchObject({ seismicGuidePrediction: 'Keep prediction.', seismicIntervalPinS: 12.319 });
+    expect(state.seismicGuideEvidence).toBeUndefined();
+  });
+
+  it('shaking visual: preserves amplitude scaling and arbitrarily small nonzero segments without a minimum display width', () => {
+    mount({ seismicGuideOpen: true, seismicIntensityG: 0.12 });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 21.217 });
+    openStartingEnergy();
+    const ordinary = checkShakingVisual(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs());
+    patch({ seismicIntensityG: 0.000001 });
+    const mixed = checkShakingVisual(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs());
+    for (const segment of mixed.snapshot.trials[1].rendered) {
+      expect(segment.width).toBeGreaterThan(0);
+      expect(segment.width).toBeLessThan(0.001);
+    }
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 21.217 });
+    openStartingEnergy();
+    const tiny = checkShakingVisual(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs());
+    const squaredRatio = (0.000001 / 0.12) ** 2;
+    expect(tiny.scale / ordinary.scale).toBeCloseTo(squaredRatio, 20);
+    for (const [index, row] of tiny.expected.entries()) {
+      for (const [kind, amount] of Object.entries(row.amounts)) {
+        const before = ordinary.expected[index].amounts[kind];
+        if (before === 0) expect(amount).toBe(0);
+        else expect(amount / before).toBeCloseTo(squaredRatio, 20);
+      }
+      const ordinarySegments = ordinary.snapshot.trials[index].rendered;
+      expect(tiny.snapshot.trials[index].rendered.map(segment => segment.kind)).toEqual(ordinarySegments.map(segment => segment.kind));
+      tiny.snapshot.trials[index].rendered.forEach((segment, segmentIndex) => {
+        expect(segment.width).toBeCloseTo(ordinarySegments[segmentIndex].width, 9);
+      });
+    }
+    expect(startingEnergyFrame().querySelector('[data-guide-shaking-zero]')).toBeNull();
+  });
+
+  it('shaking visual: leaves exact-zero rows empty and shows undamped stored energy without a loss segment', () => {
+    mount({ seismicGuideOpen: true, seismicIntensityG: 0 });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 24 });
+    openStartingEnergy();
+    const zero = checkShakingVisual(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs());
+    expect(zero.scale).toBe(1);
+    expect(zero.snapshot.trials.every(row => row.rendered.length === 0)).toBe(true);
+    const baseline = JSON.parse(JSON.stringify(state.seismicGuideBaseline));
+    patch({ seismicGuideBaseline: { ...baseline, inputs: { ...baseline.inputs, intensityG: 0.12 } } });
+    const oneZero = checkShakingVisual(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs());
+    expect(oneZero.snapshot.trials[0].rendered.length).toBeGreaterThan(0);
+    expect(oneZero.snapshot.trials[1].rendered).toEqual([]);
+    expect(startingEnergyFrame().querySelector('[data-guide-shaking-zero]')).toBeNull();
+    patch({ seismicIntensityG: 0.12, seismicDampingRatio: 0 });
+    const undamped = checkShakingVisual(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs());
+    expect(undamped.expected[1].amounts.damping).toBe(0);
+    expect(undamped.expected[1].amounts.stored).toBeGreaterThan(0);
+    expect(undamped.expected[1].amounts.added).toBeGreaterThan(0);
+    expect(undamped.snapshot.trials[1].rendered.map(segment => segment.kind)).toEqual(['added', 'stored']);
+    expect(undamped.snapshot.trials[0].rendered.some(segment => segment.kind === 'damping')).toBe(true);
+  });
+
+  it('shaking visual: freezes a saved confounded comparison and rebuilds its bars from the original inputs in a fresh print', () => {
+    const writing = { seismicGuidePrediction: 'Keep my prediction.', seismicGuideClaim: 'Keep my claim.',
+      seismicGuideReasoning: 'Ground motion changed as well.' };
+    mount({ ...writing, seismicGuideOpen: true, seismicIntensityG: 0.000001 });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicFrequencyHz: 0.8, seismicIntensityG: 0.000002, seismicTime: 21.217 });
+    click('Record paired evidence');
+    const record = JSON.parse(JSON.stringify(state.seismicGuideEvidence));
+    openStartingEnergy('recorded');
+    const original = checkShakingVisual(record.referenceInputs, record.currentInputs, 'recorded').snapshot;
+    expect(host.querySelector('[data-guide-readings="recorded"] [data-guide-comparison-context]').dataset.guideComparisonContext).toBe('confounded');
+    patch({ seismicFrequencyHz: 1.1, seismicIntensityG: 0.12 });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 24 });
+    expect(checkShakingVisual(record.referenceInputs, record.currentInputs, 'recorded').snapshot).toEqual(original);
+    expect(state.seismicGuideEvidence).toEqual(record);
+    const savedState = JSON.parse(JSON.stringify(state));
+    act(() => root.unmount()); root = null; host.remove();
+    const imported = { ...record, shakingVisual: { scaleJPerKg: 999999, trials: [] },
+      shakingBudget: { inputJPerKg: 999999, storedJPerKg: 999999 } };
+    mount({ ...savedState, tab: 'print', seismicEnabled: false, seismicGuideEvidence: imported });
+    const report = host.querySelector('[data-bridge-damping-guide="print"]');
+    expect(checkShakingVisual(record.referenceInputs, record.currentInputs, 'recorded').snapshot).toEqual(original);
+    expect(startingEnergyFrame('recorded').closest('details')).toBeNull();
+    expect(report.querySelector('details,summary,button,input,select,textarea')).toBeNull();
+    expect(report.textContent).not.toContain('999999');
+    expect(state.seismicGuideEvidence).toEqual(imported);
+    expect(state).toMatchObject(writing);
+  });
+
+  it('starting energy: keeps the optional disclosure open and focused while its 0–16 second values stay fixed', () => {
+    mount({ seismicGuideOpen: true, seismicIntervalPinS: 12.319, seismicGuidePrediction: 'Keep my prediction.' });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 15.999 });
+    expect(host.querySelector('[data-guide-shaking-disclosure]')).toBeNull();
+    patch({ seismicTime: 16 });
+    const initialDisclosure = guideEnergyFigure().querySelector('[data-guide-shaking-disclosure]');
+    expect(initialDisclosure.open).toBe(false);
+    const summary = initialDisclosure.querySelector(':scope > summary');
+    act(() => summary.focus());
+    expect(document.activeElement).toBe(summary);
+    const { disclosure } = openStartingEnergy();
+    const original = checkStartingEnergy(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs());
+    if (original.some(row => row.residual !== 0 && Math.abs(row.residual) < 0.001)) {
+      const help = guideEnergyFigure().querySelector('[data-guide-energy-scientific-help]');
+      expect(help).toBeTruthy();
+      expect(help.textContent).toContain('Scientific notation:');
+      expect(help.closest('[hidden],[aria-hidden="true"]')).toBeNull();
+      expect(getComputedStyle(help).display).not.toBe('none');
+      expect(getComputedStyle(help).visibility).not.toBe('hidden');
+      expect(help.closest('details').open).toBe(true);
+    }
+    const storedNow = () => Number(guideEnergyFigure().querySelector('[data-guide-energy-trial="b"] [data-guide-energy-field="remaining"]').dataset.guideEnergyValue);
+    const initialStored = storedNow();
+    for (const time of [21.217, 24]) {
+      patch({ seismicTime: time });
+      expect(guideEnergyFigure().querySelector('[data-guide-shaking-disclosure]')).toBe(disclosure);
+      expect(disclosure.open).toBe(true);
+      expect(document.activeElement).toBe(summary);
+      expect(checkStartingEnergy(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs())).toEqual(original);
+      expect(storedNow()).toBeLessThan(initialStored);
+    }
+    patch({ seismicTime: 7.217 });
+    expect(host.querySelector('[data-guide-shaking-budget]')).toBeNull();
+    expect(state).toMatchObject({ seismicIntervalPinS: 12.319, seismicGuidePrediction: 'Keep my prediction.' });
+    expect(state.seismicGuideEvidence).toBeUndefined();
+  });
+
+  it('starting energy: rebuilds saved confounded inputs in a fresh disabled-model print after the live pair changes', () => {
+    const writing = { seismicGuidePrediction: 'Keep guide prediction.', seismicGuideClaim: 'Keep my claim.',
+      seismicGuideReasoning: 'The original pair changed ground motion too.', seismicObservation: 'Keep notebook writing.' };
+    mount({ ...writing, seismicGuideOpen: true, seismicIntensityG: 0.000001 });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicFrequencyHz: 0.8, seismicIntensityG: 0.000002, seismicTime: 21.217 });
+    click('Record paired evidence');
+    const record = JSON.parse(JSON.stringify(state.seismicGuideEvidence));
+    expect(Object.keys(record).sort()).toEqual(['currentInputs', 'referenceInputs', 'timeS', 'version']);
+    openStartingEnergy('recorded');
+    const original = checkStartingEnergy(record.referenceInputs, record.currentInputs, 'recorded');
+    const recordedContext = () => host.querySelector('[data-guide-readings="recorded"] [data-guide-comparison-context]');
+    expect(recordedContext().dataset.guideComparisonContext).toBe('confounded');
+    expect(startingEnergyFrame('recorded').querySelector('[data-guide-shaking-controlled]')).toBeNull();
+    patch({ seismicFrequencyHz: 1.1, seismicIntensityG: 0.12 });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 24 });
+    expect(startingEnergyFrame().querySelector('[data-guide-shaking-controlled]')).toBeTruthy();
+    expect(checkStartingEnergy(record.referenceInputs, record.currentInputs, 'recorded')).toEqual(original);
+    expect(recordedContext().dataset.guideComparisonContext).toBe('confounded');
+    expect(state.seismicGuideEvidence).toEqual(record);
+    const savedState = JSON.parse(JSON.stringify(state));
+    act(() => root.unmount()); root = null; host.remove();
+    const restoredRecord = { ...record, shakingBudget: { inputJPerKg: 999999, storedJPerKg: 999999 } };
+    mount({ ...savedState, tab: 'print', seismicEnabled: false, seismicGuideEvidence: restoredRecord });
+    const report = host.querySelector('[data-bridge-damping-guide="print"]');
+    expect(report).toBeTruthy();
+    expect(checkStartingEnergy(record.referenceInputs, record.currentInputs, 'recorded')).toEqual(original);
+    expect(startingEnergyFrame('recorded').closest('details')).toBeNull();
+    expect(report.querySelector('[data-guide-shaking-disclosure]')).toBeNull();
+    expect(report.querySelector('details,summary,button,input,select,textarea')).toBeNull();
+    expect(report.textContent).not.toContain('999999');
+    expect(recordedContext().dataset.guideComparisonContext).toBe('confounded');
+    expect(startingEnergyFrame('recorded').querySelector('[data-guide-shaking-controlled]')).toBeNull();
+    expect(state.seismicGuideEvidence).toEqual(restoredRecord);
+    expect(state).toMatchObject(writing);
+  });
+
+  it('starting energy: retains tiny input work and distinguishes zero shaking from undamped storage', () => {
+    mount({ seismicGuideOpen: true, seismicIntensityG: 0.000001 });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 24 });
+    openStartingEnergy();
+    const baseline = JSON.parse(JSON.stringify(state.seismicGuideBaseline));
+    const tiny = checkStartingEnergy(baseline.inputs, guideEnergyCurrentInputs());
+    for (const row of tiny) {
+      expect(row.initial).toBe(0);
+      for (const field of ['input', 'damping', 'stored']) {
+        expect(row[field]).toBeGreaterThan(0);
+        expect(row[field]).toBeLessThan(0.001);
+      }
+    }
+    for (const reading of startingEnergyFrame().querySelectorAll('[data-guide-shaking-field]')) {
+      if (Number(reading.dataset.guideShakingValue) === 0) continue;
+      const shown = reading.textContent.replace(/−/g, '-').match(/[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?/i);
+      expect(shown).toBeTruthy();
+      expect(Number(shown[0])).not.toBe(0);
+    }
+    patch({ seismicIntensityG: 0 });
+    const onlyA = checkStartingEnergy(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs());
+    expect(onlyA[0].input).toBeGreaterThan(0);
+    expect(Object.values(onlyA[1]).every(value => value === 0)).toBe(true);
+    patch({ seismicGuideBaseline: { ...baseline, inputs: { ...baseline.inputs, intensityG: 0 } } });
+    const zero = checkStartingEnergy(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs());
+    expect(zero.every(row => Object.values(row).every(value => value === 0))).toBe(true);
+    for (const reading of startingEnergyFrame().querySelectorAll('[data-guide-shaking-field]')) {
+      expect(reading.textContent.trim()).not.toMatch(/^[+−-]0(?:\.0+)?(?:\s|$)/);
+    }
+    patch({ seismicGuideBaseline: { ...baseline, inputs: { ...baseline.inputs } }, seismicIntensityG: 0.000001, seismicDampingRatio: 0 });
+    const undamped = checkStartingEnergy(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs());
+    expect(undamped[0].damping).toBeGreaterThan(0);
+    expect(undamped[1].damping).toBe(0);
+    expect(undamped[1].stored).toBeGreaterThan(0);
+    expect(undamped[1].input).toBeGreaterThan(0);
+    expect(undamped[1].input - undamped[1].stored).toBeCloseTo(undamped[1].residual, 20);
+    const input = startingEnergyFrame().querySelector('[data-guide-shaking-trial="b"] [data-guide-shaking-field="input"]');
+    expect(input.textContent.trim()).toMatch(/^\+/);
+    expect(state.seismicGuideBaseline.inputs.dampingRatio).toBe(0.05);
+  });
+
+  it('starting energy: explains damping as the changed input only for a controlled nonzero pair', () => {
+    mount({ seismicGuideOpen: true });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 16 });
+    openStartingEnergy();
+    const context = () => host.querySelector('[data-guide-readings="current"] [data-guide-comparison-context]').dataset.guideComparisonContext;
+    const controlled = checkStartingEnergy(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs());
+    expect(context()).toBe('controlled');
+    expect(startingEnergyFrame().querySelector('[data-guide-shaking-controlled]')).toBeTruthy();
+    expect(controlled[0].input).not.toBe(controlled[1].input);
+    expect(controlled[0].stored).not.toBe(controlled[1].stored);
+    patch({ seismicDampingRatio: 0.05 });
+    const identical = checkStartingEnergy(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs());
+    expect(identical[0]).toEqual(identical[1]);
+    expect(context()).toBe('identical');
+    expect(startingEnergyFrame().querySelector('[data-guide-shaking-controlled]')).toBeNull();
+    patch({ seismicDampingRatio: 0.2, seismicFrequencyHz: 0.8 });
+    checkStartingEnergy(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs());
+    expect(context()).toBe('confounded');
+    expect(startingEnergyFrame().querySelector('[data-guide-shaking-controlled]')).toBeNull();
+    patch({ seismicIntensityG: 0 });
+    checkStartingEnergy(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs());
+    expect(context()).toBe('zero');
+    expect(startingEnergyFrame().querySelector('[data-guide-shaking-controlled]')).toBeNull();
+  });
+
+  it('starting energy: keeps guide provenance independent of notebook selection, scene selection and learner writing', () => {
+    const records = [
+      { version: 'bridge-seismic-v1', name: 'Stiff notebook reference', timeS: 7.217,
+        inputs: { archetype: 'stiff', groundFrequencyHz: 0.8, intensityG: 0.2, dampingRatio: 0.1 }, prediction: 'First prediction', observation: 'First explanation' },
+      { version: 'bridge-seismic-v1', name: 'Flexible notebook reference', timeS: 12.319,
+        inputs: { archetype: 'flexible', groundFrequencyHz: 0.65, intensityG: 0.15, dampingRatio: 0.3 }, prediction: 'Second prediction', observation: 'Second explanation' }
+    ];
+    const writing = { seismicPrediction: 'Notebook prediction', seismicObservation: 'Notebook explanation',
+      seismicScenePrediction: 'Scene prediction', seismicSceneNote: 'Scene explanation',
+      seismicGuidePrediction: 'Guide prediction', seismicGuideClaim: 'Guide claim', seismicGuideReasoning: 'Guide reasoning' };
+    mount({ ...writing, bridgeView: 'immersive', seismicGuideOpen: true, seismicEnergyInterval: true,
+      seismicIntervalPinS: 12.319, seismicTrials: records, seismicReferenceIndex: 0 });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 21.217 });
+    openStartingEnergy();
+    act(() => Simulate.change(field('Interval evidence quantity'), { target: { value: 'kinetic' } }));
+    const original = checkStartingEnergy(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs());
+    const assertScope = () => {
+      expect(checkStartingEnergy(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs())).toEqual(original);
+      expect(guideEnergyFigure().querySelector('[data-guide-shaking-disclosure]').open).toBe(true);
+      expect(field('Interval evidence quantity').value).toBe('kinetic');
+      expect(host.querySelector('[data-claim-window="interval"]').dataset).toMatchObject({ claimMeasureSource: 'manual', claimStart: '12.319' });
+      expect(state).toMatchObject({ ...writing, seismicIntervalPinS: 12.319, seismicTime: 21.217 });
+      expect(state.seismicTrials).toEqual(records);
+      expect(state.seismicGuideEvidence).toBeUndefined();
+    };
+    act(() => Simulate.change(field('Earthquake reference trial'), { target: { value: '1' } }));
+    assertScope();
+    click('A · reference'); assertScope();
+    click('B · current'); assertScope();
+    click('Compare saved trial in scene');
+    click('A · reference'); assertScope();
+    expect(state.seismicSceneSource).toBe('saved');
+    act(() => { viewerStatus = 'failed'; viewerListener?.('failed'); });
+    expect(state.bridgeView).toBe('2d');
+    assertScope();
+  });
+
+  it('decay time: preserves focused drafts, pauses motion, commits bounded times and keeps saved evidence static', () => {
+    const writing = { seismicGuidePrediction: 'Keep prediction.', seismicGuideClaim: 'Keep claim.',
+      seismicGuideReasoning: 'Keep reasoning.', seismicObservation: 'Keep notebook writing.', seismicSceneNote: 'Keep scene note.' };
+    mount({ ...writing, seismicGuideOpen: true, seismicEnergyInterval: true, seismicIntervalPinS: 12.319 });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 20.125 });
+    click('Record paired evidence');
+    const record = JSON.parse(JSON.stringify(state.seismicGuideEvidence));
+    const disclosure = openDecayFractions();
+    const summary = disclosure.querySelector(':scope > summary');
+    const number = field('Fraction inspection time (s)');
+    const range = field('Scrub energy after shaking');
+    function typeDraft(value) {
+      act(() => { number.value = value; Simulate.change(number); });
+    }
+    click('Run earthquake');
+    expect(state.seismicPlaying).toBe(true);
+    act(() => number.focus());
+    expect(document.activeElement).toBe(number);
+    expect(state).toMatchObject({ seismicPlaying: false, autoDriving: false, seismicTime: 20.125 });
+    typeDraft('1');
+    expect(state.seismicTime).toBe(20.125);
+    expect(number.value).toBe('1');
+    patch({ bridgeBankYaw: 18 });
+    expect(field('Fraction inspection time (s)')).toBe(number);
+    expect(document.activeElement).toBe(number);
+    expect(number.value).toBe('1');
+    typeDraft('21.217');
+    expect(state.seismicTime).toBe(21.217);
+    expect(Number(range.value)).toBe(21.217);
+    expect(document.activeElement).toBe(number);
+    checkDecayFractions(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs(), 21.217);
+    expect(disclosure.querySelector('[data-guide-decay-time-status]').textContent).toContain('21.217 s overall');
+    expect(disclosure.querySelector('[data-guide-decay-time-status]').textContent).toContain('5.217 s after shaking ended');
+    typeDraft('15');
+    expect(state.seismicTime).toBe(21.217);
+    act(() => Simulate.keyDown(number, { key: 'Enter' }));
+    expect(state.seismicTime).toBe(16);
+    expect(number.value).toBe('16.000');
+    expect(document.activeElement).toBe(number);
+    typeDraft('25');
+    expect(state.seismicTime).toBe(16);
+    act(() => number.blur());
+    expect(state.seismicTime).toBe(24);
+    expect(number.value).toBe('24.000');
+    act(() => number.focus());
+    typeDraft('');
+    expect(number.value).toBe('');
+    expect(state.seismicTime).toBe(24);
+    act(() => Simulate.keyDown(number, { key: 'Enter' }));
+    expect(number.value).toBe('24.000');
+    expect(state.seismicTime).toBe(24);
+    act(() => summary.focus());
+    const drive = [...host.querySelectorAll('button')].find(node => node.textContent.includes('Auto-Drive Vehicle'));
+    expect(drive).toBeTruthy();
+    act(() => drive.click());
+    expect(state.autoDriving).toBe(true);
+    act(() => range.focus());
+    expect(document.activeElement).toBe(range);
+    expect(state).toMatchObject({ autoDriving: false, seismicPlaying: false, seismicTime: 24 });
+    act(() => { range.value = '18.625'; Simulate.change(range); });
+    expect(state.seismicTime).toBe(18.625);
+    expect(number.value).toBe('18.625');
+    expect(document.activeElement).toBe(range);
+    checkDecayFractions(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs(), 18.625);
+    expect(disclosure.open).toBe(true);
+    expect(guideEnergyFigure('recorded').querySelector('[data-guide-decay-time-controls]')).toBeNull();
+    expect(guideEnergyFigure('recorded').querySelector('input')).toBeNull();
+    checkDecayFractions(record.referenceInputs, record.currentInputs, record.timeS, 'recorded');
+    expect(state.seismicGuideEvidence).toEqual(record);
+    expect(state).toMatchObject({ ...writing, seismicIntervalPinS: 12.319 });
+    click('Open investigation report');
+    const report = host.querySelector('[data-bridge-damping-guide="print"]');
+    expect(report.querySelector('[data-guide-decay-time-controls]')).toBeNull();
+    expect(report.querySelector('input,button,select,textarea')).toBeNull();
+    checkDecayFractions(record.referenceInputs, record.currentInputs, record.timeS, 'recorded');
+    expect(state.seismicGuideEvidence).toEqual(record);
+    expect(state).toMatchObject(writing);
+  });
+
+  function openDecayFractions(origin = 'current') {
+    const disclosure = guideEnergyFigure(origin).querySelector('[data-guide-decay-disclosure]');
+    expect(disclosure).toBeTruthy();
+    expect(disclosure.tagName).toBe('DETAILS');
+    const summary = disclosure.querySelector(':scope > summary');
+    expect(summary.textContent.trim()).toBe('Compare the fraction remaining');
+    if (!disclosure.open) act(() => { summary.click(); vi.advanceTimersByTime(0); });
+    expect(disclosure.open).toBe(true);
+    return disclosure;
+  }
+  function checkDecayFractions(referenceInputs, currentInputs, time, origin = 'current') {
+    const frame = guideEnergyFigure(origin).querySelector('[data-guide-decay-fractions]');
+    expect(frame).toBeTruthy();
+    const end = Math.min(24, time);
+    const expected = [referenceInputs, currentInputs].map((inputs, index) => {
+      const interval = guideEnergyOracle.bridgeSeismicEnergyInterval(guideEnergyResponse(inputs), 16, end);
+      const initial = interval.earlier.storedJPerKg, remaining = interval.later.storedJPerKg;
+      return { id: index === 0 ? 'a' : 'b', initial, remaining, fraction: initial > 0 ? remaining / initial : null };
+    });
+    const scale = Math.max(1, ...expected.filter(row => row.fraction !== null).map(row => row.fraction));
+    expect(Number(frame.dataset.guideDecayStart)).toBe(16);
+    expect(Number(frame.dataset.guideDecayEnd)).toBe(end);
+    expect(Number(frame.dataset.guideDecayRange)).toBe(scale);
+    for (const row of expected) {
+      const trial = frame.querySelector('[data-guide-decay-trial="' + row.id + '"]');
+      expect(trial).toBeTruthy();
+      expect(Number(trial.dataset.guideDecayInitial)).toBe(row.initial);
+      expect(Number(trial.dataset.guideDecayRemaining)).toBe(row.remaining);
+      const amounts = trial.querySelector('[data-guide-decay-amounts]');
+      expect(amounts, 'visible numerator and denominator for ' + row.id).toBeTruthy();
+      const displayedAmounts = [...amounts.textContent.replace(/−/g, '-').matchAll(/([+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?)\s*J\/kg/gi)]
+        .map(match => Number(match[1]));
+      expect(displayedAmounts).toHaveLength(2);
+      const [numerator, denominator] = displayedAmounts;
+      if (row.fraction === null) {
+        expect(denominator).toBe(0);
+        expect(numerator).toBe(0);
+      } else {
+        expect(denominator).toBeGreaterThan(0);
+        const displayedQuotient = numerator / denominator;
+        if (row.fraction === 0) expect(displayedQuotient).toBe(0);
+        else {
+          expect(numerator).toBeGreaterThan(0);
+          expect(Math.abs(displayedQuotient - row.fraction)).toBeLessThanOrEqual(2e-5 * row.fraction);
+        }
+      }
+      const reading = trial.querySelector('[data-guide-decay-value]');
+      const bar = trial.querySelector('[data-guide-decay-bar]');
+      if (row.fraction === null) {
+        expect(trial.querySelector('[data-guide-decay-undefined]')).toBeTruthy();
+        expect(trial.querySelector('[data-guide-decay-fraction]')).toBeNull();
+        expect(bar).toBeNull();
+      } else {
+        expect(reading).toBeTruthy();
+        expect(Number(reading.dataset.guideDecayFraction)).toBe(row.fraction);
+        expect(trial.querySelector('[data-guide-decay-undefined]')).toBeNull();
+        if (row.fraction === 0) expect(bar).toBeNull();
+        else {
+          expect(bar).toBeTruthy();
+          expect(Number(bar.getAttribute('width'))).toBeCloseTo(row.fraction / scale * 400, 10);
+        }
+      }
+    }
+    const markers = [...frame.querySelectorAll('[data-guide-decay-reference]')];
+    expect(markers).toHaveLength(expected.filter(row => row.fraction !== null).length);
+    for (const marker of markers) expect(Number(marker.getAttribute('x1'))).toBeCloseTo(400 / scale, 10);
+    expect(frame.innerHTML).not.toMatch(/NaN|Infinity/);
+    return { expected, scale };
+  }
+
+  it('decay fraction: opens a native optional view and follows each model ratio from 16 seconds through the event end', () => {
+    mount({ seismicGuideOpen: true, seismicIntervalPinS: 12.319, seismicGuidePrediction: 'Keep my prediction.' });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 15.999 });
+    expect(host.querySelector('[data-guide-decay-disclosure]')).toBeNull();
+    patch({ seismicTime: 16 });
+    expect(guideEnergyFigure().querySelector('[data-guide-decay-disclosure]').open).toBe(false);
+    const disclosure = openDecayFractions();
+    const start = checkDecayFractions(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs(), 16);
+    expect(start.expected.map(row => row.fraction)).toEqual([1, 1]);
+    expect(start.expected[0].initial).not.toBe(start.expected[1].initial);
+    for (const time of [21.217, 24]) {
+      patch({ seismicTime: time });
+      expect(disclosure.open).toBe(true);
+      const result = checkDecayFractions(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs(), time);
+      expect(result.expected.every(row => row.fraction > 0 && row.fraction < 1)).toBe(true);
+    }
+    patch({ seismicTime: 7.217 });
+    expect(host.querySelector('[data-guide-decay-fractions]')).toBeNull();
+    expect(state).toMatchObject({ seismicIntervalPinS: 12.319, seismicGuidePrediction: 'Keep my prediction.' });
+    expect(state.seismicGuideEvidence).toBeUndefined();
+  });
+
+  it('decay fraction: preserves amplitude-independent ratios and bar widths for tiny nonzero energy', () => {
+    mount({ seismicGuideOpen: true, seismicIntensityG: 0.12 });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 21.217 });
+    openDecayFractions();
+    const ordinary = checkDecayFractions(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs(), 21.217);
+    const widths = () => [...guideEnergyFigure().querySelectorAll('[data-guide-decay-bar]')].map(node => Number(node.getAttribute('width')));
+    const ordinaryWidths = widths();
+    patch({ seismicIntensityG: 0.000001 });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 21.217 });
+    openDecayFractions();
+    const tiny = checkDecayFractions(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs(), 21.217);
+    const squaredRatio = (0.000001 / 0.12) ** 2;
+    for (const [index, row] of tiny.expected.entries()) {
+      expect(row.initial).toBeGreaterThan(0);
+      expect(row.remaining).toBeGreaterThan(0);
+      expect(row.initial / ordinary.expected[index].initial).toBeCloseTo(squaredRatio, 20);
+      expect(row.fraction).toBeCloseTo(ordinary.expected[index].fraction, 13);
+    }
+    expect(tiny.scale).toBe(ordinary.scale);
+    expect(widths()).toHaveLength(ordinaryWidths.length);
+    widths().forEach((width, index) => expect(width).toBeCloseTo(ordinaryWidths[index], 9));
+    expect(guideEnergyFigure().querySelector('[data-guide-decay-undefined]')).toBeNull();
+  });
+
+  it('decay fraction: leaves zero-initial trials undefined instead of presenting zero percent remaining', () => {
+    mount({ seismicGuideOpen: true, seismicIntensityG: 0 });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 16 });
+    openDecayFractions();
+    const zeroStart = checkDecayFractions(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs(), 16);
+    expect(zeroStart.expected.map(row => row.fraction)).toEqual([null, null]);
+    patch({ seismicTime: 21.217 });
+    const zero = checkDecayFractions(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs(), 21.217);
+    expect(zero.scale).toBe(1);
+    expect(guideEnergyFigure().querySelectorAll('[data-guide-decay-undefined]')).toHaveLength(2);
+    expect(guideEnergyFigure().querySelectorAll('[data-guide-decay-bar]')).toHaveLength(0);
+    patch({ seismicIntensityG: 0.12 });
+    const onlyB = checkDecayFractions(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs(), 21.217);
+    expect(onlyB.expected[0].fraction).toBeNull();
+    expect(onlyB.expected[1].fraction).toBeGreaterThan(0);
+    const baseline = JSON.parse(JSON.stringify(state.seismicGuideBaseline));
+    patch({ seismicGuideBaseline: { ...baseline, inputs: { ...baseline.inputs, intensityG: 0.12 } }, seismicIntensityG: 0 });
+    const onlyA = checkDecayFractions(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs(), 21.217);
+    expect(onlyA.expected[0].fraction).toBeGreaterThan(0);
+    expect(onlyA.expected[1].fraction).toBeNull();
+    expect(guideEnergyFigure().querySelectorAll('[data-guide-decay-undefined]')).toHaveLength(1);
+  });
+
+  it('decay fraction: displays the measured undamped ratio without forcing it to exactly one', () => {
+    mount({ seismicGuideOpen: true, seismicIntensityG: 0.12 });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicDampingRatio: 0, seismicTime: 24 });
+    openDecayFractions();
+    const result = checkDecayFractions(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs(), 24);
+    const a = result.expected[0], b = result.expected[1];
+    expect(state.seismicGuideBaseline.inputs.dampingRatio).toBe(0.05);
+    expect(a.fraction).toBeLessThan(b.fraction);
+    expect(b.fraction).toBeCloseTo(1, 6);
+    expect(b.fraction).not.toBe(1);
+    const reading = guideEnergyFigure().querySelector('[data-guide-decay-trial="b"] [data-guide-decay-value]');
+    expect(Number(reading.dataset.guideDecayFraction)).toBe(b.remaining / b.initial);
+    expect(Number(reading.dataset.guideDecayFraction)).not.toBe(1);
+    const interval = guideEnergyOracle.bridgeSeismicEnergyInterval(guideEnergyResponse(guideEnergyCurrentInputs()), 16, 24);
+    expect(interval.dissipatedJPerKg).toBe(0);
+    expect((1 - b.fraction) * b.initial).toBeCloseTo(interval.balanceErrorJPerKg, 12);
+  });
+
+  it('decay fraction: reconstructs a saved confounded pair and exposes its own ratios in a fresh disabled-model print', () => {
+    const writing = { seismicGuidePrediction: 'Keep guide prediction.', seismicGuideClaim: 'Keep my claim.',
+      seismicGuideReasoning: 'These saved inputs also changed shaking.', seismicObservation: 'Keep notebook evidence.' };
+    mount({ ...writing, seismicGuideOpen: true, seismicIntensityG: 0.000001 });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicFrequencyHz: 0.8, seismicIntensityG: 0.000002, seismicTime: 21.217 });
+    click('Record paired evidence');
+    const record = JSON.parse(JSON.stringify(state.seismicGuideEvidence));
+    expect(Object.keys(record).sort()).toEqual(['currentInputs', 'referenceInputs', 'timeS', 'version']);
+    openDecayFractions('recorded');
+    const saved = checkDecayFractions(record.referenceInputs, record.currentInputs, record.timeS, 'recorded');
+    const readings = origin => host.querySelector('[data-guide-readings="' + origin + '"]');
+    expect(readings('recorded').querySelector('[data-guide-comparison-context]').dataset.guideComparisonContext).toBe('confounded');
+    patch({ seismicFrequencyHz: 1.1, seismicIntensityG: 0.12 });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 24 });
+    expect(readings('current').querySelector('[data-guide-comparison-context]').dataset.guideComparisonContext).toBe('controlled');
+    expect(checkDecayFractions(record.referenceInputs, record.currentInputs, record.timeS, 'recorded')).toEqual(saved);
+    expect(readings('recorded').querySelector('[data-guide-comparison-context]').dataset.guideComparisonContext).toBe('confounded');
+    expect(state.seismicGuideEvidence).toEqual(record);
+    const savedState = JSON.parse(JSON.stringify(state));
+    act(() => root.unmount()); root = null; host.remove();
+    const restoredRecord = { ...record, fractions: { remainingFraction: 999999 } };
+    mount({ ...savedState, tab: 'print', seismicEnabled: false, seismicGuideEvidence: restoredRecord });
+    const report = host.querySelector('[data-bridge-damping-guide="print"]');
+    expect(report).toBeTruthy();
+    expect(checkDecayFractions(record.referenceInputs, record.currentInputs, record.timeS, 'recorded')).toEqual(saved);
+    const printFractions = guideEnergyFigure('recorded').querySelector('[data-guide-decay-fractions]');
+    expect(printFractions.closest('details')).toBeNull();
+    expect(report.querySelector('[data-guide-decay-disclosure]')).toBeNull();
+    expect(report.querySelector('details,summary,button,input,select,textarea')).toBeNull();
+    expect(report.textContent).not.toContain('999999');
+    expect(readings('recorded').querySelector('[data-guide-comparison-context]').dataset.guideComparisonContext).toBe('confounded');
+    expect(readings('recorded').querySelector('p strong').textContent).toBe('Shared inspection time: 21.217 s');
+    expect(state.seismicGuideEvidence).toEqual(restoredRecord);
+    expect(state).toMatchObject(writing);
+  });
+
+  it('decay fraction: keeps the prepared pair independent of notebook references, manual evidence and scene fallback', () => {
+    const records = [
+      { version: 'bridge-seismic-v1', name: 'Stiff notebook reference', timeS: 7.217,
+        inputs: { archetype: 'stiff', groundFrequencyHz: 0.8, intensityG: 0.2, dampingRatio: 0.1 }, prediction: 'First prediction', observation: 'First explanation' },
+      { version: 'bridge-seismic-v1', name: 'Flexible notebook reference', timeS: 12.319,
+        inputs: { archetype: 'flexible', groundFrequencyHz: 0.65, intensityG: 0.15, dampingRatio: 0.3 }, prediction: 'Second prediction', observation: 'Second explanation' }
+    ];
+    const writing = { seismicPrediction: 'Notebook prediction', seismicObservation: 'Notebook explanation',
+      seismicSceneNote: 'Scene explanation', seismicGuidePrediction: 'Guide prediction', seismicGuideClaim: 'Guide claim' };
+    mount({ ...writing, bridgeView: 'immersive', seismicGuideOpen: true, seismicEnergyInterval: true,
+      seismicIntervalPinS: 12.319, seismicTrials: records, seismicReferenceIndex: 0 });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 21.217 });
+    openDecayFractions();
+    act(() => Simulate.change(field('Interval evidence quantity'), { target: { value: 'kinetic' } }));
+    const original = checkDecayFractions(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs(), 21.217);
+    const assertScope = () => {
+      expect(checkDecayFractions(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs(), 21.217)).toEqual(original);
+      expect(guideEnergyFigure().querySelector('[data-guide-decay-disclosure]').open).toBe(true);
+      expect(field('Interval evidence quantity').value).toBe('kinetic');
+      expect(host.querySelector('[data-claim-window="interval"]').dataset).toMatchObject({ claimMeasureSource: 'manual', claimStart: '12.319' });
+      expect(state).toMatchObject({ ...writing, seismicIntervalPinS: 12.319, seismicTime: 21.217 });
+      expect(state.seismicTrials).toEqual(records);
+      expect(state.seismicGuideEvidence).toBeUndefined();
+    };
+    act(() => Simulate.change(field('Earthquake reference trial'), { target: { value: '1' } }));
+    assertScope();
+    click('A · reference'); assertScope();
+    click('B · current'); assertScope();
+    click('Compare saved trial in scene');
+    click('A · reference'); assertScope();
+    expect(state.seismicSceneSource).toBe('saved');
+    act(() => { viewerStatus = 'failed'; viewerListener?.('failed'); });
+    expect(state.bridgeView).toBe('2d');
+    assertScope();
+  });
+
+  function guideEnergyFigure(origin = 'current') {
+    return host.querySelector('[data-guide-readings="' + origin + '"] [data-guide-energy-budget]');
+  }
+  function guideEnergyCurrentInputs() {
+    return { archetype: state.seismicArchetype ?? 'balanced', groundFrequencyHz: state.seismicFrequencyHz ?? 1.1,
+      intensityG: state.seismicIntensityG ?? 0.12, dampingRatio: state.seismicDampingRatio ?? 0.05 };
+  }
+  function checkGuideEnergy(referenceInputs, currentInputs, time, origin = 'current') {
+    const figure = guideEnergyFigure(origin);
+    expect(figure, 'after-shaking budget for ' + origin).toBeTruthy();
+    const end = Math.min(24, time);
+    const intervals = [referenceInputs, currentInputs].map(inputs =>
+      guideEnergyOracle.bridgeSeismicEnergyInterval(guideEnergyResponse(inputs), 16, end));
+    const maximum = Math.max(...intervals.flatMap(q => [q.earlier.storedJPerKg, q.later.storedJPerKg + q.dissipatedJPerKg]));
+    const range = maximum || 1;
+    expect(Number(figure.dataset.guideEnergyStart)).toBe(16);
+    expect(Number(figure.dataset.guideEnergyEnd)).toBe(end);
+    expect(Number(figure.dataset.guideEnergyRange)).toBe(range);
+    const values = intervals.map((q, index) => {
+      const id = index === 0 ? 'a' : 'b';
+      const trial = figure.querySelector('[data-guide-energy-trial="' + id + '"]');
+      expect(trial).toBeTruthy();
+      const expected = { initial: q.earlier.storedJPerKg, remaining: q.later.storedJPerKg,
+        damping: q.dissipatedJPerKg, residual: q.balanceErrorJPerKg };
+      expect(q.inputJPerKg).toBe(0);
+      for (const [field, amount] of Object.entries(expected)) {
+        const reading = trial.querySelector('[data-guide-energy-field="' + field + '"]');
+        expect(reading, id + ' ' + field).toBeTruthy();
+        expect(Number(reading.dataset.guideEnergyValue)).toBe(amount);
+        if (field === 'residual') continue;
+        const bar = trial.querySelector('[data-guide-energy-bar="' + field + '"]');
+        if (amount === 0) expect(bar).toBeNull();
+        else {
+          expect(bar, id + ' ' + field + ' bar').toBeTruthy();
+          expect(Number(bar.getAttribute('width'))).toBeCloseTo(amount / range * 400, 10);
+        }
+      }
+      const stored = trial.querySelector('strong[data-guide-value="' + id + '"][data-guide-number]');
+      expect(stored, 'preserved stored-energy reading').toBeTruthy();
+      expect(Number(stored.dataset.guideNumber)).toBe(expected.remaining);
+      return expected;
+    });
+    expect(figure.querySelector('[data-guide-energy-coincident]') !== null).toBe(end === 16);
+    expect(figure.querySelector('[data-guide-energy-zero]') !== null).toBe(maximum === 0);
+    expect(figure.textContent).toContain('J/kg');
+    expect(figure.innerHTML).not.toMatch(/NaN|Infinity/);
+    return { values, range };
+  }
+
+  it('guide energy: compares both after-shaking budgets with their own recorded model intervals', () => {
+    mount({ seismicGuideOpen: true, seismicArchetype: 'balanced', seismicFrequencyHz: 1.1, seismicIntensityG: 0.12 });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 21.217 });
+    const result = checkGuideEnergy(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs(), 21.217);
+    expect(result.values[0].initial).not.toBe(result.values[1].initial);
+    for (const row of result.values) {
+      expect(row.initial).toBeGreaterThan(0);
+      expect(row.remaining).toBeGreaterThan(0);
+      expect(row.damping).toBeGreaterThan(0);
+      expect(row.initial - row.remaining - row.damping).toBeCloseTo(row.residual, 14);
+    }
+    expect(host.querySelector('[data-guide-readings="current"] > p strong').textContent).toBe('Shared inspection time: 21.217 s');
+    expect(state.seismicGuideEvidence).toBeUndefined();
+    expect(state.seismicTrials).toBeUndefined();
+  });
+
+  it('guide energy: gates the budget at shaking end without reversing an earlier inspection', () => {
+    mount({ seismicGuideOpen: true, seismicEnergyInterval: true, seismicIntervalPinS: 12.319 });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 15.999 });
+    expect(guideEnergyFigure()).toBeNull();
+    expect(host.querySelectorAll('[data-guide-readings="current"] [data-guide-measure="3"] [data-guide-number]')).toHaveLength(2);
+    for (const time of [16, 21.217, 24, 99]) {
+      patch({ seismicTime: time });
+      const { values } = checkGuideEnergy(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs(), time);
+      if (time === 16) for (const row of values) {
+        expect(row.initial).toBeGreaterThan(0);
+        expect(row.remaining).toBe(row.initial);
+        expect(row.damping).toBe(0);
+        expect(row.residual).toBe(0);
+      }
+    }
+    patch({ seismicTime: 7.217 });
+    expect(guideEnergyFigure()).toBeNull();
+    expect(host.querySelectorAll('[data-guide-readings="current"] [data-guide-measure="3"] [data-guide-number]')).toHaveLength(2);
+    expect(state.seismicIntervalPinS).toBe(12.319);
+    expect(state.seismicGuideEvidence).toBeUndefined();
+  });
+
+  it('guide energy: preserves tiny proportions on one pair scale and distinguishes one-zero and all-zero budgets', () => {
+    mount({ seismicGuideOpen: true, seismicIntensityG: 0.12 });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 21.217 });
+    const ordinary = checkGuideEnergy(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs(), 21.217);
+    const widths = () => [...guideEnergyFigure().querySelectorAll('[data-guide-energy-bar]')].map(node => Number(node.getAttribute('width')));
+    const ordinaryWidths = widths();
+    patch({ seismicIntensityG: 0.000001 });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 21.217 });
+    const tinyInputs = JSON.parse(JSON.stringify(state.seismicGuideBaseline));
+    const tiny = checkGuideEnergy(tinyInputs.inputs, guideEnergyCurrentInputs(), 21.217);
+    const squaredRatio = (0.000001 / 0.12) ** 2;
+    expect(tiny.range).toBeLessThan(0.001);
+    expect(tiny.range / ordinary.range).toBeCloseTo(squaredRatio, 20);
+    widths().forEach((width, index) => expect(width).toBeCloseTo(ordinaryWidths[index], 8));
+    for (const row of tiny.values) for (const field of ['initial', 'remaining', 'damping']) {
+      expect(row[field]).toBeGreaterThan(0);
+      expect(row[field]).toBeLessThan(0.001);
+    }
+    for (const reading of guideEnergyFigure().querySelectorAll('[data-guide-energy-field]')) {
+      if (Number(reading.dataset.guideEnergyValue) !== 0) expect(reading.textContent).toMatch(/e-\d/);
+    }
+    patch({ seismicGuideBaseline: { ...tinyInputs, inputs: { ...tinyInputs.inputs, intensityG: 0 } } });
+    const aZero = checkGuideEnergy(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs(), 21.217);
+    expect(Object.values(aZero.values[0]).every(value => value === 0)).toBe(true);
+    expect(aZero.values[1].initial).toBeGreaterThan(0);
+    patch({ seismicGuideBaseline: { ...tinyInputs, inputs: { ...tinyInputs.inputs } }, seismicIntensityG: 0 });
+    const bZero = checkGuideEnergy(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs(), 21.217);
+    expect(bZero.values[0].initial).toBeGreaterThan(0);
+    expect(Object.values(bZero.values[1]).every(value => value === 0)).toBe(true);
+    patch({ seismicGuideBaseline: { ...tinyInputs, inputs: { ...tinyInputs.inputs, intensityG: 0 } } });
+    const bothZero = checkGuideEnergy(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs(), 21.217);
+    expect(bothZero.range).toBe(1);
+    expect(guideEnergyFigure().querySelectorAll('[data-guide-energy-bar]')).toHaveLength(0);
+  });
+
+  it('guide energy: retains undamped stored energy and reports zero loss without hiding solver residuals', () => {
+    mount({ seismicGuideOpen: true, seismicIntensityG: 0.12 });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicDampingRatio: 0, seismicTime: 24 });
+    const mixed = checkGuideEnergy(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs(), 24);
+    expect(state.seismicGuideBaseline.inputs.dampingRatio).toBe(0.05);
+    expect(mixed.values[0].damping).toBeGreaterThan(0);
+    const undamped = mixed.values[1];
+    expect(undamped.damping).toBe(0);
+    expect(undamped.initial).toBeGreaterThan(0);
+    expect(undamped.remaining).toBeGreaterThan(0);
+    expect(Math.abs(undamped.initial - undamped.remaining)).toBeLessThanOrEqual(
+      Math.abs(undamped.residual) + Number.EPSILON * Math.max(1, undamped.initial));
+    expect(guideEnergyFigure().querySelector('[data-guide-energy-trial="a"] [data-guide-energy-bar="damping"]')).toBeTruthy();
+    expect(guideEnergyFigure().querySelector('[data-guide-energy-trial="b"] [data-guide-energy-bar="damping"]')).toBeNull();
+    expect(guideEnergyFigure().querySelector('[data-guide-energy-zero]')).toBeNull();
+    expect(guideEnergyFigure().querySelectorAll('[data-guide-energy-field="residual"]')).toHaveLength(2);
+    click('Record paired evidence');
+    const record = state.seismicGuideEvidence;
+    expect(record.referenceInputs.dampingRatio).toBe(0.05);
+    expect(record.currentInputs.dampingRatio).toBe(0);
+    expect(checkGuideEnergy(record.referenceInputs, record.currentInputs, record.timeS, 'recorded')).toEqual(mixed);
+    expect(guideEnergyFigure('recorded').querySelector('[data-guide-energy-trial="b"] [data-guide-energy-bar="damping"]')).toBeNull();
+  });
+
+  it('guide energy: reconstructs saved pair budgets in a fresh disabled-model print after live settings change', () => {
+    const writing = { seismicGuidePrediction: 'Keep my prediction.', seismicGuideClaim: 'Keep my claim.',
+      seismicGuideReasoning: 'The saved pair changed shaking too.', seismicObservation: 'Keep notebook writing.' };
+    mount({ ...writing, seismicGuideOpen: true, seismicIntensityG: 0.000001 });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicFrequencyHz: 0.8, seismicIntensityG: 0.000002, seismicTime: 21.217 });
+    click('Record paired evidence');
+    const record = JSON.parse(JSON.stringify(state.seismicGuideEvidence));
+    expect(Object.keys(record).sort()).toEqual(['currentInputs', 'referenceInputs', 'timeS', 'version']);
+    const original = checkGuideEnergy(record.referenceInputs, record.currentInputs, record.timeS, 'recorded');
+    const savedText = guideEnergyFigure('recorded').textContent;
+    const baseline = JSON.parse(JSON.stringify(state.seismicGuideBaseline));
+    patch({ seismicFrequencyHz: 2, seismicIntensityG: 0.12, seismicDampingRatio: 0.4, seismicTime: 7.217,
+      seismicGuideBaseline: { ...baseline, inputs: { ...baseline.inputs, archetype: 'stiff', intensityG: 0.15 } } });
+    expect(guideEnergyFigure()).toBeNull();
+    expect(checkGuideEnergy(record.referenceInputs, record.currentInputs, record.timeS, 'recorded')).toEqual(original);
+    expect(guideEnergyFigure('recorded').textContent).toBe(savedText);
+    expect(host.querySelector('[data-guide-readings="recorded"] [data-guide-comparison-context]').dataset.guideComparisonContext).toBe('confounded');
+    expect(state.seismicGuideEvidence).toEqual(record);
+    expect(state).toMatchObject(writing);
+    const savedState = JSON.parse(JSON.stringify(state));
+    act(() => root.unmount()); root = null; host.remove();
+    const restoredRecord = { ...record, budget: { initialJPerKg: 999999, remainingJPerKg: 999999 } };
+    mount({ ...savedState, tab: 'print', seismicEnabled: false, seismicGuideEvidence: restoredRecord });
+    const report = host.querySelector('[data-bridge-damping-guide="print"]');
+    expect(report).toBeTruthy();
+    expect(checkGuideEnergy(record.referenceInputs, record.currentInputs, record.timeS, 'recorded')).toEqual(original);
+    expect(guideEnergyFigure('recorded').textContent).toBe(savedText);
+    expect(report.textContent).not.toContain('999999');
+    expect(report.querySelector('[data-guide-readings="recorded"] > p strong').textContent).toBe('Shared inspection time: 21.217 s');
+    expect(report.querySelector('[data-guide-comparison-context]').dataset.guideComparisonContext).toBe('confounded');
+    expect(report.querySelector('button,input,select,textarea')).toBeNull();
+    expect(state.seismicGuideEvidence).toEqual(restoredRecord);
+    expect(state).toMatchObject(writing);
+    expect(state.seismicTrials).toBeUndefined();
+  });
+
+  it('guide energy: keeps the guide pair independent of notebook choices, pinned intervals and scene fallback', () => {
+    const records = [
+      { version: 'bridge-seismic-v1', name: 'Stiff notebook A', timeS: 7.217,
+        inputs: { archetype: 'stiff', groundFrequencyHz: 0.8, intensityG: 0.2, dampingRatio: 0.1 }, prediction: 'First saved prediction', observation: 'First saved explanation' },
+      { version: 'bridge-seismic-v1', name: 'Flexible notebook A', timeS: 12.319,
+        inputs: { archetype: 'flexible', groundFrequencyHz: 0.65, intensityG: 0.15, dampingRatio: 0.3 }, prediction: 'Second saved prediction', observation: 'Second saved explanation' }
+    ];
+    const writing = { seismicPrediction: 'Notebook prediction', seismicObservation: 'Notebook explanation',
+      seismicScenePrediction: 'Scene prediction', seismicSceneNote: 'Scene explanation',
+      seismicGuidePrediction: 'Guide prediction', seismicGuideClaim: 'Guide claim', seismicGuideReasoning: 'Guide reasoning' };
+    mount({ ...writing, bridgeView: 'immersive', span: 42, seismicGuideOpen: true, seismicEnergyInterval: true,
+      seismicIntervalPinS: 12.319, seismicTrials: records, seismicReferenceIndex: 0 });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 21.217 });
+    act(() => Simulate.change(field('Interval evidence quantity'), { target: { value: 'kinetic' } }));
+    const original = checkGuideEnergy(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs(), 21.217);
+    const originalText = guideEnergyFigure().textContent;
+    const assertScope = () => {
+      expect(checkGuideEnergy(state.seismicGuideBaseline.inputs, guideEnergyCurrentInputs(), 21.217)).toEqual(original);
+      expect(guideEnergyFigure().textContent).toBe(originalText);
+      expect(field('Interval evidence quantity').value).toBe('kinetic');
+      expect(host.querySelector('[data-claim-window="interval"]').dataset.claimMeasureSource).toBe('manual');
+      expect(state).toMatchObject({ ...writing, seismicTime: 21.217, seismicIntervalPinS: 12.319, span: 42 });
+      expect(state.seismicTrials).toEqual(records);
+      expect(state.seismicGuideEvidence).toBeUndefined();
+    };
+    act(() => Simulate.change(field('Earthquake reference trial'), { target: { value: '1' } }));
+    assertScope();
+    click('A · reference'); assertScope();
+    click('B · current'); assertScope();
+    click('Compare saved trial in scene');
+    click('A · reference'); assertScope();
+    expect(state.seismicSceneSource).toBe('saved');
+    act(() => { viewerStatus = 'failed'; viewerListener?.('failed'); });
+    expect(state.bridgeView).toBe('2d');
+    assertScope();
+  });
+
   const scenePose = overrides => ({ version: 'bridge-scene-v1', source: 'current', view: 'immersive', observer: 'bank',
     walkPos: 0.63, yaw: 27, pitch: -12, bankYaw: 18, bankPitch: -8, rotY: 46, rotX: 23, zoom: 1.4, ...overrides });
   const sceneTrial = overrides => ({ version: 'bridge-seismic-v1', name: 'My scene',
@@ -129,6 +1089,149 @@ describe('Bridge Lab immersive earthquake interaction', () => {
     patch({seismicIntensityG:0});for(const block of [fallback(),mechanism()]){expect(block.dataset.forceMotionKind).toBe('rest');expect(block.querySelector('[data-force-motion-direction]').dataset.forceMotionDirection).toBe('0');expect([...block.querySelectorAll('[data-force-motion-contribution]')].every(n=>Number(n.dataset.forceMotionPower)===0)).toBe(true);expect(block.querySelector('[data-force-motion-scientific-help]')).toBeNull();}expect(state).toMatchObject({bridgeView:'2d',seismicSceneTrial:'reference',bridgeBankYaw:18,seismicTime:7.217,seismicSceneNote:'Keep explanation',seismicIntervalPinS:12.319});
   });
 
+  // Check the bridge-shaped diagram against the native, unrounded readings.
+  // This does not call the rendering frame helper: the expected gap comes from
+  // subtracting the two physical positions on their common coordinate axis.
+  function checkMotionPositionDiagram() {
+    const frame = host.querySelector('[data-motion-frame]');
+    const figure = frame.querySelector('[data-motion-position-diagram]');
+    const svg = figure.querySelector('[data-motion-position-svg]');
+    const range = Number(frame.dataset.motionRangeM);
+    const values = Object.fromEntries([...frame.querySelectorAll('[data-motion-reading]')]
+      .map(node => [node.dataset.motionReading, Number(node.dataset.motionValueM)]));
+    const expectedX = Object.fromEntries(['ground', 'deck'].map(id => [id, 200 + values[id] / range * 160]));
+    expect(figure.dataset.motionPositionDiagram).toBe(frame.dataset.motionFrame);
+    expect(svg.getAttribute('aria-hidden')).toBe('true');
+    expect(svg.getAttribute('focusable')).toBe('false');
+    expect(svg.getAttribute('viewBox')).toBe('0 0 400 104');
+    expect(svg.getAttribute('preserveAspectRatio')).toBe('none');
+    expect(svg.querySelector('button,input,select,textarea,animate,animateTransform')).toBeNull();
+    expect(figure.querySelectorAll('[data-motion-position-glyph]')).toHaveLength(2);
+    expect(svg.querySelector('[data-motion-position-glyph]')).toBeNull();
+    // The main diagram stretches its coordinate axis to fit the panel. Marker
+    // shapes live beside it so a narrow phone cannot turn the circle into an oval.
+    expect(svg.parentElement.style.position).toBe('relative');
+    expect(svg.parentElement.style.height).toBe('104px');
+    expect(svg.parentElement.getAttribute('aria-hidden')).toBe('true');
+    expect(figure.querySelector('[data-motion-position-labels]').closest('[aria-hidden="true"]')).toBeNull();
+    expect(figure.querySelector('[data-motion-position-scope]').closest('[aria-hidden="true"]')).toBeNull();
+    expect(figure.textContent).toContain('Across the bridge · position diagram');
+    expect(figure.textContent).toContain('one sway mode');
+    expect(figure.textContent).toContain('member deformation');
+    expect(figure.textContent).toContain('damage');
+    expect(svg.textContent).not.toContain('Across the bridge');
+    const rest = svg.querySelector('[data-motion-position-rest]');
+    expect(Number(rest.getAttribute('x1'))).toBe(200);
+    expect(Number(rest.getAttribute('x2'))).toBe(200);
+    for (const id of ['ground', 'deck']) {
+      const y = id === 'deck' ? 16 : 56;
+      const resting = svg.querySelector('[data-motion-resting-shape="' + id + '"]');
+      expect([...['x', 'y', 'width', 'height']].map(name => Number(resting.getAttribute(name)))).toEqual([172, y, 56, 12]);
+      const body = svg.querySelector('[data-motion-position-body="' + id + '"]');
+      const percent = Number(body.dataset.motionPositionPercent);
+      expect(percent).toBeCloseTo(50 + values[id] / range * 40, 12);
+      const transform = body.getAttribute('transform').match(/^translate\(([^ ]+) 0\)$/);
+      expect(transform).toBeTruthy();
+      expect(Number(transform[1])).toBeCloseTo(expectedX[id], 11);
+      const slab = body.querySelector('rect');
+      expect(['x', 'y', 'width', 'height'].map(name => Number(slab.getAttribute(name)))).toEqual([-28, y, 56, 12]);
+      const glyph = figure.querySelector('[data-motion-position-glyph="' + id + '"]');
+      expect(glyph.parentElement).toBe(svg.parentElement);
+      expect(glyph.getAttribute('aria-hidden')).toBe('true');
+      expect(glyph.getAttribute('focusable')).toBe('false');
+      expect(glyph.getAttribute('viewBox')).toBe('0 0 16 16');
+      expect(glyph.getAttribute('width')).toBe('16');
+      expect(glyph.getAttribute('height')).toBe('16');
+      expect(glyph.getAttribute('preserveAspectRatio')).not.toBe('none');
+      expect(glyph.style.position).toBe('absolute');
+      expect(parseFloat(glyph.style.left)).toBeCloseTo(percent, 12);
+      expect(glyph.style.left.endsWith('%')).toBe(true);
+      expect(glyph.style.top).toBe(id === 'deck' ? '22px' : '62px');
+      expect(glyph.style.transform).toBe('translate(-50%,-50%)');
+      expect(glyph.style.width).not.toBe('100%');
+      expect(glyph.style.height).not.toBe('100%');
+      expect(body.querySelector('circle,path,ellipse')).toBeNull();
+      if (id === 'ground') {
+        const circle = glyph.querySelector('circle');
+        expect(['cx', 'cy', 'r'].map(name => Number(circle.getAttribute(name)))).toEqual([8, 8, 6]);
+        expect(glyph.querySelector('ellipse,path')).toBeNull();
+      } else {
+        const diamond = glyph.querySelector('path');
+        expect(diamond.getAttribute('d').match(/-?\d+(?:\.\d+)?/g).map(Number)).toEqual([8, 2, 6, 6, -6, 6, -6, -6]);
+        expect(diamond.getAttribute('d').trim().endsWith('Z')).toBe(true);
+        expect(glyph.querySelector('circle,ellipse')).toBeNull();
+      }
+      const projection = svg.querySelector('[data-motion-position-projection="' + id + '"]');
+      expect(Number(projection.getAttribute('x1'))).toBeCloseTo(expectedX[id], 11);
+      expect(Number(projection.getAttribute('x2'))).toBeCloseTo(expectedX[id], 11);
+      expect(Number(projection.getAttribute('y1'))).toBe(id === 'deck' ? 34 : 74);
+      expect(Number(projection.getAttribute('y2'))).toBe(90);
+    }
+    const gap = svg.querySelector('[data-motion-position-gap]');
+    if (values.relative === 0) {
+      expect(gap).toBeNull();
+    } else {
+      expect(gap).toBeTruthy();
+      expect(Number(gap.dataset.motionRelativeM)).toBe(values.relative);
+      const start = Number(gap.getAttribute('x1')), end = Number(gap.getAttribute('x2'));
+      expect(start).toBeCloseTo(expectedX.ground, 11);
+      expect(end).toBeCloseTo(expectedX.deck, 11);
+      expect(Number(gap.getAttribute('y1'))).toBe(90);
+      expect(Number(gap.getAttribute('y2'))).toBe(90);
+      expect(Math.abs((end - start) * range / 160 - values.relative))
+        .toBeLessThanOrEqual(Math.max(Math.abs(values.relative) * 1e-11, range * 1e-12));
+      expect(gap.getAttribute('marker-start')).toBeNull();
+      expect(gap.getAttribute('marker-end')).toBeNull();
+    }
+    return { groundX: expectedX.ground, deckX: expectedX.deck, relativeM: values.relative, rangeM: range,
+      gapLength: gap ? Math.abs(Number(gap.getAttribute('x2')) - Number(gap.getAttribute('x1'))) : 0 };
+  }
+
+  it('motion position: renders on demand and remains available for deliberate reduced-motion inspection', () => {
+    media.change(true);
+    mount({ bridgeView: 'immersive', bridgeObserver: 'bank', bridgeBankYaw: 18, seismicTime: 7.217,
+      seismicSceneNote: 'Keep my interpretation', seismicEnergyInterval: true, seismicIntervalPinS: 12.319 });
+    expect(host.querySelector('[data-motion-position-diagram]')).toBeNull();
+    expect(host.querySelector('[data-motion-position-svg]')).toBeNull();
+    const disclosure = host.querySelector('[data-bridge-motion-guide="scene"]');
+    act(() => { disclosure.open = true; disclosure.dispatchEvent(new Event('toggle')); vi.advanceTimersByTime(0); });
+    expect(state.seismicMotionGuide).toBe(true);
+    expect(host.querySelectorAll('[data-motion-position-diagram]')).toHaveLength(1);
+    const original = checkMotionPositionDiagram();
+    patch({ bridgeBankYaw: 90, bridgeBankPitch: -30 });
+    expect(checkMotionPositionDiagram()).toEqual(original);
+    expect(state).toMatchObject({ seismicTime: 7.217, seismicSceneNote: 'Keep my interpretation', seismicIntervalPinS: 12.319 });
+    expect(state.seismicPlaying).not.toBe(true);
+    patch({ seismicMotionGuide: false });
+    expect(host.querySelector('[data-motion-position-diagram]')).toBeNull();
+    expect(host.querySelector('[data-motion-position-svg]')).toBeNull();
+    patch({ bridgeView: '2d', seismicMotionGuide: true });
+    expect(checkMotionPositionDiagram()).toEqual(original);
+    click('Step forward 0.5 s');
+    checkMotionPositionDiagram();
+    expect(host.querySelector('[data-motion-position-diagram]').dataset.motionPositionDiagram).toBe('7.717');
+    expect(state.seismicPlaying).not.toBe(true);
+    expect(state.seismicSceneNote).toBe('Keep my interpretation');
+  });
+
+  it('motion position: exact rest and zero input leave the relative gap empty without changing the reference', () => {
+    mount({ seismicMotionGuide: true, seismicTime: 0 });
+    const start = checkMotionPositionDiagram();
+    expect(start).toMatchObject({ groundX: 200, deckX: 200, relativeM: 0, gapLength: 0 });
+    expect(start.rangeM).toBeGreaterThan(0);
+    patch({ seismicTime: 7.217 });
+    const moving = checkMotionPositionDiagram();
+    expect(moving.relativeM).not.toBe(0);
+    expect(moving.gapLength).toBeGreaterThan(0);
+    expect(moving.rangeM).toBe(start.rangeM);
+    patch({ seismicIntensityG: 0, seismicTime: 24 });
+    const zero = checkMotionPositionDiagram();
+    expect(zero).toMatchObject({ groundX: 200, deckX: 200, relativeM: 0, gapLength: 0 });
+    expect([...host.querySelectorAll('[data-motion-reading]')].every(node => node.textContent.endsWith('0.00 cm'))).toBe(true);
+    expect(host.querySelector('[data-motion-position-svg]').innerHTML).not.toMatch(/NaN|Infinity/);
+    expect(host.querySelector('[data-motion-position-rest]').getAttribute('x1')).toBe('200');
+  });
+
   it('motion coherence keeps tiny signed readings and the normalized rails at the actual event scale',()=>{
     mount({seismicMotionGuide:true,seismicIntensityG:0.000001,seismicTime:7.217,seismicSceneNote:'Keep writing',seismicEnergyInterval:true,seismicIntervalPinS:12.319});
     const frame=()=>host.querySelector('[data-motion-frame]'),positions=()=>[...frame().querySelectorAll('[data-motion-segment]')].map(n=>[Number(n.dataset.motionStartPercent),Number(n.dataset.motionEndPercent)]);
@@ -136,29 +1239,31 @@ describe('Bridge Lab immersive earthquake interaction', () => {
     expect(frame().querySelector('[data-motion-scientific-help]').textContent).toContain('2.5e-6 means 0.0000025');
     expect(frame().querySelector('[data-motion-range-caption]').textContent).toMatch(/e-\d/);
     for(const reading of frame().querySelectorAll('[data-motion-reading]')){const value=Number(reading.dataset.motionValueM);expect(reading.querySelector('strong').textContent).toMatch(/e-\d/);expect(reading.querySelector('strong').textContent.startsWith(value<0?'−':'+')).toBe(true);}
-    const range=Number(frame().dataset.motionRangeM),small=positions();expect(range).toBeLessThan(0.001);patch({seismicIntensityG:0.12});
+    const range=Number(frame().dataset.motionRangeM),small=positions(),smallDiagram=checkMotionPositionDiagram();expect(range).toBeLessThan(0.001);patch({seismicIntensityG:0.12});
     expect(Number(frame().dataset.motionRangeM)/range).toBeCloseTo(120000,7);positions().forEach((pair,i)=>pair.forEach((value,j)=>expect(value).toBeCloseTo(small[i][j],9)));
-    const fixed=frame().dataset.motionRangeM;patch({seismicTime:24});expect(frame().dataset.motionRangeM).toBe(fixed);expect(state).toMatchObject({seismicSceneNote:'Keep writing',seismicIntervalPinS:12.319});
+    const ordinaryDiagram=checkMotionPositionDiagram();expect(ordinaryDiagram.groundX).toBeCloseTo(smallDiagram.groundX,9);expect(ordinaryDiagram.deckX).toBeCloseTo(smallDiagram.deckX,9);expect(ordinaryDiagram.relativeM/smallDiagram.relativeM).toBeCloseTo(120000,7);
+    const fixed=frame().dataset.motionRangeM;patch({seismicTime:24});expect(frame().dataset.motionRangeM).toBe(fixed);checkMotionPositionDiagram();expect(state).toMatchObject({seismicSceneNote:'Keep writing',seismicIntervalPinS:12.319});
   });
   it('motion coherence preserves the ground-to-deck gap and sign on a common coordinate axis',()=>{
-    mount({seismicMotionGuide:true});const frame=()=>host.querySelector('[data-motion-frame]');let opposing=0;
+    mount({seismicMotionGuide:true});const frame=()=>host.querySelector('[data-motion-frame]');let opposing=0,subtractive=0;
     for(const time of [0,1,3.5,7.217,8,8.633,9.083,10,12.319,16,24]){
       patch({seismicTime:time});const range=Number(frame().dataset.motionRangeM),ground=Number(frame().querySelector('[data-motion-reading="ground"]').dataset.motionValueM),deck=Number(frame().querySelector('[data-motion-reading="deck"]').dataset.motionValueM),relative=Number(frame().querySelector('[data-motion-reading="relative"]').dataset.motionValueM);
       const gap=frame().querySelector('[data-motion-segment="relative"]'),start=Number(gap.dataset.motionStartPercent),end=Number(gap.dataset.motionEndPercent);
       expect(start).toBeCloseTo(50+ground/range*40,12);expect(end).toBeCloseTo(50+deck/range*40,12);expect((end-start)*range/40).toBeCloseTo(relative,12);expect(parseFloat(gap.style.width)).toBeCloseTo(Math.abs(end-start),12);
       for(const marker of frame().querySelectorAll('[data-motion-marker]')){const percent=Number(marker.dataset.motionPositionPercent);expect(percent).toBeGreaterThanOrEqual(10-1e-9);expect(percent).toBeLessThanOrEqual(90+1e-9);expect(marker.getAttribute('width')).toBe('16');}
-      if(ground*deck<0)opposing++;
+      checkMotionPositionDiagram();if(ground*deck<0)opposing++;if(ground*deck>0&&Math.abs(relative)<Math.max(Math.abs(ground),Math.abs(deck)))subtractive++;
     }
-    expect(opposing).toBeGreaterThan(0);expect(frame().textContent).toContain('Relative = deck from rest − ground from rest.');expect(frame().textContent).toContain('Circle = ground; diamond = deck.');
+    expect(opposing).toBeGreaterThan(0);expect(subtractive).toBeGreaterThan(0);expect(frame().textContent).toContain('Relative = deck from rest − ground from rest.');expect(frame().textContent).toContain('Circle = ground; diamond = deck.');
   });
   it('motion coherence uses unequal scene A/B scales and returns to current measurements through zero input and graphics fallback',()=>{
     mount({bridgeView:'immersive',bridgeObserver:'bank',bridgeBankYaw:18,seismicMotionGuide:true,seismicTime:7.217,seismicTrialName:'Large reference',seismicSceneNote:'Keep scene note',seismicEnergyInterval:true,seismicIntervalPinS:12.319});click('Save earthquake trial');const record=state.seismicTrials[0];
     patch({seismicIntensityG:0.000001,seismicDampingRatio:0.2,seismicSceneCompare:true,seismicSceneSource:'saved',seismicSceneTrial:'current'});const frame=()=>host.querySelector('[data-motion-frame]'),reading=()=>frame().querySelector('[data-motion-reading="deck"]'),range=frame().dataset.motionRangeM,b=reading().dataset.motionValueM;
-    expect(frame().dataset.motionSource).toBe('saved');expect(frame().querySelector('[data-motion-caption]').textContent).toContain('B · current · 7.217 s');click('A · reference');expect(frame().querySelector('[data-motion-caption]').textContent).toContain('A · reference · 7.217 s');expect(frame().dataset.motionRangeM).toBe(range);expect(reading().dataset.motionValueM).not.toBe(b);const a=reading().dataset.motionValueM;
-    patch({bridgeBankYaw:90});expect(reading().dataset.motionValueM).toBe(a);expect(state.seismicTime).toBe(7.217);
-    act(()=>{viewerStatus='failed';viewerListener?.('failed');});expect(frame().dataset.motionTrial).toBe('current');expect(frame().dataset.motionSource).toBe('current');expect(reading().dataset.motionValueM).toBe(b);expect(Number(frame().dataset.motionRangeM)).toBeLessThan(Number(range));expect(frame().querySelector('[data-motion-caption]').textContent).toContain('Current experiment');
+    const smallPairedDiagram=checkMotionPositionDiagram();expect(smallPairedDiagram.gapLength).toBeGreaterThan(0);expect(smallPairedDiagram.gapLength).toBeLessThan(0.01);
+    expect(frame().dataset.motionSource).toBe('saved');expect(frame().querySelector('[data-motion-caption]').textContent).toContain('B · current · 7.217 s');click('A · reference');expect(frame().querySelector('[data-motion-caption]').textContent).toContain('A · reference · 7.217 s');expect(frame().dataset.motionRangeM).toBe(range);expect(reading().dataset.motionValueM).not.toBe(b);const a=reading().dataset.motionValueM,aDiagram=checkMotionPositionDiagram();expect(aDiagram.gapLength).toBeGreaterThan(smallPairedDiagram.gapLength);
+    patch({bridgeBankYaw:90});expect(reading().dataset.motionValueM).toBe(a);expect(checkMotionPositionDiagram()).toEqual(aDiagram);expect(state.seismicTime).toBe(7.217);
+    act(()=>{viewerStatus='failed';viewerListener?.('failed');});expect(frame().dataset.motionTrial).toBe('current');expect(frame().dataset.motionSource).toBe('current');expect(reading().dataset.motionValueM).toBe(b);expect(Number(frame().dataset.motionRangeM)).toBeLessThan(Number(range));expect(frame().querySelector('[data-motion-caption]').textContent).toContain('Current experiment');const fallbackDiagram=checkMotionPositionDiagram();expect(fallbackDiagram.relativeM).toBe(smallPairedDiagram.relativeM);expect(fallbackDiagram.gapLength).toBeGreaterThan(smallPairedDiagram.gapLength);
     patch({seismicIntensityG:0});expect(frame().dataset.motionMaximumM).toBe('0');expect(frame().querySelector('[data-motion-range-caption]')).toBeNull();expect(frame().querySelector('[data-motion-scientific-help]')).toBeNull();expect(frame().querySelector('[data-motion-zero]').textContent).toContain('stay at rest');expect([...frame().querySelectorAll('[data-motion-marker]')].every(n=>n.dataset.motionPositionPercent==='50')).toBe(true);expect([...frame().querySelectorAll('[data-motion-reading]')].every(n=>n.textContent.endsWith('0.00 cm'))).toBe(true);
-    expect(state).toMatchObject({bridgeView:'2d',seismicSceneTrial:'reference',bridgeBankYaw:90,seismicSceneNote:'Keep scene note',seismicIntervalPinS:12.319,seismicTime:7.217});expect(state.seismicTrials[0]).toEqual(record);
+    checkMotionPositionDiagram();expect(host.querySelector('[data-motion-position-gap]')).toBeNull();expect(state).toMatchObject({bridgeView:'2d',seismicSceneTrial:'reference',bridgeBankYaw:90,seismicSceneNote:'Keep scene note',seismicIntervalPinS:12.319,seismicTime:7.217});expect(state.seismicTrials[0]).toEqual(record);
   });
 
   it('recorded maxima inspect notebook A and current B at exact shared times while preserving the scene and investigation',()=>{
@@ -530,7 +1635,7 @@ describe('Bridge Lab immersive earthquake interaction', () => {
     act(()=>root.unmount());root=null;host.remove();mount({tab:'print',seismicEnabled:false,seismicTrials:[{...record,sample:{kineticJPerKg:999999},power:{storedPowerWPerKg:999999}}]});const print=host.querySelector('[data-seismic-trial]');expect(print.querySelector('[data-seismic-saved-energy]').textContent).toBe(energy);expect(print.querySelector('[data-seismic-scene-power]').textContent).toBe(power);expect(print.textContent).not.toContain('999999');expect(print.querySelector('button,input,textarea,select')).toBeNull();
   });
   it('saved small readouts keep true-zero and ordinary-scale summaries simple',()=>{
-    mount({seismicIntensityG:0,seismicSceneRecording:true,seismicTime:24});click('Save scene observation');const zero=host.querySelector('[data-seismic-trial]');expect(zero.querySelector('[data-seismic-saved-energy]').textContent).toContain('0.000 / 0.000 / 0.000 / 0.000');expect(zero.querySelector('[data-seismic-scene-power]').textContent).toContain('0.000 / 0.000 / 0.000');expect(zero.querySelector('[data-seismic-scientific-help]')).toBeNull();
+    mount({seismicIntensityG:0,seismicSceneRecording:true,seismicTime:24});click('Save scene observation');const zero=host.querySelector('[data-seismic-trial]');expect([...zero.querySelectorAll('[data-seismic-saved-energy] dd')].map(node=>node.textContent)).toEqual(['0.000 J/kg','0.000 J/kg','0.000 J/kg','0.000 J/kg']);expect([...zero.querySelectorAll('[data-seismic-saved-energy] dt')].map(node=>node.textContent)).toEqual(['Kinetic','Elastic','Damping loss since 0 s','Net input work since 0 s']);expect([...zero.querySelectorAll('[data-seismic-scene-power] dd')].map(node=>node.textContent)).toEqual(['0.000 W/kg','0.000 W/kg','0.000 W/kg']);expect([...zero.querySelectorAll('[data-seismic-scene-power] dt')].map(node=>node.textContent)).toEqual(['Ground input power','Damping loss rate','Stored energy change rate']);expect(zero.querySelector('[data-seismic-scientific-help]')).toBeNull();
     patch({seismicIntensityG:0.12,seismicDampingRatio:0.05,seismicTime:7.217});click('Save earthquake trial');const ordinary=host.querySelectorAll('[data-seismic-trial]')[1];expect(ordinary.querySelector('[data-seismic-saved-energy]').textContent).not.toMatch(/e-\d/);expect(ordinary.querySelector('[data-seismic-scientific-help]')).toBeNull();
   });
   it('interval time controls edit exact endpoints, pause motion and swap without changing energy evidence',()=>{
@@ -1307,6 +2412,126 @@ describe('Bridge Lab immersive earthquake interaction', () => {
     expect(state).toMatchObject({span:45,materialId:'aluminum'});
   });
 
+  function checkNativeEnergyFlow(inputs, time, trial = 'current') {
+    const point = guideEnergyOracle.bridgeSeismicEnergyInterval(guideEnergyResponse(inputs), time, time).earlier;
+    const frame = host.querySelector('[data-flow-frame]');
+    expect(frame, 'energy transfer frame').toBeTruthy();
+    expect(Number(frame.dataset.flowFrame)).toBe(point.timeS);
+    expect(frame.dataset.flowTrial).toBe(trial);
+    const diagram = frame.querySelector('[data-flow-diagram]');
+    expect(diagram.getAttribute('role')).toBe('group');
+    expect(diagram.getAttribute('aria-label')).toContain('W/kg');
+    const external = diagram.querySelector('[data-flow-group="external"]');
+    const internal = diagram.querySelector('[data-flow-group="internal"]');
+    expect([...external.querySelectorAll('[data-flow-path]')].map(row => row.dataset.flowPath)).toEqual(['input', 'damping']);
+    expect([...internal.querySelectorAll('[data-flow-path]')].map(row => row.dataset.flowPath)).toEqual(['exchange']);
+    expect(internal.textContent.toLowerCase()).toContain('within');
+    expect(internal.textContent.toLowerCase()).toContain('stored');
+    const expected = {
+      input: { value: point.inputPowerWPerKg, from: 'Ground interaction', to: 'Stored' },
+      damping: { value: point.dampingPowerWPerKg, from: 'Stored', to: 'Dissipated' },
+      exchange: { value: point.elasticPowerWPerKg, from: 'Kinetic', to: 'Elastic' }
+    };
+    const rates = {};
+    for (const [id, item] of Object.entries(expected)) {
+      const row = diagram.querySelector('[data-flow-path="' + id + '"]');
+      expect(row.tagName).toBe('DIV');
+      expect(row.getAttribute('role')).toBe('group');
+      expect(Number(row.dataset.flowPower)).toBe(item.value);
+      expect(Number(row.dataset.flowDirection)).toBe(item.value > 0 ? 1 : item.value < 0 ? -1 : 0);
+      const from = row.querySelector('[data-flow-node="from"]');
+      const to = row.querySelector('[data-flow-node="to"]');
+      for (const node of [from, to]) expect(node.closest('svg,[aria-hidden="true"]')).toBeNull();
+      expect(from.textContent).toBe(item.from);
+      expect(to.textContent).toBe(item.to);
+      const directed = item.value === 0 ? 'No transfer'
+        : item.value > 0 ? item.from + ' → ' + item.to : item.to + ' → ' + item.from;
+      expect(row.getAttribute('aria-label')).toContain(directed);
+      expect(diagram.getAttribute('aria-label')).toContain(directed);
+      const reading = row.querySelector('[data-flow-rate="' + id + '"]');
+      expect(Number(reading.dataset.flowRateValue)).toBe(Math.abs(item.value));
+      expect(reading.closest('svg,[aria-hidden="true"]')).toBeNull();
+      expect(reading.textContent).toContain('W/kg');
+      if (item.value !== 0 && Math.abs(item.value) < 0.001) {
+        expect(reading.textContent).toMatch(/\d\.\d{2}e[+-]\d+/);
+        expect(reading.textContent).not.toContain('<0.001');
+      }
+      const arrow = row.querySelector('[data-flow-arrow="' + id + '"]');
+      expect(arrow.getAttribute('aria-hidden')).toBe('true');
+      expect(arrow.getAttribute('focusable')).toBe('false');
+      expect(arrow.querySelector('text')).toBeNull();
+      rates[id] = item.value;
+    }
+    const net = frame.querySelector('[data-flow-stored-rate]');
+    expect(Number(net.dataset.flowStoredRate)).toBe(point.storedPowerWPerKg);
+    expect(point.storedPowerWPerKg).toBeCloseTo(rates.input - rates.damping, 12);
+    const small = [...Object.values(rates), point.storedPowerWPerKg]
+      .some(value => value !== 0 && Math.abs(value) < 0.001);
+    expect(Boolean(frame.querySelector('[data-flow-scientific-help]'))).toBe(small);
+    expect(frame.innerHTML).not.toMatch(/NaN|Infinity/);
+    return { rates, net: point.storedPowerWPerKg, description: diagram.getAttribute('aria-label') };
+  }
+
+  it('energy transfer native: preserves tiny signed rates, native routes and true zero during deliberate inspection', () => {
+    media.change(true);
+    const time = 7.283333333333333;
+    mount({ bridgeView: 'immersive', seismicEnergyFlow: true, seismicTime: time, seismicIntensityG: 1e-10,
+      seismicPlaying: false, seismicObservation: 'Follow small transfers.' });
+    const original = checkNativeEnergyFlow(guideEnergyCurrentInputs(), time);
+    expect(original.rates.input).toBeLessThan(0);
+    expect(original.net).toBeLessThan(0);
+    expect(Object.values(original.rates).every(value => value !== 0 && Math.abs(value) < 0.001)).toBe(true);
+    expect(host.querySelector('[data-flow-stored-rate]').textContent).toMatch(/decreasing: \d\.\d{2}e[+-]\d+ W\/kg/);
+    const signature = lastScene.sig;
+    patch({ seismicTime: 0 });
+    const rest = checkNativeEnergyFlow(guideEnergyCurrentInputs(), 0);
+    expect(Object.values(rest.rates)).toEqual([0, 0, 0]);
+    expect(rest.description).toContain('No transfer');
+    expect(host.querySelector('[data-flow-stored-rate]').textContent).toBe('Stored energy unchanged: 0.000 W/kg');
+    patch({ seismicTime: time, rot3d: { rotX: 22, rotY: 87 }, seismicMotionGuide: true, seismicForceLens: true });
+    expect(checkNativeEnergyFlow(guideEnergyCurrentInputs(), time)).toEqual(original);
+    patch({ seismicTime: 18, seismicDampingRatio: 0 });
+    const free = checkNativeEnergyFlow(guideEnergyCurrentInputs(), 18);
+    expect(free.rates.input).toBe(0);
+    expect(free.rates.damping).toBe(0);
+    expect(free.rates.exchange).not.toBe(0);
+    expect(free.net).toBe(0);
+    expect(lastScene.sig).toBe(signature);
+    expect(state).toMatchObject({ seismicPlaying: false, seismicObservation: 'Follow small transfers.' });
+    expect(button('Replay scene').disabled).toBe(true);
+  });
+
+  it('energy transfer native: follows unequal saved A/B inputs and keeps current rates in graphics fallback', () => {
+    const savedInputs = { archetype: 'flexible', groundFrequencyHz: 0.8, intensityG: 0.17, dampingRatio: 0 };
+    const records = [{ version: 'bridge-seismic-v1', name: 'Flexible undamped reference', timeS: 12.319,
+      inputs: savedInputs, prediction: 'Reference prediction', observation: 'Reference explanation' }];
+    const time = 7.217;
+    mount({ bridgeView: 'immersive', seismicEnergyFlow: true, seismicTrials: records, seismicReferenceIndex: 0,
+      seismicIntensityG: 1e-10, seismicDampingRatio: 0.2, seismicTime: time,
+      seismicSceneNote: 'Keep scene evidence.', seismicObservation: 'Keep current evidence.' });
+    click('Compare saved trial in scene');
+    const current = checkNativeEnergyFlow(guideEnergyCurrentInputs(), time);
+    click('A · reference');
+    const reference = checkNativeEnergyFlow(savedInputs, time, 'reference');
+    expect(reference.rates).not.toEqual(current.rates);
+    expect(reference.rates.damping).toBe(0);
+    patch({ seismicIntensityG: 0.12, seismicDampingRatio: 0.1 });
+    expect(checkNativeEnergyFlow(savedInputs, time, 'reference')).toEqual(reference);
+    click('B · current');
+    const changed = checkNativeEnergyFlow(guideEnergyCurrentInputs(), time);
+    expect(changed.rates).not.toEqual(current.rates);
+    click('A · reference');
+    act(() => { viewerStatus = 'failed'; viewerListener?.('failed'); });
+    expect(host.querySelector('[data-bridge-energy-flow="fallback"]').open).toBe(true);
+    const fallback = checkNativeEnergyFlow(guideEnergyCurrentInputs(), time);
+    expect(fallback.rates).toEqual(changed.rates);
+    expect(fallback.net).toBe(changed.net);
+    expect(fallback.description).toMatch(/^Current experiment · 7\.22 s\./);
+    expect(state).toMatchObject({ bridgeView: '2d', seismicTime: time, seismicPlaying: false,
+      seismicSceneTrial: 'reference', seismicSceneNote: 'Keep scene evidence.', seismicObservation: 'Keep current evidence.' });
+    expect(state.seismicTrials).toEqual(records);
+  });
+
   it('opens energy transfer without starting motion and keeps its rates synchronized with replay', () => {
     mount({ seismicTime: 7.217, seismicEnergyFlow: 'true', seismicObservation: 'Keep my energy notes.' });
     expect(host.querySelector('[data-flow-frame]')).toBeNull();
@@ -1338,7 +2563,7 @@ describe('Bridge Lab immersive earthquake interaction', () => {
     expect(host.querySelector('[data-flow-frame]').dataset.flowTrial).toBe('reference');
     expect(rates()).not.toEqual(b);
     expect(state.seismicTime).toBe(7.217);
-    expect(host.querySelector('[data-flow-frame] svg').getAttribute('aria-label')).toContain('A · reference');
+    expect(host.querySelector('[data-flow-frame] [data-flow-diagram]').getAttribute('aria-label')).toContain('A · reference');
     click('B · current');
     expect(rates()).toEqual(b);
     expect(state.seismicDampingRatio).toBe(0.2);
@@ -1349,7 +2574,7 @@ describe('Bridge Lab immersive earthquake interaction', () => {
     mount({ seismicEnergyFlow: true, seismicIntensityG: 0, seismicTime: 18 });
     expect([...host.querySelectorAll('[data-flow-path]')].every(n => n.dataset.flowDirection === '0')).toBe(true);
     expect(host.querySelector('[data-flow-stored-rate]').textContent).toBe('Stored energy unchanged: 0.000 W/kg');
-    expect(host.querySelector('[data-flow-frame] svg').getAttribute('aria-label')).toContain('No transfer');
+    expect(host.querySelector('[data-flow-frame] [data-flow-diagram]').getAttribute('aria-label')).toContain('No transfer');
     patch({ seismicIntensityG: 0.12, seismicDampingRatio: 0, seismicTime: 18 });
     expect(host.querySelector('[data-flow-path="input"]').dataset.flowDirection).toBe('0');
     expect(host.querySelector('[data-flow-path="damping"]').dataset.flowDirection).toBe('0');
@@ -1360,7 +2585,7 @@ describe('Bridge Lab immersive earthquake interaction', () => {
 
   it('retains transfer settings through folded measurements, 2D fallback and graphics recovery', () => {
     mount({ bridgeView: 'immersive', seismicEnergyFlow: true, seismicTime: 7.217 });
-    const diagram=() => host.querySelector('[data-flow-frame] svg').getAttribute('aria-label');
+    const diagram=() => host.querySelector('[data-flow-frame] [data-flow-diagram]').getAttribute('aria-label');
     const before=diagram();
     patch({ seismicReadoutCollapsed: true });
     expect(host.querySelector('[data-flow-frame]')).toBeNull();
@@ -1382,16 +2607,56 @@ describe('Bridge Lab immersive earthquake interaction', () => {
     mount({ seismicEnergyFlow: true, seismicGuideOpen: true });
     click('Prepare 5% / 20% comparison');
     patch({ seismicTime: 8 });
-    const b=host.querySelector('[data-flow-frame] svg').getAttribute('aria-label');
+    const b=host.querySelector('[data-flow-frame] [data-flow-diagram]').getAttribute('aria-label');
     click('A · reference');
     patch({ bridgeView: '2d' });
     const frame=host.querySelector('[data-flow-frame]');
     expect(frame.dataset.flowTrial).toBe('current');
     expect(frame.textContent).toContain('Current experiment');
-    expect(frame.querySelector('svg').getAttribute('aria-label').split(' s. ')[1]).toBe(b.split(' s. ')[1]);
+    expect(frame.querySelector('[data-flow-diagram]').getAttribute('aria-label').split(' s. ')[1]).toBe(b.split(' s. ')[1]);
     expect(state.seismicTime).toBe(8);
     expect(state.seismicPlaying).toBe(false);
   });
+
+  function checkNativeMoment(inputs, id, trial = 'current') {
+    const response = guideEnergyResponse(inputs);
+    const time = { start: 0, motion: response.milestones.peakMotionS,
+      acceleration: response.milestones.peakAccelerationS, free: response.milestones.freeVibrationS,
+      end: response.durationS }[id];
+    // Read the independently sampled response, rather than deriving the expected
+    // number from scene rendering or the insight's own metadata.
+    const point = guideEnergyOracle.bridgeSeismicEnergyInterval(response, time, time).earlier;
+    const value = id === 'motion' ? Math.abs(point.relativeM * 100)
+      : id === 'acceleration' ? Math.abs(point.absoluteAccelerationMps2) / 9.80665 : point.storedJPerKg;
+    const unit = id === 'motion' ? 'cm' : id === 'acceleration' ? 'g' : 'J/kg';
+    const quantity = id === 'motion' ? 'relativeMotion' : id === 'acceleration' ? 'absoluteAcceleration' : 'storedEnergy';
+    const insight = host.querySelector('[data-bridge-moment-insight="' + id + '"]');
+    expect(insight, trial + ' exact ' + id + ' milestone').toBeTruthy();
+    expect(Number(insight.dataset.momentTime)).toBe(time);
+    expect(state.seismicTime).toBe(time);
+    expect(insight.dataset.momentTrial).toBe(trial);
+    const reading = insight.querySelector('[data-moment-reading]');
+    expect(reading).toBeTruthy();
+    expect(reading.tagName).toBe('STRONG');
+    expect(reading.closest('svg,[aria-hidden="true"]')).toBeNull();
+    expect(Number(reading.dataset.momentValue)).toBe(value);
+    expect(reading.dataset.momentUnit).toBe(unit);
+    expect(reading.dataset.momentQuantity).toBe(quantity);
+    expect(parseFloat(reading.style.fontSize)).toBeGreaterThanOrEqual(12);
+    expect(reading.style.overflowWrap).toBe('anywhere');
+    const scientific = value !== 0 && Math.abs(value) < 0.001;
+    const expectedText = (scientific ? value.toExponential(2) : value.toFixed(3)) + ' ' + unit;
+    expect(reading.textContent).toBe(expectedText);
+    const help = insight.querySelector('[data-moment-scientific-help]');
+    expect(Boolean(help)).toBe(scientific);
+    if (help) {
+      expect(help.textContent).toContain('2.5e-6 means 0.0000025');
+      expect(help.textContent).toContain('still nonzero');
+      expect(help.closest('svg,[aria-hidden="true"]')).toBeNull();
+    }
+    expect(insight.innerHTML).not.toMatch(/NaN|Infinity/);
+    return { time, value, unit, quantity, text: expectedText, scientific };
+  }
 
   it('jumps to exact model peaks from the scene, pauses replay, and preserves viewpoint and writing', () => {
     mount({ bridgeView: 'immersive', bridgeObserver: 'bank', bridgeBankYaw: 18, seismicTime: 5,
@@ -1407,10 +2672,11 @@ describe('Bridge Lab immersive earthquake interaction', () => {
     expect(lastScene.sig).toBe(sig);
     expect(Number(host.querySelector('[data-motion-frame]').dataset.motionFrame)).toBe(peak);
     const insight = host.querySelector('[data-bridge-moment-insight="motion"]');
-    expect(insight.textContent).toContain((Math.abs(lastScene.quake.deckM - lastScene.quake.groundM) * 100).toFixed(2) + ' cm');
+    expect(checkNativeMoment(guideEnergyCurrentInputs(), 'motion').time).toBe(peak);
     expect(field('Scene key moments').getAttribute('aria-describedby')).toBe(insight.id);
     act(() => Simulate.change(field('Scene key moments'), { target: { value: 'acceleration' } }));
     const accelerationTime = state.seismicTime;
+    expect(checkNativeMoment(guideEnergyCurrentInputs(), 'acceleration').time).toBe(accelerationTime);
     expect(host.querySelector('[data-bridge-moment-insight="acceleration"]').textContent).toContain('stationary frame');
     click('Inspect peak acceleration');
     expect(state.seismicTime).toBe(accelerationTime);
@@ -1472,7 +2738,10 @@ describe('Bridge Lab immersive earthquake interaction', () => {
       expect(state.seismicTime).toBe(time);
       expect(state.seismicPlaying).toBe(false);
       expect(host.querySelector('[data-bridge-moment-insight]').textContent).toContain('No ground motion was applied');
-      expect(host.querySelector('[data-bridge-moment-insight]').textContent).toContain('0.000 J/kg');
+      const reading = checkNativeMoment(guideEnergyCurrentInputs(), id);
+      expect(reading.value).toBe(0);
+      expect(reading.text).toBe('0.000 J/kg');
+      expect(reading.scientific).toBe(false);
     }
     expect(button('Replay scene').disabled).toBe(true);
   });
@@ -1507,11 +2776,68 @@ describe('Bridge Lab immersive earthquake interaction', () => {
 
   it('distinguishes very small nonzero peak readings from a zero-input experiment', () => {
     mount({ seismicIntensityG: 0.000001 });
+    for (const id of ['motion', 'acceleration', 'free', 'end']) {
+      act(() => Simulate.change(field('Scene key moments'), { target: { value: id } }));
+      const reading = checkNativeMoment(guideEnergyCurrentInputs(), id);
+      expect(reading.value).toBeGreaterThan(0);
+      expect(reading.value).toBeLessThan(0.001);
+      expect(reading.scientific).toBe(true);
+      expect(reading.text).toMatch(/e-\d+ (cm|g|J\/kg)$/);
+      expect(host.querySelector('[data-bridge-moment-insight]').textContent).not.toContain('No ground motion');
+      expect(host.querySelector('[data-moment-reading]').textContent).not.toContain('<');
+    }
+    act(() => Simulate.change(field('Scene key moments'), { target: { value: 'start' } }));
+    const start = checkNativeMoment(guideEnergyCurrentInputs(), 'start');
+    expect(start.value).toBe(0);
+    expect(start.text).toBe('0.000 J/kg');
+    expect(start.scientific).toBe(false);
+  });
+
+  it('moment precision: uses saved tiny A values and milestones independently of ordinary B while preserving the common clock and evidence', () => {
+    const savedInputs = { archetype: 'flexible', groundFrequencyHz: 0.8, intensityG: 1e-10, dampingRatio: 0.05 };
+    const records = [{ version: 'bridge-seismic-v1', name: 'Tiny reference bridge', timeS: 12.319,
+      inputs: savedInputs, prediction: 'Reference prediction', observation: 'Reference explanation' }];
+    mount({ bridgeView: 'immersive', bridgeObserver: 'bank', bridgeBankYaw: 18,
+      seismicTrials: records, seismicReferenceIndex: 0, seismicIntensityG: 0.12,
+      seismicDampingRatio: 0.2, seismicTime: 7.217, seismicSceneNote: 'Keep scene evidence.',
+      seismicObservation: 'Keep current explanation.' });
+    click('Compare saved trial in scene');
+    const currentInputs = guideEnergyCurrentInputs();
+    const aResponse = guideEnergyResponse(savedInputs), bResponse = guideEnergyResponse(currentInputs);
+    expect(aResponse.milestones.peakMotionS).not.toBe(bResponse.milestones.peakMotionS);
+    const signature = lastScene.sig;
+    click('A · reference');
+    expect(state.seismicTime).toBe(7.217);
     act(() => Simulate.change(field('Scene key moments'), { target: { value: 'motion' } }));
-    expect(host.querySelector('[data-bridge-moment-insight]').textContent).toContain('Magnitude: <0.01 cm');
+    const aMotion = checkNativeMoment(savedInputs, 'motion', 'reference');
+    expect(aMotion.value).toBeGreaterThan(0);
+    expect(aMotion.scientific).toBe(true);
+    click('B · current');
+    expect(state.seismicTime).toBe(aMotion.time);
+    expect(field('Scene key moments').value).toBe('');
+    expect(host.querySelector('[data-bridge-moment-insight]')).toBeNull();
+    act(() => Simulate.change(field('Scene key moments'), { target: { value: 'motion' } }));
+    const bMotion = checkNativeMoment(currentInputs, 'motion');
+    expect(bMotion.value).toBeGreaterThan(aMotion.value);
+    expect(bMotion.scientific).toBe(false);
+    click('A · reference');
+    expect(state.seismicTime).toBe(bMotion.time);
     act(() => Simulate.change(field('Scene key moments'), { target: { value: 'acceleration' } }));
-    expect(host.querySelector('[data-bridge-moment-insight]').textContent).toContain('Magnitude: <0.001 g');
-    expect(host.querySelector('[data-bridge-moment-insight]').textContent).not.toContain('No ground motion');
+    const aAcceleration = checkNativeMoment(savedInputs, 'acceleration', 'reference');
+    expect(aAcceleration.scientific).toBe(true);
+    act(() => Simulate.change(field('Scene key moments'), { target: { value: 'free' } }));
+    const aFree = checkNativeMoment(savedInputs, 'free', 'reference');
+    expect(aFree.scientific).toBe(true);
+    patch({ seismicIntensityG: 0.07, seismicFrequencyHz: 2.6, seismicDampingRatio: 0.4 });
+    expect(checkNativeMoment(savedInputs, 'free', 'reference')).toEqual(aFree);
+    click('B · current');
+    expect(state.seismicTime).toBe(aFree.time);
+    const bFree = checkNativeMoment(guideEnergyCurrentInputs(), 'free');
+    expect(bFree.value).toBeGreaterThan(aFree.value);
+    expect(state).toMatchObject({ seismicPlaying: false, bridgeObserver: 'bank', bridgeBankYaw: 18,
+      seismicSceneNote: 'Keep scene evidence.', seismicObservation: 'Keep current explanation.' });
+    expect(lastScene.sig).toBe(signature);
+    expect(state.seismicTrials).toEqual(records);
   });
 
   it('folds scene measurements without resetting the clock, selected trial, or resting rails', () => {
@@ -1525,7 +2851,7 @@ describe('Bridge Lab immersive earthquake interaction', () => {
     expect(host.querySelector('[data-bridge-scene-readout]').open).toBe(false);
     expect(host.querySelector('[data-motion-frame]')).toBeNull();
     expect(host.querySelector('[data-bridge-scene-energy-frame]')).toBeNull();
-    expect(host.querySelector('[data-bridge-scene-readout]').textContent).toContain('A · reference · 8.00 s');
+    expect(host.querySelector('[data-bridge-scene-readout]').textContent).toContain('A · reference · 8.000 s');
     expect(lastScene.motionGuide).toBe(true);
     expect(state.seismicTime).toBe(8);
     click('Switch to deck viewpoint');
@@ -1838,6 +3164,161 @@ describe('Bridge Lab immersive earthquake interaction', () => {
     expect(state.seismicPlaying).toBe(false);
   });
 
+  function checkNativeSceneEnergy(inputs, time, trial = 'current', pairedInputs = null) {
+    const response = guideEnergyResponse(inputs);
+    const point = guideEnergyOracle.bridgeSeismicEnergyInterval(response, time, time).earlier;
+    const eventLimit = value => Math.max(0.001, value.peaks.inputJPerKg,
+      value.peaks.storedJPerKg, value.peaks.dissipatedJPerKg) * 1.04;
+    const limit = Math.max(eventLimit(response), pairedInputs ? eventLimit(guideEnergyResponse(pairedInputs)) : 0);
+    const frame = host.querySelector('[data-bridge-scene-energy-frame]');
+    expect(frame, 'native scene energy amounts').toBeTruthy();
+    expect(Number(frame.dataset.bridgeSceneEnergyFrame)).toBe(point.timeS);
+    expect(Number(frame.dataset.energyLimit)).toBe(limit);
+    expect(frame.dataset.energyTrial).toBe(trial);
+    expect(frame.getAttribute('aria-live')).toBe('off');
+    const caption = frame.querySelector('[data-scene-energy-caption]');
+    expect(caption.closest('svg,[aria-hidden="true"]')).toBeNull();
+    expect(caption.textContent).toContain(pairedInputs ? trial === 'reference' ? 'A · reference' : 'B · current' : 'Current experiment');
+    const shownTime = caption.textContent.match(/(\d+(?:\.\d+)?)\s*s(?:\s|$)/);
+    expect(shownTime, 'native caption time').toBeTruthy();
+    expect(Number(shownTime[1])).toBeCloseTo(point.timeS, 2);
+    const stored = frame.querySelector('[data-scene-energy-group="stored"]');
+    const dissipated = frame.querySelector('[data-scene-energy-group="dissipated"]');
+    expect(stored.tagName).toBe('SECTION');
+    expect(dissipated.tagName).toBe('SECTION');
+    expect(stored.getAttribute('role')).toBe('group');
+    expect(stored.getAttribute('aria-label')).toContain('Stored now');
+    expect(dissipated.getAttribute('role')).toBe('group');
+    expect(dissipated.getAttribute('aria-label')).toContain('since 0 s');
+    expect([...stored.querySelectorAll('[data-scene-energy-part]')].map(node => node.dataset.sceneEnergyPart)).toEqual(['kinetic', 'elastic']);
+    expect([...dissipated.querySelectorAll('[data-scene-energy-part]')].map(node => node.dataset.sceneEnergyPart)).toEqual(['dissipated']);
+    const amounts = { kinetic: point.kineticJPerKg, elastic: point.strainJPerKg,
+      stored: point.storedJPerKg, dissipated: point.dissipatedJPerKg };
+    const widths = {};
+    for (const id of ['kinetic', 'elastic', 'dissipated']) {
+      const part = frame.querySelector('[data-scene-energy-part="' + id + '"]');
+      expect(Number(part.dataset.energyValue)).toBe(amounts[id]);
+      expect(part.closest('[aria-hidden="true"]')).toBeTruthy();
+      widths[id] = parseFloat(part.style.width);
+      if (amounts[id] === 0) expect(widths[id]).toBe(0);
+      else {
+        expect(widths[id]).toBeGreaterThan(0);
+        expect(widths[id] / (amounts[id] / limit * 100)).toBeCloseTo(1, 12);
+      }
+    }
+    for (const id of ['stored', 'dissipated']) {
+      const total = frame.querySelector('[data-scene-energy-total="' + id + '"]');
+      expect(Number(total.dataset.energyValue)).toBe(amounts[id]);
+      expect(total.closest('svg,[aria-hidden="true"]')).toBeNull();
+      expect(total.textContent).toContain('J/kg');
+      if (amounts[id] === 0) expect(total.textContent).toContain('0.000 J/kg');
+      else if (amounts[id] < 0.001) expect(total.textContent).toMatch(/\d\.\d{2}e[+-]\d+ J\/kg/);
+    }
+    for (const id of ['kinetic', 'elastic']) {
+      const reading = frame.querySelector('[data-scene-energy-reading="' + id + '"]');
+      expect(Number(reading.dataset.energyValue)).toBe(amounts[id]);
+      expect(reading.closest('svg,[aria-hidden="true"]')).toBeNull();
+      const label = reading.querySelector('[data-scene-energy-label]');
+      expect(label.textContent).toBe(id === 'kinetic' ? 'Kinetic' : 'Elastic');
+      expect(label.closest('svg,[aria-hidden="true"]')).toBeNull();
+      expect(reading.textContent).toContain('J/kg');
+      if (amounts[id] === 0) expect(reading.textContent).toContain('0.000 J/kg');
+      else if (amounts[id] < 0.001) expect(reading.textContent).toMatch(/\d\.\d{2}e[+-]\d+ J\/kg/);
+    }
+    const scale = frame.querySelector('[data-scene-energy-scale]');
+    expect(Number(scale.dataset.sceneEnergyScale)).toBe(limit);
+    expect(scale.closest('svg,[aria-hidden="true"]')).toBeNull();
+    expect(scale.textContent).toContain('0');
+    expect(scale.textContent).toContain('J/kg');
+    const units = frame.querySelector('[data-scene-energy-units]');
+    expect(units.textContent).toContain('J/kg');
+    expect(units.textContent).toContain('W/kg');
+    expect(units.textContent.toLowerCase()).toContain('second');
+    const tiny = Object.values(amounts).some(value => value !== 0 && Math.abs(value) < 0.001);
+    expect(Boolean(frame.querySelector('[data-scene-energy-scientific-help]'))).toBe(tiny);
+    expect(frame.textContent).not.toContain('<0.001');
+    expect(frame.innerHTML).not.toMatch(/NaN|Infinity|undefined/);
+    return { amounts, widths, limit };
+  }
+
+  it('frame energy native: separates stored and cumulative loss while preserving tiny, zero and undamped readings', () => {
+    media.change(true);
+    const time = 7.217;
+    mount({ bridgeView: 'immersive', seismicSceneEnergy: true, seismicTime: time, seismicIntensityG: 1e-10,
+      seismicPlaying: false, seismicObservation: 'Keep my explanation.' });
+    const tiny = checkNativeSceneEnergy(guideEnergyCurrentInputs(), time);
+    expect(Object.values(tiny.amounts).every(value => value > 0 && value < 0.001)).toBe(true);
+    expect(tiny.limit).toBe(0.001 * 1.04);
+    expect(host.querySelector('[data-scene-energy-scientific-help]').textContent).toContain('2.5e-6 means 0.0000025');
+    const currentPoint = guideEnergyOracle.bridgeSeismicEnergyInterval(guideEnergyResponse(guideEnergyCurrentInputs()), time, time).earlier;
+    expect(tiny.amounts.kinetic).not.toBe(currentPoint.velocityMps * currentPoint.velocityMps / 2);
+    patch({ seismicTime: 0 });
+    const start = checkNativeSceneEnergy(guideEnergyCurrentInputs(), 0);
+    expect(Object.values(start.amounts)).toEqual([0, 0, 0, 0]);
+    expect(start.widths).toEqual({ kinetic: 0, elastic: 0, dissipated: 0 });
+    patch({ seismicIntensityG: 0, seismicTime: 24 });
+    expect(Object.values(checkNativeSceneEnergy(guideEnergyCurrentInputs(), 24).amounts)).toEqual([0, 0, 0, 0]);
+    patch({ seismicIntensityG: 0.12, seismicDampingRatio: 0, seismicTime: 18.137 });
+    const free = checkNativeSceneEnergy(guideEnergyCurrentInputs(), 18.137);
+    expect(free.amounts.stored).toBeGreaterThan(0);
+    expect(free.amounts.dissipated).toBe(0);
+    expect(free.widths.dissipated).toBe(0);
+    patch({ seismicDampingRatio: 0.05, seismicTime: 16 });
+    const endOfShaking = checkNativeSceneEnergy(guideEnergyCurrentInputs(), 16);
+    patch({ seismicTime: 24 });
+    const later = checkNativeSceneEnergy(guideEnergyCurrentInputs(), 24);
+    expect(later.limit).toBe(endOfShaking.limit);
+    expect(later.amounts.stored).toBeLessThan(endOfShaking.amounts.stored);
+    expect(later.amounts.dissipated).toBeGreaterThan(endOfShaking.amounts.dissipated);
+    expect(state).toMatchObject({ seismicPlaying: false, seismicObservation: 'Keep my explanation.' });
+    expect(button('Replay scene').disabled).toBe(true);
+  });
+
+  it('frame energy native: follows unequal saved A/B on one scale while fallback retains the current experiment', () => {
+    const savedInputs = { archetype: 'flexible', groundFrequencyHz: 0.8, intensityG: 0.17, dampingRatio: 0 };
+    const records = [{ version: 'bridge-seismic-v1', name: 'Original undamped bridge', timeS: 12.319,
+      inputs: savedInputs, prediction: 'Reference prediction', observation: 'Reference explanation' }];
+    const time = 7.217;
+    mount({ bridgeView: 'immersive', seismicSceneEnergy: true, seismicTrials: records, seismicReferenceIndex: 0,
+      seismicIntensityG: 1e-10, seismicDampingRatio: 0.2, seismicTime: time, seismicPlaying: false,
+      seismicSceneNote: 'Keep scene evidence.', seismicObservation: 'Keep current evidence.' });
+    click('Compare saved trial in scene');
+    const currentInputs = guideEnergyCurrentInputs();
+    const current = checkNativeSceneEnergy(currentInputs, time, 'current', savedInputs);
+    const currentMapAmounts = () => Object.fromEntries(['stored', 'damping'].map(id => [id,
+      Number(host.querySelector('[data-energy-map-amount="' + id + '"]').dataset.energyValue)]));
+    const mapBefore = currentMapAmounts();
+    expect(mapBefore).toEqual({ stored: current.amounts.stored, damping: current.amounts.dissipated });
+    click('A · reference');
+    const reference = checkNativeSceneEnergy(savedInputs, time, 'reference', currentInputs);
+    expect(reference.amounts).not.toEqual(current.amounts);
+    expect(reference.amounts.dissipated).toBe(0);
+    expect(reference.limit).toBe(current.limit);
+    expect(currentMapAmounts()).toEqual(mapBefore);
+    patch({ rot3d: { rotX: 22, rotY: 87 }, bridgeBankYaw: 37, bridgeBankPitch: -12,
+      seismicMotionGuide: true, seismicEnergyFlow: true });
+    expect(checkNativeSceneEnergy(savedInputs, time, 'reference', currentInputs)).toEqual(reference);
+    click('B · current');
+    expect(checkNativeSceneEnergy(currentInputs, time, 'current', savedInputs)).toEqual(current);
+    click('A · reference');
+    act(() => { viewerStatus = 'failed'; viewerListener?.('failed'); });
+    expect(host.querySelector('[data-bridge-scene-energy-frame]')).toBeNull();
+    expect(host.querySelector('[data-seismic-energy-map]').dataset.seismicEnergyMap).toBe('current');
+    expect(host.querySelector('[data-energy-map-caption]').textContent).toContain('Current experiment · 7.217 s');
+    expect(currentMapAmounts()).toEqual(mapBefore);
+    expect(state).toMatchObject({ bridgeView: '2d', seismicSceneTrial: 'reference', seismicTime: time,
+      seismicPlaying: false, seismicSceneEnergy: true, seismicSceneNote: 'Keep scene evidence.',
+      seismicObservation: 'Keep current evidence.' });
+    act(() => { viewerStatus = 'ready'; viewerListener?.('ready'); });
+    expect(state.bridgeView).toBe('2d');
+    expect(host.querySelector('[data-bridge-scene-energy-frame]')).toBeNull();
+    expect(currentMapAmounts()).toEqual(mapBefore);
+    click('From the riverbank');
+    expect(checkNativeSceneEnergy(savedInputs, time, 'reference', currentInputs)).toEqual(reference);
+    expect(state).toMatchObject({ bridgeView: 'immersive', seismicTime: time, seismicPlaying: false });
+    expect(state.seismicTrials).toEqual(records);
+  });
+
   it('uses fixed energy proportions in the scene and updates the shaking phase at 16 seconds', () => {
     mount({ bridgeView: 'immersive', seismicSceneEnergy: true, seismicTime: 7.2 });
     const frame = () => host.querySelector('[data-bridge-scene-energy-frame]');
@@ -2141,7 +3622,7 @@ describe('Bridge Lab immersive earthquake interaction', () => {
     expect(state.seismicTime).toBe(24);
     press('ArrowRight');
     expect(state.seismicTime).toBe(24);
-    expect(slider.getAttribute('aria-valuetext')).toContain('Free vibration');
+    expect(slider.getAttribute('aria-valuetext')).toContain('Observation ends');
     click('Motion over time');
     expect(host.querySelector('[data-bridge-seismic-timeline]').getAttribute('data-bridge-seismic-timeline')).toBe('motion');
     expect(state.seismicTime).toBe(24);
@@ -2149,7 +3630,7 @@ describe('Bridge Lab immersive earthquake interaction', () => {
     press('ArrowDown');
     expect(state.seismicTime).toBe(0);
     expect(slider.getAttribute('aria-valuenow')).toBe('0');
-    expect(host.querySelector('[data-seismic-input-power]').textContent).toContain('No input work');
+    expect(host.querySelector('[data-seismic-input-power]').textContent).toContain('No input transfer at this instant.');
     expect(vi.getTimerCount()).toBe(0);
   });
 
@@ -2180,13 +3661,119 @@ describe('Bridge Lab immersive earthquake interaction', () => {
     expect(button('Energy over time').getAttribute('aria-pressed')).toBe('true');
     const history = () => host.querySelector('[data-seismic-energy-area="elastic"]').getAttribute('points');
     const initial = history();
-    expect(host.querySelector('[data-seismic-input-power]').textContent).toContain('No input work');
+    expect(host.querySelector('[data-seismic-input-power]').textContent).toContain('No input transfer at this instant.');
     patch({ seismicTime: 8 });
     expect(history()).toBe(initial);
     click('Try 20% damping');
     expect(history()).not.toBe(initial);
     patch({ seismicIntensityG: 0 });
     expect(host.querySelector('[data-bridge-seismic-timeline]').textContent).not.toMatch(/NaN|Infinity|undefined/);
+  });
+
+  const modeInspectionCases = ['flexible', 'balanced', 'stiff'].flatMap(mode =>
+    ['relative', 'acceleration'].map(measure => [mode, measure]));
+  const modeInspectionLabels = {
+    flexible: 'Flexible response', balanced: 'Intermediate response', stiff: 'Stiffer response'
+  };
+  function modeInspectionMaximum(mode, measure) {
+    const response = guideEnergyResponse({ archetype: mode, groundFrequencyHz: state.seismicFrequencyHz,
+      intensityG: state.seismicIntensityG, dampingRatio: state.seismicDampingRatio });
+    const field = measure === 'relative' ? 'relativeM' : 'absoluteAccelerationMps2';
+    const factor = measure === 'relative' ? 100 : 1 / 9.80665;
+    const point = response.samples.reduce((largest, candidate) =>
+      Math.abs(candidate[field]) > Math.abs(largest[field]) ? candidate : largest, response.samples[0]);
+    return { point, magnitude: Math.abs(point[field] * factor) };
+  }
+  function modeInspectionAction(mode, measure) {
+    const row = host.querySelector('[data-response-mode="' + mode + '"]');
+    expect(row, 'response mode ' + mode).toBeTruthy();
+    const action = row.querySelector('[data-mode-peak-inspect="' + measure + '"]');
+    expect(action, mode + ' ' + measure + ' recorded maximum action').toBeTruthy();
+    expect(action.tagName).toBe('BUTTON');
+    expect(action.type).toBe('button');
+    expect(action.textContent).toContain('Inspect recorded maximum');
+    return action;
+  }
+  function checkModeInspection(mode, measure) {
+    const maximum = modeInspectionMaximum(mode, measure);
+    const action = modeInspectionAction(mode, measure);
+    expect(action.disabled).toBe(false);
+    expect(Number(action.dataset.modePeakTime)).toBe(maximum.point.timeS);
+    expect(Number(action.dataset.modePeakMagnitude)).toBe(maximum.magnitude);
+    act(() => action.click());
+    expect(state).toMatchObject({ seismicArchetype: mode, seismicTime: maximum.point.timeS,
+      seismicSceneTrial: 'current', seismicPlaying: false, autoDriving: false });
+    const readout = host.querySelector('[data-bridge-seismic-readout]');
+    expect(readout.getAttribute('tabindex')).toBe('-1');
+    expect(document.activeElement).toBe(readout);
+    expect(Number(readout.dataset.currentMoment)).toBe(maximum.point.timeS);
+    expect(readout.querySelector('[data-moment-readout-caption]').textContent).toContain(modeInspectionLabels[mode]);
+    expect(Number(readout.querySelector('[data-moment-reading="relative"] [data-moment-value]').dataset.momentValue))
+      .toBe(maximum.point.relativeM * 100);
+    expect(Number(readout.querySelector('[data-moment-reading="acceleration"] [data-moment-value]').dataset.momentValue))
+      .toBe(maximum.point.absoluteAccelerationMps2 / 9.80665);
+    return maximum;
+  }
+
+  it.each(modeInspectionCases)('mode inspection: selects the %s %s recorded maximum and preserves the investigation', (mode, measure) => {
+    mount({ bridgeView: 'immersive', bridgeObserver: 'bank', bridgeWalkPos: 0.73, bridgeLookYaw: 91, bridgeLookPitch: -9,
+      bridgeBankYaw: 27, bridgeBankPitch: -6, seismicArchetype: 'balanced', seismicFrequencyHz: 1.1,
+      seismicIntensityG: 0.14, seismicDampingRatio: 0.08, seismicTime: 7.217, seismicIntervalPinS: 12.319,
+      seismicTrialName: 'Keep notebook A', seismicPrediction: 'Keep earthquake prediction', seismicObservation: 'Keep explanation',
+      seismicScenePrediction: 'Keep scene prediction', seismicSceneNote: 'Keep scene note', seismicGuideOpen: true,
+      seismicGuidePrediction: 'Keep damping prediction', seismicGuideClaim: 'Keep claim', seismicGuideReasoning: 'Keep reasoning' });
+    click('Save earthquake trial');
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 7.217 });
+    click('Record paired evidence');
+    patch({ seismicSceneTrial: 'reference', seismicPlaying: true, autoDriving: true });
+    const preservedKeys = ['bridgeView', 'bridgeObserver', 'bridgeWalkPos', 'bridgeLookYaw', 'bridgeLookPitch',
+      'bridgeBankYaw', 'bridgeBankPitch', 'seismicFrequencyHz', 'seismicIntensityG', 'seismicDampingRatio',
+      'seismicIntervalPinS', 'seismicTrialName', 'seismicPrediction', 'seismicObservation', 'seismicScenePrediction',
+      'seismicSceneNote', 'seismicGuidePrediction', 'seismicGuideClaim', 'seismicGuideReasoning',
+      'seismicTrials', 'seismicGuideBaseline', 'seismicGuideEvidence'];
+    const preserved = JSON.parse(JSON.stringify(Object.fromEntries(preservedKeys.map(key => [key, state[key]]))));
+    expect(host.querySelectorAll('[data-mode-peak-inspect]')).toHaveLength(6);
+    const maximum = checkModeInspection(mode, measure);
+    expect(maximum.point.timeS).toBeGreaterThan(0);
+    expect(Object.fromEntries(preservedKeys.map(key => [key, state[key]]))).toEqual(preserved);
+    tick(100);
+    expect(state.seismicTime).toBe(maximum.point.timeS);
+    expect(document.activeElement).toBe(host.querySelector('[data-bridge-seismic-readout]'));
+  });
+
+  it.each([['2d', false], ['immersive', true]])('mode inspection: keeps all six manual actions usable in %s with reduced motion %s', (view, reduced) => {
+    media.change(reduced);
+    mount({ bridgeView: view, bridgeObserver: 'deck', seismicArchetype: 'balanced', seismicFrequencyHz: 0.85,
+      seismicIntensityG: 0.12, seismicDampingRatio: 0.1, seismicTime: 2 });
+    for (const [mode, measure] of modeInspectionCases) {
+      const maximum = checkModeInspection(mode, measure);
+      expect(state.bridgeView).toBe(view);
+      tick(100);
+      expect(state.seismicTime).toBe(maximum.point.timeS);
+      expect(state.seismicPlaying).toBe(false);
+    }
+  });
+
+  it('mode inspection: disables zero response and still inspects tiny nonzero recorded motion and acceleration', () => {
+    mount({ bridgeView: '2d', seismicArchetype: 'balanced', seismicFrequencyHz: 1.15,
+      seismicIntensityG: 0, seismicDampingRatio: 0.2, seismicTime: 7.217, seismicObservation: 'Keep tiny evidence' });
+    const unchanged = JSON.parse(JSON.stringify(state));
+    for (const [mode, measure] of modeInspectionCases) {
+      const action = modeInspectionAction(mode, measure);
+      expect(action.disabled).toBe(true);
+      expect(modeInspectionMaximum(mode, measure).magnitude).toBe(0);
+      act(() => action.click());
+      expect(state).toEqual(unchanged);
+    }
+    patch({ seismicIntensityG: 1e-9 });
+    for (const [mode, measure] of modeInspectionCases) {
+      const maximum = checkModeInspection(mode, measure);
+      expect(maximum.magnitude).toBeGreaterThan(0);
+      expect(maximum.magnitude).toBeLessThan(0.001);
+      expect(state.seismicIntensityG).toBe(1e-9);
+      expect(state.seismicObservation).toBe('Keep tiny evidence');
+    }
   });
 
   it('inspects peak frames without motion and synchronizes the ground/deck diagram in 2D', () => {
@@ -2265,7 +3852,7 @@ describe('Bridge Lab immersive earthquake interaction', () => {
     expect(report.querySelector('script')).toBeNull();
     expect(report.textContent).toContain('Observed decay.');
     expect(report.textContent).toContain('A later unsaved observation.');
-    expect(report.textContent).toContain('7.20 s');
+    expect(report.textContent).toContain('Inspected time: 7.200 s');
     expect(report.textContent).toContain('J/kg');
     expect(report.querySelectorAll('button,input,textarea')).toHaveLength(0);
     expect(report.textContent).not.toMatch(/NaN|Infinity|undefined/);
@@ -2278,7 +3865,7 @@ describe('Bridge Lab immersive earthquake interaction', () => {
     }] });
     expect(host.querySelectorAll('[data-seismic-trial]')).toHaveLength(1);
     const trial = host.querySelector('[data-seismic-trial]');
-    expect(trial.textContent).toContain('Peak relative motion: 0.00 cm');
+    const reading=trial.querySelector('[data-saved-reading="peak-relative"]');expect(reading.querySelector('dt').textContent).toBe('Peak relative motion');expect(reading.querySelector('dd').textContent).toBe('0.000 cm');expect(reading.querySelector('dd').getAttribute('data-saved-reading-value')).toBe('0');
     expect(trial.textContent).not.toContain('999');
     expect(trial.textContent).not.toMatch(/NaN|Infinity|undefined/);
   });

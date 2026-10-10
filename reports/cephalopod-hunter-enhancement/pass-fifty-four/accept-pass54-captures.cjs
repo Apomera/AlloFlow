@@ -1,0 +1,10 @@
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),crypto=require('node:crypto');
+const dir='C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/cephalopod-hunter-enhancement/pass-fifty-four',initial=path.join(dir,'final-views'),focused=path.join(dir,'final-squid-depth-views'),archive=path.join(dir,'initial-final-views'),read=d=>JSON.parse(fs.readFileSync(path.join(d,'capture-manifest.json'),'utf8')),hash=b=>crypto.createHash('sha256').update(b).digest('hex');
+const a=read(initial),b=read(focused);assert.equal(a.sourceSHA,b.sourceSHA);assert.equal(a.frames.length,20);assert.equal(b.frames.length,5);assert.deepEqual(a.errors,[]);assert.deepEqual(b.errors,[]);assert.deepEqual(a.leaks,[]);assert.deepEqual(b.leaks,[]);
+assert.ok(b.frames.every(f=>f.species==='humboldtSquid'));const frames=[...a.frames.filter(f=>f.species!=='humboldtSquid'),...b.frames];
+for(const f of frames){if(f.view==='contact'||f.view==='settled'){assert.equal(f.state.prey.alive,false,f.name);assert.ok(Number(f.state.prey.score)>0,f.name);}assert.equal(hash(fs.readFileSync(path.join(f.species==='humboldtSquid'?focused:initial,f.image))),f.imageSHA);}
+assert.ok(!fs.existsSync(archive));fs.mkdirSync(archive);fs.copyFileSync(path.join(initial,'capture-manifest.json'),path.join(archive,'capture-manifest.json'));for(const f of a.frames)fs.copyFileSync(path.join(initial,f.image),path.join(archive,f.image));
+for(const f of b.frames)fs.copyFileSync(path.join(focused,f.image),path.join(initial,f.image));
+const manifest={...a,scope:b.scope,frames,batches:[{report:'initial-final-views/capture-manifest.json',acceptedSpecies:['commonOcto','giantPacific','blueRinged'],frames:15},{report:'final-squid-depth-views/capture-manifest.json',acceptedSpecies:['humboldtSquid'],frames:5}],captureOutcomeVerified:true};
+fs.writeFileSync(path.join(initial,'capture-manifest.json'),JSON.stringify(manifest,null,2)+'\n');
+console.log(JSON.stringify({frames:20,successfulCaptures:4,sourceSHA:manifest.sourceSHA,initialEvidenceRetained:true}));

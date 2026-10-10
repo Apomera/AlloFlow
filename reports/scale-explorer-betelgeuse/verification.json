@@ -1,0 +1,15 @@
+{
+  "sha256": "b05e63a47cd5c004b78b4fbd9bcdb62ee1c6be0ee9b8771cd981f3afcc1e08c1",
+  "bytes": 2405518,
+  "unitTests": 18,
+  "browserTests": 2,
+  "copyKeys": 6,
+  "mirrorsMatch": true,
+  "diffCheck": true,
+  "sources": [
+    "https://www.eso.org/public/news/eso0927/",
+    "https://eso.org/public/images/potw2634a/"
+  ],
+  "scope": "Procedural illustration of broad stellar convection; not a measured surface map. Nominal measured diameter remains one model unit. Atmospheric haze excluded from body bounds. Animation is illustrative; respects existing motion controls.",
+  "committed": false
+}

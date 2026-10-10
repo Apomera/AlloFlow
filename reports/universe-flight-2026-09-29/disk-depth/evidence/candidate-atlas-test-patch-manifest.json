@@ -1,0 +1,128 @@
+{
+  "completed": true,
+  "baselineRendererHash": "c0cc2486b3d5edd620e5975daec3d23b8f2e995a24db151be27ac30820d058c7",
+  "candidateRendererHash": "8121868ef2aa764c5e3e88284089ebf76fe0c9e1ec264ee4ae95fe434d7e9bc9",
+  "actualBuilderPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-disk-depth57\\build-atlas-test-candidates.cjs",
+  "actualBuilderHash": "cddf46a3c41e16533280b15f6955a33e8f90d3f7a9b1e14f80833cbb8f95b226",
+  "auditPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-disk-depth57\\candidate-atlas-pin-audit.json",
+  "auditHash": "ea963a96e5189a0d7bbfa0c22baafb2d939c7240de2557a350ed2353de79fa90",
+  "files": [
+    {
+      "sourcePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\universe_flight_cloud_surfaces.test.js",
+      "baselinePath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-disk-depth57\\baseline-universe_flight_cloud_surfaces.test.js",
+      "candidatePath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-disk-depth57\\candidate-universe_flight_cloud_surfaces.test.js",
+      "baselineHash": "68ecc0c20f0fe6096e6dca3f63a4be9923dddf6c0b0629dc8414ba9b1bcd7b59",
+      "candidateHash": "dd45b21d6c71af53bb18ed5eb6e00191914b0b49220a7b61445ac5b57166397a",
+      "changes": [
+        {
+          "purpose": "Refresh only the deliberately changed galaxy RGB atlas pin; retain the c0 pin and proof provenance",
+          "before": "const ATLASES = {\n  2048: '47e61b0e871129a48cbe8f814a5d629263750e16d068766c84e8beeeb057ad53',",
+          "after": "// Before enhancement57, the complete galaxy atlas was pinned to\n// 47e61b0e871129a48cbe8f814a5d629263750e16d068766c84e8beeeb057ad53.\n// The smooth disk transfer changes spiral RGB only. The bulge suite and\n// the independent c0 host audit preserve its reconstructed light and alpha;\n// cloud bytes and all existing source/suffix assertions stay exact.\nconst ATLASES = {\n  2048: '8a8b5bbb2e4f8b87c6958b80227d7d148e2e708553d47b348fe91f1187f0063e',"
+        }
+      ]
+    },
+    {
+      "sourcePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\universe_flight_spiral_detail.test.js",
+      "baselinePath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-disk-depth57\\baseline-universe_flight_spiral_detail.test.js",
+      "candidatePath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-disk-depth57\\candidate-universe_flight_spiral_detail.test.js",
+      "baselineHash": "7c4a18dcd248e45342c7795e1f1fad632166dec2ff42c88dd2f2c1cd6d5d8913",
+      "candidateHash": "6d1776be1b0a5e92b96c8402e6175a3db34c6ac5fa5b678554c7f4e5b83847f7",
+      "changes": [
+        {
+          "purpose": "Keep historical pins and add independently generated current RGB and unchanged alpha pins",
+          "before": "const WORLD = {",
+          "after": "// Enhancement57 moves a small smooth RGB component to its projected disk.\n// ATLAS retains every historical pin. Independently captured current RGB\n// pins cover the same tile/core bytes; their exact c0 alpha planes, ellipse,\n// gutters and clouds remain pinned. The bulge suite checks reconstructed\n// historical RGB samples and integrals; the host audit checks every RGB pixel.\nconst CURRENT_DIFFUSE = {\n  \"tiles\": [\n    \"416d22da716ed5761ec77576c75af7188f3d675a490481a08cab203b01c784d2\",\n    \"15fcc8600ba4fe8976905b06b954499a89c80d385cf5909547e7de02fbb0d8cb\",\n    \"a971ae2b6f6c1bbdf34920e691ba16bf7b9f63cacc7724284d2cdb60b0bff23e\",\n    \"08f244e4ef3ad6f71eb240e7e9e67410fe82f16a69f1992f27c2f857dcd15d38\"\n  ],\n  \"core\": \"8158e806a302586198dd2ec60742cd03b0cfde97a9ac2e5a35342f0f4c0361be\",\n  \"alpha\": [\n    \"a51ffddde8ae618f9731e74595148f912c0dc7604f956e2e93595a30f075506a\",\n    \"40a0d06735f623a51882ba96c828b3752af9b70c39fe8c82ae2df2808c35aa0a\",\n    \"0a9eb44bc927971a9ce80d6e59ac8789b6313b7329043111ec017e03cc6a8dce\"\n  ],\n  \"coreAlpha\": \"c7f9efea0e8bef8eece018d45b26d03a785062f48a6709bac5a7151f225e99ff\"\n};\nconst WORLD = {"
+        },
+        {
+          "purpose": "Require exact c0 alpha for all three spiral tiles",
+          "before": "    expect(data).toHaveLength(4194304);",
+          "after": "    expect(data).toHaveLength(4194304);\n    for (let index = 0; index < 3; index++) expect(hash(tile(data, index).filter((_value, offset) => offset % 4 === 3))).toBe(CURRENT_DIFFUSE.alpha[index]);"
+        },
+        {
+          "purpose": "Keep full core byte coverage after the RGB transfer and pin its exact old alpha separately",
+          "before": "    expect(core).toHaveLength(16768); expect(hash(new Uint8Array(core))).toBe(ATLAS.core);",
+          "after": "    expect(core).toHaveLength(16768); expect(hash(new Uint8Array(core))).toBe(CURRENT_DIFFUSE.core);\n    expect(hash(new Uint8Array(core).filter((_value, offset) => offset % 4 === 3))).toBe(CURRENT_DIFFUSE.coreAlpha);"
+        },
+        {
+          "purpose": "Preserve the fixed corner suffix at its actual offset after the appended disk",
+          "before": "    expect(buffers.get(surfaceBuffer).subarray(4608)).toEqual(originalSurface.subarray(4608));",
+          "after": "    const cornerStart = galaxySurfaceFloats('galaxy', WORLD.galaxy.surfaceFloats);\n    expect(buffers.get(surfaceBuffer).subarray(cornerStart)).toEqual(originalSurface.subarray(cornerStart));"
+        },
+        {
+          "purpose": "Require both projected presentation kinds while preserving fixed source prefix",
+          "before": "    expect(projectedUpdates.length).toBeGreaterThan(0);",
+          "after": "    expect(projectedUpdates.length).toBeGreaterThan(0);\n    const projectedKinds = new Set();"
+        },
+        {
+          "purpose": "Permit only exact bulge/disk ranges and require their distinct positive/negative classes",
+          "before": "      expect(update.buffer).toBe(surfaceBuffer); expect(update.offset).toBe(2304 * 4);\n      expect(update.data).toHaveLength(2304); expect(update.data.every(Number.isFinite)).toBe(true);",
+          "after": "      expect(update.buffer).toBe(surfaceBuffer); expect([2304 * 4, 4608 * 4]).toContain(update.offset);\n      projectedKinds.add(update.offset);\n      expect(update.data).toHaveLength(2304); expect(update.data.every(Number.isFinite)).toBe(true);\n      for (let offset = 5; offset < update.data.length; offset += 6) {\n        if (update.offset === 4608 * 4) expect(update.data[offset]).toBeLessThan(0);\n        else expect(update.data[offset]).toBeGreaterThanOrEqual(1);\n      }"
+        },
+        {
+          "purpose": "Require both exact projected ranges without relaxing texture, resource, or paused-surface checks",
+          "before": "    expect(textureUploads).toHaveLength(2); expect(resources()).toEqual(objects);\n  });\n\n  it('keeps physical viewing uniforms",
+          "after": "    expect([...projectedKinds].sort((a, b) => a - b)).toEqual([2304 * 4, 4608 * 4]);\n    expect(textureUploads).toHaveLength(2); expect(resources()).toEqual(objects);\n  });\n\n  it('keeps physical viewing uniforms"
+        }
+      ]
+    },
+    {
+      "sourcePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\universe_flight_two_arm_detail.test.js",
+      "baselinePath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-disk-depth57\\baseline-universe_flight_two_arm_detail.test.js",
+      "candidatePath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-disk-depth57\\candidate-universe_flight_two_arm_detail.test.js",
+      "baselineHash": "585920a902a6f540f6f71f45690e9847639d6e06253609125d144911a49174ac",
+      "candidateHash": "e58958aa52265bc0a1b432f9001fea0593c07ff412eea193c174a594a4851a99",
+      "changes": [
+        {
+          "purpose": "Keep historical pins and add independently generated current RGB and unchanged alpha pins",
+          "before": "const WORLD = {",
+          "after": "// Enhancement57 moves a small smooth RGB component to its projected disk.\n// ATLAS retains every historical pin. Independently captured current RGB\n// pins cover the same tile/core bytes; their exact c0 alpha planes, ellipse,\n// gutters and clouds remain pinned. The bulge suite checks reconstructed\n// historical RGB samples and integrals; the host audit checks every RGB pixel.\nconst CURRENT_DIFFUSE = {\n  \"tiles\": [\n    \"416d22da716ed5761ec77576c75af7188f3d675a490481a08cab203b01c784d2\",\n    \"15fcc8600ba4fe8976905b06b954499a89c80d385cf5909547e7de02fbb0d8cb\",\n    \"a971ae2b6f6c1bbdf34920e691ba16bf7b9f63cacc7724284d2cdb60b0bff23e\",\n    \"08f244e4ef3ad6f71eb240e7e9e67410fe82f16a69f1992f27c2f857dcd15d38\"\n  ],\n  \"core\": \"89aa8470f4da78fd678c5b141397fb11ad37cb81bd540fb500c2139a261bc4e4\",\n  \"alpha\": [\n    \"a51ffddde8ae618f9731e74595148f912c0dc7604f956e2e93595a30f075506a\",\n    \"40a0d06735f623a51882ba96c828b3752af9b70c39fe8c82ae2df2808c35aa0a\",\n    \"0a9eb44bc927971a9ce80d6e59ac8789b6313b7329043111ec017e03cc6a8dce\"\n  ],\n  \"coreAlpha\": \"b203231bbfdd8c11036166ecac26fc76dc882e5b82536702f02bbd2bf94d9f86\"\n};\nconst WORLD = {"
+        },
+        {
+          "purpose": "Require exact c0 alpha for all three spiral tiles",
+          "before": "    expect(data).toHaveLength(4194304);",
+          "after": "    expect(data).toHaveLength(4194304);\n    for (let index = 0; index < 3; index++) expect(hash(tile(data, index).filter((_value, offset) => offset % 4 === 3))).toBe(CURRENT_DIFFUSE.alpha[index]);"
+        },
+        {
+          "purpose": "Refresh only intentionally transferred spiral RGB and retain the exact old elliptical pin",
+          "before": "    for (const index of [0, 3]) expect(hash(tile(data, index))).toBe(ATLAS.tiles[index]);",
+          "after": "    for (const index of [0, 3]) expect(hash(tile(data, index))).toBe(index === 3 ? ATLAS.tiles[index] : CURRENT_DIFFUSE.tiles[index]);"
+        },
+        {
+          "purpose": "Keep full core byte coverage after the RGB transfer and pin its exact old alpha separately",
+          "before": "    expect(core).toHaveLength(16768); expect(hash(new Uint8Array(core))).toBe(ATLAS.core);",
+          "after": "    expect(core).toHaveLength(16768); expect(hash(new Uint8Array(core))).toBe(CURRENT_DIFFUSE.core);\n    expect(hash(new Uint8Array(core).filter((_value, offset) => offset % 4 === 3))).toBe(CURRENT_DIFFUSE.coreAlpha);"
+        }
+      ]
+    },
+    {
+      "sourcePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\universe_flight_barred_detail.test.js",
+      "baselinePath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-disk-depth57\\baseline-universe_flight_barred_detail.test.js",
+      "candidatePath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-disk-depth57\\candidate-universe_flight_barred_detail.test.js",
+      "baselineHash": "00f04916ef6a550ffead04adbdcaafa06a00d8ba68cb9d49135c2a7840b3c291",
+      "candidateHash": "f1112671533f4d996646a8d9a7baa78d8a0639bb2de159e8be6cab7bdc77cbde",
+      "changes": [
+        {
+          "purpose": "Keep historical pins and add independently generated current RGB and unchanged alpha pins",
+          "before": "const WORLD = {",
+          "after": "// Enhancement57 moves a small smooth RGB component to its projected disk.\n// ATLAS retains every historical pin. Independently captured current RGB\n// pins cover the same tile/core bytes; their exact c0 alpha planes, ellipse,\n// gutters and clouds remain pinned. The bulge suite checks reconstructed\n// historical RGB samples and integrals; the host audit checks every RGB pixel.\nconst CURRENT_DIFFUSE = {\n  \"tiles\": [\n    \"416d22da716ed5761ec77576c75af7188f3d675a490481a08cab203b01c784d2\",\n    \"15fcc8600ba4fe8976905b06b954499a89c80d385cf5909547e7de02fbb0d8cb\",\n    \"a971ae2b6f6c1bbdf34920e691ba16bf7b9f63cacc7724284d2cdb60b0bff23e\",\n    \"08f244e4ef3ad6f71eb240e7e9e67410fe82f16a69f1992f27c2f857dcd15d38\"\n  ],\n  \"core\": \"4fdde00c558cf68173a2550b26bbb540dfe0f714f14da63fe74d930d803fff41\",\n  \"alpha\": [\n    \"a51ffddde8ae618f9731e74595148f912c0dc7604f956e2e93595a30f075506a\",\n    \"40a0d06735f623a51882ba96c828b3752af9b70c39fe8c82ae2df2808c35aa0a\",\n    \"0a9eb44bc927971a9ce80d6e59ac8789b6313b7329043111ec017e03cc6a8dce\"\n  ],\n  \"coreAlpha\": \"b28cc15d8c42e5bb53c62005c58d639730979b2dd75f2182555982b8edcef7c9\"\n};\nconst WORLD = {"
+        },
+        {
+          "purpose": "Require exact c0 alpha for all three spiral tiles",
+          "before": "    expect(data).toHaveLength(4194304);",
+          "after": "    expect(data).toHaveLength(4194304);\n    for (let index = 0; index < 3; index++) expect(hash(tile(data, index).filter((_value, offset) => offset % 4 === 3))).toBe(CURRENT_DIFFUSE.alpha[index]);"
+        },
+        {
+          "purpose": "Refresh only intentionally transferred spiral RGB and retain the exact old elliptical pin",
+          "before": "    for (const index of [0, 1, 3]) expect(hash(tile(data, index))).toBe(ATLAS.tiles[index]);",
+          "after": "    for (const index of [0, 1, 3]) expect(hash(tile(data, index))).toBe(index === 3 ? ATLAS.tiles[index] : CURRENT_DIFFUSE.tiles[index]);"
+        },
+        {
+          "purpose": "Keep full core byte coverage after the RGB transfer and pin its exact old alpha separately",
+          "before": "    expect(core).toHaveLength(16768); expect(hash(new Uint8Array(core))).toBe(ATLAS.core);",
+          "after": "    expect(core).toHaveLength(16768); expect(hash(new Uint8Array(core))).toBe(CURRENT_DIFFUSE.core);\n    expect(hash(new Uint8Array(core).filter((_value, offset) => offset % 4 === 3))).toBe(CURRENT_DIFFUSE.coreAlpha);"
+        }
+      ]
+    }
+  ],
+  "productionWrites": false
+}

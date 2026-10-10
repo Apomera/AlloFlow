@@ -1,0 +1,39 @@
+{
+  "checks": [
+    {
+      "width": 320,
+      "font": 32,
+      "unequalTranslatedHeadingsAndCaptions": true,
+      "stationaryDrawingProjection": true,
+      "controls44px": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 390,
+      "font": 32,
+      "unequalTranslatedHeadingsAndCaptions": true,
+      "stationaryDrawingProjection": true,
+      "controls44px": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 1600,
+      "font": 16,
+      "unequalTranslatedHeadingsAndCaptions": true,
+      "stationaryDrawingProjection": true,
+      "controls44px": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "modifiedKeysPreserved": true,
+      "programmaticSwitchRelocatesHiddenFocus": true
+    }
+  ],
+  "errors": [],
+  "sourceSHA256": "3e4a8c970ecc57c635a249c78c0f355786a5bfce4e248080fb8318d5a40b8295",
+  "loadedSourceSHA256": "3e4a8c970ecc57c635a249c78c0f355786a5bfce4e248080fb8318d5a40b8295",
+  "finalSourceSHA256": "3e4a8c970ecc57c635a249c78c0f355786a5bfce4e248080fb8318d5a40b8295"
+}

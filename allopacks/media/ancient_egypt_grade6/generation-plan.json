@@ -153,7 +153,8 @@
       ],
       "prompt": "Use case: historical-scene. Asset: wide lesson illustration. Wide strip with exactly four equal panels, left to right: river flooding a field; plain granary stacked with grain sacks; potter and weaver at their crafts; scribe with angled blank writing board beside those same sacks. Plain small arrows between panels. No readable marks. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
       "file": "eg-img-chain.png",
-      "status": "awaiting-generation"
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-82dd5d19-dc88-47e4-a37b-5a3274bb9fbc.png"
     },
     {
       "id": "eg-img-irrigation",
@@ -170,7 +171,8 @@
       ],
       "prompt": "Use case: historical-scene. Asset: wide lesson illustration. Wide field with shallow irrigation ditches in a grid. Ordinary workers using simple wooden hoes open a connecting channel; water flows from the river toward dry ground. No pyramids, no whips, no modern tools. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
       "file": "eg-img-irrigation.png",
-      "status": "awaiting-generation"
+      "status": "visual-review-passed",
+      "generatedSource": "C:/Users/cabba/.codex/generated_images/01a123a0-d1f1-7610-98b4-74d037121ad8/exec-16d16dba-b4bf-467d-9bde-07555fcc24f0.png"
     },
     {
       "id": "eg-img-receipt",
@@ -186,7 +188,8 @@
       ],
       "prompt": "Use case: historical-scene. Asset: wide lesson illustration. Wide scene of Egyptian scribe seated holding a wooden writing board steeply angled away from viewer, grain sacks carried into a granary past him. His hand marks the board but surface is hidden so NO individual symbols or writing visible. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
       "file": "eg-img-receipt.png",
-      "status": "awaiting-generation"
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-70d8c2cb-defd-44bc-a164-6b6743de9b5d.png"
     },
     {
       "id": "eg-img-two-graves",
@@ -202,7 +205,8 @@
       ],
       "prompt": "Use case: historical-scene. Asset: wide lesson illustration. Wide paired archaeological evidence view: left intact elaborate painted tomb wall with only geometric color bands and human figures, NO script or signs; right plain settlement ground with post holes, a bread oven and pottery fragments. Equal importance, no gold. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
       "file": "eg-img-two-graves.png",
-      "status": "awaiting-generation"
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-2b13949a-823a-4b79-9c05-220d141ef5c3.png"
     },
     {
       "id": "eg-img-workers-village",
@@ -219,7 +223,8 @@
       ],
       "prompt": "Use case: historical-scene. Asset: wide lesson illustration. Wide ancient Egyptian workers settlement, rows of modest mud-brick homes, large bread ovens, ordinary people eating and resting. A pyramid is visible but small and distant in the background. No whipping or anonymous labor crowds. Emphasize houses food ordinary life. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
       "file": "eg-img-workers-village.png",
-      "status": "awaiting-generation"
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-d64bd38e-f4e8-4549-9209-1f65ec7964f3.png"
     },
     {
       "id": "eg-img-source-table",
@@ -237,7 +242,8 @@
       ],
       "prompt": "Use case: historical-scene. Asset: wide lesson illustration. Wide top-down view of exactly four archaeological items on plain linen: painted tomb fragment showing part of a human figure but no writing; a flat wooden record board face down; bread-oven brick; temple relief fragment showing part of a person with no script. Room near edges for native labels. Style: warm grounded watercolor and fine ink educational illustration on ivory paper, muted earth palette, ordinary North African people with a range of brown skin tones and simple linen clothing where relevant; historically careful, no invented glyphs, no readable script, no words, numbers, labels, logos, or watermarks.",
       "file": "eg-img-source-table.png",
-      "status": "awaiting-generation"
+      "status": "visual-review-passed",
+      "generatedSource": "C:\\Users\\cabba\\.codex\\generated_images\\01a123a0-d1f1-7610-98b4-74d037121ad8\\exec-43399c28-6375-4041-9db5-7a5c0267aa4a.png"
     }
   ]
 }

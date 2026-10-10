@@ -1632,15 +1632,26 @@ describe('The plate encyclopedia cards do something', () => {
     };
     const memberPath = node => node?.type === 'Identifier' ? node.name
       : node?.type === 'MemberExpression' && !node.computed ? memberPath(node.object) + '.' + node.property.name : null;
-    // This one template crosses the plain-data model boundary before the
-    // helper knows which retained earthquake to label. Follow its actual
-    // consumer; do not exempt the translation key wherever it might appear.
-    const focusConsumer = calls.find(call => {
+    // Renderer templates cross the plain-data model boundary before a helper
+    // knows which earthquake to label. Trace each word into that helper and its
+    // visible label; translation keys elsewhere still need local substitution.
+    const deferredTemplates = new Map([
+      ['stem.platetectonics.block_focus_depth', { word: 'focus', helper: 'updateFocusGuide' }],
+      ['stem.platetectonics.ql_projection_label', { word: 'observation', helper: 'updateObservationGuide' }]
+    ]);
+    const modelDeclaration = node => {
+      for (let parent = parents.get(node); parent; parent = parents.get(parent)) {
+        if (parent.type === 'VariableDeclarator' && parent.id.name === 'tectGlModel'
+          && parent.init?.type === 'ObjectExpression') return parent;
+      }
+      return null;
+    };
+    const templateConsumer = ({ word, helper }) => calls.find(call => {
       const expression = call.callee?.object;
-      return functionScope(call)?.id?.name === 'updateFocusGuide'
+      return functionScope(call)?.id?.name === helper
         && call.callee.type === 'MemberExpression' && ['replace', 'replaceAll'].includes(call.callee.property.name)
         && expression?.type === 'LogicalExpression' && expression.operator === '||'
-        && memberPath(expression.left?.right) === 'm.words.focus';
+        && memberPath(expression.left?.right) === 'm.words.' + word;
     });
     const bad = [];
     for (const call of calls) {
@@ -1651,17 +1662,31 @@ describe('The plate encyclopedia cards do something', () => {
       // Follow substitutions on this template, including a shared chain after
       // a conditional choice. Regex/global replacement must cover repeats.
       let current = call;
-      if (key.value === 'stem.platetectonics.block_focus_depth') {
+      const deferred = deferredTemplates.get(key.value);
+      if (deferred) {
         const property = modelProperty(call), parent = parents.get(call);
-        const carriedToHelper = property === 'words' && parent?.type === 'Property' && parent.key.name === 'focus' && parent.value === call;
+        const carriedToHelper = property === 'words' && parent?.type === 'Property' && parent.key.name === deferred.word && parent.value === call;
         const cacheSignature = property === 'sig';
         if (carriedToHelper || cacheSignature) {
-          const declaration = focusConsumer && parents.get(focusConsumer);
-          expect(declaration?.type, 'the deferred focus template must be substituted in the helper').toBe('VariableDeclarator');
+          const matchingWord = calls.find(word => word.callee.name === '__alloT'
+            && word.arguments[0]?.value === key.value && modelProperty(word) === 'words'
+            && parents.get(word)?.type === 'Property' && parents.get(word).key.name === deferred.word
+            && parents.get(word).value === word && modelDeclaration(word) === modelDeclaration(call));
+          expect(matchingWord, 'the signature template must match words.' + deferred.word + ' in the same model').toBeTruthy();
+          const consumer = templateConsumer(deferred), declaration = consumer && parents.get(consumer);
+          expect(declaration?.type, 'the deferred ' + deferred.word + ' template must be substituted in ' + deferred.helper).toBe('VariableDeclarator');
           expect(calls.some(label => label.callee.name === 'makeLabel'
             && label.arguments[0]?.type === 'Identifier' && label.arguments[0].name === declaration?.id.name
-            && functionScope(label) === functionScope(focusConsumer)), 'the substituted focus text must reach its visible label').toBe(true);
-          current = focusConsumer.callee.object;
+            && functionScope(label) === functionScope(consumer)), 'the substituted ' + deferred.word + ' text must reach its visible label').toBe(true);
+          if (deferred.word === 'observation') {
+            const eventNumber = consumer.arguments[1];
+            expect(consumer.arguments[0]?.value, 'the observation event-number placeholder must be substituted').toBe('{n}');
+            expect(eventNumber?.type, 'the displayed event number must derive from the selected point index').toBe('BinaryExpression');
+            expect(eventNumber.operator).toBe('+');
+            expect(memberPath(eventNumber.left)).toBe('point.index');
+            expect(eventNumber.right?.value).toBe(1);
+          }
+          current = consumer.callee.object;
         }
       }
       const done = new Map();

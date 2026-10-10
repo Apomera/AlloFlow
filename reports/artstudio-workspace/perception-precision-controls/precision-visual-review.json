@@ -1,0 +1,28 @@
+{
+  "sourceSHA256": "5e87e036527367946e53fff6cd6a373a2564b0b82833e7c88760887e8e7770e5",
+  "finalSourceSHA256": "5e87e036527367946e53fff6cd6a373a2564b0b82833e7c88760887e8e7770e5",
+  "checks": [
+    {
+      "width": 320,
+      "height": 844,
+      "viewportCapture": true,
+      "controlsFit": true,
+      "axe": []
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "viewportCapture": true,
+      "controlsFit": true,
+      "axe": []
+    },
+    {
+      "width": 760,
+      "height": 390,
+      "viewportCapture": true,
+      "controlsFit": true,
+      "axe": []
+    }
+  ],
+  "errors": []
+}

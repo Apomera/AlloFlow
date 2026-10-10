@@ -1,0 +1,256 @@
+{
+  "date": "2026-10-06",
+  "currentHashes": {
+    "stem_lab/stem_tool_dissection.js": "c9c4d0a4170a44cb7492f19c7e10823bded91490edcc7ad0998e59a814508a56",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "c9c4d0a4170a44cb7492f19c7e10823bded91490edcc7ad0998e59a814508a56",
+    "tests/dissection_lab_improvements.test.js": "e2468a2b7e90db503e29ca3ae5c4c4d29f663e2c61de2c875ea1a9116b3eaba1",
+    "tests/e2e/dissection-scenario-clarity.spec.ts": "d0b5a0ab9c9343963f9bb070ca48eb194d0e42ef51f3c2c331b0731191ba0246",
+    "tests/dissection_canvas_loop.test.js": "d3851e389c78866a4475f13cef2067305d937b86cb339615caf009f7c7553916"
+  },
+  "unchangedInputs": {
+    "tests/dissection_workspace_bands.test.js": "9c59fde98d1fd7e103edf4dffb72b1b9dbea39524d5acfd5bc67760dcf56f98c",
+    "tests/e2e/dissection-study-chooser.spec.ts": "7941e1e85ac47ec7005ac1cf529f488f7173a39079a4b811e7d3a04b8e46031e",
+    "tests/e2e/dissection-tools-cohesion.spec.ts": "1b34409ba5e1c7d2f81f98f206eb01b1b6e1c5417a2b5aec5dab053e4f44ad5b",
+    "tests/e2e/dissection-capture-clarity.spec.ts": "007db45b401ce6470082eb456b845ee48dfb5ab5ecaec0b55a5ea713177ae2f7",
+    "tests/e2e/dissection-evidence-gallery.spec.ts": "fd03716a63f5cdbe3e7010ec309eba3128d2a0284b67eef9bb94cb0d235f2c89",
+    "tests/e2e/dissection-reference-workbench.spec.ts": "fb436d8471bf847c377bb8e6603784e5a725067bb53c7eec1e273dc9b813ff6e",
+    "tests/e2e/dissection-view-controls.spec.ts": "d76e1030ebe16a9bdb0b99a599a7fcb7774109252e66217e93ebded70a54a8cc",
+    "tests/e2e/dissection-view-chooser.spec.ts": "81f8f90725f510092b8a20468175be7862bda9d93c5afbb16a07240a5bb2c614"
+  },
+  "intentionalTestEdits": {
+    "tests/dissection_canvas_loop.test.js": {
+      "file": "tests/dissection_canvas_loop.test.js",
+      "beforeSha256": "b31bbe5cc07efe789e0b2262d12441366c3425966f2e804ad818513a6d22e5ca",
+      "afterSha256": "d3851e389c78866a4475f13cef2067305d937b86cb339615caf009f7c7553916",
+      "edits": [
+        {
+          "before": "setProcedureFeedback\\('Timed practical expired\\.",
+          "after": "setProcedureFeedback\\('The 4-minute technique challenge expired\\."
+        },
+        {
+          "before": "cancelActiveCanvasGesture\\('Timed practical expired;",
+          "after": "cancelActiveCanvasGesture\\('The 4-minute technique challenge expired;"
+        }
+      ],
+      "exactReversal": true,
+      "syntax": "passed",
+      "assertionOnly": true,
+      "preserved": [
+        "remaining === 0 guard",
+        "caution severity",
+        "cancelActiveCanvasGesture semantics",
+        "all other bytes"
+      ],
+      "repositoryWrites": true,
+      "suitesRun": false
+    }
+  },
+  "results": {
+    "baseline": {
+      "passed": 6,
+      "failed": 0,
+      "flaky": 0,
+      "skipped": 0
+    },
+    "scenario": {
+      "passed": 11,
+      "failed": 0,
+      "flaky": 0,
+      "skipped": 0
+    },
+    "unit-main": {
+      "passed": 278,
+      "failed": 0,
+      "pending": 1
+    },
+    "unit-axe": {
+      "passed": 1,
+      "failed": 0,
+      "pending": 169
+    },
+    "study": {
+      "passed": 12,
+      "failed": 0,
+      "flaky": 0,
+      "skipped": 0
+    },
+    "view": {
+      "passed": 17,
+      "failed": 0,
+      "flaky": 0,
+      "skipped": 0
+    }
+  },
+  "latestJobs": {
+    "baseline": "baseline-2",
+    "scenario": "scenario-7",
+    "unit-main": "unit-main-7",
+    "unit-axe": "unit-axe-7",
+    "study": "study-7",
+    "view": "view-7"
+  },
+  "failedRuns": [
+    {
+      "label": "baseline-1",
+      "exitCode": 1
+    },
+    {
+      "label": "scenario-3",
+      "exitCode": 1
+    },
+    {
+      "label": "scenario-4",
+      "exitCode": 1
+    },
+    {
+      "label": "scenario-5",
+      "exitCode": 1
+    },
+    {
+      "label": "unit-main-6",
+      "exitCode": 1
+    }
+  ],
+  "unitPassed": 279,
+  "browserPassed": 40,
+  "baselineLayouts": 6,
+  "axeAudits": [
+    {
+      "file": "scenario-7/captures/desktop-axe.json",
+      "violations": 0,
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "file": "scenario-7/captures/embedded-large-contrast-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "scenario-7/captures/embedded-medium-axe.json",
+      "violations": 0,
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "file": "scenario-7/captures/forced-colors-axe.json",
+      "violations": 0,
+      "incomplete": []
+    },
+    {
+      "file": "scenario-7/captures/phone-axe.json",
+      "violations": 0,
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "file": "scenario-7/captures/restart-review-axe.json",
+      "violations": 0,
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 1
+        }
+      ]
+    },
+    {
+      "file": "scenario-7/captures/tablet-axe.json",
+      "violations": 0,
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 1
+        }
+      ]
+    }
+  ],
+  "manualContrastReview": "reviews/visual-review.json",
+  "nativePreservationReview": "reviews/native-preservation-review.json",
+  "previousReportFilesPreserved": 303,
+  "sourceReversal": true,
+  "unitReversal": true,
+  "browserCorrectionReversal": true,
+  "head": "2f9789e0bba98c9795492beb226202cf34f0d675",
+  "stagedPaths": "",
+  "noGitMutations": true,
+  "deployed": false,
+  "archivedHelpers": [
+    "apply-browser-open-fix.cjs",
+    "apply-browser.cjs",
+    "apply-canvas-assertion.cjs",
+    "apply-final-polish.cjs",
+    "apply-forced-paint.cjs",
+    "apply-refinements.cjs",
+    "apply-source-unit.cjs",
+    "apply-visual.cjs",
+    "archive-reviews.cjs",
+    "audit-captures.cjs",
+    "audit-native.cjs",
+    "browser-work\\browser-audit-study-fixture-edits.json",
+    "browser-work\\browser-axe-clock-fixture-edits.json",
+    "browser-work\\browser-native-fixture-edits.json",
+    "browser-work\\browser-open-fixture-edits.json",
+    "browser-work\\browser-readiness-fixture-edits.json",
+    "browser-work\\check-browser.cjs",
+    "browser-work\\dissection-scenario-clarity.spec.ts",
+    "browser-work\\prepare-browser-axe-clock-fix.cjs",
+    "browser-work\\prepare-browser-native-fix.cjs",
+    "browser-work\\prepare-browser-open-fix.cjs",
+    "browser-work\\prepare-browser-readiness-fix.cjs",
+    "browser-work\\prepare-visual-review.cjs",
+    "browser-work\\read-browser-failures.cjs",
+    "browser-work\\read-canvas-state.cjs",
+    "browser-work\\read-review.cjs",
+    "browser-work\\read-scenario.cjs",
+    "browser-work\\read-timer-failures.cjs",
+    "browser-work\\read-visual-metrics.cjs",
+    "browser-work\\scenario-6-visual-review.json",
+    "browser-work\\scenario-independent-review.json",
+    "browser-work\\scenario-visual-review.json",
+    "check-baseline.cjs",
+    "cleanup-scenario.ps1",
+    "final-review-checks.cjs",
+    "finalize-scenario.cjs",
+    "inspect-incomplete.cjs",
+    "native-audit.json",
+    "prepare-baseline.cjs",
+    "prepare-runner.cjs",
+    "refine-finalization.cjs",
+    "review-results.cjs",
+    "run-scenario.cjs",
+    "show-current-failures.cjs",
+    "source-work\\prepare-scenario.cjs",
+    "source-work\\renderer-contrast-edits.json",
+    "source-work\\renderer-edits.json",
+    "source-work\\renderer-forced-paint-edits.json",
+    "source-work\\renderer-incremental-edits.json",
+    "source-work\\renderer-visual-edits.json",
+    "start-run.ps1",
+    "status-current.cjs",
+    "unit-work\\canvas-loop-baseline.js.gz",
+    "unit-work\\canvas-loop-edits.json",
+    "unit-work\\canvas-loop-next.js",
+    "unit-work\\native-preservation-review.json",
+    "unit-work\\prepare-canvas-assertion.cjs",
+    "unit-work\\prepare-unit-edits.cjs",
+    "unit-work\\review-native-preservation.cjs",
+    "unit-work\\scenario-unit-fragment.js",
+    "unit-work\\stage-incremental-baseline.cjs",
+    "unit-work\\unit-edits.json",
+    "unit-work\\unit-incremental-baseline.js.gz",
+    "unit-work\\unit-incremental-edits.json",
+    "verify-scenario.cjs"
+  ]
+}

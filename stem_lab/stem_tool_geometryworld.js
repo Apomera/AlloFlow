@@ -832,6 +832,24 @@
     ,'@media(forced-colors:active){#geoworld-fs-workspace.gw-root.gw-root .gw-measure-card .gw-notebook-trigger{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}}'
     ,'@media(max-width:800px) and (orientation:portrait){#geoworld-fs-workspace.gw-root[data-touch-active="true"] .gw-measure-card[data-measurement-compact="true"][data-details-open="false"]{max-height:min(460px,calc(100% - var(--gw-toolbar-height,58px) - 320px))!important}#geoworld-fs-workspace.gw-root[data-touch-active="true"][data-build-tools="open"] .gw-measure-card[data-measurement-compact="true"][data-details-open="false"]{max-height:min(460px,calc(100% - var(--gw-toolbar-height,58px) - 486px))!important}}'
     ,'@media(max-width:800px) and (max-height:600px) and (orientation:portrait){#geoworld-fs-workspace.gw-root[data-touch-active="true"]:has(>.gw-measure-card) :is(.gw-touch-controls,.gw-hotbar,.gw-shape-tray,.gw-action-bar){display:none!important}#geoworld-fs-workspace.gw-root.gw-root.gw-root[data-touch-active="true"] .gw-measure-card[data-measurement-compact="true"][data-details-open="false"]{max-height:calc(100% - var(--gw-toolbar-height,58px) - 28px)!important}}'
+    ,'#geoworld-fs-workspace.gw-root.gw-root .gw-coordinate-hud{position:absolute;left:8px;bottom:10px;z-index:21;box-sizing:border-box;max-width:calc(100% - 16px);padding:0 10px 10px;border:1px solid #79918c;border-radius:6px;font:13px/1.5 system-ui,sans-serif;color:#f4f7f6;overflow:auto;overscroll-behavior:contain;scrollbar-color:#9ebbb7 #202728}#geoworld-fs-workspace.gw-root.gw-root .gw-coordinate-hud:not([open]){padding:0;width:max-content;max-height:none}#geoworld-fs-workspace.gw-root.gw-root .gw-coordinate-hud[open]{width:264px;max-height:min(360px,calc(100% - 150px))}#geoworld-fs-workspace.gw-root.gw-root .gw-coordinate-summary{position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;margin:0!important;padding:0 6px;background:var(--gw-solid-surface,#202728);color:inherit;list-style:none;font-size:13px!important;font-weight:700;cursor:pointer}#geoworld-fs-workspace.gw-root.gw-root .gw-coordinate-summary::-webkit-details-marker{display:none}#geoworld-fs-workspace.gw-root.gw-root .gw-coordinate-summary:after{content:"+";font-size:18px;line-height:1}#geoworld-fs-workspace.gw-root.gw-root .gw-coordinate-hud[open]>.gw-coordinate-summary:after{content:"-"}#geoworld-fs-workspace.gw-root .gw-coordinate-group{margin:4px 0 10px}#geoworld-fs-workspace.gw-root .gw-coordinate-label{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:3px 8px;margin:0 0 5px;font-size:13px;font-weight:650}#geoworld-fs-workspace.gw-root .gw-coordinate-units{font-size:13px;font-weight:400;color:#c6d3d2}#geoworld-fs-workspace.gw-root .gw-coordinate-readout{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0}#geoworld-fs-workspace.gw-root .gw-coordinate-readout>div{min-width:0}#geoworld-fs-workspace.gw-root .gw-coordinate-axis{font-size:13px;font-weight:700;color:#b9d8ff}#geoworld-fs-workspace.gw-root .gw-coordinate-axis[data-axis="x"]{color:#ffb7a1}#geoworld-fs-workspace.gw-root .gw-coordinate-axis[data-axis="y"]{color:#b9eee4}#geoworld-fs-workspace.gw-root .gw-coordinate-value{margin:0;color:#f4f7f6;font:700 15px/1.5 ui-monospace,monospace;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}#geoworld-fs-workspace.gw-root .gw-coordinate-facing{display:flex;flex-wrap:wrap;gap:6px 10px;margin:0 0 10px;font-size:13px;color:#c6d3d2}#geoworld-fs-workspace.gw-root .gw-coordinate-facing strong{color:#f4f7f6}#geoworld-fs-workspace.gw-root.gw-root .gw-coordinate-speech-toggle{box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:44px;padding:8px;border:1px solid #8aa5a0;border-radius:6px;background:#303b3c;color:#f4f7f6;font:13px/1.5 system-ui,sans-serif;cursor:pointer;text-align:left}#geoworld-fs-workspace.gw-root.gw-root .gw-coordinate-speech-toggle[aria-pressed="true"]{background:#b9eee4;color:#173b38;border-color:#b9eee4}#geoworld-fs-workspace.gw-root .gw-coordinate-speech-toggle span{min-width:0;overflow-wrap:anywhere}#geoworld-fs-workspace.gw-root .gw-coordinate-speech-toggle strong{flex:none}'
+    ,'#geoworld-fs-workspace.gw-root.gw-root[data-ui-text-size="large"] :is(.gw-coordinate-summary,.gw-coordinate-label,.gw-coordinate-units,.gw-coordinate-axis,.gw-coordinate-facing,.gw-coordinate-speech-toggle){font-size:15px!important;line-height:1.5}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gw-coordinate-value{font-size:17px}'
+    ,'@media(max-width:800px){#geoworld-fs-workspace.gw-root.gw-root.gw-root .gw-coordinate-hud[open]{top:calc(var(--gw-toolbar-height,58px) + 10px)!important;bottom:auto!important;max-width:calc(100% - 16px);max-height:calc(100% - var(--gw-toolbar-height,58px) - 180px)}}@media(max-width:800px) and (orientation:portrait){#geoworld-fs-workspace.gw-root.gw-root.gw-root[data-touch-active="true"]>.gw-coordinate-hud[open]{max-height:calc(100% - var(--gw-toolbar-height,58px) - 320px)}#geoworld-fs-workspace.gw-root.gw-root.gw-root[data-touch-active="true"][data-build-tools="open"]>.gw-coordinate-hud[open]{max-height:calc(100% - var(--gw-toolbar-height,58px) - 486px)}}@media(max-width:800px) and (max-height:600px) and (orientation:portrait){#geoworld-fs-workspace.gw-root.gw-root.gw-root.gw-root[data-touch-active="true"]>.gw-coordinate-hud[open]{width:calc(100% - 16px);max-height:calc(100% - var(--gw-toolbar-height,58px) - 28px)}#geoworld-fs-workspace.gw-root[data-touch-active="true"]:has(>.gw-coordinate-hud[open]) :is(.gw-touch-controls,.gw-hotbar,.gw-shape-tray,.gw-action-bar){display:none!important}#geoworld-fs-workspace.gw-root.gw-root[data-touch-active="true"] .gwe-builder-dock[data-collapsed="true"]{left:104px!important}}@media(max-height:520px) and (orientation:landscape){#geoworld-fs-workspace.gw-root.gw-root.gw-root .gw-coordinate-hud[open]{top:52px!important;bottom:auto!important;max-height:calc(100% - 200px)}}'
+    ,'.theme-contrast #geoworld-fs-workspace.gw-root.gw-root .gw-coordinate-hud,[data-stem-theme="contrast"] #geoworld-fs-workspace.gw-root.gw-root .gw-coordinate-hud{background:#000!important;color:#fff!important;border-color:#ff0!important}.theme-contrast #geoworld-fs-workspace.gw-root .gw-coordinate-summary,[data-stem-theme="contrast"] #geoworld-fs-workspace.gw-root .gw-coordinate-summary{background:#000!important}.theme-contrast #geoworld-fs-workspace.gw-root :is(.gw-coordinate-label,.gw-coordinate-units,.gw-coordinate-axis,.gw-coordinate-value,.gw-coordinate-facing,.gw-coordinate-facing strong),[data-stem-theme="contrast"] #geoworld-fs-workspace.gw-root :is(.gw-coordinate-label,.gw-coordinate-units,.gw-coordinate-axis,.gw-coordinate-value,.gw-coordinate-facing,.gw-coordinate-facing strong){color:#fff!important}.theme-contrast #geoworld-fs-workspace.gw-root.gw-root .gw-coordinate-speech-toggle,[data-stem-theme="contrast"] #geoworld-fs-workspace.gw-root.gw-root .gw-coordinate-speech-toggle{background:#000!important;color:#0f0!important;border-color:#0f0!important}@media(forced-colors:active){#geoworld-fs-workspace.gw-root.gw-root .gw-coordinate-hud,#geoworld-fs-workspace.gw-root.gw-root .gw-coordinate-hud *{color:CanvasText!important;border-color:CanvasText!important}#geoworld-fs-workspace.gw-root.gw-root :is(.gw-coordinate-hud,.gw-coordinate-summary){background:Canvas!important}#geoworld-fs-workspace.gw-root.gw-root .gw-coordinate-hud .gw-coordinate-speech-toggle,#geoworld-fs-workspace.gw-root.gw-root .gw-coordinate-speech-toggle *{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}}'
+    ,'#geoworld-fs-workspace.gw-root.gw-root.gw-root[data-ui-text-size="standard"] .gw-coordinate-speech-toggle{font-size:13px!important}@media(min-width:801px) and (min-height:521px){#geoworld-fs-workspace.gw-root.gw-root .gw-coordinate-hud[open]{bottom:250px;max-height:min(360px,calc(100% - var(--gw-toolbar-height,58px) - 270px))}}@media(min-width:801px) and (min-height:521px) and (max-height:650px){#geoworld-fs-workspace.gw-root:has(>.gw-coordinate-hud[open])>.gw-learning-compass{visibility:hidden;pointer-events:none}}@media(max-width:800px){#geoworld-fs-workspace.gw-root:has(>.gw-coordinate-hud[open]) .gw-placement-hint{visibility:hidden;pointer-events:none}}@media(max-height:520px) and (orientation:landscape){#geoworld-fs-workspace.gw-root.gw-root[data-touch-active="true"]:not([data-preview-review="true"])>.gw-coordinate-hud{display:block!important}#geoworld-fs-workspace.gw-root:has(>.gw-coordinate-hud[open]) .gw-placement-hint{visibility:hidden;pointer-events:none}}'
+  ].join('\n');
+  var GW_COORDINATE_CAPACITY_CSS = '#geoworld-fs-workspace.gw-root.gw-root.gw-root[data-ui-text-size="large"] :is(.gw-coordinate-summary,.gw-coordinate-label,.gw-coordinate-units,.gw-coordinate-axis,.gw-coordinate-facing,.gw-coordinate-speech-toggle){font-size:15px!important;line-height:1.5}@media(min-width:801px) and (min-height:521px) and (max-height:650px){#geoworld-fs-workspace.gw-root:has(>.gw-coordinate-hud[open]) .gw-placement-hint{visibility:hidden;pointer-events:none}}@media(max-height:520px) and (orientation:landscape){#geoworld-fs-workspace.gw-root.gw-root.gw-root[data-touch-active="true"]>.gw-coordinate-hud[open]{max-height:calc(100% - 252px)}}';
+  GW_CLARITY_CSS += '\n' + GW_COORDINATE_CAPACITY_CSS + '@media(max-width:800px) and (orientation:portrait){#geoworld-fs-workspace.gw-root.gw-root.gw-root[data-touch-active="false"]>.gw-coordinate-hud[open]{max-height:calc(100% - var(--gw-toolbar-height,58px) - 268px)}}';
+  GW_CLARITY_CSS += '#geoworld-fs-workspace.gw-root:has(#gw-history-panel) .gwe-builder-dock[data-collapsed="true"]{visibility:hidden;pointer-events:none}';
+  GW_CLARITY_CSS += '\n' + [
+    '@media(forced-colors:active){#geoworld-fs-workspace.gw-root.gw-root.gw-root :is(.gw-prediction-panel,.gw-history-panel) *{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}#geoworld-fs-workspace.gw-root.gw-root.gw-root :is(.gw-prediction-panel,.gw-history-panel) :is(input,select,textarea){background:Field!important;color:FieldText!important;border-color:FieldText!important}#geoworld-fs-workspace.gw-root.gw-root.gw-root :is(.gw-prediction-panel,.gw-history-panel) button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}#geoworld-fs-workspace.gw-root.gw-root.gw-root .gw-notebook-tabs button[aria-selected="true"]{border-bottom-color:Highlight!important}}',
+    '#geoworld-fs-workspace.gw-root .gw-prediction-field :is(input,select){flex:none!important;height:44px!important}@media(max-height:520px) and (orientation:landscape){#geoworld-fs-workspace.gw-root .gw-history-panel{top:8px!important;max-height:calc(100% - 16px)!important;display:flex;flex-direction:column;overflow:hidden}#geoworld-fs-workspace.gw-root .gw-history-panel :is(.gw-notebook-header,.gw-notebook-footer){position:static;flex:none}#geoworld-fs-workspace.gw-root .gw-history-panel>[role="tabpanel"]:not([hidden]){flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain}#geoworld-fs-workspace.gw-root[data-hud-panel="history"][data-touch-active="true"] :is(.gw-touch-controls,.gw-build-tools,.gw-action-bar,.gw-placement-hint){visibility:hidden;pointer-events:none}}',
+    '#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gw-settings-panel :is(button,select,input:not([type="checkbox"]):not([type="range"])){font-size:16px!important;line-height:1.6}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gw-settings-panel :is(.gw-quality-label,.gw-view-presets-label,.gw-settings-look label){font-size:16px!important;line-height:1.6}',
+    '#geoworld-fs-workspace.gw-root .gw-prediction-panel :is(label,p,span,[data-geometry-estimate-status],[data-geometry-prediction-scaffold]){font-size:14px!important;line-height:1.5}#geoworld-fs-workspace.gw-root .gw-prediction-panel :is(input,select,button){font-size:14px!important}#geoworld-fs-workspace.gw-root .gw-prediction-title{font-size:16px!important}',
+    '#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] :is(.gw-settings-tabs button,.gw-settings-section-title,.gw-workspace-save-status,.gw-quality-help,.gw-settings-panel .gw-hud-preset-help){font-size:16px!important;line-height:1.6}.gw-root .gw-settings-tabs button{overflow-wrap:anywhere}@media(max-width:420px){#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gw-settings-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}',
+    '#geoworld-fs-workspace.gw-root .gw-prediction-panel{display:grid!important;grid-template-columns:minmax(100px,.7fr) minmax(0,1fr) minmax(0,1.2fr);align-items:start!important;gap:12px!important;padding:12px!important}.gw-root .gw-prediction-field{display:flex;flex-direction:column;gap:6px;min-width:0;max-width:100%}.gw-root .gw-prediction-field>span{font-weight:650}.gw-root .gw-prediction-field :is(input,select){width:100%!important;max-width:100%!important;min-width:0;padding:8px!important;font-family:inherit}.gw-root .gw-prediction-unit{font-weight:400!important}.gw-root .gw-prediction-panel>[data-geometry-estimate-action]{grid-column:1/-1;justify-self:start;max-width:100%;white-space:normal}.gw-root .gw-prediction-panel>[data-geometry-prediction-scaffold]{grid-column:1/-1;flex-wrap:wrap}.gw-root .gw-prediction-heading{position:sticky;top:-12px;z-index:2;margin:-12px -12px 0;padding:12px;background:var(--gw-solid-surface,#202728)}.gw-root .gw-prediction-title{margin:0;min-width:0;overflow-wrap:anywhere}.gw-root .gw-prediction-close{flex:none;min-width:44px;min-height:44px}@media(max-width:600px){#geoworld-fs-workspace.gw-root .gw-prediction-panel{grid-template-columns:minmax(0,1fr)}}',
+    '#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gw-prediction-panel :is(label,p,span,input,select,button,[data-geometry-estimate-status],[data-geometry-prediction-scaffold]){font-size:16px!important;line-height:1.6}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gw-prediction-title{font-size:18px!important}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gw-history-panel :is(.gw-retrieval-title,.gw-retrieval-card label,.gw-retrieval-input,.gw-retrieval-button,.gw-retrieval-card>div,.gw-notebook-insight,.gw-notebook-estimate summary){font-size:16px!important;line-height:1.6}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gw-history-panel :is(.gw-notebook-estimate,.gw-notebook-caption){font-size:14px!important;line-height:1.6}',
+    '.theme-contrast #geoworld-fs-workspace.gw-root .gw-prediction-heading,[data-stem-theme="contrast"] #geoworld-fs-workspace.gw-root .gw-prediction-heading{background:#000!important;color:#fff!important;border-color:#ff0!important}@media(forced-colors:active){#geoworld-fs-workspace.gw-root .gw-prediction-heading{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}}'
   ].join('\n');
   var GW_WORKSPACE_REFRESH_CSS = [
     '#geoworld-fs-workspace.gw-root{--gw-glass:#202728f5;--gw-line:#596969;--allo-stem-canvas:#202728;--allo-stem-panel:#2b3334;--allo-stem-deeper:#181d1e;--allo-stem-text:#f4f7f6;--allo-stem-text-soft:#c6d3d2;--allo-stem-border:#687c7b;--allo-stem-button-bg:#2b3334;--allo-stem-button-text:#f4f7f6;--allo-stem-button-border:#687c7b;letter-spacing:0}',
@@ -881,11 +899,29 @@
     '@media(forced-colors:active){#geoworld-fs-workspace.gw-root :is(.gw-learning-compass,.gw-objective-panel,.gw-dialog,.gw-measure-card,.gwe-builder-dock){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.gw-root :is(.gw-learning-compass span,.gw-objective-copy,.gw-objective-marker,.gw-objective-evidence,.gw-concept-reminder,.gw-concept-reminder summary,.gw-concept-reminder strong){color:CanvasText!important}.gw-root .gw-objective-item[data-next="true"] .gw-objective-marker{background:Highlight!important;color:HighlightText!important}}'
   ].join('\n');
   // Pointer and touch entry points for the measuring tools on T, V and N.
+  GW_CLARITY_CSS += '.theme-contrast .gw-root .gw-notebook-tabs button[aria-selected="true"],[data-stem-theme="contrast"] .gw-root .gw-notebook-tabs button[aria-selected="true"]{text-decoration:underline!important;text-underline-offset:4px;text-decoration-thickness:2px}@media(forced-colors:active){.gw-root .gw-notebook-tabs button[aria-selected="true"]{text-decoration:underline!important;text-underline-offset:4px;text-decoration-thickness:2px}}';
+  GW_CLARITY_CSS += '#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] #gw-retrieval-prompt{font-size:16px!important;line-height:1.6}';
+  GW_CLARITY_CSS += [
+    '@media(max-height:520px) and (orientation:landscape){#geoworld-fs-workspace.gw-root.gw-root[data-hud-panel="inventory"][data-touch-active="true"]>.gw-coordinate-hud{display:none!important}}',
+    '#geoworld-fs-workspace.gw-root[data-hud-panel="inventory"]:not([data-hud-hidden="true"])>.gw-inventory-panel{display:flex!important}',
+    '#geoworld-fs-workspace.gw-root[data-hud-panel="inventory"]>:is(.gw-measure-card,.gw-coordinate-hud){display:none!important}',
+    '#geoworld-fs-workspace.gw-root .gw-inventory-panel{display:flex;flex-direction:column;gap:12px;top:calc(var(--gw-toolbar-height,58px) + 10px)!important;left:12px!important;right:auto!important;bottom:auto!important;width:min(280px,calc(100% - 24px))!important;max-height:calc(100% - var(--gw-toolbar-height,58px) - 190px)!important;padding:12px!important;overflow:hidden;border:1px solid #718984!important;border-radius:8px!important;background:#202728eb!important;box-shadow:0 8px 24px #0003!important;color:#f4f7f6;line-height:1.5}#geoworld-fs-workspace.gw-root:is([data-toolbar-collapsed="true"],[data-fullscreen="true"]) .gw-inventory-panel{top:56px!important}.gw-root .gw-inventory-title{flex:none;margin:0;color:inherit;font-size:15px;letter-spacing:0}.gw-root .gw-inventory-title h3{margin:0;font-size:inherit;line-height:1.5}.gw-root .gw-inventory-panel .gw-hud-panel-close{box-sizing:border-box;flex:none;min-width:44px;min-height:44px;font-size:22px;border-radius:6px;background:#303b3c;color:#f4f7f6;border-color:#718984}',
+    '.gw-root .gw-inventory-summary{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:baseline;gap:6px 12px;flex:none;margin:0;font-size:14px}.gw-root .gw-inventory-summary dt{color:#c6d3d2}.gw-root .gw-inventory-summary dd{margin:0;font-weight:650;font-variant-numeric:tabular-nums;text-align:right;overflow-wrap:anywhere}.gw-root .gw-inventory-materials{min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#9ebbb7 #202728;outline-offset:-3px}.gw-root .gw-inventory-materials ul{list-style:none;margin:0;padding:0}.gw-root .gw-inventory-row{display:grid;grid-template-columns:24px minmax(0,1fr) auto;align-items:center;gap:10px;min-height:36px;padding:6px 4px;border-radius:0;font-size:14px;color:inherit;border-top:1px solid #536463}.gw-root .gw-inventory-row:nth-child(even){background:transparent}.gw-root .gw-inventory-row .gw-material-swatch{width:24px;height:24px}.gw-root .gw-inventory-material-name{min-width:0;overflow-wrap:anywhere}.gw-root .gw-inventory-count{color:inherit;font-family:inherit;font-weight:650;font-variant-numeric:tabular-nums}.gw-root .gw-inventory-empty{flex:none;margin:0;color:#c6d3d2;font-size:14px}',
+    '#geoworld-fs-workspace.gw-root[data-ui-surface="solid"] .gw-inventory-panel{background:var(--gw-solid-surface,#202728)!important;backdrop-filter:none!important}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gw-inventory-panel :is(.gw-inventory-title,.gw-inventory-summary,.gw-inventory-row,.gw-inventory-empty){font-size:16px!important;line-height:1.6}',
+    '@media(max-width:800px),(max-height:520px){#geoworld-fs-workspace.gw-root .gw-inventory-panel{left:10px!important;width:min(320px,calc(100% - 20px))!important;max-height:calc(100% - var(--gw-toolbar-height,58px) - 100px)!important}#geoworld-fs-workspace.gw-root[data-hud-panel="inventory"] :is(.gw-touch-controls,.gw-hotbar,.gw-shape-tray,.gw-action-bar,.gw-measure-card,.gw-coordinate-hud,.gw-placement-hint,.gw-action-feedback,.gw-viewport-control,.gwe-builder-dock){display:none!important}}@media(max-height:520px) and (orientation:landscape){#geoworld-fs-workspace.gw-root .gw-inventory-panel{top:calc(var(--gw-toolbar-height,58px) + 10px)!important;left:auto!important;right:8px!important;width:min(320px,calc(100% - 16px))!important;max-height:calc(100% - var(--gw-toolbar-height,58px) - 18px)!important}}',
+    '.theme-contrast #geoworld-fs-workspace.gw-root .gw-inventory-panel,[data-stem-theme="contrast"] #geoworld-fs-workspace.gw-root .gw-inventory-panel{background:#000!important;border-color:#ff0!important;color:#fff!important}.theme-contrast .gw-root .gw-inventory-panel :is(h3,dt,dd,p,li,span),[data-stem-theme="contrast"] .gw-root .gw-inventory-panel :is(h3,dt,dd,p,li,span){color:#fff!important;border-color:#ff0!important}@media(forced-colors:active){#geoworld-fs-workspace.gw-root.gw-root .gw-inventory-panel{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.gw-root .gw-inventory-panel :is(h3,dt,dd,p,li,span){color:CanvasText!important;border-color:CanvasText!important}#geoworld-fs-workspace.gw-root .gw-inventory-panel .gw-hud-panel-close{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}}'
+  ].join('\n');
   var MEASURING_TOOLS = [
     { id: 'ruler', key: 'T', label: 'Ruler', action: 'useRuler', title: 'Ruler: aim at a point and use it, then aim at a second point and use it again (T)' },
     { id: 'angle', key: 'V', label: 'Angle', action: 'useAngleTool', title: 'Angle: aim at three blocks in turn; the middle one is the vertex (V)' },
     { id: 'net', key: 'N', label: 'Net', action: 'useNetTool', title: 'Net: unfold the aimed prism and see its surface area (N)' }
   ];
+  GW_CLARITY_CSS += [
+    '.gw-root .gw-notebook-record-scope{display:flex;align-items:center;gap:10px;box-sizing:border-box;min-height:44px;margin:0 0 8px;padding:4px 0;color:#d9e5e3;font-size:13px;line-height:1.5;cursor:pointer}.gw-root .gw-notebook-record-scope input{flex:0 0 20px;width:20px!important;height:20px!important;min-width:20px!important;min-height:20px!important;margin:0;padding:0!important;accent-color:#b9eee4}.gw-root .gw-notebook-record-scope span{min-width:0;overflow-wrap:anywhere}',
+    '.gw-root .gw-retrieval-hint{margin:12px 0 0;border-top:1px solid #536463;font-size:13px;line-height:1.6;color:#d9e5e3}.gw-root .gw-retrieval-hint summary{box-sizing:border-box;min-height:44px;padding:10px 4px;color:#b9eee4;font-weight:650;cursor:pointer}.gw-root .gw-history-panel .gw-retrieval-button{min-width:88px}.gw-root .gw-history-panel .gw-retrieval-button:disabled{background:transparent!important;color:#c6d3d2!important;border-color:#718984!important;border-style:dashed!important;box-shadow:none!important;cursor:default;opacity:1}.gw-root .gw-history-panel .gw-retrieval-input:disabled{opacity:1}',
+    '#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] :is(.gw-notebook-record-scope,.gw-retrieval-hint){font-size:16px!important;line-height:1.6}@media(max-width:600px){.gw-root .gw-notebook-quantities .gw-notebook-surface-unavailable{grid-column:1 / -1}.gw-root .gw-notebook-quantities dd.gw-notebook-surface-unavailable{font-weight:400}}',
+    '@media(forced-colors:active){#geoworld-fs-workspace.gw-root .gw-history-panel .gw-retrieval-button:disabled{color:GrayText!important;border-color:GrayText!important;background:Canvas!important}.gw-root .gw-retrieval-hint{border-color:CanvasText!important}.gw-root .gw-notebook-record-scope input{accent-color:auto}}'
+  ].join('\n');
   function renderWorkspaceAction(el, icon, label, count) {
     return el('span',{className:'gw-utility-content'},renderWorkspaceIcon(el,icon),el('span',{className:'gw-utility-label'},label),typeof count==='number' && el('span',{className:'gw-utility-count','aria-hidden':'true'},count));
   }
@@ -1670,9 +1706,16 @@
     };
   }
 
-  function buildRetrievalCheckpoint(history) {
+  function retrievalMeasurementCount(history, progress) {
+    var retainedCount = completeMeasurementRecords(history || []).length;
+    return progress && progress.history === history && Number.isSafeInteger(progress.completeCount) && progress.completeCount >= retainedCount
+      ? progress.completeCount : retainedCount;
+  }
+
+  function buildRetrievalCheckpoint(history, completedCount) {
     var complete = completeMeasurementRecords(history || []);
     if (complete.length < 2) return null;
+    var measurementCount = Number.isSafeInteger(completedCount) && completedCount >= complete.length ? completedCount : complete.length;
     var latest = complete[complete.length - 1] || {};
     var volume = typeof latest.occupiedVolume === 'number' ? latest.occupiedVolume : parseVolumePrediction(latest.vol);
     if (!Number.isFinite(volume) || volume <= 0) return null;
@@ -1681,15 +1724,15 @@
     if (latest.hasFractions && typeof latest.blocks === 'number' && latest.blocks > volume) {
       checkpoint.concept = 'fractional_volume';
       checkpoint.expected = latest.blocks - volume;
-      checkpoint.prompt = 'This structure uses ' + latest.blocks + ' pieces but occupies ' + formatVolume(volume) + ' cubic units. How much less is that than ' + latest.blocks + ' whole cubes?';
+      checkpoint.prompt = 'This structure uses ' + latest.blocks + ' pieces but occupies ' + formatMeasurementQuantity(volume, 'volume') + '. How much less is that than ' + latest.blocks + ' whole cubes?';
       checkpoint.hint = 'Subtract the occupied volume from the number of whole-cube spaces.';
     } else if (latest.isSolidPrism === false && typeof latest.boundingVolume === 'number' && latest.boundingVolume > volume) {
       checkpoint.concept = 'empty_space';
       checkpoint.expected = latest.boundingVolume - volume;
-      checkpoint.prompt = 'A bounding box is ' + formatVolume(latest.boundingVolume) + ' cubic units and the structure occupies ' + formatVolume(volume) + '. How much space is empty?';
+      checkpoint.prompt = 'A bounding box is ' + formatMeasurementQuantity(latest.boundingVolume, 'volume') + ' and the structure occupies ' + formatVolume(volume) + '. How much space is empty?';
       checkpoint.hint = 'Subtract occupied volume from bounding-box volume.';
     } else if (latest.isSolidPrism === true && [latest.L, latest.W, latest.H].every(function(value) { return typeof value === 'number' && Number.isFinite(value) && value > 0; }) && Math.abs(latest.L * latest.W * latest.H - volume) < 0.0001) {
-      if (complete.length % 2 === 0) {
+      if (measurementCount % 2 === 0) {
         checkpoint.concept = 'scale_height';
         checkpoint.expected = latest.H * 2;
         checkpoint.prompt = 'A new prism keeps the same ' + formatVolume(latest.L) + ' by ' + formatVolume(latest.W) + ' base but doubles the volume to ' + formatVolume(volume * 2) + '. What height will it need?';
@@ -1743,13 +1786,13 @@
     var answer = parseRetrievalAnswer(value);
     if (answer === null) return { correct: false, valid: false, feedback: 'Enter a number or fraction (0 is allowed).' };
     var correct = Math.abs(answer - checkpoint.expected) < 0.0001;
-    var amount = formatVolume(checkpoint.expected);
+    var volumeAmount = formatMeasurementQuantity(checkpoint.expected, 'volume');
     var feedbackByConcept = {
-      scale_height: 'With the base area fixed, twice the height gives twice the volume. The new height is ' + amount + ' units.',
-      layer_area: 'One layer covers ' + amount + ' square units. Multiplying base area by the number of equal unit layers gives volume.',
-      empty_space: 'Bounding-box volume minus occupied volume leaves ' + amount + ' cubic units of empty space.',
-      fractional_volume: 'The fractional pieces occupy ' + amount + ' cubic units less than that many whole cubes. Piece count and occupied volume are different quantities.',
-      volume_difference: checkpoint.expected === 0 ? 'Both structures have the same occupied volume, so their difference is 0 cubic units.' : 'Subtracting the smaller occupied volume from the larger gives a difference of ' + amount + ' cubic units.'
+      scale_height: 'With the base area fixed, twice the height gives twice the volume. The new height is ' + formatMeasurementQuantity(checkpoint.expected, 'length') + '.',
+      layer_area: 'One layer covers ' + formatMeasurementQuantity(checkpoint.expected, 'surface') + '. Multiplying base area by the number of equal unit layers gives volume.',
+      empty_space: 'Bounding-box volume minus occupied volume leaves ' + volumeAmount + ' of empty space.',
+      fractional_volume: 'The fractional pieces occupy ' + volumeAmount + ' less than that many whole cubes. Piece count and occupied volume are different quantities.',
+      volume_difference: checkpoint.expected === 0 ? 'Both structures have the same occupied volume, so their difference is 0 cubic units.' : 'Subtracting the smaller occupied volume from the larger gives a difference of ' + volumeAmount + '.'
     };
     var successFeedback = Object.prototype.hasOwnProperty.call(feedbackByConcept, checkpoint.concept)
       ? 'Correct. ' + feedbackByConcept[checkpoint.concept] : 'Correct - you retrieved the relationship from earlier evidence.';
@@ -1992,6 +2035,12 @@
     };
   }
 
+  function formatMeasurementQuantity(value, kind, qualifier) {
+    if (!Number.isFinite(value) || value < 0) return null;
+    var unit = kind === 'length' ? 'unit' : kind === 'surface' ? 'square unit' : 'cubic unit';
+    return formatVolume(value) + ' ' + (qualifier ? qualifier + ' ' : '') + unit + (Math.abs(value - 1) < 0.000001 ? '' : 's');
+  }
+
   function formatMeasurementChange(value, kind) {
     var surface = kind === 'surface';
     if (!Number.isFinite(value)) return surface ? 'Exact surface area unavailable for one or both measurements.' : 'Occupied volume change unavailable.';
@@ -2019,6 +2068,8 @@
     var data = record || {};
     var complete = data.isComplete !== false;
     var volume = typeof data.occupiedVolume === 'number' ? data.occupiedVolume : parseVolumePrediction(data.vol);
+    var surface = complete && Number.isFinite(data.surfaceArea) && data.surfaceArea >= 0 && data.surfaceAreaExact !== false ? data.surfaceArea : null;
+    var estimate = Number.isFinite(data.prediction) && data.prediction > 0 ? data.prediction : null;
     var dimensions = [data.L, data.W, data.H];
     var hasDimensions = dimensions.every(function(value) { return Number.isFinite(value) && value > 0; });
     return {
@@ -2027,9 +2078,14 @@
       dimensions: complete && hasDimensions ? dimensions.map(formatVolume).join(' \u00d7 ') + ' units' : null,
       dimensionLabel: data.isSolidPrism === true ? 'Prism dimensions' : 'Bounding box',
       volume: Number.isFinite(volume) && volume >= 0 ? formatVolume(volume) : null,
+      volumeQuantity: formatMeasurementQuantity(volume, 'volume'),
       volumeLabel: complete ? 'Occupied volume' : 'Occupied volume, at least',
-      surfaceArea: complete && Number.isFinite(data.surfaceArea) && data.surfaceArea >= 0 && data.surfaceAreaExact !== false ? formatVolume(data.surfaceArea) : null,
-      estimate: Number.isFinite(data.prediction) && data.prediction > 0 ? formatVolume(data.prediction) : null,
+      surfaceArea: surface === null ? null : formatVolume(surface),
+      surfaceAreaQuantity: formatMeasurementQuantity(surface, 'surface'),
+      surfaceAreaState: surface !== null ? 'exact' : !complete ? 'incomplete' : data.hasFractions ? 'unsupported' : 'unavailable',
+      surfaceAreaUnavailable: surface !== null ? null : !complete ? 'Unavailable until the full structure is measured.' : data.hasFractions ? 'Exact exposed surface area is unavailable for these block shapes.' : 'Exact exposed surface area is unavailable in this record.',
+      estimate: estimate === null ? null : formatVolume(estimate),
+      estimateQuantity: formatMeasurementQuantity(estimate, 'volume'),
       strategy: String(data.strategy || '').trim(),
       reason: String(data.reason || '').trim()
     };
@@ -2038,6 +2094,23 @@
   function measurementLayerFor(blockData) {
     if (blockData && blockData._measurementLayer) return blockData._measurementLayer;
     return blockData && blockData._lessonBlock ? 'lesson' : 'student';
+  }
+
+  function summarizeStudentInventory(blocks) {
+    var counts = Object.create(null), pieces = 0, volume = 0, volumeKnown = true;
+    Object.keys(blocks || {}).forEach(function(key) {
+      var data = blocks[key] && blocks[key].userData;
+      if (!data || data._lessonBlock || data.gwGroundProxy || measurementLayerFor(data) !== 'student' || typeof data.blockType !== 'string' || !data.blockType) return;
+      pieces++;
+      counts[data.blockType] = (counts[data.blockType] || 0) + 1;
+      if (Number.isFinite(data.volume) && data.volume >= 0) volume += data.volume;
+      else volumeKnown = false;
+    });
+    var materials = Object.keys(counts).map(function(type) {
+      var material = BLOCK_TYPES.find(function(candidate) { return candidate.id === type; });
+      return { type: type, name: material ? material.name : type, count: counts[type] };
+    }).sort(function(a, b) { return b.count - a.count || a.name.localeCompare(b.name); });
+    return { pieces: pieces, volume: volumeKnown && Number.isFinite(volume) ? volume : null, materials: materials };
   }
 
   function belongsToMeasuredComponent(seedData, candidateData) {
@@ -8689,22 +8762,32 @@
       }
 
       function focusGameSettingsTrigger() {
+        var request = settingsFocusRef.current.generation;
         setTimeout(function() {
+          var state = settingsFocusRef.current;
+          if (!state.mounted || state.generation !== request || state.open) return;
           try {
-            var triggers = document.querySelectorAll('[data-geometry-settings-trigger="true"]');
+            var workspace = document.getElementById('geoworld-fs-workspace');
+            if (!workspace || !workspace.isConnected || workspace.querySelector('[aria-modal="true"]')) return;
+            var triggers = workspace.querySelectorAll('[data-geometry-settings-trigger="true"]');
             var target = Array.prototype.filter.call(triggers, function(node) { return node.offsetParent !== null; })[0] || triggers[0];
             if (target) target.focus({ preventScroll: true });
             else focusWorldSurface();
-          } catch (e) { focusWorldSurface(); }
+          } catch (e) {}
         }, 0);
       }
 
       function closeGameSettings() {
+        settingsFocusRef.current.generation++;
+        settingsFocusRef.current.open = false;
         upd('showGameSettings', false);
         focusGameSettingsTrigger();
       }
 
       function openGameSettings() {
+        settingsFocusRef.current.generation++;
+        settingsFocusRef.current.open = true;
+        settingsFocusRef.current.tab = 'workspace';
         try { if (document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (e) {}
         settingsTabState[1]('workspace');
         upd({ showGameSettings: true, showPredictionPanel: false, objectivesOpen: false });
@@ -8755,10 +8838,16 @@
       }
 
       function selectSettingsTab(next, focus) {
+        var request = ++settingsFocusRef.current.generation;
+        settingsFocusRef.current.tab = next;
         settingsTabState[1](next);
         setTimeout(function() {
-          var body = document.querySelector('.gw-settings-body'); if (body) body.scrollTop = 0;
-          if (focus) { var node = document.querySelector('[data-gw-settings-tab="' + next + '"]'); if (node) node.focus(); }
+          var state = settingsFocusRef.current;
+          if (!state.mounted || !state.open || state.generation !== request || state.tab !== next) return;
+          var dialog = document.getElementById('gw-settings-dialog');
+          if (!dialog || !dialog.isConnected) return;
+          var body = dialog.querySelector('.gw-settings-body'); if (body) body.scrollTop = 0;
+          if (focus) { var node = dialog.querySelector('[data-gw-settings-tab="' + next + '"][aria-selected="true"]'); if (node) node.focus(); }
         }, 0);
       }
 
@@ -8785,7 +8874,6 @@
         var next = hudPanel === panel ? '' : normalizeGeometryHudPanel(panel);
         setSceneMapOpen(false);
         upd({ hudPanel: next, showPredictionPanel: false, objectivesOpen: false });
-        workspaceSaveState[1]('Optional panel applies for this session');
         announceToSR(next ? label + ' opened for this session.' : 'Optional panel hidden for this session.');
       }
 
@@ -8873,6 +8961,14 @@
       var settingsTabState = React.useState('workspace');
       var settingsTab = settingsTabState[0];
       var workspaceSaveState = React.useState('');
+      var settingsFocusRef = React.useRef({ generation: 0, mounted: true, open: showGameSettings, tab: settingsTab });
+      if (settingsFocusRef.current.open !== showGameSettings) settingsFocusRef.current.generation++;
+      settingsFocusRef.current.open = showGameSettings;
+      settingsFocusRef.current.tab = settingsTab;
+      React.useEffect(function() {
+        settingsFocusRef.current.mounted = true;
+        return function() { settingsFocusRef.current.mounted = false; settingsFocusRef.current.generation++; };
+      }, []);
       var showPredictionPanel = !!d.showPredictionPanel;
       var hudPreferences = loadGeometryHudPreferences();
       var hudPreset = isGeometryHudPreset(d.hudPreset)
@@ -8977,7 +9073,10 @@
       var notebookViewState = React.useState('records');
       var notebookView = notebookViewState[0];
       var setNotebookView = notebookViewState[1];
-      React.useEffect(function() { setNotebookView('records'); }, [activeLesson]);
+      var notebookRecordsState = React.useState(false);
+      var showAllNotebookRecords = notebookRecordsState[0];
+      var setShowAllNotebookRecords = notebookRecordsState[1];
+      React.useEffect(function() { setNotebookView('records'); setShowAllNotebookRecords(false); }, [activeLesson]);
       React.useEffect(function() {
         if (hudPanel !== 'history') return;
         var timer = setTimeout(function() {
@@ -8997,7 +9096,6 @@
       var predictionScaffold = determinePredictionScaffold(measureHistory);
       var latestCompleteMeasurement = completedMeasurements.length ? completedMeasurements[completedMeasurements.length - 1] : null;
       var measurementComparison = completedMeasurements.length >= 2 ? compareMeasurementRecords(completedMeasurements[completedMeasurements.length - 2], completedMeasurements[completedMeasurements.length - 1]) : null;
-      var activeRetrievalCheckpoint = buildRetrievalCheckpoint(measureHistory);
       var actionFeedback = d.actionFeedback || ''; // brief action text
       // Pointer-lock state for the on-screen hint. Runtime only: it is React
       // state fed by the pointerlockchange handler through the engine bridge, never
@@ -12446,7 +12544,7 @@
               if (ms.touchMoreOpen) { upd('touchMoreOpen', false); break; }
               if (ms.showCompletion && engine.closeGeometryCompletion) { ev.preventDefault(); engine.closeGeometryCompletion(); break; }
               if (ms.showNpcDialog) { upd('showNpcDialog', false); focusWorldSurface(); break; }
-              if (ms.showGameSettings) { upd('showGameSettings', false); focusGameSettingsTrigger(); break; }
+              if (ms.showGameSettings) { closeGameSettings(); break; }
               if (ms.showPredictionPanel) { upd('showPredictionPanel', false); focusWorldSurface(); break; }
               if (ms.objectivesOpen) { upd('objectivesOpen', false); focusWorldSurface(); break; }
               if (ms.hudPanel) { upd('hudPanel', ''); focusWorldSurface(); break; }
@@ -12712,6 +12810,13 @@
           var predictionComparison = estimateOutcome.comparison;
           var mh = (predictionState.history || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.isComplete === false ? m.count + '+' : m.formattedOccupiedVolume, occupiedVolume: m.occupiedVolume, boundingVolume: m.boundingVolume, missingVolume: m.missingVolume, hasFractions: m.hasFractions, surfaceArea: m.exposedSurfaceArea, blocks: m.count, materialCount: Object.keys(m.materialCounts || {}).length, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, estimateTargetKey: estimateOutcome.targetKey, estimateStatus: estimateOutcome.status, prediction: predictionComparison ? predictionComparison.prediction : null, percentError: predictionComparison ? predictionComparison.percentError : null, strategy: predictionComparison ? predictionComparison.strategy : '', reason: predictionComparison ? predictionComparison.reason : '', diagnosisCode: predictionComparison ? predictionComparison.diagnosisCode : '', t: Date.now() }]);
           if (mh.length > 10) mh = mh.slice(-10);
+          // Keep practice cadence beyond the retention cap, scoped to this exact
+          // native history. Replaced/imported histories use the legacy fallback.
+          var priorRetrievalCount = retrievalMeasurementCount(predictionState.history, engine._retrievalMeasurementProgress);
+          var priorRetrievalCheckpoint = m.isComplete === false ? buildRetrievalCheckpoint(predictionState.history, priorRetrievalCount) : null;
+          engine._retrievalMeasurementProgress = { history: mh, completeCount: priorRetrievalCount + (m.isComplete === false ? 0 : 1) };
+          var nextRetrievalCheckpoint = priorRetrievalCheckpoint ? buildRetrievalCheckpoint(mh, engine._retrievalMeasurementProgress.completeCount) : null;
+          var preserveRetrievalWork = priorRetrievalCheckpoint && nextRetrievalCheckpoint && ['id', 'concept', 'expected', 'prompt', 'hint'].every(function(key) { return priorRetrievalCheckpoint[key] === nextRetrievalCheckpoint[key]; });
 
           var measurementFeedback = m.isComplete === false
             ? 'Measurement limit reached: at least ' + m.count + ' connected blocks. Result is incomplete.'
@@ -12721,7 +12826,14 @@
           var nextPredictionState = Object.assign({}, predictionState, { commitment: estimateOutcome.nextCommitment, observedTargetKeys: estimateOutcome.observedTargetKeys, history: mh });
           if (estimateOutcome.consumed) { nextPredictionState.input = ''; nextPredictionState.strategy = ''; nextPredictionState.reason = ''; }
           engine._predictionState = nextPredictionState;
-          upd({ measureResult: m, measureHistory: mh, volumeEstimateCommitment: estimateOutcome.nextCommitment, volumeEstimateObservedTargets: estimateOutcome.observedTargetKeys, volumeEstimateCommitError: estimateOutcome.status === 'target_mismatch' ? 'That measurement was a different structure. Your original estimate remains locked for its aimed structure.' : '', volumePrediction: estimateOutcome.consumed ? '' : (predictionState.input || ''), predictionStrategy: estimateOutcome.consumed ? '' : (predictionState.strategy || ''), predictionReason: estimateOutcome.consumed ? '' : (predictionState.reason || ''), predictionResult: predictionComparison, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '', volumeRepresentationKey: '', volumeRepresentationFromKey: '', volumeRepresentationVisitedKeys: [], volumeRepresentationReason: '', volumeRepresentationInvariantChecked: false, volumeRepresentationEvidenceChecked: false, volumeRepresentationConnectionSaved: false, retrievalAnswer: '', retrievalResult: null, retrievalAttemptCount: 0, actionFeedback: '📏 Measured: ' + measurementFeedback + (predictionComparison ? ' • ' + predictionComparison.accuracyLabel : ' • Observation only: no eligible committed estimate was compared.') });
+          var measurementPatch = { measureResult: m, measureHistory: mh, volumeEstimateCommitment: estimateOutcome.nextCommitment, volumeEstimateObservedTargets: estimateOutcome.observedTargetKeys, volumeEstimateCommitError: estimateOutcome.status === 'target_mismatch' ? 'That measurement was a different structure. Your original estimate remains locked for its aimed structure.' : '', volumePrediction: estimateOutcome.consumed ? '' : (predictionState.input || ''), predictionStrategy: estimateOutcome.consumed ? '' : (predictionState.strategy || ''), predictionReason: estimateOutcome.consumed ? '' : (predictionState.reason || ''), predictionResult: predictionComparison, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '', volumeRepresentationKey: '', volumeRepresentationFromKey: '', volumeRepresentationVisitedKeys: [], volumeRepresentationReason: '', volumeRepresentationInvariantChecked: false, volumeRepresentationEvidenceChecked: false, volumeRepresentationConnectionSaved: false, retrievalAnswer: '', retrievalResult: null, retrievalAttemptCount: 0, actionFeedback: '📏 Measured: ' + measurementFeedback + (predictionComparison ? ' • ' + predictionComparison.accuracyLabel : ' • Observation only: no eligible committed estimate was compared.') };
+          // Omit these keys so this native closure cannot overwrite newer learner work.
+          if (preserveRetrievalWork) {
+            delete measurementPatch.retrievalAnswer;
+            delete measurementPatch.retrievalResult;
+            delete measurementPatch.retrievalAttemptCount;
+          }
+          upd(measurementPatch);
           var measurementAnnouncement = (m.isComplete === false
             ? 'Measurement limit reached. At least ' + m.count + ' connected blocks were found. This result is incomplete'
             : m.isSolidPrism
@@ -15274,6 +15386,9 @@
 
       var engine = window[engineKey];
       var sceneOverview = sceneMapOpen && engine && engine.getSceneOverview ? engine.getSceneOverview() : null;
+      var activeRetrievalCheckpoint = buildRetrievalCheckpoint(measureHistory, retrievalMeasurementCount(measureHistory, engine && engine._retrievalMeasurementProgress));
+      var activeRetrievalResult = retrievalResult && activeRetrievalCheckpoint && retrievalResult.checkpointId === activeRetrievalCheckpoint.id ? retrievalResult : null;
+      var retrievalComplete = !!(activeRetrievalResult && activeRetrievalResult.correct);
       function runMobileButtonAction(actionKey, action, ev) {
         if (!engine || engine._touchControlsEnabled === false || typeof action !== 'function') return;
         if (ev && ev.type === 'touchstart') {
@@ -15856,7 +15971,8 @@
               el('button', { type: 'button', className: 'gw-prediction-close gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_close_volume_estimate_drawer', 'Close volume estimate drawer'), onClick: function() { upd('showPredictionPanel', false); focusWorldSurface(); } }, '\u00D7')
             ),
             el('p', { style: { gridColumn: '1 / -1', margin: 0, color: '#dbeafe', fontSize: '10px', lineHeight: 1.4 } }, 'This is an ungraded estimate. Aim at one unmeasured structure, commit your thinking, then measure that same structure.'),
-            el('label', { htmlFor: 'gw-volume-prediction', style: { color: '#fde68a', fontSize: '10px', fontWeight: 700, whiteSpace: 'nowrap' } }, 'Estimate V'),
+            el('label', { htmlFor: 'gw-volume-prediction', className: 'gw-prediction-field' },
+            el('span', null, 'Estimated volume'),
             el('input', {
               id: 'gw-volume-prediction',
               type: 'text', inputMode: 'decimal', value: volumePrediction, disabled: !!volumeEstimateCommitment,
@@ -15864,12 +15980,13 @@
               placeholder: __alloT('stem.geometryworld.e_g_24','e.g. 24'),
               'aria-label': __alloT('stem.geometryworld.a11y_estimated_volume_in_cubic_units', 'Estimated volume in cubic units'),
               'aria-invalid': String(volumePrediction || '').trim() && !volumeEstimateDraftValid ? 'true' : 'false',
-              'aria-describedby': 'gw-volume-estimate-status',
+              'aria-describedby': 'gw-volume-prediction-unit gw-volume-estimate-status',
               title: volumeEstimateCommitment ? 'This estimate is locked until it is measured or you choose Change estimate.' : 'Enter an estimate before measuring. Decimals and fractions such as 3/4 are supported.',
               style: { width: '58px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid #64748b', borderRadius: '4px', padding: '2px 4px', color: '#fff', fontSize: '11px', fontFamily: 'monospace' }
             }),
-            el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '9px' } }, 'cu'),
-            el('label', { htmlFor: 'gw-prediction-strategy', style: { color: '#c4b5fd', fontSize: '9px', fontWeight: 700 } }, 'using'),
+            el('span', { id: 'gw-volume-prediction-unit', className: 'gw-prediction-unit' }, 'cubic units')),
+            el('label', { htmlFor: 'gw-prediction-strategy', className: 'gw-prediction-field' },
+            el('span', null, 'Strategy'),
             el('select', {
               id: 'gw-prediction-strategy', value: predictionStrategy, disabled: !!volumeEstimateCommitment,
               onChange: function(ev) { upd({ predictionStrategy: ev.target.value, volumeEstimateCommitError: '' }); },
@@ -15881,14 +15998,17 @@
               el('option', { value: 'layers' }, 'Base area \u00d7 height'),
               el('option', { value: 'decomposition' }, 'Split into prisms'),
               el('option', { value: 'bounding box' }, 'Box \u2212 empty space')
-            ),
+            )),
+            el('label', { htmlFor: 'gw-prediction-reason', className: 'gw-prediction-field' },
+            el('span', null, 'Reason'),
             el('input', {
+              id: 'gw-prediction-reason',
               type: 'text', value: predictionReason, disabled: !!volumeEstimateCommitment,
               onChange: function(ev) { upd({ predictionReason: ev.target.value, volumeEstimateCommitError: '' }); },
               placeholder: predictionScaffold.reasonPrompt,
               'aria-label': __alloT('stem.geometryworld.a11y_brief_reason_for_estimate', 'Brief reason for estimate'),
               style: { width: '125px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid #64748b', borderRadius: '4px', padding: '2px 4px', color: '#fff', fontSize: '9px' }
-            }),
+            })),
             el('button', {
               type: 'button', className: 'gw-compact-action gw-focusable',
               'data-geometry-estimate-action': volumeEstimateCommitment ? 'change' : 'commit',
@@ -15925,8 +16045,8 @@
             }, volumeEstimateCommitment ? 'Change estimate' : 'Commit estimate'),
             el('div', { id: 'gw-volume-estimate-status', role: 'status', 'aria-live': 'polite', 'data-geometry-estimate-status': volumeEstimateCommitment ? 'locked' : volumeEstimateCommitError || (String(volumePrediction || '').trim() && !volumeEstimateDraftValid) ? 'error' : 'draft', style: { gridColumn: '1 / -1', color: volumeEstimateCommitError || (String(volumePrediction || '').trim() && !volumeEstimateDraftValid) ? '#fecaca' : volumeEstimateCommitment ? '#a7f3d0' : '#bfdbfe', fontSize: '9px', fontWeight: volumeEstimateCommitment || volumeEstimateCommitError ? 750 : 600, lineHeight: 1.4 } },
               volumeEstimateCommitment
-                ? 'Estimate locked for the aimed structure. Measure that same structure; the original stays fixed.'
-                : volumeEstimateCommitError || (String(volumePrediction || '').trim() && !volumeEstimateDraftValid ? 'Enter a positive number, decimal, or fraction before committing.' : 'Aim at an unmeasured structure, commit, then press M. Difference is described only for an estimate committed before measurement; it is not scored.')
+                ? (Number.isFinite(volumeEstimateCommitment.prediction) && volumeEstimateCommitment.prediction > 0 ? 'Estimate of ' + formatMeasurementQuantity(volumeEstimateCommitment.prediction, 'volume') + ' locked' : 'Estimate locked') + ' for the aimed structure. Measure that same structure; the original stays fixed.'
+                : volumeEstimateCommitError || (String(volumePrediction || '').trim() && !volumeEstimateDraftValid ? 'Enter a positive number, decimal, or fraction before committing.' : 'Aim at an unmeasured structure, commit, then ' + (isMobile && touchMode ? 'tap Measure.' : 'press M.') + ' Difference is described only for an estimate committed before measurement; it is not scored.')
             ),
             el('div', { 'data-geometry-prediction-scaffold': predictionScaffold.level, title: predictionScaffold.cue, style: { flexBasis: '100%', display: 'flex', gap: '5px', alignItems: 'center', color: predictionScaffold.level === 'independent' ? '#86efac' : '#bfdbfe', fontSize: '9px', lineHeight: 1.3 } },
               el('span', { style: { fontWeight: 800, whiteSpace: 'nowrap' } }, predictionScaffold.label + ':'),
@@ -16328,7 +16448,7 @@
                     })
                   )
                 ),
-                worldActive && el('label', { className: 'gw-settings-field' }, el('span', null, 'Optional panel'),
+                worldActive && el('label', { className: 'gw-settings-field' }, el('span', null, 'Optional panel (this session)'),
                   el('select', { value: hudPanel, 'data-gw-workspace-panel': 'true', onChange: function(ev) { setHudPanel(ev.target.value, ev.target.options[ev.target.selectedIndex].text); } },
                     el('option', { value: '' }, 'None'), el('option', { value: 'progress' }, 'Lesson progress'), el('option', { value: 'map', disabled: !engine }, 'Minimap'), el('option', { value: 'history', disabled: measureHistory.length === 0 }, 'Measurement notebook'), el('option', { value: 'inventory', disabled: !engine }, 'Block counts'), el('option', { value: 'transform' }, 'Transform lab'))),
                 worldActive && el('p', { className: 'gw-workspace-save-status' }, 'Current layout: ' + (hudPanel === GW_HUD_PRESETS[hudPreset].hudPanel ? GW_HUD_PRESETS[hudPreset].label : 'Custom')),
@@ -17482,7 +17602,7 @@
           })
         )),
         // ── Coordinate & Compass HUD (bottom-left) ──
-        workspacePreferences.showCoordinates && engine && engine.camera && el('details', { className: 'gw-coordinate-hud', open: typeof window === 'undefined' || (window.innerWidth > 800 && window.innerHeight > 520) },
+        workspacePreferences.showCoordinates && engine && engine.camera && el('details', { className: 'gw-coordinate-hud', open: typeof window === 'undefined' || (window.innerWidth > 800 && window.innerHeight > 650) },
           el('summary', { className: 'gw-coordinate-summary', onKeyDown: function(ev) { if (ev.key === ' ' || ev.key === 'Enter') ev.stopPropagation(); } }, 'Position'),
           renderCoordinateReadout(el, engine.camera.position, 'camera'),
           (function() {
@@ -17730,20 +17850,24 @@
             )
           ),
           el('div', { role: 'tabpanel', id: 'gw-notebook-view-records', 'aria-labelledby': 'gw-notebook-tab-records', hidden: notebookView !== 'records', tabIndex: 0 },
-            el('p', { className: 'gw-notebook-caption' }, completedMeasurements.length + ' complete \u00b7 ' + measureHistory.length + ' scans retained' + (measureHistory.length > 5 ? ' \u00b7 latest 5 shown' : '')),
-            el('ol', { className: 'gw-notebook-records', 'aria-label': 'Recent measurement records' }, measureHistory.slice(-5).reverse().map(function(mh, mi) {
+            el('p', { className: 'gw-notebook-caption' }, completedMeasurements.length + ' complete \u00b7 ' + measureHistory.length + ' scans retained' + (measureHistory.length > 5 && !showAllNotebookRecords ? ' \u00b7 latest 5 shown' : '')),
+            measureHistory.length > 5 && el('label', { className: 'gw-notebook-record-scope' },
+              el('input', { type: 'checkbox', checked: showAllNotebookRecords, 'aria-controls': 'gw-notebook-records',
+                onChange: function(ev) { setShowAllNotebookRecords(ev.target.checked); } }),
+              el('span', null, 'Show all ' + measureHistory.length + ' retained scans')),
+            el('ol', { id: 'gw-notebook-records', className: 'gw-notebook-records', 'aria-label': 'Recent measurement records' }, measureHistory.slice(showAllNotebookRecords ? 0 : -5).reverse().map(function(mh, mi) {
               var entry = measurementNotebookEntry(mh);
               return el('li', { key: mi, className: 'gw-history-row', 'data-current': mi === 0 ? 'true' : 'false', 'data-incomplete': entry.complete ? 'false' : 'true' },
                 el('strong', { className: 'gw-notebook-record-title' }, (mi === 0 ? 'Latest' : 'Record ' + (measureHistory.length - mi)) + ' \u00b7 ' + entry.kind),
                 el('dl', { className: 'gw-notebook-quantities' },
                   entry.dimensions && el(React.Fragment, null, el('dt', null, entry.dimensionLabel), el('dd', null, entry.dimensions)),
-                  el('dt', null, entry.volumeLabel), el('dd', null, entry.volume === null ? 'Unavailable' : entry.volume + ' cubic units'),
-                  entry.surfaceArea !== null && el(React.Fragment, null, el('dt', null, 'Exposed surface area'), el('dd', null, entry.surfaceArea + ' square units'))
+                  el('dt', null, entry.volumeLabel), el('dd', null, entry.volumeQuantity === null ? 'Unavailable' : entry.volumeQuantity),
+                  el('dt', { className: entry.surfaceAreaQuantity === null ? 'gw-notebook-surface-unavailable' : undefined }, 'Exposed surface area'), el('dd', { className: entry.surfaceAreaQuantity === null ? 'gw-notebook-surface-unavailable' : undefined, 'data-geometry-record-surface': entry.surfaceAreaState }, entry.surfaceAreaQuantity === null ? entry.surfaceAreaUnavailable : entry.surfaceAreaQuantity)
                 ),
                 !entry.complete && el('p', { className: 'gw-notebook-caption' }, 'Partial scan; not evidence for comparison or practice.'),
                 entry.estimate !== null && el('details', { className: 'gw-notebook-estimate' },
                   el('summary', null, 'Estimate and reasoning'),
-                  el('p', null, 'Committed estimate: ' + entry.estimate + ' cubic units. Descriptive, ungraded.'),
+                  el('p', null, 'Committed estimate: ' + entry.estimateQuantity + '. Descriptive, ungraded.'),
                   entry.strategy && el('p', null, 'Strategy: ' + entry.strategy),
                   el('p', null, entry.reason ? 'Reason: ' + entry.reason : 'No written reason recorded.')
                 )
@@ -17754,28 +17878,29 @@
             measurementComparison ? el('div', { className: 'gw-history-comparison', 'data-geometry-measurement-comparison': 'true' },
               el('h3', null, 'Latest two complete measurements'),
               el('dl', { className: 'gw-notebook-quantities' },
-                el('dt', null, 'Previous occupied volume'), el('dd', null, formatVolume(measurementComparison.previousVolume) + ' cubic units'),
-                el('dt', null, 'Latest occupied volume'), el('dd', null, formatVolume(measurementComparison.latestVolume) + ' cubic units'),
+                el('dt', null, 'Previous occupied volume'), el('dd', null, formatMeasurementQuantity(measurementComparison.previousVolume, 'volume')),
+                el('dt', null, 'Latest occupied volume'), el('dd', null, formatMeasurementQuantity(measurementComparison.latestVolume, 'volume')),
                 el('dt', null, 'Occupied volume change'), el('dd', { 'data-geometry-quantity-change': 'volume' }, formatMeasurementChange(measurementComparison.volumeDifference, 'volume')),
                 measurementComparison.surfaceAreaDifference !== null && el(React.Fragment, null,
-                  el('dt', null, 'Previous exposed surface'), el('dd', null, formatVolume(measurementComparison.previousSurfaceArea) + ' square units'),
-                  el('dt', null, 'Latest exposed surface'), el('dd', null, formatVolume(measurementComparison.latestSurfaceArea) + ' square units')),
+                  el('dt', null, 'Previous exposed surface'), el('dd', null, formatMeasurementQuantity(measurementComparison.previousSurfaceArea, 'surface')),
+                  el('dt', null, 'Latest exposed surface'), el('dd', null, formatMeasurementQuantity(measurementComparison.latestSurfaceArea, 'surface'))),
                 el('dt', null, 'Exposed surface area change'), el('dd', { 'data-geometry-quantity-change': 'surface' }, formatMeasurementChange(measurementComparison.surfaceAreaDifference, 'surface'))
               ),
-              measurementComparison.moreSurfaceEfficient && el('p', { className: 'gw-notebook-insight' }, (measurementComparison.moreSurfaceEfficient === 'latest' ? 'Latest' : 'Previous') + ' measurement has ' + formatVolume(Math.abs(measurementComparison.surfaceAreaDifference)) + ' fewer square units of exposed surface for the same occupied volume.'),
+              measurementComparison.moreSurfaceEfficient && el('p', { className: 'gw-notebook-insight' }, (measurementComparison.moreSurfaceEfficient === 'latest' ? 'Latest' : 'Previous') + ' measurement has ' + formatMeasurementQuantity(Math.abs(measurementComparison.surfaceAreaDifference), 'surface', 'fewer') + ' of exposed surface for the same occupied volume.'),
               measurementComparison.surfaceAreaDifference === null && el('p', { className: 'gw-notebook-caption' }, 'Exact exposed surface areas are needed to compare covering.'),
               el('p', { className: 'gw-notebook-question' }, measurementComparison.sameVolume ? measurementComparison.surfaceAreaDifference !== null && measurementComparison.surfaceAreaDifference !== 0 ? 'The occupied volume stayed the same. Which shared or exposed faces explain the surface-area difference?' : 'How could rearranging the same occupied units change the exposed faces?' : 'What changed in the occupied space? Which layers, gaps, or pieces explain the difference?'),
               el('button', { type: 'button', className: 'gw-reflect-trigger gw-focusable', 'data-geometry-reflect-trigger': 'notebook', onClick: openGeometryReflection }, 'Reflect on the comparison')
             ) : el('p', { className: 'gw-notebook-empty' }, 'Two complete measurements are needed for a comparison.')
           ),
           el('div', { role: 'tabpanel', id: 'gw-notebook-view-practice', 'aria-labelledby': 'gw-notebook-tab-practice', hidden: notebookView !== 'practice', tabIndex: 0 },
-          activeRetrievalCheckpoint ? el('div', { className: 'gw-retrieval-card', 'data-geometry-retrieval-checkpoint': activeRetrievalCheckpoint.concept },
+          activeRetrievalCheckpoint ? el('div', { className: 'gw-retrieval-card', 'data-geometry-retrieval-checkpoint': activeRetrievalCheckpoint.concept, 'data-geometry-practice-state': retrievalComplete ? 'complete' : activeRetrievalResult ? 'retry' : 'ready' },
             el('h3', { className: 'gw-retrieval-title' }, 'Apply the relationship'),
+            measureHistory.length > 0 && measureHistory[measureHistory.length - 1].isComplete === false && el('p', { className: 'gw-notebook-caption', 'data-geometry-practice-source': 'complete' }, 'Based on Record ' + (measureHistory.lastIndexOf(latestCompleteMeasurement) + 1) + ', the latest complete measurement.'),
             el('p', { id: 'gw-retrieval-prompt' }, activeRetrievalCheckpoint.prompt),
             el('label', { htmlFor: 'gw-retrieval-answer' }, 'Your answer (' + (activeRetrievalCheckpoint.concept === 'scale_height' ? 'units' : activeRetrievalCheckpoint.concept === 'layer_area' ? 'square units' : 'cubic units') + ')'),
             el('form', { className: 'gw-retrieval-controls', onSubmit: function(ev) {
                   ev.preventDefault();
-                  if (retrievalResult && retrievalResult.checkpointId === activeRetrievalCheckpoint.id && retrievalResult.correct) return;
+                  if (retrievalComplete) return;
                   var nextAttempt = retrievalAttemptCount + 1;
                   var result = checkRetrievalAnswer(activeRetrievalCheckpoint, retrievalAnswer, nextAttempt);
                   if (!result) return;
@@ -17790,57 +17915,47 @@
                   announceToSR(result.feedback);
                 } },
               el('input', {
-                id: 'gw-retrieval-answer', type: 'text', inputMode: 'decimal', value: retrievalAnswer, disabled: !!(retrievalResult && retrievalResult.checkpointId === activeRetrievalCheckpoint.id && retrievalResult.correct),
+                id: 'gw-retrieval-answer', type: 'text', inputMode: 'decimal', value: retrievalAnswer, disabled: retrievalComplete,
                 className: 'gw-retrieval-input gw-focusable',
                 onChange: function(ev) { upd({ retrievalAnswer: ev.target.value, retrievalResult: null }); },
-                'aria-describedby': 'gw-retrieval-prompt', 'aria-invalid': retrievalResult && retrievalResult.valid === false ? 'true' : 'false',
+                'aria-describedby': activeRetrievalResult ? 'gw-retrieval-prompt gw-retrieval-feedback' : 'gw-retrieval-prompt', 'aria-invalid': activeRetrievalResult && activeRetrievalResult.valid === false ? 'true' : 'false',
                 placeholder: 'answer',
                 autoComplete: 'off'
               }),
               el('button', {
                 type: 'submit', className: 'gw-focusable gw-retrieval-button',
-                disabled: !!(retrievalResult && retrievalResult.checkpointId === activeRetrievalCheckpoint.id && retrievalResult.correct),
-                'aria-label': __alloT('stem.geometryworld.a11y_check_retrieval_answer', 'Check retrieval answer')
-              }, 'Check')
+                disabled: retrievalComplete,
+                'aria-label': retrievalComplete ? 'Answer correct' : __alloT('stem.geometryworld.a11y_check_retrieval_answer', 'Check retrieval answer')
+              }, retrievalComplete ? 'Correct' : 'Check')
             ),
-            retrievalResult && retrievalResult.checkpointId === activeRetrievalCheckpoint.id && el('div', { role: 'status', 'data-geometry-retrieval-result': retrievalResult.correct ? 'correct' : 'retry', style: { marginTop: '3px', color: retrievalResult.correct ? '#86efac' : '#fde68a', fontSize: '9px', fontWeight: 700 } }, retrievalResult.feedback)
+            activeRetrievalResult && el('div', { id: 'gw-retrieval-feedback', role: 'status', 'data-geometry-retrieval-result': activeRetrievalResult.correct ? 'correct' : 'retry', style: { marginTop: '3px', color: activeRetrievalResult.correct ? '#86efac' : '#fde68a', fontSize: '9px', fontWeight: 700 } }, activeRetrievalResult.feedback),
+            el('details', { key: activeLesson + '-' + activeRetrievalCheckpoint.id, className: 'gw-retrieval-hint', 'data-geometry-retrieval-hint': 'true' },
+              el('summary', { className: 'gw-focusable' }, 'Hint'),
+              el('p', null, activeRetrievalCheckpoint.hint))
           ) : el('p', { className: 'gw-notebook-empty' }, 'Complete another measurement to investigate a related question.')),
           el('div', { className: 'gw-notebook-footer' }, el('button', { type: 'button', className: 'gw-notebook-return gw-focusable', onClick: function() { closeHudPanel('Measurements'); } }, measureResult ? 'Back to measurement' : 'Return to world'))
         ),
-        // ── Block inventory widget (top-right, shows counts per type) ──
+        // ── Student block inventory ──
         hudPanel === 'inventory' && engine && el('section', { id: 'gw-inventory-panel', className: 'gw-inventory-panel', role: 'region', 'aria-label': __alloT('stem.geometryworld.a11y_block_inventory', 'Block inventory') },
-          el('div', { className: 'gw-inventory-title gw-hud-panel-heading' }, el('span', null, 'BLOCKS PLACED'), el('button', { type: 'button', className: 'gw-hud-panel-close gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_hide_block_inventory', 'Hide block inventory'), onClick: function() { closeHudPanel('Block counts'); } }, '\u00D7')),
-          // Real-time total volume counter
+          el('div', { className: 'gw-inventory-title gw-hud-panel-heading' }, el('h3', null, 'Block counts'), el('button', { type: 'button', className: 'gw-hud-panel-close gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_hide_block_inventory', 'Hide block inventory'), onClick: function() { closeHudPanel('Block counts'); } }, '\u00D7')),
           (function() {
-            var totalVol = 0;
-            var bks = Object.keys(engine.blocks);
-            for (var vi = 0; vi < bks.length; vi++) {
-              var bm = engine.blocks[bks[vi]];
-              if (bm && bm.userData && !bm.userData._lessonBlock && bm.userData.volume) totalVol += bm.userData.volume;
-            }
-            return el('div', { className: 'gw-inventory-volume' },
-              '\uD83D\uDCE6 ' + (totalVol === Math.floor(totalVol) ? totalVol : totalVol.toFixed(2)) + ' cu'
+            var inventory = summarizeStudentInventory(engine.blocks);
+            return el(React.Fragment, null,
+              el('dl', { className: 'gw-inventory-summary' },
+                el('dt', null, 'Your placed pieces'), el('dd', { 'data-geometry-inventory-pieces': 'true' }, inventory.pieces + (inventory.pieces === 1 ? ' piece' : ' pieces')),
+                el('dt', null, 'Occupied volume'), el('dd', { 'data-geometry-inventory-volume': inventory.volume === null ? 'unavailable' : 'exact' }, inventory.volume === null ? 'Unavailable' : formatMeasurementQuantity(inventory.volume, 'volume'))
+              ),
+              inventory.pieces ? el('div', { className: 'gw-inventory-materials', role: 'region', 'aria-label': 'Placed pieces by material', tabIndex: 0,
+                onKeyDown: function(ev) { if (ev.key !== 'Escape') ev.stopPropagation(); } },
+                el('ul', null, inventory.materials.map(function(material) {
+                  return el('li', { key: material.type, className: 'gw-inventory-row', 'data-geometry-inventory-material': material.type },
+                    renderBlockSwatch(el, material.type),
+                    el('span', { className: 'gw-inventory-material-name' }, material.name),
+                    el('span', { className: 'gw-inventory-count' }, material.count)
+                  );
+                }))
+              ) : el('p', { className: 'gw-inventory-empty' }, 'No student-placed pieces yet.')
             );
-          })(),
-          (function() {
-            var counts = {};
-            var bk = Object.keys(engine.blocks);
-            for (var bi = 0; bi < bk.length; bi++) {
-              var bm = engine.blocks[bk[bi]];
-              if (bm && bm.userData.blockType && !bm.userData._lessonBlock && bm.userData.blockType !== 'grass') {
-                var bt = bm.userData.blockType;
-                counts[bt] = (counts[bt] || 0) + 1;
-              }
-            }
-            var typeKeys = Object.keys(counts).sort(function(a, b) { return counts[b] - counts[a]; });
-            if (typeKeys.length === 0) return el('div', { style: { color: 'var(--allo-stem-text-soft, #475569)', fontSize: '9px' } }, 'None yet');
-            return typeKeys.slice(0, 6).map(function(tk) {
-              var bt = BLOCK_TYPES.find(function(b) { return b.id === tk; });
-              return el('div', { key: tk, className: 'gw-inventory-row' },
-                el('span', null, (bt ? bt.emoji + ' ' : '') + tk),
-                el('span', { className: 'gw-inventory-count' }, counts[tk])
-              );
-            });
           })()
         ),
         sceneMapOpen && worldActive && engine && sceneOverview && el('section', {

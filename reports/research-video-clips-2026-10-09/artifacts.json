@@ -1,0 +1,56 @@
+[
+  {
+    "name": "content_engine_module.js",
+    "sha256": "7e0353118ae3d8a79dbf5301f3b924d81ecdb274587a3f35f75e9b5222193ebe",
+    "mirrors": [
+      "desktop/web-app/public/content_engine_module.js",
+      "desktop/app-build/content_engine_module.js",
+      "desktop/web-app/build/content_engine_module.js"
+    ]
+  },
+  {
+    "name": "view_misc_panels_module.js",
+    "sha256": "85efb2f5c229e58410def4b7c44d34f5c7114c0eae8f92e54053297ca5921d8c",
+    "mirrors": [
+      "desktop/web-app/public/view_misc_panels_module.js",
+      "desktop/app-build/view_misc_panels_module.js",
+      "desktop/web-app/build/view_misc_panels_module.js"
+    ]
+  },
+  {
+    "name": "gemini_api_module.js",
+    "sha256": "704c22ea299b44d14371ed55a002a6d058e30fd04b0d254b633bcf409d130845",
+    "mirrors": [
+      "desktop/web-app/public/gemini_api_module.js",
+      "desktop/app-build/gemini_api_module.js",
+      "desktop/web-app/build/gemini_api_module.js"
+    ]
+  },
+  {
+    "name": "text_pipeline_helpers_module.js",
+    "sha256": "118830a0b51847d3df88dc4f147f964fccb92735cde9700c262d2742982bd32d",
+    "mirrors": [
+      "desktop/web-app/public/text_pipeline_helpers_module.js",
+      "desktop/app-build/text_pipeline_helpers_module.js",
+      "desktop/web-app/build/text_pipeline_helpers_module.js"
+    ]
+  },
+  {
+    "name": "view_simplified_module.js",
+    "sha256": "0af9108e4ed1912258f13c3e03afc847ae53371e66da7b03ee0e88e32e82c595",
+    "mirrors": [
+      "desktop/web-app/public/view_simplified_module.js",
+      "desktop/app-build/view_simplified_module.js",
+      "desktop/web-app/build/view_simplified_module.js"
+    ]
+  },
+  {
+    "name": "doc_pipeline_module.js",
+    "sha256": "9fbe4362885fc7eec6452ac07c98d255607af6ff6bc4b006fb2825d8dcf9643f",
+    "mirrors": [
+      "desktop/web-app/public/doc_pipeline_module.js",
+      "desktop/app-build/doc_pipeline_module.js",
+      "desktop/web-app/build/doc_pipeline_module.js"
+    ]
+  }
+]

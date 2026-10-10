@@ -1,0 +1,23 @@
+{
+  "mode": "Verified aggregation of same-source test results",
+  "sourceBeforeSHA256": "5e87e036527367946e53fff6cd6a373a2564b0b82833e7c88760887e8e7770e5",
+  "sourceAfterSHA256": "5e87e036527367946e53fff6cd6a373a2564b0b82833e7c88760887e8e7770e5",
+  "exitCode": 0,
+  "proofFiles": [
+    "combined-test-execution.json",
+    "isolated-perception_lab_experiments-execution.json",
+    "isolated-perception_lab_focus_workspace-execution.json",
+    "isolated-perception_lab_live_comparison-execution.json",
+    "isolated-perception_lab_png_export-execution.json",
+    "isolated-perception_lab_precision_controls-execution.json"
+  ],
+  "files": [
+    "perception_lab_experiments.test.js",
+    "perception_lab_focus_workspace.test.js",
+    "perception_lab_live_comparison.test.js",
+    "perception_lab_matching.test.js",
+    "perception_lab_png_export.test.js",
+    "perception_lab_precision_controls.test.js",
+    "perception_lab_repeat_study.test.js"
+  ]
+}

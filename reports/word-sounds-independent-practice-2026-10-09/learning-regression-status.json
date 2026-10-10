@@ -1,0 +1,21 @@
+{
+  "phase": "finished",
+  "pid": 34140,
+  "started": "2026-10-10T01:22:33.156Z",
+  "steps": [
+    {
+      "name": "voice_mode",
+      "code": 0
+    },
+    {
+      "name": "mic_lifecycle",
+      "code": 0
+    },
+    {
+      "name": "isolation_startup",
+      "code": 0
+    }
+  ],
+  "code": 0,
+  "finished": "2026-10-10T01:22:35.604Z"
+}

@@ -1,0 +1,481 @@
+{
+  "candidateSourceSha256": "de20974db8f350264fd6ec10e982b12f45a18d9fdcacd841eec8b56d0157fc5f",
+  "candidateIncludesRenderer": true,
+  "rendererSha256": "c229c26853b94128448dda66d96008338bb360072f3876e65107621113bd6dc2",
+  "metadataSha256": "673538d1d37134930cfc657daebc43b1f8eb7defbda312a2ea2505c825a31747",
+  "hemoglobinDataSha256": "6abfaa23e317fb979122a64894bc8789152e88b2a82070f0d097b5c21bd6a8b5",
+  "sectionMeshSha256": "2f644b648142d46ae9c541c6b376eafcabfa72d274b4b1fbc022de4860e4b702",
+  "buildMs": 232582,
+  "draws": 14,
+  "triangles": 99612,
+  "maxVertices": 11907,
+  "normalError": 4.811563525386475e-8,
+  "wrongWinding": 0,
+  "degenerate": 0,
+  "minimumArea": 5.253489999691025e-8,
+  "uint32Meshes": 0,
+  "nonfinite": 0,
+  "unsafeIndices": 0,
+  "resources": 38,
+  "profileProof": {
+    "diameterMetres": 0.0000075,
+    "centerThicknessWorld": 0.1035805,
+    "centerThicknessMicrometres": 0.77685375,
+    "maximumThicknessWorld": 0.3280913163629952,
+    "maximumThicknessMicrometres": 2.460684872722464,
+    "maximumThicknessAtRadialFraction": 0.70021,
+    "windowMinimumRadialDistance": 0.06803508501982758
+  },
+  "reference": {
+    "axis": "x",
+    "extent": 1,
+    "center": 0,
+    "metres": 0.0000075
+  },
+  "wholeBounds": {
+    "min": [
+      -0.5,
+      -0.5,
+      -0.16400448977947235
+    ],
+    "max": [
+      0.5,
+      0.5,
+      0.16400448977947235
+    ]
+  },
+  "sectionBounds": {
+    "min": [
+      -0.5,
+      -0.5,
+      -0.16400448977947235
+    ],
+    "max": [
+      0.5,
+      0.5,
+      0.16404564678668976
+    ]
+  },
+  "nativeRays": [
+    {
+      "id": "center",
+      "section": false,
+      "firstId": "center",
+      "hitPoint": [
+        -1.1105028008273621e-10,
+        -2.2210056016547242e-10,
+        0.05179024861187154
+      ],
+      "targetDistance": 1.4101636297235048e-9
+    },
+    {
+      "id": "rim",
+      "section": false,
+      "firstId": "rim",
+      "hitPoint": [
+        0.3399864970979123,
+        0.08999549903263743,
+        0.16396176011524055
+      ],
+      "targetDistance": 0.00007635447425291356
+    },
+    {
+      "id": "membrane",
+      "section": false,
+      "firstId": "membrane",
+      "hitPoint": [
+        0.4349753686908016,
+        -0.14998973695450066,
+        0.10718523792126966
+      ],
+      "targetDistance": 0.00020698809788101318
+    },
+    {
+      "id": "spectrin",
+      "section": true,
+      "firstId": "spectrin",
+      "hitPoint": [
+        -0.18,
+        0.14,
+        0.1186556497315463
+      ],
+      "targetDistance": 2.7801795865478596e-9
+    },
+    {
+      "id": "hemoglobin",
+      "section": true,
+      "firstId": "hemoglobin",
+      "hitPoint": [
+        -0.109096272,
+        0.091755017,
+        0.07452876801070873
+      ],
+      "targetDistance": 2.288488787360876e-9
+    }
+  ],
+  "centerSurfaceRays": [
+    {
+      "face": "front",
+      "firstId": "center",
+      "z": 0.05179024860262882
+    },
+    {
+      "face": "back",
+      "firstId": "center",
+      "z": -0.05179024860262882
+    }
+  ],
+  "nearCenterRays": [
+    {
+      "offset": 0.000001,
+      "face": "front",
+      "firstId": "center",
+      "z": 0.05179028581433365
+    },
+    {
+      "offset": 0.000001,
+      "face": "back",
+      "firstId": "center",
+      "z": -0.05179028581433365
+    },
+    {
+      "offset": 0.0001,
+      "face": "front",
+      "firstId": "center",
+      "z": 0.05179396977312678
+    },
+    {
+      "offset": 0.0001,
+      "face": "back",
+      "firstId": "center",
+      "z": -0.05179396977312678
+    },
+    {
+      "offset": 0.002,
+      "face": "front",
+      "firstId": "center",
+      "z": 0.05186467201259093
+    },
+    {
+      "offset": 0.002,
+      "face": "back",
+      "firstId": "center",
+      "z": -0.05186467201259093
+    }
+  ],
+  "wrongTriangleExamples": [],
+  "stablePoseResources": true,
+  "allResourcesDisposed": true,
+  "hemoglobin": {
+    "pdb": "2HHB",
+    "alphaCarbons": 574,
+    "hemes": 4,
+    "hemeHeavyAtoms": 172,
+    "coordinateError": 4.999197050770121e-8,
+    "ironBondCount": 0
+  },
+  "scienceNotes": [
+    "Healthy resting mature human erythrocyte; no nucleus or mitochondria.",
+    "Molecular size, spacing, colours and particle counts are enlarged or sampled.",
+    "2HHB represents deoxygenated hemoglobin; no bound oxygen is shown.",
+    "Only Cα traces and HEM coordinates are retained; Fe–N coordination is omitted from the <=1.9 Å bond guides."
+  ],
+  "warnings": [],
+  "meshReports": [
+    {
+      "id": "center",
+      "pose": "whole",
+      "vertices": 10449,
+      "triangles": 3328,
+      "wrongWinding": 0,
+      "degenerate": 0,
+      "minimumArea": 0.000009460243046183666,
+      "bounds": {
+        "min": [
+          -0.5,
+          -0.5,
+          -0.16400448977947235
+        ],
+        "max": [
+          0.5,
+          0.5,
+          0.16400448977947235
+        ]
+      }
+    },
+    {
+      "id": "rim",
+      "pose": "whole",
+      "vertices": 10449,
+      "triangles": 5632,
+      "wrongWinding": 0,
+      "degenerate": 0,
+      "minimumArea": 0.000117490387446917,
+      "bounds": {
+        "min": [
+          -0.5,
+          -0.5,
+          -0.16400448977947235
+        ],
+        "max": [
+          0.5,
+          0.5,
+          0.16400448977947235
+        ]
+      }
+    },
+    {
+      "id": "membrane",
+      "pose": "whole",
+      "vertices": 10449,
+      "triangles": 11264,
+      "wrongWinding": 0,
+      "degenerate": 0,
+      "minimumArea": 0.00006854050970209577,
+      "bounds": {
+        "min": [
+          -0.5,
+          -0.5,
+          -0.16400448977947235
+        ],
+        "max": [
+          0.5,
+          0.5,
+          0.16400448977947235
+        ]
+      }
+    },
+    {
+      "id": "center",
+      "pose": "section",
+      "vertices": 10115,
+      "triangles": 3197,
+      "wrongWinding": 0,
+      "degenerate": 0,
+      "minimumArea": 0.000003710259478007316,
+      "bounds": {
+        "min": [
+          -0.5,
+          -0.5,
+          -0.16400448977947235
+        ],
+        "max": [
+          0.5,
+          0.5,
+          0.16404564678668976
+        ]
+      }
+    },
+    {
+      "id": "rim",
+      "pose": "section",
+      "vertices": 10115,
+      "triangles": 5562,
+      "wrongWinding": 0,
+      "degenerate": 0,
+      "minimumArea": 0.0000015929980605371648,
+      "bounds": {
+        "min": [
+          -0.5,
+          -0.5,
+          -0.16400448977947235
+        ],
+        "max": [
+          0.5,
+          0.5,
+          0.16404564678668976
+        ]
+      }
+    },
+    {
+      "id": "membrane",
+      "pose": "section",
+      "vertices": 10115,
+      "triangles": 10797,
+      "wrongWinding": 0,
+      "degenerate": 0,
+      "minimumArea": 0.000002160534670826991,
+      "bounds": {
+        "min": [
+          -0.5,
+          -0.5,
+          -0.16400448977947235
+        ],
+        "max": [
+          0.5,
+          0.5,
+          0.16404564678668976
+        ]
+      }
+    },
+    {
+      "id": "membrane",
+      "pose": "section",
+      "vertices": 162,
+      "triangles": 160,
+      "wrongWinding": 0,
+      "degenerate": 0,
+      "minimumArea": 0.000015703892287525634,
+      "bounds": {
+        "min": [
+          -0.3400000035762787,
+          -0.019999999552965164,
+          0.05796748399734497
+        ],
+        "max": [
+          -0.019999999552965164,
+          0.30000001192092896,
+          0.16404545307159424
+        ]
+      }
+    },
+    {
+      "id": "membrane",
+      "pose": "section",
+      "vertices": 162,
+      "triangles": 160,
+      "wrongWinding": 0,
+      "degenerate": 0,
+      "minimumArea": 0.000015703882401226044,
+      "bounds": {
+        "min": [
+          -0.3400000035762787,
+          -0.019999999552965164,
+          0.05546748265624046
+        ],
+        "max": [
+          -0.019999999552965164,
+          0.30000001192092896,
+          0.16154545545578003
+        ]
+      }
+    },
+    {
+      "id": "hemoglobin",
+      "pose": "section",
+      "vertices": 4419,
+      "triangles": 8224,
+      "wrongWinding": 0,
+      "degenerate": 0,
+      "minimumArea": 6.766181420934475e-7,
+      "bounds": {
+        "min": [
+          -0.3400000035762787,
+          -0.019999999552965164,
+          -0.0035687617491930723
+        ],
+        "max": [
+          -0.019999999552965164,
+          0.30000001192092896,
+          0.15904544293880463
+        ]
+      }
+    },
+    {
+      "id": "spectrin",
+      "pose": "section",
+      "vertices": 11907,
+      "triangles": 17136,
+      "wrongWinding": 0,
+      "degenerate": 0,
+      "minimumArea": 2.8601460243123503e-7,
+      "bounds": {
+        "min": [
+          -0.3232949376106262,
+          0.0016255010850727558,
+          0.04920293763279915
+        ],
+        "max": [
+          -0.04911394044756889,
+          0.27376654744148254,
+          0.15408001840114594
+        ]
+      }
+    },
+    {
+      "id": "hemoglobin",
+      "pose": "section",
+      "vertices": 9877,
+      "triangles": 14568,
+      "wrongWinding": 0,
+      "degenerate": 0,
+      "minimumArea": 1.0191543655009828e-7,
+      "bounds": {
+        "min": [
+          -0.3159371018409729,
+          0.004143041558563709,
+          0.011445961892604828
+        ],
+        "max": [
+          -0.06396811455488205,
+          0.2736928462982178,
+          0.12266535311937332
+        ]
+      }
+    },
+    {
+      "id": "hemoglobin",
+      "pose": "section",
+      "vertices": 9926,
+      "triangles": 14688,
+      "wrongWinding": 0,
+      "degenerate": 0,
+      "minimumArea": 9.967961178538214e-8,
+      "bounds": {
+        "min": [
+          -0.3159371018409729,
+          0.004143041558563709,
+          0.011445961892604828
+        ],
+        "max": [
+          -0.06396811455488205,
+          0.2736928462982178,
+          0.12266535311937332
+        ]
+      }
+    },
+    {
+      "id": "hemoglobin",
+      "pose": "section",
+      "vertices": 3864,
+      "triangles": 4416,
+      "wrongWinding": 0,
+      "degenerate": 0,
+      "minimumArea": 6.381892905604563e-8,
+      "bounds": {
+        "min": [
+          -0.1340099722146988,
+          0.07691674679517746,
+          0.02764168567955494
+        ],
+        "max": [
+          -0.10904812067747116,
+          0.10450481623411179,
+          0.07208894938230515
+        ]
+      }
+    },
+    {
+      "id": "hemoglobin",
+      "pose": "section",
+      "vertices": 364,
+      "triangles": 480,
+      "wrongWinding": 0,
+      "degenerate": 0,
+      "minimumArea": 5.253489999691025e-8,
+      "bounds": {
+        "min": [
+          -0.13129761815071106,
+          0.08129383623600006,
+          0.03410080820322037
+        ],
+        "max": [
+          -0.11098557710647583,
+          0.09985969215631485,
+          0.06565309315919876
+        ]
+      }
+    }
+  ],
+  "failures": []
+}

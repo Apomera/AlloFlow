@@ -1,0 +1,49 @@
+{
+  "completed": true,
+  "enhancement": 62,
+  "pins": {
+    "renderer": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7",
+    "ui": "87d34fea4ff6c3db26cc11ff4390046b6c9fd4edc7d39bbfad0d1642d39201df"
+  },
+  "sourceMirrorsExact": true,
+  "sourceSyntax": true,
+  "rendererReverseExact": true,
+  "scopedWhitespace": true,
+  "indexEmpty": true,
+  "unit": {
+    "passed": 54,
+    "failed": 0,
+    "evidence": "unit/summary.json"
+  },
+  "native": {
+    "captures": 40,
+    "oldHighlightsExact": 15,
+    "relativityControlExact": true,
+    "geometryAndOldRouteMathExact": true,
+    "pausedPixelsExact": true,
+    "resourcesReleased": true,
+    "evidence": "native-attempt1/check.json"
+  },
+  "browser": {
+    "workflows": 5,
+    "accessibilityScopes": 3,
+    "screenshots": 5,
+    "evidence": "browser-attempt4/check.json"
+  },
+  "previews": {
+    "views": 18,
+    "oldViewsExact": 15,
+    "newViews": 3,
+    "evidence": "previews/check.json"
+  },
+  "mainReport": {
+    "beforeSha256": "07da3fa19ec5b57fae6b835c098954472f41e32c32f40fa0d07c63565bd55bf2",
+    "afterSha256": "1b192f03c2d5aadb34bd4d0327e26944b09d78387535eccbf834adfacec4b69c"
+  },
+  "limits": [
+    "Generated stellar groups, not surveyed objects or physical star sizes.",
+    "Authored exploration-camera path, not a gravitational spacecraft trajectory.",
+    "Focused Node canvas/event shim and Chromium SwiftShader checks; the full application DOM suite and physical-device GPU matrix were not run."
+  ],
+  "committed": false
+}

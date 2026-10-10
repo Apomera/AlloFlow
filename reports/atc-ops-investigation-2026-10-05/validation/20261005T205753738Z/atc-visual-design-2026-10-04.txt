@@ -1,0 +1,23 @@
+PASS Welcome airport diagrams, visual hierarchy, and touch targets at 1440px
+PASS Airport selection updates the visual airport summary without starting traffic at 1440px
+PASS Practice skill illustrations and preview disclosures fit accessibly at 1440px
+PASS Playing radar, flight controls, and operations have clear responsive geometry at 1440px
+PASS A real completed debrief presents reflection and evidence in a responsive workspace at 1440px
+PASS Welcome airport diagrams, visual hierarchy, and touch targets at 390px
+PASS Airport selection updates the visual airport summary without starting traffic at 390px
+PASS Practice skill illustrations and preview disclosures fit accessibly at 390px
+PASS Playing radar, flight controls, and operations have clear responsive geometry at 390px
+PASS A real completed debrief presents reflection and evidence in a responsive workspace at 390px
+PASS Welcome airport diagrams, visual hierarchy, and touch targets at 320px
+PASS Airport selection updates the visual airport summary without starting traffic at 320px
+PASS Practice skill illustrations and preview disclosures fit accessibly at 320px
+PASS Playing radar, flight controls, and operations have clear responsive geometry at 320px
+PASS A real completed debrief presents reflection and evidence in a responsive workspace at 320px
+PASS Airport artwork and keyboard selection retain visible focus and correct selected state
+PASS Command entry keeps readable previews, cancel behavior, and keyboard focus within the visual layout
+PASS Default controls have distinct boundaries and the custom high-contrast console uses black and yellow
+PASS Forced colors at 200 percent zoom preserve all major views and actual exercise progress
+PASS Reduced motion retains static diagrams and visible focus while genuine traffic still moves when resumed
+PASS Ops, lessons, and badge routes retain readable shared visual tokens at 1440px
+PASS Ops, lessons, and badge routes retain readable shared visual tokens at 320px
+{"passed":22,"failed":0,"errors":[],"sourceStable":true}

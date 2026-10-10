@@ -1,0 +1,40 @@
+{
+  "sourceSHA256": "8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940",
+  "beforeSHA256": "179ddeefd0c930ca4a084d98fc683c321fb4f36f720e62cddf8b30d56b576466",
+  "exactReversal": true,
+  "sourceOutsideEditIdentical": true,
+  "unknownSourceRejected": true,
+  "historicalAssertionsChanged": false,
+  "sourceHashes": {
+    "stem_lab/stem_tool_firstresponse.js": "179ddeefd0c930ca4a084d98fc683c321fb4f36f720e62cddf8b30d56b576466",
+    "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js": "179ddeefd0c930ca4a084d98fc683c321fb4f36f720e62cddf8b30d56b576466",
+    "desktop/app-build/stem_lab/stem_tool_firstresponse.js": "179ddeefd0c930ca4a084d98fc683c321fb4f36f720e62cddf8b30d56b576466",
+    "desktop/web-app/build/stem_lab/stem_tool_firstresponse.js": "179ddeefd0c930ca4a084d98fc683c321fb4f36f720e62cddf8b30d56b576466"
+  },
+  "indexSHA256": "8e20b05c29c0ebb6e2096635eefbb040deb73f79bd567630f4a8f85d09168404",
+  "additions": [
+    {
+      "file": "tests/helpers/firstresponse_arm_finish_delta.cjs",
+      "content": "const { createHash } = require('node:crypto');\nconst delta = require('./firstresponse_arm_finish_delta.json');\nconst hash = source => createHash('sha256').update(source).digest('hex');\nfunction revertArmFinish(source) {\n  if (hash(source) === delta.beforeSHA256) return source;\n  if (hash(source) !== delta.afterSHA256) throw new Error('Arm finish source does not match its exact refinement delta');\n  for (const edit of [...delta.edits].reverse()) {\n    if (source.split(edit.new).length !== 2) throw new Error('Arm finish reversal is not unique: ' + (edit.name || 'source edit'));\n    source = source.replace(edit.new, edit.old);\n  }\n  if (hash(source) !== delta.beforeSHA256) throw new Error('Arm finish reversal did not recover fixed baseline');\n  return source;\n}\nmodule.exports = { revertArmFinish, delta };\n",
+      "SHA256": "49b16f801c9365dd4e70d8ba80152a06d671c6040d25c6cdff533cd4e0b3d122",
+      "beforeSHA256": null,
+      "afterSHA256": "49b16f801c9365dd4e70d8ba80152a06d671c6040d25c6cdff533cd4e0b3d122"
+    },
+    {
+      "file": "tests/helpers/firstresponse_arm_finish_delta.json",
+      "content": "{\n  \"beforeSHA256\": \"179ddeefd0c930ca4a084d98fc683c321fb4f36f720e62cddf8b30d56b576466\",\n  \"afterSHA256\": \"8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940\",\n  \"edits\": [\n    {\n      \"old\": \"        skin, 'fr-rescuer-' + id + '-forearm', armSection);\",\n      \"new\": \"        skin, 'fr-rescuer-' + id + '-forearm', armSection);\\n      // Internal end disks can flicker through the continuous elbow surface.\\n      forearm.geometry.setDrawRange(0, forearm.geometry.groups[0].count);\"\n    },\n    {\n      \"old\": \"      shapedSegment(hand, elbow, shoulder,\\n        [[0,.061*handSize],[.38,.073*handSize],[.75,.068*handSize],[1,.060*handSize]],\\n        skin, 'fr-rescuer-' + id + '-upper-arm', armSection);\",\n      \"new\": \"      var upperArm = shapedSegment(hand, elbow, shoulder,\\n        [[0,.061*handSize],[.38,.073*handSize],[.75,.068*handSize],[1,.060*handSize]],\\n        skin, 'fr-rescuer-' + id + '-upper-arm', armSection);\\n      upperArm.geometry.setDrawRange(0, upperArm.geometry.groups[2].start);\"\n    }\n  ]\n}\n",
+      "SHA256": "de68e78d3411b4a6270c95230983f1a0297f1e2bf209e62c5ab9cd3661705b2a",
+      "beforeSHA256": null,
+      "afterSHA256": "de68e78d3411b4a6270c95230983f1a0297f1e2bf209e62c5ab9cd3661705b2a"
+    }
+  ],
+  "edits": [
+    {
+      "file": "tests/helpers/firstresponse_wrist_shading_refinement_delta.cjs",
+      "before": "const { createHash } = require('node:crypto');\nconst delta = require('./firstresponse_wrist_shading_refinement_delta.json');\nconst hash = source => createHash('sha256').update(source).digest('hex');\nfunction revertWristShadingRefinement(source) {\n  if (hash(source) === delta.beforeSHA256) return source;\n  if (hash(source) !== delta.afterSHA256) throw new Error('Wrist shading source does not match its exact refinement delta');\n  for (const edit of [...delta.edits].reverse()) {\n    if (source.split(edit.new).length !== 2) throw new Error('Wrist shading reversal is not unique: ' + (edit.name || 'source edit'));\n    source = source.replace(edit.new, edit.old);\n  }\n  if (hash(source) !== delta.beforeSHA256) throw new Error('Wrist shading reversal did not recover fixed baseline');\n  return source;\n}\nmodule.exports = { revertWristShadingRefinement, delta };\n",
+      "after": "const { createHash } = require('node:crypto');\nconst delta = require('./firstresponse_wrist_shading_refinement_delta.json');\nconst hash = source => createHash('sha256').update(source).digest('hex');\nfunction revertWristShadingRefinement(source) {\n  if (hash(source) !== delta.beforeSHA256 && hash(source) !== delta.afterSHA256) {\n    source = require('./firstresponse_arm_finish_delta.cjs').revertArmFinish(source);\n  }\n  if (hash(source) === delta.beforeSHA256) return source;\n  if (hash(source) !== delta.afterSHA256) throw new Error('Wrist shading source does not match its exact refinement delta');\n  for (const edit of [...delta.edits].reverse()) {\n    if (source.split(edit.new).length !== 2) throw new Error('Wrist shading reversal is not unique: ' + (edit.name || 'source edit'));\n    source = source.replace(edit.new, edit.old);\n  }\n  if (hash(source) !== delta.beforeSHA256) throw new Error('Wrist shading reversal did not recover fixed baseline');\n  return source;\n}\nmodule.exports = { revertWristShadingRefinement, delta };\n",
+      "beforeSHA256": "3fa8abe8e88f3d82aa98121a4bcce722af573c1e69800b52922a691172086e50",
+      "afterSHA256": "285a784f6adc74b5d62d5c38948ed5048557ed6edf170056289adef45ecf4d04"
+    }
+  ]
+}

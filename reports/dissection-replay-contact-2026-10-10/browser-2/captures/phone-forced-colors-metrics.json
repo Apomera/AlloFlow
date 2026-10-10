@@ -1,0 +1,51 @@
+{
+  "width": 370.40625,
+  "client": 366,
+  "scroll": 366,
+  "paragraphs": [
+    {
+      "text": "Paused · Action 2 of 3 · Hydrated",
+      "font": 16,
+      "client": 339,
+      "scroll": 339
+    },
+    {
+      "text": "Supported action position.",
+      "font": 16,
+      "client": 339,
+      "scroll": 339
+    },
+    {
+      "text": "Previous and Next hold the full action on the specimen. Resume continues from that action. Escape ends the review.",
+      "font": 16,
+      "client": 339,
+      "scroll": 339
+    }
+  ],
+  "buttons": [
+    {
+      "text": "Resume replay",
+      "height": 44,
+      "width": 165.609375,
+      "font": 16
+    },
+    {
+      "text": "Previous action",
+      "height": 44,
+      "width": 165.609375,
+      "font": 16
+    },
+    {
+      "text": "Next action",
+      "height": 44,
+      "width": 165.609375,
+      "font": 16
+    },
+    {
+      "text": "Stop replay",
+      "height": 44,
+      "width": 165.609375,
+      "font": 16
+    }
+  ]
+}

@@ -370,7 +370,7 @@ describe('space station tool', () => {
       expect(source).toContain('function clearThrust()');
       expect(source).toContain("window.addEventListener('blur', clearThrust)");
       expect(source).toContain('st.trail');
-      expect(source).toContain('predictStep');
+      expect(source).toContain('function coastForecast()');
       expect(source).toContain('BRAKING DISTANCE');
       expect(source).toContain('PROXIMITY ×');
       expect(source).toContain('STOP MARGIN');

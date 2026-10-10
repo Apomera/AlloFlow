@@ -1,0 +1,48 @@
+{
+  "status": "Read-only review of roadmap-7, pending root-owned large-font inheritance correction and final rerun",
+  "sourceSha256AtRun": "5646ce64f266c0a82f74e7f3827d25c8fcab3e3b7c5c04a8a34eff801ce59ce4",
+  "browserFixtureSha256AtRun": "70bbdf48c371174b553e6a7b0d88b3a0d49e5921e886f58a86b6e2cb7085cf58",
+  "sourceMutations": 0,
+  "browserFixtureMutations": 0,
+  "testRuns": 0,
+  "evidenceDirectory": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-technique-roadmap-2026-10-06/roadmap-7",
+  "largeContrastFailure": {
+    "artifact": "test-results/dissection-technique-roadm-67974-able-collapsed-and-expanded-chromium/error-context.md",
+    "line": 95,
+    "receivedFontPx": 16,
+    "requiredFontPx": 18,
+    "assertionText": "1Inspect ventral landmarks and confirm symmetryVerified",
+    "cause": "The aggregate first li retains the roadmap's 16px inherited font. The large selector overrides its strong/span child text to 18px but excludes li. The helper's getClientRects filter also includes this closed-details descendant, so the assertion fails before collapsed captures or audits.",
+    "recommendation": "Keep the strict fixture. Root can include li in the existing large roadmap font selector or set the inherited roadmap font to 18px.",
+    "fixtureChangesApplied": false
+  },
+  "screenshotsActuallyReviewed": [
+    "captures/after-phone-collapsed-checkpoint.png",
+    "captures/after-phone-expanded-checkpoint.png",
+    "captures/after-forced-colors-expanded-checkpoint.png",
+    "test-results/dissection-technique-roadm-67974-able-collapsed-and-expanded-chromium/test-failed-1.png"
+  ],
+  "visualAssessment": {
+    "phoneCollapsed": "Roadmap position, verified count, blue progress and native disclosure form a compact block. The native task title remains visually more prominent. Prompt, phases, answers and keyboard help preserve a clear hierarchy.",
+    "phoneExpanded": "Six complete labels and status text wrap naturally. The inset summary focus ring is visible. Height comes from readable optional sequence content; no text clipping or large empty padding is visible.",
+    "forcedColors": "System-colored progress fill, purple inset focus ring and black current-step border remain clearly visible. State text and numbering communicate status alongside color.",
+    "embeddedLargeContrast": "Failed before target screenshots were produced; requires final actual image review."
+  },
+  "axeReportCountReviewed": 15,
+  "expectedFinalAxeReportCount": 17,
+  "axeViolationRuleCount": 0,
+  "ariaProhibitedAttr": "Absent from all fifteen reports after role=group correction.",
+  "headingOrder": "Explicit pass in every report. The reflect report also passes the native saved-response evidence h4.",
+  "remainingIncompleteRules": ["color-contrast"],
+  "remainingIncompleteCause": "Every incomplete check uses axe messageKey bgGradient on an existing native checkpoint node; none target the roadmap.",
+  "manualIncompleteResolution": {
+    "predictSelectors": [".diss-learning-check__eyebrow", "#diss-learning-check-title", ".diss-learning-check__prompt", "#diss-learning-check-keyboard-help"],
+    "performSelectors": [".diss-learning-check__eyebrow", "#diss-learning-check-title", ".diss-learning-check__prompt", ".diss-learning-check__perform"],
+    "reflectSelectors": [".diss-learning-check__eyebrow", "#diss-learning-check-title", ".diss-learning-check__prompt", "#diss-learning-check-keyboard-help"],
+    "phaseTextMinimumRatio": 7.198981824594242,
+    "performDescriptionMinimumRatio": 7.294077894689702,
+    "requiredRatio": 4.5,
+    "methodAndPhaseBounds": "pre-correction-visual-axe-receipt.json",
+    "correctedProgressAndPerformDescriptionBounds": "final-style-contrast-review.json"
+  }
+}

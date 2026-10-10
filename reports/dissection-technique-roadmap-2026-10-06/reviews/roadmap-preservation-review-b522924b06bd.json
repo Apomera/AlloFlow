@@ -1,0 +1,81 @@
+{
+  "reviewType": "Independent read-only static preservation review",
+  "reviewedAtUtc": "2026-10-06T23:54:12.748Z",
+  "baselineSha256": "c9c4d0a4170a44cb7492f19c7e10823bded91490edcc7ad0998e59a814508a56",
+  "candidateSha256": "b522924b06bd29c8b58e0c1e1b155a57beb7215114bd7f452a2e1076c332c7a8",
+  "manifestMatchesCandidate": true,
+  "verdict": "pass",
+  "openFindings": [],
+  "resolvedFindings": [
+    {
+      "id": "current-phase-stale-record",
+      "priority": "P2",
+      "originalCandidateSha256": "af1c985d4465f1bb46c12cbdef6cebec8dd77294e7d3c47d756a2361f4a18b01",
+      "issue": "A completed current action with missing prediction and reflection flags was labeled Plan needed although the native gate prioritizes the pending explanation.",
+      "resolution": "Final row state derives from currentLearningGate.required and currentLearningGate.phase; pending reflection is labeled Explanation needed. A noncurrent completed but unverified row is labeled Recorded action; evidence incomplete.",
+      "evidence": "renderer-next.js:18634, 18637, 18650-18655; unchanged native gate at 5840-5850"
+    }
+  ],
+  "scope": {
+    "editCount": 4,
+    "editNames": [
+      "Readable expandable technique overview styles",
+      "Derived native protocol overview",
+      "Place progress inside the existing visible checkpoint",
+      "Honest review wording"
+    ],
+    "independentlyVerifiedExactReversal": true,
+    "allBytesOutsideFourEditsPreserved": true,
+    "repoWritesPerformedByReviewer": false,
+    "suitesRunByReviewer": false
+  },
+  "checks": [
+    {
+      "name": "Native learning gates and scoring",
+      "status": "pass",
+      "evidence": "Gate, learning entry, summary, action completion, scoring, and handlers are unchanged by exact reversal. Display count calls procedureLearningSummary(currentProcedure); row verification uses its same action-complete plus predictionCorrect plus reflectionCorrect predicate."
+    },
+    {
+      "name": "Current pending explanation and stale flags",
+      "status": "pass",
+      "evidence": "Required gate action takes precedence over procedureNext.action; row state follows native gate phase. Correct flags alone cannot verify an undone or incomplete physical action. Noncurrent completed actions with incomplete evidence are labeled recorded."
+    },
+    {
+      "name": "Legacy learning records",
+      "status": "pass",
+      "evidence": "Existing procedureLearningEntry compatibility treats completed actions with no learningChecks record as legacy verified. Both count and rows retain that native interpretation, with no new learning credit logic."
+    },
+    {
+      "name": "Native protocol labels and order",
+      "status": "pass",
+      "evidence": "Roadmap iterates procedureProtocol.order and takes procedureProtocol.actions[index], with native procedureActionLabel fallback. Original profiles remain byte-identical, including pin before cutting for earthworm and sheep eye."
+    },
+    {
+      "name": "Undo and visibility",
+      "status": "pass",
+      "evidence": "Unchanged undoProcedureAction clears physical completion and reflection correctness; display recomputes from the restored state. New render call stays inside the unchanged procedureLearningCheckpointVisible guard. No exposure, view, or learning visibility logic changed."
+    },
+    {
+      "name": "Information-only disclosure",
+      "status": "pass",
+      "evidence": "Native details and summary disclose an ordered list. New markup has no action handler or state update call; opening it grants no credit and performs no technique action."
+    },
+    {
+      "name": "No new application state, timers, or saved fields",
+      "status": "pass",
+      "evidence": "Inserted function is derived rendering only and uses local values. No new hooks, upd or update calls, timers, event listeners, or saved fields are present.",
+      "staticMutationTokenScanEmpty": true
+    },
+    {
+      "name": "Single planning prompt",
+      "status": "pass",
+      "evidence": "New content uses protocol action labels and a short verification explanation; it does not repeat predictionPrompt or reflectionPrompt. Existing next-action suppression and phase-only stage headline stay byte-identical."
+    },
+    {
+      "name": "Honest final review wording",
+      "status": "pass",
+      "evidence": "Only the final title changes from Specimen investigation complete to Review your specimen investigation. The final description, label, start-assessment action, branches, and assessment handlers remain byte-identical."
+    }
+  ],
+  "limits": "Static review of staged source and exact changes. Browser layout and user interaction verification are handled by the separate browser auditor."
+}

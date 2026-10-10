@@ -1,10 +1,11 @@
 import { test, expect } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
 test.describe.configure({ mode: 'serial' });
-const desktop = new GlHarness({ toolFile: 'stem_lab/stem_tool_solarsystem.js', toolId: 'solarSystem', width: 1180, height: 900, appStyles: true });
-const mobile = new GlHarness({ toolFile: 'stem_lab/stem_tool_solarsystem.js', toolId: 'solarSystem', width: 340, height: 820, appStyles: true });
+const desktop = new GlHarness({ toolFile: 'stem_lab/stem_tool_solarsystem.js', toolId: 'solarSystem', width: 1180, height: 900, appStyles: true, layout: 'document' });
+const mobile = new GlHarness({ toolFile: 'stem_lab/stem_tool_solarsystem.js', toolId: 'solarSystem', width: 340, height: 820, appStyles: true, layout: 'document' });
 const initial = { solarSystem: { tutorialDismissed: true, selectedPlanet: 'stem.solar_sys.earth', viewTab: 'overview', paused: true } };
 test.beforeAll(async () => { await desktop.start(); await mobile.start(); });
+test.beforeEach(async ({ page }) => { await page.emulateMedia({ reducedMotion: 'reduce' }); });
 test.afterAll(async () => { await desktop.stop(); await mobile.stop(); });
 test.afterEach(async ({ page }) => { await desktop.destroy(page); });
 async function start(page) {

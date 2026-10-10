@@ -1,0 +1,24 @@
+{
+  "sourceSHA256": "24dbe22375df2c8c3e7739d00d4621f4cc2c1e4db68d2bb05dfd15cca56c8a8a",
+  "beforeSHA256": "16aceaa1b7d8bbd0ed869536b554451ddd2e5e3a832229e2e3322f8ad75f03e2",
+  "uniqueEdits": 1,
+  "exactSourceReversal": true,
+  "sourceOutsideEarIdentical": true,
+  "historical476SHA256": "476c1562ef879cb20ac65efdbf290edff9b98fafde9dbd7866f3e612c5750935",
+  "historicalCCSHA256": "cc354bd12dd0712e1e628ebfc16689ba584c3b988d1b085df5a41e1f67cecc26",
+  "historical970SHA256": "970fbb0e068412f3d3e3fb4ed01013a1afb56b9d5270fb2eb18d24201bfd012c",
+  "historicalFixedHashesUnchanged": true,
+  "rawCurrentEarTestsUnchanged": true,
+  "fixtureSHA256": {
+    "firstresponse_patient_finish.test.js": "59ed72f453d37af25581978bf22e1f22660cd34cbfed05b4ec2ddd5db8da77b1",
+    "firstresponse_patient_contrast.test.js": "16ad3253e543cc6d79081a7eaf6140f90cbbfdfca5867bf938d46f7c26ae9288",
+    "firstresponse_patient_wrists.test.js": "d575633db97da7a03fecc2325f9af24068640fba67361882a04ec23c1bda29d4",
+    "firstresponse_patient_sleeves.test.js": "010360382688054d7cde434ed9053b4406fc4ab5fa1ecf595bbee8fe9fcf0e72",
+    "firstresponse_supporting_hand.test.js": "1c6477d40e7988ced0f94b18a20a59f9c995bfa617da6d152fd03024ef451fa0",
+    "firstresponse_ear_folds.test.js": "135d73e4bcca8709fe2205bfd3c5403125db86424347dd7ef0f6ea19bbadbea2",
+    "firstresponse_ear_rims.test.js": "2cc8e19ed7d491a6b77c115dafcf82160cbd68f1be406da70fe5908f8edf275c",
+    "firstresponse_depth_explorer.test.js": "2b0a1b570261314af4e0541a52b8098e934940a6eb5d729afd4548f6a6524d8b"
+  },
+  "syntax": true,
+  "unknownSourceRejected": true
+}

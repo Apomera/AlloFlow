@@ -1,0 +1,8 @@
+Starting journal-1060-dark
+Checked journal-1060-dark
+Starting journal-1060-light
+Checked journal-1060-light
+Starting journal-320-dark
+Checked journal-320-dark
+Starting journal-320-light
+Checked journal-320-light

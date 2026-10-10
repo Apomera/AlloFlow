@@ -1,6 +1,48 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 
+const DISK_METADATA = {
+  "id": "disk",
+  "name": "Spiral disk passage",
+  "region": "galaxy",
+  "durationSeconds": 44,
+  "position": [
+    63127.46206453789,
+    25688.2137830559,
+    -12650.660296061507
+  ],
+  "aim": [
+    -20170,
+    10020,
+    -4410
+  ],
+  "fov": 64,
+  "targetId": "inner-arm",
+  "highlights": [
+    {
+      "id": "arms",
+      "name": "Above the spiral arms",
+      "seconds": 10,
+      "description": "Look toward the inner arm from above the generated disk.",
+      "targetId": "inner-arm"
+    },
+    {
+      "id": "crossing",
+      "name": "Inside the stellar disk",
+      "seconds": 17,
+      "description": "Pause among the existing three-dimensional stars and emission records as the camera crosses the disk.",
+      "targetId": "inner-arm"
+    },
+    {
+      "id": "panorama",
+      "name": "Beyond the disk",
+      "seconds": 40,
+      "description": "Look back at the spiral after emerging on the other side of the tilted disk.",
+      "targetId": "galactic-center"
+    }
+  ]
+};
+
 let flight;
 let scene;
 let telemetry;
@@ -593,7 +635,7 @@ describe('Universe flight composition framing', () => {
     expect(centered.yaw).toBeCloseTo(Math.PI / 4, 12);
     expect(centered.pitch).toBeCloseTo(Math.asin(1 / Math.sqrt(3)), 12);
     for (const direction of [[-3.1, 1, 8.5], [4.3, -2.2, 16], [1, 0, -1]]) {
-      for (const beta of [0, 0.9, 0.9999]) for (const fov of [30, 65, 100]) {
+      for (const beta of [0, 0.9, 0.9999]) for (const fov of [10, 30, 65, 100]) {
         for (const aspect of [0.5, 1.6, 3]) for (const u of [1 / 3, 0.5, 2 / 3]) {
           const pose = flight.math.targetFrame(direction, beta, fov, aspect, u);
           expect(pose).not.toBeNull();
@@ -627,7 +669,7 @@ describe('Universe flight composition framing', () => {
     const defaults = flight.math.targetFrame(ray, NaN, NaN, 0);
     expect(defaults).toEqual(flight.math.targetFrame(ray, 0, 65, 1, 0.5));
     expect(flight.math.targetFrame(ray, 2, 200, 1.6, 1 / 3)).toEqual(flight.math.targetFrame(ray, 0.9999, 100, 1.6, 1 / 3));
-    expect(flight.math.targetFrame(ray, -1, -5, -1, 2 / 3)).toEqual(flight.math.targetFrame(ray, 0, 30, 1, 2 / 3));
+    expect(flight.math.targetFrame(ray, -1, -5, -1, 2 / 3)).toEqual(flight.math.targetFrame(ray, 0, 10, 1, 2 / 3));
     for (const u of [0, 1]) {
       const pose = flight.math.targetFrame([0, 0, -1], 0, 65, 1.6, u);
       expect(Number.isFinite(pose.yaw)).toBe(true);
@@ -921,6 +963,469 @@ describe('Universe flight precision camera', () => {
     expect(scene.nudge('up',-1)).toBe(false);expect(scene.snapshot()).toEqual(before);
     scene.set({mode:'relativity'});const physical=scene.snapshot();
     expect(scene.nudge('forward',1)).toBe(false);expect(scene.snapshot()).toEqual(physical);
+  });
+});
+
+describe('Universe landmark camera distance controls', () => {
+  const range = (position, center) => Math.hypot(...position.map((v, i) => v - center[i]));
+
+  it('steps closer and farther around all eighteen landmarks, preserving settings and clocks, with paused Back restores', () => {
+    let visited = 0;
+    for (const region of ['neighborhood', 'galaxy', 'cosmic']) {
+      scene.set({ region, fov: 10, exposure: .65, quality: 'low', beta: .8, compareRest: true });
+      const seeded = scene.snapshot();
+      seeded.state.distanceLy = 11; seeded.state.universeYears = 3.5; seeded.state.travelerYears = 1.25;
+      expect(scene.restore(seeded)).toBe(true);
+      for (const target of flight.landmarks(region)) {
+        const before = scene.snapshot(), published = structuredClone(telemetry);
+        const plan = scene.planDistanceView(target.id, 'closer');
+        expect(plan).not.toBeNull(); expect(scene.snapshot()).toEqual(before); expect(telemetry).toEqual(published);
+        expect(plan.minimumLy).toBeCloseTo(target.arrivalRadiusLy * .1, 10);
+        expect(plan.rangeLy).toBeCloseTo(range(before.state.position, target.position) * .8, 6);
+        plan.position[0] = 1e30;
+        expect(scene.planDistanceView(target.id, 'closer').position[0]).not.toBe(1e30);
+        expect(scene.stepDistanceView(target.id, 'closer')).toBe(true);
+        const closer = scene.snapshot();
+        expect(closer.settings).toEqual(before.settings); expect(closer.targetId).toBe(target.id);
+        expect(range(closer.state.position, target.position)).toBeCloseTo(plan.rangeLy, 6);
+        expect(closer.state.distanceLy - before.state.distanceLy).toBeCloseTo(plan.distanceLy, 6);
+        expect(closer.state.universeYears).toBe(before.state.universeYears); expect(closer.state.travelerYears).toBe(before.state.travelerYears);
+        expect(telemetry.running).toBe(false); expect(telemetry.target.screen[0]).toBeCloseTo(.5, 10); expect(telemetry.target.screen[1]).toBeCloseTo(.5, 10);
+        expect(scene.stepDistanceView(target.id, 'farther')).toBe(true);
+        const farther = scene.snapshot();
+        farther.state.position.forEach((v, i) => expect(v).toBeCloseTo(before.state.position[i], 6));
+        expect(farther.state.distanceLy - before.state.distanceLy).toBeCloseTo(plan.distanceLy * 2, 6);
+        expect(farther.settings).toEqual(before.settings);
+        expect(farther.state.universeYears).toBe(before.state.universeYears); expect(farther.state.travelerYears).toBe(before.state.travelerYears);
+        scene.set({ running: true });
+        expect(scene.restore(before)).toBe(true); expect(scene.snapshot()).toEqual(before); expect(telemetry.running).toBe(false);
+        advance(1000); expect(scene.snapshot()).toEqual(before);
+        visited++;
+      }
+    }
+    expect(visited).toBe(18);
+  });
+
+  it('clips native steps exactly at the minimum landmark range and the world boundary', () => {
+    const target = flight.landmarks('neighborhood')[0], minimum = target.arrivalRadiusLy * .1;
+    const near = scene.snapshot(); near.state.position = target.position.map((v, i) => v + (i === 2 ? minimum * 1.1 : 0));
+    expect(scene.restore(near)).toBe(true);
+    const closest = scene.planDistanceView(target.id, 'closer');
+    expect(closest.limited).toBe(true); expect(closest.rangeLy).toBeCloseTo(minimum, 12);
+    expect(closest.distanceLy).toBeCloseTo(minimum * .1, 12);
+    expect(scene.stepDistanceView(target.id, 'closer')).toBe(true);
+    expect(range(scene.snapshot().state.position, target.position)).toBeCloseTo(minimum, 12);
+    const atMinimum = scene.snapshot(), publishedMinimum = structuredClone(telemetry), eventsMinimum = pauseEvents.length;
+    expect(scene.planDistanceView(target.id, 'closer')).toBeNull(); expect(scene.stepDistanceView(target.id, 'closer')).toBe(false);
+    expect(scene.snapshot()).toEqual(atMinimum); expect(telemetry).toEqual(publishedMinimum); expect(pauseEvents).toHaveLength(eventsMinimum);
+    expect(scene.stepDistanceView(target.id, 'farther')).toBe(true);
+
+    const edge = scene.snapshot(); edge.state.position = [target.position[0], target.position[1], 99999];
+    expect(scene.restore(edge)).toBe(true);
+    const farthest = scene.planDistanceView(target.id, 'farther'), maxZ = Math.sqrt(100000 ** 2 - target.position[0] ** 2 - target.position[1] ** 2);
+    expect(farthest.limited).toBe(true); expect(farthest.maximumLy).toBeCloseTo(maxZ - target.position[2], 7);
+    expect(farthest.distanceLy).toBeCloseTo(maxZ - 99999, 7);
+    expect(scene.stepDistanceView(target.id, 'farther')).toBe(true);
+    expect(Math.hypot(...scene.snapshot().state.position)).toBeCloseTo(100000, 7);
+    const atBoundary = scene.snapshot(), publishedBoundary = structuredClone(telemetry), eventsBoundary = pauseEvents.length;
+    expect(scene.planDistanceView(target.id, 'farther')).toBeNull(); expect(scene.stepDistanceView(target.id, 'farther')).toBe(false);
+    expect(scene.snapshot()).toEqual(atBoundary); expect(telemetry).toEqual(publishedBoundary); expect(pauseEvents).toHaveLength(eventsBoundary);
+    expect(scene.stepDistanceView(target.id, 'closer')).toBe(true);
+  });
+
+  it('ends every travel mode, clears stale undo and updates the chart while reusing GPU resources', () => {
+    const allocations = { ...graphicsCreates }, textures = createdTextures.length, uploads = textureUploads.length;
+    for (const start of [() => scene.set({ running: true }), () => scene.navigateTo('amber-star'), () => scene.startOrbit('amber-star'), () => scene.startFlyby('stellar')]) {
+      scene.reset(); start(); advance(); const before = scene.snapshot();
+      expect(scene.stepDistanceView('amber-star', 'closer')).toBe(true);
+      expect(telemetry.running).toBe(false); expect(telemetry.navigation.active).toBe(false); expect(telemetry.orbit.active).toBe(false); expect(telemetry.flyby.active).toBe(false);
+      const stopped = scene.snapshot(); advance(1000); expect(scene.snapshot()).toEqual(stopped);
+      expect(stopped.settings).toEqual(before.settings); expect(stopped.state.universeYears).toBe(before.state.universeYears); expect(stopped.state.travelerYears).toBe(before.state.travelerYears);
+      expect(telemetry.trail.at(-1)).toEqual(stopped.state.position);
+    }
+    scene.reset(); expect(scene.nudge('right', 1)).toBe(true); expect(scene.frameTarget('amber-star', 1 / 3)).toBe(true);
+    expect(scene.stepDistanceView('amber-star', 'farther')).toBe(true); advance();
+    expect(telemetry.cameraMoves).toBe(0); expect(scene.undoNudge()).toBe(false); expect(scene.undoFrame()).toBe(false);
+    expect(telemetry.target.screen[0]).toBeCloseTo(.5, 10); expect(telemetry.target.screen[1]).toBeCloseTo(.5, 10);
+    expect(graphicsCreates).toEqual(allocations); expect(createdTextures).toHaveLength(textures); expect(textureUploads).toHaveLength(uploads);
+  });
+
+  it('rejects invalid, cross-region, coincident and polar steps without changing active motion', () => {
+    expect(scene.startOrbit('amber-star')).toBe(true); advance();
+    for (const args of [['missing', 'closer'], ['galactic-center', 'farther'], ['amber-star', 'bad'], ['amber-star', null]]) {
+      const before = scene.snapshot(), published = structuredClone(telemetry), events = pauseEvents.length, scheduled = frames.size;
+      expect(scene.planDistanceView(...args)).toBeNull(); expect(scene.stepDistanceView(...args)).toBe(false);
+      expect(scene.snapshot()).toEqual(before); expect(telemetry).toEqual(published); expect(pauseEvents).toHaveLength(events); expect(frames.size).toBe(scheduled);
+    }
+    expect(telemetry.orbit.active).toBe(true); advance(100); expect(telemetry.orbit.active).toBe(true);
+    const target = flight.landmarks('neighborhood')[0];
+    for (const offset of [[0, 0, 0], [0, 10, 0], [.001, -10, 0]]) {
+      const saved = scene.snapshot(); saved.state.position = target.position.map((v, i) => v + offset[i]); expect(scene.restore(saved)).toBe(true);
+      scene.set({ running: true });
+      const before = scene.snapshot(), published = structuredClone(telemetry), events = pauseEvents.length;
+      for (const direction of ['closer', 'farther']) {
+        expect(scene.planDistanceView(target.id, direction)).toBeNull(); expect(scene.stepDistanceView(target.id, direction)).toBe(false);
+        expect(scene.snapshot()).toEqual(before); expect(telemetry).toEqual(published); expect(pauseEvents).toHaveLength(events);
+      }
+      expect(telemetry.running).toBe(true);
+    }
+  });
+
+  it('rejects physical mode and lost, disposed or unavailable graphics without emitting a pause', () => {
+    scene.set({ mode: 'relativity', running: true });
+    const physical = scene.snapshot(), publishedPhysical = structuredClone(telemetry), physicalEvents = pauseEvents.length;
+    expect(scene.planDistanceView('amber-star', 'closer')).toBeNull(); expect(scene.stepDistanceView('amber-star', 'closer')).toBe(false);
+    expect(scene.snapshot()).toEqual(physical); expect(telemetry).toEqual(publishedPhysical); expect(pauseEvents).toHaveLength(physicalEvents);
+    scene.set({ mode: 'explore' }); sceneCanvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true }));
+    const lost = scene.snapshot(), publishedLost = structuredClone(telemetry), lostEvents = pauseEvents.length;
+    expect(scene.planDistanceView('amber-star', 'farther')).toBeNull(); expect(scene.stepDistanceView('amber-star', 'farther')).toBe(false);
+    expect(scene.snapshot()).toEqual(lost); expect(telemetry).toEqual(publishedLost); expect(pauseEvents).toHaveLength(lostEvents);
+    scene.dispose(); expect(scene.planDistanceView('amber-star', 'closer')).toBeNull(); expect(scene.stepDistanceView('amber-star', 'closer')).toBe(false);
+    expect(scene.snapshot()).toEqual(lost); expect(pauseEvents).toHaveLength(lostEvents);
+
+    const canvas = document.createElement('canvas'), callback = vi.fn();
+    vi.spyOn(canvas, 'getContext').mockReturnValue(null); vi.spyOn(canvas, 'getBoundingClientRect').mockReturnValue({ width: 800, height: 500 });
+    const unavailable = flight.create(canvas, { onPause: callback }), before = unavailable.snapshot();
+    expect(unavailable.planDistanceView('amber-star', 'closer')).toBeNull(); expect(unavailable.stepDistanceView('amber-star', 'closer')).toBe(false);
+    expect(unavailable.snapshot()).toEqual(before); expect(callback).not.toHaveBeenCalled(); unavailable.dispose();
+  });
+});
+
+describe('Universe smooth landmark distance glides', () => {
+  const range = (position, center) => Math.hypot(...position.map((value, index) => value - center[index]));
+  const publish = () => { scene.set({}); return telemetry.distanceGlide; };
+  function launch(id = 'amber-star', direction = 'closer') {
+    const before = scene.snapshot(), plan = scene.planDistanceView(id, direction);
+    expect(plan).not.toBeNull();
+    expect(scene.startDistanceGlide(id, direction)).toBe(true);
+    expect(scene.snapshot().state.position).toEqual(before.state.position);
+    expect(scene.snapshot().state.distanceLy).toBe(before.state.distanceLy);
+    expect(telemetry.distanceGlide).toMatchObject({ active: true, completed: false, targetId: id, direction, progress: 0, elapsedSeconds: 0, durationSeconds: 3 });
+    expect(telemetry.motion.kind).toBe('glide');
+    expect(telemetry.running).toBe(true);
+    advance();
+    expect(scene.snapshot().state.position).toEqual(before.state.position);
+    return { before, plan };
+  }
+  function expectAtomicRejection(action) {
+    const before = scene.snapshot(), published = structuredClone(telemetry), events = pauseEvents.length, scheduled = [...frames.keys()];
+    expect(action()).toBe(false);
+    expect(scene.snapshot()).toEqual(before);
+    expect(telemetry).toEqual(published);
+    expect(pauseEvents).toHaveLength(events);
+    expect([...frames.keys()]).toEqual(scheduled);
+  }
+
+  it('glides closer and farther to exact native planner endpoints across five scenic landmarks without changing the lens or physical clocks', () => {
+    const allocations = { ...graphicsCreates }, textures = createdTextures.length, uploads = textureUploads.length;
+    let visited = 0;
+    for (const region of ['neighborhood', 'galaxy', 'cosmic']) {
+      scene.set({ region, fov: 10, exposure: .65, quality: 'low', beta: .8, compareRest: true });
+      const seeded = scene.snapshot();
+      seeded.state.distanceLy = 11; seeded.state.universeYears = 3.5; seeded.state.travelerYears = 1.25;
+      const scenicTargets = { neighborhood: ['amber-star', 'violet-nebula'], galaxy: ['galactic-center'], cosmic: ['near-galaxy', 'golden-elliptical'] };
+      for (const target of flight.landmarks(region).filter(item => scenicTargets[region].includes(item.id))) {
+        for (const direction of ['closer', 'farther']) {
+          expect(scene.restore(seeded)).toBe(true);
+          const { before, plan } = launch(target.id, direction), events = pauseEvents.length;
+          expect(plan.rangeLy).toBeCloseTo(range(before.state.position, target.position) * (direction === 'closer' ? .8 : 1.25), 6);
+          expect(telemetry.distanceGlide.startRangeLy).toBeCloseTo(range(before.state.position, target.position), 6);
+          expect(telemetry.distanceGlide.endRangeLy).toBeCloseTo(plan.rangeLy, 6);
+          expect(telemetry.target.screen[0]).toBeCloseTo(.5, 9); expect(telemetry.target.screen[1]).toBeCloseTo(.5, 9);
+          for (let index = 0; index < 6; index++) advance(500);
+          const completed = scene.snapshot();
+          expect(completed.state.position).toEqual(plan.position);
+          expect(completed.state.distanceLy - before.state.distanceLy).toBeCloseTo(plan.distanceLy, 6);
+          expect(completed.state.universeYears).toBe(before.state.universeYears); expect(completed.state.travelerYears).toBe(before.state.travelerYears);
+          expect(completed.settings).toEqual(before.settings); expect(completed.targetId).toBe(target.id);
+          expect(telemetry.distanceGlide).toMatchObject({ active: false, completed: true, targetId: target.id, direction, progress: 1, elapsedSeconds: 3, durationSeconds: 3 });
+          expect(telemetry.running).toBe(false); expect(telemetry.motion.paceLyPerSecond).toBe(0);
+          expect(telemetry.target.screen[0]).toBeCloseTo(.5, 9); expect(telemetry.target.screen[1]).toBeCloseTo(.5, 9);
+          expect(telemetry.trail.at(-1)).toEqual(plan.position);
+          expect(pauseEvents).toHaveLength(events + 1);
+          advance(5000); expect(scene.snapshot()).toEqual(completed); expect(pauseEvents).toHaveLength(events + 1);
+          visited++;
+        }
+      }
+    }
+    expect(visited).toBe(10);
+    expect(graphicsCreates).toEqual(allocations); expect(createdTextures).toHaveLength(textures); expect(textureUploads).toHaveLength(uploads);
+  });
+
+  it('uses smoothstep progress along the straight sightline and counts only the camera path, independently of travel settings and frame subdivision', () => {
+    scene.set({ speed: 1e10, timeScale: 1e10, beta: .9999, smoothTravel: true, flybyRate: 4, orbitRate: 12, fov: 35 });
+    const seeded = scene.snapshot(); seeded.state.distanceLy = 17; seeded.state.universeYears = 9; seeded.state.travelerYears = 4;
+    expect(scene.restore(seeded)).toBe(true);
+    const { before, plan } = launch(), samples = [];
+    for (let index = 1; index <= 30; index++) {
+      advance(100);
+      if (![3, 15, 27, 30].includes(index)) continue;
+      const route = publish(), progress = index / 30, eased = progress * progress * (3 - 2 * progress), current = scene.snapshot();
+      expect(route.progress).toBeCloseTo(progress, 12); expect(route.elapsedSeconds).toBeCloseTo(index / 10, 12);
+      if (index < 30) expect(telemetry.motion.targetLyPerSecond).toBeCloseTo(plan.distanceLy * 1.5 / 3, 10);
+      expect(telemetry.motion.paceLyPerSecond).toBeCloseTo(index === 30 ? 0 : plan.distanceLy * 6 * progress * (1 - progress) / 3, 10);
+      current.state.position.forEach((value, axis) => expect(value).toBeCloseTo(before.state.position[axis] + (plan.position[axis] - before.state.position[axis]) * eased, 10));
+      expect(current.state.distanceLy - before.state.distanceLy).toBeCloseTo(plan.distanceLy * eased, 10);
+      expect(current.state.universeYears).toBe(9); expect(current.state.travelerYears).toBe(4); expect(current.settings).toEqual(before.settings);
+      expect(telemetry.target.screen[0]).toBeCloseTo(.5, 10); expect(telemetry.target.screen[1]).toBeCloseTo(.5, 10);
+      samples.push(current.state);
+    }
+    expect(scene.restore(before)).toBe(true); launch();
+    for (let index = 0; index < 60; index++) advance(25);
+    scene.set({ running: false });
+    scene.snapshot().state.position.forEach((value, axis) => expect(value).toBeCloseTo(samples[1].position[axis], 10));
+    expect(scene.snapshot().state.distanceLy).toBeCloseTo(samples[1].distanceLy, 10);
+    expect(telemetry.distanceGlide.elapsedSeconds).toBeCloseTo(1.5, 12);
+    expect(scene.restore(before)).toBe(true); launch(); advance(5000);
+    expect(publish().elapsedSeconds).toBeCloseTo(.5, 12);
+  });
+
+  it('retains the route on pause and same-target focus or settings changes, then resumes without counting the paused gap', () => {
+    launch(); for (let index = 0; index < 8; index++) advance(100);
+    scene.set({ running: false });
+    const paused = scene.snapshot(), route = structuredClone(telemetry.distanceGlide);
+    expect(route).toMatchObject({ active: true, completed: false }); expect(telemetry.motion.kind).toBe('glide'); expect(telemetry.motion.paceLyPerSecond).toBe(0);
+    advance(5000); expect(scene.snapshot()).toEqual(paused); expect(telemetry.distanceGlide).toEqual(route);
+    expect(scene.selectTarget('amber-star')).toBe(true); expect(scene.focusTarget('amber-star')).toBe(true);
+    scene.set({ fov: 40, exposure: 1.2, beta: .9, compareRest: true, quality: 'low', speed: 5000, timeScale: 300, smoothTravel: true, flybyRate: 4, orbitTilt: 35 });
+    expect(telemetry.distanceGlide).toEqual(route); expect(scene.snapshot().state).toEqual(paused.state);
+    scene.set({ running: true }); advance();
+    expect(scene.snapshot().state).toEqual(paused.state); expect(telemetry.distanceGlide.elapsedSeconds).toBe(route.elapsedSeconds);
+    advance(100);
+    expect(publish().elapsedSeconds).toBeCloseTo(route.elapsedSeconds + .1, 12);
+    expect(scene.snapshot().state.position).not.toEqual(paused.state.position);
+    const resumed = scene.snapshot().state, resumedRoute = structuredClone(telemetry.distanceGlide);
+    expect(scene.selectTarget('amber-star')).toBe(true); expect(scene.focusTarget('amber-star')).toBe(true);
+    scene.set({ fov: 45, exposure: 1.3 }); scene.set({ fov: 40, exposure: 1.2 });
+    expect(telemetry.distanceGlide).toEqual(resumedRoute); expect(telemetry.running).toBe(true); expect(scene.snapshot().state).toEqual(resumed);
+    for (let index = 0; index < 21; index++) advance(100);
+    expect(telemetry.distanceGlide).toMatchObject({ active: false, completed: true, elapsedSeconds: 3 }); expect(telemetry.running).toBe(false);
+    expect(scene.snapshot().settings).toMatchObject({ fov: 40, exposure: 1.2, beta: .9, compareRest: true, quality: 'low' });
+  });
+
+  it('freezes hidden and offscreen glides and excludes suspended wall time when visibility returns', () => {
+    let intersect;
+    const originalObserver = window.IntersectionObserver;
+    window.IntersectionObserver = class { constructor(callback) { intersect = callback; } observe() {} disconnect() {} };
+    try {
+      scene.dispose();
+      scene = flight.create(sceneCanvas, { onTelemetry: value => { telemetry = value; }, onPause: (...args) => { pauses.push(args[0]); pauseEvents.push(args); } });
+      launch(); advance(100); advance(100);
+      vi.spyOn(document, 'hidden', 'get').mockReturnValue(true); document.dispatchEvent(new Event('visibilitychange'));
+      const hidden = scene.snapshot(), route = structuredClone(telemetry.distanceGlide);
+      expect(telemetry.motion.paceLyPerSecond).toBe(0);
+      advance(5000); expect(scene.snapshot()).toEqual(hidden); expect(telemetry.distanceGlide).toEqual(route);
+      vi.spyOn(document, 'hidden', 'get').mockReturnValue(false); document.dispatchEvent(new Event('visibilitychange'));
+      advance(5000); expect(scene.snapshot()).toEqual(hidden);
+      advance(100); expect(publish().elapsedSeconds).toBeCloseTo(route.elapsedSeconds + .1, 12);
+      intersect([{ isIntersecting: false }]);
+      const offscreen = scene.snapshot(), offscreenRoute = structuredClone(telemetry.distanceGlide);
+      advance(5000); expect(scene.snapshot()).toEqual(offscreen); expect(telemetry.distanceGlide).toEqual(offscreenRoute);
+      intersect([{ isIntersecting: true }]);
+      advance(5000); expect(scene.snapshot()).toEqual(offscreen);
+      advance(100); expect(publish().elapsedSeconds).toBeCloseTo(offscreenRoute.elapsedSeconds + .1, 12);
+    } finally {
+      if (originalObserver === undefined) delete window.IntersectionObserver;
+      else window.IntersectionObserver = originalObserver;
+    }
+  });
+
+  it('cancels immediately at the current pose and permits ordinary travel or a fresh glide afterward', () => {
+    launch(); for (let index = 0; index < 9; index++) advance(100);
+    const before = scene.snapshot(), events = pauseEvents.length;
+    expect(scene.cancelDistanceGlide()).toBe(true);
+    expect(scene.snapshot()).toEqual(before); expect(telemetry.running).toBe(false);
+    expect(telemetry.distanceGlide).toMatchObject({ active: false, completed: false, targetId: null, progress: 0, elapsedSeconds: 0 });
+    expect(telemetry.motion.kind).not.toBe('glide'); expect(pauseEvents).toHaveLength(events + 1);
+    advance(5000); expect(scene.snapshot()).toEqual(before); expect(pauseEvents).toHaveLength(events + 1);
+    expectAtomicRejection(() => scene.cancelDistanceGlide());
+    scene.set({ running: true, speed: 10, smoothTravel: false }); advance(); advance(100);
+    expect(scene.snapshot().state.distanceLy).toBeCloseTo(before.state.distanceLy + 1, 10); expect(telemetry.distanceGlide.active).toBe(false);
+    const { plan } = launch('amber-star', 'farther');
+    for (let index = 0; index < 30; index++) advance(100);
+    expect(scene.snapshot().state.position).toEqual(plan.position); expect(telemetry.distanceGlide.completed).toBe(true);
+    const completed = scene.snapshot();
+    scene.set({ running: true }); advance(); expect(scene.snapshot()).toEqual(completed);
+    advance(100); publish();
+    expect(scene.snapshot().state.distanceLy).toBeCloseTo(completed.state.distanceLy + 1, 10);
+    expect(telemetry.distanceGlide).toMatchObject({ active: false, completed: false }); expect(telemetry.motion.kind).toBe('free');
+  });
+
+  it('hands off every active travel mode, clears stale precision undo and framing, and yields to successful camera actions', () => {
+    for (const start of [() => scene.set({ running: true }), () => scene.navigateTo('amber-star'), () => scene.startOrbit('amber-star'), () => scene.startFlyby('stellar')]) {
+      scene.reset(); start(); advance(); launch();
+      expect(telemetry.navigation.active).toBe(false); expect(telemetry.orbit.active).toBe(false); expect(telemetry.flyby.active).toBe(false);
+      expect(telemetry.distanceGlide.active).toBe(true); expect(telemetry.motion.kind).toBe('glide');
+    }
+    scene.reset(); expect(scene.nudge('right', 1)).toBe(true); expect(scene.frameTarget('amber-star', 1 / 3)).toBe(true); launch();
+    expect(telemetry.cameraMoves).toBe(0); expect(scene.undoNudge()).toBe(false); expect(scene.undoFrame()).toBe(false);
+    const actions = [
+      () => scene.stepDistanceView('amber-star', 'farther'),
+      () => scene.stepOrbitView('amber-star', 'right', 5),
+      () => scene.nudge('right', 1),
+      () => scene.look(.1, -.1),
+      () => scene.view('back'),
+      () => scene.frameTarget('amber-star', 1 / 3),
+      () => scene.faceSceneCenter(),
+      () => scene.focusTarget('blue-star'),
+      () => scene.selectTarget('blue-star'),
+      () => scene.restore(scene.snapshot()),
+      () => scene.reset(),
+      () => scene.set({ mode: 'relativity' }),
+      () => scene.set({ region: 'galaxy' }),
+      () => scene.startOrbit('amber-star'),
+      () => scene.navigateTo('amber-star'),
+      () => scene.startFlyby('stellar'),
+    ];
+    for (const action of actions) {
+      scene.set({ mode: 'explore', region: 'neighborhood' }); scene.reset(); launch(); advance(100); advance(100);
+      action(); scene.set({});
+      expect(telemetry.distanceGlide).toMatchObject({ active: false, completed: false, targetId: null }); expect(telemetry.motion.kind).not.toBe('glide');
+    }
+  });
+
+  it('clears completed glide metadata on target, view and framing handoffs while preserving it for same-target focus, lens changes and rejected cancel', () => {
+    for (const action of [() => scene.selectTarget('blue-star'), () => scene.focusTarget('blue-star'), () => scene.view('back'), () => scene.frameTarget('amber-star', 1 / 3)]) {
+      scene.reset(); launch(); for (let index = 0; index < 6; index++) advance(500);
+      const completed = structuredClone(telemetry.distanceGlide), pose = scene.snapshot().state;
+      expect(completed).toMatchObject({ active: false, completed: true, targetId: 'amber-star', progress: 1 });
+      expect(scene.selectTarget('amber-star')).toBe(true); expect(scene.focusTarget('amber-star')).toBe(true);
+      scene.set({ fov: scene.snapshot().settings.fov === 40 ? 45 : 40, exposure: 1.2 });
+      expect(telemetry.distanceGlide).toEqual(completed); expect(scene.snapshot().state).toEqual(pose); expect(telemetry.running).toBe(false);
+      expectAtomicRejection(() => scene.cancelDistanceGlide());
+      action(); publish();
+      expect(telemetry.distanceGlide).toMatchObject({ active: false, completed: false, targetId: null, direction: null, progress: 0, elapsedSeconds: 0 });
+    }
+  });
+
+  it('rejects invalid, cross-region, coincident and polar launches atomically while preserving active modes', () => {
+    const invalid = [['missing', 'closer'], ['galactic-center', 'farther'], ['amber-star', 'bad'], ['amber-star', null]];
+    for (const start of [() => scene.navigateTo('amber-star'), () => scene.startOrbit('amber-star'), () => scene.startFlyby('stellar'), () => scene.startDistanceGlide('amber-star', 'closer')]) {
+      scene.reset(); start(); advance();
+      for (const args of invalid) expectAtomicRejection(() => scene.startDistanceGlide(...args));
+    }
+    expectAtomicRejection(() => scene.startDistanceGlide('amber-star', 'farther'));
+    for (const action of [() => scene.startOrbit('missing'), () => scene.navigateTo('missing'), () => scene.startFlyby('missing'), () => scene.stepDistanceView('missing', 'closer'), () => scene.stepOrbitView('missing', 'right', 5), () => scene.nudge('missing', 1), () => scene.frameTarget('missing', 1 / 3), () => scene.focusTarget('missing'), () => scene.selectTarget('missing')]) expectAtomicRejection(action);
+    const target = flight.landmarks('neighborhood')[0];
+    for (const offset of [[0, 0, 0], [0, 10, 0], [.001, -10, 0]]) {
+      const saved = scene.snapshot(); saved.state.position = target.position.map((value, axis) => value + offset[axis]);
+      expect(scene.restore(saved)).toBe(true); scene.set({ running: true });
+      for (const direction of ['closer', 'farther']) expectAtomicRejection(() => scene.startDistanceGlide(target.id, direction));
+      expect(telemetry.running).toBe(true);
+    }
+  });
+
+  it('finishes clipped routes exactly at the minimum range and world boundary, then rejects an exhausted range without state changes', () => {
+    const target = flight.landmarks('neighborhood')[0], minimum = target.arrivalRadiusLy * .1;
+    for (const [position, direction] of [[target.position.map((value, axis) => value + (axis === 2 ? minimum * 1.1 : 0)), 'closer'], [[target.position[0], target.position[1], 99999], 'farther']]) {
+      const saved = scene.snapshot(); saved.state.position = position; expect(scene.restore(saved)).toBe(true);
+      const { plan } = launch(target.id, direction);
+      expect(plan.limited).toBe(true);
+      for (let index = 0; index < 6; index++) advance(500);
+      expect(scene.snapshot().state.position).toEqual(plan.position); expect(telemetry.distanceGlide.completed).toBe(true);
+      if (direction === 'closer') expect(range(scene.snapshot().state.position, target.position)).toBeCloseTo(minimum, 12);
+      else expect(Math.hypot(...scene.snapshot().state.position)).toBeCloseTo(100000, 7);
+      expectAtomicRejection(() => scene.startDistanceGlide(target.id, direction));
+    }
+  });
+
+  it('rejects physical mode and unavailable, lost or disposed graphics without changing the camera or emitting a pause', () => {
+    scene.set({ mode: 'relativity', running: true }); expectAtomicRejection(() => scene.startDistanceGlide('amber-star', 'closer'));
+    scene.set({ mode: 'explore' }); launch(); sceneCanvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true }));
+    expectAtomicRejection(() => scene.startDistanceGlide('amber-star', 'farther')); expectAtomicRejection(() => scene.cancelDistanceGlide());
+    scene.dispose(); expectAtomicRejection(() => scene.startDistanceGlide('amber-star', 'closer')); expectAtomicRejection(() => scene.cancelDistanceGlide());
+    const canvas = document.createElement('canvas'), callback = vi.fn();
+    vi.spyOn(canvas, 'getContext').mockReturnValue(null); vi.spyOn(canvas, 'getBoundingClientRect').mockReturnValue({ width: 800, height: 500 });
+    const unavailable = flight.create(canvas, { onPause: callback }), before = unavailable.snapshot();
+    expect(unavailable.startDistanceGlide('amber-star', 'closer')).toBe(false); expect(unavailable.cancelDistanceGlide()).toBe(false);
+    expect(unavailable.snapshot()).toEqual(before); expect(callback).not.toHaveBeenCalled(); unavailable.dispose();
+  });
+});
+
+describe('Universe tilted camera orbits', () => {
+  it('moves above and below the landmark over a complete circle with fixed range and clocks', () => {
+    scene.set({orbitTilt:35,orbitRate:12,fov:10});scene.startOrbit('amber-star');advance();
+    const initial=scene.snapshot(),center=flight.landmarks('neighborhood')[0].position,range=Math.hypot(...initial.state.position.map((v,i)=>v-center[i])),circle=Math.hypot(initial.state.position[0]-center[0],initial.state.position[2]-center[2]),heights=[];
+    for(let n=0;n<300;n++){advance(100);const s=scene.snapshot();heights.push(s.state.position[1]);expect(Math.hypot(...s.state.position.map((v,i)=>v-center[i]))).toBeCloseTo(range,9);expect(s.state.universeYears).toBe(initial.state.universeYears);expect(s.state.travelerYears).toBe(initial.state.travelerYears);}
+    const final=scene.snapshot();final.state.position.forEach((v,i)=>expect(v).toBeCloseTo(initial.state.position[i],9));expect(final.state.distanceLy-initial.state.distanceLy).toBeCloseTo(2*Math.PI*circle,9);expect(Math.max(...heights)-Math.min(...heights)).toBeGreaterThan(5);expect(telemetry.target.screen[0]).toBeCloseTo(.5,10);expect(telemetry.target.screen[1]).toBeCloseTo(.5,10);
+    expect(telemetry.motion.targetLyPerSecond).toBeCloseTo(circle*12*Math.PI/180,10);
+  });
+  it('anchors tilted motion for all eighteen landmarks and reuses uploaded resources', () => {
+    for(const region of ['neighborhood','galaxy','cosmic']){
+      scene.set({region,orbitTilt:35,orbitRate:12});
+      for(const target of flight.landmarks(region)){
+        const start=scene.snapshot(),resources={...graphicsCreates},textures=createdTextures.length,uploads=textureUploads.length;
+        expect(scene.startOrbit(target.id)).toBe(true);expect(scene.snapshot().state.position).toEqual(start.state.position);advance();
+        for(let n=0;n<20;n++)advance(100);
+        const s=scene.snapshot(),r=p=>Math.hypot(...p.map((v,i)=>v-target.position[i]));expect(r(s.state.position)).toBeCloseTo(r(start.state.position),6);expect(telemetry.target.screen[0]).toBeCloseTo(.5,9);expect(telemetry.target.screen[1]).toBeCloseTo(.5,9);
+        expect(graphicsCreates).toEqual(resources);expect(createdTextures).toHaveLength(textures);expect(textureUploads).toHaveLength(uploads);scene.restore(start);
+      }
+    }
+  });
+  it('changes paths without a position jump, holds a pause and retraces when reversed', () => {
+    scene.startOrbit('amber-star');advance();advance(100);scene.set({running:false});const paused=scene.snapshot();
+    scene.set({orbitTilt:35});expect(scene.snapshot()).toEqual(paused);expect(telemetry.orbit.active).toBe(true);advance(1000);expect(scene.snapshot()).toEqual(paused);
+    scene.set({running:true});advance();advance(100);const forward=scene.snapshot();scene.set({orbitDirection:-1});advance(100);const reverse=scene.snapshot();reverse.state.position.forEach((v,i)=>expect(v).toBeCloseTo(paused.state.position[i],10));expect(reverse.state.distanceLy).toBeGreaterThan(forward.state.distanceLy);
+    const beforeLevel=scene.snapshot();scene.set({orbitTilt:0});expect(scene.snapshot()).toEqual(beforeLevel);advance();advance(100);expect(scene.snapshot().state.position[1]).toBe(beforeLevel.state.position[1]);
+  });
+  it('ends tilted motion on manual look, viewpoint steps, restore and scene changes', () => {
+    scene.set({orbitTilt:35});
+    for(const action of[()=>scene.look(.1,0),()=>scene.stepOrbitView('amber-star','up',5),()=>scene.restore(scene.snapshot()),()=>scene.set({region:'galaxy'})]){
+      scene.set({region:'neighborhood'});expect(scene.startOrbit('amber-star')).toBe(true);advance();advance(100);action();expect(telemetry.orbit.active).toBe(false);expect(telemetry.running).toBe(false);const stopped=scene.snapshot();advance(1000);expect(scene.snapshot()).toEqual(stopped);
+    }
+    scene.set({mode:'relativity'});expect(scene.startOrbit('amber-star')).toBe(false);
+  });
+  it('declines a near-polar tilted path without moving and safely stops a running level orbit', () => {
+    const saved=scene.snapshot(),target=flight.landmarks('neighborhood')[0];saved.state.position=[target.position[0]+.01,target.position[1]+10,target.position[2]];saved.targetId=target.id;scene.restore(saved);
+    scene.set({orbitTilt:35});const before=scene.snapshot();expect(scene.startOrbit(target.id)).toBe(false);expect(scene.snapshot()).toEqual(before);expect(telemetry.running).toBe(false);
+    scene.set({orbitTilt:0});expect(scene.startOrbit(target.id)).toBe(true);const active=scene.snapshot();scene.set({orbitTilt:35});expect(scene.snapshot()).toEqual(active);expect(telemetry.orbit.active).toBe(false);expect(telemetry.running).toBe(false);
+  });
+});
+
+describe('Universe landmark perspective controls', () => {
+  it('steps around all eighteen landmarks at fixed distance, centered and paused', () => {
+    for(const region of ['neighborhood','galaxy','cosmic']) {
+      scene.set({region,fov:10,exposure:.65,quality:'low'});
+      for(const target of flight.landmarks(region)) {
+        const before=scene.snapshot(),plan=scene.planOrbitView(target.id,'up',15);
+        expect(plan).not.toBeNull();expect(scene.snapshot()).toEqual(before);
+        expect(scene.stepOrbitView(target.id,'up',15)).toBe(true);
+        const after=scene.snapshot();
+        expect(after.settings).toEqual(before.settings);
+        expect(Math.hypot(...after.state.position.map((v,i)=>v-target.position[i]))).toBeCloseTo(plan.radiusLy,6);
+        expect(after.state.distanceLy-before.state.distanceLy).toBeCloseTo(plan.distanceLy,6);
+        expect(after.state.universeYears).toBe(before.state.universeYears);expect(after.state.travelerYears).toBe(before.state.travelerYears);
+        expect(telemetry.running).toBe(false);expect(telemetry.target.screen[0]).toBeCloseTo(.5,10);expect(telemetry.target.screen[1]).toBeCloseTo(.5,10);
+        expect(scene.restore(before)).toBe(true);
+      }
+    }
+  });
+  it('ends travel, navigation, orbit and scenic flight before changing the viewpoint', () => {
+    for(const start of [()=>scene.set({running:true}),()=>scene.navigateTo('amber-star'),()=>scene.startOrbit('amber-star'),()=>scene.startFlyby('stellar')]) {
+      scene.reset();start();advance();const before=scene.snapshot();
+      expect(scene.stepOrbitView('amber-star','right',5)).toBe(true);
+      expect(telemetry.running).toBe(false);expect(telemetry.navigation.active).toBe(false);expect(telemetry.orbit.active).toBe(false);expect(telemetry.flyby.active).toBe(false);
+      const stopped=scene.snapshot();advance(1000);expect(scene.snapshot()).toEqual(stopped);
+      expect(stopped.state.universeYears).toBe(before.state.universeYears);expect(stopped.state.travelerYears).toBe(before.state.travelerYears);
+    }
+  });
+  it('updates the chart, clears stale move and framing undo, and retains GPU resources', () => {
+    scene.nudge('right',1);scene.frameTarget('amber-star',1/3);
+    const allocations={...graphicsCreates},textures=createdTextures.length,uploads=textureUploads.length;
+    expect(scene.stepOrbitView('amber-star','left',15)).toBe(true);advance();
+    expect(telemetry.trail.at(-1)).toEqual(scene.snapshot().state.position);expect(telemetry.cameraMoves).toBe(0);
+    expect(scene.undoNudge()).toBe(false);expect(scene.undoFrame()).toBe(false);
+    expect(graphicsCreates).toEqual(allocations);expect(createdTextures).toHaveLength(textures);expect(textureUploads).toHaveLength(uploads);
+  });
+  it('leaves invalid, coincident, physical-mode and unavailable views unchanged', () => {
+    const before=scene.snapshot();
+    for(const args of [['missing','up',15],['amber-star','bad',15],['amber-star','up',NaN],['amber-star','up',0]])expect(scene.stepOrbitView(...args)).toBe(false);
+    expect(scene.snapshot()).toEqual(before);
+    const target=flight.landmarks('neighborhood')[0],coincident=scene.snapshot();coincident.state.position=target.position.slice();scene.restore(coincident);
+    expect(scene.stepOrbitView(target.id,'up',15)).toBe(false);expect(scene.snapshot().state.position).toEqual(target.position);
+    scene.set({mode:'relativity'});const physical=scene.snapshot();expect(scene.stepOrbitView(target.id,'up',15)).toBe(false);expect(scene.snapshot()).toEqual(physical);
+    scene.set({mode:'explore'});sceneCanvas.dispatchEvent(new Event('webglcontextlost',{cancelable:true}));expect(scene.stepOrbitView(target.id,'up',15)).toBe(false);
+    scene.dispose();expect(scene.planOrbitView(target.id,'up',15)).toBeNull();expect(scene.stepOrbitView(target.id,'up',15)).toBe(false);
   });
 });
 
@@ -1293,7 +1798,8 @@ describe('Universe flight Halo flyby', () => {
       expect(item.kind + ' ' + item.description).toMatch(/generated/i);
     }
     const routes = flight.flybys('galaxy');
-    expect(routes).toHaveLength(1);
+    expect(routes).toHaveLength(2);
+    expect(routes[1]).toEqual(DISK_METADATA);
     expect(routes).toEqual(flight.flybys().filter(item => item.region === 'galaxy'));
     expect(flight.flybys('cosmic')).toMatchObject([{ id: 'group', region: 'cosmic' }]);
     expect(flight.flybys('missing')).toEqual([]);
@@ -1641,10 +2147,10 @@ describe('Universe flight Nebula passage', () => {
 
   it('returns independent region-specific route catalogs and preserves the original Halo metadata', () => {
     const catalog = flight.flybys(), neighborhood = flight.flybys('neighborhood'), galaxy = flight.flybys('galaxy');
-    expect(catalog).toHaveLength(4);
-    expect(new Set(catalog.map(item => item.id)).size).toBe(4);
+    expect(catalog).toHaveLength(5);
+    expect(new Set(catalog.map(item => item.id)).size).toBe(5);
     expect(neighborhood).toHaveLength(2);
-    expect(galaxy).toMatchObject([haloMetadata]);
+    expect(galaxy).toMatchObject([haloMetadata, DISK_METADATA]);
     expect(neighborhood[0]).toMatchObject({
       id: 'nebula', name: 'Nebula passage', region: 'neighborhood', durationSeconds: 40,
       position: [-14, 6, 3], aim: [9, -2, 34], fov: 64, targetId: 'blue-nebula',
@@ -1857,7 +2363,7 @@ describe('Universe flight Nebula passage', () => {
   it('preserves the Halo launch, duration, completion target and endpoint after a completed local route', () => {
     launch(4); finish();
     scene.set({ region: 'galaxy', flybyRate: 4 });
-    expect(flight.flybys('galaxy')).toMatchObject([haloMetadata]);
+    expect(flight.flybys('galaxy')).toMatchObject([haloMetadata, DISK_METADATA]);
     expect(scene.startFlyby('halo')).toBe(true); advance();
     expect(telemetry.position).toEqual(haloMetadata.position);
     expect(telemetry.flyby).toMatchObject({ id: 'halo', name: 'Halo flyby', durationSeconds: 36, progress: 0 });
@@ -1916,7 +2422,7 @@ describe('Universe flight galaxy group flyby', () => {
   it('adds one detached cosmic route while retaining every existing generated galaxy', () => {
     const routes = flight.flybys('cosmic'), original = structuredClone(routes);
     expect(routes).toHaveLength(1);
-    expect(flight.flybys().map(route => route.id)).toEqual(['halo', 'nebula', 'group', 'stellar']);
+    expect(flight.flybys().map(route => route.id)).toEqual(['halo', 'nebula', 'group', 'stellar', 'disk']);
     expect(routes[0]).toMatchObject({
       id: 'group', name: 'Galaxy group flyby', region: 'cosmic', durationSeconds: 48,
       position: launchPosition, aim: [0, 0, 0], fov: 60, targetId: 'near-galaxy',
@@ -2536,13 +3042,14 @@ describe('Universe flight scenic highlights', () => {
     const routes = flight.flybys(), original = structuredClone(routes);
     expect(routes.map(route => route.highlights.map(highlight => highlight.id))).toEqual([
       ['arm', 'cluster', 'panorama'], ['approach', 'filaments', 'violet'], ['spiral', 'elliptical', 'panorama'],
-      ['amber', 'blue', 'pale'],
+      ['amber', 'blue', 'pale'], ['arms', 'crossing', 'panorama'],
     ]);
     expect(routes.map(route => route.highlights.map(highlight => highlight.targetId))).toEqual([
       ['galactic-center', 'halo-cluster-2', 'galactic-center'],
       ['blue-nebula', 'blue-nebula', 'violet-nebula'],
       ['near-galaxy', 'golden-elliptical', 'golden-elliptical'],
       ['amber-star', 'blue-star', 'pale-star'],
+      ['inner-arm', 'inner-arm', 'galactic-center'],
     ]);
     for (const route of routes) {
       let previous = 0;

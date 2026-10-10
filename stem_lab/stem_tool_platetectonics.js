@@ -255,6 +255,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     _s.id = 'tect-a11y';
     _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } ' +
       '.plate-tectonics-container button:focus, .plate-tectonics-container input:focus, .plate-tectonics-container select:focus, .plate-tectonics-container textarea:focus, .plate-tectonics-container canvas:focus, .plate-tectonics-container [tabindex]:focus { outline: 3px solid #facc15 !important; outline-offset: 2px !important; box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.4) !important; } ' +
+      '.pt-tect-frame canvas.pt-tect-gl-focus:focus-visible { outline: 3px solid #facc15 !important; outline-offset: -5px !important; box-shadow: inset 0 0 0 6px #0f172a !important; transition: none !important; } @media (forced-colors: active) { .pt-tect-frame canvas.pt-tect-gl-focus:focus-visible { outline-color: Highlight !important; box-shadow: none !important; } } ' +
       '.plate-tectonics-container.dark { color: #e2e8f0 !important; } .plate-tectonics-container.dark h2, .plate-tectonics-container.dark h3, .plate-tectonics-container.dark h4 { color: #f1f5f9 !important; } ' +
       '.plate-tectonics-container.dark .bg-white { background-color: rgba(15, 23, 42, 0.6) !important; border-color: rgba(51, 65, 85, 0.5) !important; color: #f1f5f9 !important; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); } ' +
       '.plate-tectonics-container.dark .bg-red-50 { background-color: rgba(220, 38, 38, 0.1) !important; border-color: rgba(220, 38, 38, 0.25) !important; } ' +
@@ -1183,6 +1184,50 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     return 'exposed';
   }
 
+  // Recorded observations have distance and depth, but no along-strike
+  // coordinate. Their annotation is a projection onto an exposed cut face.
+  function tectObservationFace(m) {
+    if (!m || m.cut == null || !isFinite(m.cut) || m.cut <= -TECT_HALF_Z || m.cut >= TECT_HALF_Z) return 'cut-face';
+    if (Math.abs(m.rotX || 0) >= 75 || Math.cos(-(m.rotY || 0) * Math.PI / 180) <= 0.12) return 'view-angle';
+    return 'exposed';
+  }
+  function tectObservationReason(m) {
+    var point = m && m.observationProjection;
+    if (!point) return 'none';
+    if (typeof point.x !== 'number' || typeof point.z !== 'number' || !isFinite(point.x) || !isFinite(point.z) ||
+        !Number.isInteger(point.index) || point.index < 0) return 'invalid';
+    if (Math.abs(point.x * TECT_KM) > TECT_HALF_X || point.z < 0 || point.z * TECT_KM > TECT_DEPTH) return 'outside-block';
+    return tectObservationFace(m);
+  }
+
+  // A recorded sample supplies distance and depth only. Keep every original
+  // event index, including coincident points, while separating finite-picture
+  // omissions from malformed values. No point is moved to fit the block.
+  function tectObservationSampleSnapshot(m) {
+    var sample = m && m.observationSample;
+    var snapshot = { enabled: !!sample, visible: false, reason: sample ? 'invalid' : 'none',
+      total: 0, inBounds: 0, outside: 0, invalid: 0, captured: !!(sample && sample.captured), points: [] };
+    if (!sample) return snapshot;
+    if (!Array.isArray(sample.points)) return snapshot;
+    snapshot.total = sample.points.length;
+    if (snapshot.total > 200) return snapshot;
+    if (!snapshot.total) { snapshot.reason = 'empty'; return snapshot; }
+    for (var index = 0; index < sample.points.length; index++) {
+      var point = sample.points[index];
+      if (!point || typeof point.x !== 'number' || typeof point.z !== 'number' || !isFinite(point.x) || !isFinite(point.z)) {
+        snapshot.invalid++; continue;
+      }
+      if (Math.abs(point.x * TECT_KM) > TECT_HALF_X || point.z < 0 || point.z * TECT_KM > TECT_DEPTH) {
+        snapshot.outside++; continue;
+      }
+      snapshot.points.push({ index: index, x: point.x, z: point.z });
+    }
+    snapshot.inBounds = snapshot.points.length;
+    snapshot.reason = snapshot.inBounds ? tectObservationFace(m) : snapshot.invalid ? 'invalid' : 'outside-block';
+    snapshot.visible = snapshot.reason === 'exposed';
+    return snapshot;
+  }
+
   // ═══════════════════════════════════════════════════════════════════════
   // 3D BLOCK VIEW — progressive enhancement over the 2D cross-section
   // ───────────────────────────────────────────────────────────────────────
@@ -1208,6 +1253,69 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
   var TECT_KM = 0.1;                 // scene units per km
   var TECT_HALF_X = 76, TECT_HALF_Z = 25, TECT_DEPTH = 80;
 
+  // Match the backing pixels to the displayed canvas, including CSS zoom.
+  // Keep the same density cap and logical dimensions used for camera and hits.
+  function tectCanvasPixelRatio(canvas, width, height) {
+    var rect = canvas.getBoundingClientRect();
+    var scale = rect.width > 0 && rect.height > 0 && isFinite(rect.width + rect.height)
+      ? Math.max(1, rect.width / width, rect.height / height) : 1;
+    var density = window.devicePixelRatio || 1;
+    if (!(density > 0) || !isFinite(density)) density = 1;
+    return Math.min(2, density * scale);
+  }
+
+
+  // Keep captions near their preferred position without searching every
+  // combination of obstacle edges. At each candidate row, merge only the
+  // horizontally overlapping forbidden intervals; touching edges stay legal.
+  function tectNearestLabelPlacement(preferred, width, height, bounds, occupied, gap) {
+    if (bounds.left > bounds.right || bounds.top > bounds.bottom) return null;
+    var clamp = function (value, low, high) { return Math.max(low, Math.min(high, value)); };
+    var px = clamp(preferred.x, bounds.left, bounds.right), py = clamp(preferred.y, bounds.top, bounds.bottom);
+    var rows = [py, bounds.top, bounds.bottom], halfHeight = height / 2, halfWidth = width / 2;
+    occupied.forEach(function (rect) {
+      rows.push(clamp(rect.y - halfHeight - gap, bounds.top, bounds.bottom),
+        clamp(rect.y + rect.height + halfHeight + gap, bounds.top, bounds.bottom));
+    });
+    rows.sort(function (a, b) { return Math.abs(a - py) - Math.abs(b - py) || a - b; });
+    var best = null, bestCost = Infinity, seen = new Set();
+    rows.forEach(function (y) {
+      if (seen.has(y) || (y - py) * (y - py) > bestCost) return;
+      seen.add(y);
+      var intervals = [];
+      occupied.forEach(function (rect) {
+        if (y > rect.y - halfHeight - gap && y < rect.y + rect.height + halfHeight + gap) {
+          intervals.push({ left: rect.x - halfWidth - gap, right: rect.x + rect.width + halfWidth + gap });
+        }
+      });
+      intervals.sort(function (a, b) { return a.left - b.left || a.right - b.right; });
+      var merged = [];
+      intervals.forEach(function (interval) {
+        var last = merged[merged.length - 1];
+        if (last && interval.left < last.right) last.right = Math.max(last.right, interval.right);
+        else merged.push(interval);
+      });
+      var x = px;
+      for (var i = 0; i < merged.length; i++) {
+        var blocked = merged[i];
+        if (x <= blocked.left) break;
+        if (x < blocked.right) {
+          var left = blocked.left >= bounds.left ? blocked.left : null;
+          var right = blocked.right <= bounds.right ? blocked.right : null;
+          if (left == null && right == null) return;
+          x = right == null || (left != null && px - left <= right - px) ? left : right;
+          break;
+        }
+      }
+      var cost = (x - px) * (x - px) + (y - py) * (y - py);
+      if (cost < bestCost || (cost === bestCost && (!best || y < best.y || (y === best.y && x < best.x)))) {
+        best = { x: x, y: y }; bestCost = cost;
+      }
+    });
+    return best;
+  }
+  try { window.__alloTectNearestLabelPlacement = tectNearestLabelPlacement; } catch (e) {}
+
   var TectGL = (function () {
     var DEG = Math.PI / 180;
     var T = null;
@@ -1218,6 +1326,11 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     var sectionCaps = [], geometrySig = '', scaleSig = '', geometryBuilds = 0;
     var labelPlacements = [], labelRects = [];
     var focusSig = '', focusAnnotation = null;
+    var observationGroup = null, observationMarker = null, observationHalo = null, observationSig = '';
+    var observationState = { visible: false, reason: 'none', index: null, distanceKm: null, depthKm: null, captured: false, point: null };
+    var observationSampleGroup = null, observationSampleCore = null, observationSampleHalo = null, observationSampleDummy = null;
+    var observationSampleSig = '';
+    var observationSampleState = { enabled: false, visible: false, reason: 'none', total: 0, inBounds: 0, outside: 0, invalid: 0, captured: false, points: [], cut: null };
     var inspectionGroup = null, inspectionOutline = null, inspectionMarker = null;
     var arcProcessGroup = null, arcProcessState = { step: null, visible: false, reason: 'none', cut: null };
     var inspectionSig = '', inspectionNoticeSig = '';
@@ -1318,6 +1431,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       scene.add(scaleGroup);
       scene.add(guideGroup);
       scene.add(focusGroup);
+      observationGroup = new T.Group(); observationGroup.name = 'sample-observation-projection'; scene.add(observationGroup);
       buildArcProcess();
 
       // One pooled outline follows the selected meshes. It has no effect on
@@ -1726,28 +1840,49 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     // Text via canvas texture — r128 has no text geometry, and a sprite always
     // faces the camera, which is what a depth label needs while the block turns.
     function makeLabel(text, hex, scaleUnits) {
-      var pad = 8, fs = 40;
+      var pad = 8, fs = 40, resolution = 2;
       var cv = document.createElement('canvas');
       cv.setAttribute('aria-hidden', 'true');
       var c2 = cv.getContext('2d');
       c2.font = 'bold ' + fs + 'px sans-serif';
-      cv.width = Math.ceil(c2.measureText(text).width) + pad * 2;
-      cv.height = fs + pad * 2;
+      var width = Math.ceil(c2.measureText(text).width) + pad * 2;
+      var height = fs + pad * 2;
+      // Paint at twice the resolution while preserving each label's footprint.
+      cv.width = width * resolution;
+      cv.height = height * resolution;
       c2 = cv.getContext('2d');
+      c2.scale(resolution, resolution);
       c2.font = 'bold ' + fs + 'px sans-serif';
-      c2.fillStyle = 'rgba(15,23,42,0.94)';
-      c2.fillRect(0, 0, cv.width, cv.height);
+      var inset = 1, radius = 8;
+      c2.beginPath();
+      c2.moveTo(inset + radius, inset);
+      c2.lineTo(width - inset - radius, inset);
+      c2.quadraticCurveTo(width - inset, inset, width - inset, inset + radius);
+      c2.lineTo(width - inset, height - inset - radius);
+      c2.quadraticCurveTo(width - inset, height - inset, width - inset - radius, height - inset);
+      c2.lineTo(inset + radius, height - inset);
+      c2.quadraticCurveTo(inset, height - inset, inset, height - inset - radius);
+      c2.lineTo(inset, inset + radius);
+      c2.quadraticCurveTo(inset, inset, inset + radius, inset);
+      c2.closePath();
+      c2.fillStyle = 'rgba(15,23,42,0.97)';
+      c2.fill();
+      c2.strokeStyle = 'rgba(148,163,184,0.7)';
+      c2.lineWidth = 2;
+      c2.stroke();
       c2.fillStyle = hex;
       c2.textBaseline = 'middle';
-      c2.fillText(text, pad, cv.height / 2);
+      c2.fillText(text, pad, height / 2);
       var tex = new T.CanvasTexture(cv);
+      tex.minFilter = tex.magFilter = T.LinearFilter;
+      tex.generateMipmaps = false;
       tex.needsUpdate = true;
       var sp = new T.Sprite(new T.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false }));
       sp.renderOrder = 10;
       sp.userData.label = text;
-      sp.userData.aspect = cv.width / cv.height;
+      sp.userData.aspect = width / height;
       var s = scaleUnits || 7;
-      sp.scale.set(s * (cv.width / cv.height), s, 1);
+      sp.scale.set(s * (width / height), s, 1);
       return sp;
     }
 
@@ -1764,12 +1899,13 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       { km: 700, label: '700 km',   hex: '#94a3b8' }
     ];
 
-    function trackScaleLabel(sprite, target, depth, focus) {
+    function trackScaleLabel(sprite, target, depth, focus, owner) {
       var geo = new T.BufferGeometry().setFromPoints([target, sprite.position]);
       var leader = new T.Line(geo, new T.LineBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.7, depthTest: false, depthWrite: false }));
+      leader.userData.feature = 'reading-label-leader';
       leader.renderOrder = 9;
-      (focus ? focusGroup : scaleGroup).add(leader);
-      labelPlacements.push({ sprite: sprite, base: sprite.position.clone(), target: target, leader: leader, depth: depth, focus: !!focus });
+      (owner || (focus ? focusGroup : scaleGroup)).add(leader);
+      labelPlacements.push({ sprite: sprite, base: sprite.position.clone(), target: target, leader: leader, depth: depth, focus: !!focus, observation: owner === observationGroup });
     }
 
     function layoutScaleLabels() {
@@ -1810,10 +1946,9 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       labelPlacements.forEach(function (item) {
         if (!item.depth) return;
         item.layout.y -= depthOverflow;
-        occupied.push(labelRect(item.layout));
       });
-      // Keep feature captions clear of plate identities and motion arrows as
-      // well as the depth scale. Leaders retain true targets during rotation.
+      // Reserve fixed identities, arrows and measured points before moving any
+      // caption. Leaders retain true targets during rotation.
       guideGroup.children.forEach(function (o) {
         if (o.userData.feature === 'plate-identity') {
           var screen = o.position.clone().project(camera);
@@ -1853,6 +1988,35 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         var markerSize = 14 * 2 * markerDepth * tanV / hgt;
         inspectionMarker.scale.set(markerSize, markerSize, 1);
       }
+      if (observationSampleCore && observationSampleState.visible) {
+        var sampleFaceZ = observationSampleState.cut - 0.04;
+        observationSampleState.points.forEach(function (point, index) {
+          observationSampleDummy.position.set(point.x * TECT_KM, -point.z * TECT_KM, sampleFaceZ);
+          // Reserve the 8-pixel circle and its 1.3-radius halo. Recorded
+          // points stay coincident; only movable captions yield to them.
+          var sampleScreen = observationSampleDummy.position.clone().project(camera);
+          var sampleX = (sampleScreen.x + 1) * w / 2, sampleY = (1 - sampleScreen.y) * hgt / 2;
+          if (isFinite(sampleX + sampleY) && sampleX + 5.2 >= 0 && sampleX - 5.2 <= w && sampleY + 5.2 >= 0 && sampleY - 5.2 <= hgt) {
+            occupied.push({ x: sampleX - 5.2, y: sampleY - 5.2, width: 10.4, height: 10.4 });
+          }
+          var sampleDepth = -observationSampleDummy.position.clone().applyMatrix4(camera.matrixWorldInverse).z;
+          var sampleSize = 8 * 2 * sampleDepth * tanV / hgt / 2;
+          observationSampleDummy.scale.set(sampleSize, sampleSize, 1);
+          observationSampleDummy.quaternion.copy(camera.quaternion); observationSampleDummy.updateMatrix();
+          observationSampleHalo.setMatrixAt(index, observationSampleDummy.matrix);
+          observationSampleCore.setMatrixAt(index, observationSampleDummy.matrix);
+        });
+        observationSampleHalo.instanceMatrix.needsUpdate = observationSampleCore.instanceMatrix.needsUpdate = true;
+      }
+      if (observationMarker && observationState.visible) {
+        var observedScreen = observationMarker.position.clone().project(camera);
+        occupied.push({ x: (observedScreen.x + 1) * w / 2 - 9, y: (1 - observedScreen.y) * hgt / 2 - 9, width: 18, height: 18 });
+        var observedDepth = -observationMarker.position.clone().applyMatrix4(camera.matrixWorldInverse).z;
+        var observedSize = 14 * 2 * observedDepth * tanV / hgt / 2;
+        [observationMarker, observationHalo].forEach(function (marker) {
+          marker.scale.setScalar(observedSize); marker.quaternion.copy(camera.quaternion);
+        });
+      }
       if (focusAnnotation) {
         [focusAnnotation.point, focusAnnotation.surface].forEach(function (point) {
           var screen = new T.Vector3(point.x, point.y, point.z).project(camera);
@@ -1868,25 +2032,38 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
           o.quaternion.copy(camera.quaternion);
         });
       }
+      // Keep the depth rail in order while yielding to fixed symbols. Work out
+      // the latest feasible rows first so an early caption cannot trap a later
+      // one. Publish the complete stack only when every row has space.
+      var depthLabels = labelPlacements.filter(function (item) { return item.depth; });
+      var depthStep = labelHeight + 4, depthTop = labelHeight / 2 + 8;
+      var latestDepthRows = [], nextDepthY = hgt - depthTop, depthFits = true;
+      for (var di = depthLabels.length - 1; di >= 0; di--) {
+        var dp = depthLabels[di].layout;
+        var latest = tectNearestLabelPlacement({ x: dp.x, y: nextDepthY }, dp.width, labelHeight,
+          { left: dp.x, right: dp.x, top: depthTop + di * depthStep, bottom: nextDepthY }, occupied, 4);
+        if (!latest) { depthFits = false; break; }
+        latestDepthRows[di] = latest.y;
+        nextDepthY = latest.y - depthStep;
+      }
+      var placedDepthRows = [], previousDepthY = depthTop - depthStep;
+      if (depthFits) for (var di = 0; di < depthLabels.length; di++) {
+        var dp = depthLabels[di].layout;
+        var placed = tectNearestLabelPlacement(dp, dp.width, labelHeight,
+          { left: dp.x, right: dp.x, top: previousDepthY + depthStep, bottom: latestDepthRows[di] }, occupied, 4);
+        if (!placed) { depthFits = false; break; }
+        placedDepthRows[di] = placed.y;
+        previousDepthY = placed.y;
+      }
+      depthLabels.forEach(function (item, index) {
+        if (depthFits) item.layout.y = placedDepthRows[index];
+        occupied.push(labelRect(item.layout));
+      });
       labelPlacements.forEach(function (item) {
         if (item.depth) return;
-        var p = item.layout, xs = [p.x], ys = [p.y], gap = 4;
-        occupied.forEach(function (r) {
-          xs.push(r.x - p.width / 2 - gap, r.x + r.width + p.width / 2 + gap);
-          ys.push(r.y - labelHeight / 2 - gap, r.y + r.height + labelHeight / 2 + gap);
-        });
-        var best = null, bestCost = Infinity;
-        xs.forEach(function (cx) { ys.forEach(function (cy) {
-          var x = Math.max(p.width / 2 + 8, Math.min(w - p.width / 2 - 8, cx));
-          var y = Math.max(labelHeight / 2 + 8, Math.min(hgt - labelHeight / 2 - 8, cy));
-          var candidate = labelRect({ x: x, y: y, width: p.width });
-          var overlaps = occupied.some(function (r) {
-            return candidate.x < r.x + r.width + gap && candidate.x + candidate.width + gap > r.x &&
-              candidate.y < r.y + r.height + gap && candidate.y + candidate.height + gap > r.y;
-          });
-          var cost = (x - p.x) * (x - p.x) + (y - p.y) * (y - p.y);
-          if (!overlaps && cost < bestCost) { best = { x: x, y: y }; bestCost = cost; }
-        }); });
+        var p = item.layout;
+        var best = tectNearestLabelPlacement(p, p.width, labelHeight,
+          { left: p.width / 2 + 8, right: w - p.width / 2 - 8, top: labelHeight / 2 + 8, bottom: hgt - labelHeight / 2 - 8 }, occupied, 4);
         if (best) { p.x = best.x; p.y = best.y; }
         occupied.push(labelRect(p));
       });
@@ -1914,7 +2091,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     function buildScale(m) {
       clearGroup(scaleGroup);
       labelPlacements = [];
-      focusSig = '';
+      focusSig = ''; observationSig = '';
       var axisX = -TECT_HALF_X - 4;
       var faceZ = m.cut == null ? TECT_HALF_Z : m.cut;
       var words = m.words || {};
@@ -1928,9 +2105,12 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         g.setAttribute('position', new T.BufferAttribute(new Float32Array([
           axisX, y, faceZ, TECT_HALF_X, y, faceZ
         ]), 3));
-        var line = new T.LineSegments(g, new T.LineBasicMaterial({
-          color: new T.Color(t.hex), transparent: true, opacity: 0.5
-        }));
+        var bandGuide = t.km === 70 || t.km === 300;
+        var line = new T.LineSegments(g, bandGuide
+          ? new T.LineDashedMaterial({ color: new T.Color(t.hex), transparent: true, opacity: 0.5, dashSize: 1.5, gapSize: 1 })
+          : new T.LineBasicMaterial({ color: new T.Color(t.hex), transparent: true, opacity: 0.5 }));
+        if (bandGuide) line.computeLineDistances();
+        line.userData.depthGuide = 'tick'; line.userData.depthKm = t.km;
         scaleGroup.add(line);
 
         // Inside the block's x-range and in front of its face. Hanging them off
@@ -1951,6 +2131,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
               side: T.DoubleSide, depthWrite: false, clippingPlanes: [clipPlane]
             })
           );
+          plane.userData.depthGuide = 'plane'; plane.userData.depthKm = t.km;
           plane.rotation.x = -Math.PI / 2;
           plane.position.set(0, y, 0);
           scaleGroup.add(plane);
@@ -2011,6 +2192,100 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       });
       quakeBatch.mesh.renderOrder = 2;
       quakeBatch.addTo(scene);
+      // Keep the live quake batch first if its capacity grows after a sample
+      // projection was created; annotation draw order remains explicit.
+      if (observationSampleGroup) { scene.remove(observationSampleGroup); scene.add(observationSampleGroup); }
+    }
+
+    function ensureObservationSample() {
+      if (observationSampleGroup) return;
+      // Allocate only after an explicit projection exposes a valid sample.
+      // ensureQuakes has already added its live batch before this group.
+      // Two retained batches show recorded coordinates projected onto the face.
+      // Hollow circles differ from live spheres and the selected diamond.
+      observationSampleGroup = new T.Group(); observationSampleGroup.name = 'earthquake-sample-projection';
+      observationSampleGroup.visible = false; scene.add(observationSampleGroup);
+      observationSampleHalo = new T.InstancedMesh(new T.RingGeometry(0.5, 1.3, 12),
+        new T.MeshBasicMaterial({ color: 0x0f172a, side: T.DoubleSide, depthTest: false, depthWrite: false }), 200);
+      observationSampleCore = new T.InstancedMesh(new T.RingGeometry(0.65, 1, 12),
+        new T.MeshBasicMaterial({ color: 0xffffff, side: T.DoubleSide, depthTest: false, depthWrite: false }), 200);
+      observationSampleHalo.name = 'observation-sample-halo-batch'; observationSampleHalo.userData.feature = 'observation-sample-halo';
+      observationSampleCore.name = 'observation-sample-marker-batch'; observationSampleCore.userData.feature = 'observation-sample-marker';
+      // Three.js allocates instance colours using the current draw count.
+      // Initialise at full capacity before hiding either retained batch.
+      observationSampleCore.setColorAt(0, new T.Color(0xffffff));
+      [observationSampleHalo, observationSampleCore].forEach(function (batch, index) {
+        batch.count = 0; batch.frustumCulled = false; batch.renderOrder = 5 + index;
+        batch.instanceMatrix.setUsage(T.DynamicDrawUsage); observationSampleGroup.add(batch);
+      });
+      observationSampleDummy = new T.Object3D();
+    }
+
+    function observationSampleSignature(m) {
+      return [JSON.stringify(m.observationSample || null), tectObservationFace(m), m.cut, !!m.darkMode].join('|');
+    }
+
+    function updateObservationSample(m) {
+      // Include the whole sample: a capped live log can replace points without
+      // changing length. Matrices and colours update without replacing meshes.
+      var sig = observationSampleSignature(m);
+      if (sig === observationSampleSig) return;
+      observationSampleSig = sig;
+      observationSampleState = tectObservationSampleSnapshot(m); observationSampleState.cut = m.cut == null ? null : m.cut;
+      if (observationSampleState.visible) ensureObservationSample();
+      if (observationSampleGroup) observationSampleGroup.visible = observationSampleState.visible;
+      if (observationSampleCore) observationSampleHalo.count = observationSampleCore.count = observationSampleState.visible ? observationSampleState.inBounds : 0;
+      if (!observationSampleState.visible) return;
+      observationSampleHalo.material.color.setHex(m.darkMode ? 0x0f172a : 0xffffff);
+      observationSampleState.points.forEach(function (point, index) {
+        var color = point.z >= 300 ? (m.darkMode ? 0xc4b5fd : 0x6d28d9)
+          : point.z >= 70 ? (m.darkMode ? 0xfdba74 : 0xc2410c) : (m.darkMode ? 0xfb7185 : 0xbe123c);
+        colorTmp.setHex(color); observationSampleCore.setColorAt(index, colorTmp);
+      });
+      if (observationSampleCore.instanceColor) observationSampleCore.instanceColor.needsUpdate = true;
+    }
+
+    function observationSampleSnapshot() {
+      return Object.assign({}, observationSampleState, {
+        points: observationSampleState.points.map(function (point) {
+          return { index: point.index, x: point.x, z: point.z, point: observationSampleState.visible
+            ? [point.x * TECT_KM, -point.z * TECT_KM, observationSampleState.cut - 0.04] : null };
+        }),
+        drawnCount: observationSampleCore ? observationSampleCore.count : 0
+      });
+    }
+
+    function updateObservationGuide(m) {
+      var point = m.observationProjection, reason = tectObservationReason(m), visible = reason === 'exposed';
+      var sig = [reason, point && point.x, point && point.z, point && point.index, point && point.captured, m.cut, !!m.darkMode, m.words && m.words.observation].join('|');
+      if (sig === observationSig) return;
+      observationSig = sig; clearGroup(observationGroup);
+      labelPlacements = labelPlacements.filter(function (item) { return !item.observation; });
+      observationMarker = observationHalo = null;
+      observationState = { visible: visible, reason: reason, index: point ? point.index : null,
+        distanceKm: point ? point.x : null, depthKm: point ? point.z : null, captured: !!(point && point.captured), point: null };
+      if (!visible) return;
+      var faceZ = m.cut - 0.02, target = new T.Vector3(point.x * TECT_KM, -point.z * TECT_KM, faceZ);
+      observationState.point = target.toArray();
+      function guide(start, name) {
+        var line = new T.Line(new T.BufferGeometry().setFromPoints([start, target]),
+          new T.LineDashedMaterial({ color: m.darkMode ? 0x67e8f9 : 0x0e7490, dashSize: 1.3, gapSize: 1, depthTest: false, depthWrite: false, clippingPlanes: [clipPlane] }));
+        line.computeLineDistances(); line.renderOrder = 7; line.userData.feature = name; observationGroup.add(line);
+      }
+      guide(new T.Vector3(target.x, 0, faceZ), 'observation-depth-guide');
+      guide(new T.Vector3(0, target.y, faceZ), 'observation-distance-guide');
+      // This hollow screen annotation is distinct from the live spherical foci.
+      // Exposure gating keeps it on a visible face; billboarding preserves its
+      // diamond shape when the learner turns that face toward the camera.
+      observationHalo = new T.Mesh(new T.RingGeometry(0.55, 1.2, 4), new T.MeshBasicMaterial({ color: 0x0f172a, side: T.DoubleSide, depthTest: false, depthWrite: false }));
+      observationMarker = new T.Mesh(new T.RingGeometry(0.7, 1, 4), new T.MeshBasicMaterial({ color: 0x67e8f9, side: T.DoubleSide, depthTest: false, depthWrite: false }));
+      [observationHalo, observationMarker].forEach(function (marker, index) {
+        marker.position.copy(target); marker.renderOrder = 8 + index; marker.userData.feature = index ? 'observation-marker' : 'observation-marker-halo'; observationGroup.add(marker);
+      });
+      var text = (m.words && m.words.observation || 'Projected event {n}').replace('{n}', point.index + 1);
+      var label = makeLabel(text, '#67e8f9', 5.5); label.userData.feature = 'observation-projection-label';
+      label.position.copy(target).add(new T.Vector3(16, -7, 4)); observationGroup.add(label);
+      trackScaleLabel(label, target, false, false, observationGroup);
     }
 
     function updateFocusGuide(m) {
@@ -2018,7 +2293,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       // vertical surface projection keep the X-ray dot from reading as a
       // surface event, especially when the learner turns the block overhead.
       // Annotate only the newest focus retained by the current slice.
-      var qs = m.quakes || [], q = null;
+      var qs = observationState.visible || observationSampleState.visible ? [] : (m.quakes || []), q = null;
       for (var i = qs.length - 1; i >= 0; i--) {
         if (m.cut == null || (qs[i].strikeKm || 0) * TECT_KM <= m.cut) { q = qs[i]; break; }
       }
@@ -2147,6 +2422,30 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       try { m.onInspection(inspectionSnapshot()); } catch (e) {}
     }
 
+    function updateReadingGuides(m) {
+      // Keep guide strokes readable against the canvas and exposed rock while
+      // retaining their measured endpoints, caption textures and geometry.
+      var dark = !!m.darkMode;
+      labelPlacements.forEach(function (item) {
+        item.leader.material.color.setHex(dark ? 0xcbd5e1 : 0x475569);
+        item.leader.material.opacity = 0.85;
+      });
+      scaleGroup.children.forEach(function (part) {
+        if (!part.userData.depthGuide) return;
+        var km = part.userData.depthKm;
+        var ink = km === 70 ? (dark ? 0xfdba74 : 0xc2410c)
+          : km === 300 ? (dark ? 0xc4b5fd : 0x6d28d9)
+            : km === 700 ? (dark ? 0x94a3b8 : 0x64748b) : (dark ? 0xe2e8f0 : 0x475569);
+        part.material.color.setHex(ink);
+        if (part.userData.depthGuide === 'tick') part.material.opacity = 0.75;
+      });
+      focusGroup.children.forEach(function (part) {
+        if (part.userData.feature === 'focus-depth-guide' || part.userData.feature === 'focus-surface-projection') {
+          part.material.color.setHex(dark ? 0xe2e8f0 : 0x475569);
+        }
+      });
+    }
+
     function apply(m) {
       // Camera turns and new quake dots must not rebuild all the rock meshes,
       // textures and labels. Quantise only the visual geometry, not the data.
@@ -2178,7 +2477,10 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
           hex);
       }
       quakeBatch.commit(qs.length);
+      updateObservationSample(m);
+      updateObservationGuide(m);
       updateFocusGuide(m);
+      updateReadingGuides(m);
 
       // Cut along strike. At full extent the plane is outside the block, so
       // nothing is clipped; sliding it in carves out the 2D section.
@@ -2214,7 +2516,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     function resize() {
       if (!renderer || !canvasEl) return;
       var w = canvasEl.clientWidth || 1, hh = canvasEl.clientHeight || 1;
-      renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+      renderer.setPixelRatio(tectCanvasPixelRatio(canvasEl, w, hh));
       renderer.setSize(w, hh, false);
       camera.aspect = w / hh;
       camera.updateProjectionMatrix();
@@ -2232,7 +2534,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         if (cs !== appliedCamSig) {
           applyCam(m); appliedCamSig = cs; dirty = true;
           // Camera-only turns also gate annotations to the exposed cut face.
-          if (arcProcessState.step && tectArcProcessFace(m) !== arcProcessState.reason) { apply(m); }
+          if ((arcProcessState.step && tectArcProcessFace(m) !== arcProcessState.reason) || tectObservationReason(m) !== observationState.reason || (observationSampleState.inBounds > 0 && tectObservationFace(m) !== observationSampleState.reason)) { apply(m); }
         }
         if (!dirty) return;
         dirty = false;
@@ -2249,6 +2551,32 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     return {
       isReady: function () { return state === 'ready'; },
       submit: function (m) { pending = m; },
+      // Select a recorded circle, including its hollow centre, in CSS pixels.
+      // A pending sample or camera must first be painted before it can be hit.
+      pickObservationSample: function (clientX, clientY) {
+        if (state !== 'ready' || !renderer || !camera || !canvasEl || !pending || dirty ||
+            observationSampleSig !== observationSampleSignature(pending) || appliedCamSig !== [pending.rotX, pending.rotY, pending.scale, pending.mode, Math.round(pending.offset || 0)].join(',') ||
+            !observationSampleState.visible || !observationSampleCore || !observationSampleCore.count ||
+            typeof clientX !== 'number' || typeof clientY !== 'number' || !isFinite(clientX) || !isFinite(clientY)) return null;
+        var rect = canvasEl.getBoundingClientRect();
+        if (!(rect.width > 0 && rect.height > 0) || !isFinite(rect.left + rect.top + rect.width + rect.height) ||
+            clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) return null;
+        var nearest = null, best = 12 * 12;
+        observationSampleState.points.forEach(function (point) {
+          var world = new T.Vector3(point.x * TECT_KM, -point.z * TECT_KM, observationSampleState.cut - 0.04);
+          var depth = -world.clone().applyMatrix4(camera.matrixWorldInverse).z, screen = world.project(camera);
+          if (!(depth > 0) || !isFinite(screen.x + screen.y + screen.z) || screen.z < -1 || screen.z > 1) return;
+          var x = rect.left + (screen.x + 1) * rect.width / 2, y = rect.top + (1 - screen.y) * rect.height / 2;
+          if (x + 5.2 < rect.left || x - 5.2 > rect.right || y + 5.2 < rect.top || y - 5.2 > rect.bottom) return;
+          var distance = (x - clientX) * (x - clientX) + (y - clientY) * (y - clientY);
+          // Keep the first original record when circles are coincident. The
+          // native event chooser can inspect every record in that position.
+          if (distance <= best && (!nearest || distance < best)) {
+            best = distance; nearest = { index: point.index, x: point.x, z: point.z, captured: observationSampleState.captured };
+          }
+        });
+        return nearest;
+      },
       debug: function () {
         if (state !== 'ready' || !renderer) return { state: state };
         var gl = renderer.getContext();
@@ -2280,6 +2608,8 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
           scaleFaceZ: pending && pending.cut != null ? pending.cut : TECT_HALF_Z,
           labelRects: labelRects,
           focusAnnotation: focusAnnotation,
+          observationProjection: Object.assign({}, observationState, { point: observationState.point ? observationState.point.slice() : null }),
+          observationSample: observationSampleSnapshot(),
           inspection: inspectionSnapshot(),
           arcProcess: Object.assign({}, arcProcessState),
           depthLabelCount: labelPlacements.filter(function (item) { return item.depth; }).length,
@@ -2312,8 +2642,10 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
           resize();
           if (typeof ResizeObserver === 'function') {
             resizeObs = new ResizeObserver(resize);
-            resizeObs.observe(canvasEl);
-          } else { window.addEventListener('resize', resize); }
+            try { resizeObs.observe(canvasEl, { box: 'device-pixel-content-box' }); }
+            catch (e) { resizeObs.observe(canvasEl); }
+          }
+          window.addEventListener('resize', resize);
           state = 'ready';
           appliedSig = ''; appliedCamSig = ''; dirty = true;
           if (!rafId) rafId = requestAnimationFrame(frame);
@@ -2323,9 +2655,12 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       unmount: function () {
         if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
         if (resizeObs) { try { resizeObs.disconnect(); } catch (e) {} resizeObs = null; }
-        else window.removeEventListener('resize', resize);
+        window.removeEventListener('resize', resize);
         if (scene) {
-          clearGroup(plateGroup); clearGroup(arcGroup); clearGroup(scaleGroup); clearGroup(guideGroup); clearGroup(focusGroup); clearGroup(inspectionGroup); clearGroup(arcProcessGroup);
+          // InstancedMesh owns matrix/colour buffers in addition to its rings.
+          [observationSampleHalo, observationSampleCore].forEach(function (batch) { if (batch && typeof batch.dispose === 'function') batch.dispose(); });
+          clearGroup(observationSampleGroup);
+          clearGroup(plateGroup); clearGroup(arcGroup); clearGroup(scaleGroup); clearGroup(guideGroup); clearGroup(focusGroup); clearGroup(observationGroup); clearGroup(inspectionGroup); clearGroup(arcProcessGroup);
           if (slabMesh) { scene.remove(slabMesh); disposeTree(slabMesh); }
           if (quakeBatch) quakeBatch.dispose(scene);
           scene.children.forEach(function (o) { if (o.isMesh) disposeTree(o); });
@@ -2337,6 +2672,10 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         renderer = scene = camera = null; canvasEl = null; pending = null;
         capacity = 0; appliedSig = ''; appliedCamSig = ''; geometrySig = ''; scaleSig = ''; sectionCaps = []; geometryBuilds = 0;
         labelPlacements = []; labelRects = []; focusSig = ''; focusAnnotation = null;
+        observationGroup = observationMarker = observationHalo = null; observationSig = '';
+        observationSampleGroup = observationSampleCore = observationSampleHalo = observationSampleDummy = null; observationSampleSig = '';
+        observationSampleState = { enabled: false, visible: false, reason: 'none', total: 0, inBounds: 0, outside: 0, invalid: 0, captured: false, points: [], cut: null };
+        observationState = { visible: false, reason: 'none', index: null, distanceKm: null, depthKm: null, captured: false, point: null };
         inspectionGroup = inspectionOutline = inspectionMarker = null; inspectionSig = ''; inspectionNoticeSig = '';
         arcProcessGroup = null; arcProcessState = { step: null, visible: false, reason: 'none', cut: null };
         inspectionState = { id: null, mode: null, visible: false, reason: 'none', anchor: null, segments: 0, objects: 0 };
@@ -2747,16 +3086,19 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     // Text via canvas texture: r128 has no text geometry, and a sprite always
     // faces the camera, which is what an anatomy label needs while the model turns.
     function makeLabel(text, hex) {
-      var pad = 12, fs = 40;
+      var pad = 12, fs = 40, density = 2;
       var cv = document.createElement('canvas');
       cv.setAttribute('aria-hidden', 'true');
       var c2 = cv.getContext('2d');
       c2.font = 'bold ' + fs + 'px system-ui, sans-serif';
-      cv.width = Math.ceil(c2.measureText(text).width) + pad * 2 + 6;
-      cv.height = fs + pad * 2;
+      var w = Math.ceil(c2.measureText(text).width) + pad * 2 + 6, hh = fs + pad * 2;
+      // Paint at twice the logical resolution without enlarging the badge.
+      cv.width = w * density;
+      cv.height = hh * density;
       c2 = cv.getContext('2d');
+      c2.scale(density, density);
       c2.font = 'bold ' + fs + 'px system-ui, sans-serif';
-      var w = cv.width, hh = cv.height, r = hh / 2 - 3;
+      var r = hh / 2 - 3;
       c2.beginPath();
       c2.moveTo(r + 3, 3); c2.lineTo(w - r - 3, 3); c2.arc(w - r - 3, hh / 2, r, -Math.PI / 2, Math.PI / 2);
       c2.lineTo(r + 3, hh - 3); c2.arc(r + 3, hh / 2, r, Math.PI / 2, Math.PI * 1.5); c2.closePath();
@@ -2767,15 +3109,17 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       c2.textBaseline = 'middle';
       c2.fillText(text, pad + 3, hh / 2 + 1);
       var tex = own(new T.CanvasTexture(cv));
+      tex.minFilter = tex.magFilter = T.LinearFilter;
+      tex.generateMipmaps = false;
       tex.needsUpdate = true;
       var sp = new T.Sprite(own(new T.SpriteMaterial({ map: tex, transparent: true, depthTest: false })));
       sp.renderOrder = 999;
       // Sprite scale is in WORLD units, so a label sized for the old fixed camera
       // 118 units back became a billboard once the framing tightened to ~74.
       var s = 2.9;
-      sp.scale.set(s * (cv.width / cv.height), s, 1);
+      sp.scale.set(s * (w / hh), s, 1);
       sp.userData.ventLabelText = text;
-      sp.userData.ventLabelAspect = cv.width / cv.height;
+      sp.userData.ventLabelAspect = w / hh;
       sp.userData.ventLabelPixels = 21;
       return sp;
     }
@@ -3895,7 +4239,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     function resize() {
       if (!renderer || !canvasEl) return;
       var w = canvasEl.clientWidth || 1, hh = canvasEl.clientHeight || 1;
-      var pr = Math.min(2, window.devicePixelRatio || 1);
+      var pr = tectCanvasPixelRatio(canvasEl, w, hh);
       renderer.setPixelRatio(pr);
       renderer.setSize(w, hh, false);
       camera.aspect = w / hh;
@@ -3946,12 +4290,14 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         ventMotionCarry += motionTicks;
         var motionSteps = Math.floor(ventMotionCarry + 1e-9);
         ventMotionCarry -= motionSteps;
-        if (m.active) {
+        // A held eruption only needs its shape repainted when the source
+        // stage or a view control changes. Running scenes keep camera easing.
+        if (m.active && (!m.paused || !wasActive || m.tick !== prevTick || dirty)) {
           if (!wasActive || m.tick < prevTick) { resetShape(); lavaPaths.length = 0; }
           wasActive = true; prevTick = m.tick;
           animate(m);
           dirty = true;
-        } else if (wasActive) {
+        } else if (!m.active && wasActive) {
           wasActive = false;
           applyScars();
           animate(m);
@@ -4085,8 +4431,10 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
           resize();
           if (typeof ResizeObserver === 'function') {
             resizeObs = new ResizeObserver(resize);
-            resizeObs.observe(canvasEl);
-          } else { window.addEventListener('resize', resize); }
+            try { resizeObs.observe(canvasEl, { box: 'device-pixel-content-box' }); }
+            catch (e) { resizeObs.observe(canvasEl); }
+          }
+          window.addEventListener('resize', resize);
           state = 'ready';
           appliedDark = null; appliedLabels = null; appliedCam = ''; appliedMagma = null; appliedCut = 'x';
           dirty = true;
@@ -4097,7 +4445,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       unmount: function () {
         if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
         if (resizeObs) { try { resizeObs.disconnect(); } catch (e) {} resizeObs = null; }
-        else window.removeEventListener('resize', resize);
+        window.removeEventListener('resize', resize);
         // One pass over everything build() allocated. The cone and conduit swap
         // geometry when the composition changes, so their live geometry is freed
         // here too (the replaced ones were freed at the swap).
@@ -4646,6 +4994,20 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     // Event inspection is local to this displayed sample. It never writes an
     // observation, changes model time, or issues a reward or announcement.
     var quakeInspectionState = useState(null), quakeInspection = quakeInspectionState[0], setQuakeInspection = quakeInspectionState[1];
+    var quakeProjectionState = useState(null), quakeProjectionRequest = quakeProjectionState[0], setQuakeProjectionRequest = quakeProjectionState[1];
+    var inspectedCaptured = s.dipLocked && s.dipSample && Array.isArray(s.dipSample.points) ? s.dipSample : null;
+    var inspectedLog = inspectedCaptured ? inspectedCaptured.points : (Array.isArray(s.qlog) ? s.qlog : []);
+    var selectedQuakeIndex = quakeInspection && quakeInspection.mode === s.mode && quakeInspection.captured === !!inspectedCaptured ? inspectedLog.indexOf(quakeInspection.point) : -1;
+    var selectedQuakePoint = selectedQuakeIndex >= 0 ? inspectedLog[selectedQuakeIndex] : null;
+    var quakeProjectionContext = quakeProjectionRequest && quakeProjectionRequest.mode === s.mode && quakeProjectionRequest.captured === !!inspectedCaptured && s.qlOpen
+      && (!inspectedCaptured || quakeProjectionRequest.checkedPoints === inspectedCaptured.points);
+    var projectedObservation = quakeProjectionContext && selectedQuakePoint
+      ? { x: selectedQuakePoint.x, z: selectedQuakePoint.z, index: selectedQuakeIndex, captured: !!inspectedCaptured } : null;
+    var projectedSample = quakeProjectionContext && quakeProjectionRequest.sample && inspectedLog.length
+      ? { points: inspectedLog, captured: !!inspectedCaptured } : null;
+    useEffect(function () {
+      if (quakeProjectionRequest && !projectedObservation && !projectedSample) setQuakeProjectionRequest(null);
+    }, [quakeProjectionRequest, selectedQuakePoint, inspectedLog.length, s.mode, s.qlOpen, inspectedCaptured && inspectedCaptured.points]);
     var quakePlotRef = useRef(null), quakeLogRef = useRef(null);
     var quakePlotWidthState = useState(460), quakePlotWidth = quakePlotWidthState[0], setQuakePlotWidth = quakePlotWidthState[1];
     useEffect(function () {
@@ -4714,6 +5076,15 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     var setView3d = v3[1];
     var updView = function(patch) { setView3d(function(prev) { return Object.assign({}, prev, patch); }); };
     var simulatorRef = useRef(null), inspectionFocusPending = useRef(null);
+    // Visiting the projection is explicit. Ordinary event selection preserves
+    // keyboard focus and page position, even when a visible projection follows it.
+    useEffect(function () {
+      if (!quakeProjectionRequest || (!projectedObservation && !projectedSample)) return;
+      var host = simulatorRef.current, target = host && host.querySelector('#pt-quake-projection-status');
+      if (target) target.focus({ preventScroll: true });
+      var frame = host && host.querySelector('.pt-tect-frame');
+      if (frame && typeof frame.scrollIntoView === 'function') frame.scrollIntoView({ block: 'center', behavior: 'auto' });
+    }, [quakeProjectionRequest && quakeProjectionRequest.visit]);
     // A view action can remove or disable its own button. Keep focus on
     // the local explanation or enabled control without scrolling.
     useEffect(function () {
@@ -4770,6 +5141,53 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       if (!preset) return;
       inspectionFocusPending.current = statusSelector;
       updView(Object.assign({}, preset.view));
+    }
+    function revealQuakeProjection(includeSample) {
+      if (includeSample ? !inspectedLog.length : !selectedQuakePoint || Math.abs(selectedQuakePoint.x * TECT_KM) > TECT_HALF_X) return;
+      if (canvasRef.current && canvasRef.current.parentElement) canvasRef.current.parentElement.scrollLeft = 0;
+      setQuakeProjectionRequest(function (previous) {
+        var sameSource = previous && previous.mode === s.mode && previous.captured === !!inspectedCaptured
+          && (!inspectedCaptured || previous.checkedPoints === inspectedCaptured.points);
+        return { mode: s.mode, captured: !!inspectedCaptured, checkedPoints: inspectedCaptured ? inspectedCaptured.points : null,
+          sample: !!includeSample || !!(sameSource && previous.sample), visit: previous ? previous.visit + 1 : 1 };
+      });
+      updView({ on: true, rotX: 0, rotY: 0, scale: 1, cut: 0 });
+    }
+    function showQuakeProjection() { revealQuakeProjection(false); }
+    function showSampleProjection() { revealQuakeProjection(true); }
+    function toggleSampleProjection() {
+      if (projectedSample && !projectedObservation) { hideQuakeProjection(); return; }
+      setQuakeProjectionRequest(function (previous) { return previous ? Object.assign({}, previous, { sample: !previous.sample }) : previous; });
+    }
+    function hideQuakeProjection() {
+      setQuakeProjectionRequest(null);
+      var host = simulatorRef.current, target = host && host.querySelector('[data-tect-gl][aria-hidden="false"]');
+      if (!target) target = canvasRef.current;
+      if (target) target.focus({ preventScroll: true });
+    }
+    // Both inspectors share the displayed observation identity. Local selection
+    // never revisits the camera or writes a checked sample.
+    function moveModelQuake(delta) {
+      var next = selectedQuakeIndex + delta;
+      if (selectedQuakeIndex < 0 || next < 0 || next >= inspectedLog.length) return;
+      if (next === 0 || next === inspectedLog.length - 1) {
+        var chooser = simulatorRef.current && simulatorRef.current.querySelector('[data-pt-quake-model-select]');
+        if (chooser) chooser.focus({ preventScroll: true });
+      }
+      inspectQuake(inspectedLog[next]);
+    }
+    function clearModelQuake() {
+      var host = simulatorRef.current, target = host && host.querySelector(projectedSample
+        ? '[data-pt-quake-model-select]' : '[data-tect-gl][aria-hidden="false"]');
+      if (!target) target = canvasRef.current;
+      if (target) target.focus({ preventScroll: true });
+      inspectQuake(null);
+    }
+    function returnToQuakeGraph() {
+      var target = quakeLogRef.current && quakeLogRef.current.querySelector('[data-pt-quake-inspect-select]');
+      if (!target) return;
+      target.focus({ preventScroll: true });
+      if (typeof target.scrollIntoView === 'function') target.scrollIntoView({ block: 'center', behavior: 'auto' });
     }
     function chooseBoundaryView(want, focusSelector) {
       if (want === view3d.on) return;
@@ -5858,6 +6276,8 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     showScale: view3d.showScale !== false,
     surfaceView: tectSurfaceView,
     inspectionId: selectedFeature,
+    observationProjection: projectedObservation,
+    observationSample: projectedSample,
     arcProcessStep: s.mode === 'convergent' ? selectedArcProcess : null,
     darkMode: isDark,
     onInspection: featureResult[1],
@@ -5867,7 +6287,8 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       arc: __alloT('stem.platetectonics.fig_volcanic_arc', 'volcanic arc'),
       ridge: __alloT('stem.platetectonics.block_ridge_axis', 'ridge axis'),
       fault: __alloT('stem.platetectonics.block_transform_fault', 'transform fault'),
-      focus: __alloT('stem.platetectonics.block_focus_depth', 'Focus · {n} km')
+      focus: __alloT('stem.platetectonics.block_focus_depth', 'Focus · {n} km'),
+      observation: __alloT('stem.platetectonics.ql_projection_label', 'Projected event {n}')
     },
     onReady: function() {
       updView({ readyAt: Date.now() });   // flips tectGlLive on the next render
@@ -5878,12 +6299,44 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.sim_3d_failed', 'The 3D block could not load. Showing the 2D cross-section.'));
     },
     sig: [s.mode, Math.round(s.mountainHeight), Math.round(s.rift), Math.round(s.offset),
-          (s.quakes || []).length, s.quakeTotal || 0, view3d.cut, view3d.showScale !== false, tectSurfaceView, selectedFeature, selectedArcProcess, tectArcProcessFace({ mode: s.mode, cut: view3d.cut, rotX: view3d.rotX, rotY: view3d.rotY }), isDark,
+          (s.quakes || []).length, s.quakeTotal || 0, JSON.stringify(projectedObservation), JSON.stringify(projectedSample), tectObservationReason({ observationProjection: projectedObservation, cut: view3d.cut, rotX: view3d.rotX, rotY: view3d.rotY }), view3d.cut, view3d.showScale !== false, tectSurfaceView, selectedFeature, selectedArcProcess, tectArcProcessFace({ mode: s.mode, cut: view3d.cut, rotX: view3d.rotX, rotY: view3d.rotY }), isDark,
           (s.quakes || []).length ? Math.round((s.quakes[s.quakes.length - 1].depthKm || 0)) : '',
-          __alloT('stem.platetectonics.block_surface', 'surface'), __alloT('stem.platetectonics.fig_trench', 'trench'), __alloT('stem.platetectonics.fig_volcanic_arc', 'volcanic arc'), __alloT('stem.platetectonics.block_ridge_axis', 'ridge axis'), __alloT('stem.platetectonics.block_transform_fault', 'transform fault'), __alloT('stem.platetectonics.block_focus_depth', 'Focus · {n} km')].join('|')
+          __alloT('stem.platetectonics.block_surface', 'surface'), __alloT('stem.platetectonics.fig_trench', 'trench'), __alloT('stem.platetectonics.fig_volcanic_arc', 'volcanic arc'), __alloT('stem.platetectonics.block_ridge_axis', 'ridge axis'), __alloT('stem.platetectonics.block_transform_fault', 'transform fault'), __alloT('stem.platetectonics.block_focus_depth', 'Focus · {n} km'), __alloT('stem.platetectonics.ql_projection_label', 'Projected event {n}')].join('|')
   };
   if (view3d.on) TectGL.submit(tectGlModel);
   var tectGlLive = view3d.on && TectGL.isReady();
+  var projectionReason = tectObservationReason(tectGlModel);
+  var sampleProjection = tectObservationSampleSnapshot(tectGlModel);
+  var anyQuakeProjection = projectedObservation || projectedSample;
+  var quakeProjectionSource = projectedSample || projectedObservation;
+  var quakeProjectionExposed = !!((projectedObservation && projectionReason === 'exposed') || sampleProjection.visible);
+  var sampleProjectionCounts = __alloT('stem.platetectonics.ql_sample_projection_counts', 'Events inside this block: {p} of {n}. Beyond the block: {o}.').replace('{p}', sampleProjection.inBounds).replace('{n}', sampleProjection.total).replace('{o}', sampleProjection.outside);
+  var sampleProjectionStatus = !view3d.on
+    ? __alloT('stem.platetectonics.ql_sample_projection_2d', 'The sample projection belongs to the 3D cut face. The graph and list retain every coordinate; use Show this sample to return to the block.')
+    : !tectGlLive ? __alloT('stem.platetectonics.block_inspect_loading', 'The 3D block is loading. The cross-section remains available.')
+      : sampleProjection.reason === 'outside-block' ? __alloT('stem.platetectonics.ql_sample_projection_outside', 'No events in this sample lie inside the finite 3D block. Their exact coordinates remain in the graph and list.')
+        : sampleProjection.visible ? __alloT('stem.platetectonics.ql_sample_projection_visible', 'Small hollow circles project this sample onto the cut face. Their depth colors match the graph.')
+          : __alloT('stem.platetectonics.ql_sample_projection_hidden', 'This view hides the sample projection. Show the sample on an exposed cut face to compare its pattern.');
+  var projectionEventTitle = projectedObservation ? __alloT('stem.platetectonics.ql_model_selected_event', 'Selected event {n}').replace('{n}', selectedQuakeIndex + 1) : '';
+  var projectionDepthBand = selectedQuakePoint ? (selectedQuakePoint.z >= 300
+    ? { id: 'deep', label: __alloT('stem.platetectonics.depth_band_deep', 'Deep'), range: __alloT('stem.platetectonics.depth_band_deep_range', '300–700 km') }
+    : selectedQuakePoint.z >= 70
+      ? { id: 'intermediate', label: __alloT('stem.platetectonics.depth_band_intermediate', 'Intermediate'), range: __alloT('stem.platetectonics.depth_band_intermediate_range', '70–<300 km') }
+      : { id: 'shallow', label: __alloT('stem.platetectonics.depth_band_shallow', 'Shallow'), range: __alloT('stem.platetectonics.depth_band_shallow_range', '0–<70 km') }) : null;
+  var projectionCheckedFit = false;
+  if (projectedObservation && projectedObservation.captured && s.mode === 'convergent' && s.dipLocked) {
+    var projectionFitCount = 0, projectionFitXX = 0, projectionFitXZ = 0;
+    inspectedLog.forEach(function (point) {
+      if (point.z >= 70) { projectionFitCount++; projectionFitXX += point.x * point.x; projectionFitXZ += point.x * point.z; }
+    });
+    projectionCheckedFit = projectionFitCount >= 8 && projectionFitXX > 0 && isFinite(Math.atan(projectionFitXZ / projectionFitXX));
+  }
+  var projectionStatus = !view3d.on
+    ? __alloT('stem.platetectonics.ql_projection_2d', 'The projection belongs to the 3D cut face. Your selected coordinates remain in the graph and list; use Show this event to return to the block.')
+    : !tectGlLive ? __alloT('stem.platetectonics.block_inspect_loading', 'The 3D block is loading. The cross-section remains available.')
+      : projectionReason === 'outside-block' ? __alloT('stem.platetectonics.ql_projection_limit', 'This event lies beyond the finite 3D block. Its exact coordinates remain in the graph and list; the event is not moved to fit the picture.')
+        : projectionReason === 'exposed' ? __alloT('stem.platetectonics.ql_projection_visible', 'The hollow cyan diamond marks this sample event projected onto the cut face. Dashed guides show its recorded distance and depth.')
+          : __alloT('stem.platetectonics.ql_projection_hidden', 'This view hides the projection. Show the event on an exposed cut face to compare its distance and depth.');
   var featureRevealView = tectGlLive && selectedFeature === 'slab' && tectSurfaceView ? 'section'
     : tectGlLive && selectedFeature === 'markers' && tectPreset && tectPreset.id === 'section' ? 'surface' : null;
   var featureStatus = !selectedFeature
@@ -5917,20 +6370,11 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       h('span', { className: subtitleClass, style: { fontSize: 14, lineHeight: 1.5, flexBasis: '100%' } }, __alloT('stem.platetectonics.sim_boundary_subtitle', 'Choose a boundary, then inspect its motion, surface features and earthquake depths.'))
     ),
     view3d.on && h('p', { 'data-tect-block-guide': 'true', className: 'mx-3 mt-3 text-sm leading-relaxed ' + (isDark ? 'text-slate-100' : 'text-slate-800') }, __alloT('stem.platetectonics.block_quick_key', 'A/B: plates. Arrows: relative motion. Dots: earthquake locations.')),
-    view3d.on && h('details', { 'data-tect-rock-details': 'true', className: 'mx-3 mt-2 rounded-lg border px-3 ' + (isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-orange-300 bg-white text-slate-800') },
-      h('summary', { style: { minHeight: 40 }, className: 'text-sm font-bold leading-relaxed cursor-pointer py-2 focus:outline-none focus:ring-2 focus:ring-sky-500' }, __alloT('stem.platetectonics.block_rock_details', 'Read the rock and motion key')),
-      h('p', { 'data-tect-block-guide-detail': 'true', style: { margin: '10px 12px 0', fontSize: 14, lineHeight: 1.5, color: isDark ? '#e2e8f0' : '#334155' } },
-      __alloT('stem.platetectonics.block_rock_key', 'A and B identify the plates. Arrows show their relative motion. The lighter band is crust; darker rock below it is the mantle part of the plate. The translucent volume reveals the mostly solid mantle beneath. Colored dots show earthquake locations inside the rock, visible through the layers.'),
-      s.mode === 'transform'
-        ? ' ' + __alloT('stem.platetectonics.block_transform_markers_extent', 'Advance the model and compare matching pale bands across the fault. Their separation is schematic and stops at the picture limit; the cumulative fault slip reading keeps the full distance.')
-        : s.mode === 'divergent'
-          ? ' ' + __alloT('stem.platetectonics.block_ridge_cooling', 'The narrow orange fissure marks rising melt. The wider ridge around it is new, cooling rock.')
-          : ' ' + __alloT('stem.platetectonics.block_slab_evidence', 'Turn the block to trace the sinking slab beneath the volcanic arc. Earthquake dots appear as the model runs. Surface relief is exaggerated.'))),
-    h('dl', { 'data-pt-model-readings': s.mode, 'aria-live': 'off', className: 'mx-3 mt-3 grid grid-cols-2 gap-2' },
+    h('dl', { 'data-pt-model-readings': s.mode, 'aria-live': 'off', className: 'mx-3 mt-3 grid gap-2', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))' } },
       [[__alloT('stem.platetectonics.sim_readout_time', 'Model time'), timeText, 'time'], [movementLabel, movementText, 'movement']].map(function(reading) {
-        return h('div', { key: reading[2], className: 'rounded-lg border px-3 py-2 ' + (isDark ? 'bg-slate-950 border-slate-700 text-slate-100' : 'bg-white border-orange-300 text-slate-900') },
+        return h('div', { key: reading[2], style: { minWidth: 0, overflowWrap: 'anywhere' }, className: 'rounded-lg border px-3 py-2 ' + (isDark ? 'bg-slate-950 border-slate-700 text-slate-100' : 'bg-white border-orange-300 text-slate-900') },
           h('dt', { className: 'text-sm ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, reading[0]),
-          h('dd', { 'data-pt-model-reading': reading[2], className: 'text-sm font-bold tabular-nums', style: reading[2] === 'movement' && s.mode === 'transform' ? { overflowWrap: 'anywhere' } : undefined }, reading[1]));
+          h('dd', { 'data-pt-model-reading': reading[2], className: 'mt-1 font-bold tabular-nums', style: { marginLeft: 0, fontSize: 20, lineHeight: 1.4, overflowWrap: 'anywhere' } }, reading[1]));
       })),
     h('p', { 'data-pt-sim-check': s.mode, 'aria-live': 'off', className: 'mx-3 mt-2 text-sm leading-relaxed font-semibold rounded-lg px-3 py-2 border ' + (isDark ? 'bg-slate-950 border-slate-700 text-amber-200' : 'bg-amber-50 border-amber-300 text-amber-900') }, checkText),
     s.mode === 'transform' && h('p', { 'data-pt-transform-extent': transformDisplay.atLimit ? 'limited' : 'growing',
@@ -5961,7 +6405,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         ),
         // `pt-tect-frame`: below 560 px the 540-unit drawing keeps its size and the
         // frame scrolls sideways instead of shrinking its 10 px HUD to 6 px.
-        h('div', { style: { minWidth: 0 }, className: 'pt-tect-frame rounded-xl overflow-hidden border relative ' + (isDark ? 'border-slate-800 bg-slate-950' : 'border-orange-400 bg-white') },
+        h('div', { id: 'pt-quake-model-frame', style: { minWidth: 0 }, className: 'pt-tect-frame rounded-xl overflow-hidden border relative ' + (isDark ? 'border-slate-800 bg-slate-950' : 'border-orange-400 bg-white') },
           // 2D cross-section — always rendered, and the guaranteed floor. Hidden
           // (not unmounted) while the block view is live so its rAF loop, HUD and
           // aria-label stay intact and one toggle brings it straight back.
@@ -5985,7 +6429,9 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
             role: 'img',
             'aria-label': tectGlAlt,
             'aria-hidden': !tectGlLive,
-            'aria-describedby': 'tect-gl-description tect-navigation-help',
+            'aria-describedby': 'tect-gl-description tect-navigation-help' + (tectGlLive && view3d.showScale !== false && !tectSurfaceView ? ' tect-depth-guide-note' : '') + (anyQuakeProjection ? ' pt-quake-projection-status pt-quake-projection-explanation' : '') + (projectedSample && sampleProjection.visible && tectGlLive ? ' pt-quake-sample-pick-help' : ''),
+            'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home Shift+ArrowLeft Shift+ArrowRight Shift+ArrowUp Shift+ArrowDown',
+            className: 'pt-tect-gl-focus',
             ref: tectGlRef,
             'data-tect-gl': 'true',
             id: 'pt-boundary-3d',
@@ -6023,21 +6469,47 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
               visibility: tectGlLive ? 'visible' : 'hidden'
             },
             onPointerDown: function(e) {
-              dragRef.current = { x: e.clientX, y: e.clientY, rx: view3d.rotX, ry: view3d.rotY };
+              if (!tectGlLive || e.isPrimary === false || e.button !== 0 || dragRef.current) return;
+              var rect = e.currentTarget.getBoundingClientRect();
+              var bounds = rect.width > 0 && rect.height > 0 && [rect.left, rect.top, rect.width, rect.height].every(Number.isFinite)
+                ? { left: rect.left, top: rect.top, width: rect.width, height: rect.height } : null;
+              dragRef.current = { id: e.pointerId, x: e.clientX, y: e.clientY, rx: view3d.rotX, ry: view3d.rotY,
+                bounds: bounds, travel: 0, view: view3d, mode: s.mode, log: inspectedLog, captured: !!inspectedCaptured };
               try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {}
             },
             onPointerMove: function(e) {
-              if (!dragRef.current) return;
+              var drag = dragRef.current;
+              if (!drag || drag.id !== e.pointerId) return;
+              var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+              drag.travel = Math.max(drag.travel, dx * dx + dy * dy);
+              if (drag.travel <= 36) return;
               updView({
-                rotX: Math.max(-88, Math.min(88, dragRef.current.rx + (e.clientY - dragRef.current.y) * 0.4)),
-                rotY: dragRef.current.ry + (e.clientX - dragRef.current.x) * 0.4
+                rotX: Math.max(-88, Math.min(88, drag.rx + dy * 0.4)),
+                rotY: drag.ry + dx * 0.4
               });
             },
             onPointerUp: function(e) {
+              var drag = dragRef.current;
+              if (!drag || drag.id !== e.pointerId) return;
               dragRef.current = null;
               try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (_) {}
+              var dx = e.clientX - drag.x, dy = e.clientY - drag.y, current = sRef.current;
+              var captured = current.dipLocked && current.dipSample && Array.isArray(current.dipSample.points) ? current.dipSample : null;
+              var log = captured ? captured.points : current.qlog;
+              if (e.isPrimary === false || e.button !== 0 || Math.max(drag.travel, dx * dx + dy * dy) > 36 ||
+                  !tectGlLive || !projectedSample || drag.view !== view3d || drag.mode !== current.mode ||
+                  drag.log !== log || drag.captured !== !!captured) return;
+              var rect = e.currentTarget.getBoundingClientRect(), bounds = drag.bounds;
+              if (!bounds || ![rect.left, rect.top, rect.width, rect.height].every(Number.isFinite) ||
+                  rect.width !== bounds.width || rect.height !== bounds.height) return;
+              // Keep the tap at its local canvas position if surrounding text moves.
+              // A resized canvas or changed camera/sample requires a fresh gesture.
+              var hit = TectGL.pickObservationSample(e.clientX + rect.left - bounds.left, e.clientY + rect.top - bounds.top), point = hit && log[hit.index];
+              if (hit && Number.isInteger(hit.index) && hit.index >= 0 && point && hit.captured === !!captured &&
+                  hit.x === point.x && hit.z === point.z) inspectQuake(point);
             },
-            onPointerCancel: function() { dragRef.current = null; },
+            onPointerCancel: function(e) { if (dragRef.current && dragRef.current.id === e.pointerId) dragRef.current = null; },
+            onLostPointerCapture: function(e) { if (dragRef.current && dragRef.current.id === e.pointerId) dragRef.current = null; },
             onWheel: function(e) { updView({ scale: Math.max(0.4, Math.min(2.6, view3d.scale + (e.deltaY > 0 ? -0.1 : 0.1))) }); }
           }),
           view3d.on && !tectGlLive && h('div', {
@@ -6046,10 +6518,124 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
           !tectGlLive && h('div', { className: 'pt-tect-swipe text-sm font-bold px-2 py-1 ' + (isDark ? 'text-orange-200 bg-slate-900' : 'text-orange-900 bg-orange-50'), style: { position: 'sticky', left: 0 }, 'aria-hidden': 'true' },
             '\u2194 Swipe the section sideways to see all of it'),
           h('p', { id: 'tect-gl-description', className: 'sr-only' },
-            __alloT('stem.platetectonics.sim_block_focus_keys_help', 'Focus this block and use the arrow keys to turn it, plus and minus to zoom, and Home to reset the view; hold Shift for bigger steps. The labeled focus and dashed guide connect its depth to a surface projection. Use Cut face to compare with the 2D cross-section.'), ' ',
+            quakeProjectionExposed
+              ? __alloT('stem.platetectonics.sim_block_navigation_help', 'Drag to turn the block. With the block focused, arrow keys turn it, + and − zoom, and Home resets the view.')
+              : __alloT('stem.platetectonics.sim_block_focus_keys_help', 'Focus this block and use the arrow keys to turn it, plus and minus to zoom, and Home to reset the view; hold Shift for bigger steps. The labeled focus and dashed guide connect its depth to a surface projection. Use Cut face to compare with the 2D cross-section.'), ' ',
             s.mode === 'convergent'
               ? __alloT('stem.platetectonics.sim_block_slab_focus_band', 'Deep earthquakes form a dipping band within the sinking slab.')
               : __alloT('stem.platetectonics.sim_block_shallow_focus_band', 'Here, earthquakes remain shallow near the boundary. No sinking slab is present.'))
+        ),
+        h('div', { 'data-pt-scene-key': 'true', className: 'rounded-lg border px-3 py-2 text-sm leading-relaxed ' + (isDark ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-800') },
+          h('h4', { className: 'font-semibold' }, __alloT('stem.platetectonics.sim_depth_key_heading', 'Earthquake depth key')),
+            h('div', { 'data-pt-model-depth-key': 'true', className: 'flex flex-wrap gap-x-4 gap-y-2 mt-2' },
+              [[__alloT('stem.platetectonics.sim_key_shallow_range', 'Shallow: less than 70 km'), isDark ? '#fb7185' : '#be123c'],
+               [__alloT('stem.platetectonics.sim_key_intermediate_range', 'Intermediate: 70 to less than 300 km'), isDark ? '#fdba74' : '#c2410c'],
+               [__alloT('stem.platetectonics.sim_key_deep_range', 'Deep: 300–700 km'), isDark ? '#c4b5fd' : '#6d28d9']].map(function (band) {
+                return h('span', { key: band[0], className: 'inline-flex items-center gap-2' }, h('span', { 'aria-hidden': 'true', style: { width: 9, height: 9, borderRadius: '50%', backgroundColor: band[1], flexShrink: 0 } }), band[0]);
+              })),
+          tectGlLive && view3d.showScale !== false && !tectSurfaceView && h('p', { id: 'tect-depth-guide-note', 'data-pt-depth-guide-note': 'true', className: 'mt-2' },
+            h('span', { 'aria-hidden': 'true', style: { display: 'inline-block', width: 24, marginRight: 8, borderTop: '2px dashed currentColor', verticalAlign: 'middle' } }),
+            __alloT('stem.platetectonics.sim_depth_guide_note', 'Dashed lines at 70 and 300 km mark earthquake depth bands. The faint planes extend these reading guides through the block. Textured surfaces show the rock layers.')),
+          view3d.on && h('details', { 'data-tect-rock-details': 'true', className: 'mt-2 border-t ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
+            h('summary', { style: { minHeight: 40 }, className: 'text-sm font-bold leading-relaxed cursor-pointer py-2 focus:outline-none focus:ring-2 focus:ring-sky-500' }, __alloT('stem.platetectonics.block_rock_details', 'Read the rock and motion key')),
+            h('dl', { 'data-tect-block-guide-detail': 'true', style: { margin: '4px 0 0', fontSize: 14, lineHeight: 1.5 } },
+              [
+                { id: 'motion', title: __alloT('stem.platetectonics.block_key_motion_title', 'Plates and motion'),
+                  text: __alloT('stem.platetectonics.block_key_motion_text', 'A and B identify the plates. Arrows show relative motion.'),
+                  symbol: h('span', { style: { display: 'block', fontSize: 10, lineHeight: 1.2, textAlign: 'center' } }, 'A B', h('span', { style: { display: 'block', fontSize: 18, lineHeight: 1 } }, '→')) },
+                { id: 'lithosphere', title: __alloT('stem.platetectonics.block_key_lithosphere_title', 'Plate (lithosphere)'),
+                  text: h(React.Fragment, null,
+                    h('div', null, __alloT('stem.platetectonics.block_key_crust_band', 'Crust: light upper band')),
+                    h('div', null, __alloT('stem.platetectonics.block_key_mantle_band', 'Uppermost mantle: darker band below')),
+                    h('p', { className: 'mt-1' }, __alloT('stem.platetectonics.block_key_plate_together', 'These layers together form one tectonic plate.'))),
+                  symbol: h('span', { style: { display: 'flex', width: 20, height: 28, border: '1px solid #94a3b8', borderRadius: 2, overflow: 'hidden', boxSizing: 'border-box' } },
+                    (s.mode === 'convergent' ? ['oceanic', 'continental'] : s.mode === 'divergent' ? ['oceanic', 'oceanic'] : ['continental', 'continental']).map(function (kind, index) {
+                      return h('span', { key: index, 'data-pt-rock-kind': kind, style: { display: 'block', width: '50%', height: '100%', background: kind === 'oceanic' ? '#384a55' : '#535348' } },
+                        h('span', { style: { display: 'block', height: (kind === 'oceanic' ? 7 / 80 : 35 / 150) * 100 + '%', background: kind === 'oceanic' ? '#7ba0ad' : '#c4a371' } }));
+                    })) },
+                { id: 'mantle', title: __alloT('stem.platetectonics.block_key_mantle_title', 'Surrounding mantle'),
+                  text: __alloT('stem.platetectonics.block_key_mantle_text', 'The mostly solid mantle can flow slowly over geologic time. It is shown transparent so you can see the slab and earthquakes.'),
+                  symbol: h('span', { style: { display: 'block', width: 20, height: 20, boxSizing: 'border-box', border: '1px solid currentColor', borderRadius: 2, background: isDark ? 'rgba(203,213,225,0.13)' : 'rgba(64,60,55,0.13)' } }) },
+                { id: 'earthquakes', title: __alloT('stem.platetectonics.block_key_quakes_title', 'Earthquake locations'),
+                  text: __alloT('stem.platetectonics.block_key_quakes_text', 'Colored dots mark earthquake locations inside the rock. Match their colors to the depth key above.'),
+                  symbol: h('span', { style: { display: 'flex', flexWrap: 'wrap', gap: 3, width: 20 } },
+                    (isDark ? ['#fb7185', '#fdba74', '#c4b5fd'] : ['#be123c', '#c2410c', '#6d28d9']).map(function (color) {
+                      return h('span', { key: color, style: { display: 'block', width: 7, height: 7, borderRadius: '50%', background: color } });
+                    })) }
+              ].map(function (row) {
+                return h('div', { key: row.id, 'data-pt-rock-row': row.id, style: { marginBottom: 12, minWidth: 0, overflowWrap: 'anywhere' } },
+                  h('dt', { style: { display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600 } },
+                    h('span', { 'data-pt-rock-swatch': row.id, 'aria-hidden': 'true', style: { display: 'inline-block', width: 20, flexShrink: 0 } }, row.symbol),
+                    h('span', { style: { minWidth: 0 } }, row.title)),
+                  h('dd', { style: { margin: '4px 0 0 28px' } }, row.text));
+              })),
+            h('p', { 'data-pt-rock-boundary-cue': s.mode, className: 'mb-2', style: { fontSize: 14, lineHeight: 1.5 } },
+              s.mode === 'transform'
+                ? __alloT('stem.platetectonics.block_transform_markers_extent', 'Advance the model and compare matching pale bands across the fault. Their separation is schematic and stops at the picture limit; the cumulative fault slip reading keeps the full distance.')
+                : s.mode === 'divergent'
+                  ? __alloT('stem.platetectonics.block_ridge_cooling', 'The narrow orange fissure marks rising melt. The wider ridge around it is new, cooling rock.')
+                  : __alloT('stem.platetectonics.block_slab_evidence', 'Turn the block to trace the sinking slab beneath the volcanic arc. Earthquake dots appear as the model runs. Surface relief is exaggerated.')))
+        ),
+        anyQuakeProjection && h('section', { 'data-pt-quake-projection-panel': quakeProjectionSource.captured ? 'captured' : 'live', 'aria-labelledby': 'pt-quake-projection-heading',
+          className: 'rounded-xl border p-3 text-sm leading-relaxed ' + (isDark ? 'bg-slate-900 border-cyan-500 text-slate-100' : 'bg-cyan-50 border-cyan-700 text-slate-900') },
+          h('h4', { id: 'pt-quake-projection-heading', className: 'font-bold' }, projectedSample
+            ? __alloT('stem.platetectonics.ql_sample_projection_heading', 'Earthquake sample projection')
+            : __alloT('stem.platetectonics.ql_projection_heading', 'Selected earthquake projection')),
+          h('p', { 'data-pt-quake-projection-source': quakeProjectionSource.captured ? 'captured' : 'live', className: 'mt-1' }, quakeProjectionSource.captured
+            ? __alloT('stem.platetectonics.ql_projection_checked_source', 'From your fixed checked sample.')
+            : __alloT('stem.platetectonics.ql_projection_live_source', 'From the current observation log.')),
+          projectedSample && sampleProjection.visible && tectGlLive && h('p', { id: 'pt-quake-sample-pick-help', 'data-pt-quake-sample-pick-help': 'true', className: 'mt-2' }, __alloT('stem.platetectonics.ql_sample_pick_help', 'Tap a hollow sample circle to read its distance and depth. Use the event chooser for overlapping records.')),
+          h('fieldset', { 'data-pt-quake-model-inspector': quakeProjectionSource.captured ? 'captured' : 'live', className: 'min-w-0 rounded-lg border p-2 mt-3 ' + (isDark ? 'border-slate-600 bg-slate-950' : 'border-cyan-300 bg-white') },
+            h('legend', { className: 'px-1 font-bold' }, __alloT('stem.platetectonics.ql_model_inspect_title', 'Read an event beside the model')),
+            h('label', { htmlFor: 'pt-ql-model-event', className: 'block font-semibold' }, __alloT('stem.platetectonics.ql_inspect_choose_label', 'Event in the displayed sample')),
+            h('select', { id: 'pt-ql-model-event', 'data-pt-quake-model-select': 'true', value: selectedQuakeIndex < 0 ? '' : String(selectedQuakeIndex), disabled: !inspectedLog.length, className: 'block w-full min-w-0 mt-1 px-2 rounded-lg border text-sm ' + (isDark ? 'bg-slate-900 border-slate-600' : 'bg-white border-slate-400'), style: { minHeight: 44, maxWidth: '100%' },
+              onChange: function (event) { if (event.target.value === '') clearModelQuake(); else inspectQuake(inspectedLog[Number(event.target.value)]); } },
+              h('option', { value: '' }, __alloT('stem.platetectonics.ql_inspect_choose', 'Choose an event')),
+              inspectedLog.map(function (point, index) {
+                var band = point.z >= 300 ? __alloT('stem.platetectonics.depth_band_deep', 'Deep') : point.z >= 70 ? __alloT('stem.platetectonics.depth_band_intermediate', 'Intermediate') : __alloT('stem.platetectonics.depth_band_shallow', 'Shallow');
+                return h('option', { key: index, value: String(index) }, __alloT('stem.platetectonics.ql_inspect_option', 'Event {n} · {band}').replace('{n}', index + 1).replace('{band}', band));
+              })),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.platetectonics.ql_inspect_controls', 'Move between displayed earthquakes'), className: 'flex flex-wrap gap-2 mt-2' },
+              h('button', { type: 'button', 'data-pt-quake-model-prev': 'true', disabled: selectedQuakeIndex <= 0, onClick: function () { moveModelQuake(-1); }, style: { minHeight: 44 }, className: 'px-3 py-2 rounded-lg border font-semibold focus:ring-2 focus:ring-yellow-500 focus:outline-none disabled:opacity-70 ' + (isDark ? 'bg-slate-900 border-slate-500' : 'bg-white border-slate-400') }, __alloT('stem.platetectonics.ql_inspect_prev', 'Previous')),
+              h('button', { type: 'button', 'data-pt-quake-model-next': 'true', disabled: selectedQuakeIndex < 0 || selectedQuakeIndex >= inspectedLog.length - 1, onClick: function () { moveModelQuake(1); }, style: { minHeight: 44 }, className: 'px-3 py-2 rounded-lg border font-semibold focus:ring-2 focus:ring-yellow-500 focus:outline-none disabled:opacity-70 ' + (isDark ? 'bg-slate-900 border-slate-500' : 'bg-white border-slate-400') }, __alloT('stem.platetectonics.ql_inspect_next', 'Next')),
+              h('button', { type: 'button', 'data-pt-quake-model-clear': 'true', disabled: !selectedQuakePoint, onClick: clearModelQuake, style: { minHeight: 44 }, className: 'px-3 py-2 rounded-lg border font-semibold focus:ring-2 focus:ring-yellow-500 focus:outline-none disabled:opacity-70 ' + (isDark ? 'bg-slate-900 border-slate-500' : 'bg-white border-slate-400') }, __alloT('stem.platetectonics.ql_inspect_clear', 'Clear selection')))),
+          h('div', { id: 'pt-quake-projection-status', tabIndex: -1, 'aria-live': 'off', 'data-pt-quake-projection-status': projectedObservation ? projectionReason : sampleProjection.reason, className: 'mt-2 rounded focus:ring-2 focus:ring-yellow-500 focus:outline-none' },
+            projectedObservation && h('div', { 'data-pt-quake-model-values': String(selectedQuakeIndex), className: 'min-w-0 rounded-lg border p-3 ' + (isDark ? 'border-cyan-700 bg-slate-950' : 'border-cyan-300 bg-white') },
+              h('h5', { 'data-pt-quake-model-selected-heading': 'true', className: 'font-bold' }, projectionEventTitle),
+              h('dl', { 'data-pt-quake-model-values-layout': 'true', className: 'mt-2', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 12rem), 1fr))', gap: 12 } },
+                h('div', { style: { minWidth: 0 } },
+                  h('dt', { className: 'text-sm leading-snug' }, s.mode === 'convergent' ? __alloT('stem.platetectonics.ql_coordinates_trench', 'Distance from trench (km)') : __alloT('stem.platetectonics.ql_coordinates_boundary', 'Distance from boundary (km)')),
+                  h('dd', { 'data-pt-quake-model-distance': 'true', className: 'mt-1 font-bold', style: { marginLeft: 0, fontSize: 20, fontVariantNumeric: 'tabular-nums', overflowWrap: 'anywhere' } }, String(selectedQuakePoint.x))),
+                h('div', { style: { minWidth: 0 } },
+                  h('dt', { className: 'text-sm leading-snug' }, __alloT('stem.platetectonics.ql_coordinates_depth', 'Depth (km)')),
+                  h('dd', { 'data-pt-quake-model-depth': 'true', className: 'mt-1 font-bold', style: { marginLeft: 0, fontSize: 20, fontVariantNumeric: 'tabular-nums', overflowWrap: 'anywhere' } }, String(selectedQuakePoint.z)))),
+              h('details', { 'data-pt-quake-model-interpretation': 'true', className: 'mt-2 border-t ' + (isDark ? 'border-slate-700' : 'border-slate-200') },
+                h('summary', { className: 'py-2 font-semibold cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none', style: { minHeight: 44 } }, __alloT('stem.platetectonics.ql_model_interpret', 'Interpret this event')),
+                h('p', { 'data-pt-quake-model-band': projectionDepthBand.id, className: 'font-semibold' }, projectionDepthBand.label + ' · ' + projectionDepthBand.range),
+                projectionCheckedFit && h('p', { 'data-pt-quake-model-fit-sample': selectedQuakePoint.z >= 70 ? 'included' : 'excluded', className: 'mt-2' }, selectedQuakePoint.z >= 70
+                  ? __alloT('stem.platetectonics.ql_model_fit_included', 'Included in the checked angle-fit sample: depth is at least 70 km.')
+                  : __alloT('stem.platetectonics.ql_model_fit_excluded', 'Excluded from the checked angle fit: depth is below 70 km.')),
+                selectedQuakePoint.x < 0 && h('p', { 'data-pt-quake-model-signed': 'true', className: 'mt-2' }, __alloT('stem.platetectonics.ql_model_signed', 'In the graph, negative distances lie left of the zero-distance line; positive distances lie right. Turning the block does not change the recorded distance.')),
+                h('p', { 'data-pt-quake-model-caution': 'true', className: 'mt-2' }, __alloT('stem.platetectonics.ql_inspect_caution', 'Compare several events before drawing a conclusion. One earthquake does not establish a slab angle or boundary type.'))),
+              h('p', { 'data-pt-quake-model-visibility': 'true', className: 'mt-2' }, projectionStatus)),
+            projectedSample && h('p', { 'data-pt-quake-sample-status': sampleProjection.reason, 'data-pt-quake-sample-counts': 'true', 'data-total': sampleProjection.total, 'data-inbounds': sampleProjection.inBounds, 'data-outside': sampleProjection.outside, 'data-invalid': sampleProjection.invalid, className: projectedObservation ? 'mt-3 pt-3 border-t ' + (isDark ? 'border-slate-600' : 'border-cyan-300') : '' }, sampleProjectionCounts + ' ' + sampleProjectionStatus)),
+          projectedSample && h('div', { 'data-pt-quake-sample-depth-key': 'true', role: 'group', 'aria-label': __alloT('stem.platetectonics.ql_sample_projection_key', 'Sample marker depth bands'), className: 'flex flex-wrap gap-x-3 gap-y-2 mt-3' },
+            [{ id: 'shallow', color: isDark ? '#fb7185' : '#be123c', label: __alloT('stem.platetectonics.depth_band_shallow', 'Shallow'), range: __alloT('stem.platetectonics.depth_band_shallow_range', '0–<70 km') },
+             { id: 'intermediate', color: isDark ? '#fdba74' : '#c2410c', label: __alloT('stem.platetectonics.depth_band_intermediate', 'Intermediate'), range: __alloT('stem.platetectonics.depth_band_intermediate_range', '70–<300 km') },
+             { id: 'deep', color: isDark ? '#c4b5fd' : '#6d28d9', label: __alloT('stem.platetectonics.depth_band_deep', 'Deep'), range: __alloT('stem.platetectonics.depth_band_deep_range', '300–700 km') }].map(function (band) {
+              return h('span', { key: band.id, 'data-pt-quake-sample-band': band.id, className: 'inline-flex items-center gap-2' }, h('span', { 'aria-hidden': 'true', style: { width: 10, height: 10, borderRadius: '50%', border: '2px solid ' + band.color, backgroundColor: isDark ? '#0f172a' : '#ffffff', flexShrink: 0 } }), band.label + ' · ' + band.range);
+            })),
+          projectedSample && h('p', { 'data-pt-quake-sample-explanation': 'true', className: 'mt-2' }, __alloT('stem.platetectonics.ql_sample_projection_explanation', 'Compare several records across distance and depth. Overlapping records stay coincident; the counts describe events, not separate symbols.')),
+          h('p', { id: 'pt-quake-projection-explanation', className: 'mt-2' }, __alloT('stem.platetectonics.ql_projection_explanation', 'Position along the boundary was not recorded. Moving the cut moves this projection plane; it does not locate the earthquake along the boundary.')),
+          h('div', { className: 'flex flex-wrap gap-2 mt-3' },
+            ((projectedSample && sampleProjection.inBounds > 0) || (!projectedSample && projectionReason !== 'outside-block')) && (!tectGlLive || !quakeProjectionExposed) && h('button', { type: 'button', 'data-pt-quake-projection-reveal': 'true', 'aria-describedby': 'pt-quake-projection-status', onClick: projectedSample ? showSampleProjection : showQuakeProjection, style: { minHeight: 44 }, className: 'px-3 py-2 rounded-lg border font-semibold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-950 border-cyan-500 text-cyan-100' : 'bg-white border-cyan-700 text-cyan-950') }, projectedSample
+              ? __alloT('stem.platetectonics.ql_sample_projection_show', 'Show this sample on the 3D cut face')
+              : __alloT('stem.platetectonics.ql_projection_show', 'Show this event on the 3D cut face')),
+            h('button', { type: 'button', 'data-pt-quake-sample-toggle': 'true', 'aria-pressed': !!projectedSample, 'aria-controls': 'pt-quake-model-frame', onClick: toggleSampleProjection, style: { minHeight: 44 }, className: 'px-3 py-2 rounded-lg border font-semibold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-950 border-cyan-500 text-cyan-100' : 'bg-white border-cyan-700 text-cyan-950') }, projectedSample
+              ? __alloT('stem.platetectonics.ql_sample_projection_hide', 'Hide sample pattern')
+              : __alloT('stem.platetectonics.ql_sample_projection_include', 'Include sample pattern')),
+            h('button', { type: 'button', 'data-pt-quake-model-return': 'true', 'aria-controls': 'pt-ql-event', onClick: returnToQuakeGraph, style: { minHeight: 44 }, className: 'px-3 py-2 rounded-lg border font-semibold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-950 border-slate-500' : 'bg-white border-slate-500') }, __alloT('stem.platetectonics.ql_model_inspect_return', 'Return to graph and event list')),
+            h('button', { type: 'button', 'data-pt-quake-projection-hide': 'true', onClick: hideQuakeProjection, style: { minHeight: 44 }, className: 'px-3 py-2 rounded-lg border font-semibold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-950 border-slate-500' : 'bg-white border-slate-500') }, __alloT('stem.platetectonics.ql_projection_hide', 'Hide projection')))
         ),
         h('section', { 'data-pt-boundary-inspector': s.mode, 'aria-labelledby': 'pt-boundary-inspector-heading',
           className: 'rounded-xl border p-3 ' + (isDark ? 'bg-slate-900 border-slate-600 text-slate-100' : 'bg-white border-slate-300 text-slate-900') },
@@ -6118,30 +6704,45 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         view3d.on && h('div', { 'data-pt-view-tools': 'true', className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-orange-300 text-slate-800') },
           h('h4', { className: 'text-sm font-bold uppercase mb-1 ' + (isDark ? 'text-orange-400' : 'text-orange-700') }, __alloT('stem.platetectonics.sim_view_tools_heading', 'Turn, zoom and slice')),
           h('div', { className: 'mt-2' },
-            h('div', { role: 'group', 'aria-label': __alloT('stem.platetectonics.block_preset_group', 'Choose a useful angle'), style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 6 } },
+            h('h5', { id: 'tect-preset-heading', 'data-tect-preset-heading': 'true', className: 'text-sm font-semibold mb-2' }, __alloT('stem.platetectonics.block_preset_group', 'Choose a useful angle')),
+            h('div', { 'data-tect-preset-choices': 'true', role: 'group', 'aria-labelledby': 'tect-preset-heading', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 80px), 1fr))', gap: 8, marginBottom: 8 } },
               tectPresetChoices.map(function(preset) {
                 var active = tectPreset && tectPreset.id === preset.id;
                 return h('button', {
-                  key: preset.id, type: 'button', 'data-tect-preset': preset.id, 'aria-pressed': !!active,
+                  key: preset.id, type: 'button', 'data-tect-preset': preset.id, 'aria-pressed': !!active, 'aria-label': preset.label, 'aria-describedby': active ? 'tect-view-caption' : undefined,
                   onClick: function() { updView(Object.assign({}, preset.view)); },
-                  style: { minHeight: 40, flex: '1 1 70px' },
-                  className: 'px-2 py-1 text-sm rounded border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'border-orange-400 bg-orange-700 text-white font-bold' : (isDark ? 'border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700' : 'border-orange-300 bg-orange-50 text-orange-800 hover:bg-orange-100'))
-                }, preset.label);
+                  style: { minHeight: 44, minWidth: 0, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, overflowWrap: 'anywhere' },
+                  className: 'px-2 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'border-orange-400 bg-orange-700 text-white font-bold' : (isDark ? 'border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700' : 'border-orange-300 bg-orange-50 text-orange-800 hover:bg-orange-100'))
+                },
+                  h('svg', { 'data-tect-preset-diagram': preset.id, 'aria-hidden': 'true', focusable: 'false', width: 48, height: 36, viewBox: '0 0 64 48', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', style: { flexShrink: 0 } },
+                    preset.id === 'oblique' ? h(React.Fragment, null,
+                      h('path', { d: 'M8 17L32 4L56 17L32 30Z', fill: 'currentColor', fillOpacity: 0.16 }),
+                      h('path', { d: 'M8 17V31L32 44V30Z', fill: 'currentColor', fillOpacity: 0.08 }),
+                      h('path', { d: 'M32 30L56 17V31L32 44Z', fill: 'currentColor', fillOpacity: 0.24 }))
+                    : preset.id === 'section' ? h(React.Fragment, null,
+                      h('rect', { x: 9, y: 8, width: 46, height: 32, rx: 1, fill: 'currentColor', fillOpacity: 0.12 }),
+                      h('path', { d: 'M9 16L16 9 M9 24L16 17 M9 32L16 25 M9 40L16 33', strokeWidth: 1.5 }))
+                    : h(React.Fragment, null,
+                      h('rect', { x: 9, y: 12, width: 46, height: 24, rx: 1, fill: 'currentColor', fillOpacity: 0.2 }),
+                      h('path', { d: 'M9 40H55', opacity: 0.4, strokeDasharray: '3 3' }))),
+                  h('span', { style: { minWidth: 0, maxWidth: '100%', lineHeight: 1.5 } }, preset.label),
+                  h('span', { 'data-tect-preset-selected': preset.id, 'aria-hidden': 'true', style: { position: 'absolute', top: 3, right: 5, fontSize: 14, lineHeight: 1, transitionProperty: 'none', visibility: active ? 'visible' : 'hidden' } }, '✓'));
               })
             ),
-            h('p', { 'data-tect-view-caption': 'true', role: 'status', style: { fontSize: 14, lineHeight: 1.5, margin: '0 0 8px', color: isDark ? '#e2e8f0' : '#334155' } }, tectViewCaption),
+            h('p', { id: 'tect-view-caption', 'data-tect-view-caption': 'true', role: 'status', style: { fontSize: 14, lineHeight: 1.5, margin: '0 0 8px', color: isDark ? '#e2e8f0' : '#334155' } }, tectViewCaption),
             s.mode === 'transform' && h('div', { 'data-tect-matching-key': 'true', role: 'group', 'aria-label': __alloT('stem.platetectonics.block_marker_key', 'Matching surface markers'), style: { display: 'flex', flexWrap: 'wrap', gap: '6px 16px', fontSize: 14, lineHeight: 1.5, marginBottom: 8, color: isDark ? '#e2e8f0' : '#334155' } },
               h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 6 } }, h('span', { 'aria-hidden': 'true', style: { width: 30, borderTop: '3px solid currentColor' } }), __alloT('stem.platetectonics.block_marker_solid', 'Solid pair')),
               h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 6 } }, h('span', { 'aria-hidden': 'true', style: { width: 30, borderTop: '3px dashed currentColor' } }), __alloT('stem.platetectonics.block_marker_dashed', 'Dashed pair'))),
-            h('div', { className: 'flex gap-1 mb-1', role: 'group', 'aria-label': __alloT('stem.platetectonics.sim_rotate_group', 'Rotate the 3D block') },
+            h('div', { 'data-tect-rotation-controls': 'true', className: 'grid gap-2 mb-1', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 110px), 1fr))' }, role: 'group', 'aria-label': __alloT('stem.platetectonics.sim_rotate_group', 'Rotate the 3D block') },
               [[__alloT('stem.platetectonics.sim_turn_left', 'Turn left'), { rotY: view3d.rotY - 20 }], [__alloT('stem.platetectonics.sim_turn_right', 'Turn right'), { rotY: view3d.rotY + 20 }],
                [__alloT('stem.platetectonics.sim_tilt_up', 'Tilt up'), { rotX: Math.max(-88, view3d.rotX - 15) }], [__alloT('stem.platetectonics.sim_tilt_down', 'Tilt down'), { rotX: Math.min(88, view3d.rotX + 15) }]]
                 .map(function(b, i) {
                   return h('button', {
-                    key: i, type: 'button', 'aria-label': b[0], 'aria-controls': 'pt-boundary-3d', 'aria-describedby': 'tect-navigation-help',
+                    key: i, type: 'button', 'data-tect-rotate': ['left', 'right', 'up', 'down'][i], 'aria-label': b[0], 'aria-controls': 'pt-boundary-3d', 'aria-describedby': 'tect-navigation-help',
                     onClick: function() { updView(b[1]); },
-                    className: 'flex-1 min-h-10 px-1 py-1 text-sm rounded border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700' : 'border-orange-300 bg-orange-50 text-orange-800 hover:bg-orange-100')
-                  }, ['◀', '▶', '▲', '▼'][i]);
+                    style: { minHeight: 44, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, overflowWrap: 'anywhere' },
+                    className: 'px-2 py-2 text-sm font-semibold rounded border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700' : 'border-orange-400 bg-orange-50 text-orange-900 hover:bg-orange-100')
+                  }, h('span', { 'aria-hidden': 'true', style: { flexShrink: 0 } }, ['◀', '▶', '▲', '▼'][i]), h('span', { style: { minWidth: 0 } }, b[0]));
                 })
             ),
             h('p', { id: 'tect-navigation-help', 'data-tect-navigation-help': 'true', className: 'text-sm leading-relaxed mt-2 mb-2 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
@@ -6168,6 +6769,8 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
             // the way in and the block becomes the 2D section on the left.
             h('label', { htmlFor: 'tect-cut', className: 'text-sm font-bold ' + (isDark ? 'text-orange-400' : 'text-orange-700') },
               view3d.cut == null ? __alloT('stem.platetectonics.sim_cutaway_off', 'Cutaway: off') : __alloT('stem.platetectonics.sim_cutaway_on', 'Cutaway: slicing to the cross-section')),
+            h('p', { 'data-tect-cut-position': 'true', 'aria-live': 'off', className: 'text-sm font-semibold mt-1 tabular-nums' },
+              __alloT('stem.platetectonics.sim_cutaway_position', 'Cut position: {n} / 100').replace('{n}', view3d.cut == null ? 100 : Math.round((view3d.cut / TECT_HALF_Z) * 100))),
             h('input', {
               id: 'tect-cut', type: 'range', min: 0, max: 100, step: 1,
               value: view3d.cut == null ? 100 : Math.round((view3d.cut / TECT_HALF_Z) * 100),
@@ -6181,7 +6784,18 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
               className: 'focus:ring-2 focus:ring-yellow-500 focus:outline-none',
               style: { width: '100%', minHeight: 40, height: 40, padding: 0, border: 'none', background: 'transparent', accentColor: '#ea580c' }
             }),
-            h('p', { id: 'tect-cut-help', className: 'text-sm leading-relaxed mt-1 mb-2 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.platetectonics.sim_cutaway_positions', '0 reveals the center cross-section. 100 shows the whole block. Moving this cut leaves model time unchanged.')),
+            h('div', { 'data-tect-cut-endpoints': 'true', role: 'group', 'aria-label': __alloT('stem.platetectonics.sim_cutaway_endpoints', 'Cutaway end positions'), 'aria-describedby': 'tect-cut-help', className: 'grid gap-2', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 110px), 1fr))' } },
+              [{ id: 'center', cut: 0, number: 0, label: __alloT('stem.platetectonics.sim_cutaway_center', 'Center section') },
+               { id: 'whole', cut: null, number: 100, label: __alloT('stem.platetectonics.sim_cutaway_whole', 'Whole block') }].map(function (choice) {
+                var active = view3d.cut === choice.cut;
+                return h('button', { key: choice.id, type: 'button', 'data-tect-cut-endpoint': choice.id, 'aria-pressed': active,
+                  'aria-controls': 'pt-boundary-3d', 'aria-describedby': 'tect-cut-help',
+                  onClick: function () { if (!active) updView({ cut: choice.cut }); },
+                  style: { minHeight: 44, minWidth: 0, overflowWrap: 'anywhere' },
+                  className: 'px-2 py-2 text-sm font-semibold rounded border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'border-orange-400 bg-orange-700 text-white' : (isDark ? 'border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700' : 'border-orange-400 bg-orange-50 text-orange-900 hover:bg-orange-100'))
+                }, h('span', { 'aria-hidden': 'true', className: 'tabular-nums' }, choice.number + ' · '), choice.label);
+              })),
+            h('p', { id: 'tect-cut-help', className: 'text-sm leading-relaxed mt-1 mb-2 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.platetectonics.sim_cutaway_navigation_help', 'Choose an end position or move the slider. Your angle, zoom and model time stay in place.')),
             h('button', {
               type: 'button',
               'data-tect-scale-toggle': 'true',
@@ -6206,7 +6820,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
           )
         ),
         // Mode selector
-        h('div', { className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-orange-300 text-slate-800') },
+        h('div', { 'data-pt-boundary-choices': 'true', role: 'group', 'aria-label': __alloT('stem.platetectonics.sim_boundary_type', 'Boundary type'), className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-orange-300 text-slate-800') },
           h('div', { className: 'text-sm font-bold uppercase mb-1 ' + (isDark ? 'text-orange-400' : 'text-orange-700') }, __alloT('stem.platetectonics.sim_boundary_type', 'Boundary type')),
           ['convergent', 'divergent', 'transform'].map(function(k) {
             var b = BOUNDARY[k];
@@ -6215,7 +6829,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
               type: 'button',
               // Selectable by tests and by the screenshot harness, the same way
               // the view and magma controls already are.
-              'data-tect-mode': k,
+              'data-tect-mode': k, 'aria-label': b.name, 'aria-describedby': 'pt-boundary-choice-' + k + '-motion',
               'aria-pressed': s.mode === k,
               onClick: function() {
                 if (k === s.mode) return;
@@ -6223,16 +6837,31 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
                 reset();
                 if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.sim_sr_switched_boundary', 'Switched boundary type to {type}').replace('{type}', b.name));
               },
-              className: 'w-full min-h-10 px-2 py-1.5 mb-1 text-sm text-left rounded transition-colors focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (s.mode === k ? 'text-white font-bold' : (isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-orange-50 text-orange-800 hover:bg-orange-100')),
-              style: { background: s.mode === k ? b.color : undefined }
-            }, b.icon + ' ' + b.name);
+              className: 'w-full px-2 py-2 mb-2 text-sm text-left rounded-lg border transition-colors focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (s.mode === k ? 'text-white' : (isDark ? 'bg-slate-800 text-slate-100 hover:bg-slate-700' : 'bg-orange-50 text-orange-900 hover:bg-orange-100')),
+              style: { background: s.mode === k ? { convergent: '#b91c1c', divergent: '#0369a1', transform: '#92400e' }[k] : undefined,
+                borderColor: s.mode === k ? 'transparent' : (isDark ? '#64748b' : '#94a3b8'), minHeight: 44, minWidth: 0,
+                display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, overflowWrap: 'anywhere' }
+            },
+              h('svg', { 'data-pt-boundary-motion': k, 'aria-hidden': 'true', focusable: 'false', width: 48, height: 30, viewBox: '0 0 64 40', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', style: { flexShrink: 0 } },
+                h('rect', { x: 1, y: 2, width: 25, height: 36, rx: 4, fill: 'currentColor', fillOpacity: 0.08 }),
+                h('rect', { x: 38, y: 2, width: 25, height: 36, rx: 4, fill: 'currentColor', fillOpacity: 0.08 }),
+                h('path', { d: 'M32 2V38', strokeDasharray: '3 3', opacity: 0.5 }),
+                h('path', { d: k === 'convergent' ? 'M6 20H22 M16 14L22 20L16 26 M58 20H42 M48 14L42 20L48 26'
+                  : k === 'divergent' ? 'M22 20H6 M12 14L6 20L12 26 M42 20H58 M52 14L58 20L52 26'
+                  : 'M14 30V10 M8 16L14 10L20 16 M50 10V30 M44 24L50 30L56 24' })),
+              h('span', { style: { flex: '1 1 120px', minWidth: 0 } },
+                h('span', { className: 'flex items-center justify-between gap-2 font-bold' },
+                  h('span', { style: { minWidth: 0 } }, b.name),
+                  h('span', { 'data-pt-boundary-choice-selected': k, 'aria-hidden': 'true', style: { width: 16, flexShrink: 0, visibility: s.mode === k ? 'visible' : 'hidden' } }, '✓')),
+                h('span', { id: 'pt-boundary-choice-' + k + '-motion', 'data-pt-boundary-choice-motion': k, className: 'block mt-1 leading-relaxed' }, BOUNDARY_EVIDENCE[k].motion)));
           })
         ),
         // Rate slider
-        h('div', { className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-orange-300 text-slate-800') },
-          h('label', { className: 'text-sm font-bold ' + (isDark ? 'text-orange-400' : 'text-orange-700') + ' uppercase' }, __alloT('stem.platetectonics.sim_rate_label', 'Plate rate: {n} cm/year').replace('{n}', s.rate)),
+        h('div', { 'data-pt-rate-control': 'true', className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-orange-300 text-slate-800') },
+          h('label', { htmlFor: 'pt-model-rate', 'data-pt-rate-label': 'true', className: 'block font-bold ' + (isDark ? 'text-orange-400' : 'text-orange-700'), style: { fontSize: 18, lineHeight: 1.5, fontVariantNumeric: 'tabular-nums', overflowWrap: 'anywhere' } }, __alloT('stem.platetectonics.sim_rate_label', 'Plate rate: {n} cm/year').replace('{n}', s.rate)),
           h('input', {
-            type: 'range', min: 1, max: 15, step: 1, value: s.rate,
+            type: 'range', id: 'pt-model-rate', 'data-pt-model-rate': 'true', min: 1, max: 15, step: 1, value: s.rate,
+            'aria-valuetext': String(s.rate) + ' ' + __alloT('stem.platetectonics.hl_cm_year_unit', 'cm/year'), 'aria-describedby': 'pt-model-rate-context',
             'aria-label': __alloT('stem.platetectonics.sim_rate_aria', 'Plate movement rate in centimeters per year'),
             onChange: function(e) {
               var newRate = parseInt(e.target.value);
@@ -6242,21 +6871,30 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
               if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.sim_sr_rate_changed', 'Plate rate changed to {n} centimeters per year').replace('{n}', newRate));
             },
             className: 'focus:ring-2 focus:ring-yellow-500 focus:outline-none',
-            style: { width: '100%', minHeight: 40, height: 40, padding: 0, border: 'none', background: 'transparent', accentColor: '#ea580c' }
+            style: { width: '100%', minHeight: 44, height: 44, padding: 0, border: 'none', background: 'transparent', accentColor: '#ea580c' }
           }),
-          h('div', { className: 'text-sm ' + (isDark ? 'text-orange-300' : 'text-orange-700') },
+          h('div', { 'data-pt-rate-bounds': 'true', 'aria-hidden': 'true', className: 'text-sm font-semibold ' + (isDark ? 'text-slate-300' : 'text-slate-700'), style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 8, overflowWrap: 'anywhere', fontVariantNumeric: 'tabular-nums', marginBottom: 8 } },
+            h('span', null, '1 ' + __alloT('stem.platetectonics.hl_cm_year_unit', 'cm/year')),
+            h('span', { style: { textAlign: 'right' } }, '15 ' + __alloT('stem.platetectonics.hl_cm_year_unit', 'cm/year'))),
+          h('div', { id: 'pt-model-rate-context', 'data-pt-rate-context': 'true', className: 'text-sm leading-relaxed ' + (isDark ? 'text-orange-300' : 'text-orange-700') },
             s.rate <= 3 ? __alloT('stem.platetectonics.sim_rate_slow', 'Slow (like NA plate)') : s.rate <= 7 ? __alloT('stem.platetectonics.sim_rate_medium', 'Medium (like Africa)') : __alloT('stem.platetectonics.sim_rate_fast', 'Fast (like Pacific)')
           )
         ),
         // Controls
-        h('div', { className: 'grid grid-cols-2 gap-2' },
+        h('div', { 'data-pt-run-controls': 'true', className: 'grid gap-2', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 110px), 1fr))' } },
+          h('p', { id: 'pt-model-playback-state', 'data-pt-playback-state': s.running ? 'playing' : 'paused', 'aria-live': 'off',
+            style: { gridColumn: '1 / -1', minWidth: 0, display: 'flex', alignItems: 'center', gap: 8, overflowWrap: 'anywhere' },
+            className: 'rounded-lg border px-3 py-2 text-sm font-semibold ' + (s.running ? (isDark ? 'bg-emerald-950 border-emerald-700 text-emerald-100' : 'bg-emerald-50 border-emerald-300 text-emerald-900') : (isDark ? 'bg-slate-900 border-slate-600 text-slate-200' : 'bg-white border-slate-300 text-slate-700'))
+          }, h('span', { 'aria-hidden': 'true', style: { flexShrink: 0 } }, s.running ? '▶' : '⏸'),
+            h('span', { style: { minWidth: 0 } }, s.running ? __alloT('stem.platetectonics.sim_playing', 'Simulation playing') : __alloT('stem.platetectonics.sim_paused', 'Simulation paused'))),
           h('button', {
             onClick: function() {
               var nextRunning = !s.running;
               update({ running: nextRunning });
               if (typeof announceToSR === 'function') announceToSR(nextRunning ? __alloT('stem.platetectonics.sim_playing', 'Simulation playing') : __alloT('stem.platetectonics.sim_paused', 'Simulation paused'));
             },
-            type: 'button', 'data-pt-model-play': 'true',
+            type: 'button', 'data-pt-model-play': 'true', 'aria-describedby': 'pt-model-playback-state',
+            style: { minHeight: 44, minWidth: 0, overflowWrap: 'anywhere' },
             className: 'min-h-10 px-2 py-1.5 text-sm font-bold rounded focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (s.running ? 'bg-amber-500 text-slate-900' : 'bg-emerald-700 text-white')
           }, s.running ? '⏸ Pause' : '▶ Play'),
           h('button', {
@@ -6264,19 +6902,23 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
               reset(true);
               if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.sim_reset_sample_sr', 'Simulation and saved checked slab sample reset.'));
             },
-            type: 'button', 'data-pt-model-reset': 'true',
+            type: 'button', 'data-pt-model-reset': 'true', 'aria-describedby': 'pt-model-reset-help',
+            style: { minHeight: 44, minWidth: 0, overflowWrap: 'anywhere' },
             title: __alloT('stem.platetectonics.sim_reset_sample_title', 'Reset this run and clear the saved checked slab sample'),
             className: 'min-h-10 px-2 py-1.5 text-sm font-bold rounded focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'transition-colors bg-slate-800 text-slate-200 hover:bg-slate-700' : 'transition-colors bg-orange-200 text-orange-900 hover:bg-orange-300')
-          }, '↻ Reset'),
+          }, h('span', { 'aria-hidden': 'true' }, '↻ '), __alloT('stem.platetectonics.sim_reset_run', 'Reset run')),
+          h('p', { id: 'pt-model-reset-help', 'data-pt-model-reset-help': 'true', 'aria-live': 'off', style: { gridColumn: '1 / -1', minWidth: 0, overflowWrap: 'anywhere' }, className: 'text-sm leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
+            __alloT('stem.platetectonics.sim_reset_sample_title', 'Reset this run and clear the saved checked slab sample')),
           h('button', { type: 'button', 'data-pt-model-step': 'true', disabled: s.running, 'aria-describedby': 'pt-model-step-help',
             onClick: function () {
               if (sRef.current.running || !stepRef.current) return;
               stepRef.current();
               if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.sim_step_sr', 'Advanced the paused model by 60,000 years. Read the updated distance or mountain height and check the quake log.'));
             },
-            className: 'col-span-2 min-h-10 px-2 py-2 text-sm font-bold rounded border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (s.running ? 'opacity-60 ' : '') + (isDark ? 'bg-slate-950 border-slate-600 text-slate-100' : 'bg-white border-orange-400 text-orange-900')
+            style: { gridColumn: '1 / -1', minHeight: 44, minWidth: 0, overflowWrap: 'anywhere' },
+            className: 'min-h-10 px-2 py-2 text-sm font-bold rounded border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (s.running ? 'opacity-60 ' : '') + (isDark ? 'bg-slate-950 border-slate-600 text-slate-100' : 'bg-white border-orange-400 text-orange-900')
           }, __alloT('stem.platetectonics.sim_step_button', 'Advance 60,000 years')),
-          h('p', { id: 'pt-model-step-help', className: 'col-span-2 text-sm leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.platetectonics.sim_step_help', 'Pause to advance one interval at a time. Each step runs the same model as one second of Play; an earthquake may occur, but is not guaranteed.'))
+          h('p', { id: 'pt-model-step-help', style: { gridColumn: '1 / -1', minWidth: 0, overflowWrap: 'anywhere' }, className: 'text-sm leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.platetectonics.sim_step_help', 'Pause to advance one interval at a time. Each step runs the same model as one second of Play; an earthquake may occur, but is not guaranteed.'))
         ),
         h('div', { className: 'text-sm px-1 italic ' + (isDark ? 'text-slate-400' : 'text-orange-800') }, info.desc)
       )
@@ -6327,14 +6969,8 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       h('div', { className: 'mt-2 text-sm leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-600') },
         (s.mode === 'convergent' ? __alloT('stem.platetectonics.sim_scenario_note', 'Scenario note: this cross-section depicts oceanic lithosphere subducting beneath another plate. Continental collision looks different. ') : ''),
         __alloT('stem.platetectonics.sim_model_note_clock', 'Model note: the clock runs 60,000 years every second. Rift width and fault offset are rate × time exactly; mountain growth is a simplified estimate; earthquake timing is a qualitative cue, not a forecast. '),
-        h('div', { 'data-pt-model-depth-key': 'true', className: 'flex flex-wrap gap-x-4 gap-y-2 mt-2' },
-          [[__alloT('stem.platetectonics.sim_key_shallow_range', 'Shallow: less than 70 km'), isDark ? '#fb7185' : '#be123c'],
-           [__alloT('stem.platetectonics.sim_key_intermediate_range', 'Intermediate: 70 to less than 300 km'), isDark ? '#fdba74' : '#c2410c'],
-           [__alloT('stem.platetectonics.sim_key_deep_range', 'Deep: 300–700 km'), isDark ? '#c4b5fd' : '#6d28d9']].map(function (band) {
-            return h('span', { key: band[0], className: 'inline-flex items-center gap-2' }, h('span', { 'aria-hidden': 'true', style: { width: 9, height: 9, borderRadius: '50%', backgroundColor: band[1], flexShrink: 0 } }), band[0]);
-          })),
         h('p', { 'data-pt-model-dots-note': 'true', className: 'mt-2' }, __alloT('stem.platetectonics.sim_dots_retained', 'Dots mark earthquake foci inside the rock. They stay fixed between advances and disappear as the model runs. The quake log below keeps the latest observations after the dots disappear.')),
-        view3d.on && h('p', { 'data-pt-model-focus-guide': 'true', className: 'mt-2' }, __alloT('stem.platetectonics.sim_focus_guide', 'In 3D, the labeled focus is the newest event retained by the slice. Its dashed guide reaches a hollow marker directly above it at the surface. The internal focus is where the earthquake starts.'))
+        view3d.on && !quakeProjectionExposed && h('p', { 'data-pt-model-focus-guide': 'true', className: 'mt-2' }, __alloT('stem.platetectonics.sim_focus_guide', 'In 3D, the labeled focus is the newest event retained by the slice. Its dashed guide reaches a hollow marker directly above it at the surface. The internal focus is where the earthquake starts.'))
       )
     ),
     typeof (props && props.onRecordBoundaryInquiry) === 'function' && (function () {
@@ -6607,8 +7243,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     // foci sloping down under the overriding plate: the Wadati-Benioff zone. The
     // student sets an angle, commits it, and only then sees the fitted dip.
     (function () {
-      var captured = s.dipLocked && s.dipSample && Array.isArray(s.dipSample.points) ? s.dipSample : null;
-      var log = captured ? captured.points : (Array.isArray(s.qlog) ? s.qlog : []);
+      var captured = inspectedCaptured, log = inspectedLog;
       var deep = log.filter(function (q) { return q.z >= 70; });
       var canLock = s.mode === 'convergent' && deep.length >= 8;
       var fitDip = null;
@@ -6617,6 +7252,34 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         deep.forEach(function (q) { sxz += q.x * q.z; sxx += q.x * q.x; });
         if (sxx > 0) fitDip = Math.atan(sxz / sxx) * 180 / Math.PI;
       }
+      // Interpret only a deliberately checked sample. Keep the comparison
+      // signed and unrounded; card formatting must not change its direction.
+      var angleComparison = 'unavailable', angleDifference = null, fitAngleText = '—';
+      var angleComparisonText = __alloT('stem.platetectonics.ql_angle_comparison_unavailable', 'A fitted angle is unavailable for this sample.');
+      if (s.dipLocked && fitDip != null && isFinite(fitDip)) {
+        angleDifference = s.dipGuess - fitDip;
+        var absoluteDifference = Math.abs(angleDifference);
+        fitAngleText = fitDip < 0 && fitDip > -0.1
+          ? __alloT('stem.platetectonics.ql_angle_fit_near_zero', 'Between −0.1° and 0°')
+          : __alloT('stem.platetectonics.ql_angle_fit_approximate', 'About {a}°').replace('{a}', String(Number(fitDip.toFixed(1))));
+        if (fitDip < 0) {
+          angleComparison = 'opposite';
+          angleComparisonText = __alloT('stem.platetectonics.ql_angle_comparison_opposite', 'Your estimate slopes down toward increasing distance; this sample’s fitted line slopes up in that direction. Compare the signed distances in the captured points.');
+        } else if (absoluteDifference <= 0.0000001) {
+          angleComparison = 'equal';
+          angleComparisonText = __alloT('stem.platetectonics.ql_angle_comparison_equal', 'Your estimate matches this sample’s fitted angle within numerical rounding.');
+        } else if (angleDifference > 0) {
+          angleComparison = 'steeper';
+          angleComparisonText = absoluteDifference < 0.1
+            ? __alloT('stem.platetectonics.ql_angle_comparison_steeper_small', 'Using the unrounded fit, your estimate is slightly steeper by less than 0.1°.')
+            : __alloT('stem.platetectonics.ql_angle_comparison_steeper', 'Your estimate is steeper than this sample’s fitted line by about {d}°.').replace('{d}', String(Number(absoluteDifference.toFixed(1))));
+        } else {
+          angleComparison = 'shallower';
+          angleComparisonText = absoluteDifference < 0.1
+            ? __alloT('stem.platetectonics.ql_angle_comparison_shallower_small', 'Using the unrounded fit, your estimate is slightly shallower by less than 0.1°.')
+            : __alloT('stem.platetectonics.ql_angle_comparison_shallower', 'Your estimate is shallower than this sample’s fitted line by about {d}°.').replace('{d}', String(Number(absoluteDifference.toFixed(1))));
+        }
+      }
       // Equal kilometre scales preserve the angle of the observed band. Font
       // size and margins follow the actual CSS width, including narrow hosts.
       var VW = 460, XMIN = -150, XMAX = 800, ZMAX = 720, unit = VW / quakePlotWidth;
@@ -6624,8 +7287,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       var VH = T + B + (VW - L - R) * ZMAX / (XMAX - XMIN), axisFont = 14 * unit;
       var qx = function (x) { return L + (x - XMIN) / (XMAX - XMIN) * (VW - L - R); };
       var qz = function (z) { return T + z / ZMAX * (VH - T - B); };
-      var inspectedIndex = quakeInspection && quakeInspection.mode === s.mode && quakeInspection.captured === !!captured ? log.indexOf(quakeInspection.point) : -1;
-      var inspectedPoint = inspectedIndex >= 0 ? log[inspectedIndex] : null;
+      var inspectedIndex = selectedQuakeIndex, inspectedPoint = selectedQuakePoint;
       var bands = [
         { id: 'shallow', lo: 0, hi: 70, color: isDark ? '#fb7185' : '#be123c', label: __alloT('stem.platetectonics.depth_band_shallow', 'Shallow'), range: __alloT('stem.platetectonics.depth_band_shallow_range', '0–<70 km') },
         { id: 'intermediate', lo: 70, hi: 300, color: isDark ? '#fdba74' : '#c2410c', label: __alloT('stem.platetectonics.depth_band_intermediate', 'Intermediate'), range: __alloT('stem.platetectonics.depth_band_intermediate_range', '70–<300 km') },
@@ -6655,7 +7317,10 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
             ? __alloT('stem.platetectonics.ql_readiness_checked', 'Compare your dashed estimate with the solid data fit. These counts belong to the fixed checked sample. Choose Revise my angle to work with the latest observations.')
             : canLock ? __alloT('stem.platetectonics.ql_readiness_ready', 'Your sample is ready. Compare several points, set your dashed angle estimate, then choose Check my angle against this sample to pause the run and reveal the data fit.')
               : s.running ? __alloT('stem.platetectonics.ql_readiness_collecting', 'Collecting observations. Watch the pattern and try an angle estimate while the sample grows. Events still needed at 70 km or deeper: {n}.').replace('{n}', 8 - deep.length)
-                : __alloT('stem.platetectonics.ql_readiness_paused', 'Use Play or Advance 60,000 years in the model controls to collect observations. Events still needed at 70 km or deeper: {n}.').replace('{n}', 8 - deep.length))));
+                : __alloT('stem.platetectonics.ql_readiness_paused', 'Use Play or Advance 60,000 years in the model controls to collect observations. Events still needed at 70 km or deeper: {n}.').replace('{n}', 8 - deep.length))),
+        h('p', { id: 'pt-ql-sample-project-help', className: 'mt-3' }, __alloT('stem.platetectonics.ql_sample_projection_intro', 'Compare this displayed sample with the 3D cut face. Every mark uses a recorded distance and depth; the selected event can be highlighted within the pattern.')),
+        h('button', { type: 'button', 'data-pt-quake-sample-project': 'true', disabled: !log.length, 'aria-controls': 'pt-quake-model-frame', 'aria-describedby': 'pt-ql-sample-project-help', onClick: showSampleProjection, style: { minHeight: 44 }, className: 'mt-2 px-3 py-2 rounded-lg border font-semibold focus:ring-2 focus:ring-yellow-500 focus:outline-none disabled:opacity-70 ' + (isDark ? 'bg-slate-900 border-cyan-500 text-cyan-100' : 'bg-white border-cyan-700 text-cyan-950') }, __alloT('stem.platetectonics.ql_sample_projection_show', 'Show this sample on the 3D cut face')));
+
       var ink = isDark ? '#f1f5f9' : '#0f172a', muted = isDark ? '#cbd5e1' : '#475569', grid = isDark ? '#334155' : '#e2e8f0';
       var kids = [h('rect', { key: 'bg', x: 0, y: 0, width: VW, height: VH, fill: isDark ? '#0f172a' : '#ffffff' })];
       bands.forEach(function (band) {
@@ -6665,9 +7330,9 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         kids.push(h('line', { key: 'gz' + z, 'data-pt-quake-grid': 'depth', 'data-km': z, x1: L, y1: qz(z), x2: VW - R, y2: qz(z), stroke: grid }));
         kids.push(h('text', { key: 'tz' + z, 'data-pt-quake-axis-label': 'depth', 'data-km': z, x: L - 8 * unit, y: qz(z) + axisFont * 0.35, fontSize: axisFont, fill: muted, textAnchor: 'end' }, String(z)));
       });
-      [0, 200, 400, 600, 800].forEach(function (x) {
+      [XMIN, 0, 200, 400, 600, 800].forEach(function (x) {
         kids.push(h('line', { key: 'gx' + x, 'data-pt-quake-grid': 'distance', 'data-km': x, 'data-pt-quake-boundary-reference': x === 0 ? 'true' : undefined, x1: qx(x), y1: T, x2: qx(x), y2: VH - B, stroke: x === 0 ? muted : grid, strokeWidth: x === 0 ? 1.5 : 1, strokeDasharray: x === 0 ? '3 3' : undefined, vectorEffect: 'non-scaling-stroke' }));
-        kids.push(h('text', { key: 'tx' + x, 'data-pt-quake-axis-label': 'distance', 'data-km': x, x: qx(x), y: VH - B + 22 * unit, fontSize: axisFont, fill: muted, textAnchor: x === XMAX ? 'end' : 'middle' }, String(x)));
+        kids.push(h('text', { key: 'tx' + x, 'data-pt-quake-axis-label': 'distance', 'data-km': x, x: qx(x), y: VH - B + 22 * unit, fontSize: axisFont, fill: muted, textAnchor: x === XMIN || x === XMAX ? 'end' : 'middle' }, x < 0 ? '−' + Math.abs(x) : String(x)));
       });
       log.forEach(function (q, i) {
         kids.push(h('circle', { key: 'q' + i, 'data-pt-quake-point': String(i), 'data-pt-quake-inspected': String(i === inspectedIndex), 'data-distance-km': q.x, 'data-depth-km': q.z, cx: qx(q.x), cy: qz(q.z), r: Math.max(3.2, 3 * unit), fill: bandOf(q).color, opacity: 0.9 }));
@@ -6676,8 +7341,11 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       var xEnd = Math.min(XMAX, ZMAX / Math.tan(dip));
       if (s.mode === 'convergent') kids.push(h('line', { key: 'yours', 'data-pt-slab-line': 'guess', x1: qx(0), y1: qz(0), x2: qx(xEnd), y2: qz(xEnd * Math.tan(dip)), stroke: '#d97706', strokeWidth: 3, strokeDasharray: '7 5' }));
       if (s.mode === 'convergent' && s.dipLocked && fitDip != null) {
-        var fr = fitDip * Math.PI / 180, xf = Math.min(XMAX, ZMAX / Math.tan(fr));
-        kids.push(h('line', { key: 'fit', 'data-pt-slab-line': 'fit', x1: qx(0), y1: qz(0), x2: qx(xf), y2: qz(xf * Math.tan(fr)), stroke: isDark ? '#38bdf8' : '#0369a1', strokeWidth: 2.5 }));
+        var fr = fitDip * Math.PI / 180, fitSlope = Math.tan(fr);
+        // End at the first plot edge in either signed direction. A negative
+        // fit must stay clear of the depth labels in the left gutter.
+        var xf = fitSlope === 0 ? XMAX : fitSlope < 0 ? Math.max(XMIN, ZMAX / fitSlope) : Math.min(XMAX, ZMAX / fitSlope);
+        kids.push(h('line', { key: 'fit', 'data-pt-slab-line': 'fit', x1: qx(0), y1: qz(0), x2: qx(xf), y2: qz(xf * fitSlope), stroke: isDark ? '#38bdf8' : '#0369a1', strokeWidth: 2.5 }));
       }
       if (inspectedPoint) {
         var ix = qx(inspectedPoint.x), iz = qz(inspectedPoint.z), focusInk = isDark ? '#f8fafc' : '#0f172a';
@@ -6711,7 +7379,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       // built while its panel is open.
       var quakeChart = s.qlOpen && h('div', { 'data-pt-quake-chart': 'true', className: 'min-w-0' },
         h('p', { 'data-pt-quake-axis': 'depth', className: 'text-sm font-semibold mb-1' }, __alloT('stem.platetectonics.ql_axis_z', 'Depth (km)'), ' ↓'),
-        h('svg', { ref: quakePlotRef, 'data-pt-quake-plot': 'equal-scale', viewBox: '0 0 ' + VW + ' ' + VH, width: '100%', role: 'img', onClick: inspectPlottedQuake, 'aria-describedby': (inspectedPoint ? 'pt-ql-inspected-values' : 'pt-ql-equal-scale-help') + ' pt-ql-plot-selection-help', className: 'rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-300'), style: { display: 'block', height: 'auto', aspectRatio: VW + '/' + VH, cursor: log.length ? 'pointer' : 'default', background: isDark ? '#0f172a' : '#ffffff' },
+        h('svg', { ref: quakePlotRef, 'data-pt-quake-plot': 'equal-scale', viewBox: '0 0 ' + VW + ' ' + VH, width: '100%', role: 'img', onClick: inspectPlottedQuake, 'aria-describedby': (inspectedPoint ? 'pt-ql-inspected-values' : 'pt-ql-equal-scale-help') + ' pt-ql-boundary-reference-help pt-ql-plot-selection-help', className: 'rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-300'), style: { display: 'block', height: 'auto', aspectRatio: VW + '/' + VH, cursor: log.length ? 'pointer' : 'default', background: isDark ? '#0f172a' : '#ffffff' },
             'aria-label': (s.mode === 'convergent'
               ? __alloT('stem.platetectonics.ql_aria_depth70', 'Scatter plot of {n} earthquakes, distance from the boundary against depth. {d} are 70 km or deeper. Your line slopes down at {a} degrees.')
               : __alloT('stem.platetectonics.ql_aria_no_slab', 'Scatter plot of {n} earthquakes, distance from the boundary against depth. No slab-angle line is drawn for this boundary.'))
@@ -6719,7 +7387,8 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         h('p', { 'data-pt-quake-axis': 'distance', className: 'text-sm leading-relaxed font-semibold mt-1 text-center' }, s.mode === 'convergent'
             ? __alloT('stem.platetectonics.ql_axis_x', 'Distance from the boundary (km), toward the overriding plate')
             : __alloT('stem.platetectonics.ql_axis_x_neutral', 'Distance from the boundary (km)')),
-        h('p', { 'data-pt-quake-origin-help': 'true', className: 'text-sm leading-relaxed mt-2' }, __alloT('stem.platetectonics.ql_boundary_reference_help', 'The stronger vertical dashed line marks the boundary at 0 km. Read each event’s distance from that reference.')),
+        h('p', { id: 'pt-ql-boundary-reference-help', 'data-pt-quake-origin-help': 'true', className: 'text-sm leading-relaxed mt-2' }, __alloT('stem.platetectonics.ql_boundary_reference_help', 'The stronger vertical dashed line marks the boundary at 0 km. Read each event’s distance from that reference.'),
+          log.some(function (point) { return point.x < 0; }) && h('span', { 'data-pt-quake-signed-distance-help': 'true' }, ' ', __alloT('stem.platetectonics.ql_signed_distance_help', 'Negative distances lie left of that boundary. Positive distances lie right of it.'))),
         h('p', { id: 'pt-ql-equal-scale-help', 'data-pt-quake-scale-help': 'true', className: 'text-sm leading-relaxed mt-2' }, __alloT('stem.platetectonics.ql_equal_scale_help', 'The same number of kilometres takes the same length on both axes. Depth increases down from the surface, so the band’s slope can help you estimate an angle.')),
         h('p', { id: 'pt-ql-plot-selection-help', 'data-pt-quake-plot-selection-help': 'true', className: 'text-sm leading-relaxed mt-3' }, __alloT('stem.platetectonics.ql_plot_selection_help', 'Choose a point in the graph or an event in the list to trace its coordinates. Use the list to distinguish overlapping points.')));
       var quakeReadout = s.qlOpen && h('fieldset', { 'data-pt-quake-inspector': captured ? 'captured' : 'live', className: 'min-w-0 rounded-lg border p-3 text-sm leading-relaxed ' + (isDark ? 'border-slate-600 bg-slate-950' : 'border-slate-300 bg-slate-50') },
@@ -6740,7 +7409,13 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
                 h('div', null, h('dt', { className: 'font-semibold' }, __alloT('stem.platetectonics.ql_inspect_band', 'Depth band')), h('dd', { 'data-pt-quake-inspected-band': bandOf(inspectedPoint).id, className: 'mt-1' }, bandOf(inspectedPoint).label + ' · ' + bandOf(inspectedPoint).range))),
               h('p', { 'data-pt-quake-inspected-source': captured ? 'captured' : 'live', className: 'mt-3' }, captured ? __alloT('stem.platetectonics.ql_inspect_captured', 'This event belongs to your fixed checked sample, even while newer earthquakes enter the live run.') : __alloT('stem.platetectonics.ql_inspect_live', 'This event belongs to the latest observation log. Selection follows this observation as the log changes; it clears if the observation leaves the displayed sample.')),
               h('p', { className: 'mt-2' }, __alloT('stem.platetectonics.ql_inspect_read_guides', 'The ring marks this event. Dashed guides connect it to the distance and depth axes; the outlined coordinate row contains the same values.')),
-              h('p', { 'data-pt-quake-inspected-caution': 'true', className: 'mt-2 font-semibold' }, __alloT('stem.platetectonics.ql_inspect_caution', 'Compare several events before drawing a conclusion. One earthquake does not establish a slab angle or boundary type.'))));
+              h('p', { 'data-pt-quake-inspected-caution': 'true', className: 'mt-2 font-semibold' }, __alloT('stem.platetectonics.ql_inspect_caution', 'Compare several events before drawing a conclusion. One earthquake does not establish a slab angle or boundary type.')),
+              Math.abs(inspectedPoint.x * TECT_KM) > TECT_HALF_X
+                ? h('p', { 'data-pt-quake-projection-limit': 'true', className: 'mt-3 font-semibold' }, __alloT('stem.platetectonics.ql_projection_limit', 'This event lies beyond the finite 3D block. Its exact coordinates remain in the graph and list; the event is not moved to fit the picture.'))
+                : h('div', { className: 'mt-3' },
+                    h('p', { id: 'pt-ql-project-help', className: 'mb-2' }, __alloT('stem.platetectonics.ql_projection_intro', 'Compare this event’s recorded distance and depth with the 3D cut face. This projection does not recover its position along the boundary.')),
+                    h('button', { type: 'button', 'data-pt-quake-project': 'true', 'aria-describedby': 'pt-ql-project-help', 'aria-controls': 'pt-quake-model-frame', onClick: showQuakeProjection, style: { minHeight: 44 }, className: 'px-3 py-2 rounded-lg border font-semibold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-950 border-cyan-500 text-cyan-100' : 'bg-white border-cyan-700 text-cyan-950') }, __alloT('stem.platetectonics.ql_projection_show', 'Show this event on the 3D cut face')))));
+
       var quakeCoordinates = s.qlOpen && h('details', { 'data-pt-slab-coordinates': captured ? 'captured' : 'live', className: 'mt-3 rounded-lg border p-3 text-sm leading-relaxed ' + (isDark ? 'bg-slate-950 border-slate-600 text-slate-100' : 'bg-slate-50 border-slate-300 text-slate-900') },
             h('summary', { className: 'min-h-11 py-2 font-bold cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none', style: { minHeight: 44 } }, __alloT('stem.platetectonics.ql_coordinates_summary', 'Read the plotted coordinates ({n} events)').replace('{n}', log.length)),
             h('p', { 'data-pt-slab-coordinates-note': captured ? 'captured' : 'live', className: 'mt-2 mb-3' }, captured
@@ -6796,10 +7471,25 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
                       if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.ql_sr_checked', 'Angle checked. The run is paused and the sample is captured. Compare your dashed estimate with the solid data fit.'));
                     } },
                     __alloT('stem.platetectonics.ql_check_angle', 'Check my angle against this sample'))
-                : h('div', { className: 'mt-2' },
-                    h('p', { className: 'text-sm leading-relaxed', 'data-pt-quake-fit': fitDip == null ? '' : String(Math.round(fitDip)) },
-                      __alloT('stem.platetectonics.ql_result_sample', 'The solid line fits {n} captured earthquakes at 70 km or deeper: about {f}° from horizontal. Your estimate was {g}°. In real subduction zones, the dipping earthquake band (Wadati–Benioff zone) helps trace the sinking slab. Deep earthquakes occur within the slab.')
-                        .replace('{n}', deep.length).replace('{f}', fitDip == null ? '?' : Math.round(fitDip)).replace('{g}', s.dipGuess)),
+                : h('section', { className: 'mt-3 rounded-lg border p-3 text-sm leading-relaxed ' + (isDark ? 'bg-slate-950 border-slate-600' : 'bg-slate-50 border-slate-300'), 'data-pt-slab-angle-result': 'checked', 'data-pt-quake-fit': fitDip == null ? '' : String(Math.round(fitDip)), 'aria-labelledby': 'pt-ql-angle-result-title', 'aria-live': 'off' },
+                    h('h4', { id: 'pt-ql-angle-result-title', className: 'font-bold' }, __alloT('stem.platetectonics.ql_angle_comparison_title', 'Compare your angle with this sample')),
+                    h('dl', { 'data-pt-slab-angle-metrics': 'true', className: 'mt-3 min-w-0', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 130px), 1fr))', gap: 12 } },
+                      h('div', { className: 'min-w-0 rounded-lg border p-3 ' + (isDark ? 'bg-slate-900 border-slate-600' : 'bg-white border-slate-300') },
+                        h('dt', { className: 'font-semibold' }, h('span', { 'aria-hidden': 'true', className: 'inline-block mr-2 align-middle', style: { width: 24, borderTop: '3px dashed #d97706' } }), __alloT('stem.platetectonics.ql_legend_guess', 'Your estimate (dashed)')),
+                        h('dd', { 'data-pt-slab-angle-metric': 'estimate', 'data-angle-deg': String(s.dipGuess), className: 'mt-2 font-bold tabular-nums', style: { fontSize: 24, lineHeight: 1.3, overflowWrap: 'anywhere' } }, String(s.dipGuess) + '°')),
+                      h('div', { className: 'min-w-0 rounded-lg border p-3 ' + (isDark ? 'bg-slate-900 border-slate-600' : 'bg-white border-slate-300') },
+                        h('dt', { className: 'font-semibold' }, h('span', { 'aria-hidden': 'true', className: 'inline-block mr-2 align-middle', style: { width: 24, borderTop: '3px solid ' + (isDark ? '#38bdf8' : '#0369a1') } }), __alloT('stem.platetectonics.ql_legend_fit', 'Data fit (solid)')),
+                        h('dd', { 'data-pt-slab-angle-metric': 'fit', 'data-angle-deg': fitDip == null ? '' : String(fitDip), className: 'mt-2 font-bold tabular-nums', style: { fontSize: 24, lineHeight: 1.3, overflowWrap: 'anywhere' } }, fitAngleText))),
+                    h('p', { 'data-pt-slab-angle-comparison': angleComparison, 'data-fit-deg': fitDip == null ? '' : String(fitDip), 'data-difference-deg': angleDifference == null ? '' : String(angleDifference), className: 'mt-3 font-semibold' }, angleComparisonText),
+                    h('p', { 'data-pt-slab-angle-sample-context': 'true', 'data-used-count': deep.length, 'data-total-count': log.length, 'data-excluded-count': log.length - deep.length, className: 'mt-2' }, __alloT('stem.platetectonics.ql_angle_fit_sample_count', 'Uses {u} of the {n} captured earthquakes: those at 70 km or deeper.').replace('{u}', deep.length).replace('{n}', log.length)),
+                    log.length > deep.length && h('p', { 'data-pt-slab-angle-excluded': 'true', className: 'mt-1' }, __alloT('stem.platetectonics.ql_angle_fit_shallow_excluded', 'Shallower events stay plotted but are excluded from this angle fit.')),
+                    h('details', { 'data-pt-slab-fit-method': 'true', className: 'mt-3 rounded-lg border p-2 ' + (isDark ? 'border-slate-600' : 'border-slate-300') },
+                      h('summary', { className: 'py-2 font-semibold cursor-pointer rounded focus:ring-2 focus:ring-yellow-500 focus:outline-none', style: { minHeight: 44 } }, __alloT('stem.platetectonics.ql_angle_fit_method_title', 'How this sample is fitted')),
+                      h('p', { className: 'mt-2' }, __alloT('stem.platetectonics.ql_angle_fit_method', 'The solid line passes through 0 km distance and 0 km depth at the boundary and fits the observations at 70 km or deeper. It is a straight-line summary of this fixed sample.')),
+                      h('p', { className: 'mt-2' }, __alloT('stem.platetectonics.ql_angle_fit_threshold', 'Eight qualifying events make Check available. This minimum is an activity threshold; the fitted angle remains a summary of this sample.')),
+                      h('p', { className: 'mt-2' },
+                        __alloT('stem.platetectonics.ql_result_sample', 'The solid line fits {n} captured earthquakes at 70 km or deeper: about {f}° from horizontal. Your estimate was {g}°. In real subduction zones, the dipping earthquake band (Wadati–Benioff zone) helps trace the sinking slab. Deep earthquakes occur within the slab.')
+                          .replace('{n}', deep.length).replace('{f}', fitDip == null ? '?' : Math.round(fitDip)).replace('{g}', s.dipGuess))),
                     h('button', { type: 'button', 'data-pt-slab-revise': 'true', className: 'min-h-11 mt-2 px-3 py-2 rounded-lg text-sm font-bold border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-950 border-slate-600 text-slate-100' : 'bg-white border-slate-400 text-slate-800'),
                       onClick: function () { setQuakeInspection(null); slabActionPending.current = false; slabFocusPending.current = '#pt-ql-dip'; update({ dipLocked: false, dipSample: null }); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.ql_sr_revise', 'Your estimate is editable again. The current run and observations are kept.')); } }, __alloT('stem.platetectonics.ql_revise', 'Revise my angle')))
             );

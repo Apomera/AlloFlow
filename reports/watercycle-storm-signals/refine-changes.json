@@ -1,0 +1,14 @@
+{
+  "before": "1b1abb8400181464f5d75991cc40e3f239927ffa55c77ecc78e7f0b925d91fa1",
+  "after": "8c4d1ed57b2282fe5d9be03df4642aa769858f58fdf4e5bb0ab5b1a8dff2f759",
+  "changes": [
+    {
+      "before": "No falling activity is shown at these three moments.",
+      "after": "Falling activity reads 0 at all three moments."
+    },
+    {
+      "before": "No modeled response on this ground track at these three moments.",
+      "after": "All three displayed readings are 0 on this ground track."
+    }
+  ]
+}

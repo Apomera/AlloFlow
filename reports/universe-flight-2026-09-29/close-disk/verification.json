@@ -1,0 +1,62 @@
+{
+  "completed": true,
+  "verifiedAt": "2026-10-07T17:14:13.910Z",
+  "verifierHash": "1c2b623891a0c0a5d36a668d019fb73f000fbe12fb498c617e5bfad74a1227cd",
+  "runtime": [
+    {
+      "file": "stem_lab/universe_flight_scene.js",
+      "sha256": "6f1267255407b7de52bb685922281301fef58de9c91cc8a036577a7c317e56e8",
+      "syntaxPassed": true
+    },
+    {
+      "file": "stem_lab/stem_tool_universe.js",
+      "sha256": "a744f3d2e32b5bec28864c8ee29468ec68178cd20d9bb08bcd8fa3d9eefc19a9",
+      "syntaxPassed": true
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/universe_flight_scene.js",
+      "sha256": "6f1267255407b7de52bb685922281301fef58de9c91cc8a036577a7c317e56e8",
+      "syntaxPassed": true
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/stem_tool_universe.js",
+      "sha256": "a744f3d2e32b5bec28864c8ee29468ec68178cd20d9bb08bcd8fa3d9eefc19a9",
+      "syntaxPassed": true
+    }
+  ],
+  "testHash": "ed7e3572a4a3ccc5760e2edf408e10e4e9d0bfc4e67a9a135af15e580cb07276",
+  "inversePatchExact": true,
+  "served": [
+    {
+      "file": "stem_lab/universe_flight_scene.js",
+      "sha256": "6f1267255407b7de52bb685922281301fef58de9c91cc8a036577a7c317e56e8"
+    },
+    {
+      "file": "stem_lab/stem_tool_universe.js",
+      "sha256": "a744f3d2e32b5bec28864c8ee29468ec68178cd20d9bb08bcd8fa3d9eefc19a9"
+    }
+  ],
+  "hostCases": 298048,
+  "spiralRanges": 89,
+  "nativeCaptures": 36,
+  "nativeOriginalMetricFailuresPreserved": true,
+  "exteriorControls": [
+    "galaxy-inner048",
+    "galaxy-radial122",
+    "galaxy-above08-dpr2",
+    "galaxy-exterior3",
+    "elliptical-near",
+    "neighborhood-control"
+  ],
+  "distinctFocusedTests": 39,
+  "distinctFocusedFiles": 3,
+  "unitEnvironment": "Node canvas/event shim",
+  "fullDomUnitSuiteRun": false,
+  "browserWorkflows": 4,
+  "scopedAccessibilityAudits": 6,
+  "previewCards": 12,
+  "previewImagesChanged": [],
+  "gitDiffCheckPassed": true,
+  "gitIndexEmpty": true,
+  "committed": false
+}

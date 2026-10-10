@@ -1,0 +1,468 @@
+[
+  {
+    "dark": true,
+    "state": "default",
+    "world": "Earth",
+    "phase": 25,
+    "latitude": 45,
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "minimumContrast": 12.024320295980338,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "observers": [
+      {
+        "left": 47,
+        "right": 511,
+        "altitude": 68.44
+      },
+      {
+        "left": 549,
+        "right": 1013,
+        "altitude": 21.560000000000002
+      }
+    ],
+    "daylight": [
+      15.425892413189418,
+      8.574107586810582
+    ]
+  },
+  {
+    "dark": false,
+    "state": "equinox",
+    "world": "Earth",
+    "phase": 0,
+    "latitude": 0,
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "minimumContrast": 5.3577549124490425,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "observers": [
+      {
+        "left": 47,
+        "right": 511,
+        "altitude": 90
+      },
+      {
+        "left": 549,
+        "right": 1013,
+        "altitude": 90
+      }
+    ],
+    "daylight": [
+      12,
+      12
+    ]
+  },
+  {
+    "dark": false,
+    "state": "equator",
+    "world": "Earth",
+    "phase": 25,
+    "latitude": 0,
+    "width": 736,
+    "scrollWidth": 736,
+    "errors": [],
+    "minimumContrast": 5.3577549124490425,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "observers": [
+      {
+        "left": 43,
+        "right": 349,
+        "altitude": 66.56
+      },
+      {
+        "left": 387,
+        "right": 693,
+        "altitude": 66.56
+      }
+    ],
+    "daylight": [
+      12,
+      12
+    ]
+  },
+  {
+    "dark": false,
+    "state": "polar-day",
+    "world": "Earth",
+    "phase": 25,
+    "latitude": 70,
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "minimumContrast": 5.3577549124490425,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "observers": [
+      {
+        "left": 43,
+        "right": 277,
+        "altitude": 43.440000000000005
+      },
+      {
+        "left": 43,
+        "right": 277,
+        "altitude": -3.4399999999999977
+      }
+    ],
+    "daylight": [
+      24,
+      0
+    ]
+  },
+  {
+    "dark": true,
+    "state": "polar-night",
+    "world": "Earth",
+    "phase": 75,
+    "latitude": 70,
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "minimumContrast": 12.024320295980338,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "observers": [
+      {
+        "left": 43,
+        "right": 277,
+        "altitude": -3.4399999999999977
+      },
+      {
+        "left": 43,
+        "right": 277,
+        "altitude": 43.440000000000005
+      }
+    ],
+    "daylight": [
+      0,
+      24
+    ]
+  },
+  {
+    "dark": false,
+    "state": "far-polar",
+    "world": "Earth",
+    "phase": 75,
+    "latitude": 80,
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "minimumContrast": 5.3577549124490425,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "observers": [
+      {
+        "left": 47,
+        "right": 511,
+        "altitude": -13.439999999999998
+      },
+      {
+        "left": 549,
+        "right": 1013,
+        "altitude": 33.440000000000005
+      }
+    ],
+    "daylight": [
+      0,
+      24
+    ]
+  },
+  {
+    "dark": true,
+    "state": "mars",
+    "world": "Mars",
+    "phase": 25,
+    "latitude": 45,
+    "width": 736,
+    "scrollWidth": 736,
+    "errors": [],
+    "minimumContrast": 12.024320295980338,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "observers": [],
+    "daylight": []
+  },
+  {
+    "dark": true,
+    "state": "uranus-north",
+    "world": "Uranus",
+    "phase": 25,
+    "latitude": 45,
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "minimumContrast": 12.024320295980338,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "observers": [],
+    "daylight": []
+  },
+  {
+    "dark": false,
+    "state": "uranus-south",
+    "world": "Uranus",
+    "phase": 75,
+    "latitude": 45,
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "minimumContrast": 6.7766979627892985,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "observers": [],
+    "daylight": []
+  },
+  {
+    "dark": true,
+    "state": "near-equinox",
+    "world": "Earth",
+    "phase": 2,
+    "latitude": 45,
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "minimumContrast": 12.024320295980338,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "observers": [
+      {
+        "left": 43,
+        "right": 277,
+        "altitude": 47.85772996622976
+      },
+      {
+        "left": 43,
+        "right": 277,
+        "altitude": 42.14227003377024
+      }
+    ],
+    "daylight": [
+      12.38150549248345,
+      11.618494507516552
+    ]
+  },
+  {
+    "dark": false,
+    "state": "fractional",
+    "world": "Earth",
+    "phase": 12.5,
+    "latitude": 45.5,
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "minimumContrast": 5.3577549124490425,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "observers": [
+      {
+        "left": 47,
+        "right": 511,
+        "altitude": 60.8365513354417
+      },
+      {
+        "left": 549,
+        "right": 1013,
+        "altitude": 28.163448664558302
+      }
+    ],
+    "daylight": [
+      14.313862338728809,
+      9.686137661271191
+    ]
+  },
+  {
+    "dark": false,
+    "state": "malformed",
+    "world": "Earth",
+    "phase": 25,
+    "latitude": 45,
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "minimumContrast": 5.3577549124490425,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "observers": [
+      {
+        "left": 43,
+        "right": 277,
+        "altitude": 68.44
+      },
+      {
+        "left": 43,
+        "right": 277,
+        "altitude": 21.560000000000002
+      }
+    ],
+    "daylight": [
+      15.425892413189418,
+      8.574107586810582
+    ]
+  },
+  {
+    "dark": true,
+    "state": "guide-predict",
+    "world": "Earth",
+    "phase": 25,
+    "latitude": 45,
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "minimumContrast": 12.822699300665738,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "observers": [],
+    "daylight": []
+  },
+  {
+    "dark": false,
+    "state": "guide-collect",
+    "world": "Earth",
+    "phase": 25,
+    "latitude": 45,
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "minimumContrast": 5.3577549124490425,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "observers": [
+      {
+        "left": 43,
+        "right": 277,
+        "altitude": 68.44
+      },
+      {
+        "left": 43,
+        "right": 277,
+        "altitude": 21.560000000000002
+      }
+    ],
+    "daylight": [
+      15.425892413189418,
+      8.574107586810582
+    ]
+  },
+  {
+    "dark": true,
+    "state": "guide-claim",
+    "world": "Earth",
+    "phase": 75,
+    "latitude": 45,
+    "width": 736,
+    "scrollWidth": 736,
+    "errors": [],
+    "minimumContrast": 12.024320295980338,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "observers": [
+      {
+        "left": 43,
+        "right": 349,
+        "altitude": 21.560000000000002
+      },
+      {
+        "left": 387,
+        "right": 693,
+        "altitude": 68.44
+      }
+    ],
+    "daylight": [
+      8.574107586810582,
+      15.425892413189418
+    ]
+  },
+  {
+    "dark": false,
+    "state": "guide-explain",
+    "world": "Earth",
+    "phase": 25,
+    "latitude": 45,
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "minimumContrast": 5.3577549124490425,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "observers": [
+      {
+        "left": 47,
+        "right": 511,
+        "altitude": 68.44
+      },
+      {
+        "left": 549,
+        "right": 1013,
+        "altitude": 21.560000000000002
+      }
+    ],
+    "daylight": [
+      15.425892413189418,
+      8.574107586810582
+    ]
+  },
+  {
+    "dark": true,
+    "state": "guide-invalid",
+    "world": "Earth",
+    "phase": 75,
+    "latitude": 45,
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "minimumContrast": 12.024320295980338,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "observers": [
+      {
+        "left": 43,
+        "right": 277,
+        "altitude": 21.560000000000002
+      },
+      {
+        "left": 43,
+        "right": 277,
+        "altitude": 68.44
+      }
+    ],
+    "daylight": [
+      8.574107586810582,
+      15.425892413189418
+    ]
+  },
+  {
+    "dark": true,
+    "state": "saved",
+    "world": "Earth",
+    "phase": 25,
+    "latitude": 45,
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "minimumContrast": 12.024320295980338,
+    "minimumTargetHeight": 44,
+    "minimumTextSize": 13,
+    "observers": [
+      {
+        "left": 47,
+        "right": 511,
+        "altitude": 68.44
+      },
+      {
+        "left": 549,
+        "right": 1013,
+        "altitude": 21.560000000000002
+      }
+    ],
+    "daylight": [
+      15.425892413189418,
+      8.574107586810582
+    ]
+  }
+]

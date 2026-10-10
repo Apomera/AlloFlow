@@ -1,0 +1,60 @@
+{
+  "width": 365.625,
+  "client": 366,
+  "scroll": 366,
+  "choices": [
+    {
+      "height": 64,
+      "client": 364,
+      "scroll": 364
+    },
+    {
+      "height": 109.15625,
+      "client": 364,
+      "scroll": 364
+    },
+    {
+      "height": 64,
+      "client": 364,
+      "scroll": 364
+    }
+  ],
+  "text": [
+    {
+      "text": "Lighter, thinner ventral surface.",
+      "font": 16,
+      "client": 298,
+      "scroll": 298
+    },
+    {
+      "text": "Transparent third eyelid protecting eye underwater.",
+      "font": 16,
+      "client": 298,
+      "scroll": 298
+    },
+    {
+      "text": "Try another choice. That observation belongs to a different structure. Compare position, tissue appearance, and function, then try again.",
+      "font": 16,
+      "client": 362,
+      "scroll": 362
+    },
+    {
+      "text": "Try another choice.",
+      "font": 16,
+      "client": 336,
+      "scroll": 336
+    },
+    {
+      "text": "That observation belongs to a different structure. Compare position, tissue appearance, and function, then try again.",
+      "font": 16,
+      "client": 336,
+      "scroll": 336
+    },
+    {
+      "text": "External eardrum behind eye.",
+      "font": 16,
+      "client": 298,
+      "scroll": 298
+    }
+  ]
+}

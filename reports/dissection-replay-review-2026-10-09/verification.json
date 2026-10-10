@@ -1,0 +1,222 @@
+{
+  "at": "2026-10-10T04:22:30.196Z",
+  "sourceSha256": "ca1ebfd63cce6cd95c722e3354ad4e813eef3ae48d61e6e5ace6c917cb0d3654",
+  "existingUnitSha256": "7c26ad56c4e9bb87a0ca214e30ea4d09e2943f003d5295b95957726736976238",
+  "sourceRuntimeParity": true,
+  "sourceSyntax": true,
+  "sourceReversalEdits": 32,
+  "sourceReversalMatchesBaseline": true,
+  "protectedFilesUnchanged": 1046,
+  "runs": {
+    "unit-5": {
+      "passed": 18,
+      "failed": 0,
+      "excluded": 239,
+      "inputs": {
+        "stem_lab/stem_tool_dissection.js": "ca1ebfd63cce6cd95c722e3354ad4e813eef3ae48d61e6e5ace6c917cb0d3654",
+        "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "ca1ebfd63cce6cd95c722e3354ad4e813eef3ae48d61e6e5ace6c917cb0d3654",
+        "tests/dissection_lab_improvements.test.js": "7c26ad56c4e9bb87a0ca214e30ea4d09e2943f003d5295b95957726736976238",
+        "tests/dissection_replay_review.test.js": "67b253aabc1c974da69b1b11bb26b142e8565ae62b202c085e2b743172eeb7ff"
+      }
+    },
+    "browser-7": {
+      "startTime": "2026-10-10T04:21:04.355Z",
+      "duration": 54298.332,
+      "expected": 4,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "inputs": {
+        "stem_lab/stem_tool_dissection.js": "ca1ebfd63cce6cd95c722e3354ad4e813eef3ae48d61e6e5ace6c917cb0d3654",
+        "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "ca1ebfd63cce6cd95c722e3354ad4e813eef3ae48d61e6e5ace6c917cb0d3654",
+        "tests/e2e/dissection-replay-review.spec.ts": "0abfd753c24b83469204bd38afa754431244daa6b55b1ffb0b872ab415262973",
+        "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6"
+      }
+    }
+  },
+  "audits": {
+    "desktop-motion": {
+      "violations": 0,
+      "incomplete": []
+    },
+    "phone-reduced": {
+      "violations": 0,
+      "incomplete": []
+    },
+    "phone-forced-colors": {
+      "violations": 0,
+      "incomplete": []
+    },
+    "embedded-large-contrast": {
+      "violations": 0,
+      "incomplete": []
+    }
+  },
+  "metrics": {
+    "desktop-motion": {
+      "width": 797.21875,
+      "client": 793,
+      "scroll": 793,
+      "status": {
+        "font": 16,
+        "client": 766,
+        "scroll": 766
+      },
+      "buttons": [
+        {
+          "text": "Resume replay",
+          "height": 44,
+          "width": 185.5,
+          "font": 16
+        },
+        {
+          "text": "Previous action",
+          "height": 44,
+          "width": 185.515625,
+          "font": 16
+        },
+        {
+          "text": "Next action",
+          "height": 44,
+          "width": 185.5,
+          "font": 16
+        },
+        {
+          "text": "Stop replay",
+          "height": 44,
+          "width": 185.515625,
+          "font": 16
+        }
+      ]
+    },
+    "phone-reduced": {
+      "width": 300.40625,
+      "client": 296,
+      "scroll": 296,
+      "status": {
+        "font": 16,
+        "client": 269,
+        "scroll": 269
+      },
+      "buttons": [
+        {
+          "text": "Resume replay",
+          "height": 67.59375,
+          "width": 130.609375,
+          "font": 16
+        },
+        {
+          "text": "Previous action",
+          "height": 67.59375,
+          "width": 130.609375,
+          "font": 16
+        },
+        {
+          "text": "Next action",
+          "height": 44,
+          "width": 130.609375,
+          "font": 16
+        },
+        {
+          "text": "Stop replay",
+          "height": 44,
+          "width": 130.609375,
+          "font": 16
+        }
+      ]
+    },
+    "phone-forced-colors": {
+      "width": 370.40625,
+      "client": 366,
+      "scroll": 366,
+      "status": {
+        "font": 16,
+        "client": 339,
+        "scroll": 339
+      },
+      "buttons": [
+        {
+          "text": "Resume replay",
+          "height": 44,
+          "width": 165.609375,
+          "font": 16
+        },
+        {
+          "text": "Previous action",
+          "height": 44,
+          "width": 165.609375,
+          "font": 16
+        },
+        {
+          "text": "Next action",
+          "height": 44,
+          "width": 165.609375,
+          "font": 16
+        },
+        {
+          "text": "Stop replay",
+          "height": 44,
+          "width": 165.609375,
+          "font": 16
+        }
+      ]
+    },
+    "embedded-large-contrast": {
+      "width": 300.40625,
+      "client": 296,
+      "scroll": 296,
+      "status": {
+        "font": 18,
+        "client": 269,
+        "scroll": 269
+      },
+      "buttons": [
+        {
+          "text": "Resume replay",
+          "height": 73.59375,
+          "width": 130.609375,
+          "font": 18
+        },
+        {
+          "text": "Previous action",
+          "height": 73.59375,
+          "width": 130.609375,
+          "font": 18
+        },
+        {
+          "text": "Next action",
+          "height": 46.59375,
+          "width": 130.609375,
+          "font": 18
+        },
+        {
+          "text": "Stop replay",
+          "height": 46.59375,
+          "width": 130.609375,
+          "font": 18
+        }
+      ]
+    }
+  },
+  "scopedWhitespace": true,
+  "baselineHead": "3bc1e436017284c7ff6a10d0217323a97509c7f8",
+  "finalHead": "21b719454f295c4e4f677b0c804e1b44254a5383",
+  "concurrentOwnedCommits": "",
+  "stagedNamesUnchanged": true,
+  "stagedNames": "",
+  "scopedStatus": "M desktop/web-app/public/stem_lab/stem_tool_dissection.js\n M stem_lab/stem_tool_dissection.js\n?? tests/dissection_replay_review.test.js\n?? tests/e2e/dissection-replay-review.spec.ts",
+  "archived": {
+    "stem_lab/stem_tool_dissection.js": {
+      "sha256": "ca1ebfd63cce6cd95c722e3354ad4e813eef3ae48d61e6e5ace6c917cb0d3654",
+      "archive": "edits/source-after.js.gz"
+    },
+    "tests/dissection_replay_review.test.js": {
+      "sha256": "67b253aabc1c974da69b1b11bb26b142e8565ae62b202c085e2b743172eeb7ff",
+      "archive": "edits/review-unit-after.js.gz"
+    },
+    "tests/e2e/dissection-replay-review.spec.ts": {
+      "sha256": "0abfd753c24b83469204bd38afa754431244daa6b55b1ffb0b872ab415262973",
+      "archive": "edits/browser-after.ts.gz"
+    }
+  }
+}

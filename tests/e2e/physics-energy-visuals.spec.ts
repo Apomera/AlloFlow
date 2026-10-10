@@ -70,10 +70,33 @@ async function assertEnergy(page: Page, run: number) {
   for (const [key, value] of Object.entries(expected.values)) {
     const el = panel.locator(`[data-physics-energy-value="${key}"]`);
     expect(Number(await el.getAttribute('data-value'))).toBeCloseTo(value, 8);
-    await expect(el).toHaveText(value.toFixed(2) + ' J');
+    await expect(el).toHaveText((value !== 0 && Math.abs(value) < .01 ? value.toPrecision(3) : value.toFixed(2)) + ' J');
   }
-  const bars = await panel.locator('[data-physics-energy-budget]').evaluateAll(els => els.map(el => ({ key: (el as HTMLElement).dataset.physicsEnergyBudget!, width: el.getBoundingClientRect().width, total: el.parentElement!.getBoundingClientRect().width })));
-  for (const bar of bars) expect(Math.abs(bar.width - bar.total * expected.values[bar.key as keyof typeof expected.values] / expected.values.initialEnergy)).toBeLessThan(.05);
+  const accounting = page.locator('[data-physics-energy-readings] [data-physics-energy-accounting]');
+  await expect(accounting).toBeVisible();
+  await expect(accounting).toHaveAttribute('data-run', String(run));
+  await expect(accounting).toHaveAttribute('data-sample-index', String(expected.index));
+  await expect(accounting).toHaveAttribute('data-time', String(expected.t));
+  const scale = Math.max(expected.values.initialEnergy, expected.values.totalEnergy + expected.values.dragLoss);
+  expect(Number(await accounting.getAttribute('data-scale-energy'))).toBeCloseTo(scale, 8);
+  const allocation = accounting.locator('[data-physics-energy-allocation]');
+  await expect(allocation).toHaveAttribute('viewBox', '0 0 300 36');
+  await expect(allocation.locator('rect[data-physics-energy-budget]')).toHaveCount(3);
+  await expect(panel.locator('[data-physics-energy-budget]')).toHaveCount(0);
+  const bars = await allocation.locator('rect[data-physics-energy-budget]').evaluateAll(els => els.map(el => ({
+    key: el.getAttribute('data-physics-energy-budget')!, value: Number(el.getAttribute('data-value')),
+    x: Number(el.getAttribute('x')), width: Number(el.getAttribute('width')),
+  })));
+  expect(bars.map(bar => bar.key)).toEqual(['ke', 'pe', 'dragLoss']);
+  let x = 0;
+  for (const bar of bars) {
+    const value = expected.values[bar.key as keyof typeof expected.values], width = scale > 0 ? 300 * value / scale : 0;
+    expect(bar.value).toBeCloseTo(value, 8); expect(Number.isFinite(bar.x) && Number.isFinite(bar.width)).toBe(true);
+    expect(bar.x).toBeCloseTo(x, 8); expect(bar.width).toBeCloseTo(width, 8); x += width;
+  }
+  const reference = accounting.locator('[data-physics-energy-reference]');
+  await expect(reference).toHaveCount(1);
+  expect(Number(await reference.getAttribute('width'))).toBeCloseTo(scale > 0 ? 300 * expected.values.initialEnergy / scale : 0, 8);
   return expected;
 }
 async function assertBands(page: Page) {
@@ -210,9 +233,27 @@ for (const theme of ['default', 'dark', 'contrast']) test(`320px ${theme} energy
   expect(layout.overflow).toBe(0); expect(layout.fonts.every(v => v >= 11.99)).toBe(true); expect(layout.patterns).toHaveLength(2); expect(await evidence(page)).toEqual(original);
   const contrast = await page.locator('[data-physics-energy-graph]').evaluate(svg => {
     const lum = (color: string) => color.match(/[\d.]+/g)!.slice(0, 3).map(Number).map(v => { v /= 255; return v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }).reduce((sum, v, i) => sum + v * [.2126, .7152, .0722][i], 0);
+    const ratio = (first: string, second: string) => { const a = lum(first), b = lum(second); return (Math.max(a, b) + .05) / (Math.min(a, b) + .05); };
     const bands = [svg.querySelector('[data-physics-energy-area="ke"]')!, ...svg.querySelectorAll('pattern rect')].map(el => getComputedStyle(el).fill);
-    const marks = [svg.querySelector('[data-physics-energy-cursor]')!, ...svg.querySelectorAll('[data-physics-energy-boundary]')].map(el => getComputedStyle(el).stroke);
-    return marks.flatMap(mark => bands.map(band => { const a = lum(mark), b = lum(band); return (Math.max(a, b) + .05) / (Math.min(a, b) + .05); }));
+    const foreground = svg.querySelector('[data-physics-energy-cursor]')!, outline = svg.querySelector('[data-physics-energy-cursor-outline]')!;
+    const foregroundStyle = getComputedStyle(foreground), outlineStyle = getComputedStyle(outline);
+    const boundaries = [...svg.querySelectorAll('[data-physics-energy-boundary]')].map(el => getComputedStyle(el).stroke);
+    const geometry = (el: Element) => ['x1', 'x2', 'y1', 'y2'].map(key => el.getAttribute(key));
+    return {
+      outlineBandContrast: bands.map(band => ratio(outlineStyle.stroke, band)),
+      foregroundOutlineContrast: ratio(foregroundStyle.stroke, outlineStyle.stroke),
+      boundaryContrast: boundaries.flatMap(mark => bands.map(band => ratio(mark, band))),
+      foregroundWidth: parseFloat(foregroundStyle.strokeWidth), outlineWidth: parseFloat(outlineStyle.strokeWidth),
+      foregroundGeometry: geometry(foreground), outlineGeometry: geometry(outline),
+      foregroundDash: foregroundStyle.strokeDasharray, outlineDash: outlineStyle.strokeDasharray,
+      outlineBeforeForeground: !!(outline.compareDocumentPosition(foreground) & Node.DOCUMENT_POSITION_FOLLOWING),
+    };
   });
-  expect(contrast.every(value => value >= 3)).toBe(true);
+  expect(contrast.outlineBandContrast.every(value => value >= 3)).toBe(true);
+  expect(contrast.foregroundOutlineContrast).toBeGreaterThanOrEqual(3);
+  expect(contrast.boundaryContrast.every(value => value >= 3)).toBe(true);
+  expect(contrast.outlineWidth).toBeGreaterThan(contrast.foregroundWidth);
+  expect(contrast.foregroundGeometry).toEqual(contrast.outlineGeometry);
+  expect(contrast.foregroundDash).toBe('none'); expect(contrast.outlineDash).toBe('none');
+  expect(contrast.outlineBeforeForeground).toBe(true);
 });

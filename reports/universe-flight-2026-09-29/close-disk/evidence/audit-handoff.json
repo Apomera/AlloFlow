@@ -1,0 +1,120 @@
+{
+  "completed": true,
+  "startedAtUtc": "2026-10-07T16:54:02.142Z",
+  "driverPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-close-projection58\\audit-handoff.cjs",
+  "driverHash": "a76daf859d7cc23072795b80a54de42483f67d407631fa8a5a278877f35a9d05",
+  "inputPaths": {
+    "baseline": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-close-projection58\\baseline-renderer.js",
+    "candidate": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-close-projection58\\candidate-renderer.js"
+  },
+  "regions": {
+    "neighborhood": {
+      "points": 19203,
+      "pointHash": "f0933322797366fbee8bbdc9ce8d2263700b1c07a71caa1bcfa1224d68edc2a3",
+      "models": 0,
+      "geometryVertices": 0,
+      "geometryHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "planeRanges": 0,
+      "ellipticalRanges": 0,
+      "bulgeRanges": 0,
+      "diskRanges": 0
+    },
+    "galaxy": {
+      "points": 36400,
+      "pointHash": "f5dbc73e3ae0b2751dcf15f6fffce2753ae4994b089c62d020975e414889b2ab",
+      "models": 1,
+      "geometryVertices": 1152,
+      "geometryHash": "539ba7bb97a10622f59dcd734c2588edf0c20899f6db3dce1b3d140ce3fe248f",
+      "planeRanges": 1,
+      "ellipticalRanges": 0,
+      "bulgeRanges": 1,
+      "diskRanges": 1
+    },
+    "cosmic": {
+      "points": 41470,
+      "pointHash": "156c66d7c6805406f2d231fb18affab8e613952ec32b5fdf9e9e805104966b85",
+      "models": 134,
+      "geometryVertices": 119040,
+      "geometryHash": "319cff53d08cc55c6ac0606d4febd777e0c3616da96e693a31015346488bf018",
+      "planeRanges": 88,
+      "ellipticalRanges": 46,
+      "bulgeRanges": 88,
+      "diskRanges": 88
+    }
+  },
+  "limits": [
+    "This host audit checks geometry, source data and analytical handoff invariants. Native WebGL images and UI workflows are separate checks.",
+    "The close observer handoff suppresses an invalid flat illustration; it does not conserve integrated light or simulate volumetric transfer."
+  ],
+  "baselineHash": "8121868ef2aa764c5e3e88284089ebf76fe0c9e1ec264ee4ae95fe434d7e9bc9",
+  "candidateHash": "6f1267255407b7de52bb685922281301fef58de9c91cc8a036577a7c317e56e8",
+  "patchManifestHash": "80f8c5ad3c5615ba108c6c0e4453363ff20efd9894d1346a36a1c8f4cd41ecba",
+  "canonicalBefore": "8121868ef2aa764c5e3e88284089ebf76fe0c9e1ec264ee4ae95fe434d7e9bc9",
+  "preservedShaders": {
+    "pointVertexHash": "be3dfd82c202ffc6192fa45116862bcffb8fefd8012e6de7bdc625ba0c7938a8",
+    "pointFragmentHash": "eef2131d4eae5c713ace7f84469522721c76074e7f557e50356de9294750e2b7",
+    "galaxyVertexHash": "dceeac9ce6818a744bf497de87d9372a621290503aeabb33a2cd32292a88607c",
+    "baselineGalaxyFragmentHash": "e8e0a6ffab5de0563ce37ea182492c64e8d4267417c0203d285f32fd30915602",
+    "candidateGalaxyFragmentHash": "ff599eb0b94475123e25068157d8106fe6365d6545036f7ad4711c17eb39d33f"
+  },
+  "preservedFunctions": {
+    "physicsAndNavigation": [
+      "gamma",
+      "aberrate",
+      "doppler",
+      "stepFlight",
+      "viewSpectrum",
+      "lightClock",
+      "chartView",
+      "approachPlan",
+      "targetView",
+      "targetFrame",
+      "orbitView",
+      "rangeView",
+      "orbitPlane",
+      "easePace"
+    ],
+    "routeCount": 4,
+    "projectedHelpers": [
+      "projectedGalaxyView",
+      "ellipticalView",
+      "spiralBulgeView",
+      "spiralDiskView",
+      "writeProjectedSurface",
+      "diskLightProfile"
+    ]
+  },
+  "atlases": {
+    "galaxyHash": "8a8b5bbb2e4f8b87c6958b80227d7d148e2e708553d47b348fe91f1187f0063e",
+    "cloudHash": "b57c6fd38bbb173b026084c3f7977e0a27c8a91bb5446e045cef067a043b2c88",
+    "galaxyBytes": 4194304,
+    "cloudBytes": 262144,
+    "diskLight": [
+      0.0007869976689107716,
+      0.0022449109237641096,
+      0.0045285155065357685,
+      0.0007869976689107716,
+      0.0022449109237641096,
+      0.0045285155065357685,
+      0.0007869976689107716,
+      0.0022449109237641096,
+      0.0045285155065357685
+    ],
+    "diskAxisRatio": 0.03381552170253481
+  },
+  "gate": {
+    "sourceDiskSigma": 0.012,
+    "heightFullSuppression": 0.012,
+    "heightUnchanged": 0.048,
+    "radialFullSuppression": 1.12,
+    "radialUnchanged": 1.22,
+    "markerMinimum": 0,
+    "markerMaximum": 0.5,
+    "testedGridCases": 298048,
+    "testedMarkerWriteRanges": 89,
+    "maximumAnalyticalError": 1.1102230246251565e-16,
+    "maximumSymmetryError": 1.1102230246251565e-16
+  },
+  "canonicalAfter": "8121868ef2aa764c5e3e88284089ebf76fe0c9e1ec264ee4ae95fe434d7e9bc9",
+  "completedAtUtc": "2026-10-07T16:54:13.277Z"
+}

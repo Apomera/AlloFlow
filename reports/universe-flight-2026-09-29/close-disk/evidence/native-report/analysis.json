@@ -1,0 +1,655 @@
+{
+  "completed": true,
+  "analysisSha256": "99cefe3d03b278ef803c7b5ec4f63eccc10c7785d1a7509f50fdf496abb27114",
+  "driverSha256": "6fce8e35a8a12fb60a60923d5dfcd8447f3ca5f5e37cfc27add0932349e0e0d6",
+  "originalCheckSha256": "a9680129d64d48c3785e981606dd3fb99353bf042677a4f2415196c8cb6ba30c",
+  "originalFailurePreserved": "AssertionError [ERR_ASSERTION]: Near-map artifact visibly changes",
+  "reusedCaptures": 32,
+  "newBrowserLaunches": 0,
+  "renderPins": {
+    "baseline": "8121868ef2aa764c5e3e88284089ebf76fe0c9e1ec264ee4ae95fe434d7e9bc9",
+    "candidate": "6f1267255407b7de52bb685922281301fef58de9c91cc8a036577a7c317e56e8"
+  },
+  "comparisons": [
+    {
+      "name": "galaxy-near008",
+      "exactControl": false,
+      "baseline": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 4183726.6762009826,
+        "meanLuminance": 12.105690614007473,
+        "outerLuminance": 3665745.515600602,
+        "nonblackPixels": 345515,
+        "clippedFraction": 0.000011574074074074073,
+        "centroid": [
+          358.2617525632272,
+          237.574858050698
+        ],
+        "majorSigma": 159.03795083558077,
+        "minorSigma": 114.4802475458183
+      },
+      "candidate": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 4182966.7612009817,
+        "meanLuminance": 12.10349178588247,
+        "outerLuminance": 3664969.187400601,
+        "nonblackPixels": 345515,
+        "clippedFraction": 0.000011574074074074073,
+        "centroid": [
+          358.2607983980789,
+          237.57362616676525
+        ],
+        "majorSigma": 159.03663861679723,
+        "minorSigma": 114.48786506577495
+      },
+      "delta": {
+        "meanAbsoluteRgb": 0.002243441358024691,
+        "changedFraction": 0.00005787037037037037,
+        "maxMeanRgb": 101.33333333333333
+      }
+    },
+    {
+      "name": "galaxy-inner0",
+      "exactControl": false,
+      "baseline": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 2284534.1379995933,
+        "meanLuminance": 6.610341834489564,
+        "outerLuminance": 1203206.5574000196,
+        "nonblackPixels": 107722,
+        "clippedFraction": 0.001388888888888889,
+        "centroid": [
+          356.2353477417612,
+          236.42279045220923
+        ],
+        "majorSigma": 115.72219118324612,
+        "minorSigma": 36.02594798230425
+      },
+      "candidate": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 2283694.421199582,
+        "meanLuminance": 6.60791209837842,
+        "outerLuminance": 1202793.9032000196,
+        "nonblackPixels": 107722,
+        "clippedFraction": 0.0013859953703703703,
+        "centroid": [
+          356.22159585488345,
+          236.40647529051063
+        ],
+        "majorSigma": 115.70710668271518,
+        "minorSigma": 36.032524119986086
+      },
+      "delta": {
+        "meanAbsoluteRgb": 0.0024160879629629628,
+        "changedFraction": 0.0000636574074074074,
+        "maxMeanRgb": 124.66666666666667
+      }
+    },
+    {
+      "name": "galaxy-inner012",
+      "exactControl": false,
+      "baseline": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 4873258.557396069,
+        "meanLuminance": 14.100863881354368,
+        "outerLuminance": 4652968.017996173,
+        "nonblackPixels": 219439,
+        "clippedFraction": 0.0020891203703703705,
+        "centroid": [
+          259.49060672559676,
+          261.7733490444553
+        ],
+        "majorSigma": 145.73108990790618,
+        "minorSigma": 106.19055844863239
+      },
+      "candidate": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 2293879.606799564,
+        "meanLuminance": 6.637383121526516,
+        "outerLuminance": 1219745.3648000427,
+        "nonblackPixels": 115434,
+        "clippedFraction": 0.0013483796296296297,
+        "centroid": [
+          351.8007056366593,
+          236.473556282682
+        ],
+        "majorSigma": 117.26337491972976,
+        "minorSigma": 37.850068240309795
+      },
+      "delta": {
+        "meanAbsoluteRgb": 7.901187307098765,
+        "changedFraction": 0.5026302083333334,
+        "maxMeanRgb": 97.33333333333333
+      }
+    },
+    {
+      "name": "galaxy-inner03",
+      "exactControl": false,
+      "baseline": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 4476452.549997908,
+        "meanLuminance": 12.952698350688392,
+        "outerLuminance": 4251623.9779968895,
+        "nonblackPixels": 215598,
+        "clippedFraction": 0.0023929398148148148,
+        "centroid": [
+          270.2903492684052,
+          258.18530436194345
+        ],
+        "majorSigma": 146.7732147291521,
+        "minorSigma": 105.14517938357467
+      },
+      "candidate": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 3395673.45460097,
+        "meanLuminance": 9.825444023729657,
+        "outerLuminance": 2919871.1494000475,
+        "nonblackPixels": 215598,
+        "clippedFraction": 0.001484375,
+        "centroid": [
+          295.56931388951364,
+          250.47581371971802
+        ],
+        "majorSigma": 139.37159936541912,
+        "minorSigma": 94.66178559821027
+      },
+      "delta": {
+        "meanAbsoluteRgb": 3.2943026620370373,
+        "changedFraction": 0.5069762731481482,
+        "maxMeanRgb": 60
+      }
+    },
+    {
+      "name": "galaxy-inner048",
+      "exactControl": true,
+      "baseline": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 4406109.723199822,
+        "meanLuminance": 12.74916007870319,
+        "outerLuminance": 4094123.877198669,
+        "nonblackPixels": 215236,
+        "clippedFraction": 0.0021354166666666665,
+        "centroid": [
+          279.983253086924,
+          253.14047773944915
+        ],
+        "majorSigma": 149.04298930245548,
+        "minorSigma": 98.65002773043663
+      },
+      "candidate": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 4406109.723199822,
+        "meanLuminance": 12.74916007870319,
+        "outerLuminance": 4094123.877198669,
+        "nonblackPixels": 215236,
+        "clippedFraction": 0.0021354166666666665,
+        "centroid": [
+          279.983253086924,
+          253.14047773944915
+        ],
+        "majorSigma": 149.04298930245548,
+        "minorSigma": 98.65002773043663
+      },
+      "delta": {
+        "meanAbsoluteRgb": 0,
+        "changedFraction": 0,
+        "maxMeanRgb": 0
+      }
+    },
+    {
+      "name": "galaxy-radial112",
+      "exactControl": false,
+      "baseline": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 1613332.605399949,
+        "meanLuminance": 4.668207770254482,
+        "outerLuminance": 846724.5344000689,
+        "nonblackPixels": 68243,
+        "clippedFraction": 0.0010648148148148149,
+        "centroid": [
+          361.04151358635494,
+          240.78223411872878
+        ],
+        "majorSigma": 122.22793614046037,
+        "minorSigma": 24.14523973620187
+      },
+      "candidate": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 1612940.8851999494,
+        "meanLuminance": 4.667074320601706,
+        "outerLuminance": 846329.248600069,
+        "nonblackPixels": 68243,
+        "clippedFraction": 0.0010648148148148149,
+        "centroid": [
+          361.0363884865042,
+          240.77589181952334
+        ],
+        "majorSigma": 122.21965158719793,
+        "minorSigma": 24.148152268936403
+      },
+      "delta": {
+        "meanAbsoluteRgb": 0.0011930941358024691,
+        "changedFraction": 0.00004050925925925926,
+        "maxMeanRgb": 70.33333333333333
+      }
+    },
+    {
+      "name": "galaxy-radial117",
+      "exactControl": false,
+      "baseline": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 1457682.9106007086,
+        "meanLuminance": 4.217832495951124,
+        "outerLuminance": 754558.3346007544,
+        "nonblackPixels": 72933,
+        "clippedFraction": 0.001027199074074074,
+        "centroid": [
+          363.87173844002245,
+          247.18128227224574
+        ],
+        "majorSigma": 117.27120986506672,
+        "minorSigma": 25.417657655308734
+      },
+      "candidate": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 1432063.7365999753,
+        "meanLuminance": 4.143702941550854,
+        "outerLuminance": 726716.8022000476,
+        "nonblackPixels": 61416,
+        "clippedFraction": 0.001027199074074074,
+        "centroid": [
+          362.76901027033335,
+          244.46430261866666
+        ],
+        "majorSigma": 116.08295031788671,
+        "minorSigma": 24.340253776870146
+      },
+      "delta": {
+        "meanAbsoluteRgb": 0.09202642746913581,
+        "changedFraction": 0.06870659722222222,
+        "maxMeanRgb": 31
+      }
+    },
+    {
+      "name": "galaxy-radial122",
+      "exactControl": true,
+      "baseline": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 1240509.1415999809,
+        "meanLuminance": 3.589436173611056,
+        "outerLuminance": 584595.1966000585,
+        "nonblackPixels": 51819,
+        "clippedFraction": 0.0009664351851851852,
+        "centroid": [
+          362.26186067569057,
+          242.1722769553518
+        ],
+        "majorSigma": 106.7036194653767,
+        "minorSigma": 23.50983748610907
+      },
+      "candidate": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 1240509.1415999809,
+        "meanLuminance": 3.589436173611056,
+        "outerLuminance": 584595.1966000585,
+        "nonblackPixels": 51819,
+        "clippedFraction": 0.0009664351851851852,
+        "centroid": [
+          362.26186067569057,
+          242.1722769553518
+        ],
+        "majorSigma": 106.7036194653767,
+        "minorSigma": 23.50983748610907
+      },
+      "delta": {
+        "meanAbsoluteRgb": 0,
+        "changedFraction": 0,
+        "maxMeanRgb": 0
+      }
+    },
+    {
+      "name": "galaxy-above08-dpr2",
+      "exactControl": true,
+      "baseline": {
+        "width": 1440,
+        "height": 960,
+        "sumLuminance": 18426936.06950553,
+        "meanLuminance": 13.329670189167775,
+        "outerLuminance": 16597026.623689564,
+        "nonblackPixels": 861909,
+        "clippedFraction": 0.0015335648148148149,
+        "centroid": [
+          571.8524120641579,
+          499.51435432232154
+        ],
+        "majorSigma": 304.9608684500288,
+        "minorSigma": 183.67040074980136
+      },
+      "candidate": {
+        "width": 1440,
+        "height": 960,
+        "sumLuminance": 18426936.06950553,
+        "meanLuminance": 13.329670189167775,
+        "outerLuminance": 16597026.623689564,
+        "nonblackPixels": 861909,
+        "clippedFraction": 0.0015335648148148149,
+        "centroid": [
+          571.8524120641579,
+          499.51435432232154
+        ],
+        "majorSigma": 304.9608684500288,
+        "minorSigma": 183.67040074980136
+      },
+      "delta": {
+        "meanAbsoluteRgb": 0,
+        "changedFraction": 0,
+        "maxMeanRgb": 0
+      }
+    },
+    {
+      "name": "galaxy-exterior3",
+      "exactControl": true,
+      "baseline": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 180238.3162000034,
+        "meanLuminance": 0.5215229056713061,
+        "outerLuminance": 25806.047199999968,
+        "nonblackPixels": 6924,
+        "clippedFraction": 0.0002199074074074074,
+        "centroid": [
+          360.18545275778837,
+          240.83019550755893
+        ],
+        "majorSigma": 48.51388699546765,
+        "minorSigma": 32.11807774131213
+      },
+      "candidate": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 180238.3162000034,
+        "meanLuminance": 0.5215229056713061,
+        "outerLuminance": 25806.047199999968,
+        "nonblackPixels": 6924,
+        "clippedFraction": 0.0002199074074074074,
+        "centroid": [
+          360.18545275778837,
+          240.83019550755893
+        ],
+        "majorSigma": 48.51388699546765,
+        "minorSigma": 32.11807774131213
+      },
+      "delta": {
+        "meanAbsoluteRgb": 0,
+        "changedFraction": 0,
+        "maxMeanRgb": 0
+      }
+    },
+    {
+      "name": "cosmic-twoarm-inner",
+      "exactControl": false,
+      "baseline": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 4042530.150997985,
+        "meanLuminance": 11.697135853582132,
+        "outerLuminance": 3817685.943598475,
+        "nonblackPixels": 233412,
+        "clippedFraction": 0.00013310185185185186,
+        "centroid": [
+          263.8668624907683,
+          245.66952840598057
+        ],
+        "majorSigma": 134.7307830466613,
+        "minorSigma": 108.9798302524818
+      },
+      "candidate": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 2882858.1372021367,
+        "meanLuminance": 8.341603406256182,
+        "outerLuminance": 2453677.1469996516,
+        "nonblackPixels": 233379,
+        "clippedFraction": 0,
+        "centroid": [
+          294.2310331586391,
+          242.12867885444203
+        ],
+        "majorSigma": 125.25123220520334,
+        "minorSigma": 99.13686727996559
+      },
+      "delta": {
+        "meanAbsoluteRgb": 3.5089400077160495,
+        "changedFraction": 0.5079542824074074,
+        "maxMeanRgb": 61.666666666666664
+      }
+    },
+    {
+      "name": "cosmic-barred-inner",
+      "exactControl": false,
+      "baseline": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 3845603.2433943506,
+        "meanLuminance": 11.127324199636432,
+        "outerLuminance": 3184844.1369946604,
+        "nonblackPixels": 268982,
+        "clippedFraction": 0.00036458333333333335,
+        "centroid": [
+          399.55395586469047,
+          217.7699886895502
+        ],
+        "majorSigma": 182.94965610544682,
+        "minorSigma": 93.97974811973535
+      },
+      "candidate": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 3410508.499000121,
+        "meanLuminance": 9.868369499421647,
+        "outerLuminance": 3023401.4495999874,
+        "nonblackPixels": 268903,
+        "clippedFraction": 0.00005787037037037037,
+        "centroid": [
+          415.1262744132347,
+          210.64348176154297
+        ],
+        "majorSigma": 180.80904351626194,
+        "minorSigma": 85.9137743327553
+      },
+      "delta": {
+        "meanAbsoluteRgb": 1.330660686728395,
+        "changedFraction": 0.5082725694444444,
+        "maxMeanRgb": 65.66666666666667
+      }
+    },
+    {
+      "name": "elliptical-near",
+      "exactControl": true,
+      "baseline": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 57270564.09390355,
+        "meanLuminance": 165.71343777171165,
+        "outerLuminance": 55310137.337909095,
+        "nonblackPixels": 345600,
+        "clippedFraction": 0.00009548611111111112,
+        "centroid": [
+          359.76811342783,
+          239.75002162841054
+        ],
+        "majorSigma": 200.76368466110944,
+        "minorSigma": 136.53523288689
+      },
+      "candidate": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 57270564.09390355,
+        "meanLuminance": 165.71343777171165,
+        "outerLuminance": 55310137.337909095,
+        "nonblackPixels": 345600,
+        "clippedFraction": 0.00009548611111111112,
+        "centroid": [
+          359.76811342783,
+          239.75002162841054
+        ],
+        "majorSigma": 200.76368466110944,
+        "minorSigma": 136.53523288689
+      },
+      "delta": {
+        "meanAbsoluteRgb": 0,
+        "changedFraction": 0,
+        "maxMeanRgb": 0
+      }
+    },
+    {
+      "name": "neighborhood-control",
+      "exactControl": true,
+      "baseline": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 2250493.5091998293,
+        "meanLuminance": 6.511844644675432,
+        "outerLuminance": 1986109.495000337,
+        "nonblackPixels": 97518,
+        "clippedFraction": 0.00010416666666666667,
+        "centroid": [
+          382.26379680122164,
+          304.1429683358208
+        ],
+        "majorSigma": 155.78024953860665,
+        "minorSigma": 75.89142240698082
+      },
+      "candidate": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 2250493.5091998293,
+        "meanLuminance": 6.511844644675432,
+        "outerLuminance": 1986109.495000337,
+        "nonblackPixels": 97518,
+        "clippedFraction": 0.00010416666666666667,
+        "centroid": [
+          382.26379680122164,
+          304.1429683358208
+        ],
+        "majorSigma": 155.78024953860665,
+        "minorSigma": 75.89142240698082
+      },
+      "delta": {
+        "meanAbsoluteRgb": 0,
+        "changedFraction": 0,
+        "maxMeanRgb": 0
+      }
+    },
+    {
+      "name": "beta09-inner",
+      "exactControl": false,
+      "baseline": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 4627662.9288012255,
+        "meanLuminance": 13.39022838194799,
+        "outerLuminance": 4166950.3025986254,
+        "nonblackPixels": 195993,
+        "clippedFraction": 0.005115740740740741,
+        "centroid": [
+          461.4662108275906,
+          210.30717671360338
+        ],
+        "majorSigma": 121.48823717660748,
+        "minorSigma": 89.94866810428921
+      },
+      "candidate": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 3284015.936798997,
+        "meanLuminance": 9.50236092823784,
+        "outerLuminance": 3063855.938598943,
+        "nonblackPixels": 195993,
+        "clippedFraction": 0.004696180555555556,
+        "centroid": [
+          446.93974108758385,
+          223.43004452463455
+        ],
+        "majorSigma": 126.89846050806364,
+        "minorSigma": 86.40953049705786
+      },
+      "delta": {
+        "meanAbsoluteRgb": 4.1518904320987655,
+        "changedFraction": 0.36180266203703704,
+        "maxMeanRgb": 83.33333333333333
+      }
+    },
+    {
+      "name": "beta099-inner",
+      "exactControl": false,
+      "baseline": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 1404776.9164006482,
+        "meanLuminance": 4.064748021992616,
+        "outerLuminance": 848571.4278002793,
+        "nonblackPixels": 70095,
+        "clippedFraction": 0.0013020833333333333,
+        "centroid": [
+          406.19879505142563,
+          214.26814426393346
+        ],
+        "majorSigma": 58.18525197484375,
+        "minorSigma": 51.74000713546547
+      },
+      "candidate": {
+        "width": 720,
+        "height": 480,
+        "sumLuminance": 1238916.9640005992,
+        "meanLuminance": 3.5848291782424746,
+        "outerLuminance": 862992.4250002787,
+        "nonblackPixels": 70080,
+        "clippedFraction": 0.0011284722222222221,
+        "centroid": [
+          407.46270024448313,
+          214.39841296214274
+        ],
+        "majorSigma": 61.11214034819641,
+        "minorSigma": 54.37445361457106
+      },
+      "delta": {
+        "meanAbsoluteRgb": 0.5086631944444444,
+        "changedFraction": 0.028521412037037036,
+        "maxMeanRgb": 78
+      }
+    }
+  ],
+  "exactOutsideControls": [
+    "galaxy-inner048",
+    "galaxy-radial122",
+    "galaxy-above08-dpr2",
+    "galaxy-exterior3",
+    "elliptical-near",
+    "neighborhood-control"
+  ],
+  "confirmed": [
+    "Actual point buffers, texture uploads, math functions, route functions and highlight snapshots are exact",
+    "Two DPR groups release every buffer, texture, program and shader; no GL errors or lost contexts",
+    "Paused, look, lens, exposure and same-position restore reuse surface uploads",
+    "Both actual beta .9 and .99 scenes use apparent chief-ray aim and contain meaningful visible signal"
+  ],
+  "near008Scope": "The direct height-zero full-scene pose is almost pixel exact (0.0058% of pixels change). It does not reproduce the isolated legacy triangle artifact, so the original change threshold failed. Inner height .012 and .03 cases do exercise the handoff. An independent exact-pose replay is required to demonstrate the recorded 57 triangle artifact.",
+  "photometry": "Measurements summarize encoded display RGB only. Fading an invalid exterior illustration intentionally removes its light and is not a conserved-light or dust-transfer model."
+}

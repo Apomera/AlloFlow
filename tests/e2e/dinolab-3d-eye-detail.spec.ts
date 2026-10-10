@@ -19,7 +19,13 @@ async function inspect(page){return page.evaluate(()=>{
  m.traverse(p=>{
   const role=p.userData.dinoEyeRole;if(!role)return;const g=p.geometry,a=g.attributes.position,iris=g.attributes.dinoIris;
   for(let i=0;i<a.count;i++){const v=new T.Vector3().fromBufferAttribute(a,i).applyMatrix4(p.matrixWorld).project(c);if(!Number.isFinite(v.x+v.y+v.z))invalid++;if(Math.max(Math.abs(v.x),Math.abs(v.y),Math.abs(v.z))>1)outside++;}
-  parts.push({role,side:p.userData.dinoEyeSide,id:p.uuid,radius:g.parameters.radius,position:p.position.toArray(),scale:p.scale.toArray(),visible:p.visible,irisVertices:iris?.count||0,key:p.material.customProgramCacheKey(),map:!!p.material.map,material:p.material.type,opacity:p.material.opacity,color:p.material.color.toArray()});
+  parts.push({role,side:p.userData.dinoEyeSide,id:p.uuid,radius:g.parameters.radius,position:p.position.toArray(),quaternion:p.quaternion.toArray(),scale:p.scale.toArray(),visible:p.visible,irisVertices:iris?.count||0,key:p.material.customProgramCacheKey(),map:!!p.material.map,material:p.material.type,opacity:p.material.opacity,color:p.material.color.toArray()});
+ });
+ parts.filter(p=>p.role==='pupil').forEach(pupil=>{
+  const iris=parts.find(p=>p.role==='iris'&&p.side===pupil.side);
+  pupil.irisPlaneOffset=new T.Vector3().fromArray(pupil.position)
+   .sub(new T.Vector3().fromArray(iris.position))
+   .applyQuaternion(new T.Quaternion().fromArray(iris.quaternion).invert()).toArray();
  });
  return {parts,model:m.uuid,invalid,outside,geometries:r.info.memory.geometries,textures:r.info.memory.textures,errors:w.__events.errors,lost:w.__glLive().lost,shaderFailures:r.info.programs.filter(p=>p.diagnostics&&p.diagnostics.runnable===false).length};
 });}
@@ -28,7 +34,9 @@ function check(r){
  for(const side of [-1,1]){
   const get=role=>r.parts.find(p=>p.side===side&&p.role===role),iris=get('iris'),pupil=get('pupil'),cornea=get('cornea');
   expect(iris.irisVertices).toBe(825);expect(iris.key).toBe('dinolab-iris-v1');expect(iris.map).toBe(false);expect(pupil.material).toBe('MeshBasicMaterial');
-  expect(pupil.position[0]).toBe(iris.position[0]);expect(pupil.position[1]).toBe(iris.position[1]);expect(pupil.radius/iris.radius).toBeCloseTo(.54,5);
+  expect(Math.abs(pupil.irisPlaneOffset[0])/iris.radius).toBeLessThan(1e-6);
+  expect(Math.abs(pupil.irisPlaneOffset[1])/iris.radius).toBeLessThan(1e-6);
+  expect(pupil.irisPlaneOffset[2]/iris.radius).toBeCloseTo(side*.39,6);expect(pupil.radius/iris.radius).toBeCloseTo(.54,5);
   expect(cornea.opacity).toBeLessThan(.1);expect(cornea.color).toEqual([1,1,1]);
  }
 }

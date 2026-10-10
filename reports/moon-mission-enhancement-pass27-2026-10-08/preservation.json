@@ -1,0 +1,14 @@
+{
+  "sourceSha256": "db4ac387a5c8b2ac4f4019835837a86005076c3f3d58bd50adaea88c1167a52c",
+  "sourceBytes": 1412411,
+  "canonicalPublicIdentical": true,
+  "guardedOperations": 6,
+  "reverseMatchesAcceptedPass26": true,
+  "priorTestsUnchanged": 122,
+  "scopedIndexUnchanged": true,
+  "currentlyStagedOwnedPaths": [],
+  "syntaxAndDiffWhitespaceChecksPassed": true,
+  "ownedFiles": {
+    "tests/e2e/moon-mission-descent-hud.spec.ts": "20779670bef6efb51cc9b467a8b4daa3f39ce318a48f35f4a86999fc32adcd9c"
+  }
+}

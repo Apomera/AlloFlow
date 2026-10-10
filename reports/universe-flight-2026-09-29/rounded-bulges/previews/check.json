@@ -1,0 +1,21 @@
+{
+  "completed": true,
+  "unchangedPoses": 12,
+  "unchangedImages": [
+    "nebula-approach.webp",
+    "nebula-filaments.webp",
+    "nebula-violet.webp",
+    "stellar-amber.webp",
+    "stellar-blue.webp",
+    "stellar-pale.webp"
+  ],
+  "changedImages": [
+    "halo-arm.webp",
+    "halo-cluster.webp",
+    "halo-panorama.webp",
+    "group-spiral.webp",
+    "group-elliptical.webp",
+    "group-panorama.webp"
+  ],
+  "rendererHash": "31f5f34b1caab8d3a95da56bbac2e37930d6e06055aba405196c0fd4d581c236"
+}

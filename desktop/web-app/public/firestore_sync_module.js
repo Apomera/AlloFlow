@@ -702,6 +702,64 @@
     return out;
   }
 
+  // Research working records and private appendices never cross the learner
+  // boundary. A missing evidence helper withholds the record, not the reading.
+  function sanitizeStudentResearchResource(value, seen) {
+    const appendix = /^#{1,6}[ \t]+(?:Your Document References|Research Review)[ \t]*:?[ \t]*\r?$/mi;
+    const api = window.AlloModules && (window.AlloModules.StudentSources || window.AlloModules.TextPipelineHelpers?.studentSources);
+    const publicText = (text, record) => {
+      try {
+        if (typeof api?.publicText === 'function') return api.publicText(text, record);
+      } catch (_) {}
+      const marker = appendix.exec(text);
+      return marker ? text.slice(0, marker.index).trimEnd() : text;
+    };
+    if (typeof value === 'string') return publicText(value, null);
+    if (!value || typeof value !== 'object' || value instanceof Date) return value;
+    const prototype = Object.getPrototypeOf(value);
+    if (!Array.isArray(value) && prototype !== Object.prototype && prototype !== null) return value;
+    const report = value.version === 1 && (Array.isArray(value.supplied) && Array.isArray(value.citedIds)
+      || Array.isArray(value.items) && value.sourceDecisions && Array.isArray(value.activity));
+    if (report) return undefined;
+    const visited = seen || new WeakMap();
+    if (visited.has(value)) return visited.get(value);
+    const out = Array.isArray(value) ? [] : {};
+    visited.set(value, out);
+    let reading = typeof value.data === 'string' ? value.data : typeof value.text === 'string' ? value.text : null;
+    let decoded = false, withholdEncodedReading = false;
+    if (value.type === 'simplified' && value.dataEncoding === 'json-text/v1' && reading !== null) {
+      try { const parsed = JSON.parse(reading); if (typeof parsed === 'string') { reading = parsed; decoded = true; } } catch (_) {}
+      withholdEncodedReading = !decoded && /\\n#{1,6}[ \t]+(?:Your Document References|Research Review)/i.test(reading);
+      if (withholdEncodedReading) reading = null;
+    }
+    let record = null;
+    if (reading !== null && (value.type === 'simplified' || value.studentSources) && typeof api?.sanitize === 'function' && typeof api?.forText === 'function') {
+      try { record = api.sanitize(api.forText(value.studentSources, reading)); } catch (_) {}
+    }
+    Object.entries(value).forEach(([key, nested]) => {
+      if (key === 'data' && withholdEncodedReading) return;
+      if (['researchEvidence', 'researchPacket', 'reviewedResearch', 'researchConfig', 'studentSources'].includes(key)) return;
+      if (key === 'sourceProvenance' && nested && typeof nested === 'object'
+        && ['signature', 'researchEvidence', 'researchPacket', 'reviewedResearch'].some(field => Object.prototype.hasOwnProperty.call(nested, field))) return;
+      if (key === 'sourceSnapshot' && nested && typeof nested.text === 'string' && appendix.test(nested.text)) return;
+      if (key === 'sourceSnapshot' && nested && typeof nested === 'object' && !Array.isArray(nested)) {
+        const { signature, preview, ...snapshot } = nested;
+        out[key] = sanitizeStudentResearchResource(snapshot, visited);
+        return;
+      }
+      if (['generationInputText', 'fromText'].includes(key) && typeof nested === 'string' && appendix.test(nested)) return;
+      if (typeof nested === 'string') {
+        out[key] = publicText(key === 'data' && decoded ? reading : nested, record);
+      } else {
+        const safe = sanitizeStudentResearchResource(nested, visited);
+        if (safe !== undefined) out[key] = safe;
+      }
+    });
+    if (decoded) out.dataEncoding = 'text/v1';
+    if (record) out.studentSources = record;
+    return normalizeReadingPreservation(out, 'student-research-privacy');
+  }
+
   // A quiz the teacher marked graded reaches the session without its key:
   // answers, per-option correctness, explanations, answer guides, fact checks
   // and rubrics stay on the teacher's copy, which live quizzes grade against.
@@ -729,7 +787,7 @@
   function prepareSessionResourcesForWrite(resources, options) {
     const maxBytes = Math.max(1024, Number(options && options.maxBytes) || SESSION_RESOURCE_SYNC_MAX_BYTES);
     const source = (Array.isArray(resources) ? resources : []).map(withStudentWordHelpOnly).map(withholdGradedQuizKeys);
-    const cleaned = stripUndefined(sanitizeHistoryForCloud(source).map(item => stripTeacherOnlyResourceFields(sanitizeSessionValue(stripMemoryAidTeacherWorkingData(item), 'resource'))));
+    const cleaned = stripUndefined(sanitizeHistoryForCloud(source).map(item => sanitizeStudentResearchResource(stripTeacherOnlyResourceFields(sanitizeSessionValue(stripMemoryAidTeacherWorkingData(item), 'resource')))));
     const kept = [];
     let droppedCount = 0;
 
@@ -838,6 +896,7 @@
   window.stripReadingSupportPictures = stripReadingSupportPictures;
   window.prepareSessionResourcesForWrite = prepareSessionResourcesForWrite;
   window.stripTeacherOnlyResourceFields = stripTeacherOnlyResourceFields;
+  window.sanitizeStudentResearchResource = sanitizeStudentResearchResource;
   window.withholdGradedQuizKeys = withholdGradedQuizKeys;
   window.normalizePersistedInstructionalText = normalizePersistedInstructionalText;
   window.normalizeReadingPreservation = normalizeReadingPreservation;

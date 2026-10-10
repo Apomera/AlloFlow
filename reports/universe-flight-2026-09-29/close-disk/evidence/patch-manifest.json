@@ -1,0 +1,31 @@
+{
+  "baseline": "8121868ef2aa764c5e3e88284089ebf76fe0c9e1ec264ee4ae95fe434d7e9bc9",
+  "candidate": "6f1267255407b7de52bb685922281301fef58de9c91cc8a036577a7c317e56e8",
+  "inverseExact": true,
+  "replacements": [
+    {
+      "before": "  function galaxyGeometry(models) {",
+      "after": "  // The authored flat spiral map is an exterior illustration. Inside its\n  // luminous footprint, hand it off to the actual 3D records within 1–4\n  // generated diffuse-disk height sigmas. This is not dust transfer or a\n  // conserved-light model. Outside that small envelope, the marker stays zero.\n  function spiralPlaneMarker(model, observer) {\n    var dx=(observer[0]-model.center[0])/model.radius;\n    var dy=(observer[1]-model.center[1])/model.radius;\n    var dz=(observer[2]-model.center[2])/model.radius;\n    var x=dx*Math.cos(model.turn)+dy*Math.sin(model.turn);\n    var y=-dx*Math.sin(model.turn)+dy*Math.cos(model.turn);\n    var height=Math.abs(y*Math.cos(model.tilt)+dz*Math.sin(model.tilt));\n    var z=-y*Math.sin(model.tilt)+dz*Math.cos(model.tilt);\n    var radial=clamp((Math.hypot(x,z)-1.12)/0.10,0,1);\n    var vertical=clamp((height-0.012)/0.036,0,1);\n    var interior=1-radial*radial*(3-2*radial);\n    var within=1-vertical*vertical*(3-2*vertical);\n    return Math.fround(0.5*interior*within);\n  }\n  function writeSpiralPlane(values, range, observer) {\n    var marker=spiralPlaneMarker(range.model,observer);\n    if (marker===range.marker) return false;\n    for (var offset=range.offset+5;offset<range.offset+range.count;offset+=6) values[offset]=marker;\n    range.marker=marker;\n    return true;\n  }\n  function galaxyGeometry(models) {"
+    },
+    {
+      "before": "var values=[],segments=8,ellipticals=[],bulges=[],disks=[];",
+      "after": "var values=[],segments=8,ellipticals=[],bulges=[],disks=[],planes=[];"
+    },
+    {
+      "before": "      if(model.elliptical) ellipticals.push({model:model,offset:values.length,count:segments*segments*6*6});",
+      "after": "      if(model.elliptical) ellipticals.push({model:model,offset:values.length,count:segments*segments*6*6});\n      else planes.push({model:model,offset:values.length,count:segments*segments*6*6,marker:0});"
+    },
+    {
+      "before": "return {points:new Float32Array(values),ellipticals:ellipticals,bulges:bulges,disks:disks};",
+      "after": "return {points:new Float32Array(values),ellipticals:ellipticals,bulges:bulges,disks:disks,planes:planes};"
+    },
+    {
+      "before": "source=light*exp(-r*2.5)*edge*edge*(-v_bulge-1.0);}else{source=v_bulge>0.0?t.a*vec3(1.0,0.80,0.56)*(v_bulge-1.0):t.rgb;}",
+      "after": "source=light*exp(-r*2.5)*edge*edge*(-v_bulge-1.0);}else{source=v_bulge>=1.0?t.a*vec3(1.0,0.80,0.56)*(v_bulge-1.0):(v_bulge>0.0?t.rgb*(1.0-2.0*v_bulge):t.rgb);}"
+    },
+    {
+      "before": "      galaxyObserver=state.position.slice();",
+      "after": "      galaxySurfaces.planes.forEach(function(range){\n        if (writeSpiralPlane(galaxySurfaces.points,range,state.position)) {\n          gl.bufferSubData(gl.ARRAY_BUFFER,range.offset*4,galaxySurfaces.points.subarray(range.offset,range.offset+range.count));\n        }\n      });\n      galaxyObserver=state.position.slice();"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "args": [
+    "node",
+    "--max-old-space-size=512",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass30-2026-10-09\\run-workflow.cjs",
+    "native"
+  ],
+  "cwd": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "pid": 57064,
+  "output": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass30-2026-10-09\\direct-native-1"
+}

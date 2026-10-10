@@ -244,8 +244,11 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswer
 
 const WordSoundsReviewPanel = ({
     preloadedWords,
+    packMaintenance,
     onUpdateWord,
     onReorderWords,
+    renderSyllableEditor,
+    syllableReviewRequest,
     onStartActivity,
     onClose,
     onBackToSetup,
@@ -290,6 +293,15 @@ const WordSoundsReviewPanel = ({
     React.useEffect(() => {
     }, []);
     const [expandedIndex, setExpandedIndex] = React.useState(null);
+    React.useEffect(() => {
+        if (!syllableReviewRequest || !Number.isInteger(syllableReviewRequest.index)) return;
+        setExpandedIndex(syllableReviewRequest.index);
+        const timer = setTimeout(() => {
+            const editor = document.getElementById('ws-syllables-' + syllableReviewRequest.index);
+            if (editor) { editor.open = true; editor.scrollIntoView?.({ block: 'nearest' }); editor.querySelector('summary')?.focus(); }
+        }, 0);
+        return () => clearTimeout(timer);
+    }, [syllableReviewRequest?.index, syllableReviewRequest?.nonce]);
     const [showPhonemeBank, setShowPhonemeBank] = React.useState(null);
     // Phoneme-bank display: IPA-first (the language-neutral spine) by default,
     // with a toggle to letters-first for young readers, and a per-chip reveal of
@@ -744,6 +756,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                     </div>
                 )}
                 <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4 custom-scrollbar">
+                    {packMaintenance}
                     {(() => {
                         const words = [...new Set((preloadedWords || []).flatMap(w => w?._instructionalCoverage?.untaughtWords || []))];
                         if (!words.length) return null;
@@ -1243,6 +1256,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                 </div>
                                 {expandedIndex === idx && (
                                     <div id={`word-sounds-details-${idx}`} className="border-t border-slate-100 p-4 space-y-4 animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
+                                        {typeof renderSyllableEditor === 'function' && renderSyllableEditor(word, idx)}
                                         <div>
                                             <div className="flex items-center justify-between mb-2">
                                                 <div className="flex items-center gap-2">

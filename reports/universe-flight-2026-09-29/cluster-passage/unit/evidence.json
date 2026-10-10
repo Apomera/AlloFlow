@@ -1,0 +1,50 @@
+{
+  "passed": 54,
+  "failed": 0,
+  "rendererSha256": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7",
+  "uiSha256": "87d34fea4ff6c3db26cc11ff4390046b6c9fd4edc7d39bbfad0d1642d39201df",
+  "scope": "9 cluster route groups,13 detour groups including all routes,10 dust groups,22 physics checks. Node canvas/event shim; real rendering and browser checks recorded separately.",
+  "files": [
+    {
+      "file": "cluster-node.config.mjs",
+      "sha256": "0d6d76a3e4ebaa75dd946389be9d80996eb0036184583138b94467a12b2dcae2"
+    },
+    {
+      "file": "detours-node-setup.mjs",
+      "sha256": "2bbc6f26e724128d5cb544977fbda3953843bd50ad611b7ba00479a80b120971"
+    },
+    {
+      "file": "results.json",
+      "sha256": "f5ca50a9cb6b6bd28c878009ee219936a463dfd7f2dd5ebdd63f1f8e9540a508"
+    },
+    {
+      "file": "run-unit.cjs",
+      "sha256": "42af6b2651a9bf4580ac61691351f1012d17349fdd10ea05ed8098613df2cf5c"
+    },
+    {
+      "file": "run.log",
+      "sha256": "ca144f245c5b4927260b5ea5dae8d2386b2e9ca5229909088d5dc10d2a07f826"
+    },
+    {
+      "file": "summary.json",
+      "sha256": "0f12f24fb070a610c4762a263e9674b2ba12f69ceadc90c59b18fb9d1b19ddfb"
+    },
+    {
+      "file": "universe_flight_cluster_passage.test.js",
+      "sha256": "db4ab9425bb9563262b861841232c1ea137543ff8faa851815953e6a3c4d9931"
+    },
+    {
+      "file": "universe_flight_detours.test.js",
+      "sha256": "176e4d54502fac54e927001e4f7c4831ecfa3b107f9bf9e186aed484db653f8b"
+    },
+    {
+      "file": "universe_flight_dust.test.js",
+      "sha256": "97358fb4ff5371b6ceff076cbdba031d199b5d6882d0665ef5c0a695ae759a2b"
+    },
+    {
+      "file": "universe_flight_physics.test.js",
+      "sha256": "c181ce38faaa0a0f66b1f202222149fcc7aef2e08019ce4c05d8281107dbccaf"
+    }
+  ],
+  "replay": "Executed config and runner retain original absolute workspace references; dependency copies are included for provenance."
+}

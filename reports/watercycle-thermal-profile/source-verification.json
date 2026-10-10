@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "sourceSHA256": "f29310e7d0bd78fdbb444e52ea36d6abae393ff268960aa956ae200dd139850a",
+  "baselineSHA256": "9a31c9d2107ccaf74c578e3423958d5066915cd0dcd8b42b9fb5dc6442a56ed9",
+  "mirrored": true,
+  "syntaxPassed": true,
+  "exactReversal": true,
+  "changedSections": [
+    "renderThermalLayerInspector",
+    "WC_THERMAL_LAYER_INSPECTOR_STYLE"
+  ],
+  "allOtherSourceUnchanged": true
+}

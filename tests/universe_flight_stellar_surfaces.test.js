@@ -1,6 +1,7 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { originalGalaxySurface, galaxySurfaceFloats } from './helpers/universe_galaxy_surfaces.js';
 
 let flight, scene, canvas, now, frames, frameId;
 let buffers, uploads, updates, draws, attributes, uniforms, constants, created, deleted;
@@ -149,10 +150,10 @@ describe('Universe projected stellar surfaces', () => {
       const points = uploads.findLast(item => item.buffer === pointBuffer).data;
       const surfaces = uploads.findLast(item => item.buffer === surfaceBuffer).data;
       expect(points).toHaveLength(expected.count * 9); expect(hash(points)).toBe(expected.points);
-      expect(surfaces).toHaveLength(expected.surfaceFloats + 30 + (region === 'neighborhood' ? 66000 : 0));
-      expect(hash(surfaces.subarray(0, expected.surfaceFloats))).toBe(expected.surface);
-      const tail = surfaces.subarray(expected.surfaceFloats, expected.surfaceFloats + 30), corners = [];
-      for (let index = 0; index < tail.length; index += 5) {
+      expect(surfaces).toHaveLength(galaxySurfaceFloats(region, expected.surfaceFloats) + 36 + (region === 'neighborhood' ? 66000 : 0));
+      expect(hash(originalGalaxySurface(surfaces, expected.surfaceFloats))).toBe(expected.surface);
+      const tail = surfaces.subarray(galaxySurfaceFloats(region, expected.surfaceFloats), galaxySurfaceFloats(region, expected.surfaceFloats) + 36), corners = [];
+      for (let index = 0; index < tail.length; index += 6) {
         expect(Array.from(tail.subarray(index, index + 3))).toEqual([0, 0, 0]);
         const corner = Array.from(tail.subarray(index + 3, index + 5));
         expect(corner.every(value => Math.abs(value) === 1)).toBe(true); corners.push(corner);
@@ -174,7 +175,7 @@ describe('Universe projected stellar surfaces', () => {
       expect(quad.uniforms.u_stellarQuad).toBe(1);
       expect(quad.blend).toEqual([constants.get('ONE'), constants.get('ONE_MINUS_SRC_ALPHA')]);
       expect(quad.first).toBe(0); expect(quad.count).toBe(6);
-      expect(quad.attributes.a_corner).toMatchObject({ enabled: true, buffer: surfaceBuffer, size: 2, stride: 20, offset: 12 });
+      expect(quad.attributes.a_corner).toMatchObject({ enabled: true, buffer: surfaceBuffer, size: 2, stride: 24, offset: 12 });
       const position = quad.attributes.a_position.constant;
       const record = records.find(item => item.slice(0, 3).every((value, index) => value === position[index]));
       expect(record).toBeDefined(); expect(record[8]).toBe(0);
@@ -195,7 +196,7 @@ describe('Universe projected stellar surfaces', () => {
       expect(pointDraw(calls).uniforms.u_stellarCount).toBe(0);
       expect(pointDraw(calls).count).toBe(WORLD[region].count);
       const diffuse = calls.filter(item => item.program !== pointProgram);
-      expect(diffuse).toHaveLength(1); expect(diffuse[0].count).toBe(WORLD[region].surfaceFloats / 5);
+      expect(diffuse).toHaveLength(1); expect(diffuse[0].count).toBe(galaxySurfaceFloats(region, WORLD[region].surfaceFloats) / 6);
     }
   });
 

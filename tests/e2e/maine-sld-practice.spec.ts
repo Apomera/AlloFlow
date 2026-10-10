@@ -5,34 +5,55 @@ import { readFile, writeFile, mkdtemp, mkdir } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { extname, join, resolve, sep } from 'node:path';
+import { transformSync } from 'esbuild';
 
 // Real working-tree Hub/card, source-host route reader, Maine panel and theme.
 // Full compiled-app boot is covered separately by the integration owner.
 const ROOT=process.cwd(), WEB=join(ROOT,'desktop','web-app');
 const REPORT=process.env.SLD_REPORT_DIR?resolve(process.env.SLD_REPORT_DIR):join(ROOT,'reports','maine-sld-case-lab-2026-10-01');
-let server:Server, base='', css='', hostReader='', firstScore='';
+let server:Server, base='', css='', hostReader='', gateCode='', firstScore='';
 const mime:Record<string,string>={'.js':'text/javascript','.css':'text/css','.html':'text/html','.json':'application/json'};
 const harness=()=>`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Maine SLD working-tree host test</title><link rel="stylesheet" href="/__tw.css"></head><body><button id="outside">Outside dialog</button><main id="app"></main>
 <script src="/desktop/web-app/node_modules/react/umd/react.production.min.js"></script><script src="/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js"></script><script src="/app_styles_module.js"></script><script src="/admin_hub_module.js"></script><script src="/maine_sld_practice_module.js"></script>
 <script>window.__errors=[];window.addEventListener('error',function(e){window.__errors.push(String(e.message));});
 ${hostReader}
+${gateCode}
 window.__reader=_alloReadShellDeepLinkTool;
-window.__mount=function(theme){
+window.__mount=function(theme,legacy){
+ delete window.__alloOpenMaineSldPractice;
  const e=React.createElement;
  function Host(){
   const [tool,setTool]=React.useState(function(){return window.__reader()==='maineSldPractice'?'maineSldPractice':'hub';});
   const close=React.useCallback(function(){setTool('hub');},[]);
+  React.useEffect(function(){if(legacy)return;window.__alloOpenMaineSldPractice=function(){setTool('maineSldPractice');return true;};return function(){delete window.__alloOpenMaineSldPractice;};},[]);
   return e('div',{className:'min-h-screen bg-slate-50 text-slate-800 font-sans theme-'+theme},e(window.AlloModules.AppStyles.AppStyles,{}),
-   tool==='hub'?e(window.AlloModules.AdminHub.AdminHubPanel,{t:function(){},onClose:function(){},addToast:function(){},openTool:function(id){if(id==='maineSldPractice')setTool(id);}}):
+   tool==='closed'?null:tool==='hub'?e(window.AlloModules.AdminHub.AdminHubPanel,{t:function(){},onClose:function(){},addToast:function(){},openTool:function(id){if(legacy){setTool('closed');return;}if(id==='maineSldPractice')setTool(id);}}):
    e(window.AlloModules.MaineSldPractice.MaineSldPracticePanel,{isOpen:true,onClose:close,theme:theme,t:function(){},addToast:function(){},initialCaseId:new URLSearchParams(location.search).get('case')||'alex'}));
  }
  ReactDOM.createRoot(document.getElementById('app')).render(e(Host));
+};
+window.__mountLoading=function(){
+ const e=React.createElement,saved=window.AlloModules.MaineSldPractice;
+ delete window.AlloModules.MaineSldPractice;
+ window.__alloModuleRegistry={MaineSldPractice:{status:'pending'}};window.__loadCalls=0;
+ window.__alloLazyMaineSldPractice=function(){window.__loadCalls++;window.__alloModuleRegistry.MaineSldPractice.status='pending';window.dispatchEvent(new Event('alloflow:module-registry-changed'));};
+ window.__failMaine=function(){window.__alloModuleRegistry.MaineSldPractice.status='failed';window.dispatchEvent(new Event('alloflow:module-registry-changed'));};
+ window.__completeMaine=function(){window.AlloModules.MaineSldPractice=saved;window.__alloModuleRegistry.MaineSldPractice.status='loaded';window.dispatchEvent(new Event('alloflow:module-registry-changed'));};
+ function LoadingHost(){
+  const [open,setOpen]=React.useState(false);
+  return e(React.Fragment,null,e('button',{id:'launch-loading',onClick:function(){setOpen(true);}},'Open case loading test'),
+   e(CDNModuleGate,{moduleKey:'MaineSldPractice.MaineSldPracticePanel',loaderName:'__alloLazyMaineSldPractice',accessibleModal:true,hostedUrl:'https://alloflow-cdn.pages.dev/app/?tool=maine-sld-practice',displayName:'Maine SLD Case Lab',modalZIndex:270,isOpen:open,onClose:function(){setOpen(false);}},function(Panel){return e(Panel,{theme:'light',onClose:function(){setOpen(false);}});}));
+ }
+ ReactDOM.createRoot(document.getElementById('app')).render(e(LoadingHost));
 };</script></body></html>`;
 test.beforeAll(async()=>{
  const source=await readFile(join(ROOT,'AlloFlowANTI.txt'),'utf8');
  const start=source.indexOf('// __ALLO_STEM_DEEP_LINKS_BEGIN__'), fn=source.indexOf('const _alloReadShellDeepLinkTool =',start), end=source.indexOf('\n};',fn)+3;
  if(start<0||fn<0||end<fn)throw new Error('Host route reader not found');
  hostReader=source.slice(start,end);
+ const gateStart=source.indexOf('// MODULE_GATE_WATCH_START'),gateEnd=source.indexOf('// Thin host adapters',gateStart);
+ if(gateStart<0||gateEnd<gateStart)throw new Error('Host loading gate not found');
+ gateCode=transformSync(source.slice(gateStart,gateEnd),{loader:'jsx',jsxFactory:'React.createElement',jsxFragment:'React.Fragment'}).code;
  const data=JSON.parse(await readFile(join(ROOT,'maine_sld_case_data.json'),'utf8'));firstScore=data.scoreRows[0].id;
  const dir=await mkdtemp(join(tmpdir(),'maine-sld-browser-')),input=join(dir,'input.css'),output=join(dir,'tailwind.css'),html=join(dir,'host.html');
  await writeFile(input,'@tailwind base;\n@tailwind components;\n@tailwind utilities;\n');await writeFile(html,harness());
@@ -66,6 +87,41 @@ test('native Leadership card launches the panel and host reader resolves both al
  await expect(page.locator('#msld-Q7')).toContainText('Resolve concerns or obtain appropriate alternative evidence before relying on results for Q8.');
  for(const query of ['?tool=maine-sld-practice','?tool=maineSldPractice']){await open(page,'light',query);expect(await page.evaluate(()=>(window as any).__reader())).toBe('maineSldPractice');}
  await page.goto(base+'/__host?tool=unknown-case');await page.evaluate(()=>(window as any).__mount('light'));await expect(page.getByRole('dialog',{name:'Leadership Hub',exact:true})).toBeVisible();
+});
+for(const activation of ['mouse','keyboard'])test('older shell Maine card opens hosted case by '+activation+' without losing the Hub',async({page,context})=>{
+ const destination='https://alloflow-cdn.pages.dev/app/?tool=maine-sld-practice';
+ await context.route(destination,route=>route.fulfill({status:200,contentType:'text/html',body:'<!doctype html><title>Maine SLD hosted route</title><h1>Hosted case route reached</h1>'}));
+ await page.goto(base+'/__host');await page.evaluate(()=>(window as any).__mount('light',true));
+ const hub=page.getByRole('dialog',{name:'Leadership Hub',exact:true}),card=page.locator('[data-hub-id="maineSldPractice"]');
+ await expect(card).toHaveAttribute('href',destination);await expect(card).toHaveAccessibleName(/Maine SLD Case Lab/);
+ const opened=context.waitForEvent('page');
+ if(activation==='keyboard'){await card.focus();await expect(card).toBeFocused();await page.keyboard.press('Enter');}else await card.click();
+ const popup=await opened;await popup.waitForURL(destination);await expect(popup.getByRole('heading',{name:'Hosted case route reached'})).toBeVisible();
+ await expect(hub).toBeVisible();await expect(page.getByTestId('maine-sld-panel')).toHaveCount(0);
+ expect(await page.evaluate(()=>(window as any).__errors)).toEqual([]);await popup.close();
+});
+test('Maine launch recovery keeps keyboard focus through failure, retry and the loaded panel',async({page})=>{
+ await page.goto(base+'/__host');await page.evaluate(()=>(window as any).__mountLoading());
+ const launch=page.getByRole('button',{name:'Open case loading test'});await launch.click();
+ const dialog=page.getByRole('dialog',{name:/Maine SLD Case Lab/});await expect(dialog).toBeFocused();await expect(dialog).toHaveAttribute('aria-modal','true');
+ const hosted=dialog.getByRole('link',{name:'Open Maine SLD Case Lab in a new tab'}),close=dialog.getByRole('button',{name:'Close',exact:true});
+ await page.keyboard.press('Shift+Tab');await expect(close).toBeFocused();await page.keyboard.press('Tab');await expect(hosted).toBeFocused();
+ await page.evaluate(()=>(window as any).__failMaine());await expect(dialog).toContainText('could not load');await expect(hosted).toBeFocused();
+ const retry=dialog.getByRole('button',{name:'Retry loading'});await retry.focus();await page.keyboard.press('Shift+Tab');await expect(close).toBeFocused();await page.keyboard.press('Tab');await expect(retry).toBeFocused();
+ const before=await page.evaluate(()=>(window as any).__loadCalls);await page.keyboard.press('Enter');expect(await page.evaluate(()=>(window as any).__loadCalls)).toBeGreaterThan(before);await expect(retry).toHaveCount(0);await expect(dialog).toBeFocused();
+ await page.evaluate(()=>(window as any).__failMaine());await expect(retry).toBeVisible();await expect(dialog).toBeFocused();
+ await page.screenshot({path:join(REPORT,'maine-launch-recovery.png')});
+ await page.keyboard.press('Escape');await expect(dialog).toHaveCount(0);await expect(launch).toBeFocused();
+ await launch.click();await expect(dialog).toBeFocused();await page.evaluate(()=>(window as any).__completeMaine());
+ const panel=page.getByTestId('maine-sld-panel');await expect(panel).toBeVisible();await expect.poll(()=>panel.evaluate(node=>node.contains(document.activeElement))).toBe(true);
+ expect(await page.evaluate(()=>(window as any).__errors)).toEqual([]);
+});
+test('Maine launch recovery hosted link works while the module is unavailable',async({page,context})=>{
+ const destination='https://alloflow-cdn.pages.dev/app/?tool=maine-sld-practice';
+ await context.route(destination,route=>route.fulfill({status:200,contentType:'text/html',body:'<!doctype html><title>Hosted case</title><h1>Hosted case route reached</h1>'}));
+ await page.goto(base+'/__host');await page.evaluate(()=>(window as any).__mountLoading());await page.getByRole('button',{name:'Open case loading test'}).click();await page.evaluate(()=>(window as any).__failMaine());
+ const dialog=page.getByRole('dialog',{name:/Maine SLD Case Lab/}),link=dialog.getByRole('link',{name:'Open Maine SLD Case Lab in a new tab'});
+ await link.focus();const opened=context.waitForEvent('page');await page.keyboard.press('Enter');const popup=await opened;await popup.waitForURL(destination);await expect(popup.getByRole('heading',{name:'Hosted case route reached'})).toBeVisible();await expect(dialog).toBeVisible();await popup.close();
 });
 test('all52 scores, evidence and Q8/Q9 work survive steps, case switches and reload',async({page})=>{
  await open(page);await step(page,'scores');await expect(page.locator('[data-testid^="score-row-"]')).toHaveCount(52);await page.getByRole('combobox',{name:/^Assessment/}).selectOption('WISC-V');await expect(page.locator('[data-testid^="score-row-"]')).toHaveCount(16);await expect(page.getByTestId('maine-sld-panel')).toContainText('Showing 16 of 52 results');await page.getByRole('searchbox',{name:'Search the record'}).fill('no matching assessment');await expect(page.locator('[data-testid^="score-row-"]')).toHaveCount(0);await expect(page.getByRole('heading',{name:'No scores match this filter.'})).toBeVisible();await page.getByRole('button',{name:'Show all scores',exact:true}).click();await expect(page.locator('[data-testid^="score-row-"]')).toHaveCount(52);await page.getByTestId('score-pin-'+firstScore).click();await step(page,'evidence');

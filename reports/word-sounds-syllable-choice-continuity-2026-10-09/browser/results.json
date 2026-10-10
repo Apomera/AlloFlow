@@ -1,0 +1,218 @@
+{
+  "checks": [
+    {
+      "name": "sunset: teacher choice edit preserves exact reviewed recordings, revision, and signature in current and prepared words",
+      "passed": true
+    },
+    {
+      "name": "choice-edited bank word plays the exact native reviewed clips sequentially without overlap",
+      "passed": true
+    },
+    {
+      "name": "sunset: actual student-pack serializer and fresh modal reload retain edited choices and playable reviewed clips",
+      "passed": true
+    },
+    {
+      "name": "banana: teacher choice edit preserves exact reviewed recordings, revision, and signature in current and prepared words",
+      "passed": true
+    },
+    {
+      "name": "banana: actual student-pack serializer and fresh modal reload retain edited choices and playable reviewed clips",
+      "passed": true
+    },
+    {
+      "name": "saving a newly reviewed recording revision preserves matching authored answer choices",
+      "passed": true
+    },
+    {
+      "name": "recording save rejects malformed, other-word, and other-language inherited choices",
+      "passed": true
+    },
+    {
+      "name": "non-English recorded word obtains replacement choices from the same lesson without English bank fillers",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "cases": [
+    {
+      "target": "sunset",
+      "beforeIdentity": {
+        "revision": 17,
+        "signature": "51e6f4d2-970f63e6"
+      },
+      "editedOptions": [
+        "raincoat",
+        "sunset",
+        "raindrop",
+        "milkshake"
+      ],
+      "playback": [
+        {
+          "id": 4,
+          "type": "playing",
+          "index": 0,
+          "at": 9037
+        },
+        {
+          "id": 4,
+          "type": "pause",
+          "index": 0,
+          "at": 10830.200000000186
+        },
+        {
+          "id": 4,
+          "type": "ended",
+          "index": 0,
+          "at": 10830.400000000373
+        },
+        {
+          "id": 5,
+          "type": "playing",
+          "index": 1,
+          "at": 11581.5
+        },
+        {
+          "id": 5,
+          "type": "pause",
+          "index": 1,
+          "at": 13366
+        },
+        {
+          "id": 5,
+          "type": "ended",
+          "index": 1,
+          "at": 13366.5
+        }
+      ]
+    },
+    {
+      "target": "banana",
+      "beforeIdentity": {
+        "revision": 17,
+        "signature": "e92d0446-db7894f2"
+      },
+      "editedOptions": [
+        "banana",
+        "sunset",
+        "potato",
+        "pajamas"
+      ],
+      "playback": [
+        {
+          "id": 3,
+          "type": "playing",
+          "index": 0,
+          "at": 8370.700000000186
+        },
+        {
+          "id": 3,
+          "type": "pause",
+          "index": 0,
+          "at": 10155
+        },
+        {
+          "id": 3,
+          "type": "ended",
+          "index": 0,
+          "at": 10155.200000000186
+        },
+        {
+          "id": 4,
+          "type": "playing",
+          "index": 1,
+          "at": 10560.700000000186
+        },
+        {
+          "id": 4,
+          "type": "pause",
+          "index": 1,
+          "at": 12356.200000000186
+        },
+        {
+          "id": 4,
+          "type": "ended",
+          "index": 1,
+          "at": 12356.700000000186
+        },
+        {
+          "id": 5,
+          "type": "playing",
+          "index": 2,
+          "at": 12792.700000000186
+        },
+        {
+          "id": 5,
+          "type": "pause",
+          "index": 2,
+          "at": 14575.299999999814
+        },
+        {
+          "id": 5,
+          "type": "ended",
+          "index": 2,
+          "at": 14575.799999999814
+        }
+      ]
+    },
+    {
+      "rejected": [
+        {
+          "config": {
+            "malformed": true
+          },
+          "options": [
+            "lunchbox",
+            "teapot",
+            "sunlight",
+            "sunset"
+          ]
+        },
+        {
+          "config": {
+            "boardTarget": "banana",
+            "options": [
+              "banana",
+              "forbidden-old",
+              "other-old"
+            ]
+          },
+          "options": [
+            "bedtime",
+            "goldmine",
+            "sunset",
+            "baseball"
+          ]
+        },
+        {
+          "config": {
+            "boardLanguage": "es",
+            "options": [
+              "sunset",
+              "forbidden-old",
+              "other-old"
+            ]
+          },
+          "options": [
+            "pancake",
+            "seahorse",
+            "sunset",
+            "handshake"
+          ]
+        }
+      ]
+    }
+  ],
+  "hashes": {
+    "word_sounds_core.js": "7b6498f2261942266cb461288f0b08db7200583d37535e03f7122ca12a11e0b0",
+    "word_sounds_module.js": "55c60625928f785a70f77a6fd0815a29607e18568cc91dc0ffe326ce4fddcd7d",
+    "word_sounds_setup_source.jsx": "e7b78b4eb019f13fec130b5d955ec4349baa930c63ba552fc9f519810be16e67",
+    "word_sounds_setup_module.js": "e29e00fa2f34e6375e4365adead0db15a47c04e13ca8fe57463e0b819c3bd673",
+    "word_sounds_readiness_contract.js": "99fe1efc2f0f159ce35524b14249177dfd7dbf5c3f8bff6ff96c8f72332ed52b",
+    "live_aac_source.jsx": "6ef24cc9371bcf0a26b2e783d0bd05dedaf2bc91dde4cb74a6125052667925cc",
+    "firestore_sync_module.js": "8326f81be88782ce2d6f98331418ddee62cb3ed437ad87af4899bf601aafe00a",
+    "misc_components_module.js": "24ccb78566e3e9bbf1996b098e22e01ab99e86b7649fa224a3b76dc99412c7ad"
+  },
+  "limits": "Actual WordSoundsModal, production recording editor, canonical core, native Chromium WAV decoding/playback, production CSS and production resource serialization. Host uses React state and local audio fixtures; any TTS calls receive fixture audio. This does not evaluate pronunciation, physical microphone capture, full Studio generation, cloud delivery, or the full production host."
+}

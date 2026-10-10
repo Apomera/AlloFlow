@@ -1,0 +1,30 @@
+{
+  "baselineSHA": "8c045e6d8056e834d795ed4bfecb0418758c6a5c3e9d2ce4f05d69ec14dca940",
+  "finalSHA": "9de34818d5428c3b453f8617c4bd5622c711fbe79acd77fd2ef4fd35119f3f76",
+  "workflows": 1,
+  "matchingViewPairs": 1,
+  "selectedViews": [
+    "adult-pose5"
+  ],
+  "evidenceCount": 2,
+  "workers": 1,
+  "retries": 0,
+  "perWorkflowTimeoutMs": 450000,
+  "runnerTimeoutMs": 900000,
+  "images": [
+    "adult-pose5-baseline-face.png",
+    "adult-pose5-baseline-stage.png",
+    "adult-pose5-candidate-face.png",
+    "adult-pose5-candidate-stage.png"
+  ],
+  "stats": {
+    "startTime": "2026-10-09T00:28:50.939Z",
+    "duration": 188522.138,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "inputsUnchanged": true,
+  "privateCandidate": true
+}

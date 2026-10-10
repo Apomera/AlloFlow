@@ -1,0 +1,31 @@
+{
+  "startedAt": "2026-10-05T15:13:34.417Z",
+  "sourceSha256": "04c957c418534eca9853c08255b82a0e4ff7b63218b99a0f50c4ab4e985b6389",
+  "suites": [
+    {
+      "name": "atc-lesson-workbench-2026-10-05",
+      "checksPassed": 15,
+      "reused": true,
+      "resultsFile": "browser-qa-results.json"
+    },
+    {
+      "name": "atc-visual-design-2026-10-04",
+      "checksPassed": 22,
+      "reused": false,
+      "resultsFile": "regressions/atc-visual-design-2026-10-04/20261005T151334417Z/browser-qa-results.json"
+    },
+    {
+      "name": "atc-practice-flow-2026-10-04",
+      "checksPassed": 17,
+      "reused": false,
+      "resultsFile": "regressions/atc-practice-flow-2026-10-04/20261005T151334417Z/browser-qa-results.json"
+    }
+  ],
+  "complete": true,
+  "resumedFrom": "2026-10-05T15:03:00.356Z",
+  "unitTestsPassed": 266,
+  "unitFilesPassed": 22,
+  "browserChecksPassed": 54,
+  "completedAt": "2026-10-05T15:24:54.041Z",
+  "sourceStable": true
+}

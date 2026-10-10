@@ -1,3 +1,4 @@
+import { restoreCLSquidFinReference } from './helpers/cephalopod_squid_fin_reference.js';
 import { afterEach, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -8,9 +9,9 @@ const source=readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE||'stem_lab/stem_to
 const start=source.indexOf('function createCLHuntAnimal('),end=source.indexOf('// Compact, individually owned prey rig.',start);
 if(start<0||end<=start)throw Error('Animal factory anchors missing');
 const build=new Function('T','species','Math',source.slice(start,end)+';return createCLHuntAnimal(T,species);');
-const {restorePass42AnimalSource}=require('./helpers/cephalopod_pass42_reference.cjs');
+const {restorePass42AnimalSource:restorePass42AnimalOnly}=require('./helpers/cephalopod_pass42_reference.cjs');
 // Restore only the approved cuttle funnel for this historical whole-rig fingerprint.
-const priorBuild=new Function('T','species','Math',restorePass42AnimalSource(source.slice(start,end))+';return createCLHuntAnimal(T,species);');
+const priorBuild=new Function('T','species','Math',restoreCLSquidFinReference(restorePass42AnimalSource(source.slice(start,end)),true)+';return createCLHuntAnimal(T,species);');
 const noRandom=Object.assign(Object.create(Math),{random(){throw Error('Nautilus eye geometry consumed dive RNG');}}),allocated=[];
 const names=new Set(['cl-eye-rim','cl-iris','cl-pupil','cl-eye-highlight','cl-eye-lid']),stride=33;
 const state=(extra={})=>({moving:false,jet:false,strike:0,camo:0,substrate:'sand',display:false,reducedMotion:false,...extra});
@@ -93,3 +94,6 @@ describe('Nautilus open pinhole eyes',()=>{
     for(const [id,fingerprint]of Object.entries(expected)){const a=rig(id,true),frames=[];for(let i=0;i<4;i++){a.update(1+i*.05,.05,state({moving:i>0,jet:i===2,strike:i===3?.6:0,camo:.6,substrate:['sand','rock','grass','sand'][i],display:i===2,reducedMotion:i===3}));frames.push(hash(protectedRecords(a)));}expect(hash(frames),id).toBe(fingerprint);}
   },240000);
 });
+
+// Historical fingerprints predate the approved fin roll, layered pigment, oral finish and octopus cups.
+function restorePass42AnimalSource(source){return require('./helpers/cephalopod_pass34_animal_reference.cjs').restorePass34AnimalSource(require('./helpers/cephalopod_pass36_animal_reference.cjs').restorePass36AnimalSource(restorePass42AnimalOnly(require('./helpers/cephalopod_pass50_reference.cjs').restorePass50Source(require('./helpers/cephalopod_pass51_reference.cjs').restorePass51Source(require('./helpers/cephalopod_pass52_reference.cjs').restorePass52Source(require('./helpers/cephalopod_pass53_reference.cjs').restorePass53Source(require('./helpers/cephalopod_pass54_reference.cjs').restorePass54Source(source))))))));}

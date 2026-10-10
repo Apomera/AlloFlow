@@ -1,0 +1,2 @@
+const fs=require('fs'),path=require('path'),file=path.join(__dirname,'..','renderer-baseline.js'),s=fs.readFileSync(file,'utf8'),lines=s.split('\n');
+for(const phrase of ['var dissScenarioTimer =','className: "diss-scenario-console"','className: "diss-advanced-telemetry"','className: "diss-advanced-panel"']){const index=lines.findIndex(l=>l.includes(phrase));if(index>=0)console.log(JSON.stringify({phrase,line:index+1,excerpt:lines.slice(Math.max(0,index-18),index+31).join('\n')}));}

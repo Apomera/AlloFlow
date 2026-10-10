@@ -1,0 +1,45 @@
+{
+  "sourceSha256": "fe5e154cc36da00262e82e5c56dea54c01753451512f40ab0fc21fc64fe140bc",
+  "baselineSha256": "ae501ff0f40a26ca88c9e19d9b17cf2b03ad658051c1cb95210e55fd441833e8",
+  "verifiedAt": "2026-10-10T01:21:18.253Z",
+  "desktopMirrorMatches": true,
+  "units": {
+    "passed": 70,
+    "total": 70,
+    "suites": [
+      "tests\\solar_system_activity_topics.test.js",
+      "tests\\solar_system_activity_navigation.test.js",
+      "tests\\solar_system_activity_shortcuts.test.js",
+      "tests\\solar_system_investigation_discovery.test.js"
+    ]
+  },
+  "browser": {
+    "passed": 4,
+    "cases": [
+      "topic-discovery-1060-dark",
+      "topic-discovery-1060-light",
+      "topic-discovery-320-dark",
+      "topic-discovery-320-light"
+    ]
+  },
+  "validatedBehavior": [
+    "Eight topic buttons expose matching counts computed from search and collection before the selected topic filter",
+    "Topic icons and colors repeat on result cards, with text labels and pressed state carrying the meaning",
+    "Topic buttons and the existing native select remain synchronized without moving focus away from topic selection",
+    "Counts update with normalized, translated-label and description search, saved bookmarks and the investigation collection",
+    "Empty results offer one accurate recovery action: widen topic, clear search, widen collection, or reset all filters",
+    "Recovery preserves helpful filters and saved work, and focuses the committed results heading after the action",
+    "Detached, closed and stale recovery controls cannot overwrite newer filters or saved selections",
+    "Restored invalid data stays read-only; filtering does not launch activities or change rewards/history",
+    "Desktop and 320px layouts in both themes have readable controls, sufficient topic contrast and no horizontal overflow or browser errors",
+    "Navigation, saved shortcuts and investigation discovery regressions pass"
+  ],
+  "visualReview": [
+    "topic-discovery-1060-light-investigations.png",
+    "topic-discovery-320-dark-investigations.png",
+    "topic-discovery-320-light-recovery.png"
+  ],
+  "syntax": "passed",
+  "whitespace": "passed",
+  "committed": false
+}

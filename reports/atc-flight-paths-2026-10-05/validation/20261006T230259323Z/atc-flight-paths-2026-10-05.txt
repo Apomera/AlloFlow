@@ -1,0 +1,16 @@
+PASS Live motion and draft paths fit accessibly at 1440px
+PASS Live motion and draft paths fit accessibly at 390px
+PASS Live motion and draft paths fit accessibly at 320px
+PASS A deliberate step matches the ten-second projection and updates all clocks while paused
+PASS Six steps follow the progressive turn and produce real curved history
+PASS Every aircraft moves during a step and vertical separation uses actual altitude
+PASS An actual landing exercise completes entirely through deliberate paused steps
+PASS Changing horizon, previewing drafts, and hiding projections never change live instructions
+PASS Draft release of a hold stays hypothetical and speed drafts preserve approach guidance
+PASS Help and command entry block stepping, and finishing discards a queued step
+PASS Real history survives reopening and continues from its saved clock
+PASS Traffic stepping and path detail remain usable when canvas drawing is unavailable
+PASS Keyboard controls inspect the horizon and step without accidental radar commands
+PASS High contrast and forced colors keep the detail legible at 200 percent zoom
+PASS Live traffic records a bounded trail with a continuing clock after two flight minutes
+{"passed":15,"failed":0,"errors":[],"sourceStable":true,"artifactDir":"C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-flight-paths-2026-10-05\\validation\\20261006T230259323Z\\atc-flight-paths-2026-10-05"}

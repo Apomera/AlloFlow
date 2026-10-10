@@ -1,0 +1,40 @@
+{
+  "sourceSHA256": "69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242",
+  "beforeSHA256": "164407bb58546fc91584761e51e9a907d2eacd33442a0a5fae31da0c22ef37c0",
+  "exactReversal": true,
+  "sourceOutsideEditIdentical": true,
+  "unknownSourceRejected": true,
+  "historicalAssertionsChanged": false,
+  "sourceHashes": {
+    "stem_lab/stem_tool_firstresponse.js": "164407bb58546fc91584761e51e9a907d2eacd33442a0a5fae31da0c22ef37c0",
+    "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js": "164407bb58546fc91584761e51e9a907d2eacd33442a0a5fae31da0c22ef37c0",
+    "desktop/app-build/stem_lab/stem_tool_firstresponse.js": "164407bb58546fc91584761e51e9a907d2eacd33442a0a5fae31da0c22ef37c0",
+    "desktop/web-app/build/stem_lab/stem_tool_firstresponse.js": "164407bb58546fc91584761e51e9a907d2eacd33442a0a5fae31da0c22ef37c0"
+  },
+  "indexSHA256": "108c1be399abb624076a9ef781ec68f7b16a173c899d05f8e5e0c26e0898e735",
+  "additions": [
+    {
+      "file": "tests/helpers/firstresponse_support_frame_delta.cjs",
+      "content": "const { createHash } = require('node:crypto');\nconst delta = require('./firstresponse_support_frame_delta.json');\nconst hash = source => createHash('sha256').update(source).digest('hex');\nfunction revertSupportFrame(source) {\n  if (hash(source) === delta.beforeSHA256) return source;\n  if (hash(source) !== delta.afterSHA256) throw new Error('Support frame source does not match its exact refinement delta');\n  for (const edit of [...delta.edits].reverse()) {\n    if (source.split(edit.new).length !== 2) throw new Error('Support frame reversal is not unique: ' + (edit.name || 'source edit'));\n    source = source.replace(edit.new, edit.old);\n  }\n  if (hash(source) !== delta.beforeSHA256) throw new Error('Support frame reversal did not recover fixed baseline');\n  return source;\n}\nmodule.exports = { revertSupportFrame, delta };\n",
+      "SHA256": "78ad2c50653692ebcad9f2ddd08fbfc3e4f51fe1bc0d71eac18bbd9c2882309a",
+      "beforeSHA256": null,
+      "afterSHA256": "78ad2c50653692ebcad9f2ddd08fbfc3e4f51fe1bc0d71eac18bbd9c2882309a"
+    },
+    {
+      "file": "tests/helpers/firstresponse_support_frame_delta.json",
+      "content": "{\n  \"beforeSHA256\": \"164407bb58546fc91584761e51e9a907d2eacd33442a0a5fae31da0c22ef37c0\",\n  \"afterSHA256\": \"69d2407c26ddf3e3c5d7ee112622d0dab8613926e34b7d61af9f2e17f1317242\",\n  \"edits\": [\n    {\n      \"old\": \"      var supportSphere = supportBox.getBoundingSphere(new THREE.Sphere());\",\n      \"new\": \"      var supportSphere = supportBox.getBoundingSphere(new THREE.Sphere());\\n      var supportFaceSphere = supportBox.clone().union(new THREE.Box3().setFromObject(headPivot)).getBoundingSphere(new THREE.Sphere());\\n      var supportFacePoint = new THREE.Vector3(), supportFaceRadiusSq = 0;\\n      [supportingHand, headPivot].forEach(function (group) {\\n        group.traverse(function (part) {\\n          var positions = part.geometry && part.geometry.attributes && part.geometry.attributes.position;\\n          if (!positions) return;\\n          for (var i = 0; i < positions.count; i++) {\\n            supportFacePoint.fromBufferAttribute(positions, i).applyMatrix4(part.matrixWorld);\\n            supportFaceRadiusSq = Math.max(supportFaceRadiusSq, supportFacePoint.distanceToSquared(supportFaceSphere.center));\\n          }\\n        });\\n      });\\n      supportContext.forEach(function (point) { supportFaceRadiusSq = Math.max(supportFaceRadiusSq, point.distanceToSquared(supportFaceSphere.center)); });\\n      supportFaceSphere.radius = Math.sqrt(supportFaceRadiusSq);\"\n    },\n    {\n      \"old\": \"        center: supportSphere.center.toArray(), radius: supportSphere.radius,\",\n      \"new\": \"        center: supportSphere.center.toArray(), radius: supportSphere.radius,\\n        faceFrame: { center: supportFaceSphere.center.toArray(), radius: supportFaceSphere.radius },\"\n    },\n    {\n      \"old\": \"    var fit = palmDetailCamera(frSupportingHandInfo, width > 0 && height > 0 ? width / height : 1, FR_BODY_CAMERA_HOME);\",\n      \"new\": \"    var aspect = width > 0 && height > 0 ? width / height : 1;\\n    var info = frSupportingHandInfo;\\n    if (aspect < 1.15 && info.faceFrame) info = { center: info.faceFrame.center, radius: info.faceFrame.radius,\\n      normal: info.normal, forward: info.forward };\\n    var fit = palmDetailCamera(info, aspect, FR_BODY_CAMERA_HOME);\"\n    }\n  ]\n}\n",
+      "SHA256": "e121d7817d02cf1bd9084465a12c06567e96823a8ac57fce39d15ed974528de6",
+      "beforeSHA256": null,
+      "afterSHA256": "e121d7817d02cf1bd9084465a12c06567e96823a8ac57fce39d15ed974528de6"
+    }
+  ],
+  "edits": [
+    {
+      "file": "tests/helpers/firstresponse_nose_contour_delta.cjs",
+      "before": "const { createHash } = require('node:crypto');\nconst delta = require('./firstresponse_nose_contour_delta.json');\nconst hash = source => createHash('sha256').update(source).digest('hex');\nfunction revertNoseContour(source) {\n  if (hash(source) === delta.beforeSHA256) return source;\n  if (hash(source) !== delta.afterSHA256) throw new Error('Nose contour source does not match its exact refinement delta');\n  for (const edit of [...delta.edits].reverse()) {\n    if (source.split(edit.new).length !== 2) throw new Error('Nose contour reversal is not unique: ' + (edit.name || 'source edit'));\n    source = source.replace(edit.new, edit.old);\n  }\n  if (hash(source) !== delta.beforeSHA256) throw new Error('Nose contour reversal did not recover fixed baseline');\n  return source;\n}\nmodule.exports = { revertNoseContour, delta };\n",
+      "after": "const { createHash } = require('node:crypto');\nconst delta = require('./firstresponse_nose_contour_delta.json');\nconst hash = source => createHash('sha256').update(source).digest('hex');\nfunction revertNoseContour(source) {\n  if (hash(source) !== delta.beforeSHA256 && hash(source) !== delta.afterSHA256) {\n    source = require('./firstresponse_support_frame_delta.cjs').revertSupportFrame(source);\n  }\n  if (hash(source) === delta.beforeSHA256) return source;\n  if (hash(source) !== delta.afterSHA256) throw new Error('Nose contour source does not match its exact refinement delta');\n  for (const edit of [...delta.edits].reverse()) {\n    if (source.split(edit.new).length !== 2) throw new Error('Nose contour reversal is not unique: ' + (edit.name || 'source edit'));\n    source = source.replace(edit.new, edit.old);\n  }\n  if (hash(source) !== delta.beforeSHA256) throw new Error('Nose contour reversal did not recover fixed baseline');\n  return source;\n}\nmodule.exports = { revertNoseContour, delta };\n",
+      "beforeSHA256": "e4bc27922d774170593c86fad4efaaf1b8a713435b1ea71af55e600015805047",
+      "afterSHA256": "5681ac9f43d92d6318587b1148791906c8002ce723ed2f77a2b79980c3562078"
+    }
+  ]
+}

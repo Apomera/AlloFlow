@@ -1,0 +1,166 @@
+{
+  "phase": "text-200-320",
+  "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   clipped: [\n+     'perception-precision-value'\n+   ],\n-   clipped: [],\n    overflow: false,\n    small: []\n  }\n",
+  "stack": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   clipped: [\n+     'perception-precision-value'\n+   ],\n-   clipped: [],\n    overflow: false,\n    small: []\n  }\n\n    at controlsFit (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-going-you-re-doing\\perception-precision-candidate\\dev-tools\\perception_lab_precision_controls_qa.cjs:29:11)\n    at async C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-going-you-re-doing\\perception-precision-candidate\\dev-tools\\perception_lab_precision_controls_qa.cjs:58:286",
+  "checks": [
+    {
+      "experiment": "brightness",
+      "key": "contrast",
+      "exactValueApplied": 61,
+      "individualReset": 80,
+      "notesAndRecordsPreserved": true
+    },
+    {
+      "experiment": "brightness",
+      "key": "target",
+      "exactValueApplied": 117,
+      "individualReset": 128,
+      "notesAndRecordsPreserved": true
+    },
+    {
+      "experiment": "ebbinghaus",
+      "key": "surround",
+      "exactValueApplied": 43,
+      "individualReset": 36,
+      "notesAndRecordsPreserved": true
+    },
+    {
+      "experiment": "ebbinghaus",
+      "key": "gap",
+      "exactValueApplied": 19,
+      "individualReset": 12,
+      "notesAndRecordsPreserved": true
+    },
+    {
+      "experiment": "mullerLyer",
+      "key": "angle",
+      "exactValueApplied": 54,
+      "individualReset": 30,
+      "notesAndRecordsPreserved": true
+    },
+    {
+      "experiment": "mullerLyer",
+      "key": "fin",
+      "exactValueApplied": 63,
+      "individualReset": 42,
+      "notesAndRecordsPreserved": true
+    },
+    {
+      "experiment": "cafeWall",
+      "key": "offset",
+      "exactValueApplied": 72,
+      "individualReset": 50,
+      "notesAndRecordsPreserved": true
+    },
+    {
+      "experiment": "cafeWall",
+      "key": "mortar",
+      "exactValueApplied": 11,
+      "individualReset": 5,
+      "notesAndRecordsPreserved": true
+    },
+    {
+      "experiment": "necker",
+      "key": "depth",
+      "exactValueApplied": 73,
+      "individualReset": 95,
+      "notesAndRecordsPreserved": true
+    },
+    {
+      "experiment": "moire",
+      "key": "angle",
+      "exactValueApplied": 13.7,
+      "individualReset": 5,
+      "notesAndRecordsPreserved": true
+    },
+    {
+      "experiment": "moire",
+      "key": "spacing",
+      "exactValueApplied": 17,
+      "individualReset": 12,
+      "notesAndRecordsPreserved": true
+    },
+    {
+      "invalidDraftsDoNotChangeDrawing": true,
+      "blurAppliesValidCorrection": true
+    },
+    {
+      "escapeCancelsDraftBeforeClosingFocus": true
+    },
+    {
+      "nativeDecimalStepping": true,
+      "appliesOnBlur": true
+    },
+    {
+      "resetDiscardsDraftAndRestoresFocus": true,
+      "touchReset": true
+    },
+    {
+      "staleDraftCannotOverwriteExternalChange": true
+    },
+    {
+      "preciseDrawingEditReturnsToCurrent": true,
+      "pinAndSaveCaptureCommittedDraft": true
+    },
+    {
+      "editingPausesVisibleFrame": true,
+      "resetCannotRestoreOldAnimationFrame": true
+    },
+    {
+      "experiment": "brightness",
+      "precisionLockedThroughoutStudy": true,
+      "exactComparisonTargetNeverExposed": true,
+      "studyUsesCommittedDraft": true
+    },
+    {
+      "experiment": "ebbinghaus",
+      "precisionLockedThroughoutStudy": true,
+      "exactComparisonTargetNeverExposed": true,
+      "studyUsesCommittedDraft": true
+    },
+    {
+      "experiment": "mullerLyer",
+      "precisionLockedThroughoutStudy": true,
+      "exactComparisonTargetNeverExposed": true,
+      "studyUsesCommittedDraft": true
+    },
+    {
+      "width": 320,
+      "preciseControlAndFocusedWorkspace": true,
+      "controls44px": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 390,
+      "preciseControlAndFocusedWorkspace": true,
+      "controls44px": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 768,
+      "preciseControlAndFocusedWorkspace": true,
+      "controls44px": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 1280,
+      "preciseControlAndFocusedWorkspace": true,
+      "controls44px": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 1600,
+      "preciseControlAndFocusedWorkspace": true,
+      "controls44px": true,
+      "noOverflow": true,
+      "axe": []
+    }
+  ],
+  "errors": [],
+  "sourceSHA256": "483bb2440f213d8109b52baeb3b0deba0135a763de807e75e518a1ac3b0a055f",
+  "finalSourceSHA256": "483bb2440f213d8109b52baeb3b0deba0135a763de807e75e518a1ac3b0a055f"
+}

@@ -1,0 +1,51 @@
+{
+  "sourceSHA256": "476c1562ef879cb20ac65efdbf290edff9b98fafde9dbd7866f3e612c5750935",
+  "images": [
+    "adult-near-after-comparison.png",
+    "adult-near-after-stage.png",
+    "phone-infant-forced-colors-comparison.png",
+    "phone-infant-forced-colors-stage.png",
+    "phone-infant-near-after-comparison.png",
+    "phone-infant-near-after-stage.png"
+  ],
+  "inspected": [
+    {
+      "name": "adult-near-after-comparison.png",
+      "sha256": "da27d36026cb1109938f252b278b72c17b1caecf459dd716b34caf9f4e71c2ea",
+      "width": 562,
+      "height": 176
+    },
+    {
+      "name": "adult-near-after-stage.png",
+      "sha256": "ced0052663936e61a7a62c2240400c901893f722082fd7cd43d6e121c995b474",
+      "width": 562,
+      "height": 361
+    },
+    {
+      "name": "phone-infant-forced-colors-comparison.png",
+      "sha256": "3c6f0a5b3a2d57afc353dadcc8deb5526958883280b5fec1efbd6fecf51e22de",
+      "width": 296,
+      "height": 194
+    },
+    {
+      "name": "phone-infant-forced-colors-stage.png",
+      "sha256": "7108d70625a545487c78860c45ee4fdd38b51f9de799022b39756464299a94a5",
+      "width": 296,
+      "height": 331
+    },
+    {
+      "name": "phone-infant-near-after-comparison.png",
+      "sha256": "41626165ebf5719a07abff782313f4d5b4fab9a11305779e909f7acd24304d4e",
+      "width": 296,
+      "height": 194
+    },
+    {
+      "name": "phone-infant-near-after-stage.png",
+      "sha256": "2b7726fd6509eab1a4175af4f26ad857456267751671c37a9528690c5367e68d",
+      "width": 296,
+      "height": 331
+    }
+  ],
+  "review": "All six captures viewed directly. Adult and phone rail labels are readable, selected outlines identify both hand and pose, and phone controls fit two columns. Forced colors retain legible captions and selected borders. Controls remain outside the existing model crop.",
+  "reviewedAt": "2026-10-07T03:59:51.829Z"
+}

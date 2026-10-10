@@ -1,0 +1,307 @@
+{
+  "stages": [
+    {
+      "name": "high-low",
+      "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass31-2026-10-09\\direct-plume-1\\high-low.png",
+      "sample": {
+        "t": 1,
+        "alt": 300,
+        "tilt": 0,
+        "fuel": 50,
+        "throttle": 0.25,
+        "v": 0,
+        "h": 0,
+        "x": 0
+      },
+      "pixels": {
+        "changed": 1775,
+        "totalLight": 37340,
+        "groundChanged": 0,
+        "upstreamChanged": 0,
+        "nozzleConnected": 40,
+        "maxChangedY": 234.25,
+        "surface": 331.8,
+        "pivot": 194,
+        "width": 310,
+        "height": 420,
+        "backingWidth": 620,
+        "backingHeight": 840
+      },
+      "stability": {
+        "comparedAnimationFrames": 2,
+        "bytes": 2083200,
+        "changedBytes": 0
+      }
+    },
+    {
+      "name": "high-off",
+      "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass31-2026-10-09\\direct-plume-1\\high-off.png",
+      "sample": {
+        "t": 2,
+        "alt": 300,
+        "tilt": 0,
+        "fuel": 50,
+        "throttle": 0,
+        "v": 0,
+        "h": 0,
+        "x": 0
+      }
+    },
+    {
+      "name": "high-full",
+      "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass31-2026-10-09\\direct-plume-1\\high-full.png",
+      "sample": {
+        "t": 3,
+        "alt": 300,
+        "tilt": 0,
+        "fuel": 50,
+        "throttle": 1,
+        "v": 0,
+        "h": 0,
+        "x": 0
+      },
+      "pixels": {
+        "changed": 9056,
+        "totalLight": 222132,
+        "groundChanged": 0,
+        "upstreamChanged": 0,
+        "nozzleConnected": 40,
+        "maxChangedY": 261.75,
+        "surface": 331.8,
+        "pivot": 194,
+        "width": 310,
+        "height": 420,
+        "backingWidth": 620,
+        "backingHeight": 840
+      },
+      "stability": {
+        "comparedAnimationFrames": 2,
+        "bytes": 2083200,
+        "changedBytes": 0
+      }
+    },
+    {
+      "name": "near-level",
+      "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass31-2026-10-09\\direct-plume-1\\near-level.png",
+      "sample": {
+        "t": 5,
+        "alt": 0.5,
+        "tilt": 0,
+        "fuel": 50,
+        "throttle": 1,
+        "v": 0,
+        "h": 0,
+        "x": 0
+      },
+      "pixels": {
+        "changed": 748,
+        "totalLight": 63811,
+        "groundChanged": 0,
+        "upstreamChanged": 0,
+        "nozzleConnected": 40,
+        "maxChangedY": 331.75,
+        "surface": 331.8,
+        "pivot": 300.47159303644776,
+        "width": 310,
+        "height": 420,
+        "backingWidth": 620,
+        "backingHeight": 840
+      },
+      "stability": {
+        "comparedAnimationFrames": 2,
+        "bytes": 2083200,
+        "changedBytes": 0
+      }
+    },
+    {
+      "name": "near-left",
+      "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass31-2026-10-09\\direct-plume-1\\near-left.png",
+      "sample": {
+        "t": 7,
+        "alt": 0.5,
+        "tilt": -0.35,
+        "fuel": 50,
+        "throttle": 1,
+        "v": 0,
+        "h": 0,
+        "x": 0
+      },
+      "pixels": {
+        "changed": 2427,
+        "totalLight": 133534,
+        "groundChanged": 0,
+        "upstreamChanged": 0,
+        "nozzleConnected": 40,
+        "maxChangedY": 331.75,
+        "surface": 331.8,
+        "pivot": 294.04934787016,
+        "width": 310,
+        "height": 420,
+        "backingWidth": 620,
+        "backingHeight": 840
+      },
+      "stability": {
+        "comparedAnimationFrames": 2,
+        "bytes": 2083200,
+        "changedBytes": 0
+      }
+    },
+    {
+      "name": "near-right",
+      "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass31-2026-10-09\\direct-plume-1\\near-right.png",
+      "sample": {
+        "t": 9,
+        "alt": 0.5,
+        "tilt": 0.35,
+        "fuel": 50,
+        "throttle": 1,
+        "v": 0,
+        "h": 0,
+        "x": 0
+      },
+      "pixels": {
+        "changed": 2426,
+        "totalLight": 133461,
+        "groundChanged": 0,
+        "upstreamChanged": 0,
+        "nozzleConnected": 40,
+        "maxChangedY": 331.75,
+        "surface": 331.8,
+        "pivot": 294.04934787016,
+        "width": 310,
+        "height": 420,
+        "backingWidth": 620,
+        "backingHeight": 840
+      },
+      "stability": {
+        "comparedAnimationFrames": 2,
+        "bytes": 2083200,
+        "changedBytes": 0
+      }
+    },
+    {
+      "name": "empty-fuel",
+      "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass31-2026-10-09\\direct-plume-1\\empty-fuel.png",
+      "sample": {
+        "t": 11,
+        "alt": 300,
+        "tilt": 0.35,
+        "fuel": 0,
+        "throttle": 1,
+        "v": 0,
+        "h": 0,
+        "x": 0
+      },
+      "pixels": {
+        "changed": 0,
+        "totalLight": 0,
+        "groundChanged": 0,
+        "upstreamChanged": 0,
+        "nozzleConnected": 0,
+        "maxChangedY": null,
+        "surface": 331.8,
+        "pivot": 201.68193133532907,
+        "width": 310,
+        "height": 420,
+        "backingWidth": 620,
+        "backingHeight": 840
+      },
+      "stability": {
+        "comparedAnimationFrames": 2,
+        "bytes": 2083200,
+        "changedBytes": 0
+      }
+    },
+    {
+      "name": "below-threshold",
+      "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass31-2026-10-09\\direct-plume-1\\below-threshold.png",
+      "sample": {
+        "t": 13,
+        "alt": 300,
+        "tilt": 0,
+        "fuel": 50,
+        "throttle": 0.1,
+        "v": 0,
+        "h": 0,
+        "x": 0
+      },
+      "pixels": {
+        "changed": 0,
+        "totalLight": 0,
+        "groundChanged": 0,
+        "upstreamChanged": 0,
+        "nozzleConnected": 0,
+        "maxChangedY": null,
+        "surface": 331.8,
+        "pivot": 194,
+        "width": 310,
+        "height": 420,
+        "backingWidth": 620,
+        "backingHeight": 840
+      },
+      "stability": {
+        "comparedAnimationFrames": 2,
+        "bytes": 2083200,
+        "changedBytes": 0
+      }
+    },
+    {
+      "name": "touchdown",
+      "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass31-2026-10-09\\direct-plume-1\\touchdown.png",
+      "sample": {
+        "t": 15,
+        "alt": 0,
+        "tilt": 0,
+        "fuel": 50,
+        "throttle": 1,
+        "v": 0,
+        "h": 0,
+        "x": 0
+      },
+      "pixels": {
+        "changed": 0,
+        "totalLight": 0,
+        "groundChanged": 0,
+        "upstreamChanged": 0,
+        "nozzleConnected": 0,
+        "maxChangedY": null,
+        "surface": 331.8,
+        "pivot": 301.3,
+        "width": 310,
+        "height": 420,
+        "backingWidth": 620,
+        "backingHeight": 840
+      },
+      "stability": {
+        "comparedAnimationFrames": 2,
+        "bytes": 2083200,
+        "changedBytes": 0
+      }
+    },
+    {
+      "name": "desktop-full",
+      "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass31-2026-10-09\\direct-plume-1\\desktop-full.png",
+      "pixels": {
+        "changed": 9097,
+        "totalLight": 221943,
+        "groundChanged": 0,
+        "upstreamChanged": 0,
+        "nozzleConnected": 40,
+        "maxChangedY": 222.25,
+        "surface": 331.8,
+        "pivot": 154.3,
+        "width": 1014,
+        "height": 420,
+        "backingWidth": 2028,
+        "backingHeight": 840
+      },
+      "stability": {
+        "comparedAnimationFrames": 2,
+        "bytes": 6814080,
+        "changedBytes": 0
+      },
+      "errors": [],
+      "completed": true
+    }
+  ]
+}

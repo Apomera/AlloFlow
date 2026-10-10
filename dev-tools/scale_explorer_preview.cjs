@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const assets = {
+  '/stem_lab/assets/scale-explorer/reef/reef-geography.json': 'stem_lab/assets/scale-explorer/reef/reef-geography.json',
   '/stem_lab/assets/terrain/everest-elevation.json': 'stem_lab/assets/terrain/everest-elevation.json',
   '/react.js': 'desktop/web-app/node_modules/react/umd/react.production.min.js',
   '/react-dom.js': 'desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js',
@@ -12,11 +13,15 @@ const assets = {
   '/vendor/three-r128/GLTFLoader.js': 'vendor/three-r128/GLTFLoader.js',
   '/stem_lab/stem_lab_module.js': 'stem_lab/stem_lab_module.js',
   '/stem_lab/stem_tool_scaleexplorer.js': 'stem_lab/stem_tool_scaleexplorer.js',
+  '/stem_lab/assets/astronomy/earth-bluemarble-2k.png': 'stem_lab/assets/astronomy/earth-bluemarble-2k.png',
+  '/stem_lab/assets/astronomy/earth-blackmarble-2016.jpg': 'stem_lab/assets/astronomy/earth-blackmarble-2016.jpg',
   '/stem_lab/assets/astronomy/scale-earth-bluemarble-1k.png': 'stem_lab/assets/astronomy/scale-earth-bluemarble-1k.png',
   '/stem_lab/assets/astronomy/moon-lroc-color-2k.jpg': 'stem_lab/assets/astronomy/moon-lroc-color-2k.jpg',
   '/stem_lab/assets/astronomy/moon-lola-height-1k.jpg': 'stem_lab/assets/astronomy/moon-lola-height-1k.jpg',
+  '/stem_lab/assets/astronomy/jupiter-opal-2015.jpg': 'stem_lab/assets/astronomy/jupiter-opal-2015.jpg',
   '/stem_lab/assets/astronomy/scale-jupiter-hubble-1k.jpg': 'stem_lab/assets/astronomy/scale-jupiter-hubble-1k.jpg',
-  '/stem_lab/assets/anatomy/body-surface/makehuman-body-surface.glb': 'stem_lab/assets/anatomy/body-surface/makehuman-body-surface.glb'
+  '/stem_lab/assets/anatomy/body-surface/makehuman-body-surface.glb': 'stem_lab/assets/anatomy/body-surface/makehuman-body-surface.glb',
+  '/stem_lab/assets/scale-explorer/liberty/liberty-sculpture.glb': 'stem_lab/assets/scale-explorer/liberty/liberty-sculpture.glb'
 };
 const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Scale Explorer · Immersive atlas</title><style>body{margin:0;background:#0f172a;font-family:system-ui,sans-serif}#preview{max-width:1500px;margin:auto}button,input,select{font-family:inherit}.preview-theme{padding:8px 16px;color:#dbeafe;display:flex;justify-content:flex-end;gap:8px;font-size:12px}.preview-theme select{color:#fff;background:#1e293b;border:1px solid #64748b;border-radius:6px;padding:4px}</style></head><body><main id="preview"></main><p id="announcer" role="status" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)"></p><script src="/react.js"></script><script src="/react-dom.js"></script><script src="/three.js"></script><script src="/stem_lab/stem_lab_module.js"></script><script src="/stem_lab/stem_tool_scaleexplorer.js"></script><script>
 function Explorer(props){var data=React.useState({});return window.StemLab._registry.scaleExplorer.render({React:React,toolData:data[0],setToolData:data[1],theme:props.theme,t:function(k,fb){return fb==null?k:fb;},announceToSR:function(s){document.getElementById('announcer').textContent=s;}});}

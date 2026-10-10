@@ -1,0 +1,33 @@
+{
+  "name": "near-left",
+  "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass30-2026-10-09\\direct-plume-3\\near-left.png",
+  "sample": {
+    "t": 7,
+    "alt": 0.5,
+    "tilt": -0.35,
+    "fuel": 50,
+    "throttle": 1,
+    "v": 0,
+    "h": 0,
+    "x": 0
+  },
+  "pixels": {
+    "changed": 2427,
+    "totalLight": 133649,
+    "groundChanged": 0,
+    "upstreamChanged": 0,
+    "nozzleConnected": 40,
+    "maxChangedY": 331.75,
+    "surface": 331.8,
+    "pivot": 294.04934787016,
+    "width": 310,
+    "height": 420,
+    "backingWidth": 620,
+    "backingHeight": 840
+  },
+  "stability": {
+    "comparedAnimationFrames": 2,
+    "bytes": 2083200,
+    "changedBytes": 0
+  }
+}

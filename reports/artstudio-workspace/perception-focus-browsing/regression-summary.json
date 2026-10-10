@@ -1,0 +1,22 @@
+{
+  "sourceSHA256": "0c4029cbcaa25d427010cbe6edf04810c500eddcfe18457486ad8f3e8a40db36",
+  "results": [
+    {
+      "file": "tests/perception_lab_focus_workspace.test.js",
+      "passed": 23
+    },
+    {
+      "file": "tests/perception_lab_live_comparison.test.js",
+      "passed": 15
+    },
+    {
+      "file": "tests/perception_lab_precision_controls.test.js",
+      "passed": 40
+    },
+    {
+      "file": "tests/perception_lab_png_export.test.js",
+      "passed": 22
+    }
+  ],
+  "total": 100
+}

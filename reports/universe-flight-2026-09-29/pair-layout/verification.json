@@ -1,0 +1,40 @@
+{
+  "completed": true,
+  "enhancement": 66,
+  "pins": {
+    "renderer": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7",
+    "ui": "e487e503c86194b227e6d0c087f6f0c8cb139e229c0db37a6a4790593a1a7d33"
+  },
+  "sourceSyntax": true,
+  "sourceMirrorsExact": true,
+  "uiReversePatchExact": true,
+  "rendererUnchanged": true,
+  "previewManifestUnchanged": true,
+  "previewImagesUnchanged": 18,
+  "previewMirrorsExact": true,
+  "scopedWhitespace": true,
+  "indexEmpty": true,
+  "unit": {
+    "passed": 17,
+    "failed": 0,
+    "projectionCases": 240,
+    "layoutViewportCases": 288,
+    "evidence": "unit/pair-layout-refined-summary.json"
+  },
+  "browser": {
+    "workflows": 9,
+    "accessibilityScopes": 5,
+    "screenshots": 8,
+    "touchTargets": 8,
+    "evidence": "browser-verified/check.json"
+  },
+  "mainReport": {
+    "beforeSha256": "bb04cd8e3561c9d150f5ee4df33e529f1939f2089e8bb51b237de0d69617340a",
+    "afterSha256": "d78afa1ebc988ce7c9d1ea0298b0a3b250370145a320fc844343bd9378590b8d"
+  },
+  "limits": [
+    "Layout protects projected centers and labels; limited space can still require minimizing the panel.",
+    "Chromium SwiftShader browser checks; full application suite and physical-device GPU matrix not run."
+  ],
+  "committed": false
+}

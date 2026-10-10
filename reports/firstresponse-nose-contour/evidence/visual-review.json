@@ -1,0 +1,26 @@
+{
+  "sourceSHA256": "164407bb58546fc91584761e51e9a907d2eacd33442a0a5fae31da0c22ef37c0",
+  "accepted": true,
+  "imageHashes": {
+    "adult-support-baseline-face.png": "adcaed1fbd64d778a935c750216725ebe6f4c7b373cdbe37a8558f4510405adf",
+    "adult-support-baseline-stage.png": "a1957b49b5bebb981166e06f7db9d557ca5f9d7329cc83dfffdcc442ba810af6",
+    "adult-support-candidate-face.png": "0063540226e477abbeb8928eb23ec12c76a228fa2b546012e54d744872c82c3e",
+    "adult-support-candidate-stage.png": "2a54c9d70c8193f8071eb98b3a786a4a8cc48df96f20a4d1c1a30b96d9c8d9e8",
+    "adult-support-before-baseline-face.png": "eb73083b6152966cdd0b22f515b0b188082f4553ca95038436fd7f39ce57f730",
+    "adult-support-before-baseline-stage.png": "d3b0015eeca7290173f6e91840542191f08277745dc1bbda17c4cba835be543e",
+    "adult-support-before-candidate-face.png": "a8040590c098fe60fb1982a953fe17bbe10a992b726f1696ef4ae003dc20248b",
+    "adult-support-before-candidate-stage.png": "6305f7846559868677404077d84cdd9183535d574f3dd2d625046dd097effac3",
+    "infant-support-contrast-baseline-face.png": "c299942b525ef8800833fa40231e88263f9de26a34a31f523c5b03bffefa14da",
+    "infant-support-contrast-baseline-stage.png": "5006a4c3540108c361f1ccf96e9dea05e0c84b897d696fa6888f37409cdcc3d1",
+    "infant-support-contrast-candidate-face.png": "dda4f87bbc4d84b731c57018d89fad001b2984f20404f11ca5aed6038670a192",
+    "infant-support-contrast-candidate-stage.png": "67256f976d20cc70e2a3116e9aba9a332b8dfd48cedfa55c09aa73f1e5c12c44"
+  },
+  "observations": [
+    "Viewed all twelve final baseline/candidate stage images and face crops after the camera fixture repair.",
+    "The adult supporting-hand views before and after the turn show a less prominent, shallower nasal tip and a gentler bridge-to-tip transition. The change is modest at full-stage scale and clearer in the face crops.",
+    "The rounded tip, tapered bridge and nostril detail remain visible. No new detached edge, sharp ridge or surface gap is apparent in either adult view.",
+    "The infant contrast view retains a readable curved nose outline and nostril marks. This narrow supporting-hand view already crops the outer head edge; it offers limited evidence for surface realism.",
+    "Hand placement, head proportions and surrounding facial landmarks look unchanged in the final comparisons. The mannequin remains stylized."
+  ],
+  "limitations": "Three matched raw-module Supporting hand close-ups only, using poses 4, 5 and 8. The initial Head close-up comparison was rejected because its automatic fit changed the camera; archived diagnostics retain that run. Full application loading, full-app build and deployment were not tested."
+}

@@ -1,0 +1,27 @@
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict'),cp=require('node:child_process');
+const repo='C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated',work=path.join(__dirname,'pass55-work'),report=path.join(repo,'reports/cephalopod-hunter-enhancement/pass-fifty-five');
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex'),read=p=>JSON.parse(fs.readFileSync(p,'utf8'));
+const guards=read(work+'/refined-change-guards.json'),fixtures=read(work+'/fixture-edits.json'),native=read(work+'/final-native-views/manifest.json'),review=read(work+'/refined-surface-cpu-review.json');
+const candidate=fs.readFileSync(work+'/refined-source.js','utf8'),baseline=fs.readFileSync(work+'/baseline-source.js','utf8');
+assert.equal(sha(candidate),guards.candidateSHA);assert.equal(sha(baseline),guards.baselineSHA);assert.equal(native.sourceSHA,guards.candidateSHA);assert.equal(native.frames.length,13);assert.equal(native.checks.length,10);assert.ok(native.checks.every(c=>c.passed===true));assert.deepEqual(native.errors,[]);assert.ok(JSON.stringify(review).includes(guards.candidateSHA));assert.equal(fixtures.candidateSHA,guards.candidateSHA);new Function(candidate);
+assert.equal(require(work+'/cephalopod_pass55_reference.cjs').restorePass55Source(candidate),baseline);
+const mirrors=['stem_lab/stem_tool_cephalopodlab.js','desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js','desktop/app-build/stem_lab/stem_tool_cephalopodlab.js','desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js'];
+const git=args=>{const r=cp.spawnSync('git',args,{cwd:repo,windowsHide:true,encoding:'utf8',env:{...process.env,GIT_OPTIONAL_LOCKS:'0'}});assert.equal(r.status,0,r.stderr);return r.stdout;};
+const indexPath=path.resolve(repo,git(['rev-parse','--git-path','index']).trim()),indexBefore=sha(fs.readFileSync(indexPath));
+const stagedBefore=git(['diff','--cached','--name-only','--',...mirrors,...fixtures.edits.map(e=>e.path),...fixtures.newFiles.map(e=>e.repoPath)]);assert.equal(stagedBefore,'');
+for(const p of mirrors)assert.equal(sha(fs.readFileSync(repo+'/'+p)),guards.baselineSHA,p);
+for(const e of fixtures.edits)assert.equal(sha(fs.readFileSync(repo+'/'+e.path)),e.originalSHA,e.path);
+for(const e of fixtures.newFiles){assert.ok(!fs.existsSync(repo+'/'+e.repoPath),e.repoPath);assert.equal(sha(fs.readFileSync(e.taskPath)),e.SHA);}
+for(const p of mirrors)fs.writeFileSync(repo+'/'+p,candidate);
+for(const e of fixtures.edits){let s=fs.readFileSync(repo+'/'+e.path,'utf8');for(const c of e.changes){assert.equal(s.split(c.before).length-1,1);s=s.replace(c.before,c.after);}assert.equal(sha(s),e.proposedSHA);fs.writeFileSync(repo+'/'+e.path,s);}
+for(const e of fixtures.newFiles)fs.copyFileSync(e.taskPath,repo+'/'+e.repoPath);
+for(const p of mirrors)assert.equal(sha(fs.readFileSync(repo+'/'+p)),guards.candidateSHA);
+assert.equal(require(repo+'/tests/helpers/cephalopod_pass55_reference.cjs').restorePass55Source(fs.readFileSync(repo+'/'+mirrors[0],'utf8')),baseline);
+git(['diff','--check','--',...mirrors,...fixtures.edits.map(e=>e.path),...fixtures.newFiles.map(e=>e.repoPath)]);
+assert.equal(sha(fs.readFileSync(indexPath)),indexBefore);assert.equal(git(['diff','--cached','--name-only','--',...mirrors,...fixtures.edits.map(e=>e.path),...fixtures.newFiles.map(e=>e.repoPath)]),'');
+fs.mkdirSync(report,{recursive:true});
+for(const p of ['baseline-source.js','refined-source.js','refined-change-guards.json','fixture-edits.json','refined-surface-cpu-review.json','cephalopod_pass55_reference.cjs','gallery.html'])fs.copyFileSync(work+'/'+p,report+'/'+p);
+for(const p of ['final-native-views','candidate-native-01-views'])fs.cpSync(work+'/'+p,report+'/'+p,{recursive:true,errorOnExist:true});
+for(const p of ['prepare-pass55.cjs','capture-pass55.cjs','pass55-surface-check.cjs','prepare-pass55-fixture-edits.cjs','adopt-pass55.cjs','build-pass55-gallery.cjs'])fs.copyFileSync(path.join(__dirname,p),report+'/'+p);
+const receipt={status:'implemented_targeted_validation_pending',sourceSHA:guards.candidateSHA,baselineSHA:guards.baselineSHA,mirrors,scope:'Existing surface sheet only: world-anchored soft crossing waves, derivative footprint filtering and exact plain-shader fallback. Clock follows existing caustic phase; existing day/depth opacity, low-core suppression, animal, cameras and gameplay preserved.',independentChecks:14,numericSamples:8192,nativeProfiles:3,nativeChecks:10,nativeFrames:13,exactInverse:true,fixtures:fixtures.verification,scopedDiffCheck:true,indexSHA:indexBefore,indexUnchanged:true,staged:false,committed:false,pushed:false,deployed:false,limitations:'Procedural optical finish, not a fluid or refraction simulation. No physical-device FPS claim. Native profiles exercise the existing no-WebAudio fallback; sound is not evaluated. The broad suite is not being repeated.',reviewedImages:['humboldtSquid-desktop-hunt-surface.png'],earlierAttempts:['candidate-native-01-views: first wave strength was visually too subtle; retained, not credited as final-source validation.','Initial sandbox capture bootstrap could not chdir into the external repository; rerun approved through automatic review.'],createdAt:new Date().toISOString()};
+fs.writeFileSync(report+'/audit.json',JSON.stringify(receipt,null,2)+'\n');fs.writeFileSync(work+'/adoption-receipt.json',JSON.stringify(receipt,null,2)+'\n');console.log(JSON.stringify({sourceSHA:guards.candidateSHA,mirrors:4,nativeFrames:13,nativeChecks:10,indexUnchanged:true,committed:false,report}));

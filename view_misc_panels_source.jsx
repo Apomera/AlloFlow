@@ -2215,101 +2215,600 @@ function sourcePanelImportSummary(outcome, text) {
     .replace(/\{(saved|replaced|skipped|failed)\}/g, (_, key) => String(counts[key]));
 }
 
-// Discovery and approval live separately from the quick-generation button.
+// Keep private evidence in memory for this editor instance, including panel remounts.
+const sourceResearchSessions = new WeakMap();
+function SourceResearchDialog({ title, onClose, children, sourceText, busy, scrollBody = true }) {
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    const previous = document.activeElement;
+    const body = document.body;
+    const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' });
+    if (body && ++scrollLock.count === 1) { scrollLock.prev = body.style.overflow; body.style.overflow = 'hidden'; }
+    ref.current?.focus();
+    return () => {
+      if (body && --scrollLock.count === 0) body.style.overflow = scrollLock.prev;
+      if (previous?.isConnected) previous.focus();
+    };
+  }, []);
+  const containFocus = event => {
+    if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); if (!busy) onClose(); return; }
+    if (event.key !== 'Tab') return;
+    const controls = Array.from(ref.current.querySelectorAll('button, input, select, textarea, a[href], summary, [tabindex="0"]'))
+      .filter(el => {
+        if (el.tabIndex < 0 || el.matches(':disabled, input[type="hidden"]') || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        for (let ancestor = el; ancestor && ancestor !== ref.current; ancestor = ancestor.parentElement) {
+          if (ancestor.tagName === 'DETAILS' && !ancestor.open && ancestor.querySelector(':scope > summary') !== el) return false;
+          const style = window.getComputedStyle(ancestor);
+          if (style.display === 'none' || style.visibility === 'hidden') return false;
+        }
+        return true;
+      });
+    const first = controls[0], last = controls[controls.length - 1];
+    if (!first) { event.preventDefault(); ref.current.focus(); }
+    else if (event.shiftKey && (document.activeElement === first || document.activeElement === ref.current)) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && (document.activeElement === last || document.activeElement === ref.current)) { event.preventDefault(); first.focus(); }
+  };
+  const dialog = <div className="fixed inset-0 z-[10000] bg-black/40 flex items-center justify-center p-2 sm:p-4" onMouseDown={event => { if (event.target === event.currentTarget && !busy) onClose(); }}>
+    <section ref={ref} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} onKeyDown={containFocus}
+      className="w-full max-w-2xl rounded-md bg-white text-slate-900 shadow-xl flex flex-col overflow-hidden outline-none" style={{ maxHeight: 'calc(100dvh - 2rem)' }}>
+      <header className="flex items-center justify-between gap-3 px-4 py-2 border-b border-slate-200 shrink-0">
+        <h2 className="font-bold text-base">{title}</h2>
+        <button type="button" disabled={busy} onClick={onClose} className="w-11 h-11 shrink-0 flex items-center justify-center rounded hover:bg-slate-100 disabled:opacity-50" title={sourceText('common.close', 'Close')} aria-label={sourceText('common.close', 'Close')}><X size={20} aria-hidden="true" /></button>
+      </header>
+      <div className={scrollBody ? 'p-4 overflow-y-auto overscroll-contain space-y-4 min-h-0' : 'flex flex-col flex-1 min-h-0 overflow-hidden'}>{children}</div>
+    </section>
+  </div>;
+  return window.ReactDOM?.createPortal ? window.ReactDOM.createPortal(dialog, document.body) : dialog;
+}
+
+function sourceReviewKey(item) {
+  if (window.AlloModules?.SourceResearchReview?.sourceKey) return window.AlloModules.SourceResearchReview.sourceKey(item);
+  if (item.sourceKey) return item.sourceKey;
+  if (item.kind === 'document') return 'document:' + item.sourceId;
+  if (item.url) { try { const url = new URL(item.url); url.hash = ''; return 'web:' + url.href.replace(/\/$/, ''); } catch (_) {} }
+  return item.kind + ':' + (item.sourceId || item.id);
+}
+
+function sourceReviewVideoUrl(value) {
+  if (window.AlloModules?.SourceResearchReview?.videoUrl) return window.AlloModules.SourceResearchReview.videoUrl(value);
+  try {
+    const url = new URL(String(value || '').trim());
+    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.port) return '';
+    const host = url.hostname.toLowerCase();
+    const shortHost = ['youtu.be', 'www.youtu.be'].includes(host);
+    const videoHost = ['youtube.com', 'www.youtube.com', 'm.youtube.com', 'music.youtube.com'].includes(host);
+    const shortPath = /^\/([A-Za-z0-9_-]{11})\/?$/.exec(url.pathname);
+    const videoPath = /^\/(?:shorts|embed|live)\/([A-Za-z0-9_-]{11})\/?$/.exec(url.pathname);
+    const id = shortHost && shortPath ? shortPath[1] : videoHost && /^\/watch\/?$/.test(url.pathname) && url.searchParams.getAll('v').length === 1 ? url.searchParams.get('v')
+      : videoHost && videoPath ? videoPath[1] : '';
+    return id?.length === 11 && /^[A-Za-z0-9_-]{11}$/.test(id) ? 'https://www.youtube.com/watch?v=' + id : '';
+  } catch (_) { return ''; }
+}
+
+function sourceReviewVideoAvailability({ ai, callGemini, isTeacherMode, studentAiFeaturesHidden } = {}) {
+  const fn = callGemini !== undefined ? callGemini : window.callGemini;
+  if (fn?._alloQrBlocked || window.__alloStudentAiDisabled || callGemini === null || (!isTeacherMode && studentAiFeaturesHidden)) return 'disabled';
+  if (window.ALLOFLOW_MANAGED_AI_POLICY != null) return 'managed';
+  if (ai?.backend && ai.backend !== 'gemini' || fn?._alloflowBackend && fn._alloflowBackend !== 'gemini') return 'provider';
+  return typeof fn === 'function' && fn._alloflowVideoInput === true ? 'ready' : 'unavailable';
+}
+
+function sourceReviewStoreTranscript(cache, topic, snapshot) {
+  const url = sourceReviewVideoUrl(snapshot?.url);
+  if (!url || typeof snapshot?.transcript !== 'string' || snapshot.transcript.trim().length < 20 || snapshot.transcript.length > 200000 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(snapshot.transcript)) return cache;
+  const key = sourceReviewTranscriptKey(snapshot);
+  if (!key) return cache;
+  const entries = cache?.topic === topic ? cache.entries || [] : [];
+  return { topic, entries: [...entries.filter(entry => sourceReviewTranscriptKey(entry) !== key), { url, ...(snapshot.videoClip ? { videoClip: { startSeconds: snapshot.videoClip.startSeconds, endSeconds: snapshot.videoClip.endSeconds } } : {}), title: String(snapshot.title || 'YouTube video').slice(0, 300),
+    transcript: snapshot.transcript, retrievedAt: typeof snapshot.retrievedAt === 'string' ? snapshot.retrievedAt : '' }].slice(-3) };
+}
+
+function sourceReviewTranscriptKey(value) {
+  const url = sourceReviewVideoUrl(value?.url);
+  if (!url) return '';
+  if (!Object.prototype.hasOwnProperty.call(value, 'videoClip')) return url;
+  const clip = value.videoClip;
+  return clip && typeof clip === 'object' && !Array.isArray(clip) && Number.isSafeInteger(clip.startSeconds) && clip.startSeconds >= 0 && Number.isSafeInteger(clip.endSeconds) && clip.endSeconds > clip.startSeconds
+    ? url + '#clip=' + clip.startSeconds + '-' + clip.endSeconds : '';
+}
+
+function sourceReviewParseVideoTime(value) {
+  const text = String(value ?? '').trim();
+  if (!/^\d+(?::[0-5]\d){0,2}$/.test(text)) return null;
+  const seconds = text.split(':').reduce((total, part) => total * 60 + Number(part), 0);
+  return Number.isSafeInteger(seconds) ? seconds : null;
+}
+
+function sourceReviewVideoTime(seconds) {
+  const hours = Math.floor(seconds / 3600), minutes = Math.floor(seconds % 3600 / 60), rest = String(seconds % 60).padStart(2, '0');
+  return hours ? hours + ':' + String(minutes).padStart(2, '0') + ':' + rest : minutes + ':' + rest;
+}
+
+function sourceReviewLinkedVideoStart(value) {
+  if (!sourceReviewVideoUrl(value)) return null;
+  const url = new URL(value), hash = new URLSearchParams(url.hash.slice(1));
+  const values = [...url.searchParams.getAll('t'), ...url.searchParams.getAll('start'), ...hash.getAll('t')];
+  if (values.length !== 1) return null;
+  if (/^\d+$/.test(values[0])) return sourceReviewParseVideoTime(values[0]);
+  const match = /^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/.exec(values[0]);
+  if (!match || !match[0]) return null;
+  const seconds = Number(match[1] || 0) * 3600 + Number(match[2] || 0) * 60 + Number(match[3] || 0);
+  return Number.isSafeInteger(seconds) ? seconds : null;
+}
+
+function sourceReviewVideoClipReady(props = {}) {
+  const fn = props.callGemini !== undefined ? props.callGemini : window.callGemini;
+  return sourceReviewVideoAvailability(props) === 'ready' && fn?._alloflowVideoClipInput === true && typeof window.AlloModules?.SourceResearchReview?.transcriptKey === 'function';
+}
+
+function SourceTranscriptChooser({ snapshot, packet, disabled, sourceText, onApply }) {
+  const api = window.AlloModules?.SourceResearchReview;
+  const candidates = React.useMemo(() => { try { return api?.transcriptPassages?.(snapshot) || []; } catch (_) { return []; } }, [api, snapshot]);
+  const currentIds = candidates.filter(candidate => packet?.items.some(item => item.evidenceType === 'AI video transcript' && item.id === candidate.id)).map(candidate => candidate.id);
+  const selectionKey = currentIds.join('|');
+  const [chosen, setChosen] = React.useState(currentIds);
+  const [query, setQuery] = React.useState('');
+  const [page, setPage] = React.useState(0);
+  const [error, setError] = React.useState('');
+  const resultStatus = React.useRef(null);
+  const focusResults = React.useRef(false);
+  const resultId = React.useId();
+  React.useEffect(() => { setChosen(currentIds); setError(''); }, [snapshot, selectionKey]);
+  React.useEffect(() => { setPage(0); setQuery(''); }, [snapshot]);
+  const filtered = candidates.filter(item => item.passage.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
+  const pages = Math.max(1, Math.ceil(filtered.length / 8)), currentPage = Math.min(page, pages - 1);
+  React.useLayoutEffect(() => {
+    if (!focusResults.current) return;
+    focusResults.current = false;
+    resultStatus.current?.focus({ preventScroll: true });
+    resultStatus.current?.scrollIntoView?.({ block: 'nearest' });
+  }, [currentPage]);
+  const changePage = next => { focusResults.current = true; setPage(next); };
+  const sourceKey = api?.sourceKey({ kind: 'web', url: snapshot.url });
+  const retained = (packet?.items || []).filter(item => !(sourceReviewTranscriptKey(item) === sourceReviewTranscriptKey(snapshot) && item.evidenceType === 'AI video transcript'));
+  const capacity = Math.max(0, Math.min(4 - retained.filter(item => sourceReviewKey(item) === sourceKey).length, (api?.maxItems || 24) - retained.length));
+  const emptiesSource = !chosen.length && !retained.some(item => sourceReviewKey(item) === sourceKey);
+  const changed = chosen.length !== currentIds.length || chosen.some(id => !currentIds.includes(id));
+  const label = (key, fallback, values) => Object.entries(values || {}).reduce((value, [name, replacement]) => value.replace('{' + name + '}', String(replacement)), sourceText(key, fallback, values));
+  const rangeLabel = snapshot.videoClip ? label('input.research_requested_clip', 'Requested clip {start} to {end}', { start: sourceReviewVideoTime(snapshot.videoClip.startSeconds), end: sourceReviewVideoTime(snapshot.videoClip.endSeconds) }) : sourceText('input.research_whole_video', 'Whole video');
+  const apply = () => {
+    try { onApply(snapshot, chosen); setError(''); } catch (failure) { setError(failure.message || sourceText('input.research_transcript_apply_error', 'The excerpt selection could not be applied.')); }
+  };
+  return <details data-transcript-chooser role="group" aria-label={(snapshot.title || 'YouTube video') + ': ' + rangeLabel}>
+    <summary className="min-h-11 py-3 cursor-pointer font-medium">{sourceText('input.research_choose_transcript', 'Choose transcript excerpts')}{snapshot.videoClip && <span className="block text-xs font-normal">{label('input.research_requested_clip', 'Requested clip {start} to {end}', { start: sourceReviewVideoTime(snapshot.videoClip.startSeconds), end: sourceReviewVideoTime(snapshot.videoClip.endSeconds) })}</span>}</summary>
+    <div className="space-y-3">
+      {!snapshot.videoClip && <p className="text-xs font-medium">{sourceText('input.research_whole_video', 'Whole video')}</p>}
+      <p className="text-xs text-amber-900">{sourceText('input.research_video_transcript_note', 'AI-generated transcript, not verified captions. It may contain transcription errors.')}</p>
+      <label className="block text-xs">{sourceText('input.research_transcript_find', 'Find in transcript')}
+        <input type="search" aria-describedby={resultId} className="block w-full min-h-11 p-2 border border-indigo-200 rounded text-sm" value={query} maxLength={200} disabled={disabled} onChange={event => { setQuery(event.target.value); setPage(0); }} />
+      </label>
+      <p ref={resultStatus} id={resultId} data-transcript-results tabIndex={-1} role="status" aria-atomic="true" className="text-xs rounded focus:outline focus:outline-2 focus:outline-indigo-600">{filtered.length ? label('input.research_transcript_results', '{count} matching excerpts. Page {page} of {pages}.', { count: filtered.length, page: currentPage + 1, pages }) : sourceText('input.research_transcript_no_matches', 'No matching excerpts.')}</p>
+      <p role="status" className="text-xs">{label('input.research_transcript_selection', '{selected} of {capacity} excerpt slots selected', { selected: chosen.length, capacity })}</p>
+      {emptiesSource && <p className="text-xs text-amber-900">{sourceText('input.research_transcript_keep_one', 'Keep at least one excerpt, or remove this source.')}</p>}
+      {packet?.sourceDecisions?.[sourceKey] === false && <p className="text-xs">{sourceText('input.research_transcript_source_excluded', 'This source remains excluded from writing.')}</p>}
+      <div className="space-y-3">{filtered.slice(currentPage * 8, currentPage * 8 + 8).map(candidate => {
+        const number = candidates.findIndex(item => item.id === candidate.id) + 1;
+        return <div key={candidate.id} data-transcript-candidate={candidate.id}>
+          <label className="flex gap-2 items-center min-h-11 text-xs">
+            <input type="checkbox" checked={chosen.includes(candidate.id)} disabled={disabled || !chosen.includes(candidate.id) && chosen.length >= capacity}
+              onChange={event => { setError(''); setChosen(previous => event.target.checked ? [...previous, candidate.id] : previous.filter(id => id !== candidate.id)); }} />
+            <span>{label('input.research_transcript_keep', 'Keep excerpt {number}', { number })} <span className="text-slate-600">{candidate.locatorLabel}</span></span>
+          </label>
+          <p className="whitespace-pre-wrap break-words border-l-2 border-indigo-200 pl-2">{candidate.passage}</p>
+        </div>;
+      })}</div>
+      <div className="flex flex-wrap items-center gap-2">
+        <button type="button" className="w-11 h-11 inline-flex items-center justify-center border border-indigo-300 rounded disabled:opacity-50" title={sourceText('input.research_transcript_previous', 'Previous excerpts')} aria-label={sourceText('input.research_transcript_previous', 'Previous excerpts')} disabled={disabled || currentPage === 0} onClick={() => changePage(currentPage - 1)}><ChevronLeft size={18} aria-hidden="true" /></button>
+        <span className="text-xs">{label('input.research_transcript_page', 'Page {page} of {pages}', { page: currentPage + 1, pages })}</span>
+        <button type="button" className="w-11 h-11 inline-flex items-center justify-center border border-indigo-300 rounded disabled:opacity-50" title={sourceText('input.research_transcript_next', 'Next excerpts')} aria-label={sourceText('input.research_transcript_next', 'Next excerpts')} disabled={disabled || currentPage >= pages - 1} onClick={() => changePage(currentPage + 1)}><ChevronRight size={18} aria-hidden="true" /></button>
+        <button type="button" className="min-h-11 px-3 py-2 border border-indigo-300 rounded disabled:opacity-50" disabled={disabled || !changed} onClick={() => { setChosen(currentIds); setError(''); }}>{sourceText('input.research_transcript_reset', 'Reset selection')}</button>
+        <button type="button" className="min-h-11 px-3 py-2 bg-indigo-600 text-white rounded disabled:opacity-50" disabled={disabled || !changed || emptiesSource || chosen.length > capacity} onClick={apply}>{sourceText('input.research_transcript_apply', 'Apply excerpts')}</button>
+      </div>
+      {error && <p role="alert" className="text-rose-800 break-words">{error}</p>}
+    </div>
+  </details>;
+}
+
 // Every asynchronous result belongs to the visible topic/document selection.
-function SourceResearchReviewPanel({ topic, includeWeb, includeDocuments, documentsOnly, selectedIds, sources, libraryReady, busy, generate, sourceText }) {
-  const [packet, setPacket] = React.useState(null);
+function SourceResearchReviewPanel({ topic, includeWeb, includeDocuments, documentsOnly, selectedIds, sources, libraryReady, busy, generate, sourceText, researchConfig, packet: savedPacket, onPacketChange, draft: savedDraft, onDraftChange, videoAvailability: suppliedVideoAvailability, videoClipReady: suppliedVideoClipReady, transcripts: savedTranscripts, onTranscriptsChange }) {
+  const [localPacket, setLocalPacket] = React.useState(null);
+  const packet = onPacketChange ? savedPacket : localPacket;
+  const setPacket = next => onPacketChange ? onPacketChange(typeof next === 'function' ? next(packet) : next) : setLocalPacket(next);
   const [working, setWorking] = React.useState('');
   const [error, setError] = React.useState('');
-  const [query, setQuery] = React.useState('');
-  const [url, setUrl] = React.useState('');
-  const [title, setTitle] = React.useState('');
-  const [passage, setPassage] = React.useState('');
+  const [outcome, setOutcome] = React.useState('');
+  const [progress, setProgress] = React.useState('');
+  const [localTranscripts, setLocalTranscripts] = React.useState(null);
+  const transcripts = onTranscriptsChange ? savedTranscripts : localTranscripts;
+  const videoAvailability = suppliedVideoAvailability || sourceReviewVideoAvailability();
+  const videoReady = videoAvailability === 'ready';
+  const clipReady = videoReady && (suppliedVideoClipReady ?? sourceReviewVideoClipReady());
+  const clipUnavailable = sourceText('input.research_clip_unavailable', 'The video clip reader is not ready. Reload the app, or choose Whole video.');
+  const videoHint = videoAvailability === 'disabled' ? sourceText('input.research_video_disabled', 'Video transcription is disabled in this session. You can paste a permitted transcript.')
+    : videoAvailability === 'managed' ? sourceText('input.research_video_managed', 'This deployment does not allow video transcription. You can paste a permitted transcript.')
+      : videoAvailability === 'provider' ? sourceText('input.research_video_provider', 'Video transcription requires Gemini. Your selected provider is unchanged; you can paste a transcript.')
+        : sourceText('input.research_video_unavailable', 'The Gemini video reader is not ready. Reload the app or paste a transcript.');
+  const transcriptEntries = transcripts?.topic === topic.trim() ? transcripts.entries || [] : [];
+  React.useEffect(() => {
+    if (transcripts && transcripts.topic !== topic.trim()) { if (onTranscriptsChange) onTranscriptsChange(null); else setLocalTranscripts(null); }
+  }, [topic]);
+  const [localDraft, setLocalDraft] = React.useState(null);
+  const draftRecord = onDraftChange ? savedDraft : localDraft;
+  const draft = draftRecord?.topic === topic.trim() ? draftRecord : {};
+  const { query = '', url = '', title = '', passage = '', videoScope = 'whole', clipStart = '0:00', clipEnd = '' } = draft;
+  const typedVideo = sourceReviewVideoUrl(url), linkedStart = sourceReviewLinkedVideoStart(url);
+  const startSeconds = sourceReviewParseVideoTime(clipStart), endSeconds = sourceReviewParseVideoTime(clipEnd);
+  const draftClip = startSeconds !== null && endSeconds !== null && endSeconds > startSeconds ? { startSeconds, endSeconds } : null;
+  const updateDraft = values => {
+    const next = { ...draft, ...values, topic: topic.trim() };
+    if (onDraftChange) onDraftChange(next); else setLocalDraft(next);
+  };
+  const addDetails = React.useRef(null);
+  const pasteDetails = React.useRef(null);
+  const clipStartControl = React.useRef(null);
+  const focusClip = React.useRef(false);
+  React.useLayoutEffect(() => {
+    if (focusClip.current && clipStartControl.current) { focusClip.current = false; clipStartControl.current.focus(); clipStartControl.current.scrollIntoView?.({ block: 'nearest' }); }
+  });
+  const chooseClip = value => {
+    if (addDetails.current) addDetails.current.open = true;
+    focusClip.current = true;
+    updateDraft({ url: value, videoScope: 'clip', clipStart: sourceReviewVideoTime(sourceReviewLinkedVideoStart(value) ?? 0), clipEnd: '' });
+  };
+  const searchDetails = React.useRef(null);
+  React.useEffect(() => {
+    if (draftRecord && draftRecord.topic !== topic.trim()) {
+      if (onDraftChange) onDraftChange(null); else setLocalDraft(null);
+    }
+    if (addDetails.current && (url || title || passage)) addDetails.current.open = true;
+    if (pasteDetails.current && (title || passage)) pasteDetails.current.open = true;
+    if (searchDetails.current && query) searchDetails.current.open = true;
+  }, [topic]);
+  const [lastRemoved, setLastRemoved] = React.useState(null);
+  const passageNodes = React.useRef(new Map());
+  const sourceControls = React.useRef(new Map());
+  const reviewRoot = React.useRef(null);
+  const undoControl = React.useRef(null);
+  const findControl = React.useRef(null);
+  const generateControl = React.useRef(null);
+  const pendingFocus = React.useRef(null);
+  const passagePrefix = React.useId();
   const epoch = React.useRef(0);
-  const context = JSON.stringify([topic.trim(), documentsOnly, includeDocuments, selectedIds, sources.map(s => [s.id, s.version, s.allowAI])]);
+  const context = JSON.stringify([topic.trim(), documentsOnly, includeWeb, includeDocuments, researchConfig, selectedIds, sources.map(s => [s.id, s.version, s.allowAI])]);
   const currentContext = React.useRef(context);
   currentContext.current = context;
-  React.useEffect(() => { epoch.current++; setWorking(''); setError(''); return () => { epoch.current++; }; }, [context]);
+  React.useEffect(() => { epoch.current++; setWorking(''); setError(''); setOutcome(''); setLastRemoved(null); return () => { epoch.current++; }; }, [context]);
   const eligible = item => item.kind !== 'document' || includeDocuments && libraryReady && sources.some(source => source.id === item.sourceId && source.allowAI !== false && source.version === item.version && (Array.isArray(selectedIds) ? selectedIds.includes(source.id) : source.active !== false));
   const visiblePacket = packet?.topic === topic.trim() ? packet : null;
-  const items = (visiblePacket?.items || []).map(item => ({ ...item, included: item.included && eligible(item) && (!documentsOnly || item.kind !== 'web') }));
+  const items = (visiblePacket?.items || []).map(item => ({ ...item, included: item.included && item.passage?.length >= 20 && eligible(item) }));
+  const reviewApi = window.AlloModules?.SourceResearchReview;
+  const groups = reviewApi?.groupSources ? reviewApi.groupSources({ topic: topic.trim(), items }).map(group => ({ ...group, key: group.sourceKey })) : Array.from(items.reduce((map, item) => {
+    const key = sourceReviewKey(item);
+    if (!map.has(key)) map.set(key, { key, title: item.title, url: item.url, items: [] });
+    map.get(key).items.push(item); return map;
+  }, new Map()).values()).map(group => ({ ...group, summary: group.items.map(item => item.passage).join(' ').slice(0, 360), claims: [] }));
   const selected = items.filter(item => item.included);
+  const selectedSources = groups.filter(group => group.items.some(item => item.included)).length;
   const disabled = busy || !!working;
+  React.useLayoutEffect(() => {
+    const request = pendingFocus.current;
+    if (!request) return;
+    if (request.context !== context) { pendingFocus.current = null; return; }
+    if (request.target === 'action' && document.activeElement !== document.body && document.activeElement !== document.documentElement && document.activeElement !== request.control) {
+      pendingFocus.current = null; return;
+    }
+    const control = request.target === 'action' ? request.control : request.target === 'undo' ? undoControl.current
+      : request.target === 'generate' ? generateControl.current : sourceControls.current.get(request.key);
+    const target = control?.isConnected && !control.matches(':disabled') ? control : findControl.current && !findControl.current.disabled ? findControl.current : reviewRoot.current;
+    if (!target) return;
+    pendingFocus.current = null;
+    target.focus({ preventScroll: true });
+    if (request.target === 'source' || request.target === 'undo' || request.target === 'action') target.scrollIntoView?.({ block: 'nearest', behavior: 'auto' });
+  }, [packet, lastRemoved, disabled, context]);
+  const showPassage = id => {
+    const node = passageNodes.current.get(id);
+    if (!node) return;
+    const details = node.closest('details');
+    if (details) details.open = true;
+    node.focus({ preventScroll: true });
+    node.scrollIntoView?.({ block: 'nearest', behavior: 'auto' });
+  };
   const run = async (action, options = {}) => {
     if (disabled || !topic.trim()) return;
     const revision = ++epoch.current, startContext = context;
     const isCurrent = () => revision === epoch.current && currentContext.current === startContext;
-    setWorking(action); setError('');
+    let acceptingCallbacks = true;
+    let pendingTranscripts = null;
+    const initiator = reviewRoot.current?.contains(document.activeElement) ? document.activeElement : null;
+    const previousIds = new Set(items.map(item => item.id));
+    if (action === 'url' && sourceReviewVideoUrl(options.url) && !videoReady) { setError(videoHint); return; }
+    if (action === 'url' && Object.prototype.hasOwnProperty.call(options, 'videoClip') && !clipReady) { setError(clipUnavailable); return; }
+    setWorking(action); setProgress(action === 'url' && sourceReviewVideoUrl(options.url) ? 'transcribing' : ''); setError(''); setOutcome('');
     try {
-      const result = await generate({ topic: topic.trim(), selectedOwnSourceIds: selectedIds, documentsOnly,
+      const result = await generate({ topic: topic.trim(), selectedOwnSourceIds: selectedIds, documentsOnly, researchConfig,
         ...(action === 'write' ? { reviewedResearch: { ...visiblePacket, items } } : { researchAction: action, researchPacket: visiblePacket }),
-        ...options, isCurrent });
+        ...options, isCurrent,
+        onResearchProgress: value => { if (acceptingCallbacks && isCurrent() && ['transcribing', 'selecting', 'collecting'].includes(value?.stage)) setProgress(value.stage); },
+        onVideoTranscript: snapshot => { if (acceptingCallbacks && isCurrent()) pendingTranscripts = sourceReviewStoreTranscript(pendingTranscripts, topic.trim(), snapshot); } });
       if (!isCurrent()) return;
+      if (result?.packet && !result.cancelled && pendingTranscripts) {
+        const update = previous => pendingTranscripts.entries.reduce((cache, snapshot) => sourceReviewStoreTranscript(cache, topic.trim(), snapshot), previous);
+        if (onTranscriptsChange) onTranscriptsChange(update); else setLocalTranscripts(update);
+      }
       if (result?.packet) setPacket(result.packet);
       if (!result?.ok && !result?.cancelled) setError(result?.error || sourceText('input.review_unavailable', 'Research could not finish. Your existing source is unchanged. Try again.'));
-      if (result?.ok && action === 'paste') { setPassage(''); setTitle(''); setUrl(''); }
+      if (result?.packet && !result.cancelled && action !== 'write') {
+        const detail = result.collectionOutcome;
+        const countKeys = ['added', 'duplicate', 'removed', 'reviewLimit', 'sourceLimit', 'invalid'];
+        const validDetail = detail?.version === 1 && [...countKeys, 'attempted', 'linkOnly'].every(key => Number.isSafeInteger(detail[key]) && detail[key] >= 0)
+          && countKeys.reduce((sum, key) => sum + detail[key], 0) === detail.attempted && detail.linkOnly <= detail.added;
+        const newItems = result.packet.items.filter(item => !previousIds.has(item.id));
+        const added = validDetail ? detail.added : newItems.length;
+        const linkOnly = validDetail ? detail.linkOnly : newItems.filter(item => !item.passage || item.passage.length < 20).length;
+        const readableAdded = added - linkOnly;
+        const readableSources = new Set(result.packet.items.filter(item => item.passage?.length >= 20).map(sourceReviewKey));
+        const unreadableLinks = new Set(newItems.filter(item => (!item.passage || item.passage.length < 20) && !readableSources.has(sourceReviewKey(item))).map(sourceReviewKey)).size;
+        const incomplete = validDetail ? detail.reviewLimit + detail.sourceLimit + detail.removed + detail.invalid + linkOnly > 0 : detail != null;
+        const keepPaste = action === 'paste' && (!result.ok || !added || incomplete);
+        const message = (key, fallback, count) => sourceText(key, fallback, { count }).replace('{count}', String(count));
+        if (result.ok || added > 0 || validDetail && detail.attempted > 0) {
+          const notes = [];
+          if (readableAdded) notes.push(message(readableAdded === 1 ? 'input.research_added_one' : 'input.research_added_many', readableAdded === 1 ? 'Added {count} passage.' : 'Added {count} passages.', readableAdded));
+          else if (!unreadableLinks) notes.push(sourceText('input.research_no_additions', 'No new passages added.'));
+          if (unreadableLinks) notes.push(message(unreadableLinks === 1 ? 'input.research_link_only_one' : 'input.research_link_only_many', unreadableLinks === 1 ? '{count} source link needs readable text.' : '{count} source links need readable text.', unreadableLinks));
+          if (validDetail) {
+            if (detail.duplicate) notes.push(message('input.research_duplicate_count', 'Already in collection: {count}.', detail.duplicate));
+            if (detail.removed) notes.push(message('input.research_removed_count', 'Passages from removed sources: {count}.', detail.removed));
+            if (detail.reviewLimit) notes.push(sourceText('input.research_collection_full', 'Collection limit reached (24 passages).'));
+            if (detail.sourceLimit) notes.push(sourceText('input.research_source_full', 'Source limit reached (4 passages per source).'));
+            if (detail.invalid) notes.push(message('input.research_invalid_count', 'Unusable source entries: {count}.', detail.invalid));
+          }
+          if (keepPaste) notes.push(sourceText('input.research_draft_kept', 'Your pasted text has been kept.'));
+          setOutcome(notes.join(' '));
+        }
+        if (action === 'paste' && result.ok && added > 0 && !keepPaste) updateDraft({ passage: '', title: '', url: '' });
+      }
     } catch (failure) {
       if (isCurrent()) setError(failure?.message || sourceText('input.review_unavailable', 'Research could not finish. Your existing source is unchanged. Try again.'));
-    } finally { if (isCurrent()) setWorking(''); }
+    } finally {
+      acceptingCallbacks = false;
+      if (isCurrent()) {
+        if (initiator) {
+          pendingFocus.current = { context: startContext, target: 'action', control: initiator };
+        }
+        setWorking('');
+      }
+    }
   };
-  const edit = (id, remove) => setPacket(previous => {
+  const edit = (key, included) => { setPacket(previous => {
     if (!previous) return previous;
-    const item = previous.items.find(row => row.id === id);
-    return { ...previous, items: remove ? previous.items.filter(row => row.id !== id) : previous.items.map(row => row.id === id ? { ...row, included: !row.included } : row),
-      activity: [...previous.activity, { at: new Date().toISOString(), type: 'selection', detail: (remove ? 'Removed: ' : item.included ? 'Excluded: ' : 'Included: ') + item.title }].slice(-40) };
+    const item = previous.items.find(row => sourceReviewKey(row) === key);
+    if (reviewApi?.setSourceIncluded) {
+      const next = reviewApi.setSourceIncluded({ ...previous, items: previous.items.map(row => ({ ...row })), sourceDecisions: { ...previous.sourceDecisions }, passageDecisions: { ...previous.passageDecisions }, removedSources: { ...previous.removedSources }, activity: [...(previous.activity || [])] }, key, included);
+      next.activity = [...next.activity, { at: new Date().toISOString(), type: 'selection', detail: (included ? 'Included: ' : 'Excluded: ') + item.title }].slice(-40);
+      return { ...next };
+    }
+    const passageDecisions = { ...previous.passageDecisions };
+    previous.items.forEach(row => { if (sourceReviewKey(row) === key) delete passageDecisions[row.id]; });
+    return { ...previous, sourceDecisions: { ...previous.sourceDecisions, [key]: included }, passageDecisions,
+      items: previous.items.map(row => sourceReviewKey(row) === key ? { ...row, included } : row),
+      activity: [...(previous.activity || []), { at: new Date().toISOString(), type: 'selection', detail: (included ? 'Included: ' : 'Excluded: ') + item.title }].slice(-40) };
+  }); };
+  const editPassage = (id, included) => setPacket(previous => {
+    const item = previous?.items.find(row => row.id === id);
+    if (!item || !eligible(item) || item.passage.length < 20) return previous;
+    const key = sourceReviewKey(item), passageDecisions = { ...previous.passageDecisions }, sourceDecisions = { ...previous.sourceDecisions };
+    if (included && sourceDecisions[key] === false) {
+      previous.items.forEach(row => { if (sourceReviewKey(row) === key && row.id !== id) passageDecisions[row.id] = false; });
+      sourceDecisions[key] = true;
+    }
+    passageDecisions[id] = included;
+    return { ...previous, passageDecisions, sourceDecisions,
+      items: previous.items.map(row => row.id === id ? { ...row, included } : row),
+      activity: [...(previous.activity || []), { at: new Date().toISOString(), type: 'selection', detail: (included ? 'Included passage: ' : 'Excluded passage: ') + item.title }].slice(-40) };
   });
+  const remove = key => {
+    if (!packet) return;
+    const removed = packet.items.map((item, index) => ({ item: { ...item }, index })).filter(entry => sourceReviewKey(entry.item) === key);
+    if (!removed.length) return;
+    setOutcome('');
+    pendingFocus.current = { context, target: 'undo' };
+    setLastRemoved({ context, topic: packet.topic, key, items: removed, sourceDecision: packet.sourceDecisions?.[key], removedSource: packet.removedSources?.[key],
+      passageDecisions: Object.fromEntries(removed.filter(entry => Object.prototype.hasOwnProperty.call(packet.passageDecisions || {}, entry.item.id)).map(entry => [entry.item.id, packet.passageDecisions[entry.item.id]])) });
+    setPacket(previous => {
+      const copy = { ...previous, items: previous.items.map(item => ({ ...item })), sourceDecisions: { ...previous.sourceDecisions }, passageDecisions: { ...previous.passageDecisions }, removedSources: { ...previous.removedSources }, activity: [...(previous.activity || [])] };
+      if (reviewApi?.removeSource) {
+        const title = copy.items.find(item => sourceReviewKey(item) === key)?.title || '';
+        const next = reviewApi.removeSource(copy, key);
+        next.activity = [...next.activity, { at: new Date().toISOString(), type: 'selection', detail: 'Removed: ' + title }].slice(-40);
+        return { ...next };
+      }
+      removed.forEach(entry => { delete copy.passageDecisions[entry.item.id]; });
+      return { ...copy, items: copy.items.filter(item => sourceReviewKey(item) !== key), sourceDecisions: { ...copy.sourceDecisions, [key]: false }, removedSources: { ...copy.removedSources, [key]: true },
+        activity: [...copy.activity, { at: new Date().toISOString(), type: 'selection', detail: 'Removed: ' + removed[0].item.title }].slice(-40) };
+    });
+  };
+  const undoRemove = () => {
+    setOutcome('');
+    if (!lastRemoved || !packet || lastRemoved.context !== context || packet.topic !== lastRemoved.topic) { setLastRemoved(null); return; }
+    // A refreshed source wins over an older removal snapshot, including its permissions.
+    if (packet.items.some(item => sourceReviewKey(item) === lastRemoved.key)) {
+      pendingFocus.current = { context, target: 'source', key: lastRemoved.key };
+      setLastRemoved(null); return;
+    }
+    const restored = lastRemoved.items.filter(entry => !packet.items.some(item => item.id === entry.item.id));
+    if (packet.items.length + restored.length > (reviewApi?.maxItems || 24)) {
+      setError(sourceText('input.research_undo_limit', 'This source cannot be restored because the research collection is full.')); return;
+    }
+    pendingFocus.current = { context, target: 'source', key: lastRemoved.key };
+    setPacket(previous => {
+      const next = { ...previous, items: [...previous.items], sourceDecisions: { ...previous.sourceDecisions }, passageDecisions: { ...previous.passageDecisions }, removedSources: { ...previous.removedSources } };
+      restored.forEach(entry => { next.items.splice(Math.min(entry.index, next.items.length), 0, { ...entry.item }); });
+      if (next.sourceDecisions[lastRemoved.key] === false) {
+        if (lastRemoved.sourceDecision === undefined) delete next.sourceDecisions[lastRemoved.key]; else next.sourceDecisions[lastRemoved.key] = lastRemoved.sourceDecision;
+      }
+      if (next.removedSources[lastRemoved.key] === true) {
+        if (lastRemoved.removedSource === undefined) delete next.removedSources[lastRemoved.key]; else next.removedSources[lastRemoved.key] = lastRemoved.removedSource;
+      }
+      Object.entries(lastRemoved.passageDecisions).forEach(([id, decision]) => { if (!Object.prototype.hasOwnProperty.call(next.passageDecisions, id)) next.passageDecisions[id] = decision; });
+      next.activity = [...(previous.activity || []), { at: new Date().toISOString(), type: 'selection', detail: 'Restored: ' + lastRemoved.items[0].item.title }].slice(-40);
+      return next;
+    });
+    setLastRemoved(null); setError('');
+  };
+  const share = (key, allowed) => setPacket(previous => previous ? { ...previous,
+    items: previous.items.map(item => sourceReviewKey(item) === key ? { ...item, shareWithStudents: allowed === true } : item)
+  } : previous);
+  const applyTranscript = (snapshot, ids) => {
+    if (disabled || !visiblePacket || !reviewApi?.replaceTranscriptPassages) throw new Error(sourceText('input.research_transcript_apply_error', 'The excerpt selection could not be applied.'));
+    const next = reviewApi.replaceTranscriptPassages(visiblePacket, snapshot, ids);
+    pendingFocus.current = { context, target: 'source', key: sourceReviewKey({ kind: 'web', url: snapshot.url }) };
+    setPacket(next); setError('');
+    setOutcome(sourceText('input.research_transcript_applied', 'Transcript excerpt selection updated.'));
+  };
   const button = 'min-h-11 px-3 py-2 rounded border border-indigo-300 bg-white text-indigo-900 disabled:opacity-50';
   const field = 'w-full min-h-11 p-2 rounded border border-indigo-200 bg-white text-slate-900';
   const ready = !!topic.trim();
-  return <section aria-label={sourceText('input.review_heading', 'Review research sources')} className="rounded-md border border-indigo-200 bg-white p-3 space-y-3 text-sm text-slate-800">
-    <h3 className="font-bold text-indigo-900">{sourceText('input.review_heading', 'Review research sources')}</h3>
-    <p>{sourceText('input.review_explanation', 'Find evidence, inspect the passages, and choose what the writer may use. Only included passages are supplied when you generate. Citations identify supporting evidence; they do not verify every claim.')}</p>
+  const countText = (count, singularKey, pluralKey, singular, plural) => sourceText(count === 1 ? singularKey : pluralKey, count === 1 ? singular : plural, { count }).replace('{count}', String(count));
+  return <section ref={reviewRoot} tabIndex={-1} data-research-review aria-label={sourceText('input.review_heading', 'Review research sources')} className="flex flex-col flex-1 min-h-0 overflow-hidden text-sm text-slate-800 focus:outline focus:outline-2 focus:outline-indigo-600" style={{ outlineOffset: '-2px' }}>
+    <div data-research-scroll aria-busy={!!working} className="p-4 overflow-y-auto overscroll-contain space-y-3 min-h-0 flex-1">
     {!ready && <p role="status">{sourceText('input.review_topic_required', 'Enter a topic above to start reviewing sources.')}</p>}
-    <button type="button" className={button} disabled={disabled || !ready || !(includeWeb && !documentsOnly || includeDocuments && libraryReady)} onClick={() => run('prepare', { includeWeb: includeWeb && !documentsOnly, includeDocuments })}>
+    {!videoReady && researchConfig?.urls?.some(sourceReviewVideoUrl) && <p className="text-xs text-amber-900">{videoHint}</p>}
+    <button ref={findControl} type="button" className={button} disabled={disabled || !ready || !(includeWeb || includeDocuments && libraryReady || researchConfig?.urls?.length)} onClick={() => run('prepare', { includeWeb, includeDocuments })}>
       {sourceText('input.review_find', 'Find sources to review')}
     </button>
     {includeDocuments && <button type="button" className={button + ' ml-1'} disabled={disabled || !ready || !libraryReady} onClick={() => run('documents', { includeDocuments: true })}>{sourceText('input.review_refresh_documents', 'Refresh document passages')}</button>}
-    <p className="text-xs">{sourceText('input.review_upload_hint', 'Use Add documents above to upload files, then refresh their passages here. Excluding a passage here keeps your library document.')}</p>
-    <p role="status" aria-live="polite">{items.length} {sourceText('input.review_collected', 'passages collected')} · {selected.length} {sourceText('input.review_included', 'included for writing')}</p>
-    {items.length > 0 && <ul className="space-y-2">{items.map(item => <li key={item.id} className="border border-slate-200 rounded p-2 space-y-1" data-research-id={item.id}>
-      <label className="flex gap-2 items-start min-h-11 cursor-pointer">
-        <input type="checkbox" className="mt-1" checked={item.included} disabled={disabled || item.passage.length < 20 || !eligible(item) || documentsOnly && item.kind === 'web'} onChange={() => edit(item.id, false)} />
-        <span className="min-w-0 break-words"><strong>{item.title}</strong><span className="block text-xs">{item.evidenceType}{item.locatorLabel ? ' · ' + item.locatorLabel : ''}</span></span>
+    {groups.length > 0 && <ul className="space-y-2">{groups.map(group => <li key={group.key}
+      className={'border border-slate-200 rounded p-3 space-y-2 ' + (group.items.some(item => item.included) ? 'bg-white' : 'bg-slate-50')}
+      data-research-id={group.key} data-research-excluded={!group.items.some(item => item.included)}>
+      <div className="flex gap-2 items-start">
+      <label className="flex gap-2 items-start min-h-11 cursor-pointer min-w-0 flex-1">
+        <input type="checkbox" className="mt-1" checked={group.items.some(item => item.included) && group.items.every(item => item.included || item.passage.length < 20 || !eligible(item))}
+          aria-label={sourceText('input.research_use_for_writing', 'Use source for writing: ' + group.title, { title: group.title })}
+          ref={node => { if (node) { sourceControls.current.set(group.key, node); node.indeterminate = group.items.some(item => item.included) && group.items.some(item => !item.included && item.passage.length >= 20 && eligible(item)); } else sourceControls.current.delete(group.key); }}
+          aria-checked={group.items.some(item => item.included) && group.items.some(item => !item.included && item.passage.length >= 20 && eligible(item)) ? 'mixed' : group.items.some(item => item.included)}
+          disabled={disabled || !group.items.some(item => item.passage.length >= 20 && eligible(item))} onChange={event => edit(group.key, event.target.checked)} />
+        <span className="min-w-0 break-words"><strong role="heading" aria-level={3}>{group.title}</strong><span className="block text-xs">{group.url ? group.url.replace(/^https?:\/\//, '').split('/')[0] : group.items[0].kind === 'document' ? sourceText('input.research_document', 'Your document') : sourceText('input.research_pasted', 'Pasted text')} · {(group.evidenceTypes || Array.from(new Set(group.items.map(item => item.evidenceType)))).join(', ')}</span>
+          <span data-research-selection className="block text-xs text-slate-600 mt-1">{sourceText(group.items.length === 1 ? 'input.research_passage_selected' : 'input.research_passages_selected', group.items.length === 1 ? '{included} of {total} passage included' : '{included} of {total} passages included', { included: group.items.filter(item => item.included).length, total: group.items.length }).replace('{included}', String(group.items.filter(item => item.included).length)).replace('{total}', String(group.items.length))}</span>
+        </span>
       </label>
-      {item.url && <a className="inline-flex items-center min-h-11 underline text-indigo-800 break-all" href={item.url} target="_blank" rel="noopener noreferrer">{sourceText('input.review_open', 'Open source')}</a>}
-      {!eligible(item) && <p className="text-amber-900 text-xs">{sourceText('input.review_stale_document', 'This document is no longer selected, available, or unchanged. Refresh document passages before including it.')}</p>}
-      <details><summary className="min-h-11 flex items-center cursor-pointer font-medium">{sourceText('input.review_passage', 'Inspect passage supplied to the writer')}</summary>
-        <blockquote className="border-l-2 border-indigo-200 pl-2 whitespace-pre-wrap break-words">{item.passage || sourceText('input.review_link_only', 'A link was found, but no readable passage was returned. Read the page or paste a passage before including it.')}</blockquote>
-        {item.evidenceType === 'Source-linked AI note' && <p className="text-xs mt-2">{sourceText('input.review_ai_note', 'This is an AI summary linked to this source, not a verbatim page excerpt. Open the source to check it.')}</p>}
+      <button type="button" className="w-11 h-11 shrink-0 flex items-center justify-center rounded text-slate-600 hover:bg-slate-100 disabled:opacity-50" disabled={disabled}
+        title={sourceText('input.research_remove_source', 'Remove source from research')} aria-label={sourceText('input.research_remove_source', 'Remove source from research') + ': ' + group.title} onClick={() => remove(group.key)}><X size={16} aria-hidden="true" /></button>
+      </div>
+      {group.items.some(item => item.included) && (group.summary || group.claims?.length > 0) && <div data-research-highlights>
+        <strong className="text-xs">{sourceText('input.research_highlights', 'Source highlights')}</strong>
+        {group.claims?.length > 0 ? <ul className="list-disc pl-4 space-y-1">{group.claims.slice(0, 2).map((claim, index) => <li key={index} className="break-words whitespace-pre-wrap">
+          {claim.text}{(claim.evidenceIds || []).map(id => {
+            const number = group.items.findIndex(item => item.id === id) + 1;
+            if (!number) return null;
+            const label = sourceText('input.research_view_passage', 'View supporting passage {number}', { number }).replace('{number}', String(number));
+            return <button key={id} type="button" onClick={() => showPassage(id)} aria-label={label} title={label} aria-controls={passagePrefix + '-' + id}
+              className="inline-flex min-h-11 min-w-11 items-center justify-center align-middle underline text-indigo-800 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600">[{number}]</button>;
+          })}
+        </li>)}</ul> : <p className="break-words whitespace-pre-wrap">{group.summary}</p>}
+      </div>}
+      {!group.summary && !group.claims?.length && <p className="text-xs text-slate-600">{sourceReviewVideoUrl(group.url) ? sourceText('input.research_video_link_only', 'No readable video transcript was returned.') : sourceText('input.review_link_only', 'A link was found, but no readable passage was returned. Read the page or paste a passage before including it.')}</p>}
+      {group.items.every(item => item.evidenceType === 'Search snippet') && <p className="text-xs text-slate-600">{sourceReviewVideoUrl(group.url) ? sourceText('input.research_video_snippet', 'Search snippet only; the video has not been transcribed.') : sourceText('input.research_snippet', 'Search snippet only; the full page has not been read.')}</p>}
+      {group.items.every(item => item.evidenceType === 'Source-linked AI note') && <p className="text-xs text-amber-900">{sourceReviewVideoUrl(group.url) ? sourceText('input.research_video_ai_note', 'AI-linked notes, not a video transcript.') : sourceText('input.research_ai_note_preview', 'AI-linked notes, not page excerpts. Read the page to check the original wording.')}</p>}
+      {group.items.some(item => item.evidenceType === 'AI video transcript') && <p className="text-xs text-amber-900">{sourceText('input.research_video_transcript_note', 'AI-generated transcript, not verified captions. It may contain transcription errors.')}</p>}
+      <div className="flex flex-wrap gap-2">
+        {group.url && <a className="inline-flex items-center min-h-11 underline text-indigo-800 break-all" href={group.url} target="_blank" rel="noopener noreferrer">{sourceText('input.review_open', 'Open source')}</a>}
+        {group.url && !group.items.some(item => item.evidenceType === (sourceReviewVideoUrl(group.url) ? 'AI video transcript' : 'Page excerpt')) && <button type="button" className={button} disabled={disabled || !!sourceReviewVideoUrl(group.url) && !videoReady} onClick={() => run('url', { url: group.url })}>{sourceReviewVideoUrl(group.url) ? sourceText('input.research_read_video', 'Read video') : sourceText('input.research_read_page', 'Read page')}</button>}
+        {sourceReviewVideoUrl(group.url) && Array.from(new Map(group.items.filter(item => item.evidenceType === 'AI video transcript').map(item => [sourceReviewTranscriptKey(item), item])).values()).filter(item => sourceReviewTranscriptKey(item) && !transcriptEntries.some(entry => sourceReviewTranscriptKey(entry) === sourceReviewTranscriptKey(item))).map(item => <button key={sourceReviewTranscriptKey(item)} type="button" className={button} disabled={disabled || !videoReady || !!item.videoClip && !clipReady} onClick={() => run('url', { url: group.url, ...(item.videoClip ? { videoClip: item.videoClip } : {}) })}>{item.videoClip ? sourceText('input.research_reload_clip', 'Load clip {start} to {end}', { start: sourceReviewVideoTime(item.videoClip.startSeconds), end: sourceReviewVideoTime(item.videoClip.endSeconds) }).replace('{start}', sourceReviewVideoTime(item.videoClip.startSeconds)).replace('{end}', sourceReviewVideoTime(item.videoClip.endSeconds)) : sourceText('input.research_transcript_reload', 'Load transcript for review')}</button>)}
+        {sourceReviewVideoUrl(group.url) && <button type="button" className={button} disabled={disabled || !clipReady} onClick={() => chooseClip(group.url)}>{sourceText('input.research_choose_clip', 'Choose clip')}</button>}
+      </div>
+      {sourceReviewVideoUrl(group.url) && !videoReady && <p className="text-xs text-amber-900">{videoHint}</p>}
+      {reviewApi?.transcriptPassages && reviewApi?.replaceTranscriptPassages && transcriptEntries.filter(entry => entry.url === sourceReviewVideoUrl(group.url)).map(snapshot => <SourceTranscriptChooser key={sourceReviewTranscriptKey(snapshot)} snapshot={snapshot} packet={visiblePacket} disabled={disabled} sourceText={sourceText} onApply={applyTranscript} />)}
+      {!group.items.some(eligible) && <p className="text-amber-900 text-xs">{sourceText('input.review_stale_document', 'This document is no longer selected, available, or unchanged. Refresh document passages before including it.')}</p>}
+      {group.items.some(item => item.kind !== 'web' || item.evidenceType === 'Pasted text') && <label className="flex gap-2 items-start min-h-11 py-2 cursor-pointer text-xs">
+        <input type="checkbox" className="mt-0.5" checked={group.items.every(item => item.shareWithStudents === true)} disabled={disabled} onChange={event => share(group.key, event.target.checked)} />
+        <span>{sourceText('input.research_show_student_details', 'Show source name and excerpts to students')}</span>
+      </label>}
+      {group.items.some(item => item.kind !== 'web' || item.evidenceType === 'Pasted text') && <p className="text-xs text-slate-600">{sourceText('input.research_student_reading_notice', 'This controls source details, not information included in the reading.')}</p>}
+      <details data-research-passages><summary className="min-h-11 py-3 cursor-pointer font-medium">{sourceText('input.research_findings', 'Supporting excerpts')}</summary>
+        {group.relevance?.matchedTerms?.length > 0 && <p className="text-xs text-slate-600 mb-3 break-words">{sourceText('input.research_matched_terms', 'Matching topic words')}: {group.relevance.matchedTerms.join(', ')}</p>}
+        <div className="space-y-3">{group.items.map((item, index) => <div key={item.id}>
+          <label className="flex gap-2 items-center min-h-11 cursor-pointer">
+            <input type="checkbox" checked={item.included} disabled={disabled || item.passage.length < 20 || !eligible(item)} onChange={event => editPassage(item.id, event.target.checked)} />
+            <span>{sourceText('input.research_include_passage', 'Include passage {number}', { number: index + 1 }).replace('{number}', String(index + 1))}</span>
+          </label>
+          <p className="text-xs text-slate-600">[{index + 1}] {item.evidenceType}{item.locatorLabel ? ' · ' + item.locatorLabel : ''}</p>
+          <blockquote id={passagePrefix + '-' + item.id} data-research-passage={item.id} tabIndex={-1}
+            ref={node => { if (node) passageNodes.current.set(item.id, node); else passageNodes.current.delete(item.id); }}
+            className="border-l-2 border-indigo-200 pl-2 whitespace-pre-wrap break-words rounded focus:outline focus:outline-2 focus:outline-indigo-600">{item.passage || (sourceReviewVideoUrl(group.url) ? sourceText('input.research_video_link_only', 'No readable video transcript was returned.') : sourceText('input.review_link_only', 'A link was found, but no readable passage was returned. Read the page or paste a passage before including it.'))}</blockquote>
+          {item.evidenceType === 'Search snippet' && !group.items.some(passage => passage.evidenceType === (sourceReviewVideoUrl(group.url) ? 'AI video transcript' : 'Page excerpt')) && <p className="text-xs mt-2">{sourceReviewVideoUrl(group.url) ? sourceText('input.research_video_snippet', 'Search snippet only; the video has not been transcribed.') : sourceText('input.research_snippet', 'Search snippet only; the full page has not been read.')}</p>}
+          {item.evidenceType === 'Source-linked AI note' && <p className="text-xs mt-2">{sourceReviewVideoUrl(group.url) ? sourceText('input.research_video_ai_note', 'AI-linked notes, not a video transcript.') : sourceText('input.review_ai_note', 'This is an AI summary linked to this source, not a verbatim page excerpt. Open the source to check it.')}</p>}
+          {item.evidenceType === 'AI video transcript' && <p className="text-xs mt-2">{sourceText('input.research_video_transcript_note', 'AI-generated transcript, not verified captions. It may contain transcription errors.')}</p>}
+        </div>)}</div>
       </details>
-      <button type="button" className={button} disabled={disabled} onClick={() => edit(item.id, true)} aria-label={sourceText('input.review_remove', 'Remove from review') + ': ' + item.title}>{sourceText('input.review_remove', 'Remove from review')}</button>
     </li>)}</ul>}
-    {!documentsOnly && <details><summary className="min-h-11 flex items-center cursor-pointer font-medium">{sourceText('input.review_search_more', 'Search for more sources')}</summary>
-      <label className="block">{sourceText('input.review_query', 'Public search topic')}<input className={field} value={query} onChange={e => setQuery(e.target.value)} maxLength={200} disabled={disabled} /></label>
-      <p className="text-xs mt-1">{sourceText('input.review_public_hint', 'Use public subject terms only. Some connections require a topic from Supported web-search topics above. Existing selections are kept.')}</p>
-      <button type="button" className={button + ' mt-2'} disabled={disabled || !ready || query.trim().length < 3} onClick={() => run('search', { includeWeb: true, query })}>{sourceText('input.review_search', 'Search and add results')}</button>
+    {includeWeb && <details ref={searchDetails}><summary className="min-h-11 py-3 cursor-pointer font-medium">{sourceText('input.review_search_more', 'Search for more sources')}</summary>
+      <label className="block">{sourceText('input.review_query', 'Public search topic')}<input className={field} value={query} onChange={e => updateDraft({ query: e.target.value })} maxLength={500} disabled={disabled} /></label>
+      <p className="text-xs mt-1">{sourceText('input.research_query_hint', 'Only this topic is sent to web search. Your source selections are kept.')}</p>
+      <button type="button" className={button + ' mt-2'} disabled={disabled || !ready || !query.trim()} onClick={() => run('search', { includeWeb: true, query })}>{sourceText('input.review_search', 'Search and add results')}</button>
     </details>}
-    <details><summary className="min-h-11 flex items-center cursor-pointer font-medium">{sourceText('input.review_add', 'Add a webpage or your own text')}</summary>
+    <details ref={addDetails}><summary className="min-h-11 py-3 cursor-pointer font-medium">{sourceText('input.research_add_link', 'Add a link or your own text')}</summary>
       <div className="space-y-2">
-        {!documentsOnly && <><label className="block">{sourceText('input.review_url', 'Source URL (optional for pasted text)')}<input type="url" className={field} value={url} onChange={e => setUrl(e.target.value)} disabled={disabled} /></label>
-          <button type="button" className={button} disabled={disabled || !ready || !url.trim()} onClick={() => run('url', { url })}>{sourceText('input.review_read_url', 'Read webpage excerpt')}</button></>}
-        <label className="block">{sourceText('input.review_title', 'Passage title')}<input className={field} value={title} onChange={e => setTitle(e.target.value)} maxLength={300} disabled={disabled} /></label>
-        <label className="block">{sourceText('input.review_text', 'Paste a relevant passage (20–1,200 characters)')}<textarea className={field} value={passage} onChange={e => setPassage(e.target.value)} rows={5} maxLength={1200} disabled={disabled} /></label>
-        <p className="text-xs">{sourceText('input.review_send_hint', 'Included passages will be sent to your configured AI provider when you generate. Add separate passages for longer resources.')}</p>
-        <button type="button" className={button} disabled={disabled || !ready || passage.trim().length < 20} onClick={() => run('paste', { title, passage, url: documentsOnly ? '' : url })}>{sourceText('input.review_add_passage', 'Add passage')}</button>
+        <label className="block">{sourceText('input.review_url', 'Source URL (optional for pasted text)')}<input type="url" className={field} value={url} aria-describedby={typedVideo && !videoReady ? passagePrefix + '-video-hint' : undefined} onChange={e => updateDraft({ url: e.target.value, ...(sourceReviewVideoUrl(e.target.value) !== typedVideo ? { videoScope: 'whole', clipStart: '0:00', clipEnd: '' } : {}) })} disabled={disabled} /></label>
+        {typedVideo && <fieldset className="space-y-2 min-w-0" disabled={disabled}>
+          <legend className="text-xs font-medium">{sourceText('input.research_video_scope', 'Video range')}</legend>
+          <div className="flex flex-wrap gap-x-4">
+            <label className="inline-flex gap-2 items-center min-h-11"><input type="radio" name={passagePrefix + '-video-scope'} checked={videoScope !== 'clip'} onChange={() => updateDraft({ videoScope: 'whole' })} />{sourceText('input.research_whole_video', 'Whole video')}</label>
+            <label className="inline-flex gap-2 items-center min-h-11"><input type="radio" name={passagePrefix + '-video-scope'} checked={videoScope === 'clip'} disabled={!clipReady} onChange={() => updateDraft({ videoScope: 'clip' })} />{sourceText('input.research_clip', 'Clip')}</label>
+          </div>
+          {linkedStart !== null && videoScope !== 'clip' && <div className="flex flex-wrap items-center gap-2 text-xs">
+            <span>{sourceText('input.research_linked_start', 'Link starts at {time}. Whole video selected.', { time: sourceReviewVideoTime(linkedStart) }).replace('{time}', sourceReviewVideoTime(linkedStart))}</span>
+            <button type="button" className={button} disabled={!clipReady} onClick={() => chooseClip(url)}>{sourceText('input.research_use_linked_start', 'Use linked start time')}</button>
+          </div>}
+          {videoScope === 'clip' && <div className="space-y-2">
+            <p id={passagePrefix + '-clip-format'} className="sr-only">{sourceText('input.research_clip_format', 'Time in seconds, minutes:seconds, or hours:minutes:seconds.')}</p>
+            <div className="grid grid-cols-2 gap-2">
+              <label className="block min-w-0 text-xs">{sourceText('input.research_clip_start', 'Start time')}<input ref={clipStartControl} type="text" inputMode="text" placeholder="0:00" maxLength={18} aria-invalid={startSeconds === null} aria-describedby={passagePrefix + '-clip-format' + (!draftClip ? ' ' + passagePrefix + '-clip-error' : '')} className={field + ' block mt-1 min-w-0'} value={clipStart} onChange={e => updateDraft({ clipStart: e.target.value })} /></label>
+              <label className="block min-w-0 text-xs">{sourceText('input.research_clip_end', 'End time')}<input type="text" inputMode="text" placeholder="2:00" maxLength={18} aria-invalid={endSeconds === null || startSeconds !== null && endSeconds <= startSeconds} aria-describedby={passagePrefix + '-clip-format' + (!draftClip ? ' ' + passagePrefix + '-clip-error' : '')} className={field + ' block mt-1 min-w-0'} value={clipEnd} onChange={e => updateDraft({ clipEnd: e.target.value })} /></label>
+            </div>
+            {!draftClip && <p id={passagePrefix + '-clip-error'} className="text-xs text-amber-900">{sourceText('input.research_clip_invalid', 'Enter a start and end time, with the end after the start.')}</p>}
+          </div>}
+          {videoReady && !clipReady && <p className="text-xs text-amber-900">{clipUnavailable}</p>}
+        </fieldset>}
+        <button type="button" className={button} disabled={disabled || !ready || !url.trim() || !!typedVideo && (!videoReady || videoScope === 'clip' && (!clipReady || !draftClip))} onClick={() => run('url', { url, ...(typedVideo && videoScope === 'clip' ? { videoClip: draftClip } : {}) })}>{typedVideo ? videoScope === 'clip' ? sourceText('input.research_read_clip', 'Read clip') : sourceText('input.research_read_video', 'Read video') : sourceText('input.research_read_url', 'Read relevant webpage passages')}</button>
+        {sourceReviewVideoUrl(url) && !videoReady && <p id={passagePrefix + '-video-hint'} className="text-xs text-amber-900">{videoHint}</p>}
+        <details ref={pasteDetails} data-research-paste><summary className="min-h-11 py-3 cursor-pointer font-medium">{sourceText('input.research_paste_disclosure', 'Paste text')}</summary><div className="space-y-2">
+        <label className="block">{sourceText('input.review_title', 'Passage title')}<input className={field} value={title} onChange={e => updateDraft({ title: e.target.value })} maxLength={300} disabled={disabled} /></label>
+        <label className="block">{sourceText('input.research_paste', 'Paste source text')}<textarea className={field} value={passage} onChange={e => updateDraft({ passage: e.target.value })} rows={5} maxLength={50000} disabled={disabled} /></label>
+        <p className="text-xs">{sourceText('input.research_send_hint', 'Relevant excerpts will be selected from your text and sent to your configured AI provider when you generate.')}</p>
+        <button type="button" className={button} disabled={disabled || !ready || passage.trim().length < 20} onClick={() => run('paste', { title, passage, url })}>{sourceText('input.review_add_passage', 'Add passage')}</button>
+        </div></details>
       </div>
     </details>
-    {visiblePacket?.activity?.length > 0 && <details><summary className="min-h-11 flex items-center cursor-pointer font-medium">{sourceText('input.review_activity', 'Research activity')}</summary>
+    {visiblePacket?.activity?.length > 0 && <details><summary className="min-h-11 py-3 cursor-pointer font-medium">{sourceText('input.review_activity', 'Research activity')}</summary>
       <p className="text-xs">{sourceText('input.review_activity_hint', 'This record shows searches, retrieved evidence, selection changes, and errors.')}</p>
       <ol className="list-decimal pl-5 space-y-2 mt-2">{visiblePacket.activity.map((entry, index) => <li key={index} className="break-words"><time dateTime={entry.at} className="text-xs text-slate-600">{new Date(entry.at).toLocaleTimeString()}</time> {entry.detail}</li>)}</ol>
     </details>}
-    {working && <p role="status" aria-live="polite">{working === 'write' ? sourceText('input.review_writing', 'Writing from reviewed sources…') : sourceText('input.review_finding', 'Collecting passages for review…')}</p>}
-    {working && working !== 'write' && <button type="button" className={button} onClick={() => { epoch.current++; setWorking(''); setError(''); }}>{sourceText('input.review_cancel', 'Cancel research')}</button>}
-    {error && <p role="alert" className="text-rose-800 break-words">{error}</p>}
-    <button type="button" className="w-full min-h-11 p-2 bg-indigo-600 text-white rounded disabled:opacity-50" disabled={disabled || !ready || !selected.length} onClick={() => run('write')}>
-      {sourceText('input.review_generate', 'Generate from included passages')}
-    </button>
-    <p className="text-xs">{sourceText('input.review_frozen', 'Writing uses this selection without additional web searches. If you need more evidence, add it before generating.')}</p>
+    <p className="text-xs">{sourceText('input.research_claims_note', 'Excerpts describe what each source says; they are not independently verified facts. Writing uses your included sources without additional searches.')}</p>
+    </div>
+    <footer data-research-footer className="shrink-0 border-t border-slate-200 bg-white px-4 py-3 flex flex-col gap-2" style={{ maxHeight: '60dvh' }}>
+      {(lastRemoved || working || error || outcome) && <div data-research-feedback role="group" tabIndex={0} aria-label={sourceText('input.research_feedback', 'Research status')} className="min-h-0 overflow-y-auto overscroll-contain space-y-2">
+      {lastRemoved && <div className="flex gap-2 items-center min-w-0">
+        <p role="status" className="min-w-0 flex-1 truncate" title={lastRemoved.items[0].item.title}>{sourceText('input.research_removed_source', 'Removed: ' + lastRemoved.items[0].item.title, { title: lastRemoved.items[0].item.title })}</p>
+        <button ref={undoControl} type="button" className="w-11 h-11 shrink-0 flex items-center justify-center rounded border border-indigo-300 text-indigo-900 disabled:opacity-50"
+          aria-label={sourceText('input.research_undo_remove', 'Undo removal')} title={sourceText('input.research_undo_remove', 'Undo removal')} disabled={disabled} onClick={undoRemove}><Undo2 size={18} aria-hidden="true" /></button>
+      </div>}
+      {working && <p role="status" aria-live="polite">{working === 'write' ? sourceText('input.review_writing', 'Writing from reviewed sources…') : progress === 'transcribing' ? sourceText('input.research_video_transcribing', 'Transcribing video with Gemini...') : progress === 'selecting' ? sourceText('input.research_video_selecting', 'Selecting transcript excerpts...') : sourceText('input.review_finding', 'Collecting passages for review…')}</p>}
+      {error && <p role="alert" className="text-rose-800 break-words">{error}</p>}
+      {outcome && <p data-research-outcome role="status" aria-live="polite" className="text-xs text-slate-600">{outcome}</p>}
+      </div>}
+      <div className="shrink-0 flex flex-wrap gap-2 items-center justify-between">
+        <p data-research-summary role="status" aria-live="polite" aria-atomic="true" className="text-xs text-slate-600 min-w-0">
+          <span className="block font-medium">{sourceText('input.research_writing_selection', 'Included for writing')}</span>
+          {countText(selectedSources, 'input.research_source_count_one', 'input.research_source_count_many', '{count} source', '{count} sources')}, {countText(selected.length, 'input.research_passage_count_one', 'input.research_passage_count_many', '{count} passage', '{count} passages')}
+        </p>
+        {working && working !== 'write'
+          ? <button type="button" className={button} onClick={() => { epoch.current++; pendingFocus.current = { context, target: 'generate' }; setWorking(''); setError(''); setOutcome(sourceText('input.research_cancelled', 'Research cancelled.')); }}>{sourceText('input.review_cancel', 'Cancel research')}</button>
+          : <button ref={generateControl} type="button" aria-label={sourceText('input.review_generate', 'Generate from included passages')} className="min-h-11 px-3 py-2 bg-indigo-600 text-white rounded disabled:opacity-50 max-w-full" disabled={disabled || !ready || !selected.length} onClick={() => run('write')}>
+            {sourceText('input.research_generate_short', 'Generate')}
+          </button>}
+      </div>
+    </footer>
   </section>;
 }
 
@@ -2331,9 +2830,37 @@ function SourceGenPanel(props) {
   // so the panel asks Lumen how many there are. A control that is always on but
   // silently does nothing is worse than one that explains why it is unavailable.
   // Reads local storage only — no network, nothing sent anywhere.
-  const sourceText = (key, fallback) => { try { const value = t(key); return value && value !== key ? value : fallback; } catch (_) { return fallback; } };
-  const supportedWebTopics = window.WebSearchProvider?.publicSearchQuery?.topics || [];
-  const [reviewBeforeWriting, setReviewBeforeWriting] = React.useState(false);
+  const sourceText = (key, fallback, values) => { try { const value = t(key, values); return value && value !== key ? value : fallback; } catch (_) { return fallback; } };
+  const sessionKey = typeof setSourceTopic === 'function' ? setSourceTopic : null;
+  const restoredSession = sessionKey && sourceResearchSessions.get(sessionKey);
+  const [researchConfig, setResearchConfig] = React.useState(() => restoredSession?.config || {
+    version: 1, enabled: !!(includeSourceCitations || useOwnSources || documentsOnly),
+    mode: documentsOnly ? 'sources' : useOwnSources ? (includeSourceCitations ? 'combined' : 'sources') : 'web',
+    urls: [], reviewBeforeWriting: false, exactQuotes: !!documentsOnly
+  });
+  const [reviewPacket, setReviewPacket] = React.useState(() => restoredSession?.packet || null);
+  const [reviewDraft, setReviewDraft] = React.useState(() => restoredSession?.draft?.topic === sourceTopic.trim() ? restoredSession.draft : null);
+  React.useEffect(() => { setReviewDraft(draft => draft?.topic === sourceTopic.trim() ? draft : null); }, [sourceTopic]);
+  const [reviewTranscripts, setReviewTranscripts] = React.useState(() => restoredSession?.transcripts?.topic === sourceTopic.trim() ? restoredSession.transcripts : null);
+  React.useEffect(() => { setReviewTranscripts(cache => cache?.topic === sourceTopic.trim() ? cache : null); }, [sourceTopic]);
+  const [settingsOpen, setSettingsOpen] = React.useState(false);
+  const [reviewOpen, setReviewOpen] = React.useState(false);
+  const [draftConfig, setDraftConfig] = React.useState(null);
+  const [draftUrls, setDraftUrls] = React.useState('');
+  const [settingsError, setSettingsError] = React.useState('');
+  const settingsUrlControl = React.useRef(null);
+  React.useLayoutEffect(() => { if (settingsError) settingsUrlControl.current?.focus(); }, [settingsError]);
+  const settingsSelection = React.useRef(null);
+  const researchWeb = researchConfig.enabled && researchConfig.mode !== 'sources';
+  const researchDocuments = researchConfig.enabled && researchConfig.mode !== 'web';
+  const reviewBeforeWriting = researchConfig.enabled && researchConfig.reviewBeforeWriting;
+  const commitConfig = config => {
+    setResearchConfig(config);
+    if (setIncludeSourceCitations) setIncludeSourceCitations(config.enabled && config.mode !== 'sources');
+    if (setUseOwnSources) setUseOwnSources(config.enabled && config.mode !== 'web');
+    if (setDocumentsOnly) setDocumentsOnly(config.enabled && config.exactQuotes && config.mode === 'sources');
+  };
+  React.useEffect(() => { if (sessionKey) sourceResearchSessions.set(sessionKey, { config: researchConfig, packet: reviewPacket, draft: reviewDraft, transcripts: reviewTranscripts }); }, [sessionKey, researchConfig, reviewPacket, reviewDraft, reviewTranscripts]);
   const [ownSourcesLoaded, setOwnSourcesLoaded] = React.useState(false);
   const [ownSourceLoading, setOwnSourceLoading] = React.useState(true);
   const [ownSourceReadError, setOwnSourceReadError] = React.useState('');
@@ -2368,12 +2895,35 @@ function SourceGenPanel(props) {
   }, []);
   const ownSourceControlsBusy = ownSourceBusy || ownSourceImporting || isGeneratingSource;
   const canGenerateSource = (!!sourceTopic.trim() || targetStandards.length > 0)
-    && !ownSourceControlsBusy && (!documentsOnly || (ownSourceCount > 0 && !ownSourceLoading && !ownSourceReadError));
-  const submitSource = (event) => { if (canGenerateSource && !reviewBeforeWriting) return handleGenerateSource(event); };
+    && !ownSourceControlsBusy && (!researchDocuments || researchConfig.mode !== 'sources' || researchConfig.urls.length > 0 || reviewPacket?.topic === sourceTopic.trim() && reviewPacket.items?.some(item => item.included && item.kind !== 'document') || (ownSourceCount > 0 && !ownSourceLoading && !ownSourceReadError));
+  const submitSource = async () => {
+    if (reviewBeforeWriting) { setReviewOpen(true); return; }
+    if (!canGenerateSource) return;
+    const result = await handleGenerateSource({ researchConfig, selectedOwnSourceIds: selectedIds,
+      ...(researchConfig.enabled && reviewPacket?.topic === sourceTopic.trim() ? { researchPacket: reviewPacket } : {}) });
+    if (researchConfig.enabled && result?.packet) setReviewPacket(result.packet);
+    return result;
+  };
+  const openSettings = () => {
+    setDraftConfig({ ...researchConfig, urls: [...researchConfig.urls] }); setDraftUrls(researchConfig.urls.join('\n'));
+    settingsSelection.current = Array.isArray(selectedIds) ? [...selectedIds] : selectedIds;
+    setSettingsError(''); setSettingsOpen(true);
+  };
+  const cancelSettings = () => {
+    if (duplicateResolverRef.current) chooseDuplicate('skip');
+    updateSelectedIds(settingsSelection.current); setSettingsOpen(false); setDraftConfig(null); setSettingsError('');
+  };
+  const applySettings = () => {
+    const urls = [];
+    const rejectUrls = message => { setSettingsError(message); if (settingsError === message) settingsUrlControl.current?.focus(); };
+    for (const line of draftUrls.split(/\r?\n/).map(value => value.trim()).filter(Boolean)) {
+      try { const url = new URL(line); if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) throw new Error('invalid'); url.hash = ''; if (!urls.includes(url.href)) urls.push(url.href); }
+      catch (_) { rejectUrls(sourceText('input.research_invalid_url', 'Enter a complete http or https URL on each line.')); return; }
+    }
+    if (urls.length > 12) { rejectUrls(sourceText('input.research_url_limit', 'Choose up to 12 webpages for one research session.')); return; }
+    commitConfig({ ...draftConfig, version: 1, urls }); setSettingsOpen(false); setDraftConfig(null); setSettingsError('');
+  };
   const ownSourcesApi = (typeof window !== 'undefined' && window.AlloOwnSources) || null;
-  React.useEffect(() => {
-    if (ownSourceCount === 0 && !ownSourceLoading && !ownSourceReadError && !ownSourceImporting && useOwnSources && !documentsOnly && setUseOwnSources) setUseOwnSources(false);
-  }, [ownSourceCount, ownSourceLoading, ownSourceReadError, ownSourceImporting, useOwnSources, documentsOnly, setUseOwnSources]);
 
   // Exclude keeps the document but drops it from retrieval; the count follows,
   // because the count is what the toggle promises the AI will read.
@@ -2387,6 +2937,7 @@ function SourceGenPanel(props) {
   const handleToggleOwnSource = React.useCallback((source) => {
     if (ownSourceControlsBusy) return;
     if (!source || source.allowAI === false) return;
+    if (!isSourceSelected(source)) setDraftConfig(config => config ? { ...config, enabled: true, mode: config.mode === 'web' ? 'combined' : config.mode } : config);
     updateSelectedIds((current) => {
       const ids = Array.isArray(current) ? current : ownSourceList.filter((row) => row.active !== false && row.allowAI !== false).map((row) => row.id);
       return ids.includes(source.id) ? ids.filter((id) => id !== source.id) : [...ids, source.id];
@@ -2453,7 +3004,7 @@ function SourceGenPanel(props) {
       const importedIds = (outcome.results || []).filter((row) => row.ok && row.sourceId && (row.action === 'added' || row.action === 'replaced')).map((row) => row.sourceId);
       if (importedIds.length) {
         updateSelectedIds((ids) => Array.from(new Set([...(ids || []), ...importedIds])));
-        if (setUseOwnSources) setUseOwnSources(true);
+        setDraftConfig(config => config ? { ...config, enabled: true, mode: config.mode === 'web' ? 'combined' : config.mode } : config);
       }
       try {
         const library = await readSourcePanelLibrary(ownSourcesApi);
@@ -2801,71 +3352,49 @@ function SourceGenPanel(props) {
                           aria-label={t('wizard.input_instructions_label')}
                         />
                       </div>
-                      <div className="flex flex-col gap-2 bg-purple-50 p-2.5 rounded-lg border-2 border-purple-200 shadow-sm" data-help-key="source_verify_checkbox">
+                      <div className="flex flex-wrap items-center gap-2 border-y border-slate-200 py-2 text-sm" data-help-key="source_verify_checkbox">
                           <div className="flex items-center gap-2">
-                              <input aria-label={t('common.toggle_include_source_citations')}
+                              <input aria-label={sourceText('input.research_toggle', 'Research')}
                                   id="includeCitations"
                                   type="checkbox"
-                                  checked={includeSourceCitations}
-                                  onChange={(e) => { setIncludeSourceCitations(e.target.checked); if (e.target.checked && setDocumentsOnly) setDocumentsOnly(false); }}
+                                  checked={researchConfig.enabled}
+                                  onChange={event => commitConfig({ ...researchConfig, enabled: event.target.checked })}
                                   className="w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-purple-500 cursor-pointer"
                               />
                               <label htmlFor="includeCitations" className="text-xs font-bold text-purple-900 cursor-pointer select-none flex items-center gap-1.5">
-                                  <Search size={12} className="text-purple-600"/> {t('input.verify_facts')}
+                                  <Search size={12} className="text-purple-600"/> {sourceText('input.research_toggle', 'Research')}
                               </label>
                           </div>
-                          {includeSourceCitations && (
-                              <p className="text-[11px] text-purple-700 ml-6 leading-relaxed">{t('input.verify_facts_desc')}</p>
-                          )}
-                          {includeSourceCitations && !documentsOnly && supportedWebTopics.length > 0 && (
-                              <details className="ml-6 text-xs text-purple-900">
-                                  <summary className="min-h-11 py-3 cursor-pointer font-bold">{sourceText('input.web_supported_topics', 'Supported web-search topics')}</summary>
-                                  <p id="sourceWebTopicHelp" className="mb-2 leading-relaxed">{sourceText('input.web_supported_topics_desc', 'Canvas and connected search providers support these public topics. Choosing one replaces the topic above. Your instructions and selected documents stay in place.')}</p>
-                                  <label htmlFor="sourceWebTopic" className="block font-bold mb-1">{sourceText('input.web_choose_topic', 'Choose a public topic')}</label>
-                                  <select id="sourceWebTopic" value="" disabled={ownSourceControlsBusy}
-                                      aria-describedby="sourceWebTopicHelp"
-                                      onChange={(event) => { if (event.target.value) setSourceTopic(event.target.value); }}
-                                      className="w-full min-h-11 rounded border border-purple-300 bg-white p-2 text-purple-900">
-                                      <option value="">{sourceText('input.web_choose_topic', 'Choose a public topic')}</option>
-                                      {supportedWebTopics.map(topic => <option key={topic} value={topic}>{topic}</option>)}
-                                  </select>
-                              </details>
-                          )}
+                          <span className="min-w-0 flex-1 text-xs text-slate-600 break-words" data-research-summary>
+                            {!researchConfig.enabled ? sourceText('input.research_off', 'Off') : researchConfig.mode === 'web' ? sourceText('input.research_web', 'Web search') : researchConfig.mode === 'sources' ? sourceText('input.research_sources', 'My sources') : sourceText('input.research_combined', 'Web and my sources')}
+                            {researchConfig.enabled && researchConfig.mode !== 'web' && ` · ${ownSourceCount ?? 0} ${sourceText('input.research_documents', 'Documents')}`}
+                            {researchConfig.enabled && researchConfig.urls.length > 0 && ` · ${researchConfig.urls.length} ${sourceText('input.research_links', 'links')}`}
+                            {reviewBeforeWriting && ` · ${sourceText('input.research_review_enabled', 'Review first')}`}
+                          </span>
+                          <button type="button" onClick={openSettings} disabled={ownSourceControlsBusy} title={sourceText('input.research_settings', 'Research settings')} aria-label={sourceText('input.research_settings', 'Research settings')}
+                            className="w-11 h-11 shrink-0 flex items-center justify-center rounded border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-50"><Settings size={18} aria-hidden="true" /></button>
                       </div>
-                      <div className="flex flex-col gap-2 bg-purple-50 p-2.5 rounded-lg border-2 border-purple-200 shadow-sm">
-                          {/* Documents and web search are independent options. Keep
-                              the document toggle visible when all saved files are
-                              excluded, so the user can still see its state. */}
-                          {(useOwnSources || (ownSourceCount !== null && ownSourceList.length > 0)) && (
-                              <div className="flex items-center gap-2 ml-6 pt-1.5 border-t border-purple-200/70">
-                                  <input aria-label={t('input.use_my_sources')}
-                                      id="useOwnSources"
-                                      type="checkbox"
-                                      checked={!!useOwnSources}
-                                      onChange={(e) => { if (setUseOwnSources) setUseOwnSources(e.target.checked); if (!e.target.checked && setDocumentsOnly) setDocumentsOnly(false); }}
-                                      disabled={(ownSourceCount === 0 && !documentsOnly && !ownSourceLoading && !ownSourceReadError) || ownSourceControlsBusy}
-                                      className="w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-purple-500 cursor-pointer"
-                                  />
-                                  <label htmlFor="useOwnSources" className="text-xs font-bold text-purple-900 cursor-pointer select-none flex items-center gap-1.5">
-                                      <FileText size={12} className="text-purple-600" aria-hidden="true"/> {t('input.use_my_sources')}
-                                      {ownSourceCount !== null && <span className="font-normal text-purple-700">({ownSourceCount})</span>}
-                                  </label>
-                              </div>
-                          )}
-                          {ownSourceCount !== null && ownSourceCount > 0 && useOwnSources && (
-                              <p className="text-[11px] text-purple-700 ml-12 leading-relaxed">{t('input.use_my_sources_desc')}</p>
-                          )}
-                          {useOwnSources && (
-                              <div className="ml-6 space-y-1">
-                                  <label className="flex min-h-11 items-center gap-2 text-xs font-bold text-purple-900">
-                                      <input id="documentsOnly" type="checkbox" checked={!!documentsOnly} disabled={ownSourceControlsBusy}
-                                          onChange={(e) => { if (setDocumentsOnly) setDocumentsOnly(e.target.checked); if (e.target.checked) setIncludeSourceCitations(false); }} />
-                                      {sourceText('input.documents_only', 'Documents only (quoted excerpts)')}
-                                  </label>
-                                  {documentsOnly && <p className="text-[11px] text-purple-700">{sourceText('input.documents_only_desc', 'Uses exact passages from the selected documents, without adding outside information. Web search is off. Length, tone and reading level do not rewrite these excerpts.')}</p>}
-                                  {documentsOnly && ownSourceCount === 0 && !ownSourceLoading && !ownSourceReadError && <p role="status" className="text-xs text-amber-900">{sourceText('input.documents_only_select', 'Select at least one available document to continue.')}</p>}
-                              </div>
-                          )}
+                      {settingsOpen && draftConfig && <SourceResearchDialog title={sourceText('input.research_settings', 'Research settings')} onClose={cancelSettings} sourceText={sourceText} busy={ownSourceControlsBusy}>
+                        <label className="flex min-h-11 items-center gap-2 font-medium text-sm"><input type="checkbox" checked={draftConfig.enabled} disabled={ownSourceControlsBusy} onChange={event => setDraftConfig({ ...draftConfig, enabled: event.target.checked })} />{sourceText('input.research_toggle', 'Research')}</label>
+                        <fieldset className="space-y-2" disabled={ownSourceControlsBusy}>
+                          <legend className="text-sm font-bold">{sourceText('input.research_source_mode', 'Sources')}</legend>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">{[
+                            ['web', sourceText('input.research_web', 'Web search')],
+                            ['sources', sourceText('input.research_sources', 'My sources')],
+                            ['combined', sourceText('input.research_combined', 'Web and my sources')]
+                          ].map(([mode, label]) => <label key={mode} className={'flex min-h-11 items-center gap-2 border rounded p-2 text-sm cursor-pointer ' + (draftConfig.mode === mode ? 'border-indigo-500 bg-indigo-50 text-indigo-900' : 'border-slate-300 text-slate-800')}>
+                            <input type="radio" name="source-research-mode" value={mode} checked={draftConfig.mode === mode} onChange={() => setDraftConfig({ ...draftConfig, mode, enabled: true })} />{label}
+                          </label>)}</div>
+                        </fieldset>
+                        <div className="space-y-2 border-t border-slate-200 pt-3">
+                          <label className="block text-sm font-bold" htmlFor="source-research-urls">{sourceText('input.research_urls', 'Webpages to include')}</label>
+                          <textarea ref={settingsUrlControl} id="source-research-urls" value={draftUrls} onChange={event => { setDraftUrls(event.target.value); setSettingsError(''); }} rows={3} disabled={ownSourceControlsBusy}
+                            className="w-full rounded border border-slate-300 p-2 text-sm text-slate-900" placeholder="https://example.org/article" aria-invalid={!!settingsError} aria-describedby={'source-research-urls-hint' + (settingsError ? ' source-research-urls-error' : '')} />
+                          <p id="source-research-urls-hint" className="text-xs text-slate-600">{sourceText('input.research_urls_hint', 'One URL per line. These pages can be read with web search turned off.')}</p>
+                          {settingsError && <p id="source-research-urls-error" role="alert" className="text-sm text-rose-800">{settingsError}</p>}
+                        </div>
+                        <div className="flex flex-col gap-2 border-t border-slate-200 pt-3">
+                          <h3 className="text-sm font-bold text-slate-900">{sourceText('input.research_documents', 'Documents')}</h3>
                           {ownSourceLoading && <p role="status" className="text-xs text-purple-700">{sourceText('input.my_sources_loading', 'Loading saved documents…')}</p>}
                           {ownSourceReadError && <div className="ml-6 space-y-1">
                               <p role="alert" className="text-xs text-amber-900">{sourceText('input.my_sources_load_failed', 'Saved documents could not be loaded. Your selections have been kept. Retry loading, or continue with web search.')}</p>
@@ -2977,22 +3506,42 @@ function SourceGenPanel(props) {
                               </div>
                           )}
                       </div>
-                      <label className="flex items-center gap-2 min-h-11 text-sm font-medium text-indigo-900">
-                        <input type="checkbox" checked={reviewBeforeWriting} disabled={ownSourceControlsBusy} onChange={event => setReviewBeforeWriting(event.target.checked)} />
-                        {sourceText('input.review_before_writing', 'Review sources before writing')}
-                      </label>
-                      {reviewBeforeWriting && <SourceResearchReviewPanel topic={sourceTopic} includeWeb={includeSourceCitations} includeDocuments={useOwnSources || documentsOnly}
-                        documentsOnly={documentsOnly} selectedIds={selectedIds} sources={ownSourceList} libraryReady={ownSourcesLoaded && !ownSourceLoading && !ownSourceReadError}
-                        busy={ownSourceControlsBusy} generate={handleGenerateSource} sourceText={sourceText} />}
-                      {!reviewBeforeWriting && <button
+                        <fieldset className="border-t border-slate-200 pt-3 space-y-1" disabled={ownSourceControlsBusy}>
+                          <legend className="text-sm font-bold">{sourceText('input.research_writing', 'Writing')}</legend>
+                          <label className="flex items-center gap-2 min-h-11 text-sm font-medium">
+                            <input type="checkbox" checked={draftConfig.reviewBeforeWriting} onChange={event => setDraftConfig({ ...draftConfig, reviewBeforeWriting: event.target.checked })} />
+                            {sourceText('input.review_before_writing', 'Review sources before writing')}
+                          </label>
+                          <label className="flex items-center gap-2 min-h-11 text-sm font-medium">
+                            <input id="documentsOnly" type="checkbox" checked={draftConfig.exactQuotes} onChange={event => setDraftConfig({ ...draftConfig, exactQuotes: event.target.checked })} />
+                            {sourceText('input.research_exact_quotes', 'Exact quotations only')}
+                          </label>
+                          {draftConfig.exactQuotes && <p className="text-xs text-slate-600">{sourceText('input.research_quotes_hint', 'Keeps the wording of retrieved passages. Tone and reading level do not rewrite quotations.')}</p>}
+                        </fieldset>
+                        <p className="text-xs text-slate-600">{sourceText('input.research_privacy', 'Included source passages go to your configured AI provider. Web searches receive only the research topic.')}</p>
+                        <footer className="flex flex-wrap justify-end gap-2 border-t border-slate-200 pt-3">
+                          <button type="button" onClick={cancelSettings} disabled={ownSourceControlsBusy} className="min-h-11 px-4 rounded border border-slate-300 text-sm disabled:opacity-50">{sourceText('common.cancel', 'Cancel')}</button>
+                          <button type="button" onClick={applySettings} disabled={ownSourceControlsBusy} className="min-h-11 px-4 rounded bg-indigo-600 text-white text-sm disabled:opacity-50">{sourceText('input.research_apply', 'Apply settings')}</button>
+                        </footer>
+                      </SourceResearchDialog>}
+                      {researchConfig.enabled && reviewOpen && <SourceResearchDialog title={sourceText('input.review_heading', 'Review research sources')} onClose={() => setReviewOpen(false)} sourceText={sourceText} busy={isGeneratingSource} scrollBody={false}>
+                        <SourceResearchReviewPanel topic={sourceTopic} includeWeb={researchWeb} includeDocuments={researchDocuments}
+                          documentsOnly={false} researchConfig={researchConfig} selectedIds={selectedIds} sources={ownSourceList} libraryReady={ownSourcesLoaded && !ownSourceLoading && !ownSourceReadError}
+                          packet={reviewPacket} onPacketChange={setReviewPacket} draft={reviewDraft} onDraftChange={setReviewDraft}
+                          transcripts={reviewTranscripts} onTranscriptsChange={setReviewTranscripts} videoAvailability={sourceReviewVideoAvailability(props)} videoClipReady={sourceReviewVideoClipReady(props)}
+                          busy={ownSourceControlsBusy} generate={handleGenerateSource} sourceText={sourceText} />
+                      </SourceResearchDialog>}
+                      {researchConfig.enabled && !reviewBeforeWriting && reviewPacket?.topic === sourceTopic.trim() && <button type="button" onClick={() => setReviewOpen(true)} disabled={ownSourceControlsBusy} className="min-h-11 px-2 underline text-indigo-800">{sourceText('input.research_review_sources', 'Review sources')}</button>}
+                      {researchConfig.enabled && researchConfig.mode === 'sources' && !canGenerateSource && !ownSourceControlsBusy && <p role="status" className="text-xs text-amber-900">{sourceText('input.research_sources_required', 'Select a document, add a webpage, or add source text in review.')}</p>}
+                      <button
                         data-help-key="source_generate_button"
                         onClick={submitSource}
-                        disabled={!canGenerateSource} aria-busy={isGeneratingSource}
+                        disabled={reviewBeforeWriting ? ownSourceControlsBusy || !sourceTopic.trim() : !canGenerateSource} aria-busy={isGeneratingSource}
                         className="w-full bg-indigo-600 text-white text-sm font-medium py-2 rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >
                         {isGeneratingSource ? <RefreshCw className="animate-spin motion-reduce:animate-none" size={14} /> : <Pencil size={14} />}
-                        <span role={isGeneratingSource ? 'status' : undefined} aria-live="polite" aria-atomic="true">{isGeneratingSource ? (generationStep || t('input.writing')) : t('input.generate')}</span>
-                      </button>}
+                        <span role={isGeneratingSource ? 'status' : undefined} aria-live="polite" aria-atomic="true">{isGeneratingSource ? (generationStep || t('input.writing')) : reviewBeforeWriting ? sourceText('input.research_review_sources', 'Review sources') : t('input.generate')}</span>
+                      </button>
                   </div>
   );
 }

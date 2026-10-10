@@ -1,0 +1,918 @@
+{
+  "checks": [
+    {
+      "name": "spelling_bee: correct duplicate submission commits once immediately and locks response controls",
+      "passed": true
+    },
+    {
+      "name": "word_scramble: correct duplicate submission commits once immediately and locks response controls",
+      "passed": true
+    },
+    {
+      "name": "missing_letter: correct duplicate submission commits once immediately and locks response controls",
+      "passed": true
+    },
+    {
+      "name": "spelling_bee: empty/whitespace Enter, key repeat, and IME composition consume no attempt",
+      "passed": true
+    },
+    {
+      "name": "word_scramble: empty/whitespace Enter, key repeat, and IME composition consume no attempt",
+      "passed": true
+    },
+    {
+      "name": "Spelling Bee: checked feedback appears after a miss, duplicate wrong checks count once, and corrected spelling records two attempts with support",
+      "passed": true
+    },
+    {
+      "name": "Spelling Bee: first-letter, vowel, and more-letter hints accumulate and fully revealed answers are recorded honestly",
+      "passed": true
+    },
+    {
+      "name": "Spelling Bee: repeated Show More advances _a_ to ca_ to cat without resetting the revealed letters",
+      "passed": true
+    },
+    {
+      "name": "Spelling Bee: erasing a hint does not erase its support evidence from the completed response",
+      "passed": true
+    }
+  ],
+  "errors": [
+    "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('textbox', { name: 'Enter User Answer', exact: true }) to be visible\u001b[22m\n\n    at boot (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\word_sounds_answer_integrity_acceptance.cjs:80:177)\n    at async independentAndProbe (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\word_sounds_answer_integrity_acceptance.cjs:159:54)\n    at async run (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\word_sounds_answer_integrity_acceptance.cjs:164:862)"
+  ],
+  "externalRequests": [],
+  "runs": [
+    {
+      "name": "spelling_bee immediate submit",
+      "word": "cat",
+      "activity": "spelling_bee",
+      "score": {
+        "correct": 1,
+        "total": 1,
+        "streak": 1
+      },
+      "history": [
+        {
+          "timestamp": 1791603344425,
+          "sessionId": "ws-run-1791603344064-92tb5r",
+          "language": "en-US",
+          "textSupported": false,
+          "cluesShown": [],
+          "mode": "sound_only",
+          "firstTry": true,
+          "activity": "spelling_bee",
+          "word": "cat",
+          "correct": true,
+          "difficulty": "easy",
+          "wordDifficulty": "easy",
+          "phonemes": [
+            "k",
+            "a",
+            "t"
+          ],
+          "attempts": 1
+        }
+      ],
+      "feedback": {
+        "isCorrect": true,
+        "streak": 1,
+        "message": "Correct!"
+      },
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "instruction:fb_you_got_it",
+          "at": 1033.5
+        },
+        {
+          "id": 0,
+          "type": "waiting",
+          "label": "instruction:fb_you_got_it",
+          "duration": null,
+          "playbackRate": 1,
+          "at": 1072.300000000745,
+          "active": [
+            0
+          ]
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "word_scramble immediate submit",
+      "word": "cat",
+      "activity": "word_scramble",
+      "score": {
+        "correct": 1,
+        "total": 1,
+        "streak": 1
+      },
+      "history": [
+        {
+          "timestamp": 1791603345499,
+          "sessionId": "ws-run-1791603344895-bcatx4",
+          "language": "en-US",
+          "textSupported": false,
+          "cluesShown": [],
+          "mode": "sound_only",
+          "firstTry": true,
+          "activity": "word_scramble",
+          "word": "cat",
+          "correct": true,
+          "difficulty": "easy",
+          "wordDifficulty": "easy",
+          "phonemes": [
+            "k",
+            "a",
+            "t"
+          ],
+          "attempts": 1
+        }
+      ],
+      "feedback": {
+        "isCorrect": true,
+        "streak": 1,
+        "message": "Correct!"
+      },
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "instruction:fb_you_got_it",
+          "at": 919.2999999970198
+        },
+        {
+          "id": 0,
+          "type": "waiting",
+          "label": "instruction:fb_you_got_it",
+          "duration": null,
+          "playbackRate": 1,
+          "at": 974,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "loadedmetadata",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 978.3999999985099,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "playing",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 994.2999999970198,
+          "active": [
+            0
+          ]
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "missing_letter immediate submit",
+      "word": "cat",
+      "activity": "missing_letter",
+      "score": {
+        "correct": 1,
+        "total": 1,
+        "streak": 1
+      },
+      "history": [
+        {
+          "timestamp": 1791603346256,
+          "sessionId": "ws-run-1791603346004-y5zmrm",
+          "language": "en-US",
+          "textSupported": false,
+          "cluesShown": [],
+          "mode": "sound_only",
+          "firstTry": true,
+          "activity": "missing_letter",
+          "word": "cat",
+          "correct": true,
+          "difficulty": "easy",
+          "wordDifficulty": "easy",
+          "phonemes": [
+            "k",
+            "a",
+            "t"
+          ],
+          "attempts": 1
+        }
+      ],
+      "feedback": {
+        "isCorrect": true,
+        "streak": 1,
+        "message": "Correct!"
+      },
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "instruction:fb_you_got_it",
+          "at": 576.3000000007451
+        },
+        {
+          "id": 0,
+          "type": "waiting",
+          "label": "instruction:fb_you_got_it",
+          "duration": null,
+          "playbackRate": 1,
+          "at": 599.6000000014901,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "loadedmetadata",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 609.9000000022352,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "playing",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 615.5,
+          "active": [
+            0
+          ]
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "spelling_bee keyboard safety",
+      "word": "cat",
+      "activity": "spelling_bee",
+      "score": {
+        "correct": 1,
+        "total": 1,
+        "streak": 1
+      },
+      "history": [
+        {
+          "timestamp": 1791603347340,
+          "sessionId": "ws-run-1791603346971-3m5qr1",
+          "language": "en-US",
+          "textSupported": false,
+          "cluesShown": [],
+          "mode": "sound_only",
+          "firstTry": true,
+          "activity": "spelling_bee",
+          "word": "cat",
+          "correct": true,
+          "difficulty": "easy",
+          "wordDifficulty": "easy",
+          "phonemes": [
+            "k",
+            "a",
+            "t"
+          ],
+          "attempts": 1
+        }
+      ],
+      "feedback": {
+        "isCorrect": true,
+        "streak": 1,
+        "message": "Correct!"
+      },
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "instruction:fb_you_got_it",
+          "at": 905.8000000007451
+        },
+        {
+          "id": 0,
+          "type": "waiting",
+          "label": "instruction:fb_you_got_it",
+          "duration": null,
+          "playbackRate": 1,
+          "at": 921.6000000014901,
+          "active": [
+            0
+          ]
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "word_scramble keyboard safety",
+      "word": "cat",
+      "activity": "word_scramble",
+      "score": {
+        "correct": 1,
+        "total": 1,
+        "streak": 1
+      },
+      "history": [
+        {
+          "timestamp": 1791603348321,
+          "sessionId": "ws-run-1791603347791-gu4kpu",
+          "language": "en-US",
+          "textSupported": false,
+          "cluesShown": [],
+          "mode": "sound_only",
+          "firstTry": true,
+          "activity": "word_scramble",
+          "word": "cat",
+          "correct": true,
+          "difficulty": "easy",
+          "wordDifficulty": "easy",
+          "phonemes": [
+            "k",
+            "a",
+            "t"
+          ],
+          "attempts": 1
+        }
+      ],
+      "feedback": {
+        "isCorrect": true,
+        "streak": 1,
+        "message": "Correct!"
+      },
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "instruction:fb_you_got_it",
+          "at": 858
+        },
+        {
+          "id": 0,
+          "type": "waiting",
+          "label": "instruction:fb_you_got_it",
+          "duration": null,
+          "playbackRate": 1,
+          "at": 876.3000000007451,
+          "active": [
+            0
+          ]
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "checked spelling feedback",
+      "word": "cat",
+      "activity": "spelling_bee",
+      "score": {
+        "correct": 1,
+        "total": 1,
+        "streak": 0
+      },
+      "history": [
+        {
+          "timestamp": 1791603349468,
+          "sessionId": "ws-run-1791603348825-arye7f",
+          "language": "en-US",
+          "textSupported": true,
+          "cluesShown": [
+            "spelling_letter_feedback"
+          ],
+          "answerExposed": false,
+          "mode": "visual",
+          "firstTry": false,
+          "activity": "spelling_bee",
+          "word": "cat",
+          "correct": true,
+          "difficulty": "easy",
+          "wordDifficulty": "easy",
+          "phonemes": [
+            "k",
+            "a",
+            "t"
+          ],
+          "attempts": 2
+        }
+      ],
+      "feedback": {
+        "isCorrect": true,
+        "streak": 0,
+        "message": "Correct!"
+      },
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "instruction:fb_try_again_listen",
+          "at": 586.5
+        },
+        {
+          "id": 0,
+          "type": "waiting",
+          "label": "instruction:fb_try_again_listen",
+          "duration": null,
+          "playbackRate": 1,
+          "at": 596,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "loadedmetadata",
+          "label": "instruction:fb_try_again_listen",
+          "duration": 2.640039,
+          "playbackRate": 1,
+          "at": 601.8999999985099,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "playing",
+          "label": "instruction:fb_try_again_listen",
+          "duration": 2.640039,
+          "playbackRate": 1,
+          "at": 613.5,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "pause",
+          "label": "instruction:fb_try_again_listen",
+          "duration": 2.640039,
+          "playbackRate": 1,
+          "at": 1045.5999999977648,
+          "active": []
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "first-letter plus cumulative hints",
+      "word": "cat",
+      "activity": "spelling_bee",
+      "score": {
+        "correct": 1,
+        "total": 1,
+        "streak": 1
+      },
+      "history": [
+        {
+          "timestamp": 1791603350515,
+          "sessionId": "ws-run-1791603349896-ur0uif",
+          "language": "en-US",
+          "textSupported": true,
+          "cluesShown": [
+            "spelling_first_letter",
+            "spelling_vowels",
+            "spelling_more_letters"
+          ],
+          "answerExposed": true,
+          "mode": "visual",
+          "firstTry": true,
+          "activity": "spelling_bee",
+          "word": "cat",
+          "correct": true,
+          "difficulty": "easy",
+          "wordDifficulty": "easy",
+          "phonemes": [
+            "k",
+            "a",
+            "t"
+          ],
+          "attempts": 1
+        }
+      ],
+      "feedback": {
+        "isCorrect": true,
+        "streak": 1,
+        "message": "Correct!"
+      },
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "instruction:fb_you_got_it",
+          "at": 928
+        },
+        {
+          "id": 0,
+          "type": "waiting",
+          "label": "instruction:fb_you_got_it",
+          "duration": null,
+          "playbackRate": 1,
+          "at": 952.3999999985099,
+          "active": [
+            0
+          ]
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "vowels monotonic reveal",
+      "word": "cat",
+      "activity": "spelling_bee",
+      "score": {
+        "correct": 1,
+        "total": 1,
+        "streak": 1
+      },
+      "history": [
+        {
+          "timestamp": 1791603351552,
+          "sessionId": "ws-run-1791603350988-adog42",
+          "language": "en-US",
+          "textSupported": true,
+          "cluesShown": [
+            "spelling_vowels",
+            "spelling_more_letters"
+          ],
+          "answerExposed": true,
+          "mode": "visual",
+          "firstTry": true,
+          "activity": "spelling_bee",
+          "word": "cat",
+          "correct": true,
+          "difficulty": "easy",
+          "wordDifficulty": "easy",
+          "phonemes": [
+            "k",
+            "a",
+            "t"
+          ],
+          "attempts": 1
+        }
+      ],
+      "feedback": {
+        "isCorrect": true,
+        "streak": 1,
+        "message": "Correct!"
+      },
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "instruction:fb_you_got_it",
+          "at": 944.8000000007451
+        },
+        {
+          "id": 0,
+          "type": "waiting",
+          "label": "instruction:fb_you_got_it",
+          "duration": null,
+          "playbackRate": 1,
+          "at": 962.1999999992549,
+          "active": [
+            0
+          ]
+        },
+        {
+          "id": 0,
+          "type": "loadedmetadata",
+          "label": "instruction:fb_you_got_it",
+          "duration": 0.959913,
+          "playbackRate": 1,
+          "at": 968.3000000007451,
+          "active": [
+            0
+          ]
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "erased hint evidence",
+      "word": "cat",
+      "activity": "spelling_bee",
+      "score": {
+        "correct": 1,
+        "total": 1,
+        "streak": 1
+      },
+      "history": [
+        {
+          "timestamp": 1791603352370,
+          "sessionId": "ws-run-1791603351977-ftypiy",
+          "language": "en-US",
+          "textSupported": true,
+          "cluesShown": [
+            "spelling_first_letter"
+          ],
+          "answerExposed": false,
+          "mode": "visual",
+          "firstTry": true,
+          "activity": "spelling_bee",
+          "word": "cat",
+          "correct": true,
+          "difficulty": "easy",
+          "wordDifficulty": "easy",
+          "phonemes": [
+            "k",
+            "a",
+            "t"
+          ],
+          "attempts": 1
+        }
+      ],
+      "feedback": {
+        "isCorrect": true,
+        "streak": 1,
+        "message": "Correct!"
+      },
+      "audioEvents": [
+        {
+          "id": 0,
+          "type": "play-call",
+          "label": "instruction:fb_you_got_it",
+          "at": 697.3000000007451
+        },
+        {
+          "id": 0,
+          "type": "waiting",
+          "label": "instruction:fb_you_got_it",
+          "duration": null,
+          "playbackRate": 1,
+          "at": 713.3000000007451,
+          "active": [
+            0
+          ]
+        }
+      ],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "neutral independent spelling",
+      "word": "cat",
+      "activity": "spelling_bee",
+      "score": {
+        "correct": 0,
+        "total": 0,
+        "streak": 0
+      },
+      "history": [],
+      "feedback": null,
+      "audioEvents": [],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    },
+    {
+      "name": "failure",
+      "word": null,
+      "activity": "spelling_bee",
+      "score": {
+        "correct": 0,
+        "total": 0,
+        "streak": 0
+      },
+      "history": [],
+      "feedback": null,
+      "audioEvents": [],
+      "toasts": [],
+      "synthesis": [],
+      "gemini": []
+    }
+  ],
+  "consoleMessages": [
+    "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "[PureHelpers] 7 helpers registered",
+    "[MiscComponentsModule] 3 components registered.",
+    "[MiscComponentsModule] 3 components registered (incl. WordSoundsReviewPanel with Sound Swap)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] loadProbeBanks stub (CDN)",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] WordSoundsModal MOUNTED. initialShowReviewPanel: false, activity: spelling_bee",
+    "[WS-DBG] initialShowReviewPanel changed to: false",
+    "[WS-DBG] 🔄 Reset hasStartedFromReview for new word set: cat",
+    "[WS-DBG] 🚀 Initializing Session Queue for spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] Streak preserved across activity change to: spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] 🔄 Synced currentWordIndex to 1 to skip: cat",
+    "[WS-DBG] 🚀 Using preloaded data for: cat",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] TeacherCheck: checkAnswer called {answer: correct, expectedAnswer: correct, locked: false}",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] WordSoundsModal UNMOUNTED",
+    "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "[PureHelpers] 7 helpers registered",
+    "[MiscComponentsModule] 3 components registered.",
+    "[MiscComponentsModule] 3 components registered (incl. WordSoundsReviewPanel with Sound Swap)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] loadProbeBanks stub (CDN)",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [word_scramble]",
+    "[WS-DBG] WordSoundsModal MOUNTED. initialShowReviewPanel: false, activity: word_scramble",
+    "[WS-DBG] initialShowReviewPanel changed to: false",
+    "[WS-DBG] 🔄 Reset hasStartedFromReview for new word set: cat",
+    "[WS-DBG] 🚀 Initializing Session Queue for word_scramble",
+    "[WS-DBG] 🎲 Generating session queue for word_scramble (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [word_scramble]",
+    "[WS-DBG] Streak preserved across activity change to: word_scramble",
+    "[WS-DBG] 🎲 Generating session queue for word_scramble (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] 🔄 Synced currentWordIndex to 1 to skip: cat",
+    "[WS-DBG] 🚀 Using preloaded data for: cat",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [word_scramble]",
+    "[WS-DBG] TeacherCheck: checkAnswer called {answer: correct, expectedAnswer: correct, locked: false}",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [word_scramble]",
+    "[WS-DBG] WordSoundsModal UNMOUNTED",
+    "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "[PureHelpers] 7 helpers registered",
+    "[MiscComponentsModule] 3 components registered.",
+    "[MiscComponentsModule] 3 components registered (incl. WordSoundsReviewPanel with Sound Swap)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] loadProbeBanks stub (CDN)",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [missing_letter]",
+    "[WS-DBG] WordSoundsModal MOUNTED. initialShowReviewPanel: false, activity: missing_letter",
+    "[WS-DBG] initialShowReviewPanel changed to: false",
+    "[WS-DBG] 🔄 Reset hasStartedFromReview for new word set: cat",
+    "[WS-DBG] 🚀 Initializing Session Queue for missing_letter",
+    "[WS-DBG] 🎲 Generating session queue for missing_letter (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [missing_letter]",
+    "[WS-DBG] Streak preserved across activity change to: missing_letter",
+    "[WS-DBG] 🎲 Generating session queue for missing_letter (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] 🔄 Synced currentWordIndex to 1 to skip: cat",
+    "[WS-DBG] 🚀 Using preloaded data for: cat",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [missing_letter]",
+    "[WS-DBG] TeacherCheck: checkAnswer called {answer: correct, expectedAnswer: correct, locked: false}",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [missing_letter]",
+    "[WS-DBG] WordSoundsModal UNMOUNTED",
+    "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "[PureHelpers] 7 helpers registered",
+    "[MiscComponentsModule] 3 components registered.",
+    "[MiscComponentsModule] 3 components registered (incl. WordSoundsReviewPanel with Sound Swap)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] loadProbeBanks stub (CDN)",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] WordSoundsModal MOUNTED. initialShowReviewPanel: false, activity: spelling_bee",
+    "[WS-DBG] initialShowReviewPanel changed to: false",
+    "[WS-DBG] 🔄 Reset hasStartedFromReview for new word set: cat",
+    "[WS-DBG] 🚀 Initializing Session Queue for spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] Streak preserved across activity change to: spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] 🔄 Synced currentWordIndex to 1 to skip: cat",
+    "[WS-DBG] 🚀 Using preloaded data for: cat",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] TeacherCheck: checkAnswer called {answer: correct, expectedAnswer: correct, locked: false}",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] WordSoundsModal UNMOUNTED",
+    "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "[PureHelpers] 7 helpers registered",
+    "[MiscComponentsModule] 3 components registered.",
+    "[MiscComponentsModule] 3 components registered (incl. WordSoundsReviewPanel with Sound Swap)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] loadProbeBanks stub (CDN)",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [word_scramble]",
+    "[WS-DBG] WordSoundsModal MOUNTED. initialShowReviewPanel: false, activity: word_scramble",
+    "[WS-DBG] initialShowReviewPanel changed to: false",
+    "[WS-DBG] 🔄 Reset hasStartedFromReview for new word set: cat",
+    "[WS-DBG] 🚀 Initializing Session Queue for word_scramble",
+    "[WS-DBG] 🎲 Generating session queue for word_scramble (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [word_scramble]",
+    "[WS-DBG] Streak preserved across activity change to: word_scramble",
+    "[WS-DBG] 🎲 Generating session queue for word_scramble (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] 🔄 Synced currentWordIndex to 1 to skip: cat",
+    "[WS-DBG] 🚀 Using preloaded data for: cat",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [word_scramble]",
+    "[WS-DBG] TeacherCheck: checkAnswer called {answer: correct, expectedAnswer: correct, locked: false}",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [word_scramble]",
+    "[WS-DBG] WordSoundsModal UNMOUNTED",
+    "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "[PureHelpers] 7 helpers registered",
+    "[MiscComponentsModule] 3 components registered.",
+    "[MiscComponentsModule] 3 components registered (incl. WordSoundsReviewPanel with Sound Swap)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] loadProbeBanks stub (CDN)",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] WordSoundsModal MOUNTED. initialShowReviewPanel: false, activity: spelling_bee",
+    "[WS-DBG] initialShowReviewPanel changed to: false",
+    "[WS-DBG] 🔄 Reset hasStartedFromReview for new word set: cat",
+    "[WS-DBG] 🚀 Initializing Session Queue for spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] Streak preserved across activity change to: spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)",
+    "[WS-DBG] 🔄 Synced currentWordIndex to 1 to skip: cat",
+    "[WS-DBG] 🚀 Using preloaded data for: cat",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] TeacherCheck: checkAnswer called {answer: incorrect, expectedAnswer: correct, locked: false}",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] TeacherCheck: checkAnswer called {answer: correct, expectedAnswer: correct, locked: false}",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] WordSoundsModal UNMOUNTED",
+    "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "[PureHelpers] 7 helpers registered",
+    "[MiscComponentsModule] 3 components registered.",
+    "[MiscComponentsModule] 3 components registered (incl. WordSoundsReviewPanel with Sound Swap)",
+    "[WS-DBG] ✅ WordSoundsModal: availableLanguages [English]",
+    "[WS-DBG] loadProbeBanks stub (CDN)",
+    "[WS-DBG] 🔄 Syncing activitySequence from prop: [spelling_bee]",
+    "[WS-DBG] WordSoundsModal MOUNTED. initialShowReviewPanel: false, activity: spelling_bee",
+    "[WS-DBG] initialShowReviewPanel changed to: false",
+    "[WS-DBG] 🔄 Reset hasStartedFromReview for new word set: cat",
+    "[WS-DBG] 🚀 Initializing Session Queue for spelling_bee",
+    "[WS-DBG] 🎲 Generating session queue for spelling_bee (easy)",
+    "[WS-DBG] 📊 Difficulty filter (easy): 1/1 words",
+    "[WS-DBG] ⚠️ Not enough strict difficulty words, broadening pool...",
+    "[WS-DBG] ✅ Queue generated: 10 words (Sequential: false)"
+  ],
+  "runtimeSha256": "7bbee046d670147447ef0e93fa3a4fcc193908e6e75a98fc9c58c89b69c40c9f",
+  "voiceSha256": "ab8f03324c8eac75f229d2dc98b2a314e06fa5f847485d5f4ddd03fde0e4d6b9",
+  "limitations": [
+    "Controlled local React host and production runtime/CSS validate construction answer mechanics and recorded learning evidence.",
+    "Native audio remains available from existing local banks; this suite does not assess physical microphone accuracy, live provider generation, or pronunciation quality."
+  ]
+}

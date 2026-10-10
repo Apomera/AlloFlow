@@ -1,0 +1,33 @@
+{
+  "baselineSHA": "f6cfbcccc65323918d7ca7b209737dcd13cf57a31246da4110f2ab980907147f",
+  "finalSHA": "179ddeefd0c930ca4a084d98fc683c321fb4f36f720e62cddf8b30d56b576466",
+  "baselineOnly": false,
+  "workflows": 1,
+  "selectedViews": [
+    "child-heel-side-contrast"
+  ],
+  "evidenceCount": 4,
+  "workers": 1,
+  "retries": 0,
+  "perWorkflowTimeoutMs": 450000,
+  "images": [
+    "child-heel-side-contrast-baseline-compression-stage.png",
+    "child-heel-side-contrast-baseline-compression-wrists.png",
+    "child-heel-side-contrast-baseline-release-stage.png",
+    "child-heel-side-contrast-baseline-release-wrists.png",
+    "child-heel-side-contrast-candidate-compression-stage.png",
+    "child-heel-side-contrast-candidate-compression-wrists.png",
+    "child-heel-side-contrast-candidate-release-stage.png",
+    "child-heel-side-contrast-candidate-release-wrists.png"
+  ],
+  "stats": {
+    "startTime": "2026-10-08T15:50:03.357Z",
+    "duration": 256695.18099999998,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "inputsUnchanged": true,
+  "privateCandidate": true
+}

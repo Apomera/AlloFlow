@@ -1,0 +1,12 @@
+{
+  "completed": true,
+  "installed": false,
+  "baselineUiHash": "609b91840f54bbf05447bfb877a4a87e024f6b1d7cfbf65744d2b9c9904a60c6",
+  "candidateUiHash": "166dd6c8a059c03fd21e79c646c14bd104ea0be93d8cc43105231fd6f5576742",
+  "cssHash": "b6d3f0a4aedcddb2d1abe548f461a2e05eb82858ddcea9e8eef3cbb732cb51f8",
+  "rendererHash": "c0cc2486b3d5edd620e5975daec3d23b8f2e995a24db151be27ac30820d058c7",
+  "insertionBefore": "  @media(forced-colors:active){\n    [data-universe-tool] .uf-inview-controls{",
+  "insertionLine": 1952,
+  "insertion": "  @media(forced-colors:active){\n    [data-universe-tool] .uf-vistas{background:Canvas;color:CanvasText;border-color:CanvasText;box-shadow:none;}\n    [data-universe-tool] .uf-vistas .uf-section-heading h3,[data-universe-tool] .uf-vistas .uf-section-heading p,[data-universe-tool] .uf-vistas .uf-section-heading span{color:CanvasText!important;}\n    [data-universe-tool] .uf-vista-list button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;}\n    [data-universe-tool] .uf-vista-list button span,[data-universe-tool] .uf-vista-list button strong,[data-universe-tool] .uf-vista-list button small{color:ButtonText!important;}\n  }\n",
+  "scope": "Explicit system palette for scenic view headings and cards; forced-color-adjust remains auto; all axe rules remain enabled"
+}

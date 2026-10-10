@@ -1,0 +1,34 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/solar_system_journal_drafts.test.js
+[deferred-jsdom] Initializing the official DOM environment.
+
+stdout | tests/solar_system_journal_drafts.test.js
+[deferred-jsdom] DOM environment ready.
+
+stdout | tests/solar_system_journal_drafts.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/solar_system_journal_drafts.test.js
+[deferred-jsdom] Existing repository setup loaded.
+
+ ✓ tests/solar_system_journal_drafts.test.js > Solar System world-specific journal drafts > requires an observation and rejects forced blank or whitespace saves without XP 9172ms
+ ✓ tests/solar_system_journal_drafts.test.js > Solar System world-specific journal drafts > ignores malformed and inherited restored drafts without mutating them on render 1944ms
+ ✓ tests/solar_system_journal_drafts.test.js > Solar System world-specific journal drafts > keeps all four authored fields when the native journal toggle closes and reopens 1099ms
+ ✓ tests/solar_system_journal_drafts.test.js > Solar System world-specific journal drafts > isolates Earth and Mars drafts through the actual mission-control world pickers 524ms
+ ✓ tests/solar_system_journal_drafts.test.js > Solar System world-specific journal drafts > saves raw paragraphs to the selected world, clears only its draft, and reveals the new entry 658ms
+ ✓ tests/solar_system_journal_drafts.test.js > Solar System world-specific journal drafts > rejects repeated callbacks from the same save so the entry and XP are recorded once 353ms
+ ✓ tests/solar_system_journal_drafts.test.js > Solar System world-specific journal drafts > rejects an old save callback after an observation edit and saves only the reviewed draft 414ms
+ ✓ tests/solar_system_journal_drafts.test.js > Solar System world-specific journal drafts > rejects old saves and field updates immediately after a native world switch 198ms
+ ✓ tests/solar_system_journal_drafts.test.js > Solar System world-specific journal drafts > rejects an old save immediately after closing the journal and keeps the draft 532ms
+ ✓ tests/solar_system_journal_drafts.test.js > Solar System world-specific journal drafts > merges same-frame field callbacks and preserves the latest edit to each field 295ms
+ ✓ tests/solar_system_journal_drafts.test.js > Solar System world-specific journal drafts > preserves another lab entry appended after the composer rendered 733ms
+ ✓ tests/solar_system_journal_drafts.test.js > Solar System world-specific journal drafts > focuses the saved confirmation once on connected commit and cancels pending focus on close 1891ms
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  19:52:19
+   Duration  47.72s (transform 2.16s, setup 25.72s, import 1.61s, tests 17.82s, environment 0ms)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/solar-journal-drafts-enhancement-2026-10-08/unit-journal-results.json

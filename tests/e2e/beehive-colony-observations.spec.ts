@@ -154,8 +154,8 @@ test('capacity, reversible removal, run mismatches and writing limits preserve s
   await evidence.fill('A revised observation.');
   await expect(page.locator('[data-notebook-review="evidence"]')).not.toBeChecked();
   await page.locator('[data-beehive-capture-evidence="beekeeper"]').click();
-  await expect(evidence).toHaveValue(/Workers 33333/);
-  await expect(evidence).toHaveValue(/Combined food 300 honey-equivalent lb/);
+  await expect(evidence).toHaveValue(/Workers: 33,333/);
+  await expect(evidence).toHaveValue(/Combined food: 300 honey-equivalent lb/);
   const captured = await evidence.inputValue();
   await page.locator('[data-beehive-capture-evidence="beekeeper"]').click();
   await expect(evidence).toHaveValue(captured);

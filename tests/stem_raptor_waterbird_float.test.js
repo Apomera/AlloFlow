@@ -3,7 +3,7 @@ import {readFileSync} from 'node:fs';
 const source=readFileSync('stem_lab/stem_tool_raptorhunt.js','utf8');
 function extract(name,end){const start=source.indexOf('function '+name+'(');return Function('return ('+source.slice(start,source.indexOf(end,start)).trim()+')')();}
 const sample=extract('sampleLakeSurface','        function advanceWaterBirdFloat');
-const advance=extract('advanceWaterBirdFloat','        function createPreyWingGeometry');
+const advance=extract('advanceWaterBirdFloat','        function preyBirdPalette');
 const state=()=>({height:0,slopeX:0,slopeZ:0,pitch:0,roll:0,offset:0,contact:0});
 describe('Raptor waterbird flotation',()=>{
   it('matches height derivatives in deep water and fades wave displacement at the shore',()=>{

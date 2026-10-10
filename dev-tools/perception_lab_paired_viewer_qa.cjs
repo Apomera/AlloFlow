@@ -144,7 +144,19 @@ function seed(fixture = fixtures[0], options = {}) {
       if(width<=768)assert(b.y>a.y); else assert(Math.abs(a.y-b.y)<1);
       assert(a.x>=0&&a.right<=width&&b.x>=0&&b.right<=width);
       await audit('pair-'+width); await dialog.screenshot({path:path.join(out,'pair-'+width+'.png')});
-      const initialWidth=a.width; await stack(); [a,b]=await equalScale(); assert(b.y>a.y); if(width>=1280)assert(a.width>initialWidth*1.7);
+      // Measure the projected viewBox: the SVG element itself can contain letterboxing.
+      const projection = async side => page.locator('[data-perception-recorded-scene="viewer-'+side+'"]').evaluate(svg => {
+        const matrix=svg.getScreenCTM(),figure=svg.closest('figure');
+        return { x:matrix.a,y:matrix.d,b:matrix.b,c:matrix.c,fit:Math.min(figure.clientWidth/800,innerHeight*.65/480) };
+      });
+      const initialProjection=await projection('a'); await stack(); [a,b]=await equalScale(); assert(b.y>a.y);
+      const projectedA=await projection('a'),projectedB=await projection('b');
+      for(const projected of [projectedA,projectedB]){
+        assert(Math.abs(projected.x-projected.fit)<.002&&Math.abs(projected.y-projected.fit)<.002,'Stack must fit the complete drawing at the available scale.');
+        assert(Math.abs(projected.b)<.001&&Math.abs(projected.c)<.001,'Stack must preserve drawing orientation.');
+      }
+      assert(Math.abs(projectedA.x-projectedB.x)<.002,'Stack must preserve equal A/B drawing scale.');
+      if(width>=1280)assert(projectedA.x>initialProjection.x,'Stack must enlarge the actual drawing at desktop widths.');
       if(width===1600)await dialog.screenshot({path:path.join(out,'pair-stacked-1600.png')});
       for(const slot of ['viewer-a','viewer-b']){await preview(slot).locator('.perception-recorded-note').scrollIntoViewIfNeeded();assert(await preview(slot).locator('.perception-recorded-note').isVisible());}
       await close(); checks.push({width,equalScale:true,responsiveStacking:true,manualStacking:true,controls44px:true,fullNotesReachable:true,axe:[]});

@@ -1,0 +1,209 @@
+{
+  "sourceSHA256": "5e87e036527367946e53fff6cd6a373a2564b0b82833e7c88760887e8e7770e5",
+  "loadedSourceSHA256": "5e87e036527367946e53fff6cd6a373a2564b0b82833e7c88760887e8e7770e5",
+  "finalSourceSHA256": "5e87e036527367946e53fff6cd6a373a2564b0b82833e7c88760887e8e7770e5",
+  "checks": [
+    {
+      "experiment": "brightness",
+      "key": "contrast",
+      "exactValueApplied": 61,
+      "individualReset": 80,
+      "notesAndRecordsPreserved": true
+    },
+    {
+      "experiment": "brightness",
+      "key": "target",
+      "exactValueApplied": 117,
+      "individualReset": 128,
+      "notesAndRecordsPreserved": true
+    },
+    {
+      "experiment": "ebbinghaus",
+      "key": "surround",
+      "exactValueApplied": 43,
+      "individualReset": 36,
+      "notesAndRecordsPreserved": true
+    },
+    {
+      "experiment": "ebbinghaus",
+      "key": "gap",
+      "exactValueApplied": 19,
+      "individualReset": 12,
+      "notesAndRecordsPreserved": true
+    },
+    {
+      "experiment": "mullerLyer",
+      "key": "angle",
+      "exactValueApplied": 54,
+      "individualReset": 30,
+      "notesAndRecordsPreserved": true
+    },
+    {
+      "experiment": "mullerLyer",
+      "key": "fin",
+      "exactValueApplied": 63,
+      "individualReset": 42,
+      "notesAndRecordsPreserved": true
+    },
+    {
+      "experiment": "cafeWall",
+      "key": "offset",
+      "exactValueApplied": 72,
+      "individualReset": 50,
+      "notesAndRecordsPreserved": true
+    },
+    {
+      "experiment": "cafeWall",
+      "key": "mortar",
+      "exactValueApplied": 11,
+      "individualReset": 5,
+      "notesAndRecordsPreserved": true
+    },
+    {
+      "experiment": "necker",
+      "key": "depth",
+      "exactValueApplied": 73,
+      "individualReset": 95,
+      "notesAndRecordsPreserved": true
+    },
+    {
+      "experiment": "moire",
+      "key": "angle",
+      "exactValueApplied": 13.7,
+      "individualReset": 5,
+      "notesAndRecordsPreserved": true
+    },
+    {
+      "experiment": "moire",
+      "key": "spacing",
+      "exactValueApplied": 17,
+      "individualReset": 12,
+      "notesAndRecordsPreserved": true
+    },
+    {
+      "invalidDraftsDoNotChangeDrawing": true,
+      "blurAppliesValidCorrection": true
+    },
+    {
+      "escapeCancelsDraftBeforeClosingFocus": true
+    },
+    {
+      "nativeDecimalStepping": true,
+      "appliesOnBlur": true
+    },
+    {
+      "resetDiscardsDraftAndRestoresFocus": true,
+      "touchReset": true
+    },
+    {
+      "staleDraftCannotOverwriteExternalChange": true
+    },
+    {
+      "preciseDrawingEditReturnsToCurrent": true,
+      "pinAndSaveCaptureCommittedDraft": true
+    },
+    {
+      "editingPausesVisibleFrame": true,
+      "resetCannotRestoreOldAnimationFrame": true
+    },
+    {
+      "experiment": "brightness",
+      "precisionLockedThroughoutStudy": true,
+      "exactComparisonTargetNeverExposed": true,
+      "studyUsesCommittedDraft": true
+    },
+    {
+      "experiment": "ebbinghaus",
+      "precisionLockedThroughoutStudy": true,
+      "exactComparisonTargetNeverExposed": true,
+      "studyUsesCommittedDraft": true
+    },
+    {
+      "experiment": "mullerLyer",
+      "precisionLockedThroughoutStudy": true,
+      "exactComparisonTargetNeverExposed": true,
+      "studyUsesCommittedDraft": true
+    },
+    {
+      "width": 320,
+      "preciseControlAndFocusedWorkspace": true,
+      "controls44px": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 390,
+      "preciseControlAndFocusedWorkspace": true,
+      "controls44px": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 768,
+      "preciseControlAndFocusedWorkspace": true,
+      "controls44px": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 1280,
+      "preciseControlAndFocusedWorkspace": true,
+      "controls44px": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "width": 1600,
+      "preciseControlAndFocusedWorkspace": true,
+      "controls44px": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "text200Percent": true,
+      "width": 320,
+      "height": 844,
+      "controlsFit": true,
+      "axe": []
+    },
+    {
+      "text200Percent": true,
+      "width": 390,
+      "height": 844,
+      "controlsFit": true,
+      "axe": []
+    },
+    {
+      "text200Percent": true,
+      "width": 760,
+      "height": 390,
+      "controlsFit": true,
+      "axe": []
+    },
+    {
+      "theme": "dark",
+      "invalidFieldReadable": true,
+      "separateFocusOutline": true,
+      "axe": []
+    },
+    {
+      "theme": "contrast",
+      "invalidFieldReadable": true,
+      "separateFocusOutline": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-light",
+      "invalidFieldReadable": true,
+      "separateFocusOutline": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-dark",
+      "invalidFieldReadable": true,
+      "separateFocusOutline": true,
+      "axe": []
+    }
+  ],
+  "errors": []
+}

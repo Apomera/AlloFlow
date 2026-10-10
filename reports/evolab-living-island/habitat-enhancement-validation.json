@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-06",
+  "feature": "Distinct island habitats, recognizable residents and population layers",
+  "status": "Final browser journey result remains uncollected",
+  "sourceSha256": "035200f5130efcffd48ccc64d38e4bb856eaabdd1231cd9d177175e12ea01e3e",
+  "sourceBytes": 2292872,
+  "sourceMirrorsIdentical": true,
+  "sourceLineEndings": "LF",
+  "committed": false,
+  "deployed": false,
+  "changes": [
+    "Recognizable Seedwing birds with tails, wings, pale chests and feet; inherited beak strength illustrated by beak width.",
+    "Branched Shellseed plants with paired leaves and fixed-size pods; schematic inherited hardness shown by rib thickness on both faces.",
+    "Sparse dry tufts and lava rocks on Ember, coastal tufts and pale stones on Tide, fern-like leaves and moss-colored rocks on Mist.",
+    "Native population filters and scenery toggle, accurate generation counts and automatic reveal of selected archived residents.",
+    "Visible scenic geometry participates in camera fitting and island picking. Hidden organisms and scenery cannot intercept selections.",
+    "Scenery uses deterministic visual noise and does not change inheritance, selection, rainfall, carrying capacity or migration."
+  ],
+  "validation": {
+    "focused": {
+      "passed": 26,
+      "files": 3,
+      "log": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat/habitat-units.log"
+    },
+    "render": {
+      "passed": 2,
+      "log": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat/habitat-goldens.log",
+      "snapshotScope": "Only two EvoLab entries updated"
+    },
+    "browser": {
+      "confirmedPassed": 6,
+      "uncollected": 1,
+      "retries": 0,
+      "log": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat/habitat-browser.log",
+      "confirmedCoverage": [
+        "Primer and private futures preserve both expeditions",
+        "Recorded migrants and actual parent copies through history and queued rainfall",
+        "Phone founder investigation using keyboard controls without WebGL",
+        "Actual terrain, shores, residents and scenery fit desktop camera turns and island views",
+        "Phone population layers, scenery toggles, zoom, resizing and keyboard controls",
+        "Accessible native controls without WebGL, zero axe violations and no overflow"
+      ],
+      "uncollectedJourney": "Exact population layers and body cues, model purity, scenery picking and archived parent reveal"
+    },
+    "preview": {
+      "url": "http://127.0.0.1:56559/?preview=archipelago",
+      "sourceMatchedAtLastCheck": true,
+      "http200AssetsAtLastCheck": 6
+    },
+    "screenshotsInspected": [
+      "habitat-ember.png",
+      "habitat-tide.png",
+      "habitat-mist.png",
+      "habitat-phone.png"
+    ],
+    "modelSourceUnchanged": true,
+    "sharedTranslationCatalogsModified": false,
+    "runtimeLimitation": "The Windows tool runtime became unresponsive while collecting the seventh browser journey. A Node tool diagnostic reported windows sandbox failed: helper_unknown_error: apply deny-read ACLs. The final journey is not claimed as passing."
+  },
+  "followup": {
+    "date": "2026-10-09",
+    "outstandingJourneyPassed": true,
+    "log": "habitat-recovered-browser.log",
+    "fullFinalSourceRegressionJourneysPassed": 7,
+    "finalSourceReport": "field-card-validation.json"
+  }
+}

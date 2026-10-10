@@ -1,0 +1,24 @@
+{
+  "at": "2026-10-07T00:41:55.649Z",
+  "beforeSha256": "b522924b06bd29c8b58e0c1e1b155a57beb7215114bd7f452a2e1076c332c7a8",
+  "afterSha256": "5646ce64f266c0a82f74e7f3827d25c8fcab3e3b7c5c04a8a34eff801ce59ce4",
+  "edits": [
+    {
+      "name": "Explicit native progress contrast",
+      "before": ".diss-technique-roadmap progress { display: block; width: 100%; height: .55rem; accent-color: #0f766e; }",
+      "after": ".diss-technique-roadmap progress {\n  display: block;\n  width: 100%;\n  height: .55rem;\n  appearance: none;\n  -webkit-appearance: none;\n  border: 0;\n  border-radius: 999px;\n  overflow: hidden;\n  color: #17689a;\n  accent-color: #17689a;\n  background: #e4edf7;\n}\n.diss-technique-roadmap progress::-webkit-progress-bar { background: #e4edf7; border-radius: 999px; }\n.diss-technique-roadmap progress::-webkit-progress-value { background: #17689a; border-radius: 999px; }\n.diss-technique-roadmap progress::-moz-progress-bar { background: #17689a; border-radius: 999px; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-technique-roadmap progress { color: #fff !important; background: #000 !important; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-technique-roadmap progress::-webkit-progress-bar { background: #000 !important; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-technique-roadmap progress::-webkit-progress-value { background: #fff !important; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-technique-roadmap progress::-moz-progress-bar { background: #fff !important; }\n@media (forced-colors: active) {\n  .diss-technique-roadmap progress { color: Highlight !important; background: Canvas !important; forced-color-adjust: none; }\n  .diss-technique-roadmap progress::-webkit-progress-bar { background: Canvas !important; }\n  .diss-technique-roadmap progress::-webkit-progress-value { background: Highlight !important; }\n  .diss-technique-roadmap progress::-moz-progress-bar { background: Highlight !important; }\n}"
+    },
+    {
+      "name": "Expose the labelled native learning cycle as a group",
+      "before": "className: \"diss-learning-check__phases\", \"aria-label\": __alloT('stem.dissection.a11y_learning_cycle_progress', 'Learning cycle progress')",
+      "after": "className: \"diss-learning-check__phases\", role: \"group\", \"aria-label\": __alloT('stem.dissection.a11y_learning_cycle_progress', 'Learning cycle progress')"
+    },
+    {
+      "name": "Expose the labelled Guided evidence cycle as a group",
+      "before": "className: \"diss-learning-check__phases\", \"aria-label\": __alloT('stem.dissection.a11y_guided_evidence_progress', 'Guided evidence progress')",
+      "after": "className: \"diss-learning-check__phases\", role: \"group\", \"aria-label\": __alloT('stem.dissection.a11y_guided_evidence_progress', 'Guided evidence progress')"
+    }
+  ],
+  "syntax": true,
+  "exactReversal": true
+}

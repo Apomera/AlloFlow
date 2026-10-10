@@ -1,0 +1,28 @@
+{
+  "currentScope": {
+    "sha256": "3e963bb5805fb60c02699dea99a67bcf7eeba54abf405771365c8ed136353a09",
+    "nodes": 217,
+    "meshes": 148,
+    "geometries": 146,
+    "materials": 28
+  },
+  "priorScope": {
+    "sha256": "edd9ca59112ba7878596d42f09147822d50999719e10aa508a73567b7329735e",
+    "nodes": 217,
+    "meshes": 148,
+    "geometries": 146,
+    "materials": 28
+  },
+  "differences": [
+    {
+      "i": 125,
+      "current": "[14,\"BufferGeometry\",{\"start\":0,\"count\":null},[]]",
+      "before": "[14,\"SphereGeometry\",{\"start\":0,\"count\":null},[]]"
+    },
+    {
+      "i": 128,
+      "current": "[15,\"BufferGeometry\",{\"start\":0,\"count\":null},[]]",
+      "before": "[15,\"SphereGeometry\",{\"start\":0,\"count\":null},[]]"
+    }
+  ]
+}

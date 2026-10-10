@@ -1,24 +1,46 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { originalGalaxySurface, galaxySurfaceFloats } from './helpers/universe_galaxy_surfaces.js';
 
 let flight, scene, canvas, now, frames, frameId, telemetry;
 let buffers, uploads, updates, textureUploads, draws, uniforms, constants, attributes, created, deleted;
 let pointBuffer, surfaceBuffer, pointProgram;
 
 // Independently captured from accepted enhancement37 before the two-arm pass.
-// The four-arm and elliptical maps, companion core and cloud atlas stay exact.
+// The elliptical and cloud maps stay exact. Spiral RGB/alpha pins reflect
+// the later rounded-bulge split; total light is owned by the bulge suite.
 // Barred refinement is covered by universe_flight_barred_detail.test.js.
 const ATLAS = {
   tiles: [
-    '1daa2df71ba119a61dcd4b4d3f83828f5a005f8c562012bff5db78ba02f37df8',
+    '6fd59e26b468b65d5df6b28d0e3538d8c93ed7219fefabee5a58fc8059686b16',
     '8a4f1ef140edfc925a3005767207d6f5077bf7cd9d9744b6ed5ce6f65741e642',
     'b4d05f4c47a17ecb92f55fd0aeac4133c239e127689ce7a84a9334b372cdaa26',
     '08f244e4ef3ad6f71eb240e7e9e67410fe82f16a69f1992f27c2f857dcd15d38',
   ],
-  core: '649c6e1040571d38eb1924ec48c0c7fae0661ccba7a0cad75a3937fe0bb73a13',
+  core: '866eb88a1fa2586bb956b6ffc7d3192cc8b5180a515c6236ff1fca12a5dde00d',
   gutter: 'ca8a4b28e8b434e231027bf5d9952a7d32014111151ed7e3e2efc0b6fe934a0a',
   cloud: 'b57c6fd38bbb173b026084c3f7977e0a27c8a91bb5446e045cef067a043b2c88',
+};
+// Enhancement57 moves a small smooth RGB component to its projected disk.
+// ATLAS retains every historical pin. Independently captured current RGB
+// pins cover the same tile/core bytes; their exact c0 alpha planes, ellipse,
+// gutters and clouds remain pinned. The bulge suite checks reconstructed
+// historical RGB samples and integrals; the host audit checks every RGB pixel.
+const CURRENT_DIFFUSE = {
+  "tiles": [
+    "416d22da716ed5761ec77576c75af7188f3d675a490481a08cab203b01c784d2",
+    "15fcc8600ba4fe8976905b06b954499a89c80d385cf5909547e7de02fbb0d8cb",
+    "a971ae2b6f6c1bbdf34920e691ba16bf7b9f63cacc7724284d2cdb60b0bff23e",
+    "08f244e4ef3ad6f71eb240e7e9e67410fe82f16a69f1992f27c2f857dcd15d38"
+  ],
+  "core": "89aa8470f4da78fd678c5b141397fb11ad37cb81bd540fb500c2139a261bc4e4",
+  "alpha": [
+    "a51ffddde8ae618f9731e74595148f912c0dc7604f956e2e93595a30f075506a",
+    "40a0d06735f623a51882ba96c828b3752af9b70c39fe8c82ae2df2808c35aa0a",
+    "0a9eb44bc927971a9ce80d6e59ac8789b6313b7329043111ec017e03cc6a8dce"
+  ],
+  "coreAlpha": "b203231bbfdd8c11036166ecac26fc76dc882e5b82536702f02bbd2bf94d9f86"
 };
 const WORLD = {
   neighborhood: { count: 19203, points: 'f0933322797366fbee8bbdc9ce8d2263700b1c07a71caa1bcfa1224d68edc2a3', surfaceFloats: 0, surface: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' },
@@ -141,8 +163,9 @@ describe('Universe companion spiral atlas detail', () => {
     const map = atlas(), data = map.data;
     expect(map).toMatchObject({ width: 2048, height: 512, level: 0, border: 0 });
     expect(data).toHaveLength(4194304);
+    for (let index = 0; index < 3; index++) expect(hash(tile(data, index).filter((_value, offset) => offset % 4 === 3))).toBe(CURRENT_DIFFUSE.alpha[index]);
     expect(hash(tile(data, 1))).not.toBe(ATLAS.tiles[1]);
-    for (const index of [0, 3]) expect(hash(tile(data, index))).toBe(ATLAS.tiles[index]);
+    for (const index of [0, 3]) expect(hash(tile(data, index))).toBe(index === 3 ? ATLAS.tiles[index] : CURRENT_DIFFUSE.tiles[index]);
     const companion = tile(data, 1), core = [], gutter = [];
     for (let y = 0; y < 512; y++) for (let x = 0; x < 512; x++) {
       const px = ((x - 8) / 495 * 2 - 1) * 1.22, pz = ((y - 8) / 495 * 2 - 1) * 1.22;
@@ -150,7 +173,8 @@ describe('Universe companion spiral atlas detail', () => {
       if (x >= 8 && x < 504 && y >= 8 && y < 504 && Math.hypot(px, pz) < 0.18) core.push(...companion.subarray(offset, offset + 4));
       if (x < 8 || x >= 504 || y < 8 || y >= 504) gutter.push(...companion.subarray(offset, offset + 4));
     }
-    expect(core).toHaveLength(16768); expect(hash(new Uint8Array(core))).toBe(ATLAS.core);
+    expect(core).toHaveLength(16768); expect(hash(new Uint8Array(core))).toBe(CURRENT_DIFFUSE.core);
+    expect(hash(new Uint8Array(core).filter((_value, offset) => offset % 4 === 3))).toBe(CURRENT_DIFFUSE.coreAlpha);
     expect(gutter).toHaveLength(64512); expect(hash(new Uint8Array(gutter))).toBe(ATLAS.gutter);
     expect(gutter.every(value => value === 0)).toBe(true);
     const cloud = textureUploads.find(item => item.width === 512);
@@ -166,7 +190,7 @@ describe('Universe companion spiral atlas detail', () => {
     expect(target.arrivalRadiusLy).toBe(330000);
     const originalPoints = buffers.get(pointBuffer).slice(), originalSurfaces = buffers.get(surfaceBuffer).slice();
     expect(hash(originalPoints)).toBe(WORLD.cosmic.points);
-    expect(hash(uploads.findLast(item => item.buffer === surfaceBuffer).data.subarray(0, WORLD.cosmic.surfaceFloats))).toBe(WORLD.cosmic.surface);
+    expect(hash(originalGalaxySurface(uploads.findLast(item => item.buffer === surfaceBuffer).data, WORLD.cosmic.surfaceFloats))).toBe(WORLD.cosmic.surface);
     const objects = resources(), uploadCount = uploads.length, updateStart = updates.length;
     const maps = textureUploads.map(item => ({ source: item.source, hash: hash(item.data) }));
     expect(scene.navigateTo(target.id)).toBe(true); advance();
@@ -189,10 +213,10 @@ describe('Universe companion spiral atlas detail', () => {
     expect(scene.snapshot().state.universeYears).toBe(0); expect(scene.snapshot().state.travelerYears).toBe(0);
     expect(hash(buffers.get(pointBuffer))).toBe(hash(originalPoints));
     // The first three model surfaces are fixed disks, including the companion.
-    // Existing observer-facing elliptical proxies may update later ranges.
-    expect(buffers.get(surfaceBuffer).subarray(0, 5760)).toEqual(originalSurfaces.subarray(0, 5760));
+    // Observer-facing elliptical and rounded bulge proxies update later ranges.
+    expect(buffers.get(surfaceBuffer).subarray(0, 6912)).toEqual(originalSurfaces.subarray(0, 6912));
     for (const update of updates.slice(updateStart)) {
-      expect(update.buffer).toBe(surfaceBuffer); expect(update.offset).toBeGreaterThanOrEqual(5760 * 4);
+      expect(update.buffer).toBe(surfaceBuffer); expect(update.offset).toBeGreaterThanOrEqual(6912 * 4);
       expect(update.data.every(Number.isFinite)).toBe(true);
     }
     expect(uploads).toHaveLength(uploadCount); expect(textureUploads).toHaveLength(2); expect(resources()).toEqual(objects);
@@ -215,8 +239,8 @@ describe('Universe companion spiral atlas detail', () => {
       expect(hash(buffers.get(pointBuffer))).toBe(expected.points);
       const surfaces = uploads.findLast(item => item.buffer === surfaceBuffer).data;
       // The cloud-surface test owns the appended neighborhood record batch.
-      expect(surfaces).toHaveLength(expected.surfaceFloats + 30 + (region === 'neighborhood' ? 66000 : 0));
-      expect(hash(surfaces.subarray(0, expected.surfaceFloats))).toBe(expected.surface);
+      expect(surfaces).toHaveLength(galaxySurfaceFloats(region, expected.surfaceFloats) + 36 + (region === 'neighborhood' ? 66000 : 0));
+      expect(hash(originalGalaxySurface(surfaces, expected.surfaceFloats))).toBe(expected.surface);
       expect(scene.restore(saved)).toBe(true); advance();
       expect(scene.snapshot()).toEqual(saved); expect(capture()).toEqual(reference);
       advance(1000); expect(scene.snapshot()).toEqual(saved);

@@ -1,0 +1,16 @@
+/* A movement receipt shares the coach space and never changes the canvas layout. */
+.kitchen-gesture-coach[data-mode="receipt"]{box-sizing:border-box;width:min(360px,calc(100% - 28px));max-width:calc(100% - 28px);max-height:none;padding:11px 13px;border:2px solid #3f6850;border-left-width:5px;background:#fffef6;color:#244533;pointer-events:none;z-index:4}
+.kitchen-gesture-coach[data-mode="receipt"] .gesture-heading{align-items:flex-start;gap:10px;font-size:11px;line-height:1.4;margin-bottom:5px}
+.kitchen-gesture-coach[data-mode="receipt"] #gestureTitle{min-width:0;flex:1;font-weight:750}
+.kitchen-gesture-coach[data-mode="receipt"] .gesture-clock{max-width:115px;white-space:normal;text-align:right;color:#325a40;font-weight:700}
+.kitchen-gesture-coach[data-mode="receipt"] #gestureInstruction{font-size:13px;line-height:1.45;font-weight:650}
+.kitchen-gesture-coach[data-mode="receipt"] #gestureDetail{display:block;font-size:12px;line-height:1.45;margin:6px 0 0;color:#3b5644}
+.kitchen-gesture-coach[data-mode="receipt"] #gestureDetail:empty{display:none}
+.kitchen-gesture-coach[data-mode="receipt"] progress,.kitchen-gesture-coach[data-mode="receipt"] .gesture-exit{display:none}
+.kitchen-gesture-coach[data-mode="receipt"][data-outcome="unfinished"]{background:#fff8e8;border-color:#8a6835;color:#674a23}
+.kitchen-gesture-coach[data-mode="receipt"][data-outcome="unfinished"] .gesture-clock{color:#6e5026}
+.kitchen-gesture-coach[data-mode="receipt"][data-outcome="stopped"]{border-color:#61756b;background:#f5f7f1}
+.kitchen-gesture-coach[data-mode="receipt"][data-outcome="kept"]{border-color:#4d7167;background:#f0f7f1}
+@media(max-width:650px){.kitchen-gesture-coach[data-mode="receipt"]{top:auto;bottom:10px;left:10px;width:min(360px,calc(100% - 20px));max-width:calc(100% - 20px);padding:9px 11px}.kitchen-gesture-coach[data-mode="receipt"] .gesture-heading{font-size:10px;gap:8px;margin-bottom:4px}.kitchen-gesture-coach[data-mode="receipt"] .gesture-clock{max-width:96px}.kitchen-gesture-coach[data-mode="receipt"] #gestureInstruction{font-size:12px;line-height:1.4}.kitchen-gesture-coach[data-mode="receipt"] #gestureDetail{display:block;font-size:12px;line-height:1.4;margin-top:5px}.kitchen-gesture-coach[data-mode="receipt"] #gestureDetail:empty{display:none}}
+@media(forced-colors:active){.kitchen-gesture-coach[data-mode="receipt"],.kitchen-gesture-coach[data-mode="receipt"][data-outcome]{background:Canvas;color:CanvasText;border-color:CanvasText}.kitchen-gesture-coach[data-mode="receipt"] .gesture-clock,.kitchen-gesture-coach[data-mode="receipt"][data-outcome] .gesture-clock,.kitchen-gesture-coach[data-mode="receipt"] #gestureDetail{color:CanvasText}.kitchen-gesture-coach[data-mode="receipt"][data-outcome="completed"]{border-left-style:double}}
+@media print{.kitchen-gesture-coach[data-mode="receipt"]{display:none}}

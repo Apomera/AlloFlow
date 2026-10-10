@@ -1,0 +1,56 @@
+{
+  "whole": {
+    "min": 0.4969999744962131,
+    "max": 0.5000000205012533,
+    "vertices": 41377,
+    "texture": [
+      2048,
+      1024
+    ],
+    "valvePixel": [
+      6,
+      6,
+      6,
+      255
+    ],
+    "ruler": true,
+    "worldScale": 3,
+    "scale": [
+      1,
+      1,
+      1
+    ],
+    "geometry": "2D8B6A28-00E3-4410-AB2A-19D26F3C43A9",
+    "cover": "7F65F5BA-7379-456A-B44E-D24B69264C14",
+    "relief": "42E5DA65-CC4D-421F-A9B7-25C67D267DE7",
+    "geometries": 18,
+    "textures": 5
+  },
+  "close": {
+    "min": 0.4969999744962131,
+    "max": 0.5000000205012533,
+    "vertices": 41377,
+    "texture": [
+      2048,
+      1024
+    ],
+    "valvePixel": [
+      6,
+      6,
+      6,
+      255
+    ],
+    "ruler": false,
+    "worldScale": 3,
+    "scale": [
+      1,
+      1,
+      1
+    ],
+    "geometry": "2D8B6A28-00E3-4410-AB2A-19D26F3C43A9",
+    "cover": "7F65F5BA-7379-456A-B44E-D24B69264C14",
+    "relief": "42E5DA65-CC4D-421F-A9B7-25C67D267DE7",
+    "geometries": 18,
+    "textures": 5
+  }
+}

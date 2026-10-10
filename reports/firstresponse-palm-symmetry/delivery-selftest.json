@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "sourceSHA256": "dfe3e01f38a419187e468c749cc37827f486a47401b9916afaa9ec6f98a3f86a",
+  "checks": [
+    {
+      "kind": "wrong-source",
+      "rejected": true,
+      "restoredAndReread": true,
+      "restoredSHA256": "dfe3e01f38a419187e468c749cc37827f486a47401b9916afaa9ec6f98a3f86a"
+    },
+    {
+      "kind": "unaccepted-review",
+      "rejected": true,
+      "restoredAndReread": true,
+      "restoredSHA256": "af3619ad579a38511d933e759282e6bb2e26a66e304ea63b550fb2ac2a95cb8d"
+    }
+  ]
+}

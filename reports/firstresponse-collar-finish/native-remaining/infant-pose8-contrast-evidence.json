@@ -1,0 +1,223 @@
+{
+  "baselineSHA": "38f468c92a949621adcf6eea4765c8a3aaf2626d35132996df1d17239b97a542",
+  "finalSHA": "5dca48ebc42ab8cd896b9aeefaf3873dce2193cf6c81e2be1d7967d0d552498a",
+  "view": {
+    "id": "infant-pose8-contrast",
+    "age": "infant",
+    "width": 320,
+    "height": 840,
+    "pose": 8,
+    "contrast": true
+  },
+  "attempts": [
+    {
+      "variant": "baseline",
+      "startedAt": "2026-10-07T23:05:28.338Z",
+      "phase": "mount",
+      "probe": {
+        "camera": {
+          "position": [
+            -0.49623437472021503,
+            0.5696209105034493,
+            -0.42024557066356794
+          ],
+          "quaternion": [
+            -0.20421794497820936,
+            -0.6330791662924193,
+            -0.17831111397330113,
+            0.725059271224755
+          ],
+          "projection": [
+            2.906357868093765,
+            0,
+            0,
+            0,
+            0,
+            2.6050890646938014,
+            0,
+            0,
+            0,
+            0,
+            -1.002002002002002,
+            -1,
+            0,
+            0,
+            -0.20020020020020018,
+            0
+          ],
+          "aspect": 0.8963414634146342
+        },
+        "pose": {
+          "structure": {
+            "hash": "b0354fa8",
+            "bytes": 6534
+          },
+          "preservedTransforms": {
+            "hash": "4629286d",
+            "bytes": 16517
+          },
+          "counts": {
+            "objects": 121,
+            "meshes": 87
+          }
+        },
+        "neckMesh": {
+          "name": "fr-manikin-neck",
+          "vertices": 523,
+          "triangles": 816,
+          "materialType": "MeshBasicMaterial",
+          "colorHex": 16777215,
+          "visible": true
+        },
+        "torsoMesh": {
+          "name": "fr-manikin-torso",
+          "vertices": 1683,
+          "triangles": 3280,
+          "materialType": "MeshBasicMaterial",
+          "colorHex": 3355443,
+          "visible": true
+        },
+        "collarProjection": {
+          "total": 893,
+          "inFrame": 736,
+          "min": [
+            0.15783982572452082,
+            -1.031091910998618,
+            0.5721761769563213
+          ],
+          "max": [
+            1.4360951184088608,
+            0.7845490417440449,
+            0.7067196484329251
+          ]
+        },
+        "neckProjection": {
+          "total": 523,
+          "inFrame": 485,
+          "min": [
+            0.15783982572452082,
+            -0.46451737777485047,
+            0.6023701249679257
+          ],
+          "max": [
+            1.1353899089364303,
+            0.13264115831466206,
+            0.684384884866547
+          ]
+        },
+        "neckBounds": [
+          [
+            -0.1266189180779504,
+            0.16149938419349752,
+            -0.45892869302930084
+          ],
+          [
+            0.07020370717145503,
+            0.33844049629064515,
+            -0.28084330697069926
+          ]
+        ],
+        "selectedHand": {
+          "total": 7628,
+          "inFrame": 7628,
+          "min": [
+            -0.6076658768655578,
+            -0.35219621381316013,
+            0.4369913554205394
+          ],
+          "max": [
+            0.5465569033467578,
+            0.28757942939178854,
+            0.5152546871875908
+          ]
+        },
+        "head": {
+          "total": 23333,
+          "inFrame": 23304,
+          "min": [
+            -1.0611960803656533,
+            -0.9048434754780121,
+            0.49945193260888787
+          ],
+          "max": [
+            0.9291555962809632,
+            0.6514497845664685,
+            0.720543189180849
+          ]
+        },
+        "canvasRect": {
+          "x": 13,
+          "y": 256.296875,
+          "width": 294,
+          "height": 328
+        },
+        "cheekContext": [
+          [
+            -0.032312253329086424,
+            -0.023179419954101343,
+            0.5064885679405321
+          ],
+          [
+            -0.5791397558216992,
+            0.03613288755322382,
+            0.49570693865927756
+          ],
+          [
+            0.4917113150594716,
+            -0.08001827112320183,
+            0.5168205790834461
+          ],
+          [
+            -0.08199494917221493,
+            -0.5144046876223483,
+            0.4786250936089487
+          ],
+          [
+            0.012347833272292828,
+            0.4183860511330348,
+            0.5315352196076023
+          ]
+        ],
+        "contrast": true,
+        "state": {
+          "consentAccepted": true,
+          "view": "body3d",
+          "b3dTab": "recovery",
+          "b3dAge": "infant",
+          "b3dRec": [
+            "check",
+            "arm",
+            "hand",
+            "knee",
+            "roll",
+            "airway",
+            "stable",
+            "watch"
+          ],
+          "b3dRecView": 8,
+          "b3dRecoveryGuides": false,
+          "b3dChildHands": "two",
+          "b3dPlaced": "correct",
+          "b3dHandStudy": {},
+          "faMastery": {},
+          "modulesVisited": {},
+          "badges": {},
+          "b3dStatus": "ready"
+        },
+        "errors": [],
+        "draw": {
+          "id": 1,
+          "createdBy": "page",
+          "draws": 3963,
+          "sequence": 52,
+          "calls": 50,
+          "triangles": 67568,
+          "geometries": 77,
+          "programs": 3,
+          "disposeCount": 0
+        }
+      }
+    }
+  ],
+  "evidence": []
+}

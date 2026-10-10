@@ -1,0 +1,12 @@
+{
+  "input": {
+    "research_link_only_one": "{count} source link needs readable text.",
+    "research_link_only_many": "{count} source links need readable text.",
+    "research_duplicate_count": "Already in collection: {count}.",
+    "research_removed_count": "Passages from removed sources: {count}.",
+    "research_collection_full": "Collection limit reached (24 passages).",
+    "research_source_full": "Source limit reached (4 passages per source).",
+    "research_invalid_count": "Unusable source entries: {count}.",
+    "research_draft_kept": "Your pasted text has been kept."
+  }
+}

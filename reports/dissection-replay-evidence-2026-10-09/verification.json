@@ -1,0 +1,129 @@
+{
+  "at": "2026-10-10T02:49:55.622Z",
+  "sourceSha256": "e3a88070afa77800d1be26612e69ad68d5949ee6322c588c49f2a3b192f5990d",
+  "unitSha256": "7c26ad56c4e9bb87a0ca214e30ea4d09e2943f003d5295b95957726736976238",
+  "sourceRuntimeParity": true,
+  "sourceSyntax": true,
+  "sourceReversalEdits": 35,
+  "sourceReversalMatchesBaseline": true,
+  "unitReversalMatchesBaseline": true,
+  "protectedFilesUnchanged": 712,
+  "runs": {
+    "unit-10": {
+      "passed": 14,
+      "failed": 0,
+      "excluded": 238,
+      "inputs": {
+        "stem_lab/stem_tool_dissection.js": "e3a88070afa77800d1be26612e69ad68d5949ee6322c588c49f2a3b192f5990d",
+        "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "e3a88070afa77800d1be26612e69ad68d5949ee6322c588c49f2a3b192f5990d",
+        "tests/dissection_lab_improvements.test.js": "7c26ad56c4e9bb87a0ca214e30ea4d09e2943f003d5295b95957726736976238",
+        "tests/dissection_replay_evidence.test.js": "4b81b875cba5f3f6b79fe9acddf6cffc894b6216d91f32de89cd8b2921fed58d"
+      }
+    },
+    "browser-9": {
+      "startTime": "2026-10-10T02:47:13.554Z",
+      "duration": 18441.039,
+      "expected": 4,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "inputs": {
+        "stem_lab/stem_tool_dissection.js": "e3a88070afa77800d1be26612e69ad68d5949ee6322c588c49f2a3b192f5990d",
+        "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "e3a88070afa77800d1be26612e69ad68d5949ee6322c588c49f2a3b192f5990d",
+        "tests/e2e/dissection-replay-evidence.spec.ts": "d3464c23964e182da33c73cdd0a0624420903ece2ed1432686613cb4be457f43",
+        "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6"
+      }
+    }
+  },
+  "audits": {
+    "legacy-phone": {
+      "violations": 0,
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": [
+            {
+              "target": [
+                "#diss-equivalent-technique-note"
+              ],
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            },
+            {
+              "target": [
+                "#diss-replay-evidence-help"
+              ],
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            }
+          ]
+        }
+      ]
+    },
+    "saved-desktop": {
+      "violations": 0,
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": [
+            {
+              "target": [
+                "#diss-equivalent-technique-note"
+              ],
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            },
+            {
+              "target": [
+                "#diss-replay-evidence-help"
+              ],
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            }
+          ]
+        }
+      ]
+    },
+    "pressure-forced-colors": {
+      "violations": 0,
+      "incomplete": []
+    },
+    "supported-embedded-large": {
+      "violations": 0,
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": [
+            {
+              "target": [
+                "#diss-replay-evidence-help"
+              ],
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "scopedWhitespace": true,
+  "baselineHead": "75bbb4026faa246655d17d4354b17e3dd1df09f9",
+  "finalHead": "3bc1e436017284c7ff6a10d0217323a97509c7f8",
+  "concurrentOwnedCommits": "",
+  "stagedNamesUnchanged": true,
+  "stagedNames": "",
+  "scopedStatus": "M desktop/web-app/public/stem_lab/stem_tool_dissection.js\n M stem_lab/stem_tool_dissection.js\n M tests/dissection_lab_improvements.test.js\n?? tests/dissection_replay_evidence.test.js\n?? tests/e2e/dissection-replay-evidence.spec.ts",
+  "archived": {
+    "stem_lab/stem_tool_dissection.js": {
+      "sha256": "e3a88070afa77800d1be26612e69ad68d5949ee6322c588c49f2a3b192f5990d",
+      "archive": "edits/source-after.js.gz"
+    },
+    "tests/dissection_lab_improvements.test.js": {
+      "sha256": "7c26ad56c4e9bb87a0ca214e30ea4d09e2943f003d5295b95957726736976238",
+      "archive": "edits/unit-after.js.gz"
+    },
+    "tests/dissection_replay_evidence.test.js": {
+      "sha256": "4b81b875cba5f3f6b79fe9acddf6cffc894b6216d91f32de89cd8b2921fed58d",
+      "archive": "edits/replay-unit-after.js.gz"
+    },
+    "tests/e2e/dissection-replay-evidence.spec.ts": {
+      "sha256": "d3464c23964e182da33c73cdd0a0624420903ece2ed1432686613cb4be457f43",
+      "archive": "edits/browser-after.ts.gz"
+    }
+  }
+}

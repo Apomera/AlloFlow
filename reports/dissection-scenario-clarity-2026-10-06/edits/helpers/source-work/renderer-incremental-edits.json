@@ -1,0 +1,28 @@
+{
+  "beforeSha256": "dbc43139c77c656c397ba3afa97fe5d006987c3b89cec6dcb66aa2ca67331e08",
+  "afterSha256": "6b96c71e04bc42f4a5e6bc4ecfe6c61d96edf8f4d8fc02f296b99bcd41497de9",
+  "edits": [
+    {
+      "name": "Bind Cancel to its own private review",
+      "before": "          function cancelProcedureScenarioRestart() {\n            delete _disScenarioRestartReviews[dissectionSaveOwner];",
+      "after": "          function cancelProcedureScenarioRestart(review) {\n            if (!review || _disScenarioRestartReviews[dissectionSaveOwner] !== review) return;\n            delete _disScenarioRestartReviews[dissectionSaveOwner];"
+    },
+    {
+      "name": "Bind Escape to its own private review",
+      "before": "          function handleProcedureScenarioRestartKey(event) {\n            if (event.key !== 'Escape' || event.isComposing || event.altKey || event.ctrlKey || event.metaKey) return;\n            event.preventDefault(); event.stopPropagation(); cancelProcedureScenarioRestart();",
+      "after": "          function handleProcedureScenarioRestartKey(event, review) {\n            if (!review || _disScenarioRestartReviews[dissectionSaveOwner] !== review || event.key !== 'Escape' || event.isComposing || event.altKey || event.ctrlKey || event.metaKey) return;\n            event.preventDefault(); event.stopPropagation(); cancelProcedureScenarioRestart(review);"
+    },
+    {
+      "name": "Capture rendered review in Escape callback",
+      "before": "onKeyDown: handleProcedureScenarioRestartKey",
+      "after": "onKeyDown: function (event) { handleProcedureScenarioRestartKey(event, scenarioRestartReview); }"
+    },
+    {
+      "name": "Capture rendered review in Cancel callback",
+      "before": "onClick: cancelProcedureScenarioRestart",
+      "after": "onClick: function () { cancelProcedureScenarioRestart(scenarioRestartReview); }"
+    }
+  ],
+  "exactReversal": true,
+  "syntax": "passed"
+}

@@ -1,0 +1,177 @@
+--- stem_lab/stem_tool_moonmission.js@pass25
++++ stem_lab/stem_tool_moonmission.js@pass26
+@@ -1887,6 +1887,87 @@
+       ctx.globalAlpha=Math.sqrt(p.opacity)*0.85;ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(x,y);ctx.stroke();
+     });ctx.restore();
+   }
++  // Rendered-terrain ejecta reuse immutable live births. The horizontal path is
++  // linear and each ground face is planar, so first contact is a quadratic root.
++  // The pool cycle is a display horizon, not a claim that every grain settles.
++  var MM_DESCENT_TERRAIN_DUST=Object.freeze({maxAge:MM_DESCENT_DUST.cycle,maxTrailSegments:16});
++  function mmDescentDustTerrainFlight(p,surface) {
++    if(!p||!surface||typeof surface.heightAt!=='function'||typeof surface.trace!=='function'||!surface.bounds)return null;
++    var keys=['id','born','launchX','launchZ','vx','vy','vz','strength','life'];
++    for(var v=0;v<keys.length;v++)if(!mmNum(p[keys[v]]))return null;
++    if(p.id<0||Math.floor(p.id)!==p.id||p.born<0||p.life<=0||p.strength<0||p.strength>1)return null;
++    var D=MM_DESCENT_DUST,S=D.worldScale,b=surface.bounds;
++    if(![b.minX,b.maxX,b.minZ,b.maxZ].every(mmNum)||b.minX>=b.maxX||b.minZ>=b.maxZ)return null;
++    var x=p.launchX*S,z=p.launchZ*S,ux=p.vx*S,uz=p.vz*S;
++    if(![x,z,ux,uz].every(mmNum)||x<b.minX||x>b.maxX||z<b.minZ||z>b.maxZ)return null;
++    var launchY=surface.heightAt(x,z);if(!mmNum(launchY))return null;
++    var horizon=MM_DESCENT_TERRAIN_DUST.maxAge,kind='display-limit';
++    function limit(start,speed,lo,hi) {
++      if(speed>0)return (hi-start)/speed;
++      if(speed<0)return (lo-start)/speed;
++      return Infinity;
++    }
++    var exit=Math.min(limit(x,ux,b.minX,b.maxX),limit(z,uz,b.minZ,b.maxZ));
++    if(exit<=horizon){horizon=Math.max(0,exit);kind='mesh-exit';}
++    if(horizon===0)return Object.freeze({launchY:launchY,life:0,endKind:kind,breaks:Object.freeze([0]),impact:null});
++    var points;
++    if(ux===0&&uz===0)points=[{x:x,y:launchY,z:z},{x:x,y:launchY,z:z}];
++    else points=surface.trace(x,z,Math.max(b.minX,Math.min(b.maxX,x+ux*horizon)),
++      Math.max(b.minZ,Math.min(b.maxZ,z+uz*horizon)),0);
++    if(!points||points.length<2)return null;
++    var times=points.map(function(q,i) {
++      if(i===0)return 0;if(i===points.length-1)return horizon;
++      return Math.max(0,Math.min(horizon,Math.abs(ux)>=Math.abs(uz)?(q.x-x)/ux:(q.z-z)/uz));
++    });
++    var k=S*D.gravity/2,life=horizon;
++    for(var i=1;i<points.length;i++) {
++      var a=times[i-1],width=times[i]-a;if(width<=1e-12)continue;
++      var c=S*(D.initialHeight+p.vy*a-D.gravity*a*a/2)+(launchY-points[i-1].y);
++      var d=S*(p.vy-D.gravity*a)-(points[i].y-points[i-1].y)/width;
++      if(!mmNum(c)||!mmNum(d))return null;
++      var root=0;
++      if(c>0) {
++        var disc=Math.sqrt(d*d+4*k*c);if(!mmNum(disc))return null;
++        root=d<0?2*c/(disc-d):(d+disc)/(2*k);
++      }
++      if(root<=width+1e-10) {
++        life=a+Math.max(0,Math.min(width,root));kind='impact';break;
++      }
++    }
++    var impact=kind==='impact'?Object.freeze({age:life,x:x+ux*life,
++      y:launchY+S*(D.initialHeight+p.vy*life-D.gravity*life*life/2),z:z+uz*life}):null;
++    return Object.freeze({launchY:launchY,life:life,endKind:kind,breaks:Object.freeze(times),impact:impact});
++  }
++  function mmNewDescentTerrainDust(surface) {
++    if(!surface||typeof surface.heightAt!=='function'||typeof surface.trace!=='function'||!surface.bounds)return null;
++    var b=surface.bounds;if(![b.minX,b.maxX,b.minZ,b.maxZ].every(mmNum)||b.minX>=b.maxX||b.minZ>=b.maxZ)return null;
++    var cache=new WeakMap(),D=MM_DESCENT_DUST,C=MM_DESCENT_TERRAIN_DUST;
++    function sample(pool,time) {
++      if(!pool||!Array.isArray(pool.grains)||pool.grains.length>256||
++        (pool.capacity!==undefined&&pool.capacity!==pool.grains.length)||!mmNum(time)||time<0)return Object.freeze([]);
++      var out=[];
++      pool.grains.forEach(function(p) {
++        if(!p||!mmNum(p.born))return;
++        var age=time-p.born;if(age<0||age>=C.maxAge)return;
++        var immutable=Object.isFrozen(p),flight=immutable&&cache.has(p)?cache.get(p):mmDescentDustTerrainFlight(p,surface);
++        if(immutable&&!cache.has(p))cache.set(p,flight);
++        if(!flight||age>=flight.life||flight.life<=0)return;
++        var tail=Math.max(0,age-D.trailTime),ages=[tail];
++        flight.breaks.forEach(function(t){if(t>tail+1e-12&&t<age-1e-12)ages.push(t);});
++        ages.push(age);
++        // Keeping the latest pieces shortens an unusually dense trail while
++        // preserving its head and the fixed geometry allocation.
++        if(ages.length>C.maxTrailSegments+1)ages=ages.slice(-(C.maxTrailSegments+1));
++        var trail=ages.map(function(t){return Object.freeze({age:t,x:(p.launchX+p.vx*t)*D.worldScale,
++          y:flight.launchY+D.worldScale*(D.initialHeight+p.vy*t-D.gravity*t*t/2),z:(p.launchZ+p.vz*t)*D.worldScale});});
++        out.push(Object.freeze({id:p.id,born:p.born,age:age,life:flight.life,flatLife:p.life,endKind:flight.endKind,
++          launchY:flight.launchY,opacity:p.strength*Math.pow(Math.max(0,1-age/flight.life),0.7),trail:Object.freeze(trail)}));
++      });
++      return Object.freeze(out);
++    }
++    return Object.freeze({sample:sample});
++  }
++
+   // Optional projections use the same finite-propellant descent integrator as
+   // the live flight. Only cloned states advance. A vertical arrest is not a
+   // landing: lateral motion and further hovering still require control/fuel.
+@@ -2325,6 +2406,7 @@
+     descentShadowVertices:mmDescentShadowVertices,buildDescentShadow:mmBuildDescentShadow,
+     descentDust:MM_DESCENT_DUST,newDescentDust:mmNewDescentDust,stepDescentDust:mmStepDescentDust,
+     sampleDescentDust:mmSampleDescentDust,drawDescentDust2D:mmDrawDescentDust2D,
++    descentTerrainDust:MM_DESCENT_TERRAIN_DUST,descentDustTerrainFlight:mmDescentDustTerrainFlight,newDescentTerrainDust:mmNewDescentTerrainDust,
+     descentPredictionVisuals:mmDescentPredictionVisuals,
+     descentPredictionLandmarks: mmDescentPredictionLandmarks,descentPredictionView:mmDescentPredictionView,updateDescentPrediction:mmUpdateDescentPrediction});}catch(e){}
+ 
+@@ -7889,13 +7971,16 @@
+     plumeGrp.position.y = bellExitY;
+     lm.add(plumeGrp);
+ 
+-    // Both views consume the flight loop's shared ballistic ejecta. Short
+-    // streaks show radial motion and each grain has its own fade opacity.
++    // Both views share immutable births; 3D resolves the first terrain impact.
++    // Trail pieces lie within individual ground faces, with a fixed allocation.
+     var dustN=lowPower?90:220;
++    var terrainDust=renderedTerrain?mmNewDescentTerrainDust(renderedTerrain):null;
++    var maxDustSegments=terrainDust?MM_DESCENT_TERRAIN_DUST.maxTrailSegments:1;
+     var dustGeo=new THREE.BufferGeometry();
+-    dustGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(dustN*6),3));
+-    dustGeo.setAttribute('opacity',new THREE.BufferAttribute(new Float32Array(dustN*2),1));
++    dustGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(dustN*maxDustSegments*6),3));
++    dustGeo.setAttribute('opacity',new THREE.BufferAttribute(new Float32Array(dustN*maxDustSegments*2),1));
+     dustGeo.setDrawRange(0,0);
++    glCv.dataset.descentDustCollisionMode=terrainDust?'mesh-triangles':'flat-projection';
+     var dustMat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,
+       uniforms:{tint:{value:new THREE.Color(0xbcb2a0)}},
+       vertexShader:'attribute float opacity; varying float grainOpacity; void main(){grainOpacity=opacity;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+@@ -8064,17 +8149,30 @@
+         coreMat.opacity = 0.09 + thrust * 0.11;
+       }
+ 
+-      // The shared flight emitter owns births and world launch points. Context
+-      // rebuilds and camera changes only project this same immutable sample.
+-      var dustFrame=s.dust||[],dp=dustGeo.attributes.position,da=dustGeo.attributes.opacity;
+-      var shownDust=Math.min(dustN,dustFrame.length);
++      // Rendering neither emits grains nor advances the flight. Each cached
++      // impact comes from the immutable birth and fixed terrain, even on rebuild.
++      var usingTerrainDust=!!(terrainDust&&s.dustPool&&!s.review);
++      var dustFrame=usingTerrainDust?terrainDust.sample(s.dustPool,s.dustTime):(s.dust||[]);
++      var dp=dustGeo.attributes.position,da=dustGeo.attributes.opacity;
++      var shownDust=Math.min(dustN,dustFrame.length),dustVertices=0;
+       for(var k=0;k<shownDust;k++) {
+-        var grain=dustFrame[k],launchH=surfaceHeight(grain.launchX*0.6,grain.launchZ*0.6);
+-        dp.setXYZ(k*2,grain.tailX*0.6-groundX,launchH+grain.tailHeight*0.6,grain.tailZ*0.6-groundZ);
+-        dp.setXYZ(k*2+1,grain.x*0.6-groundX,launchH+grain.height*0.6,grain.z*0.6-groundZ);
+-        da.setX(k*2,grain.opacity);da.setX(k*2+1,grain.opacity);
++        var grain=dustFrame[k],trail=grain.trail;
++        if(!usingTerrainDust) {
++          var launchH=surfaceHeight(grain.launchX*0.6,grain.launchZ*0.6);
++          trail=[{x:grain.tailX*0.6,y:launchH+grain.tailHeight*0.6,z:grain.tailZ*0.6},
++            {x:grain.x*0.6,y:launchH+grain.height*0.6,z:grain.z*0.6}];
++        }
++        for(var piece=1;piece<trail.length;piece++) {
++          var a=trail[piece-1],b=trail[piece];
++          dp.setXYZ(dustVertices,a.x-groundX,a.y,a.z-groundZ);da.setX(dustVertices++,grain.opacity);
++          dp.setXYZ(dustVertices,b.x-groundX,b.y,b.z-groundZ);da.setX(dustVertices++,grain.opacity);
++        }
+       }
+-      dp.needsUpdate=true;da.needsUpdate=true;dustGeo.setDrawRange(0,shownDust*2);
++      dp.needsUpdate=true;da.needsUpdate=true;dustGeo.setDrawRange(0,dustVertices);
++      dust.userData.terrainDustFrame=usingTerrainDust?Object.freeze(dustFrame.slice(0,shownDust)):Object.freeze([]);
++      dust.userData.terrainDustBirths=Object.freeze(s.dustPool?s.dustPool.grains.filter(Boolean):[]);
++      dust.userData.terrainDustTime=s.dustTime;
++      dust.userData.terrainDustMode=usingTerrainDust?'mesh-triangles':s.review?'omitted-recording':'flat-projection';
+       glCv.dataset.descentDustCount=String(shownDust);
+ 
+       // ── Camera ──
+@@ -11365,7 +11463,7 @@
+                       d3.update({
+                         alt: viewAlt, tilt: viewTilt, thrust: viewThrust, fuel: viewFuel,
+                         groundX: viewGroundX, groundZ: groundZ, tick: tick, time: viewTime + (review ? 0 : dustSettlingTime), hVel: viewHVel, vVel: viewVVel, done: viewDone,
+-                        cameraMode: cameraMode, review: !!review, dust: lastDescentDust
++                        cameraMode: cameraMode, review: !!review, dust: lastDescentDust, dustPool: review ? null : descentDust, dustTime: dustTime
+                       });
+                     }
+                     if (!d3) {
+@@ -11781,7 +11879,7 @@
+                 h('p', null, t('stem.moonmission.flight_model_explanation', 'Mass falls as propellant burns, so the same thrust produces more acceleration. Hover throttle balances lunar gravity at your current tilt. Delta-v is the ideal remaining change in velocity; holding altitude also spends fuel.')),
+                 h('p', null, t('stem.moonmission.brake_model_explanation', 'Braking height estimates a full-thrust stop at the current tilt, with an engine-response allowance. It assumes continued thrust and enough fuel, and does not guarantee a safe landing. Begin braking above that height.')),
+                 h('p', null, t('stem.moonmission.scene_model_explanation', 'The scene compresses altitude to keep the lander visible. Cyan marks the ground below the lander; amber shows five seconds of drift at the current speed. The terrain is illustrative and is not a landing hazard map.')),
+-                h('p', { 'data-descent-dust-note': true }, 'Surface dust follows shallow ballistic arcs under lunar gravity and keeps moving after engine cutoff. Grain speeds and density are illustrative. Recorded frames omit airborne dust.'),
++                h('p', { 'data-descent-dust-note': true }, 'Surface dust follows shallow ballistic arcs under lunar gravity and keeps moving after engine cutoff. In 3D, grains stop at their first contact with the visible terrain; the 2D view uses level ground. Grains outside the 3D terrain or beyond 2.5 seconds are omitted. Grain speeds and density are illustrative. Recorded frames omit airborne dust.'),
+                 h('p', { 'data-descent-shadow-note': true }, 'The lander casts a shadow along the fixed scene sunlight. Both 3D views follow the terrain; the lighter view uses a smaller shadow map. Scene height is compressed, so the shadow is a visual cue rather than an altitude measurement.'),
+                 h('p', { 'data-descent-surface-note': true }, 'In 3D, the feet, ground markers and exhaust clearance follow the visible cratered surface. The flight model uses level ground when deciding touchdown and grading the landing.'),
+                 h('p', null, t('stem.moonmission.engine_model_explanation', 'Educational final-approach model: 46.7 kN maximum engine thrust, 311 s specific impulse, and an assumed 7,000 kg mass without remaining descent propellant. The throttle range and landing limits are simplified for practice.')),

@@ -1,0 +1,56 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+ ✓ tests/scale_explorer_comparison.test.js > Scale Explorer compares characteristic measurements > preserves the chosen order while giving a unit-independent length ratio 2ms
+ ✓ tests/scale_explorer_comparison.test.js > Scale Explorer compares characteristic measurements > keeps exact endpoints, tenfold intermediate steps and a fractional final step for every catalog pair 4953ms
+ ✓ tests/scale_explorer_comparison.test.js > Scale Explorer compares characteristic measurements > does not duplicate an endpoint at an exact whole decade or replace an exact step by its example 1ms
+ ✓ tests/scale_explorer_comparison.test.js > Scale Explorer compares characteristic measurements > uses personal height for the ratio and validates remembered comparison identifiers 0ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > represents all197 nucleons with79 protons and118 neutrons in a finite illustrative layout 4ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > normalizes only the strict whole/section view and finite numeric section depth 1ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > provides four cited native stops with correct species targets and isolated camera data 17ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > migrates legacy notes and preserves exact native cameras and section settings through backup 4ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > uses actual retained species instances and a fixed14fm reference with finite WebGL1 buffers 7ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > allocates full species colour buffers before hiding inactive section faces 15ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > cuts real species ray hits at the model-local plane and admits only active cap instances 23ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > updates reversible section caps and comparison without reallocating any retained resource 79ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > frames the reference rather than shared unit geometry when instances are transformed 4ms
+ ✓ tests/scale_explorer_nucleus.test.js > Scale Explorer gold-197 nucleus guide > releases all tracked GPU resources exactly once after section and comparison changes 4ms
+ ✓ tests/scale_explorer_silhouette.test.js > Scale Explorer larger-object silhouettes > accepts only the saved silhouette presentation enum 2ms
+ ✓ tests/scale_explorer_silhouette.test.js > Scale Explorer larger-object silhouettes > chooses the closest strictly larger object while skipping distances and wavelengths 1ms
+ ✓ tests/scale_explorer_silhouette.test.js > Scale Explorer larger-object silhouettes > uses the current personalized height and never mutates catalog measurements 1ms
+ ✓ tests/scale_explorer_silhouette.test.js > Scale Explorer larger-object silhouettes > bounds mask resolution while preserving aspect and finite dimensions 1ms
+ ✓ tests/scale_explorer_silhouette.test.js > Scale Explorer larger-object silhouettes > restores render targets, scene settings, scissor and every layer including nested lights 3ms
+ ✓ tests/scale_explorer_silhouette.test.js > Scale Explorer larger-object silhouettes > restores all render state after a failed mask pass and leaves no stale silhouette 2ms
+ ✓ tests/scale_explorer_silhouette.test.js > Scale Explorer larger-object silhouettes > retains one mask, one material and one quad across resize, contrast and hide transitions 19ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > restores bounded canyon relief and preserves its new Earth entry point 3ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > restores deep orbital views without extending other specimens’ zoom limits 1ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > recovers nebula visibility and uses the corrected 24-light-year reference 0ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > preserves galaxy landmarks and the recorded viewing direction 1ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > preserves solar layer observations and rejects an unknown solar target 0ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > keeps distinct microscopic structures and their saved cutaway state 0ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > restores planetary lighting and landmarks while accepting older notebook entries 0ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > ignores invalid targets and duplicate records without discarding valid notes 0ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > retains a recorded personal height and bounds damaged camera and note values 1ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > keeps drafts attached to known objects and features, including an intentionally blank edit 1ms
+ ✓ tests/scale_explorer_notebook.test.js > Scale Explorer notebook recovers persisted student work > bounds a notebook loaded from oversized storage 0ms
+ ✓ tests/scale_explorer_comparison_context.test.js > Scale Explorer comparison references > sorts only valid, strictly larger objects and excludes wavelengths and distance measurements 2ms
+ ✓ tests/scale_explorer_comparison_context.test.js > Scale Explorer comparison references > deduplicates reference IDs and leaves the input catalog and objects unchanged 0ms
+ ✓ tests/scale_explorer_comparison_context.test.js > Scale Explorer comparison references > uses personalized height when choosing larger references 1ms
+ ✓ tests/scale_explorer_comparison_context.test.js > Scale Explorer comparison references > returns an empty fresh list when no larger reference exists or input is invalid 0ms
+ ✓ tests/scale_explorer_comparison_context.test.js > Scale Explorer comparison references > keeps a manually selected distance reference in sorted choices without duplicating it 0ms
+ ✓ tests/scale_explorer_comparison_context.test.js > Scale Explorer comparison references > excludes equal-sized and current objects from the reference choices 0ms
+ ✓ tests/scale_explorer_comparison_context.test.js > Scale Explorer comparison measurement badges > places horizontal measurement labels above or below the anchor with a boundary leader 1ms
+ ✓ tests/scale_explorer_comparison_context.test.js > Scale Explorer comparison measurement badges > places vertical measurement labels beside the anchor with a boundary leader 0ms
+ ✓ tests/scale_explorer_comparison_context.test.js > Scale Explorer comparison measurement badges > keeps edge labels within the viewport and reserved control space 1ms
+ ✓ tests/scale_explorer_comparison_context.test.js > Scale Explorer comparison measurement badges > uses default top and bottom reserves and never mutates layout inputs 1ms
+ ✓ tests/scale_explorer_comparison_context.test.js > Scale Explorer comparison measurement badges > moves a label when its first location is occupied and keeps an eight-pixel gap 0ms
+ ✓ tests/scale_explorer_comparison_context.test.js > Scale Explorer comparison measurement badges > moves a phone label outside the foreground model when nearby placements are blocked 0ms
+ ✓ tests/scale_explorer_comparison_context.test.js > Scale Explorer comparison measurement badges > returns null when all available space is occupied or too cramped 0ms
+ ✓ tests/scale_explorer_comparison_context.test.js > Scale Explorer comparison measurement badges > rejects invalid geometry and offscreen anchors rather than emitting nonfinite positions 0ms
+
+ Test Files  5 passed (5)
+      Tests  46 passed (46)
+   Start at  15:37:46
+   Duration  6.77s (transform 71ms, setup 0ms, import 447ms, tests 5.17s, environment 1ms)
+
+JSON report written to C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-2/scale-comparison-context/unit-results.json

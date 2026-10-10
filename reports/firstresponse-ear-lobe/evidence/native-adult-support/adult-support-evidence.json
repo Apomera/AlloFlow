@@ -1,0 +1,3471 @@
+{
+  "baselineSHA": "bb4526d583db90d928008a1fa9b7540dfef8c8acdfd4055c0fd71225454011bf",
+  "finalSHA": "0af58d9afd30ed0de275caf53197320ddabed9308f08b191cce7bf4927d83f84",
+  "view": {
+    "id": "adult-support",
+    "age": "adult",
+    "width": 1280,
+    "height": 1080,
+    "pose": 5,
+    "contrast": false,
+    "head": false
+  },
+  "attempts": [
+    {
+      "variant": "baseline",
+      "startedAt": "2026-10-09T21:43:01.117Z",
+      "phase": "complete",
+      "mountWindow": {
+        "adjustedWaits": 4,
+        "waits": [
+          {
+            "beforeMs": 30000,
+            "afterMs": 120000
+          },
+          {
+            "beforeMs": 30000,
+            "afterMs": 120000
+          },
+          {
+            "beforeMs": 30000,
+            "afterMs": 120000
+          },
+          {
+            "beforeMs": 30000,
+            "afterMs": 120000
+          }
+        ],
+        "waitPredicateUnchanged": true
+      },
+      "probe": {
+        "preservedScene": {
+          "hash": "c00001ec",
+          "bytes": 269335
+        },
+        "noseMaterial": {
+          "name": "fr-manikin-nose",
+          "material": {
+            "metadata": {
+              "version": 4.5,
+              "type": "Material",
+              "generator": "Material.toJSON"
+            },
+            "type": "MeshPhongMaterial",
+            "color": 10846055,
+            "emissive": 0,
+            "specular": 394758,
+            "shininess": 12,
+            "reflectivity": 1,
+            "refractionRatio": 0.98,
+            "depthFunc": 3,
+            "depthTest": true,
+            "depthWrite": true,
+            "colorWrite": true,
+            "stencilWrite": false,
+            "stencilWriteMask": 255,
+            "stencilFunc": 519,
+            "stencilRef": 0,
+            "stencilFuncMask": 255,
+            "stencilFail": 7680,
+            "stencilZFail": 7680,
+            "stencilZPass": 7680,
+            "userData": {
+              "_baseOpacity": 1
+            }
+          },
+          "visible": true,
+          "hooks": {
+            "compile": "function(){}",
+            "cacheKey": "function(){}"
+          },
+          "separateFromHead": false,
+          "strength": null
+        },
+        "headMaterial": {
+          "metadata": {
+            "version": 4.5,
+            "type": "Material",
+            "generator": "Material.toJSON"
+          },
+          "type": "MeshPhongMaterial",
+          "color": 10846055,
+          "emissive": 0,
+          "specular": 394758,
+          "shininess": 12,
+          "reflectivity": 1,
+          "refractionRatio": 0.98,
+          "depthFunc": 3,
+          "depthTest": true,
+          "depthWrite": true,
+          "colorWrite": true,
+          "stencilWrite": false,
+          "stencilWriteMask": 255,
+          "stencilFunc": 519,
+          "stencilRef": 0,
+          "stencilFuncMask": 255,
+          "stencilFail": 7680,
+          "stencilZFail": 7680,
+          "stencilZPass": 7680,
+          "userData": {
+            "_baseOpacity": 1
+          }
+        },
+        "camera": {
+          "position": [
+            -0.4061376371893065,
+            1.3605465583590406,
+            -1.173910635717908
+          ],
+          "quaternion": [
+            -0.3588554535556178,
+            -0.581919622291384,
+            -0.3178862062866766,
+            0.6569175568504082
+          ],
+          "projection": [
+            1.6683754654031857,
+            0,
+            0,
+            0,
+            0,
+            2.6050890646938014,
+            0,
+            0,
+            0,
+            0,
+            -1.002002002002002,
+            -1,
+            0,
+            0,
+            -0.20020020020020018,
+            0
+          ],
+          "aspect": 1.5614525139664805
+        },
+        "pose": {
+          "structure": {
+            "hash": "b0354fa8",
+            "bytes": 6534
+          },
+          "preservedTransforms": {
+            "hash": "8e03f0cd",
+            "bytes": 16441
+          },
+          "counts": {
+            "objects": 121,
+            "meshes": 87
+          }
+        },
+        "neckMesh": {
+          "name": "fr-manikin-neck",
+          "vertices": 523,
+          "triangles": 816,
+          "materialType": "MeshPhongMaterial",
+          "colorHex": 10846055,
+          "visible": true
+        },
+        "torsoMesh": {
+          "name": "fr-manikin-torso",
+          "vertices": 2913,
+          "triangles": 5680,
+          "materialType": "MeshPhongMaterial",
+          "colorHex": 2647450,
+          "visible": true
+        },
+        "faceProjection": {
+          "total": 12618,
+          "inFrame": 12618,
+          "min": [
+            -0.3353680263215155,
+            -0.6970087468921475,
+            0.7258678131385559
+          ],
+          "max": [
+            0.12572004208449336,
+            -0.07839746844873605,
+            0.7731766075242762
+          ]
+        },
+        "selectedEar": {
+          "name": "fr-manikin-ear-right",
+          "projection": {
+            "total": 551,
+            "inFrame": 551,
+            "min": [
+              -0.14173358972436076,
+              0.3003152932771534,
+              0.7534434694246716
+            ],
+            "max": [
+              0.06349670762578301,
+              0.4518503487414744,
+              0.7726636987748119
+            ]
+          },
+          "visibleSamples": 21,
+          "samples": 25,
+          "estimatedVisiblePixels": 1306.979320015034,
+          "depth": -0.8387134787006496
+        },
+        "earCandidates": [
+          {
+            "name": "fr-manikin-ear-right",
+            "projection": {
+              "total": 551,
+              "inFrame": 551,
+              "min": [
+                -0.14173358972436076,
+                0.3003152932771534,
+                0.7534434694246716
+              ],
+              "max": [
+                0.06349670762578301,
+                0.4518503487414744,
+                0.7726636987748119
+              ]
+            },
+            "visibleSamples": 21,
+            "samples": 25,
+            "estimatedVisiblePixels": 1306.979320015034,
+            "depth": -0.8387134787006496
+          },
+          {
+            "name": "fr-manikin-ear-left",
+            "projection": {
+              "total": 551,
+              "inFrame": 551,
+              "min": [
+                -0.15228403318426081,
+                -0.6901417084459608,
+                0.8040131946471727
+              ],
+              "max": [
+                0.012384586018431967,
+                -0.5385756820033919,
+                0.8164031360432574
+              ]
+            },
+            "visibleSamples": 0,
+            "samples": 25,
+            "estimatedVisiblePixels": 0,
+            "depth": -1.0444378697319083
+          }
+        ],
+        "earMeshes": [
+          {
+            "name": "fr-manikin-ear-left-helix",
+            "type": "TorusGeometry",
+            "parameters": {
+              "radius": 1,
+              "tube": 1,
+              "radialSegments": 16,
+              "tubularSegments": 64,
+              "arc": 6.283185307179586,
+              "path": {
+                "metadata": {
+                  "version": 4.5,
+                  "type": "Curve",
+                  "generator": "Curve.toJSON"
+                },
+                "arcLengthDivisions": 200,
+                "type": "CatmullRomCurve3",
+                "points": [
+                  [
+                    -0.019490805624203928,
+                    0.04029,
+                    0
+                  ],
+                  [
+                    -0.01936421693459583,
+                    0.03524256144536047,
+                    0.022578322509540297
+                  ],
+                  [
+                    -0.019054491658553906,
+                    0.02593134227595935,
+                    0.041719300090006295
+                  ],
+                  [
+                    -0.018738672401020375,
+                    0.013781316346709262,
+                    0.054508892418165915
+                  ],
+                  [
+                    -0.01860598393866525,
+                    2.1958597814175234e-18,
+                    0.059
+                  ],
+                  [
+                    -0.018738672401020375,
+                    -0.013781316346709257,
+                    0.054508892418165915
+                  ],
+                  [
+                    -0.0190544916585539,
+                    -0.02593134227595935,
+                    0.0417193000900063
+                  ],
+                  [
+                    -0.019364216934595828,
+                    -0.03524256144536047,
+                    0.022578322509540304
+                  ],
+                  [
+                    -0.019490805624203928,
+                    -0.04029,
+                    7.225416114969383e-18
+                  ],
+                  [
+                    -0.019364216934595828,
+                    -0.039203651284399024,
+                    -0.02257832250954029
+                  ],
+                  [
+                    -0.0190544916585539,
+                    -0.03104732215205265,
+                    -0.041719300090006295
+                  ],
+                  [
+                    -0.01873867240102037,
+                    -0.0170553146332697,
+                    -0.0545088924181659
+                  ],
+                  [
+                    -0.01860598393866525,
+                    -8.214726517041488e-18,
+                    -0.059
+                  ],
+                  [
+                    -0.01873867240102037,
+                    0.017055314633269685,
+                    -0.05450889241816591
+                  ],
+                  [
+                    -0.019054491658553902,
+                    0.031047322152052637,
+                    -0.04171930009000631
+                  ],
+                  [
+                    -0.01936421693459584,
+                    0.039203651284399,
+                    -0.02257832250954033
+                  ]
+                ],
+                "closed": true,
+                "curveType": "centripetal",
+                "tension": 0.5
+              }
+            },
+            "vertices": 1105,
+            "triangles": 2048,
+            "attributes": {
+              "normal": {
+                "count": 1105,
+                "itemSize": 3,
+                "array": {
+                  "hash": "31c3d882",
+                  "bytes": 65487
+                }
+              },
+              "position": {
+                "count": 1105,
+                "itemSize": 3,
+                "array": {
+                  "hash": "d2dabd1a",
+                  "bytes": 70491
+                }
+              },
+              "uv": {
+                "count": 1105,
+                "itemSize": 2,
+                "array": {
+                  "hash": "a0b1f601",
+                  "bytes": 15109
+                }
+              }
+            },
+            "index": {
+              "hash": "b92ca794",
+              "bytes": 24578
+            },
+            "indexCount": 6144,
+            "bounds": [
+              [
+                -0.022583642974495888,
+                -0.04698792099952698,
+                -0.06599999964237213
+              ],
+              [
+                -0.006960571743547916,
+                0.04698792099952698,
+                0.06449999660253525
+              ]
+            ],
+            "material": {
+              "type": "MeshPhongMaterial",
+              "colorHex": 10846055,
+              "side": 0,
+              "transparent": false,
+              "opacity": 1,
+              "depthWrite": true
+            },
+            "visible": true
+          },
+          {
+            "name": "fr-manikin-ear-right-helix",
+            "type": "TorusGeometry",
+            "parameters": {
+              "radius": 1,
+              "tube": 1,
+              "radialSegments": 16,
+              "tubularSegments": 64,
+              "arc": 6.283185307179586,
+              "path": {
+                "metadata": {
+                  "version": 4.5,
+                  "type": "Curve",
+                  "generator": "Curve.toJSON"
+                },
+                "arcLengthDivisions": 200,
+                "type": "CatmullRomCurve3",
+                "points": [
+                  [
+                    0.019490805624203928,
+                    0.04029,
+                    0
+                  ],
+                  [
+                    0.01936421693459583,
+                    0.03524256144536047,
+                    0.022578322509540297
+                  ],
+                  [
+                    0.019054491658553906,
+                    0.02593134227595935,
+                    0.041719300090006295
+                  ],
+                  [
+                    0.018738672401020375,
+                    0.013781316346709262,
+                    0.054508892418165915
+                  ],
+                  [
+                    0.01860598393866525,
+                    2.1958597814175234e-18,
+                    0.059
+                  ],
+                  [
+                    0.018738672401020375,
+                    -0.013781316346709257,
+                    0.054508892418165915
+                  ],
+                  [
+                    0.0190544916585539,
+                    -0.02593134227595935,
+                    0.0417193000900063
+                  ],
+                  [
+                    0.019364216934595828,
+                    -0.03524256144536047,
+                    0.022578322509540304
+                  ],
+                  [
+                    0.019490805624203928,
+                    -0.04029,
+                    7.225416114969383e-18
+                  ],
+                  [
+                    0.019364216934595828,
+                    -0.039203651284399024,
+                    -0.02257832250954029
+                  ],
+                  [
+                    0.0190544916585539,
+                    -0.03104732215205265,
+                    -0.041719300090006295
+                  ],
+                  [
+                    0.01873867240102037,
+                    -0.0170553146332697,
+                    -0.0545088924181659
+                  ],
+                  [
+                    0.01860598393866525,
+                    -8.214726517041488e-18,
+                    -0.059
+                  ],
+                  [
+                    0.01873867240102037,
+                    0.017055314633269685,
+                    -0.05450889241816591
+                  ],
+                  [
+                    0.019054491658553902,
+                    0.031047322152052637,
+                    -0.04171930009000631
+                  ],
+                  [
+                    0.01936421693459584,
+                    0.039203651284399,
+                    -0.02257832250954033
+                  ]
+                ],
+                "closed": true,
+                "curveType": "centripetal",
+                "tension": 0.5
+              }
+            },
+            "vertices": 1105,
+            "triangles": 2048,
+            "attributes": {
+              "normal": {
+                "count": 1105,
+                "itemSize": 3,
+                "array": {
+                  "hash": "bebae6d5",
+                  "bytes": 65622
+                }
+              },
+              "position": {
+                "count": 1105,
+                "itemSize": 3,
+                "array": {
+                  "hash": "f921aeff",
+                  "bytes": 69386
+                }
+              },
+              "uv": {
+                "count": 1105,
+                "itemSize": 2,
+                "array": {
+                  "hash": "a0b1f601",
+                  "bytes": 15109
+                }
+              }
+            },
+            "index": {
+              "hash": "b1131fda",
+              "bytes": 24578
+            },
+            "indexCount": 6144,
+            "bounds": [
+              [
+                0.006960571743547916,
+                -0.04698792099952698,
+                -0.06599999964237213
+              ],
+              [
+                0.022583642974495888,
+                0.04698792099952698,
+                0.06449999660253525
+              ]
+            ],
+            "material": {
+              "type": "MeshPhongMaterial",
+              "colorHex": 10846055,
+              "side": 0,
+              "transparent": false,
+              "opacity": 1,
+              "depthWrite": true
+            },
+            "visible": true
+          }
+        ],
+        "skull": {
+          "total": 1617,
+          "inFrame": 1617,
+          "min": [
+            -0.5281294244620266,
+            -0.7710828398820543,
+            0.7282896438581232
+          ],
+          "max": [
+            0.45649973188510984,
+            0.41519560554570856,
+            0.8299403994146345
+          ]
+        },
+        "skullGeometry": {
+          "name": "fr-manikin-head",
+          "type": "SphereGeometry",
+          "parameters": {
+            "radius": 1,
+            "widthSegments": 48,
+            "heightSegments": 32,
+            "phiStart": 0,
+            "phiLength": 6.283185307179586,
+            "thetaStart": 0,
+            "thetaLength": 3.141592653589793
+          },
+          "vertices": 1617,
+          "triangles": 2976,
+          "attributes": {
+            "normal": {
+              "count": 1617,
+              "itemSize": 3,
+              "array": {
+                "hash": "5d50019b",
+                "bytes": 93113
+              }
+            },
+            "position": {
+              "count": 1617,
+              "itemSize": 3,
+              "array": {
+                "hash": "aaba19ff",
+                "bytes": 93126
+              }
+            },
+            "uv": {
+              "count": 1617,
+              "itemSize": 2,
+              "array": {
+                "hash": "525b5ca2",
+                "bytes": 34509
+              }
+            }
+          },
+          "index": {
+            "hash": "e528e187",
+            "bytes": 38745
+          },
+          "indexCount": 8928,
+          "bounds": [
+            [
+              -1,
+              -1,
+              -1
+            ],
+            [
+              1,
+              0.9400359988212585,
+              1
+            ]
+          ],
+          "material": {
+            "type": "MeshPhongMaterial",
+            "colorHex": 10846055,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        },
+        "preservedFace": {
+          "total": 26659,
+          "inFrame": 26659,
+          "min": [
+            -0.5281294244620266,
+            -0.7710828398820543,
+            0.7258678131385559
+          ],
+          "max": [
+            0.45649973188510984,
+            0.45753080222051223,
+            0.8299403994146345
+          ]
+        },
+        "neckProjection": {
+          "total": 523,
+          "inFrame": 509,
+          "min": [
+            0.14034315187020693,
+            -0.9685809370923902,
+            0.7114697651228442
+          ],
+          "max": [
+            1.058827080475312,
+            0.10533266861952481,
+            0.8109409595994934
+          ]
+        },
+        "neckBounds": [
+          [
+            -0.23563978113224482,
+            0.31730464945465947,
+            -1.1530043258795395
+          ],
+          [
+            0.26031073326051973,
+            0.7842258392963055,
+            -0.7169956741204607
+          ]
+        ],
+        "selectedHand": {
+          "total": 7628,
+          "inFrame": 7628,
+          "min": [
+            -0.4027426722478521,
+            -0.43709802500104655,
+            0.6831129009355041
+          ],
+          "max": [
+            0.38935469308251475,
+            0.34053436403639853,
+            0.7346064719807811
+          ]
+        },
+        "head": {
+          "total": 27233,
+          "inFrame": 27233,
+          "min": [
+            -0.5281294244620266,
+            -0.7710828398820543,
+            0.7258678131385559
+          ],
+          "max": [
+            0.45649973188510984,
+            0.45753080222051223,
+            0.8299403994146345
+          ]
+        },
+        "canvasRect": {
+          "x": 83,
+          "y": 270.46875,
+          "width": 559,
+          "height": 358
+        },
+        "cheekContext": [
+          [
+            -0.007414011470659337,
+            -0.04194067333213416,
+            0.7325910727539381
+          ],
+          [
+            -0.23951082757716252,
+            0.01420269310588609,
+            0.7282328133718666
+          ],
+          [
+            0.21740888662757368,
+            -0.09632450574883861,
+            0.7368127442157798
+          ],
+          [
+            -0.035826821920668536,
+            -0.40351626012505876,
+            0.7214244609560513
+          ],
+          [
+            0.018823778014647973,
+            0.2919560436431601,
+            0.742902872430799
+          ]
+        ],
+        "contrast": false,
+        "state": {
+          "consentAccepted": true,
+          "view": "body3d",
+          "b3dTab": "recovery",
+          "b3dAge": "adult",
+          "b3dRec": [
+            "check",
+            "arm",
+            "hand",
+            "knee",
+            "roll",
+            "airway",
+            "stable",
+            "watch"
+          ],
+          "b3dRecView": 5,
+          "b3dRecoveryGuides": false,
+          "b3dChildHands": "two",
+          "b3dPlaced": "correct",
+          "b3dHandStudy": {},
+          "faMastery": {},
+          "modulesVisited": {},
+          "badges": {},
+          "b3dStatus": "ready"
+        },
+        "errors": [],
+        "draw": {
+          "materials": 27,
+          "id": 1,
+          "createdBy": "page",
+          "draws": 5766,
+          "sequence": 38,
+          "calls": 48,
+          "triangles": 75296,
+          "geometries": 77,
+          "programs": 3,
+          "disposeCount": 0
+        }
+      },
+      "materialDisposal": [
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "LineBasicMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "fr-rescuer-skin",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "fr-rescuer-nail",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshBasicMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshBasicMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshBasicMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshBasicMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshBasicMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshBasicMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshBasicMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "LineBasicMaterial",
+          "disposeCount": 1
+        }
+      ]
+    },
+    {
+      "variant": "candidate",
+      "startedAt": "2026-10-09T21:43:10.890Z",
+      "phase": "complete",
+      "mountWindow": {
+        "adjustedWaits": 4,
+        "waits": [
+          {
+            "beforeMs": 30000,
+            "afterMs": 120000
+          },
+          {
+            "beforeMs": 30000,
+            "afterMs": 120000
+          },
+          {
+            "beforeMs": 30000,
+            "afterMs": 120000
+          },
+          {
+            "beforeMs": 30000,
+            "afterMs": 120000
+          }
+        ],
+        "waitPredicateUnchanged": true
+      },
+      "probe": {
+        "preservedScene": {
+          "hash": "c00001ec",
+          "bytes": 269335
+        },
+        "noseMaterial": {
+          "name": "fr-manikin-nose",
+          "material": {
+            "metadata": {
+              "version": 4.5,
+              "type": "Material",
+              "generator": "Material.toJSON"
+            },
+            "type": "MeshPhongMaterial",
+            "color": 10846055,
+            "emissive": 0,
+            "specular": 394758,
+            "shininess": 12,
+            "reflectivity": 1,
+            "refractionRatio": 0.98,
+            "depthFunc": 3,
+            "depthTest": true,
+            "depthWrite": true,
+            "colorWrite": true,
+            "stencilWrite": false,
+            "stencilWriteMask": 255,
+            "stencilFunc": 519,
+            "stencilRef": 0,
+            "stencilFuncMask": 255,
+            "stencilFail": 7680,
+            "stencilZFail": 7680,
+            "stencilZPass": 7680,
+            "userData": {
+              "_baseOpacity": 1
+            }
+          },
+          "visible": true,
+          "hooks": {
+            "compile": "function(){}",
+            "cacheKey": "function(){}"
+          },
+          "separateFromHead": false,
+          "strength": null
+        },
+        "headMaterial": {
+          "metadata": {
+            "version": 4.5,
+            "type": "Material",
+            "generator": "Material.toJSON"
+          },
+          "type": "MeshPhongMaterial",
+          "color": 10846055,
+          "emissive": 0,
+          "specular": 394758,
+          "shininess": 12,
+          "reflectivity": 1,
+          "refractionRatio": 0.98,
+          "depthFunc": 3,
+          "depthTest": true,
+          "depthWrite": true,
+          "colorWrite": true,
+          "stencilWrite": false,
+          "stencilWriteMask": 255,
+          "stencilFunc": 519,
+          "stencilRef": 0,
+          "stencilFuncMask": 255,
+          "stencilFail": 7680,
+          "stencilZFail": 7680,
+          "stencilZPass": 7680,
+          "userData": {
+            "_baseOpacity": 1
+          }
+        },
+        "camera": {
+          "position": [
+            -0.4061376371893065,
+            1.3605465583590406,
+            -1.173910635717908
+          ],
+          "quaternion": [
+            -0.3588554535556178,
+            -0.581919622291384,
+            -0.3178862062866766,
+            0.6569175568504082
+          ],
+          "projection": [
+            1.6683754654031857,
+            0,
+            0,
+            0,
+            0,
+            2.6050890646938014,
+            0,
+            0,
+            0,
+            0,
+            -1.002002002002002,
+            -1,
+            0,
+            0,
+            -0.20020020020020018,
+            0
+          ],
+          "aspect": 1.5614525139664805
+        },
+        "pose": {
+          "structure": {
+            "hash": "b0354fa8",
+            "bytes": 6534
+          },
+          "preservedTransforms": {
+            "hash": "8e03f0cd",
+            "bytes": 16441
+          },
+          "counts": {
+            "objects": 121,
+            "meshes": 87
+          }
+        },
+        "neckMesh": {
+          "name": "fr-manikin-neck",
+          "vertices": 523,
+          "triangles": 816,
+          "materialType": "MeshPhongMaterial",
+          "colorHex": 10846055,
+          "visible": true
+        },
+        "torsoMesh": {
+          "name": "fr-manikin-torso",
+          "vertices": 2913,
+          "triangles": 5680,
+          "materialType": "MeshPhongMaterial",
+          "colorHex": 2647450,
+          "visible": true
+        },
+        "faceProjection": {
+          "total": 12618,
+          "inFrame": 12618,
+          "min": [
+            -0.3353680263215155,
+            -0.6970087468921475,
+            0.7258678131385559
+          ],
+          "max": [
+            0.12572004208449336,
+            -0.07839746844873605,
+            0.7731766075242762
+          ]
+        },
+        "selectedEar": {
+          "name": "fr-manikin-ear-right",
+          "projection": {
+            "total": 551,
+            "inFrame": 551,
+            "min": [
+              -0.14173358972436076,
+              0.3003152932771534,
+              0.7534434694246716
+            ],
+            "max": [
+              0.06349670762578301,
+              0.4518503487414744,
+              0.7726636987748119
+            ]
+          },
+          "visibleSamples": 21,
+          "samples": 25,
+          "estimatedVisiblePixels": 1306.979320015034,
+          "depth": -0.8387134787006496
+        },
+        "earCandidates": [
+          {
+            "name": "fr-manikin-ear-right",
+            "projection": {
+              "total": 551,
+              "inFrame": 551,
+              "min": [
+                -0.14173358972436076,
+                0.3003152932771534,
+                0.7534434694246716
+              ],
+              "max": [
+                0.06349670762578301,
+                0.4518503487414744,
+                0.7726636987748119
+              ]
+            },
+            "visibleSamples": 21,
+            "samples": 25,
+            "estimatedVisiblePixels": 1306.979320015034,
+            "depth": -0.8387134787006496
+          },
+          {
+            "name": "fr-manikin-ear-left",
+            "projection": {
+              "total": 551,
+              "inFrame": 551,
+              "min": [
+                -0.15228403318426081,
+                -0.6901417084459608,
+                0.8040131946471727
+              ],
+              "max": [
+                0.012384586018431967,
+                -0.5385756820033919,
+                0.8164031360432574
+              ]
+            },
+            "visibleSamples": 0,
+            "samples": 25,
+            "estimatedVisiblePixels": 0,
+            "depth": -1.0444378697319083
+          }
+        ],
+        "earMeshes": [
+          {
+            "name": "fr-manikin-ear-left-helix",
+            "type": "TorusGeometry",
+            "parameters": {
+              "radius": 1,
+              "tube": 1,
+              "radialSegments": 16,
+              "tubularSegments": 64,
+              "arc": 6.283185307179586,
+              "path": {
+                "metadata": {
+                  "version": 4.5,
+                  "type": "Curve",
+                  "generator": "Curve.toJSON"
+                },
+                "arcLengthDivisions": 200,
+                "type": "CatmullRomCurve3",
+                "points": [
+                  [
+                    -0.019490805624203928,
+                    0.04029,
+                    0
+                  ],
+                  [
+                    -0.01936421693459583,
+                    0.03524256144536047,
+                    0.022578322509540297
+                  ],
+                  [
+                    -0.019054491658553906,
+                    0.02593134227595935,
+                    0.041719300090006295
+                  ],
+                  [
+                    -0.018738672401020375,
+                    0.013781316346709262,
+                    0.054508892418165915
+                  ],
+                  [
+                    -0.01860598393866525,
+                    2.1958597814175234e-18,
+                    0.059
+                  ],
+                  [
+                    -0.018738672401020375,
+                    -0.013781316346709257,
+                    0.054508892418165915
+                  ],
+                  [
+                    -0.0190544916585539,
+                    -0.02593134227595935,
+                    0.0417193000900063
+                  ],
+                  [
+                    -0.019364216934595828,
+                    -0.03524256144536047,
+                    0.022578322509540304
+                  ],
+                  [
+                    -0.019490805624203928,
+                    -0.04029,
+                    7.225416114969383e-18
+                  ],
+                  [
+                    -0.019364216934595828,
+                    -0.039203651284399024,
+                    -0.02257832250954029
+                  ],
+                  [
+                    -0.0190544916585539,
+                    -0.03104732215205265,
+                    -0.041719300090006295
+                  ],
+                  [
+                    -0.01873867240102037,
+                    -0.0170553146332697,
+                    -0.0545088924181659
+                  ],
+                  [
+                    -0.01860598393866525,
+                    -8.214726517041488e-18,
+                    -0.059
+                  ],
+                  [
+                    -0.01873867240102037,
+                    0.017055314633269685,
+                    -0.05450889241816591
+                  ],
+                  [
+                    -0.019054491658553902,
+                    0.031047322152052637,
+                    -0.04171930009000631
+                  ],
+                  [
+                    -0.01936421693459584,
+                    0.039203651284399,
+                    -0.02257832250954033
+                  ]
+                ],
+                "closed": true,
+                "curveType": "centripetal",
+                "tension": 0.5
+              }
+            },
+            "vertices": 1105,
+            "triangles": 2048,
+            "attributes": {
+              "normal": {
+                "count": 1105,
+                "itemSize": 3,
+                "array": {
+                  "hash": "8d78d08",
+                  "bytes": 65423
+                }
+              },
+              "position": {
+                "count": 1105,
+                "itemSize": 3,
+                "array": {
+                  "hash": "e0021df1",
+                  "bytes": 70473
+                }
+              },
+              "uv": {
+                "count": 1105,
+                "itemSize": 2,
+                "array": {
+                  "hash": "a0b1f601",
+                  "bytes": 15109
+                }
+              }
+            },
+            "index": {
+              "hash": "b92ca794",
+              "bytes": 24578
+            },
+            "indexCount": 6144,
+            "bounds": [
+              [
+                -0.022583642974495888,
+                -0.04698792099952698,
+                -0.06599999964237213
+              ],
+              [
+                -0.006960571743547916,
+                0.04698792099952698,
+                0.06449999660253525
+              ]
+            ],
+            "material": {
+              "type": "MeshPhongMaterial",
+              "colorHex": 10846055,
+              "side": 0,
+              "transparent": false,
+              "opacity": 1,
+              "depthWrite": true
+            },
+            "visible": true
+          },
+          {
+            "name": "fr-manikin-ear-right-helix",
+            "type": "TorusGeometry",
+            "parameters": {
+              "radius": 1,
+              "tube": 1,
+              "radialSegments": 16,
+              "tubularSegments": 64,
+              "arc": 6.283185307179586,
+              "path": {
+                "metadata": {
+                  "version": 4.5,
+                  "type": "Curve",
+                  "generator": "Curve.toJSON"
+                },
+                "arcLengthDivisions": 200,
+                "type": "CatmullRomCurve3",
+                "points": [
+                  [
+                    0.019490805624203928,
+                    0.04029,
+                    0
+                  ],
+                  [
+                    0.01936421693459583,
+                    0.03524256144536047,
+                    0.022578322509540297
+                  ],
+                  [
+                    0.019054491658553906,
+                    0.02593134227595935,
+                    0.041719300090006295
+                  ],
+                  [
+                    0.018738672401020375,
+                    0.013781316346709262,
+                    0.054508892418165915
+                  ],
+                  [
+                    0.01860598393866525,
+                    2.1958597814175234e-18,
+                    0.059
+                  ],
+                  [
+                    0.018738672401020375,
+                    -0.013781316346709257,
+                    0.054508892418165915
+                  ],
+                  [
+                    0.0190544916585539,
+                    -0.02593134227595935,
+                    0.0417193000900063
+                  ],
+                  [
+                    0.019364216934595828,
+                    -0.03524256144536047,
+                    0.022578322509540304
+                  ],
+                  [
+                    0.019490805624203928,
+                    -0.04029,
+                    7.225416114969383e-18
+                  ],
+                  [
+                    0.019364216934595828,
+                    -0.039203651284399024,
+                    -0.02257832250954029
+                  ],
+                  [
+                    0.0190544916585539,
+                    -0.03104732215205265,
+                    -0.041719300090006295
+                  ],
+                  [
+                    0.01873867240102037,
+                    -0.0170553146332697,
+                    -0.0545088924181659
+                  ],
+                  [
+                    0.01860598393866525,
+                    -8.214726517041488e-18,
+                    -0.059
+                  ],
+                  [
+                    0.01873867240102037,
+                    0.017055314633269685,
+                    -0.05450889241816591
+                  ],
+                  [
+                    0.019054491658553902,
+                    0.031047322152052637,
+                    -0.04171930009000631
+                  ],
+                  [
+                    0.01936421693459584,
+                    0.039203651284399,
+                    -0.02257832250954033
+                  ]
+                ],
+                "closed": true,
+                "curveType": "centripetal",
+                "tension": 0.5
+              }
+            },
+            "vertices": 1105,
+            "triangles": 2048,
+            "attributes": {
+              "normal": {
+                "count": 1105,
+                "itemSize": 3,
+                "array": {
+                  "hash": "c7e9559b",
+                  "bytes": 65558
+                }
+              },
+              "position": {
+                "count": 1105,
+                "itemSize": 3,
+                "array": {
+                  "hash": "97c669fe",
+                  "bytes": 69368
+                }
+              },
+              "uv": {
+                "count": 1105,
+                "itemSize": 2,
+                "array": {
+                  "hash": "a0b1f601",
+                  "bytes": 15109
+                }
+              }
+            },
+            "index": {
+              "hash": "b1131fda",
+              "bytes": 24578
+            },
+            "indexCount": 6144,
+            "bounds": [
+              [
+                0.006960571743547916,
+                -0.04698792099952698,
+                -0.06599999964237213
+              ],
+              [
+                0.022583642974495888,
+                0.04698792099952698,
+                0.06449999660253525
+              ]
+            ],
+            "material": {
+              "type": "MeshPhongMaterial",
+              "colorHex": 10846055,
+              "side": 0,
+              "transparent": false,
+              "opacity": 1,
+              "depthWrite": true
+            },
+            "visible": true
+          }
+        ],
+        "skull": {
+          "total": 1617,
+          "inFrame": 1617,
+          "min": [
+            -0.5281294244620266,
+            -0.7710828398820543,
+            0.7282896438581232
+          ],
+          "max": [
+            0.45649973188510984,
+            0.41519560554570856,
+            0.8299403994146345
+          ]
+        },
+        "skullGeometry": {
+          "name": "fr-manikin-head",
+          "type": "SphereGeometry",
+          "parameters": {
+            "radius": 1,
+            "widthSegments": 48,
+            "heightSegments": 32,
+            "phiStart": 0,
+            "phiLength": 6.283185307179586,
+            "thetaStart": 0,
+            "thetaLength": 3.141592653589793
+          },
+          "vertices": 1617,
+          "triangles": 2976,
+          "attributes": {
+            "normal": {
+              "count": 1617,
+              "itemSize": 3,
+              "array": {
+                "hash": "5d50019b",
+                "bytes": 93113
+              }
+            },
+            "position": {
+              "count": 1617,
+              "itemSize": 3,
+              "array": {
+                "hash": "aaba19ff",
+                "bytes": 93126
+              }
+            },
+            "uv": {
+              "count": 1617,
+              "itemSize": 2,
+              "array": {
+                "hash": "525b5ca2",
+                "bytes": 34509
+              }
+            }
+          },
+          "index": {
+            "hash": "e528e187",
+            "bytes": 38745
+          },
+          "indexCount": 8928,
+          "bounds": [
+            [
+              -1,
+              -1,
+              -1
+            ],
+            [
+              1,
+              0.9400359988212585,
+              1
+            ]
+          ],
+          "material": {
+            "type": "MeshPhongMaterial",
+            "colorHex": 10846055,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        },
+        "preservedFace": {
+          "total": 26659,
+          "inFrame": 26659,
+          "min": [
+            -0.5281294244620266,
+            -0.7710828398820543,
+            0.7258678131385559
+          ],
+          "max": [
+            0.45649973188510984,
+            0.45753080222051223,
+            0.8299403994146345
+          ]
+        },
+        "neckProjection": {
+          "total": 523,
+          "inFrame": 509,
+          "min": [
+            0.14034315187020693,
+            -0.9685809370923902,
+            0.7114697651228442
+          ],
+          "max": [
+            1.058827080475312,
+            0.10533266861952481,
+            0.8109409595994934
+          ]
+        },
+        "neckBounds": [
+          [
+            -0.23563978113224482,
+            0.31730464945465947,
+            -1.1530043258795395
+          ],
+          [
+            0.26031073326051973,
+            0.7842258392963055,
+            -0.7169956741204607
+          ]
+        ],
+        "selectedHand": {
+          "total": 7628,
+          "inFrame": 7628,
+          "min": [
+            -0.4027426722478521,
+            -0.43709802500104655,
+            0.6831129009355041
+          ],
+          "max": [
+            0.38935469308251475,
+            0.34053436403639853,
+            0.7346064719807811
+          ]
+        },
+        "head": {
+          "total": 27233,
+          "inFrame": 27233,
+          "min": [
+            -0.5281294244620266,
+            -0.7710828398820543,
+            0.7258678131385559
+          ],
+          "max": [
+            0.45649973188510984,
+            0.45753080222051223,
+            0.8299403994146345
+          ]
+        },
+        "canvasRect": {
+          "x": 83,
+          "y": 270.46875,
+          "width": 559,
+          "height": 358
+        },
+        "cheekContext": [
+          [
+            -0.007414011470659337,
+            -0.04194067333213416,
+            0.7325910727539381
+          ],
+          [
+            -0.23951082757716252,
+            0.01420269310588609,
+            0.7282328133718666
+          ],
+          [
+            0.21740888662757368,
+            -0.09632450574883861,
+            0.7368127442157798
+          ],
+          [
+            -0.035826821920668536,
+            -0.40351626012505876,
+            0.7214244609560513
+          ],
+          [
+            0.018823778014647973,
+            0.2919560436431601,
+            0.742902872430799
+          ]
+        ],
+        "contrast": false,
+        "state": {
+          "consentAccepted": true,
+          "view": "body3d",
+          "b3dTab": "recovery",
+          "b3dAge": "adult",
+          "b3dRec": [
+            "check",
+            "arm",
+            "hand",
+            "knee",
+            "roll",
+            "airway",
+            "stable",
+            "watch"
+          ],
+          "b3dRecView": 5,
+          "b3dRecoveryGuides": false,
+          "b3dChildHands": "two",
+          "b3dPlaced": "correct",
+          "b3dHandStudy": {},
+          "faMastery": {},
+          "modulesVisited": {},
+          "badges": {},
+          "b3dStatus": "ready"
+        },
+        "errors": [],
+        "draw": {
+          "materials": 27,
+          "id": 1,
+          "createdBy": "page",
+          "draws": 6231,
+          "sequence": 41,
+          "calls": 48,
+          "triangles": 75296,
+          "geometries": 77,
+          "programs": 3,
+          "disposeCount": 0
+        }
+      },
+      "materialDisposal": [
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "LineBasicMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "fr-rescuer-skin",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "fr-rescuer-nail",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshBasicMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshBasicMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshPhongMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshBasicMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshBasicMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshBasicMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshBasicMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "MeshBasicMaterial",
+          "disposeCount": 1
+        },
+        {
+          "name": "",
+          "type": "LineBasicMaterial",
+          "disposeCount": 1
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "adult-support",
+      "age": "adult",
+      "width": 1280,
+      "height": 1080,
+      "pose": {
+        "structure": {
+          "hash": "b0354fa8",
+          "bytes": 6534
+        },
+        "preservedTransforms": {
+          "hash": "8e03f0cd",
+          "bytes": 16441
+        },
+        "counts": {
+          "objects": 121,
+          "meshes": 87
+        }
+      },
+      "contrast": false,
+      "head": {
+        "total": 27233,
+        "inFrame": 27233,
+        "min": [
+          -0.5281294244620266,
+          -0.7710828398820543,
+          0.7258678131385559
+        ],
+        "max": [
+          0.45649973188510984,
+          0.45753080222051223,
+          0.8299403994146345
+        ]
+      },
+      "variant": "baseline",
+      "sourceSHA": "bb4526d583db90d928008a1fa9b7540dfef8c8acdfd4055c0fd71225454011bf",
+      "capture": "adult-support-baseline-stage.png",
+      "detail": {
+        "file": "adult-support-baseline-ear.png",
+        "earName": "fr-manikin-ear-right",
+        "clip": {
+          "x": 304,
+          "y": 350,
+          "width": 95,
+          "height": 64
+        },
+        "proof": {
+          "sameCapturedFrame": true,
+          "sourceSHA256": "e36e8b32aae81a70fc098cd1ebc6d89c8f1c264e40c419ccd381b5cac90f4493",
+          "cropSHA256": "a815602ddf099a264746463f1ad11a403fb21f630fff63dec16a6f2c0fe3e8b3",
+          "sourceSize": {
+            "width": 562,
+            "height": 361
+          },
+          "clip": {
+            "x": 222,
+            "y": 81,
+            "width": 95,
+            "height": 64
+          },
+          "pixelsVerified": 6080
+        },
+        "visibleVertices": 551,
+        "totalVertices": 551,
+        "partiallyClipped": false
+      },
+      "captureInfo": {
+        "stageClip": {
+          "x": 82,
+          "y": 269,
+          "width": 562,
+          "height": 361
+        },
+        "observedCanvas": {
+          "x": 83,
+          "y": 270.46875,
+          "width": 559,
+          "height": 358
+        },
+        "screenshotMs": 2944
+      },
+      "preservedScene": {
+        "hash": "c00001ec",
+        "bytes": 269335
+      },
+      "noseMaterial": {
+        "name": "fr-manikin-nose",
+        "material": {
+          "metadata": {
+            "version": 4.5,
+            "type": "Material",
+            "generator": "Material.toJSON"
+          },
+          "type": "MeshPhongMaterial",
+          "color": 10846055,
+          "emissive": 0,
+          "specular": 394758,
+          "shininess": 12,
+          "reflectivity": 1,
+          "refractionRatio": 0.98,
+          "depthFunc": 3,
+          "depthTest": true,
+          "depthWrite": true,
+          "colorWrite": true,
+          "stencilWrite": false,
+          "stencilWriteMask": 255,
+          "stencilFunc": 519,
+          "stencilRef": 0,
+          "stencilFuncMask": 255,
+          "stencilFail": 7680,
+          "stencilZFail": 7680,
+          "stencilZPass": 7680,
+          "userData": {
+            "_baseOpacity": 1
+          }
+        },
+        "visible": true,
+        "hooks": {
+          "compile": "function(){}",
+          "cacheKey": "function(){}"
+        },
+        "separateFromHead": false,
+        "strength": null
+      },
+      "headMaterial": {
+        "metadata": {
+          "version": 4.5,
+          "type": "Material",
+          "generator": "Material.toJSON"
+        },
+        "type": "MeshPhongMaterial",
+        "color": 10846055,
+        "emissive": 0,
+        "specular": 394758,
+        "shininess": 12,
+        "reflectivity": 1,
+        "refractionRatio": 0.98,
+        "depthFunc": 3,
+        "depthTest": true,
+        "depthWrite": true,
+        "colorWrite": true,
+        "stencilWrite": false,
+        "stencilWriteMask": 255,
+        "stencilFunc": 519,
+        "stencilRef": 0,
+        "stencilFuncMask": 255,
+        "stencilFail": 7680,
+        "stencilZFail": 7680,
+        "stencilZPass": 7680,
+        "userData": {
+          "_baseOpacity": 1
+        }
+      },
+      "camera": {
+        "position": [
+          -0.4061376371893065,
+          1.3605465583590406,
+          -1.173910635717908
+        ],
+        "quaternion": [
+          -0.3588554535556178,
+          -0.581919622291384,
+          -0.3178862062866766,
+          0.6569175568504082
+        ],
+        "projection": [
+          1.6683754654031857,
+          0,
+          0,
+          0,
+          0,
+          2.6050890646938014,
+          0,
+          0,
+          0,
+          0,
+          -1.002002002002002,
+          -1,
+          0,
+          0,
+          -0.20020020020020018,
+          0
+        ],
+        "aspect": 1.5614525139664805
+      },
+      "neckMesh": {
+        "name": "fr-manikin-neck",
+        "vertices": 523,
+        "triangles": 816,
+        "materialType": "MeshPhongMaterial",
+        "colorHex": 10846055,
+        "visible": true
+      },
+      "torsoMesh": {
+        "name": "fr-manikin-torso",
+        "vertices": 2913,
+        "triangles": 5680,
+        "materialType": "MeshPhongMaterial",
+        "colorHex": 2647450,
+        "visible": true
+      },
+      "faceProjection": {
+        "total": 12618,
+        "inFrame": 12618,
+        "min": [
+          -0.3353680263215155,
+          -0.6970087468921475,
+          0.7258678131385559
+        ],
+        "max": [
+          0.12572004208449336,
+          -0.07839746844873605,
+          0.7731766075242762
+        ]
+      },
+      "selectedEar": {
+        "name": "fr-manikin-ear-right",
+        "projection": {
+          "total": 551,
+          "inFrame": 551,
+          "min": [
+            -0.14173358972436076,
+            0.3003152932771534,
+            0.7534434694246716
+          ],
+          "max": [
+            0.06349670762578301,
+            0.4518503487414744,
+            0.7726636987748119
+          ]
+        },
+        "visibleSamples": 21,
+        "samples": 25,
+        "estimatedVisiblePixels": 1306.979320015034,
+        "depth": -0.8387134787006496
+      },
+      "earCandidates": [
+        {
+          "name": "fr-manikin-ear-right",
+          "projection": {
+            "total": 551,
+            "inFrame": 551,
+            "min": [
+              -0.14173358972436076,
+              0.3003152932771534,
+              0.7534434694246716
+            ],
+            "max": [
+              0.06349670762578301,
+              0.4518503487414744,
+              0.7726636987748119
+            ]
+          },
+          "visibleSamples": 21,
+          "samples": 25,
+          "estimatedVisiblePixels": 1306.979320015034,
+          "depth": -0.8387134787006496
+        },
+        {
+          "name": "fr-manikin-ear-left",
+          "projection": {
+            "total": 551,
+            "inFrame": 551,
+            "min": [
+              -0.15228403318426081,
+              -0.6901417084459608,
+              0.8040131946471727
+            ],
+            "max": [
+              0.012384586018431967,
+              -0.5385756820033919,
+              0.8164031360432574
+            ]
+          },
+          "visibleSamples": 0,
+          "samples": 25,
+          "estimatedVisiblePixels": 0,
+          "depth": -1.0444378697319083
+        }
+      ],
+      "earMeshes": [
+        {
+          "name": "fr-manikin-ear-left-helix",
+          "type": "TorusGeometry",
+          "parameters": {
+            "radius": 1,
+            "tube": 1,
+            "radialSegments": 16,
+            "tubularSegments": 64,
+            "arc": 6.283185307179586,
+            "path": {
+              "metadata": {
+                "version": 4.5,
+                "type": "Curve",
+                "generator": "Curve.toJSON"
+              },
+              "arcLengthDivisions": 200,
+              "type": "CatmullRomCurve3",
+              "points": [
+                [
+                  -0.019490805624203928,
+                  0.04029,
+                  0
+                ],
+                [
+                  -0.01936421693459583,
+                  0.03524256144536047,
+                  0.022578322509540297
+                ],
+                [
+                  -0.019054491658553906,
+                  0.02593134227595935,
+                  0.041719300090006295
+                ],
+                [
+                  -0.018738672401020375,
+                  0.013781316346709262,
+                  0.054508892418165915
+                ],
+                [
+                  -0.01860598393866525,
+                  2.1958597814175234e-18,
+                  0.059
+                ],
+                [
+                  -0.018738672401020375,
+                  -0.013781316346709257,
+                  0.054508892418165915
+                ],
+                [
+                  -0.0190544916585539,
+                  -0.02593134227595935,
+                  0.0417193000900063
+                ],
+                [
+                  -0.019364216934595828,
+                  -0.03524256144536047,
+                  0.022578322509540304
+                ],
+                [
+                  -0.019490805624203928,
+                  -0.04029,
+                  7.225416114969383e-18
+                ],
+                [
+                  -0.019364216934595828,
+                  -0.039203651284399024,
+                  -0.02257832250954029
+                ],
+                [
+                  -0.0190544916585539,
+                  -0.03104732215205265,
+                  -0.041719300090006295
+                ],
+                [
+                  -0.01873867240102037,
+                  -0.0170553146332697,
+                  -0.0545088924181659
+                ],
+                [
+                  -0.01860598393866525,
+                  -8.214726517041488e-18,
+                  -0.059
+                ],
+                [
+                  -0.01873867240102037,
+                  0.017055314633269685,
+                  -0.05450889241816591
+                ],
+                [
+                  -0.019054491658553902,
+                  0.031047322152052637,
+                  -0.04171930009000631
+                ],
+                [
+                  -0.01936421693459584,
+                  0.039203651284399,
+                  -0.02257832250954033
+                ]
+              ],
+              "closed": true,
+              "curveType": "centripetal",
+              "tension": 0.5
+            }
+          },
+          "vertices": 1105,
+          "triangles": 2048,
+          "attributes": {
+            "normal": {
+              "count": 1105,
+              "itemSize": 3,
+              "array": {
+                "hash": "31c3d882",
+                "bytes": 65487
+              }
+            },
+            "position": {
+              "count": 1105,
+              "itemSize": 3,
+              "array": {
+                "hash": "d2dabd1a",
+                "bytes": 70491
+              }
+            },
+            "uv": {
+              "count": 1105,
+              "itemSize": 2,
+              "array": {
+                "hash": "a0b1f601",
+                "bytes": 15109
+              }
+            }
+          },
+          "index": {
+            "hash": "b92ca794",
+            "bytes": 24578
+          },
+          "indexCount": 6144,
+          "bounds": [
+            [
+              -0.022583642974495888,
+              -0.04698792099952698,
+              -0.06599999964237213
+            ],
+            [
+              -0.006960571743547916,
+              0.04698792099952698,
+              0.06449999660253525
+            ]
+          ],
+          "material": {
+            "type": "MeshPhongMaterial",
+            "colorHex": 10846055,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        },
+        {
+          "name": "fr-manikin-ear-right-helix",
+          "type": "TorusGeometry",
+          "parameters": {
+            "radius": 1,
+            "tube": 1,
+            "radialSegments": 16,
+            "tubularSegments": 64,
+            "arc": 6.283185307179586,
+            "path": {
+              "metadata": {
+                "version": 4.5,
+                "type": "Curve",
+                "generator": "Curve.toJSON"
+              },
+              "arcLengthDivisions": 200,
+              "type": "CatmullRomCurve3",
+              "points": [
+                [
+                  0.019490805624203928,
+                  0.04029,
+                  0
+                ],
+                [
+                  0.01936421693459583,
+                  0.03524256144536047,
+                  0.022578322509540297
+                ],
+                [
+                  0.019054491658553906,
+                  0.02593134227595935,
+                  0.041719300090006295
+                ],
+                [
+                  0.018738672401020375,
+                  0.013781316346709262,
+                  0.054508892418165915
+                ],
+                [
+                  0.01860598393866525,
+                  2.1958597814175234e-18,
+                  0.059
+                ],
+                [
+                  0.018738672401020375,
+                  -0.013781316346709257,
+                  0.054508892418165915
+                ],
+                [
+                  0.0190544916585539,
+                  -0.02593134227595935,
+                  0.0417193000900063
+                ],
+                [
+                  0.019364216934595828,
+                  -0.03524256144536047,
+                  0.022578322509540304
+                ],
+                [
+                  0.019490805624203928,
+                  -0.04029,
+                  7.225416114969383e-18
+                ],
+                [
+                  0.019364216934595828,
+                  -0.039203651284399024,
+                  -0.02257832250954029
+                ],
+                [
+                  0.0190544916585539,
+                  -0.03104732215205265,
+                  -0.041719300090006295
+                ],
+                [
+                  0.01873867240102037,
+                  -0.0170553146332697,
+                  -0.0545088924181659
+                ],
+                [
+                  0.01860598393866525,
+                  -8.214726517041488e-18,
+                  -0.059
+                ],
+                [
+                  0.01873867240102037,
+                  0.017055314633269685,
+                  -0.05450889241816591
+                ],
+                [
+                  0.019054491658553902,
+                  0.031047322152052637,
+                  -0.04171930009000631
+                ],
+                [
+                  0.01936421693459584,
+                  0.039203651284399,
+                  -0.02257832250954033
+                ]
+              ],
+              "closed": true,
+              "curveType": "centripetal",
+              "tension": 0.5
+            }
+          },
+          "vertices": 1105,
+          "triangles": 2048,
+          "attributes": {
+            "normal": {
+              "count": 1105,
+              "itemSize": 3,
+              "array": {
+                "hash": "bebae6d5",
+                "bytes": 65622
+              }
+            },
+            "position": {
+              "count": 1105,
+              "itemSize": 3,
+              "array": {
+                "hash": "f921aeff",
+                "bytes": 69386
+              }
+            },
+            "uv": {
+              "count": 1105,
+              "itemSize": 2,
+              "array": {
+                "hash": "a0b1f601",
+                "bytes": 15109
+              }
+            }
+          },
+          "index": {
+            "hash": "b1131fda",
+            "bytes": 24578
+          },
+          "indexCount": 6144,
+          "bounds": [
+            [
+              0.006960571743547916,
+              -0.04698792099952698,
+              -0.06599999964237213
+            ],
+            [
+              0.022583642974495888,
+              0.04698792099952698,
+              0.06449999660253525
+            ]
+          ],
+          "material": {
+            "type": "MeshPhongMaterial",
+            "colorHex": 10846055,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        }
+      ],
+      "skull": {
+        "total": 1617,
+        "inFrame": 1617,
+        "min": [
+          -0.5281294244620266,
+          -0.7710828398820543,
+          0.7282896438581232
+        ],
+        "max": [
+          0.45649973188510984,
+          0.41519560554570856,
+          0.8299403994146345
+        ]
+      },
+      "skullGeometry": {
+        "name": "fr-manikin-head",
+        "type": "SphereGeometry",
+        "parameters": {
+          "radius": 1,
+          "widthSegments": 48,
+          "heightSegments": 32,
+          "phiStart": 0,
+          "phiLength": 6.283185307179586,
+          "thetaStart": 0,
+          "thetaLength": 3.141592653589793
+        },
+        "vertices": 1617,
+        "triangles": 2976,
+        "attributes": {
+          "normal": {
+            "count": 1617,
+            "itemSize": 3,
+            "array": {
+              "hash": "5d50019b",
+              "bytes": 93113
+            }
+          },
+          "position": {
+            "count": 1617,
+            "itemSize": 3,
+            "array": {
+              "hash": "aaba19ff",
+              "bytes": 93126
+            }
+          },
+          "uv": {
+            "count": 1617,
+            "itemSize": 2,
+            "array": {
+              "hash": "525b5ca2",
+              "bytes": 34509
+            }
+          }
+        },
+        "index": {
+          "hash": "e528e187",
+          "bytes": 38745
+        },
+        "indexCount": 8928,
+        "bounds": [
+          [
+            -1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            0.9400359988212585,
+            1
+          ]
+        ],
+        "material": {
+          "type": "MeshPhongMaterial",
+          "colorHex": 10846055,
+          "side": 0,
+          "transparent": false,
+          "opacity": 1,
+          "depthWrite": true
+        },
+        "visible": true
+      },
+      "preservedFace": {
+        "total": 26659,
+        "inFrame": 26659,
+        "min": [
+          -0.5281294244620266,
+          -0.7710828398820543,
+          0.7258678131385559
+        ],
+        "max": [
+          0.45649973188510984,
+          0.45753080222051223,
+          0.8299403994146345
+        ]
+      },
+      "neckProjection": {
+        "total": 523,
+        "inFrame": 509,
+        "min": [
+          0.14034315187020693,
+          -0.9685809370923902,
+          0.7114697651228442
+        ],
+        "max": [
+          1.058827080475312,
+          0.10533266861952481,
+          0.8109409595994934
+        ]
+      },
+      "neckBounds": [
+        [
+          -0.23563978113224482,
+          0.31730464945465947,
+          -1.1530043258795395
+        ],
+        [
+          0.26031073326051973,
+          0.7842258392963055,
+          -0.7169956741204607
+        ]
+      ],
+      "selectedHand": {
+        "total": 7628,
+        "inFrame": 7628,
+        "min": [
+          -0.4027426722478521,
+          -0.43709802500104655,
+          0.6831129009355041
+        ],
+        "max": [
+          0.38935469308251475,
+          0.34053436403639853,
+          0.7346064719807811
+        ]
+      },
+      "canvasRect": {
+        "x": 83,
+        "y": 270.46875,
+        "width": 559,
+        "height": 358
+      },
+      "cheekContext": [
+        [
+          -0.007414011470659337,
+          -0.04194067333213416,
+          0.7325910727539381
+        ],
+        [
+          -0.23951082757716252,
+          0.01420269310588609,
+          0.7282328133718666
+        ],
+        [
+          0.21740888662757368,
+          -0.09632450574883861,
+          0.7368127442157798
+        ],
+        [
+          -0.035826821920668536,
+          -0.40351626012505876,
+          0.7214244609560513
+        ],
+        [
+          0.018823778014647973,
+          0.2919560436431601,
+          0.742902872430799
+        ]
+      ],
+      "state": {
+        "consentAccepted": true,
+        "view": "body3d",
+        "b3dTab": "recovery",
+        "b3dAge": "adult",
+        "b3dRec": [
+          "check",
+          "arm",
+          "hand",
+          "knee",
+          "roll",
+          "airway",
+          "stable",
+          "watch"
+        ],
+        "b3dRecView": 5,
+        "b3dRecoveryGuides": false,
+        "b3dChildHands": "two",
+        "b3dPlaced": "correct",
+        "b3dHandStudy": {},
+        "faMastery": {},
+        "modulesVisited": {},
+        "badges": {},
+        "b3dStatus": "ready"
+      },
+      "errors": [],
+      "draw": {
+        "materials": 27,
+        "id": 1,
+        "createdBy": "page",
+        "draws": 5766,
+        "sequence": 38,
+        "calls": 48,
+        "triangles": 75296,
+        "geometries": 77,
+        "programs": 3,
+        "disposeCount": 0
+      }
+    },
+    {
+      "id": "adult-support",
+      "age": "adult",
+      "width": 1280,
+      "height": 1080,
+      "pose": {
+        "structure": {
+          "hash": "b0354fa8",
+          "bytes": 6534
+        },
+        "preservedTransforms": {
+          "hash": "8e03f0cd",
+          "bytes": 16441
+        },
+        "counts": {
+          "objects": 121,
+          "meshes": 87
+        }
+      },
+      "contrast": false,
+      "head": {
+        "total": 27233,
+        "inFrame": 27233,
+        "min": [
+          -0.5281294244620266,
+          -0.7710828398820543,
+          0.7258678131385559
+        ],
+        "max": [
+          0.45649973188510984,
+          0.45753080222051223,
+          0.8299403994146345
+        ]
+      },
+      "variant": "candidate",
+      "sourceSHA": "0af58d9afd30ed0de275caf53197320ddabed9308f08b191cce7bf4927d83f84",
+      "capture": "adult-support-candidate-stage.png",
+      "detail": {
+        "file": "adult-support-candidate-ear.png",
+        "earName": "fr-manikin-ear-right",
+        "clip": {
+          "x": 304,
+          "y": 350,
+          "width": 95,
+          "height": 64
+        },
+        "proof": {
+          "sameCapturedFrame": true,
+          "sourceSHA256": "a1957b49b5bebb981166e06f7db9d557ca5f9d7329cc83dfffdcc442ba810af6",
+          "cropSHA256": "e05fd270349324ef95206fbdc1e240981a006bca3368e4063dfd0645747068d3",
+          "sourceSize": {
+            "width": 562,
+            "height": 361
+          },
+          "clip": {
+            "x": 222,
+            "y": 81,
+            "width": 95,
+            "height": 64
+          },
+          "pixelsVerified": 6080
+        },
+        "visibleVertices": 551,
+        "totalVertices": 551,
+        "partiallyClipped": false
+      },
+      "captureInfo": {
+        "stageClip": {
+          "x": 82,
+          "y": 269,
+          "width": 562,
+          "height": 361
+        },
+        "observedCanvas": {
+          "x": 83,
+          "y": 270.46875,
+          "width": 559,
+          "height": 358
+        },
+        "screenshotMs": 3582
+      },
+      "preservedScene": {
+        "hash": "c00001ec",
+        "bytes": 269335
+      },
+      "noseMaterial": {
+        "name": "fr-manikin-nose",
+        "material": {
+          "metadata": {
+            "version": 4.5,
+            "type": "Material",
+            "generator": "Material.toJSON"
+          },
+          "type": "MeshPhongMaterial",
+          "color": 10846055,
+          "emissive": 0,
+          "specular": 394758,
+          "shininess": 12,
+          "reflectivity": 1,
+          "refractionRatio": 0.98,
+          "depthFunc": 3,
+          "depthTest": true,
+          "depthWrite": true,
+          "colorWrite": true,
+          "stencilWrite": false,
+          "stencilWriteMask": 255,
+          "stencilFunc": 519,
+          "stencilRef": 0,
+          "stencilFuncMask": 255,
+          "stencilFail": 7680,
+          "stencilZFail": 7680,
+          "stencilZPass": 7680,
+          "userData": {
+            "_baseOpacity": 1
+          }
+        },
+        "visible": true,
+        "hooks": {
+          "compile": "function(){}",
+          "cacheKey": "function(){}"
+        },
+        "separateFromHead": false,
+        "strength": null
+      },
+      "headMaterial": {
+        "metadata": {
+          "version": 4.5,
+          "type": "Material",
+          "generator": "Material.toJSON"
+        },
+        "type": "MeshPhongMaterial",
+        "color": 10846055,
+        "emissive": 0,
+        "specular": 394758,
+        "shininess": 12,
+        "reflectivity": 1,
+        "refractionRatio": 0.98,
+        "depthFunc": 3,
+        "depthTest": true,
+        "depthWrite": true,
+        "colorWrite": true,
+        "stencilWrite": false,
+        "stencilWriteMask": 255,
+        "stencilFunc": 519,
+        "stencilRef": 0,
+        "stencilFuncMask": 255,
+        "stencilFail": 7680,
+        "stencilZFail": 7680,
+        "stencilZPass": 7680,
+        "userData": {
+          "_baseOpacity": 1
+        }
+      },
+      "camera": {
+        "position": [
+          -0.4061376371893065,
+          1.3605465583590406,
+          -1.173910635717908
+        ],
+        "quaternion": [
+          -0.3588554535556178,
+          -0.581919622291384,
+          -0.3178862062866766,
+          0.6569175568504082
+        ],
+        "projection": [
+          1.6683754654031857,
+          0,
+          0,
+          0,
+          0,
+          2.6050890646938014,
+          0,
+          0,
+          0,
+          0,
+          -1.002002002002002,
+          -1,
+          0,
+          0,
+          -0.20020020020020018,
+          0
+        ],
+        "aspect": 1.5614525139664805
+      },
+      "neckMesh": {
+        "name": "fr-manikin-neck",
+        "vertices": 523,
+        "triangles": 816,
+        "materialType": "MeshPhongMaterial",
+        "colorHex": 10846055,
+        "visible": true
+      },
+      "torsoMesh": {
+        "name": "fr-manikin-torso",
+        "vertices": 2913,
+        "triangles": 5680,
+        "materialType": "MeshPhongMaterial",
+        "colorHex": 2647450,
+        "visible": true
+      },
+      "faceProjection": {
+        "total": 12618,
+        "inFrame": 12618,
+        "min": [
+          -0.3353680263215155,
+          -0.6970087468921475,
+          0.7258678131385559
+        ],
+        "max": [
+          0.12572004208449336,
+          -0.07839746844873605,
+          0.7731766075242762
+        ]
+      },
+      "selectedEar": {
+        "name": "fr-manikin-ear-right",
+        "projection": {
+          "total": 551,
+          "inFrame": 551,
+          "min": [
+            -0.14173358972436076,
+            0.3003152932771534,
+            0.7534434694246716
+          ],
+          "max": [
+            0.06349670762578301,
+            0.4518503487414744,
+            0.7726636987748119
+          ]
+        },
+        "visibleSamples": 21,
+        "samples": 25,
+        "estimatedVisiblePixels": 1306.979320015034,
+        "depth": -0.8387134787006496
+      },
+      "earCandidates": [
+        {
+          "name": "fr-manikin-ear-right",
+          "projection": {
+            "total": 551,
+            "inFrame": 551,
+            "min": [
+              -0.14173358972436076,
+              0.3003152932771534,
+              0.7534434694246716
+            ],
+            "max": [
+              0.06349670762578301,
+              0.4518503487414744,
+              0.7726636987748119
+            ]
+          },
+          "visibleSamples": 21,
+          "samples": 25,
+          "estimatedVisiblePixels": 1306.979320015034,
+          "depth": -0.8387134787006496
+        },
+        {
+          "name": "fr-manikin-ear-left",
+          "projection": {
+            "total": 551,
+            "inFrame": 551,
+            "min": [
+              -0.15228403318426081,
+              -0.6901417084459608,
+              0.8040131946471727
+            ],
+            "max": [
+              0.012384586018431967,
+              -0.5385756820033919,
+              0.8164031360432574
+            ]
+          },
+          "visibleSamples": 0,
+          "samples": 25,
+          "estimatedVisiblePixels": 0,
+          "depth": -1.0444378697319083
+        }
+      ],
+      "earMeshes": [
+        {
+          "name": "fr-manikin-ear-left-helix",
+          "type": "TorusGeometry",
+          "parameters": {
+            "radius": 1,
+            "tube": 1,
+            "radialSegments": 16,
+            "tubularSegments": 64,
+            "arc": 6.283185307179586,
+            "path": {
+              "metadata": {
+                "version": 4.5,
+                "type": "Curve",
+                "generator": "Curve.toJSON"
+              },
+              "arcLengthDivisions": 200,
+              "type": "CatmullRomCurve3",
+              "points": [
+                [
+                  -0.019490805624203928,
+                  0.04029,
+                  0
+                ],
+                [
+                  -0.01936421693459583,
+                  0.03524256144536047,
+                  0.022578322509540297
+                ],
+                [
+                  -0.019054491658553906,
+                  0.02593134227595935,
+                  0.041719300090006295
+                ],
+                [
+                  -0.018738672401020375,
+                  0.013781316346709262,
+                  0.054508892418165915
+                ],
+                [
+                  -0.01860598393866525,
+                  2.1958597814175234e-18,
+                  0.059
+                ],
+                [
+                  -0.018738672401020375,
+                  -0.013781316346709257,
+                  0.054508892418165915
+                ],
+                [
+                  -0.0190544916585539,
+                  -0.02593134227595935,
+                  0.0417193000900063
+                ],
+                [
+                  -0.019364216934595828,
+                  -0.03524256144536047,
+                  0.022578322509540304
+                ],
+                [
+                  -0.019490805624203928,
+                  -0.04029,
+                  7.225416114969383e-18
+                ],
+                [
+                  -0.019364216934595828,
+                  -0.039203651284399024,
+                  -0.02257832250954029
+                ],
+                [
+                  -0.0190544916585539,
+                  -0.03104732215205265,
+                  -0.041719300090006295
+                ],
+                [
+                  -0.01873867240102037,
+                  -0.0170553146332697,
+                  -0.0545088924181659
+                ],
+                [
+                  -0.01860598393866525,
+                  -8.214726517041488e-18,
+                  -0.059
+                ],
+                [
+                  -0.01873867240102037,
+                  0.017055314633269685,
+                  -0.05450889241816591
+                ],
+                [
+                  -0.019054491658553902,
+                  0.031047322152052637,
+                  -0.04171930009000631
+                ],
+                [
+                  -0.01936421693459584,
+                  0.039203651284399,
+                  -0.02257832250954033
+                ]
+              ],
+              "closed": true,
+              "curveType": "centripetal",
+              "tension": 0.5
+            }
+          },
+          "vertices": 1105,
+          "triangles": 2048,
+          "attributes": {
+            "normal": {
+              "count": 1105,
+              "itemSize": 3,
+              "array": {
+                "hash": "8d78d08",
+                "bytes": 65423
+              }
+            },
+            "position": {
+              "count": 1105,
+              "itemSize": 3,
+              "array": {
+                "hash": "e0021df1",
+                "bytes": 70473
+              }
+            },
+            "uv": {
+              "count": 1105,
+              "itemSize": 2,
+              "array": {
+                "hash": "a0b1f601",
+                "bytes": 15109
+              }
+            }
+          },
+          "index": {
+            "hash": "b92ca794",
+            "bytes": 24578
+          },
+          "indexCount": 6144,
+          "bounds": [
+            [
+              -0.022583642974495888,
+              -0.04698792099952698,
+              -0.06599999964237213
+            ],
+            [
+              -0.006960571743547916,
+              0.04698792099952698,
+              0.06449999660253525
+            ]
+          ],
+          "material": {
+            "type": "MeshPhongMaterial",
+            "colorHex": 10846055,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        },
+        {
+          "name": "fr-manikin-ear-right-helix",
+          "type": "TorusGeometry",
+          "parameters": {
+            "radius": 1,
+            "tube": 1,
+            "radialSegments": 16,
+            "tubularSegments": 64,
+            "arc": 6.283185307179586,
+            "path": {
+              "metadata": {
+                "version": 4.5,
+                "type": "Curve",
+                "generator": "Curve.toJSON"
+              },
+              "arcLengthDivisions": 200,
+              "type": "CatmullRomCurve3",
+              "points": [
+                [
+                  0.019490805624203928,
+                  0.04029,
+                  0
+                ],
+                [
+                  0.01936421693459583,
+                  0.03524256144536047,
+                  0.022578322509540297
+                ],
+                [
+                  0.019054491658553906,
+                  0.02593134227595935,
+                  0.041719300090006295
+                ],
+                [
+                  0.018738672401020375,
+                  0.013781316346709262,
+                  0.054508892418165915
+                ],
+                [
+                  0.01860598393866525,
+                  2.1958597814175234e-18,
+                  0.059
+                ],
+                [
+                  0.018738672401020375,
+                  -0.013781316346709257,
+                  0.054508892418165915
+                ],
+                [
+                  0.0190544916585539,
+                  -0.02593134227595935,
+                  0.0417193000900063
+                ],
+                [
+                  0.019364216934595828,
+                  -0.03524256144536047,
+                  0.022578322509540304
+                ],
+                [
+                  0.019490805624203928,
+                  -0.04029,
+                  7.225416114969383e-18
+                ],
+                [
+                  0.019364216934595828,
+                  -0.039203651284399024,
+                  -0.02257832250954029
+                ],
+                [
+                  0.0190544916585539,
+                  -0.03104732215205265,
+                  -0.041719300090006295
+                ],
+                [
+                  0.01873867240102037,
+                  -0.0170553146332697,
+                  -0.0545088924181659
+                ],
+                [
+                  0.01860598393866525,
+                  -8.214726517041488e-18,
+                  -0.059
+                ],
+                [
+                  0.01873867240102037,
+                  0.017055314633269685,
+                  -0.05450889241816591
+                ],
+                [
+                  0.019054491658553902,
+                  0.031047322152052637,
+                  -0.04171930009000631
+                ],
+                [
+                  0.01936421693459584,
+                  0.039203651284399,
+                  -0.02257832250954033
+                ]
+              ],
+              "closed": true,
+              "curveType": "centripetal",
+              "tension": 0.5
+            }
+          },
+          "vertices": 1105,
+          "triangles": 2048,
+          "attributes": {
+            "normal": {
+              "count": 1105,
+              "itemSize": 3,
+              "array": {
+                "hash": "c7e9559b",
+                "bytes": 65558
+              }
+            },
+            "position": {
+              "count": 1105,
+              "itemSize": 3,
+              "array": {
+                "hash": "97c669fe",
+                "bytes": 69368
+              }
+            },
+            "uv": {
+              "count": 1105,
+              "itemSize": 2,
+              "array": {
+                "hash": "a0b1f601",
+                "bytes": 15109
+              }
+            }
+          },
+          "index": {
+            "hash": "b1131fda",
+            "bytes": 24578
+          },
+          "indexCount": 6144,
+          "bounds": [
+            [
+              0.006960571743547916,
+              -0.04698792099952698,
+              -0.06599999964237213
+            ],
+            [
+              0.022583642974495888,
+              0.04698792099952698,
+              0.06449999660253525
+            ]
+          ],
+          "material": {
+            "type": "MeshPhongMaterial",
+            "colorHex": 10846055,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1,
+            "depthWrite": true
+          },
+          "visible": true
+        }
+      ],
+      "skull": {
+        "total": 1617,
+        "inFrame": 1617,
+        "min": [
+          -0.5281294244620266,
+          -0.7710828398820543,
+          0.7282896438581232
+        ],
+        "max": [
+          0.45649973188510984,
+          0.41519560554570856,
+          0.8299403994146345
+        ]
+      },
+      "skullGeometry": {
+        "name": "fr-manikin-head",
+        "type": "SphereGeometry",
+        "parameters": {
+          "radius": 1,
+          "widthSegments": 48,
+          "heightSegments": 32,
+          "phiStart": 0,
+          "phiLength": 6.283185307179586,
+          "thetaStart": 0,
+          "thetaLength": 3.141592653589793
+        },
+        "vertices": 1617,
+        "triangles": 2976,
+        "attributes": {
+          "normal": {
+            "count": 1617,
+            "itemSize": 3,
+            "array": {
+              "hash": "5d50019b",
+              "bytes": 93113
+            }
+          },
+          "position": {
+            "count": 1617,
+            "itemSize": 3,
+            "array": {
+              "hash": "aaba19ff",
+              "bytes": 93126
+            }
+          },
+          "uv": {
+            "count": 1617,
+            "itemSize": 2,
+            "array": {
+              "hash": "525b5ca2",
+              "bytes": 34509
+            }
+          }
+        },
+        "index": {
+          "hash": "e528e187",
+          "bytes": 38745
+        },
+        "indexCount": 8928,
+        "bounds": [
+          [
+            -1,
+            -1,
+            -1
+          ],
+          [
+            1,
+            0.9400359988212585,
+            1
+          ]
+        ],
+        "material": {
+          "type": "MeshPhongMaterial",
+          "colorHex": 10846055,
+          "side": 0,
+          "transparent": false,
+          "opacity": 1,
+          "depthWrite": true
+        },
+        "visible": true
+      },
+      "preservedFace": {
+        "total": 26659,
+        "inFrame": 26659,
+        "min": [
+          -0.5281294244620266,
+          -0.7710828398820543,
+          0.7258678131385559
+        ],
+        "max": [
+          0.45649973188510984,
+          0.45753080222051223,
+          0.8299403994146345
+        ]
+      },
+      "neckProjection": {
+        "total": 523,
+        "inFrame": 509,
+        "min": [
+          0.14034315187020693,
+          -0.9685809370923902,
+          0.7114697651228442
+        ],
+        "max": [
+          1.058827080475312,
+          0.10533266861952481,
+          0.8109409595994934
+        ]
+      },
+      "neckBounds": [
+        [
+          -0.23563978113224482,
+          0.31730464945465947,
+          -1.1530043258795395
+        ],
+        [
+          0.26031073326051973,
+          0.7842258392963055,
+          -0.7169956741204607
+        ]
+      ],
+      "selectedHand": {
+        "total": 7628,
+        "inFrame": 7628,
+        "min": [
+          -0.4027426722478521,
+          -0.43709802500104655,
+          0.6831129009355041
+        ],
+        "max": [
+          0.38935469308251475,
+          0.34053436403639853,
+          0.7346064719807811
+        ]
+      },
+      "canvasRect": {
+        "x": 83,
+        "y": 270.46875,
+        "width": 559,
+        "height": 358
+      },
+      "cheekContext": [
+        [
+          -0.007414011470659337,
+          -0.04194067333213416,
+          0.7325910727539381
+        ],
+        [
+          -0.23951082757716252,
+          0.01420269310588609,
+          0.7282328133718666
+        ],
+        [
+          0.21740888662757368,
+          -0.09632450574883861,
+          0.7368127442157798
+        ],
+        [
+          -0.035826821920668536,
+          -0.40351626012505876,
+          0.7214244609560513
+        ],
+        [
+          0.018823778014647973,
+          0.2919560436431601,
+          0.742902872430799
+        ]
+      ],
+      "state": {
+        "consentAccepted": true,
+        "view": "body3d",
+        "b3dTab": "recovery",
+        "b3dAge": "adult",
+        "b3dRec": [
+          "check",
+          "arm",
+          "hand",
+          "knee",
+          "roll",
+          "airway",
+          "stable",
+          "watch"
+        ],
+        "b3dRecView": 5,
+        "b3dRecoveryGuides": false,
+        "b3dChildHands": "two",
+        "b3dPlaced": "correct",
+        "b3dHandStudy": {},
+        "faMastery": {},
+        "modulesVisited": {},
+        "badges": {},
+        "b3dStatus": "ready"
+      },
+      "errors": [],
+      "draw": {
+        "materials": 27,
+        "id": 1,
+        "createdBy": "page",
+        "draws": 6231,
+        "sequence": 41,
+        "calls": 48,
+        "triangles": 75296,
+        "geometries": 77,
+        "programs": 3,
+        "disposeCount": 0
+      }
+    }
+  ]
+}

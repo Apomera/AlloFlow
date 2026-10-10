@@ -12,7 +12,15 @@ Build-preserving transitions and recovery: [fifth-pass changes](fifth-pass/READM
 
 Workspace clarity and saved readability controls: [sixth-pass changes](sixth-pass/README.md).
 
-Latest continuation: [inspection clarity and safer tool navigation](seventh-pass/README.md).
+Inspection clarity and safer tool navigation: [seventh-pass changes](seventh-pass/README.md).
+
+Readable coordinates and directional measurement comparisons: [eighth-pass changes](eighth-pass/README.md).
+
+Consistent Larger text and usable estimate and practice workflows: [ninth-pass changes](ninth-pass/README.md).
+
+Explicit measurement evidence and varied long-session practice: [tenth-pass changes](tenth-pass/README.md).
+
+Latest continuation: [learner-controlled clarity, Practice continuity, and readable block counts](eleventh-pass/README.md).
 
 ## Changes
 

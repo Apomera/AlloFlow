@@ -521,3 +521,254 @@ The initial candidate's 2D number boxes overlapped when scaled to a 280-pixel ho
 The first controlled-RAF browser run also sampled labels during an overhead-to-cut-face resize. The final harness explicitly waits for the renderer dimensions and camera aspect to match the canvas, then repaints before testing label collisions. The earlier failure receipts are preserved. Settled captures and assertions cover the actual installed source and registries, with no candidate overlay or fallback-key allowance.
 
 Changes remain uncommitted and unstaged. The consolidated [verification.json](C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-6/tectonics-arc-overview/verification.json) links the final test, browser and asset results.
+
+
+## Projecting selected earthquake observations
+
+Selecting an earthquake in the graph or observation list now offers Show this event on the 3D cut face. The deliberate action opens an exposed section, focuses its nearby explanation and brings the model into view. Selecting an event alone preserves the current view, focus and page position. After the learner enables the projection, Previous, Next and graph selection update it within the same sample without navigating the camera again.
+
+A hollow cyan diamond marks the exact recorded distance and depth. A dark halo keeps its outline visible; dashed distance and depth guides use darker cyan on light rock and brighter cyan in dark mode. The diamond remains at least 14 CSS pixels wide. Its Projected event caption shares the model's label placement logic, including when the slab inspector and Whole process trace are visible. The spherical live earthquake dots stay intact. The competing newest-focus label and guides pause while the sample projection is visible and return when it is hidden.
+
+The model explanation identifies the source as either the fixed checked sample or the current observation log. It states that position along the boundary was not recorded. Moving the cut moves the projection plane; the display does not invent an along-boundary coordinate. Events outside the finite block keep their exact coordinates in the graph and list and are not clamped to a visible edge. Rear, overhead and uncut views hide the annotation and offer an explicit reveal action. The source and visibility explanation remain near the model while it loads or falls back to the cross-section.
+
+Hide projection moves focus to the visible canvas. Closing the observation log, revising or replacing its sample, resetting and switching boundaries clear the projection request. Returning to the same view preset supports a fresh deliberate activation. The new control references a model frame that exists in 2D, 3D and loading states. Idle rendering and ordinary event selection do not save evidence, award progress or ping.
+
+### Verification of the selected observation projection
+
+- 816 distinct focused tests passed across 46 files. 19 added cases cover exact signed and decimal coordinates, checked and live sources, deliberate activation and focus, quiet selection and idle behavior, camera and cut visibility, out-of-block observations, loading failure, theme contrast, annotation cleanup and retained rock geometry.
+- 94 browser checks passed against the final installed source. Native captures and measurements cover nine phone, desktop and narrow-host layouts, light, dark and contrast settings, selected sample projections beside live foci, geological and arc annotations, and a mounted resize between wide and narrow hosts.
+- The idle regression audit again passed its 1,200 drawing frames and deliberate-input checks. Saved investigation and application checks passed.
+- All three source copies match SHA-256 cffa09cfd44c7e2fbfe4f9f9003d6e6b7e9800864c3f0ceb260e4424ec4b2761. Both English tectonic namespaces match, with 13 added labels and retained values preserved. Syntax and Git whitespace checks pass. The rate-and-time calculation, plate geometry, rock section construction, camera calculation and arc process functions are unchanged.
+
+The initial fixture reports are retained. Corrections made them inspect actual drawable children in a hidden projection group, preserve valid out-of-block metadata for visibility gating and avoid treating Three.js shared sprite geometry as owned disposable geometry. Final unit and native browser reports test the installed source. The browser audit uses no prototype source overlay or fallback-key allowance.
+
+The first full batch's existing rolling-log test took 113.9 seconds while the browser audits were active, exceeding its 90-second limit. With those audits finished, the same installed source and test passed in 14.4 seconds. Both receipts are retained. The translation audit also gained an explicit route from the new model label template to its substituted renderer text. It verifies the visible label consumer and event number instead of exempting the new key. The original focus-label route remains covered. Three artifact mutations confirm that missing substitution, disconnected visible text and a signature without the corresponding model word still fail that audit.
+
+Changes remain uncommitted and unstaged. The consolidated [verification.json](C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-6/tectonics-observation-projection/verification.json) links the test, browser and asset results.
+
+
+## Projecting an earthquake sample pattern
+
+The observation overview now offers Show this sample on the 3D cut face. It projects every eligible record in the displayed sample at its exact distance and depth. The source remains explicit: a checked sample stays fixed, while a requested live pattern follows the latest 200 records. Saved comparisons store summaries and are not used as point coordinates.
+
+Small hollow circles show the sample's shallow, intermediate and deep bands using the graph's colors. A nearby text key gives the depth ranges. The existing larger cyan diamond can highlight one selected event inside the pattern. Coincident observations stay at the same location; the explanation makes clear that the counts describe records rather than separately visible symbols. No fitted line, slab ribbon or invented position along the boundary is added.
+
+The shared model card reports total events, events within the finite block and events beyond it. Out-of-block records retain their coordinates in the graph and list. The cut-face explanation remains available when the view is hidden, the 3D model is loading or the cross-section fallback is in use. Moving the cut moves the projection plane without supplying an unrecorded position along the boundary.
+
+Only deliberate Show actions open and navigate to the exposed cut face. Selection, deselection, a rolling-log replacement and the Include or Hide sample pattern toggle update locally. Expiring a selected live event removes its diamond while retaining the requested live sample. Closing the log, changing boundary, resetting, checking a replacement sample and revising clear the request. Hide projection returns focus to the visible canvas.
+
+Two retained marker batches keep up to 200 circles inexpensive to update. Their outlines stay at least eight CSS pixels wide; colors, camera-facing orientation and matrices update without rebuilding the rock. Camera movement checks face visibility using the validated sample count instead of scanning the records again. The newest live-focus annotation pauses while either recorded projection is visible, and the spherical live events remain intact. Hiding both projections restores that annotation. Invalid input, including sparse array holes, cannot leave stale markers behind.
+
+### Verification of the sample pattern
+
+- 836 distinct focused tests passed across 46 files. Twenty added cases cover exact coordinates, depth thresholds, duplicates, finite bounds, malformed inputs, same-length rolling samples, independent selection, lifecycle, camera visibility, retained geometry, resize, disposal and quiet idle behavior. The existing UI and renderer cases are preserved.
+- 97 checks passed in native browser, idle, investigation report and application audits against the installed source. Browser captures cover phone, tablet, desktop and narrow hosts, light and dark themes, contrast settings, checked and rolling live patterns, coexistence with selected events and geological labels, view gates and loading failures.
+- The idle audit passed 1,200 drawing frames without repeated progress awards or pings. Source mirrors and both English registries match; twelve new labels preserve existing values. The rate-and-time calculation and rock construction remain unchanged.
+
+Changes remain uncommitted and unstaged. Results are recorded in [verification.json](C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-6/tectonics-sample-pattern/verification.json).
+
+
+## Reading sample events beside the model
+
+The earthquake projection card now includes an event chooser and Previous, Next and Clear selection controls. They share the graph and coordinate list's selected observation, so the larger cyan diamond follows the same exact distance and depth. A learner can compare several records beside the cutaway without repeatedly scrolling back to the lower observation panel.
+
+The chooser contains every record in the displayed sample, including events beyond the finite block and coincident points. It begins unselected. Checked records remain fixed; live selection follows the same observation as its list index changes and clears when that record expires. Clearing selection leaves a requested whole-sample pattern visible. These actions preserve the camera, cut, zoom, model time, playback, estimate and saved evidence.
+
+Return to graph and event list deliberately focuses the existing lower event chooser with preventScroll, then brings it into view. It retains the projection request. Previous and Next return focus to the local chooser when the clicked button becomes disabled at a list boundary. Clear focuses the local chooser when the whole pattern remains, or the visible model canvas when clearing removes the selected-event panel. Choosing the blank option uses the same safe focus behavior.
+
+The new controls sit within the existing projection card and use a native select, distinct labels and wrapping buttons. Each control has a target at least 44 pixels tall. Selection changes stay outside live announcements and do not save records, award progress or ping.
+
+### Verification of linked sample inspection
+
+- 856 distinct focused tests passed across 47 files. 20 new cases verify linked selection, exact coordinates, coincident and out-of-block records, fixed and rolling sources, expiration, navigation, focus, fallback and quiet callbacks. Existing observation, projection and translation fixtures remain unchanged.
+- 111 browser checks passed against the installed source. The local inspection audit covers 8 phone, desktop and narrow-host layouts and records actual WebGL marker positions, control wrapping, target sizes, explicit return focus and retained model state. Saved investigation and application checks also pass.
+- The idle audit again passed 1,200 drawing frames without repeated rewards or pings. Painted screenshots were inspected, with nonblank saved model regions checked before accepting captures.
+- All three source copies match SHA-256 9394aa434b7f5e1979b95bf9a8c60824ee1f4e149db5dc9b7a01514b744107bb. Both English tectonics namespaces match, with two added labels and all existing values retained. The renderer, plate geometry, arc traces, rate-and-time calculation and code outside the boundary simulator are byte-unchanged from the preceding pass. Syntax and Git whitespace checks pass.
+
+Changes remain uncommitted and unstaged. The consolidated [verification.json](C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-6/tectonics-sample-inspection/verification.json) links the final test, browser, asset and delivery results.
+
+
+## Keeping model captions clear of sample events
+
+Movable geological, arc-process and selected-event captions now reserve the full footprint of every visible recorded earthquake circle, including its halo. A sample observation can no longer disappear beneath these captions in the tested crowded views. The same leaders keep their exact geological or recorded targets. Earthquake coordinates, coincident records, depth colors, marker sizes and instance matrices retain their existing meaning. Depth-scale captions keep their existing positions at the left of the frame.
+
+The nearest-placement search visits candidate rows and merges horizontal exclusion intervals instead of trying every combination of obstacle edges. It picks the closest available position within the canvas, with consistent ties. This keeps a 200-record sample practical. Exact gap boundaries remain available; using the same decimal endpoints for candidate generation and membership avoids rounding a legal position into an obstacle. Hidden, rear, overhead and uncut views remove the sample reservations, and revealing the face restores them.
+
+### Verification of sample caption clarity
+
+- 537 focused tests passed across 16 files on the installed source. The 23 new cases cover touching intervals, fractional boundaries, completely blocked rows, nearest placement, deliberate points beneath earlier captions, arc and slab annotations, exact signed coordinates, duplicates, 200 records, geometry reuse, resizing, zoom, view gates and 1,200 settled frames.
+- 94 browser checks passed. Native WebGL checks cover eight phone, desktop and narrow-host layouts in light, dark and contrast settings, exact projected halo vertices, selected diamonds, caption clearance, rotation and cut movement, dense samples, retained geometry and quiet idle. Ten painted native captures were inspected; saved investigation and application audits also pass.
+- The original reward audit passed its 1,200 idle frames and deliberate-input checks without repeated awards or pings. An independent comparison of the final helper passed 20,000 general layouts and 10,000 fractional-edge layouts.
+- All three source copies match SHA-256 1808fec8d1376d1fde62c2d4b66ccb00794ad73e0beacede3aa8e907c30ca730. Reversing the placement helper, sample footprint reservations and movable-caption search reproduces the preceding source byte for byte. Rock construction, event coordinates, React controls, model calculations, saving and reward callbacks therefore retain their existing code. The two tectonics translation namespaces and all 47 existing fixtures are preserved. Syntax and Git whitespace checks pass.
+
+The initial source passed its existing test selection but independent review found a fractional-boundary case that could displace a caption to the far frame edge. The corrected source includes that exact regression. Earlier receipts remain saved. Final test validation also records an initial configuration-cache error and a V8 allocation failure; using native configuration loading, isolated workers and a temporary directory inside this workspace produced the passing final reports.
+
+Changes remain uncommitted and unstaged. Results and provenance are recorded in [verification.json](C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-6/tectonics-caption-clarity/verification.json).
+
+
+## Clearer feedback for a checked slab-angle sample
+
+- Replaced the long default result paragraph with two readable angle cards. Dashed and solid swatches match the plotted estimate and data fit, and the cards adapt to narrow containers.
+- Compare the exact saved estimate with the unrounded fit. Feedback explains steeper, shallower, equal within numerical rounding, or opposite signed directions; differences below 0.1 degrees retain their direction. Tiny negative fits stay visibly signed.
+- Show the number of captured earthquakes used at 70 km or deeper and explain that shallower plotted observations are excluded from this angle fit.
+- Added a collapsed, native keyboard-accessible method explanation: the line is constrained through zero distance and depth, and eight qualifying events are an activity threshold. The existing geological explanation remains available inside it.
+- Kept fit math, coordinates, renderer, Check/Revise handlers, persistence and rewards unchanged. Added 15 English keys in both registries while retaining current unrelated namespaces.
+- Validation: 367 focused tests across 15 files, including 28 new angle-feedback cases; 101 browser checks, eight layouts and 10 painted captures. Checked native keyboard disclosure, 320/390 px layouts, themes, contrast, a 430 px embedded host, decimal restoration, fresh capture/recheck and 1,200 paused frames without repeated saves, rewards, notices or audio starts.
+- Verified all three source mirrors, all 48 existing fixtures, exact two-region source scope, and unchanged tectonics index namespaces. Changes remain uncommitted and unstaged.
+
+
+## Signed distances and bounded slab-fit lines
+
+- Fixed negative fitted lines extending through the left depth-axis gutter. Each signed fitted line now ends at the first distance or depth edge of the existing plot rectangle. The raw fit and equal kilometre scales stay intact.
+- Handle positive and negative zero slopes as finite horizontal lines. A valid sample with a subnormal negative coordinate can underflow to negative zero; its exact observations remain stored and inspectable while the graph renders finite coordinates.
+- Added a readable minus-sign label at the -150 km distance edge, aligned into the existing gutter. The zero boundary retains its unique stronger dashed reference, and ordinary positive fit geometry is unchanged.
+- Explain negative and positive distances in the existing origin paragraph when the displayed sample contains a negative coordinate. The SVG now references that paragraph alongside its existing scale/inspection and point-selection descriptions.
+- Kept event selection, captured/live sample separation, 3D submissions, persistence, Check/Revise controls and rewards unchanged. Added one English key in both registries while preserving current unrelated namespaces.
+- Validation: 394 focused tests across 16 files, including 27 new signed-graph cases; 114 browser checks across eight layouts and 13 painted captures. Actual label rectangles stay inside the SVG and separate from neighbouring labels; signed points, guides and samples remain exact through selection and playback. Verified 1,200 paused frames without repeated saves, rewards, pings, notices or audio starts.
+- Independent review verified the exact five source edits, 18 endpoint arithmetic cases and the negative-zero reproduction. Preserved all 49 existing fixtures and all three source mirrors. Before/after inspection confirms that negative fitted lines clear the depth labels. Changes remain uncommitted and unstaged.
+
+
+## Direct earthquake selection in the 3D sample
+
+Learners can tap a visible hollow sample circle to inspect that same original event in the model, graph and coordinate list. Selection uses the displayed camera and exposed cut face. Coincident circles choose the first recorded event, and the native chooser still reaches every event. Drags, canceled gestures and stale sample or camera frames do not select a record.
+
+A short tap keeps its local position when surrounding model text moves the canvas. Canvas size changes require a fresh tap. This lets learners inspect a fixed checked sample while the separate live log grows, including the layout change when playback first starts.
+
+The selected event has a compact semantic distance/depth readout with exact raw values, larger tabular numerals and wrapping for long decimals. The readings stack on narrow cards and sit beside each other when space allows. Visibility explanations and whole-sample counts stay separate. Selection remains local and quiet, with no rewards, pings, saved evidence or automatic announcements.
+
+Validation: 84 distinct focused tests across 4 files and 73 browser checks passed. The original four-file run passed 83 cases; one readout assertion exceeded its 300000 ms budget. Its raw failure report, log and receipt were preserved. Only that exact assertion was rerun with a 600000 ms test budget and passed; the other 11 readout cases were skipped in the retry and retain their original passes. Tests ran in isolated threads. A reviewed temporary preload increased only Vitest’s parent worker startup watchdogs from 60/90 seconds to 300 seconds; test-worker and product timers remained native. Native WebGL checks covered mouse and touch input, eight light/dark/contrast/enlarged layouts, complete 200-event samples, overlapping records, live and checked samples, camera/source freshness, local tap positions through layout shifts, and idle behavior. All eight captures passed painted-output and hash checks; representative images were visually reviewed. All 50 prior tectonic fixtures were preserved. Changes remain uncommitted and unstaged.
+
+
+## Reading guides and optional event interpretation
+
+Depth ticks, depth bands, caption leaders and the selected-event guides now use clear ink for the current light or dark theme. Theme changes update retained materials while preserving measurement coordinates, rock geometry, caption textures and the camera. Rebuilt cut faces and guides receive the current palette.
+
+The tap instruction now sits directly above the earthquake chooser. An optional, keyboard-accessible “Interpret this event” disclosure explains the selected event’s depth band. A checked convergent sample with a valid angle fit also shows whether the event meets the 70 km fitting threshold. Negative-distance guidance refers to the graph’s zero-distance line and remains accurate when the 3D block turns. Live logs and rejected saved samples do not show checked-fit membership claims. The existing reminder still asks learners to compare several events before inferring a slab angle or boundary type.
+
+The disclosure starts closed, stays open when learners choose another event, and disappears when selection is cleared. Reading, changing themes and leaving the diagram idle remain quiet, with no repeated rewards, pings or automatic announcements.
+
+Validation: 105 distinct focused assertions across six files and 101 browser checks passed on the final source. The initial run reported 85 passes, two guide failures caused by disposal-spy history retained across cases, and one readout timeout at 600000 ms. The clarity fixture did not start because its native worker startup timed out. The original failure report, log and receipts were preserved. The new guide fixture now restores spies immediately after unmount without changing any behavior assertions; all seven guide cases were rerun. The first clarity follow-up again failed at worker startup before collecting any assertions; its zero-test report and log were preserved. The final 17 clarity cases passed. A later readout attempt ended before test startup after an OS thread-resource panic; its log was preserved with an unconfirmed exit and no structured report. A separate recovery child passed the exact failed readout case and exited successfully. Its wrapper then exited with a parser assertion because the JSON reporter labels the 11 intentionally filtered cases “skipped” while also counting them as pending. The verifier accepts those exact filtered names only after confirming their original passes; the wrapper failure and original runner, receipts, report and log remain preserved. Both successful Vitest child runs used a 900000 ms test budget and a reviewed 900000 ms parent startup allowance. The other 80 accepted initial passes were retained, including the 11 readout cases intentionally skipped by the exact retry filter.
+
+The native WebGL review included retained-object and camera checks, exact depth thresholds, signed distances, valid and rejected saved samples, live and nonconvergent events, keyboard behavior, and idle behavior. All 11 saved captures passed painted-output and hash checks: eight existing responsive/theme layouts plus three open interpretation layouts. 11 captures were directly inspected for visual clarity. All 52 prior tectonic fixtures were preserved. Focused tests used isolated native threads and a 300000 ms hook budget. Reviewed temporary preloads increased only Vitest’s parent worker startup watchdogs from 60/90 seconds to 300 seconds initially and 900 seconds for the final clarity/readout runs; test-worker and product timers remained native. Changes remain uncommitted and unstaged.
+
+
+## Nearby depth key, guide patterns and keyboard focus
+
+The earthquake depth key now sits directly below the scene, ahead of the projection and feature panels. Its three ranges and theme colors are preserved. A short side-view explanation connects the dashed 70 and 300 km lines to the faint depth planes and distinguishes these reading guides from the textured rock layers. The explanation follows the existing scale and surface-view rules and is included in the active canvas description only while visible.
+
+Only the 70 and 300 km tick materials gain a dash pattern. Coordinates, depth planes, classification thresholds, camera controls and recorded measurements retain their original definitions. Line distances are computed during the existing guide build and retained between changes.
+
+The keyboard focus indicator sits inside the clipped 3D canvas, with a gold outline backed by a dark inset border. Its scoped focus rule disables transitions so the indicator appears immediately under reduced motion. Forced-colors uses the system Highlight color. Shortcut metadata exposes the existing arrow, Home and Shift-arrow controls.
+
+### Validation
+
+- All 50 focused assertions passed across five regression files on the final source, including twelve new geometry and UI cases. The 54 prior tectonics fixtures remained byte-exact.
+- All 27 native Chromium checks and eleven existing idle/gesture checks passed on the installed source. Native checks exercised all three boundary modes, standalone and full-wrapper keyboard focus, exact saved coordinates, side/hidden-scale/overhead/2D guidance, and 1,200 quiet paused frames.
+- All five painted WebGL captures were reviewed directly: light 320 px, dark 390 px, contrast 320 px, light 1100 px, and light 390 px at 200% zoom. No browser errors, missing strings or horizontal overflow were reported.
+- Three source copies match SHA-256 `a82671d18f5c0b7a21c6f232359e560a3ea7cb70f7c2c9768996c9d6eb160665`. Both English registries contain the two new matching keys; unrelated registry text was preserved. Syntax, scoped whitespace, HEAD and index checks passed.
+- An initial native focus check caught a transition introduced by the shared reduced-motion stylesheet. CSSOM diagnostics recorded the active outline transitions and their correct target values. The canvas focus transition was disabled, then all fifty assertions and the unchanged native checks were rerun. Initial passing test results, the failed browser result, and both focus diagnostics are preserved in `tectonics-next/`.
+- A later browser run caught a QA expectation that omitted the existing one-time 3D ready announcement after an explicit return from 2D. The helper now requires all six legitimate notices in exact order, rejects extras, and retains the same idle checks. Product source stayed unchanged; the failed result and independent correction review are preserved.
+- Direct visual review caught a 200% zoom screenshot crop that counted scrolling twice and omitted the scene/key. The artifact-only capture now uses final document coordinates and proves saved scene pixels against an independent native canvas screenshot, excluding the background. All five final screenshots were reviewed again. The earlier crop and passing browser receipts are preserved; product source stayed unchanged.
+- The focused test runner uses isolated native threads with a 300-second test/hook limit and the previously reviewed 900-second parent startup allowance for this slow Windows host. Installed Vitest code and worker/product timers were unchanged.
+
+Detailed evidence is in the task workspace's `tectonics-next/` folder. Changes remain uncommitted and unstaged.
+
+
+## 2026-10-07 — Depth captions yield to fixed plate evidence
+
+The 3D depth ruler now places its captions after reserving plate identities, motion arrows, inspected features and observation markers. Its surface caption previously covered plate A at both 141 and 266 CSS pixels. Captions stay in their left column and depth order, with leaders still ending at the exact ruler depths. Two bounded placement passes fit the complete stack; an infeasible column keeps the original whole stack. Rock, guide geometry, records, and reward logic are unchanged.
+
+Validation: 58 focused assertions across five fixtures; 31 native Chromium checks and five reviewed captures covering light, dark, contrast, desktop and 200% zoom; 11 original idle reward checks. Native narrow checks cover all three boundary types, actual marker footprints, exact leader targets and resize recovery. Both unit and browser idle checks retain data and produce no extra drawing, rewards, pings or saves through 1,200 paused frames. All 56 earlier fixtures were preserved. Changes remain uncommitted and unstaged.
+
+
+## 2026-10-07 — Visual rock key beside the model
+
+Moved the existing rock and motion disclosure into the scene key directly beneath the model. Four entries now explain plate letters and arrows, paired crust and mantle swatches, the transparent surrounding mantle, and earthquake dots. The layer swatches use the model's oceanic and continental colors and proportions for each boundary type. The existing boundary-specific cue remains at 14px, and the disclosure stays closed initially.
+
+The plate definition follows [USGS's description of the Earth's interior](https://pubs.usgs.gov/gip/interior/index.html). The explanation of solid mantle flowing over geologic time follows [USGS's mantle FAQ](https://www.usgs.gov/faqs/are-tectonic-plates-floating-magma). Transparency is explained as a viewing choice.
+
+Validation: 10 focused tests across the existing depth-key fixture and 3 new rock-key cases; 19 native Chromium checks with 5 directly reviewed captures covering light, dark, contrast, desktop and 200% zoom. Native Enter/Space operation, boundary-specific swatches, reflow, selected-event retention and 1,200 paused frames passed. Opening and closing the key preserved the real camera and saved evidence without extra draws, rewards, pings or saves. All 57 earlier fixtures and the renderer/reward code were preserved. The changes remain uncommitted and unstaged.
+
+
+## 2026-10-09 — Visible labels for 3D camera controls
+
+The four rotation buttons now show Turn left, Turn right, Tilt up and Tilt down beside their direction icons. Existing translated labels serve as both visible text and accessible names; decorative icons are hidden from screen readers. A wrapping grid and 44px minimum targets keep the controls readable and usable on narrow screens and at 200% zoom.
+
+Validation: 6 existing tests passed, plus 25 native Chromium checks and 5 directly reviewed captures across light, dark, contrast, desktop and 200% zoom. Enter and Space activate all four buttons in the expected directions. Camera changes preserve model time, saved points, selected observations and rock geometry. A further 1,200 paused frames produce no extra rendering, saves, rewards or pings. All 58 existing tectonics fixtures and the English namespace remain intact. The changes remain uncommitted and unstaged.
+
+
+## 2026-10-09 — Cutaway positions and endpoint shortcuts
+
+The cutaway slider now displays its current position from 0 to 100. Named Center section and Whole block buttons explain the endpoints and let learners reach them while retaining their chosen angle and zoom. Active styling follows the exact cut state; intermediate slices leave both endpoints unselected. Updated help explains that the controls preserve model time.
+
+Validation: 7 focused tests, including 4 new behavioral cases, and 32 native Chromium checks passed. Five captures were reviewed across light, dark, contrast, desktop and 200% zoom. The checks cover slider keyboard input, endpoint activation, saved-event projection guidance, preset and view synchronization, and 1,200 paused frames. Repeated presses on an active endpoint produce no extra draws, saves, rewards or pings. All 58 earlier fixtures remain intact. The source mirrors match, and the English namespace adds only the five new control strings. Changes remain uncommitted and unstaged.
+
+
+## 2026-10-09 — Clear run-reset consequences
+
+The simulation reset is now labeled Reset run. Its existing explanation that reset clears the saved checked slab sample is visible beside the controls and linked to the button for screen readers. Play, Reset run and Advance use at least 44px targets and reflow into a single column when space is limited. Reset, play, step, camera, physics, reward and timer behavior are unchanged.
+
+Validation: 14 existing focused tests and 43 native Chromium checks passed. Ten captures were reviewed across light, dark, contrast, desktop and 200% zoom layouts. Keyboard checks confirm Reset view preserves the investigation and Reset run clears its saved sample once while retaining the camera. Another 1,200 paused frames produce no further saves, rewards, pings or announcements. The existing slab-inquiry fixture changes only its reset-button selector; the other 58 fixtures remain byte-for-byte intact. Three source mirrors match, and both English registries add only the Reset run key to the tectonics namespace. Changes remain uncommitted and unstaged.
+
+
+## 2026-10-09 — Visible playback state
+
+A quiet state indicator now shows Simulation paused or Simulation playing above the run controls. Text, a static decorative symbol and distinct styling make the current state visible, including when checking a sample pauses the model. The Play/Pause button references the state as its accessible description. The indicator uses existing translated strings and the existing running state; it adds no timers, effects or live announcements.
+
+Validation: 19 existing focused tests and 52 native Chromium checks passed. 11 captures were reviewed across narrow, desktop, dark, contrast and 200% zoom layouts, including the playing state. Checks cover native keyboard activation, automatic sample-check pauses, both playback states and quiet idle behavior. All 59 existing fixtures and the tectonics English namespaces remain unchanged. Three source mirrors match. Changes remain uncommitted and unstaged.
+
+
+## 2026-10-09 — Readable model measurements at narrow widths
+
+Model time and movement now use adaptive cards: two columns on wide screens and one column when space is limited. The values use 20px tabular numerals, with wrapping for every boundary type. The existing labels, numerical formatting, units, semantic definition list and quiet reading behavior are unchanged. A baseline browser probe confirmed that the old fixed columns clipped labels and overflowed the time value at 390px with 200% CSS zoom.
+
+Validation: 23 existing numerical and idle tests passed. Eighteen targeted native Chromium checks cover all three boundaries in five light, dark, contrast, desktop and zoomed layouts; all 15 final readout captures were reviewed. Checks retain the exact zero, one-step and 17-step readings, preserve values through repeated resizing and observe no reading mutations or callbacks during 1,200 paused frames. All 59 existing fixtures and both tectonics English namespaces remain intact. Three source mirrors match. Changes remain uncommitted and unstaged.
+
+
+## 2026-10-09 — Boundary choices show relative motion
+
+The boundary chooser now pairs each name with a static plate-motion diagram and its existing translated motion description. Arrows point toward each other for convergent, away for divergent, and in opposite parallel directions for transform. A checkmark identifies the selected option, while darker selected colors improve white-text contrast. Buttons retain native pressed state, use explicit accessible names and linked descriptions, and wrap at narrow widths with at least 44px targets. The boundary switch handler and all model behavior remain unchanged.
+
+Validation: 19 existing focused tests and 25 native Chromium checks passed. Five cropped chooser captures were reviewed across light, dark, contrast, desktop and 200% zoom layouts. Native keyboard selection, repeated active selection, sample retention, text contrast and paused idle behavior were checked. All 59 existing fixtures and both tectonics English namespaces remain unchanged; three source mirrors match. The first test preflight ran before installation finished and rejected the old source before collecting tests; the unchanged runner passed after installation completed. Changes remain uncommitted and unstaged.
+
+
+## 2026-10-09 — Visible plate-rate scale and linked context
+
+The plate-rate slider now shows its 1–15 cm/year bounds and a larger, wrapping current-rate label with tabular numerals. The visible label is linked to the input. Screen readers receive the current value with its units and the existing slow, medium or fast description. The slider target is at least 44px tall. All wording uses existing translations; the rate handler, numerical model, reward logic and timers remain unchanged.
+
+Validation: 19 existing numerical and slab-inquiry tests and 25 native Chromium checks passed. Five captures were directly reviewed across light, dark, contrast, desktop and 200% zoom layouts. Native Home, End and arrow keys retain exact settings and only the existing rate announcement. A paused 1 cm/year interval gives 0.6 km, and changing to 15 cm/year for the next interval gives 9.6 km total. Another 1,200 paused frames leave controls and readings unchanged with no saves, rewards, pings or announcements. Exact inversion proves the single source region change, all 59 existing fixtures and both English namespaces are unchanged, and three source mirrors match. Changes remain uncommitted and unstaged.
+
+
+## 2026-10-09 — Recognizable 3D angle presets
+
+The Oblique, Cut face and From above presets now pair their existing labels with simple static view diagrams. A visible Choose a useful angle heading introduces the group, and a checkmark identifies the matching camera preset. The checkmark switches immediately, including with the shared reduced-motion styles. The grid wraps into fewer columns when space is limited, with at least 44px targets. Only the matching preset links to the existing view explanation for screen readers. The same preset handler retains its existing zoom-reset and cutaway behavior.
+
+Validation: 41 existing camera, zoom, cutaway and depth-key tests and 30 native Chromium checks passed. Five captures were directly reviewed across light, dark, contrast, desktop and 200% zoom layouts. Real 3D camera changes, repeated preset activation after zoom, manual rotation, saved evidence and 1,200 quiet paused frames were checked. Exact inversion proves the single source-region change; all 59 existing fixtures and both English namespaces are unchanged, and three source mirrors match. Changes remain uncommitted and unstaged.
+
+
+## 2026-10-09 — Refined 3D model label badges
+
+The plate model now uses rounded dark label badges with a fine slate rim. Each label texture is painted at twice its previous resolution and uses linear filtering without mipmaps. Logical dimensions, font, text colors and screen placement are preserved so the existing caption layout continues to protect arrows, depth guides and measured points. The change is confined to the plate model label painter.
+
+Validation: all 60 existing tests in five 3D clarity, caption placement, depth caption, motion label and reading guide fixtures passed. The initial wrapper expected 48 plain test declarations and reported a count mismatch after Vitest exited successfully; an independent report verifier includes all parameterized cases and preserves the original evidence. Native Chromium passed 39 checks with seven real WebGL captures and seven directly reviewed model crops, covering light, dark, contrast, desktop, 200% zoom and all three boundaries. Texture pixels and logical metrics were checked; camera zoom retains labels and saved evidence, and 1,200 paused frames produce no changes or reward/ping callbacks. All 59 existing fixtures and both English namespaces are intact; the three source mirrors match. Changes remain uncommitted and unstaged.
+
+
+## 2026-10-10 — Sharper enlarged plate and volcano models
+
+Both 3D renderers now size their drawing buffers from the displayed canvas scale as well as device density, while keeping the existing density cap of 2. Device-pixel observation follows live CSS zoom, with the existing content-box observation as a compatibility fallback. A window resize listener also follows display-density changes and is removed on unmount. Camera aspect, label placement and picking retain logical canvas dimensions; volcano point sizes use the corrected density. No timers or polling were added.
+
+A native baseline probe confirmed that 200% CSS zoom displayed the plate canvas at 282×600 while its drawing buffer was only 141×300, and the volcano canvas at 342×600 with a 171×300 buffer. Validation: 87 existing camera, picking, observation, depth caption and volcano tests and 52 native Chromium checks passed. Ten model captures were directly reviewed, including the plate views, all three boundaries, and light/dark enlarged volcano cutaways. Checks cover backing-buffer dimensions, native viewport resizing, live CSS zoom with a fixed logical box, volcano point sizing and resize cleanup. Saved evidence and camera state are retained; 1,200 paused frames for each model stay quiet with no extra draws or plate reward/ping callbacks. Independent review found no issues. All 59 fixtures and both English namespaces remain intact; three source mirrors match. Changes remain uncommitted and unstaged.
+
+
+## 2026-10-10 — Cleaner volcano annotation textures
+
+The volcano label painter now uses twice the backing resolution with linear texture sampling and no mipmaps. All 14 depth, anatomy and eruption badges keep their original logical dimensions, pill shapes, colors and placement. Labels, leaders, slice intersections, selection outlines, camera framing and model geometry match the native baseline exactly across 11 cases. The change adds no frame work or callbacks.
+
+Validation: 12 existing volcano clarity and inspection tests passed. The installed baseline and candidate each passed 46 native Chromium checks; all 11 candidate model images were directly reviewed. Coverage includes phone and desktop sizes, light and dark themes, 200% zoom, all three magma compositions, selected dikes/chambers, closed and offset slices, and frozen eruption stages. Every scene checks all 14 texture dimensions and logical aspects. Nine inactive paused scenes each stay unchanged through 1,200 frames with no draws or extra inspection callbacks. Frozen active eruptions preserve state and callbacks through eight frames; they retain their existing redraw behavior. The initial baseline check incorrectly expected those active scenes to stop drawing; its failed evidence is preserved, and the expectation was corrected before installing the change. Independent review found no issues. All 59 fixtures and both English namespaces remain intact; three source mirrors match. Changes remain uncommitted and unstaged.
+
+
+## 2026-10-10 — Held eruption inspection without repeated repainting
+
+An active paused eruption now redraws only when its source tick or a view control changes. Initial entry, backward resets, camera movement, zoom, slicing, labels, theme, feature selection, resize and composition updates remain responsive. The stop branch explicitly requires an inactive eruption, so an unchanged held frame cannot be mistaken for completion. Running eruptions retain their existing camera easing and rendering. Motion, particles, rewards and ping paths are unchanged.
+
+Three new behavioral regressions each reproduced 1,200 unnecessary baseline draws (1,206 total instead of 6). The candidate passed all 26 focused tests across four fixtures and 52 native Chromium checks. Eleven reference model views preserve their exact PNG bytes, camera, geometry, labels and slice state. A twelfth capture was directly reviewed after naturally advancing an eruption to tick 130 with real particles and visible ash/lava/gas callouts. Its held image, particle buffers, model state and inspection callbacks remain unchanged through 1,200 frames with no draws, including after hidden visits. View controls, paused stage changes, all three compositions, stop and deliberate restart each render their requested update and settle again. Resume advances from tick 130 to 131 without a catch-up. Independent review approved source and validation evidence. All 59 existing fixtures and both English namespaces remain intact; the new idle fixture contains three tests and all three source mirrors match. Changes remain uncommitted and unstaged.

@@ -1,0 +1,482 @@
+{
+  "completed": true,
+  "captures": 116,
+  "pngCount": 92,
+  "comparisons": 25,
+  "curveReferences": 6,
+  "sweepSamples": 42,
+  "resourceLifecycles": 7,
+  "additionalGeometryLifecycles": 1,
+  "reusedCaptures": 85,
+  "newCaptures": 31,
+  "interruptedPhaseDisposalRecorded": false,
+  "harnessHash": "845af515dccf0bdb1b6add6d688b3de4e62de753f865f4fc302d53dc09a61f64",
+  "captureHarnessHash": "ab334d73f7e54c992b7215292e342b107eff1034345ef65c073062a241426408",
+  "reportHash": "bdb7e88c0ab2d1ee56f2d846f8a3db1de7df35f1d8fc5bf2abd194c171c6d847",
+  "preResumeReportHash": "8687f0fb790e0ea0708b8a6214ddef7dff8bb51738ac6976e29ee250ede90ee1",
+  "baselineHash": "604a7f50df297c5c1d9c9c3db3007e2425ba828eadc408d6006330dee8f91889",
+  "rendererHash": "c0cc2486b3d5edd620e5975daec3d23b8f2e995a24db151be27ac30820d058c7",
+  "referenceHash": "25907d9e48c36a566d2731d6f433cb7e457e9224f733a33e37c044e07ed2afea",
+  "pngs": [
+    {
+      "file": "dpr2-refined-amber-vista.png",
+      "pngHash": "136dbad5ece2881fc5a82a5d1ad88b10d9a785b2952d48468f20e541dedee575",
+      "pixelHash": "6f23ed42468739b19d7d5642f20980662ab9e6a2ee147b9ee575ae3c61928a5d"
+    },
+    {
+      "file": "dpr2-refined-amber-vista-zero-loops.png",
+      "pngHash": "fec6b5b4adbdf96e8943503259e241e7c379274e4ef975480340368ca44529c7",
+      "pixelHash": "359b772f879386c980149de551420987a63211dba6761a80f9a679d37e1adfa6"
+    },
+    {
+      "file": "dpr2-refined-amber-A-limb.png",
+      "pngHash": "dffbbc428098f8944e1e24d39f8e7efb1b45717831f8841bae4a86311597d979",
+      "pixelHash": "1b9870bcc413ce35e5043b19c815680dda217f486b1779bea84d1cea4ecb658e"
+    },
+    {
+      "file": "dpr2-refined-amber-A-limb-zero-loops.png",
+      "pngHash": "67ea8ad75c98feed16d129f407269c047ba4a1fc8ea9515480c40b0743138b0d",
+      "pixelHash": "d0af3a55cfe347f0d07d4f6f3c7273db71e00d0325e2909190bf35ab79aa5cda"
+    },
+    {
+      "file": "dpr2-refined-amber-A-near.png",
+      "pngHash": "7126c4418fdcd0e8f6f13abece50085a5ef89ca8d2afdd87245794720722eae4",
+      "pixelHash": "7c777d0d8a6c619e62c6bf63774834f8811148c466e6b5a309d5da62ef905283"
+    },
+    {
+      "file": "dpr2-refined-amber-A-far.png",
+      "pngHash": "a40621e79c9fe9694b7ac01347e80475e4c5de5b86a0d78fe6b22afa56cbe95a",
+      "pixelHash": "8003001ac21934bad06263540a27e676c4839b955f1c722588ec278541ef90bc"
+    },
+    {
+      "file": "dpr2-refined-amber-B-limb.png",
+      "pngHash": "d4b572467657b3e429b4151f12345f2b7b88cff8169402596dd358b5f5f8af5b",
+      "pixelHash": "f4f64819eb2c3fcbf92b3cad821b3229280f6b135eff8ded1a1c0a47e0723f8c"
+    },
+    {
+      "file": "dpr2-refined-amber-B-limb-zero-loops.png",
+      "pngHash": "80e1f88ba4c1a656762911b121cb5e4a78c7744cd3732c498e28e73f3e54b60b",
+      "pixelHash": "5e3bcbacf8d3ce4f77e8343ba95d64369bbbb1401716a632a0c2c7f454b8190a"
+    },
+    {
+      "file": "dpr2-refined-amber-B-near.png",
+      "pngHash": "daea661b2a85e4f444c1d90e6b12308019c5030057831559b40657b87e14cb3a",
+      "pixelHash": "a6eb200d9ab1abe3bdc327271a58ac845c22df5fdf6dc051b96512623e29a24a"
+    },
+    {
+      "file": "dpr2-refined-amber-B-far.png",
+      "pngHash": "97f9b8baaf5f06c615c0c71d9e0687c65c6a7d3a43b7b25075554ddddb5eca5d",
+      "pixelHash": "d946d0924520324141f9f6acdfb5077465e6704d26370378d942c456183d220a"
+    },
+    {
+      "file": "dpr2-refined-blue-A-limb.png",
+      "pngHash": "7633fc8ccecd6af686a30af5c6eef5a245576c1a8463de1d6f53b62cd7b7e1b6",
+      "pixelHash": "045bd4b0560bec629d8624767b5de684f50bdd1cf95a497a7d239642dc86fa7d"
+    },
+    {
+      "file": "dpr2-refined-blue-A-limb-zero-loops.png",
+      "pngHash": "41ff2b29117d1d450771bc319fa60882989ac884c9d57ec84a0b54a44bbfa76c",
+      "pixelHash": "e4bd32ce90f5b7cb6f69d55e562fd1830371584b4791728a26d25e3b271c0a46"
+    },
+    {
+      "file": "dpr2-refined-blue-A-near.png",
+      "pngHash": "974278048035b364769c0b1171c1d8b9654e1cd229e7e916ee944ced293fe8c0",
+      "pixelHash": "343b9c94a4d326803ef16be4b830818dc4fd06841676b7a37467618c00268bec"
+    },
+    {
+      "file": "dpr2-refined-blue-A-far.png",
+      "pngHash": "721f7c54a7287e54ed2e35406b21aa3e5090b30fefc76a496eff00255c4cf4e9",
+      "pixelHash": "7848eee90680a261142b24e8f820e1433c5e4d4d735ba5d25a2a5f24e457f0f0"
+    },
+    {
+      "file": "dpr2-refined-blue-B-limb.png",
+      "pngHash": "52078d5e07b1713ddca8a2e1f0ad79d744b168c47ac38c15f038bde3b955838d",
+      "pixelHash": "7184a02e21ae65c90896811f38aab1af05c03046d1ea5a528ddc64d3f806f6b5"
+    },
+    {
+      "file": "dpr2-refined-blue-B-limb-zero-loops.png",
+      "pngHash": "2a753fb4256c181c44d8541460f3e64047fdf754ad8f472133b1358b6d180581",
+      "pixelHash": "14be878014fbf009b3e70af0d7526d6ca6f1f827a8f689d7446b27761ae33499"
+    },
+    {
+      "file": "dpr2-refined-blue-B-near.png",
+      "pngHash": "140ee67c4461de6b694e8006a554dc07404c5fece6ae361b9c10badb3a988194",
+      "pixelHash": "e099eeba232a1be1de09a2456f25ce5762ec4b7fbb2aad339a25b5b8055df310"
+    },
+    {
+      "file": "dpr2-refined-blue-B-far.png",
+      "pngHash": "b6b9b0358c8ba43b3a842d70d9ab27bb650d99eb77dd381b77c86876d1f54f13",
+      "pixelHash": "a6d17964e6ece04aeca849c9079be5c7b585a810d0b04cb6dfcb9596bc81a75c"
+    },
+    {
+      "file": "dpr2-refined-pale-A-limb.png",
+      "pngHash": "3f26092293b2cd7f98bc5228be047a656316c1fe8f9334f08b68cb2ee5d04bc5",
+      "pixelHash": "995d75c3a56aae0cc385edf484137a0349b6d9e3107eb6312ff88acdf4f81890"
+    },
+    {
+      "file": "dpr2-refined-pale-A-limb-zero-loops.png",
+      "pngHash": "0691138c2228b17a54568345393d98d027e8d90e13b245124abdeac65526d063",
+      "pixelHash": "e08c24a7a2631222097cd45ca93a554e18d29088e36dd398a94d1d26393e6cc5"
+    },
+    {
+      "file": "dpr2-refined-pale-A-near.png",
+      "pngHash": "38f49c27389a10585adeddb8d674af52a611ee5102fca125aad438ae1896125f",
+      "pixelHash": "297febb2ebba9674489062b4d55e0580433d5d69eae62b340b2e84a44a8099e6"
+    },
+    {
+      "file": "dpr2-refined-pale-A-far.png",
+      "pngHash": "959642c3f922746f7f05cfe3b44ef1231c5089a8afaa97fb193208c830b01f53",
+      "pixelHash": "ab551175173abaa96c3d01784eba6a70078d116eeb87b220dcbc42de5afe5e3f"
+    },
+    {
+      "file": "dpr2-refined-pale-B-limb.png",
+      "pngHash": "21c99bf228bc9941c2c71596f00e5dda9f4aacea906b0f115af81b623dac05a3",
+      "pixelHash": "a7fb89888942149fd9d92bc4775f6fea322d2f75dd0cfa133c7bf2429f3fa847"
+    },
+    {
+      "file": "dpr2-refined-pale-B-limb-zero-loops.png",
+      "pngHash": "45fcf06ea1555bea1c46cc26b77a0a1042f27a33708340619338b6dc6abba66d",
+      "pixelHash": "352239929f81165c54b9454982afa90c0fb786c33fc587da34df5434b3130a4b"
+    },
+    {
+      "file": "dpr2-refined-pale-B-near.png",
+      "pngHash": "80ce7ae1e7f6ee3187a6e6707ca95410c9e7082776e870a9b0dd55b3923447af",
+      "pixelHash": "dca78214d20c731d81328ef534abeb99643211d9cf721f574735c422e999b8cc"
+    },
+    {
+      "file": "dpr2-refined-pale-B-far.png",
+      "pngHash": "cf90b0675f04e769531d4db6fca25a5b3a30448c8e7544111911807a3ae3ff49",
+      "pixelHash": "9332de470aa36904e86ad3bb0ff22f4fad68fa3483557af8f42903c8284146f4"
+    },
+    {
+      "file": "dpr2-refined-unresolved.png",
+      "pngHash": "6a69e304f33950ccfc8772d45dcdc486b424ef5a2d0878463f9162e19dcc62e2",
+      "pixelHash": "d092475593bbb9573a24a15e223989fc59ff6d4544dfd547f1a08318415cd94f"
+    },
+    {
+      "file": "dpr2-refined-granule-medium.png",
+      "pngHash": "592d1aa4a52ef3d4ca14e4508f5d66c8a404b6cc46f5f573f33af1ea989368cb",
+      "pixelHash": "bfd1754f8fddb1e9dbad331be193dc90d21c1d04c0ddc6cf68743c367f6c5f1e"
+    },
+    {
+      "file": "dpr2-refined-relativity.png",
+      "pngHash": "d5c66c026aadbd2c613ba8f517b83c9668bf0e9e8255d959a2ead7ed680c3405",
+      "pixelHash": "39056dca802859df780263c3768270233fd3aec37ed683fc841f75c5d41f3292"
+    },
+    {
+      "file": "dpr2-refined-galaxy.png",
+      "pngHash": "1bf3710ec0f93316e970bea8675cd8abf0cdc3311c1638a69fb131a6fd35f9ff",
+      "pixelHash": "de0f462d7caf9109a6784ee5c898e2ea38a930591a4defdb17a8b1c1100a605f"
+    },
+    {
+      "file": "dpr2-refined-cloud.png",
+      "pngHash": "37f1fbeda6016cf0402d724c277cd4e1a2b91ebdaff4ecaae38e20762479cb64",
+      "pixelHash": "5544f589135bcbf77d2e13d8f2807f2ab8f457c6467186cee21ce581f95f39f4"
+    },
+    {
+      "file": "dpr2-baseline-amber-vista.png",
+      "pngHash": "c32464c2bfe521f6f58b470318d5be512cf25f1484063f717212c73e2fd6a90a",
+      "pixelHash": "0786d77b9708a0c9ea95220790021f985707def1cd5aeba0d2c72dfda8eb3257"
+    },
+    {
+      "file": "dpr2-baseline-amber-vista-zero-loops.png",
+      "pngHash": "fec6b5b4adbdf96e8943503259e241e7c379274e4ef975480340368ca44529c7",
+      "pixelHash": "359b772f879386c980149de551420987a63211dba6761a80f9a679d37e1adfa6"
+    },
+    {
+      "file": "dpr2-baseline-amber-A-limb.png",
+      "pngHash": "d9be3df4acfded62f05807cb50d24980a502e82471f958a2acb79da6bbb46efd",
+      "pixelHash": "e122d6e9e8b296658514c419b72f40626664785734e9878199f591606c3b80fb"
+    },
+    {
+      "file": "dpr2-baseline-amber-A-limb-zero-loops.png",
+      "pngHash": "67ea8ad75c98feed16d129f407269c047ba4a1fc8ea9515480c40b0743138b0d",
+      "pixelHash": "d0af3a55cfe347f0d07d4f6f3c7273db71e00d0325e2909190bf35ab79aa5cda"
+    },
+    {
+      "file": "dpr2-baseline-amber-A-near.png",
+      "pngHash": "aeea06c1eef372020c2fb761aa0002564dfca2d64a50fd98c7222e1db685c15e",
+      "pixelHash": "f790a614c1ef5879885191da9ca2f3fd49f948c35be5f7195704c20e8a7a0126"
+    },
+    {
+      "file": "dpr2-baseline-amber-A-far.png",
+      "pngHash": "092fed35aa3a44315ca95ec1a69051eff172c8596cb6385e66d22e132ea571cc",
+      "pixelHash": "786b68ad03156f6b0ac6943ccfdd8da00b4e229069b9dc9c9df434cee4ec1d0d"
+    },
+    {
+      "file": "dpr2-baseline-amber-B-limb.png",
+      "pngHash": "ea96a8cdcaa8231e7ff9f39a7f55a49cd0e26eb86a32bc7bf3bdce7fba9214da",
+      "pixelHash": "d9ee4375c9eed961d63438777658d06b294853d10b03ffcc4cd545cad7f9e13c"
+    },
+    {
+      "file": "dpr2-baseline-amber-B-limb-zero-loops.png",
+      "pngHash": "80e1f88ba4c1a656762911b121cb5e4a78c7744cd3732c498e28e73f3e54b60b",
+      "pixelHash": "5e3bcbacf8d3ce4f77e8343ba95d64369bbbb1401716a632a0c2c7f454b8190a"
+    },
+    {
+      "file": "dpr2-baseline-amber-B-near.png",
+      "pngHash": "0ba72cdb11e724d076920d513de2cebbc179f3be1d86d87414deca6642dd5dba",
+      "pixelHash": "cd2c11535c3cb170b4fde4e32a93ebfdd6222c339d0631d3999ed739d795e478"
+    },
+    {
+      "file": "dpr2-baseline-amber-B-far.png",
+      "pngHash": "110cf9b4c56de5e0ec6a73b0ab250d2de28a58d4e82a64decf1729f2e9ef553b",
+      "pixelHash": "78ea3075ef5945c97aed2e07de63d2bb7503b66d75546a8bd959c1bf2aa993f3"
+    },
+    {
+      "file": "dpr2-baseline-blue-A-limb.png",
+      "pngHash": "dc9cdd57f0245d14ff8dbdc6f0de852486dc4b37eaef45ec2e0ce9fe215a7e04",
+      "pixelHash": "619aa14aba93b8731382b6b47656c856f53752d4ff1206a34aefc15d7eb1bc2c"
+    },
+    {
+      "file": "dpr2-baseline-blue-A-limb-zero-loops.png",
+      "pngHash": "41ff2b29117d1d450771bc319fa60882989ac884c9d57ec84a0b54a44bbfa76c",
+      "pixelHash": "e4bd32ce90f5b7cb6f69d55e562fd1830371584b4791728a26d25e3b271c0a46"
+    },
+    {
+      "file": "dpr2-baseline-blue-A-near.png",
+      "pngHash": "dd094eae08a94853ea55bb631c7e3c5920de51c96a18f1c51ddba22bb8064cca",
+      "pixelHash": "f76dea6cd3aa72c51292319fbb0de93190ea07e4022cd1812d80e57446917964"
+    },
+    {
+      "file": "dpr2-baseline-blue-A-far.png",
+      "pngHash": "6584cc8daa134b28f056a34ad50afa2bcd5c86f90fee695cce3c5ce94bac5d40",
+      "pixelHash": "fb9ea4fdff5eece68fbfe64ed767f9c4eebfa16ad2c5daa4d4b9bf1d671f60d2"
+    },
+    {
+      "file": "dpr2-baseline-blue-B-limb.png",
+      "pngHash": "f8866836b701ff521f4251d455e966feebbd1b1748bcabcc65762d677985a442",
+      "pixelHash": "bbc2a073e8df7f2efefa88d6a872926b914cb8a8c33068cb976168c474f436bb"
+    },
+    {
+      "file": "dpr2-baseline-blue-B-limb-zero-loops.png",
+      "pngHash": "2a753fb4256c181c44d8541460f3e64047fdf754ad8f472133b1358b6d180581",
+      "pixelHash": "14be878014fbf009b3e70af0d7526d6ca6f1f827a8f689d7446b27761ae33499"
+    },
+    {
+      "file": "dpr2-baseline-blue-B-near.png",
+      "pngHash": "56c8481fadcb7134a7ae81711f4415c3896ee7c0dc8c21234eab4bc05b3884fa",
+      "pixelHash": "42578be11bc55b4456dfda45ae6a5d688ebdabdf9f362cf6717ca25548932417"
+    },
+    {
+      "file": "dpr2-baseline-blue-B-far.png",
+      "pngHash": "7b1de0588858de025d9c32a0f9ca2d7abd4047e1eddb901933c51cf31e40a078",
+      "pixelHash": "d2221a0cea0b4c60b3d9638533d833ab77a234a66fbb119bb6a4f854cee287eb"
+    },
+    {
+      "file": "dpr2-baseline-pale-A-limb.png",
+      "pngHash": "08b0afda459d514fdd3f55435be991b85d777aef06a70397dd30e4a08c6def3b",
+      "pixelHash": "e2706464004eb73312b67ec86ef7b7e68ceb87f251a590c380a4afe6315e8506"
+    },
+    {
+      "file": "dpr2-baseline-pale-A-limb-zero-loops.png",
+      "pngHash": "0691138c2228b17a54568345393d98d027e8d90e13b245124abdeac65526d063",
+      "pixelHash": "e08c24a7a2631222097cd45ca93a554e18d29088e36dd398a94d1d26393e6cc5"
+    },
+    {
+      "file": "dpr2-baseline-pale-A-near.png",
+      "pngHash": "b4d74aa318c54af19a306ee87535e2f93bc34c917c944566d746c04531052b20",
+      "pixelHash": "ebbd8e122b1e0772848a4d02d0aac39a9f28716114cab4e4854f0f6d06273602"
+    },
+    {
+      "file": "dpr2-baseline-pale-A-far.png",
+      "pngHash": "f19eb3c3a74807efc2cc019320df55166103c3b564f4c435e4d4fbc6b7a86ed0",
+      "pixelHash": "ffec3f08f3884a29249fa6fa903f8fa161feb7298ec040e3bc43b8dbc1823e6a"
+    },
+    {
+      "file": "dpr2-baseline-pale-B-limb.png",
+      "pngHash": "7e9bd0e218526fb837c96b11c6bdb9be629883f05f1d7cb95028c1c36eb3b311",
+      "pixelHash": "903bf46a2849f5df75ed87ada6aba194515a7c49908dc62b8c23a1363f34e855"
+    },
+    {
+      "file": "dpr2-baseline-pale-B-limb-zero-loops.png",
+      "pngHash": "45fcf06ea1555bea1c46cc26b77a0a1042f27a33708340619338b6dc6abba66d",
+      "pixelHash": "352239929f81165c54b9454982afa90c0fb786c33fc587da34df5434b3130a4b"
+    },
+    {
+      "file": "dpr2-baseline-pale-B-near.png",
+      "pngHash": "b6b74f1e5c5ee36f77eba85cbb3803f665c3122a2e8a4cb0983371ade647ea36",
+      "pixelHash": "35e5ce30bfe014e28a1888902a83f74aab2a00509b6e508eb8c8851101996f79"
+    },
+    {
+      "file": "dpr2-baseline-pale-B-far.png",
+      "pngHash": "8b0226bae5d4c4ecd032c48c4c0e54d6ec44077bc94dffbfd7163f7a72c2743e",
+      "pixelHash": "bf7fb884b45f4bc85b36b6f440fa62991a30cd695ec58a5696b592ce377dc7bf"
+    },
+    {
+      "file": "dpr2-baseline-unresolved.png",
+      "pngHash": "6a69e304f33950ccfc8772d45dcdc486b424ef5a2d0878463f9162e19dcc62e2",
+      "pixelHash": "d092475593bbb9573a24a15e223989fc59ff6d4544dfd547f1a08318415cd94f"
+    },
+    {
+      "file": "dpr2-baseline-granule-medium.png",
+      "pngHash": "592d1aa4a52ef3d4ca14e4508f5d66c8a404b6cc46f5f573f33af1ea989368cb",
+      "pixelHash": "bfd1754f8fddb1e9dbad331be193dc90d21c1d04c0ddc6cf68743c367f6c5f1e"
+    },
+    {
+      "file": "dpr2-baseline-relativity.png",
+      "pngHash": "aae27449894d42c803b06bccb5c122441dd44da8c0ccfd5b08fae527fa1d3b92",
+      "pixelHash": "f2341d4f78200f360a666ed48181175a43eb8e3969996564504ca75d2f2a0ed6"
+    },
+    {
+      "file": "dpr2-baseline-galaxy.png",
+      "pngHash": "1bf3710ec0f93316e970bea8675cd8abf0cdc3311c1638a69fb131a6fd35f9ff",
+      "pixelHash": "de0f462d7caf9109a6784ee5c898e2ea38a930591a4defdb17a8b1c1100a605f"
+    },
+    {
+      "file": "dpr2-baseline-cloud.png",
+      "pngHash": "37f1fbeda6016cf0402d724c277cd4e1a2b91ebdaff4ecaae38e20762479cb64",
+      "pixelHash": "5544f589135bcbf77d2e13d8f2807f2ab8f457c6467186cee21ce581f95f39f4"
+    },
+    {
+      "file": "dpr2-reference-amber-A-limb.png",
+      "pngHash": "e8c6af5c14ad0151c07e86a9daa7f0200f85e6c41bb2c149c97d3e687eb1ff91",
+      "pixelHash": "b9749e5b98a875164f66e160af98709ab098093d971c1853daea77334a5ebb23"
+    },
+    {
+      "file": "dpr2-reference-amber-B-limb.png",
+      "pngHash": "13e656182cb504654e48c60298fb8877008e8cb00c6685f79808fb2e14ffb022",
+      "pixelHash": "d63a781fb1647401dd58e7ff183f8568a281d5ecd5ef8ebb372aba0374447f19"
+    },
+    {
+      "file": "dpr2-reference-blue-A-limb.png",
+      "pngHash": "7aa1498e058c951219dee05528362c35e9e148c9758188248127ed5ecda2e282",
+      "pixelHash": "9457462f6ecca6ad67d15fb4688b935a719a99cd4316b6093a5ad7ee5e8540bc"
+    },
+    {
+      "file": "dpr2-reference-blue-B-limb.png",
+      "pngHash": "e22704a14f10fd4193ae0ac62a346e52c90c50eb078f51e46b18ea181a0f0dd6",
+      "pixelHash": "2042822fc893eb9c0a9856875ca0bbf54d0ff0355034485fb40f91ed79acad6b"
+    },
+    {
+      "file": "dpr2-reference-pale-A-limb.png",
+      "pngHash": "3fe641d45be327deb010e37c3425ba2fa6037ca83c3cc99c34f76192ba4b9eeb",
+      "pixelHash": "5200cb5610f9ca11a462659715afe86f6cec65b377592464a8cfff9baec28fd9"
+    },
+    {
+      "file": "dpr2-reference-pale-B-limb.png",
+      "pngHash": "b444eca23360c71f16f0d28c62720738e01662f3b56ca4ef992a6878479a5055",
+      "pixelHash": "447997fe5ba32237f1ca78a1595447174dd4b3299755a3653b78273adeee1906"
+    },
+    {
+      "file": "dpr1-baseline-amber-quality-low.png",
+      "pngHash": "0a61f849e9568b1226b761c70fd2b7c517e4054603299706e4357c661756b9e3",
+      "pixelHash": "511e237d2aca0c4e38174b623ee576abd97d52e825d871eb338a2b8c7cade2f8"
+    },
+    {
+      "file": "dpr1-baseline-amber-quality-low-zero-loops.png",
+      "pngHash": "acbdd99d29b0cc9c5f0a66cbb226cebae222154fa165d8b4d1d8cfd3b106b032",
+      "pixelHash": "2e0894730f0cd2722126d2b9271e996c3605c82c287b152766639a36679e459a"
+    },
+    {
+      "file": "dpr1-baseline-blue-quality-auto.png",
+      "pngHash": "7935fc46d1e9664ecf92f751cb4deab06483fb21856fd7aee5562662c95ed37d",
+      "pixelHash": "65591230a4e3a516c7172a60bc89a7368510d2aa30b44743332d9c25bec51279"
+    },
+    {
+      "file": "dpr1-baseline-blue-quality-auto-zero-loops.png",
+      "pngHash": "12b12cc10386449c33c4afa1e5bfdf48bd19d829209b86631720b380a651b7d8",
+      "pixelHash": "324b159bbb0dbd56115a5f9fa92ad0e0cd7e8147480514ee4eee03776c4c57b8"
+    },
+    {
+      "file": "dpr1-baseline-pale-quality-high.png",
+      "pngHash": "2dc2a64d13f5e91792a846a0a9022e1c82177d0022c61d32203218833e316c3d",
+      "pixelHash": "c3549ff1146b1339bf2da62e2e9e1df49ad56e31f0c5153d5e31cd9bd6fc8e33"
+    },
+    {
+      "file": "dpr1-baseline-pale-quality-high-zero-loops.png",
+      "pngHash": "757058c0356e0b8ce2f40a69ab3e10b5f19d7a18901faa5a1f78ea72ead94781",
+      "pixelHash": "0b288e5390b09a41ec0b06148c168ef97e9ccb85f39b0013176213a551326062"
+    },
+    {
+      "file": "dpr1-refined-amber-quality-low.png",
+      "pngHash": "9c66e5e9307b310c022c935adb7a850af6e74dcd68064019cdbf83bb08bc4b05",
+      "pixelHash": "bc242a3fb846282c65ac6831f796d9ee5e897c6d5ed8039c14a51139d3039458"
+    },
+    {
+      "file": "dpr1-refined-amber-quality-low-zero-loops.png",
+      "pngHash": "acbdd99d29b0cc9c5f0a66cbb226cebae222154fa165d8b4d1d8cfd3b106b032",
+      "pixelHash": "2e0894730f0cd2722126d2b9271e996c3605c82c287b152766639a36679e459a"
+    },
+    {
+      "file": "dpr1-refined-blue-quality-auto.png",
+      "pngHash": "fe950b4fa75eca43c16dcfb89041702aada6854e806674f9b7bb26930032d7d2",
+      "pixelHash": "af5cc5c786124c6de040f874fbb0c35961a6ba63d952c260ce3555a8a16a2179"
+    },
+    {
+      "file": "dpr1-refined-blue-quality-auto-zero-loops.png",
+      "pngHash": "12b12cc10386449c33c4afa1e5bfdf48bd19d829209b86631720b380a651b7d8",
+      "pixelHash": "324b159bbb0dbd56115a5f9fa92ad0e0cd7e8147480514ee4eee03776c4c57b8"
+    },
+    {
+      "file": "dpr1-refined-pale-quality-high.png",
+      "pngHash": "21f8c515548bedfc4629c4b295ff90b1905494225873c1fca39884e92ef3511b",
+      "pixelHash": "4b7d27643283c767799821aff9fa07697278bf8a6ad52e42f5183ce8f01434f8"
+    },
+    {
+      "file": "dpr1-refined-pale-quality-high-zero-loops.png",
+      "pngHash": "757058c0356e0b8ce2f40a69ab3e10b5f19d7a18901faa5a1f78ea72ead94781",
+      "pixelHash": "0b288e5390b09a41ec0b06148c168ef97e9ccb85f39b0013176213a551326062"
+    },
+    {
+      "file": "cap16-baseline-amber-cap16.png",
+      "pngHash": "e0ff3e99b35e47d171d2ff5bb0f94443c9e8e487e50d5eb552653ac440c9d7cb",
+      "pixelHash": "49e9d063a88afcc406f0a75dd548010541511c0cd1d01fbd6d14c2ff379c80e0"
+    },
+    {
+      "file": "cap16-baseline-amber-cap16-zero-loops.png",
+      "pngHash": "dac573476a353a6f6574101a83d38832d1efbab9585f0fc8c3ee8aca7682745e",
+      "pixelHash": "4e04ade71b5cf0942820f1ad8afc7daa88f31b0e491864f23a3448367de9909d"
+    },
+    {
+      "file": "cap16-baseline-blue-cap16.png",
+      "pngHash": "7935fc46d1e9664ecf92f751cb4deab06483fb21856fd7aee5562662c95ed37d",
+      "pixelHash": "65591230a4e3a516c7172a60bc89a7368510d2aa30b44743332d9c25bec51279"
+    },
+    {
+      "file": "cap16-baseline-blue-cap16-zero-loops.png",
+      "pngHash": "12b12cc10386449c33c4afa1e5bfdf48bd19d829209b86631720b380a651b7d8",
+      "pixelHash": "324b159bbb0dbd56115a5f9fa92ad0e0cd7e8147480514ee4eee03776c4c57b8"
+    },
+    {
+      "file": "cap16-baseline-pale-cap16.png",
+      "pngHash": "2dc2a64d13f5e91792a846a0a9022e1c82177d0022c61d32203218833e316c3d",
+      "pixelHash": "c3549ff1146b1339bf2da62e2e9e1df49ad56e31f0c5153d5e31cd9bd6fc8e33"
+    },
+    {
+      "file": "cap16-baseline-pale-cap16-zero-loops.png",
+      "pngHash": "757058c0356e0b8ce2f40a69ab3e10b5f19d7a18901faa5a1f78ea72ead94781",
+      "pixelHash": "0b288e5390b09a41ec0b06148c168ef97e9ccb85f39b0013176213a551326062"
+    },
+    {
+      "file": "cap16-refined-amber-cap16.png",
+      "pngHash": "620eb0de82321c3114bc6d0c0bc539239c3d923bbd1dc64faa669861a42a6d8f",
+      "pixelHash": "7b8e67f312b63325242f899535811e2720eba425e0639aea5bce2a5d941ecd40"
+    },
+    {
+      "file": "cap16-refined-amber-cap16-zero-loops.png",
+      "pngHash": "dac573476a353a6f6574101a83d38832d1efbab9585f0fc8c3ee8aca7682745e",
+      "pixelHash": "4e04ade71b5cf0942820f1ad8afc7daa88f31b0e491864f23a3448367de9909d"
+    },
+    {
+      "file": "cap16-refined-blue-cap16.png",
+      "pngHash": "fe950b4fa75eca43c16dcfb89041702aada6854e806674f9b7bb26930032d7d2",
+      "pixelHash": "af5cc5c786124c6de040f874fbb0c35961a6ba63d952c260ce3555a8a16a2179"
+    },
+    {
+      "file": "cap16-refined-blue-cap16-zero-loops.png",
+      "pngHash": "12b12cc10386449c33c4afa1e5bfdf48bd19d829209b86631720b380a651b7d8",
+      "pixelHash": "324b159bbb0dbd56115a5f9fa92ad0e0cd7e8147480514ee4eee03776c4c57b8"
+    },
+    {
+      "file": "cap16-refined-pale-cap16.png",
+      "pngHash": "21f8c515548bedfc4629c4b295ff90b1905494225873c1fca39884e92ef3511b",
+      "pixelHash": "4b7d27643283c767799821aff9fa07697278bf8a6ad52e42f5183ce8f01434f8"
+    },
+    {
+      "file": "cap16-refined-pale-cap16-zero-loops.png",
+      "pngHash": "757058c0356e0b8ce2f40a69ab3e10b5f19d7a18901faa5a1f78ea72ead94781",
+      "pixelHash": "0b288e5390b09a41ec0b06148c168ef97e9ccb85f39b0013176213a551326062"
+    }
+  ]
+}

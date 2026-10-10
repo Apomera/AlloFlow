@@ -434,6 +434,40 @@ function getGlossaryImageAlt(item) {
     var activityMemoryCount = activityWords.filter(item => (typeof item.def === 'string' && item.def.trim()) || item.image).length;
     var activityMatchingCount = activityWords.filter(item => typeof item.def === 'string' && item.def.trim()).length;
     function activityText(key, fallback) { var value = t(key); return value && value !== key ? value : fallback; }
+    var [wordPracticeStatus, setWordPracticeStatus] = React.useState({ busy: false, notice: '' });
+    var wordPracticeControllerRef = React.useRef(null);
+    React.useEffect(function () {
+      setWordPracticeStatus({ busy: false, notice: '' });
+      return function () {
+        if (wordPracticeControllerRef.current) wordPracticeControllerRef.current.abort();
+        wordPracticeControllerRef.current = null;
+      };
+    }, [activityResourceKey, isTeacherMode]);
+    async function openGlossaryWordPractice() {
+      if (!isTeacherMode || !activityWords.length || wordPracticeControllerRef.current) return;
+      var controller = new AbortController();
+      wordPracticeControllerRef.current = controller;
+      setWordPracticeStatus({ busy: true, notice: '' });
+      try {
+        if (typeof window.__alloOpenWordPractice !== 'function') throw new Error('Presentation tools unavailable');
+        var ttsAssets = {};
+        (Array.isArray(generatedContent?.data) ? generatedContent.data : []).forEach(function (item) {
+          if (item?._ttsAssets && typeof item._ttsAssets === 'object') Object.assign(ttsAssets, item._ttsAssets);
+        });
+        await window.__alloOpenWordPractice({
+          words: activityWords, ttsAssets: ttsAssets,
+          title: generatedContent?.title || activityText('glossary.practice_title', 'Vocabulary Practice'),
+          language: activityWords[0]?.termLanguage || 'English', source: 'glossary',
+          callTTS: callTTS, selectedVoice: selectedVoice, ttsSpeed: voiceSpeed, t: t,
+          signal: controller.signal,
+        });
+        if (!controller.signal.aborted) setWordPracticeStatus({ busy: false, notice: '' });
+      } catch (_) {
+        if (!controller.signal.aborted) setWordPracticeStatus({ busy: false, notice: activityText('glossary.practice_open_failed', 'Presentation tools could not open. Please try again.') });
+      } finally {
+        if (wordPracticeControllerRef.current === controller) wordPracticeControllerRef.current = null;
+      }
+    }
     function activityData(name) {
       var session = activitySessions[name];
       return session && session.resourceKey === activityResourceKey ? session.data : generatedContent?.data;
@@ -1380,7 +1414,13 @@ function getGlossaryImageAlt(item) {
             <div className="flex flex-wrap gap-2">
               <button type="button" data-help-key="glossary_standard_flashcards" onClick={() => launchInteractiveFlashcards('standard')} className={toolButton + ' bg-blue-700 text-white border-blue-700 hover:bg-blue-800'} aria-label={t('flashcards.tooltip_launch_standard')}><MonitorPlay size={16} aria-hidden="true" /> {t('flashcards.launch_standard')}</button>
               {glossaryLanguages.length > 0 && <button type="button" data-help-key="glossary_language_flashcards" onClick={launchGlossaryLanguageFlashcards} className={toolButton + ' bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50'} aria-label={t('flashcards.tooltip_launch_language')}><Languages size={16} aria-hidden="true" /> {t('flashcards.launch_language')}</button>}
+              {isTeacherMode && <button type="button" onClick={openGlossaryWordPractice} disabled={wordPracticeStatus.busy || !activityWords.length} aria-busy={wordPracticeStatus.busy} aria-describedby="glossary-presentation-help" className={secondaryButton + ' disabled:opacity-60 disabled:cursor-not-allowed'}><MonitorPlay size={16} aria-hidden="true" /> {wordPracticeStatus.busy ? activityText('glossary.practice_opening', 'Opening presentation tools…') : activityText('glossary.practice_present_export', 'Present & Export')}</button>}
             </div>
+            {isTeacherMode && <div className="mt-3">
+              <label className="inline-flex max-w-full flex-wrap items-center gap-2 text-sm font-semibold text-slate-700">{activityText('glossary.practice_words', 'Words to present')}<select value={activityScope} onChange={e => setActivityScope(e.target.value)} className="min-h-11 max-w-full rounded-lg border border-slate-400 bg-white px-3 font-normal focus-visible:ring-2 focus-visible:ring-indigo-600"><option value="all">{activityText('glossary.activities.all', 'All glossary words')}</option><option value="filtered">{activityText('glossary.activities.filtered', 'Current filtered words')}</option></select></label>
+              <p id="glossary-presentation-help" className="mt-2 text-xs text-slate-600">{activityWords.length} {activityText('glossary.practice_export_help', 'words: project practice or download HTML and PowerPoint with meanings and optional audio.')}</p>
+              <p role="status" aria-live="polite" className="mt-1 text-sm text-amber-900">{wordPracticeStatus.notice}</p>
+            </div>}
           </div>
           <div className="flex flex-wrap items-start gap-2">
             <button type="button" onClick={() => toggleGlossaryToolPanel('games')} aria-expanded={glossaryToolsOpen.games} aria-controls="glossary-games-tools" className={toolButton + ' bg-white text-indigo-800 border-indigo-300 hover:bg-indigo-50'}><Gamepad2 size={16} aria-hidden="true" /> {t('common.start_game')} <ChevronDown size={16} aria-hidden="true" className={glossaryToolsOpen.games ? 'rotate-180' : ''} /></button>

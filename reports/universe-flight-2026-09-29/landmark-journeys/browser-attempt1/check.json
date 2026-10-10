@@ -1,0 +1,132 @@
+{
+  "completed": false,
+  "pins": {
+    "stem_lab/universe_flight_scene.js": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7",
+    "stem_lab/stem_tool_universe.js": "c5306e8eb4479e3e399c037786341644f05f954de37541152a77b66d6a78a793"
+  },
+  "harnessSha256": "f782e8c68dc763fd9e93389d223184c5b6fde39199b2874307299134005f5e8e",
+  "workflows": [
+    {
+      "name": "opening-preserves-scene-and-focus",
+      "ids": [
+        "pale-star",
+        "blue-nebula",
+        "violet-nebula",
+        "blue-star"
+      ]
+    },
+    {
+      "name": "exact-desktop-marker-centers",
+      "markers": [
+        {
+          "id": "pale-star",
+          "inView": true,
+          "actual": [
+            479.9375,
+            197.046875
+          ],
+          "expected": [
+            479.947882344982,
+            197.26935749545072
+          ],
+          "size": [
+            44,
+            44
+          ],
+          "covered": false,
+          "overlap": false
+        },
+        {
+          "id": "blue-nebula",
+          "inView": true,
+          "actual": [
+            567.21875,
+            255.328125
+          ],
+          "expected": [
+            567.2281713355716,
+            255.60626029679366
+          ],
+          "size": [
+            44,
+            44
+          ],
+          "covered": false,
+          "overlap": false
+        },
+        {
+          "id": "violet-nebula",
+          "inView": true,
+          "actual": [
+            372.640625,
+            185.109375
+          ],
+          "expected": [
+            372.64167046986944,
+            185.3208352349347
+          ],
+          "size": [
+            44,
+            44
+          ],
+          "covered": false,
+          "overlap": false
+        }
+      ]
+    },
+    {
+      "name": "escape-from-numbered-marker"
+    },
+    {
+      "name": "marker-focus-recovers-to-stable-row-on-resize"
+    },
+    {
+      "name": "coincident-center-has-no-invented-bearing"
+    },
+    {
+      "name": "preview-assets-match-their-actual-landmarks"
+    },
+    {
+      "name": "in-range-destination-prevents-redundant-flight"
+    },
+    {
+      "name": "direct-flight-pause-and-exact-origin-return"
+    }
+  ],
+  "accessibility": [
+    {
+      "name": "desktop-landmark-browser",
+      "violations": []
+    }
+  ],
+  "captures": [
+    {
+      "name": "desktop-landmarks",
+      "file": "desktop-landmarks.png",
+      "sha256": "23c47dbd477621ba51e395acf06b75686b47d3a0deef594ec7bea69a018aed89"
+    },
+    {
+      "name": "destination-preview-cards",
+      "file": "destination-preview-cards.png",
+      "sha256": "401c274bab373cc4a60e2d3ed946d759ec7d0b1d63f4728bfc92795ff5d6085b"
+    },
+    {
+      "name": "guided-flight-paused",
+      "file": "guided-flight-paused.png",
+      "sha256": "5d237e859a7057bcf00f3ebc4f7e44f70ef1457bffff6fbbf0978c57787f32c8"
+    }
+  ],
+  "bounds": [],
+  "served": [
+    {
+      "file": "stem_lab/stem_tool_universe.js",
+      "sha256": "c5306e8eb4479e3e399c037786341644f05f954de37541152a77b66d6a78a793"
+    },
+    {
+      "file": "stem_lab/universe_flight_scene.js",
+      "sha256": "a89075fce55bf3eb03c74eb983db0216809c6ba7588b9214556e8e030eec71b7"
+    }
+  ],
+  "errors": [],
+  "failure": "page.waitForFunction: Timeout 45000ms exceeded.\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-3\\universe-landmark-journeys71\\browser-check.cjs:53:92"
+}

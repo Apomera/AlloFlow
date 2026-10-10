@@ -1,0 +1,25 @@
+{
+  "sourceBefore": "d079994beb6b17604f75862e3f8a1bb46477eab8ee5f5beeba37a685306b5b19",
+  "sourceAfter": "d079994beb6b17604f75862e3f8a1bb46477eab8ee5f5beeba37a685306b5b19",
+  "sourceStable": true,
+  "results": [
+    {
+      "name": "match_start",
+      "exitCode": 0,
+      "expected": 60,
+      "tests": 60,
+      "passed": 60,
+      "failed": 0,
+      "success": true
+    },
+    {
+      "name": "matching",
+      "exitCode": 0,
+      "expected": 29,
+      "tests": 29,
+      "passed": 29,
+      "failed": 0,
+      "success": true
+    }
+  ]
+}

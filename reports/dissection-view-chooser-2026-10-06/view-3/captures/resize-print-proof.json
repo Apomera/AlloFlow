@@ -1,0 +1,1363 @@
+{
+  "wide": {
+    "top": 341.6875,
+    "left": 0,
+    "width": 1180,
+    "height": 1280.84375,
+    "client": 1178,
+    "scroll": 1178,
+    "columns": 1,
+    "containerWidth": 1180,
+    "subgroupColumns": 2,
+    "groups": [
+      {
+        "name": "accessibility",
+        "top": 354.6875,
+        "left": 13,
+        "width": 1154,
+        "height": 185.125
+      },
+      {
+        "name": "specimen",
+        "top": 551.8125,
+        "left": 13,
+        "width": 1154,
+        "height": 714.4375
+      },
+      {
+        "name": "lighting",
+        "top": 1278.25,
+        "left": 13,
+        "width": 1154,
+        "height": 199.03125
+      },
+      {
+        "name": "workspace",
+        "top": 1489.28125,
+        "left": 13,
+        "width": 1154,
+        "height": 120.25
+      }
+    ],
+    "subgroups": [
+      {
+        "name": "presentation",
+        "top": 610.1875,
+        "left": 26,
+        "width": 558,
+        "height": 298.1875,
+        "columns": 2
+      },
+      {
+        "name": "inspection",
+        "top": 610.1875,
+        "left": 596,
+        "width": 558,
+        "height": 268.3125,
+        "columns": 2
+      },
+      {
+        "name": "scene",
+        "top": 920.375,
+        "left": 26,
+        "width": 558,
+        "height": 332.875,
+        "columns": 2
+      },
+      {
+        "name": "reference",
+        "top": 920.375,
+        "left": 596,
+        "width": 558,
+        "height": 268.3125,
+        "columns": 2
+      }
+    ],
+    "text": [
+      {
+        "text": "Accessibility",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Specimen display",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Anatomy and presentation",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Guided uses balanced materials and visible technique targets.",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Quality balances animation smoothness with device load.",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Local inspection",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Magnify a local area and choose its tissue depth. Specimen zoom stays separate.",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Select a structure or move over the specimen before pinning.",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Scene and landmarks",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Choose instrument, landmark, and depth cues for the specimen.",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Reference and variation",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Compare the live specimen with Frame 2 from Internal Organs.",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Tissue before/after changes the displayed technique overlay. Your recorded technique stays saved.",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Lighting and motion",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Illumination intensity · Balanced illumination",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "68%",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Workspace actions",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      }
+    ],
+    "buttons": [
+      {
+        "name": "Toggle organ name labels",
+        "top": 413.0625,
+        "left": 26,
+        "width": 276,
+        "height": 52.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle high contrast mode",
+        "top": 413.0625,
+        "left": 310,
+        "width": 276,
+        "height": 52.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle additional reduced motion; operating system reduced motion settings are always honored",
+        "top": 413.0625,
+        "left": 594,
+        "width": 276,
+        "height": 52.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle larger interface text",
+        "top": 413.0625,
+        "left": 878,
+        "width": 276,
+        "height": 52.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle simplified step instructions",
+        "top": 473.9375,
+        "left": 26,
+        "width": 276,
+        "height": 52.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle dissection sound effects",
+        "top": 473.9375,
+        "left": 310,
+        "width": 276,
+        "height": 52.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle tactile instrument feedback",
+        "top": 473.9375,
+        "left": 594,
+        "width": 276,
+        "height": 52.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Visual presentation: cycle guided, realistic, and accessible",
+        "top": 694.5625,
+        "left": 39,
+        "width": 262,
+        "height": 48.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Anatomical view: cycle dorsal, ventral, lateral, and internal",
+        "top": 694.5625,
+        "left": 309,
+        "width": 262,
+        "height": 48.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle schematic layer map",
+        "top": 751.4375,
+        "left": 39,
+        "width": 262,
+        "height": 48.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Specimen condition: cycle standard, preserved, dehydrated, cloudy, and swollen",
+        "top": 751.4375,
+        "left": 309,
+        "width": 262,
+        "height": 48.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle curated anatomical relationships",
+        "top": 808.3125,
+        "left": 39,
+        "width": 262,
+        "height": 48.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Rendering quality: cycle auto, high, and balanced",
+        "top": 808.3125,
+        "left": 309,
+        "width": 262,
+        "height": 48.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle movable inspection lens",
+        "top": 721.5625,
+        "left": 609,
+        "width": 262,
+        "height": 48.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Pin inspection lens to selected structure or current pointer",
+        "top": 721.5625,
+        "left": 879,
+        "width": 262,
+        "height": 48.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Cycle inspection magnification: 2, 4, or 6 times",
+        "top": 778.4375,
+        "left": 609,
+        "width": 262,
+        "height": 48.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Cycle inspection focus depth: surface, structure, or deep",
+        "top": 778.4375,
+        "left": 879,
+        "width": 262,
+        "height": 48.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle detailed pointer-following instrument visuals and contact response",
+        "top": 1004.75,
+        "left": 39,
+        "width": 262,
+        "height": 52.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle docked macro inspection view",
+        "top": 1004.75,
+        "left": 309,
+        "width": 262,
+        "height": 52.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle specimen-specific surface and tray depth details",
+        "top": 1065.625,
+        "left": 39,
+        "width": 262,
+        "height": 52.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle anatomical depth atlas with shape-coded landmarks",
+        "top": 1065.625,
+        "left": 309,
+        "width": 262,
+        "height": 52.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle responsive tissue relief lighting around visible structures",
+        "top": 1126.5,
+        "left": 39,
+        "width": 262,
+        "height": 52.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle animated direction markers for curated anatomical relationships",
+        "top": 1126.5,
+        "left": 309,
+        "width": 262,
+        "height": 52.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle selected-structure focus isolation",
+        "top": 1187.375,
+        "left": 39,
+        "width": 262,
+        "height": 52.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle subtle pointer-responsive specimen depth",
+        "top": 1187.375,
+        "left": 309,
+        "width": 262,
+        "height": 52.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle live and reference split comparison",
+        "top": 1004.75,
+        "left": 609,
+        "width": 262,
+        "height": 48.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Generate another deterministic specimen variation",
+        "top": 1004.75,
+        "left": 879,
+        "width": 262,
+        "height": 48.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Tissue: after technique. Activate to show the tissue before the technique.",
+        "top": 1061.625,
+        "left": 609,
+        "width": 262,
+        "height": 48.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Lab light: cycle neutral, warm, and cool",
+        "top": 1336.625,
+        "left": 26,
+        "width": 276,
+        "height": 127.65625,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Laboratory light direction: cycle overhead, left, right, and raking",
+        "top": 1336.625,
+        "left": 594,
+        "width": 276,
+        "height": 127.65625,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Animation speed: cycle normal, slow, and fast",
+        "top": 1336.625,
+        "left": 878,
+        "width": 276,
+        "height": 127.65625,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Enter fullscreen specimen mode with view and tool controls",
+        "top": 1547.65625,
+        "left": 26,
+        "width": 276,
+        "height": 48.875,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Print clean dissection report",
+        "top": 1547.65625,
+        "left": 310,
+        "width": 276,
+        "height": 48.875,
+        "font": 18,
+        "clipped": false
+      }
+    ],
+    "ranges": [
+      {
+        "id": "diss-light-intensity-range",
+        "top": 1404.890625,
+        "left": 322.1875,
+        "width": 251.625,
+        "height": 48
+      }
+    ]
+  },
+  "narrow": {
+    "top": 1418.984375,
+    "left": 0,
+    "width": 320,
+    "height": 3692.5,
+    "client": 318,
+    "scroll": 318,
+    "columns": 1,
+    "containerWidth": 320,
+    "subgroupColumns": 1,
+    "groups": [
+      {
+        "name": "accessibility",
+        "top": 1431.984375,
+        "left": 13,
+        "width": 294,
+        "height": 520.65625
+      },
+      {
+        "name": "specimen",
+        "top": 1964.640625,
+        "left": 13,
+        "width": 294,
+        "height": 2500.90625
+      },
+      {
+        "name": "lighting",
+        "top": 4477.546875,
+        "left": 13,
+        "width": 294,
+        "height": 428.1875
+      },
+      {
+        "name": "workspace",
+        "top": 4917.734375,
+        "left": 13,
+        "width": 294,
+        "height": 180.75
+      }
+    ],
+    "subgroups": [
+      {
+        "name": "presentation",
+        "top": 2024.828125,
+        "left": 26,
+        "width": 268,
+        "height": 665.0625,
+        "columns": 1
+      },
+      {
+        "name": "inspection",
+        "top": 2701.890625,
+        "left": 26,
+        "width": 268,
+        "height": 522.5,
+        "columns": 1
+      },
+      {
+        "name": "scene",
+        "top": 3236.390625,
+        "left": 26,
+        "width": 268,
+        "height": 712.4375,
+        "columns": 1
+      },
+      {
+        "name": "reference",
+        "top": 3960.828125,
+        "left": 26,
+        "width": 268,
+        "height": 491.71875,
+        "columns": 1
+      }
+    ],
+    "text": [
+      {
+        "text": "Accessibility",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Specimen display",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Anatomy and presentation",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Guided uses balanced materials and visible technique targets.",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Quality balances animation smoothness with device load.",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Local inspection",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Magnify a local area and choose its tissue depth. Specimen zoom stays separate.",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Select a structure or move over the specimen before pinning.",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Scene and landmarks",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Choose instrument, landmark, and depth cues for the specimen.",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Reference and variation",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Compare the live specimen with Frame 2 from Internal Organs.",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Tissue before/after changes the displayed technique overlay. Your recorded technique stays saved.",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Lighting and motion",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Illumination intensity · Balanced illumination",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "68%",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      },
+      {
+        "text": "Workspace actions",
+        "font": 18,
+        "clipped": false,
+        "textOverflow": "clip"
+      }
+    ],
+    "buttons": [
+      {
+        "name": "Toggle organ name labels",
+        "top": 1492.171875,
+        "left": 26,
+        "width": 268,
+        "height": 53.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle high contrast mode",
+        "top": 1553.953125,
+        "left": 26,
+        "width": 268,
+        "height": 53.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle additional reduced motion; operating system reduced motion settings are always honored",
+        "top": 1615.734375,
+        "left": 26,
+        "width": 268,
+        "height": 80.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle larger interface text",
+        "top": 1704.515625,
+        "left": 26,
+        "width": 268,
+        "height": 53.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle simplified step instructions",
+        "top": 1766.296875,
+        "left": 26,
+        "width": 268,
+        "height": 49.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle dissection sound effects",
+        "top": 1824.078125,
+        "left": 26,
+        "width": 268,
+        "height": 53.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle tactile instrument feedback",
+        "top": 1885.859375,
+        "left": 26,
+        "width": 268,
+        "height": 53.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Visual presentation: cycle guided, realistic, and accessible",
+        "top": 2192.015625,
+        "left": 39,
+        "width": 242,
+        "height": 49.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Anatomical view: cycle dorsal, ventral, lateral, and internal",
+        "top": 2249.796875,
+        "left": 39,
+        "width": 242,
+        "height": 49.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle schematic layer map",
+        "top": 2307.578125,
+        "left": 39,
+        "width": 242,
+        "height": 49.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Specimen condition: cycle standard, preserved, dehydrated, cloudy, and swollen",
+        "top": 2365.359375,
+        "left": 39,
+        "width": 242,
+        "height": 76.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle curated anatomical relationships",
+        "top": 2450.140625,
+        "left": 39,
+        "width": 242,
+        "height": 76.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Rendering quality: cycle auto, high, and balanced",
+        "top": 2534.921875,
+        "left": 39,
+        "width": 242,
+        "height": 49.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle movable inspection lens",
+        "top": 2869.078125,
+        "left": 39,
+        "width": 242,
+        "height": 49.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Pin inspection lens to selected structure or current pointer",
+        "top": 2926.859375,
+        "left": 39,
+        "width": 242,
+        "height": 49.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Cycle inspection magnification: 2, 4, or 6 times",
+        "top": 2984.640625,
+        "left": 39,
+        "width": 242,
+        "height": 49.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Cycle inspection focus depth: surface, structure, or deep",
+        "top": 3042.421875,
+        "left": 39,
+        "width": 242,
+        "height": 49.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle detailed pointer-following instrument visuals and contact response",
+        "top": 3376.578125,
+        "left": 39,
+        "width": 242,
+        "height": 53.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle docked macro inspection view",
+        "top": 3438.359375,
+        "left": 39,
+        "width": 242,
+        "height": 49.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle specimen-specific surface and tray depth details",
+        "top": 3496.140625,
+        "left": 39,
+        "width": 242,
+        "height": 76.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle anatomical depth atlas with shape-coded landmarks",
+        "top": 3580.921875,
+        "left": 39,
+        "width": 242,
+        "height": 53.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle responsive tissue relief lighting around visible structures",
+        "top": 3642.703125,
+        "left": 39,
+        "width": 242,
+        "height": 80.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle animated direction markers for curated anatomical relationships",
+        "top": 3731.484375,
+        "left": 39,
+        "width": 242,
+        "height": 80.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle selected-structure focus isolation",
+        "top": 3820.265625,
+        "left": 39,
+        "width": 242,
+        "height": 53.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle subtle pointer-responsive specimen depth",
+        "top": 3882.046875,
+        "left": 39,
+        "width": 242,
+        "height": 53.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Toggle live and reference split comparison",
+        "top": 4128.015625,
+        "left": 39,
+        "width": 242,
+        "height": 49.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Generate another deterministic specimen variation",
+        "top": 4185.796875,
+        "left": 39,
+        "width": 242,
+        "height": 49.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Tissue: after technique. Activate to show the tissue before the technique.",
+        "top": 4243.578125,
+        "left": 39,
+        "width": 242,
+        "height": 49.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Lab light: cycle neutral, warm, and cool",
+        "top": 4537.734375,
+        "left": 26,
+        "width": 268,
+        "height": 49.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Laboratory light direction: cycle overhead, left, right, and raking",
+        "top": 4758.171875,
+        "left": 26,
+        "width": 268,
+        "height": 76.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Animation speed: cycle normal, slow, and fast",
+        "top": 4842.953125,
+        "left": 26,
+        "width": 268,
+        "height": 49.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Enter fullscreen specimen mode with view and tool controls",
+        "top": 4977.921875,
+        "left": 26,
+        "width": 268,
+        "height": 49.78125,
+        "font": 18,
+        "clipped": false
+      },
+      {
+        "name": "Print clean dissection report",
+        "top": 5035.703125,
+        "left": 26,
+        "width": 268,
+        "height": 49.78125,
+        "font": 18,
+        "clipped": false
+      }
+    ],
+    "ranges": [
+      {
+        "id": "diss-light-intensity-range",
+        "top": 4690.78125,
+        "left": 38.1875,
+        "width": 243.625,
+        "height": 48
+      }
+    ]
+  },
+  "savedWork": {
+    "specimen": "frog",
+    "layer": "skin",
+    "instrument": "probe",
+    "camera": [
+      1.5,
+      15,
+      -8
+    ],
+    "notes": {
+      "frog|nictitating": "A transparent protective membrane supports this identification."
+    },
+    "confidence": {
+      "frog|nictitating": 3
+    },
+    "explored": {
+      "frog|nictitating": true
+    },
+    "verified": {
+      "frog|nictitating": {
+        "status": "verified",
+        "at": 88
+      }
+    },
+    "revealed": {
+      "skin": true
+    },
+    "procedures": {
+      "skin": {
+        "tissueState": {
+          "moisture": 67,
+          "tension": 52,
+          "exposure": 87,
+          "trauma": 0,
+          "clarity": 91,
+          "stability": 84,
+          "risk": 16,
+          "salineDrops": 0,
+          "variantId": "firm",
+          "variantLabel": "Firm preservation",
+          "lastAction": "probe",
+          "lastUpdatedAt": 100,
+          "consequences": []
+        },
+        "inspected": true,
+        "incisionStarted": true,
+        "incisionExtended": true,
+        "retracted": true,
+        "pins": [
+          {
+            "x": 0.45,
+            "y": 0.3
+          },
+          {
+            "x": 0.55,
+            "y": 0.8
+          }
+        ],
+        "probed": true,
+        "history": [
+          "inspect",
+          "scalpel",
+          "scissors",
+          "forceps",
+          "pin",
+          "probe"
+        ],
+        "actionLog": [
+          {
+            "action": "inspect",
+            "at": 100,
+            "label": "inspect",
+            "inputType": "motor-neutral",
+            "assistance": "motor-neutral",
+            "tissueBefore": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            },
+            "tissueAfter": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            }
+          },
+          {
+            "action": "scalpel",
+            "at": 101,
+            "label": "scalpel",
+            "inputType": "motor-neutral",
+            "assistance": "motor-neutral",
+            "tissueBefore": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            },
+            "tissueAfter": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            }
+          },
+          {
+            "action": "scissors",
+            "at": 102,
+            "label": "scissors",
+            "inputType": "motor-neutral",
+            "assistance": "motor-neutral",
+            "tissueBefore": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            },
+            "tissueAfter": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            }
+          },
+          {
+            "action": "forceps",
+            "at": 103,
+            "label": "forceps",
+            "inputType": "motor-neutral",
+            "assistance": "motor-neutral",
+            "tissueBefore": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            },
+            "tissueAfter": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            }
+          },
+          {
+            "action": "pin",
+            "at": 104,
+            "label": "pin",
+            "inputType": "motor-neutral",
+            "assistance": "motor-neutral",
+            "tissueBefore": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            },
+            "tissueAfter": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            }
+          },
+          {
+            "action": "probe",
+            "at": 105,
+            "label": "probe",
+            "inputType": "motor-neutral",
+            "assistance": "motor-neutral",
+            "tissueBefore": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            },
+            "tissueAfter": {
+              "moisture": 67,
+              "tension": 52,
+              "exposure": 87,
+              "trauma": 0,
+              "clarity": 91,
+              "stability": 84,
+              "risk": 16,
+              "salineDrops": 0,
+              "variantId": "firm",
+              "variantLabel": "Firm preservation",
+              "lastAction": "probe",
+              "lastUpdatedAt": 100,
+              "consequences": []
+            }
+          }
+        ],
+        "learningChecks": {
+          "inspect": {
+            "predictionCorrect": true,
+            "reflectionCorrect": true
+          },
+          "scalpel": {
+            "predictionCorrect": true,
+            "reflectionCorrect": true
+          },
+          "scissors": {
+            "predictionCorrect": true,
+            "reflectionCorrect": true
+          },
+          "forceps": {
+            "predictionCorrect": true,
+            "reflectionCorrect": true
+          },
+          "pin": {
+            "predictionCorrect": true,
+            "reflectionCorrect": true
+          },
+          "probe": {
+            "predictionCorrect": true,
+            "reflectionCorrect": true
+          }
+        }
+      }
+    },
+    "objectives": {
+      "frog|skin": true
+    },
+    "annotations": [
+      {
+        "x": 0.5,
+        "y": 0.38,
+        "type": "dot"
+      }
+    ],
+    "frames": [
+      {
+        "id": 101,
+        "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGPgF9f6DwAB2QFQiLRdVgAAAABJRU5ErkJggg==",
+        "specimen": "frog",
+        "layer": "skin",
+        "layerName": "External Anatomy",
+        "view": "dorsal",
+        "condition": "preserved",
+        "selectedOrganName": "Nictitating Membrane",
+        "techniqueScore": 84,
+        "opticalQuality": 91
+      },
+      {
+        "id": 102,
+        "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGPgF9f6DwAB2QFQiLRdVgAAAABJRU5ErkJggg==",
+        "specimen": "frog",
+        "layer": "organs",
+        "layerName": "Internal Organs",
+        "view": "lateral",
+        "condition": "dehydrated",
+        "selectedOrganName": "Heart (3-chamber)",
+        "techniqueScore": 0,
+        "opticalQuality": 0
+      },
+      {
+        "id": "legacy/frame 103",
+        "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGPgF9f6DwAB2QFQiLRdVgAAAABJRU5ErkJggg==",
+        "specimen": "frog",
+        "layer": "unmapped",
+        "techniqueScore": null,
+        "opticalQuality": null
+      }
+    ],
+    "reference": 102,
+    "notebook": true,
+    "scores": [
+      1,
+      2
+    ],
+    "firstAttempt": [
+      1,
+      2
+    ],
+    "supported": 0,
+    "assessment": {
+      "frog|nictitating": {
+        "attempts": 1,
+        "correct": true,
+        "firstAttemptCorrect": true
+      }
+    },
+    "recordedAssessment": [
+      null,
+      null,
+      null
+    ]
+  }
+}

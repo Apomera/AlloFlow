@@ -1,0 +1,424 @@
+diff --git "a/C:\\Users\\cabba\\Documents\\Codex\\2026-10-07\\please-keep-enhancing-thanks-x20\\work\\integrity-baseline\\word_sounds_module.js" "b/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\word_sounds_module.js"
+index cc66ba9..08b9e5c 100644
+--- "a/C:\\Users\\cabba\\Documents\\Codex\\2026-10-07\\please-keep-enhancing-thanks-x20\\work\\integrity-baseline\\word_sounds_module.js"
++++ "b/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\word_sounds_module.js"
+@@ -13644,8 +13644,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
+           !isLoadingPhonemes
+         ) {
+           if (isProbeMode && !hasStartedFromReview.current) {
+-            hasStartedFromReview.current = true;
+             const autoStartTimer = setTimeout(() => {
++              if (!isMountedRef.current || hasStartedFromReview.current) return;
++              // Claim startup only when it runs. Effect cleanup can cancel a
++              // pending timer after host props change; the next effect must retry.
++              hasStartedFromReview.current = true;
+               startActivity(wordSoundsActivity);
+             }, 100);
+             return () => clearTimeout(autoStartTimer);
+@@ -14791,7 +14794,15 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
+               showWordText: !!(showWordText || _seen.showWordText),
+               showLetterHints: !!(showLetterHints || _seen.showLetterHints),
+               alwaysShowText: getEffectiveTextMode() === "alwaysOn",
+-              taskEvidence: opts?.taskEvidence,
++              taskEvidence: _seen.taskEvidence ? {
++                ..._seen.taskEvidence, ...opts?.taskEvidence,
++                textSupported: !!(_seen.taskEvidence.textSupported || opts?.taskEvidence?.textSupported),
++                answerExposed: !!(_seen.taskEvidence.answerExposed || opts?.taskEvidence?.answerExposed),
++                cluesShown: [...new Set([
++                  ...(Array.isArray(_seen.taskEvidence.cluesShown) ? _seen.taskEvidence.cluesShown : []),
++                  ...(Array.isArray(opts?.taskEvidence?.cluesShown) ? opts.taskEvidence.cluesShown : []),
++                ])],
++              } : opts?.taskEvidence,
+             });
+             const _masteryEvidence = {
+               presentations: attempts + 1,
+@@ -16638,6 +16649,53 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
+         return handleAudio({ word: currentWordSoundsWord, playbackRate });
+       }, [beginIsolationPlayback, handleAudio, currentWordSoundsWord]);
+       // END WORD SOUNDS SPELLING REPLAY
++      // BEGIN WORD SOUNDS SPELLING SUPPORT
++      const recordSpellingSupport = React.useCallback((clue, answerExposed = false) => {
++        if (isProbeMode || submissionLockRef.current || !currentWordSoundsWord) return;
++        const key = `${advanceEpochRef.current}|${wordSoundsActivity}|${currentWordSoundsWord}`;
++        const previous = supportSeenRef.current.key === key ? supportSeenRef.current : {};
++        const evidence = previous.taskEvidence || {};
++        supportSeenRef.current = {
++          ...previous, key,
++          taskEvidence: {
++            ...evidence, textSupported: true,
++            ...(answerExposed || evidence.answerExposed ? { answerExposed: true } : {}),
++            cluesShown: [...new Set([...(evidence.cluesShown || []), clue])],
++          },
++        };
++      }, [currentWordSoundsWord, wordSoundsActivity, isProbeMode]);
++      // END WORD SOUNDS SPELLING SUPPORT
++      // BEGIN WORD SOUNDS CONSTRUCTION ANSWERS
++      const constructionSubmissionRef = React.useRef(null);
++      const submitConstructionAnswer = (expected) => {
++        if (!isMountedRef.current || submissionLockRef.current ||
++            (useMicInput && wordSoundsActivity !== "spelling_bee")) return false;
++        const answer = String(userAnswer || "").trim().toLowerCase();
++        const target = String(expected || "").trim().toLowerCase();
++        if (!answer || !target) return false;
++        const key = `${advanceEpochRef.current}|${wordSoundsActivity}|${currentWordSoundsWord}`;
++        if (constructionSubmissionRef.current?.key === key && constructionSubmissionRef.current.answer === answer) return false;
++        constructionSubmissionRef.current = { key, answer };
++        const correct = answer === target;
++        if (!correct && wordSoundsActivity === "spelling_bee" && !isProbeMode) recordSpellingSupport("spelling_letter_feedback");
++        // Grade now: the shared handler locks final answers and owns feedback
++        // and advance. A local success timer allowed later edits to race it.
++        checkAnswer(correct ? "correct" : "incorrect", "correct");
++        return true;
++      };
++      const editConstructionAnswer = (answer) => {
++        if (submissionLockRef.current || !isMountedRef.current) return false;
++        constructionSubmissionRef.current = null;
++        setUserAnswer(answer);
++        setWordSoundsFeedback(null);
++        return true;
++      };
++      const onConstructionEnter = (event, submit) => {
++        if (event.key !== "Enter" || event.repeat || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
++        event.preventDefault();
++        submit();
++      };
++      // END WORD SOUNDS CONSTRUCTION ANSWERS
+       const scrambleWord = (word) => {
+         if (!word || word.length <= 2) return word?.split("") || [];
+         const letters = word.split("");
+@@ -17405,8 +17463,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
+           case "spelling_bee": {
+             const getLetterFeedback = () => {
+               if (!userAnswer || !currentWordSoundsWord) return [];
+-              const target = currentWordSoundsWord.toLowerCase();
+-              const input = userAnswer.toLowerCase();
++              const target = currentWordSoundsWord.trim().toLowerCase();
++              const input = userAnswer.trim().toLowerCase();
+               return target
+                 .split("")
+                 .map((letter, idx) => ({
+@@ -17417,41 +17475,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
+             };
+             const letterFeedback = getLetterFeedback();
+             const correctCount = letterFeedback.filter((l) => l.correct).length;
+-            const checkSpellingBee = () => {
+-              const correct =
+-                userAnswer?.toLowerCase().trim() ===
+-                currentWordSoundsWord?.toLowerCase();
+-              const liveStreak = wordSoundsScore?.streak || 0;
+-              if (correct) {
+-                const streakBonus =
+-                  liveStreak >= 5
+-                    ? " 🔥x2 BONUS!"
+-                    : liveStreak >= 3
+-                      ? " ⭐ Streak!"
+-                      : "";
+-                setWordSoundsFeedback({
+-                  type: "correct",
+-                  message: "🎉 Perfect!" + streakBonus,
+-                });
+-                const _scoreEpoch = advanceEpochRef.current;
+-                setTimeout(() => {
+-                  if (!isMountedRef.current || advanceEpochRef.current !== _scoreEpoch) return;
+-                  setUserAnswer("");
+-                  checkAnswer("correct", "correct");
+-                }, 1500);
+-              } else {
+-                const almostMsg =
+-                  correctCount > 0
+-                    ? `${correctCount}/${currentWordSoundsWord?.length} letters correct! Check the red boxes 👀`
+-                    : "Try again! Listen carefully 🔊";
+-                setWordSoundsFeedback({
+-                  type: "incorrect",
+-                  message: almostMsg,
+-                });
+-                handleAudio(currentWordSoundsWord);
+-                checkAnswer("incorrect", "correct");
+-              }
+-            };
++            const checkSpellingBee = () => submitConstructionAnswer(currentWordSoundsWord);
++            const showSpellingFeedback = !isProbeMode && attempts > 0;
+             return /*#__PURE__*/ React.createElement(
+               "div",
+               { className: "flex flex-col items-center gap-5 p-4" },
+@@ -17520,9 +17545,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
+                 currentWordSoundsWord?.split("").map((letter, idx) => {
+                   const hasInput = userAnswer?.[idx];
+                   const isCorrect =
+-                    hasInput &&
++                    showSpellingFeedback && hasInput &&
+                     userAnswer[idx]?.toLowerCase() === letter.toLowerCase();
+-                  const isWrong = hasInput && !isCorrect;
++                  const isWrong = showSpellingFeedback && hasInput && !isCorrect;
+                   return /*#__PURE__*/ React.createElement(
+                     "div",
+                     {
+@@ -17533,7 +17558,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
+                   );
+                 }),
+               ),
+-              userAnswer &&
++              showSpellingFeedback && userAnswer &&
+                 /*#__PURE__*/ React.createElement(
+                 "div",
+                 { className: "text-sm text-slate-600" },
+@@ -17543,14 +17568,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
+               /*#__PURE__*/ React.createElement("input", {
+                   "aria-label": t("common.enter_user_answer"),
+                   type: "text",
++                  disabled: submissionLockRef.current,
+                   inputMode: "text",
+                   autoComplete: "off", autoCorrect: "off", autoCapitalize: "none", spellCheck: false,
+                   value: userAnswer || "",
+                   onChange: (e) => {
+-                    setUserAnswer(e.target.value);
+-                    setWordSoundsFeedback(null);
++                    editConstructionAnswer(e.target.value);
+                   },
+-                  onKeyDown: (e) => e.key === "Enter" && checkSpellingBee(),
++                  onKeyDown: (e) => onConstructionEnter(e, checkSpellingBee),
+                   placeholder: t("common.placeholder_type_the_word"),
+                   maxLength: currentWordSoundsWord?.length || 20,
+                   className:
+@@ -17562,7 +17587,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
+                   {
+                     "aria-label": ts("word_sounds.spelling_bee_check") || "Check Answer",
+                     onClick: checkSpellingBee,
+-                    disabled: !userAnswer,
++                    disabled: submissionLockRef.current || !String(userAnswer || "").trim(),
+                     className: `px-8 py-3 rounded-xl font-bold shadow-lg transition-all ${userAnswer ? "bg-amber-700 hover:bg-amber-700 text-white hover:scale-105" : "bg-slate-200 text-slate-600 cursor-not-allowed"}`,
+                   },
+                   ts("word_sounds.spelling_bee_check") || "Check Spelling ✓",
+@@ -17575,8 +17600,15 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
+                 /*#__PURE__*/ React.createElement(
+                     "button",
+                     {
+-                      onClick: () =>
+-                        setUserAnswer(currentWordSoundsWord?.[0] || ""),
++                      disabled: submissionLockRef.current,
++                      onClick: () => {
++                        if (submissionLockRef.current || isProbeMode) return;
++                        const word = currentWordSoundsWord || "";
++                        const next = (word[0] || "") + (userAnswer || "").slice(1);
++                        if (!next || next === userAnswer) return;
++                        recordSpellingSupport("spelling_first_letter", next.toLowerCase() === word.toLowerCase());
++                        editConstructionAnswer(next);
++                      },
+                       className: "text-amber-600 hover:text-amber-700 underline",
+                     },
+                     ts("word_sounds.spelling_bee_first_letter") || "Hint: first letter",
+@@ -17584,34 +17616,23 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
+                 /*#__PURE__*/ React.createElement(
+                     "button",
+                     {
++                      disabled: submissionLockRef.current,
+                       onClick: () => {
++                        if (submissionLockRef.current || isProbeMode) return;
+                         const word = currentWordSoundsWord || "";
+-                        const vowels = "aeiou";
+-                        const current = userAnswer?.toLowerCase() || "";
+-                        const vowelHint = word
+-                          .split("")
+-                          .map((ch) =>
+-                            vowels.includes(ch.toLowerCase()) ? ch : "_",
+-                          )
+-                          .join("");
+-                        if (
+-                          current === vowelHint.toLowerCase() ||
+-                          (current.length > 0 && !current.includes("_"))
+-                        ) {
+-                          // Already have vowels or typed answer — fill consonants one at a time
+-                          const base = vowelHint.split("");
+-                          const filled = word.split("").map((ch, i) => {
+-                            if (base[i] !== "_") return base[i];
+-                            if (current[i] && current[i] !== "_") return current[i];
+-                            return "_";
+-                          });
+-                          // Reveal ONE more consonant
++                        const current = (userAnswer || "").toLowerCase();
++                        const letters = word.split("");
++                        const isVowel = (ch) => "aeiou".includes(ch.toLowerCase());
++                        const vowelsShown = letters.every((ch, i) => !isVowel(ch) || current[i] === ch.toLowerCase());
++                        const filled = letters.map((ch, i) => isVowel(ch) || current[i] === ch.toLowerCase() ? ch : "_");
++                        if (vowelsShown) {
+                           const nextBlank = filled.indexOf("_");
+-                          if (nextBlank >= 0) filled[nextBlank] = word[nextBlank];
+-                          setUserAnswer(filled.join(""));
+-                        } else {
+-                          setUserAnswer(vowelHint);
++                          if (nextBlank >= 0) filled[nextBlank] = letters[nextBlank];
+                         }
++                        const next = filled.join("");
++                        if (!next || next === userAnswer) return;
++                        recordSpellingSupport(vowelsShown ? "spelling_more_letters" : "spelling_vowels", next.toLowerCase() === word.toLowerCase());
++                        editConstructionAnswer(next);
+                       },
+                       className: "text-slate-600 hover:text-slate-600 underline",
+                     },
+@@ -17625,32 +17646,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
+           }
+           case "word_scramble": {
+             const checkScramble = () => {
+-              const correct =
+-                userAnswer?.toLowerCase().trim() ===
+-                currentWordSoundsWord?.toLowerCase();
+-              if (correct) {
+-                setWordSoundsFeedback({
+-                  type: "correct",
+-                  message:
+-                    ts("word_sounds.scramble_correct") || "🎉 Unscrambled!",
+-                });
+-                const _scoreEpoch = advanceEpochRef.current;
+-                setTimeout(() => {
+-                  if (!isMountedRef.current || advanceEpochRef.current !== _scoreEpoch) return;
+-                  setUserAnswer("");
+-                  setUsedScrambleIndices([]);
+-                  checkAnswer("correct", "correct");
+-                }, 1500);
+-              } else {
+-                setWordSoundsFeedback({
+-                  type: "incorrect",
+-                  message:
+-                    ts("word_sounds.scramble_try_again") ||
+-                    "Not quite! Try again 🔀",
+-                });
++              if (submitConstructionAnswer(currentWordSoundsWord) && !submissionLockRef.current) {
+                 setUserAnswer("");
+                 setUsedScrambleIndices([]);
+-                checkAnswer("incorrect", "correct");
+               }
+             };
+             return /*#__PURE__*/ React.createElement(
+@@ -17695,8 +17693,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
+                 scrambledLetters.map((letter, idx) => {
+                   const isUsed = usedScrambleIndices.includes(idx);
+                   const pickLetter = () => {
+-                    if (isUsed) return;
+-                    setUserAnswer((prev) => (prev || "") + letter);
++                    if (isUsed || submissionLockRef.current || useMicInput) return;
++                    editConstructionAnswer((prev) => (prev || "") + letter);
+                     setUsedScrambleIndices((prev) => [...prev, idx]);
+                   };
+                   return /*#__PURE__*/ React.createElement(
+@@ -17704,8 +17702,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
+                     {
+                       key: idx,
+                       role: "button",
+-                      tabIndex: isUsed ? -1 : 0,
+-                      "aria-disabled": isUsed,
++                      tabIndex: isUsed || submissionLockRef.current || useMicInput ? -1 : 0,
++                      "aria-disabled": isUsed || submissionLockRef.current || useMicInput,
+                       "aria-label": letter.toUpperCase(),
+                       className: `w-12 h-14 border-2 rounded-lg flex items-center justify-center text-2xl font-bold uppercase shadow-md transition-all ${isUsed ? "border-slate-200 bg-slate-100 text-slate-600 cursor-not-allowed opacity-50" : "border-violet-300 bg-violet-50 text-violet-700 hover:scale-105 cursor-pointer"}`,
+                       onClick: pickLetter,
+@@ -17741,12 +17739,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
+                 : /*#__PURE__*/ React.createElement("input", {
+                   "aria-label": t("common.enter_user_answer"),
+                   type: "text",
++                  disabled: submissionLockRef.current,
++                  autoComplete: "off", autoCorrect: "off", autoCapitalize: "none", spellCheck: false,
+                   value: userAnswer || "",
+                   onChange: (e) => {
+-                    setUserAnswer(e.target.value);
+-                    setWordSoundsFeedback(null);
++                    editConstructionAnswer(e.target.value);
+                   },
+-                  onKeyDown: (e) => e.key === "Enter" && checkScramble(),
++                  onKeyDown: (e) => onConstructionEnter(e, checkScramble),
+                   placeholder: t("common.placeholder_type_or_tap_letters"),
+                   maxLength: currentWordSoundsWord?.length || 20,
+                   className:
+@@ -17760,9 +17759,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
+                   /*#__PURE__*/ React.createElement(
+                     "button",
+                     {
++                      disabled: submissionLockRef.current,
+                       onClick: () => {
+-                        setUserAnswer("");
+-                        setUsedScrambleIndices([]);
++                        if (editConstructionAnswer("")) setUsedScrambleIndices([]);
+                       },
+                       className:
+                         "px-4 py-2 rounded-lg bg-slate-100 text-slate-600 font-medium hover:bg-slate-200 transition-all",
+@@ -17774,7 +17773,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
+                     {
+                       "aria-label": ts("word_sounds.word_scramble_check") || "Check Answer",
+                       onClick: checkScramble,
+-                      disabled: useMicInput || !userAnswer,
++                      disabled: submissionLockRef.current || useMicInput || !String(userAnswer || "").trim(),
+                       className: `px-6 py-2 rounded-lg font-bold shadow-md transition-all ${userAnswer ? "bg-violet-500 hover:bg-violet-600 text-white hover:scale-105" : "bg-slate-200 text-slate-600 cursor-not-allowed"}`,
+                     },
+                     ts("word_sounds.word_scramble_check"),
+@@ -17800,50 +17799,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
+             );
+           }
+           case "missing_letter": {
+-            const checkMissingLetter = () => {
+-              const correct =
+-                userAnswer?.toLowerCase().trim() === correctLetter;
+-              if (correct) {
+-                setWordSoundsFeedback({
+-                  type: "correct",
+-                  message:
+-                    ts("word_sounds.ml_correct") || "🎉 Correct letter!",
+-                });
+-                const _scoreEpoch = advanceEpochRef.current;
+-                setTimeout(() => {
+-                  if (!isMountedRef.current || advanceEpochRef.current !== _scoreEpoch) return;
+-                  setUserAnswer("");
+-                  checkAnswer("correct", "correct");
+-                }, 1500);
+-              } else {
+-                // Escalate on THIS item's tries (the per-item `attempts`
+-                // state), not the session-wide error count — a child who
+-                // missed twice earlier in the session used to get the answer
+-                // revealed on their FIRST miss of a fresh item. And never
+-                // auto-fill the answer: showing it while requiring the child
+-                // to type it keeps the interaction without granting free,
+-                // recorded-as-correct credit for no discrimination.
+-                const itemTries = attempts;
+-                const position = (hiddenIndex || 0) + 1;
+-                if (itemTries >= 1) {
+-                  setWordSoundsFeedback({
+-                    type: "incorrect",
+-                    message:
+-                      ts("word_sounds.ml_hint_position", { n: position }) ||
+-                      `🔍 Hint: It's letter #${position} in the word. Listen carefully!`,
+-                  });
+-                } else {
+-                  setWordSoundsFeedback({
+-                    type: "incorrect",
+-                    message:
+-                      ts("word_sounds.ml_try_again") ||
+-                      "Not quite! Listen again 🔊",
+-                  });
+-                }
+-                handleAudio(currentWordSoundsWord);
+-                checkAnswer("incorrect", "correct");
+-              }
+-            };
++            const checkMissingLetter = () => submitConstructionAnswer(correctLetter);
+             return /*#__PURE__*/ React.createElement(
+               "div",
+               { className: "flex flex-col items-center gap-5 p-4" },
+@@ -17906,9 +17862,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
+                     "button",
+                     {
+                       key: idx,
++                      disabled: submissionLockRef.current,
+                       onClick: () => {
+-                        setUserAnswer(letter);
+-                        setWordSoundsFeedback(null);
++                        editConstructionAnswer(letter);
+                       },
+                       className: `w-14 h-14 border-2 rounded-xl flex items-center justify-center text-2xl font-bold uppercase transition-all hover:scale-110 ${userAnswer?.toLowerCase() === letter ? "border-emerald-500 bg-emerald-100 text-emerald-700" : "border-slate-200 bg-white text-slate-600 hover:border-emerald-300"}`,
+                     },
+@@ -17921,7 +17877,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
+                   {
+                     "aria-label": ts("word_sounds.check_answer") || "Check Answer",
+                     onClick: checkMissingLetter,
+-                    disabled: useMicInput || !userAnswer,
++                    disabled: submissionLockRef.current || useMicInput || !String(userAnswer || "").trim(),
+                     className: `px-8 py-3 rounded-xl font-bold shadow-lg transition-all ${userAnswer ? "bg-emerald-700 hover:bg-emerald-700 text-white hover:scale-105" : "bg-slate-200 text-slate-600 cursor-not-allowed"}`,
+                   },
+                   ts("word_sounds.check_answer") || "Check Answer \u2713",

@@ -1,0 +1,21 @@
+{
+  "desktop/web-app/public/content_engine_module.js": "c24d76261e0cd19042f38928d271b1405b0ebd31f695d55d53243b69cd69f080",
+  "desktop/app-build/content_engine_module.js": "c24d76261e0cd19042f38928d271b1405b0ebd31f695d55d53243b69cd69f080",
+  "desktop/web-app/build/content_engine_module.js": "c24d76261e0cd19042f38928d271b1405b0ebd31f695d55d53243b69cd69f080",
+  "desktop/web-app/src/content_engine_source.jsx": "1da0d05d52f6cf80743ed174e7a718d2ada561e71cbc4687dc55eea47a51c4d2",
+  "desktop/web-app/public/view_misc_panels_module.js": "80da1b78b49b013f98312de4dbc956d0831e17753af92246a30906500518121d",
+  "desktop/app-build/view_misc_panels_module.js": "80da1b78b49b013f98312de4dbc956d0831e17753af92246a30906500518121d",
+  "desktop/web-app/build/view_misc_panels_module.js": "80da1b78b49b013f98312de4dbc956d0831e17753af92246a30906500518121d",
+  "desktop/web-app/public/gemini_api_module.js": "4bda330650b6261285b2a38ae583c7b7508a13330bd2199382c327c78690aa7f",
+  "desktop/app-build/gemini_api_module.js": "4bda330650b6261285b2a38ae583c7b7508a13330bd2199382c327c78690aa7f",
+  "desktop/web-app/build/gemini_api_module.js": "4bda330650b6261285b2a38ae583c7b7508a13330bd2199382c327c78690aa7f",
+  "desktop/web-app/public/text_pipeline_helpers_module.js": "d005b3b11745cbc4d131b0b614ba17186206c254d5d9401e9391c1b8ffac05bf",
+  "desktop/app-build/text_pipeline_helpers_module.js": "d005b3b11745cbc4d131b0b614ba17186206c254d5d9401e9391c1b8ffac05bf",
+  "desktop/web-app/build/text_pipeline_helpers_module.js": "d005b3b11745cbc4d131b0b614ba17186206c254d5d9401e9391c1b8ffac05bf",
+  "desktop/web-app/public/view_simplified_module.js": "e8f6c13b3d5943a90b95737bc4fdcc3a3fcfdaff96f2d910959031c5614709cb",
+  "desktop/app-build/view_simplified_module.js": "e8f6c13b3d5943a90b95737bc4fdcc3a3fcfdaff96f2d910959031c5614709cb",
+  "desktop/web-app/build/view_simplified_module.js": "e8f6c13b3d5943a90b95737bc4fdcc3a3fcfdaff96f2d910959031c5614709cb",
+  "desktop/web-app/public/doc_pipeline_module.js": "8fdc92c801873be5d22b55562954a0ee0e2d0926a681400806b62d92eb8fe06c",
+  "desktop/app-build/doc_pipeline_module.js": "8fdc92c801873be5d22b55562954a0ee0e2d0926a681400806b62d92eb8fe06c",
+  "desktop/web-app/build/doc_pipeline_module.js": "8fdc92c801873be5d22b55562954a0ee0e2d0926a681400806b62d92eb8fe06c"
+}
