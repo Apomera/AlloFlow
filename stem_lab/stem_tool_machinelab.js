@@ -155,6 +155,26 @@ window.StemLab = window.StemLab || {
       };
     },
 
+    // An ideal task needs MA >= load/forceLimit and MA <= travelLimit/loadTravel.
+    // Limits concern accumulated hand-path distance, not the size of a 3D bay.
+    designEnvelope: function (load, loadTravel, forceLimit, travelLimit) {
+      if (!pos(load) || !pos(loadTravel) || !pos(forceLimit) || !pos(travelLimit)) return null;
+      var minMA = load / forceLimit, maxMA = travelLimit / loadTravel;
+      var work = load * loadTravel, budget = forceLimit * travelLimit;
+      if (![minMA, maxMA, work, budget].every(finite)) return null;
+      return { minMA: minMA, maxMA: maxMA, work: work, budget: budget,
+        possible: minMA <= maxMA + 1e-9 * Math.max(1, minMA, maxMA) };
+    },
+    designFit: function (load, loadTravel, ma, forceLimit, travelLimit) {
+      var envelope = this.designEnvelope(load, loadTravel, forceLimit, travelLimit);
+      if (!envelope || !pos(ma)) return null;
+      var force = this.effortForce(load, ma), travel = this.effortDistance(loadTravel, ma);
+      if (!finite(force) || !finite(travel)) return null;
+      var forceOK = force <= forceLimit + 1e-9 * Math.max(1, forceLimit);
+      var travelOK = travel <= travelLimit + 1e-9 * Math.max(1, travelLimit);
+      return { force: force, travel: travel, forceOK: forceOK, travelOK: travelOK, fits: forceOK && travelOK };
+    },
+
     // Prediction grading. Relative tolerance, with an absolute floor so that
     // predicting a near-zero force is not impossible to get right.
     withinTolerance: function (predicted, actual, relTol) {
@@ -6907,6 +6927,7 @@ window.StemLab = window.StemLab || {
       provenBenches: {},
       benchExperiments: {},
       benchInvestigations: {},
+      benchDesignLimits: {},
       shopDemoId: 0, shopSlowMotion: false, shopDemoDuration: 2200,
       shopAnimating: false,
       shopMotionProgress: null, shopClueBench: null,
@@ -7605,6 +7626,128 @@ window.StemLab = window.StemLab || {
       }
 
       function stationSlider(c) { return slider(Object.assign({}, c, { station: true })); }
+
+      function stationDesignLimits() {
+        if (band !== 'g68' && band !== 'g912') return null;
+        var stored = d.benchDesignLimits && d.benchDesignLimits[bench.id];
+        function limitValue(source, key) {
+          var value = source && !Array.isArray(source) ? source[key] : undefined;
+          if (value === undefined) return key === 'force' ? '100' : '3';
+          return typeof value === 'string' ? value.slice(0, 64) : finite(value) ? String(value) : '';
+        }
+        var rawForce = limitValue(stored, 'force'), rawTravel = limitValue(stored, 'travel');
+        var forceLimit = _machineMath.parseNum(rawForce), travelLimit = _machineMath.parseNum(rawTravel);
+        var forceValid = forceLimit !== null && forceLimit >= 1 && forceLimit <= 5000;
+        var travelValid = travelLimit !== null && travelLimit >= 0.1 && travelLimit <= 300;
+        var validLimits = forceValid && travelValid;
+        var setup = stationSettingsCopy(d), validSetup = validStationSetup(setup);
+        var envelope = validLimits && validSetup ? _machineMath.designEnvelope(load, loadDist, forceLimit, travelLimit) : null;
+        var fit = envelope && _machineMath.designFit(load, loadDist, ma, forceLimit, travelLimit);
+        var control = bench.id === 'screw' ? bench.controls[1] : bench.controls[0];
+        var suggestion = null;
+        if (envelope && envelope.possible && fit && !fit.fits) {
+          var steps = Math.round((control.max - control.min) / control.step);
+          for (var i = 0; i <= steps; i++) {
+            var value = Math.round((control.min + i * control.step) * 1e10) / 1e10;
+            if (value > control.max + 1e-9) continue;
+            var candidate = Object.assign({}, setup); candidate[control.key] = value;
+            if (!validStationSetup(candidate)) continue;
+            var result = _machineMath.designFit(load, loadDist, bench.ma(candidate), forceLimit, travelLimit);
+            if (result && result.fits && (!suggestion || Math.abs(value - setup[control.key]) < Math.abs(suggestion.value - setup[control.key]) - 1e-9)) {
+              suggestion = { value: value, result: result };
+            }
+          }
+        }
+        function editLimit(kind, raw) {
+          setLabToolData(function (prev) {
+            var cur = (prev && prev.machineLab) || {};
+            if ((cur.bench || _defaults.bench) !== bench.id) return prev;
+            var all = Object.assign({}, cur.benchDesignLimits || {}), next = {
+              force: limitValue(all[bench.id], 'force'), travel: limitValue(all[bench.id], 'travel')
+            };
+            next[kind] = raw.slice(0, 64); all[bench.id] = next;
+            return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { benchDesignLimits: all }) });
+          });
+        }
+        function applySuggestion(ev) {
+          if (!suggestion) return;
+          var trigger = ev.currentTarget, panel = trigger.closest('[data-ml-design]');
+          setLabToolData(function (prev) {
+            var cur = (prev && prev.machineLab) || {}, current = Object.assign({}, _defaults, cur);
+            var currentLimits = cur.benchDesignLimits && cur.benchDesignLimits[bench.id];
+            if (current.bench !== bench.id || !stationSettingsMatch(current, setup) ||
+                _machineMath.parseNum(limitValue(currentLimits, 'force')) !== forceLimit ||
+                _machineMath.parseNum(limitValue(currentLimits, 'travel')) !== travelLimit) return prev;
+            var patch = { shopAnimating: false, shopMotionProgress: 0.5, shopClueBench: null,
+              benchPrediction: '', benchChoice: null, benchResult: null };
+            patch[control.key] = suggestion.value;
+            return Object.assign({}, prev, { machineLab: Object.assign({}, cur, patch) });
+          });
+          setTimeout(function () {
+            if (!panel || !panel.isConnected || typeof document === 'undefined') return;
+            if (document.activeElement !== trigger && !(document.activeElement === document.body && !trigger.isConnected)) return;
+            var target = document.getElementById('ml-' + control.key);
+            if (target) { target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'center', behavior: 'auto' }); }
+          }, 0);
+        }
+        var textStyle = { fontSize: 13, lineHeight: 1.55, color: T.text, margin: '8px 0' };
+        function resultRows(result, prefix) {
+          return h('ul', { key: prefix, style: { paddingLeft: 18, fontSize: 13, lineHeight: 1.6, margin: '8px 0' } }, [
+            h('li', { key: 'force', 'data-ml-design-force-ok': String(result.forceOK) },
+              __alloT('stem.machinelab.effort_needed', 'Effort needed') + ': ' + fmt(result.force, 3) + ' N · ' +
+              (result.forceOK ? __alloT('stem.machinelab.design_within', 'Within limit') : __alloT('stem.machinelab.design_over', 'Over limit'))),
+            h('li', { key: 'travel', 'data-ml-design-travel-ok': String(result.travelOK) },
+              __alloT('stem.machinelab.design_total_travel', 'Total hand travel') + ': ' + fmt(result.travel, 3) + ' m · ' +
+              (result.travelOK ? __alloT('stem.machinelab.design_within', 'Within limit') : __alloT('stem.machinelab.design_over', 'Over limit')))
+          ]);
+        }
+        return card([h('details', { key: 'design', 'data-ml-design': bench.id, className: 'ml-design-limits' }, [
+          h('summary', { key: 'summary', style: { cursor: 'pointer', padding: '6px 0', fontWeight: 800, fontSize: 14, color: T.text } },
+            __alloT('stem.machinelab.design_title', 'Design within limits')),
+          h('p', { key: 'intro', style: textStyle }, __alloT('stem.machinelab.design_intro', 'Can this setup do the task within both limits? Keep the load and its movement fixed, then adjust one setting.')),
+          h('p', { key: 'task', style: Object.assign({}, textStyle, { fontWeight: 750 }), 'data-ml-design-task': '' },
+            __alloT('stem.machinelab.load', 'Load') + ': ' + fmt(load, 1) + ' N · ' + __alloT('stem.machinelab.load_moves', 'Load moves') + ': ' + fmt(loadDist, 2) + ' m'),
+          h('div', { key: 'limits', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,150px),1fr))', gap: 8 } }, [
+            { kind: 'force', label: __alloT('stem.machinelab.design_force_limit', 'Maximum effort force'), value: rawForce, min: 1, max: 5000, unit: 'N' },
+            { kind: 'travel', label: __alloT('stem.machinelab.design_travel_limit', 'Maximum total hand travel'), value: rawTravel, min: 0.1, max: 300, unit: 'm' }
+          ].map(function (field) {
+            var id = 'ml-design-' + field.kind + '-' + bench.id;
+            return h('div', { key: field.kind }, [
+              h('label', { key: 'label', htmlFor: id, style: { display: 'block', fontSize: 12, fontWeight: 750, color: T.text, marginBottom: 4 } }, field.label + ' (' + field.unit + ')'),
+              h('input', { key: 'input', id: id, type: 'number', min: field.min, max: field.max, step: 'any', value: field.value,
+                'aria-describedby': 'ml-design-help-' + bench.id, 'aria-invalid': !(field.kind === 'force' ? forceValid : travelValid) ? 'true' : undefined,
+                onChange: function (ev) { editLimit(field.kind, ev.target.value); },
+                style: { width: '100%', boxSizing: 'border-box', minHeight: 42, padding: 8, borderRadius: 8, border: '1px solid ' + T.border, background: T.bg, color: T.text, font: 'inherit' } })
+            ]);
+          })),
+          h('p', { key: 'help', id: 'ml-design-help-' + bench.id, style: Object.assign({}, textStyle, { fontSize: 12, color: T.dim }) },
+            __alloT('stem.machinelab.design_help', 'Use 1–5000 N and 0.1–300 m. Hand travel adds up along its path, including repeated turns; it is not arm reach. These are ideal force and travel limits, not a test of real machine strength or size.')),
+          !validLimits ? h('p', { key: 'invalid', role: 'status', style: textStyle }, __alloT('stem.machinelab.design_invalid', 'Enter a positive value within each range to compare the limits.')) : !validSetup
+            ? h('p', { key: 'geometry', role: 'status', style: textStyle }, __alloT('stem.machinelab.design_geometry', 'Correct the station settings before designing for this task.')) : h('div', { key: 'results' }, [
+              h('p', { key: 'status', role: 'status', 'data-ml-design-fit': String(fit.fits), style: Object.assign({}, textStyle, { fontWeight: 800 }) },
+                fit.fits ? __alloT('stem.machinelab.design_fits', 'This setup meets both limits.') : __alloT('stem.machinelab.design_misses', 'This setup does not meet both limits.')),
+              resultRows(fit, 'current'),
+              h('p', { key: 'work', style: textStyle }, __alloT('stem.machinelab.design_work', 'Task work: ') + fmt(envelope.work, 3) + ' J · ' +
+                __alloT('stem.machinelab.design_budget', 'Force limit × travel limit: ') + fmt(envelope.budget, 3) + ' J'),
+              !envelope.possible ? h('p', { key: 'impossible', 'data-ml-design-impossible': '', style: textStyle },
+                __alloT('stem.machinelab.design_impossible', 'No ideal mechanical advantage can meet both limits: the force × travel budget is smaller than the task work. Increase a limit or reduce the task. Changing geometry alone cannot fix this.')) : h('p', { key: 'interval', style: textStyle },
+                __alloT('stem.machinelab.design_interval', 'Mechanical advantage must be at least ') + fmt(envelope.minMA, 3) + '× ' +
+                __alloT('stem.machinelab.design_interval_end', 'and at most ') + fmt(envelope.maxMA, 3) + '×. ' + __alloT('stem.machinelab.design_rounded', 'Values are rounded; checks use full precision.')),
+              suggestion ? h('div', { key: 'suggestion', 'data-ml-design-suggestion': control.key, 'data-value': suggestion.value,
+                style: { marginTop: 10, padding: 10, borderRadius: 8, border: '1px solid ' + T.border, background: T.bg } }, [
+                  h('p', { key: 'setting', style: Object.assign({}, textStyle, { marginTop: 0, fontWeight: 750 }) },
+                    control.label + ': ' + fmt(setup[control.key], 3) + ' → ' + fmt(suggestion.value, 3) + (control.unit ? ' ' + control.unit : '')),
+                  h('p', { key: 'held', style: textStyle }, __alloT('stem.machinelab.design_held', 'This suggestion changes only the named setting. The load, load movement and other geometry stay fixed.')),
+                  resultRows(suggestion.result, 'suggested'),
+                  h('button', { key: 'apply', type: 'button', onClick: applySuggestion, style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + T.accent,
+                    background: T.accent, color: T.accentInk, fontSize: 13, fontWeight: 750, cursor: 'pointer' } }, __alloT('stem.machinelab.design_apply', 'Apply suggested setting'))
+                ]) : envelope.possible && !fit.fits ? h('p', { key: 'no-step', 'data-ml-design-no-step': '', style: textStyle },
+                  __alloT('stem.machinelab.design_no_step', 'No available increment of this setting meets both limits: ') + control.label + '. ' +
+                  __alloT('stem.machinelab.design_no_step_help', 'Try a different held setting, a wider limit, or another station. A possible force/travel budget does not guarantee a usable setting here.')) : null
+            ]),
+          h('style', { key: 'focus' }, '.ml-design-limits summary:focus-visible,.ml-design-limits input:focus-visible,.ml-design-limits button:focus-visible{outline:3px solid currentColor;outline-offset:2px}')
+        ])], 'design-limits');
+      }
 
       function stationInvestigation() {
         if (band !== 'g68' && band !== 'g912') return null;
@@ -10791,6 +10934,7 @@ window.StemLab = window.StemLab || {
             ]),
             h('div', { key: 'right' }, [
               stationInvestigation(),
+              stationDesignLimits(),
               readout(),
               tradePanel(),
               proveePanel(),
