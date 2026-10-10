@@ -6928,6 +6928,7 @@ window.StemLab = window.StemLab || {
       benchExperiments: {},
       benchInvestigations: {},
       benchDesignLimits: {},
+      benchDesignRecords: {},
       shopDemoId: 0, shopSlowMotion: false, shopDemoDuration: 2200,
       shopAnimating: false,
       shopMotionProgress: null, shopClueBench: null,
@@ -7627,6 +7628,54 @@ window.StemLab = window.StemLab || {
 
       function stationSlider(c) { return slider(Object.assign({}, c, { station: true })); }
 
+      function designControls(forBench) {
+        var b = forBench || bench;
+        return b.controls.filter(function (c) { return c.key !== b.loadKey; });
+      }
+      function designControl(source, forBench) {
+        var b = forBench || bench, controls = designControls(b);
+        return controls.filter(function (c) { return source && !Array.isArray(source) && c.key === source.control; })[0] ||
+          (b.id === 'screw' ? controls[1] : controls[0]);
+      }
+      function validDesignRecord(record, forBench) {
+        var b = forBench || bench;
+        if (!record || Array.isArray(record) || record.benchId !== b.id || !validStationSetup(record.settings, b) ||
+            !record.limits || Array.isArray(record.limits) || !finite(record.limits.force) || !finite(record.limits.travel) ||
+            record.limits.force < 1 || record.limits.force > 5000 || record.limits.travel < 0.1 || record.limits.travel > 300 ||
+            !designControls(b).some(function (c) { return c.key === record.control; })) return null;
+        return _machineMath.designFit(record.settings[b.loadKey], record.settings.loadDistance, b.ma(record.settings), record.limits.force, record.limits.travel) ? record : null;
+      }
+      function designRecordText(record, forBench) {
+        var b = forBench || bench, settings = record.settings, limits = record.limits;
+        var result = _machineMath.designFit(settings[b.loadKey], settings.loadDistance, b.ma(settings), limits.force, limits.travel);
+        var selected = designControl(record, b);
+        var details = [__alloT('stem.machinelab.rec_design_station', 'Recorded design: ') + b.label,
+          __alloT('stem.machinelab.rec_design_fixed', 'Fixed recorded settings and limits. Ideal model results; values are rounded.'),
+          __alloT('stem.machinelab.design_force_limit', 'Maximum effort force') + ': ' + fmt(limits.force, 3) + ' N',
+          __alloT('stem.machinelab.design_travel_limit', 'Maximum total hand travel') + ': ' + fmt(limits.travel, 3) + ' m',
+          __alloT('stem.machinelab.design_chosen', 'Chosen setting: ') + selected.label];
+        stationReferenceSettings(b).forEach(function (c) {
+          details.push(c.label + ': ' + fmt(settings[c.key], 3) + (c.unit ? ' ' + c.unit : ''));
+        });
+        details.push(__alloT('stem.machinelab.ma', 'Mechanical advantage') + ': ' + fmt(b.ma(settings), 3) + '×');
+        details.push(__alloT('stem.machinelab.effort_needed', 'Effort needed') + ': ' + fmt(result.force, 3) + ' N · ' +
+          (result.forceOK ? __alloT('stem.machinelab.design_within', 'Within limit') : __alloT('stem.machinelab.design_over', 'Over limit')));
+        details.push(__alloT('stem.machinelab.design_total_travel', 'Total hand travel') + ': ' + fmt(result.travel, 3) + ' m · ' +
+          (result.travelOK ? __alloT('stem.machinelab.design_within', 'Within limit') : __alloT('stem.machinelab.design_over', 'Over limit')));
+        details.push(__alloT('stem.machinelab.design_work', 'Task work: ') + fmt(settings[b.loadKey] * settings.loadDistance, 3) + ' J');
+        details.push(result.fits ? __alloT('stem.machinelab.design_record_fits', 'Recorded setup meets both limits.') :
+          __alloT('stem.machinelab.design_record_misses', 'Recorded setup does not meet both limits.'));
+        return details.join('\n');
+      }
+      function editDesignRecord(record, forBench, value) {
+        setLabToolData(function (prev) {
+          var cur = (prev && prev.machineLab) || {}, records = cur.benchDesignRecords || {}, current = records[forBench.id];
+          if (!current || current.settings !== record.settings || current.limits !== record.limits || current.control !== record.control) return prev;
+          var next = Object.assign({}, records);
+          next[forBench.id] = Object.assign({}, current, { note: value.slice(0, 1200) });
+          return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { benchDesignRecords: next }) });
+        });
+      }
       function stationDesignLimits() {
         if (band !== 'g68' && band !== 'g912') return null;
         var stored = d.benchDesignLimits && d.benchDesignLimits[bench.id];
@@ -7643,9 +7692,10 @@ window.StemLab = window.StemLab || {
         var setup = stationSettingsCopy(d), validSetup = validStationSetup(setup);
         var envelope = validLimits && validSetup ? _machineMath.designEnvelope(load, loadDist, forceLimit, travelLimit) : null;
         var fit = envelope && _machineMath.designFit(load, loadDist, ma, forceLimit, travelLimit);
-        var control = bench.id === 'screw' ? bench.controls[1] : bench.controls[0];
-        var suggestion = null;
-        if (envelope && envelope.possible && fit && !fit.fits) {
+        var control = designControl(stored), controls = designControls();
+        var recorded = validDesignRecord(d.benchDesignRecords && d.benchDesignRecords[bench.id]);
+        var suggestion = null, feasible = [];
+        if (envelope && envelope.possible && fit) {
           var steps = Math.round((control.max - control.min) / control.step);
           for (var i = 0; i <= steps; i++) {
             var value = Math.round((control.min + i * control.step) * 1e10) / 1e10;
@@ -7653,7 +7703,8 @@ window.StemLab = window.StemLab || {
             var candidate = Object.assign({}, setup); candidate[control.key] = value;
             if (!validStationSetup(candidate)) continue;
             var result = _machineMath.designFit(load, loadDist, bench.ma(candidate), forceLimit, travelLimit);
-            if (result && result.fits && (!suggestion || Math.abs(value - setup[control.key]) < Math.abs(suggestion.value - setup[control.key]) - 1e-9)) {
+            if (result && result.fits) feasible.push(value);
+            if (!fit.fits && result && result.fits && (!suggestion || Math.abs(value - setup[control.key]) < Math.abs(suggestion.value - setup[control.key]) - 1e-9)) {
               suggestion = { value: value, result: result };
             }
           }
@@ -7665,29 +7716,56 @@ window.StemLab = window.StemLab || {
             var all = Object.assign({}, cur.benchDesignLimits || {}), next = {
               force: limitValue(all[bench.id], 'force'), travel: limitValue(all[bench.id], 'travel')
             };
+            if (all[bench.id] && !Array.isArray(all[bench.id]) && all[bench.id].control !== undefined) next.control = designControl(all[bench.id]).key;
+            if (kind === 'control' && !controls.some(function (c) { return c.key === raw; })) return prev;
             next[kind] = raw.slice(0, 64); all[bench.id] = next;
             return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { benchDesignLimits: all }) });
           });
         }
         function applySuggestion(ev) {
           if (!suggestion) return;
-          var trigger = ev.currentTarget, panel = trigger.closest('[data-ml-design]');
+          var trigger = ev.currentTarget, panel = trigger.closest('[data-ml-design]'), applied = false;
           setLabToolData(function (prev) {
             var cur = (prev && prev.machineLab) || {}, current = Object.assign({}, _defaults, cur);
             var currentLimits = cur.benchDesignLimits && cur.benchDesignLimits[bench.id];
             if (current.bench !== bench.id || !stationSettingsMatch(current, setup) ||
                 _machineMath.parseNum(limitValue(currentLimits, 'force')) !== forceLimit ||
-                _machineMath.parseNum(limitValue(currentLimits, 'travel')) !== travelLimit) return prev;
+                _machineMath.parseNum(limitValue(currentLimits, 'travel')) !== travelLimit || designControl(currentLimits).key !== control.key) return prev;
             var patch = { shopAnimating: false, shopMotionProgress: 0.5, shopClueBench: null,
               benchPrediction: '', benchChoice: null, benchResult: null };
             patch[control.key] = suggestion.value;
+            applied = true;
             return Object.assign({}, prev, { machineLab: Object.assign({}, cur, patch) });
           });
           setTimeout(function () {
-            if (!panel || !panel.isConnected || typeof document === 'undefined') return;
+            if (!applied || !panel || !panel.isConnected || typeof document === 'undefined') return;
             if (document.activeElement !== trigger && !(document.activeElement === document.body && !trigger.isConnected)) return;
             var target = document.getElementById('ml-' + control.key);
             if (target) { target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'center', behavior: 'auto' }); }
+          }, 0);
+        }
+        function saveDesign(ev) {
+          if (!fit) return;
+          var trigger = ev && ev.currentTarget, panel = trigger && trigger.closest('[data-ml-design]'), applied = false;
+          setLabToolData(function (prev) {
+            var cur = (prev && prev.machineLab) || {}, current = Object.assign({}, _defaults, cur);
+            var currentLimits = cur.benchDesignLimits && cur.benchDesignLimits[bench.id];
+            var currentRecord = validDesignRecord(cur.benchDesignRecords && cur.benchDesignRecords[bench.id]);
+            if (current.bench !== bench.id || !stationSettingsMatch(current, setup) ||
+                _machineMath.parseNum(limitValue(currentLimits, 'force')) !== forceLimit ||
+                _machineMath.parseNum(limitValue(currentLimits, 'travel')) !== travelLimit || designControl(currentLimits).key !== control.key ||
+                currentRecord !== recorded) return prev;
+            var records = Object.assign({}, cur.benchDesignRecords || {});
+            records[bench.id] = { benchId: bench.id, settings: stationSettingsCopy(setup),
+              limits: { force: forceLimit, travel: travelLimit }, control: control.key, note: '' };
+            applied = true;
+            return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { benchDesignRecords: records }) });
+          });
+          setTimeout(function () {
+            if (!applied || !panel || !panel.isConnected || typeof document === 'undefined') return;
+            if (document.activeElement !== trigger && !(document.activeElement === document.body && !trigger.isConnected)) return;
+            var target = document.getElementById('ml-design-note-' + bench.id);
+            if (target) { target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'nearest', behavior: 'auto' }); }
           }, 0);
         }
         var textStyle = { fontSize: 13, lineHeight: 1.55, color: T.text, margin: '8px 0' };
@@ -7722,6 +7800,16 @@ window.StemLab = window.StemLab || {
           })),
           h('p', { key: 'help', id: 'ml-design-help-' + bench.id, style: Object.assign({}, textStyle, { fontSize: 12, color: T.dim }) },
             __alloT('stem.machinelab.design_help', 'Use 1–5000 N and 0.1–300 m. Hand travel adds up along its path, including repeated turns; it is not arm reach. These are ideal force and travel limits, not a test of real machine strength or size.')),
+          h('label', { key: 'control-label', htmlFor: 'ml-design-control-' + bench.id,
+            style: { display: 'block', marginTop: 10, fontSize: 13, fontWeight: 750, color: T.text } },
+            __alloT('stem.machinelab.design_choose_control', 'Choose one setting to vary')),
+          h('select', { key: 'control', id: 'ml-design-control-' + bench.id, value: control.key,
+            'aria-describedby': 'ml-design-control-help-' + bench.id, onChange: function (ev) { editLimit('control', ev.target.value); },
+            style: { width: '100%', minWidth: 0, boxSizing: 'border-box', minHeight: 44, padding: 8, marginTop: 4, borderRadius: 8,
+              border: '1px solid ' + T.border, background: T.bg, color: T.text, font: 'inherit' } },
+            controls.map(function (c) { return h('option', { key: c.key, value: c.key }, c.label + (c.unit ? ' (' + c.unit + ')' : '')); })),
+          h('p', { key: 'control-help', id: 'ml-design-control-help-' + bench.id, style: Object.assign({}, textStyle, { fontSize: 12, color: T.dim }) },
+            __alloT('stem.machinelab.design_control_help', 'Choosing a setting leaves the machine unchanged. The search holds the load, load movement and other geometry fixed.')),
           !validLimits ? h('p', { key: 'invalid', role: 'status', style: textStyle }, __alloT('stem.machinelab.design_invalid', 'Enter a positive value within each range to compare the limits.')) : !validSetup
             ? h('p', { key: 'geometry', role: 'status', style: textStyle }, __alloT('stem.machinelab.design_geometry', 'Correct the station settings before designing for this task.')) : h('div', { key: 'results' }, [
               h('p', { key: 'status', role: 'status', 'data-ml-design-fit': String(fit.fits), style: Object.assign({}, textStyle, { fontWeight: 800 }) },
@@ -7733,6 +7821,15 @@ window.StemLab = window.StemLab || {
                 __alloT('stem.machinelab.design_impossible', 'No ideal mechanical advantage can meet both limits: the force × travel budget is smaller than the task work. Increase a limit or reduce the task. Changing geometry alone cannot fix this.')) : h('p', { key: 'interval', style: textStyle },
                 __alloT('stem.machinelab.design_interval', 'Mechanical advantage must be at least ') + fmt(envelope.minMA, 3) + '× ' +
                 __alloT('stem.machinelab.design_interval_end', 'and at most ') + fmt(envelope.maxMA, 3) + '×. ' + __alloT('stem.machinelab.design_rounded', 'Values are rounded; checks use full precision.')),
+              envelope.possible ? h('p', { key: 'feasible', 'data-ml-design-feasible': control.key, 'data-count': feasible.length,
+                'data-min': feasible.length ? feasible[0] : undefined, 'data-max': feasible.length ? feasible[feasible.length - 1] : undefined,
+                style: textStyle }, feasible.length ? [
+                  __alloT('stem.machinelab.design_available', 'Available slider settings that meet both limits: ') + feasible.length + '. ',
+                  control.label + ': ' + (feasible.length <= 8 ? feasible.map(function (v) { return fmt(v, 3); }).join(', ') :
+                    fmt(feasible[0], 3) + '–' + fmt(feasible[feasible.length - 1], 3)) + (control.unit ? ' ' + control.unit : '') + '. ',
+                  __alloT('stem.machinelab.design_step', 'Slider step: ') + fmt(control.step, 3) + (control.unit ? ' ' + control.unit : '') + '. ',
+                  __alloT('stem.machinelab.design_increments', 'Only the listed increments are available; rounded endpoints do not include every value between them.')
+                ] : __alloT('stem.machinelab.design_zero_settings', 'Available slider settings that meet both limits: 0.')) : null,
               suggestion ? h('div', { key: 'suggestion', 'data-ml-design-suggestion': control.key, 'data-value': suggestion.value,
                 style: { marginTop: 10, padding: 10, borderRadius: 8, border: '1px solid ' + T.border, background: T.bg } }, [
                   h('p', { key: 'setting', style: Object.assign({}, textStyle, { marginTop: 0, fontWeight: 750 }) },
@@ -7743,9 +7840,34 @@ window.StemLab = window.StemLab || {
                     background: T.accent, color: T.accentInk, fontSize: 13, fontWeight: 750, cursor: 'pointer' } }, __alloT('stem.machinelab.design_apply', 'Apply suggested setting'))
                 ]) : envelope.possible && !fit.fits ? h('p', { key: 'no-step', 'data-ml-design-no-step': '', style: textStyle },
                   __alloT('stem.machinelab.design_no_step', 'No available increment of this setting meets both limits: ') + control.label + '. ' +
-                  __alloT('stem.machinelab.design_no_step_help', 'Try a different held setting, a wider limit, or another station. A possible force/travel budget does not guarantee a usable setting here.')) : null
+                  __alloT('stem.machinelab.design_no_step_help', 'Try a different held setting, a wider limit, or another station. A possible force/travel budget does not guarantee a usable setting here.')) : null,
+              h('p', { key: 'save-help', style: Object.assign({}, textStyle, { fontSize: 12, color: T.dim }) }, recorded
+                ? __alloT('stem.machinelab.design_replace_help', 'Replacing saves the current setup and limits and starts a new explanation. Your recorded comparison is kept separately.')
+                : __alloT('stem.machinelab.design_save_help', 'Record a successful design or a failed trial, then explain the tradeoff. The saved numbers stay fixed while you continue experimenting.')),
+              h('button', { key: 'save', type: 'button', onClick: saveDesign,
+                style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + T.border,
+                  background: T.card, color: T.text, fontSize: 13, fontWeight: 750, cursor: 'pointer' } }, recorded
+                ? __alloT('stem.machinelab.design_replace', 'Replace design record') : __alloT('stem.machinelab.design_save', 'Record this design'))
             ]),
-          h('style', { key: 'focus' }, '.ml-design-limits summary:focus-visible,.ml-design-limits input:focus-visible,.ml-design-limits button:focus-visible{outline:3px solid currentColor;outline-offset:2px}')
+          recorded ? h('div', { key: 'recorded', 'data-ml-design-recorded': bench.id,
+            style: { marginTop: 14, padding: 10, borderRadius: 8, border: '1px solid ' + T.border, background: T.bg } }, [
+              h('div', { key: 'evidence', style: { fontSize: 13, lineHeight: 1.6, color: T.text, whiteSpace: 'pre-line', overflowWrap: 'anywhere' } }, designRecordText(recorded)),
+              h('label', { key: 'label', htmlFor: 'ml-design-note-' + bench.id,
+                style: { display: 'block', margin: '10px 0 4px', fontSize: 13, fontWeight: 750, color: T.text } },
+                __alloT('stem.machinelab.design_explanation', 'My design explanation')),
+              h('textarea', { key: 'note', id: 'ml-design-note-' + bench.id, rows: 3, maxLength: 1200,
+                value: typeof recorded.note === 'string' ? recorded.note.slice(0, 1200) : '',
+                'aria-describedby': 'ml-design-note-help-' + bench.id,
+                onChange: function (ev) { editDesignRecord(recorded, bench, ev.target.value); },
+                style: { width: '100%', boxSizing: 'border-box', minHeight: 80, resize: 'vertical', padding: 10,
+                  borderRadius: 8, border: '1px solid ' + T.border, background: T.card, color: T.text, font: 'inherit' } }),
+              h('p', { key: 'help', id: 'ml-design-note-help-' + bench.id, style: Object.assign({}, textStyle, { fontSize: 12, color: T.dim }) },
+                __alloT('stem.machinelab.design_note_help', 'Why did you choose this setting? Use the saved force and travel results to explain which limits it meets or misses. Your explanation is included in the work record.')),
+              h('button', { key: 'record', type: 'button', onClick: openWorkRecord,
+                style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: T.card, color: T.text, font: 'inherit', cursor: 'pointer' } },
+                __alloT('stem.machinelab.open_work_record', 'Open work record'))
+            ]) : null,
+          h('style', { key: 'focus' }, '.ml-design-limits summary:focus-visible,.ml-design-limits input:focus-visible,.ml-design-limits select:focus-visible,.ml-design-limits textarea:focus-visible,.ml-design-limits button:focus-visible{outline:3px solid currentColor;outline-offset:2px}')
         ])], 'design-limits');
       }
 
@@ -11865,7 +11987,20 @@ window.StemLab = window.StemLab || {
           lines.push(details.join('\n'));
         });
 
+        var designs = BENCHES.map(function (b) {
+          return { bench: b, record: validDesignRecord(d.benchDesignRecords && d.benchDesignRecords[b.id], b), isDesign: true };
+        }).filter(function (entry) { return !!entry.record; });
+        lines.push(__alloT('stem.machinelab.rec_designs', 'Recorded designs: ') + designs.length + '/6');
+        designs.forEach(function (entry) {
+          entry.evidenceText = designRecordText(entry.record, entry.bench);
+          var note = typeof entry.record.note === 'string' ? entry.record.note.slice(0, 1200).trim() : '';
+          recordRows[lines.length] = entry;
+          lines.push(entry.evidenceText + '\n' + (note ? __alloT('stem.machinelab.rec_experiment_explanation', 'My explanation: ') + note :
+            __alloT('stem.machinelab.rec_experiment_no_explanation', 'No explanation added yet.')));
+        });
+
         function editRecord(entry, value) {
+          if (entry.isDesign) { editDesignRecord(entry.record, entry.bench, value); return; }
           setLabToolData(function (prev) {
             var cur = (prev && prev.machineLab) || {}, records = cur.benchExperiments || {};
             var current = records[entry.bench.id];
@@ -11878,9 +12013,9 @@ window.StemLab = window.StemLab || {
         function reviewStation(entry) {
           updMulti({ view: 'machines', bench: entry.bench.id, shopAnimating: false });
           setTimeout(function () {
-            var target = typeof document !== 'undefined' && document.getElementById('ml-evidence-note-' + entry.bench.id);
+            var target = typeof document !== 'undefined' && document.getElementById((entry.isDesign ? 'ml-design-note-' : 'ml-evidence-note-') + entry.bench.id);
             if (!target) return;
-            var panel = target.closest('.ml-station-comparison');
+            var panel = target.closest(entry.isDesign ? '.ml-design-limits' : '.ml-station-comparison');
             if (panel) panel.open = true;
             target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'center', behavior: 'auto' });
           }, 0);
@@ -11896,10 +12031,11 @@ window.StemLab = window.StemLab || {
             __alloT('stem.machinelab.rec_intro', 'Everything you have done in this session, gathered in one place. It is a record of your work, not a mark, and nothing here is scored.')),
           h('ul', { key: 'l', style: { listStyle: 'none', margin: '0 0 10px', padding: 0 } },
             lines.map(function (t, i) {
-              var entry = recordRows[i], noteId = entry && 'ml-record-note-' + entry.bench.id;
+              var entry = recordRows[i], noteId = entry && (entry.isDesign ? 'ml-record-design-note-' : 'ml-record-note-') + entry.bench.id;
               return h('li', {
-                key: entry ? 'comparison-' + entry.bench.id : i,
-                'data-ml-record-station': entry ? entry.bench.id : undefined,
+                key: entry ? (entry.isDesign ? 'design-' : 'comparison-') + entry.bench.id : i,
+                'data-ml-record-station': entry && !entry.isDesign ? entry.bench.id : undefined,
+                'data-ml-design-record-station': entry && entry.isDesign ? entry.bench.id : undefined,
                 style: {
                   padding: '6px 0', fontSize: 13, color: T.text, lineHeight: 1.55, whiteSpace: 'pre-line', overflowWrap: 'anywhere',
                   borderTop: i ? '1px solid ' + T.border : 'none'
@@ -11907,17 +12043,20 @@ window.StemLab = window.StemLab || {
               }, entry ? [
                 h('div', { key: 'evidence' }, entry.evidenceText),
                 h('label', { key: 'label', htmlFor: noteId, style: { display: 'block', marginTop: 10, fontWeight: 750 } },
-                  __alloT('stem.machinelab.rec_edit_explanation', 'My explanation') + ' — ' + entry.bench.label),
+                  (entry.isDesign ? __alloT('stem.machinelab.design_explanation', 'My design explanation') :
+                    __alloT('stem.machinelab.rec_edit_explanation', 'My explanation')) + ' — ' + entry.bench.label),
                 h('textarea', { key: 'note', id: noteId, rows: 3, maxLength: 1200,
                   value: typeof entry.record.note === 'string' ? entry.record.note.slice(0, 1200) : '',
                   'aria-describedby': noteId + '-help', onChange: function (ev) { editRecord(entry, ev.target.value); },
                   style: { display: 'block', width: '100%', boxSizing: 'border-box', minHeight: 80, resize: 'vertical', padding: 10,
                     borderRadius: 8, border: '1px solid ' + T.border, background: T.bg, color: T.text, font: 'inherit' } }),
                 h('p', { key: 'help', id: noteId + '-help', style: { margin: '5px 0 8px', fontSize: 12, color: T.dim, whiteSpace: 'normal' } },
-                  __alloT('stem.machinelab.rec_edit_help', 'Use the recorded numbers to explain the force and travel tradeoff. Changes are saved with this comparison and included when you copy or download the record.')),
+                  entry.isDesign ? __alloT('stem.machinelab.rec_design_edit_help', 'Explain why this recorded setup meets or misses the limits. Changes are saved with this design and included when you copy or download the record.') :
+                    __alloT('stem.machinelab.rec_edit_help', 'Use the recorded numbers to explain the force and travel tradeoff. Changes are saved with this comparison and included when you copy or download the record.')),
                 band === 'g68' || band === 'g912' ? h('button', { key: 'review', type: 'button', onClick: function () { reviewStation(entry); },
                   style: { minHeight: 42, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: T.card, color: T.text, cursor: 'pointer', font: 'inherit', whiteSpace: 'normal' } },
-                  __alloT('stem.machinelab.rec_review_station', 'Review at station') + ' — ' + entry.bench.label) : null
+                  (entry.isDesign ? __alloT('stem.machinelab.rec_review_design', 'Review design at station') :
+                    __alloT('stem.machinelab.rec_review_station', 'Review at station')) + ' — ' + entry.bench.label) : null
               ] : t);
             })),
           h('div', { key: 'acts', style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } }, [
