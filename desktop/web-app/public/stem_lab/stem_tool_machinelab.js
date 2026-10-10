@@ -6906,6 +6906,7 @@ window.StemLab = window.StemLab || {
       benchStreak: 0,
       provenBenches: {},
       benchExperiments: {},
+      benchInvestigations: {},
       shopDemoId: 0, shopSlowMotion: false, shopDemoDuration: 2200,
       shopAnimating: false,
       shopMotionProgress: null, shopClueBench: null,
@@ -7470,11 +7471,63 @@ window.StemLab = window.StemLab || {
         ]);
       }
 
-      function stationReferenceSettings() { return bench.controls.concat([{ key: 'loadDistance', label: __alloT('stem.machinelab.lift_distance', 'Load moves'), min: 0.1, max: 3, unit: 'm' }]); }
-      function validStationSetup(setup) {
-        return setup && stationReferenceSettings().every(function (c) {
+      function stationReferenceSettings(forBench) { return (forBench || bench).controls.concat([{ key: 'loadDistance', label: __alloT('stem.machinelab.lift_distance', 'Load moves'), min: 0.1, max: 3, unit: 'm' }]); }
+      function validStationSetup(setup, forBench) {
+        return setup && !Array.isArray(setup) && stationReferenceSettings(forBench).every(function (c) {
           return finite(setup[c.key]) && setup[c.key] >= c.min && setup[c.key] <= c.max;
-        }) && pos(bench.ma(setup));
+        }) && pos((forBench || bench).ma(setup));
+      }
+      function validStationExperiment(record, forBench) {
+        var b = forBench || bench;
+        return record && record.benchId === b.id && record.before && record.after &&
+          validStationSetup(record.before.settings, b) && validStationSetup(record.after.settings, b) &&
+          stationReferenceSettings(b).some(function (c) { return record.before.settings[c.key] !== record.after.settings[c.key]; }) ? record : null;
+      }
+      function stationSettingsCopy(source, forBench) {
+        var copy = {};
+        stationReferenceSettings(forBench).forEach(function (c) { copy[c.key] = source[c.key]; });
+        return copy;
+      }
+      function stationSettingsMatch(source, target, forBench) {
+        return source && stationReferenceSettings(forBench).every(function (c) { return source[c.key] === target[c.key]; });
+      }
+      function investigationPlan(forBench) {
+        var b = forBench || bench;
+        var plans = {
+          lever: ['leverEffortArm', 4, __alloT('stem.machinelab.investigate_lever', 'What changes when you double the effort arm?')],
+          pulley: ['pulleySegments', 4, __alloT('stem.machinelab.investigate_pulley', 'What changes when four rope segments support the load instead of two?')],
+          windlass: ['windlassDrumR', 0.2, __alloT('stem.machinelab.investigate_windlass', 'What changes when you double the drum radius but keep the handle the same?')],
+          ramp: ['rampLength', 8, __alloT('stem.machinelab.investigate_ramp', 'What changes when the ramp is twice as long but reaches the same height?')],
+          wedge: ['wedgeThickness', 0.12, __alloT('stem.machinelab.investigate_wedge', 'What changes when the wedge is twice as thick but keeps its length?')],
+          screw: ['screwPitch', 0.01, __alloT('stem.machinelab.investigate_screw', 'What changes when the screw advances twice as far with each turn?')]
+        };
+        var spec = plans[b.id], before = stationSettingsCopy(_defaults, b), after = stationSettingsCopy(before, b);
+        after[spec[0]] = spec[1];
+        return { id: b.id + '-one-change-v1', key: spec[0], question: spec[2], before: before, after: after };
+      }
+      function validPrediction(value) { return value === 'less' || value === 'same' || value === 'more'; }
+      function validInvestigationRun(run, plan) {
+        return run && !Array.isArray(run) && run.id === plan.id && typeof run.tested === 'boolean' &&
+          (run.force === null || validPrediction(run.force)) && (run.distance === null || validPrediction(run.distance)) &&
+          (!run.tested || (validPrediction(run.force) && validPrediction(run.distance)));
+      }
+      function predictionLabel(value) {
+        return value === 'less' ? __alloT('stem.machinelab.reference_less', 'Less') : value === 'more'
+          ? __alloT('stem.machinelab.reference_more', 'More') : __alloT('stem.machinelab.reference_same', 'Same');
+      }
+      function metricDirection(before, after) { return Math.abs(after - before) <= 1e-9 * Math.max(1, Math.abs(before)) ? 'same' : after < before ? 'less' : 'more'; }
+      function recordedInvestigation(record, forBench) {
+        if (!validStationExperiment(record, forBench)) return null;
+        var info = record.investigation, plan = investigationPlan(forBench);
+        return info && info.id === plan.id && validPrediction(info.force) && validPrediction(info.distance) &&
+          stationSettingsMatch(record.before.settings, plan.before, forBench) && stationSettingsMatch(record.after.settings, plan.after, forBench) ? info : null;
+      }
+      function openWorkRecord() {
+        updMulti({ view: 'learn', manualTopic: 'record' });
+        setTimeout(function () {
+          var target = typeof document !== 'undefined' && document.getElementById('ml-work-record');
+          if (target) { target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'start', behavior: 'auto' }); }
+        }, 0);
       }
       function savedStationReference() {
         var saved = d.benchReferences && d.benchReferences[bench.id];
@@ -7553,16 +7606,198 @@ window.StemLab = window.StemLab || {
 
       function stationSlider(c) { return slider(Object.assign({}, c, { station: true })); }
 
+      function stationInvestigation() {
+        if (band !== 'g68' && band !== 'g912') return null;
+        var plan = investigationPlan(), raw = d.benchInvestigations && d.benchInvestigations[bench.id];
+        function validRun(run) {
+          return validInvestigationRun(run, plan);
+        }
+        var active = validRun(raw) ? raw : null;
+        var beforeShown = stationSettingsMatch(d, plan.before), afterShown = stationSettingsMatch(d, plan.after);
+        var ready = active && !active.tested && validPrediction(active.force) && validPrediction(active.distance) && beforeShown;
+        var changedControl = stationReferenceSettings().filter(function (c) { return c.key === plan.key; })[0];
+        var existing = validStationExperiment(d.benchExperiments && d.benchExperiments[bench.id]);
+        var beforeMA = bench.ma(plan.before), afterMA = bench.ma(plan.after);
+        var outcomes = [
+          { id: 'force', title: __alloT('stem.machinelab.effort_needed', 'Effort needed'), unit: 'N',
+            before: _machineMath.effortForce(plan.before[bench.loadKey], beforeMA), after: _machineMath.effortForce(plan.after[bench.loadKey], afterMA) },
+          { id: 'distance', title: __alloT('stem.machinelab.you_move', 'Your hand moves'), unit: 'm',
+            before: _machineMath.effortDistance(plan.before.loadDistance, beforeMA), after: _machineMath.effortDistance(plan.after.loadDistance, afterMA) }
+        ];
+        var buttonStyle = { minHeight: 42, padding: '8px 11px', borderRadius: 8, border: '1px solid ' + T.border,
+          background: T.bg, color: T.text, fontSize: 12, fontWeight: 750, cursor: 'pointer' };
+        function posePatch(setup) {
+          return Object.assign({}, setup, { shopAnimating: false, shopMotionProgress: 0.5, shopClueBench: null,
+            benchPrediction: '', benchChoice: null, benchResult: null });
+        }
+        function focusStep(ev, selector) {
+          var trigger = ev && ev.currentTarget;
+          var panel = trigger && trigger.closest('[data-ml-investigation]');
+          setTimeout(function () {
+            if (!panel || !panel.isConnected || typeof document === 'undefined') return;
+            if (document.activeElement !== trigger && !(document.activeElement === document.body && !trigger.isConnected)) return;
+            var target = panel.querySelector(selector);
+            if (target) { target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'nearest', behavior: 'auto' }); }
+          }, 0);
+        }
+        function start(ev) {
+          setLabToolData(function (prev) {
+            var cur = (prev && prev.machineLab) || {}, runs = Object.assign({}, cur.benchInvestigations || {});
+            runs[bench.id] = { id: plan.id, force: null, distance: null, tested: false };
+            return Object.assign({}, prev, { machineLab: Object.assign({}, cur, posePatch(plan.before), { benchInvestigations: runs }) });
+          });
+          announceToSR(__alloT('stem.machinelab.investigation_started', 'Starting setup loaded. Predict the change in effort force and hand travel, then test.'));
+          focusStep(ev, '[data-ml-prediction="force"][data-choice="less"]');
+        }
+        function choose(kind, choice) {
+          if (!validPrediction(choice)) return;
+          setLabToolData(function (prev) {
+            var cur = (prev && prev.machineLab) || {}, run = cur.benchInvestigations && cur.benchInvestigations[bench.id];
+            if (run !== active || !validRun(run) || run.tested || !stationSettingsMatch(Object.assign({}, _defaults, cur), plan.before)) return prev;
+            var runs = Object.assign({}, cur.benchInvestigations), next = Object.assign({}, run);
+            next[kind] = choice; runs[bench.id] = next;
+            return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { benchInvestigations: runs }) });
+          });
+        }
+        function testChange(ev) {
+          if (!ready) return;
+          setLabToolData(function (prev) {
+            var cur = (prev && prev.machineLab) || {}, run = cur.benchInvestigations && cur.benchInvestigations[bench.id];
+            if (run !== active || !validRun(run) || run.tested || !validPrediction(run.force) || !validPrediction(run.distance) ||
+                !stationSettingsMatch(Object.assign({}, _defaults, cur), plan.before)) return prev;
+            var runs = Object.assign({}, cur.benchInvestigations);
+            runs[bench.id] = Object.assign({}, run, { tested: true });
+            return Object.assign({}, prev, { machineLab: Object.assign({}, cur, posePatch(plan.after), { benchInvestigations: runs }) });
+          });
+          announceToSR(__alloT('stem.machinelab.investigation_tested', 'Planned change tested. Your predictions are kept below beside the results. The model shows the after setup.'));
+          focusStep(ev, '[data-ml-investigation-results]');
+        }
+        function showSetup(after, inspect, ev) {
+          setLabToolData(function (prev) {
+            var cur = (prev && prev.machineLab) || {};
+            if (!active || !cur.benchInvestigations || cur.benchInvestigations[bench.id] !== active) return prev;
+            return Object.assign({}, prev, { machineLab: Object.assign({}, cur, posePatch(after ? plan.after : plan.before)) });
+          });
+          if (inspect) setTimeout(function () {
+            var target = typeof document !== 'undefined' && document.querySelector('.ml-shop-bay[data-ml-station="' + bench.id + '"]');
+            if (target) { target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'center', behavior: 'auto' }); }
+          }, 0);
+          else focusStep(ev, '[data-ml-prediction="force"][data-choice="less"]');
+        }
+        function focusEvidence() {
+          setTimeout(function () {
+            var target = typeof document !== 'undefined' && document.getElementById('ml-evidence-note-' + bench.id);
+            if (!target) return;
+            var panel = target.closest('.ml-station-comparison');
+            if (panel) panel.open = true;
+            target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'center', behavior: 'auto' });
+          }, 0);
+        }
+        function saveInvestigation() {
+          if (!active || !active.tested) return;
+          setLabToolData(function (prev) {
+            var cur = (prev && prev.machineLab) || {}, run = cur.benchInvestigations && cur.benchInvestigations[bench.id];
+            if (run !== active || !validRun(run) || !run.tested) return prev;
+            var records = Object.assign({}, cur.benchExperiments || {});
+            records[bench.id] = { benchId: bench.id, before: { settings: stationSettingsCopy(plan.before) },
+              after: { settings: stationSettingsCopy(plan.after) }, note: '',
+              investigation: { id: plan.id, force: run.force, distance: run.distance } };
+            return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { benchExperiments: records }) });
+          });
+          announceToSR(__alloT('stem.machinelab.investigation_saved', 'Investigation saved to your work record. Add your explanation in the recorded comparison.'));
+          focusEvidence();
+        }
+        var status = !active ? __alloT('stem.machinelab.investigation_step_start', '1 · Set up') : active.tested
+          ? __alloT('stem.machinelab.investigation_step_explain', '3 · Explain') : __alloT('stem.machinelab.investigation_step_predict', '2 · Predict and test');
+        return card([
+          h('div', { key: 'investigation', 'data-ml-investigation': bench.id }, [
+            h('div', { key: 'heading', style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 8 } }, [
+              h('h3', { key: 'title', id: 'ml-investigation-title-' + bench.id, tabIndex: -1, style: { margin: 0, fontSize: 15, color: T.text } }, __alloT('stem.machinelab.investigation_title', 'Investigate one change')),
+              h('span', { key: 'step', style: { fontSize: 11, fontWeight: 800, color: T.accent } }, status)
+            ]),
+            h('p', { key: 'question', style: { margin: '0 0 10px', fontSize: 14, lineHeight: 1.5, color: T.text, fontWeight: 650 } }, plan.question),
+            h('div', { key: 'change', style: { padding: 10, borderRadius: 8, border: '1px solid ' + T.border, background: T.bg, color: T.text, fontSize: 12, lineHeight: 1.5 } }, [
+              h('strong', { key: 'label' }, changedControl.label + ': '),
+              h('span', { key: 'values', style: { fontVariantNumeric: 'tabular-nums' } }, fmt(plan.before[plan.key], 3) + (changedControl.unit ? ' ' + changedControl.unit : '') + ' → ' + fmt(plan.after[plan.key], 3) + (changedControl.unit ? ' ' + changedControl.unit : '')),
+              h('span', { key: 'fixed', style: { display: 'block', marginTop: 4, color: T.dim } },
+                __alloT('stem.machinelab.investigation_constants', 'Keep every other setting fixed, including the load and how far it moves.'))
+            ]),
+            !active ? h('div', { key: 'start', style: { marginTop: 10 } }, [
+              h('button', { key: 'button', type: 'button', onClick: start, style: Object.assign({}, buttonStyle, { background: T.accent, color: T.accentInk, borderColor: T.accent }) },
+                __alloT('stem.machinelab.investigation_start', 'Start investigation')),
+              h('p', { key: 'help', style: { margin: '7px 0 0', fontSize: 11, lineHeight: 1.45, color: T.dim } },
+                __alloT('stem.machinelab.investigation_start_help', 'Loads a starting setup at this station. Your saved setup and recorded comparison stay available.'))
+            ]) : h('div', { key: 'active' }, [
+              !active.tested ? h('div', { key: 'predict' }, [
+                h('p', { key: 'instruction', style: { fontSize: 12, lineHeight: 1.5, color: T.muted } },
+                  __alloT('stem.machinelab.investigation_predict_help', 'Compared with the starting setup, will each quantity be less, the same, or more? Make both predictions before testing.')),
+                ['force', 'distance'].map(function (kind) {
+                  var title = kind === 'force' ? __alloT('stem.machinelab.investigation_force_prediction', 'Effort force prediction') : __alloT('stem.machinelab.investigation_distance_prediction', 'Hand travel prediction');
+                  return h('fieldset', { key: kind, 'aria-label': title, style: { margin: '10px 0', padding: 8, minWidth: 0, borderRadius: 8, border: '1px solid ' + T.border } }, [
+                    h('legend', { key: 'legend', style: { fontSize: 12, fontWeight: 750, color: T.text } }, title),
+                    h('div', { key: 'choices', style: { display: 'flex', gap: 5, flexWrap: 'wrap' } }, ['less', 'same', 'more'].map(function (choice) {
+                      var selected = active[kind] === choice;
+                      return h('button', { key: choice, type: 'button', 'data-ml-prediction': kind, 'data-choice': choice,
+                        'aria-pressed': selected, disabled: !beforeShown, onClick: function () { choose(kind, choice); },
+                        style: Object.assign({}, buttonStyle, { flex: '1 1 55px', padding: '8px 6px',
+                          background: selected ? T.accent : T.bg, color: selected ? T.accentInk : T.text, borderColor: selected ? T.accent : T.border }) }, predictionLabel(choice));
+                    }))
+                  ]);
+                }),
+                !beforeShown ? h('p', { key: 'drift', role: 'status', style: { fontSize: 12, lineHeight: 1.5, color: T.warn } },
+                  __alloT('stem.machinelab.investigation_drift', 'The station settings changed. Restore the starting setup before testing this one-variable question.')) : null,
+                !beforeShown ? h('button', { key: 'restore', type: 'button', onClick: function (ev) { showSetup(false, false, ev); }, style: buttonStyle },
+                  __alloT('stem.machinelab.investigation_restore', 'Restore starting setup')) : null,
+                h('button', { key: 'test', type: 'button', disabled: !ready, onClick: testChange,
+                  style: Object.assign({}, buttonStyle, { marginTop: 8, background: ready ? T.accent : T.bg, color: ready ? T.accentInk : T.dim, cursor: ready ? 'pointer' : 'default' }) },
+                  __alloT('stem.machinelab.investigation_test', 'Test planned change'))
+              ]) : h('div', { key: 'result', 'data-ml-investigation-results': '', tabIndex: -1, role: 'region',
+                'aria-label': __alloT('stem.machinelab.investigation_results_label', 'Investigation results') }, [
+                h('p', { key: 'kept', style: { fontSize: 12, color: T.dim, lineHeight: 1.5 } },
+                  __alloT('stem.machinelab.investigation_results_help', 'These results belong to the two planned setups. Your original predictions stay beside the evidence.')),
+                outcomes.map(function (outcome) {
+                  var observed = metricDirection(outcome.before, outcome.after), predicted = active[outcome.id];
+                  return h('div', { key: outcome.id, 'data-ml-investigation-outcome': outcome.id, style: { padding: 10, marginBottom: 8, border: '1px solid ' + T.border, borderRadius: 8, background: T.bg, fontSize: 12, color: T.text, lineHeight: 1.5 } }, [
+                    h('strong', { key: 'title', style: { display: 'block' } }, outcome.title),
+                    h('div', { key: 'values', style: { fontSize: 16, fontWeight: 800, fontVariantNumeric: 'tabular-nums', margin: '4px 0' } },
+                      fmt(outcome.before, 3) + ' ' + outcome.unit + ' → ' + fmt(outcome.after, 3) + ' ' + outcome.unit),
+                    h('div', { key: 'pred' }, __alloT('stem.machinelab.investigation_prediction', 'Your prediction: ') + predictionLabel(predicted) + ' · ' +
+                      __alloT('stem.machinelab.investigation_observed', 'Observed: ') + predictionLabel(observed)),
+                    h('div', { key: 'feedback', style: { color: T.dim } }, predicted === observed
+                      ? __alloT('stem.machinelab.investigation_matched', 'The model matches your prediction. Explain why using both quantities.')
+                      : __alloT('stem.machinelab.investigation_rethink', 'The model differs from your prediction. Use the force and travel together to revise your explanation.'))
+                  ]);
+                }),
+                h('p', { key: 'shown', 'data-ml-investigation-shown': beforeShown ? 'before' : afterShown ? 'after' : 'other', style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } },
+                  beforeShown ? __alloT('stem.machinelab.investigation_showing_before', 'The station currently shows the before setup.') : afterShown
+                    ? __alloT('stem.machinelab.investigation_showing_after', 'The station currently shows the after setup.')
+                    : __alloT('stem.machinelab.investigation_showing_other', 'The station has other settings now.')),
+                h('div', { key: 'inspect', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } }, [
+                  h('button', { key: 'before', type: 'button', 'aria-pressed': beforeShown, onClick: function () { showSetup(false, true); }, style: buttonStyle }, __alloT('stem.machinelab.investigation_view_before', 'View before setup')),
+                  h('button', { key: 'after', type: 'button', 'aria-pressed': afterShown, onClick: function () { showSetup(true, true); }, style: buttonStyle }, __alloT('stem.machinelab.investigation_view_after', 'View after setup'))
+                ]),
+                h('p', { key: 'pose', style: { fontSize: 11, color: T.dim, lineHeight: 1.45 } }, __alloT('stem.machinelab.investigation_pose', 'Both inspection buttons hold the model halfway through its stroke. Use Run demonstration to watch either setup move.')),
+                h('button', { key: 'save', type: 'button', onClick: saveInvestigation, style: Object.assign({}, buttonStyle, { background: T.accent, color: T.accentInk, borderColor: T.accent }) }, existing
+                  ? __alloT('stem.machinelab.investigation_replace', 'Replace with investigation') : __alloT('stem.machinelab.investigation_save', 'Save investigation')),
+                existing ? h('p', { key: 'replace-help', style: { fontSize: 11, lineHeight: 1.45, color: T.dim } },
+                  __alloT('stem.machinelab.investigation_replace_help', 'Replaces this station\'s recorded pair and starts a new explanation.')) : null
+              ]),
+              h('button', { key: 'restart', type: 'button', onClick: start, style: Object.assign({}, buttonStyle, { marginTop: 10 }) }, __alloT('stem.machinelab.investigation_restart', 'Restart investigation')),
+              h('p', { key: 'restart-help', style: { fontSize: 11, lineHeight: 1.45, color: T.dim, marginBottom: 0 } },
+                __alloT('stem.machinelab.investigation_restart_help', 'Restart loads the starting settings and clears these predictions. Recorded evidence stays in your work record.'))
+            ])
+          ]),
+          h('style', { key: 'focus' }, '[data-ml-investigation] button:focus-visible,[data-ml-investigation-results]:focus-visible{outline:3px solid currentColor;outline-offset:2px}')
+        ], 'investigation');
+      }
+
       function stationComparison() {
         if (band !== 'g68' && band !== 'g912') return null;
         var settings = stationReferenceSettings();
         var saved = savedStationReference();
         var canSave = validStationSetup(d) && effort !== null && effortDist !== null;
         var savedMA = saved ? bench.ma(saved) : null;
-        var record = d.benchExperiments && d.benchExperiments[bench.id];
-        if (!record || record.benchId !== bench.id || !record.before || !record.after ||
-            !validStationSetup(record.before.settings) || !validStationSetup(record.after.settings) ||
-            !settings.some(function (c) { return record.before.settings[c.key] !== record.after.settings[c.key]; })) record = null;
+        var record = validStationExperiment(d.benchExperiments && d.benchExperiments[bench.id]);
         function snapshotSettings(source) {
           var copy = {};
           settings.forEach(function (c) { copy[c.key] = source[c.key]; });
@@ -7634,6 +7869,7 @@ window.StemLab = window.StemLab || {
           background: T.card, color: T.text, cursor: 'pointer', fontSize: 12, fontWeight: 750 };
         function evidencePanel() {
           if (!record) return null;
+          var investigation = recordedInvestigation(record);
           var before = record.before.settings, after = record.after.settings;
           var changes = settings.filter(function (c) { return before[c.key] !== after[c.key]; });
           var beforeMA = bench.ma(before), afterMA = bench.ma(after);
@@ -7658,6 +7894,9 @@ window.StemLab = window.StemLab || {
             h('p', { key: 'method', 'data-ml-experiment-changes': changes.length, style: { margin: '0 0 8px', fontSize: 12, lineHeight: 1.5, fontWeight: 700 } },
               changes.length === 1 ? __alloT('stem.machinelab.evidence_one_change', 'One setting changed: ') + changes[0].label
                 : __alloT('stem.machinelab.evidence_many_changes', 'Several settings changed. This pair alone cannot show which setting caused the effect.')),
+            investigation ? h('p', { key: 'prediction', 'data-ml-recorded-prediction': '', style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.5 } },
+              __alloT('stem.machinelab.investigation_original', 'Original predictions — effort force: ') + predictionLabel(investigation.force) + '; ' +
+              __alloT('stem.machinelab.investigation_original_distance', 'hand travel: ') + predictionLabel(investigation.distance)) : null,
             h('table', { key: 'table', style: { width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: 12 } }, [
               h('caption', { key: 'caption', style: { textAlign: 'left', color: T.dim, paddingBottom: 6, fontSize: 11 } },
                 __alloT('stem.machinelab.evidence_caption', 'Ideal model results; values are rounded.')),
@@ -7694,6 +7933,8 @@ window.StemLab = window.StemLab || {
                 border: '1px solid ' + T.border, background: T.bg, color: T.text, font: 'inherit', fontSize: 13 } }),
             h('p', { key: 'help', id: noteId + '-help', style: { margin: '5px 0 10px', fontSize: 11, color: T.dim, lineHeight: 1.45 } },
               __alloT('stem.machinelab.evidence_note_help', 'Use the before and after numbers as evidence. Your explanation is saved with this pair; it is not graded.')),
+            h('button', { key: 'open-work', type: 'button', onClick: openWorkRecord, style: Object.assign({}, buttonStyle, { marginRight: 6, marginBottom: 6 }) },
+              __alloT('stem.machinelab.investigation_open_work', 'Open your work record')),
             h('button', { key: 'clear', type: 'button', onClick: function (ev) { editEvidence(null, ev); }, style: buttonStyle },
               __alloT('stem.machinelab.evidence_clear', 'Clear comparison record'))
           ]);
@@ -9907,6 +10148,11 @@ window.StemLab = window.StemLab || {
       function renderMachines() {
         var shopCam = camFor('shop');
         var shopStatus = SHOP_GL.status();
+        var investigation = d.benchInvestigations && d.benchInvestigations[bench.id], guidedPlan = investigationPlan();
+        var investigationActive = validInvestigationRun(investigation, guidedPlan) && (band === 'g68' || band === 'g912');
+        var investigationView = stationSettingsMatch(d, guidedPlan.before) ? __alloT('stem.machinelab.investigation_showing_before', 'The station currently shows the before setup.')
+          : stationSettingsMatch(d, guidedPlan.after) ? __alloT('stem.machinelab.investigation_showing_after', 'The station currently shows the after setup.')
+          : __alloT('stem.machinelab.investigation_showing_other', 'The station has other settings now.');
         var benchIndex = BENCHES.indexOf(bench);
         var nextBench = BENCHES[(benchIndex + 1) % BENCHES.length];
         var hasRunDemo = d.shopDemoBench === bench.id;
@@ -10319,6 +10565,15 @@ window.StemLab = window.StemLab || {
                 ? '0 18px 45px rgba(0,0,0,.28)' : '0 18px 45px rgba(15,23,42,.11)'
             }
           }, [
+            investigationActive ? h('div', { key: 'investigation-view', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8,
+              padding: 9, marginBottom: 8, border: '1px solid ' + T.border, borderRadius: 9, background: T.bg, color: T.text } }, [
+              h('span', { key: 'label', id: 'ml-investigation-view-label', style: { fontSize: 12, lineHeight: 1.5, flex: '1 1 200px' } }, investigationView),
+              h('button', { key: 'return', type: 'button', onClick: function () {
+                var target = typeof document !== 'undefined' && document.getElementById('ml-investigation-title-' + bench.id);
+                if (target) { target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'center', behavior: 'auto' }); }
+              }, style: { minHeight: 40, padding: '7px 10px', border: '1px solid ' + T.border, borderRadius: 7, background: T.card, color: T.text, fontSize: 12, fontWeight: 750, cursor: 'pointer' } },
+                __alloT('stem.machinelab.investigation_return', 'Return to investigation'))
+            ]) : null,
             d.shopAnimating ? h('div', { key: 'demo-phase', className: 'ml-demo-phase',
               ref: function (el) { shopPhaseElement = el; }, 'data-ml-demo-phase': initialShopPhase,
               style: { padding: '8px 10px', marginBottom: 8, borderRadius: 9, background: T.bg, border: '1px solid ' + T.border,
@@ -10335,6 +10590,7 @@ window.StemLab = window.StemLab || {
             ]) : null,
             h('div', {
               key: 'bay', ref: shopGlRef, role: 'img', tabIndex: -1, className:'ml-shop-bay',
+              'data-ml-station': bench.id, 'aria-describedby': investigationActive ? 'ml-investigation-view-label' : undefined,
               'data-ml-orbitable': 'true',
               onPointerDown: beginShopOrbit, onPointerMove: moveShopOrbit,
               onPointerUp: endShopOrbit, onPointerCancel: endShopOrbit,
@@ -10534,6 +10790,7 @@ window.StemLab = window.StemLab || {
                 ).concat([stationComparison()]), 'controls')
             ]),
             h('div', { key: 'right' }, [
+              stationInvestigation(),
               readout(),
               tradePanel(),
               proveePanel(),
@@ -11328,7 +11585,7 @@ window.StemLab = window.StemLab || {
         var lines = [];
         lines.push(__alloT('stem.machinelab.rec_l1', 'Benches proven: ') + proven.length + '/6' +
           (proven.length ? ' (' + proven.join(', ') + ')' : ''));
-        lines.push(__alloT('stem.machinelab.rec_l2', 'Best prediction streak: ') + (d.benchStreak || 0));
+        lines.push(__alloT('stem.machinelab.rec_current_streak', 'Current prediction streak: ') + (d.benchStreak || 0));
         lines.push(__alloT('stem.machinelab.rec_l3', 'Machines fired: ') +
           (fired.length ? fired.join(', ') : __alloT('stem.machinelab.rec_none', 'none yet')));
         // If the furthest shot is itself the impossible one, say so on that
@@ -11430,11 +11687,43 @@ window.StemLab = window.StemLab || {
         if (d.iqHypothesis) lines.push(__alloT('stem.machinelab.rec_hyp', 'Hypothesis: ') + d.iqHypothesis);
         if (d.iqExplanation) lines.push(__alloT('stem.machinelab.rec_exp', 'Explanation: ') + d.iqExplanation);
 
+        var experiments = BENCHES.map(function (b) {
+          return { bench: b, record: validStationExperiment(d.benchExperiments && d.benchExperiments[b.id], b) };
+        }).filter(function (entry) { return !!entry.record; });
+        lines.push(__alloT('stem.machinelab.rec_comparisons', 'Recorded comparisons: ') + experiments.length + '/6');
+        experiments.forEach(function (entry) {
+          var b = entry.bench, record = entry.record, before = record.before.settings, after = record.after.settings;
+          var beforeMA = b.ma(before), afterMA = b.ma(after), info = recordedInvestigation(record, b);
+          var beforeWork = _machineMath.workCheck(before[b.loadKey], before.loadDistance, beforeMA);
+          var afterWork = _machineMath.workCheck(after[b.loadKey], after.loadDistance, afterMA);
+          var details = [__alloT('stem.machinelab.rec_comparison_station', 'Recorded comparison: ') + b.label];
+          if (info) {
+            details.push(__alloT('stem.machinelab.rec_investigation_question', 'Investigation: ') + investigationPlan(b).question);
+            details.push(__alloT('stem.machinelab.investigation_original', 'Original predictions — effort force: ') + predictionLabel(info.force) + '; ' +
+              __alloT('stem.machinelab.investigation_original_distance', 'hand travel: ') + predictionLabel(info.distance));
+          }
+          details.push(__alloT('stem.machinelab.rec_pair_order', 'All pairs below read before → after. Ideal model results; values are rounded.'));
+          stationReferenceSettings(b).forEach(function (setting) {
+            details.push(setting.label + ': ' + fmt(before[setting.key], 3) + (setting.unit ? ' ' + setting.unit : '') + ' → ' + fmt(after[setting.key], 3) + (setting.unit ? ' ' + setting.unit : '') +
+              ' (' + (before[setting.key] === after[setting.key] ? __alloT('stem.machinelab.evidence_held', 'held constant') : __alloT('stem.machinelab.setting_changed', 'Changed')) + ')');
+          });
+          details.push(__alloT('stem.machinelab.ma', 'Mechanical advantage') + ': ' + fmt(beforeMA, 3) + '× → ' + fmt(afterMA, 3) + '×');
+          details.push(__alloT('stem.machinelab.effort_needed', 'Effort needed') + ': ' + fmt(_machineMath.effortForce(before[b.loadKey], beforeMA), 3) + ' N → ' + fmt(_machineMath.effortForce(after[b.loadKey], afterMA), 3) + ' N');
+          details.push(__alloT('stem.machinelab.you_move', 'Your hand moves') + ': ' + fmt(_machineMath.effortDistance(before.loadDistance, beforeMA), 3) + ' m → ' + fmt(_machineMath.effortDistance(after.loadDistance, afterMA), 3) + ' m');
+          details.push(__alloT('stem.machinelab.evidence_work_in', 'Work put in') + ': ' + fmt(beforeWork.workIn, 3) + ' J → ' + fmt(afterWork.workIn, 3) + ' J');
+          details.push(__alloT('stem.machinelab.evidence_work_out', 'Work delivered') + ': ' + fmt(beforeWork.workOut, 3) + ' J → ' + fmt(afterWork.workOut, 3) + ' J');
+          var note = typeof record.note === 'string' ? record.note.slice(0, 1200).trim() : '';
+          details.push(note ? __alloT('stem.machinelab.rec_experiment_explanation', 'My explanation: ') + note
+            : __alloT('stem.machinelab.rec_experiment_no_explanation', 'No explanation added yet.'));
+          lines.push(details.join('\n'));
+        });
+
         var asText = __alloT('stem.machinelab.rec_head', 'Machine Lab — work record') + '\n' +
           __alloT('stem.machinelab.rec_level', 'Reading level: ') + BAND_LABELS[band] + '\n' +
           lines.join('\n');
 
-        return h('div', { key: 'record' }, [
+        return h('div', { key: 'record', id: 'ml-work-record', tabIndex: -1, role: 'region',
+          'aria-label': __alloT('stem.machinelab.rec_head', 'Machine Lab — work record') }, [
           h('p', { key: 'i', style: { margin: '0 0 10px', fontSize: 14, lineHeight: 1.6, color: T.muted } },
             __alloT('stem.machinelab.rec_intro', 'Everything you have done in this session, gathered in one place. It is a record of your work, not a mark, and nothing here is scored.')),
           h('ul', { key: 'l', style: { listStyle: 'none', margin: '0 0 10px', padding: 0 } },
@@ -11442,7 +11731,7 @@ window.StemLab = window.StemLab || {
               return h('li', {
                 key: i,
                 style: {
-                  padding: '6px 0', fontSize: 13, color: T.text, lineHeight: 1.55,
+                  padding: '6px 0', fontSize: 13, color: T.text, lineHeight: 1.55, whiteSpace: 'pre-line', overflowWrap: 'anywhere',
                   borderTop: i ? '1px solid ' + T.border : 'none'
                 }
               }, t);

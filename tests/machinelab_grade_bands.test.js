@@ -102,7 +102,7 @@ describe('Machine Lab: bands restate rather than filter', () => {
     expect(g35).not.toContain('Work in:');
     expect(g68).toContain('Work in:');
     expect(g68).toContain('Work out:');
-    expect(g68).toContain('identical');
+    expect(g68).toContain('data-ml-work-equal="true"');
   });
 });
 
