@@ -6905,6 +6905,7 @@ window.StemLab = window.StemLab || {
       benchResult: null,
       benchStreak: 0,
       provenBenches: {},
+      benchExperiments: {},
       shopDemoId: 0, shopSlowMotion: false, shopDemoDuration: 2200,
       shopAnimating: false,
       shopMotionProgress: null, shopClueBench: null,
@@ -7558,6 +7559,46 @@ window.StemLab = window.StemLab || {
         var saved = savedStationReference();
         var canSave = validStationSetup(d) && effort !== null && effortDist !== null;
         var savedMA = saved ? bench.ma(saved) : null;
+        var record = d.benchExperiments && d.benchExperiments[bench.id];
+        if (!record || record.benchId !== bench.id || !record.before || !record.after ||
+            !validStationSetup(record.before.settings) || !validStationSetup(record.after.settings) ||
+            !settings.some(function (c) { return record.before.settings[c.key] !== record.after.settings[c.key]; })) record = null;
+        function snapshotSettings(source) {
+          var copy = {};
+          settings.forEach(function (c) { copy[c.key] = source[c.key]; });
+          return copy;
+        }
+        function keepComparison() {
+          if (!saved || !canSave || !changed.length) return;
+          var evidence = { benchId: bench.id, before: { settings: snapshotSettings(saved) },
+            after: { settings: snapshotSettings(d) }, note: '' };
+          setLabToolData(function (prev) {
+            var cur = (prev && prev.machineLab) || {};
+            var records = Object.assign({}, cur.benchExperiments || {});
+            records[bench.id] = evidence;
+            return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { benchExperiments: records }) });
+          });
+          announceToSR(__alloT('stem.machinelab.evidence_saved', 'Comparison recorded. These results stay fixed while you change the sliders.'));
+        }
+        function editEvidence(note, ev) {
+          var panel = note === null ? ev.currentTarget.closest('.ml-station-comparison') : null;
+          setLabToolData(function (prev) {
+            var cur = (prev && prev.machineLab) || {};
+            var records = Object.assign({}, cur.benchExperiments || {});
+            var current = records[bench.id];
+            if (!current || current.before !== record.before || current.after !== record.after) return prev;
+            if (note === null) delete records[bench.id];
+            else records[bench.id] = Object.assign({}, current, { note: note.slice(0, 1200) });
+            return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { benchExperiments: records }) });
+          });
+          if (note === null) {
+            announceToSR(__alloT('stem.machinelab.evidence_cleared', 'Comparison record cleared. Your current settings and saved setup are unchanged.'));
+            setTimeout(function () {
+              var target = panel && panel.isConnected && panel.querySelector('[data-ml-keep-comparison]:not(:disabled), [data-ml-save-reference]:not(:disabled)');
+              if (target) target.focus({ preventScroll: true });
+            }, 0);
+          }
+        }
         function saveReference(clear, ev) {
           var panel = ev.currentTarget.closest('.ml-station-comparison');
           var snapshot = {};
@@ -7591,6 +7632,72 @@ window.StemLab = window.StemLab || {
         }
         var buttonStyle = { minHeight: 40, padding: '7px 10px', borderRadius: 7, border: '1px solid ' + T.border,
           background: T.card, color: T.text, cursor: 'pointer', fontSize: 12, fontWeight: 750 };
+        function evidencePanel() {
+          if (!record) return null;
+          var before = record.before.settings, after = record.after.settings;
+          var changes = settings.filter(function (c) { return before[c.key] !== after[c.key]; });
+          var beforeMA = bench.ma(before), afterMA = bench.ma(after);
+          var beforeWork = _machineMath.workCheck(before[bench.loadKey], before.loadDistance, beforeMA);
+          var afterWork = _machineMath.workCheck(after[bench.loadKey], after.loadDistance, afterMA);
+          var sameTask = before[bench.loadKey] === after[bench.loadKey] && before.loadDistance === after.loadDistance;
+          var metrics = [
+            { id: 'ma', label: __alloT('stem.machinelab.ma', 'Mechanical advantage'), before: beforeMA, after: afterMA, unit: '×' },
+            { id: 'force', label: __alloT('stem.machinelab.effort_needed', 'Effort needed'), before: _machineMath.effortForce(before[bench.loadKey], beforeMA), after: _machineMath.effortForce(after[bench.loadKey], afterMA), unit: 'N' },
+            { id: 'distance', label: __alloT('stem.machinelab.you_move', 'Your hand moves'), before: _machineMath.effortDistance(before.loadDistance, beforeMA), after: _machineMath.effortDistance(after.loadDistance, afterMA), unit: 'm' },
+            { id: 'workIn', label: __alloT('stem.machinelab.evidence_work_in', 'Work put in'), before: beforeWork.workIn, after: afterWork.workIn, unit: 'J' },
+            { id: 'workOut', label: __alloT('stem.machinelab.evidence_work_out', 'Work delivered'), before: beforeWork.workOut, after: afterWork.workOut, unit: 'J' }
+          ];
+          var cellStyle = { padding: '9px 5px', borderBottom: '1px solid ' + T.border, textAlign: 'right', verticalAlign: 'top', overflowWrap: 'anywhere', fontVariantNumeric: 'tabular-nums' };
+          var noteId = 'ml-evidence-note-' + bench.id;
+          return h('section', { key: 'evidence', 'data-ml-experiment': bench.id,
+            'aria-label': __alloT('stem.machinelab.evidence_title', 'Recorded comparison'),
+            style: { marginTop: 14, padding: 10, borderRadius: 8, border: '2px solid ' + T.accent, background: T.card, color: T.text } }, [
+            h('h4', { key: 'heading', style: { margin: '0 0 6px', fontSize: 14 } }, __alloT('stem.machinelab.evidence_title', 'Recorded comparison')),
+            h('p', { key: 'fixed', style: { margin: '0 0 10px', color: T.dim, fontSize: 12, lineHeight: 1.5 } },
+              __alloT('stem.machinelab.evidence_fixed', 'Before and after are fixed records. Moving a slider or clearing the saved setup will not change them.')),
+            h('p', { key: 'method', 'data-ml-experiment-changes': changes.length, style: { margin: '0 0 8px', fontSize: 12, lineHeight: 1.5, fontWeight: 700 } },
+              changes.length === 1 ? __alloT('stem.machinelab.evidence_one_change', 'One setting changed: ') + changes[0].label
+                : __alloT('stem.machinelab.evidence_many_changes', 'Several settings changed. This pair alone cannot show which setting caused the effect.')),
+            h('table', { key: 'table', style: { width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: 12 } }, [
+              h('caption', { key: 'caption', style: { textAlign: 'left', color: T.dim, paddingBottom: 6, fontSize: 11 } },
+                __alloT('stem.machinelab.evidence_caption', 'Ideal model results; values are rounded.')),
+              h('thead', { key: 'head' }, h('tr', null, [
+                h('th', { key: 'metric', scope: 'col', style: Object.assign({}, cellStyle, { width: '44%', textAlign: 'left' }) }, __alloT('stem.machinelab.evidence_quantity', 'Quantity')),
+                h('th', { key: 'before', scope: 'col', style: cellStyle }, __alloT('stem.machinelab.evidence_before', 'Before')),
+                h('th', { key: 'after', scope: 'col', style: cellStyle }, __alloT('stem.machinelab.evidence_after', 'After'))
+              ])),
+              h('tbody', { key: 'body' }, metrics.map(function (metric) {
+                return h('tr', { key: metric.id, 'data-ml-experiment-metric': metric.id }, [
+                  h('th', { key: 'label', scope: 'row', style: Object.assign({}, cellStyle, { textAlign: 'left', fontWeight: 600 }) }, metric.label),
+                  ['before', 'after'].map(function (side) { return h('td', { key: side, style: cellStyle,
+                    'data-ml-experiment-value': side, 'data-value': metric[side] }, fmt(metric[side], 3) + ' ' + metric.unit); })
+                ]);
+              }))
+            ]),
+            h('p', { key: 'work', style: { margin: '10px 0', fontSize: 12, lineHeight: 1.5 } }, sameTask
+              ? __alloT('stem.machinelab.evidence_same_task', 'The load and its travel stayed the same. Both setups do the same ideal work: less effort force requires more hand travel.')
+              : __alloT('stem.machinelab.evidence_task_changed', 'The load or its travel changed, so this is a different task. Work put in equals work delivered within each ideal setup; the totals can differ between setups.')),
+            h('details', { key: 'settings', style: { marginBottom: 12, fontSize: 12 } }, [
+              h('summary', { key: 'summary', style: { cursor: 'pointer', padding: '8px 0', fontWeight: 750 } }, __alloT('stem.machinelab.evidence_settings', 'Recorded settings')),
+              h('ul', { key: 'list', style: { paddingLeft: 18, margin: '4px 0', lineHeight: 1.6 } }, settings.map(function (c) {
+                return h('li', { key: c.key, style: { overflowWrap: 'anywhere' } }, c.label + ': ' + fmt(before[c.key], 3) + (c.unit ? ' ' + c.unit : '') + ' → ' + fmt(after[c.key], 3) + (c.unit ? ' ' + c.unit : '') +
+                  (before[c.key] === after[c.key] ? ' (' + __alloT('stem.machinelab.evidence_held', 'held constant') + ')' : ' (' + __alloT('stem.machinelab.setting_changed', 'Changed') + ')'));
+              }))
+            ]),
+            h('label', { key: 'label', htmlFor: noteId, style: { display: 'block', fontSize: 12, fontWeight: 750, marginBottom: 6 } },
+              __alloT('stem.machinelab.evidence_question', 'What does your comparison show?')),
+            h('textarea', { key: 'note', id: noteId, rows: 3, maxLength: 1200,
+              'aria-label': __alloT('stem.machinelab.evidence_question', 'What does your comparison show?'),
+              'aria-describedby': noteId + '-help', value: typeof record.note === 'string' ? record.note.slice(0, 1200) : '',
+              onChange: function (ev) { editEvidence(ev.target.value, ev); },
+              style: { width: '100%', boxSizing: 'border-box', resize: 'vertical', minHeight: 78, padding: 8, borderRadius: 6,
+                border: '1px solid ' + T.border, background: T.bg, color: T.text, font: 'inherit', fontSize: 13 } }),
+            h('p', { key: 'help', id: noteId + '-help', style: { margin: '5px 0 10px', fontSize: 11, color: T.dim, lineHeight: 1.45 } },
+              __alloT('stem.machinelab.evidence_note_help', 'Use the before and after numbers as evidence. Your explanation is saved with this pair; it is not graded.')),
+            h('button', { key: 'clear', type: 'button', onClick: function (ev) { editEvidence(null, ev); }, style: buttonStyle },
+              __alloT('stem.machinelab.evidence_clear', 'Clear comparison record'))
+          ]);
+        }
         function comparisonRow(id, title, before, now, unit, color) {
           var scale = Math.max(before, now || 0, 1e-12);
           var direction = now === null ? 'unavailable' : Math.abs(now - before) <= 1e-9 * Math.max(1, Math.abs(before)) ? 'same' : now < before ? 'less' : 'more';
@@ -7627,7 +7734,9 @@ window.StemLab = window.StemLab || {
                 style: { display: 'inline-block', verticalAlign: 'middle', marginLeft: 8, padding: '2px 6px', borderRadius: 5,
                   border: '1px solid ' + T.border, background: T.card, color: T.text, fontSize: 11, fontWeight: 700, lineHeight: 1.4 } },
                 changed.length === 0 ? __alloT('stem.machinelab.reference_before', 'Saved') : changed.length === 1
-                  ? __alloT('stem.machinelab.reference_one_change', '1 change') : changed.length + ' ' + __alloT('stem.machinelab.reference_changes', 'changes')) : null]),
+                  ? __alloT('stem.machinelab.reference_one_change', '1 change') : changed.length + ' ' + __alloT('stem.machinelab.reference_changes', 'changes')) : null,
+              record ? h('span', { key: 'record', style: { display: 'inline-block', marginLeft: 8, fontSize: 11, color: T.accent } },
+                __alloT('stem.machinelab.evidence_kept', 'Record kept')) : null]),
           h('div', { key: 'body', style: { padding: '0 10px 10px' } }, [
             h('p', { key: 'help', style: { margin: '0 0 10px', fontSize: 12, lineHeight: 1.5, color: T.dim } },
               __alloT('stem.machinelab.reference_help', 'Save a setup, then change one setting. Compare the force you need and the distance your hand travels. Each station keeps its own saved setup.')),
@@ -7640,7 +7749,7 @@ window.StemLab = window.StemLab || {
                   color: changed.length ? T.accent : T.dim, cursor: changed.length ? 'pointer' : 'default' }) },
                 __alloT('stem.machinelab.reference_restore', 'Restore saved setup')) : null,
               saved ? h('button', { key: 'clear', type: 'button', onClick: function (ev) { saveReference(true, ev); }, style: buttonStyle },
-                __alloT('stem.machinelab.reference_clear', 'Clear comparison')) : null
+                __alloT('stem.machinelab.reference_clear_setup', 'Clear saved setup')) : null
             ]),
             saved ? h('div', { key: 'comparison' }, [
               changed.length ? h('ul', { key: 'changes', 'data-ml-reference-changes': '', style: { margin: '0 0 10px', padding: 0, listStyle: 'none' } },
@@ -7676,9 +7785,19 @@ window.StemLab = window.StemLab || {
               ]),
               h('p', { key: 'scale', style: { margin: '8px 0 0', fontSize: 11, lineHeight: 1.45, color: T.dim } },
                 __alloT('stem.machinelab.reference_scale', 'Dashed = saved; filled = now. Each pair shares a scale. Values use the ideal model and are rounded.'))
-            ]) : null
+            ]) : null,
+            saved ? h('div', { key: 'keep', style: { marginTop: 12 } }, [
+              h('button', { key: 'button', type: 'button', 'data-ml-keep-comparison': '', disabled: !canSave || !changed.length,
+                onClick: keepComparison, style: Object.assign({}, buttonStyle, { borderColor: T.accent,
+                  cursor: canSave && changed.length ? 'pointer' : 'default', opacity: canSave && changed.length ? 1 : 0.65 }) },
+                record ? __alloT('stem.machinelab.evidence_replace', 'Replace comparison record') : __alloT('stem.machinelab.evidence_save', 'Save comparison')),
+              h('p', { key: 'help', style: { margin: '6px 0 0', fontSize: 11, lineHeight: 1.45, color: T.dim } }, record
+                ? __alloT('stem.machinelab.evidence_replace_help', 'Replacing keeps the new pair and starts a new explanation. Each station keeps one comparison record.')
+                : __alloT('stem.machinelab.evidence_save_help', 'Change a setting, then keep the pair to explain what you found. Each station keeps one comparison record.'))
+            ]) : null,
+            evidencePanel()
           ]),
-          h('style', { key: 'style' }, '.ml-station-comparison button:focus-visible,.ml-station-comparison summary:focus-visible{outline:3px solid currentColor;outline-offset:2px}@media(forced-colors:active){.ml-station-comparison [data-ml-reference-bar]{forced-color-adjust:none;border-color:CanvasText!important}.ml-station-comparison [data-ml-reference-bar=now]{background:CanvasText!important}.ml-station-comparison [data-ml-reference-bar=saved]{background:Canvas!important}}')
+          h('style', { key: 'style' }, '.ml-station-comparison button:focus-visible,.ml-station-comparison summary:focus-visible,.ml-station-comparison textarea:focus-visible{outline:3px solid currentColor;outline-offset:2px}@media(forced-colors:active){.ml-station-comparison [data-ml-reference-bar]{forced-color-adjust:none;border-color:CanvasText!important}.ml-station-comparison [data-ml-reference-bar=now]{background:CanvasText!important}.ml-station-comparison [data-ml-reference-bar=saved]{background:Canvas!important}}')
         ]);
       }
 
