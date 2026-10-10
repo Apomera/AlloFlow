@@ -11691,6 +11691,7 @@ window.StemLab = window.StemLab || {
           return { bench: b, record: validStationExperiment(d.benchExperiments && d.benchExperiments[b.id], b) };
         }).filter(function (entry) { return !!entry.record; });
         lines.push(__alloT('stem.machinelab.rec_comparisons', 'Recorded comparisons: ') + experiments.length + '/6');
+        var recordRows = {};
         experiments.forEach(function (entry) {
           var b = entry.bench, record = entry.record, before = record.before.settings, after = record.after.settings;
           var beforeMA = b.ma(before), afterMA = b.ma(after), info = recordedInvestigation(record, b);
@@ -11713,10 +11714,33 @@ window.StemLab = window.StemLab || {
           details.push(__alloT('stem.machinelab.evidence_work_in', 'Work put in') + ': ' + fmt(beforeWork.workIn, 3) + ' J → ' + fmt(afterWork.workIn, 3) + ' J');
           details.push(__alloT('stem.machinelab.evidence_work_out', 'Work delivered') + ': ' + fmt(beforeWork.workOut, 3) + ' J → ' + fmt(afterWork.workOut, 3) + ' J');
           var note = typeof record.note === 'string' ? record.note.slice(0, 1200).trim() : '';
+          entry.evidenceText = details.join('\n');
           details.push(note ? __alloT('stem.machinelab.rec_experiment_explanation', 'My explanation: ') + note
             : __alloT('stem.machinelab.rec_experiment_no_explanation', 'No explanation added yet.'));
+          recordRows[lines.length] = entry;
           lines.push(details.join('\n'));
         });
+
+        function editRecord(entry, value) {
+          setLabToolData(function (prev) {
+            var cur = (prev && prev.machineLab) || {}, records = cur.benchExperiments || {};
+            var current = records[entry.bench.id];
+            if (!current || current.before !== entry.record.before || current.after !== entry.record.after) return prev;
+            var next = Object.assign({}, records);
+            next[entry.bench.id] = Object.assign({}, current, { note: value.slice(0, 1200) });
+            return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { benchExperiments: next }) });
+          });
+        }
+        function reviewStation(entry) {
+          updMulti({ view: 'machines', bench: entry.bench.id, shopAnimating: false });
+          setTimeout(function () {
+            var target = typeof document !== 'undefined' && document.getElementById('ml-evidence-note-' + entry.bench.id);
+            if (!target) return;
+            var panel = target.closest('.ml-station-comparison');
+            if (panel) panel.open = true;
+            target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'center', behavior: 'auto' });
+          }, 0);
+        }
 
         var asText = __alloT('stem.machinelab.rec_head', 'Machine Lab — work record') + '\n' +
           __alloT('stem.machinelab.rec_level', 'Reading level: ') + BAND_LABELS[band] + '\n' +
@@ -11728,15 +11752,44 @@ window.StemLab = window.StemLab || {
             __alloT('stem.machinelab.rec_intro', 'Everything you have done in this session, gathered in one place. It is a record of your work, not a mark, and nothing here is scored.')),
           h('ul', { key: 'l', style: { listStyle: 'none', margin: '0 0 10px', padding: 0 } },
             lines.map(function (t, i) {
+              var entry = recordRows[i], noteId = entry && 'ml-record-note-' + entry.bench.id;
               return h('li', {
-                key: i,
+                key: entry ? 'comparison-' + entry.bench.id : i,
+                'data-ml-record-station': entry ? entry.bench.id : undefined,
                 style: {
                   padding: '6px 0', fontSize: 13, color: T.text, lineHeight: 1.55, whiteSpace: 'pre-line', overflowWrap: 'anywhere',
                   borderTop: i ? '1px solid ' + T.border : 'none'
                 }
-              }, t);
+              }, entry ? [
+                h('div', { key: 'evidence' }, entry.evidenceText),
+                h('label', { key: 'label', htmlFor: noteId, style: { display: 'block', marginTop: 10, fontWeight: 750 } },
+                  __alloT('stem.machinelab.rec_edit_explanation', 'My explanation') + ' — ' + entry.bench.label),
+                h('textarea', { key: 'note', id: noteId, rows: 3, maxLength: 1200,
+                  value: typeof entry.record.note === 'string' ? entry.record.note.slice(0, 1200) : '',
+                  'aria-describedby': noteId + '-help', onChange: function (ev) { editRecord(entry, ev.target.value); },
+                  style: { display: 'block', width: '100%', boxSizing: 'border-box', minHeight: 80, resize: 'vertical', padding: 10,
+                    borderRadius: 8, border: '1px solid ' + T.border, background: T.bg, color: T.text, font: 'inherit' } }),
+                h('p', { key: 'help', id: noteId + '-help', style: { margin: '5px 0 8px', fontSize: 12, color: T.dim, whiteSpace: 'normal' } },
+                  __alloT('stem.machinelab.rec_edit_help', 'Use the recorded numbers to explain the force and travel tradeoff. Changes are saved with this comparison and included when you copy or download the record.')),
+                band === 'g68' || band === 'g912' ? h('button', { key: 'review', type: 'button', onClick: function () { reviewStation(entry); },
+                  style: { minHeight: 42, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: T.card, color: T.text, cursor: 'pointer', font: 'inherit', whiteSpace: 'normal' } },
+                  __alloT('stem.machinelab.rec_review_station', 'Review at station') + ' — ' + entry.bench.label) : null
+              ] : t);
             })),
           h('div', { key: 'acts', style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } }, [
+            h('button', { key: 'download', type: 'button', onClick: function () {
+              var url = null, link = null;
+              try {
+                url = URL.createObjectURL(new Blob([asText], { type: 'text/plain;charset=utf-8' }));
+                link = document.createElement('a'); link.href = url; link.download = 'machine-lab-work-record.txt';
+                document.body.appendChild(link); link.click();
+                setTimeout(function () { URL.revokeObjectURL(url); }, 30000);
+              } catch (e) {
+                if (url) URL.revokeObjectURL(url);
+                addToast(__alloT('stem.machinelab.rec_download_failed', 'Could not download. Copy the record or select its text instead.'));
+              } finally { if (link && link.parentNode) link.parentNode.removeChild(link); }
+            }, style: { minHeight: 42, padding: '8px 12px', borderRadius: 8, cursor: 'pointer', border: '1px solid ' + T.border,
+              background: T.card, color: T.text, fontSize: 13, fontWeight: 700 } }, __alloT('stem.machinelab.rec_download', 'Download text record')),
             (typeof navigator !== 'undefined' && navigator.clipboard) ? h('button', {
               key: 'copy',
               onClick: function () {

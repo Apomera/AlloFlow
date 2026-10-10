@@ -316,7 +316,7 @@ describe('Machine Lab: guided investigations', () => {
     editor.props.onChange({ target: { value: note } });
     s.patch({ view: 'learn', manualTopic: 'record', leverEffortArm: 1, benchReferences: {} });
     const recordText = content(s.render());
-    expect(recordText).toContain(note);
+    expect(s.find((node) => node.props && node.props.id === 'ml-record-note-lever').props.value).toBe(note);
     expect(recordText).toMatch(/[Pp]rediction/);
     expect(recordText).toMatch(/[Ss]ame/);
     expect(recordText).toMatch(/[Mm]ore/);
