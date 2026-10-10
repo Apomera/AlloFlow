@@ -283,6 +283,19 @@ function stageDesktopAppBuild(sourceBuildDir = APP_BUILD, inputFingerprint = nul
   }
 }
 
+function copyDesktopPublicAssets(buildOutputDir, publicDir = path.join(APP_ROOT, 'public')) {
+  // Reconcile runtime assets before postbuild stamps and validates the isolated shell.
+  const reserved = new Set(['index.html', 'asset-manifest.json', 'static', 'app']);
+  fs.cpSync(publicDir, buildOutputDir, {
+    recursive: true,
+    dereference: true,
+    filter(file) {
+      const relative = path.relative(publicDir, file);
+      return !reserved.has(relative.split(path.sep)[0]);
+    },
+  });
+}
+
 function buildAndStage({ buildOutputDir, inputFingerprint }) {
   const env = {
     ...process.env,
@@ -340,6 +353,8 @@ function buildAndStage({ buildOutputDir, inputFingerprint }) {
     }
     throw new Error('AlloFlow web build failed.');
   }
+
+  copyDesktopPublicAssets(buildOutputDir);
 
   const postbuild = path.join(APP_ROOT, 'postbuild.js');
   if (fs.existsSync(postbuild)) {
@@ -430,6 +445,7 @@ if (require.main === module) {
 
 module.exports = {
   BUILD_INPUT_FINGERPRINT_FILE,
+  copyDesktopPublicAssets,
   computeBuildInputFingerprint,
   readPublishedFingerprint,
   shouldFingerprintPath,

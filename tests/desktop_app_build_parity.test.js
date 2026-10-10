@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join, resolve, sep } from 'node:path';
 import { createRequire } from 'node:module';
 import { execFileSync } from 'node:child_process';
 
@@ -13,6 +13,7 @@ const {
 } = require('../desktop/scripts/check-desktop-app-build.cjs');
 const {
   BUILD_INPUT_FINGERPRINT_FILE,
+  copyDesktopPublicAssets,
   shouldFingerprintPath,
 } = require('../desktop/scripts/build-desktop-web.cjs');
 
@@ -73,7 +74,11 @@ function makeValidFixture() {
 
 afterEach(() => {
   while (temporaryRoots.length) {
-    rmSync(temporaryRoots.pop(), { recursive: true, force: true });
+    const root = resolve(temporaryRoots.pop());
+    if (!root.startsWith(resolve(tmpdir()) + sep) || !basename(root).startsWith('alloflow-')) {
+      throw new Error('Refusing to remove a directory outside the test fixtures: ' + root);
+    }
+    rmSync(root, { recursive: true, force: true });
   }
 });
 
@@ -112,6 +117,39 @@ describe('desktop app-build deployment guard', () => {
     expect(shouldFingerprintPath(join(process.cwd(), 'desktop', 'web-app', 'src', 'App.jsx'))).toBe(true);
     expect(shouldFingerprintPath(join(process.cwd(), 'desktop', 'web-app', 'public', 'doc_pipeline_module.js'))).toBe(true);
     expect(shouldFingerprintPath(join(process.cwd(), 'desktop', 'web-app', 'public', 'app', 'index.html'))).toBe(false);
+  });
+
+  it('restores missing and stale runtime assets without overwriting the compiled desktop shell', () => {
+    const root = mkdtempSync(join(tmpdir(), 'alloflow-desktop-public-assets-'));
+    temporaryRoots.push(root);
+    const publicDir = join(root, 'public');
+    const buildRoot = join(root, 'build');
+    const compiled = {
+      'index.html': '<html>compiled desktop shell</html>',
+      'asset-manifest.json': '{"files":{"main.js":"./static/js/main.1234abcd.js"}}',
+      'static/js/main.1234abcd.js': 'const desktopBundle = true;',
+      'static/css/main.5678cdef.css': 'body { color: #111; }',
+    };
+    for (const [file, content] of Object.entries(compiled)) {
+      write(root, 'build/' + file, content);
+      write(root, 'public/' + file, 'stale hosted content');
+    }
+    write(root, 'public/app/index.html', '<html>nested hosted shell</html>');
+    const runtime = {
+      'misc_handlers_module.js': 'window.MiscHandlersModule = {};',
+      'stem_lab/perception_walk.js': 'window.PerceptionWalk = {};',
+      'stem_lab/perception_walk_scene.js': 'window.PerceptionWalkScene = {};',
+      'sw.js': 'const CACHE_NAME = "alloflow-v__BUILD_TS__";',
+      'alloflow_desktop_bridge.js': 'window.__desktopBridge = true;',
+    };
+    for (const [file, content] of Object.entries(runtime)) write(root, 'public/' + file, content);
+    write(root, 'build/misc_handlers_module.js', 'stale handler');
+
+    copyDesktopPublicAssets(buildRoot, publicDir);
+
+    for (const [file, content] of Object.entries(compiled)) expect(readFileSync(join(buildRoot, file), 'utf8')).toBe(content);
+    for (const [file, content] of Object.entries(runtime)) expect(readFileSync(join(buildRoot, file), 'utf8')).toBe(content);
+    expect(existsSync(join(buildRoot, 'app'))).toBe(false);
   });
 
   it('restores missing service-worker and bridge assets before stamping an isolated build', () => {
