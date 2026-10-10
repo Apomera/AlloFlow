@@ -1,0 +1,126 @@
+{
+  "date": "2026-10-10",
+  "sourceSha256": "54f493af83681c8c7d047b80add5b70547188392c00bb912f517eadefd882f58",
+  "desktopMirrorMatches": true,
+  "browserEmbedsFinalSource": true,
+  "syntaxChecks": [
+    "stem_lab/stem_tool_machinelab.js",
+    "dev-tools/ml_design_revisions_qa.cjs"
+  ],
+  "scopedWhitespaceCheck": "passed",
+  "tests": {
+    "passed": 489,
+    "failed": 0,
+    "files": 13,
+    "receipt": "tests-final.json",
+    "fileResults": [
+      {
+        "file": "tests/machinelab_a11y.test.js",
+        "passed": 28,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_bench_math.test.js",
+        "passed": 20,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_design_decisions.test.js",
+        "passed": 56,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_design_limits.test.js",
+        "passed": 45,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_design_revisions.test.js",
+        "passed": 34,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_grade_bands.test.js",
+        "passed": 37,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_guided_investigation.test.js",
+        "passed": 30,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_i18n_hygiene.test.js",
+        "passed": 8,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_paired_evidence.test.js",
+        "passed": 11,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_read_aloud.test.js",
+        "passed": 8,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_record_review.test.js",
+        "passed": 9,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_views.test.js",
+        "passed": 192,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_work_record.test.js",
+        "passed": 11,
+        "status": "passed"
+      }
+    ]
+  },
+  "browser": {
+    "passed": 45,
+    "errors": [],
+    "receipt": "browser/results.json",
+    "screenshotsVisuallyInspected": [
+      "desktop-live-comparison",
+      "phone-changed-limits",
+      "dark-phone-revision",
+      "forced-colors-work-record"
+    ],
+    "viewports": [
+      1150,
+      390,
+      320
+    ],
+    "nativeDownload": "browser/downloaded-record.txt",
+    "realReactAndThree": true
+  },
+  "initialFocusedRun": {
+    "passed": 87,
+    "receipt": "tests-design-revisions.json",
+    "note": "Precedes final export-order clarification and three additional semantic cases; not counted twice."
+  },
+  "recoveredHarnessRuns": [
+    {
+      "receipt": "browser/results-initial.json",
+      "reason": "Nested disclosure made summary locator ambiguous; restricted it to direct child summary."
+    },
+    {
+      "receipt": "browser/results-fixture-recovery.json",
+      "reason": "Dark remount reset live geometry to fixture defaults; explicitly supplied recorded pair settings before deliberate live drift."
+    }
+  ],
+  "review": "Independent read-only review found no blocking product issue.",
+  "observations": [
+    "Existing React key warnings in siege and compare view rendering; tests pass."
+  ],
+  "limits": [
+    "Ideal machine model; no friction or material-strength modeling.",
+    "No full application build, physical assistive-technology session or performance benchmark.",
+    "No push or deployment."
+  ]
+}

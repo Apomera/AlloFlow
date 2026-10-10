@@ -1,0 +1,68 @@
+Machine Lab — work record
+Reading level: Grades 6-8
+Benches proven: 0/6
+Current prediction streak: 0
+Machines fired: none yet
+Shots logged: 0
+Recorded comparisons: 1/6
+Recorded comparison: Lever
+Investigation: What changes when you double the effort arm?
+Original predictions — effort force: Same; hand travel: More
+All pairs below read before → after. Ideal model results; values are rounded.
+Effort arm: 2 m → 4 m (Changed)
+Load arm: 1 m → 1 m (held constant)
+Load: 400 N → 400 N (held constant)
+Load moves: 0.5 m → 0.5 m (held constant)
+Mechanical advantage: 2× → 4×
+Effort needed: 200 N → 100 N
+Your hand moves: 1 m → 2 m
+Work put in: 200 J → 200 J
+Work delivered: 200 J → 200 J
+My explanation: Separate investigation evidence.
+Recorded designs: 1/6
+Recorded design: Lever
+Fixed recorded settings and limits. Ideal model results; values are rounded.
+Maximum effort force: 100 N
+Maximum total hand travel: 3 m
+Chosen setting: Load arm
+Effort arm: 2 m
+Load arm: 0.5 m
+Load: 400 N
+Load moves: 0.5 m
+Mechanical advantage: 4×
+Effort needed: 100 N · Within limit
+Total hand travel: 2 m · Within limit
+Task work: 200 J
+Recorded setup meets both limits.
+My explanation: Revision: a 0.5 m load arm halves effort to 100 N.
+Hand travel doubles to 2 m, within my 3 m limit. <literal>
+The extra travel explains the lower force.!
+
+Previous design: Lever
+Fixed recorded settings and limits. Ideal model results; values are rounded.
+Maximum effort force: 100 N
+Maximum total hand travel: 3 m
+Chosen setting: Load arm
+Effort arm: 2 m
+Load arm: 1 m
+Load: 400 N
+Load moves: 0.5 m
+Mechanical advantage: 2×
+Effort needed: 200 N · Over limit
+Total hand travel: 1 m · Within limit
+Task work: 200 J
+Previous setup does not meet both limits.
+Previous explanation: First trial: 200 N exceeds my 100 N limit.
+I predict a shorter load arm will reduce effort.
+Previous → Recorded. Ideal results and differences are rounded.
+Same task: load and load movement are held constant.
+One geometry setting changed: Load arm.
+The limits are unchanged.
+With the task fixed, this comparison isolates one geometry change.
+Load arm: 1 → 0.5 m
+Effort needed: 200 → 100 N (change: -100 N)
+Total hand travel: 1 → 2 m (change: +1 m)
+Task work: 200 → 200 J (change: 0 J)
+Both setups judged against previous limits: 100 N · 3 m
+Previous: Does not meet both limits · effort: Over limit; travel: Within limit
+Recorded: Meets both limits · effort: Within limit; travel: Within limit

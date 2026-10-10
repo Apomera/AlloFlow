@@ -7645,11 +7645,18 @@ window.StemLab = window.StemLab || {
             !designControls(b).some(function (c) { return c.key === record.control; })) return null;
         return _machineMath.designFit(record.settings[b.loadKey], record.settings.loadDistance, b.ma(record.settings), record.limits.force, record.limits.travel) ? record : null;
       }
-      function designRecordText(record, forBench) {
+      function designSnapshot(record, forBench) {
+        var b = forBench || bench;
+        return { benchId: b.id, settings: stationSettingsCopy(record.settings, b),
+          limits: { force: record.limits.force, travel: record.limits.travel }, control: record.control,
+          note: typeof record.note === 'string' ? record.note.slice(0, 1200) : '' };
+      }
+      function designSnapshotText(record, forBench, previous) {
         var b = forBench || bench, settings = record.settings, limits = record.limits;
         var result = _machineMath.designFit(settings[b.loadKey], settings.loadDistance, b.ma(settings), limits.force, limits.travel);
         var selected = designControl(record, b);
-        var details = [__alloT('stem.machinelab.rec_design_station', 'Recorded design: ') + b.label,
+        var details = [(previous ? __alloT('stem.machinelab.design_previous_station', 'Previous design: ') :
+          __alloT('stem.machinelab.rec_design_station', 'Recorded design: ')) + b.label,
           __alloT('stem.machinelab.rec_design_fixed', 'Fixed recorded settings and limits. Ideal model results; values are rounded.'),
           __alloT('stem.machinelab.design_force_limit', 'Maximum effort force') + ': ' + fmt(limits.force, 3) + ' N',
           __alloT('stem.machinelab.design_travel_limit', 'Maximum total hand travel') + ': ' + fmt(limits.travel, 3) + ' m',
@@ -7663,9 +7670,114 @@ window.StemLab = window.StemLab || {
         details.push(__alloT('stem.machinelab.design_total_travel', 'Total hand travel') + ': ' + fmt(result.travel, 3) + ' m · ' +
           (result.travelOK ? __alloT('stem.machinelab.design_within', 'Within limit') : __alloT('stem.machinelab.design_over', 'Over limit')));
         details.push(__alloT('stem.machinelab.design_work', 'Task work: ') + fmt(settings[b.loadKey] * settings.loadDistance, 3) + ' J');
-        details.push(result.fits ? __alloT('stem.machinelab.design_record_fits', 'Recorded setup meets both limits.') :
-          __alloT('stem.machinelab.design_record_misses', 'Recorded setup does not meet both limits.'));
+        details.push(previous ? (result.fits ? __alloT('stem.machinelab.design_previous_fits', 'Previous setup meets both limits.') :
+          __alloT('stem.machinelab.design_previous_misses', 'Previous setup does not meet both limits.')) :
+          (result.fits ? __alloT('stem.machinelab.design_record_fits', 'Recorded setup meets both limits.') :
+          __alloT('stem.machinelab.design_record_misses', 'Recorded setup does not meet both limits.')));
         return details.join('\n');
+      }
+      function designComparisonInfo(before, after, forBench, mode) {
+        var b = forBench || bench, a = before.settings, z = after.settings, revision = mode === 'revision';
+        var beforeLabel = revision ? __alloT('stem.machinelab.design_previous', 'Previous') : __alloT('stem.machinelab.reference_before', 'Saved');
+        var afterLabel = revision ? __alloT('stem.machinelab.design_recorded', 'Recorded') : __alloT('stem.machinelab.design_current', 'Current');
+        var sameTask = a[b.loadKey] === z[b.loadKey] && a.loadDistance === z.loadDistance;
+        var sameLimits = before.limits.force === after.limits.force && before.limits.travel === after.limits.travel;
+        var geometry = designControls(b).filter(function (c) { return a[c.key] !== z[c.key]; });
+        var beforeFit = _machineMath.designFit(a[b.loadKey], a.loadDistance, b.ma(a), before.limits.force, before.limits.travel);
+        var afterFit = _machineMath.designFit(z[b.loadKey], z.loadDistance, b.ma(z), before.limits.force, before.limits.travel);
+        var ownFit = _machineMath.designFit(z[b.loadKey], z.loadDistance, b.ma(z), after.limits.force, after.limits.travel);
+        var intro = [beforeLabel + ' → ' + afterLabel + '. ' + __alloT('stem.machinelab.design_compare_rounded', 'Ideal results and differences are rounded.'),
+          sameTask ? __alloT('stem.machinelab.design_same_task', 'Same task: load and load movement are held constant.') :
+            __alloT('stem.machinelab.design_changed_task', 'Different task: the load or its movement changed. These result differences cannot be attributed to geometry alone.'),
+          geometry.length === 1 ? __alloT('stem.machinelab.design_one_geometry', 'One geometry setting changed: ') + geometry[0].label + '.' : geometry.length > 1
+            ? __alloT('stem.machinelab.design_several_geometry', 'Several geometry settings changed. Their individual effects are not isolated.')
+            : __alloT('stem.machinelab.design_no_geometry', 'No geometry settings changed.'),
+          sameLimits ? __alloT('stem.machinelab.design_same_limits', 'The limits are unchanged.') :
+            __alloT('stem.machinelab.design_changed_limits', 'The limits changed. Limits affect acceptance, not the predicted force, travel or work.')];
+        if (sameTask && geometry.length === 1) intro.push(__alloT('stem.machinelab.design_controlled_change', 'With the task fixed, this comparison isolates one geometry change.'));
+        stationReferenceSettings(b).forEach(function (c) {
+          if (a[c.key] !== z[c.key]) intro.push(c.label + ': ' + fmt(a[c.key], 3) + ' → ' + fmt(z[c.key], 3) + (c.unit ? ' ' + c.unit : ''));
+        });
+        if (!sameLimits) {
+          intro.push(__alloT('stem.machinelab.design_force_limit', 'Maximum effort force') + ': ' + fmt(before.limits.force, 3) + ' → ' + fmt(after.limits.force, 3) + ' N');
+          intro.push(__alloT('stem.machinelab.design_travel_limit', 'Maximum total hand travel') + ': ' + fmt(before.limits.travel, 3) + ' → ' + fmt(after.limits.travel, 3) + ' m');
+        }
+        if (before.control !== after.control) intro.push(__alloT('stem.machinelab.design_search_changed', 'Chosen search setting: ') +
+          designControl(before, b).label + ' → ' + designControl(after, b).label + '. ' +
+          __alloT('stem.machinelab.design_search_not_geometry', 'Changing this choice alone does not change the machine.'));
+        var metrics = [
+          { key: 'effort', label: __alloT('stem.machinelab.effort_needed', 'Effort needed'), unit: 'N', before: beforeFit.force, after: afterFit.force },
+          { key: 'travel', label: __alloT('stem.machinelab.design_total_travel', 'Total hand travel'), unit: 'm', before: beforeFit.travel, after: afterFit.travel },
+          { key: 'work', label: __alloT('stem.machinelab.design_task_work_label', 'Task work'), unit: 'J', before: a[b.loadKey] * a.loadDistance, after: z[b.loadKey] * z.loadDistance }
+        ];
+        metrics.forEach(function (m) {
+          m.delta = m.after - m.before;
+          if (Math.abs(m.delta) <= 1e-10 * Math.max(1, Math.abs(m.before), Math.abs(m.after))) m.delta = 0;
+          var amount = Math.abs(m.delta), change = m.delta === 0 ? '0' : amount < 0.001
+            ? (m.delta > 0 ? __alloT('stem.machinelab.design_tiny_increase', 'increase <0.001') : __alloT('stem.machinelab.design_tiny_decrease', 'decrease <0.001'))
+            : (m.delta > 0 ? '+' : '-') + fmt(amount, 3);
+          m.text = m.label + ': ' + fmt(m.before, 3) + ' → ' + fmt(m.after, 3) + ' ' + m.unit +
+            ' (' + __alloT('stem.machinelab.design_delta', 'change: ') + change + ' ' + m.unit + ')';
+        });
+        function outcome(label, result) {
+          return label + ': ' + (result.fits ? __alloT('stem.machinelab.design_compare_fits', 'Meets both limits') :
+            __alloT('stem.machinelab.design_compare_misses', 'Does not meet both limits')) + ' · ' +
+            __alloT('stem.machinelab.design_effort_short', 'effort') + ': ' + (result.forceOK ? __alloT('stem.machinelab.design_within', 'Within limit') : __alloT('stem.machinelab.design_over', 'Over limit')) + '; ' +
+            __alloT('stem.machinelab.design_travel_short', 'travel') + ': ' + (result.travelOK ? __alloT('stem.machinelab.design_within', 'Within limit') : __alloT('stem.machinelab.design_over', 'Over limit'));
+        }
+        var commonHeading = (revision ? __alloT('stem.machinelab.design_previous_limits', 'Both setups judged against previous limits: ') :
+          __alloT('stem.machinelab.design_saved_limits', 'Both setups judged against saved limits: ')) +
+          fmt(before.limits.force, 3) + ' N · ' + fmt(before.limits.travel, 3) + ' m';
+        var common = [{ key: 'before', result: beforeFit, text: outcome(beforeLabel, beforeFit) },
+          { key: 'after', result: afterFit, text: outcome(afterLabel, afterFit) }];
+        var ownText = sameLimits ? null : outcome(revision ? __alloT('stem.machinelab.design_recorded_own_limits', 'Recorded setup using its recorded limits') :
+          __alloT('stem.machinelab.design_current_own_limits', 'Current setup using current limits'), ownFit);
+        return { sameTask: sameTask, sameLimits: sameLimits, geometry: geometry.length, intro: intro, metrics: metrics,
+          commonHeading: commonHeading, common: common, ownFit: ownFit, ownText: ownText,
+          text: intro.concat(metrics.map(function (m) { return m.text; }), [commonHeading], common.map(function (c) { return c.text; }), ownText ? [ownText] : []).join('\n') };
+      }
+      function designComparisonView(before, after, forBench, mode) {
+        var info = designComparisonInfo(before, after, forBench, mode);
+        return h('div', { key: 'comparison-' + mode, 'data-ml-design-comparison': mode, 'data-same-task': String(info.sameTask),
+          'data-same-limits': String(info.sameLimits), 'data-geometry-changes': info.geometry,
+          style: { fontSize: 13, lineHeight: 1.6, color: T.text, overflowWrap: 'anywhere' } }, [
+            h('div', { key: 'intro', style: { whiteSpace: 'pre-line', marginTop: 8 } }, info.intro.join('\n')),
+            h('ul', { key: 'metrics', style: { margin: '8px 0', paddingLeft: 18 } }, info.metrics.map(function (m) {
+              return h('li', { key: m.key, 'data-ml-design-change': m.key, 'data-before': m.before, 'data-after': m.after, 'data-delta': m.delta }, m.text);
+            })),
+            h('p', { key: 'heading', style: { margin: '8px 0 4px', fontWeight: 750 } }, info.commonHeading),
+            h('ul', { key: 'common', style: { margin: '4px 0 8px', paddingLeft: 18 } }, info.common.map(function (c) {
+              return h('li', { key: c.key, 'data-ml-design-common-fit': c.key, 'data-fit': String(c.result.fits) }, c.text);
+            })),
+            info.ownText ? h('p', { key: 'own', 'data-ml-design-own-fit': 'after', 'data-fit': String(info.ownFit.fits), style: { margin: '8px 0' } }, info.ownText) : null
+          ]);
+      }
+      function designRevisionText(record, forBench) {
+        var b = forBench || bench, previous = validDesignRecord(record.previous, b);
+        if (!previous) return '';
+        var note = typeof previous.note === 'string' ? previous.note.slice(0, 1200).trim() : '';
+        return designSnapshotText(previous, b, true) + '\n' + (note ? __alloT('stem.machinelab.design_previous_explanation', 'Previous explanation: ') + note :
+          __alloT('stem.machinelab.design_previous_no_explanation', 'No previous explanation added.')) + '\n' +
+          designComparisonInfo(previous, record, b, 'revision').text;
+      }
+      function designRecordText(record, forBench) {
+        var revision = designRevisionText(record, forBench);
+        var note = typeof record.note === 'string' ? record.note.slice(0, 1200).trim() : '';
+        return designSnapshotText(record, forBench) + '\n' + (note ? __alloT('stem.machinelab.rec_experiment_explanation', 'My explanation: ') + note :
+          __alloT('stem.machinelab.rec_experiment_no_explanation', 'No explanation added yet.')) + (revision ? '\n\n' + revision : '');
+      }
+      function designRevisionView(record, forBench) {
+        var b = forBench || bench, previous = validDesignRecord(record.previous, b);
+        if (!previous) return null;
+        var note = typeof previous.note === 'string' ? previous.note.slice(0, 1200).trim() : '';
+        return h('details', { key: 'revision', 'data-ml-design-revision': b.id, style: { marginTop: 10, paddingTop: 8, borderTop: '1px solid ' + T.border } }, [
+          h('summary', { key: 'title', style: { cursor: 'pointer', padding: '6px 0', fontSize: 13, fontWeight: 750, color: T.text } },
+            __alloT('stem.machinelab.design_revision_title', 'Previous design and revision')),
+          h('div', { key: 'previous', style: { fontSize: 13, lineHeight: 1.6, whiteSpace: 'pre-line', overflowWrap: 'anywhere', color: T.text } },
+            designSnapshotText(previous, b, true) + '\n' + (note ? __alloT('stem.machinelab.design_previous_explanation', 'Previous explanation: ') + note :
+              __alloT('stem.machinelab.design_previous_no_explanation', 'No previous explanation added.'))),
+          designComparisonView(previous, record, b, 'revision')
+        ]);
       }
       function editDesignRecord(record, forBench, value) {
         setLabToolData(function (prev) {
@@ -7758,6 +7870,7 @@ window.StemLab = window.StemLab || {
             var records = Object.assign({}, cur.benchDesignRecords || {});
             records[bench.id] = { benchId: bench.id, settings: stationSettingsCopy(setup),
               limits: { force: forceLimit, travel: travelLimit }, control: control.key, note: '' };
+            if (recorded) records[bench.id].previous = designSnapshot(recorded);
             applied = true;
             return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { benchDesignRecords: records }) });
           });
@@ -7842,7 +7955,7 @@ window.StemLab = window.StemLab || {
                   __alloT('stem.machinelab.design_no_step', 'No available increment of this setting meets both limits: ') + control.label + '. ' +
                   __alloT('stem.machinelab.design_no_step_help', 'Try a different held setting, a wider limit, or another station. A possible force/travel budget does not guarantee a usable setting here.')) : null,
               h('p', { key: 'save-help', style: Object.assign({}, textStyle, { fontSize: 12, color: T.dim }) }, recorded
-                ? __alloT('stem.machinelab.design_replace_help', 'Replacing saves the current setup and limits and starts a new explanation. Your recorded comparison is kept separately.')
+                ? __alloT('stem.machinelab.design_revision_replace_help', 'Replacing keeps the previous design and its explanation beside the new record, then starts a fresh explanation. Only the latest two designs are kept. Your recorded comparison remains separate.')
                 : __alloT('stem.machinelab.design_save_help', 'Record a successful design or a failed trial, then explain the tradeoff. The saved numbers stay fixed while you continue experimenting.')),
               h('button', { key: 'save', type: 'button', onClick: saveDesign,
                 style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + T.border,
@@ -7851,7 +7964,15 @@ window.StemLab = window.StemLab || {
             ]),
           recorded ? h('div', { key: 'recorded', 'data-ml-design-recorded': bench.id,
             style: { marginTop: 14, padding: 10, borderRadius: 8, border: '1px solid ' + T.border, background: T.bg } }, [
-              h('div', { key: 'evidence', style: { fontSize: 13, lineHeight: 1.6, color: T.text, whiteSpace: 'pre-line', overflowWrap: 'anywhere' } }, designRecordText(recorded)),
+              h('div', { key: 'evidence', style: { fontSize: 13, lineHeight: 1.6, color: T.text, whiteSpace: 'pre-line', overflowWrap: 'anywhere' } }, designSnapshotText(recorded)),
+              h('details', { key: 'compare', 'data-ml-design-compare': bench.id, style: { marginTop: 8 } }, [
+                h('summary', { key: 'title', style: { cursor: 'pointer', padding: '6px 0', fontSize: 13, fontWeight: 750, color: T.text } },
+                  __alloT('stem.machinelab.design_compare_current', 'Compare with current setup')),
+                fit ? designComparisonView(recorded, { settings: setup, limits: { force: forceLimit, travel: travelLimit }, control: control.key }, bench, 'live') :
+                  h('p', { key: 'unavailable', 'data-ml-design-compare-unavailable': '', style: textStyle },
+                    __alloT('stem.machinelab.design_compare_unavailable', 'Enter valid current settings and limits to compare. The saved design remains available above.'))
+              ]),
+              designRevisionView(recorded),
               h('label', { key: 'label', htmlFor: 'ml-design-note-' + bench.id,
                 style: { display: 'block', margin: '10px 0 4px', fontSize: 13, fontWeight: 750, color: T.text } },
                 __alloT('stem.machinelab.design_explanation', 'My design explanation')),
@@ -11992,11 +12113,9 @@ window.StemLab = window.StemLab || {
         }).filter(function (entry) { return !!entry.record; });
         lines.push(__alloT('stem.machinelab.rec_designs', 'Recorded designs: ') + designs.length + '/6');
         designs.forEach(function (entry) {
-          entry.evidenceText = designRecordText(entry.record, entry.bench);
-          var note = typeof entry.record.note === 'string' ? entry.record.note.slice(0, 1200).trim() : '';
+          entry.evidenceText = designSnapshotText(entry.record, entry.bench);
           recordRows[lines.length] = entry;
-          lines.push(entry.evidenceText + '\n' + (note ? __alloT('stem.machinelab.rec_experiment_explanation', 'My explanation: ') + note :
-            __alloT('stem.machinelab.rec_experiment_no_explanation', 'No explanation added yet.')));
+          lines.push(designRecordText(entry.record, entry.bench));
         });
 
         function editRecord(entry, value) {
@@ -12042,6 +12161,7 @@ window.StemLab = window.StemLab || {
                 }
               }, entry ? [
                 h('div', { key: 'evidence' }, entry.evidenceText),
+                entry.isDesign ? designRevisionView(entry.record, entry.bench) : null,
                 h('label', { key: 'label', htmlFor: noteId, style: { display: 'block', marginTop: 10, fontWeight: 750 } },
                   (entry.isDesign ? __alloT('stem.machinelab.design_explanation', 'My design explanation') :
                     __alloT('stem.machinelab.rec_edit_explanation', 'My explanation')) + ' — ' + entry.bench.label),
