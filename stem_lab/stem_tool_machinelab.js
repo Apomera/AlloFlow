@@ -7493,7 +7493,7 @@ window.StemLab = window.StemLab || {
         ]);
       }
 
-      function stationReferenceSettings(forBench) { return (forBench || bench).controls.concat([{ key: 'loadDistance', label: __alloT('stem.machinelab.lift_distance', 'Load moves'), min: 0.1, max: 3, unit: 'm' }]); }
+      function stationReferenceSettings(forBench) { return (forBench || bench).controls.concat([{ key: 'loadDistance', label: __alloT('stem.machinelab.lift_distance', 'Load moves'), min: 0.1, max: 3, step: 0.1, unit: 'm' }]); }
       function validStationSetup(setup, forBench) {
         return setup && !Array.isArray(setup) && stationReferenceSettings(forBench).every(function (c) {
           return finite(setup[c.key]) && setup[c.key] >= c.min && setup[c.key] <= c.max;
@@ -7806,6 +7806,19 @@ window.StemLab = window.StemLab || {
         var fit = envelope && _machineMath.designFit(load, loadDist, ma, forceLimit, travelLimit);
         var control = designControl(stored), controls = designControls();
         var recorded = validDesignRecord(d.benchDesignRecords && d.benchDesignRecords[bench.id]);
+        var taskTrials = fit ? [
+          { kind: 'load', key: bench.loadKey, title: __alloT('stem.machinelab.task_double_load', 'Double the load') },
+          { kind: 'movement', key: 'loadDistance', title: __alloT('stem.machinelab.task_double_movement', 'Double the load movement') }
+        ].map(function (trial) {
+          var field = stationReferenceSettings().find(function (c) { return c.key === trial.key; });
+          var value = setup[trial.key] * 2, changed = Object.assign({}, setup); changed[trial.key] = value;
+          var inRange = value >= field.min && value <= field.max;
+          var steps = (value - field.min) / field.step;
+          return Object.assign({}, trial, { field: field, value: value, inRange: inRange,
+            available: inRange && Math.abs(steps - Math.round(steps)) <= 1e-8,
+            work: changed[bench.loadKey] * changed.loadDistance,
+            result: _machineMath.designFit(changed[bench.loadKey], changed.loadDistance, ma, forceLimit, travelLimit) });
+        }) : [];
         var suggestion = null, feasible = [], candidates = [], options = [];
         if (envelope && envelope.possible && fit) {
           var steps = Math.round((control.max - control.min) / control.step);
@@ -7850,8 +7863,10 @@ window.StemLab = window.StemLab || {
             return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { benchDesignLimits: all }) });
           });
         }
-        function applyDesignChoice(ev, choice) {
-          if (!choice || choice.value === setup[control.key]) return;
+        function applyStationSetting(ev, key, value) {
+          if (!fit || !finite(value) || value === setup[key] || !stationReferenceSettings().some(function (c) { return c.key === key; })) return;
+          var changed = Object.assign({}, setup); changed[key] = value;
+          if (!validStationSetup(changed)) return;
           var trigger = ev.currentTarget, panel = trigger.closest('[data-ml-design]'), applied = false;
           setLabToolData(function (prev) {
             var cur = (prev && prev.machineLab) || {}, current = Object.assign({}, _defaults, cur);
@@ -7861,7 +7876,7 @@ window.StemLab = window.StemLab || {
                 _machineMath.parseNum(limitValue(currentLimits, 'travel')) !== travelLimit || designControl(currentLimits).key !== control.key) return prev;
             var patch = { shopAnimating: false, shopMotionProgress: 0.5, shopClueBench: null,
               benchPrediction: '', benchChoice: null, benchResult: null };
-            patch[control.key] = choice.value;
+            patch[key] = value;
             applied = true;
             return Object.assign({}, prev, { machineLab: Object.assign({}, cur, patch) });
           });
@@ -7869,10 +7884,11 @@ window.StemLab = window.StemLab || {
             if (!applied || !panel || !panel.isConnected || typeof document === 'undefined') return;
             // A chosen option remains mounted but becomes disabled, which can blur it.
             if (document.activeElement !== trigger && !(document.activeElement === document.body && (!trigger.isConnected || trigger.disabled))) return;
-            var target = document.getElementById('ml-' + control.key);
+            var target = document.getElementById('ml-' + key);
             if (target) { target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'center', behavior: 'auto' }); }
           }, 0);
         }
+        function applyDesignChoice(ev, choice) { if (choice) applyStationSetting(ev, control.key, choice.value); }
         function applySuggestion(ev) { applyDesignChoice(ev, suggestion); }
         function saveDesign(ev) {
           if (!fit) return;
@@ -7908,6 +7924,58 @@ window.StemLab = window.StemLab || {
             h('li', { key: 'travel', 'data-ml-design-travel-ok': String(result.travelOK) },
               __alloT('stem.machinelab.design_total_travel', 'Total hand travel') + ': ' + fmt(result.travel, 3) + ' m · ' +
               (result.travelOK ? __alloT('stem.machinelab.design_within', 'Within limit') : __alloT('stem.machinelab.design_over', 'Over limit')))
+          ]);
+        }
+        function taskTrialView() {
+          if (!taskTrials.length) return null;
+          return h('details', { key: 'task-trials', 'data-ml-task-trials': bench.id,
+            style: { marginTop: 10, padding: 10, borderRadius: 8, border: '1px solid ' + T.border, background: T.bg } }, [
+            h('summary', { key: 'title', style: { cursor: 'pointer', padding: '6px 0', fontSize: 13, fontWeight: 750, color: T.text } },
+              __alloT('stem.machinelab.task_trials_title', 'Test a changed task')),
+            h('p', { key: 'scope', style: textStyle }, __alloT('stem.machinelab.task_trials_scope',
+              'Each preview starts from the current task and changes one condition. Geometry and limits stay fixed. Applying a trial changes the task, not the machine geometry.')),
+            h('p', { key: 'order', style: textStyle }, __alloT('stem.machinelab.task_trials_order',
+              'Numbers read Current → Trial. Ideal results are rounded; checks use full precision. Your saved design stays fixed until you choose to replace it.')),
+            h('div', { key: 'trials', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,210px),1fr))', gap: 8 } },
+              taskTrials.map(function (trial) {
+                var result = trial.result, field = trial.field, helpId = 'ml-task-trial-help-' + bench.id + '-' + trial.kind;
+                var metrics = [
+                  { key: 'force', label: __alloT('stem.machinelab.effort_needed', 'Effort needed'), unit: 'N', before: fit.force, after: result.force, ok: result.forceOK },
+                  { key: 'travel', label: __alloT('stem.machinelab.design_total_travel', 'Total hand travel'), unit: 'm', before: fit.travel, after: result.travel, ok: result.travelOK },
+                  { key: 'work', label: __alloT('stem.machinelab.design_task_work_label', 'Task work'), unit: 'J', before: envelope.work, after: trial.work }
+                ];
+                return h('div', { key: trial.kind, role: 'group', 'aria-label': trial.title,
+                  'data-ml-task-trial': trial.kind, 'data-key': trial.key, 'data-value': trial.value,
+                  'data-available': String(trial.available), 'data-fits': String(result.fits),
+                  style: { minWidth: 0, padding: 10, borderRadius: 8, border: '1px solid ' + T.border,
+                    background: T.card, color: T.text, overflowWrap: 'anywhere' } }, [
+                  h('p', { key: 'title', style: Object.assign({}, textStyle, { marginTop: 0, fontWeight: 800 }) }, trial.title),
+                  h('p', { key: 'setting', style: Object.assign({}, textStyle, { fontWeight: 750 }) },
+                    field.label + ': ' + fmt(setup[trial.key], 3) + ' → ' + fmt(trial.value, 3) + ' ' + field.unit),
+                  h('ul', { key: 'metrics', style: { paddingLeft: 18, margin: '8px 0', fontSize: 13, lineHeight: 1.6 } },
+                    metrics.map(function (m) {
+                      return h('li', { key: m.key, 'data-ml-task-metric': m.key, 'data-before': m.before, 'data-after': m.after },
+                        m.label + ': ' + fmt(m.before, 3) + ' → ' + fmt(m.after, 3) + ' ' + m.unit + (m.ok === undefined ? '' : ' · ' +
+                          (m.ok ? __alloT('stem.machinelab.design_within', 'Within limit') : __alloT('stem.machinelab.design_over', 'Over limit'))));
+                    })),
+                  h('p', { key: 'relationship', style: textStyle }, trial.kind === 'load'
+                    ? __alloT('stem.machinelab.task_load_relationship', 'Doubling the load doubles effort and work. Total hand travel stays the same.')
+                    : __alloT('stem.machinelab.task_movement_relationship', 'Doubling the load movement doubles hand travel and work. Effort force stays the same.')),
+                  h('p', { key: 'fit', style: Object.assign({}, textStyle, { fontWeight: 750 }) }, result.fits
+                    ? __alloT('stem.machinelab.task_trial_fits', 'This trial meets both limits.')
+                    : __alloT('stem.machinelab.task_trial_misses', 'This trial does not meet both limits.')),
+                  !trial.available ? h('p', { key: 'unavailable', id: helpId, style: textStyle }, !trial.inRange
+                    ? __alloT('stem.machinelab.task_trial_range', 'Preview only: the doubled value is outside this setting range: ') + fmt(field.min, 3) + '–' + fmt(field.max, 3) + ' ' + field.unit + '.'
+                    : __alloT('stem.machinelab.task_trial_step', 'Preview only: the doubled value falls between available slider increments. Step: ') + fmt(field.step, 3) + ' ' + field.unit + '.') : null,
+                  h('button', { key: 'use', type: 'button', 'data-ml-task-use': trial.kind, disabled: !trial.available,
+                    'aria-describedby': !trial.available ? helpId : undefined,
+                    onClick: function (ev) { if (trial.available) applyStationSetting(ev, trial.key, trial.value); },
+                    style: { minHeight: 44, maxWidth: '100%', padding: '8px 12px', borderRadius: 8,
+                      border: '1px solid ' + T.border, background: T.bg, color: T.text, fontSize: 13, fontWeight: 750,
+                      whiteSpace: 'normal', cursor: trial.available ? 'pointer' : 'default' } }, trial.kind === 'load'
+                    ? __alloT('stem.machinelab.task_use_load', 'Use doubled load') : __alloT('stem.machinelab.task_use_movement', 'Use doubled movement'))
+                ]);
+              }))
           ]);
         }
         return card([h('details', { key: 'design', 'data-ml-design': bench.id, className: 'ml-design-limits' }, [
@@ -8013,6 +8081,7 @@ window.StemLab = window.StemLab || {
                 ]) : envelope.possible && !fit.fits ? h('p', { key: 'no-step', 'data-ml-design-no-step': '', style: textStyle },
                   __alloT('stem.machinelab.design_no_step', 'No available increment of this setting meets both limits: ') + control.label + '. ' +
                   __alloT('stem.machinelab.design_no_step_help', 'Try a different held setting, a wider limit, or another station. A possible force/travel budget does not guarantee a usable setting here.')) : null,
+              taskTrialView(),
               h('p', { key: 'save-help', style: Object.assign({}, textStyle, { fontSize: 12, color: T.dim }) }, recorded
                 ? __alloT('stem.machinelab.design_revision_replace_help', 'Replacing keeps the previous design and its explanation beside the new record, then starts a fresh explanation. Only the latest two designs are kept. Your recorded comparison remains separate.')
                 : __alloT('stem.machinelab.design_save_help', 'Record a successful design or a failed trial, then explain the tradeoff. The saved numbers stay fixed while you continue experimenting.')),
