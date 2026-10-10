@@ -7806,7 +7806,7 @@ window.StemLab = window.StemLab || {
         var fit = envelope && _machineMath.designFit(load, loadDist, ma, forceLimit, travelLimit);
         var control = designControl(stored), controls = designControls();
         var recorded = validDesignRecord(d.benchDesignRecords && d.benchDesignRecords[bench.id]);
-        var suggestion = null, feasible = [];
+        var suggestion = null, feasible = [], candidates = [], options = [];
         if (envelope && envelope.possible && fit) {
           var steps = Math.round((control.max - control.min) / control.step);
           for (var i = 0; i <= steps; i++) {
@@ -7815,11 +7815,27 @@ window.StemLab = window.StemLab || {
             var candidate = Object.assign({}, setup); candidate[control.key] = value;
             if (!validStationSetup(candidate)) continue;
             var result = _machineMath.designFit(load, loadDist, bench.ma(candidate), forceLimit, travelLimit);
-            if (result && result.fits) feasible.push(value);
+            if (result && result.fits) { feasible.push(value); candidates.push({ value: value, result: result }); }
             if (!fit.fits && result && result.fits && (!suggestion || Math.abs(value - setup[control.key]) < Math.abs(suggestion.value - setup[control.key]) - 1e-9)) {
               suggestion = { value: value, result: result };
             }
           }
+        }
+        if (candidates.length) {
+          var leastForce = candidates[0], leastTravel = candidates[0], nearest = candidates[0];
+          candidates.forEach(function (c) {
+            if (c.result.force < leastForce.result.force) leastForce = c;
+            if (c.result.travel < leastTravel.result.travel) leastTravel = c;
+            if (Math.abs(c.value - setup[control.key]) < Math.abs(nearest.value - setup[control.key]) - 1e-9) nearest = c;
+          });
+          [{ choice: leastForce, key: 'force', label: __alloT('stem.machinelab.design_least_effort', 'Least effort') },
+            { choice: leastTravel, key: 'travel', label: __alloT('stem.machinelab.design_shortest_travel', 'Shortest travel') },
+            { choice: nearest, key: 'nearest', label: __alloT('stem.machinelab.design_closest_setting', 'Closest setting') }
+          ].forEach(function (goal) {
+            var existing = options.find(function (o) { return o.value === goal.choice.value; });
+            if (!existing) { existing = { value: goal.choice.value, result: goal.choice.result, goals: [] }; options.push(existing); }
+            existing.goals.push({ key: goal.key, label: goal.label });
+          });
         }
         function editLimit(kind, raw) {
           setLabToolData(function (prev) {
@@ -7834,28 +7850,30 @@ window.StemLab = window.StemLab || {
             return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { benchDesignLimits: all }) });
           });
         }
-        function applySuggestion(ev) {
-          if (!suggestion) return;
+        function applyDesignChoice(ev, choice) {
+          if (!choice || choice.value === setup[control.key]) return;
           var trigger = ev.currentTarget, panel = trigger.closest('[data-ml-design]'), applied = false;
           setLabToolData(function (prev) {
             var cur = (prev && prev.machineLab) || {}, current = Object.assign({}, _defaults, cur);
             var currentLimits = cur.benchDesignLimits && cur.benchDesignLimits[bench.id];
-            if (current.bench !== bench.id || !stationSettingsMatch(current, setup) ||
+            if (current.view !== 'machines' || current.bench !== bench.id || !stationSettingsMatch(current, setup) ||
                 _machineMath.parseNum(limitValue(currentLimits, 'force')) !== forceLimit ||
                 _machineMath.parseNum(limitValue(currentLimits, 'travel')) !== travelLimit || designControl(currentLimits).key !== control.key) return prev;
             var patch = { shopAnimating: false, shopMotionProgress: 0.5, shopClueBench: null,
               benchPrediction: '', benchChoice: null, benchResult: null };
-            patch[control.key] = suggestion.value;
+            patch[control.key] = choice.value;
             applied = true;
             return Object.assign({}, prev, { machineLab: Object.assign({}, cur, patch) });
           });
           setTimeout(function () {
             if (!applied || !panel || !panel.isConnected || typeof document === 'undefined') return;
-            if (document.activeElement !== trigger && !(document.activeElement === document.body && !trigger.isConnected)) return;
+            // A chosen option remains mounted but becomes disabled, which can blur it.
+            if (document.activeElement !== trigger && !(document.activeElement === document.body && (!trigger.isConnected || trigger.disabled))) return;
             var target = document.getElementById('ml-' + control.key);
             if (target) { target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'center', behavior: 'auto' }); }
           }, 0);
         }
+        function applySuggestion(ev) { applyDesignChoice(ev, suggestion); }
         function saveDesign(ev) {
           if (!fit) return;
           var trigger = ev && ev.currentTarget, panel = trigger && trigger.closest('[data-ml-design]'), applied = false;
@@ -7943,6 +7961,47 @@ window.StemLab = window.StemLab || {
                   __alloT('stem.machinelab.design_step', 'Slider step: ') + fmt(control.step, 3) + (control.unit ? ' ' + control.unit : '') + '. ',
                   __alloT('stem.machinelab.design_increments', 'Only the listed increments are available; rounded endpoints do not include every value between them.')
                 ] : __alloT('stem.machinelab.design_zero_settings', 'Available slider settings that meet both limits: 0.')) : null,
+              options.length ? h('details', { key: 'options', 'data-ml-design-options': bench.id, 'data-count': options.length,
+                style: { marginTop: 10, padding: 10, borderRadius: 8, border: '1px solid ' + T.border, background: T.bg } }, [
+                h('summary', { key: 'title', style: { cursor: 'pointer', padding: '6px 0', fontSize: 13, fontWeight: 750, color: T.text } },
+                  __alloT('stem.machinelab.design_options_title', 'Explore working designs')),
+                h('p', { key: 'scope', style: textStyle }, __alloT('stem.machinelab.design_options_scope',
+                  'These choices compare available increments of the selected setting. The load, load movement and other geometry stay fixed.')),
+                h('p', { key: 'tradeoff', style: textStyle }, __alloT('stem.machinelab.design_options_tradeoff',
+                  'Less effort requires more hand travel. Choose the tradeoff that suits your design; every option meets both limits.') + ' ' +
+                  __alloT('stem.machinelab.design_work', 'Task work: ') + fmt(envelope.work, 3) + ' J.'),
+                h('div', { key: 'choices', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,210px),1fr))', gap: 8 } },
+                  options.map(function (choice) {
+                    var isCurrent = choice.value === setup[control.key];
+                    var forceMargin = Math.max(0, forceLimit - choice.result.force), travelMargin = Math.max(0, travelLimit - choice.result.travel);
+                    var settingText = control.label + ': ' + fmt(choice.value, 3) + (control.unit ? ' ' + control.unit : '');
+                    var goalText = choice.goals.map(function (g) { return g.label; }).join(' · ');
+                    return h('div', { key: choice.value, 'data-ml-design-option': choice.value,
+                      role: 'group', 'aria-label': goalText + ' — ' + settingText,
+                      'data-goals': choice.goals.map(function (g) { return g.key; }).join(' '), 'data-current': String(isCurrent),
+                      'data-force': choice.result.force, 'data-travel': choice.result.travel,
+                      'data-force-margin': forceMargin, 'data-travel-margin': travelMargin,
+                      style: { minWidth: 0, padding: 10, borderRadius: 8, border: '1px solid ' + T.border,
+                        background: T.card, color: T.text, overflowWrap: 'anywhere' } }, [
+                      h('p', { key: 'goals', style: Object.assign({}, textStyle, { marginTop: 0, fontWeight: 800 }) },
+                        goalText),
+                      h('p', { key: 'setting', style: Object.assign({}, textStyle, { fontWeight: 750 }) }, settingText),
+                      h('ul', { key: 'metrics', style: { paddingLeft: 18, margin: '8px 0', fontSize: 13, lineHeight: 1.6 } }, [
+                        h('li', { key: 'force' }, __alloT('stem.machinelab.effort_needed', 'Effort needed') + ': ' + fmt(choice.result.force, 3) + ' N'),
+                        h('li', { key: 'travel' }, __alloT('stem.machinelab.design_total_travel', 'Total hand travel') + ': ' + fmt(choice.result.travel, 3) + ' m'),
+                        h('li', { key: 'force-margin' }, __alloT('stem.machinelab.design_force_room', 'Below force limit by: ') + fmt(forceMargin, 3) + ' N'),
+                        h('li', { key: 'travel-margin' }, __alloT('stem.machinelab.design_travel_room', 'Below travel limit by: ') + fmt(travelMargin, 3) + ' m')
+                      ]),
+                      h('button', { key: 'apply', type: 'button', 'data-ml-design-use': choice.value, disabled: isCurrent,
+                        onClick: function (ev) { applyDesignChoice(ev, choice); },
+                        style: { minHeight: 44, maxWidth: '100%', padding: '8px 12px', borderRadius: 8,
+                          border: '1px solid ' + T.border, background: T.bg, color: T.text, fontSize: 13, fontWeight: 750,
+                          whiteSpace: 'normal', cursor: isCurrent ? 'default' : 'pointer' } }, isCurrent
+                        ? __alloT('stem.machinelab.design_option_current', 'Current setting')
+                        : __alloT('stem.machinelab.design_option_use', 'Use ') + settingText)
+                    ]);
+                  }))
+              ]) : null,
               suggestion ? h('div', { key: 'suggestion', 'data-ml-design-suggestion': control.key, 'data-value': suggestion.value,
                 style: { marginTop: 10, padding: 10, borderRadius: 8, border: '1px solid ' + T.border, background: T.bg } }, [
                   h('p', { key: 'setting', style: Object.assign({}, textStyle, { marginTop: 0, fontWeight: 750 }) },
