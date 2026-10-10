@@ -1,0 +1,160 @@
+{
+  "date": "2026-10-10",
+  "sourceSha256": "947f75cfffae70c6a510fecb15bfa80dac48f7b421cd4dd8a84987d816876884",
+  "desktopMirrorMatches": true,
+  "browserEmbedsFinalSource": true,
+  "syntaxChecks": [
+    "stem_lab/stem_tool_machinelab.js",
+    "desktop/web-app/public/stem_lab/stem_tool_machinelab.js",
+    "dev-tools/ml_design_undo_qa.cjs"
+  ],
+  "scopedWhitespaceCheck": "passed",
+  "tests": {
+    "passed": 711,
+    "failed": 0,
+    "files": 16,
+    "receipt": "tests-final.json",
+    "fileResults": [
+      {
+        "file": "tests/machinelab_a11y.test.js",
+        "passed": 28,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_bench_math.test.js",
+        "passed": 20,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_design_decisions.test.js",
+        "passed": 56,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_design_limits.test.js",
+        "passed": 45,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_design_revisions.test.js",
+        "passed": 34,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_design_tradeoffs.test.js",
+        "passed": 54,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_design_undo.test.js",
+        "passed": 86,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_grade_bands.test.js",
+        "passed": 37,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_guided_investigation.test.js",
+        "passed": 30,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_i18n_hygiene.test.js",
+        "passed": 8,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_paired_evidence.test.js",
+        "passed": 11,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_read_aloud.test.js",
+        "passed": 8,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_record_review.test.js",
+        "passed": 9,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_task_trials.test.js",
+        "passed": 82,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_views.test.js",
+        "passed": 192,
+        "status": "passed"
+      },
+      {
+        "file": "tests/machinelab_work_record.test.js",
+        "passed": 11,
+        "status": "passed"
+      }
+    ]
+  },
+  "browser": {
+    "passed": 91,
+    "errors": [],
+    "receipt": "browser/results.json",
+    "screenshotsVisuallyInspected": [
+      "desktop-active-undo",
+      "phone-invalid-limits-undo",
+      "dark-manual-drift-undo",
+      "forced-colors-active-undo"
+    ],
+    "viewports": [
+      1150,
+      390,
+      320
+    ],
+    "nativeDownload": "browser/downloaded-record.txt",
+    "realReactAndThree": true,
+    "isolatedScenarioBrowsers": true
+  },
+  "focusedRun": {
+    "passed": 86,
+    "receipt": "tests-focused.json",
+    "note": "Includes four real-DOM delayed-focus regressions after adding the current-station panel guard. Included in the final suite, not counted twice."
+  },
+  "initialFocusedRun": {
+    "passed": 82,
+    "receipt": "tests-focused-initial.json",
+    "note": "Before the final delayed-focus station guard and four associated cases."
+  },
+  "review": "Read-only review identified the reused-panel delayed-focus edge case; the added station guard addresses it. Final review found no remaining blocker.",
+  "recoveries": [
+    {
+      "receipt": "browser/results-initial.json",
+      "checksCompleted": 42,
+      "errorCount": 35,
+      "passed": false,
+      "description": "WebGL shader/context errors and a canvas timeout during rapid repeated remounts. The host later reported only 185 MiB free of 15981 MiB physical memory. Independent scenarios now use one fresh Chromium process at a time and verify a real live WebGL canvas; all console and page errors remain observable."
+    },
+    {
+      "receipt": "browser/results-crop-initial.json",
+      "checksCompleted": 72,
+      "errorCount": 1,
+      "passed": false,
+      "description": "All station groups completed without WebGL/page errors; the phone screenshot failed because document coordinates exceeded viewport-only bounds. The compact crop now uses full-page bounds. The complete final browser run passed after this harness-only correction."
+    },
+    {
+      "description": "Windows rejected a direct public-mirror overwrite because a user-mapped section was open. Same-directory temporary write and atomic rename succeeded; byte parity and final hashes were rechecked."
+    }
+  ],
+  "observations": [
+    "Final focused and 16-file regression runs passed.",
+    "Existing React key warnings in siege and compare view rendering; tests pass.",
+    "Production source remained unchanged throughout the browser recovery runs."
+  ],
+  "limits": [
+    "One latest accepted design Apply checkpoint per station; consuming it does not create redo or older history.",
+    "Undo requires the complete current physical station setup to match the applied snapshot; constraints, saved records and writing are preserved.",
+    "No full application build, physical assistive-technology session or performance benchmark.",
+    "No push or deployment."
+  ]
+}

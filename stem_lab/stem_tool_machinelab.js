@@ -7788,6 +7788,13 @@ window.StemLab = window.StemLab || {
           return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { benchDesignRecords: next }) });
         });
       }
+      function validDesignUndo(change, forBench) {
+        var b = forBench || bench;
+        if (!change || Array.isArray(change) || change.benchId !== b.id ||
+            !validStationSetup(change.before, b) || !validStationSetup(change.after, b)) return null;
+        var changed = stationReferenceSettings(b).filter(function (c) { return change.before[c.key] !== change.after[c.key]; });
+        return changed.length === 1 && changed[0].key === change.key ? change : null;
+      }
       function stationDesignLimits() {
         if (band !== 'g68' && band !== 'g912') return null;
         var stored = d.benchDesignLimits && d.benchDesignLimits[bench.id];
@@ -7802,6 +7809,8 @@ window.StemLab = window.StemLab || {
         var travelValid = travelLimit !== null && travelLimit >= 0.1 && travelLimit <= 300;
         var validLimits = forceValid && travelValid;
         var setup = stationSettingsCopy(d), validSetup = validStationSetup(setup);
+        var undo = validDesignUndo(d.benchDesignUndo && d.benchDesignUndo[bench.id]);
+        var undoAvailable = !!undo && stationSettingsMatch(setup, undo.after);
         var envelope = validLimits && validSetup ? _machineMath.designEnvelope(load, loadDist, forceLimit, travelLimit) : null;
         var fit = envelope && _machineMath.designFit(load, loadDist, ma, forceLimit, travelLimit);
         var control = designControl(stored), controls = designControls();
@@ -7863,6 +7872,16 @@ window.StemLab = window.StemLab || {
             return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { benchDesignLimits: all }) });
           });
         }
+        function focusAppliedSetting(trigger, panel, key, wasApplied) {
+          setTimeout(function () {
+            if (!wasApplied() || !panel || !panel.isConnected || typeof document === 'undefined') return;
+            if (panel.getAttribute('data-ml-design') !== bench.id) return;
+            // Applying can disable its button; consuming Undo removes its button.
+            if (document.activeElement !== trigger && !(document.activeElement === document.body && (!trigger.isConnected || trigger.disabled))) return;
+            var target = document.getElementById('ml-' + key);
+            if (target) { target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'center', behavior: 'auto' }); }
+          }, 0);
+        }
         function applyStationSetting(ev, key, value) {
           if (!fit || !finite(value) || value === setup[key] || !stationReferenceSettings().some(function (c) { return c.key === key; })) return;
           var changed = Object.assign({}, setup); changed[key] = value;
@@ -7877,19 +7896,34 @@ window.StemLab = window.StemLab || {
             var patch = { shopAnimating: false, shopMotionProgress: 0.5, shopClueBench: null,
               benchPrediction: '', benchChoice: null, benchResult: null };
             patch[key] = value;
+            var changes = Object.assign({}, cur.benchDesignUndo || {});
+            changes[bench.id] = { benchId: bench.id, key: key,
+              before: stationSettingsCopy(current), after: stationSettingsCopy(changed) };
+            patch.benchDesignUndo = changes;
             applied = true;
             return Object.assign({}, prev, { machineLab: Object.assign({}, cur, patch) });
           });
-          setTimeout(function () {
-            if (!applied || !panel || !panel.isConnected || typeof document === 'undefined') return;
-            // A chosen option remains mounted but becomes disabled, which can blur it.
-            if (document.activeElement !== trigger && !(document.activeElement === document.body && (!trigger.isConnected || trigger.disabled))) return;
-            var target = document.getElementById('ml-' + key);
-            if (target) { target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'center', behavior: 'auto' }); }
-          }, 0);
+          focusAppliedSetting(trigger, panel, key, function () { return applied; });
         }
         function applyDesignChoice(ev, choice) { if (choice) applyStationSetting(ev, control.key, choice.value); }
         function applySuggestion(ev) { applyDesignChoice(ev, suggestion); }
+        function undoAppliedSetting(ev) {
+          if (!undo || !undoAvailable) return;
+          var trigger = ev.currentTarget, panel = trigger.closest('[data-ml-design]'), applied = false;
+          setLabToolData(function (prev) {
+            var cur = (prev && prev.machineLab) || {}, current = Object.assign({}, _defaults, cur);
+            var latest = cur.benchDesignUndo && cur.benchDesignUndo[bench.id];
+            if (current.view !== 'machines' || current.bench !== bench.id || latest !== undo ||
+                !validDesignUndo(latest) || !stationSettingsMatch(current, latest.after)) return prev;
+            var changes = Object.assign({}, cur.benchDesignUndo); delete changes[bench.id];
+            var patch = { benchDesignUndo: changes, shopAnimating: false, shopMotionProgress: 0.5, shopClueBench: null,
+              benchPrediction: '', benchChoice: null, benchResult: null };
+            patch[latest.key] = latest.before[latest.key];
+            applied = true;
+            return Object.assign({}, prev, { machineLab: Object.assign({}, cur, patch) });
+          });
+          focusAppliedSetting(trigger, panel, undo.key, function () { return applied; });
+        }
         function saveDesign(ev) {
           if (!fit) return;
           var trigger = ev && ev.currentTarget, panel = trigger && trigger.closest('[data-ml-design]'), applied = false;
@@ -7916,6 +7950,27 @@ window.StemLab = window.StemLab || {
           }, 0);
         }
         var textStyle = { fontSize: 13, lineHeight: 1.55, color: T.text, margin: '8px 0' };
+        function undoView() {
+          if (!undo) return null;
+          var field = stationReferenceSettings().find(function (c) { return c.key === undo.key; });
+          var helpId = 'ml-design-undo-help-' + bench.id;
+          return h('div', { key: 'undo', role: 'group', 'aria-label': __alloT('stem.machinelab.design_last_change', 'Last applied change'),
+            'data-ml-design-undo': bench.id, 'data-key': undo.key, 'data-before': undo.before[undo.key],
+            'data-after': undo.after[undo.key], 'data-available': String(undoAvailable),
+            style: { marginTop: 10, padding: 10, borderRadius: 8, border: '1px solid ' + T.border, background: T.bg, color: T.text, overflowWrap: 'anywhere' } }, [
+            h('p', { key: 'change', style: Object.assign({}, textStyle, { marginTop: 0, fontWeight: 750 }) },
+              __alloT('stem.machinelab.design_last_change', 'Last applied change') + ' · ' + field.label + ': ' +
+              fmt(undo.before[undo.key], 3) + ' → ' + fmt(undo.after[undo.key], 3) + (field.unit ? ' ' + field.unit : '')),
+            h('p', { key: 'help', id: helpId, style: textStyle }, undoAvailable
+              ? __alloT('stem.machinelab.design_undo_help', 'Undo returns this setting to its previous value. Current limits, saved records and explanations stay as they are.')
+              : __alloT('stem.machinelab.design_undo_drift', 'Station settings changed after this action. Undo is unavailable while the current setup differs from the applied setup.')),
+            h('button', { key: 'use', type: 'button', 'data-ml-design-undo-use': bench.id, disabled: !undoAvailable,
+              'aria-describedby': helpId, onClick: undoAppliedSetting,
+              style: { minHeight: 44, maxWidth: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid ' + T.border,
+                background: T.card, color: T.text, fontSize: 13, fontWeight: 750, whiteSpace: 'normal', cursor: undoAvailable ? 'pointer' : 'default' } },
+              __alloT('stem.machinelab.design_undo_action', 'Undo last applied change'))
+          ]);
+        }
         function resultRows(result, prefix) {
           return h('ul', { key: prefix, style: { paddingLeft: 18, fontSize: 13, lineHeight: 1.6, margin: '8px 0' } }, [
             h('li', { key: 'force', 'data-ml-design-force-ok': String(result.forceOK) },
@@ -8009,6 +8064,7 @@ window.StemLab = window.StemLab || {
             controls.map(function (c) { return h('option', { key: c.key, value: c.key }, c.label + (c.unit ? ' (' + c.unit + ')' : '')); })),
           h('p', { key: 'control-help', id: 'ml-design-control-help-' + bench.id, style: Object.assign({}, textStyle, { fontSize: 12, color: T.dim }) },
             __alloT('stem.machinelab.design_control_help', 'Choosing a setting leaves the machine unchanged. The search holds the load, load movement and other geometry fixed.')),
+          undoView(),
           !validLimits ? h('p', { key: 'invalid', role: 'status', style: textStyle }, __alloT('stem.machinelab.design_invalid', 'Enter a positive value within each range to compare the limits.')) : !validSetup
             ? h('p', { key: 'geometry', role: 'status', style: textStyle }, __alloT('stem.machinelab.design_geometry', 'Correct the station settings before designing for this task.')) : h('div', { key: 'results' }, [
               h('p', { key: 'status', role: 'status', 'data-ml-design-fit': String(fit.fits), style: Object.assign({}, textStyle, { fontWeight: 800 }) },
