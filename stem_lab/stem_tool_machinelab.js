@@ -7828,6 +7828,30 @@ window.StemLab = window.StemLab || {
             work: changed[bench.loadKey] * changed.loadDistance,
             result: _machineMath.designFit(changed[bench.loadKey], changed.loadDistance, ma, forceLimit, travelLimit) });
         }) : [];
+        var taskCapacities = taskTrials.map(function (trial) {
+          var field = trial.field, best = null, bestIndex = -1;
+          var count = Math.round((field.max - field.min) / field.step);
+          var held = trial.kind === 'load' ? !fit.travelOK : !fit.forceOK;
+          function atStep(index) {
+            var value = Math.round((field.min + index * field.step) * 1e10) / 1e10;
+            if (index > count || value > field.max) return null;
+            var changed = Object.assign({}, setup); changed[trial.key] = value;
+            var result = _machineMath.designFit(changed[bench.loadKey], changed.loadDistance, ma, forceLimit, travelLimit);
+            return { value: value, result: result, work: changed[bench.loadKey] * changed.loadDistance };
+          }
+          if (!held) {
+            for (var index = 0; index <= count; index++) {
+              var candidate = atStep(index);
+              if (candidate && candidate.result && candidate.result.fits) { best = candidate; bestIndex = index; }
+            }
+          }
+          var next = best ? atStep(bestIndex + 1) : null;
+          return { kind: trial.kind, key: trial.key, field: field, best: best, next: next,
+            title: trial.kind === 'load' ? __alloT('stem.machinelab.capacity_load', 'Largest load that fits')
+              : __alloT('stem.machinelab.capacity_movement', 'Largest load movement that fits'),
+            boundary: held ? (trial.kind === 'load' ? 'held-travel' : 'held-force') : !best ? 'minimum' : !next ? 'range'
+              : trial.kind === 'load' ? 'force' : 'travel' };
+        });
         var suggestion = null, feasible = [], candidates = [], options = [];
         if (envelope && envelope.possible && fit) {
           var steps = Math.round((control.max - control.min) / control.step);
@@ -7981,6 +8005,63 @@ window.StemLab = window.StemLab || {
               (result.travelOK ? __alloT('stem.machinelab.design_within', 'Within limit') : __alloT('stem.machinelab.design_over', 'Over limit')))
           ]);
         }
+        function taskCapacityView() {
+          return h('div', { key: 'capacity', role: 'group', 'aria-label': __alloT('stem.machinelab.capacity_title', 'Find a task that fits'),
+            'data-ml-task-capacity': bench.id, style: { marginTop: 16, borderTop: '1px solid ' + T.border, paddingTop: 10 } }, [
+            h('h3', { key: 'title', style: Object.assign({}, textStyle, { fontWeight: 800, fontSize: 14 }) },
+              __alloT('stem.machinelab.capacity_title', 'Find a task that fits')),
+            h('p', { key: 'scope', style: textStyle }, __alloT('stem.machinelab.capacity_scope',
+              'Each search finds the largest available slider setting that meets both limits. Only the named task condition changes; the other condition, geometry and limits stay fixed. These are ideal model results, not machine strength ratings.')),
+            h('div', { key: 'choices', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,210px),1fr))', gap: 8 } },
+              taskCapacities.map(function (capacity) {
+                var best = capacity.best, next = capacity.next, field = capacity.field;
+                var current = !!best && best.value === setup[capacity.key], disabled = !best || current;
+                var helpId = 'ml-task-capacity-help-' + bench.id + '-' + capacity.kind;
+                var reason = capacity.boundary === 'held-travel'
+                  ? __alloT('stem.machinelab.capacity_held_travel', 'Changing the load cannot reduce hand travel. The held movement already exceeds the travel limit. Shorten the movement or change geometry first.')
+                  : capacity.boundary === 'held-force'
+                  ? __alloT('stem.machinelab.capacity_held_force', 'Changing load movement cannot reduce effort force. The held load already exceeds the force limit. Reduce the load or change geometry first.')
+                  : capacity.boundary === 'minimum'
+                  ? __alloT('stem.machinelab.capacity_minimum', 'Even the smallest available setting exceeds a limit: ') + fmt(field.min, 3) + ' ' + field.unit + '. ' +
+                    __alloT('stem.machinelab.capacity_minimum_help', 'Change geometry or widen the limit before trying this task condition.')
+                  : capacity.boundary === 'range'
+                  ? __alloT('stem.machinelab.capacity_range', 'This reaches the end of the slider range. Larger values are outside this tool\'s available settings; this is not a physical strength limit.')
+                  : __alloT('stem.machinelab.capacity_next', 'The next slider setting, ') + fmt(next.value, 3) + ' ' + field.unit +
+                    (capacity.boundary === 'force' ? __alloT('stem.machinelab.capacity_next_force', ', exceeds the effort force limit.')
+                      : __alloT('stem.machinelab.capacity_next_travel', ', exceeds the total hand travel limit.'));
+                return h('div', { key: capacity.kind, role: 'group', 'aria-label': capacity.title,
+                  'data-ml-capacity-kind': capacity.kind, 'data-key': capacity.key, 'data-value': best ? best.value : undefined,
+                  'data-available': String(!!best), 'data-current': String(current), 'data-boundary': capacity.boundary,
+                  'data-next-value': next ? next.value : undefined, 'data-next-force': next ? next.result.force : undefined,
+                  'data-next-travel': next ? next.result.travel : undefined,
+                  style: { minWidth: 0, padding: 10, borderRadius: 8, border: '1px solid ' + T.border,
+                    background: T.card, color: T.text, overflowWrap: 'anywhere' } }, [
+                  h('p', { key: 'title', style: Object.assign({}, textStyle, { marginTop: 0, fontWeight: 800 }) }, capacity.title),
+                  best ? h('p', { key: 'setting', style: Object.assign({}, textStyle, { fontWeight: 750 }) },
+                    field.label + ': ' + fmt(setup[capacity.key], 3) + ' → ' + fmt(best.value, 3) + ' ' + field.unit) : null,
+                  best ? h('ul', { key: 'metrics', style: { paddingLeft: 18, margin: '8px 0', fontSize: 13, lineHeight: 1.6 } }, [
+                    { key: 'force', label: __alloT('stem.machinelab.effort_needed', 'Effort needed'), unit: 'N', before: fit.force, after: best.result.force },
+                    { key: 'travel', label: __alloT('stem.machinelab.design_total_travel', 'Total hand travel'), unit: 'm', before: fit.travel, after: best.result.travel },
+                    { key: 'work', label: __alloT('stem.machinelab.design_task_work_label', 'Task work'), unit: 'J', before: envelope.work, after: best.work }
+                  ].map(function (metric) {
+                    return h('li', { key: metric.key, 'data-ml-capacity-metric': metric.key, 'data-before': metric.before, 'data-after': metric.after },
+                      metric.label + ': ' + fmt(metric.before, 3) + ' → ' + fmt(metric.after, 3) + ' ' + metric.unit);
+                  })) : null,
+                  h('p', { key: 'fit', style: Object.assign({}, textStyle, { fontWeight: 750 }) }, best
+                    ? __alloT('stem.machinelab.capacity_fits', 'This task meets both limits.')
+                    : __alloT('stem.machinelab.capacity_none', 'No available setting meets both limits with the other condition held fixed.')),
+                  h('p', { key: 'reason', id: helpId, style: textStyle }, reason),
+                  h('button', { key: 'use', type: 'button', 'data-ml-capacity-use': capacity.kind, disabled: disabled,
+                    'aria-describedby': helpId, onClick: function (ev) { if (!disabled) applyStationSetting(ev, capacity.key, best.value); },
+                    style: { minHeight: 44, maxWidth: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid ' + T.border,
+                      background: T.bg, color: T.text, fontSize: 13, fontWeight: 750, whiteSpace: 'normal', cursor: disabled ? 'default' : 'pointer' } },
+                    current ? __alloT('stem.machinelab.capacity_current', 'Already at this setting') : capacity.kind === 'load'
+                      ? __alloT('stem.machinelab.capacity_use_load', 'Use largest fitting load')
+                      : __alloT('stem.machinelab.capacity_use_movement', 'Use largest fitting movement'))
+                ]);
+              }))
+          ]);
+        }
         function taskTrialView() {
           if (!taskTrials.length) return null;
           return h('details', { key: 'task-trials', 'data-ml-task-trials': bench.id,
@@ -8030,7 +8111,8 @@ window.StemLab = window.StemLab || {
                       whiteSpace: 'normal', cursor: trial.available ? 'pointer' : 'default' } }, trial.kind === 'load'
                     ? __alloT('stem.machinelab.task_use_load', 'Use doubled load') : __alloT('stem.machinelab.task_use_movement', 'Use doubled movement'))
                 ]);
-              }))
+              })),
+            taskCapacityView()
           ]);
         }
         return card([h('details', { key: 'design', 'data-ml-design': bench.id, className: 'ml-design-limits' }, [
